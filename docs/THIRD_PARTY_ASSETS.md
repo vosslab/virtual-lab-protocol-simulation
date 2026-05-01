@@ -1,0 +1,72 @@
+# Third-Party Assets
+
+This document lists all third-party assets integrated into the cell-culture game.
+
+## Servier Medical Art Icons
+
+The following Servier Medical Art bioicons have been integrated under the CC-BY-3.0 license. Each icon is sourced from the Servier Medical Art collection (https://smart.servier.com/) via bioicons.com (https://bioicons.com/).
+
+License: CC-BY-3.0 (https://creativecommons.org/licenses/by/3.0/)
+Attribution: Servier Medical Art, smart.servier.com
+
+### Microbiology Collection
+
+| Source File | Destination File | Modifications |
+|---|---|---|
+| culture-flask-filled-lid.svg | assets/equipment/t75_flask_v5.svg | Added anchor_liquid_clip, anchor_liquid_bounds, anchor_label, overlay_root |
+| bottle-medium-pink.svg | assets/equipment/media_bottle.svg | Added anchor system |
+| bottle-medium-pink.svg | assets/equipment/pbs_bottle.svg | Recolored pink (#d3a4d4) to light blue (#b8e5ff); added anchor system |
+| bottle-medium-orange.svg | assets/equipment/trypsin_bottle.svg | Added anchor system |
+| bottle-medium-green.svg | assets/equipment/dmso_bottle.svg | Recolored green to gray (#e0e0e0, #d0d0d0, #c0c0c0); added anchor system |
+| bottle-medium-pink.svg | assets/equipment/sterile_water_bottle.svg | Recolored pink (#d3a4d4) to pale blue (#eaf6ff); added anchor system |
+| falcon-15ml-empty.svg | assets/equipment/falcon_15ml.svg | Added anchor system |
+| falcon-50ml-empty.svg | assets/equipment/falcon_50ml.svg | Added anchor system |
+| cell-culture-equipment-1.svg | assets/equipment/cell_counter.svg | Added anchor system |
+| tube-screwcap-closed-orange.svg | assets/equipment/mtt_vial.svg | Added anchor system |
+
+### Lab Apparatus Collection
+
+| Source File | Destination File | Modifications |
+|---|---|---|
+| centrifuge.svg | assets/equipment/centrifuge.svg | Added anchor system |
+| incubator.svg | assets/equipment/incubator.svg | Added anchor system |
+| microscope.svg | assets/equipment/microscope.svg | Added anchor system |
+| spectrophotometer.svg | assets/equipment/plate_reader.svg | Added anchor system |
+| bath_filled.svg | assets/equipment/water_bath.svg | Added anchor system |
+| agitator.svg | assets/equipment/vortex.svg | Added anchor system |
+
+### Chemistry Collection
+
+| Source File | Destination File | Modifications |
+|---|---|---|
+| micropipette-multi.svg | assets/equipment/multichannel_pipette.svg | Added anchor system |
+| pipette-box.svg | assets/equipment/tip_box.svg | Added anchor system |
+
+## Anchor System
+
+All integrated Servier SVGs include the following anchor elements for layout and interaction:
+
+- `anchor_liquid_clip`: clipPath defining the liquid-bearing region (for bottles, flasks, tubes)
+- `anchor_liquid_bounds`: rect covering the liquid region bounds
+- `anchor_label`: rect positioning dynamic label overlays
+- `anchor_error`: rect for error indicator positioning
+- `overlay_root`: transparent group for engine-injected dynamic overlays
+
+Non-liquid equipment (centrifuge, microscope, etc.) include only:
+- `anchor_label`: rect positioning dynamic labels
+- `overlay_root`: transparent overlay mount
+
+## Recoloring
+
+Some Servier icons were recolored to match game visual semantics:
+
+- PBS bottle: pink -> light blue (#b8e5ff)
+- DMSO bottle: green -> gray (#e0e0e0)
+- Sterile water bottle: pink -> pale blue (#eaf6ff)
+
+All color changes were made via SVG fill attribute replacement and preserve icon structure.
+
+## Attribution Footer
+
+Credit line to include in HTML footer:
+"Servier Medical Art icons by Servier (https://smart.servier.com/), licensed under CC-BY-3.0. Sourced via bioicons.com (https://bioicons.com/)."

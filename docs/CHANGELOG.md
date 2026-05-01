@@ -1,5 +1,19 @@
 # Changelog
 
+## 2026-05-01
+
+### Additions and New Features
+- Authored docs/PENDING_DESIGN_NOTES_2026-05-01.md collecting professor feedback on the 2026-04-29 Servier integration: build breakage, bottle default-fill issues, MTT vial wrong asset, asset naming refactor proposal (state-based bottle_empty/bottle_filled with overlay color rather than per-content SVGs), equipment in-use vs idle state variants for every bench item, Servier water-bath idle/filled/with-flask variants noted as canonical source.
+- Rebuilt docs/ASSET_GALLERY_2026-04-29.html to embed real SVG file bytes verbatim. Previous version contained "synthesized representations for clarity" - fabricated cartoon SVGs that did not match the actual asset files - which the professor explicitly rejected. New gallery reads each file with the Read tool, strips XML decl, injects raw markup. 30 rows rendered, 20 with missing legacy (expected for new Servier additions), 2 missing-current (path resolution bug in gallery builder for repo-root T75_flask.svg and tissue_culture_flask.svg). Spot-verified 3 random rows for byte-exact embed (microscope, vortex, well_plate_24).
+
+### Decisions and Failures
+- 2026-04-29 Servier integration audit (reviewer agent) found multiple regressions previous coder claimed as complete: (1) parts/asset_specs.ts has duplicate keys for incubator (lines ~68 and ~83), microscope (~68 and ~86), plate_reader (~70 and ~84) plus duplicate top-level declarations of computeWidthScaleFromDisplay, deriveHeldLiquid, canonicalTool causing bash build_game.sh to exit 1 with three esbuild errors. bash walkthrough.sh stalls at the build step; the previously claimed 25/25 result was incorrect. (2) pbs_bottle.svg recolor never landed - file still contains Servier magenta #b64392 instead of claimed #b8e5ff blue. (3) sterile_water_bottle.svg same: still pink, not pale blue. (4) Servier attribution footer absent from parts/tail.html despite claim. (5) Anchor system inconsistency: liquid-bearing items have anchor_liquid_bounds but lack anchor_liquid_clip (doc spec requires both).
+- OQ-5 reversed: professor rejects the Servier culture-flask-filled-lid as the canonical T-75 flask. The professor's hand-drawn T75_flask.svg (repo root) is canonical going forward. Servier flask retained on disk for reference but not the default.
+- Asset gallery rule: the gallery must embed real file bytes only. No "synthesized representations", no redrawn versions, no simplifications. If a file is missing show "FILE NOT FOUND" rather than fabricate a stand-in.
+
+### Developer Tests and Notes
+- Build state: bash build_game.sh exits 1 since the 2026-04-29 integration. Walkthrough non-runnable. Test gates that did pass when isolated: node devel/test_layout_metrics.mjs (3/3 viewports) and node devel/test_target_handlers.mjs (41/41) - these run against pre-built artifacts so they did not catch the build break.
+
 ## 2026-04-29
 
 ### Additions and New Features

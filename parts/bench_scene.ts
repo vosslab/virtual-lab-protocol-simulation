@@ -30,27 +30,10 @@ function getBenchItemSvgHtml(itemId: string): string {
 }
 
 // ============================================
-// Bridge functions for M1.5.C: mirror hood_scene's bridge functions
+// Bridge functions for M1.5.C: deriveHeldLiquid and canonicalTool
+// are defined in hood_scene.ts and reused here. Both scenes share the
+// same liquid-mapping logic.
 //============================================
-function deriveHeldLiquid(selectedTool: string | null): { tool: string | null; liquid: string | null; volumeMl: number; colorKey: string | null } {
-	if (!selectedTool) return { tool: null, liquid: null, volumeMl: 0, colorKey: null };
-	const map: Record<string, { liquid: string; volumeMl: number; colorKey: string }> = {
-		'serological_pipette_with_pbs':     { liquid: 'pbs',     volumeMl: 4,  colorKey: 'pbs' },
-		'serological_pipette_with_trypsin': { liquid: 'trypsin', volumeMl: 3,  colorKey: 'trypsin' },
-		'serological_pipette_with_media':   { liquid: 'media',   volumeMl: 9,  colorKey: 'media' },
-		'serological_pipette_with_sample':  { liquid: 'cells',   volumeMl: 1,  colorKey: 'cells' },
-		'serological_pipette_with_cells':   { liquid: 'cells',   volumeMl: 12, colorKey: 'cells' },
-	};
-	const hit = map[selectedTool];
-	if (hit) return { tool: 'serological_pipette', liquid: hit.liquid, volumeMl: hit.volumeMl, colorKey: hit.colorKey };
-	return { tool: selectedTool, liquid: null, volumeMl: 0, colorKey: null };
-}
-
-function canonicalTool(selectedTool: string | null): string | null {
-	if (!selectedTool) return null;
-	const i = selectedTool.indexOf('_with_');
-	return i >= 0 ? selectedTool.substring(0, i) : selectedTool;
-}
 
 // ============================================
 // Click handler for bench items. Microscope/incubator open their
