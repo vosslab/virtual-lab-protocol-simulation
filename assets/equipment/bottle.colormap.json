@@ -3,52 +3,67 @@
   "groups": {
     "liquid": [
       {
-        "id": "liquid_09",
+        "id": "liquid_5ef5bc42",
         "opacity": 0.21
       },
       {
-        "id": "liquid_11",
+        "id": "liquid_6851cfe0",
         "opacity": 0.43
       },
       {
-        "id": "liquid_12",
+        "id": "liquid_1ae635e2",
         "opacity": 0.4
       },
       {
-        "id": "liquid_13",
+        "id": "liquid_2e4bf4a1",
         "opacity": 0.68
       },
       {
-        "id": "liquid_14",
+        "id": "liquid_5585a426",
         "opacity": 0.93
       },
       {
-        "id": "liquid_15",
+        "id": "liquid_9a0775ca",
         "opacity": 0.82
       },
       {
-        "id": "liquid_19",
+        "id": "liquid_deb35d26",
         "opacity": 0.4
       },
       {
-        "id": "liquid_21",
+        "id": "liquid_d13a7922",
         "opacity": 0.82
       },
       {
-        "id": "liquid_23",
+        "id": "liquid_86dcfcb9",
         "opacity": 0.94
       },
       {
-        "id": "liquid_24",
+        "id": "liquid_6e0a0e26",
         "opacity": 0.93
       },
       {
-        "id": "liquid_25",
+        "id": "liquid_4c6352a3",
         "opacity": 0.93
       },
       {
-        "id": "liquid_26",
+        "id": "liquid_48fd6b52",
         "opacity": 1.0
+      },
+      {
+        "id": "liquid_dfa4c63c",
+        "opacity": 0.54,
+        "attr": "stroke"
+      },
+      {
+        "id": "liquid_9e54c86a",
+        "opacity": 0.34,
+        "attr": "stroke"
+      },
+      {
+        "id": "liquid_e1c748b2",
+        "opacity": 0.93,
+        "attr": "stroke"
       }
     ]
   }

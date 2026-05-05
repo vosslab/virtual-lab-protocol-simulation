@@ -82,6 +82,31 @@ Run only changed files for faster feedback:
 FAST_REPO_HYGIENE=1 source source_me.sh && python3 -m pytest tests/
 ```
 
+## Regenerating the shared bottle SVG
+
+The shared bottle artwork at `assets/equipment/bottle.svg` is derived from
+the Servier Bioicons sources. Regenerate it (and its sidecar colormap)
+from the three pristine variants whenever the upstream art changes:
+
+```bash
+source source_me.sh && python3 tools/build_servier_recolor.py bottle \
+    OTHER_REPOS/bioicons/static/icons/cc-by-3.0/Microbiology/Servier/bottle-medium-pink.svg \
+    OTHER_REPOS/bioicons/static/icons/cc-by-3.0/Microbiology/Servier/bottle-medium-orange.svg \
+    OTHER_REPOS/bioicons/static/icons/cc-by-3.0/Microbiology/Servier/bottle-medium-green.svg
+```
+
+Then refresh the runtime manifest:
+
+```bash
+source source_me.sh && python3 tools/generate_svg_globals.py
+```
+
+The diff classifies any path whose fill or stroke is not shared across all
+three variants as part of the liquid layer, assigns `liquid_<sha8(d)>`
+ids, and emits per-id opacity from luminance to preserve Servier shading.
+See [docs/CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md#dynamic-svg-recolor-pipeline)
+for the full pipeline.
+
 ## Known gaps
 
 - TODO: Document expected Playwright walkthrough screenshot output

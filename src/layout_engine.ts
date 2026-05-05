@@ -19,7 +19,9 @@
 // distribution and label-availability estimation.
 
 // Average character width as percentage of font size
-import { SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
+import { SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
+import { getBottleSvg } from "./svg_assets";
+import type { BottleLiquid } from "./svg_recipes";
 import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from "./scene_types";
 
 export const AVG_CHAR_WIDTH_PCT = 0.55;
@@ -52,15 +54,29 @@ export function parseSvgAspectRatio(svgHtml: string): number {
 }
 
 // ============================================
-// Map asset IDs to their base SVG string constants
-// These are the raw SVG files injected by build_game.sh,
-// independent of game state (no dynamic fills or overlays)
+// Map consolidated bottle/stock asset ids to their BottleLiquid role.
+// Centralized here so getStaticSvg and any other dispatcher stay consistent.
+const BOTTLE_ASSET_LIQUID: Record<string, BottleLiquid> = {
+	media_bottle:      "media",
+	pbs_bottle:        "pbs",
+	trypsin_bottle:    "trypsin",
+	dmso_bottle:       "dmso",
+	sterile_water:     "sterileWater",
+	carboplatin_stock: "carboplatin",
+	metformin_stock:   "metformin",
+};
+
+// Map asset IDs to their base SVG string. Consolidated bottle ids route
+// through getBottleSvg(liquid) so callers always receive the recolored
+// SVG for the right liquid -- never the raw, unpatched Servier base.
 export function getStaticSvg(assetId: string): string {
+	const bottleLiquid = BOTTLE_ASSET_LIQUID[assetId];
+	if (bottleLiquid !== undefined) {
+		return getBottleSvg(bottleLiquid);
+	}
 	switch (assetId) {
 		case 'flask': return SVG_T75_FLASK;
 		case 'well_plate': return SVG_WELL_PLATE_24;
-		case 'media_bottle': return SVG_BOTTLE;
-		case 'trypsin_bottle': return SVG_BOTTLE;
 		case 'ethanol_bottle': return SVG_ETHANOL_SPRAY;
 		case 'serological_pipette': return SVG_SERO_PIPETTE;
 		case 'aspirating_pipette': return SVG_ASPIRATING_PIPETTE;
@@ -69,14 +85,9 @@ export function getStaticSvg(assetId: string): string {
 		case 'waste_container': return SVG_WASTE_CONTAINER;
 		case 'microscope': return SVG_MICROSCOPE;
 		case 'incubator': return SVG_INCUBATOR;
-		case 'sterile_water': return SVG_BOTTLE;
-		case 'pbs_bottle': return SVG_BOTTLE;
 		case 'conical_15ml_rack': return SVG_CONICAL_15ML_RACK;
 		case 'dilution_tube_rack': return SVG_DILUTION_TUBE_RACK;
 		case 'mtt_vial': return SVG_MTT_VIAL;
-		case 'dmso_bottle': return SVG_BOTTLE;
-		case 'carboplatin_stock': return SVG_BOTTLE;
-		case 'metformin_stock': return SVG_BOTTLE;
 		case 'micropipette_rack': return SVG_MICROPIPETTE_RACK;
 		case 'biohazard_decant': return SVG_BIOHAZARD_DECANT;
 		case 'centrifuge': return SVG_CENTRIFUGE;

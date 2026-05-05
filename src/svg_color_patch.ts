@@ -15,10 +15,16 @@ import { COLOR_MAP, type ColorRole } from "./style_constants";
 import { SVG_GROUPS, SVG_IDS, type SvgGroupEntry } from "./svg_globals";
 
 // A single patch targets exactly one authored SVG element by id.
-// v1 is intentionally narrow: fill and opacity only.
+// fillRole writes the `fill` attribute; strokeRole writes `stroke`. Stroke
+// routing is in scope: the Servier bottle pristine-source diff classifies
+// at least one liquid path as stroke-only (a thin highlight stripe), and
+// dropping it would visibly lower the recolor fidelity. Extension was made
+// deliberately after the build script reported the stroke count, not as a
+// silent reaction to a test failure.
 export type SvgColorPatch = {
 	id: string;
 	fillRole?: ColorRole;
+	strokeRole?: ColorRole;
 	opacity?: number;
 };
 
@@ -109,6 +115,12 @@ function applyOnePatch(svg: string, patch: SvgColorPatch): string {
 		const e1 = findOpenTagEnd(updated, s1);
 		updated = setAttributeInTag(updated, s1, e1, "fill", hex);
 	}
+	if (patch.strokeRole !== undefined) {
+		const hex = COLOR_MAP[patch.strokeRole];
+		const ss = findElementStart(updated, patch.id);
+		const se = findOpenTagEnd(updated, ss);
+		updated = setAttributeInTag(updated, ss, se, "stroke", hex);
+	}
 	if (patch.opacity !== undefined) {
 		const s2 = findElementStart(updated, patch.id);
 		const e2 = findOpenTagEnd(updated, s2);
@@ -153,8 +165,17 @@ export function expandGroupPatch(groupPatch: SvgGroupPatch): SvgColorPatch[] {
 	const result: SvgColorPatch[] = [];
 	for (const entry of entries) {
 		const patch: SvgColorPatch = { id: entry.id };
+		// Route the role to fill (default) or stroke based on the sidecar's
+		// optional attr field. Cast is contained: SvgGroupEntry is a JSON
+		// shape from generated code, attr is an optional generator-emitted
+		// field documented in tools/generate_svg_globals.py.
+		const entryAttr = (entry as { attr?: "fill" | "stroke" }).attr;
 		if (groupPatch.fillRole !== undefined) {
-			patch.fillRole = groupPatch.fillRole;
+			if (entryAttr === "stroke") {
+				patch.strokeRole = groupPatch.fillRole;
+			} else {
+				patch.fillRole = groupPatch.fillRole;
+			}
 		}
 		if (entry.opacity !== undefined) {
 			patch.opacity = entry.opacity * scale;

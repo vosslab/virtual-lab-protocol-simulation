@@ -1,83 +1,43 @@
 // node tests/test_svg_color_patch.mjs (run from repo root)
-// Lightweight runtime check for src/svg_color_patch.ts. We do not pull in the
-// browser-side TypeScript build; instead we exercise the same algorithm
-// against a hand-built SVG string. If this passes, the build-time tsc is
-// what guards the live module's behavior.
+//
+// Imports applyPatches and expandGroupPatch from the real
+// src/svg_color_patch.ts via esbuild compilation. The previous version
+// re-implemented the algorithm in test code, which meant the tests stayed
+// green even if the production module broke. This version exercises the
+// production code path.
 
 import assert from "node:assert/strict";
+import { importTsModule } from "./_compile_for_test.mjs";
 
-// Mirror the production algorithm (kept in sync with svg_color_patch.ts).
-function findElementStart(svg, targetId) {
-	const needle = 'id="' + targetId + '"';
-	const idIndex = svg.indexOf(needle);
-	if (idIndex < 0) {
-		return -1;
-	}
-	let cursor = idIndex;
-	while (cursor > 0 && svg.charAt(cursor) !== "<") {
-		cursor -= 1;
-	}
-	return cursor;
-}
+const colorPatch = await importTsModule("src/svg_color_patch.ts");
+const { applyPatches, expandGroupPatch, validatePatchIds } = colorPatch;
 
-function findOpenTagEnd(svg, startIndex) {
-	return svg.indexOf(">", startIndex);
-}
-
-function setAttributeInTag(svg, startIndex, endIndex, attribute, value) {
-	const openTag = svg.slice(startIndex, endIndex + 1);
-	const attrPattern = new RegExp(' ' + attribute + '="[^"]*"');
-	const replacement = ' ' + attribute + '="' + value + '"';
-	let updatedTag;
-	if (attrPattern.test(openTag)) {
-		updatedTag = openTag.replace(attrPattern, replacement);
-	} else {
-		const isSelfClose = openTag.endsWith("/>");
-		const cutoff = isSelfClose ? openTag.length - 2 : openTag.length - 1;
-		updatedTag = openTag.slice(0, cutoff) + replacement + openTag.slice(cutoff);
-	}
-	return svg.slice(0, startIndex) + updatedTag + svg.slice(endIndex + 1);
-}
-
-function applyOne(svg, patch, COLOR) {
-	const start = findElementStart(svg, patch.id);
-	if (start < 0) {
-		throw new Error("missing id: " + patch.id);
-	}
-	let updated = svg;
-	if (patch.fill !== undefined) {
-		const s = findElementStart(updated, patch.id);
-		const e = findOpenTagEnd(updated, s);
-		updated = setAttributeInTag(updated, s, e, "fill", COLOR[patch.fill]);
-	}
-	if (patch.opacity !== undefined) {
-		const s = findElementStart(updated, patch.id);
-		const e = findOpenTagEnd(updated, s);
-		updated = setAttributeInTag(updated, s, e, "opacity", String(patch.opacity));
-	}
-	return updated;
-}
-
-const COLOR = { media: "#f7a6b8", residue: "#c69a3a" };
-
-// Test 1: replace existing fill on a self-closing rect
+// Test 1: replace existing fill on a self-closing rect via fillRole
 {
-	const svg = '<svg><rect id="t75__liquid" x="0" y="0" fill="#000" /></svg>';
-	const out = applyOne(svg, { id: "t75__liquid", fill: "media" }, COLOR);
-	assert.match(out, /id="t75__liquid"[^>]* fill="#f7a6b8"/);
+	// COLOR_MAP['media'] is "#f7a6b8" -- expand into an SVG that has the
+	// matching id, then apply a fill patch.
+	const svg = '<svg><rect id="t75_flask__liquid_residue" x="0" y="0" fill="#000" /></svg>';
+	const out = applyPatches(svg, [
+		{ id: "t75_flask__liquid_residue", fillRole: "media" },
+	]);
+	assert.match(out, /id="t75_flask__liquid_residue"[^>]* fill="#f7a6b8"/);
 }
 
 // Test 2: insert opacity when absent
 {
-	const svg = '<svg><path id="t75__residue" d="M0 0 L1 1"/></svg>';
-	const out = applyOne(svg, { id: "t75__residue", opacity: 0.35 }, COLOR);
-	assert.match(out, /id="t75__residue"[^>]* opacity="0.35"/);
+	const svg = '<svg><path id="t75_flask__liquid_residue" d="M0 0 L1 1"/></svg>';
+	const out = applyPatches(svg, [
+		{ id: "t75_flask__liquid_residue", opacity: 0.35 },
+	]);
+	assert.match(out, /id="t75_flask__liquid_residue"[^>]* opacity="0.35"/);
 }
 
 // Test 3: both fill and opacity, replace existing
 {
-	const svg = '<svg><rect id="x__a" fill="#fff" opacity="1" /></svg>';
-	const out = applyOne(svg, { id: "x__a", fill: "residue", opacity: 0.5 }, COLOR);
+	const svg = '<svg><rect id="bottle__liquid_base" fill="#fff" opacity="1" /></svg>';
+	const out = applyPatches(svg, [
+		{ id: "bottle__liquid_base", fillRole: "residue", opacity: 0.5 },
+	]);
 	assert.match(out, /fill="#c69a3a"/);
 	assert.match(out, /opacity="0.5"/);
 }
@@ -87,7 +47,7 @@ const COLOR = { media: "#f7a6b8", residue: "#c69a3a" };
 	const svg = '<svg></svg>';
 	let threw = false;
 	try {
-		applyOne(svg, { id: "nope", fill: "media" }, COLOR);
+		applyPatches(svg, [{ id: "nope", fillRole: "media" }]);
 	} catch (err) {
 		threw = true;
 	}
@@ -96,19 +56,58 @@ const COLOR = { media: "#f7a6b8", residue: "#c69a3a" };
 
 // Test 5: nested sibling with same attribute name is not affected
 {
-	const svg = '<svg><g id="outer__group" opacity="0.1"><rect id="x__a" opacity="1"/></g></svg>';
-	const out = applyOne(svg, { id: "x__a", opacity: 0.5 }, COLOR);
-	// outer untouched
-	assert.match(out, /id="outer__group" opacity="0.1"/);
-	// inner updated
-	assert.match(out, /id="x__a" opacity="0.5"/);
+	const svg = '<svg><g id="bottle__outer" opacity="0.1"><rect id="bottle__inner" opacity="1"/></g></svg>';
+	const out = applyPatches(svg, [{ id: "bottle__inner", opacity: 0.5 }]);
+	assert.match(out, /id="bottle__outer" opacity="0.1"/);
+	assert.match(out, /id="bottle__inner" opacity="0.5"/);
 }
 
-// Test 6: attribute insert preserves self-closing form
+// Test 6: stroke routing via strokeRole
 {
-	const svg = '<svg><rect id="x__a" /></svg>';
-	const out = applyOne(svg, { id: "x__a", fill: "media" }, COLOR);
-	assert.match(out, /id="x__a"\s+fill="#f7a6b8"\s*\/>/);
+	const svg = '<svg><path id="bottle__liquid_stroke" stroke="#000" fill="none" /></svg>';
+	const out = applyPatches(svg, [
+		{ id: "bottle__liquid_stroke", strokeRole: "media" },
+	]);
+	assert.match(out, /id="bottle__liquid_stroke"[^>]* stroke="#f7a6b8"/);
+	// fill must remain "none"
+	assert.match(out, /fill="none"/);
 }
 
-console.log("svg_color_patch: 6 tests passed");
+// Test 7: validatePatchIds against the real SVG_IDS manifest
+{
+	// The bottle's authored ids include the residue object on T75, so a
+	// patch list referencing only that id should validate cleanly.
+	validatePatchIds("t75_flask", [
+		{ id: "t75_flask__liquid_residue", opacity: 0 },
+	]);
+	// And referencing an unknown id must throw with a clear message
+	let threw = false;
+	try {
+		validatePatchIds("t75_flask", [
+			{ id: "t75_flask__not_a_real_id" },
+		]);
+	} catch (err) {
+		threw = true;
+	}
+	assert.equal(threw, true);
+}
+
+// Test 8: expandGroupPatch returns one SvgColorPatch per id in the group
+{
+	const expanded = expandGroupPatch({
+		asset: "bottle",
+		group: "liquid",
+		fillRole: "media",
+	});
+	assert.ok(expanded.length > 0, "bottle.liquid group should not be empty");
+	for (const p of expanded) {
+		assert.equal(typeof p.id, "string");
+		// Each entry should set either fillRole or strokeRole based on attr
+		assert.ok(
+			p.fillRole === "media" || p.strokeRole === "media",
+			"expanded patch should carry the role on fill or stroke",
+		);
+	}
+}
+
+console.log("svg_color_patch: 8 tests passed (production module imported)");

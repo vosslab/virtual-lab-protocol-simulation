@@ -134,6 +134,41 @@ source source_me.sh && python3 -m pytest tests/
 Test scope is controllable via environment variables (`FAST_REPO_HYGIENE=1`,
 `REPO_HYGIENE_SCOPE=changed`, `SKIP_REPO_HYGIENE=1`).
 
+## Dynamic SVG recolor pipeline
+
+Liquid color in the game is data-driven, not baked into static art. The
+pipeline:
+
+1. **SVG art** owns shapes and stable ids. Liquid sub-objects carry ids
+   like `liquid_<sha8>` (geometry-keyed) or named ids like `liquid_residue`.
+2. **Generator** (`tools/generate_svg_globals.py`) reads
+   `assets/equipment/*.svg`, namespaces every id with `<basename>__`, and
+   emits two manifests in [src/svg_globals.ts](../src/svg_globals.ts):
+   `SVG_IDS` (per-asset id list) and `SVG_GROUPS` (sidecar groupings,
+   loaded from optional `<basename>.colormap.json`).
+3. **Renderer** (`src/svg_color_patch.ts`) applies `SvgColorPatch[]` to a
+   baked SVG string. Patches address one element by namespaced id and
+   write `fill`, `stroke` (via `strokeRole`), and/or `opacity`.
+4. **Recipes** (`src/svg_recipes.ts`) map semantic state (`T75LiquidVisual`,
+   `BottleLiquid`) to patch lists. `bottleLiquidPatches('media')` expands
+   the `liquid` group from `bottle.colormap.json` into N patches.
+5. **Sidecar JSON** (`assets/equipment/<basename>.colormap.json`) groups
+   multiple authored ids under one semantic target with per-id opacity, so
+   one role color drives a layered shading effect (base + shadow +
+   highlight).
+6. **Bottle authoring** (`tools/build_servier_recolor.py`) diffs the three
+   pristine Servier source colors (pink/orange/green) by structural color
+   palette, classifies non-shared fills/strokes as the liquid layer, and
+   writes `bottle.svg` + `bottle.colormap.json`.
+
+Design lock: only fill/stroke/opacity changes on authored ids. No new
+geometry, no overlay engine, no state machines.
+
+Validation: `tests/test_svg_id_parity.py` keeps the manifest aligned with
+the SVGs; `tests/test_svg_color_patch.mjs` and
+`tests/test_bottle_recolor.mjs` import the real production module via
+`tests/_compile_for_test.mjs` and exercise the full recolor path.
+
 ## Extension points
 
 - **New protocol steps:** Add entries to `PROTOCOL_STEPS` in
