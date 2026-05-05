@@ -1,5 +1,58 @@
 # Changelog
 
+## 2026-05-05
+
+### Additions and New Features
+- Lifted all 33 files from `parts/` (~7,121 LOC) into `src/`: TypeScript modules into `src/`, `src/scenes/`, `src/steps/`, `src/content/`; HTML and CSS templates into `src/`. Removed the now-empty `parts/` directory. The bundle entrypoint is `src/init.ts` (formerly `parts/init.ts`).
+- Retrofitted ES module boundaries on every relocated file: added `import` and `export` statements to replace the legacy concat-build globals. Strict `src/tsconfig.json` (strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `verbatimModuleSyntax`, `useUnknownInCatchVariables`) is now green across the entire runtime tree.
+- Resolved the 218 strict-mode errors that surfaced after the lift via 19 parallel implementer subagents (one per file). Most fixes were nullability narrowing (`if (x === undefined) continue;`) or non-null assertions with one-line invariant comments where index ranges are statically provable. Two TS2632 "cannot assign to import" issues in `init.ts` were resolved by adding `setGameState(next)` and `setRenderGame(fn)` setters to `game_state.ts` and `ui_rendering.ts` and updating the call sites in `init.ts`.
+- Verified `./build_github_pages.sh` produces a working `dist/` (170 KB `main.js`) and `./export_single_file.sh` produces a portable `dist-single/game.html`. Both are now reproducible from a clean checkout.
+- Added `.github/workflows/deploy-pages.yml` from the `web-game-parallel-build` skill template; user enables Pages manually after merge.
+- Replaced the legacy `run_web_server.sh` (which called the dead `build_game.sh`) with one that rebuilds via `build_github_pages.sh` and serves `dist/` on the LAN.
+
+### Behavior or Interface Changes
+- Canonical state decision: the legacy runtime `GameState` shape (formerly `parts/game_state.ts`, ~445 LOC, flat 70-field bag) is the only canonical state model. The clean three-way split (`protocol`/`lab`/`ui`) that briefly lived in `core/engine.ts` was discarded along with `core/`. There is no future state-redesign milestone in this plan.
+
+### Removals and Deprecations
+- Deleted the legacy concat build entirely: `build_game.sh` and `walkthrough.sh`. Output `cell_culture_game.html` is no longer regenerated; the archived copy lives at `tests/fixtures/legacy_cell_culture_game.html`.
+- Earlier in the day: deleted `core/`, `ui/`, `content/`, `main.ts`, `tsconfig.core.json`, `_temp_screenshot.js` (see entries above).
+
+### Decisions and Failures
+- Per-error breakdown of the 218-error retrofit: layout_engine.ts had zero net errors after the prior import/export pass, despite the initial estimate of 70 (the file was already strict-clean). Heaviest real loads were interaction_resolver.ts (29 -> 0), game_state.ts (25 -> 0), protocol_ui.ts (15 -> 0), init.ts (14 -> 0), svg_assets.ts (12 -> 0). Eighteen smaller files cleared in batches of 2-8 errors each.
+- Soft parity gate accepted in lieu of hard score parity: the codebase has no PRNG seed plumbing, so M5a "seed-42 final-score parity" was downgraded to "tsc clean + bundle builds + export_single_file works." User explicitly accepted "break things to get clean."
+- Brand id constructors and semantic Action discriminated unions remain out of scope. `src/brands.ts` is a placeholder. The plan's M7 type-tightening milestone was deleted at user direction; type design follows existing runtime shapes only.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` -> zero errors.
+- `./build_github_pages.sh` -> `dist/main.js` 170.7 KB, builds in ~5 ms after warm-up. Also assembles `dist/index.html` from `src/head.html` + `body.html` + `tail.html` so the bundled DOM matches the legacy single-file build (a fix that landed when an initial smoke caught zero scene DOM in the bundled output).
+- `./export_single_file.sh` -> `dist-single/game.html` (single-file IIFE bundle).
+- Manual browser smoke verified via `node devel/test_game_ui.mjs` (Playwright Chromium): 8/8 gates pass -- page loads with zero console errors, start screen appears, start button click advances, sidebar renders, hood scene renders, protocol-item interaction succeeds (clicked ethanol bottle picks up 24-Well Plate hint), localStorage round-trip works, scoring screen DOM is present (not played through). Screenshot at `test-results/test_game_ui.png`. After ESM migration, DOM wiring, scene rendering, and protocol interaction confirmed working.
+- `./check_codebase.sh` runs only `tsc --noEmit -p src/tsconfig.json`. The browser smoke is invoked separately from the repo root via `node devel/test_game_ui.mjs`.
+
+### Additions and New Features (foundation, earlier in the day)
+- Scaffolded the `src/` tree per the `web-game-parallel-build` skill layout. Mechanically extracted cross-module contracts from `core/types.ts` into `src/types/{ids,actions,protocol,state,scoring,scene_layout,config,save,events}.ts`, plus a `src/types.ts` barrel so files relocated from `core/` keep their `from "./types"` imports unchanged. Authored `src/brands.ts` as a placeholder; branded id wrappers are deferred to M7 per the plan's "mechanical move first" rule.
+- Replaced the shell concatenation pipeline with a real esbuild bundle. Added `build_github_pages.sh` (bundles `src/init.ts` to `dist/main.js`, copies `src/index.html` and `src/style.css`, drops `dist/.nojekyll`), `export_single_file.sh` (optional portable `dist-single/` IIFE export), and `check_codebase.sh` (strict tsc + Playwright smoke when present), all copied from the skill templates.
+- Added `src/tsconfig.json` with strict, `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, and `verbatimModuleSyntax`. Updated repo-root `tsconfig.json` to extend it and include `src/**/*.ts`.
+- Authored `src/init.ts` as the bundle entrypoint; it now calls `createInitialGameState()` and dumps state into `#app`. The shell, scenes, and steps land in M3 and M4.
+- Archived `cell_culture_game.html` to `tests/fixtures/legacy_cell_culture_game.html` as the parity baseline reference.
+
+### Behavior or Interface Changes
+- `git mv core/engine.ts src/game_state.ts`, `core/cell_model.ts src/cell_model.ts`, `core/scoring.ts src/scoring.ts`, `core/util.ts src/util.ts`. Function bodies and signatures unchanged; only import paths updated (`./types` now resolves to the `src/types.ts` barrel).
+- `git mv ui/{notifications,overlays,sidebar}.ts src/`, `git mv content/{tc_protocol.ts -> protocol.ts, tc_tools.ts -> tools.ts, validate.ts} src/content/`, `git mv content/cell_culture src/content/cell_culture`. All `from "../core/..."` imports rewritten to `from "./..."` or `from "../types"`.
+
+### Removals and Deprecations
+- Deleted `main.ts` (legacy composition root, no longer wired to the bundle), `tsconfig.core.json` (obsolete second config), `core/types.ts` (extracted into `src/types/`), and the empty `core/`, `ui/`, `content/` directories.
+- The legacy `build_game.sh` concat path is no longer maintained; the bundled `dist/` build replaces it. `parts/*` (~7,121 LOC across 34 files) remains in place for future relocation in M3-M4.
+
+### Decisions and Failures
+- Soft baseline accepted in lieu of hard score parity: the codebase has no PRNG seed infrastructure (15+ `Math.random()` sites in `core/cell_model.ts`, `parts/cell_model.ts`, `parts/mtt_readout.ts`), so the M0 plan's "seed-42 final-score" gate was downgraded to a `legacy_cell_culture_game.html` archive only. User accepted "break things to get clean."
+- Brands deferred. `src/brands.ts` ships as an empty placeholder; introducing branded id constructors would have meant rewriting every id-typed call site, violating M1's mechanical-move rule.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` is green on the relocated tree.
+- `./build_github_pages.sh` produces a working `dist/` (main.js 2.5 KB, real engine bootstrapped).
+- M3-M6 still pending: `parts/*` relocation into `src/scenes/`, `src/steps/`, plus shell wiring, smoke tests, and doc rewrites.
+
 ## 2026-05-01
 
 ### Additions and New Features

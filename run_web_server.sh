@@ -1,20 +1,27 @@
 #!/bin/bash
-# run_web_server.sh - Build the game and serve it on the local network
+# run_web_server.sh - Build the bundled game and serve it on the local network.
 # Usage: bash run_web_server.sh
+#
+# This serves the canonical dist/ build produced by build_github_pages.sh.
+# For a portable single-file artifact, run export_single_file.sh instead;
+# its output lands in dist-single/ and is not served here.
+
 set -e
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 cd "$REPO_ROOT"
 
-# Clean previous build artifacts and rebuild from scratch
-echo "Cleaning previous build..."
-rm -f cell_culture_game.html _temp_bundle.js _temp_all.ts
-echo "Building game..."
-bash build_game.sh
+if [ ! -d node_modules ]; then
+	echo "node_modules missing. Run 'npm install' first." >&2
+	exit 1
+fi
+
+# Rebuild the canonical GitHub Pages artifact into dist/.
+./build_github_pages.sh
 
 # Detect the local IP address for the LAN URL
 LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')
-PORT=5080
+PORT="${PORT:-5080}"
 
 echo ""
 echo "========================================"
@@ -23,6 +30,6 @@ echo "  http://${LOCAL_IP}:${PORT}"
 echo "========================================"
 echo ""
 
-# Start the server on all interfaces for LAN access
-sleep 1 && open http://127.0.0.1:5080 &
-source source_me.sh && python3 cell_culture_game.py --lan --port "$PORT"
+# Open the browser, then start the static server bound to all interfaces.
+sleep 1 && open "http://127.0.0.1:${PORT}" &
+python3 -m http.server "${PORT}" --bind 0.0.0.0 --directory dist

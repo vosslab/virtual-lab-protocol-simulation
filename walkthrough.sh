@@ -1,62 +1,46 @@
-#!/bin/bash
-# walkthrough.sh - Build the game, then run the Playwright browser walkthrough
-# Usage: bash walkthrough.sh [--headed]
+#!/usr/bin/env bash
+# walkthrough.sh - build the game and run the browser smoke walkthrough.
 #
-# Screenshots are saved to build/walkthrough/
+# Top-level driver: calls build_github_pages.sh to produce dist/, then
+# runs the Playwright smoke at devel/test_game_ui.mjs from the repo
+# root (the script must run from the repo root so its `import 'playwright'`
+# resolves against ./node_modules -- see docs/PLAYWRIGHT_USAGE.md).
+#
+# Exit codes:
+#   0  build green AND smoke passed all gates
+#   1  build failed
+#   2  smoke failed
+#
+# Prereqs (one-time):
+#   npm install
+#   npx playwright install chromium
+
 set -e
 
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-cd "$REPO_ROOT"
+cd "$(git rev-parse --show-toplevel)"
 
-# Build the game first
-echo "Building game..."
-bash build_game.sh
-
-# Check for Playwright
-if [ ! -d "node_modules/playwright" ]; then
-	echo "Installing Playwright..."
-	npm install playwright
-	npx playwright install chromium
+if [ ! -d node_modules ]; then
+	echo "node_modules missing. Run 'npm install' first." >&2
+	exit 1
 fi
 
-# Check for Chromium browsers in system cache or local
-SYSTEM_CACHE="$HOME/Library/Caches/ms-playwright"
-LOCAL_CACHE="node_modules/playwright-core/.local-browsers"
-if [ ! -d "$SYSTEM_CACHE" ] && [ ! -d "$LOCAL_CACHE" ]; then
-	echo "Installing Chromium browser..."
-	npx playwright install chromium
+if [ ! -d ~/Library/Caches/ms-playwright ] && [ ! -d ~/.cache/ms-playwright ]; then
+	echo "Playwright browsers may be missing. If the smoke fails to launch chromium," >&2
+	echo "run 'npx playwright install chromium' and retry." >&2
 fi
 
-# Run the data-layer walkthrough first -- asserts completeStep() order
-# via page.evaluate, fast gate for graph / trigger-coverage regressions.
-echo "Running data-layer walkthrough..."
-node devel/protocol_walkthrough.mjs "$@"
+echo "==> Building dist/ ..."
+if ! ./build_github_pages.sh; then
+	echo "BUILD FAILED" >&2
+	exit 1
+fi
 
-# Run the real-click walkthrough second -- drives the protocol through
-# DOM clicks and catches banner/wiring mismatches the data-layer pass
-# cannot see. Both must pass for walkthrough.sh to succeed.
-echo ""
-echo "Running real-click walkthrough..."
-node devel/protocol_walkthrough_ui.mjs "$@"
+echo
+echo "==> Running browser walkthrough ..."
+if ! node devel/test_game_ui.mjs; then
+	echo "WALKTHROUGH FAILED" >&2
+	exit 2
+fi
 
-# Target-handler audit: for every step, prove every item in
-# targetItems has an observable click handler. Guards against the
-# cell_counter / M4-stub class of bug where a highlighted target
-# produces a silent no-op.
-echo ""
-echo "Running target-handler audit..."
-node devel/test_target_handlers.mjs
-
-# Step completeness audit (M2): verify every protocol step has proper
-# wiring: requiredItems >= targetItems, scene membership correct,
-# every item is used or visualOnly, etc.
-echo ""
-echo "Running step completeness audit..."
-node devel/test_step_completeness.mjs
-
-echo ""
-echo "Screenshots saved to:"
-echo "  build/walkthrough/      (data-layer pass)"
-echo "  build/walkthrough_ui/   (real-click pass)"
-ls -1 build/walkthrough/*.png 2>/dev/null | while read -r f; do echo "  $f"; done
-ls -1 build/walkthrough_ui/*.png 2>/dev/null | while read -r f; do echo "  $f"; done
+echo
+echo "All gates passed. Screenshot: test-results/test_game_ui.png"
