@@ -94,6 +94,7 @@ async function main() {
 		protocol_interaction: false,
 		save_load: false,
 		scoring_reachable: false,
+		equipment_svg_renders: false,
 	};
 
 	try {
@@ -182,6 +183,32 @@ async function main() {
 		results.scoring_reachable = (await scoring.count()) > 0;
 		logGate("8. scoring_screen_in_dom", results.scoring_reachable,
 			results.scoring_reachable ? "(present, not played through)" : "(not in initial DOM; needs full playthrough)");
+
+		// Gate 9: at least one equipment SVG actually rendered with content.
+		// This catches the regression where svg_globals.ts had empty string
+		// constants and no equipment art appeared on screen, even though the
+		// page loaded cleanly. We require a non-trivial SVG node count and at
+		// least one prefixed equipment id (e.g. "t75_flask__" or "media_bottle__").
+		const svgInfo = await page.evaluate(() => {
+			const svgs = document.querySelectorAll('svg');
+			let pathCount = 0;
+			let prefixedIds = 0;
+			for (const svg of svgs) {
+				pathCount += svg.querySelectorAll('path, rect, polygon, circle, ellipse, line').length;
+			}
+			const all = document.querySelectorAll('[id]');
+			for (const el of all) {
+				const id = el.id;
+				if (id && /^(t75_flask|media_bottle|aspirating_pipette|sero_pipette|ethanol_spray|waste_container|microscope|incubator)__/.test(id)) {
+					prefixedIds++;
+				}
+			}
+			return { svgCount: svgs.length, pathCount, prefixedIds };
+		});
+		results.equipment_svg_renders = svgInfo.pathCount >= 5 && svgInfo.prefixedIds >= 1;
+		logGate("9. equipment_svg_renders",
+			results.equipment_svg_renders,
+			`svgs=${svgInfo.svgCount} paths=${svgInfo.pathCount} prefixedIds=${svgInfo.prefixedIds}`);
 
 		// Take screenshots for reference
 		const shotPath = path.join(REPO_ROOT, "test-results", "test_game_ui.png");

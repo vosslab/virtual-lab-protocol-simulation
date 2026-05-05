@@ -5,13 +5,17 @@
 // Semantic color roles for dynamic overlays
 // Each color has exactly one meaning. Never reuse across roles.
 export type ColorRole =
-	| "media"       // DMEM, culture media
+	| "media"       // DMEM, culture media (fresh)
+	| "oldMedia"    // exhausted DMEM (yellow-brown)
+	| "residue"     // dried-down film of media on a flask wall
 	| "buffer"      // water-based solutions
 	| "pbs"         // PBS washing buffer
 	| "trypsin"     // trypsin enzyme
 	| "cells"       // cell suspension
 	| "waste"       // discarded liquid
-	| "drug"        // drug/treatment solutions
+	| "drug"        // drug/treatment solutions (generic)
+	| "carboplatin" // carboplatin stock (magenta)
+	| "metformin"   // metformin stock (green)
 	| "mtt"         // MTT reagent
 	| "dmso"        // DMSO solvent
 	| "ethanol"     // 70% ethanol, sterile solutions
@@ -22,19 +26,23 @@ export type ColorRole =
 // Maps each role to its hex color
 // Color codes from REAGENTS in inventory_data.ts
 export const COLOR_MAP: Record<ColorRole, string> = {
-	media:   "#f7a6b8",
-	buffer:  "#4a90d9",
-	pbs:     "#b8e5ff",
-	trypsin: "#ffe082",
-	cells:   "#f3d6a2",
-	waste:   "#d4d4a0",
-	drug:    "#d8b4ff",
-	mtt:     "#fff59d",
-	dmso:    "#e0e0e0",
-	ethanol: "#ffd700",
-	error:   "#d94444",
-	success: "#44aa66",
-	signal:  "#222222",
+	media:    "#f7a6b8",
+	oldMedia: "#c69a3a",
+	residue:  "#c69a3a",
+	buffer:   "#4a90d9",
+	pbs:      "#b8e5ff",
+	trypsin:  "#ffe082",
+	cells:    "#f3d6a2",
+	waste:    "#d4d4a0",
+	drug:        "#d8b4ff",
+	carboplatin: "#b64392",
+	metformin:   "#01642a",
+	mtt:      "#fff59d",
+	dmso:     "#e0e0e0",
+	ethanol:  "#ffd700",
+	error:    "#d94444",
+	success:  "#44aa66",
+	signal:   "#222222",
 };
 
 // ============================================

@@ -14,11 +14,6 @@ Attribution: Servier Medical Art, smart.servier.com
 | Source File | Destination File | Modifications |
 |---|---|---|
 | culture-flask-filled-lid.svg | assets/equipment/t75_flask_v5.svg | Added anchor_liquid_clip, anchor_liquid_bounds, anchor_label, overlay_root |
-| bottle-medium-pink.svg | assets/equipment/media_bottle.svg | Added anchor system |
-| bottle-medium-pink.svg | assets/equipment/pbs_bottle.svg | Recolored pink (#d3a4d4) to light blue (#b8e5ff); added anchor system |
-| bottle-medium-orange.svg | assets/equipment/trypsin_bottle.svg | Added anchor system |
-| bottle-medium-green.svg | assets/equipment/dmso_bottle.svg | Recolored green to gray (#e0e0e0, #d0d0d0, #c0c0c0); added anchor system |
-| bottle-medium-pink.svg | assets/equipment/sterile_water_bottle.svg | Recolored pink (#d3a4d4) to pale blue (#eaf6ff); added anchor system |
 | falcon-15ml-empty.svg | assets/equipment/falcon_15ml.svg | Added anchor system |
 | falcon-50ml-empty.svg | assets/equipment/falcon_50ml.svg | Added anchor system |
 | cell-culture-equipment-1.svg | assets/equipment/cell_counter.svg | Added anchor system |
@@ -58,13 +53,11 @@ Non-liquid equipment (centrifuge, microscope, etc.) include only:
 
 ## Recoloring
 
-Some Servier icons were recolored to match game visual semantics:
-
-- PBS bottle: pink -> light blue (#b8e5ff)
-- DMSO bottle: green -> gray (#e0e0e0)
-- Sterile water bottle: pink -> pale blue (#eaf6ff)
-
-All color changes were made via SVG fill attribute replacement and preserve icon structure.
+Liquid bottle artwork is no longer shipped as one Servier-derived SVG per
+liquid. The shared `assets/equipment/bottle.svg` (hand-authored, not
+Servier-derived) is recolored at runtime by the patch pipeline in
+`src/svg_color_patch.ts` driven by `src/svg_recipes.ts`. See
+`assets/equipment/bottle.colormap.json` for the group definition.
 
 ## Attribution Footer
 

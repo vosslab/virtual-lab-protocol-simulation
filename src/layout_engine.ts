@@ -19,7 +19,7 @@
 // distribution and label-availability estimation.
 
 // Average character width as percentage of font size
-import { SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CARBOPLATIN_STOCK, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DMSO_BOTTLE, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MEDIA_BOTTLE, SVG_METFORMIN_STOCK, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PBS_BOTTLE, SVG_SERO_PIPETTE, SVG_STERILE_WATER_BOTTLE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_TRYPSIN_BOTTLE, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
+import { SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
 import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from "./scene_types";
 
 export const AVG_CHAR_WIDTH_PCT = 0.55;
@@ -59,8 +59,8 @@ export function getStaticSvg(assetId: string): string {
 	switch (assetId) {
 		case 'flask': return SVG_T75_FLASK;
 		case 'well_plate': return SVG_WELL_PLATE_24;
-		case 'media_bottle': return SVG_MEDIA_BOTTLE;
-		case 'trypsin_bottle': return SVG_TRYPSIN_BOTTLE;
+		case 'media_bottle': return SVG_BOTTLE;
+		case 'trypsin_bottle': return SVG_BOTTLE;
 		case 'ethanol_bottle': return SVG_ETHANOL_SPRAY;
 		case 'serological_pipette': return SVG_SERO_PIPETTE;
 		case 'aspirating_pipette': return SVG_ASPIRATING_PIPETTE;
@@ -69,14 +69,14 @@ export function getStaticSvg(assetId: string): string {
 		case 'waste_container': return SVG_WASTE_CONTAINER;
 		case 'microscope': return SVG_MICROSCOPE;
 		case 'incubator': return SVG_INCUBATOR;
-		case 'sterile_water': return SVG_STERILE_WATER_BOTTLE;
-		case 'pbs_bottle': return SVG_PBS_BOTTLE;
+		case 'sterile_water': return SVG_BOTTLE;
+		case 'pbs_bottle': return SVG_BOTTLE;
 		case 'conical_15ml_rack': return SVG_CONICAL_15ML_RACK;
 		case 'dilution_tube_rack': return SVG_DILUTION_TUBE_RACK;
 		case 'mtt_vial': return SVG_MTT_VIAL;
-		case 'dmso_bottle': return SVG_DMSO_BOTTLE;
-		case 'carboplatin_stock': return SVG_CARBOPLATIN_STOCK;
-		case 'metformin_stock': return SVG_METFORMIN_STOCK;
+		case 'dmso_bottle': return SVG_BOTTLE;
+		case 'carboplatin_stock': return SVG_BOTTLE;
+		case 'metformin_stock': return SVG_BOTTLE;
 		case 'micropipette_rack': return SVG_MICROPIPETTE_RACK;
 		case 'biohazard_decant': return SVG_BIOHAZARD_DECANT;
 		case 'centrifuge': return SVG_CENTRIFUGE;

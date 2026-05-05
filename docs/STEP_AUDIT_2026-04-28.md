@@ -4,8 +4,8 @@ Comprehensive audit of all 25 protocol steps in the OVCAR8 / Carboplatin / Metfo
 This document enumerates logical gaps, missing waste routing, scene-membership violations, and proposed YAML fixes
 to ensure the highlighted items match click handlers and every piece of equipment is properly wired.
 
-**Audit date:** 2026-04-28  
-**Protocol source:** OVCAR8_Carboplatin_Metformin_MTT_Protocol.docx (per protocol text sections)  
+**Audit date:** 2026-04-28
+**Protocol source:** OVCAR8_Carboplatin_Metformin_MTT_Protocol.docx (per protocol text sections)
 **YAML files:** content/cell_culture/protocol.yaml, content/cell_culture/items.yaml, content/cell_culture/reagents.yaml
 
 ## Summary
@@ -295,7 +295,7 @@ The plan requires: "count_cells reachable both from bench microscope and cell_co
 
 Current state: Step 8 (count_cells) targets only cell_counter. Microscope is unused and should serve as an alternate path.
 
-**Fix:** 
+**Fix:**
 1. Add microscope to targetItems of count_cells
 2. Add microscope to requiredItems of count_cells
 3. Wire microscope as an alternate interaction target for count_cells in interaction_resolver OR mark as scene: bench for layout visibility

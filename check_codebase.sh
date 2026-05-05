@@ -13,6 +13,9 @@ if [ ! -d node_modules ]; then
 	exit 1
 fi
 
+echo "Generating src/svg_globals.ts from assets/equipment/ ..."
+python3 tools/generate_svg_globals.py
+
 echo "Type-checking src/ ..."
 npx tsc --noEmit -p src/tsconfig.json
 

@@ -50,7 +50,7 @@ Benefits:
 - Adding a new reagent never requires a new SVG.
 
 This aligns with the heldLiquid overlay pattern already implemented for the serological
-pipette in M4 — extend the same convention to bottles.
+pipette in M4 - extend the same convention to bottles.
 
 ## Required licensing follow-through
 Servier attribution footer in `parts/tail.html` is still missing despite being claimed.

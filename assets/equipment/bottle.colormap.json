@@ -1,0 +1,55 @@
+{
+  "asset": "bottle",
+  "groups": {
+    "liquid": [
+      {
+        "id": "liquid_09",
+        "opacity": 0.21
+      },
+      {
+        "id": "liquid_11",
+        "opacity": 0.43
+      },
+      {
+        "id": "liquid_12",
+        "opacity": 0.4
+      },
+      {
+        "id": "liquid_13",
+        "opacity": 0.68
+      },
+      {
+        "id": "liquid_14",
+        "opacity": 0.93
+      },
+      {
+        "id": "liquid_15",
+        "opacity": 0.82
+      },
+      {
+        "id": "liquid_19",
+        "opacity": 0.4
+      },
+      {
+        "id": "liquid_21",
+        "opacity": 0.82
+      },
+      {
+        "id": "liquid_23",
+        "opacity": 0.94
+      },
+      {
+        "id": "liquid_24",
+        "opacity": 0.93
+      },
+      {
+        "id": "liquid_25",
+        "opacity": 0.93
+      },
+      {
+        "id": "liquid_26",
+        "opacity": 1.0
+      }
+    ]
+  }
+}

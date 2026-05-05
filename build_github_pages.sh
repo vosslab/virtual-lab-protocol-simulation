@@ -25,6 +25,11 @@ cd "$(git rev-parse --show-toplevel)"
 rm -rf dist
 mkdir -p dist
 
+# Regenerate src/svg_globals.ts from assets/equipment/*.svg before tsc.
+# Without this step every SVG_* constant is the empty string and no
+# equipment art renders in the bundled build.
+python3 tools/generate_svg_globals.py
+
 npx tsc --noEmit -p src/tsconfig.json
 
 npx esbuild src/init.ts \

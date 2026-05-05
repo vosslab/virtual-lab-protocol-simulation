@@ -23,6 +23,11 @@ OUTDIR="${OUTDIR:-dist-single}"
 OUTPUT="${OUTDIR}/game.html"
 mkdir -p "${OUTDIR}"
 
+# Regenerate src/svg_globals.ts from assets/equipment/*.svg before tsc.
+# Without this step every SVG_* constant is the empty string and no
+# equipment art renders in the inlined build.
+python3 tools/generate_svg_globals.py
+
 npx tsc --noEmit -p src/tsconfig.json
 
 npx esbuild src/init.ts \

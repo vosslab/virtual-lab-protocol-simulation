@@ -9,5 +9,10 @@
   <rect id="anchor_label" x="15" y="12" width="35" height="10" fill="none" stroke="none" display="none"/>
   <rect id="anchor_error" x="55" y="3" width="8" height="8" fill="none" stroke="none" display="none"/>
 
+  <!-- LIQUID_RESIDUE: leftover film at the bottom of the flask. Default opacity 0;
+       made visible by recipes when flaskCleanliness derives to 'dirty'. Color and
+       alpha are patched at runtime via svg_color_patch.ts. -->
+  <rect id="liquid_residue" x="8" y="24" width="50" height="4" rx="1" fill="#c69a3a" opacity="0"/>
+
   <g id="overlay_root"/>
 </svg>

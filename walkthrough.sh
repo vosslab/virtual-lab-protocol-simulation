@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# walkthrough.sh - build the game and run the browser smoke walkthrough.
+# walkthrough.sh - build the game and run the browser smoke test.
+#
+# TODO: Replace this smoke test with a real walkthrough. A walkthrough
+# must start from the welcome screen, complete the full playable protocol,
+# reach the scoring screen, and assert that a final score is produced.
 #
 # Top-level driver: calls build_github_pages.sh to produce dist/, then
 # runs the Playwright smoke at devel/test_game_ui.mjs from the repo
@@ -36,9 +40,9 @@ if ! ./build_github_pages.sh; then
 fi
 
 echo
-echo "==> Running browser walkthrough ..."
+echo "==> Running browser smoke test ..."
 if ! node devel/test_game_ui.mjs; then
-	echo "WALKTHROUGH FAILED" >&2
+	echo "SMOKE TEST FAILED" >&2
 	exit 2
 fi
 

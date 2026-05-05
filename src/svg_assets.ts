@@ -6,8 +6,11 @@
 import type { WellData } from "./constants";
 import { DRUG_CONCENTRATION_LABELS, DRUG_STOCK_CONCENTRATION_UM } from "./constants";
 import { PLATE_96_ROWS, PLATE_96_COLS, ROW_LABELS, COL_LABELS } from "./steps/plate_96";
-import { SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CARBOPLATIN_STOCK, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DMSO_BOTTLE, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MEDIA_BOTTLE, SVG_METFORMIN_STOCK, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PBS_BOTTLE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_STERILE_WATER_BOTTLE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_TRYPSIN_BOTTLE, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH } from "./svg_globals";
+import { SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH } from "./svg_globals";
 import { composeSvg, createDynamicLabel, createLiquidOverlay, createLiquidOverlayWithColor, createPipetteLiquidOverlay } from "./svg_overlays";
+import { applyPatches } from "./svg_color_patch";
+import { flaskResiduePatches, deriveT75Visual, bottleLiquidPatches, bottleLiquidLabel, type BottleLiquid } from "./svg_recipes";
+import { COLOR_MAP } from "./style_constants";
 
 
 
@@ -69,40 +72,56 @@ export function getHoodBackgroundSvg(): string {
 }
 
 /**
- * Gets the T-75 tissue culture flask SVG (Hybrid C: base + overlays)
+ * Gets the T-75 tissue culture flask SVG (Hybrid C: base + overlays + recolor patches).
  * @param mediaLevel - fill level from 0 to 1
- * @param mediaColor - explicit liquid color for old or fresh media
+ * @param mediaAge - 'old' or 'fresh'; selects oldMedia vs media color role
+ * @param isDirty - flask retains residue film (after old media is removed but before cleaning)
  *
- * OQ-5 reversed 2026-05-01: professor prefers their own hand-drawn T75_flask.svg over
- * Servier culture-flask. Servier version preserved at t75_flask_servier.svg.
- * Uses t75_flask.svg with SVG anchors for liquid, label, and overlay regions.
+ * Liquid color comes from semantic ColorRole, not a hex literal. The residue
+ * sub-object authored in t75_flask.svg is patched (opacity + fill) by recipe.
+ * Replaces the legacy hex-compare branch that switched labels via mediaColor === '#c69a3a'.
  */
-export function getFlaskSvg(mediaLevel: number, mediaColor: string): string {
-	// determine label text based on media state
+export function getFlaskSvg(
+	mediaLevel: number,
+	mediaAge: "old" | "fresh" = "fresh",
+	isDirty: boolean = false,
+): string {
+	// derive visual state from existing fields; no new game-state field added
+	const visual = deriveT75Visual(mediaLevel > 0 ? 1 : 0, mediaAge, isDirty);
+	// patch the authored residue object first, then overlay liquid + label
+	const patchedBase = applyPatches(SVG_T75_FLASK, flaskResiduePatches(visual));
+	// liquid overlay color now comes from role lookup, not a passed-in hex
+	const liquidColor = mediaAge === "old" ? COLOR_MAP.oldMedia : COLOR_MAP.media;
 	let labelText = "";
-	if (mediaLevel > 0 && mediaColor === '#c69a3a') {
-		labelText = "Old Media";
-	} else if (mediaLevel > 0) {
-		labelText = "DMEM";
+	if (mediaLevel > 0) {
+		labelText = mediaAge === "old" ? "Old Media" : "DMEM";
 	}
-	// build overlays
 	const overlays: string[] = [
-		createLiquidOverlayWithColor("t75_flask", mediaLevel, mediaColor, SVG_T75_FLASK),
-		createDynamicLabel("t75_flask", labelText, SVG_T75_FLASK),
+		createLiquidOverlayWithColor("t75_flask", mediaLevel, liquidColor, patchedBase),
+		createDynamicLabel("t75_flask", labelText, patchedBase),
 	];
-	return composeSvg(SVG_T75_FLASK, "t75_flask", overlays);
+	return composeSvg(patchedBase, "t75_flask", overlays);
 }
 
 /**
- * Gets the DMEM media bottle SVG (Hybrid C: base + overlays)
+ * Canonical bottle accessor. Renders assets/equipment/bottle.svg with the
+ * 'liquid' sub-objects recolored for the chosen liquid via the patch
+ * pipeline (svg_color_patch + bottle.colormap.json group). Replaces the
+ * previous one-SVG-per-liquid accessors.
  */
-export function getMediaBottleSvg(): string {
-	// media bottle always appears full with DMEM label
+export function getBottleSvg(liquid: BottleLiquid): string {
+	const patched = applyPatches(SVG_BOTTLE, bottleLiquidPatches(liquid));
 	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.75, "media", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "DMEM", SVG_MEDIA_BOTTLE),
+		createDynamicLabel("bottle", bottleLiquidLabel(liquid), patched),
 	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "media_bottle", overlays);
+	return composeSvg(patched, "bottle", overlays);
+}
+
+// ============================================
+// Per-liquid bottle accessors. Thin wrappers over getBottleSvg so existing
+// call sites keep working without each one importing the BottleLiquid enum.
+export function getMediaBottleSvg(): string {
+	return getBottleSvg("media");
 }
 
 /**
@@ -144,7 +163,7 @@ export function getWasteContainerSvg(): string {
 
 // ============================================
 export function getTrypsinBottleSvg(): string {
-	return SVG_TRYPSIN_BOTTLE;
+	return getBottleSvg("trypsin");
 }
 
 // ============================================
@@ -296,12 +315,12 @@ export function getPlateReaderSvg(): string {
 
 // ============================================
 export function getSterileWaterSvg(): string {
-	return SVG_STERILE_WATER_BOTTLE;
+	return getBottleSvg("sterileWater");
 }
 
 // ============================================
 export function getPbsBottleSvg(): string {
-	return SVG_PBS_BOTTLE;
+	return getBottleSvg("pbs");
 }
 
 // ============================================
@@ -327,17 +346,17 @@ export function getMttVialSvg(): string {
 
 // ============================================
 export function getDmsoBottleSvg(): string {
-	return SVG_DMSO_BOTTLE;
+	return getBottleSvg("dmso");
 }
 
 // ============================================
 export function getCarboplatinStockSvg(): string {
-	return SVG_CARBOPLATIN_STOCK;
+	return getBottleSvg("carboplatin");
 }
 
 // ============================================
 export function getMetforminStockSvg(): string {
-	return SVG_METFORMIN_STOCK;
+	return getBottleSvg("metformin");
 }
 
 // ============================================

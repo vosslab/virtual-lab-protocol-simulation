@@ -1,5 +1,14 @@
 # TODO
 
+## Replace smoke test with real walkthrough
+`walkthrough.sh` currently runs a browser smoke test. That is not a real walkthrough.
+A real walkthrough must:
+- start from the welcome screen
+- complete the full playable protocol
+- reach the scoring screen
+- assert that a final score is produced
+Until then, `walkthrough.sh` should be treated as browser smoke coverage only.
+
 = move devel/*.mjs to tests/; devel is for developmental tools, not walkthroughs and smoke tests
 
 - **Single source of truth for step objects**: Today each protocol step's "what should the student click" information is duplicated across several disjoint places that must be kept in sync manually: `step.targetItems` (drives green highlights in hood/bench scene rendering), `step.requiredItems` (drives the required-items card in `parts/protocol_ui.ts`), the hard-coded "Pick up the X" hints in `parts/hood_scene.ts :: getAvailableActions`, and the tool-state branches in `onItemClick` / `onBenchItemClick` (for example `serological_pipette_with_cells + well_plate` vs `multichannel_pipette_with_drug + well_plate`). Drift between any two causes stuck points: the recent `seed_plate` bug had `targetItems` point at `multichannel_pipette` while the handler listened for `serological_pipette`, so the banner and the green highlights told students the wrong pipette and they looped. Proposed approach: add one `click_sequence: string[]` field on each protocol step (for example `['serological_pipette', 'flask', 'well_plate']`) and derive `targetItems`, `requiredItems`, the "pick up the X" hint, and the click-handler dispatch from that single array. Highlights, hints, and handlers all read from the same list, so adding or changing a step is a one-line edit that cannot drift. Bonus: a load-time validator can walk every step's `click_sequence` and confirm every item exists in the scene's item list and every transition has a matching handler, catching the class of bug at page load instead of at play time. See also the `Step-driven trigger resolution` TODO below -- these two refactors share the same underlying goal (make the state machine the source of truth).

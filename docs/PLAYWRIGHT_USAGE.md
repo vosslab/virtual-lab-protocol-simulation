@@ -139,6 +139,8 @@ Should show `playwright@x.x.x` under the project.
 
 ## File conventions
 
-- Put Playwright scripts in `devel/` (development/testing utilities)
+- Put Playwright scripts in `devel/` (development/exploration utilities)
+- Put node-based test scripts (`node tests/test_*.mjs`) in `tests/`, alongside
+  the python pytest files. `devel/` is for developer tools, not tests.
 - Put screenshots in `test-results/` (gitignored)
 - Use `.mjs` extension for ES module scripts

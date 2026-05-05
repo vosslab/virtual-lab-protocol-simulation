@@ -108,8 +108,7 @@ export function getItemSvgHtml(itemId: string): string {
 	switch (itemId) {
 		case 'flask':
 			const mediaLevel = gameState.flaskMediaMl / FLASK_MAX_VOLUME_ML;
-			const mediaColor = gameState.flaskMediaAge === 'old' ? '#c69a3a' : '#f7a6b8';
-			return getFlaskSvg(mediaLevel, mediaColor);
+			return getFlaskSvg(mediaLevel, gameState.flaskMediaAge);
 		case 'well_plate': return getWellPlateSvg(gameState.wellPlate);
 		case 'media_bottle': return getMediaBottleSvg();
 		case 'trypsin_bottle': return getTrypsinBottleSvg();
