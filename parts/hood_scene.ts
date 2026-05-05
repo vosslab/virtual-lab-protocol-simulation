@@ -93,7 +93,7 @@ function getItemSvgHtml(itemId: string): string {
 	switch (itemId) {
 		case 'flask':
 			const mediaLevel = gameState.flaskMediaMl / FLASK_MAX_VOLUME_ML;
-			const mediaColor = gameState.flaskMediaAge === 'old' ? '#e6a840' : '#f0a0b0';
+			const mediaColor = gameState.flaskMediaAge === 'old' ? '#c69a3a' : '#f7a6b8';
 			return getFlaskSvg(mediaLevel, mediaColor);
 		case 'well_plate': return getWellPlateSvg(gameState.wellPlate);
 		case 'media_bottle': return getMediaBottleSvg();
@@ -122,6 +122,10 @@ function getItemSvgHtml(itemId: string): string {
 		case 'biohazard_decant': return getBiohazardDecanSvg();
 		default: return '';
 	}
+}
+
+function getHoodItemAccentStyle(itemId: string): string {
+	return '';
 }
 
 // ============================================
@@ -164,6 +168,7 @@ function renderHoodScene(): void {
 		const pulseClass = item.id === nextPulseTarget && isTarget && !isSelected ? ' is-next-target' : '';
 		const selectedClass = isSelected ? ' is-selected' : '';
 		const svgHtml = getItemSvgHtml(item.id);
+		const accentStyle = getHoodItemAccentStyle(item.id);
 
 		// Item div: coordinates inline, classes handle visual states
 		itemsHtml += '<div class="hood-item' + activeClass + pulseClass + selectedClass + '"';
@@ -178,21 +183,23 @@ function renderHoodScene(): void {
 		itemsHtml += ' style="left:' + item.x.toFixed(1) + '%;';
 		itemsHtml += 'top:' + item.y.toFixed(1) + '%;';
 		itemsHtml += 'width:' + item.width.toFixed(1) + '%;';
-		itemsHtml += 'height:' + item.height.toFixed(1) + '%;">';
+		itemsHtml += 'height:' + item.height.toFixed(1) + '%;' + accentStyle + '">';
 		itemsHtml += svgHtml;
 		itemsHtml += '</div>';
 
 		// Label div: positioned by layout engine
-		const multiClass = item.labelMultiline ? ' multiline' : '';
-		labelsHtml += '<div class="hood-item-label' + multiClass + '"';
-		labelsHtml += ' style="left:' + item.labelX.toFixed(1) + '%;';
-		labelsHtml += 'top:' + item.labelY.toFixed(1) + '%;';
-		labelsHtml += 'width:' + item.labelWidth.toFixed(1) + '%;">';
-		for (let li = 0; li < item.labelLines.length; li++) {
-			if (li > 0) labelsHtml += '<br>';
-			labelsHtml += item.labelLines[li];
+		if (item.id !== 'flask') {
+			const multiClass = item.labelMultiline ? ' multiline' : '';
+			labelsHtml += '<div class="hood-item-label' + multiClass + '"';
+			labelsHtml += ' style="left:' + item.labelX.toFixed(1) + '%;';
+			labelsHtml += 'top:' + item.labelY.toFixed(1) + '%;';
+			labelsHtml += 'width:' + item.labelWidth.toFixed(1) + '%;">';
+			for (let li = 0; li < item.labelLines.length; li++) {
+				if (li > 0) labelsHtml += '<br>';
+				labelsHtml += item.labelLines[li];
+			}
+			labelsHtml += '</div>';
 		}
-		labelsHtml += '</div>';
 	}
 
 	// Assemble with layer structure

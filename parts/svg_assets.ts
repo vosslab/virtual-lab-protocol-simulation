@@ -12,6 +12,13 @@ declare const SVG_WASTE_CONTAINER: string;
 declare const SVG_ETHANOL_SPRAY: string;
 declare const SVG_DRUG_VIAL_RACK: string;
 declare const SVG_MULTICHANNEL_PIPETTE: string;
+declare const SVG_TRYPSIN_BOTTLE: string;
+declare const SVG_PBS_BOTTLE: string;
+declare const SVG_DMSO_BOTTLE: string;
+declare const SVG_STERILE_WATER_BOTTLE: string;
+declare const SVG_MTT_VIAL: string;
+declare const SVG_CARBOPLATIN_STOCK: string;
+declare const SVG_METFORMIN_STOCK: string;
 declare const SVG_MICROSCOPE: string;
 declare const SVG_INCUBATOR: string;
 declare const SVG_PLATE_READER: string;
@@ -89,25 +96,23 @@ function getHoodBackgroundSvg(): string {
 /**
  * Gets the T-75 tissue culture flask SVG (Hybrid C: base + overlays)
  * @param mediaLevel - fill level from 0 to 1
- * @param mediaColor - color of media: 'old' (yellow-orange) or 'fresh' (pink-orange)
+ * @param mediaColor - explicit liquid color for old or fresh media
  *
  * OQ-5 reversed 2026-05-01: professor prefers their own hand-drawn T75_flask.svg over
  * Servier culture-flask. Servier version preserved at t75_flask_servier.svg.
  * Uses t75_flask.svg with SVG anchors for liquid, label, and overlay regions.
  */
 function getFlaskSvg(mediaLevel: number, mediaColor: string): string {
-	// map old color convention to typed ColorRole
-	const colorRole: ColorRole = mediaColor === '#e6a840' ? "waste" : "media";
 	// determine label text based on media state
 	let labelText = "";
-	if (mediaLevel > 0 && colorRole === "waste") {
+	if (mediaLevel > 0 && mediaColor === '#c69a3a') {
 		labelText = "Old Media";
-	} else if (mediaLevel > 0 && colorRole === "media") {
+	} else if (mediaLevel > 0) {
 		labelText = "DMEM";
 	}
 	// build overlays
 	const overlays: string[] = [
-		createLiquidOverlay("t75_flask", mediaLevel, colorRole, SVG_T75_FLASK),
+		createLiquidOverlayWithColor("t75_flask", mediaLevel, mediaColor, SVG_T75_FLASK),
 		createDynamicLabel("t75_flask", labelText, SVG_T75_FLASK),
 	];
 	return composeSvg(SVG_T75_FLASK, "t75_flask", overlays);
@@ -163,15 +168,8 @@ function getWasteContainerSvg(): string {
 }
 
 // ============================================
-/**
- * Gets the trypsin-EDTA bottle SVG (reuses media bottle base with different label/color)
- */
 function getTrypsinBottleSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.6, "buffer", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "Trypsin", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "trypsin_bottle", overlays);
+	return SVG_TRYPSIN_BOTTLE;
 }
 
 // ============================================
@@ -322,27 +320,13 @@ function getPlateReaderSvg(): string {
 }
 
 // ============================================
-/**
- * Gets the sterile water bottle SVG (reuses media bottle base with different label/color)
- */
 function getSterileWaterSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.75, "buffer", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "H2O", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "sterile_water", overlays);
+	return SVG_STERILE_WATER_BOTTLE;
 }
 
 // ============================================
-/**
- * Gets the PBS bottle SVG (reuses media bottle base with different label/color)
- */
 function getPbsBottleSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.75, "buffer", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "1x PBS", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "pbs_bottle", overlays);
+	return SVG_PBS_BOTTLE;
 }
 
 // ============================================
@@ -362,51 +346,23 @@ function getDilutionTubeRackSvg(): string {
 }
 
 // ============================================
-/**
- * Gets the MTT vial SVG (reuses media bottle base with different label/color)
- */
 function getMttVialSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.60, "drug", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "MTT", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "mtt_vial", overlays);
+	return SVG_MTT_VIAL;
 }
 
 // ============================================
-/**
- * Gets the DMSO bottle SVG (reuses media bottle base with different label/color)
- */
 function getDmsoBottleSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.70, "buffer", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "DMSO", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "dmso_bottle", overlays);
+	return SVG_DMSO_BOTTLE;
 }
 
 // ============================================
-/**
- * Gets the carboplatin stock bottle SVG (reuses media bottle base with different label/color)
- */
 function getCarboplatinStockSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.60, "drug", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "Carboplatin", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "carboplatin_stock", overlays);
+	return SVG_CARBOPLATIN_STOCK;
 }
 
 // ============================================
-/**
- * Gets the metformin stock bottle SVG (reuses media bottle base with different label/color)
- */
 function getMetforminStockSvg(): string {
-	const overlays: string[] = [
-		createLiquidOverlay("media_bottle", 0.60, "drug", SVG_MEDIA_BOTTLE),
-		createDynamicLabel("media_bottle", "Metformin", SVG_MEDIA_BOTTLE),
-	];
-	return composeSvg(SVG_MEDIA_BOTTLE, "metformin_stock", overlays);
+	return SVG_METFORMIN_STOCK;
 }
 
 // ============================================

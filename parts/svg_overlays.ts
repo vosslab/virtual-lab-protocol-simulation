@@ -81,12 +81,15 @@ function createPipetteLiquidOverlay(equipmentId: string, volumeMl: number, capac
  * within the anchor_liquid_bounds area, clipped by anchor_liquid_clip.
  */
 function createLiquidOverlay(equipmentId: string, level: number, role: ColorRole, svgString: string): string {
+	return createLiquidOverlayWithColor(equipmentId, level, COLOR_MAP[role], svgString);
+}
+
+function createLiquidOverlayWithColor(equipmentId: string, level: number, color: string, svgString: string): string {
 	// clamp level
 	const clampedLevel = Math.max(0, Math.min(1, level));
 	if (clampedLevel <= 0) {
 		return "";
 	}
-	const color = COLOR_MAP[role];
 	const prefixedClip = equipmentId + "__anchor_liquid_clip";
 	// get liquid bounds from the base SVG
 	const bounds = parseAnchorBounds(svgString, equipmentId, "anchor_liquid_bounds");

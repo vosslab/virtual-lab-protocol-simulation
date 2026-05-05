@@ -35,7 +35,7 @@ function createProfessorOverlay(): void {
 	const svgWrapper = document.createElement('div');
 	svgWrapper.id = 'professor-svg-wrapper';
 	svgWrapper.style.cssText = `
-		width: 100px;
+		width: 96px;
 		height: auto;
 		flex-shrink: 0;
 	`;
@@ -83,6 +83,12 @@ function renderProfessorOverlay(): void {
 	// Set SVG wrapper width
 	svgWrapper.style.width = professorWidth + 'px';
 	svgWrapper.innerHTML = getAngryProfessorSvg();
+	const svgElement = svgWrapper.querySelector('svg');
+	if (svgElement) {
+		svgElement.style.width = '100%';
+		svgElement.style.height = 'auto';
+		svgElement.style.display = 'block';
+	}
 
 	// Get current step's why text
 	const currentStep = getCurrentStep();
