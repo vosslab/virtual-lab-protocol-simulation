@@ -1,7 +1,8 @@
 @AGENTS.md
 @docs/REPO_STYLE.md
+@docs/PYTHON_STYLE.md
+@docs/E2E_TESTS.md
 @docs/MARKDOWN_STYLE.md
 @docs/CLAUDE_HOOK_USAGE_GUIDE.md
 @docs/PLAYWRIGHT_USAGE.md
 @docs/TYPESCRIPT_STYLE.md
-

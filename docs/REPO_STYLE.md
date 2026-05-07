@@ -32,10 +32,7 @@ Repo-wide conventions for this project and related repos.
 - Error report must include: the command run and full stderr, plus a short next step: close other Git processes, remove a stale lock only if no process holds it, or fix `.git` permissions.
 
 ## Pytest failure triage
-- If you are unsure whether a failing pytest result is pre-existing or introduced by your current work, assume it is new first.
-- Reason: we try not to commit code with known failing tests, so a fresh failure is usually related to current uncommitted changes.
-- If uncertainty remains, inspect `git diff` and check whether the suspicious lines are part of current uncommitted edits.
-- Never use `git stash` as a diagnostic step for this.
+- For pytest test-writing rules, commands, and failure triage, see [docs/PYTEST_STYLE.md](PYTEST_STYLE.md).
 
 ## Changelog rotation
 - Rotate `docs/CHANGELOG.md` when it reaches about 1000 lines (`wc -l docs/CHANGELOG.md`).
@@ -43,6 +40,8 @@ Repo-wide conventions for this project and related repos.
 - Keep the last two date-heading day blocks in active `docs/CHANGELOG.md` and move older day blocks to archive files.
 - "Last two days" means the two most recent `## YYYY-MM-DD` headings present in the changelog, not a rolling 48-hour window; dates may be non-consecutive.
 - Use archive filenames in the form `docs/CHANGELOG-YYYY-MM[a-z].md` (for example `docs/CHANGELOG-2026-02a.md`), choosing the next letter for additional rotations in the same month.
+- When an archived range spans multiple months, name the archive after the **most recent month included** (the YYYY-MM closest to the active changelog), not the earliest. Example: a rotation moving 2026-01-23 through 2026-04-14 into one file becomes `docs/CHANGELOG-2026-04a.md`. This keeps the most recent archive sortable next to the still-active file.
+- Date headings appear in **exactly one file**. A `## YYYY-MM-DD` heading must never exist in both the active changelog and an archive (or in two archives). Before rotating, check the boundary date against the existing newest archive; if it already lives there, drop it from the active file rather than copying it across.
 - Preserve reverse-chronological order within each file after rotation.
 - Each day block (`## YYYY-MM-DD`) should include the same subsection headings, in this order:
   - `### Additions and New Features`
@@ -54,6 +53,7 @@ Repo-wide conventions for this project and related repos.
 - Keep section order stable so entries stay easy to scan over time.
 - Categories are not required when they would be empty, but every changelog entry must belong to one category.
 - Changelog entries are never removed, but they may be rephrased for accuracy and clarity.
+- Legacy archives that use the older `CHANGELOG_ARCHIVE_NN.md` form must be renamed to the documented `CHANGELOG-YYYY-MM[a-z].md` form. The new name follows the most-recent-month-in-range rule above (use the most recent `## YYYY-MM-DD` heading inside the archive). Use `git mv` so history is preserved. Only one archive naming style should exist in the repo at any time.
 
 ## Versioning
 - Prefer `pyproject.toml` as the single source of truth when the repo is a single Python package with a single `pyproject.toml`.
@@ -71,6 +71,8 @@ Repo-wide conventions for this project and related repos.
 - Add a shebang for executable scripts and keep them runnable directly.
 - For repo-local Python commands, use:
   - `source source_me.sh && python ...`
+- For pytest commands, use:
+  - `pytest tests/`
 - Avoid hard-coded interpreter paths in routine command examples.
 - Document shared helpers and modules in `docs/USAGE.md` when used across scripts.
 - Use `tests/test_pyflakes_code_lint.py` and `tests/test_ascii_compliance.py` for repo-wide lint checks, with `tests/check_ascii_compliance.py` for single-file ASCII/ISO-8859-1 checks and `tests/fix_ascii_compliance.py` for single-file fixes.
@@ -127,7 +129,9 @@ Repo-wide conventions for this project and related repos.
 
 ### Centrally maintained docs, do not edit locally
 - `docs/AUTHORS.md`: primary maintainers and notable contributors
+- `docs/CLAUDE_HOOK_USAGE_GUIDE.md`: generated hook behavior reference, not a repo style source of truth. If repo style differs from hook examples, update repo style docs and recommend a hook rule update upstream.
 - `docs/MARKDOWN_STYLE.md`: Markdown writing rules and formatting conventions for this repo.
+- `docs/PYTEST_STYLE.md`: pytest test-writing rules, commands, fixtures, and failure triage.
 - `docs/PYTHON_STYLE.md`: Python formatting, linting, and project-specific conventions.
 - `docs/REPO_STYLE.md`: repo-level organization, conventions, and file placement rules.
 
