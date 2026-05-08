@@ -3,7 +3,7 @@
 // ============================================
 
 import { computeWellViability } from "../cell_model";
-import { gameState, registeredTriggers } from "../game_state";
+import { gameState, registeredEmitters } from "../game_state";
 
 
 export const OD560_MAX = 1.20;   // control absorbance
@@ -42,5 +42,5 @@ export function runMttReadout(): void {
 }
 
 // ============================================
-// Pre-register results step so validateTriggerCoverage passes at load time.
-registeredTriggers.add('results');
+// Pre-register results step so validateCompletionEventCoverage passes at load time.
+registeredEmitters.add('results');

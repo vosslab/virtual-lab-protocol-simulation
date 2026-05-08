@@ -75,12 +75,16 @@ export interface GameState {
 	incubationTimingOk: boolean;
 	professorMood: 'neutral' | 'pleased' | 'annoyed';
 	professorMoodSetAt: number;
+	// Interaction sequence tracking (Patch 4)
+	interactionIndex: number;
+	wrongOrderClicks: number;
 }
 
 // CRITICAL: Persistence layer must serialize activeStepId, outOfOrderAttempts,
-// completedSteps, stepsInCorrectOrder, and stepsOutOfOrder. Any future save/load
-// implementation must include these fields or reloaded sessions will diverge from
-// in-memory protocol state.
+// completedSteps, stepsInCorrectOrder, stepsOutOfOrder, interactionIndex, and
+// wrongOrderClicks. Any future save/load implementation must include these fields
+// or reloaded sessions will diverge from in-memory protocol state. Missing fields
+// in old saves should default to 0 (interactionIndex and wrongOrderClicks).
 
 // ============================================
 export function createWellPlate(): WellData[] {
@@ -144,6 +148,8 @@ export function createInitialGameState(): GameState {
 		incubationTimingOk: true,
 		professorMood: 'neutral',
 		professorMoodSetAt: Date.now(),
+		interactionIndex: 0,
+		wrongOrderClicks: 0,
 	};
 }
 
@@ -159,16 +165,16 @@ export function setGameState(newState: GameState): void {
 // ============================================
 // Runtime registration set: populated as scenes load and fire their handlers.
 // By the time the walkthrough runs, this set reflects every step id that
-// actually has a working click path. The startup validator validateTriggerCoverage()
+// actually has a working click path. The startup validator validateCompletionEventCoverage()
 // diffs this set against PROTOCOL_STEPS for dead-step detection.
 //
-// Important: a trigger registers only when its code path actually runs.
+// Important: a completion event registers only when its code path actually runs.
 // Scenes whose first render fires every handler registration unconditionally
 // are fine; any scene that lazy-registers a handler (on hover, on drag-start,
 // etc.) must have that handler run once during the walkthrough for the check
 // to cover it. Since scenes render on page load and click-handler-setup
 // functions run on render, coverage is complete.
-export const registeredTriggers: Set<string> = new Set();
+export const registeredEmitters: Set<string> = new Set();
 
 // ============================================
 export function resetGame(): void {
@@ -203,6 +209,9 @@ export function getCurrentStep(): ProtocolStep | null {
 //   attempt and do NOT mutate completedSteps or activeStepId
 // - Resolves nextId supporting both string and function forms
 // - When activeStepId becomes null, sets endTime and switches to results scene
+// - Defensive backstop (Patch 4): if the step has an interactionSequence and
+//   the current interactionIndex has not reached the end of the sequence,
+//   log an error, increment wrongOrderClicks, and refuse to advance.
 // ============================================
 export function completeStep(stepId: string): void {
 	// Idempotent: already completed is a no-op
@@ -222,6 +231,17 @@ export function completeStep(stepId: string): void {
 		throw new Error(`activeStepId '${activeId}' not in PROTOCOL_STEPS`);
 	}
 
+	// Defensive backstop: if the step has an interactionSequence completionPath,
+	// ensure all interactions have been completed before advancing.
+	const backstopInteractions = activeStep.completionPath && activeStep.completionPath.kind === 'interactionSequence'
+		? activeStep.completionPath.interactions
+		: null;
+	if (backstopInteractions && gameState.interactionIndex < backstopInteractions.length) {
+		console.error(`[completeStep backstop] step ${stepId} called early at index ${gameState.interactionIndex} of ${backstopInteractions.length}`);
+		gameState.wrongOrderClicks++;
+		return;
+	}
+
 	gameState.stepsInCorrectOrder++;
 	gameState.completedSteps.push(stepId);
 
@@ -230,6 +250,8 @@ export function completeStep(stepId: string): void {
 		? activeStep.nextId(gameState)
 		: activeStep.nextId;
 	gameState.activeStepId = next;
+	// Reset interactionIndex when transitioning to a new step
+	gameState.interactionIndex = 0;
 
 	if (gameState.activeStepId === null) {
 		gameState.endTime = Date.now();
@@ -253,9 +275,9 @@ export function triggerStep(stepId: string): void {
 		throw new Error('triggerStep called with unknown id: ' + stepId);
 	}
 	// Runtime registration: records that this scene has a live wiring
-	// path for stepId. validateTriggerCoverage() diffs this set against
+	// path for stepId. validateCompletionEventCoverage() diffs this set against
 	// PROTOCOL_STEPS at page load to catch dead steps.
-	registeredTriggers.add(stepId);
+	registeredEmitters.add(stepId);
 	completeStep(stepId);
 }
 
@@ -272,14 +294,34 @@ export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope'
 }
 
 // ============================================
+// deriveActiveTargets(step) - Extract item ids relevant to the active step.
+//
+// Patch 1 temporary: derives the set of item ids from the step's
+// interactionSequence (tool, source, destination) since targetItems has been
+// removed from the YAML schema. Used by resolveItemDepth and scene renderers
+// for highlight and depth decisions.
+// TODO Patch 6: replace with interactionIndex-aware highlight set
+// ============================================
+export function deriveActiveTargets(step: { interactionSequence?: Array<{ tool?: string; source?: string; destination?: string }> } | null): string[] {
+	if (!step || !step.interactionSequence) return [];
+	const seen = new Set<string>();
+	for (const interaction of step.interactionSequence) {
+		if (interaction.tool) seen.add(interaction.tool);
+		if (interaction.source) seen.add(interaction.source);
+		if (interaction.destination) seen.add(interaction.destination);
+	}
+	return Array.from(seen);
+}
+
+// ============================================
 // resolveItemDepth(item, activeStepId)
 //
 // Depth is automatic first, manual second. Given an item and the currently
 // active protocol step, return the tier the item should render at:
 //
-//   'front' : item.id is in the active step's targetItems (the student
-//             needs to interact with it now)
-//   'mid'   : item shares a group with one of the step's targetItems
+//   'front' : item.id is in the active step's derived targets (tool/source/destination
+//             from interactionSequence; the student needs to interact with it now)
+//   'mid'   : item shares a group with one of the step's used items
 //             (same functional cluster; keeps context close at hand)
 //   'back'  : everything else parks on the back shelf, smaller and higher
 //
@@ -306,19 +348,21 @@ export function resolveItemDepth(
 	if (!activeStepId) return 'mid';
 
 	var step = PROTOCOL_STEPS.find(function (s) { return s.id === activeStepId; });
-	if (!step || !step.targetItems || step.targetItems.length === 0) {
+	// Derive targets from interactionSequence (tool/source/destination) since
+	// targetItems has been removed. TODO Patch 6: use interactionIndex-aware highlight set.
+	var targets = deriveActiveTargets(step || null);
+	if (targets.length === 0) {
 		return 'mid';
 	}
-	var targets = step.targetItems;
 
-	// Item itself is a target: promote to front.
+	// Item is in the used items list: promote to front.
 	if (targets.indexOf(item.id) >= 0) return 'front';
 
 	// Critical items never drop below mid (plate and the active flask).
 	if (item.kind === 'plate' || item.kind === 'flask') return 'mid';
 
-	// Share a functional group with one of the targets: stay mid.
-	// Consult both hood and bench item pools so a target-items list
+	// Share a functional group with one of the used items: stay mid.
+	// Consult both hood and bench item pools so a used-items list
 	// spanning both scenes resolves correctly.
 	var targetGroups: string[] = [];
 	var pools: SceneItem[][] = [HOOD_SCENE_ITEMS, BENCH_SCENE_ITEMS];
@@ -475,6 +519,6 @@ export function setShowNotification(fn: (message: string, type?: string) => void
 }
 
 // ============================================
-// Expose registeredTriggers on window for the walkthrough test
+// Expose registeredEmitters on window for the walkthrough test
 // ============================================
-(window as any).__registeredTriggers = registeredTriggers;
+(window as any).__registeredEmitters = registeredEmitters;

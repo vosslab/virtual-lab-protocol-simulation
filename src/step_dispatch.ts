@@ -3,7 +3,7 @@
 // ============================================
 // So scene handlers don't hardcode step-id lists. Exposes helpers to:
 // - Find all modal-driven or incubation steps
-// - Filter by scene, owner, or trigger status
+// - Filter by scene, owner, or completion trigger status
 // - Lookup step details by id
 
 import type { ProtocolStep } from "./constants";
@@ -54,7 +54,7 @@ export function getStepsForScene(scene: string): ProtocolStep[] {
 export function getStepIdsRequiringTrigger(): string[] {
 	const result: string[] = [];
 	for (const step of PROTOCOL_STEPS) {
-		if (step.trigger) {
+		if (step.completionTrigger) {
 			result.push(step.id);
 		}
 	}

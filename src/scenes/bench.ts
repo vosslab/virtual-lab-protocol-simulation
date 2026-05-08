@@ -2,21 +2,22 @@
 // bench_scene.ts - Bench (outside-the-hood) scene rendering
 // ============================================
 
-// Pre-register step ids this scene owns so validateTriggerCoverage passes
+// Pre-register step ids this scene owns so validateCompletionEventCoverage passes
 // at page load time. See hood_scene.ts for the policy rationale.
 import { ASSET_SPECS } from "../asset_specs";
+import { type Interaction, type ProtocolStep } from "../constants";
 import { BENCH_LAYOUT_RULES, BENCH_SCENE_ITEMS, getBenchItemLabel } from "../bench_config";
-import { gameState, getCurrentStep, registeredTriggers, renderGame, resolveSceneItemsWithDepth, showNotification, switchScene, triggerStep } from "../game_state";
-import { resolveInteraction } from "../interaction_resolver";
+import { gameState, getCurrentStep, registeredEmitters, renderGame, resolveSceneItemsWithDepth, showNotification, switchScene, triggerStep } from "../game_state";
+import { resolveInteraction, resolveInteractionByIndex } from "../interaction_resolver";
 import { computeSceneLayout } from "../layout_engine";
 import { getCellCounterSvg, getCentrifugeSvg, getIncubatorSvg, getMicroscopeSvg, getPlateReaderSvg, getVortexSvg, getWaterBathSvg } from "../svg_assets";
 import { canonicalTool, deriveHeldLiquid } from "./hood";
 import { renderTrypsinIncubation } from "./incubator";
 
 
-registeredTriggers.add('centrifuge');
-registeredTriggers.add('prewarm_media');
-registeredTriggers.add('plate_read');
+registeredEmitters.add('centrifuge');
+registeredEmitters.add('prewarm_media');
+registeredEmitters.add('plate_read');
 // The bench is a peer of the hood scene. It holds equipment the student
 // uses between hood steps: incubator, microscope, water bath, vortex,
 // centrifuge, cell counter, plate reader. The bench wires into the shared layout
@@ -45,14 +46,253 @@ export function getBenchItemSvgHtml(itemId: string): string {
 // same liquid-mapping logic.
 //============================================
 
+//============================================
+// deriveActiveInteractionTargets(step, interactionIndex, ...)
+//
+// Patch 6: Bench version of hood's highlight derivation.
+// Returns the de-duplicated list of item ids (tool/source/destination) from
+// the active interaction at step.interactionSequence[interactionIndex].
+//============================================
+function deriveActiveInteractionTargets(
+	step: ProtocolStep | null,
+	interactionIndex: number,
+	selectedTool: string | null,
+	heldLiquid: { tool: string | null; liquid: string | null; volumeMl: number; colorKey: string | null } | null
+): string[] {
+	if (!step || !step.interactionSequence || interactionIndex < 0 || interactionIndex >= step.interactionSequence.length) {
+		return [];
+	}
+
+	const interaction = step.interactionSequence[interactionIndex];
+	if (!interaction) return [];
+
+	const targets = new Set<string>();
+
+	if (interaction.tool) {
+		targets.add(interaction.tool);
+	}
+	if (interaction.source) {
+		targets.add(interaction.source);
+	}
+	if (interaction.destination) {
+		targets.add(interaction.destination);
+	}
+
+	return Array.from(targets);
+}
+
+//============================================
+// showWrongOrderHint(itemId, step, interaction) - Bench version
+//
+// Patch 6: Display wrong-order hint for bench clicks.
+//============================================
+function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | null, interaction: Interaction | undefined): void {
+	const clickedElem = document.querySelector(`[data-item-id="${clickedItemId}"]`) as HTMLElement | null;
+	if (clickedElem) {
+		clickedElem.classList.add('wrong-order-shake');
+		setTimeout(() => {
+			clickedElem.classList.remove('wrong-order-shake');
+		}, 400);
+	}
+
+	let hintMessage = 'Try the highlighted item.';
+
+	if (!interaction) {
+		hintMessage = 'Try the highlighted item.';
+	} else {
+		const toolPreconditionMet = (): boolean => {
+			if (canonicalTool(gameState.selectedTool) === interaction.tool) return true;
+			const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+			if (heldLiquid && heldLiquid.tool === interaction.tool) return true;
+			return false;
+		};
+
+		if (interaction.tool && !toolPreconditionMet()) {
+			const toolLabel = getBenchItemLabel(interaction.tool);
+			hintMessage = `Use the ${toolLabel} first.`;
+		} else if (interaction.source) {
+			const sourceLabel = getBenchItemLabel(interaction.source);
+			hintMessage = `Use the ${sourceLabel}.`;
+		} else if (interaction.destination) {
+			const destLabel = getBenchItemLabel(interaction.destination);
+			hintMessage = `Use the ${destLabel}.`;
+		}
+	}
+
+	showWrongOrderToast(hintMessage);
+}
+
+//============================================
+// showWrongOrderToast(message) - Bench version
+//
+// Display a small toast with the hint message.
+//============================================
+function showWrongOrderToast(message: string): void {
+	let toastContainer = document.getElementById('wrong-order-toast-container');
+	if (!toastContainer) {
+		toastContainer = document.createElement('div');
+		toastContainer.id = 'wrong-order-toast-container';
+		toastContainer.style.position = 'fixed';
+		toastContainer.style.top = '20px';
+		toastContainer.style.right = '20px';
+		toastContainer.style.zIndex = '1000';
+		toastContainer.style.pointerEvents = 'none';
+		document.body.appendChild(toastContainer);
+	}
+
+	const existingToast = toastContainer.querySelector('.wrong-order-toast');
+	if (existingToast) {
+		toastContainer.removeChild(existingToast);
+	}
+
+	const toast = document.createElement('div');
+	toast.className = 'wrong-order-toast';
+	toast.textContent = message;
+	toast.style.backgroundColor = '#fff3cd';
+	toast.style.border = '1px solid #ffc107';
+	toast.style.borderRadius = '6px';
+	toast.style.padding = '12px 16px';
+	toast.style.fontSize = '14px';
+	toast.style.fontWeight = '500';
+	toast.style.color = '#856404';
+	toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+	toast.style.maxWidth = '300px';
+	toast.style.wordWrap = 'break-word';
+	toast.style.animation = 'fadeIn 0.3s ease-in';
+
+	toastContainer.appendChild(toast);
+
+	setTimeout(() => {
+		if (toastContainer && toastContainer.contains(toast)) {
+			toast.style.animation = 'fadeOut 0.3s ease-out';
+			setTimeout(() => {
+				if (toastContainer && toastContainer.contains(toast)) {
+					toastContainer.removeChild(toast);
+				}
+			}, 300);
+		}
+	}, 2000);
+}
+
+//============================================
+// dispatchBenchInteractionClick(itemId: string)
+//
+// Patch 6: New wiring logic for bench using resolveInteractionByIndex.
+//============================================
+function dispatchBenchInteractionClick(itemId: string): void {
+	const activeStep = getCurrentStep();
+	if (!activeStep || !activeStep.interactionSequence) {
+		return;
+	}
+
+	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+	const cleanTool = canonicalTool(gameState.selectedTool);
+	const result = resolveInteractionByIndex({
+		selectedTool: cleanTool,
+		clickedItem: itemId,
+		activeStep: activeStep,
+		interactionIndex: gameState.interactionIndex,
+		heldLiquid: heldLiquid,
+	});
+
+	// Wrong-order click: increment wrongOrderClicks, show hint, return
+	if (result.wrongOrder === true) {
+		gameState.wrongOrderClicks++;
+		const activeInteraction = activeStep.interactionSequence[gameState.interactionIndex];
+		showWrongOrderHint(itemId, activeStep, activeInteraction);
+		return;
+	}
+
+	// Handle the result based on kind and indexDelta
+	if (result.kind === 'load') {
+		const reagent = (window as any).__REAGENTS?.[result.resultLiquid];
+		const colorKey = reagent ? reagent.colorKey : result.resultLiquid;
+		gameState.heldLiquid = {
+			tool: result.resultActor,
+			liquid: result.resultLiquid,
+			volumeMl: result.volumeMl,
+			colorKey: colorKey,
+		};
+
+		const tool = result.resultActor || 'serological_pipette';
+		const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
+					  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
+					  : result.resultLiquid === 'media'   ? `${tool}_with_media`
+					  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
+					  : null;
+		if (legacyToken) {
+			gameState.selectedTool = legacyToken;
+		}
+
+		if (result.indexDelta === 1) {
+			gameState.interactionIndex++;
+			if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+				triggerStep(activeStep.id);
+			}
+		}
+
+		let notification = 'Loaded ' + result.resultLiquid + '.';
+		showNotification(notification);
+		renderGame();
+		return;
+	}
+
+	if (result.kind === 'discharge') {
+		if (activeStep && activeStep.id && result.completionEvent) {
+			if (result.completionEvent === 'centrifuge') {
+				gameState.flaskMediaMl = 0;
+				gameState.flaskMediaAge = 'old';
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Cells centrifuged.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'prewarm') {
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Media warmed.', 'success');
+				renderGame();
+				return;
+			}
+		}
+		gameState.selectedTool = canonicalTool(gameState.selectedTool);
+		renderGame();
+		return;
+	}
+
+	if (result.kind === 'error') {
+		showNotification(result.hint);
+		return;
+	}
+
+	// No match via new resolver; fall through to legacy code
+	renderGame();
+}
+
 // ============================================
 // Click handler for bench items. Microscope/incubator open their
 // modal overlays; the remaining instruments advance their matching
 // protocol step when the active step calls for them.
 export function onBenchItemClick(itemId: string): void {
-	// M1.5.C: Route clicks through interaction_resolver for steps with allowedInteractions
+	// Route clicks through interactionIndex-aware resolver for steps with interactionSequence
 	const activeStep = getCurrentStep();
-	if (activeStep && activeStep.allowedInteractions) {
+	if (activeStep && activeStep.interactionSequence) {
+		dispatchBenchInteractionClick(itemId);
+		return;
+	}
+
+	// Legacy path for steps without interactionSequence
+	// Old resolver code kept for compatibility
+	if (activeStep) {
 		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 		const cleanTool = canonicalTool(gameState.selectedTool);
 		const result = resolveInteraction({
@@ -62,7 +302,7 @@ export function onBenchItemClick(itemId: string): void {
 			heldLiquid: heldLiquid,
 		});
 		if (result.kind === 'load') {
-			// Set legacy _with_X token from result so existing downstream code keeps working.
+			// Set legacy _with_X token from the load result so existing downstream code keeps working.
 			const legacyToken = result.resultLiquid === 'pbs'     ? 'serological_pipette_with_pbs'
 						  : result.resultLiquid === 'trypsin' ? 'serological_pipette_with_trypsin'
 						  : result.resultLiquid === 'media'   ? 'serological_pipette_with_media'
@@ -81,16 +321,16 @@ export function onBenchItemClick(itemId: string): void {
 			}
 			// Unknown liquid; fall through to legacy.
 		} else if (result.kind === 'discharge') {
-			// For discharge, dispatch based on the event name
-			if (activeStep && activeStep.id && result.event) {
-				if (result.event === 'centrifuge') {
+			// For discharge, dispatch based on the completion event name
+			if (activeStep && activeStep.id && result.completionEvent) {
+				if (result.completionEvent === 'centrifuge') {
 					gameState.flaskMediaMl = 0;
 					gameState.flaskMediaAge = 'old';
 					triggerStep(activeStep.id);
 					showNotification('Cells centrifuged.', 'success');
 					return;
 				}
-				if (result.event === 'prewarm') {
+				if (result.completionEvent === 'prewarm') {
 					triggerStep(activeStep.id);
 					showNotification('Media warmed.', 'success');
 					return;
@@ -152,19 +392,21 @@ export function onBenchItemClick(itemId: string): void {
 	}
 	if (itemId === 'plate_reader') {
 		const currentStep = getCurrentStep();
-		if (currentStep && (currentStep.id === 'plate_read' || currentStep.id === 'results')) {
+		if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.completionPath.openClick === 'plate_reader') {
 			switchScene('plate_reader');
 			return;
 		}
 		showNotification('The plate reader is ready for the readout step.');
 		return;
 	}
-	// Centrifuge: trigger the centrifuge step when clicked
+	// Centrifuge: complete the centrifuge step when clicked
 	if (itemId === 'centrifuge') {
 		const currentStep = getCurrentStep();
-		// TODO: replace activeStepId peek with trigger-spec lookup
-		if (currentStep && currentStep.id === 'centrifuge') {
-			triggerStep('centrifuge');
+		// Use completionPath.tool to match directTool steps (cell_culture centrifuge and tutorials)
+		if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'directTool' && currentStep.completionPath.tool === 'centrifuge') {
+			if (gameState.activeStepId) {
+				triggerStep(gameState.activeStepId);
+			}
 			// Centrifuge pellets the cells; supernatant is discarded.
 			// Zero the flask volume so the subsequent resuspend flow
 			// (serological + media_bottle + flask) can start from an
@@ -176,19 +418,21 @@ export function onBenchItemClick(itemId: string): void {
 		showNotification('Cells centrifuged.');
 		return;
 	}
-	// Water bath: trigger prewarm_media when clicked
+	// Water bath: complete prewarm_media when clicked
 	if (itemId === 'water_bath') {
 		const currentStep = getCurrentStep();
-		// TODO: replace activeStepId peek with trigger-spec lookup
-		if (currentStep && currentStep.id === 'prewarm_media') {
-			triggerStep('prewarm_media');
+		// Use completionPath.tool to match directTool steps
+		if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'directTool' && currentStep.completionPath.tool === 'water_bath') {
+			if (gameState.activeStepId) {
+				triggerStep(gameState.activeStepId);
+			}
 		}
 		showNotification('Media warmed.');
 		return;
 	}
 	// Cell counter: counting UI lives in the microscope overlay
 	// (manual hemocytometer + quadrant counts). Routing here lets
-	// the visibly-highlighted cell_counter target on the bench
+	// the visibly-highlighted cell_counter item on the bench
 	// actually advance count_cells. Mirror the microscope branch's
 	// sample-load side effect so hemocytometerLoaded flips and the
 	// downstream serological + flask click in the hood routes to
@@ -196,6 +440,8 @@ export function onBenchItemClick(itemId: string): void {
 	// "load sample for counting". switchScene already renders; do
 	// not call renderGame() after it.
 	if (itemId === 'cell_counter') {
+		// New protocol: cell_counter is a modal opener that switches to microscope scene
+		// Old protocol: cell_counter click after serological_pipette_with_sample
 		if (gameState.selectedTool === 'serological_pipette_with_sample') {
 			gameState.selectedTool = null;
 			gameState.hemocytometerLoaded = true;
@@ -240,10 +486,16 @@ export function renderBenchScene(): void {
 	// clear the bench's highlights so stale targets from a previous
 	// bench step (e.g. count_cells's cell_counter) do not linger on
 	// the hidden bench div. Symmetric with the hood_scene.ts fix.
+	// Patch 6: Highlight set comes from the active interaction at interactionIndex.
 	let activeTargets: string[] = [];
-	if (currentStepData && currentStepData.scene === 'bench'
-		&& currentStepData.targetItems) {
-		activeTargets = currentStepData.targetItems;
+	if (currentStepData && currentStepData.scene === 'bench') {
+		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+		activeTargets = deriveActiveInteractionTargets(
+			currentStepData,
+			gameState.interactionIndex,
+			gameState.selectedTool,
+			heldLiquid
+		);
 	}
 
 	let itemsHtml = '';

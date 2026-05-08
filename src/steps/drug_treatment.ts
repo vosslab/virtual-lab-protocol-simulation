@@ -5,7 +5,7 @@
 // #microscope-overlay and renders the screen for whatever step is
 // active (carb_intermediate .. add_metformin). Each screen has a
 // single advance interaction that fires triggerStep(activeStepId)
-// for exactly that one step. After the trigger, the modal rerenders:
+// for exactly that one step. After the completion trigger fires, the modal rerenders:
 // if the new active step is still modal-owned it shows the next
 // screen; otherwise it closes and returns to the hood.
 //
@@ -15,13 +15,16 @@
 // explicit-transition state machine from tracking dilution mistakes
 // per step.
 
-// Dilution-series options for the carb_low_range screen. The low-range
-// working stocks for rows B-F are where the "pick a dilution scheme"
-// decision actually matters (intermediate -> 5 working stocks spanning
-// three orders of magnitude). carb_intermediate, carb_high_range, and
-// metformin_stock all have fixed recipes, so they are not options.
+// NOTE: carb_low_range has been migrated to interactionSequence (SP-K2f).
+// It is no longer modal-owned. The dilution-choice screen and
+// DILUTION_OPTIONS are deprecated and will be removed in a future cleanup.
+//
+// Legacy comment: The low-range working stocks for rows B-F were where the
+// "pick a dilution scheme" decision actually mattered (intermediate -> 5
+// working stocks spanning three orders of magnitude). The physical interaction
+// sequence now encodes all dilution steps explicitly.
 import type { ProtocolStep } from "../constants";
-import { gameState, registerWarning, registeredTriggers, showNotification, triggerStep } from "../game_state";
+import { gameState, registerWarning, registeredEmitters, showNotification, triggerStep } from "../game_state";
 import { renderHoodScene } from "../scenes/hood";
 import { getModalOwnedSteps } from "../step_dispatch";
 import { renderProtocolPanel, renderScoreDisplay } from "../ui_rendering";
@@ -104,14 +107,16 @@ export const DRUG_MODAL_SCREENS: Record<string, DrugModalScreen> = {
 // ============================================
 // Pre-register every step id that this module may advance. One
 // registration per step because each step now has its own advance
-// handler; validateTriggerCoverage runs at the `load` event before
-// any user click and needs these visible at module load time.
-registeredTriggers.add('carb_intermediate');
-registeredTriggers.add('carb_low_range');
-registeredTriggers.add('carb_high_range');
-registeredTriggers.add('metformin_stock');
-registeredTriggers.add('add_carboplatin');
-registeredTriggers.add('add_metformin');
+// handler; validateCompletionEventCoverage (the completion-event coverage check)
+// runs at the `load` event before any user click and needs these visible
+// at module load time.
+
+// Pre-register every step id that this module will advance
+registeredEmitters.add('carb_intermediate');
+registeredEmitters.add('carb_high_range');
+registeredEmitters.add('metformin_stock');
+registeredEmitters.add('add_carboplatin');
+registeredEmitters.add('add_metformin');
 
 // Steps owned by this modal, in protocol order. Derived from PROTOCOL_STEPS
 // with modal.owner === 'drug_treatment'. Used by rerender to decide whether
@@ -127,6 +132,7 @@ export function startDrugAddition(): void {
 	const overlay = document.getElementById('microscope-overlay');
 	if (!overlay) return;
 	overlay.classList.add('active');
+
 	renderDrugModalStep();
 }
 
@@ -152,14 +158,9 @@ export function renderDrugModalStep(): void {
 	const modal = overlay.querySelector('.modal-content') as HTMLElement;
 	if (!modal) return;
 
-	// carb_low_range has its own rendering path: the three-option
-	// dilution-series choice. All other modal-owned steps share the
-	// single-button layout.
-	if (active === 'carb_low_range') {
-		renderDilutionChoiceScreen(modal);
-	} else {
-		renderSingleButtonScreen(modal, active);
-	}
+	// All modal-owned steps share the single-button layout.
+	// carb_low_range is no longer modal-owned (migrated to interactionSequence).
+	renderSingleButtonScreen(modal, active);
 
 	// Close button always attached (student may abort mid-modal).
 	const closeBtn = modal.querySelector('.modal-close') as HTMLElement;
@@ -172,20 +173,20 @@ export function renderDrugModalStep(): void {
 
 // ============================================
 // Single-button screen used by every modal-owned step except
-// carb_low_range. Reads the recipe text from DRUG_MODAL_SCREENS,
+// carb_low_range. Reads the screen text from DRUG_MODAL_SCREENS,
 // renders one primary advance button, and wires the button to
 // advanceDrugModalStep().
 export function renderSingleButtonScreen(modal: HTMLElement, stepId: string): void {
 	const screen = DRUG_MODAL_SCREENS[stepId];
 	if (!screen) return;
 
-	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
+	let html = '<button class="modal-close" data-walker-advance="modal-close" aria-label="Close">&times;</button>';
 	html += '<h2>' + screen.title + '</h2>';
 	html += '<div style="padding:0 8px 16px 8px;">';
 	html += '<p style="font-size:14px;color:#212121;margin:0 0 20px 0;line-height:1.5;">';
 	html += screen.recipe;
 	html += '</p>';
-	html += '<button class="drug-modal-advance btn-primary" ';
+	html += '<button class="drug-modal-advance btn-primary" data-walker-advance="drug-modal-advance" ';
 	html += 'style="padding:12px 24px;font-size:15px;font-weight:600;">';
 	html += screen.buttonLabel;
 	html += '</button>';
@@ -207,7 +208,7 @@ export function renderSingleButtonScreen(modal: HTMLElement, stepId: string): vo
 // also advance but register a warning that lands in scoring
 // feedback later.
 export function renderDilutionChoiceScreen(modal: HTMLElement): void {
-	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
+	let html = '<button class="modal-close" data-walker-advance="modal-close" aria-label="Close">&times;</button>';
 	html += '<h2>Choose Low-Range Dilution Series</h2>';
 	html += '<div style="padding:0 8px 16px 8px;">';
 	html += '<p style="font-size:14px;color:#212121;margin:0 0 16px 0;">';
@@ -218,7 +219,7 @@ export function renderDilutionChoiceScreen(modal: HTMLElement): void {
 		const opt = DILUTION_OPTIONS[i]!; // invariant: loop index guaranteed in bounds
 		const bgColor = '#f5f5f5';
 		const borderColor = '#e0e0e0';
-		html += '<button class="dilution-choice" data-dilution-index="' + i + '" ';
+		html += '<button class="dilution-choice" data-dilution-index="' + i + '" data-walker-advance="dilution-choice" ';
 		html += 'style="display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;';
 		html += 'background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:8px;';
 		html += 'cursor:pointer;transition:all 0.2s ease;font-size:14px;">';
@@ -265,8 +266,8 @@ export function selectLowRangeDilution(index: number): void {
 }
 
 // ============================================
-// Fire the trigger for exactly one step, apply any per-step side
-// effects, then rerender the modal so it either shows the next
+// Fire the completion trigger for exactly one step, apply any per-step
+// side effects, then rerender the modal so it either shows the next
 // screen or closes.
 export function advanceDrugModalStep(stepId: string): void {
 	if (stepId === 'add_carboplatin') {
@@ -276,6 +277,9 @@ export function advanceDrugModalStep(stepId: string): void {
 		applyPlateDoseMap();
 		gameState.drugsAdded = true;
 	}
+
+	// Emit completion event
 	triggerStep(stepId);
+
 	renderDrugModalStep();
 }

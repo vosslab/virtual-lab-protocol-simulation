@@ -443,23 +443,36 @@ export const renderToolbar = (): string => {
 	let tools: Array<{ id: string; label: string; icon: string }> = [];
 
 	if (gameState.activeScene === 'hood') {
-		if (currentStep.requiredAction === 'spray_ethanol') {
-			tools = [
-				{ id: 'ethanol_bottle', label: 'Ethanol', icon: '[E]' }
-			];
-		} else if (currentStep.requiredAction === 'aspirate') {
-			tools = [
-				{ id: 'aspirating_pipette', label: 'Aspirate', icon: '[A]' }
-			];
-		} else if (currentStep.requiredAction === 'pipette_media') {
-			tools = [
-				{ id: 'serological_pipette', label: 'Pipette', icon: '[P]' },
-				{ id: 'pipette_aid', label: 'Aid', icon: '[+]' }
-			];
-		} else if (currentStep.requiredAction === 'pipette_drug') {
-			tools = [
-				{ id: 'micropipette', label: 'Micropipette', icon: '[M]' }
-			];
+		// Derive available tools from interactionSequence[*].tool in order of first appearance.
+		// Modal-driven steps have no interactionSequence; they use the modal UI instead.
+		if (currentStep.interactionSequence && currentStep.interactionSequence.length > 0) {
+			const toolIds = new Set<string>();
+			for (const interaction of currentStep.interactionSequence) {
+				if (!toolIds.has(interaction.tool)) {
+					toolIds.add(interaction.tool);
+					const toolId = interaction.tool;
+					// Map tool ID to display label and icon
+					let label = toolId;
+					let icon = '[?]';
+					if (toolId === 'ethanol_bottle') {
+						label = 'Ethanol';
+						icon = '[E]';
+					} else if (toolId === 'aspirating_pipette') {
+						label = 'Aspirate';
+						icon = '[A]';
+					} else if (toolId === 'serological_pipette') {
+						label = 'Pipette';
+						icon = '[P]';
+					} else if (toolId === 'pipette_aid') {
+						label = 'Aid';
+						icon = '[+]';
+					} else if (toolId === 'multichannel_pipette') {
+						label = 'Multichannel';
+						icon = '[M]';
+					}
+					tools.push({ id: toolId, label, icon });
+				}
+			}
 		}
 	} else if (gameState.activeScene === 'incubator') {
 		tools = [

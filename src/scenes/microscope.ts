@@ -2,17 +2,17 @@
 // microscope_scene.ts - Microscope (viability + counting) and Plate Reader
 // ============================================
 
-// Pre-register step ids this scene owns so validateTriggerCoverage passes
+// Pre-register step ids this scene owns so validateCompletionEventCoverage passes
 // at page load time. See hood_scene.ts for the policy rationale.
 import { getCellState } from "../cell_model";
-import { gameState, getWell, registeredTriggers, showNotification, switchScene, triggerStep } from "../game_state";
+import { gameState, getCurrentStep, getWell, registeredEmitters, showNotification, switchScene, triggerStep } from "../game_state";
 import { runMttReadout } from "../steps/mtt_readout";
 import { COL_LABELS, PLATE_96_COLS, PLATE_96_ROWS, ROW_LABELS } from "../steps/plate_96";
 import type { CellPosition, CellState } from "../constants";
 
 
-registeredTriggers.add('count_cells');
-registeredTriggers.add('plate_read');
+registeredEmitters.add('count_cells');
+registeredEmitters.add('plate_read');
 
 // ============================================
 // Helper: descriptive health band message based on viability and confluency
@@ -40,8 +40,13 @@ export function getHealthBandMessage(viability: number, confluency: number): str
 }
 
 // ============================================
-// MICROSCOPE VIEW - Cell viability check and hemocytometer counting
+// CELL COUNTER VIEW - Auto-capture count and viability
 // ============================================
+// Mirrors the wet-lab protocol (docs/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md
+// Part 2): the automated cell counter reads count and viability from the
+// trypan-blue-stained sample in a single Capture press. The simulated
+// machine reports viability and cells/mL directly; no manual hemocytometer
+// quadrant counting is part of the wet-lab procedure.
 export function renderMicroscopeScene(): void {
 	const overlay = document.getElementById('microscope-overlay');
 	if (!overlay) return;
@@ -52,57 +57,30 @@ export function renderMicroscopeScene(): void {
 	const modal = overlay.querySelector('.modal-content') as HTMLElement;
 	if (!modal) return;
 
-	// Check which microscope screen we are on. microscope_check is no
-	// longer a protocol step; the viability-check substep is tracked by
-	// a UI-internal flag on gameState so the confirm button advances
-	// past the viability screen instead of looping forever.
-	const viabilityDone = gameState.microscopeViabilityChecked === true;
+	const viabilityPct = Math.round(cellState.viability * 100);
+	const reportedCount = gameState.actualCellCount;
 
 	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
-
-	if (!viabilityDone) {
-		// Step 1: Viability check with trypan blue
-		html += '<h2>Microscope - Viability Check</h2>';
-		html += '<div class="microscope-view">';
-		html += '<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>';
-		html += '</div>';
-		html += '<div style="padding:16px;background:#f0f2f5;border-radius:8px;margin-bottom:16px;">';
-		html += '<p style="margin:0 0 8px 0;font-size:14px;color:#212121;">Observe the cells stained with trypan blue.</p>';
-		html += '<p style="margin:0 0 8px 0;font-size:13px;color:#757575;">Live cells appear clear/gray. Dead cells stain blue.</p>';
-		html += '<p style="margin:0 0 8px 0;font-size:13px;color:#757575;">Estimated viability: <strong>' + Math.round(cellState.viability * 100) + '%</strong></p>';
-		// Descriptive health band feedback
-		html += '<p style="margin:0;font-size:13px;color:#555555;font-style:italic;">';
-		html += getHealthBandMessage(cellState.viability, cellState.confluency);
-		html += '</p>';
-		html += '</div>';
-		html += '<button id="confirm-viability" class="btn-primary" style="padding:10px 24px;">Confirm Viability and Proceed to Counting</button>';
-	} else {
-		// Step 2: Cell counting via interactive quadrant selection
-		html += '<h2>Hemocytometer - Cell Count</h2>';
-		html += '<div class="microscope-view">';
-		// Tight wrapper so buttons align exactly with SVG
-		html += '<div id="svg-wrapper" style="position:relative;display:inline-block;width:400px;height:430px;">';
-		html += '<svg id="microscope-svg" viewBox="0 0 400 430" style="display:block;width:100%;height:100%;"></svg>';
-		// Button container covers only the 400x400 grid, not the 30px label below
-		const gridPct = (400 / 430 * 100).toFixed(1);
-		html += '<div id="quadrant-buttons" style="position:absolute;top:0;left:0;width:100%;height:' + gridPct + '%;">';
-		html += renderQuadrantButtons();
-		html += '</div>';
-		html += '</div>';
-		html += '</div>';
-		html += '<div style="padding:12px;background:#f0f2f5;border-radius:8px;margin-bottom:12px;">';
-		html += '<p style="margin:0 0 6px 0;font-size:14px;color:#212121;">Click each corner square and enter your live cell count for that quadrant.</p>';
-		html += '<p style="margin:0;font-size:12px;color:#757575;">Count all 4 corners, then submit. Formula: (avg per square) &times; dilution (10) &times; 10,000 = cells/mL.</p>';
-		html += '</div>';
-		html += '<div style="display:flex;align-items:center;gap:12px;">';
-		html += '<span id="quadrant-status" style="font-size:13px;color:#757575;">0 of 4 quadrants counted</span>';
-		html += '<button id="submit-cell-count" class="btn-primary" style="padding:10px 24px;" disabled>Submit Count</button>';
-		html += '</div>';
-	}
+	html += '<h2>Cell Counter - Trypan Blue Capture</h2>';
+	html += '<div class="microscope-view">';
+	html += '<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>';
+	html += '</div>';
+	html += '<div style="padding:16px;background:#f0f2f5;border-radius:8px;margin-bottom:16px;">';
+	html += '<p style="margin:0 0 8px 0;font-size:14px;color:#212121;">';
+	html += 'Slide loaded with trypan-blue-stained sample. Press Capture to record count and viability.';
+	html += '</p>';
+	html += '<p style="margin:0 0 4px 0;font-size:13px;color:#757575;">Live cells appear clear/gray. Dead cells stain blue.</p>';
+	html += '<p style="margin:0 0 4px 0;font-size:13px;color:#757575;">Reported viability: <strong>' + viabilityPct + '%</strong></p>';
+	html += '<p style="margin:0 0 8px 0;font-size:13px;color:#757575;">Reported density: <strong>~' + reportedCount.toLocaleString() + ' cells/mL</strong></p>';
+	html += '<p style="margin:0;font-size:13px;color:#555555;font-style:italic;">';
+	html += getHealthBandMessage(cellState.viability, cellState.confluency);
+	html += '</p>';
+	html += '</div>';
+	html += '<button id="capture-count" class="btn-primary" data-walker-advance="capture-count" style="padding:10px 24px;">Capture</button>';
 
 	modal.innerHTML = html;
 
-	// Draw cells on the SVG
+	// Draw cells on the SVG (visual aid; not gating the capture)
 	const svg = document.getElementById('microscope-svg') as unknown as SVGElement;
 	if (svg) {
 		svg.innerHTML = '';
@@ -110,34 +88,16 @@ export function renderMicroscopeScene(): void {
 		drawCellsOnGrid(cellState);
 	}
 
-	// Set up event listeners
-	if (!viabilityDone) {
-		const confirmBtn = document.getElementById('confirm-viability');
-		if (confirmBtn) {
-			confirmBtn.addEventListener('click', () => {
-				// Mark viability check as done and re-render so the
-				// counting screen appears. Without this flag the scene
-				// rendered the viability screen forever.
-				gameState.microscopeViabilityChecked = true;
-				renderMicroscopeScene();
-			});
-		}
-	} else {
-		setupQuadrantListeners();
-		const submitBtn = document.getElementById('submit-cell-count');
-		if (submitBtn) {
-			submitBtn.addEventListener('click', submitQuadrantCount);
-		}
+	const captureBtn = document.getElementById('capture-count');
+	if (captureBtn) {
+		captureBtn.addEventListener('click', captureCellCount);
 	}
 
-	// Close button with confirmation if step is incomplete
 	const closeBtn = modal.querySelector('.modal-close') as HTMLElement;
 	if (closeBtn) {
 		closeBtn.addEventListener('click', () => {
-			const viabilityDone = gameState.microscopeViabilityChecked === true;
 			const countDone = gameState.completedSteps.includes('count_cells');
-			// Warn if closing with incomplete microscope work
-			if (!viabilityDone || !countDone) {
+			if (!countDone) {
 				const confirmed = confirm('Cell counting is not finished. Are you sure you want to leave?');
 				if (!confirmed) return;
 			}
@@ -145,6 +105,24 @@ export function renderMicroscopeScene(): void {
 			switchScene('hood');
 		});
 	}
+}
+
+// ============================================
+// captureCellCount - records count + viability and triggers count_cells
+// ============================================
+// Replaces the legacy submitQuadrantCount() flow. The auto-counter records
+// the actual cell density directly; viability has already been displayed.
+function captureCellCount(): void {
+	gameState.cellCount = gameState.actualCellCount;
+	const cellState = getCellState();
+	const viabilityPct = Math.round(cellState.viability * 100);
+	showNotification('Captured: ~' + gameState.cellCount.toLocaleString() + ' cells/mL at ' + viabilityPct + '% viability.', 'success');
+	if (gameState.activeStepId) {
+		triggerStep(gameState.activeStepId);
+	}
+	const overlay = document.getElementById('microscope-overlay');
+	if (overlay) overlay.classList.remove('active');
+	switchScene('hood');
 }
 
 // ============================================
@@ -407,7 +385,9 @@ export function submitQuadrantCount(): void {
 	}
 
 	showNotification(feedback, errorPercent <= 25 ? 'success' : 'info');
-	triggerStep('count_cells');
+	if (gameState.activeStepId) {
+		triggerStep(gameState.activeStepId);
+	}
 
 	// Close microscope, return to hood
 	const overlay = document.getElementById('microscope-overlay');
@@ -428,7 +408,7 @@ export function renderPlateReaderScene(): void {
 	const modal = overlay.querySelector('.modal-content') as HTMLElement;
 	if (!modal) return;
 
-	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
+	let html = '<button class="modal-close" data-walker-advance="modal-close" aria-label="Close">&times;</button>';
 	html += '<h2>Plate Reader Results (MTT Assay - 560 nm)</h2>';
 	html += '<div class="microscope-view" style="flex-direction:column;min-height:auto;padding:16px;overflow-y:auto;">';
 
@@ -507,7 +487,7 @@ export function renderPlateReaderScene(): void {
 	html += '</div>';
 
 	html += '<div style="text-align:center;margin-top:16px;">';
-	html += '<button id="complete-plate-read" class="btn-primary" style="padding:10px 24px;">Complete Experiment</button>';
+	html += '<button id="complete-plate-read" class="btn-primary" data-walker-advance="complete-plate-read" style="padding:10px 24px;">Complete Experiment</button>';
 	html += '</div>';
 
 	modal.innerHTML = html;
@@ -515,7 +495,13 @@ export function renderPlateReaderScene(): void {
 	const completeBtn = document.getElementById('complete-plate-read');
 	if (completeBtn) {
 		completeBtn.addEventListener('click', () => {
-			triggerStep('plate_read');
+			// Check if the current step's advanceClick is "complete-plate-read"
+			const currentStep = getCurrentStep();
+			if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.completionPath.advanceClick === 'complete-plate-read') {
+				if (gameState.activeStepId) {
+					triggerStep(gameState.activeStepId);
+				}
+			}
 			// Note: "results" is fired separately by the close button so
 			// the student has an explicit "I reviewed the results"
 			// gesture. See the close-button handler below.
@@ -525,12 +511,13 @@ export function renderPlateReaderScene(): void {
 	const closeBtn = modal.querySelector('.modal-close') as HTMLElement;
 	if (closeBtn) {
 		closeBtn.addEventListener('click', () => {
-			// Closing the plate-reader overlay while the "results" step
-			// is active should fire triggerStep('results'). Previously
-			// this handler only switched scenes and left the protocol
-			// stuck at the final step.
-			if (gameState.activeStepId === 'results') {
-				triggerStep('results');
+			// Closing the plate-reader overlay should trigger the active step
+			// if its completionPath.advanceClick is "modal-close"
+			const currentStep = getCurrentStep();
+			if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.completionPath.advanceClick === 'modal-close') {
+				if (gameState.activeStepId) {
+					triggerStep(gameState.activeStepId);
+				}
 			}
 			overlay.classList.remove('active');
 			switchScene('hood');

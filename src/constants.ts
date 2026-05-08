@@ -43,12 +43,12 @@ export const STAR_THRESHOLDS = {
 
 // Type definitions (used across all modules)
 
-// Trigger specification: documents the wiring intent (scene + event)
+// Completion trigger specification: documents the wiring intent (scene + completionEvent)
 // for each protocol step. Advisory in this pass; future refactors will
 // use this for step-driven trigger resolution.
 export type TriggerSpec = {
 	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader';
-	event: string;
+	completionEvent: string;
 };
 
 // Explicit successor in the state machine. String form for linear transitions,
@@ -57,17 +57,21 @@ export type TriggerSpec = {
 // and point the new step's nextId at Y. Reordering is now local.
 export type NextStep = string | null | ((state: GameState) => string | null);
 
-// Interaction specification: one valid click in a two-stage (load-then-discharge)
-// transfer sequence, or a single-click action. Part of allowedInteractions block.
-export interface AllowedInteraction {
-	actor: string;
+// Interaction specification: one valid click in the interactionSequence of a protocol step.
+// tool: the item the student must have selected (or click directly for single-click steps).
+// source: the container to load from (load interactions).
+// destination: the container to discharge into (discharge interactions).
+// stateChange: optional state update applied when this interaction fires (e.g. heldLiquid).
+// completionEvent: event name emitted when this interaction completes the step.
+export interface Interaction {
+	tool: string;
 	source?: string;
-	target?: string;
+	destination?: string;
 	liquid?: string;
 	volumeMl?: number;
 	consumesVolumeMl?: number;
-	event?: string;
-	result?: {
+	completionEvent?: string;
+	stateChange?: {
 		heldLiquid?: {
 			tool: string;
 			liquid: string;
@@ -77,34 +81,65 @@ export interface AllowedInteraction {
 	};
 }
 
+//============================================
+// Completion path types (SP-K2a)
+//============================================
+
+export interface CompletionPathInteractionSequence {
+	kind: 'interactionSequence';
+	interactions: Interaction[];
+}
+
+export interface CompletionPathDirectTool {
+	kind: 'directTool';
+	tool: string;
+	completionEvent: string;
+}
+
+export interface CompletionPathModal {
+	kind: 'modal';
+	openClick?: string;  // optional: if omitted, modal is assumed to be already open from prior step
+	advanceClick: string;
+	completionEvent: string;
+}
+
+export type CompletionPath = CompletionPathInteractionSequence | CompletionPathDirectTool | CompletionPathModal;
+
+//============================================
+
 export interface ProtocolStep {
 	id: string;
 	label: string;
 	action: string;
 	why: string;
-	partId: 'part1_split' | 'part2_count' | 'part3_seed' | 'part4_dilute' | 'part5_treat' | 'part6_mtt' | 'part7_read';
-	dayId: 'day1' | 'day2' | 'day4';
+	partId: string;
+	dayId: string;
 	stepIndex: number;
 	requiredItems: string[];
 	errorHints: Record<string, string>;
 	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader';
-	requiredAction: string;
 	correctVolumeMl?: number;
 	toleranceMl?: number;
-	targetItems?: string[];
 	// Explicit successor for the state machine. null marks the final step.
 	// Function form is reserved for future branching; unused in this pass.
 	nextId: NextStep;
 	// Declarative wiring intent. Advisory in this pass -- actual wiring still
 	// goes through triggerStep() calls in scene handlers. Future refactors
-	// will use this for step-driven trigger resolution.
-	trigger?: TriggerSpec | null;
+	// will use this for step-driven completion trigger resolution.
+	completionTrigger?: TriggerSpec | null;
 	// Modal-driven steps reference a modal owner and screen name.
 	modal?: { owner: 'drug_treatment' | 'microscope' | 'incubator' | 'plate_reader'; screen: string };
 	// Pure incubation steps with no resolver interaction.
 	isIncubation?: boolean;
-	// Resolver-driven steps list valid click sequences that advance the step.
-	allowedInteractions?: AllowedInteraction[];
+	// Resolver-driven steps carry an ordered interaction sequence.
+	interactionSequence?: Interaction[];
+	// Optional completion path (SP-K2a). When present, describes the schema contract
+	// for how this step gets completed. The kind discriminator selects one of three shapes:
+	// interactionSequence, directTool, or modal. Legacy top-level interactionSequence
+	// still accepted during K2a (pre-migration); K2b will migrate YAML and make this required.
+	completionPath?: CompletionPath;
+	// Derived list of items used in this step, ordered by first appearance.
+	usedItems: string[];
 }
 
 

@@ -11,7 +11,7 @@
 // pushing the next incubate_* id into outOfOrderAttempts.
 import { applyIncubation } from "../cell_model";
 import type { ProtocolStep } from "../constants";
-import { gameState, registeredTriggers, showNotification, switchScene, triggerStep } from "../game_state";
+import { gameState, registeredEmitters, showNotification, switchScene, triggerStep } from "../game_state";
 import { getIncubationSteps, isIncubationStep } from "../step_dispatch";
 import { getIncubatorSvg } from "../svg_assets";
 import { renderProtocolPanel, renderScoreDisplay } from "../ui_rendering";
@@ -115,7 +115,7 @@ export function renderIncubatorScene(): void {
 		applyIncubation();
 		gameState.incubated = true;
 		// Dispatch which incubation step fires based on the active protocol step.
-		// TODO: replace activeStepId peek with trigger-spec lookup (see
+		// TODO: replace activeStepId peek with completion trigger lookup (see
 		// docs/plans/partitioned-hugging-blum.md Section 7)
 		const active = gameState.activeStepId;
 		if (active && isIncubationStep(active)) {
@@ -142,10 +142,10 @@ export function renderIncubatorScene(): void {
 }
 
 // ============================================
-// Pre-register all incubator-dispatched step ids so validateTriggerCoverage
-// passes at load time. registeredTriggers.add(id) is called by triggerStep,
+// Pre-register all incubator-dispatched step ids so validateCompletionEventCoverage
+// passes at load time. registeredEmitters.add(id) is called by triggerStep,
 // but these handlers only fire on click; register them here without
 // calling completeStep.
-registeredTriggers.add('incubate_day1');
-registeredTriggers.add('incubate_48h');
-registeredTriggers.add('incubate_mtt');
+registeredEmitters.add('incubate_day1');
+registeredEmitters.add('incubate_48h');
+registeredEmitters.add('incubate_mtt');

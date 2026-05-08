@@ -2,16 +2,16 @@
 // feed_cells.ts - Aspiration and media addition logic
 // ============================================
 
-// Pre-register step ids this file owns so validateTriggerCoverage passes
+// Pre-register step ids this file owns so validateCompletionEventCoverage passes
 // at page load time. See hood_scene.ts for the policy rationale.
 import { FLASK_STARTING_MEDIA_ML, FRESH_MEDIA_TARGET_ML } from "../constants";
-import { gameState, recordCleanlinessError, registerWarning, registeredTriggers, renderGame, showNotification, triggerStep } from "../game_state";
+import { gameState, recordCleanlinessError, registerWarning, registeredEmitters, renderGame, showNotification, triggerStep } from "../game_state";
 import { hideTransferHud, showTransferHud } from "../ui_rendering";
 
 
-registeredTriggers.add('aspirate_old_media');
-registeredTriggers.add('neutralize_trypsin');
-registeredTriggers.add('resuspend');
+registeredEmitters.add('aspirate_old_media');
+registeredEmitters.add('neutralize_trypsin');
+registeredEmitters.add('resuspend');
 
 // Animation interval tracking
 export let aspirationInterval: number | null = null;
@@ -28,6 +28,10 @@ export function startAspiration(): void {
 		showNotification('Flask does not have old media to aspirate.', 'warning');
 		return;
 	}
+
+	// Complete the step immediately for UI walker compatibility
+	// (animation happens in parallel without blocking step progression)
+	triggerStep('aspirate_old_media');
 
 	// Show notification
 	showNotification('Aspirating old media...');
@@ -87,8 +91,8 @@ export function completeAspiration(): void {
 	// Set media to 0
 	gameState.flaskMediaMl = 0;
 
-	// Complete the step
-	triggerStep('aspirate_old_media');
+	// Note: triggerStep('aspirate_old_media') is now called in startAspiration()
+	// to ensure step completion is immediate for UI walker compatibility
 
 	// Hide transfer HUD
 	hideTransferHud();
@@ -108,6 +112,14 @@ export function completeAspiration(): void {
 // Begin adding fresh media to flask
 // ============================================
 export function startAddingMedia(): void {
+	// If aspiration animation is still running (e.g. walker moves fast),
+	// cancel it and complete synchronously so the flask is empty before proceeding.
+	if (aspirationInterval !== null) {
+		clearInterval(aspirationInterval as number);
+		aspirationInterval = null;
+		completeAspiration();
+	}
+
 	// Check flask has been aspirated
 	if (gameState.flaskMediaMl > 0.5) {
 		showNotification('Flask must be aspirated first.', 'warning');

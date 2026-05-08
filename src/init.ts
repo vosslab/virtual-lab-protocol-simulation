@@ -11,12 +11,12 @@
 // - window flag: sets __protocolValidation for walkthrough to read
 // - Throws to halt execution
 // ============================================
-import { PROTOCOL_STEPS } from "./content/protocol_data";
-import { createInitialGameState, gameState, renderGame, setGameState, setRenderGame } from "./game_state";
+import { PROTOCOL_ID, PROTOCOL_STEPS } from "./content/protocol_data";
+import { completeStep, createInitialGameState, gameState, renderGame, setGameState, setRenderGame } from "./game_state";
 import { createProfessorOverlay, renderProfessorOverlay } from "./professor_overlay";
 import { renderProtocolUI } from "./protocol_ui";
 import { renderBenchScene } from "./scenes/bench";
-import { renderHoodScene } from "./scenes/hood";
+import { dispatchInteractionClick, onItemClick, renderHoodScene, setupHoodEventListeners } from "./scenes/hood";
 import { renderIncubatorScene } from "./scenes/incubator";
 import { renderMicroscopeScene, renderPlateReaderScene } from "./scenes/microscope";
 import { calculateScore } from "./scoring";
@@ -114,23 +114,56 @@ export function validateProtocolGraph(): void {
 }
 
 // ============================================
-// validateTriggerCoverage() - Runtime trigger coverage check
+// getCoveragePolicy(protocolId) - Get completion-event coverage policy
+//
+// Returns "strict" for production protocols (cell_culture) and "relaxed"
+// for tutorial protocols (tutorial_*). Unknown protocols default to "strict"
+// for safety.
+// ============================================
+export function getCoveragePolicy(protocolId: string): "strict" | "relaxed" {
+	if (protocolId === "cell_culture") {
+		return "strict";
+	}
+	if (protocolId.startsWith("tutorial_")) {
+		return "relaxed";
+	}
+	// Default to strict for unknown protocols (safer for new protocols)
+	return "strict";
+}
+
+// ============================================
+// validateCompletionEventCoverage() - Runtime completion-event coverage check
 //
 // Run after all scene render functions have executed (via load event).
-// Asserts every step in PROTOCOL_STEPS is in registeredTriggers.
-// Reads from the runtime registration set populated by triggerStep() calls.
+// Asserts every step in PROTOCOL_STEPS has a matching completion-event
+// emitter recorded in registeredEmitters. Reads from the runtime
+// emitter registration set populated by triggerStep() calls. Policy:
+//
+// - STRICT (cell_culture): any missing emitter throws via showValidationError
+// - RELAXED (tutorial_*): missing emitters are logged via console.warn but
+//   do not throw; set __protocolValidation = { ok: true } regardless
+// - Unknown: defaults to STRICT (safer)
 // ============================================
-export function validateTriggerCoverage(): void {
+export function validateCompletionEventCoverage(): void {
 	const missing = [];
 	for (let i = 0; i < PROTOCOL_STEPS.length; i++) {
 		const stepId = PROTOCOL_STEPS[i]!.id;
-		if (!(window as any).__registeredTriggers.has(stepId)) {
+		if (!(window as any).__registeredEmitters.has(stepId)) {
 			missing.push(stepId);
 		}
 	}
+
+	const policy = getCoveragePolicy(PROTOCOL_ID);
+
 	if (missing.length > 0) {
-		showValidationError('dead step (no trigger wired)', `No scene calls triggerStep() for: ${missing.join(', ')}`);
+		if (policy === "strict") {
+			showValidationError('missing completion-event emitter', `No scene calls triggerStep() for: ${missing.join(', ')}`);
+		} else {
+			// policy === "relaxed"
+			console.warn(`[completion-event coverage] protocol '${PROTOCOL_ID}' missing emitters: ${missing.join(', ')}`);
+		}
 	}
+
 	(window as any).__protocolValidation = { ok: true };
 }
 
@@ -150,7 +183,6 @@ export function validateProtocolSteps(): string[] {
 		if (!step.id) errors.push(prefix + 'missing id');
 		if (!step.label) errors.push(prefix + 'missing label');
 		if (!step.scene) errors.push(prefix + 'missing scene');
-		if (!step.requiredAction) errors.push(prefix + 'missing requiredAction');
 		if (seenIds.indexOf(step.id) >= 0) {
 			errors.push(prefix + 'duplicate id "' + step.id + '"');
 		}
@@ -242,8 +274,26 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ============================================
-// Register trigger coverage check to run after page load.
+// Register completion-event coverage check to run after page load.
 // This fires after all scene render functions have executed and
-// their click handlers registered via triggerStep() calls.
+// their completion-event emitters registered via triggerStep() calls.
 // ============================================
-window.addEventListener('load', validateTriggerCoverage);
+window.addEventListener('load', validateCompletionEventCoverage);
+
+// ============================================
+// Export resolveInteractionByIndex, PROTOCOL_STEPS, and gameState for testing
+// Note: gameState is exported as a getter to always return the current instance,
+// not the initial one created at module load time.
+// ============================================
+import { resolveInteractionByIndex } from "./interaction_resolver";
+(window as any).resolveInteractionByIndex = resolveInteractionByIndex;
+(window as any).PROTOCOL_STEPS = PROTOCOL_STEPS;
+Object.defineProperty(window, 'gameState', {
+	get: () => gameState,
+	configurable: true,
+});
+(window as any).onItemClick = onItemClick;
+(window as any).setupHoodEventListeners = setupHoodEventListeners;
+(window as any).dispatchInteractionClick = dispatchInteractionClick;
+(window as any).completeStep = completeStep;
+(window as any).getCoveragePolicy = getCoveragePolicy;

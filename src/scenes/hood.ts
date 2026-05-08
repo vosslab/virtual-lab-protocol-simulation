@@ -8,9 +8,9 @@
 import { ASSET_SPECS } from "../asset_specs";
 import { FLASK_MAX_VOLUME_ML, type ProtocolStep } from "../constants";
 import { REAGENTS } from "../content/inventory_data";
-import { gameState, getCurrentStep, recordCleanlinessError, registerWarning, registeredTriggers, renderGame, showNotification, switchScene, triggerStep } from "../game_state";
+import { gameState, getCurrentStep, recordCleanlinessError, registerWarning, registeredEmitters, renderGame, showNotification, switchScene, triggerStep } from "../game_state";
 import { HOOD_LAYOUT_RULES, HOOD_SCENE_ITEMS, getHoodItemLabel } from "../hood_config";
-import { resolveInteraction } from "../interaction_resolver";
+import { resolveInteraction, resolveInteractionByIndex } from "../interaction_resolver";
 import { computeSceneLayout } from "../layout_engine";
 import { startDrugAddition } from "../steps/drug_treatment";
 import { startAddingMedia, startAspiration } from "../steps/feed_cells";
@@ -41,15 +41,59 @@ export function canonicalTool(selectedTool: string | null): string | null {
 }
 
 //============================================
-// Return the id of the first pipette-kind target item for a step, or
-// null if the step has no pipette target. Used by the toolbar hint to
-// tell the student which tool to pick up first when they are not yet
-// holding anything. Searches HOOD_SCENE_ITEMS for each target id; if
-// the student is standing in the hood and the step targets a pipette,
-// that pipette is "what to pick up".
+// deriveActiveInteractionTargets(step, interactionIndex)
+//
+// Patch 6: Replace deriveActiveTargets with interactionIndex-aware highlight set.
+// Returns the de-duplicated list of item ids (tool/source/destination) from the
+// active interaction at step.interactionSequence[interactionIndex].
+// If the tool precondition is met (selectedTool matches or heldLiquid.tool matches),
+// keep the tool in the set so the player still sees what is loaded.
+// ============================================
+function deriveActiveInteractionTargets(
+	step: ProtocolStep | null,
+	interactionIndex: number,
+	selectedTool: string | null,
+	heldLiquid: { tool: string | null; liquid: string | null; volumeMl: number; colorKey: string | null } | null
+): string[] {
+	const interactions = step && step.completionPath && step.completionPath.kind === 'interactionSequence'
+		? step.completionPath.interactions
+		: null;
+	if (!interactions || interactionIndex < 0 || interactionIndex >= interactions.length) {
+		return [];
+	}
+
+	const interaction = interactions[interactionIndex];
+	if (!interaction) return [];
+
+	const targets = new Set<string>();
+
+	// Add tool if present (keep visible to show what is loaded)
+	if (interaction.tool) {
+		targets.add(interaction.tool);
+	}
+
+	// Add source if present and not yet satisfied
+	if (interaction.source) {
+		targets.add(interaction.source);
+	}
+
+	// Add destination if present and not yet satisfied
+	if (interaction.destination) {
+		targets.add(interaction.destination);
+	}
+
+	return Array.from(targets);
+}
+
+//============================================
+// Return the id of the first pipette-kind item from the step's active interaction.
+// Used by the toolbar hint to tell the student which tool to pick up first
+// when they are not yet holding anything.
+// Patch 6: now uses deriveActiveInteractionTargets instead of deriveActiveTargets.
 export function getStartingToolForStep(step: ProtocolStep): string | null {
-	if (!step.targetItems) return null;
-	for (const itemId of step.targetItems) {
+	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+	const itemIds = deriveActiveInteractionTargets(step, gameState.interactionIndex, gameState.selectedTool, heldLiquid);
+	for (const itemId of itemIds) {
 		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
 		if (item && item.kind === 'pipette') {
 			return item.id;
@@ -60,25 +104,22 @@ export function getStartingToolForStep(step: ProtocolStep): string | null {
 
 //============================================
 // Return the id of the reagent source the student should click next
-// when holding an unloaded pipette. The "source" is the container to
+// when holding an unloaded pipette. The source is the container to
 // draw from -- a bottle or rack for most steps, falling back to the
 // flask for draw-from-flask steps (aspirate old media, seed plate).
-// Used by the toolbar hint to tell the student "click the X" after
-// they pick up a pipette but before they have loaded anything into
-// it. Scene code derives this from the current step's targetItems so
-// the hint and the green is-active highlights share one truth.
+// Used by the toolbar hint. Patch 6: now uses interactionIndex-aware highlights.
 export function getReagentSourceForStep(step: ProtocolStep): string | null {
-	if (!step.targetItems) return null;
-	// Preferred: a bottle or rack in the targets (reagent container)
-	for (const itemId of step.targetItems) {
+	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+	const itemIds = deriveActiveInteractionTargets(step, gameState.interactionIndex, gameState.selectedTool, heldLiquid);
+	// Preferred: a bottle or rack in the derived items (reagent container)
+	for (const itemId of itemIds) {
 		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
 		if (item && (item.kind === 'bottle' || item.kind === 'rack')) {
 			return item.id;
 		}
 	}
-	// Fallback: first non-pipette, non-plate target (usually the flask
-	// for aspirate_old_media and seed_plate)
-	for (const itemId of step.targetItems) {
+	// Fallback: first non-pipette, non-plate item in derived items
+	for (const itemId of itemIds) {
 		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
 		if (item && item.kind !== 'pipette' && item.kind !== 'plate') {
 			return item.id;
@@ -87,20 +128,133 @@ export function getReagentSourceForStep(step: ProtocolStep): string | null {
 	return null;
 }
 
-// Pre-register every step id this scene owns. validateTriggerCoverage()
+//============================================
+// showWrongOrderHint(itemId, step, interaction)
+//
+// Patch 6: Wrong-order hint UI. Applies a CSS shake animation to the clicked
+// item and shows a small toast naming the expected next click. The shake is
+// a visual nudge (a few pixels of horizontal wiggle for ~400ms).
+// Toast auto-dismisses after ~2 seconds; multiple wrong clicks reset the timer.
+//============================================
+function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | null, interaction: any): void {
+	// Apply CSS shake animation to the clicked element
+	const clickedElem = document.querySelector(`[data-item-id="${clickedItemId}"]`) as HTMLElement | null;
+	if (clickedElem) {
+		clickedElem.classList.add('wrong-order-shake');
+		setTimeout(() => {
+			clickedElem.classList.remove('wrong-order-shake');
+		}, 400);
+	}
+
+	// Determine the hint message from the interaction shape
+	let hintMessage = 'Try the highlighted item.';
+
+	if (!interaction) {
+		hintMessage = 'Try the highlighted item.';
+	} else {
+		const toolPreconditionMet = (): boolean => {
+			const cleanTool = canonicalTool(gameState.selectedTool);
+			if (cleanTool === interaction.tool) return true;
+			const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+			if (heldLiquid && heldLiquid.tool === interaction.tool) return true;
+			return false;
+		};
+
+		// If tool is required but not met, hint to pick up the tool first
+		if (interaction.tool && !toolPreconditionMet()) {
+			const toolItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.tool);
+			const toolLabel = toolItem ? getHoodItemLabel(interaction.tool) : interaction.tool;
+			hintMessage = `Click the ${toolLabel} first.`;
+		}
+		// Else if source click is expected
+		else if (interaction.source) {
+			const sourceItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.source);
+			const sourceLabel = sourceItem ? getHoodItemLabel(interaction.source) : interaction.source;
+			hintMessage = `Click the ${sourceLabel}.`;
+		}
+		// Else if destination click is expected
+		else if (interaction.destination) {
+			const destItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.destination);
+			const destLabel = destItem ? getHoodItemLabel(interaction.destination) : interaction.destination;
+			hintMessage = `Click the ${destLabel}.`;
+		}
+	}
+
+	// Show the toast notification
+	showWrongOrderToast(hintMessage);
+}
+
+//============================================
+// showWrongOrderToast(message)
+//
+// Display a small toast with the hint message. Toast auto-dismisses after ~2 seconds.
+// Multiple calls reset the timer.
+//============================================
+function showWrongOrderToast(message: string): void {
+	let toastContainer = document.getElementById('wrong-order-toast-container');
+	if (!toastContainer) {
+		toastContainer = document.createElement('div');
+		toastContainer.id = 'wrong-order-toast-container';
+		toastContainer.style.position = 'fixed';
+		toastContainer.style.top = '20px';
+		toastContainer.style.right = '20px';
+		toastContainer.style.zIndex = '1000';
+		toastContainer.style.pointerEvents = 'none';
+		document.body.appendChild(toastContainer);
+	}
+
+	// Remove any existing toast
+	const existingToast = toastContainer.querySelector('.wrong-order-toast');
+	if (existingToast) {
+		toastContainer.removeChild(existingToast);
+	}
+
+	// Create new toast
+	const toast = document.createElement('div');
+	toast.className = 'wrong-order-toast';
+	toast.textContent = message;
+	toast.style.backgroundColor = '#fff3cd';
+	toast.style.border = '1px solid #ffc107';
+	toast.style.borderRadius = '6px';
+	toast.style.padding = '12px 16px';
+	toast.style.fontSize = '14px';
+	toast.style.fontWeight = '500';
+	toast.style.color = '#856404';
+	toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+	toast.style.maxWidth = '300px';
+	toast.style.wordWrap = 'break-word';
+	toast.style.animation = 'fadeIn 0.3s ease-in';
+
+	toastContainer.appendChild(toast);
+
+	// Auto-dismiss after 2 seconds
+	setTimeout(() => {
+		if (toastContainer && toastContainer.contains(toast)) {
+			toast.style.animation = 'fadeOut 0.3s ease-out';
+			setTimeout(() => {
+				if (toastContainer && toastContainer.contains(toast)) {
+					toastContainer.removeChild(toast);
+				}
+			}, 300);
+		}
+	}, 2000);
+}
+
+// Pre-register every step id this scene owns. validateCompletionEventCoverage()
 // runs on the load event -- before any click handlers have fired -- and
-// verifies that each PROTOCOL_STEPS id is in registeredTriggers. Each
+// verifies that each PROTOCOL_STEPS id is in registeredEmitters. Each
 // scene file must list its step ids here so coverage passes at load time.
 // The actual state-machine advance still happens inside triggerStep at
 // click time; these lines only announce that a live wiring path exists.
-registeredTriggers.add('spray_hood');
-registeredTriggers.add('pbs_wash');
-registeredTriggers.add('add_trypsin');
-registeredTriggers.add('seed_plate');
-registeredTriggers.add('media_adjust');
-registeredTriggers.add('add_mtt');
-registeredTriggers.add('decant_mtt');
-registeredTriggers.add('add_dmso');
+registeredEmitters.add('spray_hood');
+registeredEmitters.add('pbs_wash');
+registeredEmitters.add('add_trypsin');
+registeredEmitters.add('seed_plate');
+registeredEmitters.add('media_adjust');
+registeredEmitters.add('add_mtt');
+registeredEmitters.add('decant_mtt');
+registeredEmitters.add('add_dmso');
+registeredEmitters.add('carb_low_range');
 
 //============================================
 // Map item IDs to their SVG generator functions
@@ -155,18 +309,23 @@ export function renderHoodScene(): void {
 		viewportW, viewportH
 	);
 
-	// Determine active targets for current protocol step. Only highlight
-	// hood items when the active step actually lives on the hood; for
+	// Determine active targets for the current protocol step. Only highlight
+	// hood items when the active step lives on the hood; for
 	// bench/microscope/incubator/plate_reader steps we clear the hood's
-	// highlights so stale targets from the previous hood step do not
-	// linger on the (hidden) hood div. Without this, advancing through
-	// a non-hood step left the hood visually pointing at an item that
-	// was no longer the current target.
+	// highlights so stale highlights from the previous hood step do not
+	// linger on the (hidden) hood div.
+	// Patch 6: Highlight set comes from the active interaction at interactionIndex,
+	// not from all interactions in the sequence.
 	const currentStepData = getCurrentStep();
 	let activeTargets: string[] = [];
-	if (currentStepData && currentStepData.scene === 'hood'
-		&& currentStepData.targetItems) {
-		activeTargets = currentStepData.targetItems;
+	if (currentStepData && currentStepData.scene === 'hood') {
+		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+		activeTargets = deriveActiveInteractionTargets(
+			currentStepData,
+			gameState.interactionIndex,
+			gameState.selectedTool,
+			heldLiquid
+		);
 	}
 	const nextPulseTarget = activeTargets.length > 0 ? activeTargets[0] : null;
 
@@ -262,12 +421,12 @@ export function renderHoodScene(): void {
 		if (gameState.selectedTool === 'serological_pipette') {
 			// Held an unloaded serological pipette: the next click is
 			// the reagent source for the current protocol step. Derived
-			// from step.targetItems via getReagentSourceForStep so the
+			// from the step's used items via getReagentSourceForStep so the
 			// hint, the green is-active highlights, and the actual
 			// protocol state share one truth. Prior versions peeked at
 			// gameState.trypsinAdded/flaskMediaMl/flaskMediaAge and
-			// could show a misleading hint -- the new source-of-truth
-			// is the current step.
+			// could show a misleading hint -- the source of truth is
+			// now the current step's used items.
 			if (currentStep) {
 				const source = getReagentSourceForStep(currentStep);
 				if (source) {
@@ -291,10 +450,10 @@ export function renderHoodScene(): void {
 			hintText = 'Cells loaded -- Click the 24-well plate';
 		} else if (gameState.selectedTool === 'multichannel_pipette') {
 			// Unloaded multichannel pipette: derive next click from the
-			// current step's reagent source. The prior hardcoded "Click
-			// the drug vials" only made sense under the legacy 12-step
-			// protocol and is wrong for seed_plate, media_adjust,
-			// add_carboplatin, add_metformin, add_mtt, add_dmso.
+			// current step's reagent source (from used items). The prior
+			// hardcoded "Click the drug vials" only made sense under the
+			// legacy 12-step protocol and is wrong for seed_plate,
+			// media_adjust, add_carboplatin, add_metformin, add_mtt, add_dmso.
 			if (currentStep) {
 				const source = getReagentSourceForStep(currentStep);
 				if (source) {
@@ -315,12 +474,12 @@ export function renderHoodScene(): void {
 		} else if (gameState.selectedTool === 'flask' && gameState.trypsinAdded && !gameState.trypsinIncubated) {
 			hintText = 'Holding flask -- Click the incubator for trypsin incubation';
 		} else {
-			hintText = 'Holding: ' + toolLabel + ' -- Click a target to use';
+			hintText = 'Holding: ' + toolLabel + ' -- Click an item to use it';
 		}
 	}
 
 	// "Current step" banner. Opaque white background, solid green left
-	// accent matching the target outline, bold large text. Pairs color
+	// accent matching the active-item outline, bold large text. Pairs color
 	// with size and weight so the cue is not color-only, per
 	// docs/ACCESSIBILITY_REVIEW.md. No drop shadows -- uses a solid green
 	// border on all sides for edge definition instead.
@@ -361,10 +520,321 @@ export function renderHoodScene(): void {
 }
 
 // ============================================
-export function onItemClick(itemId: string): void {
-	// M1.5.C: Route clicks through interaction_resolver for steps with allowedInteractions
+// dispatchInteractionClick(itemId: string)
+//
+// Patch 6: New wiring logic using resolveInteractionByIndex.
+// Dispatches a click through the interactionIndex-aware resolver.
+// On wrong-order, increments wrongOrderClicks and shows hint.
+// On tool-select, updates selectedTool state without advancing.
+// On interaction advance, advances interactionIndex and calls triggerStep if sequence complete.
+//============================================
+export function dispatchInteractionClick(itemId: string): void {
 	const activeStep = getCurrentStep();
-	if (activeStep && activeStep.allowedInteractions) {
+	if (!activeStep || !activeStep.completionPath || activeStep.completionPath.kind !== 'interactionSequence') {
+		return;
+	}
+	const interactions = activeStep.completionPath.interactions;
+
+	// Use gameState.heldLiquid directly. The legacy deriveHeldLiquid()
+	// only knew the serological_pipette_with_* tokens; for any other tool
+	// (e.g. micropipette_with_carboplatin) it returned liquid:null and
+	// the resolver then mis-classified destination clicks as wrong_order.
+	const cleanTool = canonicalTool(gameState.selectedTool);
+
+	const resolveArgs: Parameters<typeof resolveInteractionByIndex>[0] = {
+		selectedTool: cleanTool,
+		clickedItem: itemId,
+		activeStep: activeStep,
+		interactionIndex: gameState.interactionIndex,
+	};
+
+	if (gameState.heldLiquid && gameState.heldLiquid.liquid) {
+		resolveArgs.heldLiquid = gameState.heldLiquid;
+	}
+
+	const result = resolveInteractionByIndex(resolveArgs);
+
+	// Wrong-order click: increment wrongOrderClicks, show hint, return without advancing
+	if (result.wrongOrder === true) {
+		gameState.wrongOrderClicks++;
+		const activeInteraction = interactions[gameState.interactionIndex];
+		showWrongOrderHint(itemId, activeStep, activeInteraction);
+		return;
+	}
+
+	// Handle the result based on kind and indexDelta
+	if (result.kind === 'load') {
+		// Load action: update heldLiquid
+		if (result.resultActor && result.resultLiquid) {
+			const reagent = REAGENTS[result.resultLiquid];
+			const colorKey = reagent ? reagent.colorKey : result.resultLiquid;
+			gameState.heldLiquid = {
+				tool: result.resultActor,
+				liquid: result.resultLiquid,
+				volumeMl: result.volumeMl,
+				colorKey: colorKey,
+			};
+		}
+
+		// Build legacy token for downstream code
+		const tool = result.resultActor || 'serological_pipette';
+		const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
+					  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
+					  : result.resultLiquid === 'media'   ? `${tool}_with_media`
+					  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
+					  : null;
+		if (legacyToken) {
+			gameState.selectedTool = legacyToken;
+		}
+
+		// If indexDelta is 1, advance the interaction index
+		if (result.indexDelta === 1) {
+			gameState.interactionIndex++;
+			// If we've reached the end of the sequence, call triggerStep
+			if (gameState.interactionIndex >= interactions.length) {
+				triggerStep(activeStep.id);
+			}
+		}
+
+		let notification = 'Loaded ' + result.resultLiquid + '.';
+		if (result.resultLiquid === 'pbs') notification = 'PBS loaded into pipette. Click the flask to rinse.';
+		if (result.resultLiquid === 'trypsin') notification = 'Loaded trypsin-EDTA. Click the flask to add.';
+		if (result.resultLiquid === 'media') notification = 'Media warmed to 37 degrees C and loaded into pipette. Click the flask.';
+		if (result.resultLiquid === 'cells') notification = 'Loaded cell suspension. Click the 24-well plate to transfer.';
+		showNotification(notification);
+		renderGame();
+		return;
+	}
+
+	if (result.kind === 'discharge') {
+		// Discharge action: dispatch based on completionEvent
+		// Special case: if indexDelta === 0, this is a tool-select action (pre-discharge setup).
+		// Set selectedTool for subsequent source/destination clicks, then return without discharge.
+		const currentInteraction = interactions ? interactions[gameState.interactionIndex] : null;
+		if (result.indexDelta === 0 && currentInteraction && (currentInteraction.source || currentInteraction.destination)) {
+			// Tool-select mode: set selectedTool and wait for source/destination click
+			const expectedTool = currentInteraction.tool;
+			gameState.selectedTool = expectedTool || null;
+			renderGame();
+			return;
+		}
+
+		if (activeStep && activeStep.id && result.completionEvent) {
+			if (result.completionEvent === 'spray_ethanol') {
+				gameState.hoodSprayed = true;
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Sprayed hood with 70% ethanol.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'aspirate') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAspiration();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'pbs_wash') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.flaskMediaAge = 'fresh';
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Flask rinsed with PBS.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'pipette_trypsin') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.trypsinAdded = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'pipette_media') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
+					gameState.trypsinNeutralized = true;
+				}
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAddingMedia();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'pipette_to_plate') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.wellPlate.forEach(well => {
+					well.hasCells = true;
+				});
+				gameState.cellsTransferred = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Cells transferred to all 24 wells.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'centrifuge') {
+				gameState.flaskMediaMl = 0;
+				gameState.flaskMediaAge = 'old';
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Cells centrifuged.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'prewarm') {
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Media warmed.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'media_adjust') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Media adjusted for all wells.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'resuspend') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAddingMedia();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'carb-low-range-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Low-range carboplatin stocks prepared.', 'success');
+				renderGame();
+				return;
+			}
+		}
+		// Generic discharge fallback: no per-event handler matched (or no
+		// completionEvent on this interaction). This branch runs only for
+		// successful discharge results (kind === 'discharge') because the
+		// outer `if (result.kind === 'discharge')` block already gated us
+		// in. Advance the interaction index by exactly the resolver's
+		// indexDelta, clear pipette state because a discharge consumes
+		// the held liquid, and fire triggerStep when the sequence ends.
+		// For tool-select results (indexDelta === 0) we do NOT clear
+		// pipette state -- the per-event branches above already handled
+		// those before we got here.
+		if (activeStep && result.indexDelta === 1) {
+			gameState.selectedTool = null;
+			gameState.heldLiquid = null;
+			gameState.interactionIndex += result.indexDelta;
+			if (gameState.interactionIndex >= interactions.length) {
+				triggerStep(activeStep.id);
+			}
+			renderGame();
+			return;
+		}
+		gameState.selectedTool = canonicalTool(gameState.selectedTool);
+		renderGame();
+		return;
+	}
+
+	// result.kind === 'error' or other error states
+	if (result.kind === 'error') {
+		showNotification(result.hint);
+		return;
+	}
+
+	// No match via new resolver; fall through to legacy code
+	renderGame();
+}
+
+// ============================================
+export function onItemClick(itemId: string): void {
+	// Route clicks through interaction_resolver for steps with interactionSequence
+	const activeStep = getCurrentStep();
+	if (activeStep && activeStep.completionPath && activeStep.completionPath.kind === 'interactionSequence') {
+		dispatchInteractionClick(itemId);
+		return;
+	}
+
+	// Legacy path for steps without interactionSequence
+	// Old resolver code kept for compatibility with existing steps
+	if (activeStep) {
 		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 		const cleanTool = canonicalTool(gameState.selectedTool);
 		const result = resolveInteraction({
@@ -386,14 +856,14 @@ export function onItemClick(itemId: string): void {
 					colorKey: colorKey,
 				};
 			}
-			// Set legacy _with_X token from result so existing downstream code keeps working.
-			// Build the token using the actual actor from the resolver result,
+			// Set legacy _with_X token from the load result so existing downstream code keeps working.
+			// Build the token using the actual tool id from the resolver result,
 			// not just hardcoded serological_pipette.
-			const actor = result.resultActor || 'serological_pipette';
-			const legacyToken = result.resultLiquid === 'pbs'     ? `${actor}_with_pbs`
-						  : result.resultLiquid === 'trypsin' ? `${actor}_with_trypsin`
-						  : result.resultLiquid === 'media'   ? `${actor}_with_media`
-						  : result.resultLiquid === 'cells'   ? `${actor}_with_cells`
+			const tool = result.resultActor || 'serological_pipette';
+			const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
+						  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
+						  : result.resultLiquid === 'media'   ? `${tool}_with_media`
+						  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
 						  : null;
 			if (legacyToken) {
 				gameState.selectedTool = legacyToken;
@@ -408,10 +878,10 @@ export function onItemClick(itemId: string): void {
 			}
 			// Unknown liquid; fall through to legacy.
 		} else if (result.kind === 'discharge') {
-			// For discharge, dispatch based on the event name to call
+			// For discharge, dispatch based on the completion event name to call
 			// the appropriate handler logic.
-			if (activeStep && activeStep.id && result.event) {
-				if (result.event === 'spray_ethanol') {
+			if (activeStep && activeStep.id && result.completionEvent) {
+				if (result.completionEvent === 'spray_ethanol') {
 					gameState.hoodSprayed = true;
 					triggerStep(activeStep.id);
 					showNotification('Sprayed hood with 70% ethanol.', 'success');
@@ -422,7 +892,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'aspirate') {
+				if (result.completionEvent === 'aspirate') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					startAspiration();
@@ -431,7 +901,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'pbs_wash') {
+				if (result.completionEvent === 'pbs_wash') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					gameState.flaskMediaAge = 'fresh';
@@ -442,7 +912,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'pipette_trypsin') {
+				if (result.completionEvent === 'pipette_trypsin') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					gameState.trypsinAdded = true;
@@ -453,7 +923,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'pipette_media') {
+				if (result.completionEvent === 'pipette_media') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
@@ -465,7 +935,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'pipette_to_plate') {
+				if (result.completionEvent === 'pipette_to_plate') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					gameState.wellPlate.forEach(well => {
@@ -479,19 +949,19 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'centrifuge') {
+				if (result.completionEvent === 'centrifuge') {
 					gameState.flaskMediaMl = 0;
 					gameState.flaskMediaAge = 'old';
 					triggerStep(activeStep.id);
 					showNotification('Cells centrifuged.', 'success');
 					return;
 				}
-				if (result.event === 'prewarm') {
+				if (result.completionEvent === 'prewarm') {
 					triggerStep(activeStep.id);
 					showNotification('Media warmed.', 'success');
 					return;
 				}
-				if (result.event === 'media_adjust') {
+				if (result.completionEvent === 'media_adjust') {
 					gameState.selectedTool = null;
 					gameState.heldLiquid = null;
 					triggerStep(activeStep.id);
@@ -501,7 +971,7 @@ export function onItemClick(itemId: string): void {
 					renderScoreDisplay();
 					return;
 				}
-				if (result.event === 'resuspend') {
+				if (result.completionEvent === 'resuspend') {
 					gameState.selectedTool = null;
 					startAddingMedia();
 					renderHoodScene();
@@ -952,7 +1422,7 @@ export function getAvailableActions(): string[] {
 			actions.push('Pick up the multichannel pipette, click the drug vials, click the 24-well plate, then click Prepare intermediate stock');
 			break;
 		case 'carb_low_range':
-			actions.push('Click the Half-log dilution option in the carboplatin modal');
+			actions.push('Pick up the micropipette, load from the intermediate, discharge to rows B-F with media');
 			break;
 		case 'carb_high_range':
 			actions.push('Click Prepare high-range stocks in the carboplatin modal');
