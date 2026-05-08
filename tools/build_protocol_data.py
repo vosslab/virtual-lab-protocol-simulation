@@ -11,6 +11,7 @@ import sys
 import subprocess
 import argparse
 import pathlib
+import re
 
 import yaml
 
@@ -137,8 +138,547 @@ def validate_reagents(reagents):
 			raise ValueError(f"Reagent '{reagent_id}': missing 'displayColor'")
 
 
+#============================================
+# Completion path parsing (SP-K2a)
+#============================================
+
+def parse_completion_path(step, items, reagents):
+	"""
+	Parse the completionPath field from a step's YAML.
+
+	If no completionPath is present, returns None (legacy path is used).
+	If completionPath is present, parses it according to its kind discriminator
+	and returns a dict suitable for emitting to TypeScript.
+
+	Raises ValueError on invalid kind or missing required fields.
+	"""
+	if 'completionPath' not in step:
+		return None
+
+	cp = step['completionPath']
+	if not isinstance(cp, dict):
+		raise ValueError(f"Step '{step['id']}': completionPath must be a dict")
+
+	if 'kind' not in cp:
+		raise ValueError(f"Step '{step['id']}': completionPath missing 'kind'")
+
+	kind = cp['kind']
+
+	if kind == 'interactionSequence':
+		if 'interactions' not in cp:
+			raise ValueError(f"Step '{step['id']}': completionPath with kind 'interactionSequence' missing 'interactions'")
+		interactions = cp['interactions']
+		if not isinstance(interactions, list):
+			raise ValueError(f"Step '{step['id']}': completionPath.interactions must be a list")
+		return {
+			'kind': 'interactionSequence',
+			'interactions': interactions,
+		}
+
+	elif kind == 'directTool':
+		if 'tool' not in cp:
+			raise ValueError(f"Step '{step['id']}': completionPath with kind 'directTool' missing 'tool'")
+		if 'completionEvent' not in cp:
+			raise ValueError(f"Step '{step['id']}': completionPath with kind 'directTool' missing 'completionEvent'")
+		return {
+			'kind': 'directTool',
+			'tool': cp['tool'],
+			'completionEvent': cp['completionEvent'],
+		}
+
+	elif kind == 'modal':
+		# openClick is optional: if omitted, the modal is assumed to be already open
+		# from the previous step's completionEvent (for split hybrid steps).
+		if 'advanceClick' not in cp:
+			raise ValueError(f"Step '{step['id']}': completionPath with kind 'modal' missing 'advanceClick'")
+		if 'completionEvent' not in cp:
+			raise ValueError(f"Step '{step['id']}': completionPath with kind 'modal' missing 'completionEvent'")
+		result = {
+			'kind': 'modal',
+			'advanceClick': cp['advanceClick'],
+			'completionEvent': cp['completionEvent'],
+		}
+		# Only include openClick if it's present and non-empty
+		if 'openClick' in cp and cp['openClick']:
+			result['openClick'] = cp['openClick']
+		return result
+
+	else:
+		raise ValueError(f"Step '{step['id']}': completionPath kind '{kind}' not in ['interactionSequence', 'directTool', 'modal']")
+
+
+#============================================
+
+
+def derive_used_items(step):
+	"""
+	Derive the list of items used in a step by walking interactionSequence.
+
+	For each interaction, appends ids in order: tool, source, destination.
+	First occurrence wins (de-duplication). Missing fields are skipped.
+	Returns a list of de-duplicated item ids.
+	"""
+	used = []
+	seen = set()
+
+	interactions = step.get('interactionSequence', [])
+	for interaction in interactions:
+		# Append in inner order: tool, source, destination
+		for field in ['tool', 'source', 'destination']:
+			item_id = interaction.get(field)
+			if item_id and item_id not in seen:
+				used.append(item_id)
+				seen.add(item_id)
+
+	return used
+
+
+#============================================
+
+
+def validate_no_discharge_without_load(step, items):
+	"""
+	Rule 1: Discharge interaction with liquid set but no preceding load
+	with matching tool and liquid.
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	interactions = step.get('interactionSequence', [])
+
+	# Build a map of (tool, liquid) -> interaction index for all load interactions
+	loads = {}
+	for idx, interaction in enumerate(interactions):
+		if 'source' in interaction and 'liquid' in interaction and 'destination' not in interaction:
+			# This is a load interaction
+			tool = interaction.get('tool')
+			liquid = interaction.get('liquid')
+			loads[(tool, liquid)] = idx
+
+	# Check discharge interactions
+	for idx, interaction in enumerate(interactions):
+		if 'destination' in interaction and 'liquid' in interaction and 'source' not in interaction:
+			# This is a discharge interaction
+			tool = interaction.get('tool')
+			liquid = interaction.get('liquid')
+			if (tool, liquid) not in loads or loads[(tool, liquid)] >= idx:
+				raise ValueError(
+					f"Step '{step_id}' interaction {idx}: discharge with liquid '{liquid}' "
+					f"has no preceding load with matching tool '{tool}'."
+				)
+
+
+#============================================
+
+
+def validate_volume_sanity(step, items):
+	"""
+	Rule 2: Volume sanity violation (consumesVolumeMl exceeds the matching
+	load's volumeMl).
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	interactions = step.get('interactionSequence', [])
+
+	# Build a map of (tool, liquid) -> volumeMl for all load interactions
+	loads = {}
+	for idx, interaction in enumerate(interactions):
+		if 'source' in interaction and 'liquid' in interaction:
+			tool = interaction.get('tool')
+			liquid = interaction.get('liquid')
+			volume_ml = interaction.get('volumeMl')
+			if volume_ml:
+				loads[(tool, liquid)] = volume_ml
+
+	# Check discharge interactions for consumesVolumeMl
+	for idx, interaction in enumerate(interactions):
+		if 'destination' in interaction and 'liquid' in interaction:
+			tool = interaction.get('tool')
+			liquid = interaction.get('liquid')
+			consumes = interaction.get('consumesVolumeMl')
+			if consumes:
+				load_volume = loads.get((tool, liquid))
+				if load_volume and consumes > load_volume:
+					raise ValueError(
+						f"Step '{step_id}' interaction {idx}: consumesVolumeMl {consumes} "
+						f"exceeds load volumeMl {load_volume} for tool '{tool}' liquid '{liquid}'."
+					)
+
+
+#============================================
+
+
+def validate_item_reagent_references(step, items, reagents):
+	"""
+	Rule 3: Interaction referencing items/reagents not in items.yaml/reagents.yaml.
+
+	Validates that all tool, source, destination, and liquid fields in interactionSequence
+	reference items/reagents that exist in the provided items and reagents dicts.
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	item_ids = set(items.keys())
+	reagent_ids = set(reagents.keys())
+
+	interactions = step.get('interactionSequence', [])
+	for idx, interaction in enumerate(interactions):
+		# Validate tool exists
+		if 'tool' in interaction:
+			tool = interaction['tool']
+			if tool not in item_ids:
+				raise ValueError(
+					f"Step '{step_id}': interactionSequence[{idx}] tool '{tool}' not in inventory"
+				)
+
+		# Validate source exists if present
+		if 'source' in interaction:
+			source = interaction['source']
+			if source not in item_ids:
+				raise ValueError(
+					f"Step '{step_id}': interactionSequence[{idx}] source '{source}' not in inventory"
+				)
+
+		# Validate destination exists if present
+		if 'destination' in interaction:
+			destination = interaction['destination']
+			if destination not in item_ids:
+				raise ValueError(
+					f"Step '{step_id}': interactionSequence[{idx}] destination '{destination}' not in inventory"
+				)
+
+		# Validate liquid exists if present
+		if 'liquid' in interaction:
+			liquid = interaction['liquid']
+			if liquid not in reagent_ids:
+				raise ValueError(
+					f"Step '{step_id}': interactionSequence[{idx}] liquid '{liquid}' not in reagents"
+				)
+
+
+#============================================
+
+
+def validate_completion_event_placement(step):
+	"""
+	Rule 4: Completion-event placement:
+	- More than one interaction with completionEvent, OR
+	- The only completionEvent is not on the final interaction.
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	interactions = step.get('interactionSequence', [])
+
+	completion_indices = []
+	for idx, interaction in enumerate(interactions):
+		if 'completionEvent' in interaction:
+			completion_indices.append(idx)
+
+	if len(completion_indices) > 1:
+		raise ValueError(
+			f"Step '{step_id}': more than one interaction has completionEvent."
+		)
+
+	if completion_indices:
+		final_idx = len(interactions) - 1
+		if completion_indices[0] != final_idx:
+			raise ValueError(
+				f"Step '{step_id}': completionEvent is not on the final interaction."
+			)
+
+
+#============================================
+
+
+def validate_tool_first(step):
+	"""
+	Rule 5: Tool-first violation:
+	Any interaction that has source, destination, liquid, or stateChange
+	must declare tool. Exception: direct: true (allowed for items like
+	opening an incubator door).
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	interactions = step.get('interactionSequence', [])
+
+	for idx, interaction in enumerate(interactions):
+		has_tool = 'tool' in interaction
+		is_direct = interaction.get('direct', False)
+		has_complex_field = (
+			'source' in interaction or
+			'destination' in interaction or
+			'liquid' in interaction or
+			'stateChange' in interaction
+		)
+
+		if has_complex_field and not has_tool and not is_direct:
+			raise ValueError(
+				f"Step '{step_id}' interaction {idx}: interaction has source/destination/liquid/stateChange "
+				f"but no tool and direct is not true."
+			)
+
+
+#============================================
+
+
+def validate_no_legacy_fields(step):
+	"""
+	Rule 6: Legacy field present in author YAML
+	(actor/target/result/event/trigger/allowedInteractions/targetItems/requiredAction).
+
+	Note: the banned field is bare `trigger`, NOT `completionTrigger` which is the
+	new canonical step-level listener. Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	legacy_fields = {
+		'actor', 'target', 'result', 'event', 'trigger',
+		'allowedInteractions', 'targetItems', 'requiredAction'
+	}
+
+	found_legacy = legacy_fields & set(step.keys())
+	if found_legacy:
+		raise ValueError(
+			f"Step '{step_id}': contains legacy fields: {found_legacy}. "
+			f"Please remove: {', '.join(sorted(found_legacy))}."
+		)
+
+
+#============================================
+
+
+def validate_no_virtual_target_destinations(step, items):
+	"""
+	Rule 7: virtual_target items must not be used as interaction.destination.
+
+	Walks every interaction in the step's interactionSequence, looks up each
+	destination in items, and raises if the destination item has role virtual_target.
+
+	Use a direct tool interaction (tool + completionEvent, no destination) instead.
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	interactions = step.get('interactionSequence', [])
+
+	for idx, interaction in enumerate(interactions):
+		if 'destination' not in interaction:
+			continue
+
+		destination = interaction['destination']
+		if destination not in items:
+			# This should be caught by Rule 3, so skip here
+			continue
+
+		dest_item = items[destination]
+		dest_role = dest_item.get('role')
+
+		if dest_role == 'virtual_target':
+			raise ValueError(
+				f"Step '{step_id}' interaction {idx}: destination '{destination}' "
+				f"has role 'virtual_target' and cannot be used as a click target. "
+				f"Use a direct tool interaction (tool + completionEvent, no destination) instead."
+			)
+
+
+#============================================
+
+
+def validate_completion_path_contract(step, items, reagents):
+	"""
+	Rule 8: Enforce the completionPath contract.
+
+	Validates:
+	(a) completionPath is required on every step
+	(b) completionPath.kind is one of: interactionSequence, directTool, modal
+	(c) For kind: interactionSequence:
+	    - interactions is a non-empty list
+	    - Banned fields: tool, openClick, advanceClick, completionEvent at kind-block level
+	(d) For kind: directTool:
+	    - tool is a non-empty string and resolves to items.yaml
+	    - completionEvent is a non-empty string (no 'click:' prefix)
+	    - Banned fields: interactions, openClick, advanceClick
+	(e) For kind: modal:
+	    - openClick is a non-empty string and resolves to items.yaml
+	    - advanceClick is a non-empty kebab-case string (regex: ^[a-z][a-z0-9-]*$)
+	    - completionEvent is a non-empty string (no 'click:' prefix)
+	    - Banned fields: interactions, tool
+	(f) Reject legacy top-level interactionSequence field
+	(g) Reject author-written completionTrigger and targetItems (derived fields)
+
+	Raises ValueError on violation.
+	"""
+	step_id = step['id']
+	item_ids = set(items.keys())
+
+	# (a) completionPath is required
+	if 'completionPath' not in step:
+		raise ValueError(
+			f"Step '{step_id}': missing required completionPath block"
+		)
+
+	cp = step['completionPath']
+	if not isinstance(cp, dict):
+		raise ValueError(f"Step '{step_id}': completionPath must be a dict")
+
+	# (b) kind must be one of the three allowed values
+	if 'kind' not in cp:
+		raise ValueError(f"Step '{step_id}': completionPath missing 'kind'")
+
+	kind = cp['kind']
+	allowed_kinds = {'interactionSequence', 'directTool', 'modal'}
+	if kind not in allowed_kinds:
+		raise ValueError(
+			f"Step '{step_id}': completionPath kind '{kind}' not in {allowed_kinds}"
+		)
+
+	# (c) For kind: interactionSequence
+	if kind == 'interactionSequence':
+		if 'interactions' not in cp:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'interactionSequence' missing 'interactions'"
+			)
+		interactions = cp['interactions']
+		if not isinstance(interactions, list) or len(interactions) == 0:
+			raise ValueError(
+				f"Step '{step_id}': completionPath.interactions must be a non-empty list"
+			)
+		# Check banned fields at kind-block level
+		banned_at_kind = {'tool', 'openClick', 'advanceClick', 'completionEvent'}
+		found_banned = banned_at_kind & set(cp.keys())
+		if found_banned:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'interactionSequence' has banned fields: {found_banned}"
+			)
+		# Validate interactions with existing rules
+		validate_step_interactions(step, items, reagents)
+
+	# (d) For kind: directTool
+	elif kind == 'directTool':
+		if 'tool' not in cp or not cp['tool']:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'directTool' missing or empty 'tool'"
+			)
+		tool = cp['tool']
+		if tool not in item_ids:
+			raise ValueError(
+				f"Step '{step_id}': completionPath.tool '{tool}' not in inventory"
+			)
+		if 'completionEvent' not in cp or not cp['completionEvent']:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'directTool' missing or empty 'completionEvent'"
+			)
+		completion_event = cp['completionEvent']
+		if completion_event.startswith('click:'):
+			raise ValueError(
+				f"Step '{step_id}': completionPath.completionEvent '{completion_event}' must not start with 'click:'"
+			)
+		# Check banned fields
+		banned_at_kind = {'interactions', 'openClick', 'advanceClick'}
+		found_banned = banned_at_kind & set(cp.keys())
+		if found_banned:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'directTool' has banned fields: {found_banned}"
+			)
+
+	# (e) For kind: modal
+	elif kind == 'modal':
+		# openClick is optional: if omitted, the modal is assumed to be already open
+		# from the previous step's completionEvent (for split hybrid steps).
+		if 'openClick' in cp and cp['openClick']:
+			open_click = cp['openClick']
+			if open_click not in item_ids:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.openClick '{open_click}' not in inventory"
+				)
+		if 'advanceClick' not in cp or not cp['advanceClick']:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'modal' missing or empty 'advanceClick'"
+			)
+		advance_click = cp['advanceClick']
+		# Validate advanceClick is kebab-case
+		kebab_pattern = r'^[a-z][a-z0-9-]*$'
+		if not re.match(kebab_pattern, advance_click):
+			raise ValueError(
+				f"Step '{step_id}': completionPath.advanceClick '{advance_click}' must be kebab-case (^[a-z][a-z0-9-]*$)"
+			)
+		if 'completionEvent' not in cp or not cp['completionEvent']:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'modal' missing or empty 'completionEvent'"
+			)
+		completion_event = cp['completionEvent']
+		if completion_event.startswith('click:'):
+			raise ValueError(
+				f"Step '{step_id}': completionPath.completionEvent '{completion_event}' must not start with 'click:'"
+			)
+		# Check banned fields
+		banned_at_kind = {'interactions', 'tool'}
+		found_banned = banned_at_kind & set(cp.keys())
+		if found_banned:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'modal' has banned fields: {found_banned}"
+			)
+
+	# (f) Reject legacy top-level interactionSequence
+	if 'interactionSequence' in step:
+		raise ValueError(
+			f"Step '{step_id}': legacy top-level `interactionSequence` field is not allowed; move under completionPath"
+		)
+
+	# (g) Reject author-written completionTrigger and targetItems
+	if 'completionTrigger' in step:
+		raise ValueError(
+			f"Step '{step_id}': `completionTrigger` is build-derived; do not author"
+		)
+	if 'targetItems' in step:
+		raise ValueError(
+			f"Step '{step_id}': `targetItems` is build-derived (`usedItems`); do not author"
+		)
+
+
+def validate_step_interactions(step, items, reagents):
+	"""
+	Validate step interactions against all seven rules.
+
+	Raises on any violation with a clear message naming the step id and rule.
+	"""
+	# Rule 1: No discharge without preceding load
+	validate_no_discharge_without_load(step, items)
+
+	# Rule 2: Volume sanity
+	validate_volume_sanity(step, items)
+
+	# Rule 3: Item/reagent references (already validated in validate_steps)
+	validate_item_reagent_references(step, items, reagents)
+
+	# Rule 4: Completion event placement
+	validate_completion_event_placement(step)
+
+	# Rule 5: Tool-first
+	validate_tool_first(step)
+
+	# Rule 6: No legacy fields
+	validate_no_legacy_fields(step)
+
+	# Rule 7: virtual_target as destination forbidden
+	validate_no_virtual_target_destinations(step, items)
+
+
+#============================================
+
+
 def validate_steps(steps, items, reagents, parts, days):
-	"""Validate all protocol steps. Raises on validation failure."""
+	"""
+	Validate all protocol steps.
+
+	Delegates to validate_step_interactions(step, items, reagents) which
+	enumerates the seven validation rules: (1) no discharge without load,
+	(2) volume sanity, (3) item/reagent references, (4) completion-event
+	placement, (5) tool-first, (6) no legacy fields, (7) no virtual_target
+	destinations. Raises ValueError on any violation.
+	"""
 	part_ids = {p['id'] for p in parts}
 	day_ids = {d['id'] for d in days}
 	item_ids = set(items.keys())
@@ -166,7 +706,7 @@ def validate_steps(steps, items, reagents, parts, days):
 
 		# Check required fields
 		required = ['label', 'action', 'why', 'partId', 'dayId', 'stepIndex',
-				'requiredItems', 'targetItems', 'scene', 'requiredAction', 'nextId']
+				'requiredItems', 'scene', 'nextId']
 		for field in required:
 			if field not in step:
 				raise ValueError(f"Step '{step_id}': missing '{field}'")
@@ -191,20 +731,6 @@ def validate_steps(steps, items, reagents, parts, days):
 					f"Step '{step_id}': requiredItem '{item_id}' not in inventory"
 				)
 
-		# Validate targetItems exist and have matching scene or are virtual
-		for item_id in step['targetItems']:
-			if item_id not in item_ids:
-				raise ValueError(
-					f"Step '{step_id}': targetItem '{item_id}' not in inventory"
-				)
-			item_def = items[item_id]
-			item_scene = item_def.get('scene')
-			# Allow virtual_target items or items with matching scene
-			if item_def.get('role') != 'virtual_target' and item_scene != scene:
-				if scene != 'bench' or item_scene not in ('bench', 'virtual'):
-					if scene != 'hood' or item_scene not in ('hood', 'virtual'):
-						pass  # Scene mismatch; may be OK for virtual targets
-
 		# Validate modal field if present
 		if 'modal' in step:
 			modal = step['modal']
@@ -220,68 +746,71 @@ def validate_steps(steps, items, reagents, parts, days):
 					f"Step '{step_id}': modal.owner '{owner}' not in {valid_modal_owners}"
 				)
 
-		# Validate allowedInteractions field if present
-		if 'allowedInteractions' in step:
-			interactions = step['allowedInteractions']
+		# Rule 8: Validate completionPath contract (SP-K2c)
+		validate_completion_path_contract(step, items, reagents)
+
+		# Validate interactionSequence field if present (for legacy/hybrid steps)
+		if 'interactionSequence' in step:
+			interactions = step['interactionSequence']
 			if not isinstance(interactions, list):
-				raise ValueError(f"Step '{step_id}': allowedInteractions must be a list")
+				raise ValueError(f"Step '{step_id}': interactionSequence must be a list")
 			for idx, interaction in enumerate(interactions):
 				if not isinstance(interaction, dict):
 					raise ValueError(
-						f"Step '{step_id}': allowedInteractions[{idx}] is not a dict"
+						f"Step '{step_id}': interactionSequence[{idx}] is not a dict"
 					)
-				# Validate actor exists
-				if 'actor' not in interaction:
+				# Validate tool field exists
+				if 'tool' not in interaction:
 					raise ValueError(
-						f"Step '{step_id}': allowedInteractions[{idx}] missing 'actor'"
+						f"Step '{step_id}': interactionSequence[{idx}] missing 'tool'"
 					)
-				actor = interaction['actor']
-				if actor not in item_ids:
+				tool = interaction['tool']
+				if tool not in item_ids:
 					raise ValueError(
-						f"Step '{step_id}': allowedInteractions[{idx}] actor '{actor}' not in inventory"
+						f"Step '{step_id}': interactionSequence[{idx}] tool '{tool}' not in inventory"
 					)
 				# Validate source exists if present
 				if 'source' in interaction:
 					source = interaction['source']
 					if source not in item_ids:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] source '{source}' not in inventory"
+							f"Step '{step_id}': interactionSequence[{idx}] source '{source}' not in inventory"
 						)
 					source_item = items[source]
 					source_role = source_item.get('role')
 					valid_source_roles = {'reagent_source', 'cell_container', 'culture_vessel'}
 					if source_role not in valid_source_roles:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] source '{source}' has role '{source_role}', expected one of {valid_source_roles}"
+							f"Step '{step_id}': interactionSequence[{idx}] source '{source}' has role '{source_role}', expected one of {valid_source_roles}"
 						)
-				# Validate target exists if present
-				if 'target' in interaction:
-					target = interaction['target']
-					if target not in item_ids:
+				# Validate destination exists if present
+				if 'destination' in interaction:
+					destination = interaction['destination']
+					if destination not in item_ids:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] target '{target}' not in inventory"
+							f"Step '{step_id}': interactionSequence[{idx}] destination '{destination}' not in inventory"
 						)
-					target_item = items[target]
-					target_role = target_item.get('role')
-					valid_target_roles = {'cell_container', 'culture_vessel', 'waste_target', 'virtual_target', 'instrument'}
-					if target_role not in valid_target_roles:
+					destination_item = items[destination]
+					destination_role = destination_item.get('role')
+					valid_destination_roles = {'cell_container', 'culture_vessel', 'waste_target', 'virtual_target', 'instrument'}
+					if destination_role not in valid_destination_roles:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] target '{target}' has role '{target_role}', expected one of {valid_target_roles}"
+							f"Step '{step_id}': interactionSequence[{idx}] destination '{destination}' has role '{destination_role}', expected one of {valid_destination_roles}"
 						)
 				# Validate liquid exists if present
 				if 'liquid' in interaction:
 					liquid = interaction['liquid']
 					if liquid not in reagent_ids:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] liquid '{liquid}' not in reagents"
+							f"Step '{step_id}': interactionSequence[{idx}] liquid '{liquid}' not in reagents"
 						)
-					# Validate that actor allows this liquid
-					actor_item = items[actor]
-					if actor_item.get('liquidCapable'):
-						allowed_liquids = actor_item.get('allowedLiquids', [])
+					# Validate that the tool allows this liquid
+					tool_item = items[tool]
+					if tool_item.get('liquidCapable'):
+						allowed_liquids = tool_item.get('allowedLiquids', [])
 						if liquid not in allowed_liquids:
 							raise ValueError(
-								f"Step '{step_id}': allowedInteractions[{idx}] actor '{actor}' does not allow liquid '{liquid}'"
+								f"Step '{step_id}': interactionSequence[{idx}] tool '{tool}' does not allow liquid '{liquid}'"
 							)
 					# Validate that source contains this liquid if source is present
 					if 'source' in interaction:
@@ -290,33 +819,36 @@ def validate_steps(steps, items, reagents, parts, days):
 						source_contains_any = source_item.get('containsAny', [])
 						if source_contains and source_contains != liquid:
 							raise ValueError(
-								f"Step '{step_id}': allowedInteractions[{idx}] source '{interaction['source']}' contains '{source_contains}', not '{liquid}'"
+								f"Step '{step_id}': interactionSequence[{idx}] source '{interaction['source']}' contains '{source_contains}', not '{liquid}'"
 							)
 						if source_contains_any and liquid not in source_contains_any:
 							if not source_contains or source_contains != liquid:
 								raise ValueError(
-									f"Step '{step_id}': allowedInteractions[{idx}] source '{interaction['source']}' does not contain '{liquid}'"
+									f"Step '{step_id}': interactionSequence[{idx}] source '{interaction['source']}' does not contain '{liquid}'"
 								)
 				# Validate volumeMl if present
 				if 'volumeMl' in interaction:
 					volume_ml = interaction['volumeMl']
-					actor_item = items[actor]
-					if actor_item.get('liquidCapable'):
-						capacity = actor_item.get('capacityMl', 0)
+					tool_item = items[tool]
+					if tool_item.get('liquidCapable'):
+						capacity = tool_item.get('capacityMl', 0)
 						if volume_ml > capacity:
 							raise ValueError(
-								f"Step '{step_id}': allowedInteractions[{idx}] volumeMl {volume_ml} exceeds actor '{actor}' capacity {capacity}"
+								f"Step '{step_id}': interactionSequence[{idx}] volumeMl {volume_ml} exceeds tool '{tool}' capacity {capacity}"
 							)
-				# Validate event matches trigger event if present
-				if 'event' in interaction and 'trigger' in step:
-					trigger_event = step['trigger'].get('event', '')
+				# Validate completionEvent matches completionTrigger if both present
+				if 'completionEvent' in interaction and 'completionTrigger' in step:
+					trigger_event = step['completionTrigger'].get('completionEvent', '')
 					# Strip prefixes like 'click:' and 'modal_ok:'
 					trigger_event_stripped = trigger_event.split(':', 1)[-1] if ':' in trigger_event else trigger_event
-					interaction_event = interaction['event']
+					interaction_event = interaction['completionEvent']
 					if interaction_event != trigger_event_stripped:
 						raise ValueError(
-							f"Step '{step_id}': allowedInteractions[{idx}] event '{interaction_event}' does not match trigger event '{trigger_event_stripped}'"
+							f"Step '{step_id}': interactionSequence[{idx}] completionEvent '{interaction_event}' does not match completionTrigger event '{trigger_event_stripped}'"
 						)
+
+		# Validate step interactions against all six rules
+		validate_step_interactions(step, items, reagents)
 
 	# Check nextId chain
 	if not first_step_id:
@@ -397,12 +929,45 @@ def object_to_ts_literal(obj):
 	return '{ ' + ', '.join(items) + ' }'
 
 
-def generate_protocol_data(steps, parts, days):
+def discover_protocols(repo_root):
+	"""Discover available protocols by globbing src/content/*/protocol.yaml."""
+	content_dir = repo_root / 'src' / 'content'
+	if not content_dir.is_dir():
+		return []
+
+	protocols = []
+	for subdir in content_dir.iterdir():
+		if subdir.is_dir():
+			protocol_yaml = subdir / 'protocol.yaml'
+			if protocol_yaml.exists():
+				protocols.append(subdir.name)
+
+	return sorted(protocols)
+
+
+#============================================
+
+
+def generate_protocol_data(steps, parts, days, protocol_name='cell_culture'):
 	"""Generate TypeScript code for protocol_data.ts."""
 	lines = [
-		'// AUTO-GENERATED by tools/build_protocol_data.py from content/<protocol>/*.yaml. DO NOT EDIT BY HAND.',
+		f'// AUTO-GENERATED by tools/build_protocol_data.py from content/{protocol_name}/*.yaml. DO NOT EDIT BY HAND.',
 		'',
-		'import { ProtocolStep, ProtocolPart, ProtocolDay } from "./constants";',
+		'import type { ProtocolStep } from "../constants";',
+		'',
+		'',
+		f'export const PROTOCOL_ID = "{protocol_name}";',
+		'',
+		'export interface ProtocolPart {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'\tdayId: string;',
+		'}',
+		'',
+		'export interface ProtocolDay {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'}',
 		'',
 	]
 
@@ -413,6 +978,9 @@ def generate_protocol_data(steps, parts, days):
 		for key in sorted(step.keys()):
 			value = step[key]
 			lines.append(f'\t\t{key}: {to_ts_value(value)},')
+		# Append derived usedItems
+		used_items = derive_used_items(step)
+		lines.append(f'\t\tusedItems: {to_ts_value(used_items)},')
 		lines.append('\t},')
 	lines.append('];')
 	lines.append('')
@@ -436,10 +1004,10 @@ def generate_protocol_data(steps, parts, days):
 	return '\n'.join(lines)
 
 
-def generate_inventory_data(items, reagents):
+def generate_inventory_data(items, reagents, protocol_name='cell_culture'):
 	"""Generate TypeScript code for inventory_data.ts."""
 	lines = [
-		'// AUTO-GENERATED by tools/build_protocol_data.py from content/<protocol>/*.yaml. DO NOT EDIT BY HAND.',
+		f'// AUTO-GENERATED by tools/build_protocol_data.py from content/{protocol_name}/*.yaml. DO NOT EDIT BY HAND.',
 		'',
 		'export interface InventoryItem {',
 		'\tlabel: string;',
@@ -482,22 +1050,37 @@ def main():
 	parser = argparse.ArgumentParser(
 		description='Compile protocol YAML to TypeScript data exports.'
 	)
-	parser.add_argument(
-		'--protocol',
+	group = parser.add_mutually_exclusive_group()
+	group.add_argument(
+		'-p', '--protocol',
+		dest='protocol',
 		default='cell_culture',
 		help='Protocol name for multi-protocol support (default: cell_culture).',
 	)
-	parser.add_argument(
-		'--check',
+	group.add_argument(
+		'-l', '--list-protocols',
+		dest='list_protocols',
 		action='store_true',
-		help='Validate only; do not write output files.',
+		help='List available protocols and exit.',
+	)
+	parser.add_argument(
+		'--validate-only',
+		action='store_true',
+		help='Validate only; do not regenerate output files.',
 	)
 	args = parser.parse_args()
 
 	repo_root = get_repo_root()
 
+	# Handle --list-protocols
+	if args.list_protocols:
+		protocols = discover_protocols(repo_root)
+		for p in protocols:
+			print(p)
+		return 0
+
 	# Load YAML files
-	protocol_dir = repo_root / 'content' / args.protocol
+	protocol_dir = repo_root / 'src' / 'content' / args.protocol
 	if not protocol_dir.is_dir():
 		print(f"Error: Protocol directory not found: {protocol_dir}", file=sys.stderr)
 		return 1
@@ -527,16 +1110,62 @@ def main():
 	validate_items(items, repo_root, reagents)
 	validate_steps(steps, items, reagents, parts, days)
 
-	if args.check:
+	if args.validate_only:
 		print("Validation passed.")
 		return 0
 
-	# Generate and write output files
-	protocol_data_ts = generate_protocol_data(steps, parts, days)
-	inventory_data_ts = generate_inventory_data(items, reagents)
+	# Parse completionPath for each step (SP-K2a)
+	# If a step has a completionPath in YAML, parse and add it to the step dict.
+	# If no completionPath, leave the step as-is (legacy top-level interactionSequence).
+	for step in steps:
+		cp = parse_completion_path(step, items, reagents)
+		if cp is not None:
+			step['completionPath'] = cp
 
-	protocol_data_path = repo_root / 'parts' / 'protocol_data.ts'
-	inventory_data_path = repo_root / 'parts' / 'inventory_data.ts'
+	# Derive completionTrigger from completionPath (SP-K2b)
+	# The builder synthesizes completionTrigger so the runtime stays unchanged.
+	# For kinds with completionEvent, wrap it with 'click:' prefix.
+	# For interactionSequence, extract the final interaction's completionEvent.
+	for step in steps:
+		if 'completionPath' in step:
+			cp = step['completionPath']
+			kind = cp.get('kind')
+			scene = step.get('scene')
+
+			if kind == 'directTool':
+				# directTool: completionEvent is bare; prefix with 'click:'
+				event = cp.get('completionEvent', '')
+				step['completionTrigger'] = {
+					'scene': scene,
+					'completionEvent': f'click:{event}'
+				}
+			elif kind == 'modal':
+				# modal: completionEvent is bare; prefix with 'click:'
+				event = cp.get('completionEvent', '')
+				step['completionTrigger'] = {
+					'scene': scene,
+					'completionEvent': f'click:{event}'
+				}
+			elif kind == 'interactionSequence':
+				# interactionSequence: extract completionEvent from the final interaction
+				interactions = cp.get('interactions', [])
+				final_event = None
+				for interaction in interactions:
+					if 'completionEvent' in interaction:
+						final_event = interaction['completionEvent']
+				if final_event:
+					step['completionTrigger'] = {
+						'scene': scene,
+						'completionEvent': f'click:{final_event}'
+					}
+
+	# Generate and write output files
+	protocol_data_ts = generate_protocol_data(steps, parts, days, args.protocol)
+	inventory_data_ts = generate_inventory_data(items, reagents, args.protocol)
+
+	# Output files live in src/content/ alongside the source YAML
+	protocol_data_path = repo_root / 'src' / 'content' / 'protocol_data.ts'
+	inventory_data_path = repo_root / 'src' / 'content' / 'inventory_data.ts'
 
 	with open(protocol_data_path, 'w') as f:
 		f.write(protocol_data_ts)

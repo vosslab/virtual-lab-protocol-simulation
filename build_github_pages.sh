@@ -25,6 +25,10 @@ cd "$(git rev-parse --show-toplevel)"
 rm -rf dist
 mkdir -p dist
 
+# Validate protocol YAML before any build steps. This is a fast gate that
+# catches schema and consistency issues early and fails the build cleanly.
+python3 tools/build_protocol_data.py --validate-only
+
 # Regenerate src/svg_globals.ts from assets/equipment/*.svg before tsc.
 # Without this step every SVG_* constant is the empty string and no
 # equipment art renders in the bundled build.

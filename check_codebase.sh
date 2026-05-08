@@ -20,4 +20,4 @@ echo "Type-checking src/ ..."
 npx tsc --noEmit -p src/tsconfig.json
 
 echo "All checks passed."
-echo "(Run 'node devel/test_game_ui.mjs' separately for the browser smoke.)"
+echo "(Run 'node tests/playwright/e2e/test_game_ui.mjs' separately for the browser smoke.)"
