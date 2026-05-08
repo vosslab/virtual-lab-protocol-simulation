@@ -267,6 +267,15 @@ steps:
     nextId: null
 ```
 
+Note on derived fields: the live `tutorial_split/protocol.yaml` snapshot
+above still uses the legacy top-level `interactionSequence` and a
+hand-written `completionTrigger`. The post-SP-K2 author schema wraps
+interactions under `completionPath.kind: interactionSequence` and the
+builder synthesizes `completionTrigger` from `step.scene` and the final
+interaction's `completionEvent`. New steps and any author edits should
+omit `completionTrigger` entirely; see "Step shapes: pick a completion
+path" below.
+
 How the three step shapes break down:
 
 - **Single discharge** (step 1): one interaction with `tool` plus
@@ -279,13 +288,84 @@ How the three step shapes break down:
 In both shapes the click plan is tool-first: the tool is always the
 first DOM element clicked.
 
+## Step shapes: pick a completion path
+
+Every step has exactly one `completionPath`. Before filling in fields,
+pick the `kind` that matches what the player actually does:
+
+1. `interactionSequence` -- the player runs an ordered click flow,
+   typically loading liquid then discharging it.
+2. `directTool` -- the player clicks one item once and the step
+   completes. Covers both hand-tool steps (for example, spraying
+   ethanol with a spray bottle) and instrument-control steps (for
+   example, closing the incubator door, starting the water bath,
+   pressing the plate-reader scan button). The conceptual difference
+   between a hand tool and an instrument lives in the item's `role`
+   in `items.yaml`, not in the completion-path kind.
+3. `modal` -- the player clicks an item to open a modal scene, then
+   clicks an advance control inside the modal (drug-treatment modal,
+   MTT modal, hemocytometer modal). The advance control is matched by
+   its `data-walker-advance` kebab-case attribute, not by an
+   `items.yaml` id. A modal that needs multiple meaningful confirmations
+   decomposes into multiple modal steps.
+
+The three kinds and their required fields are specified in
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md). Pick the kind first,
+then fill in only that kind's fields. Mixing fields across kinds fails
+the validator.
+
+### Worked example: a modal step
+
+For comparison with the `tutorial_split` interactionSequence example
+above, here is a `modal`-shaped step:
+
+```yaml
+- id: add_mtt
+  label: "Add MTT reagent to each well"
+  action: "Add MTT reagent to each well"
+  why: "MTT is the dye used in the cell viability assay."
+  partId: part_read
+  dayId: day4
+  stepIndex: 1
+  scene: bench
+  requiredItems: [well_plate, mtt_vial]
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: mtt-modal-advance
+    completionEvent: add_mtt
+  nextId: incubate_mtt
+```
+
+The walker clicks `well_plate` to open the MTT modal, waits for the
+modal scene, then clicks the element whose `data-walker-advance` attribute
+equals `mtt-modal-advance`. The advance click emits `add_mtt` and completes
+the step. There is no `interactionSequence`, no `tool` first-click, no
+source or destination.
+
+`advanceClick` is a kebab-case string matched against
+`data-walker-advance="<string>"` on a DOM control inside the modal scene
+file (for example, `<button data-walker-advance="mtt-modal-advance">`). It
+is NOT an `items.yaml` id; modal-internal advance buttons are UI controls,
+not protocol items.
+
+`step.completionTrigger` is NOT authored. The builder synthesizes it from
+`step.scene` and `step.completionPath.completionEvent` at build time. The
+validator rejects YAML that writes `completionTrigger` by hand.
+
 ## Per-step authoring checklist
 
 Run through this checklist for every step you write. The validator
 catches most of these, but checking by eye is faster than chasing a
 build error.
 
-- **Tool present.** Every interaction declares `tool`. If `source`,
+- **Pick a completion-path kind first.** Choose
+  `interactionSequence`, `directTool`, or `modal` to match the player
+  experience, then fill only that kind's fields. Instrument-control
+  steps (incubator door, water bath, plate-reader scan button) use
+  `kind: directTool`; the hand-tool-vs-instrument distinction lives
+  in `items.yaml` role, not in completion-path kind.
+- **Tool present (interactionSequence).** Every interaction declares `tool`. If `source`,
   `destination`, `liquid`, or `stateChange` is set, `tool` is required.
 - **Source present where required.** A load interaction (drawing
   liquid from a bottle or container) declares `source` and `liquid`.
@@ -308,13 +388,17 @@ build error.
   and every `tool`, `source`, `destination`, and `contains` value
   exists in `items.yaml`. Every `liquid` value exists in
   `reagents.yaml`.
+- **Do not author derived fields.** `step.usedItems` and
+  `step.completionTrigger` are synthesized by the builder from
+  `step.completionPath` and `step.scene`. Writing either field in
+  author YAML is a validation error.
 - **No banned synonyms.** Do not use `actor`, `target`, `result`,
   `event`, `trigger`, `allowedInteractions`, `targetItems`, or
   `requiredAction`. Use the modern names: `tool`, `destination`,
-  `stateChange`, `completionEvent`, `completionTrigger`,
-  `interactionSequence`, `usedItems` (derived, not authored). The
-  full ban list lives in
-  [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+  `stateChange`, `completionEvent`, `interactionSequence`. Treat
+  `completionTrigger` and `usedItems` as derived: present in the
+  generated TypeScript but never written by hand. The full ban list
+  lives in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
 ## Protocol audit tool
 
@@ -350,9 +434,26 @@ The audit reports four status levels:
 
 The YAML-driven UI walker
 ([tests/protocol_walkthrough_yaml.mjs](../tests/protocol_walkthrough_yaml.mjs))
-plays the protocol through the real DOM. For your protocol to walk
-green, it must satisfy these six MUST-FOLLOW rules and the per-step
-pass criteria below.
+plays the protocol through the real DOM. The walker dispatches on
+`step.completionPath.kind`:
+
+- `interactionSequence` -- iterate `completionPath.interactions` in
+  order; click the tool first, then any source or destination, wait
+  for progress, advance `interactionIndex`. The final interaction's
+  `completionEvent` completes the step.
+- `directTool` -- resolve `completionPath.tool` to a single visible
+  item; click it once; the completion event fires. Same shape for
+  hand tools (ethanol spray) and instrument controls (incubator door,
+  water bath, plate-reader scan button).
+- `modal` -- click `openClick`, wait for the modal scene, click the
+  element whose `data-walker-advance` attribute equals the
+  `advanceClick` string; the completion event fires.
+
+The walker has zero `step.id ===` dispatch. All shape decisions
+flow from the completion-path kind.
+
+For your protocol to walk green, it must satisfy these six
+MUST-FOLLOW rules and the per-step pass criteria below.
 
 The six rules (mirrored from the walker header):
 

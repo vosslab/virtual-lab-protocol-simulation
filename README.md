@@ -7,18 +7,20 @@ drug treatment pipetting, and microscope observation in a guided workflow.
 ## Quick start
 
 ```bash
-bash build_game.sh
+bash export_single_file.sh
 open cell_culture_game.html
 ```
 
-The build script compiles TypeScript source files from `parts/` into a single
-self-contained HTML file. Open it in any modern browser to play.
+The build script compiles TypeScript source files into a single self-contained
+HTML file (rebuilt on demand if missing, and git-ignored). Open it in any
+modern browser to play.
 
 ## Documentation
 
 - [docs/INSTALL.md](docs/INSTALL.md): prerequisites and setup
 - [docs/USAGE.md](docs/USAGE.md): how to build and play
 - [docs/CODE_ARCHITECTURE.md](docs/CODE_ARCHITECTURE.md): system design and data flow
+- [docs/PROTOCOL_AUTHORING_GUIDE.md](docs/PROTOCOL_AUTHORING_GUIDE.md): how to author a new protocol (worked example)
 - [docs/FILE_STRUCTURE.md](docs/FILE_STRUCTURE.md): directory map and file purposes
 - [docs/CHANGELOG.md](docs/CHANGELOG.md): record of changes
 - [docs/AUTHORS.md](docs/AUTHORS.md): maintainers and contributors

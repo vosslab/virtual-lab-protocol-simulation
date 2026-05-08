@@ -20,6 +20,34 @@ npx playwright install
 `npm init -y` and just run `npm install` (to pick up existing deps) followed
 by `npx playwright install`.
 
+### Quick install script
+
+Repos propagated from the starter template ship `devel/setup_playwright.sh`,
+which automates the install end-to-end (chromium only, idempotent):
+
+```bash
+bash devel/setup_playwright.sh
+```
+
+The script installs `@playwright/test` (the test runner) rather than the bare
+`playwright` library. Use it when the repo's tests rely on the test-runner
+fixtures and assertions; use the manual `npm install --save-dev playwright`
+above when the scripts use the library directly (see [Packages](#packages)).
+
+### Shared helper: `repo_root.mjs`
+
+`tests/playwright/repo_root.mjs` is centrally propagated by
+`propagate_style_guides.py`. Do not edit it per-repo. It exports `REPO_ROOT`
+resolved via `git rev-parse --show-toplevel`, so test scripts can compute
+absolute paths without brittle relative-path math:
+
+```javascript
+import { REPO_ROOT } from "./repo_root.mjs";
+import path from "node:path";
+
+const pagePath = path.join(REPO_ROOT, "index.html");
+```
+
 ## Key rule: scripts must run from the project root
 
 Node resolves `import 'playwright'` by searching `node_modules/` starting from the
@@ -49,7 +77,7 @@ Store Playwright scripts in `tests/playwright/` with an `.mjs` extension, for ex
 (`tests/playwright/fixtures/`) live alongside.
 
 Pytest only collects `test_*.py` files and actively excludes `tests/playwright/`
-via `collect_ignore = ["playwright"]` in `tests/conftest.py`, so the extension
+via `collect_ignore = ["e2e", "playwright"]` in `tests/conftest.py`, so the extension
 and subfolder together ensure Playwright scripts stay outside the fast pytest lane.
 
 ## Optional: full-path Playwright walkthroughs

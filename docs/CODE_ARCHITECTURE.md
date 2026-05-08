@@ -5,60 +5,175 @@ Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.
 ## Overview
 
 An interactive browser-based educational simulation that teaches cell culture
-laboratory techniques. The game compiles from TypeScript modules into a single
-self-contained HTML file with no external runtime dependencies. A Python
-development server and Playwright-based test suite support local development.
+laboratory techniques. The game is authored as TypeScript ES modules under
+[src/](../src/) and bundled by esbuild into a browser bundle. Two artifacts
+are produced from the same sources:
+
+- A GitHub Pages-ready directory at [dist/](../dist/) (separate `index.html`,
+  `style.css`, `main.js`).
+- A portable, fully self-contained single-file HTML at
+  [dist-single/game.html](../dist-single/) for sharing without a server.
+
+Protocol content lives as YAML in [src/content/](../src/content/) and is
+compiled into TypeScript modules by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
+before each build. A pytest test suite plus Playwright browser tests support
+local development.
 
 ## Major components
 
-### TypeScript game modules (`src/`)
+### TypeScript game modules ([src/](../src/))
 
-The game logic lives in 12 TypeScript files compiled and concatenated into one
-JavaScript bundle. All declarations are global (no ES module wrapping).
+The game is authored as ES modules. [src/init.ts](../src/init.ts) is the
+single bundle entry point; esbuild walks the import graph and produces one
+JavaScript output. There is no concatenation step.
 
-- [src/constants.ts](../src/constants.ts) - Protocol step definitions,
-  plate layout, scoring weights, and the `ProtocolStep` interface
-- [src/game_state.ts](../src/game_state.ts) - `GameState` interface and
-  well plate initialization
-- [src/cell_model.ts](../src/cell_model.ts) - Cell population model with
-  IC50-style drug response curve
-- [src/svg_assets.ts](../src/svg_assets.ts) - SVG rendering for all visual
-  elements (largest module)
-- [src/scenes/hood.ts](../src/scenes/hood.ts) - Sterile hood interaction
-  scene with click-based tool selection and load/discharge handling
-- [src/scenes/microscope.ts](../src/scenes/microscope.ts) - Cell counting
-  via hemocytometer quadrant selection
-- [src/scenes/incubator.ts](../src/scenes/incubator.ts) - Incubation
-  placement scene
-- [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) - Media aspiration and
-  addition logic with volume validation
-- [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) - Serial dilution
-  series selection (half-log, binary, shallow)
-- [src/ui_rendering.ts](../src/ui_rendering.ts) - Sidebar HUD, warning
-  banner, and score display
-- [src/scoring.ts](../src/scoring.ts) - Final score calculation across
-  four categories (order, cleanliness, waste, timing)
-- [src/init.ts](../src/init.ts) - Bootstrap, protocol validation, and
-  render dispatcher
+#### Core runtime
 
-### Build pipeline (`build_github_pages.sh`)
+- [src/init.ts](../src/init.ts) - Bootstrap, protocol graph validation,
+  completion-event coverage check, render dispatcher.
+- [src/constants.ts](../src/constants.ts) - `ProtocolStep`, `Interaction`,
+  `CompletionPath` types and shared layout constants.
+- [src/types.ts](../src/types.ts) - Shared runtime type definitions.
+- [src/game_state.ts](../src/game_state.ts) - `GameState` interface,
+  initial state, `completeStep()`, mutation helpers.
+- [src/cell_model.ts](../src/cell_model.ts) - Cell population model with an
+  IC50-style drug-response curve.
+- [src/scoring.ts](../src/scoring.ts) - Final score across order,
+  cleanliness, waste, and timing.
 
-[build_github_pages.sh](../build_github_pages.sh) concatenates TypeScript files
-in dependency order, compiles to JavaScript via esbuild (ES2020 target,
-type-stripping only), and assembles the final HTML from
-[src/head.html](../src/head.html), [src/style.css](../src/style.css),
-[src/body.html](../src/body.html), and [src/tail.html](../src/tail.html).
+#### Scenes
 
-### Local development server (`run_web_server.sh`)
+- [src/scenes/bench.ts](../src/scenes/bench.ts) - Bench scene rendering
+  and click handlers.
+- [src/scenes/hood.ts](../src/scenes/hood.ts) - Sterile hood scene; owns
+  `dispatchInteractionClick` and tool selection.
+- [src/scenes/incubator.ts](../src/scenes/incubator.ts) - Incubator
+  placement scene.
+- [src/scenes/microscope.ts](../src/scenes/microscope.ts) - Microscope and
+  plate-reader scenes (cell capture, viability, MTT readout).
 
-[run_web_server.sh](../run_web_server.sh) rebuilds the game via [build_github_pages.sh](../build_github_pages.sh),
-then serves [dist/](../dist/) on a local HTTP port for testing and Playwright automation.
+#### Step modules
 
-### Test suite (`tests/`)
+Per-step UI and emitter logic. Each module registers a completion-event
+emitter via `triggerStep(stepId)`.
 
-pytest-based tests covering code quality (pyflakes, bandit, ASCII compliance,
-import policy, indentation) and an end-to-end Playwright walkthrough that
-exercises the full 9-step protocol.
+- [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) - Media aspirate /
+  add with volume validation.
+- [src/steps/dilution_prep.ts](../src/steps/dilution_prep.ts) - Drug
+  dilution preparation modal.
+- [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) - Drug
+  pipetting flow.
+- [src/steps/mtt_readout.ts](../src/steps/mtt_readout.ts) - MTT plate
+  readout flow.
+- [src/steps/plate_96.ts](../src/steps/plate_96.ts) - 96-well plate
+  rendering.
+
+#### Interaction and dispatch
+
+- [src/interaction_resolver.ts](../src/interaction_resolver.ts) - Resolves
+  the current interaction from `step.completionPath.interactions`.
+- [src/step_dispatch.ts](../src/step_dispatch.ts) - Maps step kind
+  (`interactionSequence` / `directTool` / `modal`) to handlers.
+- [src/protocol_ui.ts](../src/protocol_ui.ts) - Protocol panel rendering
+  (left sidebar).
+- [src/ui_rendering.ts](../src/ui_rendering.ts) - Sidebar HUD, meters,
+  warnings, results screen.
+- [src/professor_overlay.ts](../src/professor_overlay.ts) - In-game hint
+  overlay.
+
+#### Layout and SVG art
+
+- [src/layout_engine.ts](../src/layout_engine.ts) - Per-scene layout
+  computation.
+- [src/bench_config.ts](../src/bench_config.ts), [src/hood_config.ts](../src/hood_config.ts) -
+  Scene-specific layout configs.
+- [src/scene_types.ts](../src/scene_types.ts) - Scene/zone enums and types.
+- [src/style_constants.ts](../src/style_constants.ts) - Color and style
+  tokens used by SVG and DOM rendering.
+- [src/asset_specs.ts](../src/asset_specs.ts), [src/brands.ts](../src/brands.ts) -
+  Asset metadata and brand-name helpers.
+- [src/svg_assets.ts](../src/svg_assets.ts) - SVG composition helpers.
+- [src/svg_overlays.ts](../src/svg_overlays.ts) - Overlay decorations
+  (labels, badges) layered on SVG art.
+- [src/svg_color_patch.ts](../src/svg_color_patch.ts) - Applies
+  `SvgColorPatch[]` to a baked SVG string.
+- [src/svg_recipes.ts](../src/svg_recipes.ts) - Maps semantic state to
+  patch lists (`bottleLiquidPatches`, `T75LiquidVisual`, etc.).
+- [src/svg_globals.ts](../src/svg_globals.ts) - Generated id manifest
+  (regenerated each build; not tracked).
+- [src/svg_globals.d.ts](../src/svg_globals.d.ts) - Type declarations for
+  the generated manifest.
+
+#### Content
+
+- [src/content/cell_culture/](../src/content/cell_culture/) - Active
+  protocol authored as YAML (items, reagents, protocol).
+- [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) and
+  [src/content/tutorial_split/](../src/content/tutorial_split/) - Minimal
+  tutorial protocols.
+- [src/content/protocol_data.ts](../src/content/protocol_data.ts) and
+  [src/content/inventory_data.ts](../src/content/inventory_data.ts) -
+  Generated TypeScript by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
+  (selected with `--protocol <name>`).
+- [src/content/tools.ts](../src/content/tools.ts), [src/content/validate.ts](../src/content/validate.ts) -
+  Build-side helpers that mirror generated data.
+
+### Build pipeline
+
+Two build entry points share a common pre-step:
+
+1. [tools/build_protocol_data.py](../tools/build_protocol_data.py) parses
+   `src/content/<protocol>/*.yaml`, applies the eight schema rules
+   (including the `completionPath` Rule 8), and writes
+   `src/content/protocol_data.ts` + `src/content/inventory_data.ts`. Build
+   scripts run this with `--validate-only` first as a fast gate.
+2. [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) reads
+   `assets/equipment/*.svg`, namespaces ids, and emits
+   [src/svg_globals.ts](../src/svg_globals.ts).
+3. `npx tsc --noEmit -p src/tsconfig.json` type-checks (no JS emit from tsc).
+4. `npx esbuild src/init.ts --bundle ...` produces the JS bundle.
+
+[build_github_pages.sh](../build_github_pages.sh) wipes [dist/](../dist/),
+emits `--format=esm` to `dist/main.js`, copies `style.css`, assembles
+`dist/index.html` from `head.html` + `body.html` + `tail.html` (linking
+the external CSS and JS), and writes `.nojekyll` for GitHub Pages.
+
+[export_single_file.sh](../export_single_file.sh) emits `--format=iife`
+into a temporary `_bundle.js`, inlines `style.css` and the bundle into
+`head.html` + `body.html` + `tail.html`, and writes a portable
+`dist-single/game.html`. The two artifacts are independently buildable;
+neither script touches the other's output directory.
+
+### Local development server
+
+[run_web_server.sh](../run_web_server.sh) runs
+[build_github_pages.sh](../build_github_pages.sh) and serves
+[dist/](../dist/) on a LAN-visible HTTP port (default 5080). This is the
+canonical preview path. Playwright tests bootstrap-build their own
+artifact via [tests/playwright/build_game_if_missing.mjs](../tests/playwright/build_game_if_missing.mjs).
+
+### Test suite ([tests/](../tests/))
+
+Three tiers, isolated by [tests/conftest.py](../tests/conftest.py)
+(`collect_ignore = ["e2e", "playwright"]`):
+
+- **Fast pytest** at the top level: pyflakes, bandit, ASCII compliance,
+  whitespace, indentation, shebangs, import policy, init-file hygiene,
+  protocol YAML validator (eight rules), test naming conventions.
+- **Browser tests** under [tests/playwright/](../tests/playwright/): unit
+  tests run inside a real page (resolver, interaction index, completion
+  event coverage) and the data-layer
+  [protocol_graph_smoke.mjs](../tests/playwright/protocol_graph_smoke.mjs).
+- **Browser walkthroughs** under
+  [tests/playwright/e2e/](../tests/playwright/e2e/): the canonical YAML
+  walker [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs)
+  drives full protocols via DOM clicks; layout/scene checks live
+  alongside.
+- A reserved [tests/e2e/](../tests/e2e/) tree for non-browser shell or
+  Python E2E runners (currently empty).
+
+See [E2E_TESTS.md](E2E_TESTS.md) and [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)
+for tier-specific conventions.
 
 ## Data flow
 
@@ -66,48 +181,48 @@ exercises the full 9-step protocol.
 User input (click)
   |
   v
-Event handlers in scene modules
+Scene event listeners (src/scenes/*.ts)
   |
   v
-updateGameState() mutations on GameState
+dispatchInteractionClick / step-kind handler (src/step_dispatch.ts)
   |
   v
-Validation (volume, interaction sequence, cleanliness)
+GameState mutations (src/game_state.ts)
   |
   v
-warnings[] accumulation (real-time sidebar display)
+Validation (volume, interaction order, cleanliness)
   |
   v
-renderGame() dispatcher (init.ts)
+warnings[] accumulation (real-time sidebar)
   |
   v
-Scene-specific renderers (hood, microscope, incubator, plate reader)
+renderGame() dispatcher (src/init.ts)
+  |
+  v
+Scene renderers (bench, hood, microscope, incubator, plate reader)
   |
   v
 SVG/HTML output to DOM
   |
   v
-completeStep() advances protocol
+triggerStep(id) -> completeStep() advances protocol
   |
   v
-Results scene: calculateScore() -> 3-star rating
+Results scene -> calculateScore() -> star rating
 ```
 
 ## Game protocol
 
-For authoring a new protocol from scratch, see [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md).
+For authoring a new protocol from scratch, see
+[PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md). The active
+protocol id is `cell_culture` (~25 steps modeling the OVCAR8 carboplatin
++ metformin MTT workflow). Tutorial protocols (`tutorial_pbs`,
+`tutorial_split`) cover smaller subsets and exist primarily for walker
+exercises.
 
-The 9-step guided workflow mirrors a real cell culture experiment in `cell_culture`:
-
-1. Spray/sanitize hood
-2. Aspirate old media
-3. Add fresh media
-4. Microscope viability check
-5. Count cells (hemocytometer quadrants)
-6. Transfer cells to plate
-7. Add drug dilutions
-8. Incubate
-9. Read plate results
+Each step declares one `completionPath` of kind `interactionSequence`,
+`directTool`, or `modal`. The walker dispatches by kind; legacy
+`step.id`-based branches were removed in the K2 migration.
 
 ## Scoring
 
@@ -116,7 +231,7 @@ Four weighted categories in [src/scoring.ts](../src/scoring.ts):
 | Category | Max points | Tracks |
 | --- | --- | --- |
 | Order | 30 | Steps completed in correct sequence |
-| Cleanliness | 25 | Contamination and sterile technique errors |
+| Cleanliness | 25 | Contamination and sterile-technique errors |
 | Waste | 20 | Excess media usage |
 | Timing | 25 | Speed to completion |
 
@@ -126,88 +241,84 @@ Final score maps to a 1-3 star rating.
 
 ```bash
 source source_me.sh && python3 -m pytest tests/
+node tests/playwright/protocol_graph_smoke.mjs
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --wrong-order
 ```
 
-- **Linting:** pyflakes, bandit security scan, ASCII compliance
-- **Style:** indentation (tabs), whitespace, shebang consistency
+- **Linting:** pyflakes, bandit, ASCII compliance.
+- **Style:** tab indentation, trailing whitespace, shebang consistency.
 - **Imports:** no `import *`, no relative imports, all third-party in
-  requirements files
-- **E2E:** `tests/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test (drives the full protocol via Playwright DOM clicks). `tests/protocol_graph_smoke.mjs` is a fast data-layer smoke test that proves graph reachability (calls `completeStep()` directly). See [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) for the protocol-flow architecture.
-
-Test scope is controllable via environment variables (`FAST_REPO_HYGIENE=1`,
-`REPO_HYGIENE_SCOPE=changed`, `SKIP_REPO_HYGIENE=1`).
+  requirements files.
+- **Protocol YAML:** eight validator rules enforced by
+  [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py).
+- **Browser walker:** drives the full protocol via DOM clicks; the
+  `--wrong-order` flag injects bad clicks and verifies soft-fail recovery.
 
 ## Dynamic SVG recolor pipeline
 
-Liquid color in the game is data-driven, not baked into static art. The
-pipeline:
+Liquid color in the game is data-driven, not baked into static art:
 
 1. **SVG art** owns shapes and stable ids. Liquid sub-objects carry ids
-   like `liquid_<sha8>` (geometry-keyed) or named ids like `liquid_residue`.
-2. **Generator** (`tools/generate_svg_globals.py`) reads
-   `assets/equipment/*.svg`, namespaces every id with `<basename>__`, and
-   emits two manifests in [src/svg_globals.ts](../src/svg_globals.ts):
-   `SVG_IDS` (per-asset id list) and `SVG_GROUPS` (sidecar groupings,
-   loaded from optional `<basename>.colormap.json`).
-3. **Renderer** (`src/svg_color_patch.ts`) applies `SvgColorPatch[]` to a
-   baked SVG string. Patches address one element by namespaced id and
-   write `fill`, `stroke` (via `strokeRole`), and/or `opacity`.
-4. **Recipes** (`src/svg_recipes.ts`) map semantic state (`T75LiquidVisual`,
-   `BottleLiquid`) to patch lists. `bottleLiquidPatches('media')` expands
-   the `liquid` group from `bottle.colormap.json` into N patches.
+   like `liquid_<sha8>` (geometry-keyed) or named ids like
+   `liquid_residue`.
+2. **Generator** ([tools/generate_svg_globals.py](../tools/generate_svg_globals.py))
+   reads `assets/equipment/*.svg`, namespaces every id with
+   `<basename>__`, and emits the `SVG_IDS` and `SVG_GROUPS` manifests in
+   [src/svg_globals.ts](../src/svg_globals.ts).
+3. **Renderer** ([src/svg_color_patch.ts](../src/svg_color_patch.ts))
+   applies `SvgColorPatch[]` to a baked SVG string. Patches address one
+   element by namespaced id and write `fill`, `stroke` (via
+   `strokeRole`), and/or `opacity`.
+4. **Recipes** ([src/svg_recipes.ts](../src/svg_recipes.ts)) map semantic
+   state (`T75LiquidVisual`, `BottleLiquid`) to patch lists.
 5. **Sidecar JSON** (`assets/equipment/<basename>.colormap.json`) groups
-   multiple authored ids under one semantic target with per-id opacity, so
-   one role color drives a layered shading effect (base + shadow +
+   multiple authored ids under one semantic target with per-id opacity,
+   so one role color drives a layered shading effect (base + shadow +
    highlight).
-6. **Bottle authoring** (`tools/build_servier_recolor.py`) diffs the three
-   pristine Servier source colors (pink/orange/green) by structural color
-   palette, classifies non-shared fills/strokes as the liquid layer, and
-   writes `bottle.svg` + `bottle.colormap.json`.
 
 Design lock: only fill/stroke/opacity changes on authored ids. No new
 geometry, no overlay engine, no state machines.
 
-Validation: `tests/test_svg_id_parity.py` keeps the manifest aligned with
-the SVGs; `tests/test_svg_color_patch.mjs` and
-`tests/test_bottle_recolor.mjs` import the real production module via
-`tests/_compile_for_test.mjs` and exercise the full recolor path.
-
 ## Completion-event coverage policy (CE-3)
 
-Each protocol has a completion-event coverage policy defined in `getCoveragePolicy(protocolId)` in
-[src/init.ts](../src/init.ts). The policy controls how missing completion-event emitters are
-handled at startup:
+Each protocol has a coverage policy returned by
+`getCoveragePolicy(protocolId)` in [src/init.ts](../src/init.ts). The
+policy controls how missing completion-event emitters are handled at
+startup:
 
-- **STRICT** (default; used for `cell_culture`): any step missing a matching completion-event emitter
-  throws via `showValidationError` with the message `'missing completion-event emitter'`. This
-  enforces that every declared step has a working implementation.
-- **RELAXED** (used for `tutorial_*` protocols): missing emitters are logged via `console.warn`
-  but do not block page load; the game can start even with incomplete wiring. Useful for tutorial
-  and development protocols where full coverage is not yet required.
-- **Unknown protocols** default to **STRICT** for safety.
+- **STRICT** (used for `cell_culture` and unknown ids): any step missing
+  a matching emitter throws via `showValidationError` with
+  `'missing completion-event emitter'`.
+- **RELAXED** (used for `tutorial_*` protocols): missing emitters are
+  logged via `console.warn`; the page still loads.
 
-The startup check `validateCompletionEventCoverage()` runs after all scene render functions
-have executed (on the `load` event) and compares the declared steps against the set of
-registered emitters populated by `triggerStep()` calls.
+`validateCompletionEventCoverage()` runs after all scene render functions
+on the `load` event and compares declared steps against the set of
+emitters populated by `triggerStep()` calls.
 
 ## Extension points
 
-- **New protocol steps:** Add entries to `PROTOCOL_STEPS` in
-  `src/constants.ts`, wire a `triggerStep(id)` call (completion-event emitter)
-  in the scene that owns the step, and add a module-scope `registeredEmitters.add(id)`
-  pre-registration line. Step ordering uses explicit `nextId` linked-list
-  transitions (not array position). Full instructions, validators, and the walker
-  test are documented in [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md).
-- **New scenes:** Create a new `*_scene.ts` file in `src/scenes/`, add it to the
-  build order in [build_github_pages.sh](../build_github_pages.sh), and register
-  it in the render dispatcher in [src/init.ts](../src/init.ts)
-- **Drug models:** Modify the IC50 curve parameters in
-  [src/cell_model.ts](../src/cell_model.ts)
-- **Scoring adjustments:** Change weights and thresholds in
-  [src/scoring.ts](../src/scoring.ts)
+- **New protocol steps:** edit
+  `src/content/<protocol>/protocol.yaml`, add a `completionPath` block
+  (kind + required fields), wire a matching `triggerStep(id)` call in the
+  scene that owns the step, and re-run
+  [tools/build_protocol_data.py](../tools/build_protocol_data.py). See
+  [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) and
+  [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md).
+- **New scenes:** add a module under [src/scenes/](../src/scenes/),
+  import it from [src/init.ts](../src/init.ts), and register a render
+  branch in the dispatcher.
+- **Drug models:** modify the IC50 curve parameters in
+  [src/cell_model.ts](../src/cell_model.ts).
+- **Scoring adjustments:** change weights and thresholds in
+  [src/scoring.ts](../src/scoring.ts).
 
 ## Known gaps
 
-- No automated TypeScript linting or type checking beyond esbuild compilation
-- E2E test depends on Playwright and Chromium installation; may not run in all
-  CI environments
+- Verification task: confirm that `cell_culture` step count matches the
+  count quoted in this document; the active protocol has been edited
+  during recent walker work and the figure here is approximate.
+- Verification task: confirm whether non-browser
+  [tests/e2e/](../tests/e2e/) is intended to remain empty or whether
+  shell wrappers (currently in [tools/](../tools/)) belong there.

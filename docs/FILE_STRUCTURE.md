@@ -4,66 +4,185 @@
 
 | Path | Purpose |
 | --- | --- |
-| [export_single_file.sh](../export_single_file.sh) | Compile TypeScript and assemble single-file HTML |
-| [smoke.sh](../smoke.sh) | Fast 9-gate browser smoke test |
-| [tools/run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E playthrough (build + walker + wrong-order recovery) |
-| [cell_culture_game.html](../cell_culture_game.html) | Generated game output (git-ignored; tests bootstrap-build on demand) |
-| [source_me.sh](../source_me.sh) | Bash environment setup for Python 3.12 |
-| [VERSION](../VERSION) | CalVer version string |
 | [README.md](../README.md) | Project overview and quick start |
-| [AGENTS.md](../AGENTS.md) | AI agent coding guidelines |
-| [pip_requirements.txt](../pip_requirements.txt) | Runtime Python dependencies |
-| [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Dev dependencies (pytest, pyflakes, bandit) |
+| [AGENTS.md](../AGENTS.md) | AI agent coding pointers |
+| [CLAUDE.md](../CLAUDE.md) | Claude Code rule manifest (loads style docs) |
+| [VERSION](../VERSION) | CalVer version string |
 | [LICENSE.LGPL_v3](../LICENSE.LGPL_v3) | Code license |
 | [LICENSE.CC_BY_4_0](../LICENSE.CC_BY_4_0) | Content license |
+| [build_github_pages.sh](../build_github_pages.sh) | Canonical bundled build into [dist/](../dist/) |
+| [export_single_file.sh](../export_single_file.sh) | Portable single-file build into [dist-single/](../dist-single/) |
+| [run_web_server.sh](../run_web_server.sh) | Build then serve [dist/](../dist/) on local network |
+| [check_codebase.sh](../check_codebase.sh) | Aggregate lint/test gate runner |
+| [source_me.sh](../source_me.sh) | Bash environment for Python 3.12 |
+| [pip_requirements.txt](../pip_requirements.txt) | Runtime Python dependencies |
+| [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Dev Python dependencies |
+| [pip_extras.txt](../pip_extras.txt) | Optional Python extras |
+| [Brewfile](../Brewfile) | Homebrew package manifest |
+| [package.json](../package.json) | Node dev dependencies (TypeScript, Playwright, esbuild) |
+| [tsconfig.json](../tsconfig.json) | Repo-root TypeScript compiler config |
 
 ## Key subtrees
 
-### `src/` - TypeScript game source
+### [src/](../src/) - TypeScript game source
 
-Game modules compiled in dependency order by [export_single_file.sh](../export_single_file.sh).
+ES modules bundled by esbuild from [src/init.ts](../src/init.ts). The
+type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 
-| File | Purpose |
-| --- | --- |
-| [head.html](../src/head.html) | HTML document header |
-| [style.css](../src/style.css) | Game CSS (drag-drop highlights, layout) |
-| [body.html](../src/body.html) | HTML body structure |
-| [tail.html](../src/tail.html) | HTML closing tags |
-| [constants.ts](../src/constants.ts) | Protocol steps, plate layout, scoring config |
-| [game_state.ts](../src/game_state.ts) | GameState interface, well plate creation |
-| [cell_model.ts](../src/cell_model.ts) | Cell population and drug response model |
-| [svg_assets.ts](../src/svg_assets.ts) | SVG rendering for all visual elements |
-| [scenes/hood.ts](../src/scenes/hood.ts) | Sterile hood interaction scene |
-| [scenes/microscope.ts](../src/scenes/microscope.ts) | Cell counting with hemocytometer |
-| [scenes/incubator.ts](../src/scenes/incubator.ts) | Incubation placement scene |
-| [steps/feed_cells.ts](../src/steps/feed_cells.ts) | Media handling logic |
-| [steps/drug_treatment.ts](../src/steps/drug_treatment.ts) | Serial dilution selection |
-| [ui_rendering.ts](../src/ui_rendering.ts) | Sidebar HUD, warnings, score display |
-| [scoring.ts](../src/scoring.ts) | Score calculation (order, cleanliness, waste, timing) |
-| [init.ts](../src/init.ts) | Bootstrap, validation, render dispatcher |
-
-### `tests/` - pytest test suite
+#### Bundled HTML scaffolding
 
 | File | Purpose |
 | --- | --- |
-| [conftest.py](../tests/conftest.py) | pytest fixtures and Playwright config |
-| [git_file_utils.py](../tests/git_file_utils.py) | Shared git operations for test scoping |
-| [test_pyflakes_code_lint.py](../tests/test_pyflakes_code_lint.py) | Static analysis linting |
-| [test_import_requirements.py](../tests/test_import_requirements.py) | Import policy validation |
-| [test_import_star.py](../tests/test_import_star.py) | Forbids `from X import *` |
-| [test_import_dot.py](../tests/test_import_dot.py) | Forbids relative imports |
-| [test_init_files.py](../tests/test_init_files.py) | `__init__.py` style enforcement |
-| [test_ascii_compliance.py](../tests/test_ascii_compliance.py) | ASCII-only source check |
-| [test_bandit_security.py](../tests/test_bandit_security.py) | Security linting |
-| [test_indentation.py](../tests/test_indentation.py) | Tab indentation enforcement |
-| [test_whitespace.py](../tests/test_whitespace.py) | Trailing whitespace check |
-| [test_shebangs.py](../tests/test_shebangs.py) | Shebang consistency |
-| [test_cell_culture_walkthrough.py](../tests/test_cell_culture_walkthrough.py) | E2E Playwright browser test |
-| [check_ascii_compliance.py](../tests/check_ascii_compliance.py) | Single-file ASCII checker |
-| [fix_ascii_compliance.py](../tests/fix_ascii_compliance.py) | Single-file ASCII fixer |
-| [fix_whitespace.py](../tests/fix_whitespace.py) | Whitespace fixer utility |
+| [src/head.html](../src/head.html) | Document head fragment (no closing `</head>`) |
+| [src/body.html](../src/body.html) | Body content (opens `<body>`; no closing `</body>`) |
+| [src/tail.html](../src/tail.html) | Closing `</body></html>` |
+| [src/style.css](../src/style.css) | Game CSS |
+| [src/index.html](../src/index.html) | Standalone HTML reference for ad-hoc preview |
 
-### `docs/` - documentation
+#### Core runtime
+
+| File | Purpose |
+| --- | --- |
+| [src/init.ts](../src/init.ts) | Bootstrap, validation, render dispatcher, bundle entry point |
+| [src/constants.ts](../src/constants.ts) | Step / interaction / completion-path types and constants |
+| [src/types.ts](../src/types.ts) | Shared runtime type definitions |
+| [src/game_state.ts](../src/game_state.ts) | `GameState`, mutation helpers, `completeStep()` |
+| [src/cell_model.ts](../src/cell_model.ts) | Cell population and drug-response model |
+| [src/scoring.ts](../src/scoring.ts) | Score calculation across four categories |
+| [src/interaction_resolver.ts](../src/interaction_resolver.ts) | Resolves current interaction from `completionPath` |
+| [src/step_dispatch.ts](../src/step_dispatch.ts) | Maps step kind to handlers |
+| [src/protocol_ui.ts](../src/protocol_ui.ts) | Protocol panel rendering |
+| [src/ui_rendering.ts](../src/ui_rendering.ts) | Sidebar HUD, meters, results screen |
+| [src/professor_overlay.ts](../src/professor_overlay.ts) | In-game hint overlay |
+
+#### Layout, asset, and SVG support
+
+| File | Purpose |
+| --- | --- |
+| [src/layout_engine.ts](../src/layout_engine.ts) | Per-scene layout computation |
+| [src/scene_types.ts](../src/scene_types.ts) | Scene/zone enums |
+| [src/bench_config.ts](../src/bench_config.ts) | Bench scene layout config |
+| [src/hood_config.ts](../src/hood_config.ts) | Hood scene layout config |
+| [src/style_constants.ts](../src/style_constants.ts) | Color and style tokens |
+| [src/asset_specs.ts](../src/asset_specs.ts) | Asset metadata |
+| [src/brands.ts](../src/brands.ts) | Brand-name helpers |
+| [src/svg_assets.ts](../src/svg_assets.ts) | SVG composition helpers |
+| [src/svg_overlays.ts](../src/svg_overlays.ts) | Overlay decorations on SVG art |
+| [src/svg_color_patch.ts](../src/svg_color_patch.ts) | Apply `SvgColorPatch[]` to baked SVG |
+| [src/svg_recipes.ts](../src/svg_recipes.ts) | Semantic-state to patch-list mappings |
+| [src/svg_globals.ts](../src/svg_globals.ts) | Generated SVG id manifest (regenerated each build) |
+| [src/svg_globals.d.ts](../src/svg_globals.d.ts) | Type declarations for the manifest |
+
+#### Scenes
+
+| File | Purpose |
+| --- | --- |
+| [src/scenes/bench.ts](../src/scenes/bench.ts) | Bench scene |
+| [src/scenes/hood.ts](../src/scenes/hood.ts) | Sterile hood scene; owns `dispatchInteractionClick` |
+| [src/scenes/incubator.ts](../src/scenes/incubator.ts) | Incubator placement |
+| [src/scenes/microscope.ts](../src/scenes/microscope.ts) | Microscope and plate-reader scenes |
+
+#### Step modules
+
+| File | Purpose |
+| --- | --- |
+| [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) | Media aspirate / add |
+| [src/steps/dilution_prep.ts](../src/steps/dilution_prep.ts) | Drug-dilution prep modal |
+| [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) | Drug pipetting flow |
+| [src/steps/mtt_readout.ts](../src/steps/mtt_readout.ts) | MTT plate readout |
+| [src/steps/plate_96.ts](../src/steps/plate_96.ts) | 96-well plate rendering |
+
+#### Content
+
+| Path | Purpose |
+| --- | --- |
+| [src/content/cell_culture/](../src/content/cell_culture/) | Active protocol YAML (`items`, `reagents`, `protocol`) |
+| [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) | Tutorial protocol (PBS wash repetition) |
+| [src/content/tutorial_split/](../src/content/tutorial_split/) | Tutorial protocol (split / passage) |
+| [src/content/protocol_data.ts](../src/content/protocol_data.ts) | Generated `PROTOCOL_STEPS` and `PROTOCOL_ID` |
+| [src/content/inventory_data.ts](../src/content/inventory_data.ts) | Generated inventory data |
+| [src/content/tools.ts](../src/content/tools.ts) | Build-side helper module |
+| [src/content/validate.ts](../src/content/validate.ts) | Build-side validator helpers |
+
+### [tools/](../tools/) - Python build and audit tools
+
+| File | Purpose |
+| --- | --- |
+| [tools/build_protocol_data.py](../tools/build_protocol_data.py) | YAML -> generated TS; eight schema rules; `--protocol`, `--validate-only` |
+| [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) | Regenerate `src/svg_globals.ts` from `assets/equipment/*.svg` |
+| [tools/normalize_svg.py](../tools/normalize_svg.py) | SVG normalization helper |
+| [tools/analyze_protocol_audit.py](../tools/analyze_protocol_audit.py) | Audit unused items / reagents per protocol |
+| [tools/run_smoke.py](../tools/run_smoke.py) | Fast browser smoke wrapper |
+| [tools/run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper (build + walker + wrong-order) |
+
+### [tests/](../tests/) - test suite
+
+Pytest-collectible tests live at the top level. Browser tests live in
+the `playwright/` subtree, and non-browser E2E in `e2e/`. Both subtrees
+are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py).
+
+| File | Purpose |
+| --- | --- |
+| [tests/conftest.py](../tests/conftest.py) | Pytest config and `collect_ignore` for `e2e` and `playwright` |
+| [tests/git_file_utils.py](../tests/git_file_utils.py) | Shared git helpers |
+| [tests/test_pyflakes_code_lint.py](../tests/test_pyflakes_code_lint.py) | Pyflakes lint gate |
+| [tests/test_bandit_security.py](../tests/test_bandit_security.py) | Bandit security scan |
+| [tests/test_ascii_compliance.py](../tests/test_ascii_compliance.py) | ASCII source check |
+| [tests/test_indentation.py](../tests/test_indentation.py) | Tab indentation enforcement |
+| [tests/test_whitespace.py](../tests/test_whitespace.py) | Trailing whitespace check |
+| [tests/test_shebangs.py](../tests/test_shebangs.py) | Shebang consistency |
+| [tests/test_import_dot.py](../tests/test_import_dot.py) | Forbids relative imports |
+| [tests/test_import_star.py](../tests/test_import_star.py) | Forbids `from X import *` |
+| [tests/test_import_requirements.py](../tests/test_import_requirements.py) | Third-party imports declared |
+| [tests/test_init_files.py](../tests/test_init_files.py) | Minimal `__init__.py` rule |
+| [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py) | Eight protocol-YAML rules |
+| [tests/test_test_naming_conventions.py](../tests/test_test_naming_conventions.py) | Test layout and naming linting |
+| [tests/test_svg_color_patch.mjs](../tests/test_svg_color_patch.mjs) | Pure Node test for color-patch logic |
+| [tests/check_ascii_compliance.py](../tests/check_ascii_compliance.py) | Single-file ASCII checker |
+| [tests/fix_ascii_compliance.py](../tests/fix_ascii_compliance.py) | Single-file ASCII fixer |
+| [tests/fix_whitespace.py](../tests/fix_whitespace.py) | Whitespace fixer |
+| [tests/TESTS_README.md](../tests/TESTS_README.md) | Test layout overview |
+
+#### [tests/playwright/](../tests/playwright/) - Browser-driven tests
+
+| File | Purpose |
+| --- | --- |
+| [tests/playwright/repo_root.mjs](../tests/playwright/repo_root.mjs) | Shared `REPO_ROOT` resolver |
+| [tests/playwright/build_game_if_missing.mjs](../tests/playwright/build_game_if_missing.mjs) | Bootstraps the bundled HTML on demand |
+| [tests/playwright/protocol_graph_smoke.mjs](../tests/playwright/protocol_graph_smoke.mjs) | Data-layer graph reachability smoke |
+| [tests/playwright/test_completion_event_coverage.mjs](../tests/playwright/test_completion_event_coverage.mjs) | `getCoveragePolicy` and emitter coverage |
+| [tests/playwright/test_interaction_index.mjs](../tests/playwright/test_interaction_index.mjs) | Interaction-index consistency |
+| [tests/playwright/test_interaction_resolver.mjs](../tests/playwright/test_interaction_resolver.mjs) | Resolver behavior across step kinds |
+
+#### [tests/playwright/e2e/](../tests/playwright/e2e/) - Full-path walkthroughs
+
+| File | Purpose |
+| --- | --- |
+| [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Canonical YAML walker (clicks DOM only) |
+| [walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) | Shared helpers for the walker |
+| [test_game_ui.mjs](../tests/playwright/e2e/test_game_ui.mjs) | Nine-gate UI smoke test |
+| [test_bench_layout.mjs](../tests/playwright/e2e/test_bench_layout.mjs) | Bench-scene layout |
+| [test_hood_layout.mjs](../tests/playwright/e2e/test_hood_layout.mjs) | Hood-scene layout |
+| [test_dilution_prep.mjs](../tests/playwright/e2e/test_dilution_prep.mjs) | Dilution-prep workflow |
+| [test_flask_variants.mjs](../tests/playwright/e2e/test_flask_variants.mjs) | Flask design rendering |
+| [test_layout_engine.mjs](../tests/playwright/e2e/test_layout_engine.mjs) | Layout engine calculations |
+| [test_layout_metrics.mjs](../tests/playwright/e2e/test_layout_metrics.mjs) | Layout metric verification |
+| [test_pipette_liquid.mjs](../tests/playwright/e2e/test_pipette_liquid.mjs) | Pipette-liquid handling |
+| [test_plate_96.mjs](../tests/playwright/e2e/test_plate_96.mjs) | 96-well plate layout |
+| [test_protocol_flow.mjs](../tests/playwright/e2e/test_protocol_flow.mjs) | Full protocol flow walkthrough |
+| [test_scoring.mjs](../tests/playwright/e2e/test_scoring.mjs) | Score calculation |
+| [test_step_completeness.mjs](../tests/playwright/e2e/test_step_completeness.mjs) | Step-completion tracking |
+| [test_step_dispatch.mjs](../tests/playwright/e2e/test_step_dispatch.mjs) | Step dispatch routing |
+| [test_target_handlers.mjs](../tests/playwright/e2e/test_target_handlers.mjs) | UI target element handlers |
+| [test_yaml_swap_runtime.mjs](../tests/playwright/e2e/test_yaml_swap_runtime.mjs) | Swap protocol at runtime |
+
+#### [tests/e2e/](../tests/e2e/) - Non-browser E2E (reserved)
+
+Currently contains [tests/e2e/legacy_cell_culture_game.html](../tests/e2e/legacy_cell_culture_game.html)
+as a reference snapshot. New shell or Python E2E runners belong here as
+`e2e_*.sh` or `e2e_*.py`.
+
+### [docs/](../docs/) - Documentation
 
 | File | Purpose |
 | --- | --- |
@@ -73,46 +192,83 @@ Game modules compiled in dependency order by [export_single_file.sh](../export_s
 | [INSTALL.md](INSTALL.md) | Prerequisites and setup |
 | [USAGE.md](USAGE.md) | Build and gameplay instructions |
 | [AUTHORS.md](AUTHORS.md) | Maintainers and contributors |
+| [ROADMAP.md](ROADMAP.md) | Planned work |
+| [TODO.md](TODO.md) | Backlog scratchpad |
+| [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) | Canonical vocabulary |
+| [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) | YAML schema reference |
+| [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
+| [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) | Step-flow architecture |
+| [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |
+| [E2E_TESTS.md](E2E_TESTS.md) | E2E test conventions |
+| [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md) | Playwright usage notes |
+| [PYTEST_STYLE.md](PYTEST_STYLE.md) | Pytest conventions |
 | [PYTHON_STYLE.md](PYTHON_STYLE.md) | Python conventions |
 | [TYPESCRIPT_STYLE.md](TYPESCRIPT_STYLE.md) | TypeScript conventions |
-| [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md) | Markdown formatting rules |
-| [REPO_STYLE.md](REPO_STYLE.md) | Repo-wide organization conventions |
-| [CLAUDE_HOOK_USAGE_GUIDE.md](CLAUDE_HOOK_USAGE_GUIDE.md) | Claude Code permissions hook guide |
+| [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md) | Markdown formatting |
+| [REPO_STYLE.md](REPO_STYLE.md) | Repo-wide conventions |
+| [CLAUDE_HOOK_USAGE_GUIDE.md](CLAUDE_HOOK_USAGE_GUIDE.md) | Claude Code permissions hook |
+| [LAYOUT_METRICS.md](LAYOUT_METRICS.md) | Layout-engine metric reference |
+| [SCALING_MODEL.md](SCALING_MODEL.md) | Scaling model notes |
+| [PIPETTE_LIQUID_CONVENTION.md](PIPETTE_LIQUID_CONVENTION.md) | Pipette-liquid convention |
+| [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) | Third-party asset attribution |
+| [HANDOFF_CURRENT_STATUS.md](HANDOFF_CURRENT_STATUS.md) | Current handoff snapshot |
+| [STATUS_2026-05-08.md](STATUS_2026-05-08.md) | Dated status note |
+| [active_plans/](active_plans/) | In-flight plan documents |
+| [archive/](archive/) | Archived plans and notes |
+| [images/](images/) | Doc figures |
 
-### `tests/e2e/` - E2E Playwright test runners
+### [assets/](../assets/) - Source art
+
+`assets/equipment/` contains the source SVG art consumed by
+[tools/generate_svg_globals.py](../tools/generate_svg_globals.py); the
+directory is git-ignored (see [.gitignore](../.gitignore)) but rebuilt
+on demand. Sidecar `*.colormap.json` files name semantic groups of ids
+for the recolor pipeline.
+
+### [servier/](../servier/) - Pristine Servier source SVGs
+
+Reference art used as input for derived equipment SVGs. Do not edit
+in place.
+
+### [devel/](../devel/) - Maintainer scripts
 
 | File | Purpose |
 | --- | --- |
-| [protocol_walkthrough_yaml.mjs](../tests/e2e/protocol_walkthrough_yaml.mjs) | Canonical real-UI regression test (Playwright-driven clicks) |
-| [test_game_ui.mjs](../tests/e2e/test_game_ui.mjs) | UI smoke tests |
-| [walker_helpers.mjs](../tests/e2e/walker_helpers.mjs) | Shared Playwright helpers for UI walkers |
+| [devel/setup_playwright.sh](../devel/setup_playwright.sh) | Idempotent Playwright (chromium) install |
+| [devel/commit_changelog.py](../devel/commit_changelog.py) | Helper for changelog hygiene |
 
-### `tests/` - Fast data-layer tests
+### Other repos
 
-| File | Purpose |
-| --- | --- |
-| [protocol_graph_smoke.mjs](../tests/protocol_graph_smoke.mjs) | Fast data-layer smoke test (proves graph reachability) |
+[OTHER_REPOS/](../OTHER_REPOS/) holds sibling-repo checkouts for
+cross-reference. Subdirectories are git-ignored.
 
 ## Generated artifacts
 
-These are produced by the build and test pipelines, not tracked in git:
+Not tracked in git (see [.gitignore](../.gitignore)):
 
 | Path | Source |
 | --- | --- |
-| `cell_culture_game.html` | [export_single_file.sh](../export_single_file.sh) output |
-| `test-results/walkthrough/*.png` | Playwright E2E screenshots |
-| `report_pyflakes.txt` | pyflakes lint output |
-| `report_import_requirements.txt` | Import policy report |
-| `report_init.txt` | `__init__.py` style report |
-| `report_import_star.txt` | `import *` usage report |
+| [dist/](../dist/) | [build_github_pages.sh](../build_github_pages.sh) output (GitHub Pages bundle) |
+| [dist-single/game.html](../dist-single/) | [export_single_file.sh](../export_single_file.sh) output (portable single-file) |
+| `cell_culture_game.html` | Legacy bundled output; bootstrap-built by tests on demand |
+| [src/svg_globals.ts](../src/svg_globals.ts) | [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) |
+| [src/content/protocol_data.ts](../src/content/protocol_data.ts), [src/content/inventory_data.ts](../src/content/inventory_data.ts) | [tools/build_protocol_data.py](../tools/build_protocol_data.py) |
+| `test-results/` | Playwright screenshots and reports |
+| `report_*.txt` | Lint reports |
+| `node_modules/` | npm install output |
+| `build/` | Python build cache |
 
 ## Where to add new work
 
 | Type | Location |
 | --- | --- |
-| Game logic | New `.ts` file in `src/` |
+| Game runtime | New `.ts` file under [src/](../src/), imported from [src/init.ts](../src/init.ts) or a scene |
+| New scene | [src/scenes/](../src/scenes/) and dispatcher branch in [src/init.ts](../src/init.ts) |
+| New step UI / emitter | [src/steps/](../src/steps/) |
+| Protocol content | New folder under [src/content/](../src/content/) with `items.yaml`, `reagents.yaml`, `protocol.yaml` |
+| Build/audit tooling | [tools/](../tools/) (Python, single-purpose) |
 | Game styles | [src/style.css](../src/style.css) |
-| Python tooling | Repo root as single-purpose script |
-| Tests | `tests/test_*.py` for pytest; `tests/e2e/*.mjs` for Playwright E2E; `tests/*.mjs` for fast data-layer tests |
-| Documentation | `docs/` with SCREAMING_SNAKE_CASE filename |
-| Developer tools | `tools/` (Python CLIs) |
+| Pytest tests | `tests/test_*.py` |
+| Browser tests | `tests/playwright/test_*.mjs` (smoke) or `tests/playwright/e2e/*.mjs` (walkthroughs) |
+| Non-browser E2E | `tests/e2e/e2e_*.sh` or `e2e_*.py` |
+| Documentation | [docs/](../docs/) with SCREAMING_SNAKE_CASE filename |

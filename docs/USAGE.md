@@ -87,7 +87,7 @@ source source_me.sh && python3 tools/build_protocol_data.py --validate-only
 ### Browser smoke test (fast 9-gate check)
 
 ```bash
-bash smoke.sh
+source source_me.sh && python3 tools/run_smoke.py
 ```
 
 This verifies the app loads and renders the first 9 bench gates. Fast signal for CI/local feedback.

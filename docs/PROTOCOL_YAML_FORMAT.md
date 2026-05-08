@@ -216,17 +216,322 @@ is determined by `nextId` linked-list pointers, not by array position.
 | `scene` | string | yes | Where this step's interactions happen: `hood`, `bench`, `incubator`, `microscope`, or `plate_reader` |
 | `requiredItems` | array of strings | yes | Item ids that must be available (shown in step card) |
 | `usedItems` | array of strings | generated (not authored) | Derived item summary: items appearing in the step's interaction sequence, in first-use order (tool, source, destination). Required in generated TypeScript; never written in author YAML. |
-| `completionTrigger` | object | no | Completion trigger: maps a scene completion event to step completion (see below) |
+| `completionPath` | object | yes | The completion path for this step. Carries a `kind` discriminator and the kind-specific fields. See "Completion paths" section below. |
+| `completionTrigger` | object | derived (build-time), do not author | Step-level listener that maps a scene completion event to step completion. The builder synthesizes this from `step.scene` and `step.completionPath` (see "Derived fields"). Author YAML must NOT include this field; the validator rejects author-written `completionTrigger`. |
 | `nextId` | string or null | yes | Id of the next step, or `null` if this is the final step |
 | `errorHints` | map of strings | no | Feedback messages keyed by error type (e.g. `wrong_tool`, `volume_off`) |
 
-#### Step fields (interaction-driven steps)
+## Completion paths
 
-Steps that advance via item clicks (most steps) must declare an interaction sequence:
+Every step has exactly one `completionPath`. The path's `kind` discriminator
+selects which schema fields apply. The walker, runtime, and validator all
+dispatch off `kind`; nothing downstream matches on `step.id`.
+
+### Why every step has a completion path
+
+Earlier schema iterations assumed every step advanced via an
+`interactionSequence`. That model fits liquid-transfer steps cleanly, but it
+forces modal-driven steps (the drug-treatment modal, the MTT modal) and
+instrument-control steps (incubator door, water bath toggle, plate-reader
+controls) into fake `tool`/`source`/`destination` rows that lie about what
+the player actually does. Direct-tool steps such as `spray_hood` were already
+informally outside the liquid-transfer shape.
+
+Different step shapes deserve different schemas. The `completionPath`
+contract makes the shape explicit at the YAML layer instead of hiding it
+behind narrowly-typed fields the runtime had to interpret. Authors choose a
+`kind` that matches the player experience; the validator and walker enforce
+the rest.
+
+The three allowed kinds are:
+
+| Kind | Use when the player |
+| --- | --- |
+| `interactionSequence` | performs an ordered click flow (load liquid then discharge, etc.) |
+| `directTool` | clicks one item once to complete the step (covers both hand tools like ethanol spray and instrument controls like incubator door, water bath, plate-reader scan button) |
+| `modal` | opens a modal scene and clicks an advance control inside it |
+
+The `directTool` kind covers what older drafts split into "direct tool" and
+"instrument" kinds. Mechanically the two cases are identical: one click on an
+item id with one completion event. The conceptual difference between a hand
+tool and an instrument is carried by the item's `role` in `items.yaml`, not by
+a separate completion-path kind.
+
+### Kind: `interactionSequence`
+
+Use for liquid-transfer flows and any step that advances via an ordered
+sequence of tool clicks. This kind preserves the existing interaction-list
+schema; only the wrapping has changed.
+
+Required fields under `completionPath`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `kind` | string | Must be `interactionSequence` |
+| `interactions` | list of objects | Ordered list of interactions; see "Interaction object structure" below |
+
+Banned fields under `completionPath` for this kind: `tool`, `openClick`,
+`advanceClick`. Those belong to other kinds.
+
+Worked YAML example:
+
+```yaml
+- id: pbs_wash
+  label: "Wash cells with 4 mL PBS"
+  scene: hood
+  requiredItems: [flask, pbs_bottle, serological_pipette]
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: serological_pipette
+        source: pbs_bottle
+        liquid: pbs
+        stateChange:
+          heldLiquid:
+            tool: serological_pipette
+            liquid: pbs
+            volumeMl: 4
+            colorKey: pbs
+      - tool: serological_pipette
+        destination: flask
+        liquid: pbs
+        consumesVolumeMl: 4
+        completionEvent: pbs_wash
+  nextId: add_trypsin
+```
+
+The builder derives `step.completionTrigger` at build time from
+`step.scene` and the final interaction's `completionEvent`. Authors do not
+write `completionTrigger`; see "Derived fields" below.
+
+Walker contract: the walker iterates `completionPath.interactions` in order.
+For each interaction it clicks the `tool` first, then any `source` or
+`destination`, waits for progress, and advances `interactionIndex`. The
+final interaction's `completionEvent` completes the step.
+
+### Kind: `directTool`
+
+Use for one-click steps performed by clicking a single item directly. This
+kind covers both hand-tool steps (for example, spraying ethanol with a
+spray bottle) and instrument-control steps (for example, closing the
+incubator door, starting the water bath, pressing the plate-reader scan
+button). The conceptual difference between a hand tool and an instrument
+is carried by `items.yaml` role; the completion-path schema is the same.
+
+Required fields under `completionPath`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `kind` | string | Must be `directTool` |
+| `tool` | string | Item id of the tool or instrument control the player clicks |
+| `completionEvent` | string | Completion event emitted when the click registers |
+
+Banned fields under `completionPath` for this kind: `interactions`, `source`,
+`destination`, `openClick`, `advanceClick`.
+
+Worked YAML example (hand tool):
+
+```yaml
+- id: spray_hood
+  label: "Spray the hood with 70% ethanol"
+  scene: hood
+  requiredItems: [ethanol_bottle]
+  completionPath:
+    kind: directTool
+    tool: ethanol_bottle
+    completionEvent: spray_ethanol
+  nextId: gather_supplies
+```
+
+Worked YAML example (instrument control):
+
+```yaml
+- id: incubate_48h
+  label: "Place the plate in the incubator"
+  scene: incubator
+  requiredItems: [incubator]
+  completionPath:
+    kind: directTool
+    tool: incubator
+    completionEvent: incubate_48h
+  nextId: read_plate
+```
+
+Walker contract: the walker resolves `completionPath.tool` to a single
+visible item and clicks it once. The completion event fires; the step
+completes. There is no `interactionIndex` and no source/destination click.
+
+### Kind: `modal`
+
+Use for steps completed through a modal scene. The player clicks an item
+to open the modal, then clicks an advance control inside the modal that
+emits the completion event.
+
+Required fields under `completionPath`:
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `interactionSequence` | list of objects | if no `modal` | Ordered list of interactions that advance the step. The resolver enforces order via `interactionIndex`. |
+| `kind` | string | yes | Must be `modal` |
+| `openClick` | string | no | Item id (declared in `items.yaml`) whose click opens the modal. Modal openers ARE protocol items (e.g., `well_plate`). **Optional**: if omitted, the modal is assumed to be already open from the previous step's completion event (used in split hybrid steps where setup is `interactionSequence` and confirm is `modal`). |
+| `advanceClick` | string | yes | Kebab-case string that matches a `data-walker-advance="<string>"` attribute on a DOM control inside the modal scene. NOT an `items.yaml` id; modal-internal advance buttons are UI controls, not protocol items. |
+| `completionEvent` | string | yes | Completion event emitted when the advance click registers |
+
+Banned fields under `completionPath` for this kind: `interactions`, `tool`,
+`source`, `destination`.
+
+Worked YAML example (direct modal):
+
+```yaml
+- id: add_mtt
+  label: "Add MTT reagent to each well"
+  scene: bench
+  requiredItems: [well_plate, mtt_vial]
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: mtt-modal-advance
+    completionEvent: add_mtt
+  nextId: incubate_mtt
+```
+
+Worked YAML example (split hybrid step - modal without openClick):
+
+```yaml
+- id: add_carboplatin_setup
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: dilution_tube_rack
+      - tool: multichannel_pipette
+        destination: well_plate
+        completionEvent: add_carboplatin_modal_open
+  nextId: add_carboplatin_confirm
+
+- id: add_carboplatin_confirm
+  completionPath:
+    kind: modal
+    advanceClick: drug-modal-advance
+    completionEvent: carb-add-confirm
+  nextId: add_metformin_setup
+```
+
+The matching DOM control inside the modal scene file:
+
+```html
+<!-- in the drug modal scene file -->
+<button data-walker-advance="drug-modal-advance">Apply Drug</button>
+```
+
+Walker contract for modal with openClick: the walker clicks `openClick`, waits for the modal scene to appear, then clicks the element whose `data-walker-advance` attribute equals the `advanceClick` string. The advance click emits `completionEvent` and completes the step.
+
+Walker contract for modal without openClick: the walker assumes the modal is already open (from the prior step's completion event). It waits for the element whose `data-walker-advance` attribute equals `advanceClick` to appear, clicks it, and the step completes.
+
+#### Split hybrid steps: setup + confirm pattern
+
+Complex steps that involve both a scene interaction sequence AND a modal confirmation are split into two consecutive steps:
+
+1. A setup step with `kind: interactionSequence` that builds up the required state (e.g., loading a tool, selecting sources and destinations) and emits a completion event indicating the modal is ready to open.
+2. A confirm step with `kind: modal` (with no `openClick`, since the modal is already open) that clicks the advance button to finalize the step.
+
+This pattern avoids hybrid steps and keeps the dispatch logic schema-driven with no special cases.
+
+#### Multi-step modals decompose into multiple modal steps
+
+`advanceClick` is a single string, not a list. If a modal needs multiple
+meaningful confirmations, the protocol declares multiple modal steps, each
+with the same `openClick`, a different `advanceClick` string, and its own
+`completionEvent`:
+
+```yaml
+- id: mtt_phase_one
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: mtt-modal-confirm-strain
+    completionEvent: mtt_phase_one
+- id: mtt_phase_two
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: mtt-modal-confirm-volume
+    completionEvent: mtt_phase_two
+```
+
+This keeps every step's completion path self-contained: one open click, one
+advance click, one completion event.
+
+### Validator behavior
+
+The validator (Rule 8 in the upcoming SP-K2 patch) enforces:
+
+- `completionPath` is present on every step. Steps that omit it fail.
+- `completionPath.kind` is one of `interactionSequence`, `directTool`, or
+  `modal`. Any other value (including the now-removed `instrument`) fails.
+- For each kind, the kind-specific required fields are present and the
+  banned fields are absent. Mixing fields across kinds fails.
+- For `kind: interactionSequence`, the existing rules continue to apply to
+  `completionPath.interactions`: tool-first click model, load-before-
+  discharge ordering, completion-event placement on the final interaction
+  only, volume sanity against `capacityMl`, item-ref resolution against
+  `items.yaml`, no `virtual_target` as `destination`.
+- For `kind: directTool`, the referenced `tool` exists in `items.yaml`.
+  The same kind serves both hand-tool and instrument-control steps; role
+  appropriateness is checked against `items.yaml`.
+- For `kind: modal`, the referenced `openClick` item exists in
+  `items.yaml`. `advanceClick` is validated by string presence: the
+  validator confirms the field is a non-empty kebab-case string AND that
+  a matching `data-walker-advance="<string>"` attribute exists somewhere
+  in the built UI (or in a declared modal-control registry, however the
+  scene code surfaces modal advance controls). The check is by string
+  presence (existence in the modal-control registry or grep over scene
+  `.ts` files), not by item-id resolution.
+- Author-written `step.completionTrigger` is rejected. Authors MUST NOT
+  write `completionTrigger` in YAML; the builder synthesizes it (see
+  "Derived fields" below).
+
+### Derived fields
+
+The builder synthesizes a small set of step fields at build time. Author
+YAML MUST NOT include these fields; the validator rejects YAML that writes
+them by hand.
+
+| Derived field | How the builder synthesizes it |
+| --- | --- |
+| `step.usedItems` | De-duplicated, first-use-ordered list of every `tool`, `source`, and `destination` referenced in the step's interaction sequence. |
+| `step.completionTrigger` | Object with `scene` (copied from `step.scene`) and `completionEvent` (copied from `step.completionPath.completionEvent`). For `kind: interactionSequence`, the `completionEvent` is the one declared on the final interaction in `completionPath.interactions`; the validator already enforces "exactly one completionEvent per step" on the final interaction. |
+
+In TypeScript pseudocode the builder synthesis for the trigger is:
+
+```ts
+step.completionTrigger = {
+    scene: step.scene,
+    completionEvent: step.completionPath.completionEvent
+};
+```
+
+These fields appear in the generated TypeScript surface (`protocol_data.ts`)
+because runtime code consumes them, but they are not part of the author
+YAML schema. Writing them in author YAML is a validation error.
+
+### Migration note
+
+The active `src/content/cell_culture/protocol.yaml` and tutorial protocols
+still use the legacy top-level `step.interactionSequence` field. Patch
+SP-K2 will mechanically migrate every existing step in those files to the
+new `completionPath` shape and update the runtime, walker, and validator
+to dispatch on `completionPath.kind`. Pre-migration YAML using flat
+`step.interactionSequence` is no longer the contract; new steps and any
+edits should adopt the new shape once SP-K2 lands.
+
+#### Step fields (interaction-driven steps)
+
+Steps with `completionPath.kind: interactionSequence` carry their ordered
+interaction list at `completionPath.interactions`:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `completionPath.interactions` | list of objects | when `kind: interactionSequence` | Ordered list of interactions that advance the step. The resolver enforces order via `interactionIndex`. |
 
 #### Step fields (optional volume checks)
 
@@ -239,18 +544,11 @@ The following fields are optional and used for volume-checking steps:
 
 #### Step fields (modal-owned steps)
 
-Steps that advance via a modal screen instead of scene clicks have `modal`:
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `modal` | object | if no `interactionSequence` | References the modal owner and screen name |
-
-Modal structure:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `owner` | string | The modal system (e.g. `drug_treatment`, `incubator`, `microscope`, `plate_reader`) |
-| `screen` | string | Unique screen name within the owner (e.g. `carb_intermediate`, `hemocytometer`) |
+Modal-driven steps are modeled by `completionPath` with `kind: modal`. See
+the "Kind: `modal`" subsection above for the canonical schema. The legacy
+top-level `step.modal` object (with `owner` and `screen` fields) is kept
+only as a runtime hint until SP-K2 lands; new steps must use the
+`completionPath` shape.
 
 #### Step fields (non-click steps)
 
@@ -326,15 +624,15 @@ steps:
     errorHints:
       wrong_reagent: "PBS is the wash buffer. Media will stop trypsin."
       volume_off: "Use about 4 mL so the whole surface is rinsed."
-    completionTrigger:
-      scene: hood
-      completionEvent: pbs_wash
     nextId: add_trypsin
 ```
 
 ```yaml
 # generated by tools/build_protocol_data.py; not authored:
 usedItems: [serological_pipette, pbs_bottle, flask]
+completionTrigger:
+  scene: hood
+  completionEvent: pbs_wash
 ```
 
 ### Step anatomy
@@ -355,7 +653,8 @@ usedItems: [serological_pipette, pbs_bottle, flask]
   the final interaction in a sequence may emit a completion event; it signals that the step
   is complete.
 - **Completion trigger** (`completionTrigger`): step-level listener that fires on a completion
-  event. Validated at build time to match the final interaction's completion event.
+  event. Derived (build-time), do not author. The builder synthesizes it from `step.scene`
+  and `step.completionPath.completionEvent`. The validator rejects author-written values.
 - **Next step** (`nextId`): explicit linked-list pointer to the next protocol step.
   Can be a string id or `null` to mark the final step.
 
