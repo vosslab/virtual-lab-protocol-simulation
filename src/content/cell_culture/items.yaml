@@ -25,7 +25,16 @@ items:
     scene: hood
     liquidCapable: true
     capacityMl: 300
-    allowedLiquids: [media, mtt, dmso]
+    allowedLiquids: [media, mtt, dmso, carboplatin, metformin]
+
+  micropipette:
+    label: "Micropipette"
+    role: transfer_tool
+    asset: micropipette_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, metformin, water, media]
 
   # Hood items - culture and reagent containers
   flask:
@@ -166,6 +175,61 @@ items:
     asset: dilution_tube_rack
     scene: hood
 
+  # Hood items - individual dilution tubes (content-named per protocol Part 4)
+  dilution_tube_carb_intermediate:
+    label: "Carb 200 uM intermediate"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, water]
+
+  dilution_tube_carb_b:
+    label: "Carb row B"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_c:
+    label: "Carb row C"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_d:
+    label: "Carb row D"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_e:
+    label: "Carb row E"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_f:
+    label: "Carb row F"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
   # Hood items - waste containers
   waste_container:
     label: "Waste"
@@ -223,13 +287,6 @@ items:
     role: instrument
     asset: plate_reader
     scene: bench
-    visualOnly: true
-
-  # Virtual targets
-  hood_surface:
-    label: "Hood work surface"
-    role: virtual_target
-    scene: virtual
     visualOnly: true
 
   # Overlay decoration

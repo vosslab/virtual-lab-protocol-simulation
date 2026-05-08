@@ -38,18 +38,13 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [ethanol_bottle]
-    targetItems: [ethanol_bottle]
     scene: hood
-    requiredAction: spray_ethanol
     errorHints:
       skipped: "Always spray the hood before starting. Contaminants wreck experiments."
-    allowedInteractions:
-      - actor: ethanol_bottle
-        target: hood_surface
-        event: spray_ethanol
-    trigger:
-      scene: hood
-      event: "click:spray_ethanol"
+    completionPath:
+      kind: directTool
+      tool: ethanol_bottle
+      completionEvent: spray_ethanol
     nextId: aspirate_old_media
 
   - id: aspirate_old_media
@@ -60,20 +55,17 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [flask, aspirating_pipette, waste_container]
-    targetItems: [flask, aspirating_pipette, waste_container]
     scene: hood
-    requiredAction: aspirate
     errorHints:
       wrong_tool: "Aspirating pipette is the correct tool. Serological will splash media."
       missed_waste: "Waste went somewhere it should not. Route it to the vacuum waste."
-    allowedInteractions:
-      - actor: aspirating_pipette
-        source: flask
-        target: waste_container
-        event: aspirate
-    trigger:
-      scene: hood
-      event: "click:aspirate"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: aspirating_pipette
+          source: flask
+          destination: waste_container
+          completionEvent: aspirate
     nextId: pbs_wash
 
   - id: pbs_wash
@@ -84,31 +76,28 @@ steps:
     dayId: day1
     stepIndex: 3
     requiredItems: [flask, pbs_bottle, serological_pipette]
-    targetItems: [flask, pbs_bottle, serological_pipette]
     scene: hood
-    requiredAction: pbs_wash
     errorHints:
       wrong_reagent: "PBS is the wash buffer. Media will stop trypsin from working."
       volume_off: "Use about 4 mL of PBS so the whole surface is rinsed."
-    allowedInteractions:
-      - actor: serological_pipette
-        source: pbs_bottle
-        liquid: pbs
-        volumeMl: 4
-        result:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: pbs
-            volumeMl: 4
-            colorKey: pbs
-      - actor: serological_pipette
-        liquid: pbs
-        target: flask
-        event: pbs_wash
-        consumesVolumeMl: 4
-    trigger:
-      scene: hood
-      event: "click:pbs_wash"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          liquid: pbs
+          destination: flask
+          completionEvent: pbs_wash
+          consumesVolumeMl: 4
     nextId: add_trypsin
 
   - id: add_trypsin
@@ -119,30 +108,27 @@ steps:
     dayId: day1
     stepIndex: 4
     requiredItems: [flask, trypsin_bottle, serological_pipette]
-    targetItems: [flask, trypsin_bottle, serological_pipette]
     scene: hood
-    requiredAction: pipette_trypsin
     errorHints:
       volume_off: "Use 3 mL of trypsin. Too much stresses the cells."
-    allowedInteractions:
-      - actor: serological_pipette
-        source: trypsin_bottle
-        liquid: trypsin
-        volumeMl: 3
-        result:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: trypsin
-            volumeMl: 3
-            colorKey: trypsin
-      - actor: serological_pipette
-        liquid: trypsin
-        target: flask
-        event: pipette_trypsin
-        consumesVolumeMl: 3
-    trigger:
-      scene: hood
-      event: "click:pipette_trypsin"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: trypsin_bottle
+          liquid: trypsin
+          volumeMl: 3
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: trypsin
+              volumeMl: 3
+              colorKey: trypsin
+        - tool: serological_pipette
+          liquid: trypsin
+          destination: flask
+          completionEvent: pipette_trypsin
+          consumesVolumeMl: 3
     nextId: neutralize_trypsin
 
   - id: neutralize_trypsin
@@ -153,32 +139,29 @@ steps:
     dayId: day1
     stepIndex: 5
     requiredItems: [flask, media_bottle, serological_pipette]
-    targetItems: [flask, media_bottle, serological_pipette]
     scene: hood
-    requiredAction: pipette_media
     correctVolumeMl: 9
     toleranceMl: 1
     errorHints:
       volume_off: "Use 3x the trypsin volume of media (9 mL) so trypsin is fully neutralized."
-    allowedInteractions:
-      - actor: serological_pipette
-        source: media_bottle
-        liquid: media
-        volumeMl: 9
-        result:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: media
-            volumeMl: 9
-            colorKey: media
-      - actor: serological_pipette
-        liquid: media
-        target: flask
-        event: pipette_media
-        consumesVolumeMl: 9
-    trigger:
-      scene: hood
-      event: "click:pipette_media"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 9
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: media
+              volumeMl: 9
+              colorKey: media
+        - tool: serological_pipette
+          liquid: media
+          destination: flask
+          completionEvent: pipette_media
+          consumesVolumeMl: 9
     nextId: centrifuge
 
   - id: centrifuge
@@ -189,18 +172,13 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [centrifuge, conical_15ml_rack]
-    targetItems: [centrifuge]
     scene: bench
-    requiredAction: centrifuge
     errorHints:
       wrong_tube: "Use a 15 mL conical tube so the pellet is easy to see."
-    allowedInteractions:
-      - actor: flask
-        target: centrifuge
-        event: centrifuge
-    trigger:
-      scene: bench
-      event: "click:centrifuge"
+    completionPath:
+      kind: directTool
+      tool: centrifuge
+      completionEvent: centrifuge
     nextId: resuspend
 
   - id: resuspend
@@ -211,32 +189,29 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [flask, media_bottle, serological_pipette, waste_container]
-    targetItems: [flask, media_bottle, serological_pipette, waste_container]
     scene: hood
-    requiredAction: resuspend
     correctVolumeMl: 12
     toleranceMl: 1
     errorHints:
       volume_off: "Use 12 mL so 100 uL per well gives 2e4 cells per well after counting."
-    allowedInteractions:
-      - actor: serological_pipette
-        source: media_bottle
-        liquid: media
-        volumeMl: 10
-        result:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: media
-            volumeMl: 10
-            colorKey: media
-      - actor: serological_pipette
-        liquid: media
-        target: flask
-        event: resuspend
-        consumesVolumeMl: 10
-    trigger:
-      scene: hood
-      event: "click:resuspend"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 10
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: media
+              volumeMl: 10
+              colorKey: media
+        - tool: serological_pipette
+          liquid: media
+          destination: flask
+          completionEvent: resuspend
+          consumesVolumeMl: 10
     nextId: count_cells
 
   - id: count_cells
@@ -247,14 +222,14 @@ steps:
     dayId: day1
     stepIndex: 3
     requiredItems: [cell_counter, dilution_tube_rack, microscope]
-    targetItems: [cell_counter, microscope]
     scene: bench
-    requiredAction: count_cells
     errorHints:
       low_viability: "Viability under 90% means dead cells dominate. Re-split and retry."
-    modal:
-      owner: microscope
-      screen: count_cells
+    completionPath:
+      kind: modal
+      openClick: cell_counter
+      advanceClick: capture-count
+      completionEvent: count-cells-capture
     nextId: seed_plate
 
   - id: seed_plate
@@ -265,30 +240,27 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [well_plate, serological_pipette, flask]
-    targetItems: [well_plate, serological_pipette, flask]
     scene: hood
-    requiredAction: pipette_to_plate
     errorHints:
       wrong_volume: "Seed 100 uL per well. Less means sparse wells and noisy readings."
-    allowedInteractions:
-      - actor: serological_pipette
-        source: flask
-        liquid: cells
-        volumeMl: 10
-        result:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: cells
-            volumeMl: 10
-            colorKey: cells
-      - actor: serological_pipette
-        liquid: cells
-        target: well_plate
-        event: pipette_to_plate
-        consumesVolumeMl: 10
-    trigger:
-      scene: hood
-      event: "click:pipette_to_plate"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: flask
+          liquid: cells
+          volumeMl: 10
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: cells
+              volumeMl: 10
+              colorKey: cells
+        - tool: serological_pipette
+          liquid: cells
+          destination: well_plate
+          completionEvent: pipette_to_plate
+          consumesVolumeMl: 10
     nextId: incubate_day1
 
   - id: incubate_day1
@@ -299,87 +271,257 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [incubator, well_plate]
-    targetItems: [incubator, well_plate]
     scene: bench
-    requiredAction: place_in_incubator
     isIncubation: true
     errorHints:
       skipped: "The plate must incubate overnight before treatment."
-    trigger:
-      scene: incubator
-      event: "click:place_in_incubator"
+    completionPath:
+      kind: directTool
+      tool: incubator
+      completionEvent: place_in_incubator
     nextId: carb_intermediate
 
   - id: carb_intermediate
-    label: "Make Carboplatin 200 uM intermediate (20 uL + 980 uL)"
-    action: "Make Carboplatin 200 uM intermediate (20 uL + 980 uL)"
+    label: "Set up carboplatin intermediate dilution"
+    action: "Set up carboplatin intermediate dilution"
     why: "Intermediate is the source for the low-dose working stocks."
     partId: part4_dilute
     dayId: day2
     stepIndex: 1
-    requiredItems: [carboplatin_stock, sterile_water, dilution_tube_rack]
-    targetItems: [sterile_water, dilution_tube_rack]
+    requiredItems: [carboplatin_stock, sterile_water, micropipette, dilution_tube_carb_intermediate]
     scene: hood
-    requiredAction: dilute_carb_intermediate
     errorHints:
-      volume_off: "Use 20 uL drug and 980 uL media. Wrong ratios break the dose series."
-    modal:
-      owner: drug_treatment
-      screen: carb_intermediate
+      volume_off: "Use 20 uL drug and 980 uL water. Wrong ratios break the dose series."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: micropipette
+          source: carboplatin_stock
+          liquid: carboplatin
+          volumeMl: 0.020
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.020
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          consumesVolumeMl: 0.020
+        - tool: micropipette
+          source: sterile_water
+          liquid: water
+          volumeMl: 0.980
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: water
+              volumeMl: 0.980
+              colorKey: water
+        - tool: micropipette
+          destination: dilution_tube_carb_intermediate
+          liquid: water
+          consumesVolumeMl: 0.980
+          completionEvent: carb_intermediate_complete
     nextId: carb_low_range
 
   - id: carb_low_range
-    label: "Make 5 low-range working stocks from the intermediate"
-    action: "Make 5 low-range working stocks from the intermediate"
+    label: "Set up 5 low-range working stocks"
+    action: "Set up 5 low-range working stocks from the intermediate"
     why: "These give the 10 nM to 500 nM final concentrations for rows B-F."
     partId: part4_dilute
     dayId: day2
     stepIndex: 2
-    requiredItems: [dilution_tube_rack, media_bottle]
-    targetItems: [dilution_tube_rack, media_bottle]
+    requiredItems: [micropipette, dilution_tube_carb_intermediate, media_bottle, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f]
     scene: hood
-    requiredAction: dilute_carb_low
     errorHints:
       wrong_count: "You need 5 low-range working stocks, one per row B-F."
-    modal:
-      owner: drug_treatment
-      screen: carb_low_range
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        # Row B: load from intermediate, discharge to B
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_b
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.450
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.450
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_b
+          liquid: media
+          consumesVolumeMl: 0.450
+        # Row C: load from intermediate, discharge to C
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_c
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.450
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.450
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_c
+          liquid: media
+          consumesVolumeMl: 0.450
+        # Row D: load from intermediate, discharge to D
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_d
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.450
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.450
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_d
+          liquid: media
+          consumesVolumeMl: 0.450
+        # Row E: load from intermediate, discharge to E
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_e
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.450
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.450
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_e
+          liquid: media
+          consumesVolumeMl: 0.450
+        # Row F: load from intermediate, discharge to F
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_f
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.450
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.450
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_f
+          liquid: media
+          consumesVolumeMl: 0.450
+          completionEvent: carb-low-range-confirm
     nextId: carb_high_range
 
   - id: carb_high_range
-    label: "Make 2 high-range working stocks from the 10 mM stock"
-    action: "Make 2 high-range working stocks from the 10 mM stock"
+    label: "Set up 2 high-range working stocks"
+    action: "Set up 2 high-range working stocks from the 10 mM stock"
     why: "These give the 5 uM and 25 uM final concentrations for rows G and H."
     partId: part4_dilute
     dayId: day2
     stepIndex: 3
     requiredItems: [carboplatin_stock, dilution_tube_rack, media_bottle]
-    targetItems: [carboplatin_stock, dilution_tube_rack, media_bottle]
     scene: hood
-    requiredAction: dilute_carb_high
     errorHints:
       wrong_count: "You need 2 high-range working stocks (rows G and H)."
-    modal:
-      owner: drug_treatment
-      screen: carb_high_range
+    completionPath:
+      kind: modal
+      openClick: multichannel_pipette
+      advanceClick: drug-modal-advance
+      completionEvent: carb-high-range-confirm
     nextId: metformin_stock
 
   - id: metformin_stock
-    label: "Make Metformin 10 mM working stock (10 uL + 990 uL)"
-    action: "Make Metformin 10 mM working stock (10 uL + 990 uL)"
+    label: "Set up metformin working stock"
+    action: "Set up Metformin 10 mM working stock (10 uL + 990 uL)"
     why: "Fresh metformin working stock is prepared on the day of treatment."
     partId: part4_dilute
     dayId: day2
     stepIndex: 4
     requiredItems: [metformin_stock, sterile_water, dilution_tube_rack]
-    targetItems: [metformin_stock, sterile_water, dilution_tube_rack]
     scene: hood
-    requiredAction: dilute_metformin
     errorHints:
       volume_off: "Use 10 uL stock and 990 uL media for a 10 mM working stock."
-    modal:
-      owner: drug_treatment
-      screen: metformin_stock
+    completionPath:
+      kind: modal
+      openClick: multichannel_pipette
+      advanceClick: drug-modal-advance
+      completionEvent: metformin-stock-prepare
     nextId: prewarm_media
 
   - id: prewarm_media
@@ -390,14 +532,13 @@ steps:
     dayId: day2
     stepIndex: 5
     requiredItems: [water_bath, media_bottle]
-    targetItems: [water_bath]
     scene: bench
-    requiredAction: prewarm
     errorHints:
       skipped: "Warm the media before adding to cells or you will kill some wells."
-    trigger:
-      scene: bench
-      event: "click:prewarm"
+    completionPath:
+      kind: directTool
+      tool: water_bath
+      completionEvent: prewarm
     nextId: media_adjust
 
   - id: media_adjust
@@ -408,50 +549,52 @@ steps:
     dayId: day2
     stepIndex: 1
     requiredItems: [well_plate, multichannel_pipette, media_bottle]
-    targetItems: [well_plate, multichannel_pipette, media_bottle]
     scene: hood
-    requiredAction: media_adjust
     errorHints:
       wrong_volume: "Columns 1-6 row A need 100 uL; rows B-H need 95 uL. Columns 7-12 subtract 10 uL."
-    trigger:
-      scene: hood
-      event: "click:media_adjust"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: multichannel_pipette
+          source: media_bottle
+          destination: well_plate
+          completionEvent: media_adjust
     nextId: add_carboplatin
 
   - id: add_carboplatin
-    label: "Add 5 uL carboplatin working stock per well (rows B-H)"
+    label: "Add carboplatin working stocks to the plate"
     action: "Add 5 uL carboplatin working stock per well (rows B-H)"
     why: "The 8-point dose series lets you compute an IC50 curve."
     partId: part5_treat
     dayId: day2
     stepIndex: 2
     requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
-    targetItems: [well_plate, multichannel_pipette, dilution_tube_rack]
     scene: hood
-    requiredAction: add_carboplatin
     errorHints:
       wrong_volume: "Add 5 uL per well. Row A stays drug-free as a control."
-    modal:
-      owner: drug_treatment
-      screen: add_carboplatin
+    completionPath:
+      kind: modal
+      openClick: multichannel_pipette
+      advanceClick: drug-modal-advance
+      completionEvent: carb-add-confirm
     nextId: add_metformin
 
   - id: add_metformin
-    label: "Add 5 uL metformin working stock to columns 7-12"
+    label: "Add metformin working stocks to columns 7-12"
     action: "Add 5 uL metformin working stock to columns 7-12"
     why: "Metformin sensitizes cells so the +metformin curve shifts left."
     partId: part5_treat
     dayId: day2
     stepIndex: 3
     requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
-    targetItems: [well_plate, multichannel_pipette, dilution_tube_rack]
     scene: hood
-    requiredAction: add_metformin
     errorHints:
       wrong_cols: "Metformin only goes in columns 7-12. Columns 1-6 stay carboplatin only."
-    modal:
-      owner: drug_treatment
-      screen: add_metformin
+    completionPath:
+      kind: modal
+      openClick: multichannel_pipette
+      advanceClick: drug-modal-advance
+      completionEvent: metformin-add-confirm
     nextId: incubate_48h
 
   - id: incubate_48h
@@ -462,15 +605,14 @@ steps:
     dayId: day2
     stepIndex: 4
     requiredItems: [incubator, well_plate]
-    targetItems: [incubator, well_plate]
     scene: bench
-    requiredAction: place_in_incubator_48h
     isIncubation: true
     errorHints:
       skipped: "The plate must incubate 48 h before MTT readout."
-    trigger:
-      scene: incubator
-      event: "click:place_in_incubator_48h"
+    completionPath:
+      kind: directTool
+      tool: incubator
+      completionEvent: place_in_incubator_48h
     nextId: add_mtt
 
   - id: add_mtt
@@ -481,14 +623,16 @@ steps:
     dayId: day4
     stepIndex: 1
     requiredItems: [well_plate, multichannel_pipette, mtt_vial]
-    targetItems: [well_plate, multichannel_pipette, mtt_vial]
     scene: hood
-    requiredAction: add_mtt
     errorHints:
       wrong_volume: "Add 25 uL MTT for a 1.5 mM final concentration."
-    trigger:
-      scene: hood
-      event: "click:add_mtt"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: multichannel_pipette
+          source: mtt_vial
+          destination: well_plate
+          completionEvent: add_mtt
     nextId: incubate_mtt
 
   - id: incubate_mtt
@@ -499,15 +643,14 @@ steps:
     dayId: day4
     stepIndex: 2
     requiredItems: [incubator, well_plate]
-    targetItems: [incubator, well_plate]
     scene: bench
-    requiredAction: place_in_incubator_mtt
     isIncubation: true
     errorHints:
       skipped: "The MTT must incubate 1.5 h or the signal is too weak."
-    trigger:
-      scene: incubator
-      event: "click:place_in_incubator_mtt"
+    completionPath:
+      kind: directTool
+      tool: incubator
+      completionEvent: place_in_incubator_mtt
     nextId: decant_mtt
 
   - id: decant_mtt
@@ -518,14 +661,15 @@ steps:
     dayId: day4
     stepIndex: 3
     requiredItems: [well_plate, biohazard_decant]
-    targetItems: [well_plate, biohazard_decant]
     scene: hood
-    requiredAction: decant_mtt
     errorHints:
       wrong_waste: "MTT goes into the biohazard bin, not the vacuum waste."
-    trigger:
-      scene: hood
-      event: "click:decant_mtt"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: well_plate
+          destination: biohazard_decant
+          completionEvent: decant_mtt
     nextId: add_dmso
 
   - id: add_dmso
@@ -536,14 +680,16 @@ steps:
     dayId: day4
     stepIndex: 4
     requiredItems: [well_plate, multichannel_pipette, dmso_bottle]
-    targetItems: [well_plate, multichannel_pipette, dmso_bottle]
     scene: hood
-    requiredAction: add_dmso
     errorHints:
       wrong_volume: "Add 200 uL DMSO per well and pipette up and down 10 times."
-    trigger:
-      scene: hood
-      event: "click:add_dmso"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: multichannel_pipette
+          source: dmso_bottle
+          destination: well_plate
+          completionEvent: add_dmso
     nextId: plate_read
 
   - id: plate_read
@@ -554,14 +700,14 @@ steps:
     dayId: day4
     stepIndex: 1
     requiredItems: [well_plate]
-    targetItems: [well_plate]
     scene: plate_reader
-    requiredAction: read_plate
     errorHints:
       wrong_wavelength: "Read at 560 nm. Other wavelengths miss the formazan peak."
-    modal:
-      owner: plate_reader
-      screen: plate_read
+    completionPath:
+      kind: modal
+      openClick: plate_reader
+      advanceClick: complete-plate-read
+      completionEvent: plate-read-complete
     nextId: results
 
   - id: results
@@ -572,11 +718,11 @@ steps:
     dayId: day4
     stepIndex: 2
     requiredItems: [well_plate]
-    targetItems: [well_plate]
     scene: plate_reader
-    requiredAction: view_results
     errorHints: {}
-    modal:
-      owner: plate_reader
-      screen: results
+    completionPath:
+      kind: modal
+      openClick: plate_reader
+      advanceClick: modal-close
+      completionEvent: results-finalize
     nextId: null
