@@ -1,7 +1,8 @@
 # Install
 
 The game builds from TypeScript source into a single self-contained HTML file.
-"Installed" means you can run `bash build_game.sh` and open the output in a browser.
+"Installed" means you can run `bash export_single_file.sh` and open the output in a browser.
+The HTML file is a generated artifact and is not committed to git.
 
 ## Requirements
 
@@ -30,13 +31,13 @@ The game builds from TypeScript source into a single self-contained HTML file.
 
 4. Build the game:
    ```bash
-   bash build_game.sh
+   bash export_single_file.sh
    ```
 
 ## Verify install
 
 ```bash
-bash build_game.sh && test -f cell_culture_game.html && echo "OK"
+bash export_single_file.sh && test -f cell_culture_game.html && echo "OK"
 ```
 
 This confirms the TypeScript compilation succeeded and the output HTML exists.

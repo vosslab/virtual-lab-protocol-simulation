@@ -37,20 +37,20 @@ node /tmp/_test_game_ui.mjs
 
 ```bash
 cd /Users/vosslab/nsh/cell-culture-game-claude
-node tests/test_game_ui.mjs
+node tests/e2e/test_game_ui.mjs
 ```
-
-Put Playwright scripts in `tests/` at the repo root.
 
 ## Script location
 
-Store Playwright scripts in `tests/` with an `.mjs` extension, for example
-`tests/test_game_ui.mjs`. This matches the testing convention in
-[docs/TYPESCRIPT_STYLE.md](TYPESCRIPT_STYLE.md), and it can overlap with pytest files safely:
+Browser-driven Playwright tests live in `tests/e2e/`, a dedicated subdirectory:
 
-- Pytest collects Python files such as `test_*.py`.
-- Playwright helper scripts use `.mjs` and are run directly with `node`.
-- Keeping both under `tests/` makes test and verification scripts easy to find.
+- `tests/e2e/` contains Playwright tests that need a real browser (`*.mjs` files).
+- `tests/` contains pure-function unit/regression tests (`test_*.py` for pytest, and non-browser `.mjs` files like protocol graph validation).
+
+This separation ensures:
+- Pytest collects only Python files from `tests/` (no `.mjs` files in the unit tier).
+- Playwright tests in `tests/e2e/` run independently with `node tests/e2e/test_*.mjs`.
+- `tests/e2e/` can grow to support multiple test runners (Cypress, Puppeteer, etc.) without name collisions.
 
 ## Packages
 
@@ -93,7 +93,7 @@ await browser.close();
 Run with:
 
 ```bash
-node tests/my_test.mjs
+node tests/e2e/my_test.mjs
 ```
 
 ## Common patterns
@@ -155,7 +155,8 @@ Should show `playwright@x.x.x` under the project.
 
 ## File conventions
 
-- Put Playwright scripts in `tests/` at the repo root.
-- Mixing Playwright `.mjs` files with pytest `test_*.py` files is fine.
-- Use `.mjs` extension for ES module scripts (e.g., `tests/test_game_ui.mjs`).
+- Put browser-driven Playwright scripts in `tests/e2e/` with `.mjs` extension (e.g., `tests/e2e/test_game_ui.mjs`).
+- Put pure-function tests (no browser) in `tests/` (pytest `.py` files and non-browser `.mjs` files).
+- Use `.mjs` extension for ES module scripts.
 - Put screenshots in `test-results/` (gitignored).
+- Call `ensureGameBuilt(repoRoot)` at the start of each test to bootstrap the HTML if missing.

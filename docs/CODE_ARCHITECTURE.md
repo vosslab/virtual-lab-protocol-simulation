@@ -1,5 +1,7 @@
 # Code architecture
 
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+
 ## Overview
 
 An interactive browser-based educational simulation that teaches cell culture
@@ -9,49 +11,48 @@ development server and Playwright-based test suite support local development.
 
 ## Major components
 
-### TypeScript game modules (`parts/`)
+### TypeScript game modules (`src/`)
 
 The game logic lives in 12 TypeScript files compiled and concatenated into one
 JavaScript bundle. All declarations are global (no ES module wrapping).
 
-- [parts/constants.ts](../parts/constants.ts) - Protocol step definitions,
+- [src/constants.ts](../src/constants.ts) - Protocol step definitions,
   plate layout, scoring weights, and the `ProtocolStep` interface
-- [parts/game_state.ts](../parts/game_state.ts) - `GameState` interface and
+- [src/game_state.ts](../src/game_state.ts) - `GameState` interface and
   well plate initialization
-- [parts/cell_model.ts](../parts/cell_model.ts) - Cell population model with
+- [src/cell_model.ts](../src/cell_model.ts) - Cell population model with
   IC50-style drug response curve
-- [parts/svg_assets.ts](../parts/svg_assets.ts) - SVG rendering for all visual
+- [src/svg_assets.ts](../src/svg_assets.ts) - SVG rendering for all visual
   elements (largest module)
-- [parts/hood_scene.ts](../parts/hood_scene.ts) - Sterile hood interaction
-  scene with drag-and-drop tool handling
-- [parts/microscope_scene.ts](../parts/microscope_scene.ts) - Cell counting
+- [src/scenes/hood.ts](../src/scenes/hood.ts) - Sterile hood interaction
+  scene with click-based tool selection and load/discharge handling
+- [src/scenes/microscope.ts](../src/scenes/microscope.ts) - Cell counting
   via hemocytometer quadrant selection
-- [parts/incubator_scene.ts](../parts/incubator_scene.ts) - Incubation
+- [src/scenes/incubator.ts](../src/scenes/incubator.ts) - Incubation
   placement scene
-- [parts/feed_cells.ts](../parts/feed_cells.ts) - Media aspiration and
+- [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) - Media aspiration and
   addition logic with volume validation
-- [parts/drug_treatment.ts](../parts/drug_treatment.ts) - Serial dilution
+- [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) - Serial dilution
   series selection (half-log, binary, shallow)
-- [parts/ui_rendering.ts](../parts/ui_rendering.ts) - Sidebar HUD, warning
+- [src/ui_rendering.ts](../src/ui_rendering.ts) - Sidebar HUD, warning
   banner, and score display
-- [parts/scoring.ts](../parts/scoring.ts) - Final score calculation across
+- [src/scoring.ts](../src/scoring.ts) - Final score calculation across
   four categories (order, cleanliness, waste, timing)
-- [parts/init.ts](../parts/init.ts) - Bootstrap, protocol validation, and
+- [src/init.ts](../src/init.ts) - Bootstrap, protocol validation, and
   render dispatcher
 
-### Build pipeline (`build_game.sh`)
+### Build pipeline (`build_github_pages.sh`)
 
-[build_game.sh](../build_game.sh) concatenates TypeScript files in dependency
-order, compiles to JavaScript via esbuild (ES2020 target, type-stripping only),
-and assembles the final HTML from [parts/head.html](../parts/head.html),
-[parts/style.css](../parts/style.css), [parts/body.html](../parts/body.html),
-and [parts/tail.html](../parts/tail.html).
+[build_github_pages.sh](../build_github_pages.sh) concatenates TypeScript files
+in dependency order, compiles to JavaScript via esbuild (ES2020 target,
+type-stripping only), and assembles the final HTML from
+[src/head.html](../src/head.html), [src/style.css](../src/style.css),
+[src/body.html](../src/body.html), and [src/tail.html](../src/tail.html).
 
-### Development server (`cell_culture_game.py`)
+### Local development server (`run_web_server.sh`)
 
-[cell_culture_game.py](../cell_culture_game.py) serves the built HTML on
-`127.0.0.1:5080` with auto-rebuild when the output is missing or stale.
-Used for local testing and Playwright automation.
+[run_web_server.sh](../run_web_server.sh) rebuilds the game via [build_github_pages.sh](../build_github_pages.sh),
+then serves [dist/](../dist/) on a local HTTP port for testing and Playwright automation.
 
 ### Test suite (`tests/`)
 
@@ -62,7 +63,7 @@ exercises the full 9-step protocol.
 ## Data flow
 
 ```text
-User input (click / drag-drop)
+User input (click)
   |
   v
 Event handlers in scene modules
@@ -71,7 +72,7 @@ Event handlers in scene modules
 updateGameState() mutations on GameState
   |
   v
-Validation (volume, sequence, cleanliness)
+Validation (volume, interaction sequence, cleanliness)
   |
   v
 warnings[] accumulation (real-time sidebar display)
@@ -94,7 +95,9 @@ Results scene: calculateScore() -> 3-star rating
 
 ## Game protocol
 
-The 9-step guided workflow mirrors a real cell culture experiment:
+For authoring a new protocol from scratch, see [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md).
+
+The 9-step guided workflow mirrors a real cell culture experiment in `cell_culture`:
 
 1. Spray/sanitize hood
 2. Aspirate old media
@@ -108,7 +111,7 @@ The 9-step guided workflow mirrors a real cell culture experiment:
 
 ## Scoring
 
-Four weighted categories in [parts/scoring.ts](../parts/scoring.ts):
+Four weighted categories in [src/scoring.ts](../src/scoring.ts):
 
 | Category | Max points | Tracks |
 | --- | --- | --- |
@@ -129,7 +132,7 @@ source source_me.sh && python3 -m pytest tests/
 - **Style:** indentation (tabs), whitespace, shebang consistency
 - **Imports:** no `import *`, no relative imports, all third-party in
   requirements files
-- **E2E:** `bash walkthrough.sh` runs [devel/protocol_walkthrough.mjs](../devel/protocol_walkthrough.mjs), a two-pass Playwright test that walks the explicit `nextId` chain through all 25 protocol steps, screenshots each, and asserts `validateTriggerCoverage()` passes. See [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) for the protocol-flow architecture.
+- **E2E:** `tests/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test (drives the full protocol via Playwright DOM clicks). `tests/protocol_graph_smoke.mjs` is a fast data-layer smoke test that proves graph reachability (calls `completeStep()` directly). See [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) for the protocol-flow architecture.
 
 Test scope is controllable via environment variables (`FAST_REPO_HYGIENE=1`,
 `REPO_HYGIENE_SCOPE=changed`, `SKIP_REPO_HYGIENE=1`).
@@ -169,22 +172,39 @@ the SVGs; `tests/test_svg_color_patch.mjs` and
 `tests/test_bottle_recolor.mjs` import the real production module via
 `tests/_compile_for_test.mjs` and exercise the full recolor path.
 
+## Completion-event coverage policy (CE-3)
+
+Each protocol has a completion-event coverage policy defined in `getCoveragePolicy(protocolId)` in
+[src/init.ts](../src/init.ts). The policy controls how missing completion-event emitters are
+handled at startup:
+
+- **STRICT** (default; used for `cell_culture`): any step missing a matching completion-event emitter
+  throws via `showValidationError` with the message `'missing completion-event emitter'`. This
+  enforces that every declared step has a working implementation.
+- **RELAXED** (used for `tutorial_*` protocols): missing emitters are logged via `console.warn`
+  but do not block page load; the game can start even with incomplete wiring. Useful for tutorial
+  and development protocols where full coverage is not yet required.
+- **Unknown protocols** default to **STRICT** for safety.
+
+The startup check `validateCompletionEventCoverage()` runs after all scene render functions
+have executed (on the `load` event) and compares the declared steps against the set of
+registered emitters populated by `triggerStep()` calls.
+
 ## Extension points
 
 - **New protocol steps:** Add entries to `PROTOCOL_STEPS` in
-  [parts/constants.ts](../parts/constants.ts), wire a `triggerStep(id)` call
-  in the scene that owns the step, and add a module-scope
-  `registeredTriggers.add(id)` pre-registration line. Step ordering uses
-  explicit `nextId` linked-list transitions (not array position). Full
-  instructions, validators, and the walkthrough test are documented in
-  [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md).
-- **New scenes:** Create a new `*_scene.ts` file in `parts/`, add it to the
-  build order in [build_game.sh](../build_game.sh), and register it in the
-  render dispatcher in [parts/init.ts](../parts/init.ts)
+  `src/constants.ts`, wire a `triggerStep(id)` call (completion-event emitter)
+  in the scene that owns the step, and add a module-scope `registeredEmitters.add(id)`
+  pre-registration line. Step ordering uses explicit `nextId` linked-list
+  transitions (not array position). Full instructions, validators, and the walker
+  test are documented in [docs/PROTOCOL_STEPS.md](PROTOCOL_STEPS.md).
+- **New scenes:** Create a new `*_scene.ts` file in `src/scenes/`, add it to the
+  build order in [build_github_pages.sh](../build_github_pages.sh), and register
+  it in the render dispatcher in [src/init.ts](../src/init.ts)
 - **Drug models:** Modify the IC50 curve parameters in
-  [parts/cell_model.ts](../parts/cell_model.ts)
+  [src/cell_model.ts](../src/cell_model.ts)
 - **Scoring adjustments:** Change weights and thresholds in
-  [parts/scoring.ts](../parts/scoring.ts)
+  [src/scoring.ts](../src/scoring.ts)
 
 ## Known gaps
 

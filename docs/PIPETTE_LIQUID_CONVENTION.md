@@ -1,5 +1,7 @@
 # Pipette Liquid Fill Convention
 
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+
 ## Overview
 
 Serological pipettes in the game visualize liquid fill through a bottom-anchored fill rectangle clipped to the inner glass tube. This document explains the asset structure and color conventions.
@@ -44,7 +46,7 @@ Liquid colors are driven by reagent `colorKey` values from `inventory_data.ts:RE
 | MTT reagent | mtt | #fff59d | Pale yellow |
 | DMSO | dmso | #e0e0e0 | Gray |
 
-Colors are defined in `parts/style_constants.ts:COLOR_MAP` and must match the `displayColor` field in `inventory_data.ts`.
+Colors are defined in `src/style_constants.ts:COLOR_MAP` and must match the `displayColor` field in `inventory_data.ts`.
 
 ## Implementation: createPipetteLiquidOverlay
 
@@ -69,7 +71,7 @@ The function:
 
 ## Game State Integration
 
-When a pipette is loaded with liquid via `resolveInteraction`, the result populates:
+When a pipette is loaded with liquid via `resolveInteraction`, the state change populates:
 
 ```typescript
 gameState.heldLiquid = {
@@ -88,7 +90,7 @@ gameState.heldLiquid = null;
 
 ## Rendering in Hood Scene
 
-`parts/hood_scene.ts:getItemSvgHtml()` checks if `gameState.heldLiquid.tool` matches the item being rendered:
+`src/scenes/hood.ts:getItemSvgHtml()` checks if `gameState.heldLiquid.tool` matches the item being rendered:
 
 ```typescript
 case 'serological_pipette':
@@ -102,9 +104,9 @@ case 'serological_pipette':
 
 ## Future Extensions
 
-- **Multichannel pipette**: 8 parallel channels with individual fill rects (deferred to M5)
-- **Aspirating pipette**: Similar single-tube fill (deferred to M5)
-- **Dynamic color override**: Drag-and-drop mixing (not in scope for this plan)
+- **Multichannel pipette**: 8 parallel channels with individual fill rects (not currently implemented)
+- **Aspirating pipette**: Similar single-tube fill (not currently implemented)
+- **Dynamic color override**: Mixing on transfer (not currently implemented; game has no drag-and-drop)
 
 ## Testing
 

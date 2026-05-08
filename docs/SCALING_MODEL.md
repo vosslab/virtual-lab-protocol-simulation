@@ -27,13 +27,13 @@ These values are tuned so that:
 
 ## How sizing works
 
-1. Item definition includes `displayWidthCm` in `content/cell_culture/items.yaml`:
+1. Item definition includes `displayWidthCm` in `src/content/cell_culture/items.yaml`:
    ```yaml
    centrifuge:
      displayWidthCm: 60  # 60 cm (exaggerated, real ~40cm)
    ```
 
-2. The value is compiled into `EQUIPMENT` in `parts/inventory_data.ts`
+2. The value is compiled into `EQUIPMENT` in `src/content/inventory_data.ts`
 
 3. Scene configs (`bench_config.ts`, `hood_config.ts`) compute `widthScale` from `displayWidthCm`:
    ```typescript
@@ -50,7 +50,7 @@ These values are tuned so that:
 
 ## Adding a new item
 
-1. Add to `content/cell_culture/items.yaml` with `displayWidthCm`:
+1. Add to `src/content/cell_culture/items.yaml` with `displayWidthCm`:
    ```yaml
    my_instrument:
      label: "My Instrument"
@@ -65,9 +65,9 @@ These values are tuned so that:
    { id: 'my_instrument', ..., widthScale: getHoodItemWidthScale('my_instrument', 10), ... }
    ```
 
-4. Test with `bash walkthrough.sh` to ensure layout fits
+4. Test with `source source_me.sh && python3 tools/run_protocol_walkthrough.py` to ensure layout fits
 
-## Legacy migration
+## Current fallback behavior
 
 Items **without** `displayWidthCm` fall back to hardcoded `widthScale` values in scene configs:
 ```typescript
@@ -77,9 +77,9 @@ const legacyScales: Record<string, number> = {
 };
 ```
 
-This allows gradual migration. To complete migration:
-1. Add `displayWidthCm` to `items.yaml`
-2. Remove item from `legacyScales`
+To migrate an item to `displayWidthCm`:
+1. Add `displayWidthCm` to `src/content/cell_culture/items.yaml`
+2. Remove the item from `legacyScales`
 3. Verify layout with tests
 
 ## Tuning displayCm values
@@ -117,9 +117,9 @@ This multiplies the final `widthScale`: `widthScale *= (fudge ?? 1.0)`
 
 Use sparingly for final layout adjustments.
 
-## Backward compatibility
+## Compatibility notes for layout scaling
 
 The layout engine is unchanged. All scaling happens at the scene config level via `widthScale` computation. This ensures:
-- Old items continue to work with legacy `widthScale`
-- No changes needed to layout_engine.ts
-- Tests (walkthrough.sh, test_layout_metrics.mjs) remain unmodified
+- Items without `displayWidthCm` continue to work with their hardcoded `widthScale`
+- No changes needed to `layout_engine.ts`
+- The layout metrics test should continue to pass

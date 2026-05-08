@@ -1,12 +1,14 @@
 # Protocol YAML format
 
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+
 This document specifies the three-file YAML schema for the Cell Culture Game protocol.
 The protocol is author-editable at build time, not at runtime.
 
 ## Design rationale
 
-The protocol was historically hardcoded as TypeScript object literals in [parts/constants.ts](../parts/constants.ts).
-Moving to YAML achieves:
+The protocol is authored in YAML and compiled at build time into TypeScript constants.
+This separation achieves:
 
 - **Editability**: a non-coder can edit YAML in a text editor without touching code.
 - **Separation of concerns**: protocol logic (branching, validation) lives in TypeScript;
@@ -18,35 +20,39 @@ Moving to YAML achieves:
   in YAML. Drift between the banner text, the highlights, and the click handlers cannot
   happen because they all read from the same generated data structure.
 
+## Where YAML lives
+
+Protocol YAML files are human-authored source content. They live under `src/content/<protocol_name>/` because the build treats them as app source inputs and compiles them into generated TypeScript modules in `src/content/`. Do not edit `src/content/protocol_data.ts` or `src/content/inventory_data.ts` by hand. Edit the YAML files and rebuild.
+
 ## File locations
 
-Protocol-specific YAML files are organized in subfolders under `content/`. Each
+Protocol-specific YAML files are organized in subfolders under `src/content/`. Each
 protocol is self-contained:
 
 ```
-content/
+src/content/
   <protocol_name>/
     items.yaml        # item definitions
     reagents.yaml     # reagent definitions
     protocol.yaml     # protocol steps, parts, and days
 ```
 
-The default protocol is `cell_culture`:
+The active protocol is `cell_culture`:
 
-- `content/cell_culture/items.yaml`: item definitions
-- `content/cell_culture/reagents.yaml`: reagent definitions
-- `content/cell_culture/protocol.yaml`: protocol steps, parts, and days
+- `src/content/cell_culture/items.yaml`: item definitions
+- `src/content/cell_culture/reagents.yaml`: reagent definitions
+- `src/content/cell_culture/protocol.yaml`: protocol steps, parts, and days
 
 A Python generator at `tools/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
 
-- `parts/protocol_data.ts`: exports `PROTOCOL_STEPS`, `PROTOCOL_PARTS`, `PROTOCOL_DAYS`
-- `parts/inventory_data.ts`: exports `EQUIPMENT` (item map) and `REAGENTS` (reagent map)
+- `src/content/protocol_data.ts`: exports `PROTOCOL_STEPS`, `PROTOCOL_PARTS`, `PROTOCOL_DAYS`
+- `src/content/inventory_data.ts`: exports `EQUIPMENT` (item map) and `REAGENTS` (reagent map)
 
 ### Multiple protocols
 
 To support future protocols (e.g. western blot, flow cytometry), each protocol is a
-self-contained subfolder under `content/`. At build time, specify the protocol:
+self-contained subfolder under `src/content/`. At build time, specify the protocol:
 
 ```bash
 python3 tools/build_protocol_data.py --protocol cell_culture
@@ -54,10 +60,10 @@ python3 tools/build_protocol_data.py --protocol western_blot  # future
 ```
 
 The `--protocol` flag defaults to `cell_culture` if omitted. To add a new protocol,
-copy `content/cell_culture/` to `content/<new_protocol_name>/`, edit the YAML files,
+copy `src/content/cell_culture/` to `src/content/<new_protocol_name>/`, edit the YAML files,
 and rebuild.
 
-## content/items.yaml and content/reagents.yaml
+## src/content/&lt;protocol_name&gt;/items.yaml and src/content/&lt;protocol_name&gt;/reagents.yaml
 
 Two YAML files handle items and reagents separately. Namespaces are disjoint:
 item ids appear in layout, reagent ids appear in liquid state. Both can appear in
@@ -79,7 +85,7 @@ Each item is a mapping keyed by snake_case id. Required fields vary by role.
 
 | Field | Type | When required | Description |
 | --- | --- | --- | --- |
-| `asset` | string | when `scene` != `virtual` and `scene` != `none` | SVG asset basename in `assets/equipment/` (no .svg). This is distinct from the legacy ASSET_SPECS lookup key in `parts/hood_config.ts`. M1.C reconciles the two namespaces at build time. |
+| `asset` | string | when `scene` != `virtual` and `scene` != `none` | SVG asset basename in `assets/equipment/` (no .svg). This is distinct from the legacy ASSET_SPECS lookup key in `src/hood_config.ts`. M1.C reconciles the two namespaces at build time. |
 | `liquidCapable` | boolean | items that hold liquid | whether the item can be filled/emptied |
 | `capacityMl` | number | if `liquidCapable: true` | max volume in mL |
 | `allowedLiquids` | array of strings | if `liquidCapable: true` | list of reagent ids that can be stored (e.g. `[media, pbs, trypsin]`) |
@@ -97,7 +103,7 @@ Each item is a mapping keyed by snake_case id. Required fields vary by role.
 - `waste_target`: a disposal container (waste_container)
 - `instrument`: bench equipment (centrifuge, incubator)
 - `modal_tool`: an item used only inside a modal (mtt_vial)
-- `virtual_target`: a clickable zone with no asset (hood_surface)
+- `virtual_target`: a documentation marker for items that are not interactive click targets. **virtual_target items must not be used as `interaction.destination`.** Use a direct tool interaction instead.
 - `decoration`: visual-only non-interactive item (professor, glove_box)
 
 #### Scene vocabulary (closed set, required)
@@ -120,7 +126,7 @@ Each reagent is a mapping keyed by snake_case id. All fields required.
 
 ### Items and reagents example
 
-content/cell_culture/items.yaml:
+src/content/cell_culture/items.yaml:
 ```yaml
 items:
   serological_pipette:
@@ -153,7 +159,7 @@ items:
     visualOnly: true
 ```
 
-content/cell_culture/reagents.yaml:
+src/content/cell_culture/reagents.yaml:
 ```yaml
 reagents:
   pbs:
@@ -167,10 +173,10 @@ reagents:
     displayColor: "#f7a6b8"
 ```
 
-## content/protocol.yaml
+## src/content/&lt;protocol_name&gt;/protocol.yaml
 
 Three top-level blocks: `parts`, `days`, and `steps`. Parts organize steps by lab workflow
-phase; days mark when each part runs. Steps are the runnable units of the protocol.
+part; days mark when each part runs. Steps are the runnable units of the protocol.
 
 ### Parts block
 
@@ -209,29 +215,27 @@ is determined by `nextId` linked-list pointers, not by array position.
 | `stepIndex` | number | yes | 1-based position within the part |
 | `scene` | string | yes | Where this step's interactions happen: `hood`, `bench`, `incubator`, `microscope`, or `plate_reader` |
 | `requiredItems` | array of strings | yes | Item ids that must be available (shown in step card) |
-| `targetItems` | array of strings | yes | Item ids that the student must click to advance |
-| `trigger` | object | no | Maps a scene event to step completion (see below) |
+| `usedItems` | array of strings | generated (not authored) | Derived item summary: items appearing in the step's interaction sequence, in first-use order (tool, source, destination). Required in generated TypeScript; never written in author YAML. |
+| `completionTrigger` | object | no | Completion trigger: maps a scene completion event to step completion (see below) |
 | `nextId` | string or null | yes | Id of the next step, or `null` if this is the final step |
 | `errorHints` | map of strings | no | Feedback messages keyed by error type (e.g. `wrong_tool`, `volume_off`) |
 
-#### Step fields (backward compatibility)
-
-These fields exist on the TypeScript `ProtocolStep` interface and must be round-tripped
-by YAML, but are not used to drive new resolver behavior in M1:
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `requiredAction` | string | no | Legacy action type (e.g. `spray_ethanol`, `pipette_media`, `centrifuge`). Kept for runtime event wiring. |
-| `correctVolumeMl` | number | no | Optional. Target volume for volume-checking steps (e.g. 9 mL for `neutralize_trypsin`). |
-| `toleranceMl` | number | no | Optional. Tolerance window paired with `correctVolumeMl` (e.g. &plusmn;1 mL). |
-
 #### Step fields (interaction-driven steps)
 
-Steps that advance via item clicks (most steps) must have `allowedInteractions`:
+Steps that advance via item clicks (most steps) must declare an interaction sequence:
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `allowedInteractions` | list of objects | if no `modal` | Array of valid click sequences that advance the step |
+| `interactionSequence` | list of objects | if no `modal` | Ordered list of interactions that advance the step. The resolver enforces order via `interactionIndex`. |
+
+#### Step fields (optional volume checks)
+
+The following fields are optional and used for volume-checking steps:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `correctVolumeMl` | number | Optional. Target volume for volume-checking steps (e.g. 9 mL for `neutralize_trypsin`). |
+| `toleranceMl` | number | Optional. Tolerance window paired with `correctVolumeMl` (e.g. &plusmn;1 mL). |
 
 #### Step fields (modal-owned steps)
 
@@ -239,7 +243,7 @@ Steps that advance via a modal screen instead of scene clicks have `modal`:
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `modal` | object | if no `allowedInteractions` | References the modal owner and screen name |
+| `modal` | object | if no `interactionSequence` | References the modal owner and screen name |
 
 Modal structure:
 
@@ -256,47 +260,42 @@ Pure incubation or animation steps with no interaction:
 | --- | --- | --- |
 | `isIncubation` | boolean | if `true`, the step is routed through `step_dispatch` with no resolver |
 
-### allowedInteractions structure
+### Interaction object structure
 
-Each interaction object describes one valid click combination. Multiple interactions form
-a sequence that the student can do in any order.
+Each interaction in an `interactionSequence` describes one logical player operation (one or more clicks).
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `actor` | string | yes | Item id of the tool the student is holding |
-| `source` | string | no | Item id to draw from (pipette source) |
-| `target` | string | no | Item id to apply to (pipette destination) |
+| `tool` | string | yes | Item id of the tool the student uses (clicked first) |
+| `source` | string | no | Item id to draw from (for load interactions) |
+| `destination` | string | no | Item id to apply to (for discharge interactions). Use `destination` only when the receiving item is an intended click target. Do not use virtual destinations or scene affordances as semantic placeholders for context. For a one-click action such as spraying ethanol or starting an instrument, use a direct tool interaction (`tool` + `completionEvent`, no `source`, no `destination`). |
 | `liquid` | string | no | Reagent id involved in the interaction |
 | `volumeMl` | number | no | Liquid volume for UI feedback |
-| `consumesVolumeMl` | number | no | Amount to deduct from actor's capacity after transfer |
-| `event` | string | no | Protocol event to fire on completion (e.g. `pbs_wash`) |
-| `result` | object | no | Post-interaction state of the actor. See result structure below. |
+| `consumesVolumeMl` | number | no | Amount to deduct from the tool's capacity after transfer |
+| `completionEvent` | string | no | Completion event emitted when this interaction finishes (e.g. `pbs_wash`). Only the final interaction in a sequence may emit a completion event. |
+| `stateChange` | object | no | Tool state change applied by this interaction. See state change structure below. |
 
-Result structure (post-interaction tool state):
+State change structure (tool state after an interaction):
 
-Nested under `result` in the interaction object:
-
-| Field | Type | Description |
-| --- | --- | --- |
-| `tool` | string | Item id of the tool |
-| `liquid` | string | Reagent id now inside the tool |
-| `volumeMl` | number | Volume of liquid in mL |
-| `colorKey` | string | Reagent colorKey for UI rendering |
-
-### Trigger structure
-
-Wires a scene event to step completion. The builder validates that the event in an
-interaction's `result` matches the step's trigger event.
+Nested under `stateChange` in an interaction object:
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `scene` | string | Scene where the event fires (e.g. `hood`, `microscope`) |
-| `event` | string | Event identifier (e.g. `pbs_wash`, `count_cells`) |
+| `heldLiquid` | object | Optional. Liquid held by the tool after a load interaction. Contains: `tool` (item id), `liquid` (reagent id), `volumeMl` (number), `colorKey` (reagent color role). |
+
+### Completion trigger structure
+
+Wires a scene completion event to step completion. The builder validates that the final interaction's `completionEvent` matches this trigger's event.
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `scene` | string | Scene where the completion event fires (e.g. `hood`, `microscope`, `bench`) |
+| `completionEvent` | string | Completion event identifier (e.g. `pbs_wash`, `count_cells`). Must match the `completionEvent` on the final interaction in the step's `interactionSequence`. |
 
 ## Worked example: pbs_wash step
 
-The `pbs_wash` step from the OVCAR8 protocol demonstrates the full schema (from
-content/cell_culture/protocol.yaml):
+The `pbs_wash` step demonstrates the canonical schema (from `src/content/cell_culture/protocol.yaml`).
+This uses modern field names; at runtime (before Patch 1), YAML keys are still in legacy form.
 
 ```yaml
 steps:
@@ -309,46 +308,54 @@ steps:
     stepIndex: 3
     scene: hood
     requiredItems: [flask, pbs_bottle, serological_pipette, waste_container]
-    targetItems:   [flask, pbs_bottle, waste_container]
-    allowedInteractions:
-      - actor: serological_pipette
+    interactionSequence:
+      - tool: serological_pipette
         source: pbs_bottle
         liquid: pbs
-        result:
+        stateChange:
           heldLiquid:
             tool: serological_pipette
             liquid: pbs
             volumeMl: 4
             colorKey: pbs
-      - actor: serological_pipette
+      - tool: serological_pipette
+        destination: flask
         liquid: pbs
-        target: flask
-        event: pbs_wash
+        completionEvent: pbs_wash
         consumesVolumeMl: 4
     errorHints:
       wrong_reagent: "PBS is the wash buffer. Media will stop trypsin."
       volume_off: "Use about 4 mL so the whole surface is rinsed."
-    trigger:
+    completionTrigger:
       scene: hood
-      event: pbs_wash
+      completionEvent: pbs_wash
     nextId: add_trypsin
+```
+
+```yaml
+# generated by tools/build_protocol_data.py; not authored:
+usedItems: [serological_pipette, pbs_bottle, flask]
 ```
 
 ### Step anatomy
 
 - **Required context** (`requiredItems`): tools and containers available for this step.
   These appear in the step card so the student knows what to look for.
-- **Target context** (`targetItems`): items the student must interact with. The UI
-  renders green highlights on these items. Must be a subset of `requiredItems`.
-- **Click sequences** (`allowedInteractions`): each interaction object is one valid click.
-  An interaction specifies the actor (held tool), optional source (where to draw from),
-  optional target (where to apply), optional liquid and volume. Multiple interactions
-  form a complete sequence (draw from bottle, then apply to flask).
-- **Result state** (`result.heldLiquid`): what the actor holds after this interaction
-  (tool id, liquid id, volume, color). The next interaction can reference this state
-  to validate or to build on it.
-- **Completion trigger** (`trigger`): the event that signals step completion. Validated
-  at build time to match an interaction's `event` field.
+- **Used items** (`usedItems`): derived item summary in first-use order (tools, sources,
+  destinations) from the interaction sequence. Never authored; always derived. The active
+  highlight items are derived from the current interaction, not directly from `usedItems`.
+- **Interaction sequence** (`interactionSequence`): ordered list of logical player operations.
+  Each interaction specifies a tool (clicked first), optional source (for load), optional
+  destination (for discharge), optional liquid and volume. The resolver enforces order
+  via `interactionIndex` set in M2 of the active plan.
+- **State change** (`stateChange`): optional tool state updated by an interaction. Contains
+  `heldLiquid` (what the tool holds after a load interaction). The next interaction may
+  reference this held liquid state to validate or build on it.
+- **Completion event** (`completionEvent`): optional event emitted by an interaction. Only
+  the final interaction in a sequence may emit a completion event; it signals that the step
+  is complete.
+- **Completion trigger** (`completionTrigger`): step-level listener that fires on a completion
+  event. Validated at build time to match the final interaction's completion event.
 - **Next step** (`nextId`): explicit linked-list pointer to the next protocol step.
   Can be a string id or `null` to mark the final step.
 
@@ -367,24 +374,25 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 ### Item validation
 
 - Every id in `requiredItems` exists in `items.yaml:items`.
-- Every id in `targetItems` is either (a) in `requiredItems`, (b) declared in
-  `items.yaml:items`, or (c) has role `virtual_target`.
-- For a step with `scene: hood`, every non-virtual targetItem must have
-  `scene: hood` in items and have a layout entry in `HOOD_LAYOUT`.
+- Every `tool`, `source`, and `destination` value in an interaction must be a declared
+  item id in `items.yaml:items`. Virtual targets (role `virtual_target`) are permitted
+  as interaction destinations even when absent from `requiredItems`.
+- For a step with `scene: hood`, every non-virtual item must have `scene: hood`
+  in items and have a layout entry in `HOOD_LAYOUT`.
   Symmetric rule for `scene: bench` and `BENCH_LAYOUT`.
 
 ### Interaction validation
 
-- `actor` exists in inventory and has role `transfer_tool`, `aspirate_tool`,
-  or `modal_tool`.
+- The `tool` exists in inventory and has role `transfer_tool`, `aspirate_tool`, or
+  `modal_tool`.
 - `source`, when present, has role `reagent_source` or `cell_container`.
-- `target`, when present, has role `cell_container`, `culture_vessel`,
+- `destination`, when present, has role `cell_container`, `culture_vessel`,
   `waste_target`, or `virtual_target`.
-- `liquid`, when present, exists in inventory and is in actor's `allowedLiquids`.
-- For a draw interaction, the source item's `contains` matches the declared `liquid`.
-- `volumeMl` and `consumesVolumeMl` do not exceed actor `capacityMl`.
-- `event`, when present, matches the step's `trigger.event` (modulo the
-  `click:` or `modal_ok:` prefix added by the resolver at runtime).
+- `liquid`, when present, exists in inventory and is in the tool's `allowedLiquids`.
+- For a load interaction, the source item's `contains` matches the declared `liquid`.
+- `volumeMl` and `consumesVolumeMl` do not exceed the tool's `capacityMl`.
+- The `completionEvent` on an interaction, when present, is expected to be triggered
+  upon completion of that interaction sequence step.
 
 ### Modal validation
 
@@ -408,15 +416,17 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 ## Generated TypeScript surface
 
-The Python builder emits two modules:
+The Python builder (`tools/build_protocol_data.py`) compiles YAML into two
+TypeScript modules at `src/content/`:
 
-### parts/protocol_data.ts
+### src/content/protocol_data.ts
 
 ```typescript
 export const PROTOCOL_STEPS: readonly ProtocolStep[] = [
-  // auto-generated from content/protocol.yaml
+  // auto-generated from src/content/cell_culture/protocol.yaml
   { id: 'spray_hood', label: '...', ... },
-  // ... 24 more steps ...
+  { id: 'gather_supplies', label: '...', ... },
+  // ... remaining steps ...
 ];
 
 export const PROTOCOL_PARTS: readonly Record<string, ProtocolPart> = {
@@ -432,7 +442,7 @@ export const PROTOCOL_DAYS: readonly Record<string, ProtocolDay> = {
 };
 ```
 
-### parts/inventory_data.ts
+### src/content/inventory_data.ts
 
 ```typescript
 export const EQUIPMENT: readonly Record<string, InventoryItem> = {
@@ -448,7 +458,9 @@ export const REAGENTS: readonly Record<string, InventoryReagent> = {
 };
 ```
 
-Scene code consumes these exports directly; no YAML parsing happens at runtime.
+Scene code imports and consumes these exports directly; no YAML parsing happens
+at runtime. The generated types are read-only arrays and records, enforcing
+immutability at compile time.
 
 ## Stable-id discipline
 
@@ -463,9 +475,9 @@ The two namespaces are intentionally disjoint:
   asset specs, future `content/scenes.yaml`).
 - **Only reagent ids** appear in `heldLiquid.liquid`, `contains` fields, and
   interaction `liquid:` fields.
-- Protocol `allowedInteractions` reference both: `source: pbs_bottle` (item id)
-  plus `liquid: pbs` (reagent id). The builder verifies that the source item's
-  `contains` matches the liquid id.
+- Interactions in the `interactionSequence` reference both item and reagent ids:
+  `source: pbs_bottle` (item id) plus `liquid: pbs` (reagent id). The builder
+  verifies that the source item's `contains` matches the liquid id.
 
 This prevents accidental name collisions and catches copy-paste errors at build time.
 

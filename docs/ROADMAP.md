@@ -1,8 +1,10 @@
 # Roadmap
 
+<!-- Verified current: 2026-05-07 (delivered section confirmed against CHANGELOG; legacy M1-M5 labels removed; future items confirmed not in active plan) -->
+
 Planned features and improvements for the cell culture simulation game.
 
-## Delivered (M1-M5)
+## Delivered
 
 - Two-scene workspace: hood (sterile work) and bench (equipment) peer scenes
 - 96-well plate geometry with 8-point carboplatin dose response and metformin sensitization

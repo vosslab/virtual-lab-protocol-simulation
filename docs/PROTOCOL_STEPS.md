@@ -1,15 +1,18 @@
 # Protocol steps
 
-How the 25-step tissue culture protocol is stored, ordered, triggered,
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+
+**Schema status:** This document describes the canonical schema and final-state implementation.
+
+How the active tissue culture protocol is stored, ordered, triggered,
 and validated at load time.
 
 ## Source of truth
 
-All protocol steps live in one array: `PROTOCOL_STEPS` in
-[parts/constants.ts](../parts/constants.ts).
+All protocol steps are defined in YAML under `src/content/` and compiled at build
+time into a TypeScript constant array `PROTOCOL_STEPS` in `src/content/protocol_data.ts`.
 
-The `ProtocolStep` interface (also in `parts/constants.ts`) defines the
-shape of each entry. Every step has:
+The `ProtocolStep` interface defines the shape of each compiled entry. Every step has:
 
 | Field | Type | Purpose |
 | --- | --- | --- |
@@ -18,15 +21,15 @@ shape of each entry. Every step has:
 | `label` | `string` | Short title shown in the sidebar protocol panel. |
 | `action` | `string` | Imperative verb phrase displayed in the hood toolbar ("Wash the flask with 4 mL PBS"). Max 60 chars. |
 | `why` | `string` | One-line rationale shown under the step card. Max 100 chars. |
-| `partId` | union | Which Part of the docx protocol this step belongs to (`part1_split`, `part2_count`, ..., `part7_read`). Used only for UI grouping. |
+| `partId` | union | Which Part of the protocol this step belongs to (`part1_split`, `part2_count`, etc.). Used only for UI grouping. |
 | `dayId` | `'day1' \| 'day2' \| 'day4'` | Which experiment day. Used for the day-ribbon UI. |
 | `stepIndex` | `number` | 1-based position inside `partId`. Used for "Step N of M" rendering inside a part. |
 | `requiredItems` | `string[]` | Scene item ids the student must interact with to complete this step. |
-| `targetItems` | `string[]` | Scene item ids that get the green `is-active` highlight while this step is the active step. Also used by the toolbar hint (see [Hint derivation](#hint-derivation) below). |
+| `usedItems` | `string[]` | Derived step-level summary of every `tool`/`source`/`destination` id in the interaction sequence, in first-use order. Not authored. The active highlight items are derived from the current interaction, not directly from `usedItems`. |
+| `interactionSequence` | `Interaction[]` | Ordered list of logical player operations (tool picks, loads, destinations, etc.). See [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for interaction structure. |
+| `completionTrigger` | `CompletionTrigger \| null` | Completion trigger: declarative wiring intent (`{completionEvent}`). Validated at build time to match the final interaction's completion event. |
 | `errorHints` | `Record<string, string>` | Named hint strings surfaced when the student makes a specific mistake. |
 | `scene` | union | Which scene owns this step (`hood`, `bench`, `incubator`, `microscope`, `plate_reader`). |
-| `requiredAction` | `string` | Internal identifier for the interaction type (e.g. `sterilize`, `aspirate`, `pipette_trypsin`). Used by scoring. |
-| `trigger` | `TriggerSpec \| null` | **Advisory** declarative wiring intent (`{scene, event}`). Not yet load-bearing; the actual wiring goes through `triggerStep()` calls in scene code. See [Future: step-driven trigger resolution](#future-step-driven-trigger-resolution). |
 | `correctVolumeMl` | `number?` | Optional exact volume the student must pipette, for pipette steps. |
 | `toleranceMl` | `number?` | Optional tolerance around `correctVolumeMl`. |
 
@@ -66,36 +69,37 @@ step is two: remove the entry, update the predecessor's `nextId`.
 
 ## Adding a new step
 
-1. Append a new entry to `PROTOCOL_STEPS` in `parts/constants.ts`. Array
-   position does not affect runtime ordering but it does control
-   sidebar display, so place the new entry where you want it visually.
+1. Add a new entry to `src/content/protocol.yaml`. The YAML build process
+   compiles steps into `src/content/protocol_data.ts` at build time.
 2. Set `nextId` on the new entry to the id of the step that should
    follow it (or `null` if it is the new final step).
 3. Find the step that should now come *before* the new step and change
    its `nextId` to the new id.
-4. Add a `triggerStep('<new_id>')` call somewhere in the scene code
-   that owns the step. This is the single user-visible wiring path --
-   see [Triggering a step](#triggering-a-step) below.
-5. Add a module-scope `registeredTriggers.add('<new_id>')` line near
-   the top of the scene file, paired with the `triggerStep` call. This
-   lets `validateTriggerCoverage()` (see below) pass at page load time
-   before any clicks happen.
-6. Reload the game in the browser. `validateProtocolGraph()` runs on
-   `DOMContentLoaded` and `validateTriggerCoverage()` runs on `load`.
-   Both must pass or a red error banner blocks the game.
+4. Rebuild and reload the game in the browser. `tools/build_protocol_data.py`
+   compiles YAML to TypeScript. `validateProtocolGraph()` runs on
+   `DOMContentLoaded`.
+
+4a. Add a `triggerStep('<new_id>')` call somewhere in the scene code
+    that owns the step. See [Triggering a step](#triggering-a-step) below.
+4b. Add a module-scope `registeredEmitters.add('<new_id>')` line near
+    the top of the scene file, paired with the `triggerStep` call. This
+    lets `validateCompletionEventCoverage()` (see below) pass at page load time
+    before any clicks happen.
 
 ## Triggering a step
 
+This section describes the scene-code wiring contract that implements step completion.
+Scenes wire steps manually via `triggerStep`.
+
 Scene code never calls `completeStep(id)` directly. It calls
-`triggerStep(id)`, a wrapper defined in
-[parts/game_state.ts](../parts/game_state.ts):
+`triggerStep(id)`, a wrapper defined in `src/game_state.ts`:
 
 ```typescript
 function triggerStep(stepId: string): void {
     if (!PROTOCOL_STEPS.some(s => s.id === stepId)) {
         throw new Error('triggerStep called with unknown id: ' + stepId);
     }
-    registeredTriggers.add(stepId);  // runtime wiring-coverage record
+    registeredEmitters.add(stepId);  // runtime wiring-coverage record
     completeStep(stepId);              // state-machine advance
 }
 ```
@@ -106,44 +110,43 @@ function triggerStep(stepId: string): void {
    exist in `PROTOCOL_STEPS` throws immediately. This catches stale
    references after a rename without any build-time tooling.
 2. **Runtime wiring registration.** Adds the id to the module-scope
-   `registeredTriggers: Set<string>`. The `validateTriggerCoverage()`
+   `registeredEmitters: Set<string>`. The `validateCompletionEventCoverage()`
    load-time check diffs this set against `PROTOCOL_STEPS` to find dead
-   steps (steps with no scene wiring).
+   steps (steps with no completion-event emitter).
 3. **State-machine advance.** Delegates to `completeStep(id)`, which
    either advances `activeStepId` via `nextId` (if `stepId === activeId`),
    or records an out-of-order attempt in `gameState.outOfOrderAttempts`.
 
 ### Pre-registration for load-time coverage
 
-`triggerStep` only adds to `registeredTriggers` when it actually runs.
-But `validateTriggerCoverage()` fires on the `load` event, before any
+`triggerStep` only adds to `registeredEmitters` when it actually runs.
+But `validateCompletionEventCoverage()` fires on the `load` event, before any
 user clicks. Click-time triggers would not yet be registered.
 
 Each scene file therefore announces its owned step ids at module init
-time via explicit `registeredTriggers.add(id)` lines near the top of
+time via explicit `registeredEmitters.add(id)` lines near the top of
 the file, separately from the `triggerStep` calls inside click handlers.
-Example from `parts/hood_scene.ts`:
+Example from `src/scenes/hood.ts`:
 
 ```typescript
-// Pre-register every step id this scene owns. validateTriggerCoverage()
+// Pre-register every step id this scene owns. validateCompletionEventCoverage()
 // runs on the load event -- before any click handlers have fired -- and
-// verifies that each PROTOCOL_STEPS id is in registeredTriggers.
-registeredTriggers.add('spray_hood');
-registeredTriggers.add('pbs_wash');
-registeredTriggers.add('add_trypsin');
+// verifies that each PROTOCOL_STEPS id is in registeredEmitters.
+registeredEmitters.add('spray_hood');
+registeredEmitters.add('pbs_wash');
+registeredEmitters.add('add_trypsin');
 // ... etc for every step the hood scene owns
 ```
 
 When you add a step, you must add its id in both places: the pre-
 registration block and the click-handler `triggerStep` call. A step
-with a missing pre-registration fails `validateTriggerCoverage` at
+with a missing pre-registration fails `validateCompletionEventCoverage` at
 load time with a red banner.
 
 ## Reading the current step
 
 Never index `PROTOCOL_STEPS` by a number to find the current step.
-Always call `getCurrentStep()`, defined in
-[parts/game_state.ts](../parts/game_state.ts):
+Always call `getCurrentStep()`, defined in `src/game_state.ts`:
 
 ```typescript
 function getCurrentStep(): ProtocolStep | null {
@@ -163,33 +166,32 @@ coupling pattern behind the M4 stuck-at-step-1 regression.
 ## Hint derivation
 
 The hood toolbar banner derives its text from the current step, not
-from ad-hoc state flags. Three helpers in `parts/hood_scene.ts`
-translate `currentStep.targetItems` into concrete click-level guidance:
+from ad-hoc state flags. Three helpers in `src/scenes/hood.ts`
+translate the active interaction into concrete click-level guidance:
 
-- `getStartingToolForStep(step)` -- returns the first `kind === 'pipette'`
-  item in `targetItems`. Used when the student is holding nothing, to
-  suggest which tool to pick up ("Pick up the Serological Pipette --
-  Wash the flask with 4 mL PBS").
-- `getReagentSourceForStep(step)` -- returns the first `kind === 'bottle'`
-  or `kind === 'rack'` item in `targetItems`, falling back to the first
-  non-pipette non-plate target. Used when the student is holding an
-  unloaded pipette, to suggest the reagent source ("Click the 1x PBS").
+- `getStartingToolForStep(step)` -- returns the `tool` from the current
+  interaction. Used when the student is holding nothing, to suggest
+  which tool to pick up ("Pick up the Serological Pipette -- Wash the
+  flask with 4 mL PBS").
+- `getReagentSourceForStep(step)` -- returns the `source` from the
+  current interaction. Used when the student is holding an unloaded
+  pipette, to suggest the reagent source ("Click the 1x PBS").
 - Tool-loaded sub-states (`serological_pipette_with_trypsin`,
   `multichannel_pipette_with_drug`, etc.) describe intermediate UI sub-
   actions that are not distinct protocol steps and keep their hardcoded
   hints.
 
-All three derivation paths share `currentStep` and `targetItems` as the
-one source of truth. If the banner and the green `is-active` highlights
-ever disagree, treat it as a bug in the hint logic, not the state.
+All three derivation paths share the current step and the active
+interaction as the source of truth. If the banner and the green
+`is-active` highlights ever disagree, treat it as a bug in the hint
+logic, not the state.
 
 ## Startup validators
 
-Three load-time checks live in [parts/init.ts](../parts/init.ts). All
-failures route through `showValidationError(title, detail)`, which
-injects a blocking red banner at the top of the page, logs to console,
-and sets `window.__protocolValidation = {ok: false, title, detail}`
-before throwing.
+Three load-time checks live in `src/init.ts`. All failures route through
+`showValidationError(title, detail)`, which injects a blocking red banner
+at the top of the page, logs to console, and sets
+`window.__protocolValidation = {ok: false, title, detail}` before throwing.
 
 ### `validateProtocolGraph()`
 
@@ -202,62 +204,55 @@ Runs on `DOMContentLoaded`. Checks:
 3. Exactly one step has `nextId === null` (the terminator).
 4. Every string-form `nextId` references a real id.
 
-### `validateTriggerCoverage()`
+### `validateCompletionEventCoverage()`
 
 Runs on the `load` event, after scenes have rendered and pre-
 registration blocks have executed. Diffs `PROTOCOL_STEPS` against
-`registeredTriggers`. Any step id missing from the set throws as a
-"dead step (no trigger wired)" error.
+`registeredEmitters`. Any step id missing from the set throws as a
+"missing completion-event emitter" error (strict mode) or logs a warning (relaxed mode).
 
 Success sets `window.__protocolValidation = {ok: true}`.
 
 ### `validateProtocolSteps()`
 
-Legacy schema check. Ensures every step has required fields (`id`,
-`label`, `scene`, `requiredAction`) and that ids are unique. Still runs
-for field-presence enforcement.
+Field-presence check. Ensures every step has required fields (`id`,
+`label`, `scene`) and that ids are unique.
 
-## Walkthrough test
+## Graph smoke test
 
-[devel/protocol_walkthrough.mjs](../devel/protocol_walkthrough.mjs) is a
-two-pass Playwright regression test invoked by
-[walkthrough.sh](../walkthrough.sh):
+`tests/protocol_graph_smoke.mjs` is a fast data-layer smoke test that proves
+the `nextId` graph is reachable from start to finish. It walks the chain from
+the first step to `null`, calling `completeStep(id)` for each step via
+`page.evaluate` and screenshotting into `test-results/walkthrough/NN_<id>.png`
+(1-indexed). Asserts final state: all steps completed, `stepsOutOfOrder === 0`,
+`activeStepId === null`. Also reads `window.__protocolValidation` set by
+`validateCompletionEventCoverage` on the `load` event; any validation failure exits
+non-zero.
 
-- **Pass A (data layer)**: walks the `nextId` chain from the first step
-  to `null`, calling `completeStep(id)` for each step via `page.evaluate`
-  and screenshotting into `build/walkthrough/NN_<id>.png` (1-indexed).
-  Asserts final state: `completedSteps.length === 25`,
-  `stepsOutOfOrder === 0`, `activeStepId === null`.
-- **Pass B (coverage)**: reads `window.__protocolValidation` set by
-  `validateTriggerCoverage` on the `load` event. Any validation failure
-  exits non-zero.
+This is a data-layer test: it calls internal APIs directly, bypasses the DOM
+click model, and proves the protocol graph is connected. It does not verify
+that actual game clicks produce correct behavior.
 
-The walkthrough is a regression gate for the exact class of bug that
-caused the M4 stuck-at-step-1 failure: a scene-code/step-id mismatch, a
-stale `completeStep` call after a rename, or a dropped `nextId` link.
+## UI walker (canonical regression test)
 
-Running `bash walkthrough.sh` builds the game, dismisses the welcome
-overlay (fresh Playwright context has empty localStorage), clears stale
-screenshots, runs the walkthrough, and reports a screenshot listing on
-success.
+`tests/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test
+(Patch 8 and beyond). It reads compiled protocol data via
+`page.evaluate(() => window.PROTOCOL_STEPS)` (from `src/content/protocol_data.ts`)
+and drives real DOM clicks in the correct tool-first order for each interaction
+in each step. It is the primary CI gate and replaces the data-layer smoke test
+for real-world behavior validation.
 
-## Future: step-driven trigger resolution
+## Completion trigger wiring
 
-The `trigger: TriggerSpec | null` field on `ProtocolStep` is currently
-advisory -- it is not yet read by any code. A future refactor will:
+The `completionTrigger` field on each step specifies the completion event
+(e.g., `click:ethanol_bottle`, `modal_ok:incubator_confirm`) that marks the
+step as complete. This field is validated at build time to match the final
+interaction's `completionEvent`.
 
-1. Move the "which step is this click supposed to fire" decision out of
-   scene code (which currently peeks at `activeStepId` in
-   `parts/incubator_scene.ts` and `parts/drug_treatment.ts`) and into a
-   lookup table derived from `step.trigger`.
-2. Let scenes emit canonical event names (`click:ethanol_bottle`,
-   `modal_ok:carb_intermediate`) and have a central dispatcher match
-   the event against the current step's `trigger.event`.
+At runtime, when a completion event occurs, `triggerStep(id)` is called by
+scene code. This is the current wiring contract: scenes announce events via
+explicit function calls, not via auto-discovery from step metadata.
 
-This would eliminate the last structural coupling between scenes and
-protocol state. It is out of scope for the current pass. See
-[docs/TODO.md](TODO.md).
-
-See also
-[/Users/vosslab/.claude/plans/partitioned-hugging-blum.md](/Users/vosslab/.claude/plans/partitioned-hugging-blum.md)
-Section 7 for the full trade-off discussion.
+A future refactor could centralize event dispatch (moving "which step completes
+on this event" logic from scene code into a data-driven resolver), but this
+is out of scope for the current pass. See [docs/TODO.md](TODO.md).

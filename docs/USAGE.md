@@ -1,37 +1,28 @@
 # Usage
 
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+
 Players learn cell culture techniques by completing a guided 9-step laboratory
 protocol in the browser.
 
 ## Quick start
 
 ```bash
-bash build_game.sh
+bash export_single_file.sh
 open cell_culture_game.html
 ```
 
-The build compiles all TypeScript files in [parts/](../parts/) into a single
-self-contained HTML file. No web server is needed to play.
+The build compiles all TypeScript files in [src/](../src/) into a single
+self-contained HTML file (a generated artifact not tracked in git). No web
+server is needed to play.
 
-## Development server
-
-[cell_culture_game.py](../cell_culture_game.py) serves the game locally with
-auto-rebuild when the output is missing or stale:
+For local development with a web server, use [run_web_server.sh](../run_web_server.sh):
 
 ```bash
-source source_me.sh && python3 cell_culture_game.py
+bash run_web_server.sh
 ```
 
-Default address: `http://127.0.0.1:5080`. Pass a port number as argument to
-change it:
-
-```bash
-source source_me.sh && python3 cell_culture_game.py 8000
-```
-
-Endpoints:
-- `/` serves the game HTML
-- `/health` returns a JSON status object
+This rebuilds [dist/](../dist/) and serves it on a local port.
 
 ## Playing the game
 
@@ -39,7 +30,7 @@ The game guides players through a 9-step cell culture protocol:
 
 1. Spray and sanitize the sterile hood
 2. Aspirate old media from the flask
-3. Add fresh media to the target volume
+3. Add fresh media to the correct volume
 4. Check cell viability under the microscope
 5. Count cells using hemocytometer quadrant selection
 6. Transfer cells to a well plate
@@ -47,8 +38,9 @@ The game guides players through a 9-step cell culture protocol:
 8. Incubate the plate
 9. Read plate results
 
-Interact by clicking items or dragging tools to targets. Valid targets glow
-with a pulsing green border. Real-time warnings appear in the sidebar when
+Interact by clicking items. Click the tool first, then click the destination
+or source to complete each interaction. Valid items for the current interaction
+glow with a pulsing green border. Real-time warnings appear in the sidebar when
 technique errors occur.
 
 ## Scoring
@@ -66,9 +58,70 @@ A 1-3 star rating is shown on the results screen.
 
 ## Inputs and outputs
 
-- **Source:** TypeScript modules in [parts/](../parts/) and HTML/CSS templates
+- **Source:** TypeScript modules in [src/](../src/) and HTML/CSS templates
 - **Build output:** `cell_culture_game.html` (single file, no external deps)
-- **Test outputs:** `report_*.txt` files and `build/walkthrough/*.png` screenshots
+- **Test outputs:** `report_*.txt` files and `test-results/walkthrough/*.png` screenshots
+
+## Protocol builder
+
+Build the active protocol's TypeScript data files:
+
+```bash
+source source_me.sh && python3 tools/build_protocol_data.py
+```
+
+Build a different protocol (e.g., tutorial):
+
+```bash
+source source_me.sh && python3 tools/build_protocol_data.py --protocol tutorial_split
+```
+
+Validate only (no output files):
+
+```bash
+source source_me.sh && python3 tools/build_protocol_data.py --validate-only
+```
+
+## Testing
+
+### Browser smoke test (fast 9-gate check)
+
+```bash
+bash smoke.sh
+```
+
+This verifies the app loads and renders the first 9 bench gates. Fast signal for CI/local feedback.
+
+### Full protocol walkthrough
+
+```bash
+source source_me.sh && python3 tools/run_protocol_walkthrough.py
+```
+
+This builds the game, then runs the YAML-driven UI walker to completion of the active protocol.
+Run with `--wrong-order` to verify soft-fail recovery:
+
+```bash
+source source_me.sh && python3 tools/run_protocol_walkthrough.py --wrong-order
+```
+
+Run on a specific protocol:
+
+```bash
+source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tutorial_split
+```
+
+Skip the build step for speed during iteration:
+
+```bash
+source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol cell_culture --no-build
+```
+
+List available protocols:
+
+```bash
+source source_me.sh && python3 tools/run_protocol_walkthrough.py --list-protocols
+```
 
 ## Running tests
 

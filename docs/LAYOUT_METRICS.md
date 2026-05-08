@@ -1,6 +1,8 @@
 # Layout Metrics
 
-Visual layout invariants and scaling ratios for Milestone M3 (visual layout and professor character).
+<!-- Verified current: 2026-05-07 (invariants confirmed against src/; stale paths and M3 framing removed) -->
+
+Visual layout invariants and scaling ratios for the professor coach card, bench scene, and equipment.
 
 ## Professor Coach Card
 
@@ -13,7 +15,7 @@ The angry professor character is rendered as a fixed-position overlay in the top
 - **Mood indicator**: background and border colors reflect `gameState.professorMood`
   - neutral: #f5f5f5 background + #999 border
   - pleased: #e8f5e9 background + #4caf50 border (appears on step completion)
-  - annoyed: #ffebee background + #f44336 border (appears on error/wrong tool)
+  - annoyed: #ffebee background + #f44336 border (appears on error/wrong-order click)
   - Auto-fades back to neutral after 2 seconds
 
 ## Bench Equipment Scaling
@@ -82,7 +84,7 @@ Layout metrics are enforced across three representative viewports:
 - **1440x900**: larger laptop, 16:10 aspect ratio
 - **1920x1080**: desktop monitor, 16:9 aspect ratio (Full HD)
 
-All assertions must pass on each viewport. Failure on one viewport blocks M3 closure.
+All assertions must pass on each viewport. Failure on one viewport blocks layout closure.
 
 ## Back Shelf Decoration
 
@@ -92,7 +94,7 @@ The back_shelf zone (baseline 22, top of scene) is populated with three visual-o
 - **glove_box**: tan/beige hinged glove container, 10% default width, center-aligned
 - **waste_tray**: gray stainless waste tray, 12% default width, right-aligned
 
-These items are not protocol targets; they carry `visualOnly: true` in items.yaml and do not trigger any game state changes when clicked. They exist purely to fill visual space and set the bench's "laboratory environment" tone.
+These items are not used by protocol interactions; they carry `visualOnly: true` in items.yaml and do not trigger any game state changes when clicked. They exist purely to fill visual space and set the bench's "laboratory environment" tone.
 
 ## Test Execution
 
@@ -102,18 +104,11 @@ Run the layout metrics test with:
 node devel/test_layout_metrics.mjs
 ```
 
-Or include it in the walkthrough suite:
-
-```bash
-bash walkthrough.sh
-```
-
 The test logs pass/fail status for each viewport and assertion. Final exit code 0 indicates all metrics pass; non-zero indicates regression.
 
 ## References
 
-- [parts/bench_config.ts](../parts/bench_config.ts) - bench zone and item layout configuration
-- [parts/asset_specs.ts](../parts/asset_specs.ts) - equipment widthScale and visual metrics
-- [parts/professor_overlay.ts](../parts/professor_overlay.ts) - coach card rendering and mood
+- [src/bench_config.ts](../src/bench_config.ts) - bench zone and item layout configuration
+- [src/asset_specs.ts](../src/asset_specs.ts) - equipment widthScale and visual metrics
+- [src/professor_overlay.ts](../src/professor_overlay.ts) - coach card rendering and mood
 - [devel/test_layout_metrics.mjs](../devel/test_layout_metrics.mjs) - automated layout test
-- Plan section 5 (Milestone M3) for visual layout requirements
