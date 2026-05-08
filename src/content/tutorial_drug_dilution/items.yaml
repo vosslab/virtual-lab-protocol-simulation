@@ -1,0 +1,41 @@
+items:
+  # Hood items - tools
+  micropipette:
+    label: "Micropipette"
+    role: transfer_tool
+    asset: micropipette_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, water]
+
+  # Hood items - reagent sources
+  carboplatin_stock:
+    label: "Carboplatin 10 mM"
+    role: reagent_source
+    asset: media_bottle
+    scene: hood
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids: [carboplatin]
+    contains: carboplatin
+
+  sterile_water:
+    label: "Sterile Water"
+    role: reagent_source
+    asset: media_bottle
+    scene: hood
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids: [water]
+    contains: water
+
+  # Hood items - dilution target
+  dilution_tube_carb_intermediate:
+    label: "Carb 200 uM intermediate"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, water]

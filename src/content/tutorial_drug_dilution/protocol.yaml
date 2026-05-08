@@ -1,0 +1,54 @@
+parts:
+  - id: tutorial_drug_part
+    label: "Tutorial: Drug Dilution"
+    dayId: tutorial_drug_day
+
+days:
+  - id: tutorial_drug_day
+    label: "Tutorial Day"
+
+steps:
+  - id: tutorial_drug_intermediate
+    label: "Make 200 uM carboplatin intermediate"
+    action: "Pipette 20 uL carboplatin stock + 980 uL water into the dilution tube"
+    why: "Mini-protocol exercising the micropipette load/discharge path used by carb_intermediate."
+    partId: tutorial_drug_part
+    dayId: tutorial_drug_day
+    stepIndex: 1
+    requiredItems: [carboplatin_stock, sterile_water, micropipette, dilution_tube_carb_intermediate]
+    scene: hood
+    errorHints:
+      volume_off: "Use 20 uL drug and 980 uL water for a 200 uM intermediate."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: micropipette
+          source: carboplatin_stock
+          liquid: carboplatin
+          volumeMl: 0.020
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.020
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          consumesVolumeMl: 0.020
+        - tool: micropipette
+          source: sterile_water
+          liquid: water
+          volumeMl: 0.980
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: water
+              volumeMl: 0.980
+              colorKey: water
+        - tool: micropipette
+          destination: dilution_tube_carb_intermediate
+          liquid: water
+          consumesVolumeMl: 0.980
+          completionEvent: tutorial_drug_intermediate_complete
+    nextId: null

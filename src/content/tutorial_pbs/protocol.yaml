@@ -1,0 +1,133 @@
+parts:
+  - id: tutorial_pbs_part
+    label: "Tutorial: PBS Wash"
+    dayId: tutorial_pbs_day
+
+days:
+  - id: tutorial_pbs_day
+    label: "PBS Tutorial"
+
+steps:
+  - id: tutorial_pbs_wash_1
+    label: "First PBS wash"
+    action: "Add PBS to flask"
+    why: "Begin rinsing with PBS buffer solution."
+    partId: tutorial_pbs_part
+    dayId: tutorial_pbs_day
+    stepIndex: 1
+    requiredItems: [flask, pbs_bottle, serological_pipette]
+    scene: hood
+    errorHints:
+      wrong_tool: "Use the serological pipette."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
+    nextId: tutorial_pbs_wash_2
+
+  - id: tutorial_pbs_wash_2
+    label: "Second PBS wash"
+    action: "Add PBS again"
+    why: "Second rinse removes more residue."
+    partId: tutorial_pbs_part
+    dayId: tutorial_pbs_day
+    stepIndex: 2
+    requiredItems: [flask, pbs_bottle, serological_pipette]
+    scene: hood
+    errorHints:
+      wrong_tool: "Use the serological pipette."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
+    nextId: tutorial_pbs_wash_3
+
+  - id: tutorial_pbs_wash_3
+    label: "Third PBS wash"
+    action: "Add PBS once more"
+    why: "Third rinse completes the wash protocol."
+    partId: tutorial_pbs_part
+    dayId: tutorial_pbs_day
+    stepIndex: 3
+    requiredItems: [flask, pbs_bottle, serological_pipette]
+    scene: hood
+    errorHints:
+      wrong_tool: "Use the serological pipette."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
+    nextId: tutorial_pbs_final_aspirate
+
+  - id: tutorial_pbs_final_aspirate
+    label: "Aspirate final PBS"
+    action: "Remove excess PBS from flask"
+    why: "Remove excess liquid to prepare for the next step."
+    partId: tutorial_pbs_part
+    dayId: tutorial_pbs_day
+    stepIndex: 4
+    requiredItems: [flask, pbs_bottle, serological_pipette]
+    scene: hood
+    errorHints:
+      wrong_tool: "Use the serological pipette."
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
+    nextId: null

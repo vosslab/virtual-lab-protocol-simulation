@@ -1,0 +1,16 @@
+items:
+  well_plate:
+    label: "24-Well Plate"
+    role: culture_vessel
+    asset: well_plate_24
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [media, cells, mtt, dmso, carboplatin, metformin]
+
+  plate_reader:
+    label: "Plate Reader"
+    role: instrument
+    asset: plate_reader
+    scene: bench
+    visualOnly: true

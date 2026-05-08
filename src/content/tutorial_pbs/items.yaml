@@ -1,0 +1,37 @@
+items:
+  # Hood items - pipettes and tools
+  serological_pipette:
+    label: "Serological pipette"
+    role: transfer_tool
+    asset: sero_pipette
+    scene: hood
+    liquidCapable: true
+    capacityMl: 10
+    allowedLiquids: [pbs]
+
+  # Hood items - culture and reagent containers
+  flask:
+    label: "T-75 Flask"
+    role: cell_container
+    asset: t75_flask
+    scene: hood
+    liquidCapable: true
+    capacityMl: 20
+    allowedLiquids: [pbs]
+
+  # Hood items - reagent sources (bottles)
+  pbs_bottle:
+    label: "1x PBS"
+    role: reagent_source
+    asset: pbs_bottle
+    scene: hood
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids: [pbs]
+    contains: pbs
+
+  # Hood items - targets
+  hood_surface:
+    label: "Hood work surface"
+    role: virtual_target
+    scene: virtual

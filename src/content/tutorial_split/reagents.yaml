@@ -1,0 +1,15 @@
+reagents:
+  media:
+    label: "Complete Media"
+    colorKey: media
+    displayColor: "#FFC0CB"
+
+  pbs:
+    label: "1x PBS"
+    colorKey: pbs
+    displayColor: "#87CEEB"
+
+  ethanol:
+    label: "70% Ethanol"
+    colorKey: ethanol
+    displayColor: "#E8E8E8"

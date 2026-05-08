@@ -1,0 +1,28 @@
+items:
+  serological_pipette:
+    label: "Serological pipette"
+    role: transfer_tool
+    asset: sero_pipette
+    scene: hood
+    liquidCapable: true
+    capacityMl: 10
+    allowedLiquids: [pbs]
+
+  flask:
+    label: "T-75 Flask"
+    role: cell_container
+    asset: t75_flask
+    scene: hood
+    liquidCapable: true
+    capacityMl: 20
+    allowedLiquids: [pbs]
+
+  pbs_bottle:
+    label: "1x PBS"
+    role: reagent_source
+    asset: pbs_bottle
+    scene: hood
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids: [pbs]
+    contains: pbs

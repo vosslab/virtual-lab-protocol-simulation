@@ -1,0 +1,30 @@
+reagents:
+  media:
+    label: "Complete media"
+    colorKey: media
+    displayColor: "#f7a6b8"
+
+  cells:
+    label: "Cell suspension"
+    colorKey: cells
+    displayColor: "#f3d6a2"
+
+  mtt:
+    label: "MTT reagent"
+    colorKey: mtt
+    displayColor: "#fff59d"
+
+  dmso:
+    label: "DMSO"
+    colorKey: dmso
+    displayColor: "#e0e0e0"
+
+  carboplatin:
+    label: "Carboplatin"
+    colorKey: carboplatin
+    displayColor: "#d0b0ff"
+
+  metformin:
+    label: "Metformin"
+    colorKey: metformin
+    displayColor: "#b0e0ff"
