@@ -69,7 +69,7 @@ async function main() {
 		process.exit(1);
 	}
 
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 	const consoleErrors = [];

@@ -48,7 +48,7 @@ async function runTests() {
 		process.exit(1);
 	}
 
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 
 	let passCount = 0;

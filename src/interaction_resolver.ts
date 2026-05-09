@@ -300,9 +300,12 @@ export function resolveInteractionByIndex(args: {
 	// Case 3: Destination only (discharge/apply)
 	else if (!interaction.source && interaction.destination) {
 		// Subcase 3a: Direct tool click (no prior tool selection)
-		// Example: legacy spray-style step with tool=ethanol_bottle destination=<some-id>
-		// Student clicks the tool directly when no tool is selected
-		if (isToolClick() && !args.selectedTool && !args.heldLiquid && !interaction.source) {
+		// ONLY applies when direct: true OR when interaction has no tool.
+		// When interaction has a tool + destination, clicking the tool is a tool-select
+		// action (indexDelta 0), not a complete discharge (indexDelta 1).
+		// Example: legacy spray-style step with tool=ethanol_bottle destination=<some-id> direct=true
+		const directInteractionFlag = (interaction as any).direct === true;
+		if (isToolClick() && !args.selectedTool && !args.heldLiquid && !interaction.source && (!interaction.tool || directInteractionFlag)) {
 			// This is a direct click with no prior tool selection required
 			return {
 				kind: 'discharge',
@@ -310,6 +313,19 @@ export function resolveInteractionByIndex(args: {
 				destination: interaction.destination,
 				consumesVolumeMl: 0,
 				indexDelta: 1,
+				wrongOrder: false,
+			};
+		}
+
+		// Tool click with no prior selection, but interaction has a tool (requires tool-select)
+		// Return tool-select result (indexDelta 0)
+		if (isToolClick() && !args.selectedTool && interaction.tool && !directInteractionFlag) {
+			return {
+				kind: 'discharge',
+				completionEvent: interaction.completionEvent ?? '',
+				destination: interaction.destination,
+				consumesVolumeMl: interaction.consumesVolumeMl ?? 0,
+				indexDelta: 0,
 				wrongOrder: false,
 			};
 		}

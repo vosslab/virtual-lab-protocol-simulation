@@ -127,6 +127,12 @@ function applyOnePatch(svg: string, patch: SvgColorPatch): string {
 		const opacityStr = patch.opacity.toString();
 		updated = setAttributeInTag(updated, s2, e2, "opacity", opacityStr);
 	}
+	// Add pointer-events="none" to all liquid elements so they don't block clicks on items beneath
+	if (patch.id.indexOf("__liquid") >= 0) {
+		const s3 = findElementStart(updated, patch.id);
+		const e3 = findOpenTagEnd(updated, s3);
+		updated = setAttributeInTag(updated, s3, e3, "pointer-events", "none");
+	}
 	// reference endIndex so the linter does not flag it (used implicitly above
 	// only when the input had the shape we expect; kept here for clarity).
 	void endIndex;

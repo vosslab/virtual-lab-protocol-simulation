@@ -137,7 +137,7 @@ items:
     allowedLiquids: [carboplatin]
     contains: carboplatin
 
-  metformin_stock:
+  metformin_stock_bottle:
     label: "Metformin 1 M"
     role: reagent_source
     asset: media_bottle
@@ -229,6 +229,33 @@ items:
     liquidCapable: true
     capacityMl: 1
     allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_g:
+    label: "Carb row G"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_carb_h:
+    label: "Carb row H"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [carboplatin, media]
+
+  dilution_tube_metformin_working:
+    label: "Metformin 10 mM working stock"
+    role: culture_vessel
+    asset: dilution_tube_rack
+    scene: hood
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids: [metformin, media]
 
   # Hood items - waste containers
   waste_container:

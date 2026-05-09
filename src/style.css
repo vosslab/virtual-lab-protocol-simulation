@@ -697,6 +697,14 @@ body {
 	width: 100%;
 	height: 100%;
 	display: block;
+	/* Disable pointer events on non-target items' SVGs so they don't block clicks beneath */
+	pointer-events: none;
+}
+
+/* Re-enable pointer events for selected and active (target) items' SVGs */
+.hood-item.is-selected svg,
+.hood-item.is-active svg {
+	pointer-events: auto;
 }
 
 /* ===== Hood Item Base Styles ===== */
@@ -706,6 +714,13 @@ body {
 	border: 2px solid transparent;
 	border-radius: 4px;
 	transition: all 0.2s ease;
+}
+
+/* Disable pointer-events for inactive hood items in the hood scene to prevent interception.
+ * Only apply in #hood-items-layer so bench items are not affected.
+ * Exception: biohazard_decant is a destination that needs to be clickable for the decant step. */
+#hood-items-layer .hood-item:not(.is-active):not(.is-selected):not([data-item-id="biohazard_decant"]) {
+	pointer-events: none !important;
 }
 
 .hood-item.is-next-target {

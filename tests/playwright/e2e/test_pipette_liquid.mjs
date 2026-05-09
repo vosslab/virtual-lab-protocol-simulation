@@ -53,7 +53,7 @@ function deriveUsedItems(step) {
 }
 
 async function testPipetteLiquidOverlay() {
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 
 	try {

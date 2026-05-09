@@ -112,11 +112,10 @@ export const DRUG_MODAL_SCREENS: Record<string, DrugModalScreen> = {
 // at module load time.
 
 // Pre-register every step id that this module will advance
+// NOTE: carb_intermediate is still registered here but it has migrated to interactionSequence.
+// Emitter registration for migrated steps (carb_high_range, metformin_stock, add_carboplatin, add_metformin)
+// has been moved to their completionEvent handlers in hood.ts dispatchInteractionClick.
 registeredEmitters.add('carb_intermediate');
-registeredEmitters.add('carb_high_range');
-registeredEmitters.add('metformin_stock');
-registeredEmitters.add('add_carboplatin');
-registeredEmitters.add('add_metformin');
 
 // Steps owned by this modal, in protocol order. Derived from PROTOCOL_STEPS
 // with modal.owner === 'drug_treatment'. Used by rerender to decide whether

@@ -1,5 +1,9 @@
 # WP-T1 trace analysis: pbs_wash passes, add_trypsin fails
 
+> **Status: resolved by WP-H1.** Kept as the root-cause record for M0. The
+> per-event-switch scope statement was accurate at the time of WP-H1; later
+> generic dispatch work (SP-K2e) further consolidated scene dispatch.
+
 Date: 2026-05-08. Read-only investigation. No production-code edits.
 
 ## Root cause

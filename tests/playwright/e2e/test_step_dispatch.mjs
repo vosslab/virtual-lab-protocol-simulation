@@ -172,7 +172,7 @@ async function runTests(page) {
 
 // ============================================
 async function main() {
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
 
 	try {

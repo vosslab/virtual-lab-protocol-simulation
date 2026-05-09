@@ -272,7 +272,7 @@ async function runCompletenesTest(page) {
 }
 
 async function main() {
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const context = await browser.newContext();
 	const page = await context.newPage();
 

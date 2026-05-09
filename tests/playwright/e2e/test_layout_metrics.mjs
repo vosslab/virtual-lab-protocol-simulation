@@ -29,7 +29,7 @@ const MAX_ITEM_OVERLAP = 0.08;     // No overlap >8% of smaller item
 const EMPTY_SPACE_MAX = 0.45;      // Bench empty space <45%
 
 async function runTests() {
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	let passCount = 0;
 	let failCount = 0;
 

@@ -107,7 +107,7 @@ export function createLiquidOverlayWithColor(equipmentId: string, level: number,
 	const surfaceCx = bounds.x + bounds.width / 2;
 	const surfaceRx = bounds.width / 2 * 0.9;
 	const surfaceRy = surfaceRx * TOP_FACE_RATIO;
-	let svg = '<g id="' + equipmentId + '__liquid">';
+	let svg = '<g id="' + equipmentId + '__liquid" pointer-events="none">';
 	// clipped liquid rectangle
 	svg += '<rect'
 		+ ' x="' + bounds.x + '"'

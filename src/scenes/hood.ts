@@ -14,11 +14,23 @@ import { resolveInteraction, resolveInteractionByIndex } from "../interaction_re
 import { computeSceneLayout } from "../layout_engine";
 import { startDrugAddition } from "../steps/drug_treatment";
 import { startAddingMedia, startAspiration } from "../steps/feed_cells";
+import { applyPlateDoseMap } from "../steps/plate_96";
 import { COLOR_MAP, type ColorRole } from "../style_constants";
 import { getAspiratingPipetteSvg, getBiohazardDecanSvg, getCarboplatinStockSvg, getConical15mlRackSvg, getDilutionTubeRackSvg, getDmsoBottleSvg, getDrugVialsSvg, getEthanolBottleSvg, getFlaskSvg, getHoodBackgroundSvg, getMediaBottleSvg, getMetforminStockSvg, getMicropipetteRackSvg, getMttVialSvg, getMultichannelPipetteSvg, getPbsBottleSvg, getSeroPipetteSvg, getSterileWaterSvg, getTrypsinBottleSvg, getWasteContainerSvg, getWellPlateSvg } from "../svg_assets";
 import { renderProtocolPanel, renderScoreDisplay } from "../ui_rendering";
 import { renderTrypsinIncubation } from "./incubator";
 
+// ============================================
+// Pre-register drug-treatment step ids that have been migrated to interactionSequence.
+// These steps complete via completionEvent handlers in dispatchInteractionClick,
+// which only fire on user interaction. The coverage validator runs at page load
+// before any user interaction, so we pre-register here to ensure validateCompletionEventCoverage()
+// finds all step ids at module load time.
+// ============================================
+registeredEmitters.add('carb_high_range');
+registeredEmitters.add('metformin_stock');
+registeredEmitters.add('add_carboplatin');
+registeredEmitters.add('add_metformin');
 
 export function deriveHeldLiquid(selectedTool: string | null): { tool: string | null; liquid: string | null; volumeMl: number; colorKey: string | null } {
 	if (!selectedTool) return { tool: null, liquid: null, volumeMl: 0, colorKey: null };
@@ -285,7 +297,8 @@ export function getItemSvgHtml(itemId: string): string {
 		case 'mtt_vial': return getMttVialSvg();
 		case 'dmso_bottle': return getDmsoBottleSvg();
 		case 'carboplatin_stock': return getCarboplatinStockSvg();
-		case 'metformin_stock': return getMetforminStockSvg();
+		case 'metformin_stock':
+		case 'metformin_stock_bottle': return getMetforminStockSvg();
 		case 'micropipette_rack': return getMicropipetteRackSvg();
 		case 'biohazard_decant': return getBiohazardDecanSvg();
 		default: return '';
@@ -315,17 +328,23 @@ export function renderHoodScene(): void {
 	// highlights so stale highlights from the previous hood step do not
 	// linger on the (hidden) hood div.
 	// Patch 6: Highlight set comes from the active interaction at interactionIndex,
-	// not from all interactions in the sequence.
+	// not from all interactions in the sequence. Also handle directTool steps
+	// by marking their tool as active.
 	const currentStepData = getCurrentStep();
 	let activeTargets: string[] = [];
 	if (currentStepData && currentStepData.scene === 'hood') {
-		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
-		activeTargets = deriveActiveInteractionTargets(
-			currentStepData,
-			gameState.interactionIndex,
-			gameState.selectedTool,
-			heldLiquid
-		);
+		if (currentStepData.completionPath && currentStepData.completionPath.kind === 'interactionSequence') {
+			const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+			activeTargets = deriveActiveInteractionTargets(
+				currentStepData,
+				gameState.interactionIndex,
+				gameState.selectedTool,
+				heldLiquid
+			);
+		} else if (currentStepData.completionPath && currentStepData.completionPath.kind === 'directTool') {
+			// For directTool steps, highlight the tool
+			activeTargets = [(currentStepData.completionPath as any).tool];
+		}
 	}
 	const nextPulseTarget = activeTargets.length > 0 ? activeTargets[0] : null;
 
@@ -787,6 +806,79 @@ export function dispatchInteractionClick(itemId: string): void {
 				renderGame();
 				return;
 			}
+			if (result.completionEvent === 'carb-high-range-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('High-range carboplatin stocks prepared.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'metformin-stock-prepare') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Metformin 10 mM working stock prepared.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'carb-add-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				applyPlateDoseMap();
+				gameState.drugsAdded = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Carboplatin added to rows B-H.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'metformin-add-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Metformin added to columns 7-12.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'decant_mtt') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('MTT decanted into biohazard bin.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
 		}
 		// Generic discharge fallback: no per-event handler matched (or no
 		// completionEvent on this interaction). This branch runs only for
@@ -993,15 +1085,21 @@ export function onItemClick(itemId: string): void {
 
 	// If no tool selected, pick up this item
 	if (!gameState.selectedTool) {
-		// Ethanol bottle sprays immediately
+		// Ethanol bottle sprays immediately (directTool dispatch)
 		if (itemId === 'ethanol_bottle') {
-			gameState.hoodSprayed = true;
-			triggerStep('spray_hood');
-			showNotification('Sprayed hood with 70% ethanol.', 'success');
-			renderHoodScene();
-			renderProtocolPanel();
-			renderScoreDisplay();
-			return;
+			const currentStep = getCurrentStep();
+			// Use completionPath.tool to match directTool steps (cell_culture spray_hood and tutorials)
+			if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'directTool' && currentStep.completionPath.tool === 'ethanol_bottle') {
+				if (gameState.activeStepId) {
+					triggerStep(gameState.activeStepId);
+				}
+				gameState.hoodSprayed = true;
+				showNotification('Sprayed hood with 70% ethanol.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
 		}
 
 		// Microscope click: go to microscope if hemocytometer loaded
@@ -1082,10 +1180,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Loaded serological pipette (trypsin) -> flask: add trypsin to detach cells
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('add_trypsin') removed; now routed through completionEvent dispatch.
 	if (tool === 'serological_pipette_with_trypsin' && itemId === 'flask') {
 		gameState.selectedTool = null;
 		gameState.trypsinAdded = true;
-		triggerStep('add_trypsin');
+		// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 		showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
 		renderHoodScene();
 		renderProtocolPanel();
@@ -1126,10 +1226,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Loaded serological pipette (PBS) -> flask: rinse the flask
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('pbs_wash') removed; now routed through completionEvent dispatch.
 	if (tool === 'serological_pipette_with_pbs' && itemId === 'flask') {
 		gameState.selectedTool = null;
 		gameState.flaskMediaAge = 'fresh';
-		triggerStep('pbs_wash');
+		// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 		showNotification('Flask rinsed with PBS.', 'success');
 		renderHoodScene();
 		renderProtocolPanel();
@@ -1139,10 +1241,12 @@ export function onItemClick(itemId: string): void {
 
 	// Legacy direct PBS-bottle -> flask path. Kept for students who grab
 	// the bottle without the pipette. Same completion behavior.
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('pbs_wash') removed; now routed through completionEvent dispatch.
 	if (tool === 'pbs_bottle' && itemId === 'flask' && gameState.flaskMediaAge === 'old') {
 		gameState.selectedTool = null;
 		gameState.flaskMediaAge = 'fresh';
-		triggerStep('pbs_wash');
+		// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 		showNotification('Flask rinsed with PBS.', 'success');
 		renderHoodScene();
 		renderProtocolPanel();
@@ -1186,6 +1290,8 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Loaded serological pipette (cells) -> well_plate: transfer cells to all wells
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('seed_plate') removed; now routed through completionEvent dispatch.
 	if (tool === 'serological_pipette_with_cells' && itemId === 'well_plate') {
 		gameState.selectedTool = null;
 		// Fill all wells with cells
@@ -1193,7 +1299,7 @@ export function onItemClick(itemId: string): void {
 			well.hasCells = true;
 		});
 		gameState.cellsTransferred = true;
-		triggerStep('seed_plate');
+		// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 		showNotification('Cells transferred to all 24 wells.', 'success');
 		renderHoodScene();
 		renderProtocolPanel();
@@ -1233,10 +1339,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Multichannel pipette (with media) -> well_plate: adjust media
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('media_adjust') removed; now routed through completionEvent dispatch.
 	if (tool === 'multichannel_pipette_with_media' && itemId === 'well_plate') {
 		if (gameState.activeStepId === 'media_adjust') {
 			gameState.selectedTool = null;
-			triggerStep('media_adjust');
+			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 			showNotification('Media adjusted for all wells.', 'success');
 			renderHoodScene();
 			renderProtocolPanel();
@@ -1256,10 +1364,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Multichannel pipette (with MTT) -> well_plate: add MTT
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('add_mtt') removed; now routed through completionEvent dispatch.
 	if (tool === 'multichannel_pipette_with_mtt' && itemId === 'well_plate') {
 		if (gameState.activeStepId === 'add_mtt') {
 			gameState.selectedTool = null;
-			triggerStep('add_mtt');
+			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 			showNotification('MTT added to all wells.', 'success');
 			renderHoodScene();
 			renderProtocolPanel();
@@ -1269,10 +1379,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Well plate -> biohazard_decant: decant MTT
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('decant_mtt') removed; now routed through completionEvent dispatch.
 	if (tool === 'well_plate' && itemId === 'biohazard_decant') {
 		if (gameState.activeStepId === 'decant_mtt') {
 			gameState.selectedTool = null;
-			triggerStep('decant_mtt');
+			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 			showNotification('MTT decanted into biohazard container.', 'success');
 			renderHoodScene();
 			renderProtocolPanel();
@@ -1292,10 +1404,12 @@ export function onItemClick(itemId: string): void {
 	}
 
 	// Multichannel pipette (with DMSO) -> well_plate: add DMSO
+	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
+	// Legacy triggerStep('add_dmso') removed; now routed through completionEvent dispatch.
 	if (tool === 'multichannel_pipette_with_dmso' && itemId === 'well_plate') {
 		if (gameState.activeStepId === 'add_dmso') {
 			gameState.selectedTool = null;
-			triggerStep('add_dmso');
+			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
 			showNotification('DMSO added to all wells.', 'success');
 			renderHoodScene();
 			renderProtocolPanel();

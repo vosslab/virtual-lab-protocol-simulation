@@ -108,10 +108,13 @@ export const HOOD_SCENE_ITEMS: SceneItem[] = [
 	{ id: 'dilution_tube_carb_d', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.3, widthScale: 0.4, label: 'Carb row D', shortLabel: 'Carb D', anchorY: 'bottom', alignStop: 'left' },
 	{ id: 'dilution_tube_carb_e', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.4, widthScale: 0.4, label: 'Carb row E', shortLabel: 'Carb E', anchorY: 'bottom', alignStop: 'left' },
 	{ id: 'dilution_tube_carb_f', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.5, widthScale: 0.4, label: 'Carb row F', shortLabel: 'Carb F', anchorY: 'bottom', alignStop: 'left' },
+	{ id: 'dilution_tube_carb_g', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.6, widthScale: 0.4, label: 'Carb row G', shortLabel: 'Carb G', anchorY: 'bottom', alignStop: 'left' },
+	{ id: 'dilution_tube_carb_h', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.7, widthScale: 0.4, label: 'Carb row H', shortLabel: 'Carb H', anchorY: 'bottom', alignStop: 'left' },
+	{ id: 'dilution_tube_metformin_working', asset: 'dilution_tube_rack', kind: 'rack', zone: 'shelf_row', priority: 28.8, widthScale: 0.4, label: 'Metformin 10 mM working stock', shortLabel: 'Metformin 10mM', anchorY: 'bottom', alignStop: 'left' },
 	{ id: 'mtt_vial',             asset: 'mtt_vial',             kind: 'bottle',    zone: 'shelf_row', priority: 24, widthScale: 0.65, label: 'MTT 5 mg/mL',          anchorY: 'bottom', alignStop: 'center' },
 	{ id: 'dmso_bottle',          asset: 'dmso_bottle',          kind: 'bottle',    zone: 'shelf_row', priority: 25, widthScale: 0.7, label: 'DMSO',                anchorY: 'bottom', alignStop: 'center' },
 	{ id: 'carboplatin_stock',    asset: 'carboplatin_stock',    kind: 'bottle',    zone: 'shelf_row', priority: 26, widthScale: 0.7, label: 'Carboplatin 10 mM',     shortLabel: 'Carboplatin', anchorY: 'bottom', alignStop: 'right'  },
-	{ id: 'metformin_stock',      asset: 'metformin_stock',      kind: 'bottle',    zone: 'shelf_row', priority: 27, widthScale: 0.7, label: 'Metformin 1 M',        shortLabel: 'Metformin',   anchorY: 'bottom', alignStop: 'right'  },
+	{ id: 'metformin_stock_bottle',      asset: 'metformin_stock',      kind: 'bottle',    zone: 'shelf_row', priority: 27, widthScale: 0.7, label: 'Metformin 1 M',        shortLabel: 'Metformin',   anchorY: 'bottom', alignStop: 'right'  },
 ];
 
 export const HOOD_LAYOUT_RULES: SceneLayoutRules = {

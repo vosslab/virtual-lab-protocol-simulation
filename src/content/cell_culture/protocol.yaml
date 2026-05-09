@@ -495,15 +495,78 @@ steps:
     partId: part4_dilute
     dayId: day2
     stepIndex: 3
-    requiredItems: [carboplatin_stock, dilution_tube_rack, media_bottle]
+    requiredItems: [micropipette, carboplatin_stock, media_bottle, dilution_tube_carb_g, dilution_tube_carb_h]
     scene: hood
     errorHints:
       wrong_count: "You need 2 high-range working stocks (rows G and H)."
     completionPath:
-      kind: modal
-      openClick: multichannel_pipette
-      advanceClick: drug-modal-advance
-      completionEvent: carb-high-range-confirm
+      kind: interactionSequence
+      interactions:
+        # Row G: load 10 uL carboplatin
+        - tool: micropipette
+          source: carboplatin_stock
+          liquid: carboplatin
+          volumeMl: 0.010
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.010
+              colorKey: carboplatin
+        # Row G: discharge to dilution_tube_carb_g
+        - tool: micropipette
+          destination: dilution_tube_carb_g
+          liquid: carboplatin
+          consumesVolumeMl: 0.010
+        # Row G: load 990 uL media
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.990
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.990
+              colorKey: media
+        # Row G: discharge to dilution_tube_carb_g
+        - tool: micropipette
+          destination: dilution_tube_carb_g
+          liquid: media
+          consumesVolumeMl: 0.990
+        # Row H: load 50 uL carboplatin
+        - tool: micropipette
+          source: carboplatin_stock
+          liquid: carboplatin
+          volumeMl: 0.050
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.050
+              colorKey: carboplatin
+        # Row H: discharge to dilution_tube_carb_h
+        - tool: micropipette
+          destination: dilution_tube_carb_h
+          liquid: carboplatin
+          consumesVolumeMl: 0.050
+        # Row H: load 950 uL media
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.950
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.950
+              colorKey: media
+        # Row H: discharge to dilution_tube_carb_h (final)
+        - tool: micropipette
+          destination: dilution_tube_carb_h
+          liquid: media
+          consumesVolumeMl: 0.950
+          completionEvent: carb-high-range-confirm
     nextId: metformin_stock
 
   - id: metformin_stock
@@ -513,15 +576,46 @@ steps:
     partId: part4_dilute
     dayId: day2
     stepIndex: 4
-    requiredItems: [metformin_stock, sterile_water, dilution_tube_rack]
+    requiredItems: [micropipette, metformin_stock_bottle, sterile_water, dilution_tube_metformin_working]
     scene: hood
     errorHints:
-      volume_off: "Use 10 uL stock and 990 uL media for a 10 mM working stock."
+      volume_off: "Use 10 uL stock and 990 uL sterile water for a 10 mM working stock."
     completionPath:
-      kind: modal
-      openClick: multichannel_pipette
-      advanceClick: drug-modal-advance
-      completionEvent: metformin-stock-prepare
+      kind: interactionSequence
+      interactions:
+        # Load 10 uL metformin
+        - tool: micropipette
+          source: metformin_stock_bottle
+          liquid: metformin
+          volumeMl: 0.010
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: metformin
+              volumeMl: 0.010
+              colorKey: metformin
+        # Discharge to dilution_tube_metformin_working
+        - tool: micropipette
+          destination: dilution_tube_metformin_working
+          liquid: metformin
+          consumesVolumeMl: 0.010
+        # Load 990 uL sterile water
+        - tool: micropipette
+          source: sterile_water
+          liquid: water
+          volumeMl: 0.990
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: water
+              volumeMl: 0.990
+              colorKey: water
+        # Discharge to dilution_tube_metformin_working (final)
+        - tool: micropipette
+          destination: dilution_tube_metformin_working
+          liquid: water
+          consumesVolumeMl: 0.990
+          completionEvent: metformin-stock-prepare
     nextId: prewarm_media
 
   - id: prewarm_media
@@ -564,37 +658,156 @@ steps:
   - id: add_carboplatin
     label: "Add carboplatin working stocks to the plate"
     action: "Add 5 uL carboplatin working stock per well (rows B-H)"
-    why: "The 8-point dose series lets you compute an IC50 curve."
+    why: "The 7-point dose series lets you compute an IC50 curve."
     partId: part5_treat
     dayId: day2
     stepIndex: 2
-    requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
+    requiredItems: [well_plate, multichannel_pipette, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f, dilution_tube_carb_g, dilution_tube_carb_h]
     scene: hood
     errorHints:
       wrong_volume: "Add 5 uL per well. Row A stays drug-free as a control."
     completionPath:
-      kind: modal
-      openClick: multichannel_pipette
-      advanceClick: drug-modal-advance
-      completionEvent: carb-add-confirm
+      kind: interactionSequence
+      interactions:
+        # Row B: load from carb_b, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_b
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row C: load from carb_c, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_c
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row D: load from carb_d, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_d
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row E: load from carb_e, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_e
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row F: load from carb_f, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_f
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row G: load from carb_g, discharge to well_plate
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_g
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+        # Row H: load from carb_h, discharge to well_plate (final)
+        - tool: multichannel_pipette
+          source: dilution_tube_carb_h
+          liquid: carboplatin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: carboplatin
+              volumeMl: 0.005
+              colorKey: carboplatin
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: carboplatin
+          consumesVolumeMl: 0.005
+          completionEvent: carb-add-confirm
     nextId: add_metformin
 
   - id: add_metformin
-    label: "Add metformin working stocks to columns 7-12"
+    label: "Add metformin working stock to columns 7-12"
     action: "Add 5 uL metformin working stock to columns 7-12"
     why: "Metformin sensitizes cells so the +metformin curve shifts left."
     partId: part5_treat
     dayId: day2
     stepIndex: 3
-    requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
+    requiredItems: [well_plate, multichannel_pipette, dilution_tube_metformin_working]
     scene: hood
     errorHints:
       wrong_cols: "Metformin only goes in columns 7-12. Columns 1-6 stay carboplatin only."
     completionPath:
-      kind: modal
-      openClick: multichannel_pipette
-      advanceClick: drug-modal-advance
-      completionEvent: metformin-add-confirm
+      kind: interactionSequence
+      interactions:
+        # Load 5 uL metformin from dilution_tube_metformin_working
+        - tool: multichannel_pipette
+          source: dilution_tube_metformin_working
+          liquid: metformin
+          volumeMl: 0.005
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: metformin
+              volumeMl: 0.005
+              colorKey: metformin
+        # Discharge to well_plate (final)
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: metformin
+          consumesVolumeMl: 0.005
+          completionEvent: metformin-add-confirm
     nextId: incubate_48h
 
   - id: incubate_48h

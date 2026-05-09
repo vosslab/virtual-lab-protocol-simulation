@@ -45,7 +45,6 @@ import {
 	waitForStepCompleted,
 	waitForHeldLiquid,
 	isToolPreconditionMet,
-	waitForActiveScene,
 	waitForMicroscopeOpen,
 	waitForIncubationComplete,
 	switchToBench,
@@ -530,8 +529,13 @@ async function walkModalStep(page, step, openClick, advanceClick, completionEven
 
 	const advanceSelector = `[data-walker-advance="${advanceClick}"]`;
 
-	// If openClick is present, the modal needs to be opened first
-	if (openClick) {
+	// If the advance button is already visible, the modal is already open from
+	// the prior step's completionEvent (e.g. results follows plate_read with
+	// the plate_reader overlay still active). Re-running openClick in that
+	// state re-renders the overlay and breaks pointer events. Skip openClick.
+	const alreadyOpenCount = await page.locator(advanceSelector).count();
+
+	if (openClick && alreadyOpenCount === 0) {
 		// Use step.scene as the truth source (matches walkInteractionSequence).
 		// DOM-detection was unreliable: items lack data-scene wrappers and
 		// the heuristic defaulted to bench, leaving hood-scoped openers
@@ -569,67 +573,6 @@ async function walkModalStep(page, step, openClick, advanceClick, completionEven
 	report.info(`Clicked advance button for ${step.id}`);
 }
 
-//============================================
-// CATEGORY: Walk plate_reader scene steps (plate_read, results)
-// plate_read: click plate_reader on bench -> scene switches to plate_reader
-//             -> renderPlateReaderScene() puts content in #microscope-overlay
-//             -> click #complete-plate-read -> triggerStep('plate_read')
-// results:    modal is still open (activeScene = plate_reader)
-//             -> click .modal-close -> triggerStep('results')
-//============================================
-
-async function walkPlateReaderStep(page, step, report) {
-	report.info(`  Using plate_reader path for ${step.id}`);
-
-	if (step.id === 'plate_read') {
-		// Navigate to bench and click plate_reader item to open the overlay
-		await switchToBench(page, report);
-		const plateReaderLocator = page.locator('[data-item-id="plate_reader"]').first();
-		if ((await plateReaderLocator.count()) === 0) {
-			throw new Error('plate_reader item not found on bench');
-		}
-		await plateReaderLocator.click();
-		report.summary.totalClicks++;
-
-		// Wait for scene to switch to plate_reader
-		await waitForActiveScene(page, 'plate_reader', 3000);
-		report.info('plate_reader scene active');
-
-		// Wait for #complete-plate-read button to appear in the overlay
-		await page.waitForSelector('#complete-plate-read', { timeout: 3000 });
-		report.info('#complete-plate-read button visible');
-
-		// Click to complete the plate read
-		const completeBtn = page.locator('#complete-plate-read').first();
-		await completeBtn.click();
-		report.summary.totalClicks++;
-		report.info('Clicked #complete-plate-read');
-
-	} else if (step.id === 'results') {
-		// plate_read completion leaves the plate_reader scene open.
-		// The modal-close button fires triggerStep('results') and switches to hood.
-		// Wait for modal-close button to be visible in the plate reader overlay.
-		const closeBtn = page.locator('#microscope-overlay .modal-close').first();
-		if ((await closeBtn.count()) === 0) {
-			// Overlay may not be open; switch to plate_reader scene first
-			await switchToBench(page, report);
-			const plateReaderLocator = page.locator('[data-item-id="plate_reader"]').first();
-			if ((await plateReaderLocator.count()) > 0) {
-				await plateReaderLocator.click();
-				report.summary.totalClicks++;
-				await waitForActiveScene(page, 'plate_reader', 3000);
-				await page.waitForSelector('#microscope-overlay .modal-close', { timeout: 3000 });
-			}
-		}
-		const closeBtnFinal = page.locator('#microscope-overlay .modal-close').first();
-		if ((await closeBtnFinal.count()) === 0) {
-			throw new Error('modal-close button not found for results step');
-		}
-		await closeBtnFinal.click();
-		report.summary.totalClicks++;
-		report.info('Clicked modal-close to complete results step');
-	}
-}
 
 //============================================
 // CATEGORY: Walk prewarm_media (completionTrigger: water_bath on bench)
@@ -806,7 +749,9 @@ async function walkStep(page, step, report, wrongOrderMode) {
 				await clickItemAndWaitProgress(page, tool, report);
 
 			} else if (kind === 'modal') {
-				// Modal interaction: optionally open, then click advance
+				// Generic modal interaction: optionally open, then click advance.
+				// walkModalStep auto-detects an already-open modal so plate_reader
+				// continuations (results after plate_read) need no special case.
 				const openClick = step.completionPath.openClick || null;
 				const advanceClick = step.completionPath.advanceClick;
 				const completionEvent = step.completionPath.completionEvent;
@@ -991,7 +936,7 @@ async function main() {
 		serverDied = code;
 	});
 
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
 	// Capture console errors

@@ -82,7 +82,7 @@ async function captureFlaskVariant(page, variant, filepath) {
 }
 
 async function main() {
-	const browser = await chromium.launch();
+	const browser = await chromium.launch({ headless: true });
 	const context = await browser.newContext({
 		viewport: { width: 600, height: 500 }
 	});
