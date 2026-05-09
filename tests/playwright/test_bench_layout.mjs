@@ -12,11 +12,9 @@ import fs from 'fs';
 import process from 'node:process';
 
 import { REPO_ROOT } from './repo_root.mjs';
-import { ensureGameBuilt } from './build_game_if_missing.mjs';
+import { gameFilePath } from './build_game_if_missing.mjs';
 
-await ensureGameBuilt(REPO_ROOT);
-
-const gamePath = path.resolve(REPO_ROOT, 'cell_culture_game.html');
+const gamePath = await gameFilePath(REPO_ROOT);
 const gameUrl = `file://${gamePath}`;
 const screenshotPath = 'test-results/bench_layout.png';
 

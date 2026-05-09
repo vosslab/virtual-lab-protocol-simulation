@@ -65,11 +65,11 @@ export async function waitForActiveScene(page, sceneName, timeoutMs = 5000) {
 	);
 }
 
-// Wait until the microscope overlay is active.
+// Wait until the instrument overlay is active.
 export async function waitForMicroscopeOpen(page, timeoutMs = 3000) {
 	await page.waitForFunction(
 		() => {
-			const overlay = document.getElementById('microscope-overlay');
+			const overlay = document.getElementById('instrument-overlay');
 			return overlay && overlay.classList.contains('active');
 		},
 		{ timeout: timeoutMs }

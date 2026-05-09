@@ -1,23 +1,7 @@
 //============================================
-// scene_helpers.ts
-// Shared helper functions for hood and bench scenes
+// wrong_order_feedback.ts
+// Toast notification for wrong order interactions
 //============================================
-
-//============================================
-// buildLegacyToken(actor, liquid): string | null
-// Construct a legacy token string from an actor (tool) and liquid type.
-// Used by the legacy interaction ladder before the K2 completionPath
-// dispatch fully replaced these paths. Routes to appropriate tool variants.
-//============================================
-function buildLegacyToken(actor: string | null, liquid: string | null): string | null {
-	const tool = actor || 'serological_pipette';
-	const legacyToken = liquid === 'pbs'     ? `${tool}_with_pbs`
-					  : liquid === 'trypsin' ? `${tool}_with_trypsin`
-					  : liquid === 'media'   ? `${tool}_with_media`
-					  : liquid === 'cells'   ? `${tool}_with_cells`
-					  : null;
-	return legacyToken;
-}
 
 //============================================
 // showWrongOrderToast(message: string): void
@@ -76,4 +60,4 @@ function showWrongOrderToast(message: string): void {
 	}, 2000);
 }
 
-export { buildLegacyToken, showWrongOrderToast };
+export { showWrongOrderToast };

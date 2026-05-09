@@ -2,7 +2,7 @@
 // drug_treatment.ts - Step-aware drug and dilution prep modal
 // ============================================
 // One modal, one protocol step at a time. startDrugAddition() opens
-// #microscope-overlay and renders the screen for whatever step is
+// #instrument-overlay and renders the screen for whatever step is
 // active (carb_intermediate .. add_metformin). Each screen has a
 // single advance interaction that fires triggerStep(activeStepId)
 // for exactly that one step. After the completion trigger fires, the modal rerenders:
@@ -25,7 +25,7 @@
 // sequence now encodes all dilution steps explicitly.
 import type { ProtocolStep } from "../constants";
 import { gameState, registerWarning, registeredEmitters, showNotification, triggerStep } from "../game_state";
-import { renderHoodScene } from "../scenes/hood";
+import { renderHoodScene } from "../scenes/cell_culture_hood/render";
 import { getModalOwnedSteps } from "../step_dispatch";
 import { renderProtocolPanel, renderScoreDisplay } from "../ui_rendering";
 import { applyPlateDoseMap } from "./plate_96";
@@ -128,7 +128,7 @@ export const MODAL_OWNED_STEPS: string[] = getModalOwnedSteps('drug_treatment')
 // (multichannel_pipette + drug_vials + well_plate). Renders the
 // modal screen for whatever step is currently active.
 export function startDrugAddition(): void {
-	const overlay = document.getElementById('microscope-overlay');
+	const overlay = document.getElementById('instrument-overlay');
 	if (!overlay) return;
 	overlay.classList.add('active');
 
@@ -139,7 +139,7 @@ export function startDrugAddition(): void {
 // Render whichever screen matches the active step. If the active
 // step is not one of the six modal-owned steps, close the overlay.
 export function renderDrugModalStep(): void {
-	const overlay = document.getElementById('microscope-overlay');
+	const overlay = document.getElementById('instrument-overlay');
 	if (!overlay) return;
 
 	const active = gameState.activeStepId;

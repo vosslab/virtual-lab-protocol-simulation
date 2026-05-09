@@ -1,6 +1,6 @@
 //============================================
 // cell_culture_hood.ts - Hood scene adapter (driver mode)
-// Thin glue between SceneContext and legacy hood game-state dispatch
+// Render ownership: moved from src/scenes/hood.ts in Patch A3
 //============================================
 
 import type { SceneContext } from "../scene_driver";
@@ -8,70 +8,423 @@ import { registerScene } from "../scene_registry";
 import {
 	getCurrentStep,
 	gameState,
+	recordCleanlinessError,
+	registerWarning,
+	registeredEmitters,
 	renderGame,
 	showNotification,
+	switchScene,
 	triggerStep,
 } from "../../game_state";
-import { resolveInteractionByIndex } from "../../interaction_resolver";
+import { resolveInteraction, resolveInteractionByIndex } from "../../interaction_resolver";
 import { showWrongOrderToast } from "../shared/wrong_order_feedback";
-import { canonicalTool } from "../shared/liquid_transfer";
+import { buildLegacyToken } from "../shared/legacy_tokens";
+import { canonicalTool, deriveHeldLiquid } from "../shared/liquid_transfer";
 import { FRESH_MEDIA_TARGET_ML } from "../../constants";
-import { hideTransferHud } from "../../ui_rendering";
+import { hideTransferHud, renderProtocolPanel, renderScoreDisplay } from "../../ui_rendering";
 import { REAGENTS } from "../../content/inventory_data";
-import { renderHoodScene } from "../hood";
+import { startAspiration, startAddingMedia } from "../../steps/feed_cells";
+import { startDrugAddition } from "../../steps/drug_treatment";
+import { applyPlateDoseMap } from "../../steps/plate_96";
+import { renderTrypsinIncubation } from "../incubator/incubator";
+import { renderHoodScene, getStartingToolForStep, getReagentSourceForStep, showWrongOrderHint, getAvailableActions } from "./render";
+import { getHoodItemLabel } from "../../hood_config";
+import { setupHoodEventListeners } from "./hood_shared";
 
 //============================================
-// buildLegacyToken - Utility for constructing legacy tool tokens
+// MODULE-LOAD SIDE EFFECTS - DO NOT MOVE OR REMOVE
+// These registrations fire only when this module is imported (directly or transitively)
+// from src/init.ts. If a future change removes or re-routes that import, these emitters
+// silently stop firing -- the validator passes at build time and the walker fails at runtime.
+// See docs/archive/scene_render_migration_2026-05-09.md "Module-load side effects are ownership too".
 //============================================
-function buildLegacyToken(actor: string | null, liquid: string | null): string | null {
-	const tool = actor || 'serological_pipette';
-	const legacyToken = liquid === 'pbs'     ? `${tool}_with_pbs`
-					  : liquid === 'trypsin' ? `${tool}_with_trypsin`
-					  : liquid === 'media'   ? `${tool}_with_media`
-					  : liquid === 'cells'   ? `${tool}_with_cells`
-					  : null;
-	return legacyToken;
-}
+// Register hood-related emitters at module load
+// These step ids are dispatched from hood interactions.
+// The validator checks for completion-event coverage at page load.
+//============================================
+registeredEmitters.add('spray_hood');
+registeredEmitters.add('pbs_wash');
+registeredEmitters.add('add_trypsin');
+registeredEmitters.add('seed_plate');
+registeredEmitters.add('media_adjust');
+registeredEmitters.add('add_mtt');
+registeredEmitters.add('decant_mtt');
+registeredEmitters.add('add_dmso');
+registeredEmitters.add('carb_low_range');
+registeredEmitters.add('carb_high_range');
+registeredEmitters.add('metformin_stock');
+registeredEmitters.add('add_carboplatin');
+registeredEmitters.add('add_metformin');
 
 //============================================
-// dispatchHoodInteraction - Per-protocol dispatch wiring for hood scene
-// Mirrors the effect logic from legacy hood.ts dispatchHoodInteractionClick
+// dispatchInteractionClick(itemId: string)
+//
+// Patch 6: New wiring logic using resolveInteractionByIndex.
+// Dispatches a click through the interactionIndex-aware resolver.
+// On wrong-order, increments wrongOrderClicks and shows hint.
+// On tool-select, updates selectedTool state without advancing.
+// On interaction advance, advances interactionIndex and calls triggerStep if sequence complete.
 //============================================
-
-function dispatchHoodInteraction(itemId: string, ctx: SceneContext): void {
+function dispatchInteractionClick(itemId: string): void {
 	const activeStep = getCurrentStep();
-	if (!activeStep) {
+	if (!activeStep || !activeStep.completionPath || activeStep.completionPath.kind !== 'interactionSequence') {
+		return;
+	}
+	const interactions = activeStep.completionPath.interactions;
+
+	const cleanTool = canonicalTool(gameState.selectedTool);
+
+	const resolveArgs: Parameters<typeof resolveInteractionByIndex>[0] = {
+		selectedTool: cleanTool,
+		clickedItem: itemId,
+		activeStep: activeStep,
+		interactionIndex: gameState.interactionIndex,
+	};
+
+	if (gameState.heldLiquid && gameState.heldLiquid.liquid) {
+		resolveArgs.heldLiquid = gameState.heldLiquid;
+	}
+
+	const result = resolveInteractionByIndex(resolveArgs);
+
+	if (result.wrongOrder === true) {
+		gameState.wrongOrderClicks++;
+		const activeInteraction = interactions[gameState.interactionIndex];
+		showWrongOrderHint(itemId, activeStep, activeInteraction);
 		return;
 	}
 
-	// For hood steps with interactionSequence, validate the click first via resolveInteractionByIndex
-	// to detect wrong-order interactions. The legacy dispatchHoodInteractionClick had this logic.
-	if (activeStep.completionPath?.kind === 'interactionSequence') {
-		const cleanTool = canonicalTool(gameState.selectedTool);
-		const resolveArgs = {
-			selectedTool: cleanTool,
-			clickedItem: itemId,
-			activeStep: activeStep,
-			interactionIndex: gameState.interactionIndex,
-		};
-
-		if (gameState.heldLiquid && gameState.heldLiquid.liquid) {
-			(resolveArgs as any).heldLiquid = gameState.heldLiquid;
+	if (result.kind === 'load') {
+		if (result.resultActor && result.resultLiquid) {
+			const reagent = REAGENTS[result.resultLiquid];
+			const colorKey = reagent ? reagent.colorKey : result.resultLiquid;
+			gameState.heldLiquid = {
+				tool: result.resultActor,
+				liquid: result.resultLiquid,
+				volumeMl: result.volumeMl,
+				colorKey: colorKey,
+			};
 		}
 
-		const result = resolveInteractionByIndex(resolveArgs);
+		const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
+		if (legacyToken) {
+			gameState.selectedTool = legacyToken;
+		}
 
-		// Wrong-order click: show hint and return without advancing
-		if (result.wrongOrder === true) {
-			gameState.wrongOrderClicks++;
-			const activeInteraction = activeStep.completionPath.interactions[gameState.interactionIndex];
-			showWrongOrderToast('Try the expected item.');
+		if (result.indexDelta === 1) {
+			gameState.interactionIndex++;
+			if (gameState.interactionIndex >= interactions.length) {
+				triggerStep(activeStep.id);
+			}
+		}
+
+		let notification = 'Loaded ' + result.resultLiquid + '.';
+		if (result.resultLiquid === 'pbs') notification = 'PBS loaded into pipette. Click the flask to rinse.';
+		if (result.resultLiquid === 'trypsin') notification = 'Loaded trypsin-EDTA. Click the flask to add.';
+		if (result.resultLiquid === 'media') notification = 'Media warmed to 37 degrees C and loaded into pipette. Click the flask.';
+		if (result.resultLiquid === 'cells') notification = 'Loaded cell suspension. Click the 24-well plate to transfer.';
+		showNotification(notification);
+		renderGame();
+		return;
+	}
+
+	if (result.kind === 'discharge') {
+		const currentInteraction = interactions ? interactions[gameState.interactionIndex] : null;
+		if (result.indexDelta === 0 && currentInteraction && (currentInteraction.source || currentInteraction.destination)) {
+			const expectedTool = currentInteraction.tool;
+			gameState.selectedTool = expectedTool || null;
+			renderGame();
 			return;
 		}
 
-		// Handle load result (setting heldLiquid and advancing interactionIndex if needed)
+		if (activeStep && activeStep.id && result.completionEvent) {
+			if (result.completionEvent === 'spray_ethanol') {
+				gameState.hoodSprayed = true;
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Sprayed hood with 70% ethanol.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'aspirate') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAspiration();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'pbs_wash') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.flaskMediaAge = 'fresh';
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Flask rinsed with PBS.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'pipette_trypsin') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.trypsinAdded = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'pipette_media') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
+					gameState.trypsinNeutralized = true;
+				}
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAddingMedia();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'pipette_to_plate') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				gameState.wellPlate.forEach(well => {
+					well.hasCells = true;
+				});
+				gameState.cellsTransferred = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Cells transferred to all 24 wells.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'centrifuge') {
+				gameState.flaskMediaMl = 0;
+				gameState.flaskMediaAge = 'old';
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Cells centrifuged.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'prewarm') {
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Media warmed.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'media_adjust') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Media adjusted for all wells.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'resuspend') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						startAddingMedia();
+					} else {
+						renderGame();
+					}
+				} else {
+					renderGame();
+				}
+				return;
+			}
+			if (result.completionEvent === 'carb-low-range-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Low-range carboplatin stocks prepared.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'carb-high-range-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('High-range carboplatin stocks prepared.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'metformin-stock-prepare') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Metformin 10 mM working stock prepared.', 'success');
+				renderGame();
+				return;
+			}
+			if (result.completionEvent === 'carb-add-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				applyPlateDoseMap();
+				gameState.drugsAdded = true;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Carboplatin added to rows B-H.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'metformin-add-confirm') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('Metformin added to columns 7-12.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+			if (result.completionEvent === 'decant_mtt') {
+				gameState.selectedTool = null;
+				gameState.heldLiquid = null;
+				if (result.indexDelta === 1) {
+					gameState.interactionIndex++;
+					if (gameState.interactionIndex >= interactions.length) {
+						triggerStep(activeStep.id);
+					}
+				}
+				showNotification('MTT decanted into biohazard bin.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
+			}
+		}
+		if (activeStep && result.indexDelta === 1) {
+			gameState.selectedTool = null;
+			gameState.heldLiquid = null;
+			gameState.interactionIndex += result.indexDelta;
+			if (gameState.interactionIndex >= interactions.length) {
+				triggerStep(activeStep.id);
+			}
+			renderGame();
+			return;
+		}
+		gameState.selectedTool = canonicalTool(gameState.selectedTool);
+		renderGame();
+		return;
+	}
+
+	if (result.kind === 'error') {
+		showNotification(result.hint);
+		return;
+	}
+
+	renderGame();
+}
+
+//============================================
+// onItemClick(itemId: string)
+//
+// Main click dispatcher for hood items. Routes through new and legacy interactions.
+//============================================
+function onItemClick(itemId: string): void {
+	const activeStep = getCurrentStep();
+	if (activeStep && activeStep.completionPath && activeStep.completionPath.kind === 'interactionSequence') {
+		dispatchInteractionClick(itemId);
+		return;
+	}
+
+	if (activeStep) {
+		const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
+		const cleanTool = canonicalTool(gameState.selectedTool);
+		const result = resolveInteraction({
+			selectedTool: cleanTool,
+			clickedItem: itemId,
+			activeStep: activeStep,
+			heldLiquid: heldLiquid,
+		});
 		if (result.kind === 'load') {
-			if (result.resultActor && result.resultLiquid) {
+			if (result.resultActor && result.resultLiquid && result.volumeMl) {
 				const reagent = REAGENTS[result.resultLiquid];
 				const colorKey = reagent ? reagent.colorKey : result.resultLiquid;
 				gameState.heldLiquid = {
@@ -81,272 +434,349 @@ function dispatchHoodInteraction(itemId: string, ctx: SceneContext): void {
 					colorKey: colorKey,
 				};
 			}
-
-			// Build legacy token for downstream code
 			const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
 			if (legacyToken) {
 				gameState.selectedTool = legacyToken;
+				let notification = 'Loaded ' + result.resultLiquid + '.';
+				if (result.resultLiquid === 'pbs') notification = 'PBS loaded into pipette. Click the flask to rinse.';
+				if (result.resultLiquid === 'trypsin') notification = 'Loaded trypsin-EDTA. Click the flask to add.';
+				if (result.resultLiquid === 'media') notification = 'Media warmed to 37 degrees C and loaded into pipette. Click the flask.';
+				if (result.resultLiquid === 'cells') notification = 'Loaded cell suspension. Click the 24-well plate to transfer.';
+				showNotification(notification);
+				renderGame();
+				return;
 			}
-
-			// If indexDelta is 1, advance the interaction index
-			if (result.indexDelta === 1) {
-				gameState.interactionIndex++;
-				// If we've reached the end of the sequence, call triggerStep
-				if (gameState.interactionIndex >= activeStep.completionPath.interactions.length) {
+		} else if (result.kind === 'discharge') {
+			if (activeStep && activeStep.id && result.completionEvent) {
+				if (result.completionEvent === 'spray_ethanol') {
+					gameState.hoodSprayed = true;
 					triggerStep(activeStep.id);
+					showNotification('Sprayed hood with 70% ethanol.', 'success');
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'aspirate') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					startAspiration();
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'pbs_wash') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					gameState.flaskMediaAge = 'fresh';
+					triggerStep(activeStep.id);
+					showNotification('Flask rinsed with PBS.', 'success');
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'pipette_trypsin') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					gameState.trypsinAdded = true;
+					triggerStep(activeStep.id);
+					showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'pipette_media') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
+						gameState.trypsinNeutralized = true;
+					}
+					startAddingMedia();
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'pipette_to_plate') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					gameState.wellPlate.forEach(well => {
+						well.hasCells = true;
+					});
+					gameState.cellsTransferred = true;
+					triggerStep(activeStep.id);
+					showNotification('Cells transferred to all 24 wells.', 'success');
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'centrifuge') {
+					gameState.flaskMediaMl = 0;
+					gameState.flaskMediaAge = 'old';
+					triggerStep(activeStep.id);
+					showNotification('Cells centrifuged.', 'success');
+					return;
+				}
+				if (result.completionEvent === 'prewarm') {
+					triggerStep(activeStep.id);
+					showNotification('Media warmed.', 'success');
+					return;
+				}
+				if (result.completionEvent === 'media_adjust') {
+					gameState.selectedTool = null;
+					gameState.heldLiquid = null;
+					triggerStep(activeStep.id);
+					showNotification('Media adjusted for all wells.', 'success');
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
+				}
+				if (result.completionEvent === 'resuspend') {
+					gameState.selectedTool = null;
+					startAddingMedia();
+					renderHoodScene();
+					renderProtocolPanel();
+					renderScoreDisplay();
+					return;
 				}
 			}
-
-			let notification = 'Loaded ' + result.resultLiquid + '.';
-			showNotification(notification);
+			gameState.selectedTool = canonicalTool(gameState.selectedTool);
 			renderGame();
 			return;
-		}
-
-		// Handle discharge result (dispatching based on completionEvent)
-		if (result.kind === 'discharge') {
-			// Special case: if indexDelta === 0, this is a tool-select action (pre-discharge setup).
-			// Set selectedTool for subsequent source/destination clicks, then return without discharge.
-			const currentInteraction = activeStep.completionPath.interactions ? activeStep.completionPath.interactions[gameState.interactionIndex] : null;
-			if (result.indexDelta === 0 && currentInteraction && (currentInteraction.source || currentInteraction.destination)) {
-				// Tool-select mode: set selectedTool and wait for source/destination click
-				const expectedTool = currentInteraction.tool;
-				gameState.selectedTool = expectedTool || null;
-				renderGame();
-				return;
-			}
-
-			// Advance interactionIndex if needed (before calling completionEvent handlers)
-			if (result.indexDelta === 1) {
-				gameState.interactionIndex++;
-			}
-			// If we've reached the end of the sequence, call triggerStep
-			if (gameState.interactionIndex >= activeStep.completionPath.interactions.length) {
-				triggerStep(activeStep.id);
-				renderGame();
-				return;
-			}
+		} else if (result.kind === 'error') {
+			showNotification(result.hint);
+			return;
 		}
 	}
 
-	// After handling load/discharge, check if the current interaction has a completionEvent handler
-	// (i.e., it's a final discharge step). If not, just render and return.
-
-	if (activeStep.completionPath?.kind === 'interactionSequence') {
-		const interactions = activeStep.completionPath.interactions;
-		if (!interactions || interactions.length === 0) {
-			renderGame();
-			return;
-		}
-
-		// Get the CURRENT active interaction (after potential indexDelta advancement above)
-		const activeInteraction = interactions[gameState.interactionIndex];
-		if (!activeInteraction || !activeInteraction.completionEvent) {
-			// No completionEvent on this interaction; it's an intermediate step
-			// (already handled by load/discharge logic above)
-			renderGame();
-			return;
-		}
-
-		// We have a completionEvent handler to dispatch
-		const completionEvent = activeInteraction.completionEvent;
-
-		// Map completionEvent to state mutations and notifications
-		if (completionEvent === 'spray_ethanol') {
-			gameState.hoodSprayed = true;
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Sprayed hood with 70% ethanol.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'pbs_wash') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			gameState.flaskMediaAge = 'fresh';
-			showNotification('Flask rinsed with PBS.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'pipette_trypsin') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			gameState.trypsinAdded = true;
-			showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'pipette_media') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
-				gameState.trypsinNeutralized = true;
+	if (!gameState.selectedTool) {
+		if (itemId === 'ethanol_bottle') {
+			const currentStep = getCurrentStep();
+			if (currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'directTool' && currentStep.completionPath.tool === 'ethanol_bottle') {
+				if (gameState.activeStepId) {
+					triggerStep(gameState.activeStepId);
+				}
+				gameState.hoodSprayed = true;
+				showNotification('Sprayed hood with 70% ethanol.', 'success');
+				renderHoodScene();
+				renderProtocolPanel();
+				renderScoreDisplay();
+				return;
 			}
-			showNotification('Media added to flask.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
+		}
+
+		if (itemId === 'microscope' && gameState.hemocytometerLoaded
+			&& !gameState.completedSteps.includes('count_cells')) {
+			switchScene('microscope');
 			return;
 		}
 
-		if (completionEvent === 'pipette_to_plate') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			gameState.wellPlate.forEach(well => {
-				well.hasCells = true;
-			});
-			gameState.cellsTransferred = true;
-			showNotification('Cells transferred to all 24 wells.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
+		if (itemId === 'microscope' && !gameState.hemocytometerLoaded) {
+			if (!gameState.trypsinNeutralized) {
+				showNotification('Complete trypsinization and media neutralization first.', 'warning');
+			} else {
+				showNotification('Load a cell sample onto the hemocytometer first.', 'warning');
+			}
 			return;
 		}
 
-		if (completionEvent === 'centrifuge') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			gameState.flaskMediaMl = 0;
-			gameState.flaskMediaAge = 'old';
-			showNotification('Cells centrifuged.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
+		const currentStep = getCurrentStep();
+		if (itemId === 'well_plate' && currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.modal?.owner === 'plate') {
+			switchScene('plate');
 			return;
 		}
 
-		if (completionEvent === 'media_adjust') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Media adjusted for all wells.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
+		if (itemId === 'well_plate' && gameState.cellsTransferred && gameState.drugsAdded
+			&& !gameState.incubated) {
+			gameState.selectedTool = 'well_plate';
+			showNotification('Holding plate. Click the incubator to place it inside.');
+			renderHoodScene();
 			return;
 		}
 
-		if (completionEvent === 'carb-low-range-confirm') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Low-range carboplatin stocks prepared.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
+		if (itemId === 'flask' && gameState.trypsinAdded && !gameState.trypsinIncubated) {
+			gameState.selectedTool = 'flask';
+			showNotification('Holding flask. Click the incubator to incubate with trypsin.');
+			renderHoodScene();
 			return;
 		}
 
-		if (completionEvent === 'carb-high-range-confirm') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('High-range carboplatin stocks prepared.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'metformin-stock-prepare') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Metformin 10 mM working stock prepared.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'carb-add-confirm') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			gameState.drugsAdded = true;
-			showNotification('Carboplatin added to rows B-H.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'metformin-add-confirm') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Metformin added to columns 7-12.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'resuspend') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			// When resuspend completes, record the waste and complete the step
-			// (driver mode: synchronous completion without animation)
-			const finalVolume = gameState.flaskMediaMl;
-			const waste = Math.abs(finalVolume - FRESH_MEDIA_TARGET_ML);
-			gameState.mediaWastedMl += waste;
-			gameState.flaskMediaAge = 'fresh';
-			hideTransferHud();
-			showNotification(`Resuspended in ${finalVolume.toFixed(1)} mL.`, 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'decant_mtt') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('MTT decanted into biohazard bin.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'carb_intermediate_complete') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Carboplatin intermediate dilution complete.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'aspirate') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('Aspiration complete.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'add_dmso') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('DMSO added.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		if (completionEvent === 'add_mtt') {
-			gameState.selectedTool = null;
-			gameState.heldLiquid = null;
-			showNotification('MTT added.', 'success');
-			triggerStep(activeStep.id);
-			renderGame();
-			return;
-		}
-
-		// Generic fallback: advance index, clear tool, and render
-		gameState.selectedTool = null;
-		gameState.heldLiquid = null;
-		renderGame();
+		gameState.selectedTool = itemId;
+		showNotification('Picked up ' + getHoodItemLabel(itemId));
+		renderHoodScene();
 		return;
 	}
 
-	// Fallback for non-interactionSequence steps: just re-render
-	renderGame();
+	const tool = gameState.selectedTool;
+
+	if (tool === 'aspirating_pipette' && itemId === 'flask') {
+		if (!gameState.hoodSprayed) {
+			registerWarning('Always sanitize the hood before working! Spray with 70% ethanol first.');
+			recordCleanlinessError('Started work without sanitizing the hood.');
+		}
+		gameState.selectedTool = null;
+		startAspiration();
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'flask' && itemId === 'incubator'
+		&& gameState.trypsinAdded && !gameState.trypsinIncubated) {
+		gameState.selectedTool = null;
+		renderTrypsinIncubation();
+		return;
+	}
+
+	if (tool === 'serological_pipette' && itemId === 'trypsin_bottle') {
+		gameState.selectedTool = 'serological_pipette_with_trypsin';
+		showNotification('Loaded trypsin-EDTA. Click the flask to add.');
+		renderHoodScene();
+		return;
+	}
+
+	if (tool === 'serological_pipette_with_trypsin' && itemId === 'flask') {
+		gameState.selectedTool = null;
+		gameState.trypsinAdded = true;
+		showNotification('Trypsin added to flask. Incubate 3-5 min at 37C.', 'success');
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'serological_pipette' && itemId === 'media_bottle') {
+		gameState.mediaWarmed = true;
+		gameState.selectedTool = 'serological_pipette_with_media';
+		showNotification('Media warmed to 37 degrees C and loaded into pipette. Click the flask.');
+		renderHoodScene();
+		return;
+	}
+
+	if (tool === 'serological_pipette_with_media' && itemId === 'flask') {
+		gameState.selectedTool = null;
+		if (gameState.trypsinIncubated && !gameState.trypsinNeutralized) {
+			gameState.trypsinNeutralized = true;
+		}
+		startAddingMedia();
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'serological_pipette' && itemId === 'pbs_bottle') {
+		gameState.selectedTool = 'serological_pipette_with_pbs';
+		showNotification('PBS loaded into pipette. Click the flask to rinse.');
+		renderHoodScene();
+		return;
+	}
+
+	if (tool === 'serological_pipette_with_pbs' && itemId === 'flask') {
+		gameState.selectedTool = null;
+		gameState.flaskMediaAge = 'fresh';
+		showNotification('Flask rinsed with PBS.', 'success');
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'pbs_bottle' && itemId === 'flask' && gameState.flaskMediaAge === 'old') {
+		gameState.selectedTool = null;
+		gameState.flaskMediaAge = 'fresh';
+		showNotification('Flask rinsed with PBS.', 'success');
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'serological_pipette' && itemId === 'flask' && gameState.flaskMediaAge === 'fresh') {
+		const countDone = gameState.completedSteps.indexOf('count_cells') >= 0;
+		if (!countDone) {
+			gameState.selectedTool = 'serological_pipette_with_sample';
+			showNotification('Cell sample loaded. Click the microscope to load the hemocytometer.');
+			renderHoodScene();
+			return;
+		}
+		gameState.selectedTool = 'serological_pipette_with_cells';
+		showNotification('Loaded cell suspension. Click the 24-well plate to transfer.');
+		renderHoodScene();
+		return;
+	}
+
+	if (tool === 'serological_pipette_with_sample' && itemId === 'microscope') {
+		gameState.selectedTool = null;
+		gameState.hemocytometerLoaded = true;
+		showNotification('Sample mixed with trypan blue and loaded onto hemocytometer.', 'success');
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'serological_pipette_with_cells' && itemId === 'well_plate') {
+		gameState.selectedTool = null;
+		gameState.wellPlate.forEach(well => {
+			well.hasCells = true;
+		});
+		gameState.cellsTransferred = true;
+		showNotification('Cells transferred to all 24 wells.', 'success');
+		renderHoodScene();
+		renderProtocolPanel();
+		renderScoreDisplay();
+		return;
+	}
+
+	if (tool === 'multichannel_pipette' && itemId === 'drug_vials') {
+		if (!gameState.cellsTransferred) {
+			showNotification('Transfer cells to the plate first.', 'warning');
+			gameState.selectedTool = null;
+			renderHoodScene();
+			return;
+		}
+		gameState.selectedTool = 'multichannel_pipette_with_drug';
+		showNotification('Loaded drug dilutions. Click the 24-well plate to add drugs.');
+		renderHoodScene();
+		return;
+	}
+
+	if (tool === 'multichannel_pipette_with_drug' && itemId === 'well_plate') {
+		gameState.selectedTool = null;
+		startDrugAddition();
+		return;
+	}
+
+	const stepHint = getCurrentStep();
+	let warningMsg = 'That combination does not work.';
+	if (stepHint) {
+		warningMsg += ' Current step: ' + stepHint.label;
+	}
+	registerWarning(warningMsg);
+	gameState.selectedTool = null;
+	renderHoodScene();
+}
+
+//============================================
+// dispatchHoodInteraction - Per-protocol dispatch wiring for hood scene
+// Routes adapter's SceneContext interaction through the item click handler
+//============================================
+function dispatchHoodInteraction(itemId: string, ctx: SceneContext): void {
+	onItemClick(itemId);
 }
 
 function renderHood(ctx: SceneContext): void {
 	renderHoodScene();
+	setupHoodEventListeners(onItemClick);
 }
 
 const cellCultureHoodAdapter = {

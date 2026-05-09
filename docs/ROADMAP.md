@@ -1,6 +1,6 @@
 # Roadmap
 
-<!-- Verified current: 2026-05-07 (delivered section confirmed against CHANGELOG; legacy M1-M5 labels removed; future items confirmed not in active plan) -->
+<!-- Verified current: 2026-05-09 (scene render-ownership migration marked done; sceneRouter resolution recorded; bench_config/hood_config YAML duplication captured as deferred) -->
 
 Planned features and improvements for the cell culture simulation game.
 
@@ -17,8 +17,64 @@ Planned features and improvements for the cell culture simulation game.
 - Protocol-fidelity scoring (5 categories: dilution, plate map, timing, MTT technique, absorbance plausibility)
 - Dilution prep validation (intermediate, low-range, high-range, metformin stocks)
 - Day timeline state machine (day1/day2/day4 with incubator-gated transitions)
+- Capability-based scene dispatch migration (Patches 1-16, 2026-05-08 to 2026-05-09; archived plan: [archive/scene_capability_architecture_2026-05-09.md](archive/scene_capability_architecture_2026-05-09.md))
+- Scene render-ownership migration: render moved from flat `src/scenes/{hood,bench,microscope,plate,incubator}.ts` source modules into per-scene adapters under `src/scenes/<scene>/<scene>.ts`; `SceneAdapter.render(ctx)` made required; new first-class `plate_reader` adapter; helper duplicates consolidated into `shared/liquid_transfer.ts` and `shared/legacy_tokens.ts`; `sceneRouter` flag retired (decision: REMOVED, see "sceneRouter resolution" below). Completed 2026-05-09 (Patches A1-B4; archived plan: [archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md)).
+
+## sceneRouter resolution (recorded 2026-05-09)
+
+The per-protocol `sceneRouter` flag was migration scaffolding from the
+2026-05-08 capability migration. Patch B3 of the render-ownership
+migration applied the decision rule from the archived plan and resolved
+the flag as **REMOVED**:
+
+- Every protocol used `driver` (no `legacy` opt-out remained).
+- Patch B2 retired the alternative implementation (the flat source
+  modules), so `legacy` had no backing path.
+- No roadmap product feature would consume the field.
+
+The flag, the `SceneRouterMode` type, and the `resolveSceneRouter`
+function are gone. There is one render and one dispatch path. The
+field is intentionally absent rather than missing by oversight.
 
 ## Future enhancements
+
+## Scene adapter responsibility-seam decomposition (added 2026-05-09)
+
+The scene render-ownership migration moved each scene's render code from a flat
+`src/scenes/<scene>.ts` source module into a per-scene adapter folder, but it
+did not decompose the moved logic. Every adapter still owns dispatch wiring,
+result handling, completion-event emission, modal rendering, and (in the hood's
+case) a token-shaped legacy interaction ladder, all in one file. Patch 4 of the
+follow-up plan was scoped to consolidate the hood ladder; bench, microscope,
+plate, and incubator adapters carry the same shape and were not addressed.
+
+What to do here is split each adapter by **responsibility seam**, not by line
+count: separate dispatch routing from result mutation, separate the legacy
+token ladder from the K2 completionPath dispatch, separate render assembly
+from event wiring (the hood/`render.ts` split is the working model). The
+legacy-token compatibility layer (`src/scenes/shared/legacy_tokens.ts`) can
+retire only after the call sites in `bench/bench.ts`, `cell_culture_hood.ts`,
+and any other adapter that still consumes `_with_<liquid>` tokens move onto
+completionPath dispatch.
+
+Concrete tasks (not ordered; pick by which adapter is next changed for an
+unrelated feature):
+
+- Hood interaction-ladder cleanup (deferred Patch 4 of the SCENE_MIGRATION
+  follow-up plan): the long token-ladder fallback in
+  `src/scenes/cell_culture_hood/cell_culture_hood.ts` should fold into the
+  K2 completionPath dispatch above it.
+- Bench dispatch decomposition: split `src/scenes/bench/bench.ts` into render,
+  dispatch, and result-handling modules along the seams already present in
+  the file.
+- Microscope dispatch decomposition: extract the manual hemocytometer flow
+  from `src/scenes/microscope/microscope.ts` into a sibling module so the
+  automated and manual paths stop sharing a single dispatcher.
+- Plate / incubator: smaller surfaces; revisit if either grows new behavior.
+
+When all `buildLegacyToken` call sites in the adapters reach zero,
+`src/scenes/shared/legacy_tokens.ts` can be deleted as part of the same
+patch that retires the last caller.
 
 ## Hood setup phase
 
@@ -64,8 +120,9 @@ the migration and surface during planning.
 - **Mini-protocol failures are design evidence, not nuisance failures.** If a mini-protocol fails during a scene migration,
   fix the scene model or capability boundary before proceeding. Do not patch around the failure.
   Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
-- **`sceneRouter` is migration scaffolding, not a product feature.** It must be deleted at MS-CLEANUP (WP-C2.1). Do not
-  extend or reuse it for unrelated routing. Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
+- **`sceneRouter` was migration scaffolding, not a product feature.** Resolved 2026-05-09 (Patch B3) as REMOVED; see "sceneRouter resolution" above.
+  Do not reintroduce the flag or a near-equivalent without an explicit product reason.
+  Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
 - **Patch report contract.** Every subagent patch report must answer 3 questions in order: (1) what changed? (2) which
   mini-protocol (or full protocol) proves it? (3) which legacy path still exists?
   Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
@@ -73,76 +130,19 @@ the migration and surface during planning.
   candidate? scene-specific? unrealistic budget?) and act on the classification -- do not squeeze code purely to hit the
   number. Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
 
-## Future work: scene rendering migration (follow-up to 2026-05-08 capability migration)
+## Deferred cleanups (post 2026-05-09 render migration)
 
-The 2026-05-08 capability-based scene migration migrated **click dispatch and step
-completion only** through a new driver pipeline. **Scene rendering** (SVG layout, DOM
-build, modal markup, overlay UI) was not in scope and remains in the legacy per-scene
-files. Patch 17 of the original plan attempted to delete those files and the walker
-regressed immediately (no rendering source). The legacy files were restored and Patches
-17-18 were deferred. Plan archived at
-[archive/scene_capability_architecture_2026-05-09.md](archive/scene_capability_architecture_2026-05-09.md).
+The render-ownership migration (Patches A1-B4, archived plan
+[archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md))
+explicitly held the following item out of scope. Tracked here so it is
+not lost.
 
-This roadmap entry tracks the rendering follow-up. It is intentionally a roadmap entry,
-not an implementation plan: the design is open and a fresh planning pass should produce
-the patch sequence.
-
-### The gap
-
-Click dispatch and step completion run through the new capability/adapter pipeline.
-Scene rendering still runs through the original monolithic functions in five legacy
-files (LOC counts as of 2026-05-09):
-
-| Legacy file | LOC | Renderer entry point |
-| --- | --- | --- |
-| [src/scenes/hood.ts](../src/scenes/hood.ts) | 1438 | `renderHoodScene` |
-| [src/scenes/microscope.ts](../src/scenes/microscope.ts) | 661 | `renderMicroscopeScene` (and modal renderers) |
-| [src/scenes/bench.ts](../src/scenes/bench.ts) | 567 | `renderBenchScene` |
-| [src/scenes/incubator.ts](../src/scenes/incubator.ts) | 151 | `renderIncubatorScene` |
-| [src/scenes/plate.ts](../src/scenes/plate.ts) | 147 | `renderPlateScene` |
-
-Total: ~2964 LOC of SVG/DOM rendering still in the legacy modules.
-
-### Pre-conditions (already in place)
-
-- Capability/adapter pattern is settled and proven through 10 protocols (9 mini +
-  full `cell_culture` 25/25). The contract for new modules to plug into is known.
-- The element-id mechanism on scene YAML (`elementId` field, Patch 14) lets scene
-  configs point at any DOM element id, including the existing `hood-scene` and
-  `microscope-overlay`.
-- The per-protocol `sceneRouter` flag and the legacy/driver coexistence pattern
-  are still in place; rendering migration can follow the same per-scene incremental
-  pattern as dispatch did.
-
-### High-level approaches (open for design)
-
-A planning pass should pick one (or hybrid):
-
-- **Adapter-owned rendering.** Each scene adapter grows a `render(ctx)` method
-  that produces the scene's DOM/SVG. Capabilities stay focused on click dispatch
-  and state. Pro: keeps the simple "one adapter per scene" mental model. Con: hood
-  adapter would balloon past current LOC budgets.
-- **Render capability per scene shape.** Add render capabilities mirroring the
-  existing dispatch capabilities (for example a `gridCountingRender` to match
-  `gridCountingWorkspace`) and a generic `sceneRenderer` that composes them. Pro:
-  consistent with the dispatch model, naturally factors shared rendering. Con:
-  more capability surface; requires careful capability-vs-adapter boundary work.
-- **Standalone rendering modules.** Treat scene rendering as a peer of the
-  capability pipeline rather than part of it. `src/scenes/<scene>/<scene>_render.ts`
-  exports a `render<Scene>Scene` that the driver invokes alongside dispatch. Pro:
-  smallest mental change. Con: re-creates the legacy split, just with new file
-  paths.
-
-Decision deferred. The right answer falls out of one or two pilot migrations
-(suggest bench or incubator first; both are small).
-
-### Post-conditions (what the follow-up unlocks)
-
-- The five legacy scene files (`bench.ts`, `hood.ts`, `microscope.ts`, `plate.ts`,
-  `incubator.ts`) can be `git rm`'d (Patch 17 of the original plan).
-- The `sceneRouter` flag and the `legacy` branch in `scene_registry` and `init.ts`
-  can be removed (Patch 18 of the original plan).
-- `src/scenes/*.ts` then contains only driver infrastructure and per-scene folders;
-  no flat monolithic scene modules remain.
-
-Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
+- **Layout config vs scene YAML duplication.** `src/bench_config.ts`
+  and `src/hood_config.ts` are still legitimate sources of layout
+  truth, but parts of the same layout information now also live in the
+  scene YAML files under `src/scenes/<scene>/<scene>.yaml`. A future
+  cleanup should pick one source of truth per layout fact and remove
+  the duplicated definitions from the other side. This is a
+  layout-engine concern, not a scene-runtime concern; sequence after
+  any further layout-engine refactor (the `layout_engine.ts` split
+  listed above).

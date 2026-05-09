@@ -23,12 +23,10 @@ import { execSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 import { REPO_ROOT } from './repo_root.mjs';
-import { ensureGameBuilt } from './build_game_if_missing.mjs';
-
-await ensureGameBuilt(REPO_ROOT);
+import { gameFilePath } from './build_game_if_missing.mjs';
 
 const PROTOCOL_YAML_PATH = path.join(REPO_ROOT, 'content', 'cell_culture', 'protocol.yaml');
-const GAME_HTML_PATH = path.join(REPO_ROOT, 'cell_culture_game.html');
+const GAME_HTML_PATH = await gameFilePath(REPO_ROOT);
 const GAME_URL = `file://${GAME_HTML_PATH}`;
 
 let yamlSnapshot = null;

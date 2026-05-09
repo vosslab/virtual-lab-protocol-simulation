@@ -126,7 +126,7 @@ user clicks. Click-time triggers would not yet be registered.
 Each scene file therefore announces its owned step ids at module init
 time via explicit `registeredEmitters.add(id)` lines near the top of
 the file, separately from the `triggerStep` calls inside click handlers.
-Example from `src/scenes/hood.ts`:
+Example from [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts):
 
 ```typescript
 // Pre-register every step id this scene owns. validateCompletionEventCoverage()
@@ -166,7 +166,7 @@ coupling pattern behind the M4 stuck-at-step-1 regression.
 ## Hint derivation
 
 The hood toolbar banner derives its text from the current step, not
-from ad-hoc state flags. Three helpers in `src/scenes/hood.ts`
+from ad-hoc state flags. Three helpers in [src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts)
 translate the active interaction into concrete click-level guidance:
 
 - `getStartingToolForStep(step)` -- returns the `tool` from the current

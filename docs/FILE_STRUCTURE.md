@@ -76,10 +76,11 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 
 #### Scenes
 
-The scene tree has two layers as of 2026-05-09: capability-based driver
-infrastructure and per-scene adapters under `src/scenes/<scene>/`, plus
-legacy flat scene modules at `src/scenes/*.ts` that still own DOM
-rendering. See
+As of 2026-05-09 the scene tree is fully driver-routed: capability-based
+driver infrastructure plus per-scene adapters under `src/scenes/<scene>/`.
+No flat monolithic scene modules remain at `src/scenes/*.ts`; the only
+flat files at that level are driver infrastructure
+(`scene_driver.ts`, `scene_registry.ts`). See
 [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md#capability-based-scene-architecture-current-state-2026-05-09)
 for the layered model.
 
@@ -87,8 +88,8 @@ for the layered model.
 
 | File | Purpose |
 | --- | --- |
-| [src/scenes/scene_driver.ts](../src/scenes/scene_driver.ts) | `runScene(sceneId)` lifecycle: mount capabilities, attach click dispatch, route to scene adapter |
-| [src/scenes/scene_registry.ts](../src/scenes/scene_registry.ts) | Capability and scene-adapter registries; `resolveSceneRouter(protocolId)` |
+| [src/scenes/scene_driver.ts](../src/scenes/scene_driver.ts) | `runScene(sceneId)` dispatch lifecycle and `runSceneRender(sceneId)` render routing |
+| [src/scenes/scene_registry.ts](../src/scenes/scene_registry.ts) | Capability and scene-adapter registries |
 
 ##### Capabilities
 
@@ -105,35 +106,21 @@ for the layered model.
 
 | File | Purpose |
 | --- | --- |
-| [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) | Wrong-order toast and message templating |
+| [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) | Wrong-order toast and message templating (re-exports `buildLegacyToken` for back-compat) |
 | [src/scenes/shared/scene_layout.ts](../src/scenes/shared/scene_layout.ts) | Item-position math and label-collision wrapping |
-| [src/scenes/shared/liquid_transfer.ts](../src/scenes/shared/liquid_transfer.ts) | `deriveHeldLiquid`, `canonicalTool`, `BOTTLE_ASSET_LIQUID` |
-| [src/scenes/shared/plate_reader.ts](../src/scenes/shared/plate_reader.ts) | Shared plate-reader helpers |
+| [src/scenes/shared/liquid_transfer.ts](../src/scenes/shared/liquid_transfer.ts) | `deriveHeldLiquid`, `canonicalTool`, `BOTTLE_ASSET_LIQUID` (single source of truth) |
+| [src/scenes/shared/legacy_tokens.ts](../src/scenes/shared/legacy_tokens.ts) | `buildLegacyToken` token formatting (single source of truth) |
 
 ##### Per-scene adapters and YAML
 
 | File | Purpose |
 | --- | --- |
-| [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml), [bench.ts](../src/scenes/bench/bench.ts) | Bench adapter and scene config |
-| [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml), [cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Sterile hood adapter and scene config |
-| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts) | 96-well plate adapter and scene config |
-| [src/scenes/microscope/microscope.yaml](../src/scenes/microscope/microscope.yaml), [microscope.ts](../src/scenes/microscope/microscope.ts) | Microscope adapter (automated counter and manual hemocytometer) and scene config |
-| [src/scenes/incubator/incubator.yaml](../src/scenes/incubator/incubator.yaml), [incubator.ts](../src/scenes/incubator/incubator.ts) | Incubator adapter and scene config |
-
-##### Legacy flat scene modules (still active for rendering)
-
-These files were not deleted. They still own SVG and DOM rendering for
-every scene and are imported by [src/init.ts](../src/init.ts). The
-rendering migration that would let them be removed is captured in
-[ROADMAP.md](ROADMAP.md).
-
-| File | Status |
-| --- | --- |
-| [src/scenes/bench.ts](../src/scenes/bench.ts) | LEGACY - owns `renderBenchScene` |
-| [src/scenes/hood.ts](../src/scenes/hood.ts) | LEGACY - owns `renderHoodScene` |
-| [src/scenes/incubator.ts](../src/scenes/incubator.ts) | LEGACY - owns `renderIncubatorScene` |
-| [src/scenes/microscope.ts](../src/scenes/microscope.ts) | LEGACY - owns `renderMicroscopeScene` |
-| [src/scenes/plate.ts](../src/scenes/plate.ts) | LEGACY - owns `renderPlateScene` |
+| [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml), [bench.ts](../src/scenes/bench/bench.ts) | Bench adapter (owns render + dispatch) and scene config |
+| [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml), [cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts), [render.ts](../src/scenes/cell_culture_hood/render.ts) | Sterile hood adapter; render assembly split into sibling `render.ts` by responsibility seam, dispatch + adapter registration in `cell_culture_hood.ts` |
+| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts) | 96-well plate adapter (owns render + dispatch) and scene config |
+| [src/scenes/microscope/microscope.yaml](../src/scenes/microscope/microscope.yaml), [microscope.ts](../src/scenes/microscope/microscope.ts) | Microscope adapter (automated counter and manual hemocytometer; owns render + dispatch) and scene config |
+| [src/scenes/incubator/incubator.yaml](../src/scenes/incubator/incubator.yaml), [incubator.ts](../src/scenes/incubator/incubator.ts) | Incubator adapter (owns render + dispatch) and scene config |
+| [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Plate-reader first-class adapter (owns render); created in Patch A6b |
 
 #### Step modules
 
@@ -255,7 +242,10 @@ as a reference snapshot. New shell or Python E2E runners belong here as
 | [ROADMAP.md](ROADMAP.md) | Planned work |
 | [TODO.md](TODO.md) | Backlog scratchpad |
 | [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) | Canonical vocabulary |
-| [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) | YAML schema reference |
+| [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) | Protocol YAML schema reference |
+| [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) | Scene YAML schema reference |
+| [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) | Scene driver, registry, adapters, capabilities |
+| [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) | Canonical terms for the scene system |
 | [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
 | [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) | Step-flow architecture |
 | [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |

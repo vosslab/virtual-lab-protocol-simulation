@@ -5,8 +5,6 @@ import type { ProtocolStep } from "../constants";
 
 export const PROTOCOL_ID = "cell_culture";
 
-export const SCENE_ROUTER: "legacy" | "driver" = "driver";
-
 export interface ProtocolPart {
 	id: string;
 	label: string;

@@ -1,5 +1,3 @@
-sceneRouter: driver
-
 parts:
   - id: tutorial_hood_part
     label: "Tutorial: Hood Transfer"

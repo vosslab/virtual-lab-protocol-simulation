@@ -1175,11 +1175,11 @@ body {
 		</div>
 	</div>
 
-	<!-- Microscope overlay modal (hidden by default) -->
-	<div id="microscope-overlay" class="modal-overlay">
+	<!-- Instrument overlay modal (shared by microscope and plate_reader; hidden by default) -->
+	<div id="instrument-overlay" class="modal-overlay">
 		<div class="modal-content microscope-modal">
-			<button class="modal-close" aria-label="Close microscope view">&times;</button>
-			<h2>Microscope View</h2>
+			<button class="modal-close" aria-label="Close instrument view">&times;</button>
+			<h2>Instrument View</h2>
 			<div class="microscope-view">
 				<!-- SVG microscope view will be injected here -->
 				<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>
@@ -7381,13 +7381,13 @@ registeredTriggers.add("add_carboplatin");
 registeredTriggers.add("add_metformin");
 const MODAL_OWNED_STEPS = getModalOwnedSteps("drug_treatment").map((step) => step.id);
 function startDrugAddition() {
-  const overlay = document.getElementById("microscope-overlay");
+  const overlay = document.getElementById("instrument-overlay");
   if (!overlay) return;
   overlay.classList.add("active");
   renderDrugModalStep();
 }
 function renderDrugModalStep() {
-  const overlay = document.getElementById("microscope-overlay");
+  const overlay = document.getElementById("instrument-overlay");
   if (!overlay) return;
   const active = gameState.activeStepId;
   if (!active || MODAL_OWNED_STEPS.indexOf(active) < 0) {
@@ -7585,7 +7585,7 @@ function getHealthBandMessage(viability, confluency) {
   return "Cells look calm and attached. Confluency appears " + confDesc + ".";
 }
 function renderMicroscopeScene() {
-  const overlay = document.getElementById("microscope-overlay");
+  const overlay = document.getElementById("instrument-overlay");
   if (!overlay) return;
   overlay.classList.add("active");
   const cellState = getCellState();
@@ -7879,12 +7879,12 @@ function submitQuadrantCount() {
   }
   showNotification(feedback, errorPercent <= 25 ? "success" : "info");
   triggerStep("count_cells");
-  const overlay = document.getElementById("microscope-overlay");
+  const overlay = document.getElementById("instrument-overlay");
   if (overlay) overlay.classList.remove("active");
   switchScene("hood");
 }
 function renderPlateReaderScene() {
-  const overlay = document.getElementById("microscope-overlay");
+  const overlay = document.getElementById("instrument-overlay");
   if (!overlay) return;
   overlay.classList.add("active");
   runMttReadout();

@@ -1,5 +1,3 @@
-sceneRouter: driver
-
 parts:
   - id: tutorial_plate_reader_part
     label: "Tutorial: Plate Reader"

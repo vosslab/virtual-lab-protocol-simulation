@@ -264,10 +264,10 @@ from a help affordance, but it must not be the step's completionPath.
 | Term | Definition | Code surface |
 | --- | --- | --- |
 | **Interaction index** | Zero-based position of the current required interaction inside the active step's interaction sequence. Reset on step entry; advances when an interaction completes. | `gameState.interactionIndex` (renamed from `cursor`) |
-| **Active highlight items** | Runtime set of items currently glowing in the UI. Derived per-frame from the active interaction's `tool`/`source`/`destination`. Distinct from `usedItems`. | `src/scenes/hood.ts` |
+| **Active highlight items** | Runtime set of items currently glowing in the UI. Derived per-frame from the active interaction's `tool`/`source`/`destination`. Distinct from `usedItems`. | [src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts) |
 | **Step-order error** | Existing soft-fail signal: a `completeStep` call for the wrong step id. | `gameState.stepsOutOfOrder`, `outOfOrderAttempts` |
 | **Wrong-order click** | A click that does not satisfy the current interaction. Soft-fail in gameplay; hard-fail in the auto-walker. | `gameState.wrongOrderClicks` (renamed from `outOfSequenceClicks`) |
-| **Completion-event emitter** | The scene/modal code path that emits a completion event when the player completes the matching interaction. | scene `.ts` files (`hood.ts`, `bench.ts`, modal handlers) |
+| **Completion-event emitter** | The scene/modal code path that emits a completion event when the player completes the matching interaction. | per-scene adapter `.ts` files under `src/scenes/<scene>/` (e.g., `cell_culture_hood/cell_culture_hood.ts`, `bench/bench.ts`), modal handlers |
 | **Completion-event coverage** | Startup check that every declared `completionTrigger` has a matching emitter. Strict for `cell_culture`; relaxed for tutorials. | `src/init.ts` |
 
 ## Test-tier terms
@@ -371,7 +371,7 @@ Step: Wash cells with PBS
 
 Note: the YAML's `completionTrigger.completionEvent: "click:pbs_wash"`
 names the event, but the step only completes when the runtime code
-in `src/scenes/hood.ts` actually emits it. That code path is the
+in [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) actually emits it. That code path is the
 **completion-event emitter** for `pbs_wash`. The startup
 **completion-event coverage** check enforces that every declared
 trigger has a matching emitter.

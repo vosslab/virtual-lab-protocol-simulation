@@ -81,6 +81,13 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 	if not isinstance(scene_id, str) or not scene_id.strip():
 		raise ValueError(f"Scene YAML {path}: sceneId must be a non-empty string, got {scene_id!r}")
 
+	# Check required workspace field (advisory label; declared as official schema field)
+	if 'workspace' not in scene_config:
+		raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): missing required 'workspace' field")
+	workspace = scene_config['workspace']
+	if not isinstance(workspace, str) or not workspace.strip():
+		raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): workspace must be a non-empty string, got {workspace!r}")
+
 	# Check optional elementId field (Patch 14: for custom DOM element id lookup)
 	if 'elementId' in scene_config:
 		element_id = scene_config['elementId']
@@ -213,10 +220,12 @@ def generate_scene_data(scene_configs: dict) -> str:
 		'',
 		'export interface SceneConfig {',
 		'\tsceneId: string;',
+		'\tworkspace: string;',
 		'\tcapabilities: string[];',
 		'\telementId?: string;',
 		'\titems?: unknown[];',
 		'\tzones?: unknown[];',
+		'\twrongOrderMessage?: { template: string; toastDurationMs: number };',
 		'\t[key: string]: unknown;',
 		'}',
 		'',

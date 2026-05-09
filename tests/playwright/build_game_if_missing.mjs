@@ -49,3 +49,14 @@ export async function ensureGameBuilt(repoRoot) {
 
 	return gamePath;
 }
+
+/**
+ * Returns the absolute path to cell_culture_game.html, building it on demand if missing.
+ * Shorthand for ensuring the file exists and getting its path in one call.
+ *
+ * @param {string} repoRoot - Repository root directory
+ * @returns {Promise<string>} - Absolute path to cell_culture_game.html
+ */
+export async function gameFilePath(repoRoot) {
+	return await ensureGameBuilt(repoRoot);
+}

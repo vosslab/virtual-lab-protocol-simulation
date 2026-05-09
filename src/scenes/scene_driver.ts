@@ -21,10 +21,9 @@ export interface ClickTarget {
 export interface SceneContext {
 	readonly sceneId: string;
 	readonly dispatchInteraction: (itemId: string) => void;
-	// TODO (Patch 7+): Add fields for cross-capability communication
-	// - DOM container reference
-	// - event dispatcher
-	// - item registry reference
+	// Capabilities may attach scene-scoped state (DOM refs, event dispatchers,
+	// item registries) under arbitrary keys; the index signature keeps that
+	// open without requiring a registry of every shared field.
 	[key: string]: unknown;
 }
 
@@ -76,7 +75,7 @@ export interface SceneCapability {
 // runScene - Driver function (Patch 6 implementation)
 // ============================================
 
-import { CAPABILITY_REGISTRY, getRegisteredScene } from "./scene_registry";
+import { CAPABILITY_REGISTRY, getRegisteredScene, listRegisteredScenes } from "./scene_registry";
 
 /**
  * runSceneRender - Render a scene through its adapter.
@@ -91,17 +90,11 @@ import { CAPABILITY_REGISTRY, getRegisteredScene } from "./scene_registry";
 export function runSceneRender(sceneId: string): void {
 	const adapter = getRegisteredScene(sceneId);
 	if (!adapter) {
+		const known = listRegisteredScenes().join(', ') || '(none registered)';
 		throw new Error(
 			`runSceneRender: no adapter registered for scene "${sceneId}". ` +
 			`Must call registerScene(adapter) before rendering the scene. ` +
-			`Available scenes: ${Object.keys(require('./scene_registry').SCENE_REGISTRY || {}).join(', ')}`
-		);
-	}
-
-	if (!adapter.render) {
-		throw new Error(
-			`runSceneRender: adapter for scene "${sceneId}" does not implement render(ctx). ` +
-			`Patch A1-A6b requires all adapters to define render(ctx: SceneContext): void`
+			`Registered scenes: ${known}.`
 		);
 	}
 
@@ -156,7 +149,7 @@ export function runScene(sceneId: string): void {
 	};
 
 	// Mount all declared capabilities
-	const capabilityIds = (sceneConfig as Record<string, unknown>).capabilities;
+	const capabilityIds = sceneConfig.capabilities;
 	if (!Array.isArray(capabilityIds)) {
 		throw new Error(
 			`runScene: scene "${sceneId}" config missing 'capabilities' array`
@@ -179,7 +172,7 @@ export function runScene(sceneId: string): void {
 	// The driver runs once and sets up event capture on the scene container.
 	// When capabilities handle a click, mark the event so legacy code can skip it.
 	// Use sceneConfig.elementId if present; otherwise fall back to `${sceneId}-scene`
-	const elementId = (sceneConfig as any).elementId || `${sceneId}-scene`;
+	const elementId = sceneConfig.elementId ?? `${sceneId}-scene`;
 	const sceneEl = document.getElementById(elementId);
 	if (sceneEl) {
 		const handler = (event: Event) => {

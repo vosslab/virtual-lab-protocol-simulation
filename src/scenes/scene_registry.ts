@@ -3,13 +3,6 @@
 // ============================================
 
 import type { SceneCapability, SceneContext } from "./scene_driver";
-export { runSceneRender } from "./scene_driver";
-
-// ============================================
-// SceneRouterMode - Per-protocol routing decision
-// ============================================
-
-export type SceneRouterMode = 'legacy' | 'driver';
 
 // ============================================
 // Capability registry - populated by capability modules at load time
@@ -38,9 +31,8 @@ export const CAPABILITY_REGISTRY: Record<string, SceneCapability> = {};
 interface SceneAdapter {
 	readonly sceneId: string;
 	dispatchInteraction(itemId: string, ctx: SceneContext): void;
-	// render? is a temporary bridge during A1-A6b only.
-	// After A6b lands, the optional marker is removed and render(ctx) becomes required.
-	render?(ctx: SceneContext): void;
+	// render is required for every scene adapter. A1-A6b completed migration of all scenes.
+	render(ctx: SceneContext): void;
 }
 
 const SCENE_REGISTRY: Record<string, SceneAdapter> = {};
@@ -66,10 +58,6 @@ export function registerCapability(capability: SceneCapability): void {
 	}
 	CAPABILITY_REGISTRY[id] = capability;
 }
-
-// ============================================
-// resolveSceneRouter - Resolve per-protocol routing decision
-// ============================================
 
 // ============================================
 // registerScene - Register a scene adapter
@@ -111,49 +99,10 @@ export function getRegisteredScene(sceneId: string): SceneAdapter | undefined {
 }
 
 // ============================================
-// resolveSceneRouter - Determine which router (legacy or driver) to use for a protocol.
+// listRegisteredScenes - Enumerate registered scene ids (for diagnostics)
 // ============================================
 
-/**
- * resolveSceneRouter - Determine which router (legacy or driver) to use for a protocol.
- *
- * Reads the optional 'sceneRouter' field from the protocol config.
- * Validates with exhaustive switch to ensure no invalid values slip through.
- * Defaults to 'legacy' when the field is absent or undefined.
- *
- * @param protocolConfig - Protocol configuration object (from protocol YAML)
- * @returns 'legacy' or 'driver'
- * @throws Error - If an invalid sceneRouter value is encountered
- */
-export function resolveSceneRouter(protocolConfig: Record<string, unknown>): SceneRouterMode {
-	const sceneRouter = protocolConfig.sceneRouter;
-
-	// Default to legacy if field is absent or undefined
-	if (sceneRouter === undefined || sceneRouter === null) {
-		return 'legacy';
-	}
-
-	// Validate the value
-	if (typeof sceneRouter !== 'string') {
-		throw new Error(
-			`Invalid sceneRouter value: expected string or undefined, got ${typeof sceneRouter}`
-		);
-	}
-
-	const mode = sceneRouter as string;
-
-	// Exhaustive switch with never-type safety
-	switch (mode) {
-		case 'legacy':
-			return 'legacy';
-		case 'driver':
-			return 'driver';
-		default: {
-			const _exhaustive: never = mode as never;
-			throw new Error(
-				`Invalid sceneRouter value: '${mode}' not in ['legacy', 'driver']. ` +
-				`Protocol id: ${protocolConfig.protocolId || 'unknown'}`
-			);
-		}
-	}
+export function listRegisteredScenes(): string[] {
+	return Object.keys(SCENE_REGISTRY);
 }
+

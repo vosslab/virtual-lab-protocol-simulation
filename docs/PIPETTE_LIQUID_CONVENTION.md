@@ -90,7 +90,7 @@ gameState.heldLiquid = null;
 
 ## Rendering in Hood Scene
 
-`src/scenes/hood.ts:getItemSvgHtml()` checks if `gameState.heldLiquid.tool` matches the item being rendered:
+[src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts) in the `getItemSvgHtml()` function checks if `gameState.heldLiquid.tool` matches the item being rendered:
 
 ```typescript
 case 'serological_pipette':

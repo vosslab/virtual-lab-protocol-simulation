@@ -7,10 +7,12 @@
 
 export interface SceneConfig {
 	sceneId: string;
+	workspace: string;
 	capabilities: string[];
 	elementId?: string;
 	items?: unknown[];
 	zones?: unknown[];
+	wrongOrderMessage?: { template: string; toastDurationMs: number };
 	[key: string]: unknown;
 }
 
@@ -562,7 +564,7 @@ export const SCENE_CONFIGS: Record<string, SceneConfig> =
   "microscope": {
     "sceneId": "microscope",
     "workspace": "modal_overlay",
-    "elementId": "microscope-overlay",
+    "elementId": "instrument-overlay",
     "capabilities": [
       "instrumentWorkspace",
       "modalWorkspace",
@@ -625,9 +627,16 @@ export const SCENE_CONFIGS: Record<string, SceneConfig> =
       "toastDurationMs": 2000
     }
   },
-  "test_bad_loud": {
-    "sceneId": "test_bad_loud",
-    "capabilities": []
+  "plate_reader": {
+    "sceneId": "plate_reader",
+    "workspace": "modal_overlay",
+    "elementId": "instrument-overlay",
+    "capabilities": [
+      "modalWorkspace",
+      "plateReaderWorkspace"
+    ],
+    "items": [],
+    "zones": []
   }
 }
 ;

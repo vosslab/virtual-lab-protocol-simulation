@@ -1,17 +1,39 @@
-// ============================================
-// plate_reader.ts - Plate reader modal renderer (MTT assay)
-// ============================================
-// Extracted from legacy microscope.ts during Patch 17 cleanup.
-// Renders the plate reader results modal that displays absorbance data
-// from the MTT assay in a table format with row means.
+//============================================
+// plate_reader.ts - Plate reader scene adapter (driver mode)
+// Owns render for plate_reader scene (MTT assay results modal)
+//============================================
 
-import { gameState, getCurrentStep, getWell, switchScene, triggerStep } from "../../game_state";
+import type { SceneContext } from "../scene_driver";
+import { registerScene } from "../scene_registry";
+import {
+	getCurrentStep,
+	gameState,
+	getWell,
+	registeredEmitters,
+	switchScene,
+	triggerStep,
+} from "../../game_state";
 import { runMttReadout } from "../../steps/mtt_readout";
 import { COL_LABELS, PLATE_96_COLS, PLATE_96_ROWS, ROW_LABELS } from "../../steps/plate_96";
 
+//============================================
+// MODULE-LOAD SIDE EFFECTS - DO NOT MOVE OR REMOVE
+// These registrations fire only when this module is imported (directly or transitively)
+// from src/init.ts. If a future change removes or re-routes that import, these emitters
+// silently stop firing -- the validator passes at build time and the walker fails at runtime.
+// See docs/archive/scene_render_migration_2026-05-09.md "Module-load side effects are ownership too".
+//============================================
+// Register the plate_read emitter at module load
+registeredEmitters.add('plate_read');
 
-export function renderPlateReaderScene(): void {
-	const overlay = document.getElementById('microscope-overlay');
+//============================================
+// renderPlateReaderScene() - Plate reader modal renderer
+//
+// Displays the plate reader results modal with MTT assay absorbance data.
+// Shows a table of well values with row means comparison.
+//============================================
+function renderPlateReaderScene(): void {
+	const overlay = document.getElementById('instrument-overlay');
 	if (!overlay) return;
 
 	overlay.classList.add('active');
@@ -136,3 +158,29 @@ export function renderPlateReaderScene(): void {
 		});
 	}
 }
+
+//============================================
+// dispatchPlateReaderInteraction - Per-protocol dispatch wiring for plate_reader scene
+// Plate reader has no item-driven interactions; modal click handlers are wired inside render
+//============================================
+function dispatchPlateReaderInteraction(itemId: string, ctx: SceneContext): void {
+	// Plate reader is a render-only modal scene with no item-zone interactions.
+	// All interactions are wired directly in renderPlateReaderScene via button event handlers.
+	// This method is a no-op.
+}
+
+function renderPlateReader(ctx: SceneContext): void {
+	renderPlateReaderScene();
+}
+
+const plateReaderSceneAdapter = {
+	sceneId: 'plate_reader',
+	dispatchInteraction: dispatchPlateReaderInteraction,
+	render: renderPlateReader,
+};
+
+//============================================
+// registerScene at module load
+//============================================
+
+registerScene(plateReaderSceneAdapter);

@@ -1,6 +1,8 @@
 sceneId: microscope
 workspace: modal_overlay
-elementId: microscope-overlay
+# instrument-overlay is a shared modal slot used by microscope and plate_reader.
+# See docs/SCENE_YAML_FORMAT.md for the design rationale.
+elementId: instrument-overlay
 capabilities:
   - instrumentWorkspace
   - modalWorkspace

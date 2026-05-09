@@ -11,7 +11,7 @@ import path from 'path';
 
 import { fileURLToPath } from 'node:url';
 
-import { ensureGameBuilt } from './build_game_if_missing.mjs';
+import { gameFilePath } from './build_game_if_missing.mjs';
 
 const VIEWPORTS = [
 	{ name: '1280x720',  width: 1280, height: 720  },
@@ -28,8 +28,13 @@ const BENCH_OCCUPANCY_MIN = 0.65;  // Items occupy >=65% of bench width
 const MAX_ITEM_OVERLAP = 0.08;     // No overlap >8% of smaller item
 const EMPTY_SPACE_MAX = 0.45;      // Bench empty space <45%
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(__dirname, '../..');
+
 async function runTests() {
 	const browser = await chromium.launch({ headless: true });
+	const gamePath = await gameFilePath(REPO_ROOT);
+	const url = `file://${gamePath}`;
 	let passCount = 0;
 	let failCount = 0;
 
@@ -37,14 +42,6 @@ async function runTests() {
 		console.log(`\n=== Testing ${viewport.name} ===`);
 
 		const page = await browser.newPage({ viewport });
-		
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, '../..');
-
-await ensureGameBuilt(REPO_ROOT);
-
-const gamePath = path.resolve(REPO_ROOT, 'cell_culture_game.html');
-		const url = `file://${gamePath}`;
 
 		try {
 			await page.goto(url, { waitUntil: 'networkidle' });
