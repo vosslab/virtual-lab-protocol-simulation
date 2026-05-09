@@ -1,0 +1,50 @@
+parts:
+  - id: tutorial_hemocytometer_part
+    label: "Tutorial: Manual Hemocytometer Count"
+    dayId: tutorial_hemocytometer_day
+
+days:
+  - id: tutorial_hemocytometer_day
+    label: "Tutorial Day"
+
+steps:
+  - id: tutorial_hemocytometer_open
+    label: "Open microscope with hemocytometer"
+    action: "Click the microscope to open and load the hemocytometer sample"
+    why: "Manual hemocytometer counting requires microscopic examination of a loaded sample."
+    partId: tutorial_hemocytometer_part
+    dayId: tutorial_hemocytometer_day
+    stepIndex: 1
+    requiredItems: [microscope, hemocytometer, cell_culture_dish]
+    scene: bench
+    errorHints:
+      not_loaded: "Load the hemocytometer first before examining under the microscope."
+    modal:
+      owner: microscope
+      screen: viability
+    completionPath:
+      kind: modal
+      openClick: microscope
+      advanceClick: confirm-viability
+      completionEvent: hemocytometer-viability-confirmed
+    nextId: tutorial_hemocytometer_count
+
+  - id: tutorial_hemocytometer_count
+    label: "Count cells in four quadrants"
+    action: "Count live cells in each of the four corner quadrants"
+    why: "Manual hemocytometer counting teaches proper microscopy technique and cell counting fundamentals."
+    partId: tutorial_hemocytometer_part
+    dayId: tutorial_hemocytometer_day
+    stepIndex: 2
+    requiredItems: [microscope, hemocytometer, cell_culture_dish]
+    scene: microscope
+    errorHints:
+      incomplete: "Count cells in all four corner quadrants before submitting."
+    modal:
+      owner: microscope
+      screen: counting
+    completionPath:
+      kind: modal
+      advanceClick: submit-cell-count
+      completionEvent: hemocytometer-count-submitted
+    nextId: null

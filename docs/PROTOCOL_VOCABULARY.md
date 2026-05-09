@@ -406,13 +406,11 @@ declare `tool` (the only exception is an interaction that
 explicitly declares `direct: true`, allowed for direct-action
 items like opening an incubator door).
 
-## Migration note
+## Status
 
-<!-- TODO Patch 1 close: remove this section once the mechanical rename is complete and legacy field names are gone. -->
-
-This vocabulary is the only vocabulary used in the repo. The
-schema rename and field cleanup are tracked in the active plan.
-Until Patch 1 lands, runtime code still uses legacy field names;
-this doc is the canonical contract the rest of the docs reference.
-There is no compatibility layer for legacy field names once the
-rename completes.
+This vocabulary is the only vocabulary used in the repo. The K2
+migration completed in Patch 2 (see [CHANGELOG.md](CHANGELOG.md)
+entry for SP-K2g): the legacy top-level `step.interactionSequence`
+field is gone and runtime, validator, walker, and YAML all read
+`step.completionPath` exclusively. There is no compatibility layer
+for legacy field names.

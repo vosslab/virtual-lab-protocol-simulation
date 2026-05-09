@@ -8,7 +8,7 @@ Planned features and improvements for the cell culture simulation game.
 
 - Two-scene workspace: hood (sterile work) and bench (equipment) peer scenes
 - 96-well plate geometry with 8-point carboplatin dose response and metformin sensitization
-- 24-step protocol across 3 days (Day 1 split/count/seed, Day 2 dilute/treat, Day 4 MTT/read)
+- 25-step protocol across 3 days (Day 1 split/count/seed, Day 2 dilute/treat, Day 4 MTT/read)
 - 22 hood reagents and equipment organized in tab-stop clusters
 - 6 bench instruments: centrifuge, water bath, vortex, cell counter, microscope, incubator
 - Depth-based visual layering (back/mid/front tiers with opacity and brightness)

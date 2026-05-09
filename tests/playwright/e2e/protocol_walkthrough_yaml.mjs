@@ -30,7 +30,12 @@
 // - On any error: write report + final screenshot, close browser cleanly, exit non-zero.
 //
 // Usage:
-//   node tests/protocol_walkthrough_yaml.mjs [--protocol <name>] [--wrong-order]
+//   node tests/protocol_walkthrough_yaml.mjs [OPTIONS]
+//
+// Options:
+//   -p, --protocol NAME    Protocol id under src/content/ to walk (default: cell_culture).
+//   --wrong-order          Drive interactions in wrong order (negative test).
+//   -h, --help             Show help message and exit.
 //
 // Output: test-results/walker/ directory with screenshots and playthrough_report.json
 
@@ -80,8 +85,35 @@ function parseArgs() {
 		wrongOrder: false,
 	};
 
+	// Check for --help or -h first and print usage
+	if (args.includes('--help') || args.includes('-h')) {
+		const usage = `Usage: node tests/playwright/e2e/protocol_walkthrough_yaml.mjs [OPTIONS]
+
+Walk through a protocol end-to-end in a headless browser, validating that every
+step can be completed via real DOM interactions.
+
+Options:
+  -p, --protocol NAME    Protocol id under src/content/ to walk (default: cell_culture).
+                         Examples: cell_culture, tutorial_hemocytometer_count,
+                         tutorial_split, tutorial_cell_counter, tutorial_hood_transfer,
+                         tutorial_drug_dilution, tutorial_bench_direct,
+                         tutorial_pbs, tutorial_plate_reader.
+                         Use 'ls src/content/' to see all available protocols, or
+                         run 'python3 tools/build_protocol_data.py --list-protocols'.
+      --wrong-order      Drive interactions in the WRONG order (negative test:
+                         expects the runtime to reject the click and not advance).
+  -h, --help             Show this help message and exit.
+
+Examples:
+  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs
+  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_hemocytometer_count
+  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol cell_culture --wrong-order`;
+		console.log(usage);
+		process.exit(0);
+	}
+
 	for (let i = 0; i < args.length; i++) {
-		if (args[i] === '--protocol' && i + 1 < args.length) {
+		if ((args[i] === '--protocol' || args[i] === '-p') && i + 1 < args.length) {
 			result.protocol = args[i + 1];
 			i++;
 		} else if (args[i] === '--wrong-order') {
@@ -520,6 +552,99 @@ async function walkCountCellsStep(page, step, report) {
 }
 
 //============================================
+// MICROSCOPE MODAL: Walk viability and/or quadrant counting steps
+// Handles both: confirm-viability screens and quadrant-counting screens
+//============================================
+
+async function walkMicroscopeModalStep(page, step, report) {
+	report.info(`  Using microscope modal path for ${step.id}`);
+
+	const advanceSelector = `[data-walker-advance="${step.completionPath.advanceClick}"]`;
+	const advanceClick = step.completionPath.advanceClick;
+
+	// Check if advance button is already visible (modal already open from prior step)
+	const alreadyOpenCount = await page.locator(advanceSelector).count();
+
+	if (step.completionPath.openClick && alreadyOpenCount === 0) {
+		// Open the microscope via the openClick item (e.g., microscope or cell_counter)
+		await switchToBench(page, report);
+
+		const openerLocator = page.locator(`[data-item-id="${step.completionPath.openClick}"]`).first();
+		if ((await openerLocator.count()) === 0) {
+			throw new Error(`Item ${step.completionPath.openClick} not found to open microscope`);
+		}
+		await clickItemAndWaitProgress(page, step.completionPath.openClick, report);
+
+		// Wait for microscope modal to open
+		await waitForMicroscopeOpen(page, 3000);
+		report.info('Microscope overlay opened');
+	}
+
+	// If this step's advance button is confirm-viability, click it and return
+	if (advanceClick === 'confirm-viability') {
+		const confirmBtn = page.locator('#confirm-viability').first();
+		if ((await confirmBtn.count()) === 0) {
+			throw new Error('confirm-viability button not found');
+		}
+		await confirmBtn.click();
+		report.summary.totalClicks++;
+		report.info('Clicked confirm-viability');
+		return;
+	}
+
+	// If this step's advance button is submit-cell-count, click all quadrants first
+	if (advanceClick === 'submit-cell-count') {
+		// Click all 4 quadrant buttons to enter counts
+		const quadrantBtns = page.locator('.quadrant-btn');
+		const quadrantCount = await quadrantBtns.count();
+		if (quadrantCount < 4) {
+			throw new Error(`Expected 4 quadrant buttons, found ${quadrantCount}`);
+		}
+
+		for (let i = 0; i < 4; i++) {
+			const btn = quadrantBtns.nth(i);
+			await btn.click();
+			report.summary.totalClicks++;
+			report.info(`Clicked quadrant ${i}`);
+
+			// Wait for the quadrant button to show as selected
+			await page.waitForFunction(
+				(index) => {
+					const buttons = document.querySelectorAll('.quadrant-btn');
+					if (buttons.length > index) {
+						const btn = buttons[index];
+						const style = window.getComputedStyle(btn);
+						return style.borderColor === 'rgb(76, 175, 80)' || style.borderWidth === '3px';
+					}
+					return false;
+				},
+				i,
+				{ timeout: 1500 }
+			);
+		}
+
+		// Wait for all 4 quadrants to be selected (submit button enabled)
+		await page.waitForFunction(
+			() => {
+				const submitBtn = document.getElementById('submit-cell-count');
+				return submitBtn && !submitBtn.disabled;
+			},
+			{ timeout: 3000 }
+		);
+		report.info('All 4 quadrants counted, submit enabled');
+	}
+
+	// Click the advance button
+	const advanceBtn = page.locator(advanceSelector).first();
+	if ((await advanceBtn.count()) === 0) {
+		throw new Error(`Advance button with selector "${advanceSelector}" not found for step ${step.id}`);
+	}
+	await advanceBtn.click();
+	report.summary.totalClicks++;
+	report.info(`Clicked advance button for ${step.id}`);
+}
+
+//============================================
 // GENERIC: Walk a modal step
 // Player must: optionally open modal (if openClick present), then click advance button
 //============================================
@@ -749,14 +874,24 @@ async function walkStep(page, step, report, wrongOrderMode) {
 				await clickItemAndWaitProgress(page, tool, report);
 
 			} else if (kind === 'modal') {
-				// Generic modal interaction: optionally open, then click advance.
-				// walkModalStep auto-detects an already-open modal so plate_reader
-				// continuations (results after plate_read) need no special case.
-				const openClick = step.completionPath.openClick || null;
-				const advanceClick = step.completionPath.advanceClick;
-				const completionEvent = step.completionPath.completionEvent;
+				// Dispatch to special handlers for microscope modals with quadrant counting
+				if (step.modal?.screen === 'viability' || step.modal?.screen === 'counting') {
+					// Hemocytometer quadrant counting requires window.prompt override.
+					// Override window.prompt because the runtime collects quadrant counts via a native browser dialog; without this Playwright would hang on the modal dialog.
+					await page.evaluate(() => {
+						window.prompt = function() { return '20'; };
+					});
+					await walkMicroscopeModalStep(page, step, report);
+				} else {
+					// Generic modal interaction: optionally open, then click advance.
+					// walkModalStep auto-detects an already-open modal so plate_reader
+					// continuations (results after plate_read) need no special case.
+					const openClick = step.completionPath.openClick || null;
+					const advanceClick = step.completionPath.advanceClick;
+					const completionEvent = step.completionPath.completionEvent;
 
-				await walkModalStep(page, step, openClick, advanceClick, completionEvent, report);
+					await walkModalStep(page, step, openClick, advanceClick, completionEvent, report);
+				}
 
 			} else {
 				throw new Error(`Unknown completionPath.kind '${kind}' for step ${step.id}`);

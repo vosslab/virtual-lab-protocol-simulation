@@ -97,7 +97,13 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | Path | Purpose |
 | --- | --- |
 | [src/content/cell_culture/](../src/content/cell_culture/) | Active protocol YAML (`items`, `reagents`, `protocol`) |
+| [src/content/tutorial_bench_direct/](../src/content/tutorial_bench_direct/) | Tutorial protocol (single bench `directTool` interaction) |
+| [src/content/tutorial_cell_counter/](../src/content/tutorial_cell_counter/) | Tutorial protocol (cell counter modal) |
+| [src/content/tutorial_drug_dilution/](../src/content/tutorial_drug_dilution/) | Tutorial protocol (drug-dilution modal) |
+| [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/) | Tutorial protocol (manual hemocytometer quadrant counting) |
+| [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/) | Tutorial protocol (hood `interactionSequence`) |
 | [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) | Tutorial protocol (PBS wash repetition) |
+| [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/) | Tutorial protocol (plate-reader modal) |
 | [src/content/tutorial_split/](../src/content/tutorial_split/) | Tutorial protocol (split / passage) |
 | [src/content/protocol_data.ts](../src/content/protocol_data.ts) | Generated `PROTOCOL_STEPS` and `PROTOCOL_ID` |
 | [src/content/inventory_data.ts](../src/content/inventory_data.ts) | Generated inventory data |
@@ -153,6 +159,7 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | [tests/playwright/test_completion_event_coverage.mjs](../tests/playwright/test_completion_event_coverage.mjs) | `getCoveragePolicy` and emitter coverage |
 | [tests/playwright/test_interaction_index.mjs](../tests/playwright/test_interaction_index.mjs) | Interaction-index consistency |
 | [tests/playwright/test_interaction_resolver.mjs](../tests/playwright/test_interaction_resolver.mjs) | Resolver behavior across step kinds |
+| [tests/playwright/test_game_ui.mjs](../tests/playwright/test_game_ui.mjs) | Nine-gate UI smoke test |
 
 #### [tests/playwright/e2e/](../tests/playwright/e2e/) - Full-path walkthroughs
 
@@ -160,7 +167,6 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | --- | --- |
 | [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Canonical YAML walker (clicks DOM only) |
 | [walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) | Shared helpers for the walker |
-| [test_game_ui.mjs](../tests/playwright/e2e/test_game_ui.mjs) | Nine-gate UI smoke test |
 | [test_bench_layout.mjs](../tests/playwright/e2e/test_bench_layout.mjs) | Bench-scene layout |
 | [test_hood_layout.mjs](../tests/playwright/e2e/test_hood_layout.mjs) | Hood-scene layout |
 | [test_dilution_prep.mjs](../tests/playwright/e2e/test_dilution_prep.mjs) | Dilution-prep workflow |
@@ -211,10 +217,8 @@ as a reference snapshot. New shell or Python E2E runners belong here as
 | [SCALING_MODEL.md](SCALING_MODEL.md) | Scaling model notes |
 | [PIPETTE_LIQUID_CONVENTION.md](PIPETTE_LIQUID_CONVENTION.md) | Pipette-liquid convention |
 | [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) | Third-party asset attribution |
-| [HANDOFF_CURRENT_STATUS.md](HANDOFF_CURRENT_STATUS.md) | Current handoff snapshot |
-| [STATUS_2026-05-08.md](STATUS_2026-05-08.md) | Dated status note |
 | [active_plans/](active_plans/) | In-flight plan documents |
-| [archive/](archive/) | Archived plans and notes |
+| [archive/](archive/) | Archived plans, status snapshots, and design notes |
 | [images/](images/) | Doc figures |
 
 ### [assets/](../assets/) - Source art

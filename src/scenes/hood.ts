@@ -12,6 +12,7 @@ import { gameState, getCurrentStep, recordCleanlinessError, registerWarning, reg
 import { HOOD_LAYOUT_RULES, HOOD_SCENE_ITEMS, getHoodItemLabel } from "../hood_config";
 import { resolveInteraction, resolveInteractionByIndex } from "../interaction_resolver";
 import { computeSceneLayout } from "../layout_engine";
+import { showWrongOrderToast, buildLegacyToken } from "./scene_helpers";
 import { startDrugAddition } from "../steps/drug_treatment";
 import { startAddingMedia, startAspiration } from "../steps/feed_cells";
 import { applyPlateDoseMap } from "../steps/plate_96";
@@ -57,7 +58,7 @@ export function canonicalTool(selectedTool: string | null): string | null {
 //
 // Patch 6: Replace deriveActiveTargets with interactionIndex-aware highlight set.
 // Returns the de-duplicated list of item ids (tool/source/destination) from the
-// active interaction at step.interactionSequence[interactionIndex].
+// active interaction at step.completionPath.interactions[interactionIndex].
 // If the tool precondition is met (selectedTool matches or heldLiquid.tool matches),
 // keep the tool in the set so the player still sees what is loaded.
 // ============================================
@@ -202,56 +203,6 @@ function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | null, in
 // Display a small toast with the hint message. Toast auto-dismisses after ~2 seconds.
 // Multiple calls reset the timer.
 //============================================
-function showWrongOrderToast(message: string): void {
-	let toastContainer = document.getElementById('wrong-order-toast-container');
-	if (!toastContainer) {
-		toastContainer = document.createElement('div');
-		toastContainer.id = 'wrong-order-toast-container';
-		toastContainer.style.position = 'fixed';
-		toastContainer.style.top = '20px';
-		toastContainer.style.right = '20px';
-		toastContainer.style.zIndex = '1000';
-		toastContainer.style.pointerEvents = 'none';
-		document.body.appendChild(toastContainer);
-	}
-
-	// Remove any existing toast
-	const existingToast = toastContainer.querySelector('.wrong-order-toast');
-	if (existingToast) {
-		toastContainer.removeChild(existingToast);
-	}
-
-	// Create new toast
-	const toast = document.createElement('div');
-	toast.className = 'wrong-order-toast';
-	toast.textContent = message;
-	toast.style.backgroundColor = '#fff3cd';
-	toast.style.border = '1px solid #ffc107';
-	toast.style.borderRadius = '6px';
-	toast.style.padding = '12px 16px';
-	toast.style.fontSize = '14px';
-	toast.style.fontWeight = '500';
-	toast.style.color = '#856404';
-	toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-	toast.style.maxWidth = '300px';
-	toast.style.wordWrap = 'break-word';
-	toast.style.animation = 'fadeIn 0.3s ease-in';
-
-	toastContainer.appendChild(toast);
-
-	// Auto-dismiss after 2 seconds
-	setTimeout(() => {
-		if (toastContainer && toastContainer.contains(toast)) {
-			toast.style.animation = 'fadeOut 0.3s ease-out';
-			setTimeout(() => {
-				if (toastContainer && toastContainer.contains(toast)) {
-					toastContainer.removeChild(toast);
-				}
-			}, 300);
-		}
-	}, 2000);
-}
-
 // Pre-register every step id this scene owns. validateCompletionEventCoverage()
 // runs on the load event -- before any click handlers have fired -- and
 // verifies that each PROTOCOL_STEPS id is in registeredEmitters. Each
@@ -596,12 +547,7 @@ export function dispatchInteractionClick(itemId: string): void {
 		}
 
 		// Build legacy token for downstream code
-		const tool = result.resultActor || 'serological_pipette';
-		const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
-					  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
-					  : result.resultLiquid === 'media'   ? `${tool}_with_media`
-					  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
-					  : null;
+		const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
 		if (legacyToken) {
 			gameState.selectedTool = legacyToken;
 		}
@@ -949,14 +895,7 @@ export function onItemClick(itemId: string): void {
 				};
 			}
 			// Set legacy _with_X token from the load result so existing downstream code keeps working.
-			// Build the token using the actual tool id from the resolver result,
-			// not just hardcoded serological_pipette.
-			const tool = result.resultActor || 'serological_pipette';
-			const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
-						  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
-						  : result.resultLiquid === 'media'   ? `${tool}_with_media`
-						  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
-						  : null;
+			const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
 			if (legacyToken) {
 				gameState.selectedTool = legacyToken;
 				let notification = 'Loaded ' + result.resultLiquid + '.';
@@ -1328,95 +1267,9 @@ export function onItemClick(itemId: string): void {
 		return;
 	}
 
-	// Multichannel pipette + media_bottle -> well_plate: adjust media for treatment
-	if (tool === 'multichannel_pipette' && itemId === 'media_bottle') {
-		if (gameState.activeStepId === 'media_adjust') {
-			gameState.selectedTool = 'multichannel_pipette_with_media';
-			showNotification('Media loaded. Click the 24-well plate to adjust media.');
-			renderHoodScene();
-			return;
-		}
-	}
 
-	// Multichannel pipette (with media) -> well_plate: adjust media
-	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
-	// Legacy triggerStep('media_adjust') removed; now routed through completionEvent dispatch.
-	if (tool === 'multichannel_pipette_with_media' && itemId === 'well_plate') {
-		if (gameState.activeStepId === 'media_adjust') {
-			gameState.selectedTool = null;
-			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
-			showNotification('Media adjusted for all wells.', 'success');
-			renderHoodScene();
-			renderProtocolPanel();
-			renderScoreDisplay();
-			return;
-		}
-	}
 
-	// Multichannel pipette + mtt_vial -> well_plate: add MTT
-	if (tool === 'multichannel_pipette' && itemId === 'mtt_vial') {
-		if (gameState.activeStepId === 'add_mtt') {
-			gameState.selectedTool = 'multichannel_pipette_with_mtt';
-			showNotification('MTT loaded. Click the 24-well plate to add.');
-			renderHoodScene();
-			return;
-		}
-	}
 
-	// Multichannel pipette (with MTT) -> well_plate: add MTT
-	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
-	// Legacy triggerStep('add_mtt') removed; now routed through completionEvent dispatch.
-	if (tool === 'multichannel_pipette_with_mtt' && itemId === 'well_plate') {
-		if (gameState.activeStepId === 'add_mtt') {
-			gameState.selectedTool = null;
-			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
-			showNotification('MTT added to all wells.', 'success');
-			renderHoodScene();
-			renderProtocolPanel();
-			renderScoreDisplay();
-			return;
-		}
-	}
-
-	// Well plate -> biohazard_decant: decant MTT
-	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
-	// Legacy triggerStep('decant_mtt') removed; now routed through completionEvent dispatch.
-	if (tool === 'well_plate' && itemId === 'biohazard_decant') {
-		if (gameState.activeStepId === 'decant_mtt') {
-			gameState.selectedTool = null;
-			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
-			showNotification('MTT decanted into biohazard container.', 'success');
-			renderHoodScene();
-			renderProtocolPanel();
-			renderScoreDisplay();
-			return;
-		}
-	}
-
-	// Multichannel pipette + dmso_bottle -> well_plate: add DMSO
-	if (tool === 'multichannel_pipette' && itemId === 'dmso_bottle') {
-		if (gameState.activeStepId === 'add_dmso') {
-			gameState.selectedTool = 'multichannel_pipette_with_dmso';
-			showNotification('DMSO loaded. Click the 24-well plate to add.');
-			renderHoodScene();
-			return;
-		}
-	}
-
-	// Multichannel pipette (with DMSO) -> well_plate: add DMSO
-	// Chain-driven (interactionSequence); completion handled by dispatchInteractionClick.
-	// Legacy triggerStep('add_dmso') removed; now routed through completionEvent dispatch.
-	if (tool === 'multichannel_pipette_with_dmso' && itemId === 'well_plate') {
-		if (gameState.activeStepId === 'add_dmso') {
-			gameState.selectedTool = null;
-			// triggerStep call removed: completion is event-keyed in dispatchInteractionClick
-			showNotification('DMSO added to all wells.', 'success');
-			renderHoodScene();
-			renderProtocolPanel();
-			renderScoreDisplay();
-			return;
-		}
-	}
 
 	// Invalid combination -- register a warning with educational guidance
 	const stepHint = getCurrentStep();
@@ -1547,23 +1400,8 @@ export function getAvailableActions(): string[] {
 		case 'add_carboplatin':
 			actions.push('Pick up the multichannel pipette, click the drug vials, click the 24-well plate, then click Add carboplatin');
 			break;
-		case 'add_fresh_media':
-			actions.push('Pick up the serological pipette, click the media bottle, then click the flask');
-			break;
-		case 'microscope_check':
-			actions.push('Click the flask to check cell viability under the microscope');
-			break;
 		case 'count_cells':
 			actions.push('Click the flask to count cells on the hemocytometer');
-			break;
-		case 'transfer_to_plate':
-			actions.push('Pick up the serological pipette, click the flask, then click the 24-well plate');
-			break;
-		case 'add_drugs':
-			actions.push('Pick up the multichannel pipette, click the drug vials, then click the 24-well plate');
-			break;
-		case 'incubate':
-			actions.push('Click the 24-well plate to move it to the incubator');
 			break;
 		case 'plate_read':
 			actions.push('Read the plate on the plate reader');

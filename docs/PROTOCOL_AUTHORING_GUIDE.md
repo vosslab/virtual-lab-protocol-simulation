@@ -14,7 +14,7 @@ Related references:
   `items.yaml`, `reagents.yaml`, and `protocol.yaml`.
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md): runtime step dispatch and
   completion flow.
-- [tests/protocol_walkthrough_yaml.mjs](../tests/protocol_walkthrough_yaml.mjs):
+- [tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs):
   the YAML-driven UI walker (canonical real-UI regression test).
 
 ## What a protocol is
@@ -433,7 +433,7 @@ The audit reports four status levels:
 ## Auto-walker contract
 
 The YAML-driven UI walker
-([tests/protocol_walkthrough_yaml.mjs](../tests/protocol_walkthrough_yaml.mjs))
+([tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs))
 plays the protocol through the real DOM. The walker dispatches on
 `step.completionPath.kind`:
 

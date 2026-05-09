@@ -2,7 +2,7 @@
 
 Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
-Players learn cell culture techniques by completing a guided 9-step laboratory
+Players learn cell culture techniques by completing a guided 25-step laboratory
 protocol in the browser.
 
 ## Quick start
@@ -26,17 +26,22 @@ This rebuilds [dist/](../dist/) and serves it on a local port.
 
 ## Playing the game
 
-The game guides players through a 9-step cell culture protocol:
+The game guides players through a 25-step cell culture protocol modeling the
+OVCAR8 carboplatin + metformin MTT workflow across three lab days. Major
+phases:
 
-1. Spray and sanitize the sterile hood
-2. Aspirate old media from the flask
-3. Add fresh media to the correct volume
-4. Check cell viability under the microscope
-5. Count cells using hemocytometer quadrant selection
-6. Transfer cells to a well plate
-7. Add drug dilutions (choose a serial dilution series)
-8. Incubate the plate
-9. Read plate results
+- Day 1: split, count cells, seed the 96-well plate, overnight incubation.
+- Day 2: prepare carboplatin and metformin dilutions, dose the plate,
+  48-hour incubation.
+- Day 4: MTT readout (add MTT, decant, dissolve formazan with DMSO, read
+  absorbance, view results).
+
+The full ordered step list is generated from
+[src/content/cell_culture/protocol.yaml](../src/content/cell_culture/protocol.yaml);
+see [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) for the
+authoring contract and
+[OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)
+for the wet-lab source protocol.
 
 Interact by clicking items. Click the tool first, then click the destination
 or source to complete each interaction. Valid items for the current interaction

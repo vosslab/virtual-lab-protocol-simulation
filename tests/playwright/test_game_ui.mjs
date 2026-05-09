@@ -1,4 +1,4 @@
-// tests/test_game_ui.mjs - browser smoke for the bundled dist/ build.
+// tests/playwright/test_game_ui.mjs - browser smoke for the bundled dist/ build.
 //
 // Loads dist/index.html via a static HTTP server, captures console errors,
 // and walks through the gates the user requires before final commit:
@@ -12,7 +12,7 @@
 //  8. Scoring screen reachable, OR documented as not reached.
 //
 // Run from the repo root with:
-//   node tests/test_game_ui.mjs
+//   node tests/playwright/test_game_ui.mjs
 //
 // Per docs/PLAYWRIGHT_USAGE.md, this script lives inside the repo so
 // `import 'playwright'` resolves against ./node_modules. Screenshots
@@ -22,7 +22,7 @@ import { chromium } from "playwright";
 import { spawn } from "node:child_process";
 import path from "node:path";
 
-import { REPO_ROOT } from "../repo_root.mjs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
 const PORT = 8123;
@@ -141,15 +141,22 @@ async function main() {
 		results.scene_renders = (await scene.count()) > 0;
 		logGate("5. scene_renders", results.scene_renders);
 
-		// Gate 6: at least one protocol interaction (try clicking any hood item)
-		const item = page.locator('[data-item-id]').first();
-		if ((await item.count()) > 0) {
+		// Gate 6: protocol interaction - click the active item for step 1 (spray_hood)
+		// and verify the step completes (appears in the sidebar checklist with completed class).
+		// The active item for spray_hood is ethanol_bottle (per protocol.yaml).
+		const ethanolItem = page.locator('[data-item-id="ethanol_bottle"]');
+		if ((await ethanolItem.count()) > 0) {
 			try {
-				await item.click({ timeout: 2000 });
-				await page.waitForTimeout(400);
+				await ethanolItem.click({ timeout: 2000 });
+				// Wait for the spray_hood step to be marked completed in the sidebar.
+				// The renderer creates li elements with class protocol-step, adds completed class,
+				// and contains a checkbox with id="step-{stepId}".
+				// Selector: li that contains the spray_hood checkbox and has the completed class.
+				const completedStep = page.locator('li:has(#step-spray_hood).completed');
+				await completedStep.waitFor({ timeout: 2000 });
 				results.protocol_interaction = true;
-			} catch {
-				// counted as fail
+			} catch (err) {
+				logGate("6. protocol_interaction_works", false, err.message);
 			}
 		}
 		logGate("6. protocol_interaction_works", results.protocol_interaction);

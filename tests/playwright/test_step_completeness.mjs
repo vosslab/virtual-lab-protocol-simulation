@@ -21,7 +21,7 @@ import { chromium } from 'playwright';
 import path from 'path';
 import process from 'node:process';
 
-import { REPO_ROOT } from '../repo_root.mjs';
+import { REPO_ROOT } from './repo_root.mjs';
 import { ensureGameBuilt } from './build_game_if_missing.mjs';
 
 await ensureGameBuilt(REPO_ROOT);

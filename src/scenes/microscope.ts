@@ -13,6 +13,8 @@ import type { CellPosition, CellState } from "../constants";
 
 registeredEmitters.add('count_cells');
 registeredEmitters.add('plate_read');
+registeredEmitters.add('hemocytometer-viability-confirmed');
+registeredEmitters.add('hemocytometer-count-submitted');
 
 // ============================================
 // Helper: descriptive health band message based on viability and confluency
@@ -52,6 +54,18 @@ export function renderMicroscopeScene(): void {
 	if (!overlay) return;
 
 	overlay.classList.add('active');
+
+	const currentStep = getCurrentStep();
+	// Route to manual hemocytometer UI if the active step declares a hemocytometer screen.
+	// Schema-driven dispatch using modal.screen field instead of hardcoded step IDs (SP-K2e).
+	if (currentStep && currentStep.modal?.screen === 'viability') {
+		renderManualHemocytometerViabilityScreen();
+		return;
+	}
+	if (currentStep && currentStep.modal?.screen === 'counting') {
+		renderManualHemocytometerCountingScreen();
+		return;
+	}
 
 	const cellState = getCellState();
 	const modal = overlay.querySelector('.modal-content') as HTMLElement;
@@ -120,6 +134,172 @@ function captureCellCount(): void {
 	if (gameState.activeStepId) {
 		triggerStep(gameState.activeStepId);
 	}
+	const overlay = document.getElementById('microscope-overlay');
+	if (overlay) overlay.classList.remove('active');
+	switchScene('hood');
+}
+
+// ============================================
+// Manual hemocytometer viability confirmation screen
+// ============================================
+function renderManualHemocytometerViabilityScreen(): void {
+	const overlay = document.getElementById('microscope-overlay');
+	if (!overlay) return;
+
+	const modal = overlay.querySelector('.modal-content') as HTMLElement;
+	if (!modal) return;
+
+	const cellState = getCellState();
+	const viabilityPct = Math.round(cellState.viability * 100);
+
+	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
+	html += '<h2>Hemocytometer - Viability Check</h2>';
+	html += '<div class="microscope-view">';
+	html += '<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>';
+	html += '</div>';
+	html += '<div style="padding:16px;background:#f0f2f5;border-radius:8px;margin-bottom:16px;">';
+	html += '<p style="margin:0 0 8px 0;font-size:14px;color:#212121;">';
+	html += 'Hemocytometer loaded with trypan-blue-stained sample. Verify cell viability before counting.';
+	html += '</p>';
+	html += '<p style="margin:0 0 4px 0;font-size:13px;color:#757575;">Live cells appear clear/gray. Dead cells stain blue.</p>';
+	html += '<p style="margin:0 0 8px 0;font-size:13px;color:#757575;">Viability: <strong>' + viabilityPct + '%</strong></p>';
+	html += '<p style="margin:0;font-size:13px;color:#555555;font-style:italic;">';
+	html += getHealthBandMessage(cellState.viability, cellState.confluency);
+	html += '</p>';
+	html += '</div>';
+	html += '<button id="confirm-viability" class="btn-primary" data-walker-advance="confirm-viability" style="padding:10px 24px;">Confirm and Proceed to Counting</button>';
+
+	modal.innerHTML = html;
+
+	const svg = document.getElementById('microscope-svg') as unknown as SVGElement;
+	if (svg) {
+		svg.innerHTML = '';
+		drawHemocytometerGrid(svg);
+		drawCellsOnGrid(cellState);
+	}
+
+	const confirmBtn = document.getElementById('confirm-viability');
+	if (confirmBtn) {
+		confirmBtn.addEventListener('click', () => {
+			gameState.manualHemocytometerViabilityChecked = true;
+			if (gameState.activeStepId) {
+				triggerStep(gameState.activeStepId);
+			}
+		});
+	}
+
+	const closeBtn = modal.querySelector('.modal-close') as HTMLElement;
+	if (closeBtn) {
+		closeBtn.addEventListener('click', () => {
+			overlay.classList.remove('active');
+			switchScene('hood');
+		});
+	}
+}
+
+// ============================================
+// Manual hemocytometer counting screen
+// ============================================
+function renderManualHemocytometerCountingScreen(): void {
+	const overlay = document.getElementById('microscope-overlay');
+	if (!overlay) return;
+
+	const modal = overlay.querySelector('.modal-content') as HTMLElement;
+	if (!modal) return;
+
+	const cellState = getCellState();
+
+	let html = '<button class="modal-close" aria-label="Close">&times;</button>';
+	html += '<h2>Hemocytometer - Cell Counting</h2>';
+	html += '<div class="microscope-view" style="position:relative;min-height:430px;">';
+	html += '<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>';
+	html += renderQuadrantButtons();
+	html += '</div>';
+	html += '<div style="padding:16px;background:#f0f2f5;border-radius:8px;margin-bottom:16px;">';
+	html += '<p style="margin:0 0 8px 0;font-size:14px;color:#212121;">';
+	html += '<strong>Count live cells in each highlighted corner quadrant.</strong>';
+	html += '</p>';
+	html += '<p id="quadrant-status" style="margin:0;font-size:13px;color:#757575;">0 of 4 quadrants counted</p>';
+	html += '</div>';
+	html += '<button id="submit-cell-count" class="btn-primary" data-walker-advance="submit-cell-count" style="padding:10px 24px;width:100%;" disabled>Submit Cell Count</button>';
+
+	modal.innerHTML = html;
+
+	const svg = document.getElementById('microscope-svg') as unknown as SVGElement;
+	if (svg) {
+		svg.innerHTML = '';
+		drawHemocytometerGrid(svg);
+		drawCellsOnGrid(cellState);
+	}
+
+	setupQuadrantListeners();
+
+	const submitBtn = document.getElementById('submit-cell-count');
+	if (submitBtn) {
+		submitBtn.addEventListener('click', submitManualHemocytometerCount);
+	}
+
+	const closeBtn = modal.querySelector('.modal-close') as HTMLElement;
+	if (closeBtn) {
+		closeBtn.addEventListener('click', () => {
+			const countDone = gameState.manualHemocytometerSubmitted;
+			if (!countDone) {
+				const confirmed = confirm('Cell counting is not finished. Are you sure you want to leave?');
+				if (!confirmed) return;
+			}
+			overlay.classList.remove('active');
+			switchScene('hood');
+		});
+	}
+}
+
+// ============================================
+// Submit manual hemocytometer count
+// ============================================
+function submitManualHemocytometerCount(): void {
+	// Count how many quadrants have been counted
+	let selectedCount = 0;
+	for (let i = 0; i < 4; i++) {
+		if (selectedQuadrants[i]) selectedCount++;
+	}
+	if (selectedCount < 4) {
+		showNotification('Please count cells in all 4 corner quadrants.', 'warning');
+		return;
+	}
+
+	// Calculate cells/mL from user-entered counts
+	// Formula: (avg per square) x dilution_factor(10) x 10,000
+	let totalUserCount = 0;
+	for (let i = 0; i < 4; i++) {
+		totalUserCount += quadrantCounts[i] as number;
+	}
+	const avgPerSquare = totalUserCount / 4;
+	const estimatedCount = Math.round(avgPerSquare * 10 * 10000);
+	gameState.cellCount = estimatedCount;
+
+	// Store counts in manual hemocytometer state
+	gameState.manualHemocytometerQuadrantCounts = quadrantCounts.slice();
+	gameState.manualHemocytometerSubmitted = true;
+
+	// Compare against actual for feedback
+	const actual = gameState.actualCellCount;
+	const errorPercent = Math.abs(estimatedCount - actual) / actual * 100;
+
+	let feedback = 'Your count: ~' + estimatedCount.toLocaleString() + ' cells/mL. ';
+	if (errorPercent <= 10) {
+		feedback += 'Excellent -- very close to actual!';
+	} else if (errorPercent <= 25) {
+		feedback += 'Good count, within acceptable range.';
+	} else {
+		feedback += 'Actual was ~' + actual.toLocaleString() + ' cells/mL.';
+	}
+
+	showNotification(feedback, errorPercent <= 25 ? 'success' : 'info');
+	if (gameState.activeStepId) {
+		triggerStep(gameState.activeStepId);
+	}
+
+	// Close microscope, return to hood
 	const overlay = document.getElementById('microscope-overlay');
 	if (overlay) overlay.classList.remove('active');
 	switchScene('hood');
@@ -238,9 +418,9 @@ export function drawCellsOnGrid(cellState: CellState): void {
 }
 
 // Track which quadrants are selected (indices 0-3 for TL, TR, BL, BR)
-export let selectedQuadrants: boolean[] = [false, false, false, false];
+let selectedQuadrants: boolean[] = [false, false, false, false];
 // User-entered cell counts per quadrant (null means not yet counted)
-export let quadrantCounts: (number | null)[] = [null, null, null, null];
+let quadrantCounts: (number | null)[] = [null, null, null, null];
 
 // ============================================
 // Quadrant corner positions matching the SVG grid corners
@@ -347,52 +527,6 @@ export function updateQuadrantStatus(): void {
 	if (submitBtn) {
 		submitBtn.disabled = count < 4;
 	}
-}
-
-// ============================================
-export function submitQuadrantCount(): void {
-	// Count how many quadrants have been counted
-	let selectedCount = 0;
-	for (let i = 0; i < 4; i++) {
-		if (selectedQuadrants[i]) selectedCount++;
-	}
-	if (selectedCount < 4) {
-		showNotification('Please count cells in all 4 corner quadrants.', 'warning');
-		return;
-	}
-
-	// Calculate cells/mL from user-entered counts
-	// Formula: (avg per square) x dilution_factor(10) x 10,000
-	let totalUserCount = 0;
-	for (let i = 0; i < 4; i++) {
-		totalUserCount += quadrantCounts[i] as number;
-	}
-	const avgPerSquare = totalUserCount / 4;
-	const estimatedCount = Math.round(avgPerSquare * 10 * 10000);
-	gameState.cellCount = estimatedCount;
-
-	// Compare against actual for feedback
-	const actual = gameState.actualCellCount;
-	const errorPercent = Math.abs(estimatedCount - actual) / actual * 100;
-
-	let feedback = 'Your count: ~' + estimatedCount.toLocaleString() + ' cells/mL. ';
-	if (errorPercent <= 10) {
-		feedback += 'Excellent -- very close to actual!';
-	} else if (errorPercent <= 25) {
-		feedback += 'Good count, within acceptable range.';
-	} else {
-		feedback += 'Actual was ~' + actual.toLocaleString() + ' cells/mL.';
-	}
-
-	showNotification(feedback, errorPercent <= 25 ? 'success' : 'info');
-	if (gameState.activeStepId) {
-		triggerStep(gameState.activeStepId);
-	}
-
-	// Close microscope, return to hood
-	const overlay = document.getElementById('microscope-overlay');
-	if (overlay) overlay.classList.remove('active');
-	switchScene('hood');
 }
 
 // ============================================

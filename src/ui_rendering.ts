@@ -443,11 +443,11 @@ export const renderToolbar = (): string => {
 	let tools: Array<{ id: string; label: string; icon: string }> = [];
 
 	if (gameState.activeScene === 'hood') {
-		// Derive available tools from interactionSequence[*].tool in order of first appearance.
-		// Modal-driven steps have no interactionSequence; they use the modal UI instead.
-		if (currentStep.interactionSequence && currentStep.interactionSequence.length > 0) {
+		// Derive available tools from completionPath.interactions[*].tool in order of first appearance.
+		// Modal-driven steps have completionPath.kind !== 'interactionSequence'; they use the modal UI instead.
+		if (currentStep.completionPath?.kind === 'interactionSequence' && currentStep.completionPath.interactions.length > 0) {
 			const toolIds = new Set<string>();
-			for (const interaction of currentStep.interactionSequence) {
+			for (const interaction of currentStep.completionPath.interactions) {
 				if (!toolIds.has(interaction.tool)) {
 					toolIds.add(interaction.tool);
 					const toolId = interaction.tool;

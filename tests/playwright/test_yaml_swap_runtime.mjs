@@ -22,7 +22,7 @@ import path from 'node:path';
 import { execSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
-import { REPO_ROOT } from '../repo_root.mjs';
+import { REPO_ROOT } from './repo_root.mjs';
 import { ensureGameBuilt } from './build_game_if_missing.mjs';
 
 await ensureGameBuilt(REPO_ROOT);

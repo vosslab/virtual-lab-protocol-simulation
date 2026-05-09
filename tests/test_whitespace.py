@@ -1,5 +1,4 @@
 import os
-import subprocess
 
 import pytest
 
@@ -110,23 +109,6 @@ def check_whitespace(path: str) -> list[str]:
 	return issues
 
 
-#============================================
-def run_fixer(path: str) -> None:
-	"""Run fix_whitespace.py on a file."""
-	script_path = os.path.join(REPO_ROOT, "tests", "fix_whitespace.py")
-	if not os.path.isfile(script_path):
-		script_path = os.path.join(os.path.dirname(__file__), "fix_whitespace.py")
-	result = subprocess.run(
-		["python3", script_path, "-i", path],
-		capture_output=True,
-		text=True,
-		cwd=REPO_ROOT,
-	)
-	if result.returncode != 0:
-		message = result.stderr.strip() or "Whitespace fixer failed."
-		raise AssertionError(message)
-
-
 _FILES = git_file_utils.collect_files(REPO_ROOT, gather_files, gather_changed_files)
 
 
@@ -135,15 +117,12 @@ _FILES = git_file_utils.collect_files(REPO_ROOT, gather_files, gather_changed_fi
 	"file_path", _FILES,
 	ids=lambda p: os.path.relpath(p, REPO_ROOT),
 )
-def test_whitespace_hygiene(file_path: str, pytestconfig) -> None:
-	"""Fail on whitespace issues. Auto-fix unless --no-ascii-fix is set."""
-	apply_fix = not pytestconfig.getoption("no_ascii_fix", default=False)
+def test_whitespace_hygiene(file_path: str) -> None:
+	"""Check for whitespace issues. Report findings without attempting to fix."""
 	issues = check_whitespace(file_path)
 	if not issues:
 		return
 	rel_path = os.path.relpath(file_path, REPO_ROOT)
 	message = f"{rel_path}: " + ", ".join(sorted(set(issues)))
-	if apply_fix:
-		run_fixer(file_path)
-		raise AssertionError(f"Whitespace issues were fixed. Please re-run pytest.\n{message}")
+	message += "\n\nRun the following to fix: python3 tests/fix_whitespace.py -i " + rel_path
 	raise AssertionError(f"Whitespace issues found:\n{message}")

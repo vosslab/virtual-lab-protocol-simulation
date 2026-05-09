@@ -131,12 +131,9 @@ export interface ProtocolStep {
 	modal?: { owner: 'drug_treatment' | 'microscope' | 'incubator' | 'plate_reader'; screen: string };
 	// Pure incubation steps with no resolver interaction.
 	isIncubation?: boolean;
-	// Resolver-driven steps carry an ordered interaction sequence.
-	interactionSequence?: Interaction[];
-	// Optional completion path (SP-K2a). When present, describes the schema contract
-	// for how this step gets completed. The kind discriminator selects one of three shapes:
-	// interactionSequence, directTool, or modal. Legacy top-level interactionSequence
-	// still accepted during K2a (pre-migration); K2b will migrate YAML and make this required.
+	// Completion path (SP-K2). Describes the schema contract for how this step
+	// gets completed. The kind discriminator selects one of three shapes:
+	// interactionSequence, directTool, or modal.
 	completionPath?: CompletionPath;
 	// Derived list of items used in this step, ordered by first appearance.
 	usedItems: string[];

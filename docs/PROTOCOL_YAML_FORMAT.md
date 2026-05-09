@@ -463,7 +463,7 @@ advance click, one completion event.
 
 ### Validator behavior
 
-The validator (Rule 8 in the upcoming SP-K2 patch) enforces:
+The validator (Rule 8) enforces:
 
 - `completionPath` is present on every step. Steps that omit it fail.
 - `completionPath.kind` is one of `interactionSequence`, `directTool`, or
@@ -514,15 +514,15 @@ These fields appear in the generated TypeScript surface (`protocol_data.ts`)
 because runtime code consumes them, but they are not part of the author
 YAML schema. Writing them in author YAML is a validation error.
 
-### Migration note
+### Migration status
 
-The active `src/content/cell_culture/protocol.yaml` and tutorial protocols
-still use the legacy top-level `step.interactionSequence` field. Patch
-SP-K2 will mechanically migrate every existing step in those files to the
-new `completionPath` shape and update the runtime, walker, and validator
-to dispatch on `completionPath.kind`. Pre-migration YAML using flat
-`step.interactionSequence` is no longer the contract; new steps and any
-edits should adopt the new shape once SP-K2 lands.
+The K2 migration completed in Patch 2 (see SP-K2g in
+[CHANGELOG.md](CHANGELOG.md)). All protocols
+(`src/content/cell_culture/protocol.yaml` plus every tutorial protocol
+under `src/content/tutorial_*/`) carry `completionPath` on every step,
+and the runtime, walker, and validator dispatch on `completionPath.kind`
+exclusively. The legacy top-level `step.interactionSequence` field has
+been removed from the runtime types; YAML that uses it fails Rule 8.
 
 #### Step fields (interaction-driven steps)
 
@@ -546,9 +546,8 @@ The following fields are optional and used for volume-checking steps:
 
 Modal-driven steps are modeled by `completionPath` with `kind: modal`. See
 the "Kind: `modal`" subsection above for the canonical schema. The legacy
-top-level `step.modal` object (with `owner` and `screen` fields) is kept
-only as a runtime hint until SP-K2 lands; new steps must use the
-`completionPath` shape.
+top-level `step.modal` object has been removed; all modal steps must use
+the `completionPath` shape.
 
 #### Step fields (non-click steps)
 

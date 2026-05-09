@@ -2,7 +2,6 @@ import importlib.util
 import os
 import random
 import re
-import sys
 
 import git_file_utils
 
@@ -294,35 +293,24 @@ def scan_file(
 	file_path: str,
 	check_module,
 	fix_module,
-	apply_fix: bool,
-) -> tuple[int, list[str], bool]:
+) -> tuple[int, list[str]]:
 	"""
-	Check a file and optionally apply fixes.
+	Check a file and report issues without applying fixes.
 	"""
 	if is_ascii_bytes(file_path):
-		return 0, [], False
+		return 0, []
 
 	content, read_error = check_module.read_text(file_path)
 	if read_error:
-		return 1, [read_error], False
+		return 1, [read_error]
 
 	issues = check_module.check_ascii_compliance(content)
 	if not issues:
-		return 0, [], False
+		return 0, []
 
-	changed = False
-	text_to_check = content
-	if apply_fix:
-		fixed_text, changed = fix_module.fix_ascii_compliance(content)
-		if changed:
-			fix_module.write_text(file_path, fixed_text)
-		text_to_check = fixed_text
-
-	issues = fix_module.find_non_latin1_chars(text_to_check)
+	issues = fix_module.find_non_latin1_chars(content)
 	if not issues:
-		if changed:
-			return 2, [], True
-		return 0, [], False
+		return 0, []
 
 	error_lines = []
 	for line_number, column_number, codepoint in issues:
@@ -331,13 +319,14 @@ def scan_file(
 		)
 	total_message = f"{file_path}:0:0: found {len(issues)} non-ISO-8859-1 characters"
 	error_lines.append(total_message)
-	return 1, error_lines, changed
+	return 1, error_lines
 
 
 #============================================
-def test_ascii_compliance(pytestconfig) -> None:
+def test_ascii_compliance() -> None:
 	"""
-	Run ASCII compliance checks across the repo.
+	Run ASCII compliance checks across the repo (read-only).
+	Reports issues without attempting to fix them.
 	"""
 	if os.environ.get(SKIP_ENV) == "1":
 		return
@@ -358,50 +347,20 @@ def test_ascii_compliance(pytestconfig) -> None:
 	else:
 		files = gather_files(REPO_ROOT)
 
-	# Delete old report file before running
-	ascii_out = os.path.join(REPO_ROOT, "report_ascii_compliance.txt")
-	if os.path.exists(ascii_out):
-		os.remove(ascii_out)
-
 	if not files:
-		print("No files matched the requested scope.")
-		print("No errors found!!!")
 		return
 
-	apply_fix = resolve_fix(pytestconfig)
-	progress_enabled = sys.stderr.isatty()
-	if progress_enabled:
-		print(f"ascii_compliance: scanning {len(files)} files...", file=sys.stderr)
-
 	all_lines = []
-	for index, file_path in enumerate(files, start=1):
-		status, file_lines, _ = scan_file(
+	for file_path in files:
+		status, file_lines = scan_file(
 			file_path,
 			check_module,
 			fix_module,
-			apply_fix,
 		)
 		all_lines.extend(file_lines)
-		if progress_enabled and (status != 0 or index % PROGRESS_EVERY == 0):
-			if status == 0:
-				sys.stderr.write(".")
-			elif status == 2:
-				sys.stderr.write("+")
-			else:
-				sys.stderr.write("!")
-			sys.stderr.flush()
-
-	if progress_enabled:
-		sys.stderr.write("\n")
-		sys.stderr.flush()
 
 	if not all_lines:
-		print("No errors found!!!")
 		return
-
-	with open(ascii_out, "w", encoding="utf-8") as handle:
-		for line in all_lines:
-			handle.write(f"{line}\n")
 
 	error_lines = [line for line in all_lines if ERROR_RE.search(line)]
 
@@ -461,7 +420,6 @@ def test_ascii_compliance(pytestconfig) -> None:
 		print("")
 		print(f"Found {emoji_count} emoji codepoints; handle them case by case.")
 
-	print("Found {} ASCII compliance errors written to REPO_ROOT/report_ascii_compliance.txt".format(
-		len(all_lines),
-	))
+	print("Found {} ASCII compliance errors.".format(len(all_lines)))
+	print("To fix: source source_me.sh && python3 tests/fix_ascii_compliance.py")
 	raise AssertionError("ASCII compliance errors detected.")

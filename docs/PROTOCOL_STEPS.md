@@ -235,7 +235,7 @@ that actual game clicks produce correct behavior.
 
 ## UI walker (canonical regression test)
 
-`tests/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test
+`tests/playwright/e2e/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test
 (Patch 8 and beyond). It reads compiled protocol data via
 `page.evaluate(() => window.PROTOCOL_STEPS)` (from `src/content/protocol_data.ts`)
 and drives real DOM clicks in the correct tool-first order for each interaction

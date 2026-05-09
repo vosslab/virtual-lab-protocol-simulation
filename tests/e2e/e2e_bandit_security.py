@@ -1,6 +1,18 @@
+#!/usr/bin/env python3
+"""
+e2e_bandit_security.py - Run bandit security checks on tracked Python files.
+
+Usage:
+	source source_me.sh && python3 tests/e2e/e2e_bandit_security.py
+
+Exits with non-zero status if bandit finds issues at severity medium or higher.
+Report written to report_bandit.txt.
+"""
 import os
 import shutil
 import subprocess
+import sys
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
 import git_file_utils
 
@@ -49,7 +61,7 @@ def run_bandit(repo_root: str) -> tuple[int, str]:
 	"""
 	bandit_bin = shutil.which("bandit")
 	if not bandit_bin:
-		raise AssertionError("bandit not found on PATH.")
+		raise RuntimeError("bandit not found on PATH.")
 	files = list_python_files(repo_root)
 	if not files:
 		return (0, "")
@@ -71,11 +83,12 @@ def run_bandit(repo_root: str) -> tuple[int, str]:
 
 
 #============================================
-def test_bandit_security() -> None:
+def main() -> None:
 	"""
 	Run bandit at severity medium or higher.
 	"""
 	if os.environ.get(SKIP_ENV) == "1":
+		print("Bandit check skipped (SKIP_REPO_HYGIENE=1)")
 		return
 
 	# Delete old report file before running
@@ -85,9 +98,16 @@ def test_bandit_security() -> None:
 
 	exit_code, output = run_bandit(REPO_ROOT)
 	if exit_code == 0:
+		print("Bandit check passed.")
 		return
 
 	with open(bandit_out, "w", encoding="utf-8") as handle:
 		handle.write(output)
 
-	raise AssertionError("Bandit issues detected. See REPO_ROOT/report_bandit.txt")
+	print(f"Bandit issues detected. See {bandit_out}")
+	sys.exit(1)
+
+
+#============================================
+if __name__ == "__main__":
+	main()

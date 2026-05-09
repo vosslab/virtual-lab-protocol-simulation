@@ -1,0 +1,18 @@
+items:
+  hemocytometer:
+    label: "Hemocytometer"
+    role: instrument
+    asset: hemocytometer
+    scene: bench
+
+  microscope:
+    label: "Microscope"
+    role: instrument
+    asset: microscope
+    scene: bench
+
+  cell_culture_dish:
+    label: "Cell Culture Dish"
+    role: culture_vessel
+    asset: cell_culture_dish
+    scene: hood

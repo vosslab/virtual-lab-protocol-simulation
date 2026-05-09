@@ -50,7 +50,8 @@ JavaScript output. There is no concatenation step.
 - [src/scenes/incubator.ts](../src/scenes/incubator.ts) - Incubator
   placement scene.
 - [src/scenes/microscope.ts](../src/scenes/microscope.ts) - Microscope and
-  plate-reader scenes (cell capture, viability, MTT readout).
+  plate-reader scenes. Supports both auto-counter modal (tutorial_cell_counter)
+  and manual hemocytometer quadrant counting (tutorial_hemocytometer_count).
 
 #### Step modules
 
@@ -108,9 +109,15 @@ emitter via `triggerStep(stepId)`.
 
 - [src/content/cell_culture/](../src/content/cell_culture/) - Active
   protocol authored as YAML (items, reagents, protocol).
-- [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) and
-  [src/content/tutorial_split/](../src/content/tutorial_split/) - Minimal
-  tutorial protocols.
+- Tutorial protocols (minimal protocols used by walker exercises):
+  [src/content/tutorial_bench_direct/](../src/content/tutorial_bench_direct/),
+  [src/content/tutorial_cell_counter/](../src/content/tutorial_cell_counter/),
+  [src/content/tutorial_drug_dilution/](../src/content/tutorial_drug_dilution/),
+  [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/),
+  [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/),
+  [src/content/tutorial_pbs/](../src/content/tutorial_pbs/),
+  [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/),
+  [src/content/tutorial_split/](../src/content/tutorial_split/).
 - [src/content/protocol_data.ts](../src/content/protocol_data.ts) and
   [src/content/inventory_data.ts](../src/content/inventory_data.ts) -
   Generated TypeScript by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
@@ -215,10 +222,11 @@ Results scene -> calculateScore() -> star rating
 
 For authoring a new protocol from scratch, see
 [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md). The active
-protocol id is `cell_culture` (~25 steps modeling the OVCAR8 carboplatin
-+ metformin MTT workflow). Tutorial protocols (`tutorial_pbs`,
-`tutorial_split`) cover smaller subsets and exist primarily for walker
-exercises.
+protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
++ metformin MTT workflow). Tutorial protocols (`tutorial_bench_direct`,
+`tutorial_cell_counter`, `tutorial_drug_dilution`, `tutorial_hood_transfer`,
+`tutorial_pbs`, `tutorial_plate_reader`, `tutorial_split`) cover smaller
+subsets and exist primarily for walker exercises.
 
 Each step declares one `completionPath` of kind `interactionSequence`,
 `directTool`, or `modal`. The walker dispatches by kind; legacy
@@ -316,9 +324,6 @@ emitters populated by `triggerStep()` calls.
 
 ## Known gaps
 
-- Verification task: confirm that `cell_culture` step count matches the
-  count quoted in this document; the active protocol has been edited
-  during recent walker work and the figure here is approximate.
 - Verification task: confirm whether non-browser
   [tests/e2e/](../tests/e2e/) is intended to remain empty or whether
   shell wrappers (currently in [tools/](../tools/)) belong there.

@@ -10,6 +10,7 @@ import { BENCH_LAYOUT_RULES, BENCH_SCENE_ITEMS, getBenchItemLabel } from "../ben
 import { gameState, getCurrentStep, registeredEmitters, renderGame, resolveSceneItemsWithDepth, showNotification, switchScene, triggerStep } from "../game_state";
 import { resolveInteraction, resolveInteractionByIndex } from "../interaction_resolver";
 import { computeSceneLayout } from "../layout_engine";
+import { showWrongOrderToast, buildLegacyToken } from "./scene_helpers";
 import { getCellCounterSvg, getCentrifugeSvg, getIncubatorSvg, getMicroscopeSvg, getPlateReaderSvg, getVortexSvg, getWaterBathSvg } from "../svg_assets";
 import { canonicalTool, deriveHeldLiquid } from "./hood";
 import { renderTrypsinIncubation } from "./incubator";
@@ -51,7 +52,7 @@ export function getBenchItemSvgHtml(itemId: string): string {
 //
 // Patch 6: Bench version of hood's highlight derivation.
 // Returns the de-duplicated list of item ids (tool/source/destination) from
-// the active interaction at step.interactionSequence[interactionIndex].
+// the active interaction at step.completionPath.interactions[interactionIndex].
 //============================================
 function deriveActiveInteractionTargets(
 	step: ProtocolStep | null,
@@ -59,11 +60,11 @@ function deriveActiveInteractionTargets(
 	selectedTool: string | null,
 	heldLiquid: { tool: string | null; liquid: string | null; volumeMl: number; colorKey: string | null } | null
 ): string[] {
-	if (!step || !step.interactionSequence || interactionIndex < 0 || interactionIndex >= step.interactionSequence.length) {
+	if (!step || step.completionPath?.kind !== 'interactionSequence' || interactionIndex < 0 || interactionIndex >= step.completionPath.interactions.length) {
 		return [];
 	}
 
-	const interaction = step.interactionSequence[interactionIndex];
+	const interaction = step.completionPath.interactions[interactionIndex];
 	if (!interaction) return [];
 
 	const targets = new Set<string>();
@@ -127,53 +128,6 @@ function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | null, in
 //
 // Display a small toast with the hint message.
 //============================================
-function showWrongOrderToast(message: string): void {
-	let toastContainer = document.getElementById('wrong-order-toast-container');
-	if (!toastContainer) {
-		toastContainer = document.createElement('div');
-		toastContainer.id = 'wrong-order-toast-container';
-		toastContainer.style.position = 'fixed';
-		toastContainer.style.top = '20px';
-		toastContainer.style.right = '20px';
-		toastContainer.style.zIndex = '1000';
-		toastContainer.style.pointerEvents = 'none';
-		document.body.appendChild(toastContainer);
-	}
-
-	const existingToast = toastContainer.querySelector('.wrong-order-toast');
-	if (existingToast) {
-		toastContainer.removeChild(existingToast);
-	}
-
-	const toast = document.createElement('div');
-	toast.className = 'wrong-order-toast';
-	toast.textContent = message;
-	toast.style.backgroundColor = '#fff3cd';
-	toast.style.border = '1px solid #ffc107';
-	toast.style.borderRadius = '6px';
-	toast.style.padding = '12px 16px';
-	toast.style.fontSize = '14px';
-	toast.style.fontWeight = '500';
-	toast.style.color = '#856404';
-	toast.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-	toast.style.maxWidth = '300px';
-	toast.style.wordWrap = 'break-word';
-	toast.style.animation = 'fadeIn 0.3s ease-in';
-
-	toastContainer.appendChild(toast);
-
-	setTimeout(() => {
-		if (toastContainer && toastContainer.contains(toast)) {
-			toast.style.animation = 'fadeOut 0.3s ease-out';
-			setTimeout(() => {
-				if (toastContainer && toastContainer.contains(toast)) {
-					toastContainer.removeChild(toast);
-				}
-			}, 300);
-		}
-	}, 2000);
-}
-
 //============================================
 // dispatchBenchInteractionClick(itemId: string)
 //
@@ -181,9 +135,11 @@ function showWrongOrderToast(message: string): void {
 //============================================
 function dispatchBenchInteractionClick(itemId: string): void {
 	const activeStep = getCurrentStep();
-	if (!activeStep || !activeStep.interactionSequence) {
+	if (!activeStep || activeStep.completionPath?.kind !== 'interactionSequence') {
 		return;
 	}
+
+	const interactions = activeStep.completionPath.interactions;
 
 	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 	const cleanTool = canonicalTool(gameState.selectedTool);
@@ -198,7 +154,7 @@ function dispatchBenchInteractionClick(itemId: string): void {
 	// Wrong-order click: increment wrongOrderClicks, show hint, return
 	if (result.wrongOrder === true) {
 		gameState.wrongOrderClicks++;
-		const activeInteraction = activeStep.interactionSequence[gameState.interactionIndex];
+		const activeInteraction = interactions[gameState.interactionIndex];
 		showWrongOrderHint(itemId, activeStep, activeInteraction);
 		return;
 	}
@@ -214,19 +170,14 @@ function dispatchBenchInteractionClick(itemId: string): void {
 			colorKey: colorKey,
 		};
 
-		const tool = result.resultActor || 'serological_pipette';
-		const legacyToken = result.resultLiquid === 'pbs'     ? `${tool}_with_pbs`
-					  : result.resultLiquid === 'trypsin' ? `${tool}_with_trypsin`
-					  : result.resultLiquid === 'media'   ? `${tool}_with_media`
-					  : result.resultLiquid === 'cells'   ? `${tool}_with_cells`
-					  : null;
+		const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
 		if (legacyToken) {
 			gameState.selectedTool = legacyToken;
 		}
 
 		if (result.indexDelta === 1) {
 			gameState.interactionIndex++;
-			if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+			if (gameState.interactionIndex >= interactions.length) {
 				triggerStep(activeStep.id);
 			}
 		}
@@ -244,7 +195,7 @@ function dispatchBenchInteractionClick(itemId: string): void {
 				gameState.flaskMediaAge = 'old';
 				if (result.indexDelta === 1) {
 					gameState.interactionIndex++;
-					if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+					if (gameState.interactionIndex >= interactions.length) {
 						triggerStep(activeStep.id);
 					}
 				}
@@ -255,7 +206,7 @@ function dispatchBenchInteractionClick(itemId: string): void {
 			if (result.completionEvent === 'prewarm') {
 				if (result.indexDelta === 1) {
 					gameState.interactionIndex++;
-					if (gameState.interactionIndex >= activeStep.interactionSequence.length) {
+					if (gameState.interactionIndex >= interactions.length) {
 						triggerStep(activeStep.id);
 					}
 				}
@@ -283,9 +234,9 @@ function dispatchBenchInteractionClick(itemId: string): void {
 // modal overlays; the remaining instruments advance their matching
 // protocol step when the active step calls for them.
 export function onBenchItemClick(itemId: string): void {
-	// Route clicks through interactionIndex-aware resolver for steps with interactionSequence
+	// Route clicks through interactionIndex-aware resolver for steps with completionPath.kind === 'interactionSequence'
 	const activeStep = getCurrentStep();
-	if (activeStep && activeStep.interactionSequence) {
+	if (activeStep && activeStep.completionPath?.kind === 'interactionSequence') {
 		dispatchBenchInteractionClick(itemId);
 		return;
 	}

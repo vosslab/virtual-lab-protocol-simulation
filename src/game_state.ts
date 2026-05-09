@@ -53,8 +53,6 @@ export interface GameState {
 	trypsinNeutralized: boolean;
 	// Hemocytometer loading
 	hemocytometerLoaded: boolean;
-	// Microscope viability sub-screen: UI-internal, not a protocol step
-	microscopeViabilityChecked: boolean;
 	// Protocol realism tracking
 	mediaWarmed: boolean;
 	startTime: number;
@@ -78,6 +76,10 @@ export interface GameState {
 	// Interaction sequence tracking (Patch 4)
 	interactionIndex: number;
 	wrongOrderClicks: number;
+	// Manual hemocytometer tracking (M4: tutorial_hemocytometer_count protocol)
+	manualHemocytometerViabilityChecked: boolean;
+	manualHemocytometerQuadrantCounts: (number | null)[];
+	manualHemocytometerSubmitted: boolean;
 }
 
 // CRITICAL: Persistence layer must serialize activeStepId, outOfOrderAttempts,
@@ -131,7 +133,6 @@ export function createInitialGameState(): GameState {
 		trypsinIncubated: false,
 		trypsinNeutralized: false,
 		hemocytometerLoaded: false,
-		microscopeViabilityChecked: false,
 		mediaWarmed: false,
 		startTime: Date.now(),
 		endTime: null,
@@ -150,6 +151,9 @@ export function createInitialGameState(): GameState {
 		professorMoodSetAt: Date.now(),
 		interactionIndex: 0,
 		wrongOrderClicks: 0,
+		manualHemocytometerViabilityChecked: false,
+		manualHemocytometerQuadrantCounts: [null, null, null, null],
+		manualHemocytometerSubmitted: false,
 	};
 }
 
@@ -296,16 +300,14 @@ export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope'
 // ============================================
 // deriveActiveTargets(step) - Extract item ids relevant to the active step.
 //
-// Patch 1 temporary: derives the set of item ids from the step's
-// interactionSequence (tool, source, destination) since targetItems has been
-// removed from the YAML schema. Used by resolveItemDepth and scene renderers
-// for highlight and depth decisions.
-// TODO Patch 6: replace with interactionIndex-aware highlight set
+// Derives the set of item ids from the step's completionPath.interactions
+// (tool, source, destination) when the step uses interactionSequence completion.
+// Used by resolveItemDepth and scene renderers for highlight and depth decisions.
 // ============================================
-export function deriveActiveTargets(step: { interactionSequence?: Array<{ tool?: string; source?: string; destination?: string }> } | null): string[] {
-	if (!step || !step.interactionSequence) return [];
+export function deriveActiveTargets(step: ProtocolStep | null): string[] {
+	if (!step || step.completionPath?.kind !== 'interactionSequence') return [];
 	const seen = new Set<string>();
-	for (const interaction of step.interactionSequence) {
+	for (const interaction of step.completionPath.interactions) {
 		if (interaction.tool) seen.add(interaction.tool);
 		if (interaction.source) seen.add(interaction.source);
 		if (interaction.destination) seen.add(interaction.destination);
@@ -347,10 +349,9 @@ export function resolveItemDepth(
 	// No active step -> default to mid (current rendering).
 	if (!activeStepId) return 'mid';
 
-	var step = PROTOCOL_STEPS.find(function (s) { return s.id === activeStepId; });
-	// Derive targets from interactionSequence (tool/source/destination) since
-	// targetItems has been removed. TODO Patch 6: use interactionIndex-aware highlight set.
-	var targets = deriveActiveTargets(step || null);
+	const step = PROTOCOL_STEPS.find(function (s) { return s.id === activeStepId; });
+	// Derive targets from completionPath.interactions (tool/source/destination).
+	const targets = deriveActiveTargets(step || null);
 	if (targets.length === 0) {
 		return 'mid';
 	}

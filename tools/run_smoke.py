@@ -3,7 +3,7 @@
 run_smoke.py - Python wrapper for browser smoke test.
 
 Builds the app and runs the Playwright smoke test at
-tests/playwright/e2e/test_game_ui.mjs to verify the app loads, renders key UI
+tests/playwright/test_game_ui.mjs to verify the app loads, renders key UI
 elements, and runs through the first 9 gates of the bench scene.
 
 This is a fast check (not a full protocol playthrough).
@@ -83,7 +83,7 @@ def main():
 	# Run the smoke test
 	print()
 	print("==> Running browser smoke test ...")
-	smoke_script = repo_root / 'tests' / 'playwright' / 'e2e' / 'test_game_ui.mjs'
+	smoke_script = repo_root / 'tests' / 'playwright' / 'test_game_ui.mjs'
 	result = subprocess.run(['node', str(smoke_script)], cwd=str(repo_root), env=os.environ.copy())
 	if result.returncode != 0:
 		print("SMOKE TEST FAILED", file=sys.stderr)
