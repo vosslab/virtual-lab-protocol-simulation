@@ -37,6 +37,17 @@ Attribution: Servier Medical Art, smart.servier.com
 | micropipette-multi.svg | assets/equipment/multichannel_pipette.svg | Added anchor system |
 | pipette-box.svg | assets/equipment/tip_box.svg | Added anchor system |
 
+## Bioicons CC-0 Lab Apparatus
+
+Additional lab apparatus icons sourced from bioicons.com (https://bioicons.com/) under the CC-0 / Public Domain dedication. Each icon's contributor is credited in the table.
+
+License: CC-0 / Public Domain (https://creativecommons.org/publicdomain/zero/1.0/)
+Source: https://bioicons.com/
+
+| Source File | Destination File | Author / Contributor | Modifications |
+|---|---|---|---|
+| 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen | None (registered as SVG_96WELL_PCR_PLATE via tools/generate_svg_globals.py) |
+
 ## Anchor System
 
 All integrated Servier SVGs include the following anchor elements for layout and interaction:

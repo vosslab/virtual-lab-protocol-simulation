@@ -12,6 +12,7 @@ import type { AssetSpec } from "./scene_types";
 export const ASSET_SPECS: Record<string, AssetSpec> = {
 	flask:                { defaultWidth: 12, labelWidth: 6,  },
 	well_plate:           { defaultWidth: 14, labelWidth: 8,  },
+	well_plate_96:        { defaultWidth: 14, labelWidth: 8,  },
 	media_bottle:         { defaultWidth: 8,  labelWidth: 5,  },
 	trypsin_bottle:       { defaultWidth: 7,  labelWidth: 5,  },
 	ethanol_bottle:       { defaultWidth: 5,  labelWidth: 5,  },

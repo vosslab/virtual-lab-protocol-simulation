@@ -683,9 +683,9 @@ def validate_steps(steps, items, reagents, parts, days):
 	day_ids = {d['id'] for d in days}
 	item_ids = set(items.keys())
 	reagent_ids = set(reagents.keys())
-	valid_modal_owners = {'drug_treatment', 'microscope', 'incubator', 'plate_reader'}
+	valid_modal_owners = {'drug_treatment', 'microscope', 'incubator', 'plate', 'plate_reader'}
 
-	valid_scenes = {'hood', 'bench', 'incubator', 'microscope', 'plate_reader'}
+	valid_scenes = {'hood', 'bench', 'incubator', 'microscope', 'plate', 'plate_reader'}
 
 	step_ids = set()
 	first_step_id = None

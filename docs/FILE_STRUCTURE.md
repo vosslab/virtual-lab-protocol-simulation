@@ -63,6 +63,7 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/scene_types.ts](../src/scene_types.ts) | Scene/zone enums |
 | [src/bench_config.ts](../src/bench_config.ts) | Bench scene layout config |
 | [src/hood_config.ts](../src/hood_config.ts) | Hood scene layout config |
+| [src/plate_config.ts](../src/plate_config.ts) | Plate scene layout config (modal renderer only; full layout-engine wiring TBD) |
 | [src/style_constants.ts](../src/style_constants.ts) | Color and style tokens |
 | [src/asset_specs.ts](../src/asset_specs.ts) | Asset metadata |
 | [src/brands.ts](../src/brands.ts) | Brand-name helpers |
@@ -81,6 +82,7 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/scenes/hood.ts](../src/scenes/hood.ts) | Sterile hood scene; owns `dispatchInteractionClick` |
 | [src/scenes/incubator.ts](../src/scenes/incubator.ts) | Incubator placement |
 | [src/scenes/microscope.ts](../src/scenes/microscope.ts) | Microscope and plate-reader scenes |
+| [src/scenes/plate.ts](../src/scenes/plate.ts) | 96-well plate workspace scene (modal-style overlay) |
 
 #### Step modules
 
@@ -103,6 +105,7 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/) | Tutorial protocol (manual hemocytometer quadrant counting) |
 | [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/) | Tutorial protocol (hood `interactionSequence`) |
 | [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) | Tutorial protocol (PBS wash repetition) |
+| [src/content/tutorial_plate_intro/](../src/content/tutorial_plate_intro/) | Tutorial protocol (96-well plate intro and carboplatin addition) |
 | [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/) | Tutorial protocol (plate-reader modal) |
 | [src/content/tutorial_split/](../src/content/tutorial_split/) | Tutorial protocol (split / passage) |
 | [src/content/protocol_data.ts](../src/content/protocol_data.ts) | Generated `PROTOCOL_STEPS` and `PROTOCOL_ID` |

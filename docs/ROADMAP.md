@@ -27,3 +27,12 @@ Planned features and improvements for the cell culture simulation game.
 - Teach sterile field layout: clean-to-dirty direction, airflow awareness, spacing
 - Score placement based on proper technique (e.g., not blocking rear vents, waste on dirty side, spacing items)
 - Could serve as an intro tutorial before the main cell culture protocol
+
+- **Split `src/layout_engine.ts` (857 LOC) into 2 modules: `layout_assets.ts` + slimmed `layout_engine.ts`.** Coherent at
+current size; revisit if it crosses 1000 LOC. Some of this logic moves into `src/scenes/shared/scene_layout.ts` during this
+plan; the residual layout engine stays where it is.
+- **Add `tests/types/` with `Expect<Equal<...>>` scaffold + 2 type-test files for `ProtocolStep` and `CompletionPath`.** Wire
+into all three build scripts. Would have caught the K2 drift at compile time.
+- **Capability contract type tests.** When the type-test suite lands, add a third file that asserts every capability module
+conforms to the `SceneCapability` interface and every YAML scene config conforms to the `SceneConfig` schema. This is the
+type-level safety net for the new system.

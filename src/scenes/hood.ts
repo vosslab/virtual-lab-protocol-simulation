@@ -295,6 +295,12 @@ export function renderHoodScene(): void {
 		} else if (currentStepData.completionPath && currentStepData.completionPath.kind === 'directTool') {
 			// For directTool steps, highlight the tool
 			activeTargets = [(currentStepData.completionPath as any).tool];
+		} else if (currentStepData.completionPath && currentStepData.completionPath.kind === 'modal') {
+			// For modal steps, highlight the item to click to open the modal (e.g., well_plate)
+			const openClick = (currentStepData.completionPath as any).openClick;
+			if (openClick) {
+				activeTargets = [openClick];
+			}
 		}
 	}
 	const nextPulseTarget = activeTargets.length > 0 ? activeTargets[0] : null;
@@ -1055,6 +1061,13 @@ export function onItemClick(itemId: string): void {
 			} else {
 				showNotification('Load a cell sample onto the hemocytometer first.', 'warning');
 			}
+			return;
+		}
+
+		// Plate click when a modal.owner === 'plate' step is active: open plate scene
+		const currentStep = getCurrentStep();
+		if (itemId === 'well_plate' && currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.modal?.owner === 'plate') {
+			switchScene('plate');
 			return;
 		}
 

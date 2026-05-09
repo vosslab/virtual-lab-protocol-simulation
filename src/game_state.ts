@@ -39,7 +39,7 @@ export interface GameState {
 	score: number;
 	completedSteps: string[];
 	hoodSprayed: boolean;
-	activeScene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader' | 'results';
+	activeScene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader' | 'results';
 	// Tracking for scoring
 	stepsInCorrectOrder: number;
 	stepsOutOfOrder: number;
@@ -292,7 +292,7 @@ export function getStepLabel(stepId: string): string {
 }
 
 // ============================================
-export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader' | 'results'): void {
+export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader' | 'results'): void {
 	gameState.activeScene = scene;
 	renderGame();
 }

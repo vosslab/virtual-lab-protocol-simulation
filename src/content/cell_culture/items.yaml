@@ -47,9 +47,9 @@ items:
     allowedLiquids: [media, trypsin, cells]
 
   well_plate:
-    label: "24-Well Plate"
+    label: "96-Well Plate"
     role: culture_vessel
-    asset: well_plate_24
+    asset: well_plate_96
     scene: hood
     liquidCapable: true
     capacityMl: 1

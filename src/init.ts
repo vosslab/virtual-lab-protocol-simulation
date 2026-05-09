@@ -19,6 +19,7 @@ import { renderBenchScene } from "./scenes/bench";
 import { dispatchInteractionClick, onItemClick, renderHoodScene, setupHoodEventListeners } from "./scenes/hood";
 import { renderIncubatorScene } from "./scenes/incubator";
 import { renderMicroscopeScene, renderPlateReaderScene } from "./scenes/microscope";
+import { renderPlateScene } from "./scenes/plate";
 import { calculateScore } from "./scoring";
 import { renderMeters, renderProtocolPanel, renderResultsScreen, renderScoreDisplay } from "./ui_rendering";
 
@@ -214,6 +215,9 @@ setRenderGame(function(): void {
 			break;
 		case 'microscope':
 			renderMicroscopeScene();
+			break;
+		case 'plate':
+			renderPlateScene();
 			break;
 		case 'plate_reader':
 			renderPlateReaderScene();

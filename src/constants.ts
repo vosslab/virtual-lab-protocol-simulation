@@ -47,7 +47,7 @@ export const STAR_THRESHOLDS = {
 // for each protocol step. Advisory in this pass; future refactors will
 // use this for step-driven trigger resolution.
 export type TriggerSpec = {
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader';
+	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader';
 	completionEvent: string;
 };
 
@@ -117,7 +117,7 @@ export interface ProtocolStep {
 	stepIndex: number;
 	requiredItems: string[];
 	errorHints: Record<string, string>;
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate_reader';
+	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader';
 	correctVolumeMl?: number;
 	toleranceMl?: number;
 	// Explicit successor for the state machine. null marks the final step.
@@ -128,7 +128,7 @@ export interface ProtocolStep {
 	// will use this for step-driven completion trigger resolution.
 	completionTrigger?: TriggerSpec | null;
 	// Modal-driven steps reference a modal owner and screen name.
-	modal?: { owner: 'drug_treatment' | 'microscope' | 'incubator' | 'plate_reader'; screen: string };
+	modal?: { owner: 'drug_treatment' | 'microscope' | 'incubator' | 'plate' | 'plate_reader'; screen: string };
 	// Pure incubation steps with no resolver interaction.
 	isIncubation?: boolean;
 	// Completion path (SP-K2). Describes the schema contract for how this step

@@ -1,0 +1,10 @@
+reagents:
+  carboplatin:
+    label: "Carboplatin"
+    colorKey: carboplatin
+    displayColor: "#d0b0ff"
+
+  media:
+    label: "Complete media"
+    colorKey: media
+    displayColor: "#f7a6b8"

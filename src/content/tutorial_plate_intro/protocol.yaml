@@ -1,0 +1,51 @@
+parts:
+  - id: tutorial_plate_part
+    label: "Tutorial: 96-Well Plate Workspace"
+    dayId: tutorial_plate_day
+
+days:
+  - id: tutorial_plate_day
+    label: "Tutorial Day"
+
+steps:
+  - id: tutorial_plate_open
+    label: "Open the 96-well plate workspace"
+    action: "Click the 96-well plate to focus on it"
+    why: "Drug additions are easier to see when the plate is the whole scene."
+    partId: tutorial_plate_part
+    dayId: tutorial_plate_day
+    stepIndex: 1
+    requiredItems: [well_plate]
+    scene: hood
+    errorHints:
+      not_loaded: "Click the 96-well plate to enter the plate workspace."
+    modal:
+      owner: plate
+      screen: plate_intro
+    completionPath:
+      kind: modal
+      openClick: well_plate
+      advanceClick: confirm-plate-intro
+      completionEvent: tutorial-plate-opened
+    nextId: tutorial_plate_action
+
+  - id: tutorial_plate_action
+    label: "Add Carboplatin working stock to row B (10 nM)"
+    action: "Use the multichannel pipette to add 5 uL of the 400 nM Carboplatin working stock to row B, columns 1-12"
+    why: "Mirrors OVCAR8 protocol Part 3 Day 2: 5 uL of carboplatin working stock per well across rows B-H. Row B (10 nM) is the lowest dose."
+    partId: tutorial_plate_part
+    dayId: tutorial_plate_day
+    stepIndex: 2
+    requiredItems: [well_plate, multichannel_pipette, carboplatin_working_stock]
+    scene: hood
+    errorHints:
+      incomplete: "Click the highlighted Add button to apply carboplatin to row B."
+    modal:
+      owner: plate
+      screen: plate_add_carb_row_b
+    completionPath:
+      kind: modal
+      openClick: well_plate
+      advanceClick: submit-plate-action
+      completionEvent: tutorial-plate-submitted
+    nextId: null

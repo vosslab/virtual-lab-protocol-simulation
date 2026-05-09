@@ -52,6 +52,9 @@ JavaScript output. There is no concatenation step.
 - [src/scenes/microscope.ts](../src/scenes/microscope.ts) - Microscope and
   plate-reader scenes. Supports both auto-counter modal (tutorial_cell_counter)
   and manual hemocytometer quadrant counting (tutorial_hemocytometer_count).
+- [src/scenes/plate.ts](../src/scenes/plate.ts) - 96-well plate workspace
+  scene; modal-style overlay for plate intro and carboplatin-addition screens
+  (tutorial_plate_intro).
 
 #### Step modules
 
@@ -88,6 +91,9 @@ emitter via `triggerStep(stepId)`.
   computation.
 - [src/bench_config.ts](../src/bench_config.ts), [src/hood_config.ts](../src/hood_config.ts) -
   Scene-specific layout configs.
+- [src/plate_config.ts](../src/plate_config.ts) - Plate scene layout config
+  (bounds/zones/items/rules); exports are present but currently consumed by
+  the modal-style renderer only, full layout-engine wiring is a follow-up.
 - [src/scene_types.ts](../src/scene_types.ts) - Scene/zone enums and types.
 - [src/style_constants.ts](../src/style_constants.ts) - Color and style
   tokens used by SVG and DOM rendering.
@@ -116,6 +122,7 @@ emitter via `triggerStep(stepId)`.
   [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/),
   [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/),
   [src/content/tutorial_pbs/](../src/content/tutorial_pbs/),
+  [src/content/tutorial_plate_intro/](../src/content/tutorial_plate_intro/),
   [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/),
   [src/content/tutorial_split/](../src/content/tutorial_split/).
 - [src/content/protocol_data.ts](../src/content/protocol_data.ts) and
@@ -206,7 +213,7 @@ warnings[] accumulation (real-time sidebar)
 renderGame() dispatcher (src/init.ts)
   |
   v
-Scene renderers (bench, hood, microscope, incubator, plate reader)
+Scene renderers (bench, hood, microscope, incubator, plate, plate reader)
   |
   v
 SVG/HTML output to DOM
@@ -225,8 +232,9 @@ For authoring a new protocol from scratch, see
 protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
 + metformin MTT workflow). Tutorial protocols (`tutorial_bench_direct`,
 `tutorial_cell_counter`, `tutorial_drug_dilution`, `tutorial_hood_transfer`,
-`tutorial_pbs`, `tutorial_plate_reader`, `tutorial_split`) cover smaller
-subsets and exist primarily for walker exercises.
+`tutorial_pbs`, `tutorial_plate_intro`, `tutorial_plate_reader`,
+`tutorial_split`) cover smaller subsets and exist primarily for walker
+exercises.
 
 Each step declares one `completionPath` of kind `interactionSequence`,
 `directTool`, or `modal`. The walker dispatches by kind; legacy

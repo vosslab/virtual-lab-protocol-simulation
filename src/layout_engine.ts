@@ -19,7 +19,7 @@
 // distribution and label-availability estimation.
 
 // Average character width as percentage of font size
-import { SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
+import { SVG_96WELL_PCR_PLATE, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
 import { getBottleSvg } from "./svg_assets";
 import type { BottleLiquid } from "./svg_recipes";
 import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from "./scene_types";
@@ -77,6 +77,7 @@ export function getStaticSvg(assetId: string): string {
 	switch (assetId) {
 		case 'flask': return SVG_T75_FLASK;
 		case 'well_plate': return SVG_WELL_PLATE_24;
+		case 'well_plate_96': return SVG_96WELL_PCR_PLATE;
 		case 'ethanol_bottle': return SVG_ETHANOL_SPRAY;
 		case 'serological_pipette': return SVG_SERO_PIPETTE;
 		case 'aspirating_pipette': return SVG_ASPIRATING_PIPETTE;
