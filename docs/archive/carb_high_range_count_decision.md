@@ -49,7 +49,7 @@ plate can express.
 ## 4. Migration shape for carb_high_range
 
 Mirrors `carb_low_range` (already migrated, walker-green). 8 interactions
-(load + discharge per tube, twice — once for carboplatin, once for media).
+(load + discharge per tube, twice - once for carboplatin, once for media).
 
 ```yaml
 - id: carb_high_range
@@ -131,7 +131,7 @@ Tool: micropipette. Final completionEvent: `carb-high-range-confirm`
 | `dilution_tube_carb_g` | "Carb row G"  | culture_vessel | dilution_tube_rack | [carboplatin, media]| 1          |
 | `dilution_tube_carb_h` | "Carb row H"  | culture_vessel | dilution_tube_rack | [carboplatin, media]| 1          |
 
-No new visual assets — reuse `dilution_tube_rack` like B-F do.
+No new visual assets - reuse `dilution_tube_rack` like B-F do.
 
 ## 6. Open follow-ups
 

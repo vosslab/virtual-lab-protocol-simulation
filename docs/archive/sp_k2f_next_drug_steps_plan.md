@@ -3,10 +3,10 @@
 ## Overview
 
 This plan covers migration of the remaining 4 steps from `kind: modal` to `kind: interactionSequence`:
-- `carb_high_range` — 2 high-range stocks (5 µM, 25 µM) from 10 mM stock
-- `metformin_stock` — 10 mM working stock (10 µL + 990 µL)
-- `add_carboplatin` — Add carboplatin to rows B-H of plate
-- `add_metformin` — Add metformin to columns 7-12 of plate
+- `carb_high_range` - 2 high-range stocks (5 µM, 25 µM) from 10 mM stock
+- `metformin_stock` - 10 mM working stock (10 µL + 990 µL)
+- `add_carboplatin` - Add carboplatin to rows B-H of plate
+- `add_metformin` - Add metformin to columns 7-12 of plate
 
 All follow the `carb_intermediate` reference template. The `carb_low_range` step (SP-K2e) is being handled separately.
 
@@ -29,12 +29,12 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 - `dilution_tube_carb_g`: label "Carb row G", role culture_vessel, asset dilution_tube_rack, scene hood, capacityMl 1, allowedLiquids [carboplatin, media]
 - `dilution_tube_carb_h`: label "Carb row H", role culture_vessel, asset dilution_tube_rack, scene hood, capacityMl 1, allowedLiquids [carboplatin, media]
 
-**Interaction list:** 8 interactions (load 10µL carb + 990µL media → carb_g; load 50µL carb + 950µL media → carb_h). All micropipette. Final discharge carries `completionEvent: carb-high-range-confirm`.
+**Interaction list:** 8 interactions (load 10µL carb + 990µL media -> carb_g; load 50µL carb + 950µL media -> carb_h). All micropipette. Final discharge carries `completionEvent: carb-high-range-confirm`.
 
 **Required items:** [carboplatin_stock, dilution_tube_carb_g, dilution_tube_carb_h, media_bottle, micropipette]
 
 **Side-effect handoff:**
-- Current: `advanceDrugModalStep(carb_high_range)` → `triggerStep()`.
+- Current: `advanceDrugModalStep(carb_high_range)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: carb-high-range-confirm`.
 - Landing: Event-keyed handler (no per-step side effects).
 
@@ -60,7 +60,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [metformin_stock, sterile_water, dilution_tube_metformin, micropipette]
 
 **Side-effect handoff:**
-- Current: `advanceDrugModalStep(metformin_stock)` → `triggerStep()`.
+- Current: `advanceDrugModalStep(metformin_stock)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: metformin-stock-prepare`.
 
 ---
@@ -109,7 +109,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [well_plate, multichannel_pipette, dilution_tube_metformin]
 
 **Side-effect handoff:**
-- Current: `advanceDrugModalStep(add_metformin)` → `triggerStep()`.
+- Current: `advanceDrugModalStep(add_metformin)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: metformin-add-confirm`.
 
 ---
@@ -123,11 +123,11 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 - `registeredEmitters.add(add_metformin);`
 
 **Dead code after migration:**
-- `renderDilutionChoiceScreen()` — no caller (carb_low_range already migrated)
-- `selectLowRangeDilution()` — no caller
-- `DILUTION_OPTIONS` — no caller
-- `advanceDrugModalStep()` — no remaining callers; becomes dead code
-- `MODAL_OWNED_STEPS` — becomes empty array, causing `renderDrugModalStep()` to auto-close overlay
+- `renderDilutionChoiceScreen()` - no caller (carb_low_range already migrated)
+- `selectLowRangeDilution()` - no caller
+- `DILUTION_OPTIONS` - no caller
+- `advanceDrugModalStep()` - no remaining callers; becomes dead code
+- `MODAL_OWNED_STEPS` - becomes empty array, causing `renderDrugModalStep()` to auto-close overlay
 
 **Event-keyed side effects:**
 For `carb-add-confirm`: implement event dispatch table in game_state.ts:
@@ -152,7 +152,7 @@ if (completionEvent && EVENT_SIDE_EFFECTS[completionEvent]) {
 ## Open Questions
 
 1. **Media vs. water for metformin:** Modal screen says "sterile water"; confirm if media is acceptable per protocol.
-2. **Dose-map timing:** Confirm `applyPlateDoseMap()` has hard-coded row→conc map (safe to call anytime) or reads gameState (must call after all interactions).
+2. **Dose-map timing:** Confirm `applyPlateDoseMap()` has hard-coded row->conc map (safe to call anytime) or reads gameState (must call after all interactions).
 3. **Metformin column range:** Confirm columns 7-12 (6 columns) with 8-channel tool (load all 8, dispense only 7-12, or narrower tool required).
 
 ---

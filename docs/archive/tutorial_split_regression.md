@@ -32,10 +32,10 @@ Walker log line: `click on ethanol_bottle produced no state change after 3000ms`
 
 **Hood scene does not implement directTool dispatch.** Hood has only:
 
-- `hood.ts:830` — explicit `interactionSequence` route via
+- `hood.ts:830` - explicit `interactionSequence` route via
   `dispatchInteractionClick`.
-- `hood.ts:837-992` — legacy `resolveInteraction` fallback.
-- `hood.ts:997+` — per-item hardcoded handlers that predate the
+- `hood.ts:837-992` - legacy `resolveInteraction` fallback.
+- `hood.ts:997+` - per-item hardcoded handlers that predate the
   `completionPath` schema. The `ethanol_bottle` branch hardcodes
   `triggerStep('spray_hood')` (a literal cell_culture step id).
 
@@ -93,12 +93,12 @@ dispatch infrastructure isn't already there for hood.
 **Not blocking.** `tutorial_split` is a fresh mini-protocol, not on any
 critical path. The fix is ~10 lines in `hood.ts`. Land after carb_low_range
 clears (active wrapper-div coder is editing style.css; this would touch
-hood.ts — separate file, but queue as the next task to keep scope clean).
+hood.ts - separate file, but queue as the next task to keep scope clean).
 
 ## 7. Open follow-ups
 
 - Audit: are there other literal-id `triggerStep('<cell_culture_id>')` calls
-  remaining in hood.ts that SP-K2e missed? Likely yes — the legacy item
+  remaining in hood.ts that SP-K2e missed? Likely yes - the legacy item
   handlers at `hood.ts:997+` look like they all share this pattern. Worth a
   read-only sweep before the next mini-protocol surfaces another instance.
 - Mini-protocol integration table (`mini_protocol_integration.md`) should

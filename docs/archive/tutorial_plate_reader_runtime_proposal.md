@@ -11,7 +11,7 @@ Mini-protocol `tutorial_plate_reader` is complete and passes YAML validation. Ho
 
 ## Root Cause
 
-**File:** `src/scenes/bench.ts`, **Lines:** 393–401
+**File:** `src/scenes/bench.ts`, **Lines:** 393-401
 
 ```typescript
 if (itemId === 'plate_reader') {
@@ -29,7 +29,7 @@ The handler checks `currentStep.id === 'plate_read' || currentStep.id === 'resul
 
 ## Generic Fix
 
-Replace hardcoded step ID checks with dispatch via `completionPath.kind === 'modal' && completionPath.openClick === itemId'`. This pattern already works for other modal instruments (e.g., cell_counter, which routes through `switchScene('microscope')`; see lines 438–449).
+Replace hardcoded step ID checks with dispatch via `completionPath.kind === 'modal' && completionPath.openClick === itemId'`. This pattern already works for other modal instruments (e.g., cell_counter, which routes through `switchScene('microscope')`; see lines 438-449).
 
 **Proposed change:**
 - Check if the current step's `completionPath.kind === 'modal'` and `openClick === 'plate_reader'`

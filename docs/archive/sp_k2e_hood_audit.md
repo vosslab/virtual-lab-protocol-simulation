@@ -64,7 +64,7 @@ Insert new dispatch blocks BEFORE the legacy fallback at ~line 997.
 ## Side-effect re-anchoring
 
 Side effects in each branch (state mutations like `gameState.hoodSprayed =
-true`, notifications, render calls) stay item-keyed for now — moving them
+true`, notifications, render calls) stay item-keyed for now - moving them
 to `completionEvent`-keyed dispatch is a separate refactor. Keep this
 patch bounded.
 
@@ -97,7 +97,7 @@ after the gate set finishes.
 ## Risks to flag
 
 1. Some branches are chain-driven (e.g. `multichannel_pipette_with_*` +
-   `well_plate`) — these may be `interactionSequence` in the YAML, not
+   `well_plate`) - these may be `interactionSequence` in the YAML, not
    `directTool`. Implementer must inspect each protocol step's
    `completionPath.kind` before assuming the directTool pattern. If the
    step is `interactionSequence`, the legacy chain branch is dead and
