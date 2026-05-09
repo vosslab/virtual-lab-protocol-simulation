@@ -1,3 +1,5 @@
+sceneRouter: driver
+
 parts:
   - id: tutorial_drug_part
     label: "Tutorial: Drug Dilution"

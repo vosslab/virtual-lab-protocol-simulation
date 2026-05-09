@@ -11,17 +11,28 @@
 // - window flag: sets __protocolValidation for walkthrough to read
 // - Throws to halt execution
 // ============================================
-import { PROTOCOL_ID, PROTOCOL_STEPS } from "./content/protocol_data";
+import { PROTOCOL_ID, PROTOCOL_STEPS, SCENE_ROUTER } from "./content/protocol_data";
 import { completeStep, createInitialGameState, gameState, renderGame, setGameState, setRenderGame } from "./game_state";
 import { createProfessorOverlay, renderProfessorOverlay } from "./professor_overlay";
 import { renderProtocolUI } from "./protocol_ui";
-import { renderBenchScene } from "./scenes/bench";
+import { renderBenchScene as renderBenchSceneLegacy } from "./scenes/bench";
 import { dispatchInteractionClick, onItemClick, renderHoodScene, setupHoodEventListeners } from "./scenes/hood";
-import { renderIncubatorScene } from "./scenes/incubator";
-import { renderMicroscopeScene, renderPlateReaderScene } from "./scenes/microscope";
-import { renderPlateScene } from "./scenes/plate";
+import { renderPlateReaderScene } from "./scenes/shared/plate_reader";
 import { calculateScore } from "./scoring";
 import { renderMeters, renderProtocolPanel, renderResultsScreen, renderScoreDisplay } from "./ui_rendering";
+import { resolveSceneRouter, runSceneRender } from "./scenes/scene_registry";
+import { runScene } from "./scenes/scene_driver";
+import "./scenes/capabilities/item_workspace";
+import "./scenes/capabilities/modal_workspace";
+import "./scenes/capabilities/plate_reader_workspace";
+import "./scenes/capabilities/instrument_workspace";
+import "./scenes/capabilities/incubator_workspace";
+import "./scenes/capabilities/grid_counting_workspace";
+import "./scenes/bench/bench";
+import "./scenes/cell_culture_hood/cell_culture_hood";
+import "./scenes/incubator/incubator";
+import "./scenes/plate/plate";
+import "./scenes/microscope/microscope";
 
 
 export function showValidationError(title: string, detail: string): never {
@@ -192,6 +203,33 @@ export function validateProtocolSteps(): string[] {
 	return errors;
 }
 
+// Track which scenes have been driver-initialized (once per scene)
+const DRIVER_INITIALIZED_SCENES = new Set<string>();
+
+// ============================================
+// Patch 6: Wrap legacy bench render to skip event handlers in driver mode
+// ============================================
+// When the protocol uses driver mode for bench, renderBenchScene still renders
+// the DOM but the legacy event handlers are not needed (driver handles them).
+// To avoid double-dispatch, we intercept legacy handler calls and skip them.
+function renderBenchScene(): void {
+	const benchScene = document.getElementById('bench-scene');
+
+	// Call the legacy render to update DOM
+	renderBenchSceneLegacy();
+
+	// If driver mode is active, remove the legacy event handlers that were just wired
+	if (PROTOCOL_SCENE_ROUTER_MODE === 'driver' && benchScene) {
+		const benchItems = benchScene.querySelectorAll('.hood-item');
+		benchItems.forEach((el) => {
+			const itemEl = el as HTMLElement;
+			// Clone and replace to remove all event listeners
+			const newEl = itemEl.cloneNode(true) as HTMLElement;
+			itemEl.parentNode?.replaceChild(newEl, itemEl);
+		});
+	}
+}
+
 // Override the stub renderGame with the real implementation
 setRenderGame(function(): void {
 	// Hood and bench are peer persistent scenes; exactly one is visible at a
@@ -205,19 +243,59 @@ setRenderGame(function(): void {
 
 	switch (gameState.activeScene) {
 		case 'hood':
+			// Patch 7: Render DOM first, then initialize driver if needed.
+			// Driver must run after elements exist in the DOM.
 			renderHoodScene();
+			if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+				if (!DRIVER_INITIALIZED_SCENES.has('cell_culture_hood')) {
+					DRIVER_INITIALIZED_SCENES.add('cell_culture_hood');
+					runScene('cell_culture_hood');
+				}
+			}
 			break;
 		case 'bench':
+			// Patch 6: Render DOM first, then initialize driver if needed.
+			// Driver must run after elements exist in the DOM.
 			renderBenchScene();
+			if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+				if (!DRIVER_INITIALIZED_SCENES.has('bench')) {
+					DRIVER_INITIALIZED_SCENES.add('bench');
+					runScene('bench');
+				}
+			}
 			break;
 		case 'incubator':
+			// Patch 13: Render DOM first, then initialize driver if needed.
+			// Driver must run after elements exist in the DOM.
 			renderIncubatorScene();
+			if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+				if (!DRIVER_INITIALIZED_SCENES.has('incubator')) {
+					DRIVER_INITIALIZED_SCENES.add('incubator');
+					runScene('incubator');
+				}
+			}
 			break;
 		case 'microscope':
+			// Patch 11: Render DOM first, then initialize driver if needed.
+			// Driver must run after elements exist in the DOM.
 			renderMicroscopeScene();
+			if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+				if (!DRIVER_INITIALIZED_SCENES.has('microscope')) {
+					DRIVER_INITIALIZED_SCENES.add('microscope');
+					runScene('microscope');
+				}
+			}
 			break;
 		case 'plate':
+			// Patch 9: Render DOM first, then initialize driver if needed.
+			// Driver must run after elements exist in the DOM.
 			renderPlateScene();
+			if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+				if (!DRIVER_INITIALIZED_SCENES.has('plate')) {
+					DRIVER_INITIALIZED_SCENES.add('plate');
+					runScene('plate');
+				}
+			}
 			break;
 		case 'plate_reader':
 			renderPlateReaderScene();
@@ -240,7 +318,14 @@ setRenderGame(function(): void {
 });
 
 // ============================================
+// Protocol-level scene routing decision: legacy vs driver
+// ============================================
+const PROTOCOL_SCENE_ROUTER_MODE = resolveSceneRouter({ sceneRouter: SCENE_ROUTER, protocolId: PROTOCOL_ID });
+
 document.addEventListener('DOMContentLoaded', () => {
+	// WP-MB1.1: Log the routing decision
+	console.info(`[scene router] protocol='${PROTOCOL_ID}' sceneRouter='${PROTOCOL_SCENE_ROUTER_MODE}'`);
+
 	// Validate protocol graph structure FIRST, before any other work
 	validateProtocolGraph();
 
@@ -290,6 +375,7 @@ window.addEventListener('load', validateCompletionEventCoverage);
 // not the initial one created at module load time.
 // ============================================
 import { resolveInteractionByIndex } from "./interaction_resolver";
+import { CAPABILITY_REGISTRY, getRegisteredScene } from "./scenes/scene_registry";
 (window as any).resolveInteractionByIndex = resolveInteractionByIndex;
 (window as any).PROTOCOL_STEPS = PROTOCOL_STEPS;
 Object.defineProperty(window, 'gameState', {
@@ -298,6 +384,39 @@ Object.defineProperty(window, 'gameState', {
 });
 (window as any).onItemClick = onItemClick;
 (window as any).setupHoodEventListeners = setupHoodEventListeners;
-(window as any).dispatchInteractionClick = dispatchInteractionClick;
 (window as any).completeStep = completeStep;
 (window as any).getCoveragePolicy = getCoveragePolicy;
+(window as any).__CAPABILITY_REGISTRY = CAPABILITY_REGISTRY;
+
+// ============================================
+// Patch 7: New window.sceneTestApi binding replaces dispatchInteractionClick
+// Provides a unified testing API for routing scene interactions through either
+// the driver or legacy paths based on the current protocol's sceneRouter mode.
+// ============================================
+(window as any).sceneTestApi = {
+	dispatchClick(sceneId: string, itemId: string): void {
+		// For now, route legacy hood and bench through their respective legacy functions
+		// When driver mode is active, call the registered adapter's dispatchInteraction
+		if (PROTOCOL_SCENE_ROUTER_MODE === 'driver') {
+			const adapter = getRegisteredScene(sceneId);
+			if (adapter) {
+				adapter.dispatchInteraction(itemId, {
+					sceneId: sceneId,
+					dispatchInteraction: (id: string) => {
+						// Nested dispatch is not used in test context; leave as no-op
+					},
+				});
+				return;
+			}
+		}
+
+		// Legacy path: route to the old dispatchInteractionClick for hood
+		if (sceneId === 'hood') {
+			dispatchInteractionClick(itemId);
+			return;
+		}
+
+		// Unknown scene or mode
+		console.warn(`[sceneTestApi] Unknown sceneId: ${sceneId}`);
+	},
+};

@@ -76,13 +76,64 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 
 #### Scenes
 
+The scene tree has two layers as of 2026-05-09: capability-based driver
+infrastructure and per-scene adapters under `src/scenes/<scene>/`, plus
+legacy flat scene modules at `src/scenes/*.ts` that still own DOM
+rendering. See
+[CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md#capability-based-scene-architecture-current-state-2026-05-09)
+for the layered model.
+
+##### Driver infrastructure
+
 | File | Purpose |
 | --- | --- |
-| [src/scenes/bench.ts](../src/scenes/bench.ts) | Bench scene |
-| [src/scenes/hood.ts](../src/scenes/hood.ts) | Sterile hood scene; owns `dispatchInteractionClick` |
-| [src/scenes/incubator.ts](../src/scenes/incubator.ts) | Incubator placement |
-| [src/scenes/microscope.ts](../src/scenes/microscope.ts) | Microscope and plate-reader scenes |
-| [src/scenes/plate.ts](../src/scenes/plate.ts) | 96-well plate workspace scene (modal-style overlay) |
+| [src/scenes/scene_driver.ts](../src/scenes/scene_driver.ts) | `runScene(sceneId)` lifecycle: mount capabilities, attach click dispatch, route to scene adapter |
+| [src/scenes/scene_registry.ts](../src/scenes/scene_registry.ts) | Capability and scene-adapter registries; `resolveSceneRouter(protocolId)` |
+
+##### Capabilities
+
+| File | Capability id |
+| --- | --- |
+| [src/scenes/capabilities/item_workspace.ts](../src/scenes/capabilities/item_workspace.ts) | `itemWorkspace` |
+| [src/scenes/capabilities/modal_workspace.ts](../src/scenes/capabilities/modal_workspace.ts) | `modalWorkspace` |
+| [src/scenes/capabilities/plate_reader_workspace.ts](../src/scenes/capabilities/plate_reader_workspace.ts) | `plateReaderWorkspace` |
+| [src/scenes/capabilities/instrument_workspace.ts](../src/scenes/capabilities/instrument_workspace.ts) | `instrumentWorkspace` |
+| [src/scenes/capabilities/incubator_workspace.ts](../src/scenes/capabilities/incubator_workspace.ts) | `incubatorWorkspace` |
+| [src/scenes/capabilities/grid_counting_workspace.ts](../src/scenes/capabilities/grid_counting_workspace.ts) | `gridCountingWorkspace` |
+
+##### Shared helpers
+
+| File | Purpose |
+| --- | --- |
+| [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) | Wrong-order toast and message templating |
+| [src/scenes/shared/scene_layout.ts](../src/scenes/shared/scene_layout.ts) | Item-position math and label-collision wrapping |
+| [src/scenes/shared/liquid_transfer.ts](../src/scenes/shared/liquid_transfer.ts) | `deriveHeldLiquid`, `canonicalTool`, `BOTTLE_ASSET_LIQUID` |
+| [src/scenes/shared/plate_reader.ts](../src/scenes/shared/plate_reader.ts) | Shared plate-reader helpers |
+
+##### Per-scene adapters and YAML
+
+| File | Purpose |
+| --- | --- |
+| [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml), [bench.ts](../src/scenes/bench/bench.ts) | Bench adapter and scene config |
+| [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml), [cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Sterile hood adapter and scene config |
+| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts) | 96-well plate adapter and scene config |
+| [src/scenes/microscope/microscope.yaml](../src/scenes/microscope/microscope.yaml), [microscope.ts](../src/scenes/microscope/microscope.ts) | Microscope adapter (automated counter and manual hemocytometer) and scene config |
+| [src/scenes/incubator/incubator.yaml](../src/scenes/incubator/incubator.yaml), [incubator.ts](../src/scenes/incubator/incubator.ts) | Incubator adapter and scene config |
+
+##### Legacy flat scene modules (still active for rendering)
+
+These files were not deleted. They still own SVG and DOM rendering for
+every scene and are imported by [src/init.ts](../src/init.ts). The
+rendering migration that would let them be removed is captured in
+[ROADMAP.md](ROADMAP.md).
+
+| File | Status |
+| --- | --- |
+| [src/scenes/bench.ts](../src/scenes/bench.ts) | LEGACY - owns `renderBenchScene` |
+| [src/scenes/hood.ts](../src/scenes/hood.ts) | LEGACY - owns `renderHoodScene` |
+| [src/scenes/incubator.ts](../src/scenes/incubator.ts) | LEGACY - owns `renderIncubatorScene` |
+| [src/scenes/microscope.ts](../src/scenes/microscope.ts) | LEGACY - owns `renderMicroscopeScene` |
+| [src/scenes/plate.ts](../src/scenes/plate.ts) | LEGACY - owns `renderPlateScene` |
 
 #### Step modules
 

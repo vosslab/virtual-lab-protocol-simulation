@@ -395,7 +395,7 @@ async function runTests() {
 					colorKey: 'carboplatin',
 				};
 
-				window.dispatchInteractionClick('dilution_tube_carb_intermediate');
+				window.sceneTestApi.dispatchClick('hood', 'dilution_tube_carb_intermediate');
 
 				return {
 					interactionIndex: window.gameState.interactionIndex,

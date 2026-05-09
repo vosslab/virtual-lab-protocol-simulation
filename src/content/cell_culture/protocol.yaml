@@ -1,3 +1,5 @@
+sceneRouter: driver
+
 parts:
   - id: part1_split
     label: "Part 1: Split"

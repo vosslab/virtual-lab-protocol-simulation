@@ -1,3 +1,5 @@
+sceneRouter: driver
+
 parts:
   - id: tutorial_pbs_part
     label: "Tutorial: PBS Wash"

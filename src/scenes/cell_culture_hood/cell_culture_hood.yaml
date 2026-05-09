@@ -1,0 +1,328 @@
+sceneId: cell_culture_hood
+elementId: hood-scene
+workspace: wet_lab_hood
+capabilities:
+  - itemWorkspace
+
+items:
+  # Back row, three tab-stop groups:
+  #   left  : well_plate, media_bottle, trypsin_bottle
+  #   center: flask (dominant working object)
+  #   right : serological, aspirating, multichannel pipettes
+  - id: well_plate
+    label: 24-Well Plate
+    zone: back_row
+    depthTier: 1
+    svgAsset: well_plate
+    kind: plate
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: left
+  - id: media_bottle
+    label: DMEM Media
+    zone: back_row
+    depthTier: 2
+    svgAsset: media_bottle
+    kind: bottle
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: left
+  - id: trypsin_bottle
+    label: Trypsin-EDTA
+    zone: back_row
+    depthTier: 3
+    svgAsset: trypsin_bottle
+    kind: bottle
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: left
+  - id: flask
+    label: T-75 Flask
+    zone: back_row
+    depthTier: 4
+    svgAsset: flask
+    kind: flask
+    widthScale: 1.2
+    anchorY: bottom
+    alignStop: center
+    baselineOverride: 52
+  - id: serological_pipette
+    label: Serological Pipette
+    shortLabel: Serological
+    zone: back_row
+    depthTier: 5
+    svgAsset: serological_pipette
+    kind: pipette
+    widthScale: 1.0
+    anchorY: tip
+    alignStop: right
+  - id: aspirating_pipette
+    label: Aspirating Pipette
+    shortLabel: Aspirating
+    zone: back_row
+    depthTier: 6
+    svgAsset: aspirating_pipette
+    kind: pipette
+    widthScale: 1.0
+    anchorY: tip
+    alignStop: right
+  - id: multichannel_pipette
+    label: Multichannel Pipette
+    shortLabel: Multichannel
+    zone: back_row
+    depthTier: 7
+    svgAsset: multichannel_pipette
+    kind: pipette
+    widthScale: 1.0
+    anchorY: tip
+    alignStop: right
+  - id: micropipette_rack
+    label: P20/P200/P1000
+    shortLabel: Micropipettes
+    zone: back_row
+    depthTier: 7.5
+    svgAsset: micropipette_rack
+    kind: rack
+    widthScale: 0.9
+    anchorY: bottom
+    alignStop: right
+  - id: micropipette
+    label: Micropipette
+    shortLabel: Micropipette
+    zone: back_row
+    depthTier: 7.6
+    svgAsset: micropipette_rack
+    kind: pipette
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: right
+  # Front row, three tab-stop groups: ethanol | drug dilutions | waste
+  - id: ethanol_bottle
+    label: 70% Ethanol
+    zone: front_row
+    depthTier: 8
+    svgAsset: ethanol_bottle
+    kind: bottle
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: left
+  - id: drug_vials
+    label: Drug Dilutions
+    zone: front_row
+    depthTier: 9
+    svgAsset: drug_vials
+    kind: rack
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: center
+  - id: waste_container
+    label: Waste
+    zone: front_row
+    depthTier: 10
+    svgAsset: waste_container
+    kind: waste
+    widthScale: 1.0
+    anchorY: bottom
+    alignStop: right
+  - id: biohazard_decant
+    label: Biohazard
+    zone: front_row
+    depthTier: 10.5
+    svgAsset: biohazard_decant
+    kind: waste
+    widthScale: 0.9
+    anchorY: bottom
+    alignStop: right
+  # Shelf row: reagent storage
+  - id: sterile_water
+    label: Sterile Water
+    zone: shelf_row
+    depthTier: 20
+    svgAsset: sterile_water
+    kind: bottle
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: left
+  - id: pbs_bottle
+    label: 1x PBS
+    zone: shelf_row
+    depthTier: 21
+    svgAsset: pbs_bottle
+    kind: bottle
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: left
+  - id: conical_15ml_rack
+    label: 15 mL Tubes
+    zone: shelf_row
+    depthTier: 22
+    svgAsset: conical_15ml_rack
+    kind: rack
+    widthScale: 0.75
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_rack
+    label: 1.5 mL Tubes
+    zone: shelf_row
+    depthTier: 23
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.75
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_intermediate
+    label: Carb 200 uM intermediate
+    shortLabel: Carb 200 uM
+    zone: shelf_row
+    depthTier: 28
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.5
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_b
+    label: Carb row B
+    shortLabel: Carb B
+    zone: shelf_row
+    depthTier: 28.1
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_c
+    label: Carb row C
+    shortLabel: Carb C
+    zone: shelf_row
+    depthTier: 28.2
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_d
+    label: Carb row D
+    shortLabel: Carb D
+    zone: shelf_row
+    depthTier: 28.3
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_e
+    label: Carb row E
+    shortLabel: Carb E
+    zone: shelf_row
+    depthTier: 28.4
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_f
+    label: Carb row F
+    shortLabel: Carb F
+    zone: shelf_row
+    depthTier: 28.5
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_g
+    label: Carb row G
+    shortLabel: Carb G
+    zone: shelf_row
+    depthTier: 28.6
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_carb_h
+    label: Carb row H
+    shortLabel: Carb H
+    zone: shelf_row
+    depthTier: 28.7
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: dilution_tube_metformin_working
+    label: Metformin 10 mM working stock
+    shortLabel: Metformin 10mM
+    zone: shelf_row
+    depthTier: 28.8
+    svgAsset: dilution_tube_rack
+    kind: rack
+    widthScale: 0.4
+    anchorY: bottom
+    alignStop: left
+  - id: mtt_vial
+    label: MTT 5 mg/mL
+    zone: shelf_row
+    depthTier: 24
+    svgAsset: mtt_vial
+    kind: bottle
+    widthScale: 0.65
+    anchorY: bottom
+    alignStop: center
+  - id: dmso_bottle
+    label: DMSO
+    zone: shelf_row
+    depthTier: 25
+    svgAsset: dmso_bottle
+    kind: bottle
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: center
+  - id: carboplatin_stock
+    label: Carboplatin 10 mM
+    shortLabel: Carboplatin
+    zone: shelf_row
+    depthTier: 26
+    svgAsset: carboplatin_stock
+    kind: bottle
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: right
+  - id: metformin_stock_bottle
+    label: Metformin 1 M
+    shortLabel: Metformin
+    zone: shelf_row
+    depthTier: 27
+    svgAsset: metformin_stock
+    kind: bottle
+    widthScale: 0.7
+    anchorY: bottom
+    alignStop: right
+
+zones:
+  # Hood interior back row: spans the full hood interior, tab-stop
+  # groups of 3 left / 1 center (flask) / 3 right (pipettes)
+  - id: back_row
+    x0: 7
+    x1: 93
+    baseline: 50
+    gap: 2
+    align: tab-stops
+  # Hood interior front row: three tab-stop groups
+  - id: front_row
+    x0: 7
+    x1: 93
+    baseline: 68
+    gap: 2
+    align: tab-stops
+  # Shelf row above back_row: reagent storage
+  - id: shelf_row
+    x0: 7
+    x1: 93
+    baseline: 22
+    gap: 2
+    align: tab-stops
+
+wrongOrderMessage:
+  template: "Try the {expectedLabel}."
+  toastDurationMs: 2000

@@ -21,8 +21,8 @@
 // Average character width as percentage of font size
 import { SVG_96WELL_PCR_PLATE, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
 import { getBottleSvg } from "./svg_assets";
-import type { BottleLiquid } from "./svg_recipes";
 import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from "./scene_types";
+import { LIQUID_BY_ASSET_ID } from "./scenes/shared/liquid_transfer";
 
 export const AVG_CHAR_WIDTH_PCT = 0.55;
 
@@ -54,23 +54,12 @@ export function parseSvgAspectRatio(svgHtml: string): number {
 }
 
 // ============================================
-// Map consolidated bottle/stock asset ids to their BottleLiquid role.
-// Centralized here so getStaticSvg and any other dispatcher stay consistent.
-const BOTTLE_ASSET_LIQUID: Record<string, BottleLiquid> = {
-	media_bottle:      "media",
-	pbs_bottle:        "pbs",
-	trypsin_bottle:    "trypsin",
-	dmso_bottle:       "dmso",
-	sterile_water:     "sterileWater",
-	carboplatin_stock: "carboplatin",
-	metformin_stock:   "metformin",
-};
-
 // Map asset IDs to their base SVG string. Consolidated bottle ids route
 // through getBottleSvg(liquid) so callers always receive the recolored
 // SVG for the right liquid -- never the raw, unpatched Servier base.
+// Bottle-to-liquid mapping is in scenes/shared/liquid_transfer.ts (LIQUID_BY_ASSET_ID).
 export function getStaticSvg(assetId: string): string {
-	const bottleLiquid = BOTTLE_ASSET_LIQUID[assetId];
+	const bottleLiquid = LIQUID_BY_ASSET_ID[assetId];
 	if (bottleLiquid !== undefined) {
 		return getBottleSvg(bottleLiquid);
 	}

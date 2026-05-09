@@ -1,3 +1,5 @@
+sceneRouter: driver
+
 parts:
   - id: tutorial_plate_part
     label: "Tutorial: 96-Well Plate Workspace"

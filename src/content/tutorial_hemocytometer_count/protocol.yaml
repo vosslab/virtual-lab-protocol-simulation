@@ -1,3 +1,5 @@
+sceneRouter: driver
+
 parts:
   - id: tutorial_hemocytometer_part
     label: "Tutorial: Manual Hemocytometer Count"

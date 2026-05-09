@@ -1,0 +1,5 @@
+# SCRATCH FILE - leftover from Patch 2 (WP-F1.1) planted-malformed YAML experiment.
+# Overwritten with valid empty-capability config so the build passes.
+# Safe to delete: rm -rf src/scenes/test_bad_loud
+sceneId: test_bad_loud
+capabilities: []

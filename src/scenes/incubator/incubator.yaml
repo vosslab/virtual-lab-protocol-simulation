@@ -1,0 +1,12 @@
+sceneId: incubator
+workspace: modal_overlay
+capabilities:
+  - incubatorWorkspace
+
+items: []
+
+zones: []
+
+wrongOrderMessage:
+  template: "Proceed with the {expectedLabel}."
+  toastDurationMs: 2000

@@ -330,8 +330,145 @@ emitters populated by `triggerStep()` calls.
 - **Scoring adjustments:** change weights and thresholds in
   [src/scoring.ts](../src/scoring.ts).
 
+## Capability-based scene architecture (current state, 2026-05-09)
+
+A 16-patch migration (Patches 1-16 of the plan archived at
+[archive/scene_capability_architecture_2026-05-09.md](archive/scene_capability_architecture_2026-05-09.md))
+introduced a layered, capability-based scene runtime that now owns
+**click dispatch and step completion** for every opted-in protocol.
+Scene **rendering** (SVG layout, DOM build, overlay markup, ~3000 LOC)
+still lives in the legacy per-scene modules and is unchanged by the
+migration. The two layers coexist behind a per-protocol `sceneRouter`
+flag.
+
+### Layered model
+
+```text
++---------------------------------------------------------------+
+|  Per-protocol sceneRouter flag (legacy | driver)              |
+|  src/content/<protocol>/protocol.yaml                         |
++---------------------------------------------------------------+
+                        |
+                        v
++---------------------------------------------------------------+
+|  Driver pipeline (when sceneRouter: driver)                   |
+|                                                               |
+|  init.ts renderGame switch                                    |
+|    -> render legacy DOM (still owns SVG/HTML)                 |
+|    -> runScene(sceneId)  [src/scenes/scene_driver.ts]         |
+|         -> dispatch click events on the scene element         |
+|         -> walk capability list from scene_registry           |
+|         -> capability.onClick / onStepChange / mount / unmount|
+|         -> scene adapter dispatch<Scene>Interaction(...)      |
+|         -> game_state.completeStep / triggerStep / mutations  |
++---------------------------------------------------------------+
+                        |
+                        v
++---------------------------------------------------------------+
+|  Legacy rendering (always runs, both routes)                  |
+|  renderHoodScene / renderBenchScene / renderMicroscopeScene / |
+|  renderPlateScene / renderIncubatorScene                      |
+|  src/scenes/{hood,bench,microscope,plate,incubator}.ts        |
++---------------------------------------------------------------+
+```
+
+### Driver infrastructure
+
+- [src/scenes/scene_driver.ts](../src/scenes/scene_driver.ts) - universal
+  `runScene(sceneId)` lifecycle. Mounts the registered capabilities for
+  a scene, attaches a capture-phase click listener on the scene's DOM
+  element, and dispatches each click first to capability `onClick`
+  handlers, then to the scene adapter's `dispatch<Scene>Interaction`.
+- [src/scenes/scene_registry.ts](../src/scenes/scene_registry.ts) -
+  capability and scene-adapter registries; `resolveSceneRouter(protocolId)`
+  reads the per-protocol opt-in flag.
+
+### Capabilities
+
+Six capability modules live in [src/scenes/capabilities/](../src/scenes/capabilities/).
+Each conforms to a `SceneCapability` contract (`mount`, `onStepChange`,
+`onClick`, `unmount`) and self-registers at module load.
+
+| Capability id | Module | Responsibility |
+| --- | --- | --- |
+| `itemWorkspace` | `item_workspace.ts` | Item-grid click dispatch, accent styling, wrong-order detection |
+| `modalWorkspace` | `modal_workspace.ts` | Modal screen flow tracking |
+| `plateReaderWorkspace` | `plate_reader_workspace.ts` | Plate-reader insert/read state |
+| `instrumentWorkspace` | `instrument_workspace.ts` | Mounted-instrument surface state (microscope, cell counter) |
+| `incubatorWorkspace` | `incubator_workspace.ts` | Incubation overlay lifecycle state |
+| `gridCountingWorkspace` | `grid_counting_workspace.ts` | Hemocytometer quadrant click tracking and total-count aggregation |
+
+### Scene adapters and configs
+
+Each migrated scene has a YAML config and a thin TypeScript adapter
+under `src/scenes/<scene>/`:
+
+| Scene | Adapter | YAML |
+| --- | --- | --- |
+| Bench | [src/scenes/bench/bench.ts](../src/scenes/bench/bench.ts) | [bench.yaml](../src/scenes/bench/bench.yaml) |
+| Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | [cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml) |
+| Plate | [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) | [plate.yaml](../src/scenes/plate/plate.yaml) |
+| Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | [microscope.yaml](../src/scenes/microscope/microscope.yaml) |
+| Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | [incubator.yaml](../src/scenes/incubator/incubator.yaml) |
+
+Scene YAML is compiled at build time by
+[tools/build_scene_data.py](../tools/build_scene_data.py) into
+`src/content/scene_data.ts` (loud build-time failures on missing
+`sceneId`, unknown capability ids, item references to unknown zones,
+duplicate ids, and missing required config blocks).
+
+### Element-id mechanism (Patch 14)
+
+Most scenes use a DOM element id of the form `<sceneId>-scene` (for
+example `bench-scene`). Two scenes do not: `cell_culture_hood` mounts
+to `hood-scene` (legacy id), and `microscope` uses `microscope-overlay`
+for the modal-style flow. The scene YAML carries an optional `elementId`
+field that overrides the default. `runScene` consults
+`sceneConfig.elementId` first and falls back to `${sceneId}-scene` when
+absent.
+
+### Coexistence pattern
+
+The per-protocol `sceneRouter: legacy | driver` flag in
+`src/content/<protocol>/protocol.yaml` decides which dispatch path runs.
+`runScene` only executes when the flag is `driver`; legacy click
+listeners (registered by the legacy renderers) handle everything else.
+**Both paths render through the same legacy renderers**, so the DOM
+tree is identical regardless of which dispatch path owns clicks. As of
+2026-05-09, ten protocols opt in to `driver`: nine tutorial mini-protocols
+plus full `cell_culture` (25 steps).
+
+### Honest scoping note
+
+The migration is **partial by design**. Patches 1-16 migrated dispatch
+only. Rendering (`renderHoodScene`, `renderBenchScene`,
+`renderMicroscopeScene`, `renderPlateScene`, `renderIncubatorScene`,
+plus their helpers) was never moved; it remains in
+`src/scenes/{hood,bench,microscope,plate,incubator}.ts` and is
+imported and called from [src/init.ts](../src/init.ts) on every
+render. Patch 17 attempted to `git rm` the legacy files and the walker
+regressed immediately (no SVG, no DOM). The legacy files are
+**load-bearing for rendering** in both legacy and driver modes.
+
+Consequently, the scaffolding cleanup steps from the original plan are
+deferred:
+
+- Patches 17 (`git rm` legacy scene files) and 18 (remove `sceneRouter`
+  flag and legacy router code) cannot run as scoped. They wait on a
+  follow-up rendering migration.
+- The follow-up is captured in [ROADMAP.md](ROADMAP.md) under
+  "Future work: scene rendering migration".
+
+What did land is real and load-bearing: the scene driver, six
+capabilities, five adapters, the element-id escape hatch, the
+`sceneRouter` opt-in, and ten protocols (including `cell_culture` 25/25)
+routing every click through the new pipeline.
+
 ## Known gaps
 
 - Verification task: confirm whether non-browser
   [tests/e2e/](../tests/e2e/) is intended to remain empty or whether
   shell wrappers (currently in [tools/](../tools/)) belong there.
+- Scene rendering migration (see
+  [ROADMAP.md](ROADMAP.md)) is the prerequisite for deleting the legacy
+  scene files and removing the `sceneRouter` flag.

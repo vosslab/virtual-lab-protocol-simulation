@@ -10,11 +10,25 @@ import { BENCH_LAYOUT_RULES, BENCH_SCENE_ITEMS, getBenchItemLabel } from "../ben
 import { gameState, getCurrentStep, registeredEmitters, renderGame, resolveSceneItemsWithDepth, showNotification, switchScene, triggerStep } from "../game_state";
 import { resolveInteraction, resolveInteractionByIndex } from "../interaction_resolver";
 import { computeSceneLayout } from "../layout_engine";
-import { showWrongOrderToast, buildLegacyToken } from "./scene_helpers";
+import { showWrongOrderToast } from "./shared/wrong_order_feedback";
 import { getCellCounterSvg, getCentrifugeSvg, getIncubatorSvg, getMicroscopeSvg, getPlateReaderSvg, getVortexSvg, getWaterBathSvg } from "../svg_assets";
 import { canonicalTool, deriveHeldLiquid } from "./hood";
 import { renderTrypsinIncubation } from "./incubator";
 
+
+//============================================
+// buildLegacyToken(actor, liquid): string | null
+// Construct a legacy token string from an actor (tool) and liquid type.
+//============================================
+function buildLegacyToken(actor: string | null, liquid: string | null): string | null {
+	const tool = actor || 'serological_pipette';
+	const legacyToken = liquid === 'pbs'     ? `${tool}_with_pbs`
+					  : liquid === 'trypsin' ? `${tool}_with_trypsin`
+					  : liquid === 'media'   ? `${tool}_with_media`
+					  : liquid === 'cells'   ? `${tool}_with_cells`
+					  : null;
+	return legacyToken;
+}
 
 registeredEmitters.add('centrifuge');
 registeredEmitters.add('prewarm_media');
