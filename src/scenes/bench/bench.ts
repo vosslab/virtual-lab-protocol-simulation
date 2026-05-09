@@ -23,7 +23,7 @@ import { computeSceneLayout } from "../../layout_engine";
 import { showWrongOrderToast } from "../shared/wrong_order_feedback";
 import { buildLegacyToken } from "../shared/legacy_tokens";
 import { canonicalTool, deriveHeldLiquid } from "../shared/liquid_transfer";
-import { getCellCounterSvg, getCentrifugeSvg, getIncubatorSvg, getMicroscopeSvg, getPlateReaderSvg, getVortexSvg, getWaterBathSvg } from "../../svg_assets";
+import { renderEquipmentSvg } from "../../svg_assets";
 import { renderTrypsinIncubation } from "../incubator/incubator";
 import { REAGENTS } from "../../content/inventory_data";
 
@@ -43,13 +43,13 @@ registeredEmitters.add('prewarm_media');
 //============================================
 function getBenchItemSvgHtml(itemId: string): string {
 	switch (itemId) {
-		case 'microscope': return getMicroscopeSvg();
-		case 'incubator': return getIncubatorSvg();
-		case 'plate_reader': return getPlateReaderSvg();
-		case 'centrifuge': return getCentrifugeSvg();
-		case 'water_bath': return getWaterBathSvg();
-		case 'vortex': return getVortexSvg();
-		case 'cell_counter': return getCellCounterSvg();
+		case 'microscope': return renderEquipmentSvg({ assetId: 'microscope' });
+		case 'incubator': return renderEquipmentSvg({ assetId: 'incubator' });
+		case 'plate_reader': return renderEquipmentSvg({ assetId: 'plate_reader' });
+		case 'centrifuge': return renderEquipmentSvg({ assetId: 'centrifuge' });
+		case 'water_bath': return renderEquipmentSvg({ assetId: 'water_bath' });
+		case 'vortex': return renderEquipmentSvg({ assetId: 'vortex' });
+		case 'cell_counter': return renderEquipmentSvg({ assetId: 'cell_counter' });
 		default: return '';
 	}
 }

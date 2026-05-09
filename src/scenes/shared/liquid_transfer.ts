@@ -5,7 +5,7 @@
 // Also serves as the liquidTransfer capability module (capability registration added in Patch 5+).
 //============================================
 
-import type { BottleLiquid } from "../../svg_recipes";
+import type { BottleLiquid } from "../../svg_assets";
 
 //============================================
 // LIQUID_BY_ASSET_ID: Map consolidated bottle/stock asset ids to their BottleLiquid role.

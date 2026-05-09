@@ -8,7 +8,9 @@
 import type { ProtocolStep } from "./constants";
 import { PROTOCOL_STEPS } from "./content/protocol_data";
 import { gameState, getCurrentStep, showNotification } from "./game_state";
-import { SVG_ANGRY_PROFESSOR } from "./svg_globals";
+// Static asset access goes through the svg_assets facade (M4): protocol_ui
+// no longer imports per-asset SVG strings from `generated/`.
+import { getStaticSvg } from "./svg_assets";
 
 
 export function escapeHtml(text: string): string {
@@ -103,7 +105,7 @@ export function renderProtocolUI(): string {
 	const upcoming = renderUpcomingSteps(currentStep.id);
 	const stepBubble = `
 		<div class="protocol-step-bubble">
-			<div class="protocol-step-bubble-image" aria-hidden="true">${SVG_ANGRY_PROFESSOR}</div>
+			<div class="protocol-step-bubble-image" aria-hidden="true">${getStaticSvg("angry_professor")}</div>
 			<div class="protocol-step-bubble-copy">
 				<div class="protocol-step-bubble-label">Next step</div>
 				<div class="protocol-step-bubble-text">${escapeHtml(getStepBubbleText(currentStep))}</div>

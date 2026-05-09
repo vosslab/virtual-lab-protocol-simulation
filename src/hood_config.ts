@@ -26,7 +26,7 @@ export const HOOD_BOUNDS: SceneBounds = {
 // ============================================
 // Zone layout: two hood-interior rows plus an outside equipment row.
 //
-// The hood-bg SVG (see parts/svg_assets.ts getHoodBackgroundSvg) is an
+// The hood-bg SVG (see src/svg_assets.ts getHoodBackgroundSvg) is an
 // 800x600 viewBox with interior walls at x=60 and x=740, i.e. the hood
 // interior spans 7.5% to 92.5% of the SVG width. The scene container
 // stretches the SVG and items share the same percentage coordinate

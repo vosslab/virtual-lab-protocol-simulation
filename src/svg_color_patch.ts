@@ -12,7 +12,7 @@
 // or a level/animation pipeline. Color and opacity only.
 
 import { COLOR_MAP, type ColorRole } from "./style_constants";
-import { SVG_GROUPS, SVG_IDS, type SvgGroupEntry } from "./svg_globals";
+import { SVG_GROUPS, SVG_IDS, type SvgGroupEntry } from "../generated/svg_manifest";
 
 // A single patch targets exactly one authored SVG element by id.
 // fillRole writes the `fill` attribute; strokeRole writes `stroke`. Stroke
@@ -212,5 +212,5 @@ export function validatePatchIds(asset: string, patches: readonly SvgColorPatch[
 	}
 }
 
-// re-export for convenience so callers do not also import from svg_globals
+// re-export for convenience so callers do not also import from generated/svg_manifest
 export type { SvgGroupEntry };

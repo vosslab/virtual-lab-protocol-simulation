@@ -32,9 +32,9 @@ python3 tools/build_protocol_data.py --validate-only
 # Validate and compile scene YAML before any build steps.
 python3 tools/build_scene_data.py
 
-# Regenerate src/svg_globals.ts from assets/equipment/*.svg before tsc.
-# Without this step every SVG_* constant is the empty string and no
-# equipment art renders in the bundled build.
+# Regenerate generated/svg_assets/*.ts and generated/svg_manifest.ts from
+# assets/equipment/*.svg before tsc. generated/ is gitignored, so this
+# step is the only way the build sees current SVG strings.
 python3 tools/generate_svg_globals.py
 
 npx tsc --noEmit -p src/tsconfig.json

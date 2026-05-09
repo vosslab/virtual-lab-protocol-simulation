@@ -15,7 +15,7 @@ import {
 } from "../../game_state";
 import { isIncubationStep, getIncubationSteps } from "../../step_dispatch";
 import { applyIncubation } from "../../cell_model";
-import { getIncubatorSvg } from "../../svg_assets";
+import { renderEquipmentSvg } from "../../svg_assets";
 import { renderProtocolPanel, renderScoreDisplay } from "../../ui_rendering";
 import { renderHoodScene } from "../cell_culture_hood/render";
 
@@ -50,7 +50,7 @@ function runIncubationOverlay(
 	// Inject incubator SVG into the view area
 	const incubatorView = overlay.querySelector('.incubator-view');
 	if (incubatorView) {
-		incubatorView.innerHTML = getIncubatorSvg();
+		incubatorView.innerHTML = renderEquipmentSvg({ assetId: 'incubator' });
 	}
 
 	overlay.classList.add('active');

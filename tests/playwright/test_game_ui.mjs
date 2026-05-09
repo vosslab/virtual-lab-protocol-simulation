@@ -190,10 +190,11 @@ async function main() {
 			results.scoring_reachable ? "(present, not played through)" : "(not in initial DOM; needs full playthrough)");
 
 		// Gate 9: at least one equipment SVG actually rendered with content.
-		// This catches the regression where svg_globals.ts had empty string
-		// constants and no equipment art appeared on screen, even though the
-		// page loaded cleanly. We require a non-trivial SVG node count and at
-		// least one prefixed equipment id (e.g. "t75_flask__" or "media_bottle__").
+		// This catches the regression where the generated SVG asset modules
+		// (under generated/svg_assets/) had empty string constants and no
+		// equipment art appeared on screen, even though the page loaded
+		// cleanly. We require a non-trivial SVG node count and at least one
+		// prefixed equipment id (e.g. "t75_flask__" or "media_bottle__").
 		const svgInfo = await page.evaluate(() => {
 			const svgs = document.querySelectorAll('svg');
 			let pathCount = 0;

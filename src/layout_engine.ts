@@ -19,10 +19,12 @@
 // distribution and label-availability estimation.
 
 // Average character width as percentage of font size
-import { SVG_96WELL_PCR_PLATE, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "./svg_globals";
-import { getBottleSvg } from "./svg_assets";
+// SVG access goes through the svg_assets facade (M4): layout_engine.ts no
+// longer imports per-asset SVG strings from `generated/`. The facade
+// (`svg_assets.ts`) and the recolor primitives layer (`svg_color_patch.ts`)
+// are the only legitimate `generated/` importers per docs/SVG_PIPELINE.md.
+import { getAssetAspectRatio } from "./svg_assets";
 import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from "./scene_types";
-import { LIQUID_BY_ASSET_ID } from "./scenes/shared/liquid_transfer";
 
 export const AVG_CHAR_WIDTH_PCT = 0.55;
 
@@ -34,77 +36,6 @@ export const MAX_FOOTPRINT_RATIO = 1.4;
 
 // Max gap between items (% of scene) to prevent excessive spreading
 export const MAX_GAP = 4;
-
-// Cache for SVG aspect ratios parsed at runtime
-var _aspectRatioCache: Record<string, number> = {};
-
-// ============================================
-// Parse aspect ratio (height/width) from an SVG viewBox attribute
-export function parseSvgAspectRatio(svgHtml: string): number {
-	var match = svgHtml.match(/viewBox="([^"]+)"/);
-	// match[1] is the captured group; match[0] is the full match
-	if (!match || match[1] === undefined) return 1.0;
-	var parts = match[1].split(/\s+/);
-	if (parts.length < 4) return 1.0;
-	// parts indices 2 and 3 are guaranteed to exist since length >= 4
-	var vbWidth = parseFloat(parts[2]!);
-	var vbHeight = parseFloat(parts[3]!);
-	if (vbWidth <= 0) return 1.0;
-	return vbHeight / vbWidth;
-}
-
-// ============================================
-// Map asset IDs to their base SVG string. Consolidated bottle ids route
-// through getBottleSvg(liquid) so callers always receive the recolored
-// SVG for the right liquid -- never the raw, unpatched Servier base.
-// Bottle-to-liquid mapping is in scenes/shared/liquid_transfer.ts (LIQUID_BY_ASSET_ID).
-export function getStaticSvg(assetId: string): string {
-	const bottleLiquid = LIQUID_BY_ASSET_ID[assetId];
-	if (bottleLiquid !== undefined) {
-		return getBottleSvg(bottleLiquid);
-	}
-	switch (assetId) {
-		case 'flask': return SVG_T75_FLASK;
-		case 'well_plate': return SVG_WELL_PLATE_24;
-		case 'well_plate_96': return SVG_96WELL_PCR_PLATE;
-		case 'ethanol_bottle': return SVG_ETHANOL_SPRAY;
-		case 'serological_pipette': return SVG_SERO_PIPETTE;
-		case 'aspirating_pipette': return SVG_ASPIRATING_PIPETTE;
-		case 'multichannel_pipette': return SVG_MULTICHANNEL_PIPETTE;
-		case 'drug_vials': return SVG_DRUG_VIAL_RACK;
-		case 'waste_container': return SVG_WASTE_CONTAINER;
-		case 'microscope': return SVG_MICROSCOPE;
-		case 'incubator': return SVG_INCUBATOR;
-		case 'conical_15ml_rack': return SVG_CONICAL_15ML_RACK;
-		case 'dilution_tube_rack': return SVG_DILUTION_TUBE_RACK;
-		case 'mtt_vial': return SVG_MTT_VIAL;
-		case 'micropipette_rack': return SVG_MICROPIPETTE_RACK;
-		case 'biohazard_decant': return SVG_BIOHAZARD_DECANT;
-		case 'centrifuge': return SVG_CENTRIFUGE;
-		case 'water_bath': return SVG_WATER_BATH;
-		case 'vortex': return SVG_VORTEX;
-		case 'cell_counter': return SVG_CELL_COUNTER;
-		case 'tip_box': return SVG_TIP_BOX;
-		case 'glove_box': return SVG_GLOVE_BOX;
-		case 'waste_tray': return SVG_WASTE_TRAY;
-		default: return '';
-	}
-}
-
-// ============================================
-// Get aspect ratio for an asset from its base SVG (cached)
-export function getAssetAspectRatio(assetId: string): number {
-	if (_aspectRatioCache[assetId] !== undefined) {
-		return _aspectRatioCache[assetId];
-	}
-	var svgHtml = getStaticSvg(assetId);
-	if (svgHtml) {
-		var ratio = parseSvgAspectRatio(svgHtml);
-		_aspectRatioCache[assetId] = ratio;
-		return ratio;
-	}
-	return 1.0;
-}
 
 // Minimum scale factor to prevent items from shrinking too much
 export const MIN_SCALE = 0.75;

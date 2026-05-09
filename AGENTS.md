@@ -2,6 +2,8 @@
 See Python coding style in docs/PYTHON_STYLE.md.
 See Markdown style in docs/MARKDOWN_STYLE.md.
 See repo style in docs/REPO_STYLE.md.
+See SVG asset pipeline ownership in [docs/SVG_PIPELINE.md](docs/SVG_PIPELINE.md).
+SVG string constants live under `generated/svg_assets/<name>.ts` (gitignored, regenerated from `assets/equipment/*.svg`); `src/svg_globals.ts` and `src/svg_globals.d.ts` no longer exist.
 When making edits, document them in docs/CHANGELOG.md.
 When in doubt, implement the changes the user asked for rather than waiting for a response; the user is not the best reader and will likely miss your request and then be confused why it was not implemented or fixed.
 When changing code always run focused tests on changed code, documentation does not require tests.

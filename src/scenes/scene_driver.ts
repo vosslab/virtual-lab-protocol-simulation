@@ -177,7 +177,15 @@ export function runScene(sceneId: string): void {
 	if (sceneEl) {
 		const handler = (event: Event) => {
 			const target = event.target as HTMLElement;
-			const itemId = target.getAttribute('data-item-id');
+			// Click target may be an inner SVG element; resolve to the nearest
+			// ancestor carrying data-item-id so clicks on shapes inside an item
+			// are still routed correctly. Without closest(), clicks on inner
+			// SVG (rect/ellipse/path) reported itemId=null and the capability
+			// dispatch silently dropped them, leaving the user unable to
+			// interact after a renderHoodScene() that did not re-attach the
+			// per-item bubble-phase listeners.
+			const itemEl = target.closest && target.closest('[data-item-id]');
+			const itemId = itemEl ? itemEl.getAttribute('data-item-id') : null;
 			if (!itemId) {
 				return;
 			}

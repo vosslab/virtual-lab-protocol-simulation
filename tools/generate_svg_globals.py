@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # generate_svg_globals.py
 #
-# Reads SVG files from assets/equipment/ and emits src/svg_globals.ts
-# with one `export const SVG_<UPPER>: string = "<inline svg>"` per file.
-#
-# Replaces the legacy build_game.sh inline-injection step that the
-# esbuild migration dropped. Without this, every SVG_* constant is the
-# empty string and no equipment art renders.
+# Reads SVG files from assets/equipment/ and emits:
+# 1. generated/svg_assets/*.ts (one per SVG, per-asset split)
+# 2. generated/svg_assets/index.ts (barrel re-export)
+# 3. generated/svg_manifest.ts (SVG_IDS and SVG_GROUPS only)
 #
 # Transforms applied per SVG (matching legacy build_game.sh behavior):
 #   1. strip XML declaration
@@ -19,6 +17,7 @@
 # Also injects CELL_CULTURE_PLATE_SVG from cell-culture2-clean.svg
 # at the repo root if it exists.
 
+import argparse
 import json
 import os
 import re
@@ -26,9 +25,19 @@ import sys
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ASSETS_DIR = os.path.join(REPO_ROOT, "assets", "equipment")
-OUT_PATH = os.path.join(REPO_ROOT, "src", "svg_globals.ts")
 PLATE_SVG = os.path.join(REPO_ROOT, "cell-culture2-clean.svg")
 
+# Default output directory; overridable via --out-dir
+DEFAULT_OUT_DIR = os.path.join(REPO_ROOT, "generated")
+
+# Canonical generated file header
+GENERATED_HEADER = "// Generated file. Do not edit by hand.\n// Source: assets/equipment/*.svg\n// Generator: tools/generate_svg_globals.py\n"
+
+
+#============================================
+
+
+#============================================
 
 def transform_svg(svg_text, prefix):
 	# strip XML declaration
@@ -59,6 +68,8 @@ def transform_svg(svg_text, prefix):
 	return svg_text
 
 
+#============================================
+
 def extract_ids(svg_text):
 	# return the list of every id attribute value found in the (un-namespaced)
 	# raw svg text, in document order. Used to build the SVG_IDS manifest so
@@ -66,6 +77,8 @@ def extract_ids(svg_text):
 	ids = re.findall(r'id="([^"]*)"', svg_text)
 	return ids
 
+
+#============================================
 
 def load_sidecar(basename):
 	# look for an optional <basename>.colormap.json next to the svg. The file
@@ -80,10 +93,12 @@ def load_sidecar(basename):
 	return data
 
 
+#============================================
+
 def validate_sidecar(basename, sidecar, raw_ids):
 	# raise on any sidecar entry whose id is not present in the source svg.
 	# raw_ids are pre-namespacing ids; the namespacing happens in transform_svg.
-	groups = sidecar.get("groups", {}) if isinstance(sidecar, dict) else {}
+	groups = sidecar["groups"]
 	id_set = set(raw_ids)
 	for group_name, entries in groups.items():
 		if not isinstance(entries, list):
@@ -104,15 +119,134 @@ def validate_sidecar(basename, sidecar, raw_ids):
 				)
 
 
-def emit_const(out_lines, const_name, body):
-	# template literal preserves newlines and double-quotes inside the
-	# SVG without further escaping. We must still escape backticks and
-	# `${` sequences so the literal does not terminate or interpolate.
-	body = body.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
-	out_lines.append("export const " + const_name + ": string = `" + body + "`;\n")
+#============================================
 
+def normalize_module_name(basename):
+	# Normalize a basename to a Python/TypeScript module name.
+	# Replace hyphens with underscores; used for name-collision detection.
+	return basename.replace("-", "_")
+
+
+#============================================
+
+def check_name_collisions(asset_list):
+	# Detect if any two source basenames normalize to the same module name.
+	# asset_list: list of (basename, ...) tuples.
+	norm_map = {}
+	for basename, _, _, in asset_list:
+		norm = normalize_module_name(basename)
+		if norm in norm_map:
+			raise ValueError(
+				"Name collision: both " + norm_map[norm] + " and " + basename
+				+ " normalize to module name " + norm + ". Rename or remove one."
+			)
+		norm_map[norm] = basename
+
+
+#============================================
+
+def emit_per_asset_file(out_dir, basename, const_name, body):
+	# Emit one file under out_dir/svg_assets/<name>.ts
+	assets_dir = os.path.join(out_dir, "svg_assets")
+	os.makedirs(assets_dir, exist_ok=True)
+	module_name = normalize_module_name(basename)
+	file_path = os.path.join(assets_dir, module_name + ".ts")
+	# template literal preserves newlines and double-quotes inside the
+	# SVG without further escaping. We must still escape backticks,
+	# `${` sequences, and backslashes so the literal does not terminate,
+	# interpolate, or mis-escape.
+	body = body.replace("\\", "\\\\").replace("`", "\\`").replace("${", "\\${")
+	lines = []
+	lines.append(GENERATED_HEADER)
+	lines.append("\n")
+	lines.append("export const " + const_name + ": string = `" + body + "`;\n")
+	with open(file_path, "w", encoding="utf-8") as fh:
+		fh.writelines(lines)
+
+
+#============================================
+
+def emit_barrel(out_dir, asset_list):
+	# Emit index.ts barrel file that re-exports all SVG_<NAME> constants.
+	# asset_list: list of (basename, const_name, ...) tuples.
+	assets_dir = os.path.join(out_dir, "svg_assets")
+	os.makedirs(assets_dir, exist_ok=True)
+	index_path = os.path.join(assets_dir, "index.ts")
+	lines = []
+	lines.append(GENERATED_HEADER)
+	lines.append("\n")
+	# Sort by module name (normalized basename) for determinism
+	sorted_assets = sorted(asset_list, key=lambda x: normalize_module_name(x[0]))
+	for basename, const_name, _, in sorted_assets:
+		module_name = normalize_module_name(basename)
+		lines.append("export { " + const_name + " } from \"./" + module_name + "\";\n")
+	with open(index_path, "w", encoding="utf-8") as fh:
+		fh.writelines(lines)
+
+
+#============================================
+
+def emit_manifest(out_dir, id_manifest, group_manifest):
+	# Emit svg_manifest.ts with SVG_IDS and SVG_GROUPS, plus the SvgGroupEntry type.
+	manifest_path = os.path.join(out_dir, "svg_manifest.ts")
+	lines = []
+	lines.append(GENERATED_HEADER)
+	lines.append("\n")
+	lines.append("// Group entry shape used by SVG_GROUPS manifest entries.\n")
+	lines.append(
+		"// attr routes the recipe's role to fill (default) or stroke; see\n"
+	)
+	lines.append(
+		"// src/svg_color_patch.ts SvgColorPatch.strokeRole.\n"
+	)
+	lines.append(
+		"export type SvgGroupEntry = { id: string; opacity?: number; "
+		'attr?: "fill" | "stroke" };\n'
+	)
+	lines.append("\n")
+	lines.append(
+		"export const SVG_IDS: Record<string, readonly string[]> = "
+	)
+	lines.append(json.dumps(id_manifest, indent=2, sort_keys=True))
+	lines.append(";\n\n")
+	lines.append(
+		"export const SVG_GROUPS: Record<string, Record<string, "
+		"readonly SvgGroupEntry[]>> = "
+	)
+	lines.append(json.dumps(group_manifest, indent=2, sort_keys=True))
+	lines.append(";\n")
+	with open(manifest_path, "w", encoding="utf-8") as fh:
+		fh.writelines(lines)
+
+
+#============================================
+
+def clear_stale_assets(out_dir):
+	# Remove stale *.ts files from out_dir/svg_assets/ before writing new ones.
+	# Only removes .ts files from that specific subdirectory, never deletes the
+	# whole generated/ tree.
+	assets_dir = os.path.join(out_dir, "svg_assets")
+	if not os.path.isdir(assets_dir):
+		return
+	for fname in os.listdir(assets_dir):
+		if fname.endswith(".ts"):
+			fpath = os.path.join(assets_dir, fname)
+			if os.path.isfile(fpath):
+				os.remove(fpath)
+
+
+#============================================
 
 def main():
+	parser = argparse.ArgumentParser(description="Generate SVG asset constants and manifests")
+	parser.add_argument(
+		"--out-dir",
+		dest="out_dir",
+		default=DEFAULT_OUT_DIR,
+		help="Output directory for generated/ tree (default: " + DEFAULT_OUT_DIR + ")"
+	)
+	args = parser.parse_args()
+
 	if not os.path.isdir(ASSETS_DIR):
 		print("ERROR: assets directory missing: " + ASSETS_DIR, file=sys.stderr)
 		return 1
@@ -135,21 +269,19 @@ def main():
 			)
 			return 2
 
-	out_lines = []
-	out_lines.append("// AUTO-GENERATED by tools/generate_svg_globals.py\n")
-	out_lines.append("// Do not edit by hand. Regenerate via build_github_pages.sh.\n")
-	out_lines.append("// Source: assets/equipment/*.svg + cell-culture2-clean.svg\n")
-	out_lines.append("\n")
-
+	# Load and process all SVG assets
 	svg_files = sorted(f for f in os.listdir(ASSETS_DIR) if f.endswith(".svg"))
+	asset_list = []  # list of (basename, const_name, body) tuples
 	count = 0
-	# build manifests as we iterate so we can emit them after the SVG constants.
-	# both maps are keyed by basename (matches the prefix used in namespacing).
 	id_manifest = {}
 	group_manifest = {}
+
 	for fname in svg_files:
 		basename = fname[:-4]
-		const_name = "SVG_" + basename.upper()
+		# Use the normalized module name for the const so hyphenated basenames
+		# (e.g. `foo-bar.svg`) produce a valid TS identifier (`SVG_FOO_BAR`)
+		# instead of the invalid `SVG_FOO-BAR`.
+		const_name = "SVG_" + normalize_module_name(basename).upper()
 		prefix = basename + "__"
 		with open(os.path.join(ASSETS_DIR, fname), "r", encoding="utf-8") as fh:
 			raw = fh.read()
@@ -157,7 +289,7 @@ def main():
 		# author-time names (the runtime ids include the prefix).
 		raw_ids = extract_ids(raw)
 		body = transform_svg(raw, prefix)
-		emit_const(out_lines, const_name, body)
+		asset_list.append((basename, const_name, body))
 		count += 1
 		# id manifest stores fully-namespaced runtime ids
 		id_manifest[basename] = [prefix + raw_id for raw_id in raw_ids]
@@ -167,7 +299,7 @@ def main():
 			continue
 		validate_sidecar(basename, sidecar, raw_ids)
 		groups_out = {}
-		for group_name, entries in sidecar.get("groups", {}).items():
+		for group_name, entries in sidecar["groups"].items():
 			out_entries = []
 			for entry in entries:
 				ns_entry = {"id": prefix + entry["id"]}
@@ -182,49 +314,44 @@ def main():
 			groups_out[group_name] = out_entries
 		group_manifest[basename] = groups_out
 
+	# Check for name collisions in normalized module names
+	check_name_collisions(asset_list)
+
 	# Special-case CELL_CULTURE_PLATE_SVG (legacy fallback artwork)
 	if os.path.isfile(PLATE_SVG):
 		with open(PLATE_SVG, "r", encoding="utf-8") as fh:
 			plate_raw = fh.read()
 		plate_body = transform_svg(plate_raw, "cell_culture_plate__")
-		emit_const(out_lines, "CELL_CULTURE_PLATE_SVG", plate_body)
-	else:
-		out_lines.append('export const CELL_CULTURE_PLATE_SVG: string = "";\n')
+		# Add plate to asset_list so it gets emitted in per-asset split
+		asset_list.append(("cell_culture_plate", "CELL_CULTURE_PLATE_SVG", plate_body))
+		id_manifest["cell_culture_plate"] = []  # No IDs in the plate; it's a fallback
+		group_manifest["cell_culture_plate"] = {}
 
-	# emit SVG_IDS and SVG_GROUPS manifests so runtime + build-time validation
-	# can confirm referenced ids exist in the generated artwork.
-	out_lines.append("\n")
-	out_lines.append("// Group entry shape used by SVG_GROUPS manifest entries.\n")
-	out_lines.append(
-		"// attr routes the recipe's role to fill (default) or stroke; see\n"
-	)
-	out_lines.append(
-		"// src/svg_color_patch.ts SvgColorPatch.strokeRole.\n"
-	)
-	out_lines.append(
-		"export type SvgGroupEntry = { id: string; opacity?: number; "
-		'attr?: "fill" | "stroke" };\n'
-	)
-	out_lines.append("\n")
-	out_lines.append(
-		"export const SVG_IDS: Record<string, readonly string[]> = "
-	)
-	out_lines.append(json.dumps(id_manifest, indent=2, sort_keys=True))
-	out_lines.append(";\n\n")
-	out_lines.append(
-		"export const SVG_GROUPS: Record<string, Record<string, "
-		"readonly SvgGroupEntry[]>> = "
-	)
-	out_lines.append(json.dumps(group_manifest, indent=2, sort_keys=True))
-	out_lines.append(";\n")
+	# Emit split output to generated/
+	out_dir = args.out_dir
+	os.makedirs(out_dir, exist_ok=True)
 
-	with open(OUT_PATH, "w", encoding="utf-8") as fh:
-		fh.writelines(out_lines)
+	# Clear stale per-asset files
+	clear_stale_assets(out_dir)
+
+	# Emit per-asset files for all SVGs (including plate)
+	equipment_count = 0
+	for basename, const_name, body, in asset_list:
+		emit_per_asset_file(out_dir, basename, const_name, body)
+		equipment_count += 1
+
+	# Emit barrel (index.ts)
+	emit_barrel(out_dir, asset_list)
+
+	# Emit manifest (svg_manifest.ts)
+	emit_manifest(out_dir, id_manifest, group_manifest)
 
 	print(
-		"Wrote " + OUT_PATH + " with " + str(count) + " equipment SVG constants, "
+		"Wrote " + str(equipment_count) + " per-asset files to "
+		+ out_dir + "/svg_assets/, plus index.ts barrel and svg_manifest.ts ("
 		+ str(len(id_manifest)) + " id manifests, "
-		+ str(len(group_manifest)) + " group manifests."
+		+ str(len(group_manifest)) + " group manifests; "
+		+ str(count) + " equipment SVGs)."
 	)
 	return 0
 

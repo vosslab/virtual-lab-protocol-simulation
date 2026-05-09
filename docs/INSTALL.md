@@ -34,6 +34,48 @@ The HTML file is a generated artifact and is not committed to git.
    bash export_single_file.sh
    ```
 
+## SVG asset pipeline (fresh clone)
+
+The `generated/` tree at the repo root holds SVG asset modules emitted by
+[tools/generate_svg_globals.py](../tools/generate_svg_globals.py) from
+`assets/equipment/*.svg`. The whole tree is gitignored, so a fresh clone has
+no `generated/` directory. Most workflows regenerate it transparently, but it
+must exist before `tsc`, the bundler, or any test that imports from
+`generated/` will run.
+
+Three ways to make `generated/` exist on a fresh clone:
+
+1. Run any build script. Both regenerate `generated/` before `tsc`:
+   ```bash
+   bash build_github_pages.sh
+   ```
+   or
+   ```bash
+   bash export_single_file.sh
+   ```
+2. Run the test suite. The `pytest_sessionstart` hook in
+   [tests/conftest.py](../tests/conftest.py) regenerates once per session if
+   `generated/svg_manifest.ts` is missing:
+   ```bash
+   source source_me.sh && pytest tests/
+   ```
+3. Run the generator directly:
+   ```bash
+   source source_me.sh && python3 tools/generate_svg_globals.py
+   ```
+
+By design, `bash check_codebase.sh` is read-only and does NOT regenerate
+`generated/`. If you run it on a fresh clone before any of the above, it
+exits non-zero with a hint pointing at the generator.
+
+To wipe `generated/` (and other build artifacts) for fresh-start testing:
+
+```bash
+bash dist_clean.sh
+```
+
+See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full asset pipeline rules.
+
 ## Verify install
 
 ```bash

@@ -338,6 +338,9 @@ migration.
   adapters and capabilities.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) - Author-facing
   protocol YAML schema (distinct from scene YAML).
+- [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset ownership boundary; read
+  this before adding or modifying SVG assets consumed by scene adapters
+  or capabilities.
 - [docs/archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md) -
   Archived plan for the render-ownership migration that produced the
   current adapter layout.

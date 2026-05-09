@@ -1,6 +1,5 @@
 //============================================
 // render.ts - Hood scene rendering assembly
-// Moved from src/scenes/hood.ts in Patch A3
 //============================================
 
 import { ASSET_SPECS } from "../../asset_specs";
@@ -12,7 +11,7 @@ import { computeSceneLayout } from "../../layout_engine";
 import { showWrongOrderToast } from "../shared/wrong_order_feedback";
 import { canonicalTool, deriveHeldLiquid } from "../shared/liquid_transfer";
 import { COLOR_MAP, type ColorRole } from "../../style_constants";
-import { getAspiratingPipetteSvg, getBiohazardDecanSvg, getCarboplatinStockSvg, getConical15mlRackSvg, getDilutionTubeRackSvg, getDmsoBottleSvg, getDrugVialsSvg, getEthanolBottleSvg, getFlaskSvg, getHoodBackgroundSvg, getMediaBottleSvg, getMetforminStockSvg, getMicropipetteRackSvg, getMttVialSvg, getMultichannelPipetteSvg, getPbsBottleSvg, getSeroPipetteSvg, getSterileWaterSvg, getTrypsinBottleSvg, getWasteContainerSvg, getWellPlateSvg } from "../../svg_assets";
+import { deriveT75Visual, getHoodBackgroundSvg, getSeroPipetteSvg, getWellPlateSvg, renderEquipmentSvg } from "../../svg_assets";
 
 //============================================
 // deriveActiveInteractionTargets(step, interactionIndex, selectedTool, heldLiquid)
@@ -155,35 +154,46 @@ export function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | n
 //============================================
 export function getItemSvgHtml(itemId: string): string {
 	switch (itemId) {
-		case 'flask':
+		case 'flask': {
+			// Derive T75LiquidVisual from current game state, then route through
+			// renderEquipmentSvg. isDirty stays false here -- the dirty residue
+			// state is owned by other code paths and was not exposed by the
+			// previous getFlaskSvg(mediaLevel, mediaAge) call signature.
 			const mediaLevel = gameState.flaskMediaMl / FLASK_MAX_VOLUME_ML;
-			return getFlaskSvg(mediaLevel, gameState.flaskMediaAge);
+			const visual = deriveT75Visual(mediaLevel > 0 ? 1 : 0, gameState.flaskMediaAge, false);
+			return renderEquipmentSvg({ assetId: 'flask', liquidState: visual });
+		}
 		case 'well_plate': return getWellPlateSvg(gameState.wellPlate);
-		case 'media_bottle': return getMediaBottleSvg();
-		case 'trypsin_bottle': return getTrypsinBottleSvg();
-		case 'aspirating_pipette': return getAspiratingPipetteSvg();
+		case 'media_bottle': return renderEquipmentSvg({ assetId: 'media_bottle' });
+		case 'trypsin_bottle': return renderEquipmentSvg({ assetId: 'trypsin_bottle' });
+		case 'aspirating_pipette': return renderEquipmentSvg({ assetId: 'aspirating_pipette' });
 		case 'serological_pipette':
+			// Held-liquid pipette uses the keeper helper that accepts a
+			// custom hex color + volume; empty pipette routes through the
+			// renderEquipmentSvg facade.
 			if (gameState.heldLiquid && gameState.heldLiquid.tool === 'serological_pipette') {
 				const reagent = REAGENTS[gameState.heldLiquid.liquid];
 				const color = reagent ? reagent.displayColor : COLOR_MAP[gameState.heldLiquid.colorKey as ColorRole] || '#cccccc';
 				return getSeroPipetteSvg(gameState.heldLiquid.volumeMl, color);
 			}
-			return getSeroPipetteSvg();
-		case 'waste_container': return getWasteContainerSvg();
-		case 'drug_vials': return getDrugVialsSvg();
-		case 'multichannel_pipette': return getMultichannelPipetteSvg();
-		case 'ethanol_bottle': return getEthanolBottleSvg();
-		case 'sterile_water': return getSterileWaterSvg();
-		case 'pbs_bottle': return getPbsBottleSvg();
-		case 'conical_15ml_rack': return getConical15mlRackSvg();
-		case 'dilution_tube_rack': return getDilutionTubeRackSvg();
-		case 'mtt_vial': return getMttVialSvg();
-		case 'dmso_bottle': return getDmsoBottleSvg();
-		case 'carboplatin_stock': return getCarboplatinStockSvg();
+			return renderEquipmentSvg({ assetId: 'serological_pipette' });
+		case 'waste_container': return renderEquipmentSvg({ assetId: 'waste_container' });
+		case 'drug_vials': return renderEquipmentSvg({ assetId: 'drug_vials' });
+		case 'multichannel_pipette': return renderEquipmentSvg({ assetId: 'multichannel_pipette' });
+		case 'ethanol_bottle': return renderEquipmentSvg({ assetId: 'ethanol_bottle' });
+		case 'sterile_water': return renderEquipmentSvg({ assetId: 'sterile_water' });
+		case 'pbs_bottle': return renderEquipmentSvg({ assetId: 'pbs_bottle' });
+		case 'conical_15ml_rack': return renderEquipmentSvg({ assetId: 'conical_15ml_rack' });
+		case 'dilution_tube_rack': return renderEquipmentSvg({ assetId: 'dilution_tube_rack' });
+		case 'mtt_vial': return renderEquipmentSvg({ assetId: 'mtt_vial' });
+		case 'dmso_bottle': return renderEquipmentSvg({ assetId: 'dmso_bottle' });
+		case 'carboplatin_stock': return renderEquipmentSvg({ assetId: 'carboplatin_stock' });
+		// metformin_stock_bottle is a legacy alias used in some authored content;
+		// route both ids to the canonical metformin_stock asset.
 		case 'metformin_stock':
-		case 'metformin_stock_bottle': return getMetforminStockSvg();
-		case 'micropipette_rack': return getMicropipetteRackSvg();
-		case 'biohazard_decant': return getBiohazardDecanSvg();
+		case 'metformin_stock_bottle': return renderEquipmentSvg({ assetId: 'metformin_stock' });
+		case 'micropipette_rack': return renderEquipmentSvg({ assetId: 'micropipette_rack' });
+		case 'biohazard_decant': return renderEquipmentSvg({ assetId: 'biohazard_decant' });
 		default: return '';
 	}
 }

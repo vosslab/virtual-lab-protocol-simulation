@@ -4,17 +4,414 @@
 
 // Base SVG constants injected by build_game.sh from assets/equipment/
 import type { WellData } from "./constants";
-import { DRUG_CONCENTRATION_LABELS, DRUG_STOCK_CONCENTRATION_UM } from "./constants";
 import { PLATE_96_ROWS, PLATE_96_COLS, ROW_LABELS, COL_LABELS } from "./steps/plate_96";
-import { SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH } from "./svg_globals";
+import { DRUG_CONCENTRATION_LABELS, DRUG_STOCK_CONCENTRATION_UM } from "./constants";
+import { SVG_96WELL_PCR_PLATE, SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "../generated/svg_assets";
 import { composeSvg, createDynamicLabel, createLiquidOverlay, createLiquidOverlayWithColor, createPipetteLiquidOverlay } from "./svg_overlays";
 import { applyPatches } from "./svg_color_patch";
-import { flaskResiduePatches, deriveT75Visual, bottleLiquidPatches, bottleLiquidLabel, type BottleLiquid } from "./svg_recipes";
+import { flaskResiduePatches, bottleLiquidPatches, bottleLiquidLabel, type BottleLiquid, type T75LiquidVisual } from "./svg_recipes";
+import { LIQUID_BY_ASSET_ID } from "./scenes/shared/liquid_transfer";
 import { COLOR_MAP } from "./style_constants";
 
+// ============================================
+// Re-exports for scene-facing code.
+// Scenes must not import from `./svg_recipes` directly (that is the recipes
+// layer and is owned by the composition facade). Re-exporting the shape
+// types and derivation helper here keeps scenes routed through this module
+// for every SVG-related concern.
+export type { BottleLiquid, T75LiquidVisual } from "./svg_recipes";
+export { deriveT75Visual } from "./svg_recipes";
 
 
-// Legacy: cell-culture2.svg artwork (fallback, will be removed)
+// ============================================
+// Public asset composition API
+// ============================================
+// Curated map of public equipment asset ids to the generated SVG_IDS keys
+// (kept internal to this module). We use a curated map rather than
+// `keyof typeof SVG_IDS` because the generated manifest exposes internal
+// variants (legacy / _new / _old / versioned flask drafts / sidecar artifacts
+// like t75_flask_v5, cell_counter_old, microscope_new, falcon_50ml_new) that
+// must not leak to scene callers as a public type surface.
+const EQUIPMENT_ASSETS = {
+	angry_professor: "angry_professor",
+	aspirating_pipette: "aspirating_pipette",
+	biohazard_decant: "biohazard_decant",
+	bottle: "bottle",
+	cell_counter: "cell_counter",
+	centrifuge: "centrifuge",
+	conical_15ml_rack: "conical_15ml_rack",
+	dilution_tube_rack: "dilution_tube_rack",
+	drug_vial_rack: "drug_vial_rack",
+	ethanol_spray: "ethanol_spray",
+	glove_box: "glove_box",
+	incubator: "incubator",
+	micropipette_rack: "micropipette_rack",
+	microscope: "microscope",
+	mtt_vial: "mtt_vial",
+	multichannel_pipette: "multichannel_pipette",
+	plate_reader: "plate_reader",
+	sero_pipette: "sero_pipette",
+	t75_flask: "t75_flask",
+	tip_box: "tip_box",
+	vortex: "vortex",
+	waste_container: "waste_container",
+	waste_tray: "waste_tray",
+	water_bath: "water_bath",
+	// ----------------------------------------------------------------
+	// Layout-only ids consumed by layout_engine.ts. These are scene-side
+	// asset names (matching SceneItem.asset values authored in scene YAML)
+	// rather than canonical equipment ids. They route to the same
+	// underlying SVGs as their canonical counterparts; layout_engine.ts
+	// queries them through getStaticSvg / getAssetAspectRatio.
+	// Bottle-liquid aliases (media_bottle, pbs_bottle, ...) route through
+	// LIQUID_BY_ASSET_ID + renderBottleFromLiquid() so the recolored bottle
+	// is returned, not the raw unpatched Servier base. Plain aliases
+	// (flask, ethanol_bottle, drug_vials, ...) return the static SVG
+	// for the matching canonical equipment id.
+	flask: "t75_flask",
+	well_plate: "well_plate_24",
+	well_plate_96: "96well_pcr_plate",
+	ethanol_bottle: "ethanol_spray",
+	serological_pipette: "sero_pipette",
+	drug_vials: "drug_vial_rack",
+	media_bottle: "bottle",
+	pbs_bottle: "bottle",
+	trypsin_bottle: "bottle",
+	dmso_bottle: "bottle",
+	sterile_water: "bottle",
+	carboplatin_stock: "bottle",
+	metformin_stock: "bottle",
+} as const;
+
+// Public, narrow asset id type. Typos at scene call sites fail at compile time.
+export type EquipmentAssetId = keyof typeof EQUIPMENT_ASSETS;
+
+// Smallest overlay union covering current convergent usage. Existing
+// internal helpers compose label + liquid overlays via createDynamicLabel /
+// createLiquidOverlay; the public API exposes only label-text customization
+// today. Liquid overlay parameters are derived from `liquidState` (see
+// EquipmentRenderRequest), so we do not also surface them here.
+export type OverlaySpec =
+	| { kind: "label"; text: string };
+
+// Public composition request. liquidState selects the recipe-driven
+// recolor + overlay path for assets that support it (t75_flask, bottle).
+// `label` overrides the default label string for assets that render one
+// (forwards to createDynamicLabel inside the existing helpers).
+// `overlays` is reserved for future additive overlay specs; currently the
+// only kind is a label override, which is equivalent to setting `label`.
+export type EquipmentRenderRequest = {
+	assetId: EquipmentAssetId;
+	liquidState?: T75LiquidVisual | BottleLiquid;
+	label?: string;
+	overlays?: readonly OverlaySpec[];
+};
+
+// ============================================
+// Internal: render flask SVG with explicit visual state. Scenes derive
+// the T75LiquidVisual via deriveT75Visual (re-exported above) and pass
+// it through renderEquipmentSvg({ assetId: "t75_flask", liquidState }).
+function renderT75FlaskFromVisual(visual: T75LiquidVisual, overrideLabel?: string): string {
+	// patch the authored residue object first, then overlay liquid + label
+	const patchedBase = applyPatches(SVG_T75_FLASK, flaskResiduePatches(visual));
+	const isOldMedia = visual === "oldMedia";
+	const liquidColor = isOldMedia ? COLOR_MAP.oldMedia : COLOR_MAP.media;
+	const hasLiquid = visual === "freshMedia" || visual === "oldMedia";
+	let labelText = "";
+	if (overrideLabel !== undefined) {
+		labelText = overrideLabel;
+	} else if (hasLiquid) {
+		labelText = isOldMedia ? "Old Media" : "DMEM";
+	}
+	const liquidLevel = hasLiquid ? 1 : 0;
+	const overlays: string[] = [
+		createLiquidOverlayWithColor("t75_flask", liquidLevel, liquidColor, patchedBase),
+		createDynamicLabel("t75_flask", labelText, patchedBase),
+	];
+	return composeSvg(patchedBase, "t75_flask", overlays);
+}
+
+// ============================================
+// Internal: render bottle SVG with explicit liquid + optional label override.
+function renderBottleFromLiquid(liquid: BottleLiquid, overrideLabel?: string): string {
+	const patched = applyPatches(SVG_BOTTLE, bottleLiquidPatches(liquid));
+	const labelText = overrideLabel !== undefined ? overrideLabel : bottleLiquidLabel(liquid);
+	const overlays: string[] = [
+		createDynamicLabel("bottle", labelText, patched),
+	];
+	return composeSvg(patched, "bottle", overlays);
+}
+
+// ============================================
+// Internal: render the waste container with its waste-liquid overlay.
+function renderWasteContainerSvg(): string {
+	const overlays: string[] = [
+		createLiquidOverlay("waste_container", 0.3, "waste", SVG_WASTE_CONTAINER),
+		createDynamicLabel("waste_container", "Waste", SVG_WASTE_CONTAINER),
+	];
+	return composeSvg(SVG_WASTE_CONTAINER, "waste_container", overlays);
+}
+
+// ============================================
+// Internal: render the ethanol spray bottle with its liquid overlay.
+function renderEthanolSprayInternal(): string {
+	const overlays: string[] = [
+		createLiquidOverlay("ethanol_spray", 0.7, "ethanol", SVG_ETHANOL_SPRAY),
+		createDynamicLabel("ethanol_spray", "70% EtOH", SVG_ETHANOL_SPRAY),
+	];
+	return composeSvg(SVG_ETHANOL_SPRAY, "ethanol_spray", overlays);
+}
+
+// ============================================
+// Internal: render the drug-vials rack with per-vial color overlays driven by
+// DRUG_CONCENTRATION_LABELS. The geometry (cx = 12 + i*18, six vials) is fixed
+// to the authored base SVG layout in assets/equipment/drug_vial_rack.svg.
+function renderDrugVialsInternal(): string {
+	let overlayContent = "";
+	for (let i = 0; i < 6; i++) {
+		const cx = 12 + i * 18;
+		const intensity = i / 5;
+		// linear ramp from light blue to deep blue by vial index
+		const r = Math.round(220 - intensity * 80);
+		const g = Math.round(220 - intensity * 100);
+		const b = Math.round(240 - intensity * 20);
+		const fillColor = "rgb(" + r + "," + g + "," + b + ")";
+		// vial body extends above rack top edge at y=15
+		overlayContent += '<rect x="' + (cx - 5) + '" y="5" width="10" height="45" rx="2"'
+			+ ' fill="' + fillColor + '" stroke="#999999" stroke-width="0.5"/>';
+		// vial cap
+		overlayContent += '<rect x="' + (cx - 5) + '" y="2" width="10" height="5" rx="1"'
+			+ ' fill="#888888"/>';
+		// concentration label below the rack
+		overlayContent += '<text x="' + cx + '" y="57" font-family="Arial,sans-serif"'
+			+ ' font-size="5" fill="#666666" text-anchor="middle">'
+			+ DRUG_CONCENTRATION_LABELS[i] + "</text>";
+	}
+	// stock concentration header
+	overlayContent += '<text x="60" y="12" font-family="Arial,sans-serif"'
+		+ ' font-size="5" fill="#555555" text-anchor="middle">('
+		+ DRUG_STOCK_CONCENTRATION_UM + " uM)</text>";
+	return composeSvg(SVG_DRUG_VIAL_RACK, "drug_vial_rack", [overlayContent]);
+}
+
+// ============================================
+// Internal: typed lookup for bottle-liquid aliases. Throws if the asset id
+// is registered in EQUIPMENT_ASSETS as a bottle alias but missing from
+// LIQUID_BY_ASSET_ID. Per TYPESCRIPT_STYLE.md / REPO_STYLE.md the right
+// behavior on missing data is a loud failure, not a silent default.
+function liquidForBottleAlias(assetId: EquipmentAssetId): BottleLiquid {
+	const liquid = LIQUID_BY_ASSET_ID[assetId];
+	if (liquid === undefined) {
+		throw new Error(
+			"svg_assets: bottle alias '" + assetId + "' is registered in"
+			+ " EQUIPMENT_ASSETS but missing from LIQUID_BY_ASSET_ID."
+			+ " Add it to src/scenes/shared/liquid_transfer.ts.",
+		);
+	}
+	return liquid;
+}
+
+// ============================================
+// Internal: pull the most-specific override label from a request.
+// `label` wins over any `{ kind: "label" }` overlay; the overlay form exists
+// for future symmetry once additional overlay kinds land.
+function pickLabelOverride(req: EquipmentRenderRequest): string | undefined {
+	if (req.label !== undefined) {
+		return req.label;
+	}
+	if (req.overlays !== undefined) {
+		for (const overlay of req.overlays) {
+			if (overlay.kind === "label") {
+				return overlay.text;
+			}
+		}
+	}
+	return undefined;
+}
+
+// ============================================
+// Convergence point for SVG composition. Scenes pass a semantic request
+// (asset id + optional liquid state + optional label/overlays); this
+// function dispatches to the internal renderers below. All scene/modal/overlay
+// call sites route through this entry point; per-asset deprecated helpers
+// were removed.
+export function renderEquipmentSvg(req: EquipmentRenderRequest): string {
+	const overrideLabel = pickLabelOverride(req);
+	switch (req.assetId) {
+		case "t75_flask":
+		case "flask": {
+			// liquidState for the flask is a T75LiquidVisual; default to "empty"
+			// (no liquid, no residue) when not provided so callers that just
+			// want the empty flask get a sensible render without state plumbing.
+			// "flask" is the layout-side alias; both ids render the same SVG.
+			const visual = (req.liquidState as T75LiquidVisual | undefined) ?? "empty";
+			return renderT75FlaskFromVisual(visual, overrideLabel);
+		}
+		case "bottle": {
+			// liquidState for the bottle is required. Throw if missing.
+			if (req.liquidState === undefined) {
+				throw new Error(
+					"svg_assets: bottle asset '" + req.assetId + "' requires liquidState;"
+					+ " a bottle must be rendered with a specific liquid color (media, pbs, etc.).",
+				);
+			}
+			const liquid = req.liquidState as BottleLiquid;
+			return renderBottleFromLiquid(liquid, overrideLabel);
+		}
+		// Bottle-liquid aliases (layout-only ids). Route through the bottle
+		// liquid lookup and recolor pipeline so the static query path returns
+		// the correctly-tinted bottle SVG, never the raw Servier base.
+		case "media_bottle":
+		case "pbs_bottle":
+		case "trypsin_bottle":
+		case "dmso_bottle":
+		case "sterile_water":
+		case "carboplatin_stock":
+		case "metformin_stock": {
+			const liquid = liquidForBottleAlias(req.assetId);
+			return renderBottleFromLiquid(liquid, overrideLabel);
+		}
+		case "sero_pipette":
+		case "serological_pipette":
+			// renderEquipmentSvg returns the empty pipette; callers that need
+			// a volume + custom hex color use getSeroPipetteSvg(volumeMl, color)
+			// directly (see below).
+			return SVG_SERO_PIPETTE;
+		case "waste_container":
+			return renderWasteContainerSvg();
+		case "ethanol_spray":
+		case "ethanol_bottle":
+			return renderEthanolSprayInternal();
+		case "drug_vial_rack":
+		case "drug_vials":
+			return renderDrugVialsInternal();
+		case "angry_professor":
+			return SVG_ANGRY_PROFESSOR;
+		case "aspirating_pipette":
+			return SVG_ASPIRATING_PIPETTE;
+		case "biohazard_decant":
+			return SVG_BIOHAZARD_DECANT;
+		case "cell_counter":
+			return SVG_CELL_COUNTER;
+		case "centrifuge":
+			return SVG_CENTRIFUGE;
+		case "conical_15ml_rack":
+			return SVG_CONICAL_15ML_RACK;
+		case "dilution_tube_rack":
+			return SVG_DILUTION_TUBE_RACK;
+		case "glove_box":
+			return SVG_GLOVE_BOX;
+		case "incubator":
+			return SVG_INCUBATOR;
+		case "micropipette_rack":
+			return SVG_MICROPIPETTE_RACK;
+		case "microscope":
+			return SVG_MICROSCOPE;
+		case "mtt_vial":
+			return SVG_MTT_VIAL;
+		case "multichannel_pipette":
+			return SVG_MULTICHANNEL_PIPETTE;
+		case "plate_reader":
+			return SVG_PLATE_READER;
+		case "tip_box":
+			return SVG_TIP_BOX;
+		case "vortex":
+			return SVG_VORTEX;
+		case "waste_tray":
+			return SVG_WASTE_TRAY;
+		case "water_bath":
+			return SVG_WATER_BATH;
+		case "well_plate":
+			return SVG_WELL_PLATE_24;
+		case "well_plate_96":
+			return SVG_96WELL_PCR_PLATE;
+		default: {
+			// Exhaustiveness check: adding a new EQUIPMENT_ASSETS key without a
+			// matching switch case becomes a compile error at this line, instead
+			// of silently returning undefined at runtime.
+			const _exhaustive: never = req.assetId;
+			throw new Error("svg_assets: unhandled assetId " + String(_exhaustive));
+		}
+	}
+}
+
+// ============================================
+// Public asset query API (M4)
+// ============================================
+// Layout/scene-facing code (e.g. layout_engine.ts) needs the raw SVG markup
+// and its viewBox aspect ratio for any equipment asset id, without going
+// through the recipe/overlay pipeline. These two helpers replace the
+// per-asset `import { SVG_* } from "../generated/svg_assets/<name>"` block
+// that lived in layout_engine.ts before M4. With them, only svg_assets.ts
+// (the composition facade) and svg_color_patch.ts (the recolor primitives
+// layer) remain as legitimate `generated/` importers.
+
+// ============================================
+// Internal: cache of parsed aspect ratios keyed by EquipmentAssetId. The
+// raw SVG markup is invariant for the lifetime of the bundle, so a single
+// parse per asset id is sufficient.
+const _aspectRatioCache: Record<string, number> = {};
+
+// ============================================
+// Parse aspect ratio (height/width) from an SVG viewBox attribute. Returns
+// 1.0 (square) when the viewBox is missing or malformed; layout_engine
+// callers tolerate this by treating 1.0 as the safe default.
+function parseSvgAspectRatio(svgHtml: string): number {
+	const match = svgHtml.match(/viewBox="([^"]+)"/);
+	if (!match || match[1] === undefined) return 1.0;
+	const parts = match[1].split(/\s+/);
+	if (parts.length < 4) return 1.0;
+	// parts indices 2 and 3 are guaranteed to exist since length >= 4
+	const vbWidth = parseFloat(parts[2]!);
+	const vbHeight = parseFloat(parts[3]!);
+	if (vbWidth <= 0) return 1.0;
+	return vbHeight / vbWidth;
+}
+
+// ============================================
+// Internal: narrow runtime check that an arbitrary string is a known
+// EquipmentAssetId. Layout/scene callers receive ids from scene YAML
+// (typed as `string`) and must convert at the boundary; unknown ids fall
+// through to the safe default (empty SVG / 1.0 aspect ratio) rather than
+// crashing the layout pass for a missing asset.
+function isEquipmentAssetId(value: string): value is EquipmentAssetId {
+	return Object.prototype.hasOwnProperty.call(EQUIPMENT_ASSETS, value);
+}
+
+// ============================================
+// Return the raw SVG markup for an equipment asset, with bottle-liquid
+// aliases recolored via the recipe pipeline. Used by layout_engine.ts for
+// aspect-ratio extraction and by protocol_ui.ts for the static angry-prof
+// bubble image. Calls renderEquipmentSvg with no liquidState so the
+// "natural" static render is returned (an empty flask, an unfilled bottle
+// recolored for the alias's liquid, etc.). Throws an Error when the asset id
+// is unknown, exposing scene YAML typos or mislabeled asset references at
+// composition time instead of silently returning empty SVG.
+export function getStaticSvg(assetId: string): string {
+	if (!isEquipmentAssetId(assetId)) {
+		throw new Error(
+			"svg_assets: getStaticSvg called with unknown asset id '" + assetId + "'",
+		);
+	}
+	return renderEquipmentSvg({ assetId });
+}
+
+// ============================================
+// Return the cached aspect ratio (height/width, in viewBox units) for an
+// equipment asset id. The cache key is the asset id; identical ids share
+// a cached parse result. Throws an Error when the asset id is unknown,
+// exposing scene YAML typos or mislabeled asset references at composition
+// time instead of silently returning a default ratio.
+export function getAssetAspectRatio(assetId: string): number {
+	if (_aspectRatioCache[assetId] !== undefined) {
+		return _aspectRatioCache[assetId]!;
+	}
+	const svgHtml = getStaticSvg(assetId);
+	const ratio = parseSvgAspectRatio(svgHtml);
+	_aspectRatioCache[assetId] = ratio;
+	return ratio;
+}
+
 
 /**
  * Gets the hood background SVG - the tissue culture hood/biosafety cabinet interior
@@ -71,61 +468,17 @@ export function getHoodBackgroundSvg(): string {
 	</svg>`;
 }
 
-/**
- * Gets the T-75 tissue culture flask SVG (Hybrid C: base + overlays + recolor patches).
- * @param mediaLevel - fill level from 0 to 1
- * @param mediaAge - 'old' or 'fresh'; selects oldMedia vs media color role
- * @param isDirty - flask retains residue film (after old media is removed but before cleaning)
- *
- * Liquid color comes from semantic ColorRole, not a hex literal. The residue
- * sub-object authored in t75_flask.svg is patched (opacity + fill) by recipe.
- * Replaces the legacy hex-compare branch that switched labels via mediaColor === '#c69a3a'.
- */
-export function getFlaskSvg(
-	mediaLevel: number,
-	mediaAge: "old" | "fresh" = "fresh",
-	isDirty: boolean = false,
-): string {
-	// derive visual state from existing fields; no new game-state field added
-	const visual = deriveT75Visual(mediaLevel > 0 ? 1 : 0, mediaAge, isDirty);
-	// patch the authored residue object first, then overlay liquid + label
-	const patchedBase = applyPatches(SVG_T75_FLASK, flaskResiduePatches(visual));
-	// liquid overlay color now comes from role lookup, not a passed-in hex
-	const liquidColor = mediaAge === "old" ? COLOR_MAP.oldMedia : COLOR_MAP.media;
-	let labelText = "";
-	if (mediaLevel > 0) {
-		labelText = mediaAge === "old" ? "Old Media" : "DMEM";
-	}
-	const overlays: string[] = [
-		createLiquidOverlayWithColor("t75_flask", mediaLevel, liquidColor, patchedBase),
-		createDynamicLabel("t75_flask", labelText, patchedBase),
-	];
-	return composeSvg(patchedBase, "t75_flask", overlays);
-}
-
-/**
- * Canonical bottle accessor. Renders assets/equipment/bottle.svg with the
- * 'liquid' sub-objects recolored for the chosen liquid via the patch
- * pipeline (svg_color_patch + bottle.colormap.json group). Replaces the
- * previous one-SVG-per-liquid accessors.
- */
-export function getBottleSvg(liquid: BottleLiquid): string {
-	const patched = applyPatches(SVG_BOTTLE, bottleLiquidPatches(liquid));
-	const overlays: string[] = [
-		createDynamicLabel("bottle", bottleLiquidLabel(liquid), patched),
-	];
-	return composeSvg(patched, "bottle", overlays);
-}
-
 // ============================================
-// Per-liquid bottle accessors. Thin wrappers over getBottleSvg so existing
-// call sites keep working without each one importing the BottleLiquid enum.
-export function getMediaBottleSvg(): string {
-	return getBottleSvg("media");
-}
+// Public helpers below: functions that stay public because their signatures
+// cannot collapse cleanly into renderEquipmentSvg.
+// ============================================
 
 /**
- * Gets the serological pipette SVG with optional liquid fill overlay
+ * Renders the serological pipette with an optional liquid fill overlay tinted
+ * by a caller-supplied hex color and volume. Kept as a named helper because
+ * the volume + custom-hex-color signature is outside renderEquipmentSvg's
+ * semantic-state surface (which only accepts liquidState role enums).
+ *
  * @param volumeMl - volume of liquid in milliliters (default 0 = empty)
  * @param color - hex color code for liquid (default null = no overlay)
  */
@@ -139,49 +492,11 @@ export function getSeroPipetteSvg(volumeMl: number = 0, color: string | null = n
 	return composeSvg(SVG_SERO_PIPETTE, "sero_pipette", overlays);
 }
 
-// getPipetteAidSvg removed: function was unused (not in HOOD_ITEMS)
-
 /**
- * Gets the aspirating pipette (Pasteur-style) SVG (Hybrid C: base only, static)
- */
-export function getAspiratingPipetteSvg(): string {
-	return SVG_ASPIRATING_PIPETTE;
-}
-
-
-/**
- * Gets the waste container SVG (Hybrid C: base + waste liquid overlay)
- */
-export function getWasteContainerSvg(): string {
-	// waste container shows low fill level of waste liquid
-	const overlays: string[] = [
-		createLiquidOverlay("waste_container", 0.3, "waste", SVG_WASTE_CONTAINER),
-		createDynamicLabel("waste_container", "Waste", SVG_WASTE_CONTAINER),
-	];
-	return composeSvg(SVG_WASTE_CONTAINER, "waste_container", overlays);
-}
-
-// ============================================
-export function getTrypsinBottleSvg(): string {
-	return getBottleSvg("trypsin");
-}
-
-// ============================================
-/**
- * Gets the ethanol spray bottle SVG (Hybrid C: base + ethanol liquid overlay)
- */
-export function getEthanolBottleSvg(): string {
-	// ethanol spray always appears mostly full
-	const overlays: string[] = [
-		createLiquidOverlay("ethanol_spray", 0.7, "ethanol", SVG_ETHANOL_SPRAY),
-		createDynamicLabel("ethanol_spray", "70% EtOH", SVG_ETHANOL_SPRAY),
-	];
-	return composeSvg(SVG_ETHANOL_SPRAY, "ethanol_spray", overlays);
-}
-
-// ============================================
-/**
- * Gets the 24-well plate SVG (Hybrid C: base + per-well color overlays)
+ * Renders the 24-well plate (despite the name, an 8x12 = 96-well grid driven
+ * by PLATE_96_ROWS / PLATE_96_COLS) with per-well color overlays derived from
+ * the WellData state. Kept as a named helper because the input is a per-well
+ * data array, not a single liquidState role.
  */
 export function getWellPlateSvg(wells: WellData[]): string {
 	// Render 8x12 well plate grid
@@ -200,24 +515,20 @@ export function getWellPlateSvg(wells: WellData[]): string {
 	svgContent += '</linearGradient>';
 	svgContent += '</defs>';
 
-	// White background
 	svgContent += '<rect width="320" height="240" fill="white" />';
 
-	// Row labels (A-H) on the left
 	for (let row = 0; row < PLATE_96_ROWS; row++) {
 		const y = marginTop + row * spacingY + wellSize / 2;
 		svgContent += '<text x="8" y="' + (y + 2) + '" font-family="Arial,sans-serif"'
 			+ ' font-size="7" fill="#333333" text-anchor="middle">' + ROW_LABELS[row] + '</text>';
 	}
 
-	// Column labels (1-12) on top
 	for (let col = 0; col < PLATE_96_COLS; col++) {
 		const x = marginLeft + col * spacingX + wellSize / 2;
 		svgContent += '<text x="' + x + '" y="12" font-family="Arial,sans-serif"'
 			+ ' font-size="6" fill="#333333" text-anchor="middle">' + COL_LABELS[col] + '</text>';
 	}
 
-	// Draw wells as small squares with color coding
 	for (let row = 0; row < PLATE_96_ROWS; row++) {
 		for (let col = 0; col < PLATE_96_COLS; col++) {
 			const x = marginLeft + col * spacingY;
@@ -255,186 +566,3 @@ export function getWellPlateSvg(wells: WellData[]): string {
 	return svgContent;
 }
 
-// ============================================
-/**
- * Gets the drug vials rack SVG (Hybrid C: base + per-vial color overlays)
- */
-export function getDrugVialsSvg(): string {
-	// vial positions match base SVG: cx = 12 + i*18 for i=0..5
-	let overlayContent = '';
-	for (let i = 0; i < 6; i++) {
-		const cx = 12 + i * 18;
-		const intensity = i / 5;
-		const r = Math.round(220 - intensity * 80);
-		const g = Math.round(220 - intensity * 100);
-		const b = Math.round(240 - intensity * 20);
-		const fillColor = 'rgb(' + r + ',' + g + ',' + b + ')';
-		// vial body (extends above rack top edge at y=15)
-		overlayContent += '<rect x="' + (cx - 5) + '" y="5" width="10" height="45" rx="2"'
-			+ ' fill="' + fillColor + '" stroke="#999999" stroke-width="0.5"/>';
-		// vial cap
-		overlayContent += '<rect x="' + (cx - 5) + '" y="2" width="10" height="5" rx="1"'
-			+ ' fill="#888888"/>';
-		// concentration label below rack
-		overlayContent += '<text x="' + cx + '" y="57" font-family="Arial,sans-serif"'
-			+ ' font-size="5" fill="#666666" text-anchor="middle">' + DRUG_CONCENTRATION_LABELS[i] + '</text>';
-	}
-	// stock concentration header
-	overlayContent += '<text x="60" y="12" font-family="Arial,sans-serif"'
-		+ ' font-size="5" fill="#555555" text-anchor="middle">(' + DRUG_STOCK_CONCENTRATION_UM + ' uM)</text>';
-	return composeSvg(SVG_DRUG_VIAL_RACK, "drug_vial_rack", [overlayContent]);
-}
-
-// ============================================
-/**
- * Gets the multichannel pipette SVG (Hybrid C: base only, static)
- */
-export function getMultichannelPipetteSvg(): string {
-	return SVG_MULTICHANNEL_PIPETTE;
-}
-
-// ============================================
-/**
- * Gets the microscope SVG (Hybrid C: base only, static)
- */
-export function getMicroscopeSvg(): string {
-	return SVG_MICROSCOPE;
-}
-
-// ============================================
-/**
- * Gets the incubator SVG (Hybrid C: base only, static)
- */
-export function getIncubatorSvg(): string {
-	return SVG_INCUBATOR;
-}
-
-export function getPlateReaderSvg(): string {
-	return SVG_PLATE_READER;
-}
-
-// ============================================
-export function getSterileWaterSvg(): string {
-	return getBottleSvg("sterileWater");
-}
-
-// ============================================
-export function getPbsBottleSvg(): string {
-	return getBottleSvg("pbs");
-}
-
-// ============================================
-/**
- * Gets the 15 mL conical tube rack SVG (hand-drawn, static)
- */
-export function getConical15mlRackSvg(): string {
-	return SVG_CONICAL_15ML_RACK;
-}
-
-// ============================================
-/**
- * Gets the 1.5 mL dilution tube rack SVG (hand-drawn, static)
- */
-export function getDilutionTubeRackSvg(): string {
-	return SVG_DILUTION_TUBE_RACK;
-}
-
-// ============================================
-export function getMttVialSvg(): string {
-	return SVG_MTT_VIAL;
-}
-
-// ============================================
-export function getDmsoBottleSvg(): string {
-	return getBottleSvg("dmso");
-}
-
-// ============================================
-export function getCarboplatinStockSvg(): string {
-	return getBottleSvg("carboplatin");
-}
-
-// ============================================
-export function getMetforminStockSvg(): string {
-	return getBottleSvg("metformin");
-}
-
-// ============================================
-/**
- * Gets the micropipette rack SVG (hand-drawn, static)
- */
-export function getMicropipetteRackSvg(): string {
-	return SVG_MICROPIPETTE_RACK;
-}
-
-// ============================================
-/**
- * Gets the biohazard decant bin SVG (hand-drawn, static)
- */
-export function getBiohazardDecanSvg(): string {
-	return SVG_BIOHAZARD_DECANT;
-}
-
-// ============================================
-/**
- * Gets the benchtop centrifuge SVG (hand-drawn, static)
- */
-export function getCentrifugeSvg(): string {
-	return SVG_CENTRIFUGE;
-}
-
-// ============================================
-/**
- * Gets the 37C water bath SVG (hand-drawn, static)
- */
-export function getWaterBathSvg(): string {
-	return SVG_WATER_BATH;
-}
-
-// ============================================
-/**
- * Gets the vortex mixer SVG (hand-drawn, static)
- */
-export function getVortexSvg(): string {
-	return SVG_VORTEX;
-}
-
-// ============================================
-/**
- * Gets the benchtop cell counter SVG (hand-drawn, static)
- */
-export function getCellCounterSvg(): string {
-	return SVG_CELL_COUNTER;
-}
-
-// ============================================
-/**
- * Gets the angry professor character SVG (coach card)
- */
-export function getAngryProfessorSvg(): string {
-	return SVG_ANGRY_PROFESSOR;
-}
-
-// ============================================
-/**
- * Gets the tip box SVG (decoration)
- */
-export function getTipBoxSvg(): string {
-	return SVG_TIP_BOX;
-}
-
-// ============================================
-/**
- * Gets the glove box SVG (decoration)
- */
-export function getGloveBoxSvg(): string {
-	return SVG_GLOVE_BOX;
-}
-
-// ============================================
-/**
- * Gets the waste tray SVG (decoration)
- */
-export function getWasteTraySvg(): string {
-	return SVG_WASTE_TRAY;
-}

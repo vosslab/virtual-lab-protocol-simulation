@@ -6,7 +6,7 @@
 // current step's "why" text and a mood indicator that updates on events.
 
 import { gameState, getCurrentStep } from "./game_state";
-import { getAngryProfessorSvg } from "./svg_assets";
+import { renderEquipmentSvg } from "./svg_assets";
 
 
 export function createProfessorOverlay(): void {
@@ -86,7 +86,7 @@ export function renderProfessorOverlay(): void {
 
 	// Set SVG wrapper width
 	svgWrapper.style.width = professorWidth + 'px';
-	svgWrapper.innerHTML = getAngryProfessorSvg();
+	svgWrapper.innerHTML = renderEquipmentSvg({ assetId: 'angry_professor' });
 	const svgElement = svgWrapper.querySelector('svg');
 	if (svgElement) {
 		svgElement.style.width = '100%';
