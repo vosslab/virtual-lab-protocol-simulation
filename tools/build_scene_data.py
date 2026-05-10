@@ -3,7 +3,7 @@
 build_scene_data.py - Compile scene YAML to TypeScript data exports.
 
 Reads scene YAML configs from src/scenes/<scene>/<scene>.yaml, validates
-them against the scene schema, and emits src/content/scene_data.ts.
+them against the scene schema, and emits generated/scene_data.ts.
 
 No scene YAMLs exist yet; generated output is an empty but valid module.
 """
@@ -30,7 +30,15 @@ VALID_CAPABILITY_IDS = {
 
 
 def get_repo_root() -> pathlib.Path:
-	"""Determine REPO_ROOT via git rev-parse --show-toplevel."""
+	"""
+	Determine REPO_ROOT via git rev-parse --show-toplevel.
+
+	Raises:
+		RuntimeError: If git command fails.
+
+	Returns:
+		Path to the repository root.
+	"""
 	result = subprocess.run(
 		['git', 'rev-parse', '--show-toplevel'],
 		capture_output=True,
@@ -42,7 +50,15 @@ def get_repo_root() -> pathlib.Path:
 
 
 def load_yaml_file(path: pathlib.Path) -> dict:
-	"""Load a YAML file and return parsed content."""
+	"""
+	Load a YAML file and return parsed content.
+
+	Args:
+		path: Path to the YAML file.
+
+	Returns:
+		Parsed YAML content as a dictionary.
+	"""
 	with open(path, 'r') as f:
 		return yaml.safe_load(f)
 
@@ -52,12 +68,13 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 	Validate a scene YAML file against the schema.
 
 	Loud failures (raises ValueError) for:
-	- Missing sceneId
+	- Missing sceneId, workspace, capabilities
 	- Unknown capability id
 	- Item references unknown zone
 	- Duplicate ids
-	- Capability declared but its required config block missing
-	- elementId present but not a non-empty string
+	- elementId, tabStops, layoutRules, accentRules present but wrong type
+	- wrongOrderMessage missing required template/toastDurationMs
+	- Mistyped fields
 
 	Args:
 		path: Path to the scene YAML file.
@@ -172,6 +189,162 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 				if zone_ref not in zone_ids:
 					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): item '{item_id}' references unknown zone '{zone_ref}'")
 
+			# Validate item field types (LayoutSceneItem or DispatchOnlySceneItem variant)
+			# Check numeric fields if present
+			if 'widthScale' in item:
+				ws = item['widthScale']
+				if not isinstance(ws, (int, float)) or ws <= 0:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): items[{i}].widthScale must be a number > 0, got {ws!r}")
+
+			if 'depthTier' in item:
+				dt = item['depthTier']
+				if not isinstance(dt, (int, float)) or dt <= 0:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): items[{i}].depthTier must be a positive number, got {dt!r}")
+
+			# Check enum fields if present
+			if 'anchorY' in item:
+				ay = item['anchorY']
+				if ay not in ('top', 'bottom', 'tip'):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): items[{i}].anchorY must be 'top', 'bottom', or 'tip', got {ay!r}")
+
+			if 'alignStop' in item:
+				als = item['alignStop']
+				if als not in ('left', 'center', 'right'):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): items[{i}].alignStop must be 'left', 'center', or 'right', got {als!r}")
+
+	# Check optional layoutRules field
+	if 'layoutRules' in scene_config:
+		lr = scene_config['layoutRules']
+		if not isinstance(lr, dict):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules must be a dict if present, got {type(lr)}")
+		# Optional fields within layoutRules: clusterSpacingPx (int), tierBrightnessFactor (map), tierOpacity (map), defaultAlignStop (enum)
+		if 'clusterSpacingPx' in lr:
+			csp = lr['clusterSpacingPx']
+			if not isinstance(csp, int):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.clusterSpacingPx must be an integer if present, got {type(csp)}")
+		if 'tierBrightnessFactor' in lr:
+			tbf = lr['tierBrightnessFactor']
+			if not isinstance(tbf, dict):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.tierBrightnessFactor must be a dict if present, got {type(tbf)}")
+		if 'tierOpacity' in lr:
+			to = lr['tierOpacity']
+			if not isinstance(to, dict):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.tierOpacity must be a dict if present, got {type(to)}")
+		if 'defaultAlignStop' in lr:
+			das = lr['defaultAlignStop']
+			if das not in ('left', 'center', 'right'):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.defaultAlignStop must be 'left', 'center', or 'right' if present, got {das!r}")
+		# New typed optional label metric fields
+		if 'labelFontSize' in lr:
+			lfs = lr['labelFontSize']
+			if not isinstance(lfs, (int, float)) or lfs <= 0:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.labelFontSize must be a positive number if present, got {lfs!r}")
+		if 'labelLineHeight' in lr:
+			llh = lr['labelLineHeight']
+			if not isinstance(llh, (int, float)) or llh <= 0:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.labelLineHeight must be a positive number if present, got {llh!r}")
+		if 'labelOffsetY' in lr:
+			loy = lr['labelOffsetY']
+			if not isinstance(loy, (int, float)):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules.labelOffsetY must be a number if present, got {loy!r}")
+
+	# Check optional accentRules field
+	if 'accentRules' in scene_config:
+		ar = scene_config['accentRules']
+		if not isinstance(ar, dict):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): accentRules must be a dict if present, got {type(ar)}")
+		# accentRules is a map of key -> { stroke?, fill?, pattern? }
+		for key, value in ar.items():
+			if not isinstance(value, dict):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): accentRules['{key}'] must be a dict, got {type(value)}")
+			# Each key should map to a dict with optional stroke, fill, pattern (all strings)
+			for field in value:
+				if field not in ('stroke', 'fill', 'pattern'):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): accentRules['{key}'].{field} is not a valid field (must be stroke, fill, or pattern)")
+				if not isinstance(value[field], str):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): accentRules['{key}'].{field} must be a string, got {type(value[field])}")
+
+	# Check for unknown top-level keys on the scene config
+	allowed_top_level_keys = {
+		'sceneId', 'workspace', 'capabilities', 'elementId', 'items', 'zones',
+		'sceneBounds', 'layoutRules', 'accentRules', 'wrongOrderMessage', 'tabStops'
+	}
+	for key in scene_config.keys():
+		if key not in allowed_top_level_keys:
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): unknown top-level key '{key}'")
+
+	# Check for unknown keys within items
+	if 'items' in scene_config:
+		allowed_item_keys = {
+			'id', 'label', 'shortLabel', 'zone', 'depthTier', 'svgAsset', 'kind',
+			'widthScale', 'anchorY', 'alignStop', 'accentKey', 'inventoryRef', 'baselineOverride'
+		}
+		items = scene_config['items']
+		for i, item in enumerate(items):
+			for key in item.keys():
+				if key not in allowed_item_keys:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): items[{i}] has unknown key '{key}'")
+
+	# Check for unknown keys within zones
+	if 'zones' in scene_config:
+		allowed_zone_keys = {'id', 'x0', 'x1', 'baseline', 'gap', 'align', 'tier', 'label'}
+		zones = scene_config['zones']
+		for i, zone in enumerate(zones):
+			for key in zone.keys():
+				if key not in allowed_zone_keys:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}] has unknown key '{key}'")
+
+	# Check for unknown keys within layoutRules
+	if 'layoutRules' in scene_config:
+		allowed_layout_rules_keys = {
+			'clusterSpacingPx', 'tierBrightnessFactor', 'tierOpacity', 'defaultAlignStop',
+			'labelFontSize', 'labelLineHeight', 'labelOffsetY'
+		}
+		layout_rules = scene_config['layoutRules']
+		for key in layout_rules.keys():
+			if key not in allowed_layout_rules_keys:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): layoutRules has unknown key '{key}'")
+
+	# Check optional wrongOrderMessage field
+	if 'wrongOrderMessage' in scene_config:
+		wom = scene_config['wrongOrderMessage']
+		if not isinstance(wom, dict):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): wrongOrderMessage must be a dict if present, got {type(wom)}")
+		if 'template' in wom:
+			tpl = wom['template']
+			if not isinstance(tpl, str):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): wrongOrderMessage.template must be a string if present, got {type(tpl)}")
+		if 'toastDurationMs' in wom:
+			tdm = wom['toastDurationMs']
+			if not isinstance(tdm, int):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): wrongOrderMessage.toastDurationMs must be an integer if present, got {type(tdm)}")
+
+	# Check optional tabStops field
+	if 'tabStops' in scene_config:
+		ts = scene_config['tabStops']
+		if not isinstance(ts, list):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): tabStops must be a list if present, got {type(ts)}")
+		# tabStops is a list of lists of item ids
+		for i, group in enumerate(ts):
+			if not isinstance(group, list):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): tabStops[{i}] must be a list, got {type(group)}")
+			for j, item_id in enumerate(group):
+				if not isinstance(item_id, str):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): tabStops[{i}][{j}] must be a string, got {type(item_id)}")
+
+	# Check optional sceneBounds field (required dict with numeric left, right, top, bottom)
+	if 'sceneBounds' in scene_config:
+		sb = scene_config['sceneBounds']
+		if not isinstance(sb, dict):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): sceneBounds must be a dict if present, got {type(sb)}")
+		# Check required fields within sceneBounds
+		for required_field in ('left', 'right', 'top', 'bottom'):
+			if required_field not in sb:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): sceneBounds.{required_field} is required if sceneBounds is present")
+			value = sb[required_field]
+			if not isinstance(value, (int, float)):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): sceneBounds.{required_field} must be a number, got {type(value)}")
+
 	return scene_config
 
 
@@ -218,15 +391,78 @@ def generate_scene_data(scene_configs: dict) -> str:
 		' * Will be populated as scenes are migrated to the driver architecture.',
 		' */',
 		'',
+		'// LayoutSceneItem: full layout-engine item with all placement and visual fields',
+		'export interface LayoutSceneItem {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'\tzone: string;',
+		'\tdepthTier: number;',
+		'\tsvgAsset: string;',
+		'\tkind: string;',
+		'\twidthScale: number;',
+		'\tanchorY: \'top\' | \'bottom\' | \'tip\';',
+		'\talignStop: \'left\' | \'center\' | \'right\';',
+		'\taccentKey?: string;',
+		'\tinventoryRef?: string;',
+		'\tshortLabel?: string;',
+		'\tbaselineOverride?: number;',
+		'}',
+		'',
+		'// DispatchOnlySceneItem: minimal item for dispatch-only scenes (id and label only)',
+		'export interface DispatchOnlySceneItem {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'\tshortLabel?: string;',
+		'}',
+		'',
+		'// SceneItem: discriminated union of layout or dispatch-only variant',
+		'export type SceneItem = LayoutSceneItem | DispatchOnlySceneItem;',
+		'',
+		'// SceneZone: zone definitions for layout positioning',
+		'export interface SceneZone {',
+		'\tid: string;',
+		'\tx0: number;',
+		'\tx1: number;',
+		'\tbaseline: number;',
+		'\tgap: number;',
+		'\talign: string;',
+		'\ttier?: number;',
+		'\tlabel?: string;',
+		'}',
+		'',
+		'// SceneLayoutRules: optional layout tweaks',
+		'export interface SceneLayoutRules {',
+		'\tclusterSpacingPx?: number;',
+		'\ttierBrightnessFactor?: Record<number, number>;',
+		'\ttierOpacity?: Record<number, number>;',
+		'\tdefaultAlignStop?: \'left\' | \'center\' | \'right\';',
+		'\tlabelFontSize?: number;',
+		'\tlabelLineHeight?: number;',
+		'\tlabelOffsetY?: number;',
+		'}',
+		'',
+		'// SceneAccentRules: optional accent styling rules keyed by item id',
+		'export interface SceneAccentRules {',
+		'\t[key: string]: {',
+		'\t\tstroke?: string;',
+		'\t\tfill?: string;',
+		'\t\tpattern?: string;',
+		'\t};',
+		'}',
+		'',
+		'// SceneConfig: top-level scene configuration',
 		'export interface SceneConfig {',
 		'\tsceneId: string;',
 		'\tworkspace: string;',
 		'\tcapabilities: string[];',
 		'\telementId?: string;',
-		'\titems?: unknown[];',
-		'\tzones?: unknown[];',
+		'\titems?: SceneItem[];',
+		'\tzones?: SceneZone[];',
+		'\tsceneBounds?: { left: number; right: number; top: number; bottom: number };',
+		'\tlayoutRules?: SceneLayoutRules;',
+		'\taccentRules?: SceneAccentRules;',
 		'\twrongOrderMessage?: { template: string; toastDurationMs: number };',
-		'\t[key: string]: unknown;',
+		'\ttabStops?: string[][];',
 		'}',
 		'',
 		'export const SCENE_CONFIGS: Record<string, SceneConfig> = ',
@@ -274,8 +510,12 @@ def main() -> int:
 	# Generate TypeScript output
 	scene_data_ts = generate_scene_data(scene_configs)
 
-	# Write output file
-	scene_data_path = repo_root / 'src' / 'content' / 'scene_data.ts'
+	# Write output file to generated/ (gitignored, regenerated by bootstrap_generated.sh)
+	scene_data_path = repo_root / 'generated' / 'scene_data.ts'
+
+	# Ensure generated/ exists
+	scene_data_path.parent.mkdir(parents=True, exist_ok=True)
+
 	with open(scene_data_path, 'w') as f:
 		f.write(scene_data_ts)
 

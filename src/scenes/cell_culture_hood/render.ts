@@ -4,14 +4,27 @@
 
 import { ASSET_SPECS } from "../../asset_specs";
 import { FLASK_MAX_VOLUME_ML, type Interaction, type ProtocolStep } from "../../constants";
-import { REAGENTS } from "../../content/inventory_data";
+import { REAGENTS } from "../../inventory";
 import { gameState, getCurrentStep, renderGame, switchScene } from "../../game_state";
-import { HOOD_LAYOUT_RULES, HOOD_SCENE_ITEMS, getHoodItemLabel } from "../../hood_config";
+import { SCENE_CONFIGS } from "../../scene_configs";
 import { computeSceneLayout } from "../../layout_engine";
 import { showWrongOrderToast } from "../shared/wrong_order_feedback";
+import { getSceneItemLabel, findSceneItem } from "../shared/scene_item_lookup";
 import { canonicalTool, deriveHeldLiquid } from "../shared/liquid_transfer";
 import { COLOR_MAP, type ColorRole } from "../../style_constants";
 import { deriveT75Visual, getHoodBackgroundSvg, getSeroPipetteSvg, getWellPlateSvg, renderEquipmentSvg } from "../../svg_assets";
+
+//============================================
+// Hood config cache (loaded from SCENE_CONFIGS at runtime)
+//============================================
+const HOOD_CONFIG_OPTIONAL = SCENE_CONFIGS['cell_culture_hood'];
+
+// Assert HOOD_CONFIG is defined; fail fast if not.
+if (!HOOD_CONFIG_OPTIONAL) {
+	throw new Error('SCENE_CONFIGS missing cell_culture_hood - hood scene cannot initialize');
+}
+
+const HOOD_CONFIG = HOOD_CONFIG_OPTIONAL;
 
 //============================================
 // deriveActiveInteractionTargets(step, interactionIndex, selectedTool, heldLiquid)
@@ -61,8 +74,9 @@ function deriveActiveInteractionTargets(
 export function getStartingToolForStep(step: ProtocolStep): string | null {
 	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 	const itemIds = deriveActiveInteractionTargets(step, gameState.interactionIndex, gameState.selectedTool, heldLiquid);
+	const hoodItems = (HOOD_CONFIG.items || []) as unknown as import('../../scene_types').SceneItem[];
 	for (const itemId of itemIds) {
-		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
+		const item = findSceneItem(hoodItems, itemId);
 		if (item && item.kind === 'pipette') {
 			return item.id;
 		}
@@ -82,16 +96,17 @@ export function getStartingToolForStep(step: ProtocolStep): string | null {
 export function getReagentSourceForStep(step: ProtocolStep): string | null {
 	const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 	const itemIds = deriveActiveInteractionTargets(step, gameState.interactionIndex, gameState.selectedTool, heldLiquid);
+	const hoodItems = (HOOD_CONFIG.items || []) as unknown as import('../../scene_types').SceneItem[];
 	// Preferred: a bottle or rack in the derived items (reagent container)
 	for (const itemId of itemIds) {
-		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
+		const item = findSceneItem(hoodItems, itemId);
 		if (item && (item.kind === 'bottle' || item.kind === 'rack')) {
 			return item.id;
 		}
 	}
 	// Fallback: first non-pipette, non-plate item in derived items
 	for (const itemId of itemIds) {
-		const item = HOOD_SCENE_ITEMS.find(i => i.id === itemId);
+		const item = findSceneItem(hoodItems, itemId);
 		if (item && item.kind !== 'pipette' && item.kind !== 'plate') {
 			return item.id;
 		}
@@ -130,16 +145,13 @@ export function showWrongOrderHint(clickedItemId: string, step: ProtocolStep | n
 		};
 
 		if (interaction.tool && !toolPreconditionMet()) {
-			const toolItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.tool);
-			const toolLabel = toolItem ? getHoodItemLabel(interaction.tool) : interaction.tool;
+			const toolLabel = getSceneItemLabel(HOOD_CONFIG?.items, interaction.tool);
 			hintMessage = `Click the ${toolLabel} first.`;
 		} else if (interaction.source) {
-			const sourceItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.source);
-			const sourceLabel = sourceItem ? getHoodItemLabel(interaction.source) : interaction.source;
+			const sourceLabel = getSceneItemLabel(HOOD_CONFIG?.items, interaction.source);
 			hintMessage = `Click the ${sourceLabel}.`;
 		} else if (interaction.destination) {
-			const destItem = HOOD_SCENE_ITEMS.find(i => i.id === interaction.destination);
-			const destLabel = destItem ? getHoodItemLabel(interaction.destination) : interaction.destination;
+			const destLabel = getSceneItemLabel(HOOD_CONFIG?.items, interaction.destination);
 			hintMessage = `Click the ${destLabel}.`;
 		}
 	}
@@ -255,10 +267,36 @@ export function renderHoodScene(): void {
 	const hoodScene = document.getElementById('hood-scene');
 	if (!hoodScene) return;
 
+	if (!HOOD_CONFIG) {
+		throw new Error('HOOD_CONFIG missing - hood scene cannot render');
+	}
+
 	const viewportW = hoodScene.clientWidth || 800;
 	const viewportH = hoodScene.clientHeight || 600;
+	// Convert zones array [{id, x0, x1, ...}] to Record<string, ZoneDef>
+	// SCENE_CONFIGS emits zones as an array; computeSceneLayout expects a dict.
+	const hoodZonesArray = HOOD_CONFIG.zones || [];
+	const hoodZonesRecord: Record<string, any> = {};
+	for (let zi = 0; zi < hoodZonesArray.length; zi++) {
+		const z = hoodZonesArray[zi];
+		if (z && z.id) {
+			hoodZonesRecord[z.id] = z;
+		}
+	}
+	// Combine zones and layoutRules for the layout engine.
+	// sceneBounds lives at the top level of HOOD_CONFIG (not inside layoutRules),
+	// so pull it in explicitly so the clamping pass in computeSceneLayout fires.
+	const hoodLayoutRules: import('../../scene_types').SceneLayoutRules = {
+		...(HOOD_CONFIG.layoutRules || {}),
+		zones: hoodZonesRecord,
+		...(HOOD_CONFIG.sceneBounds ? { sceneBounds: HOOD_CONFIG.sceneBounds } : {}),
+		labelFontSize: HOOD_CONFIG.layoutRules?.labelFontSize || 14,
+		labelLineHeight: HOOD_CONFIG.layoutRules?.labelLineHeight || 1.4,
+		labelOffsetY: HOOD_CONFIG.layoutRules?.labelOffsetY || 0,
+	};
+	const hoodItems = (HOOD_CONFIG.items || []) as unknown as import('../../scene_types').SceneItem[];
 	const layout = computeSceneLayout(
-		HOOD_SCENE_ITEMS, ASSET_SPECS, HOOD_LAYOUT_RULES,
+		hoodItems, ASSET_SPECS, hoodLayoutRules,
 		viewportW, viewportH
 	);
 
@@ -298,16 +336,17 @@ export function renderHoodScene(): void {
 		const selectedClass = isSelected ? ' is-selected' : '';
 		const svgHtml = getItemSvgHtml(item.id);
 		const accentStyle = getHoodItemAccentStyle(item.id);
+		const tooltip = getSceneItemLabel(HOOD_CONFIG?.items, item.id);
 
 		itemsHtml += '<div class="hood-item' + activeClass + pulseClass + selectedClass + '"';
 		itemsHtml += ' data-item-id="' + item.id + '"';
 		itemsHtml += ' tabindex="0" role="button"';
-		itemsHtml += ' aria-label="' + item.tooltip + '"';
+		itemsHtml += ' aria-label="' + tooltip + '"';
 		itemsHtml += ' aria-pressed="' + (isSelected ? 'true' : 'false') + '"';
 		itemsHtml += ' data-x="' + item.x.toFixed(1) + '"';
 		itemsHtml += ' data-y="' + item.y.toFixed(1) + '"';
 		itemsHtml += ' draggable="true"';
-		itemsHtml += ' title="' + item.tooltip + '"';
+		itemsHtml += ' title="' + tooltip + '"';
 		itemsHtml += ' style="left:' + item.x.toFixed(1) + '%;';
 		itemsHtml += 'top:' + item.y.toFixed(1) + '%;';
 		itemsHtml += 'width:' + item.width.toFixed(1) + '%;';
@@ -352,19 +391,19 @@ export function renderHoodScene(): void {
 			if (!gameState.selectedTool) {
 				const startTool = getStartingToolForStep(currentStep);
 				if (startTool) {
-					const startLabel = getHoodItemLabel(startTool);
+					const startLabel = getSceneItemLabel(HOOD_CONFIG?.items, startTool);
 					hintText = 'Pick up the ' + startLabel + ' -- ' + currentStep.action;
 				}
 			}
 		}
 	}
 	if (gameState.selectedTool) {
-		const toolLabel = getHoodItemLabel(gameState.selectedTool);
+		const toolLabel = getSceneItemLabel(HOOD_CONFIG?.items, gameState.selectedTool);
 		if (gameState.selectedTool === 'serological_pipette') {
 			if (currentStep) {
 				const source = getReagentSourceForStep(currentStep);
 				if (source) {
-					const sourceLabel = getHoodItemLabel(source);
+					const sourceLabel = getSceneItemLabel(HOOD_CONFIG?.items, source);
 					hintText = 'Holding: ' + toolLabel + ' -- Click the ' + sourceLabel;
 				} else {
 					hintText = 'Holding: ' + toolLabel + ' -- ' + currentStep.action;
@@ -386,7 +425,7 @@ export function renderHoodScene(): void {
 			if (currentStep) {
 				const source = getReagentSourceForStep(currentStep);
 				if (source) {
-					const sourceLabel = getHoodItemLabel(source);
+					const sourceLabel = getSceneItemLabel(HOOD_CONFIG?.items, source);
 					hintText = 'Holding: ' + toolLabel + ' -- Click the ' + sourceLabel;
 				} else {
 					hintText = 'Holding: ' + toolLabel + ' -- ' + currentStep.action;

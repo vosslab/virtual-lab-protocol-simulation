@@ -22,7 +22,7 @@ This separation achieves:
 
 ## Where YAML lives
 
-Protocol YAML files are human-authored source content. They live under `src/content/<protocol_name>/` because the build treats them as app source inputs and compiles them into generated TypeScript modules in `src/content/`. Do not edit `src/content/protocol_data.ts` or `src/content/inventory_data.ts` by hand. Edit the YAML files and rebuild.
+Protocol YAML files are human-authored source content. They live under `src/content/<protocol_name>/` because the build treats them as app source inputs and compiles them into generated TypeScript modules under `generated/` (gitignored). Do not edit `generated/protocol_data.ts` or `generated/inventory_data.ts` by hand; runtime callers consume them via the authored facades `src/protocol.ts` and `src/inventory.ts`. Edit the YAML files and rebuild.
 
 ## File locations
 
@@ -46,8 +46,8 @@ The active protocol is `cell_culture`:
 A Python generator at `tools/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
 
-- `src/content/protocol_data.ts`: exports `PROTOCOL_STEPS`, `PROTOCOL_PARTS`, `PROTOCOL_DAYS`
-- `src/content/inventory_data.ts`: exports `EQUIPMENT` (item map) and `REAGENTS` (reagent map)
+- `generated/protocol_data.ts`: exports `PROTOCOL_STEPS`, `PROTOCOL_PARTS`, `PROTOCOL_DAYS` (gitignored; re-exported by the `src/protocol.ts` facade)
+- `generated/inventory_data.ts`: exports `EQUIPMENT` (item map) and `REAGENTS` (reagent map) (gitignored; re-exported by the `src/inventory.ts` facade)
 
 ### Multiple protocols
 
@@ -715,9 +715,10 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 ## Generated TypeScript surface
 
 The Python builder (`tools/build_protocol_data.py`) compiles YAML into two
-TypeScript modules at `src/content/`:
+TypeScript modules at `generated/` (gitignored; consumed via the authored
+facades `src/protocol.ts` and `src/inventory.ts`):
 
-### src/content/protocol_data.ts
+### generated/protocol_data.ts
 
 ```typescript
 export const PROTOCOL_STEPS: readonly ProtocolStep[] = [
@@ -740,7 +741,7 @@ export const PROTOCOL_DAYS: readonly Record<string, ProtocolDay> = {
 };
 ```
 
-### src/content/inventory_data.ts
+### generated/inventory_data.ts
 
 ```typescript
 export const EQUIPMENT: readonly Record<string, InventoryItem> = {

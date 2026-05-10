@@ -25,17 +25,10 @@ cd "$(git rev-parse --show-toplevel)"
 rm -rf dist
 mkdir -p dist
 
-# Validate protocol YAML before any build steps. This is a fast gate that
-# catches schema and consistency issues early and fails the build cleanly.
-python3 tools/build_protocol_data.py --validate-only
-
-# Validate and compile scene YAML before any build steps.
-python3 tools/build_scene_data.py
-
-# Regenerate generated/svg_assets/*.ts and generated/svg_manifest.ts from
-# assets/equipment/*.svg before tsc. generated/ is gitignored, so this
-# step is the only way the build sees current SVG strings.
-python3 tools/generate_svg_globals.py
+# Bootstrap all YAML-emitted generated TS families: protocol_data.ts,
+# inventory_data.ts, scene_data.ts, and SVG manifest. The script is idempotent
+# and handles validation ordering (protocol first as a fast gate).
+bash tools/bootstrap_generated.sh
 
 npx tsc --noEmit -p src/tsconfig.json
 

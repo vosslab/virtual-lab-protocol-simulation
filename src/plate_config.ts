@@ -44,11 +44,11 @@ export const PLATE_ZONES: Record<string, ZoneDef> = {
 // sources at the top.
 export const PLATE_SCENE_ITEMS: SceneItem[] = [
 	// Center zone: 96-well plate at large scale
-	{ id: 'well_plate', asset: 'well_plate_96', kind: 'plate', zone: 'zone_plate_center', priority: 1, widthScale: 2.8, label: '96-Well Plate', anchorY: 'bottom', alignStop: 'center' },
+	{ id: 'well_plate', svgAsset: 'well_plate_96', kind: 'plate', zone: 'zone_plate_center', depthTier: 1, widthScale: 2.8, label: '96-Well Plate', anchorY: 'bottom', alignStop: 'center' },
 	// Right zone: multichannel pipette vertically centered
-	{ id: 'multichannel_pipette', asset: 'multichannel_pipette', kind: 'pipette', zone: 'zone_pipettes_right', priority: 2, widthScale: 1.0, label: 'Multichannel Pipette', shortLabel: 'Multichannel', anchorY: 'tip', alignStop: 'center' },
+	{ id: 'multichannel_pipette', svgAsset: 'multichannel_pipette', kind: 'pipette', zone: 'zone_pipettes_right', depthTier: 2, widthScale: 1.0, label: 'Multichannel Pipette', shortLabel: 'Multichannel', anchorY: 'tip', alignStop: 'center' },
 	// Top zone: reagent sources left-to-right
-	{ id: 'carboplatin_working_stock', asset: 'dilution_tube_rack', kind: 'bottle', zone: 'zone_liquids_top', priority: 3, widthScale: 0.6, label: 'Carboplatin Working Stock', shortLabel: 'Carb Stock', anchorY: 'bottom', alignStop: 'left' },
+	{ id: 'carboplatin_working_stock', svgAsset: 'dilution_tube_rack', kind: 'bottle', zone: 'zone_liquids_top', depthTier: 3, widthScale: 0.6, label: 'Carboplatin Working Stock', shortLabel: 'Carb Stock', anchorY: 'bottom', alignStop: 'left' },
 ];
 
 export const PLATE_LAYOUT_RULES: SceneLayoutRules = {

@@ -6,7 +6,7 @@
 // renderProtocolPanel() - Render the protocol checklist in the sidebar
 // ============================================
 import { INITIAL_CONFLUENCY, type ScoreResult } from "./constants";
-import { PROTOCOL_STEPS } from "./content/protocol_data";
+import { PROTOCOL_STEPS } from "./protocol";
 import { gameState, getCurrentStep, resetGame, setRenderWarningBanner, setShowNotification, triggerStep } from "./game_state";
 
 // Singleton function for rendering the game; allows init.ts to replace without violating import immutability

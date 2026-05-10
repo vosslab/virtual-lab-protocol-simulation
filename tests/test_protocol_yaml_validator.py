@@ -13,12 +13,13 @@ Tests cover all eight validation rules:
 """
 
 import sys
+import os
 import pytest
 
 # Import validation functions from build_protocol_data.py
 import git_file_utils
 REPO_ROOT = git_file_utils.get_repo_root()
-sys.path.insert(0, str(REPO_ROOT + '/tools'))
+sys.path.insert(0, os.path.join(str(REPO_ROOT), 'tools'))
 import build_protocol_data as validator
 
 

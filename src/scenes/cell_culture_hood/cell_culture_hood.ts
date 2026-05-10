@@ -18,18 +18,23 @@ import {
 } from "../../game_state";
 import { resolveInteraction, resolveInteractionByIndex } from "../../interaction_resolver";
 import { showWrongOrderToast } from "../shared/wrong_order_feedback";
-import { buildLegacyToken } from "../shared/legacy_tokens";
 import { canonicalTool, deriveHeldLiquid } from "../shared/liquid_transfer";
 import { FRESH_MEDIA_TARGET_ML } from "../../constants";
 import { hideTransferHud, renderProtocolPanel, renderScoreDisplay } from "../../ui_rendering";
-import { REAGENTS } from "../../content/inventory_data";
+import { REAGENTS } from "../../inventory";
 import { startAspiration, startAddingMedia } from "../../steps/feed_cells";
 import { startDrugAddition } from "../../steps/drug_treatment";
 import { applyPlateDoseMap } from "../../steps/plate_96";
 import { renderTrypsinIncubation } from "../incubator/incubator";
 import { renderHoodScene, getStartingToolForStep, getReagentSourceForStep, showWrongOrderHint, getAvailableActions } from "./render";
-import { getHoodItemLabel } from "../../hood_config";
+import { getSceneItemLabel } from "../shared/scene_item_lookup";
+import { SCENE_CONFIGS } from "../../scene_configs";
 import { setupHoodEventListeners } from "./hood_shared";
+
+//============================================
+// Hood config cache (loaded from SCENE_CONFIGS at runtime)
+//============================================
+const HOOD_CONFIG = SCENE_CONFIGS['cell_culture_hood'];
 
 //============================================
 // MODULE-LOAD SIDE EFFECTS - DO NOT MOVE OR REMOVE
@@ -104,11 +109,7 @@ function dispatchInteractionClick(itemId: string): void {
 				volumeMl: result.volumeMl,
 				colorKey: colorKey,
 			};
-		}
-
-		const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
-		if (legacyToken) {
-			gameState.selectedTool = legacyToken;
+			gameState.selectedTool = result.resultActor;
 		}
 
 		if (result.indexDelta === 1) {
@@ -433,10 +434,7 @@ function onItemClick(itemId: string): void {
 					volumeMl: result.volumeMl,
 					colorKey: colorKey,
 				};
-			}
-			const legacyToken = buildLegacyToken(result.resultActor, result.resultLiquid);
-			if (legacyToken) {
-				gameState.selectedTool = legacyToken;
+				gameState.selectedTool = result.resultActor;
 				let notification = 'Loaded ' + result.resultLiquid + '.';
 				if (result.resultLiquid === 'pbs') notification = 'PBS loaded into pipette. Click the flask to rinse.';
 				if (result.resultLiquid === 'trypsin') notification = 'Loaded trypsin-EDTA. Click the flask to add.';
@@ -609,7 +607,7 @@ function onItemClick(itemId: string): void {
 		}
 
 		gameState.selectedTool = itemId;
-		showNotification('Picked up ' + getHoodItemLabel(itemId));
+		showNotification('Picked up ' + getSceneItemLabel(HOOD_CONFIG?.items, itemId));
 		renderHoodScene();
 		return;
 	}

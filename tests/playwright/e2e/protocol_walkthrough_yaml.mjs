@@ -965,7 +965,7 @@ async function rebuildProtocol(protocolName) {
 	 * Returns the original protocol/inventory data as strings so they can be restored in finally.
 	 * Also rebuilds the game bundle (dist/main.js) so the server serves the new protocol.
 	 */
-	const protocolDataPath = path.join(REPO_ROOT, 'src', 'content', 'protocol_data.ts');
+	const protocolDataPath = path.join(REPO_ROOT, 'generated', 'protocol_data.ts');
 	const inventoryDataPath = path.join(REPO_ROOT, 'src', 'content', 'inventory_data.ts');
 
 	// Save original files

@@ -1,0 +1,43 @@
+sceneId: test_layout_bench
+workspace: equipment_bench
+capabilities:
+  - itemWorkspace
+
+items:
+  - id: centrifuge
+    label: Centrifuge
+    zone: mid_bench
+    depthTier: 1
+    svgAsset: centrifuge
+    kind: equipment
+    widthScale: 0.95
+    anchorY: bottom
+    alignStop: left
+  - id: water_bath
+    label: 37C Water Bath
+    zone: mid_bench
+    depthTier: 2
+    svgAsset: water_bath
+    kind: equipment
+    widthScale: 0.90
+    anchorY: bottom
+    alignStop: center
+    inventoryRef: media
+
+zones:
+  - id: mid_bench
+    x0: 5
+    x1: 95
+    baseline: 75
+    gap: 3
+    align: tab-stops
+  - id: back_shelf
+    x0: 5
+    x1: 95
+    baseline: 22
+    gap: 3
+    align: tab-stops
+
+wrongOrderMessage:
+  template: "Try the {expectedLabel}."
+  toastDurationMs: 2000

@@ -500,7 +500,7 @@ actionable diagnostics.
 | --- | --- | --- |
 | Audit | `source source_me.sh && python3 tools/analyze_protocol_audit.py --protocol <name>` | Quick check: report [OK]/[INFO]/[WARN]/[ERROR] per step. |
 | Validate | `source source_me.sh && python3 tools/build_protocol_data.py --validate-only --protocol <name>` | Run all schema and cross-file rules without writing TypeScript output. |
-| Build | `source source_me.sh && python3 tools/build_protocol_data.py --protocol <name>` | Validate and emit `src/content/protocol_data.ts` and `src/content/inventory_data.ts`. |
+| Build | `source source_me.sh && python3 tools/build_protocol_data.py --protocol <name>` | Validate and emit `generated/protocol_data.ts` and `generated/inventory_data.ts` (gitignored; consumed via the `src/protocol.ts` and `src/inventory.ts` facades). |
 | Walk | `source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol <name>` | Rebuild the bundle for `<name>`, launch Playwright, and play the protocol through the real DOM. |
 | Wrong-order walk | `source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol <name> --wrong-order` | Variant that injects a wrong-order click before each correct sequence and asserts the soft-fail behavior. |
 

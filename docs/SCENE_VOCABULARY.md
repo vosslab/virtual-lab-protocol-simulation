@@ -50,7 +50,8 @@ Adapter files live under `src/scenes/<scene>/<scene>.ts`.
 
 The stable string id for a scene. It matches the directory name, the YAML
 basename, the adapter's `sceneId` field, the key in
-[src/content/scene_data.ts](../src/content/scene_data.ts) `SCENE_CONFIGS`,
+`generated/scene_data.ts` `SCENE_CONFIGS` (consumed via the
+[src/scene_configs.ts](../src/scene_configs.ts) facade),
 and the key in the scene registry. Example: `bench`, `cell_culture_hood`,
 `plate_reader`. The discoverer in
 [tools/build_scene_data.py](../tools/build_scene_data.py) globs

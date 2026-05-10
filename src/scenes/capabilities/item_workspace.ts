@@ -1,7 +1,7 @@
 //============================================
 // item_workspace.ts - ItemWorkspace scene capability
 // First concrete capability: handles item-in-zone interactions.
-// Consumes shared modules: wrong_order_feedback, scene_layout, liquid_transfer.
+// Consumes shared modules: wrong_order_feedback, liquid_transfer.
 //============================================
 
 import type { SceneCapability, SceneContext, ClickTarget } from "../scene_driver";

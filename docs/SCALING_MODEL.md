@@ -33,9 +33,11 @@ These values are tuned so that:
      displayWidthCm: 60  # 60 cm (exaggerated, real ~40cm)
    ```
 
-2. The value is compiled into `EQUIPMENT` in `src/content/inventory_data.ts`
+2. The value is compiled into `EQUIPMENT` in `generated/inventory_data.ts`
+   (gitignored; consumed via the `src/inventory.ts` facade).
 
-3. Scene configs (`bench_config.ts`, `hood_config.ts`) compute `widthScale` from `displayWidthCm`:
+3. Scene YAML under `src/scenes/<scene>/<scene>.yaml` (bench and hood)
+   together with the layout engine compute `widthScale` from `displayWidthCm`:
    ```typescript
    widthScale = computeWidthScaleFromDisplay(displayWidthCm, scene, defaultWidth)
    ```

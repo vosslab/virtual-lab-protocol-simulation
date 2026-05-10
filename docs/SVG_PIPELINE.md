@@ -98,11 +98,12 @@ If a scene needs a new asset, a new state, or a new overlay, expose the new
 behavior through `svg_assets.ts` and import that. Reaching past the facade
 defeats the boundary the pipeline is built around.
 
-The composition facade is the only authored module that may import the
-generated manifest. Two non-scene authored consumers
-([src/layout_engine.ts](../src/layout_engine.ts) for aspect ratios and
-[src/protocol_ui.ts](../src/protocol_ui.ts) for a single static SVG) were
-migrated onto the facade; new code must not add to that list.
+Two authored modules may import from `generated/`: [src/svg_assets.ts](../src/svg_assets.ts)
+(composition facade that uses the barrel re-export) and [src/svg_color_patch.ts](../src/svg_color_patch.ts)
+(recolor-primitives layer that imports the manifest for color-group metadata). Other authored
+consumers ([src/layout_engine.ts](../src/layout_engine.ts) for aspect ratios and
+[src/protocol_ui.ts](../src/protocol_ui.ts) for static SVGs) consume through `svg_assets.ts`;
+new code must not add direct `generated/` imports outside these two boundary modules.
 
 ## How to add an equipment asset
 

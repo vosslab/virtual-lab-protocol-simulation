@@ -323,6 +323,17 @@ zones:
     gap: 2
     align: tab-stops
 
+sceneBounds:
+  left: 1
+  right: 99
+  top: 1
+  bottom: 98
+
+layoutRules:
+  labelFontSize: 9
+  labelLineHeight: 1.1
+  labelOffsetY: 3
+
 wrongOrderMessage:
   template: "Try the {expectedLabel}."
   toastDurationMs: 2000

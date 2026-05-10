@@ -25,7 +25,8 @@ src/scenes/<scene>/<scene>.yaml
 tools/build_scene_data.py  (validate + emit)
         |
         v
-src/content/scene_data.ts   (AUTO-GENERATED, do not hand-edit)
+generated/scene_data.ts     (AUTO-GENERATED, gitignored; do not hand-edit)
+src/scene_configs.ts        (authored facade re-exporting SCENE_CONFIGS)
         |
         v
 src/scenes/scene_driver.ts  (runScene reads SCENE_CONFIGS)
@@ -71,7 +72,11 @@ behavior. Scene YAML is not author-facing content and does not live under
 | `elementId` | string | no | `runScene` ([scene_driver.ts:181](../src/scenes/scene_driver.ts)) | DOM element id where the driver attaches its capture-phase click listener. Defaults to `${sceneId}-scene` if absent. Used by `cell_culture_hood` (`hood-scene`) and `microscope` (`instrument-overlay`) where the DOM id does not match the sceneId. |
 | `items` | object[] | no | `itemWorkspace` capability ([item_workspace.ts:62](../src/scenes/capabilities/item_workspace.ts)) for item-zone scenes; declared but minimal in the microscope grid scene | Item declarations consumed by the item workspace capability for click dispatch. See "Items". |
 | `zones` | object[] | no | `itemWorkspace` capability ([item_workspace.ts:69](../src/scenes/capabilities/item_workspace.ts)) | Zone declarations referenced by `items[].zone`. See "Zones". |
+| `sceneBounds` | object | no | Reserved for layout engine refinement. | Optional scene boundary definition with required numeric fields: `left`, `right`, `top`, `bottom` (each a number). Defines the active scene bounds for layout calculations. See "Scene bounds". |
+| `layoutRules` | object | no | Reserved for layout engine refinement (future). | Optional layout tweaks such as cluster spacing, tier brightness factors, default alignment, and label metrics. See "Layout rules". |
+| `accentRules` | object | no | Reserved for render styling (future). | Optional accent styling rules keyed by item id. See "Accent rules". |
 | `wrongOrderMessage` | object | no | None at runtime today | Toast template for wrong-order feedback. The shared toast helper in [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) uses hardcoded values; the YAML field is reserved for future per-scene toast messaging. See "Wrong-order messages". |
+| `tabStops` | object[] | no | Reserved for future layout refinement. | Optional grouping of item ids that share a tab stop for keyboard navigation. |
 
 **Note on `workspace`:** The `workspace` field is required for schema stability even though no runtime consumer reads it yet. Do not add new `workspace` values without updating this doc.
 
@@ -79,23 +84,56 @@ behavior. Scene YAML is not author-facing content and does not live under
 
 Item declarations are consumed by the `itemWorkspace` capability for
 click-target dispatch and (where applicable) by the layout engine via
-adapter-side config. Item rows in the bench, hood, and plate YAMLs share a
-rich field set; the microscope YAML uses a minimal item shape because grid
-quadrants are positioned by the legacy renderer, not by the layout engine.
+adapter-side config. The schema supports two item variants: `LayoutSceneItem`
+for items laid out by the layout engine (bench, hood) and `DispatchOnlySceneItem`
+for minimal items that exist for dispatch only (microscope, plate).
+
+### LayoutSceneItem (full layout-engine item)
 
 | field | type | required | used by | meaning |
 | --- | --- | --- | --- | --- |
 | `id` | string | yes | `itemWorkspace` (click dispatch); adapter dispatch | Stable per-scene item id; must be unique within the scene. |
-| `label` | string | usually | adapters (toasts, badges) | Human-readable label. Required in practice across all current YAMLs. |
+| `label` | string | yes | adapters (toasts, badges) | Human-readable label. |
+| `zone` | string | yes | `itemWorkspace` validates that the value matches a declared zone id | The zone in which the item is placed. |
+| `depthTier` | number | yes | layout engine via adapter | Front-to-back ordering within the zone. |
+| `svgAsset` | string | yes | adapter render | Name of the SVG asset for this item. |
+| `kind` | string | yes | adapter render | Item category (`equipment`, `bottle`, `flask`, `pipette`, `rack`, `plate`, `instrument`, `decoration`, `waste`). |
+| `widthScale` | number | yes | layout engine via adapter | Width scale factor relative to the zone slot. |
+| `anchorY` | string | yes | layout engine via adapter | Vertical anchor (`bottom`, `tip`). |
+| `alignStop` | string | yes | layout engine via adapter | Tab-stop alignment within the zone (`left`, `center`, `right`). |
+| `accentKey` | string | no | adapter render | Reference to an `accentRules` key for optional styling. |
+| `inventoryRef` | string | no | adapter dispatch | Reference to a reagent id in the inventory registry. |
 | `shortLabel` | string | no | adapters | Compact label variant for narrow contexts. |
-| `zone` | string | yes for layout-engine items | `itemWorkspace` validates that the value matches a declared zone id | The zone in which the item is placed. |
-| `depthTier` | number | yes for layout-engine items | layout engine via adapter | Front-to-back ordering within the zone. |
-| `svgAsset` | string | yes for layout-engine items | adapter render | Name of the SVG asset for this item. |
-| `kind` | string | yes for layout-engine items | adapter render | Item category (`equipment`, `bottle`, `flask`, `pipette`, `rack`, `plate`, `instrument`, `decoration`, `waste`). |
-| `widthScale` | number | no | layout engine via adapter | Width scale factor relative to the zone slot. |
-| `anchorY` | string | no | layout engine via adapter | Vertical anchor (`bottom`, `tip`). |
-| `alignStop` | string | no | layout engine via adapter | Tab-stop alignment within the zone (`left`, `center`, `right`). |
 | `baselineOverride` | number | no | layout engine via adapter | Per-item baseline override (used by the hood flask). |
+
+Example LayoutSceneItem:
+
+```yaml
+- id: flask
+  label: T-75 Flask
+  zone: back_row
+  depthTier: 4
+  svgAsset: flask
+  kind: flask
+  widthScale: 1.2
+  anchorY: bottom
+  alignStop: center
+  baselineOverride: 52
+```
+
+### DispatchOnlySceneItem (minimal item)
+
+| field | type | required | used by | meaning |
+| --- | --- | --- | --- | --- |
+| `id` | string | yes | `itemWorkspace` (click dispatch); adapter dispatch | Stable per-scene item id; dispatch target identifier. |
+| `label` | string | yes | adapters | Human-readable label. |
+
+Example DispatchOnlySceneItem:
+
+```yaml
+- id: quadrant_0
+  label: Quadrant A
+```
 
 The microscope YAML declares four items (`quadrant_0` through `quadrant_3`)
 with only `id` and `label`. This is a structural variant: those items exist
@@ -112,11 +150,100 @@ placement and by adapters for layout. Zones are referenced by
 | field | type | required | used by | meaning |
 | --- | --- | --- | --- | --- |
 | `id` | string | yes | `itemWorkspace` validates uniqueness and item references | Stable per-scene zone id. |
-| `x0` | number | yes for layout-engine zones | layout engine via adapter | Left bound of the zone (percent of scene width). |
-| `x1` | number | yes for layout-engine zones | layout engine via adapter | Right bound. |
-| `baseline` | number | yes for layout-engine zones | layout engine via adapter | Baseline Y (percent of scene height). |
-| `gap` | number | yes for layout-engine zones | layout engine via adapter | Inter-item gap. |
-| `align` | string | yes for layout-engine zones | layout engine via adapter | Alignment mode (`tab-stops`, `center`). |
+| `x0` | number | yes | layout engine via adapter | Left bound of the zone (percent of scene width). |
+| `x1` | number | yes | layout engine via adapter | Right bound of the zone (percent of scene width). |
+| `baseline` | number | yes | layout engine via adapter | Baseline Y (percent of scene height). |
+| `gap` | number | yes | layout engine via adapter | Inter-item gap (in scene units). |
+| `align` | string | yes | layout engine via adapter | Alignment mode (`tab-stops`, `center`). |
+| `tier` | number | no | Reserved for layout refinement. | Optional tier classification for depth-based rendering (1..5, or higher for future extension). |
+| `label` | string | no | Reserved for future labeling. | Optional zone label for debugging or documentation. |
+
+Example zone:
+
+```yaml
+zones:
+  - id: back_row
+    x0: 5
+    x1: 95
+    baseline: 75
+    gap: 3
+    align: tab-stops
+```
+
+## Scene bounds
+
+The optional `sceneBounds` block defines the active rendering bounds for
+the scene in normalized percent units. All four fields are required if the
+block is present.
+
+| field | type | meaning |
+| --- | --- | --- |
+| `left` | number | Left bound (0-100, percent of scene width). |
+| `right` | number | Right bound (0-100, percent of scene width). |
+| `top` | number | Top bound (0-100, percent of scene height). |
+| `bottom` | number | Bottom bound (0-100, percent of scene height). |
+
+Example:
+
+```yaml
+sceneBounds:
+  left: 1
+  right: 99
+  top: 1
+  bottom: 98
+```
+
+## Layout rules
+
+The optional `layoutRules` block allows fine-tuning of layout engine
+behavior per scene. All fields are optional.
+
+| field | type | meaning |
+| --- | --- | --- |
+| `clusterSpacingPx` | integer | Spacing between item clusters (in pixels). |
+| `tierBrightnessFactor` | object (map of tier -> number) | Per-tier brightness multiplier for rendered items. |
+| `tierOpacity` | object (map of tier -> number) | Per-tier opacity (0..1) for rendered items. |
+| `defaultAlignStop` | string | Default alignment for items that do not specify `alignStop` (`left`, `center`, `right`). |
+| `labelFontSize` | number | Font size for item labels (in pixels; must be positive). |
+| `labelLineHeight` | number | Line height for item labels (must be positive). |
+| `labelOffsetY` | number | Vertical offset for item labels from item baseline (in pixels). |
+
+Example:
+
+```yaml
+layoutRules:
+  clusterSpacingPx: 10
+  tierBrightnessFactor:
+    1: 1.0
+    2: 0.95
+    3: 0.9
+  defaultAlignStop: center
+  labelFontSize: 12
+  labelLineHeight: 1.2
+  labelOffsetY: 5
+```
+
+## Accent rules
+
+The optional `accentRules` block defines styling overrides for items keyed
+by `accentKey`. Each key maps to an object with optional stroke, fill, and
+pattern fields.
+
+| field | type | meaning |
+| --- | --- | --- |
+| `<key>` | object | Styling rules for items with `accentKey: "<key>"`. Contains optional `stroke` (string), `fill` (string), `pattern` (string). |
+
+Example:
+
+```yaml
+accentRules:
+  highlight_active:
+    stroke: "#ff6b6b"
+    fill: "#ffe0e0"
+  highlight_used:
+    stroke: "#4ecdc4"
+    fill: "#e0f9f7"
+```
 
 ## Wrong-order messages
 
@@ -173,11 +300,11 @@ router or no-op state holder.
 - No defensive defaults that hide missing required fields. A missing
   required field must fail the build loudly, not silently fall back.
 - No duplication of data already owned by
-  [src/content/inventory_data.ts](../src/content/inventory_data.ts),
-  [src/bench_config.ts](../src/bench_config.ts), or
-  [src/hood_config.ts](../src/hood_config.ts) unless the builder validates
-  the relationship. Today the builder does not cross-validate against those
-  modules; duplicated data is a known gap.
+  `generated/inventory_data.ts` (consumed via the
+  [src/inventory.ts](../src/inventory.ts) facade) unless the builder
+  validates the relationship. (The legacy `src/bench_config.ts` and
+  `src/hood_config.ts` modules were retired in the 2026-05-09 scene
+  migration; bench and hood layout now live in scene YAML.)
 
 ## Validation rules
 
@@ -209,8 +336,7 @@ Gaps (not validated today):
 - Item field shapes beyond `id` and `zone` are not validated.
 - Zone field shapes beyond `id` are not validated.
 - `wrongOrderMessage` is not validated.
-- Cross-references against `inventory_data.ts`, `bench_config.ts`, or
-  `hood_config.ts` are not validated.
+- Cross-references against `inventory_data.ts` (via the `src/inventory.ts` facade) are not validated.
 
 ## Examples
 

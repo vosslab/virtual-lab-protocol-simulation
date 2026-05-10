@@ -123,10 +123,10 @@ itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 
 | Scene | Adapter file | Notes |
 | --- | --- | --- |
-| Bench | [src/scenes/bench/bench.ts](../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. |
-| Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../src/scenes/cell_culture_hood/render.ts) (assembly seam). The only adapter that is split today; the seam is by responsibility, not by line count. |
+| Bench | [src/scenes/bench/bench.ts](../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam (Patch C2, 2026-05-09): `bench.ts` is a thin wrapper holding module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and K2 completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
+| Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only (Patch C1, 2026-05-09): the legacy compatibility-token ladder folded into completionPath dispatch and `buildLegacyToken` was retired. |
 | Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
-| Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | Modal overlay scene; renders the manual hemocytometer grid and the automated cell-counter view. Mounts to the shared `instrument-overlay` element. |
+| Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted (Patch C3, 2026-05-09) into sibling [manual_hemocytometer.ts](../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
 | Plate | [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) | Modal scene for the 96-well plate UI. |
 | Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
 
@@ -254,12 +254,13 @@ re-render.
    protocol-startup validation.
 
 After (1)-(5), run `tools/build_scene_data.py` to regenerate
-`src/content/scene_data.ts`, then `npx tsc` to verify types, then exercise
+`generated/scene_data.ts` (gitignored; consumed via the `src/scene_configs.ts`
+facade), then `npx tsc` to verify types, then exercise
 the new scene through a Playwright walker.
 
 ## Shared infrastructure
 
-Four modules under [src/scenes/shared/](../src/scenes/shared/) host code
+Several modules under [src/scenes/shared/](../src/scenes/shared/) host code
 that multiple scene adapters reuse. Each is a single source of truth for
 its concern.
 
@@ -267,11 +268,6 @@ its concern.
   handling abstractions: `deriveHeldLiquid`, `canonicalTool`, and the
   `LIQUID_BY_ASSET_ID` map. Consolidated in the B1 patch; do not duplicate
   these helpers in adapters.
-- [legacy_tokens.ts](../src/scenes/shared/legacy_tokens.ts) - Builds
-  compatibility interaction tokens such as
-  `serological_pipette_with_pbs` (`<base_tool>_with_<liquid>`) for
-  token-shaped interaction paths. The single source of truth for
-  `buildLegacyToken`; three duplicate inline copies were removed in B1.
 - [wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) -
   `showWrongOrderToast(message)` for the transient warning toast. Today
   the toast styling and 2 s lifetime are hardcoded; the per-scene
@@ -279,13 +275,24 @@ its concern.
 - [scene_layout.ts](../src/scenes/shared/scene_layout.ts) - Re-exports
   `computeSceneLayout` and the layout types from the core engine. Future
   layout-policy hooks will land here.
+- [scene_label_metrics.ts](../src/scenes/shared/scene_label_metrics.ts),
+  [scene_item_lookup.ts](../src/scenes/shared/scene_item_lookup.ts) -
+  Layout-helper re-exports introduced during the bench/hood YAML
+  layout migration (B10/B11) so adapters can resolve label-metric and
+  item-id lookups against scene YAML without duplicating the work.
+
+The legacy `src/scenes/shared/legacy_tokens.ts` module (and its
+`buildLegacyToken` API) was deleted in Patch C4 (2026-05-09) once the
+hood ladder folded into K2 completionPath dispatch. There is no
+compatibility-token shim anymore: dispatch reads `completionPath`
+directly.
 
 ## Relation to scene YAML
 
 Scene YAML declares static configuration; this doc covers the runtime that
 interprets it. See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for the
 schema, the validator rules, and the build pipeline that emits
-`src/content/scene_data.ts`. Scene YAML is engine-facing configuration
+`generated/scene_data.ts` (consumed via `src/scene_configs.ts`). Scene YAML is engine-facing configuration
 today, not author-facing content; if scene YAML becomes author-facing
 later, the file location moves under `src/content/scenes/` in a separate
 migration.

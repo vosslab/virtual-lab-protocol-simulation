@@ -16,11 +16,18 @@ fi
 # check_codebase.sh is read-only by design. It does NOT regenerate
 # generated/ artifacts; build scripts (build_github_pages.sh,
 # export_single_file.sh) own that, and tests/conftest.py bootstraps
-# generated/ on demand for pytest. If generated/svg_manifest.ts is
-# missing here, run a build script or pytest first.
-if [ ! -f generated/svg_manifest.ts ]; then
-	echo "ERROR: generated/svg_manifest.ts missing." >&2
-	echo "Run 'python3 tools/generate_svg_globals.py' or a build script first." >&2
+# generated/ on demand for pytest. If any generated file is missing,
+# run tools/bootstrap_generated.sh or a build script first.
+MISSING_FILES=()
+for FILE in generated/protocol_data.ts generated/inventory_data.ts generated/scene_data.ts generated/svg_manifest.ts; do
+	if [ ! -f "$FILE" ]; then
+		MISSING_FILES+=("$FILE")
+	fi
+done
+
+if [ ${#MISSING_FILES[@]} -gt 0 ]; then
+	echo "ERROR: Missing generated files: ${MISSING_FILES[*]}" >&2
+	echo "Run 'bash tools/bootstrap_generated.sh' to regenerate." >&2
 	exit 1
 fi
 

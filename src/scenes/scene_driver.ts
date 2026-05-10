@@ -3,7 +3,7 @@
 // ============================================
 
 import type { ProtocolStep } from "../constants";
-import { SCENE_CONFIGS, type SceneConfig } from "../content/scene_data";
+import { SCENE_CONFIGS, type SceneConfig } from "../scene_configs";
 
 // ============================================
 // ClickTarget - Minimal click event target specification

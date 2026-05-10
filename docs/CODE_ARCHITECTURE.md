@@ -87,8 +87,12 @@ emitter via `triggerStep(stepId)`.
 
 - [src/layout_engine.ts](../src/layout_engine.ts) - Per-scene layout
   computation.
-- [src/bench_config.ts](../src/bench_config.ts), [src/hood_config.ts](../src/hood_config.ts) -
-  Scene-specific layout configs.
+- Bench and hood layout: declared in scene YAML at
+  [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml) and
+  [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml).
+  The legacy `src/bench_config.ts` and `src/hood_config.ts` modules were
+  retired in the 2026-05-09 scene migration; YAML is the single source of
+  truth for layout in those scenes.
 - [src/plate_config.ts](../src/plate_config.ts) - Plate scene layout config
   (bounds/zones/items/rules); exports are present but currently consumed by
   the modal-style renderer only, full layout-engine wiring is a follow-up.
@@ -123,7 +127,7 @@ emitter via `triggerStep(stepId)`.
   ownership boundary and the rule that scenes import only
   `svg_assets.ts`.
 
-#### Content
+#### Content and generated data facades
 
 - [src/content/cell_culture/](../src/content/cell_culture/) - Active
   protocol authored as YAML (items, reagents, protocol).
@@ -137,12 +141,33 @@ emitter via `triggerStep(stepId)`.
   [src/content/tutorial_plate_intro/](../src/content/tutorial_plate_intro/),
   [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/),
   [src/content/tutorial_split/](../src/content/tutorial_split/).
-- [src/content/protocol_data.ts](../src/content/protocol_data.ts) and
-  [src/content/inventory_data.ts](../src/content/inventory_data.ts) -
-  Generated TypeScript by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
-  (selected with `--protocol <name>`).
 - [src/content/tools.ts](../src/content/tools.ts), [src/content/validate.ts](../src/content/validate.ts) -
   Build-side helpers that mirror generated data.
+- **Authored content facades:**
+  - [src/protocol.ts](../src/protocol.ts) - Re-exports protocol steps and protocol ID
+    from `generated/protocol_data.ts`.
+  - [src/inventory.ts](../src/inventory.ts) - Re-exports inventory metadata
+    from `generated/inventory_data.ts`.
+  - [src/scene_configs.ts](../src/scene_configs.ts) - Re-exports scene configurations
+    from `generated/scene_data.ts`.
+  - [src/svg_assets.ts](../src/svg_assets.ts) - Re-exports SVG string constants and
+    utilities (imported from `generated/svg_assets/`).
+  - [src/svg_color_patch.ts](../src/svg_color_patch.ts) - Composition layer for recolor
+    primitives that imports `generated/svg_manifest` directly for color-group metadata;
+    provides utilities for applying SVG group-based color patches.
+- **Generated TypeScript artifacts (gitignored):**
+  - `generated/protocol_data.ts` - Protocol steps and metadata
+    (emitted by [tools/build_protocol_data.py](../tools/build_protocol_data.py)).
+  - `generated/inventory_data.ts` - Inventory metadata for items and reagents
+    (emitted by [tools/build_protocol_data.py](../tools/build_protocol_data.py)).
+  - `generated/scene_data.ts` - Scene configurations and registrations
+    (emitted by [tools/build_scene_data.py](../tools/build_scene_data.py)).
+  - `generated/svg_assets/*.ts` - Per-asset SVG string constants
+    (emitted by [tools/generate_svg_globals.py](../tools/generate_svg_globals.py)).
+  - `generated/svg_manifest.ts` - SVG id/group registry and type definitions
+    (emitted by [tools/generate_svg_globals.py](../tools/generate_svg_globals.py)).
+  - See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full SVG asset
+    pipeline and ownership rules.
 
 ### Build pipeline
 
@@ -151,7 +176,8 @@ Two build entry points share a common pre-step:
 1. [tools/build_protocol_data.py](../tools/build_protocol_data.py) parses
    `src/content/<protocol>/*.yaml`, applies the eight schema rules
    (including the `completionPath` Rule 8), and writes
-   `src/content/protocol_data.ts` + `src/content/inventory_data.ts`. Build
+   `generated/protocol_data.ts` + `generated/inventory_data.ts` (gitignored;
+   consumed via the `src/protocol.ts` and `src/inventory.ts` facades). Build
    scripts run this with `--validate-only` first as a fast gate.
 2. [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) reads
    `assets/equipment/*.svg`, namespaces ids, and emits
@@ -444,11 +470,12 @@ scene's render assembly and dispatch.
 | Plate | [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) | adapter | [plate.yaml](../src/scenes/plate/plate.yaml) |
 | Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | adapter | [microscope.yaml](../src/scenes/microscope/microscope.yaml) |
 | Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | adapter | [incubator.yaml](../src/scenes/incubator/incubator.yaml) |
-| Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | adapter | (no YAML; render-only adapter) |
+| Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | adapter | [plate_reader.yaml](../src/scenes/plate_reader/plate_reader.yaml) |
 
 Scene YAML is compiled at build time by
 [tools/build_scene_data.py](../tools/build_scene_data.py) into
-`src/content/scene_data.ts` (loud build-time failures on missing
+`generated/scene_data.ts` (gitignored; consumed via the `src/scene_configs.ts`
+facade; loud build-time failures on missing
 `sceneId`, unknown capability ids, item references to unknown zones,
 duplicate ids, and missing required config blocks).
 
@@ -486,6 +513,6 @@ field is intentionally absent rather than missing by oversight.
 - Verification task: confirm whether non-browser
   [tests/e2e/](../tests/e2e/) is intended to remain empty or whether
   shell wrappers (currently in [tools/](../tools/)) belong there.
-- `src/bench_config.ts` and `src/hood_config.ts` still duplicate
-  layout truth that exists in scene YAML. Tracked as a deferred
-  cleanup in [ROADMAP.md](ROADMAP.md).
+- `src/layout_engine.ts` (~857 LOC) is coherent at its current size but
+  is the next deferred decomposition target if it grows further.
+  Tracked as a deferred cleanup in [ROADMAP.md](ROADMAP.md).

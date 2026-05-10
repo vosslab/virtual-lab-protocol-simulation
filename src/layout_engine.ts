@@ -189,7 +189,7 @@ export function layoutZoneItems(
 	for (var i = 0; i < n; i++) {
 		// i < n === zoneItems.length; both indices are in range
 		var fpItem = zoneItems[i]!;
-		var fpSpec = specs[fpItem.asset]!;
+		var fpSpec = specs[fpItem.svgAsset]!;
 		// depth multiplier: back 0.80, mid 1.00, front 1.10.
 		// Applied to item.widthScale so downstream footprint and label math
 		// all see the depth-adjusted size consistently.
@@ -342,14 +342,14 @@ export function layoutZoneItems(
 	for (var i = 0; i < n; i++) {
 		// i < n === zoneItems.length; all indices are in range
 		var item = zoneItems[i]!;
-		var spec = specs[item.asset]!;
+		var spec = specs[item.svgAsset]!;
 		var itemWidth = widths[i]!;
 		var itemFootprint = footprints[i]!;
 		// center visual width within footprint
 		var visualOffset = (itemFootprint - itemWidth) / 2;
 
 		// height from SVG aspect ratio, adjusted for viewport
-		var aspectRatio = getAssetAspectRatio(item.asset);
+		var aspectRatio = getAssetAspectRatio(item.svgAsset);
 		var height = itemWidth * aspectRatio * (viewportW / viewportH);
 
 		// determine baseline for this item. Order of precedence:
@@ -484,7 +484,7 @@ export function layoutLabels(
 		// i < layouts.length; index is in range
 		var lay = layouts[i]!;
 		var item = itemMap[lay.id]!;
-		var spec = specs[item.asset]!;
+		var spec = specs[item.svgAsset]!;
 		var zone = rules.zones[item.zone]!;
 
 		// estimate label width from character count (unscaled char units)
@@ -650,8 +650,8 @@ export function computeSceneLayout(
 		// z < zoneKeys.length; key came from the object's own keys
 		zoneGroups[zoneKeys[z]!]!.sort(
 			function(a: SceneItem, b: SceneItem): number {
-				if (a.priority !== b.priority) {
-					return a.priority - b.priority;
+				if (a.depthTier !== b.depthTier) {
+					return a.depthTier - b.depthTier;
 				}
 				if (a.id < b.id) return -1;
 				if (a.id > b.id) return 1;

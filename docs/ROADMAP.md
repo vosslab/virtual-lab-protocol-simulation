@@ -1,6 +1,6 @@
 # Roadmap
 
-<!-- Verified current: 2026-05-09 (scene render-ownership migration marked done; sceneRouter resolution recorded; bench_config/hood_config YAML duplication captured as deferred) -->
+<!-- Verified current: 2026-05-09 (scene migration closeout: Plans A/B/C complete; responsibility-seam decomposition closed; bench_config/hood_config retired; layout_engine.ts split promoted as next deferred item) -->
 
 Planned features and improvements for the cell culture simulation game.
 
@@ -19,6 +19,7 @@ Planned features and improvements for the cell culture simulation game.
 - Day timeline state machine (day1/day2/day4 with incubator-gated transitions)
 - Capability-based scene dispatch migration (Patches 1-16, 2026-05-08 to 2026-05-09; archived plan: [archive/scene_capability_architecture_2026-05-09.md](archive/scene_capability_architecture_2026-05-09.md))
 - Scene render-ownership migration: render moved from flat `src/scenes/{hood,bench,microscope,plate,incubator}.ts` source modules into per-scene adapters under `src/scenes/<scene>/<scene>.ts`; `SceneAdapter.render(ctx)` made required; new first-class `plate_reader` adapter; helper duplicates consolidated into `shared/liquid_transfer.ts` and `shared/legacy_tokens.ts`; `sceneRouter` flag retired (decision: REMOVED, see "sceneRouter resolution" below). Completed 2026-05-09 (Patches A1-B4; archived plan: [archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md)).
+- Scene migration closeout (Plans A/B/C): generated TS moved out of `src/content/` into gitignored `generated/`; four authored facades (`src/svg_assets.ts`, `src/scene_configs.ts`, `src/inventory.ts`, `src/protocol.ts`); scene YAML extended schema with formal typed `sceneBounds` and `layoutRules.label*`; bench and hood layout migrated to scene YAML and `src/bench_config.ts` + `src/hood_config.ts` deleted; bench split into render/dispatch/effects siblings; microscope manual hemocytometer extracted into a sibling module; hood compatibility-token ladder folded into K2 completionPath dispatch; `src/scenes/shared/legacy_tokens.ts` deleted. Completed 2026-05-09 (Patches A1-A6, B1-B12, C1-C5; archived plan: [archive/scene_migration_completion_2026-05-09.md](archive/scene_migration_completion_2026-05-09.md)).
 
 ## sceneRouter resolution (recorded 2026-05-09)
 
@@ -38,43 +39,29 @@ field is intentionally absent rather than missing by oversight.
 
 ## Future enhancements
 
-## Scene adapter responsibility-seam decomposition (added 2026-05-09)
+## Next deferred item: split `src/layout_engine.ts` (promoted 2026-05-09)
 
-The scene render-ownership migration moved each scene's render code from a flat
-`src/scenes/<scene>.ts` source module into a per-scene adapter folder, but it
-did not decompose the moved logic. Every adapter still owns dispatch wiring,
-result handling, completion-event emission, modal rendering, and (in the hood's
-case) a token-shaped legacy interaction ladder, all in one file. Patch 4 of the
-follow-up plan was scoped to consolidate the hood ladder; bench, microscope,
-plate, and incubator adapters carry the same shape and were not addressed.
+Promoted to the top of the deferred queue by the scene migration closeout
+(Patch C5). `src/layout_engine.ts` is ~857 LOC and coherent at its current
+size, but it is the next decomposition target after the scene migration:
+split into `layout_assets.ts` + a slimmed `layout_engine.ts`. Revisit if it
+crosses 1000 LOC, or pair it with any further layout-policy work in
+`src/scenes/shared/scene_layout.ts`. Backref:
+`~/.claude/plans/sharded-imagining-diffie.md` (origin of the split idea)
+and the closeout archive
+[archive/scene_migration_completion_2026-05-09.md](archive/scene_migration_completion_2026-05-09.md).
 
-What to do here is split each adapter by **responsibility seam**, not by line
-count: separate dispatch routing from result mutation, separate the legacy
-token ladder from the K2 completionPath dispatch, separate render assembly
-from event wiring (the hood/`render.ts` split is the working model). The
-legacy-token compatibility layer (`src/scenes/shared/legacy_tokens.ts`) can
-retire only after the call sites in `bench/bench.ts`, `cell_culture_hood.ts`,
-and any other adapter that still consumes `_with_<liquid>` tokens move onto
-completionPath dispatch.
+## Scene adapter responsibility-seam decomposition (closed 2026-05-09)
 
-Concrete tasks (not ordered; pick by which adapter is next changed for an
-unrelated feature):
+Closed by the scene migration closeout (Plans A/B/C). Concrete outcomes:
 
-- Hood interaction-ladder cleanup (deferred Patch 4 of the SCENE_MIGRATION
-  follow-up plan): the long token-ladder fallback in
-  `src/scenes/cell_culture_hood/cell_culture_hood.ts` should fold into the
-  K2 completionPath dispatch above it.
-- Bench dispatch decomposition: split `src/scenes/bench/bench.ts` into render,
-  dispatch, and result-handling modules along the seams already present in
-  the file.
-- Microscope dispatch decomposition: extract the manual hemocytometer flow
-  from `src/scenes/microscope/microscope.ts` into a sibling module so the
-  automated and manual paths stop sharing a single dispatcher.
-- Plate / incubator: smaller surfaces; revisit if either grows new behavior.
+- Hood interaction-ladder cleanup: folded into K2 completionPath dispatch (Patch C1).
+- Bench dispatch decomposition: bench split into `render.ts` / `dispatch.ts` / `effects.ts` siblings with `bench.ts` as the thin SceneAdapter shell (Patch C2).
+- Microscope dispatch decomposition: manual hemocytometer flow extracted into a sibling module so the automated and manual paths no longer share a single dispatcher (Patch C3).
+- `buildLegacyToken` call sites reached zero; `src/scenes/shared/legacy_tokens.ts` deleted (Patch C4).
+- Plate / incubator: surfaces remain small; revisit only if they grow.
 
-When all `buildLegacyToken` call sites in the adapters reach zero,
-`src/scenes/shared/legacy_tokens.ts` can be deleted as part of the same
-patch that retires the last caller.
+Archived plan: [archive/scene_migration_completion_2026-05-09.md](archive/scene_migration_completion_2026-05-09.md).
 
 ## Hood setup phase
 
@@ -101,8 +88,6 @@ the migration and surface during planning.
 
 ### Deferred work items
 
-- **Split `src/layout_engine.ts` (857 LOC) into 2 modules: `layout_assets.ts` + slimmed `layout_engine.ts`.** Coherent at
-  current size; revisit if it crosses 1000 LOC. Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
 - **Add `tests/types/` with `Expect<Equal<...>>` scaffold + 2 type-test files for `ProtocolStep` and `CompletionPath`.**
   Wire into all three build scripts. Backref: `~/.claude/plans/sharded-imagining-diffie.md`.
 - **Capability contract type tests.** When the type-test suite lands, add a third file that asserts every capability module
@@ -132,17 +117,10 @@ the migration and surface during planning.
 
 ## Deferred cleanups (post 2026-05-09 render migration)
 
-The render-ownership migration (Patches A1-B4, archived plan
-[archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md))
-explicitly held the following item out of scope. Tracked here so it is
-not lost.
+The render-ownership migration (Patches A1-B4) and the scene migration
+closeout (Plans A/B/C, Patches A1-A6 + B1-B12 + C1-C5) cleared the layout
+duplication item: `src/bench_config.ts` and `src/hood_config.ts` were
+retired and bench/hood layout is now sourced from scene YAML.
 
-- **Layout config vs scene YAML duplication.** `src/bench_config.ts`
-  and `src/hood_config.ts` are still legitimate sources of layout
-  truth, but parts of the same layout information now also live in the
-  scene YAML files under `src/scenes/<scene>/<scene>.yaml`. A future
-  cleanup should pick one source of truth per layout fact and remove
-  the duplicated definitions from the other side. This is a
-  layout-engine concern, not a scene-runtime concern; sequence after
-  any further layout-engine refactor (the `layout_engine.ts` split
-  listed above).
+The next deferred layout-engine item is the `src/layout_engine.ts` split
+described in "Next deferred item" above.

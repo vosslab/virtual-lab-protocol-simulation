@@ -8,18 +8,8 @@ capabilities:
 items:
   - id: well_plate
     label: 96-well Plate
-    zone: plate_workspace
-    depthTier: 1
-    svgAsset: well_plate_96
-    kind: instrument
 
-zones:
-  - id: plate_workspace
-    x0: 10
-    x1: 90
-    baseline: 50
-    gap: 5
-    align: center
+zones: []
 
 wrongOrderMessage:
   template: "Use the {expectedLabel}."

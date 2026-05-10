@@ -3,6 +3,12 @@ workspace: equipment_bench
 capabilities:
   - itemWorkspace
 
+sceneBounds:
+  left: 1
+  right: 99
+  top: 1
+  bottom: 98
+
 items:
   - id: centrifuge
     label: Centrifuge
@@ -110,6 +116,11 @@ zones:
     baseline: 75
     gap: 3
     align: tab-stops
+
+layoutRules:
+  labelFontSize: 9
+  labelLineHeight: 1.1
+  labelOffsetY: 3
 
 wrongOrderMessage:
   template: "Try the {expectedLabel}."

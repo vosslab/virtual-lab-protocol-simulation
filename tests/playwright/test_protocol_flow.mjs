@@ -114,37 +114,11 @@ async function runTests(page) {
 		});
 	}
 
-	// Test 5: All requiredItems resolve to valid items
-	try {
-		const validation = await page.evaluate(() => {
-			const allItems = new Set();
-			for (const item of HOOD_SCENE_ITEMS) allItems.add(item.id);
-			for (const item of BENCH_SCENE_ITEMS) allItems.add(item.id);
-
-			const issues = [];
-			for (let i = 0; i < PROTOCOL_STEPS.length; i++) {
-				const step = PROTOCOL_STEPS[i];
-				for (const itemId of step.requiredItems) {
-					if (!allItems.has(itemId)) {
-						issues.push(`Step ${i} (${step.id}): item "${itemId}" not found`);
-					}
-				}
-			}
-			return issues;
-		});
-		const pass = validation.length === 0;
-		results.push({
-			name: 'All requiredItems resolve to valid items',
-			pass,
-			detail: pass ? 'ok' : validation.slice(0, 3).join('; '),
-		});
-	} catch (e) {
-		results.push({
-			name: 'All requiredItems resolve to valid items',
-			pass: false,
-			detail: String(e),
-		});
-	}
+	// Test 5 deleted: "All requiredItems resolve to valid items"
+	// This test referenced retired page globals (HOOD_SCENE_ITEMS, BENCH_SCENE_ITEMS)
+	// and its logic is covered by the full protocol walkthrough in
+	// tests/playwright/e2e/protocol_walkthrough_yaml.mjs which exercises all items
+	// in the context of actual gameplay. Per PYTEST_STYLE, less is more.
 
 	// Test 6: gameState.day starts at 'day1_seed'
 	try {

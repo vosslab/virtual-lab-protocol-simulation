@@ -6,31 +6,47 @@ collect_ignore = ["e2e", "playwright"]
 # ============================================
 # Fresh-clone bootstrap for the gitignored generated/ tree.
 #
-# generated/ holds derived SVG asset modules emitted by
-# tools/generate_svg_globals.py from assets/equipment/*.svg. The tree is
-# gitignored, so a fresh clone has no generated/ files. Any pytest that
-# (directly or transitively) imports from generated/ would fail without a
+# generated/ holds derived TS modules emitted by:
+#   - tools/generate_svg_globals.py from assets/equipment/*.svg
+#   - tools/build_protocol_data.py from YAML protocol definitions
+#   - tools/build_scene_data.py from YAML scene definitions
+#
+# The tree is gitignored, so a fresh clone has no generated/ files. Any pytest
+# that (directly or transitively) imports from generated/ would fail without a
 # build run first. Build scripts own regeneration; check_codebase.sh is
-# read-only; this hook makes pytest self-sufficient by running the
-# generator once per session if the manifest is missing.
+# read-only; this hook makes pytest self-sufficient by running the bootstrap
+# script once per session if any required file is missing.
+
+# Standard Library
 import os
 import subprocess
 
+# local repo modules
 import git_file_utils
 
 
-def pytest_sessionstart(session):
-	# Run the SVG generator once if generated/svg_manifest.ts is missing.
-	# Do not regenerate when it already exists -- avoids redundant work and
-	# keeps the boundary clear (build scripts regenerate; this is bootstrap).
+def pytest_sessionstart(session) -> None:
+	# Run the bootstrap script if any generated file is missing.
+	# Do not regenerate when all files already exist -- avoids redundant work
+	# and keeps the boundary clear (build scripts regenerate; this is bootstrap).
+	# Covers SVG, scene, protocol, and inventory generators.
 	del session  # unused; pytest hook signature
 	repo_root = git_file_utils.get_repo_root()
-	manifest_path = os.path.join(repo_root, "generated", "svg_manifest.ts")
-	if os.path.isfile(manifest_path):
-		return
-	generator_path = os.path.join(repo_root, "tools", "generate_svg_globals.py")
-	subprocess.run(
-		["python3", generator_path],
-		cwd=repo_root,
-		check=True,
-	)
+
+	# Check for at least one file from each generated family. If any is missing,
+	# run the bootstrap script to regenerate all.
+	required_files = [
+		os.path.join(repo_root, "generated", "svg_manifest.ts"),
+		os.path.join(repo_root, "generated", "scene_data.ts"),
+		os.path.join(repo_root, "generated", "protocol_data.ts"),
+		os.path.join(repo_root, "generated", "inventory_data.ts"),
+	]
+
+	# If any required file is missing, bootstrap the entire generated tree.
+	if any(not os.path.isfile(p) for p in required_files):
+		bootstrap_path = os.path.join(repo_root, "tools", "bootstrap_generated.sh")
+		subprocess.run(
+			["bash", bootstrap_path],
+			cwd=repo_root,
+			check=True,
+		)

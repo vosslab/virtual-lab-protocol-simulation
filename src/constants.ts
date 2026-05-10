@@ -9,8 +9,7 @@ import type { GameState } from "./game_state";
 export const PLATE_ROWS = 8;
 export const PLATE_COLS = 12;
 
-// Drug concentrations per column (uM) - legacy, kept for svg_assets.ts and microscope_scene.ts
-export const DRUG_CONCENTRATIONS_UM: number[] = [0, 0.1, 0.5, 1, 5, 10];
+// Drug concentration labels for plate layout
 export const DRUG_CONCENTRATION_LABELS: string[] = ['0 (ctrl)', '0.1', '0.5', '1', '5', '10'];
 
 

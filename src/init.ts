@@ -11,14 +11,13 @@
 // - window flag: sets __protocolValidation for walkthrough to read
 // - Throws to halt execution
 // ============================================
-import { PROTOCOL_ID, PROTOCOL_STEPS } from "./content/protocol_data";
+import { PROTOCOL_ID, PROTOCOL_STEPS } from "./protocol";
 import { completeStep, createInitialGameState, gameState, renderGame, setGameState, setRenderGame } from "./game_state";
 import { createProfessorOverlay, renderProfessorOverlay } from "./professor_overlay";
 import { renderProtocolUI } from "./protocol_ui";
 import { calculateScore } from "./scoring";
 import { renderMeters, renderProtocolPanel, renderResultsScreen, renderScoreDisplay } from "./ui_rendering";
-import { runSceneRender } from "./scenes/scene_driver";
-import { runScene } from "./scenes/scene_driver";
+import { runSceneRender, runScene } from "./scenes/scene_driver";
 
 //============================================
 // Side-effect imports: each per-scene adapter module registers itself with the

@@ -1,0 +1,20 @@
+sceneId: test_scene
+workspace: equipment_bench
+capabilities:
+  - itemWorkspace
+
+items: []
+
+zones:
+  - id: duplicate_zone
+    x0: 0
+    x1: 50
+    baseline: 50
+    gap: 3
+    align: tab-stops
+  - id: duplicate_zone
+    x0: 50
+    x1: 100
+    baseline: 50
+    gap: 3
+    align: center

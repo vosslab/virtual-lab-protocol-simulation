@@ -1,0 +1,12 @@
+sceneId: test_bad_bounds
+workspace: equipment_bench
+capabilities:
+  - itemWorkspace
+
+sceneBounds:
+  right: 95
+  top: 10
+  bottom: 90
+
+items: []
+zones: []

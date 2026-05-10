@@ -6,7 +6,7 @@
 // Helper: Escape HTML special characters
 // ============================================
 import type { ProtocolStep } from "./constants";
-import { PROTOCOL_STEPS } from "./content/protocol_data";
+import { PROTOCOL_STEPS } from "./protocol";
 import { gameState, getCurrentStep, showNotification } from "./game_state";
 // Static asset access goes through the svg_assets facade (M4): protocol_ui
 // no longer imports per-asset SVG strings from `generated/`.
@@ -21,7 +21,11 @@ export function escapeHtml(text: string): string {
 		'"': '&quot;',
 		"'": '&#39;',
 	};
-	return text.replace(/[&<>"']/g, (char) => map[char] || char);
+	return text.replace(/[&<>"']/g, (char): string => {
+		const escaped = map[char];
+		if (!escaped) throw new Error(`Unexpected character in escapeHtml: ${char}`);
+		return escaped;
+	});
 }
 
 // ============================================

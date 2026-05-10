@@ -7,7 +7,7 @@
 // - Lookup step details by id
 
 import type { ProtocolStep } from "./constants";
-import { PROTOCOL_STEPS } from "./content/protocol_data";
+import { PROTOCOL_STEPS } from "./protocol";
 
 
 export function findStepById(id: string): ProtocolStep | null {

@@ -2,10 +2,8 @@
 // game_state.ts - State machine and protocol tracking
 // ============================================
 
-import { BENCH_SCENE_ITEMS } from "./bench_config";
 import { FLASK_STARTING_MEDIA_ML, INITIAL_CELL_COUNT, INITIAL_VIABILITY, PLATE_COLS, PLATE_ROWS, type ProtocolStep, type WellData } from "./constants";
-import { PROTOCOL_STEPS } from "./content/protocol_data";
-import { HOOD_SCENE_ITEMS } from "./hood_config";
+import { PROTOCOL_STEPS } from "./protocol";
 import type { SceneItem } from "./scene_types";
 
 
@@ -316,7 +314,7 @@ export function deriveActiveTargets(step: ProtocolStep | null): string[] {
 }
 
 // ============================================
-// resolveItemDepth(item, activeStepId)
+// resolveItemDepth(item, activeStepId, itemPools?)
 //
 // Depth is automatic first, manual second. Given an item and the currently
 // active protocol step, return the tier the item should render at:
@@ -332,11 +330,16 @@ export function deriveActiveTargets(step: ProtocolStep | null): string[] {
 // below 'mid' so the student never loses sight of the working plate or
 // the active reagent.
 //
+// The optional itemPools parameter allows callers to provide item arrays
+// for group lookup. If not provided, group-based depth resolution is skipped
+// (items without manual depth default to 'mid').
+//
 // Returns the resolved depth tier. Pure function; does not mutate.
 // ============================================
 export function resolveItemDepth(
 	item: SceneItem,
-	activeStepId: string | null
+	activeStepId: string | null,
+	itemPools?: SceneItem[][]
 ): 'back' | 'mid' | 'front' {
 	// Manual override wins - explicit intent beats auto-resolution.
 	if (item.depth) return item.depth;
@@ -363,12 +366,13 @@ export function resolveItemDepth(
 	if (item.kind === 'plate' || item.kind === 'flask') return 'mid';
 
 	// Share a functional group with one of the used items: stay mid.
-	// Consult both hood and bench item pools so a used-items list
-	// spanning both scenes resolves correctly.
+	// Group lookup requires itemPools to be provided. Without them,
+	// fall back to the default 'mid' (conservative: item stays visible).
+	if (!itemPools) return 'mid';
+
 	var targetGroups: string[] = [];
-	var pools: SceneItem[][] = [HOOD_SCENE_ITEMS, BENCH_SCENE_ITEMS];
-	for (var pi = 0; pi < pools.length; pi++) {
-		var pool = pools[pi]!;
+	for (var pi = 0; pi < itemPools.length; pi++) {
+		var pool = itemPools[pi]!;
 		for (var ii = 0; ii < pool.length; ii++) {
 			var it = pool[ii]!;
 			if (targets.indexOf(it.id) >= 0 && it.group) {
@@ -387,16 +391,20 @@ export function resolveItemDepth(
 // ============================================
 // resolveSceneItemsWithDepth - return a shallow copy of items with
 // `depth` populated from the auto-resolver. Leaves the input array
-// untouched so callers can safely pass HOOD_SCENE_ITEMS / BENCH_SCENE_ITEMS.
+// untouched so callers can safely pass scene items from SCENE_CONFIGS.
+//
+// The optional itemPools parameter is passed through to resolveItemDepth()
+// for group-based depth resolution. Without it, items default to 'mid'.
 // ============================================
 export function resolveSceneItemsWithDepth(
 	items: SceneItem[],
-	activeStepId: string | null
+	activeStepId: string | null,
+	itemPools?: SceneItem[][]
 ): SceneItem[] {
 	var out: SceneItem[] = [];
 	for (var i = 0; i < items.length; i++) {
 		var src = items[i]!;
-		var resolved = resolveItemDepth(src, activeStepId);
+		var resolved = resolveItemDepth(src, activeStepId, itemPools);
 		// Short-circuit: if the resolved tier matches the existing
 		// (absent or already-set) depth, push the original reference to
 		// avoid churn in downstream identity checks.
@@ -405,10 +413,10 @@ export function resolveSceneItemsWithDepth(
 		} else {
 			const copied: SceneItem = {
 				id: src!.id,
-				asset: src!.asset,
+				svgAsset: src!.svgAsset,
 				kind: src!.kind,
 				zone: src!.zone,
-				priority: src!.priority,
+				depthTier: src!.depthTier,
 				widthScale: src!.widthScale,
 				label: src!.label,
 				anchorY: src!.anchorY,

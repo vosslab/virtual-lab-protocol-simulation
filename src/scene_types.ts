@@ -4,14 +4,14 @@
 
 export type SceneItem = {
 	id: string;
-	asset: string;
-	kind: 'flask' | 'plate' | 'bottle' | 'pipette' | 'rack' | 'waste' | 'equipment' | 'decoration';
+	svgAsset: string;
+	kind: string;
 	zone: string;
-	priority: number;
+	depthTier: number;
 	widthScale: number;
 	label: string;
 	shortLabel?: string;
-	anchorY: 'bottom' | 'tip' | 'center';
+	anchorY: 'top' | 'bottom' | 'tip';
 	baselineOverride?: number;
 	// alignStop: only meaningful when the zone uses align: 'tab-stops'.
 	// Items at the same stop are packed together with the zone's gap and
@@ -94,6 +94,7 @@ export type SceneLayoutRules = {
 	labelLineHeight: number;
 	labelOffsetY: number;
 	sceneBounds?: SceneBounds;  // optional hard clamp for all items
+	[key: string]: unknown;  // Allow additional layout rule fields
 };
 
 export type ComputedItemLayout = {

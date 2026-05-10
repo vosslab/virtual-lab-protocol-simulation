@@ -10,7 +10,8 @@ and validated at load time.
 ## Source of truth
 
 All protocol steps are defined in YAML under `src/content/` and compiled at build
-time into a TypeScript constant array `PROTOCOL_STEPS` in `src/content/protocol_data.ts`.
+time into a TypeScript constant array `PROTOCOL_STEPS` in `generated/protocol_data.ts`
+(gitignored; consumed via the authored facade `src/protocol.ts`).
 
 The `ProtocolStep` interface defines the shape of each compiled entry. Every step has:
 
@@ -70,7 +71,8 @@ step is two: remove the entry, update the predecessor's `nextId`.
 ## Adding a new step
 
 1. Add a new entry to `src/content/protocol.yaml`. The YAML build process
-   compiles steps into `src/content/protocol_data.ts` at build time.
+   compiles steps into `generated/protocol_data.ts` at build time
+   (consumed via the `src/protocol.ts` facade).
 2. Set `nextId` on the new entry to the id of the step that should
    follow it (or `null` if it is the new final step).
 3. Find the step that should now come *before* the new step and change
@@ -237,7 +239,8 @@ that actual game clicks produce correct behavior.
 
 `tests/playwright/e2e/protocol_walkthrough_yaml.mjs` is the canonical real-UI regression test
 (Patch 8 and beyond). It reads compiled protocol data via
-`page.evaluate(() => window.PROTOCOL_STEPS)` (from `src/content/protocol_data.ts`)
+`page.evaluate(() => window.PROTOCOL_STEPS)` (from `generated/protocol_data.ts`,
+re-exported by the `src/protocol.ts` facade)
 and drives real DOM clicks in the correct tool-first order for each interaction
 in each step. It is the primary CI gate and replaces the data-layer smoke test
 for real-world behavior validation.
