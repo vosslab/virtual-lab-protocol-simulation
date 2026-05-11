@@ -6,7 +6,9 @@
 // This is the single public interface for inventory metadata.
 export {
 	EQUIPMENT,
+	INVENTORY_CATALOG,
 	REAGENTS,
+	type InventoryCatalogEntry,
 	type InventoryItem,
 	type InventoryReagent,
 } from "../generated/inventory_data";

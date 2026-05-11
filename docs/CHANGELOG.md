@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-10
+
+### Additions and New Features
+- **Patch 1: Browser-first protocol launcher**: `/` now opens a protocol launcher with a primary Cell Culture Protocol card and a separate Tutorials grid. Each launcher entry uses a readable title, optional static description, and a step count computed from generated protocol data. Direct links use `?protocol=<id>` and valid links bypass the launcher.
+
+### Behavior or Interface Changes
+- **Protocol generation is catalog-backed**: `tools/build_protocol_data.py` now emits all protocol and inventory data into generated catalogs while preserving the existing `PROTOCOL_ID`, `PROTOCOL_STEPS`, `EQUIPMENT`, and `REAGENTS` facade exports for runtime callers.
+- **Walker protocol selection uses direct links**: `tests/playwright/e2e/protocol_walkthrough_yaml.mjs` no longer rebuilds generated protocol data per tutorial. It opens `/?protocol=<id>` for every protocol, including `cell_culture`.
+
+### Fixes and Maintenance
+- Removed the stale Playwright rebuild/restore path that referenced the old `src/content/inventory_data.ts` location.
+- Updated [docs/USAGE.md](USAGE.md) with the browser launcher and direct-link protocol contract.
+- Updated [devel/setup_playwright.sh](../devel/setup_playwright.sh) to use repo-local `.cache/` directories for npm and Playwright browser downloads so sandboxed setup does not write to `~/.npm` or the user-level Playwright cache.
+- Added `npm run browser:smoke` as the narrow approved browser-QA command using the repo-local Playwright browser cache.
+- Added `npm run ui:review`, backed by [tests/playwright/ui_review.mjs](../tests/playwright/ui_review.mjs), to serve the compiled `dist/` build, capture desktop/mobile screenshots, and report browser console/page errors through one approved UI-review command.
+- Added [tools/run_ui_review_podman.sh](../tools/run_ui_review_podman.sh) for local pre-commit UI review: host Python serves `dist/`, while the official Playwright container runs browser automation against `host.containers.internal`.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/build_protocol_data.py` regenerated the catalog.
+- `npx tsc --noEmit -p src/tsconfig.json` passed with no diagnostics.
+- `bash build_github_pages.sh` passed after rerunning with approved access to the existing npm cache.
+- Headless Playwright verified `/` shows the launcher without protocol panel text, `/?protocol=tutorial_pbs` shows the PBS Tutorial welcome overlay, and `/?protocol=bad_id` shows a recoverable launcher error.
+- `bash devel/setup_playwright.sh` now completes inside the default sandbox using `.cache/npm` and `.cache/ms-playwright`; browser launch still requires escalation on macOS Codex due to OS process sandbox limits.
+- `node --check tests/playwright/ui_review.mjs` and `bash -n tools/run_ui_review_podman.sh` passed.
+
 ## 2026-05-09
 
 ### Additions and New Features
@@ -848,4 +873,3 @@
 - `npx tsc --noEmit -p src/tsconfig.json` is green on the relocated tree.
 - `./build_github_pages.sh` produces a working `dist/` (main.js 2.5 KB, real engine bootstrapped).
 - M3-M6 still pending: `src/*` relocation into `src/scenes/`, `src/steps/`, plus shell wiring, smoke tests, and doc rewrites.
-

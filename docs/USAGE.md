@@ -3,7 +3,7 @@
 Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
 Players learn cell culture techniques by completing a guided 25-step laboratory
-protocol in the browser.
+protocol or focused tutorials in the browser.
 
 ## Quick start
 
@@ -22,7 +22,17 @@ For local development with a web server, use [run_web_server.sh](../run_web_serv
 bash run_web_server.sh
 ```
 
-This rebuilds [dist/](../dist/) and serves it on a local port.
+This rebuilds [dist/](../dist/) and serves it on a local port. The root URL
+(`/`) opens a browser launcher where players can choose the full protocol or
+one of the short tutorials. Direct links use the protocol query parameter:
+
+```text
+/?protocol=cell_culture
+/?protocol=tutorial_pbs
+/?protocol=tutorial_plate_reader
+```
+
+Invalid protocol links return to the launcher with a recoverable error banner.
 
 ## Playing the game
 
@@ -69,13 +79,14 @@ A 1-3 star rating is shown on the results screen.
 
 ## Protocol builder
 
-Build the active protocol's TypeScript data files:
+Build the protocol catalog's TypeScript data files:
 
 ```bash
 source source_me.sh && python3 tools/build_protocol_data.py
 ```
 
-Build a different protocol (e.g., tutorial):
+Validate a specific protocol (for example, a tutorial) while keeping generated
+output catalog-backed:
 
 ```bash
 source source_me.sh && python3 tools/build_protocol_data.py --protocol tutorial_split
@@ -96,6 +107,27 @@ source source_me.sh && python3 tools/run_smoke.py
 ```
 
 This verifies the app loads and renders the first 9 bench gates. Fast signal for CI/local feedback.
+On macOS Codex, real Playwright browser launches may need approval/escalation
+because Chromium and Firefox can hit OS sandbox limits before app code runs.
+The narrow browser command is:
+
+```bash
+npm run browser:smoke
+```
+
+For a screenshot-oriented UI review of the compiled page, use:
+
+```bash
+npm run build
+npm run ui:review
+```
+
+For local pre-commit review on macOS Codex, prefer the Podman wrapper so the
+browser runs in the Playwright container:
+
+```bash
+tools/run_ui_review_podman.sh
+```
 
 ### Full protocol walkthrough
 

@@ -36,6 +36,176 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
+body.launcher-active {
+	overflow-y: auto;
+}
+
+[hidden] {
+	display: none !important;
+}
+
+/* ===== Protocol Launcher ===== */
+.protocol-launcher {
+	min-height: 100vh;
+	padding: 40px 24px 56px;
+	background: #f6f7f8;
+	overflow-y: auto;
+}
+
+.protocol-launcher-shell {
+	width: min(1080px, 100%);
+	margin: 0 auto;
+}
+
+.protocol-launcher-error {
+	margin-bottom: 18px;
+	padding: 14px 16px;
+	background: #fff3f3;
+	border: 1px solid #ef9a9a;
+	border-radius: 8px;
+	color: #8f1d1d;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.protocol-launcher-header {
+	margin-bottom: 30px;
+}
+
+.protocol-launcher-kicker {
+	margin: 0 0 8px;
+	color: var(--color-steel-gray);
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.protocol-launcher-header h1 {
+	margin: 0 0 10px;
+	font-size: 34px;
+	line-height: 1.15;
+	font-weight: 700;
+	color: var(--color-text-dark);
+	letter-spacing: 0;
+}
+
+.protocol-launcher-subtitle {
+	max-width: 620px;
+	margin: 0;
+	color: var(--color-text-light);
+	font-size: 16px;
+	line-height: 1.5;
+}
+
+.protocol-launcher-section {
+	margin-top: 28px;
+}
+
+.protocol-launcher-section h2 {
+	margin: 0 0 12px;
+	font-size: 17px;
+	line-height: 1.3;
+	font-weight: 700;
+	color: var(--color-text-dark);
+	letter-spacing: 0;
+}
+
+.protocol-card-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+	gap: 14px;
+}
+
+.protocol-card-grid-primary {
+	grid-template-columns: 1fr;
+}
+
+.protocol-card {
+	min-height: 190px;
+	padding: 18px;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	background: var(--color-white);
+	border: 1px solid #dde3e8;
+	border-radius: 8px;
+	box-shadow: 0 8px 22px rgba(20, 33, 45, 0.08);
+	cursor: pointer;
+	transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.protocol-card:hover,
+.protocol-card:focus {
+	border-color: var(--color-accent-green);
+	box-shadow: 0 10px 26px rgba(20, 33, 45, 0.12);
+	transform: translateY(-2px);
+	outline: none;
+}
+
+.protocol-card-primary {
+	min-height: 210px;
+	border-left: 5px solid var(--color-accent-green);
+}
+
+.protocol-card-topline {
+	width: 100%;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 14px;
+}
+
+.protocol-card-kind,
+.protocol-card-steps {
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.2;
+	color: var(--color-steel-gray);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.protocol-card-steps {
+	padding: 5px 8px;
+	background: #eef3f6;
+	border-radius: 999px;
+	color: var(--color-text-dark);
+	text-transform: none;
+	letter-spacing: 0;
+	white-space: nowrap;
+}
+
+.protocol-card h3 {
+	margin: 0;
+	font-size: 20px;
+	line-height: 1.25;
+	font-weight: 700;
+	color: var(--color-text-dark);
+	letter-spacing: 0;
+}
+
+.protocol-card-description {
+	margin: 10px 0 0;
+	color: var(--color-text-light);
+	font-size: 14px;
+	line-height: 1.45;
+}
+
+.protocol-card-start {
+	margin-top: auto;
+}
+
+.welcome-protocol-kind {
+	margin: 0 0 8px;
+	font-size: 12px;
+	font-weight: 700;
+	color: var(--color-steel-gray);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
 /* ===== Game Container ===== */
 #game-container {
 	display: flex;
@@ -214,6 +384,35 @@ body {
 	margin: 0 0 16px 0;
 	font-size: 18px;
 	font-weight: 600;
+	color: var(--color-text-dark);
+}
+
+.protocol-switcher {
+	margin: 14px 14px 0;
+	padding: 12px;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	background: var(--color-white);
+	border: 1px solid var(--color-border);
+	border-radius: 8px;
+	box-shadow: 0 3px 10px var(--color-shadow);
+}
+
+.protocol-switcher-kind {
+	margin-bottom: 3px;
+	font-size: 11px;
+	font-weight: 700;
+	color: var(--color-steel-gray);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.protocol-switcher-title {
+	font-size: 14px;
+	line-height: 1.3;
+	font-weight: 700;
 	color: var(--color-text-dark);
 }
 
@@ -583,6 +782,32 @@ body {
 .btn-primary:active {
 	transform: translateY(0);
 	box-shadow: 0 2px 4px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+	padding: 10px 18px;
+	background-color: var(--color-white);
+	color: var(--color-text-dark);
+	border: 1px solid #cfd8dc;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	margin-top: 12px;
+}
+
+.btn-secondary:hover {
+	border-color: var(--color-accent-green);
+	color: #2e7d32;
+	box-shadow: 0 3px 9px rgba(76, 175, 80, 0.18);
+}
+
+.btn-secondary.compact {
+	flex: 0 0 auto;
+	margin-top: 0;
+	padding: 7px 10px;
+	font-size: 12px;
 }
 
 /* ===== Notifications ===== */
@@ -1011,6 +1236,23 @@ body {
 }
 
 @media (max-width: 768px) {
+	.protocol-launcher {
+		padding: 28px 16px 44px;
+	}
+
+	.protocol-launcher-header h1 {
+		font-size: 28px;
+	}
+
+	.protocol-card-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.protocol-switcher {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
 	#game-container {
 		flex-direction: column;
 	}
@@ -1052,6 +1294,21 @@ body {
 }
 
 @media (max-width: 480px) {
+	.protocol-launcher-header h1 {
+		font-size: 25px;
+	}
+
+	.protocol-card {
+		min-height: 170px;
+		padding: 16px;
+	}
+
+	.protocol-card-topline {
+		align-items: flex-start;
+		flex-direction: column;
+		gap: 8px;
+	}
+
 	#score-display {
 		padding: 16px;
 	}

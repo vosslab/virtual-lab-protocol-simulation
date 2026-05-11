@@ -12,6 +12,14 @@
 // - Throws to halt execution
 // ============================================
 import { PROTOCOL_ID, PROTOCOL_STEPS } from "./protocol";
+import {
+	PROTOCOL_CATALOG,
+	PROTOCOL_IDS,
+	PROTOCOL_SUMMARY,
+	REQUESTED_PROTOCOL_ID,
+	SELECTED_PROTOCOL_ID,
+	type ProtocolSummary,
+} from "../generated/protocol_data";
 import { completeStep, createInitialGameState, gameState, renderGame, setGameState, setRenderGame } from "./game_state";
 import { createProfessorOverlay, renderProfessorOverlay } from "./professor_overlay";
 import { renderProtocolUI } from "./protocol_ui";
@@ -38,6 +46,11 @@ import "./scenes/plate/plate";
 import "./scenes/plate_reader/plate_reader";
 import "./scenes/microscope/microscope";
 
+const PROTOCOL_KIND_LABELS: Record<ProtocolSummary["kind"], string> = {
+	full_protocol: "Full protocol",
+	tutorial: "Tutorial",
+};
+
 
 export function showValidationError(title: string, detail: string): never {
 	console.error(`[PROTOCOL VALIDATION] ${title}\n${detail}`);
@@ -52,6 +65,171 @@ export function showValidationError(title: string, detail: string): never {
 	document.body.prepend(banner);
 	(window as any).__protocolValidation = { ok: false, title, detail };
 	throw new Error(`${title}: ${detail}`);
+}
+
+function navigateToProtocol(protocolId: string): void {
+	window.location.href = `${window.location.pathname}?protocol=${encodeURIComponent(protocolId)}`;
+}
+
+function navigateToLauncher(): void {
+	window.location.href = window.location.pathname;
+}
+
+function deriveProtocolTitle(protocolId: string): string {
+	if (protocolId === "cell_culture") {
+		return "Cell Culture Protocol";
+	}
+	const titleWords = protocolId.replace(/^tutorial_/, "").split("_");
+	const title = titleWords
+		.map((word) => word.length > 0 ? word.charAt(0).toUpperCase() + word.slice(1) : word)
+		.join(" ");
+	return `${title} Tutorial`;
+}
+
+function getProtocolTitle(summary: ProtocolSummary): string {
+	if (summary.title) {
+		return summary.title;
+	}
+	return deriveProtocolTitle(summary.id);
+}
+
+function renderProtocolLauncherCard(summary: ProtocolSummary, primary: boolean): string {
+	const title = escapeLauncherHtml(getProtocolTitle(summary));
+	const kindLabel = escapeLauncherHtml(PROTOCOL_KIND_LABELS[summary.kind]);
+	const stepText = summary.stepCount === 1 ? "1 step" : `${summary.stepCount} steps`;
+	const description = summary.description
+		? `<p class="protocol-card-description">${escapeLauncherHtml(summary.description)}</p>`
+		: "";
+	const primaryClass = primary ? " protocol-card-primary" : "";
+	const buttonText = primary ? "Start full protocol" : "Start";
+	const html = `
+		<article class="protocol-card${primaryClass}" data-protocol-id="${escapeLauncherHtml(summary.id)}" tabindex="0">
+			<div class="protocol-card-topline">
+				<span class="protocol-card-kind">${kindLabel}</span>
+				<span class="protocol-card-steps">${escapeLauncherHtml(stepText)}</span>
+			</div>
+			<h3>${title}</h3>
+			${description}
+			<button class="btn-primary protocol-card-start" type="button" data-protocol-id="${escapeLauncherHtml(summary.id)}">${escapeLauncherHtml(buttonText)}</button>
+		</article>
+	`;
+	return html;
+}
+
+function escapeLauncherHtml(text: string): string {
+	const map: Record<string, string> = {
+		"&": "&amp;",
+		"<": "&lt;",
+		">": "&gt;",
+		'"': "&quot;",
+		"'": "&#39;",
+	};
+	return text.replace(/[&<>"']/g, (char): string => {
+		const escaped = map[char];
+		if (!escaped) throw new Error(`Unexpected character in escapeLauncherHtml: ${char}`);
+		return escaped;
+	});
+}
+
+function bindLauncherCards(container: HTMLElement): void {
+	const cards = container.querySelectorAll<HTMLElement>("[data-protocol-id]");
+	for (const card of cards) {
+		const protocolId = card.dataset.protocolId;
+		if (!protocolId) continue;
+		card.addEventListener("click", () => {
+			navigateToProtocol(protocolId);
+		});
+		card.addEventListener("keydown", (event: KeyboardEvent) => {
+			if (event.key === "Enter" || event.key === " ") {
+				event.preventDefault();
+				navigateToProtocol(protocolId);
+			}
+		});
+	}
+}
+
+function renderProtocolLauncher(): void {
+	const launcher = document.getElementById("protocol-launcher");
+	const gameContainer = document.getElementById("game-container");
+	const welcomeOverlay = document.getElementById("welcome-overlay");
+	const errorBanner = document.getElementById("protocol-launcher-error");
+	const fullCard = document.getElementById("protocol-full-card");
+	const tutorialGrid = document.getElementById("protocol-tutorial-grid");
+	if (!launcher || !gameContainer || !fullCard || !tutorialGrid) {
+		throw new Error("Protocol launcher DOM is incomplete.");
+	}
+
+	const fullSummaries: ProtocolSummary[] = [];
+	const tutorialSummaries: ProtocolSummary[] = [];
+	for (const protocolId of PROTOCOL_IDS) {
+		const summary = PROTOCOL_CATALOG[protocolId].summary;
+		if (summary.kind === "full_protocol") {
+			fullSummaries.push(summary);
+		} else {
+			tutorialSummaries.push(summary);
+		}
+	}
+
+	fullCard.innerHTML = fullSummaries
+		.map((summary) => renderProtocolLauncherCard(summary, true))
+		.join("");
+	tutorialGrid.innerHTML = tutorialSummaries
+		.map((summary) => renderProtocolLauncherCard(summary, false))
+		.join("");
+	bindLauncherCards(fullCard);
+	bindLauncherCards(tutorialGrid);
+
+	if (errorBanner) {
+		if (REQUESTED_PROTOCOL_ID !== null && SELECTED_PROTOCOL_ID === null) {
+			errorBanner.textContent = `Tutorial not found: ${REQUESTED_PROTOCOL_ID}. Choose one below.`;
+			errorBanner.hidden = false;
+		} else {
+			errorBanner.textContent = "";
+			errorBanner.hidden = true;
+		}
+	}
+
+	if (welcomeOverlay) {
+		welcomeOverlay.classList.remove("active");
+	}
+	gameContainer.hidden = true;
+	launcher.hidden = false;
+	document.body.classList.add("launcher-active");
+}
+
+function initializeWelcomeOverlay(): void {
+	const welcomeOverlay = document.getElementById("welcome-overlay");
+	const startBtn = document.getElementById("welcome-start-btn");
+	const changeBtn = document.getElementById("welcome-change-tutorial-btn");
+	const titleEl = document.getElementById("welcome-protocol-title");
+	const kindEl = document.getElementById("welcome-protocol-kind");
+	if (!welcomeOverlay || !startBtn) {
+		renderGame();
+		return;
+	}
+
+	if (titleEl) {
+		titleEl.textContent = getProtocolTitle(PROTOCOL_SUMMARY);
+	}
+	if (kindEl) {
+		const stepText = PROTOCOL_SUMMARY.stepCount === 1 ? "1 step" : `${PROTOCOL_SUMMARY.stepCount} steps`;
+		kindEl.textContent = `${PROTOCOL_KIND_LABELS[PROTOCOL_SUMMARY.kind]} | ${stepText}`;
+	}
+	if (changeBtn) {
+		changeBtn.addEventListener("click", navigateToLauncher);
+	}
+	document.addEventListener("click", (event: MouseEvent) => {
+		const target = event.target;
+		if (target instanceof Element && target.closest("#protocol-change-tutorial-btn")) {
+			navigateToLauncher();
+		}
+	});
+
+	welcomeOverlay.classList.add("active");
+	startBtn.addEventListener("click", () => {
+		welcomeOverlay.classList.remove("active");
+		renderGame();
+	});
 }
 
 // ============================================
@@ -286,6 +464,10 @@ setRenderGame(function(): void {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+	if (SELECTED_PROTOCOL_ID === null) {
+		renderProtocolLauncher();
+		return;
+	}
 
 	// Validate protocol graph structure FIRST, before any other work
 	validateProtocolGraph();
@@ -300,27 +482,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	// Create professor overlay (done once at start, then updated each renderGame)
 	createProfessorOverlay();
 
-	// Check if welcome overlay should be shown (skip for repeat visitors)
-	const welcomeOverlay = document.getElementById('welcome-overlay');
-	const hasSeenWelcome = localStorage.getItem('cellCultureGameWelcomeSeen');
-
-	if (welcomeOverlay && !hasSeenWelcome) {
-		// Show welcome overlay, wait for Start click
-		const startBtn = document.getElementById('welcome-start-btn');
-		if (startBtn) {
-			startBtn.addEventListener('click', () => {
-				welcomeOverlay.classList.remove('active');
-				localStorage.setItem('cellCultureGameWelcomeSeen', 'true');
-				renderGame();
-			});
-		}
-	} else {
-		// Hide welcome overlay and start immediately
-		if (welcomeOverlay) {
-			welcomeOverlay.classList.remove('active');
-		}
-		renderGame();
-	}
+	initializeWelcomeOverlay();
 });
 
 // ============================================
@@ -328,7 +490,11 @@ document.addEventListener('DOMContentLoaded', () => {
 // This fires after all scene render functions have executed and
 // their completion-event emitters registered via triggerStep() calls.
 // ============================================
-window.addEventListener('load', validateCompletionEventCoverage);
+window.addEventListener('load', () => {
+	if (SELECTED_PROTOCOL_ID !== null) {
+		validateCompletionEventCoverage();
+	}
+});
 
 // ============================================
 // Export resolveInteractionByIndex, PROTOCOL_STEPS, and gameState for testing

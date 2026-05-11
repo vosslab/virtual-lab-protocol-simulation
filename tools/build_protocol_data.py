@@ -963,6 +963,187 @@ def discover_protocols(repo_root):
 
 #============================================
 
+PROTOCOL_METADATA = {
+	'cell_culture': {
+		'title': 'Cell Culture Protocol',
+		'description': 'Complete the full split, count, seed, drug treatment, MTT, and plate read workflow.',
+		'kind': 'full_protocol',
+	},
+	'tutorial_bench_direct': {
+		'title': 'Bench Direct Tutorial',
+		'description': 'Complete a simple one-click bench action.',
+		'kind': 'tutorial',
+	},
+	'tutorial_cell_counter': {
+		'title': 'Cell Counter Tutorial',
+		'description': 'Capture a cell count with the automated counter.',
+		'kind': 'tutorial',
+	},
+	'tutorial_drug_dilution': {
+		'title': 'Drug Dilution Tutorial',
+		'description': 'Prepare a simple drug dilution.',
+		'kind': 'tutorial',
+	},
+	'tutorial_hemocytometer_count': {
+		'title': 'Hemocytometer Count Tutorial',
+		'description': 'Practice manual count entry.',
+		'kind': 'tutorial',
+	},
+	'tutorial_hood_transfer': {
+		'title': 'Hood Transfer Tutorial',
+		'description': 'Move liquid safely in the hood.',
+		'kind': 'tutorial',
+	},
+	'tutorial_pbs': {
+		'title': 'PBS Tutorial',
+		'description': 'Practice a repeat pipette transfer.',
+		'kind': 'tutorial',
+	},
+	'tutorial_plate_intro': {
+		'title': 'Plate Intro Tutorial',
+		'description': 'Learn the plate workspace.',
+		'kind': 'tutorial',
+	},
+	'tutorial_plate_reader': {
+		'title': 'Plate Reader Tutorial',
+		'description': 'Read an assay plate.',
+		'kind': 'tutorial',
+	},
+	'tutorial_split': {
+		'title': 'Split Tutorial',
+		'description': 'Practice the first split workflow.',
+		'kind': 'tutorial',
+	},
+}
+
+
+def derive_protocol_title(protocol_name):
+	"""Derive a readable protocol title from a protocol id."""
+	if protocol_name == 'cell_culture':
+		return 'Cell Culture Protocol'
+	name = protocol_name
+	if name.startswith('tutorial_'):
+		name = name[len('tutorial_'):]
+	words = name.split('_')
+	title = ' '.join(word.upper() if word == 'pbs' else word.capitalize() for word in words)
+	if protocol_name.startswith('tutorial_'):
+		title += ' Tutorial'
+	return title
+
+
+def get_protocol_metadata(protocol_name, step_count):
+	"""Return user-facing launcher metadata for a protocol."""
+	metadata = PROTOCOL_METADATA.get(protocol_name, {})
+	kind = metadata.get('kind')
+	if kind is None:
+		kind = 'tutorial' if protocol_name.startswith('tutorial_') else 'full_protocol'
+	result = {
+		'id': protocol_name,
+		'title': metadata.get('title', derive_protocol_title(protocol_name)),
+		'kind': kind,
+		'stepCount': step_count,
+	}
+	if metadata.get('description'):
+		result['description'] = metadata['description']
+	return result
+
+
+def load_protocol_bundle(repo_root, protocol_name):
+	"""Load, validate, and normalize one protocol's YAML bundle."""
+	protocol_dir = repo_root / 'src' / 'content' / protocol_name
+	if not protocol_dir.is_dir():
+		raise FileNotFoundError(f"Protocol directory not found: {protocol_dir}")
+
+	items_path = protocol_dir / 'items.yaml'
+	reagents_path = protocol_dir / 'reagents.yaml'
+	protocol_path = protocol_dir / 'protocol.yaml'
+
+	for path in [items_path, reagents_path, protocol_path]:
+		if not path.exists():
+			raise FileNotFoundError(f"Missing file: {path}")
+
+	items_data = load_yaml_file(items_path)
+	reagents_data = load_yaml_file(reagents_path)
+	protocol = load_yaml_file(protocol_path)
+
+	items = items_data.get('items', {})
+	reagents = reagents_data.get('reagents', {})
+	parts = protocol.get('parts', [])
+	days = protocol.get('days', [])
+	steps = protocol.get('steps', [])
+
+	validate_reagents(reagents)
+	validate_items(items, repo_root, reagents)
+	validate_steps(steps, items, reagents, parts, days)
+
+	for step in steps:
+		cp = parse_completion_path(step, items, reagents)
+		if cp is not None:
+			step['completionPath'] = cp
+
+	for step in steps:
+		if 'completionPath' not in step:
+			continue
+		cp = step['completionPath']
+		kind = cp.get('kind')
+		scene = step.get('scene')
+
+		if kind == 'directTool':
+			event = cp.get('completionEvent', '')
+			step['completionTrigger'] = {
+				'scene': scene,
+				'completionEvent': f'click:{event}'
+			}
+		elif kind == 'modal':
+			event = cp.get('completionEvent', '')
+			step['completionTrigger'] = {
+				'scene': scene,
+				'completionEvent': f'click:{event}'
+			}
+		elif kind == 'interactionSequence':
+			interactions = cp.get('interactions', [])
+			final_event = None
+			for interaction in interactions:
+				if 'completionEvent' in interaction:
+					final_event = interaction['completionEvent']
+			if final_event:
+				step['completionTrigger'] = {
+					'scene': scene,
+					'completionEvent': f'click:{final_event}'
+				}
+
+	return {
+		'items': items,
+		'reagents': reagents,
+		'parts': parts,
+		'days': days,
+		'steps': steps,
+		'summary': get_protocol_metadata(protocol_name, len(steps)),
+	}
+
+
+def build_protocol_catalog(repo_root, protocol_names):
+	"""Load all requested protocol bundles keyed by protocol id."""
+	catalog = {}
+	for protocol_name in protocol_names:
+		catalog[protocol_name] = load_protocol_bundle(repo_root, protocol_name)
+	return catalog
+
+
+def render_steps_ts(steps, indent):
+	"""Render a protocol step list as TypeScript."""
+	lines = [indent + '[']
+	for step in steps:
+		lines.append(indent + '\t{')
+		for key in sorted(step.keys()):
+			value = step[key]
+			lines.append(f'{indent}\t\t{key}: {to_ts_value(value)},')
+		used_items = derive_used_items(step)
+		lines.append(f'{indent}\t\tusedItems: {to_ts_value(used_items)},')
+		lines.append(indent + '\t},')
+	lines.append(indent + ']')
+	return lines
+
 
 def generate_protocol_data(steps, parts, days, protocol_name='cell_culture'):
 	"""Generate TypeScript code for protocol_data.ts."""
@@ -1020,6 +1201,109 @@ def generate_protocol_data(steps, parts, days, protocol_name='cell_culture'):
 	return '\n'.join(lines)
 
 
+def generate_protocol_catalog_data(protocol_catalog, default_protocol='cell_culture'):
+	"""Generate TypeScript code for a catalog-backed protocol_data.ts."""
+	lines = [
+		'// AUTO-GENERATED by tools/build_protocol_data.py from all src/content/*/*.yaml. DO NOT EDIT BY HAND.',
+		'',
+		'import type { ProtocolStep } from "../src/constants";',
+		'',
+		'export interface ProtocolPart {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'\tdayId: string;',
+		'}',
+		'',
+		'export interface ProtocolDay {',
+		'\tid: string;',
+		'\tlabel: string;',
+		'}',
+		'',
+		'export interface ProtocolSummary {',
+		'\tid: string;',
+		'\ttitle: string;',
+		'\tkind: "full_protocol" | "tutorial";',
+		'\tstepCount: number;',
+		'\tdescription?: string;',
+		'}',
+		'',
+		'export interface ProtocolCatalogEntry {',
+		'\tsummary: ProtocolSummary;',
+		'\tsteps: readonly ProtocolStep[];',
+		'\tparts: Record<string, ProtocolPart>;',
+		'\tdays: Record<string, ProtocolDay>;',
+		'}',
+		'',
+	]
+
+	lines.append('export const PROTOCOL_IDS = [')
+	for protocol_name in sorted(protocol_catalog.keys()):
+		lines.append(f'\t"{protocol_name}",')
+	lines.append('] as const;')
+	lines.append('')
+	lines.append('export type ProtocolId = typeof PROTOCOL_IDS[number];')
+	lines.append('')
+	lines.append('const PROTOCOL_ID_SET: ReadonlySet<string> = new Set<string>(PROTOCOL_IDS);')
+	lines.append('')
+
+	lines.append('export const PROTOCOL_CATALOG: Record<ProtocolId, ProtocolCatalogEntry> = {')
+	for protocol_name in sorted(protocol_catalog.keys()):
+		bundle = protocol_catalog[protocol_name]
+		lines.append(f'\t{protocol_name}: {{')
+		lines.append(f'\t\tsummary: {object_to_ts_literal(bundle["summary"])},')
+		lines.append('\t\tsteps: ' + render_steps_ts(bundle['steps'], '\t\t')[0].strip())
+		for step_line in render_steps_ts(bundle['steps'], '\t\t')[1:]:
+			lines.append(step_line)
+		lines[-1] = lines[-1] + ','
+		lines.append('\t\tparts: {')
+		for part in bundle['parts']:
+			part_id = part['id']
+			lines.append(f'\t\t\t{part_id}: {object_to_ts_literal(part)},')
+		lines.append('\t\t},')
+		lines.append('\t\tdays: {')
+		for day in bundle['days']:
+			day_id = day['id']
+			lines.append(f'\t\t\t{day_id}: {object_to_ts_literal(day)},')
+		lines.append('\t\t},')
+		lines.append('\t},')
+	lines.append('};')
+	lines.append('')
+
+	lines.extend([
+		'export function getRequestedProtocolId(): string | null {',
+		'\tif (typeof window === "undefined") return null;',
+		'\tconst params = new URLSearchParams(window.location.search);',
+		'\treturn params.get("protocol");',
+		'}',
+		'',
+		'export function isKnownProtocolId(value: string | null): value is ProtocolId {',
+		'\tif (value === null) return false;',
+		'\treturn PROTOCOL_ID_SET.has(value);',
+		'}',
+		'',
+		f'export const DEFAULT_PROTOCOL_ID: ProtocolId = "{default_protocol}";',
+		'export const REQUESTED_PROTOCOL_ID = getRequestedProtocolId();',
+		'export const HAS_REQUESTED_PROTOCOL = REQUESTED_PROTOCOL_ID !== null;',
+		'export const SELECTED_PROTOCOL_ID: ProtocolId | null = isKnownProtocolId(REQUESTED_PROTOCOL_ID)',
+		'\t? REQUESTED_PROTOCOL_ID',
+		'\t: null;',
+		'export const REQUESTED_PROTOCOL_IS_VALID = SELECTED_PROTOCOL_ID !== null;',
+		'export const INVALID_REQUESTED_PROTOCOL_ID: string | null =',
+		'\tHAS_REQUESTED_PROTOCOL && !REQUESTED_PROTOCOL_IS_VALID',
+		'\t\t? REQUESTED_PROTOCOL_ID',
+		'\t\t: null;',
+		'',
+		'const ACTIVE_PROTOCOL_ID: ProtocolId = SELECTED_PROTOCOL_ID ?? DEFAULT_PROTOCOL_ID;',
+		'export const PROTOCOL_ID: ProtocolId = ACTIVE_PROTOCOL_ID;',
+		'export const PROTOCOL_STEPS: readonly ProtocolStep[] = PROTOCOL_CATALOG[ACTIVE_PROTOCOL_ID].steps;',
+		'export const PROTOCOL_PARTS: Record<string, ProtocolPart> = PROTOCOL_CATALOG[ACTIVE_PROTOCOL_ID].parts;',
+		'export const PROTOCOL_DAYS: Record<string, ProtocolDay> = PROTOCOL_CATALOG[ACTIVE_PROTOCOL_ID].days;',
+		'export const PROTOCOL_SUMMARY: ProtocolSummary = PROTOCOL_CATALOG[ACTIVE_PROTOCOL_ID].summary;',
+	])
+
+	return '\n'.join(lines)
+
+
 def generate_inventory_data(items, reagents, protocol_name='cell_culture'):
 	"""Generate TypeScript code for inventory_data.ts."""
 	lines = [
@@ -1061,6 +1345,61 @@ def generate_inventory_data(items, reagents, protocol_name='cell_culture'):
 	return '\n'.join(lines)
 
 
+def generate_inventory_catalog_data(protocol_catalog, default_protocol='cell_culture'):
+	"""Generate TypeScript code for a catalog-backed inventory_data.ts."""
+	lines = [
+		'// AUTO-GENERATED by tools/build_protocol_data.py from all src/content/*/*.yaml. DO NOT EDIT BY HAND.',
+		'',
+		'import { DEFAULT_PROTOCOL_ID, SELECTED_PROTOCOL_ID, type ProtocolId } from "./protocol_data";',
+		'',
+		'export interface InventoryItem {',
+		'\tlabel: string;',
+		'\trole: string;',
+		'\tscene: string;',
+		'\tasset?: string;',
+		'\tliquidCapable?: boolean;',
+		'\tcapacityMl?: number;',
+		'\tallowedLiquids?: string[];',
+		'\tcontains?: string;',
+		'\tcontainsAny?: string[];',
+		'\tvisualOnly?: boolean;',
+		'}',
+		'',
+		'export interface InventoryReagent {',
+		'\tlabel: string;',
+		'\tcolorKey: string;',
+		'\tdisplayColor: string;',
+		'}',
+		'',
+		'export interface InventoryCatalogEntry {',
+		'\tequipment: Record<string, InventoryItem>;',
+		'\treagents: Record<string, InventoryReagent>;',
+		'}',
+		'',
+		'export const INVENTORY_CATALOG: Record<ProtocolId, InventoryCatalogEntry> = {',
+	]
+
+	for protocol_name in sorted(protocol_catalog.keys()):
+		bundle = protocol_catalog[protocol_name]
+		lines.append(f'\t{protocol_name}: {{')
+		lines.append('\t\tequipment: {')
+		for item_id, item_def in bundle['items'].items():
+			lines.append(f'\t\t\t{item_id}: {object_to_ts_literal(item_def)},')
+		lines.append('\t\t},')
+		lines.append('\t\treagents: {')
+		for reagent_id, reagent_def in bundle['reagents'].items():
+			lines.append(f'\t\t\t{reagent_id}: {object_to_ts_literal(reagent_def)},')
+		lines.append('\t\t},')
+		lines.append('\t},')
+	lines.append('};')
+	lines.append('')
+	lines.append('const ACTIVE_PROTOCOL_ID: ProtocolId = SELECTED_PROTOCOL_ID ?? DEFAULT_PROTOCOL_ID;')
+	lines.append('export const EQUIPMENT: Record<string, InventoryItem> = INVENTORY_CATALOG[ACTIVE_PROTOCOL_ID].equipment;')
+	lines.append('export const REAGENTS: Record<string, InventoryReagent> = INVENTORY_CATALOG[ACTIVE_PROTOCOL_ID].reagents;')
+
+	return '\n'.join(lines)
+
+
 def main():
 	"""Main entry point."""
 	parser = argparse.ArgumentParser(
@@ -1070,8 +1409,8 @@ def main():
 	group.add_argument(
 		'-p', '--protocol',
 		dest='protocol',
-		default='cell_culture',
-		help='Protocol name for multi-protocol support (default: cell_culture).',
+		default=None,
+		help='Validate one protocol by name. Generated output still includes the full catalog.',
 	)
 	group.add_argument(
 		'-l', '--list-protocols',
@@ -1095,90 +1434,27 @@ def main():
 			print(p)
 		return 0
 
-	# Load YAML files
-	protocol_dir = repo_root / 'src' / 'content' / args.protocol
-	if not protocol_dir.is_dir():
-		print(f"Error: Protocol directory not found: {protocol_dir}", file=sys.stderr)
+	if args.protocol is not None:
+		protocol_names = [args.protocol]
+	else:
+		protocol_names = discover_protocols(repo_root)
+
+	try:
+		protocol_catalog = build_protocol_catalog(repo_root, protocol_names)
+	except (FileNotFoundError, ValueError) as err:
+		print(f"Error: {err}", file=sys.stderr)
 		return 1
-
-	items_path = protocol_dir / 'items.yaml'
-	reagents_path = protocol_dir / 'reagents.yaml'
-	protocol_path = protocol_dir / 'protocol.yaml'
-
-	# Verify files exist
-	for path in [items_path, reagents_path, protocol_path]:
-		if not path.exists():
-			print(f"Error: Missing file: {path}", file=sys.stderr)
-			return 1
-
-	items_data = load_yaml_file(items_path)
-	reagents_data = load_yaml_file(reagents_path)
-	protocol = load_yaml_file(protocol_path)
-
-	items = items_data.get('items', {})
-	reagents = reagents_data.get('reagents', {})
-	parts = protocol.get('parts', [])
-	days = protocol.get('days', [])
-	steps = protocol.get('steps', [])
-
-
-	# Validate
-	validate_reagents(reagents)
-	validate_items(items, repo_root, reagents)
-	validate_steps(steps, items, reagents, parts, days)
 
 	if args.validate_only:
 		print("Validation passed.")
 		return 0
 
-	# Parse completionPath for each step (SP-K2a)
-	# If a step has a completionPath in YAML, parse and add it to the step dict.
-	# If no completionPath, leave the step as-is (legacy top-level interactionSequence).
-	for step in steps:
-		cp = parse_completion_path(step, items, reagents)
-		if cp is not None:
-			step['completionPath'] = cp
+	full_catalog = build_protocol_catalog(repo_root, discover_protocols(repo_root))
 
-	# Derive completionTrigger from completionPath (SP-K2b)
-	# The builder synthesizes completionTrigger so the runtime stays unchanged.
-	# For kinds with completionEvent, wrap it with 'click:' prefix.
-	# For interactionSequence, extract the final interaction's completionEvent.
-	for step in steps:
-		if 'completionPath' in step:
-			cp = step['completionPath']
-			kind = cp.get('kind')
-			scene = step.get('scene')
-
-			if kind == 'directTool':
-				# directTool: completionEvent is bare; prefix with 'click:'
-				event = cp.get('completionEvent', '')
-				step['completionTrigger'] = {
-					'scene': scene,
-					'completionEvent': f'click:{event}'
-				}
-			elif kind == 'modal':
-				# modal: completionEvent is bare; prefix with 'click:'
-				event = cp.get('completionEvent', '')
-				step['completionTrigger'] = {
-					'scene': scene,
-					'completionEvent': f'click:{event}'
-				}
-			elif kind == 'interactionSequence':
-				# interactionSequence: extract completionEvent from the final interaction
-				interactions = cp.get('interactions', [])
-				final_event = None
-				for interaction in interactions:
-					if 'completionEvent' in interaction:
-						final_event = interaction['completionEvent']
-				if final_event:
-					step['completionTrigger'] = {
-						'scene': scene,
-						'completionEvent': f'click:{final_event}'
-					}
-
-	# Generate and write output files
-	protocol_data_ts = generate_protocol_data(steps, parts, days, args.protocol)
-	inventory_data_ts = generate_inventory_data(items, reagents, args.protocol)
+	# Generate and write output files. Normal builds always emit the full catalog
+	# so the browser can select protocols at runtime.
+	protocol_data_ts = generate_protocol_catalog_data(full_catalog)
+	inventory_data_ts = generate_inventory_catalog_data(full_catalog)
 
 	# Both protocol_data.ts and inventory_data.ts are generated artifacts (gitignored under generated/)
 	# The public facades are src/protocol.ts and src/inventory.ts

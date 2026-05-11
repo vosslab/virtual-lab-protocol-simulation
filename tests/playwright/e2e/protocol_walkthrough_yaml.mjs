@@ -98,8 +98,8 @@ Options:
                          tutorial_split, tutorial_cell_counter, tutorial_hood_transfer,
                          tutorial_drug_dilution, tutorial_bench_direct,
                          tutorial_pbs, tutorial_plate_reader.
-                         Use 'ls src/content/' to see all available protocols, or
-                         run 'python3 tools/build_protocol_data.py --list-protocols'.
+                         The walker opens /?protocol=NAME against the built catalog.
+                         Use the Python wrapper's --list-protocols option to see choices.
       --wrong-order      Drive interactions in the WRONG order (negative test:
                          expects the runtime to reject the click and not advance).
   -h, --help             Show this help message and exit.
@@ -956,85 +956,6 @@ async function walkStep(page, step, report, wrongOrderMode) {
 }
 
 //============================================
-// Protocol rebuild (for multi-protocol support)
-//============================================
-
-async function rebuildProtocol(protocolName) {
-	/**
-	 * Rebuild protocol_data.ts for the given protocol and rebuild the game bundle.
-	 * Returns the original protocol/inventory data as strings so they can be restored in finally.
-	 * Also rebuilds the game bundle (dist/main.js) so the server serves the new protocol.
-	 */
-	const protocolDataPath = path.join(REPO_ROOT, 'generated', 'protocol_data.ts');
-	const inventoryDataPath = path.join(REPO_ROOT, 'src', 'content', 'inventory_data.ts');
-
-	// Save original files
-	const originalProtocolData = fs.readFileSync(protocolDataPath, 'utf-8');
-	const originalInventoryData = fs.readFileSync(inventoryDataPath, 'utf-8');
-
-	// Helper: run a command and return a promise
-	function runCommand(cmd, args, cwd = REPO_ROOT) {
-		return new Promise((resolve, reject) => {
-			const proc = spawn(cmd, args, {
-				stdio: 'inherit',
-				cwd,
-			});
-			proc.on('exit', (code) => {
-				if (code !== 0) {
-					reject(new Error(`${cmd} ${args.join(' ')} failed with code ${code}`));
-				} else {
-					resolve();
-				}
-			});
-		});
-	}
-
-	// Step 1: Rebuild protocol data files
-	console.log(`[Protocol] Building protocol_data.ts for ${protocolName}`);
-	await runCommand('python3', ['tools/build_protocol_data.py', '--protocol', protocolName]);
-
-	// Step 2: Regenerate SVG globals (required before esbuild)
-	console.log('[Build] Generating SVG globals');
-	await runCommand('python3', ['tools/generate_svg_globals.py']);
-
-	// Step 3: Type-check
-	console.log('[Build] Type-checking');
-	await runCommand('npx', ['tsc', '--noEmit', '-p', 'src/tsconfig.json']);
-
-	// Step 4: Bundle with esbuild
-	console.log('[Build] Bundling with esbuild');
-	await runCommand('npx', ['esbuild', 'src/init.ts',
-		'--bundle',
-		'--format=esm',
-		'--target=es2020',
-		'--platform=browser',
-		`--outfile=${path.join(REPO_ROOT, 'dist', 'main.js')}`]);
-
-	console.log(`[Protocol] Successfully switched to ${protocolName}`);
-
-	// Return function to restore originals and rebuild the original protocol
-	return async () => {
-		console.log('[Restore] Restoring cell_culture protocol');
-		fs.writeFileSync(protocolDataPath, originalProtocolData, 'utf-8');
-		fs.writeFileSync(inventoryDataPath, originalInventoryData, 'utf-8');
-
-		// Rebuild the original protocol's bundle
-		console.log('[Build] Regenerating SVG globals for cell_culture');
-		await runCommand('python3', ['tools/generate_svg_globals.py']);
-
-		console.log('[Build] Rebuilding bundle for cell_culture');
-		await runCommand('npx', ['esbuild', 'src/init.ts',
-			'--bundle',
-			'--format=esm',
-			'--target=es2020',
-			'--platform=browser',
-			`--outfile=${path.join(REPO_ROOT, 'dist', 'main.js')}`]);
-
-		console.log('[Restore] Successfully restored cell_culture protocol');
-	};
-}
-
-//============================================
 // Main walker
 //============================================
 
@@ -1052,18 +973,7 @@ async function main() {
 	report.wrongOrderMode = args.wrongOrder;
 
 	const runStart = Date.now();
-
-	// Rebuild protocol if non-default; save restoration function to run in finally
-	let restoreProtocol = null;
-	if (args.protocol !== 'cell_culture') {
-		console.log(`Rebuilding protocol_data.ts for protocol=${args.protocol}`);
-		try {
-			restoreProtocol = await rebuildProtocol(args.protocol);
-		} catch (err) {
-			report.error(`Protocol rebuild failed: ${err.message}`);
-			process.exit(1);
-		}
-	}
+	const gameUrl = `http://127.0.0.1:${PORT}/?protocol=${encodeURIComponent(args.protocol)}`;
 
 	const server = startServer();
 	let serverDied = null;
@@ -1101,7 +1011,7 @@ async function main() {
 	});
 
 	try {
-		await waitForServer(`http://127.0.0.1:${PORT}/index.html`);
+		await waitForServer(`http://127.0.0.1:${PORT}/`);
 	} catch (err) {
 		report.error(`Server startup failed: ${err.message}`);
 		server.kill();
@@ -1111,8 +1021,8 @@ async function main() {
 
 	try {
 		// Navigate to game
-		report.info('Navigating to game', { url: `http://127.0.0.1:${PORT}/index.html` });
-		await page.goto(`http://127.0.0.1:${PORT}/index.html`, { waitUntil: 'networkidle' });
+		report.info('Navigating to game', { url: gameUrl });
+		await page.goto(gameUrl, { waitUntil: 'networkidle' });
 
 		// Wait for window exports to be defined
 		await page.waitForFunction(() => {
@@ -1281,15 +1191,6 @@ async function main() {
 		server.kill();
 		await new Promise((r) => setTimeout(r, 100));
 
-		// Restore original protocol if it was changed
-		if (restoreProtocol !== null) {
-			try {
-				await restoreProtocol();
-			} catch (err) {
-				console.error(`Failed to restore original protocol: ${err.message}`);
-				process.exit(1);
-			}
-		}
 	}
 }
 

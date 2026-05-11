@@ -7,6 +7,7 @@
 // ============================================
 import type { ProtocolStep } from "./constants";
 import { PROTOCOL_STEPS } from "./protocol";
+import { PROTOCOL_SUMMARY } from "../generated/protocol_data";
 import { gameState, getCurrentStep, showNotification } from "./game_state";
 // Static asset access goes through the svg_assets facade (M4): protocol_ui
 // no longer imports per-asset SVG strings from `generated/`.
@@ -88,6 +89,17 @@ export function renderProtocolUI(): string {
 	if (!currentStep) {
 		return '';
 	}
+	const protocolKind = PROTOCOL_SUMMARY.kind === "full_protocol" ? "Full protocol" : "Tutorial";
+	const stepCountText = PROTOCOL_SUMMARY.stepCount === 1 ? "1 step" : `${PROTOCOL_SUMMARY.stepCount} steps`;
+	const protocolSwitcher = `
+		<div class="protocol-switcher">
+			<div>
+				<div class="protocol-switcher-kind">${escapeHtml(protocolKind)} | ${escapeHtml(stepCountText)}</div>
+				<div class="protocol-switcher-title">${escapeHtml(PROTOCOL_SUMMARY.title)}</div>
+			</div>
+			<button id="protocol-change-tutorial-btn" class="btn-secondary compact" type="button">Change tutorial</button>
+		</div>
+	`;
 
 	const currentDayId = getCurrentDayId();
 
@@ -118,7 +130,7 @@ export function renderProtocolUI(): string {
 		</div>
 	`;
 
-	return stepBubble + dayRibbon + breadcrumb + stepCard + upcoming;
+	return protocolSwitcher + stepBubble + dayRibbon + breadcrumb + stepCard + upcoming;
 }
 
 // ============================================

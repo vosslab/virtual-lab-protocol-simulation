@@ -1,8 +1,31 @@
 <body>
+<!-- Browser-first protocol launcher (shown at / before gameplay starts) -->
+<main id="protocol-launcher" class="protocol-launcher" aria-labelledby="protocol-launcher-title" hidden>
+	<div class="protocol-launcher-shell">
+		<div id="protocol-launcher-error" class="protocol-launcher-error" role="alert" hidden></div>
+		<header class="protocol-launcher-header">
+			<p class="protocol-launcher-kicker">Cell Culture Simulation</p>
+			<h1 id="protocol-launcher-title">Choose a protocol or tutorial</h1>
+			<p class="protocol-launcher-subtitle">
+				Run the full cell-culture workflow, or start with a short focused tutorial.
+			</p>
+		</header>
+		<section class="protocol-launcher-section" aria-labelledby="protocol-full-heading">
+			<h2 id="protocol-full-heading">Full protocol</h2>
+			<div id="protocol-full-card" class="protocol-card-grid protocol-card-grid-primary"></div>
+		</section>
+		<section class="protocol-launcher-section" aria-labelledby="protocol-tutorials-heading">
+			<h2 id="protocol-tutorials-heading">Tutorials</h2>
+			<div id="protocol-tutorial-grid" class="protocol-card-grid"></div>
+		</section>
+	</div>
+</main>
+
 <!-- Welcome overlay (shown once on first visit) -->
 <div id="welcome-overlay" class="modal-overlay active">
 	<div class="modal-content" style="padding:40px 30px 30px;max-width:500px;text-align:center;">
-		<h2 style="margin:0 0 16px 0;">Cell Culture Simulation</h2>
+		<p id="welcome-protocol-kind" class="welcome-protocol-kind"></p>
+		<h2 id="welcome-protocol-title" style="margin:0 0 16px 0;">Cell Culture Simulation</h2>
 		<p style="font-size:14px;color:#757575;line-height:1.6;margin:0 0 12px 0;">
 			Complete a cell culture protocol: feed cells, check viability, count on a hemocytometer, plate cells, add drugs, incubate, and read results.
 		</p>
@@ -10,6 +33,7 @@
 			<strong>How to play:</strong> Click equipment to pick it up, then click a target to use it. Follow the protocol checklist on the right. Right-click or press Esc to put down a tool.
 		</p>
 		<button id="welcome-start-btn" class="btn-primary" style="padding:12px 32px;">Start</button>
+		<button id="welcome-change-tutorial-btn" class="btn-secondary" type="button">Change tutorial</button>
 	</div>
 </div>
 

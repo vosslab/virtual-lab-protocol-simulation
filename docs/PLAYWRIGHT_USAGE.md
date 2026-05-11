@@ -23,11 +23,67 @@ by `npx playwright install`.
 ### Quick install script
 
 Repos propagated from the starter template ship `devel/setup_playwright.sh`,
-which automates the install end-to-end (chromium only, idempotent):
+which automates the install end-to-end (chromium and firefox, idempotent):
 
 ```bash
 bash devel/setup_playwright.sh
 ```
+
+The script uses repo-local cache directories under `.cache/` for npm and
+Playwright browser downloads. This avoids writes to `~/.npm` and
+`~/Library/Caches/ms-playwright` when running inside Codex/Claude sandboxes.
+For browser runs that need those repo-local browser binaries, export the path
+printed by the setup script:
+
+```bash
+export PLAYWRIGHT_BROWSERS_PATH="$(pwd)/.cache/ms-playwright"
+```
+
+## Codex macOS sandbox note
+
+Real Playwright browser launches may fail inside the default macOS Codex
+sandbox even when setup and browser downloads succeed. Treat these launch
+errors as sandbox infrastructure failures, not application failures:
+
+- `MachPortRendezvousServer ... Permission denied`
+- `bootstrap_check_in ... Permission denied (1100)`
+- `Firefox ... SIGABRT` immediately after headless launch
+- `kill EPERM` while Playwright cleans up a failed browser process
+- `listen EPERM 127.0.0.1`
+
+Do not edit app code to fix those signatures. Use the narrow browser command
+with approval/escalation when real browser QA is needed:
+
+```bash
+npm run browser:smoke
+```
+
+For a screenshot-oriented UI review of the compiled [dist/](../dist/) build,
+use:
+
+```bash
+npm run build
+npm run ui:review
+```
+
+Run `npm run build` in the normal sandbox. Run `npm run ui:review` with
+approval/escalation on macOS Codex when browser launch hits the sandbox
+signatures above. The review script writes desktop and mobile screenshots plus
+`report.json` to `artifacts/ui-review/`, then prints console/page errors plus
+a short body-text preview.
+
+For local pre-commit browser review without launching browsers in the macOS
+Codex sandbox, use Podman:
+
+```bash
+tools/run_ui_review_podman.sh
+```
+
+This script builds [dist/](../dist/), serves it on the host with
+`python3 -m http.server`, then runs `npm run ui:review` inside the official
+Playwright container against `http://host.containers.internal:<port>`. It writes
+server logs to `test-results/ui-review-server.log` and screenshots/report files
+to `artifacts/ui-review/`.
 
 The script installs `@playwright/test` (the test runner) rather than the bare
 `playwright` library. Use it when the repo's tests rely on the test-runner

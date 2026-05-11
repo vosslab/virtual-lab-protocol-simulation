@@ -1,4 +1,6 @@
 # Build artifacts
+.cache/
+artifacts/ui-review/
 generated/
 cell_culture_game.html
 cell-culture2-clean.svg
@@ -9,6 +11,7 @@ OTHER_REPOS/*/
 node_modules/
 package-lock.json
 test-results/
+playwright-report/
 
 # Python
 *.pyc
