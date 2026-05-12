@@ -42,7 +42,8 @@ async function runTests(page) {
 		});
 	}
 
-	// Test 2: getModalOwnedSteps('drug_treatment') returns 6 specific steps
+	// Test 2: getModalOwnedSteps('drug_treatment') returns 5 specific steps
+	// carb_high_range was consolidated into carb_low_range (single 400 µM parent source)
 	try {
 		const drugModalSteps = await page.evaluate(() => {
 			return PROTOCOL_STEPS
@@ -51,23 +52,21 @@ async function runTests(page) {
 		});
 		const expectedIds = new Set([
 			'carb_intermediate',
-			'carb_low_range',
-			'carb_high_range',
 			'metformin_stock',
 			'add_carboplatin',
 			'add_metformin'
 		]);
 		const actualIds = new Set(drugModalSteps);
-		const pass = drugModalSteps.length === 6 &&
+		const pass = drugModalSteps.length === 4 &&
 			[...expectedIds].every(id => actualIds.has(id));
 		results.push({
-			name: 'getModalOwnedSteps("drug_treatment") returns 6 expected steps',
+			name: 'getModalOwnedSteps("drug_treatment") returns 4 expected steps',
 			pass,
 			detail: pass ? 'ok' : `got ${drugModalSteps.length} steps: ${drugModalSteps.join(', ')}`,
 		});
 	} catch (e) {
 		results.push({
-			name: 'getModalOwnedSteps("drug_treatment") returns 6 expected steps',
+			name: 'getModalOwnedSteps("drug_treatment") returns 4 expected steps',
 			pass: false,
 			detail: String(e),
 		});

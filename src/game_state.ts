@@ -2,8 +2,9 @@
 // game_state.ts - State machine and protocol tracking
 // ============================================
 
-import { FLASK_STARTING_MEDIA_ML, INITIAL_CELL_COUNT, INITIAL_VIABILITY, PLATE_COLS, PLATE_ROWS, type ProtocolStep, type WellData } from "./constants";
+import { FLASK_STARTING_MEDIA_ML, INITIAL_CELL_COUNT, INITIAL_VIABILITY, PLATE_COLS, PLATE_ROWS, type ProtocolStep, type WellData, type WellLiquid, type MicrotubeLiquid } from "./constants";
 import { PROTOCOL_STEPS } from "./protocol";
+import { REAGENTS } from "./inventory";
 import type { SceneItem } from "./scene_types";
 
 
@@ -37,7 +38,7 @@ export interface GameState {
 	score: number;
 	completedSteps: string[];
 	hoodSprayed: boolean;
-	activeScene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader' | 'results';
+	activeScene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader' | 'results';
 	// Tracking for scoring
 	stepsInCorrectOrder: number;
 	stepsOutOfOrder: number;
@@ -61,6 +62,12 @@ export interface GameState {
 	dragItem: string | null;
 	// Held liquid state: tracks what liquid is loaded in the current tool
 	heldLiquid: HeldLiquid | null;
+	// Plate-well liquid state: tracks liquids deposited in each well
+	// Key format: "A1", "B3", etc. (row letter + 1-indexed column)
+	plateLiquids: Record<string, WellLiquid[]>;
+	// Microtube liquid state: tracks liquids in dilution tubes
+	// Key format: microtube item id, e.g. "dilution_tube_carb_b"
+	tubeLiquids: Record<string, readonly MicrotubeLiquid[]>;
 	// Day state machine
 	day: 'day1_seed' | 'day1_wait' | 'day2_treat' | 'day2_wait' | 'day4_readout';
 	seenPartIntros: string[];
@@ -121,7 +128,9 @@ export function createInitialGameState(): GameState {
 		score: 0,
 		completedSteps: [],
 		hoodSprayed: false,
-		activeScene: 'hood',
+		// First step's scene drives the initial active scene so protocols starting outside
+		// the hood (e.g. tutorial_plate_drug_additions) do not flash the hood at launch.
+		activeScene: PROTOCOL_STEPS[0]!.scene,
 		stepsInCorrectOrder: 0,
 		stepsOutOfOrder: 0,
 		mediaWastedMl: 0,
@@ -139,6 +148,8 @@ export function createInitialGameState(): GameState {
 		isDragging: false,
 		dragItem: null,
 		heldLiquid: null,
+		plateLiquids: {},
+		tubeLiquids: {},
 		day: 'day1_seed',
 		seenPartIntros: [],
 		dilutionErrors: 0,
@@ -200,6 +211,68 @@ export function getCurrentStep(): ProtocolStep | null {
 	const step = PROTOCOL_STEPS.find(s => s.id === id);
 	if (!step) throw new Error(`activeStepId '${id}' not in PROTOCOL_STEPS`);
 	return step;
+}
+
+// ============================================
+// Well-liquid helpers (mirrors heldLiquid pattern for pipettes)
+// ============================================
+
+export function wellKey(row: string, col: number): string {
+	return `${row}${col}`;
+}
+
+export function addWellLiquid(row: string, col: number, liquid: string, volumeMl: number): void {
+	const key = wellKey(row, col);
+	const reagent = REAGENTS[liquid];
+	if (!reagent) {
+		throw new Error(`addWellLiquid: unknown reagent id '${liquid}'`);
+	}
+	const colorKey = reagent.colorKey;
+	const wellLiquid: WellLiquid = { liquid, volumeMl, colorKey };
+	if (!gameState.plateLiquids[key]) {
+		gameState.plateLiquids[key] = [];
+	}
+	gameState.plateLiquids[key]!.push(wellLiquid);
+}
+
+export function getWellLiquids(row: string, col: number): readonly WellLiquid[] {
+	const key = wellKey(row, col);
+	return gameState.plateLiquids[key] || [];
+}
+
+export function clearPlateLiquids(): void {
+	gameState.plateLiquids = {};
+}
+
+// ============================================
+// Tube-liquid helpers (mirrors wellLiquid pattern for dilution prep)
+// ============================================
+
+export function tubeKey(tubeId: string): string {
+	return tubeId;
+}
+
+export function addTubeLiquid(tubeId: string, liquid: string, volumeMl: number): void {
+	const key = tubeKey(tubeId);
+	const reagent = REAGENTS[liquid];
+	if (!reagent) {
+		throw new Error(`addTubeLiquid: unknown reagent id '${liquid}'`);
+	}
+	const colorKey = reagent.colorKey;
+	const tubeLiquid: MicrotubeLiquid = { liquid, volumeMl, colorKey };
+	if (!gameState.tubeLiquids[key]) {
+		gameState.tubeLiquids[key] = [];
+	}
+	gameState.tubeLiquids[key] = [...(gameState.tubeLiquids[key] || []), tubeLiquid];
+}
+
+export function getTubeLiquids(tubeId: string): readonly MicrotubeLiquid[] {
+	const key = tubeKey(tubeId);
+	return gameState.tubeLiquids[key] || [];
+}
+
+export function clearTubeLiquids(): void {
+	gameState.tubeLiquids = {};
 }
 
 // ============================================
@@ -290,7 +363,7 @@ export function getStepLabel(stepId: string): string {
 }
 
 // ============================================
-export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader' | 'results'): void {
+export function switchScene(scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader' | 'results'): void {
 	gameState.activeScene = scene;
 	renderGame();
 }

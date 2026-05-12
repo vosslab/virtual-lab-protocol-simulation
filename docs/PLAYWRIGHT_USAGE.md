@@ -68,12 +68,20 @@ npm run ui:review
 
 Run `npm run build` in the normal sandbox. Run `npm run ui:review` with
 approval/escalation on macOS Codex when browser launch hits the sandbox
-signatures above. The review script writes desktop and mobile screenshots plus
-`report.json` to `artifacts/ui-review/`, then prints console/page errors plus
-a short body-text preview.
+signatures above. The review script opens the launcher, then launches the
+review protocol (`cell_culture` by default), dismisses the welcome overlay, and
+writes launcher plus hood desktop/mobile screenshots and `report.json` to
+`artifacts/ui-review/`.
 
-For local pre-commit browser review without launching browsers in the macOS
-Codex sandbox, use Podman:
+### Podman UI review path for Codex only
+
+This repo also provides a Podman-based UI review path for **Codex macOS
+sandboxes only**. Use it when Codex cannot launch a local browser because of
+the sandbox errors listed above.
+
+Do not use this path in Claude Code. In Claude Code, run the normal build and
+UI review commands directly, or use the available browser/test workflow for the
+environment.
 
 ```bash
 tools/run_ui_review_podman.sh
@@ -83,7 +91,12 @@ This script builds [dist/](../dist/), serves it on the host with
 `python3 -m http.server`, then runs `npm run ui:review` inside the official
 Playwright container against `http://host.containers.internal:<port>`. It writes
 server logs to `test-results/ui-review-server.log` and screenshots/report files
-to `artifacts/ui-review/`.
+to `artifacts/ui-review/`. Set `REVIEW_PROTOCOL=<id>` to capture another
+protocol.
+
+Use this Podman script only for screenshot-oriented UI review of the compiled
+build in Codex. It is not the default Playwright path, and it is not required
+for ordinary Playwright scripts.
 
 The script installs `@playwright/test` (the test runner) rather than the bare
 `playwright` library. Use it when the repo's tests rely on the test-runner

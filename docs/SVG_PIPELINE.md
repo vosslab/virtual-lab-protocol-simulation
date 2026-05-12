@@ -137,6 +137,61 @@ The generator fails loudly on:
 - Two source SVGs whose normalized module names or export constants
   collide.
 
+## Bioicons facade aliases
+
+Some scene-facing assets originate from the Bioicons / Servier Medical Art
+library rather than from the original `assets/equipment/` set. To keep
+scene callers stable, the Bioicons SVG is copied into
+`assets/equipment/<name>.svg` under a repo-stable snake_case name, and an
+identity alias is registered in the
+[src/svg_assets.ts](../src/svg_assets.ts) `EQUIPMENT_ASSETS` map (the
+alias key equals its value because the asset id already matches the file
+basename). The facade's `getEquipmentSvg` switch returns the generated
+SVG constant for that asset.
+
+Two facade aliases ship today:
+
+- `microtube_open_translucent` -- backs the `microtube_open_translucent`
+  asset (Bioicons Servier microtube SVG). Used for individual dilution
+  microtubes in the well-plate workspace; liquid identity is overlaid
+  dynamically from reagent `displayColor`.
+- `bottle_medium_pink` -- backs the `bottle_medium_pink` asset (Bioicons
+  Servier pink media bottle SVG). Used as the preferred media bottle in
+  the well-plate workspace.
+
+To add a new Bioicons-sourced asset:
+
+1. Copy the source SVG into `assets/equipment/<name>.svg` using a
+   repo-stable snake_case basename (no spaces, no hyphens). Verify the
+   `assets/equipment/` license terms match the source (Bioicons assets
+   are typically CC-BY-3.0; record the attribution in
+   [docs/THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md)).
+2. Rerun the generator so the new SVG flows through into
+   `generated/svg_assets/<name>.ts` and `generated/svg_manifest.ts`:
+   ```
+   source source_me.sh && python3 tools/generate_svg_globals.py
+   ```
+3. Add an identity entry to `EQUIPMENT_ASSETS` in
+   [src/svg_assets.ts](../src/svg_assets.ts):
+   ```ts
+   <name>: "<name>",
+   ```
+4. Add a matching `case "<name>":` arm to `getEquipmentSvg` that returns
+   the generated `SVG_<NAME>` constant. The compiler's exhaustiveness
+   check at the `default` branch surfaces any missed case.
+5. Scenes refer to the asset by its snake_case id only (e.g.
+   `assetId: "microtube_open_translucent"`) through the facade; they
+   never import the generated constant directly. This keeps the
+   ownership boundary in "Hard rule for scenes and capabilities" intact
+   for Bioicons assets too.
+
+Coloring a Bioicons asset by liquid identity follows the same recipe
+path as the original assets: a recipe in
+[src/svg_recipes.ts](../src/svg_recipes.ts) maps a semantic state to a
+patch list against ids declared in the asset's colormap sidecar; the
+scene asks the facade for the colored variant rather than recoloring
+inline.
+
 ## How to add or update a recipe
 
 A recipe maps a semantic state (a TypeScript enum like `T75LiquidVisual`

@@ -123,6 +123,27 @@ export async function switchToHood(page, report) {
 	report.info('Now on hood scene');
 }
 
+// Switch to well_plate_workspace scene by clicking well_plate in the hood and waiting.
+export async function switchToPlate(page, report) {
+	const currentScene = await page.evaluate(() => window.gameState.activeScene);
+	if (currentScene === 'well_plate_workspace') return;
+
+	report.info('Switching to well_plate_workspace scene');
+	// Switch to hood first if not there
+	if (currentScene !== 'hood') {
+		await switchToHood(page, report);
+	}
+
+	// Click well_plate to trigger scene switch to well_plate_workspace
+	const wellPlateLocator = page.locator('[data-item-id="well_plate"]').first();
+	if ((await wellPlateLocator.count()) === 0) {
+		throw new Error('well_plate not found in hood; cannot switch to well_plate_workspace scene without a real click');
+	}
+	await wellPlateLocator.click();
+	await waitForActiveScene(page, 'well_plate_workspace', 3000);
+	report.info('Now on well_plate_workspace scene');
+}
+
 //============================================
 // Selector and click helpers
 //============================================
@@ -132,10 +153,24 @@ export function resolveSelector(itemId) {
 	return `[data-item-id="${itemId}"]`;
 }
 
+// Resolve scene-scoped data-item-id selector.
+// When a step is scene-specific (scene: 'well_plate_workspace', 'bench', 'hood', 'plate_reader'),
+// this function scopes the item locator to the correct scene container.
+// Returns the scoped selector (e.g., '#well_plate_workspace-scene [data-item-id="multichannel_pipette"]').
+// plate_reader items live in the bench scene DOM (they're not in a separate container).
+export function resolveScopedSelector(itemId, scene) {
+	const sceneSelector = scene === 'well_plate_workspace' ? '#well_plate_workspace-scene'
+		: scene === 'bench' ? '#bench-scene'
+		: scene === 'plate_reader' ? '#bench-scene'
+		: '#hood-scene';
+	return `${sceneSelector} [data-item-id="${itemId}"]`;
+}
+
 // Click an item and wait for progress signal.
 // Optional clickBudgetMs parameter (default 3000ms) can be overridden by caller.
-export async function clickItemAndWaitProgress(page, itemId, report, clickBudgetMs = 3000) {
-	const selector = resolveSelector(itemId);
+// Optional scene parameter scopes the item to a specific scene container (e.g., 'well_plate_workspace', 'bench', 'hood').
+export async function clickItemAndWaitProgress(page, itemId, report, clickBudgetMs = 3000, scene = null) {
+	const selector = scene !== null ? resolveScopedSelector(itemId, scene) : resolveSelector(itemId);
 	const locator = page.locator(selector).first();
 
 	// Verify element exists and is visible

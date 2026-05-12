@@ -5,8 +5,8 @@
 // Base SVG constants injected by build_game.sh from assets/equipment/
 import type { WellData } from "./constants";
 import { PLATE_96_ROWS, PLATE_96_COLS, ROW_LABELS, COL_LABELS } from "./steps/plate_96";
-import { DRUG_CONCENTRATION_LABELS, DRUG_STOCK_CONCENTRATION_UM } from "./constants";
-import { SVG_96WELL_PCR_PLATE, SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24 } from "../generated/svg_assets";
+import { DRUG_CONCENTRATION_LABELS, DRUG_STOCK_CONCENTRATION_MM } from "./constants";
+import { SVG_96WELL_PCR_PLATE, SVG_ANGRY_PROFESSOR, SVG_ASPIRATING_PIPETTE, SVG_BIOHAZARD_DECANT, SVG_BOTTLE, SVG_CELL_COUNTER, SVG_CENTRIFUGE, SVG_CONICAL_15ML_RACK, SVG_DILUTION_TUBE_RACK, SVG_DRUG_VIAL_RACK, SVG_ETHANOL_SPRAY, SVG_GLOVE_BOX, SVG_INCUBATOR, SVG_MICROPIPETTE_RACK, SVG_MICROSCOPE, SVG_MTT_VIAL, SVG_MULTICHANNEL_PIPETTE, SVG_PLATE_READER, SVG_SERO_PIPETTE, SVG_T75_FLASK, SVG_TIP_BOX, SVG_VORTEX, SVG_WASTE_CONTAINER, SVG_WASTE_TRAY, SVG_WATER_BATH, SVG_WELL_PLATE_24, SVG_MICROTUBE_OPEN_TRANSLUCENT, SVG_BOTTLE_MEDIUM_PINK } from "../generated/svg_assets";
 import { composeSvg, createDynamicLabel, createLiquidOverlay, createLiquidOverlayWithColor, createPipetteLiquidOverlay } from "./svg_overlays";
 import { applyPatches } from "./svg_color_patch";
 import { flaskResiduePatches, bottleLiquidPatches, bottleLiquidLabel, type BottleLiquid, type T75LiquidVisual } from "./svg_recipes";
@@ -81,6 +81,13 @@ const EQUIPMENT_ASSETS = {
 	sterile_water: "bottle",
 	carboplatin_stock: "bottle",
 	metformin_stock: "bottle",
+	// Aliases for tutorial_plate_drug_additions items.yaml item ids that need
+	// to resolve through getStaticSvg() in the well_plate_workspace static-render path.
+	carboplatin_stock_solution: "bottle",
+	metformin_stock_solution: "bottle",
+	distilled_water: "bottle",
+	microtube_open_translucent: "microtube_open_translucent",
+	bottle_medium_pink: "bottle_medium_pink",
 } as const;
 
 // Public, narrow asset id type. Typos at scene call sites fail at compile time.
@@ -190,7 +197,7 @@ function renderDrugVialsInternal(): string {
 	// stock concentration header
 	overlayContent += '<text x="60" y="12" font-family="Arial,sans-serif"'
 		+ ' font-size="5" fill="#555555" text-anchor="middle">('
-		+ DRUG_STOCK_CONCENTRATION_UM + " uM)</text>";
+		+ DRUG_STOCK_CONCENTRATION_MM + " mM)</text>";
 	return composeSvg(SVG_DRUG_VIAL_RACK, "drug_vial_rack", [overlayContent]);
 }
 
@@ -267,7 +274,10 @@ export function renderEquipmentSvg(req: EquipmentRenderRequest): string {
 		case "dmso_bottle":
 		case "sterile_water":
 		case "carboplatin_stock":
-		case "metformin_stock": {
+		case "carboplatin_stock_solution":
+		case "metformin_stock":
+		case "metformin_stock_solution":
+		case "distilled_water": {
 			const liquid = liquidForBottleAlias(req.assetId);
 			return renderBottleFromLiquid(liquid, overrideLabel);
 		}
@@ -325,6 +335,10 @@ export function renderEquipmentSvg(req: EquipmentRenderRequest): string {
 			return SVG_WELL_PLATE_24;
 		case "well_plate_96":
 			return SVG_96WELL_PCR_PLATE;
+		case "microtube_open_translucent":
+			return SVG_MICROTUBE_OPEN_TRANSLUCENT;
+		case "bottle_medium_pink":
+			return SVG_BOTTLE_MEDIUM_PINK;
 		default: {
 			// Exhaustiveness check: adding a new EQUIPMENT_ASSETS key without a
 			// matching switch case becomes a compile error at this line, instead

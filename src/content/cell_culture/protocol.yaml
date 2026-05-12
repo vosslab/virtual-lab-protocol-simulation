@@ -282,229 +282,67 @@ steps:
     nextId: carb_intermediate
 
   - id: carb_intermediate
-    label: "Set up carboplatin intermediate dilution"
-    action: "Set up carboplatin intermediate dilution"
-    why: "Intermediate is the source for the low-dose working stocks."
+    label: "Set up carboplatin parent stock"
+    action: "Set up carboplatin parent stock from 10 mM master stock"
+    why: "This 400 µM parent stock feeds all 7 working stocks (rows B-H); row H uses it directly."
     partId: part4_dilute
     dayId: day2
     stepIndex: 1
     requiredItems: [carboplatin_stock, sterile_water, micropipette, dilution_tube_carb_intermediate]
     scene: hood
     errorHints:
-      volume_off: "Use 20 uL drug and 980 uL water. Wrong ratios break the dose series."
+      volume_off: "Use 40 uL drug and 960 uL water. Wrong ratios break the dose series."
     completionPath:
       kind: interactionSequence
       interactions:
         - tool: micropipette
           source: carboplatin_stock
           liquid: carboplatin
-          volumeMl: 0.020
+          volumeMl: 0.040
           stateChange:
             heldLiquid:
               tool: micropipette
               liquid: carboplatin
-              volumeMl: 0.020
+              volumeMl: 0.040
               colorKey: carboplatin
         - tool: micropipette
           destination: dilution_tube_carb_intermediate
           liquid: carboplatin
-          consumesVolumeMl: 0.020
+          consumesVolumeMl: 0.040
         - tool: micropipette
           source: sterile_water
           liquid: water
-          volumeMl: 0.980
+          volumeMl: 0.960
           stateChange:
             heldLiquid:
               tool: micropipette
               liquid: water
-              volumeMl: 0.980
+              volumeMl: 0.960
               colorKey: water
         - tool: micropipette
           destination: dilution_tube_carb_intermediate
           liquid: water
-          consumesVolumeMl: 0.980
+          consumesVolumeMl: 0.960
           completionEvent: carb_intermediate_complete
     nextId: carb_low_range
 
   - id: carb_low_range
-    label: "Set up 5 low-range working stocks"
-    action: "Set up 5 low-range working stocks from the intermediate"
-    why: "These give the 10 nM to 500 nM final concentrations for rows B-F."
+    label: "Set up 7 carboplatin working stocks using 1-2-5 dose series"
+    action: "Set up 7 carboplatin working stocks from the 400 µM parent stock"
+    why: "The 1-2-5 series (0.1, 0.2, 0.5, 1, 2, 5, 10 µM final) gives clean log-spaced doses with familiar labels."
     partId: part4_dilute
     dayId: day2
     stepIndex: 2
-    requiredItems: [micropipette, dilution_tube_carb_intermediate, media_bottle, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f]
+    requiredItems: [micropipette, dilution_tube_carb_intermediate, media_bottle, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f, dilution_tube_carb_g, dilution_tube_carb_h]
     scene: hood
     errorHints:
-      wrong_count: "You need 5 low-range working stocks, one per row B-F."
+      wrong_count: "You need 7 working stocks, one per row B-H."
     completionPath:
       kind: interactionSequence
       interactions:
-        # Row B: load from intermediate, discharge to B
+        # Row B: 10 uL parent + 990 uL media -> 4 uM working (0.1 uM final)
         - tool: micropipette
           source: dilution_tube_carb_intermediate
-          liquid: carboplatin
-          volumeMl: 0.050
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: carboplatin
-              volumeMl: 0.050
-              colorKey: carboplatin
-        - tool: micropipette
-          destination: dilution_tube_carb_b
-          liquid: carboplatin
-          consumesVolumeMl: 0.050
-        - tool: micropipette
-          source: media_bottle
-          liquid: media
-          volumeMl: 0.450
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: media
-              volumeMl: 0.450
-              colorKey: media
-        - tool: micropipette
-          destination: dilution_tube_carb_b
-          liquid: media
-          consumesVolumeMl: 0.450
-        # Row C: load from intermediate, discharge to C
-        - tool: micropipette
-          source: dilution_tube_carb_intermediate
-          liquid: carboplatin
-          volumeMl: 0.050
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: carboplatin
-              volumeMl: 0.050
-              colorKey: carboplatin
-        - tool: micropipette
-          destination: dilution_tube_carb_c
-          liquid: carboplatin
-          consumesVolumeMl: 0.050
-        - tool: micropipette
-          source: media_bottle
-          liquid: media
-          volumeMl: 0.450
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: media
-              volumeMl: 0.450
-              colorKey: media
-        - tool: micropipette
-          destination: dilution_tube_carb_c
-          liquid: media
-          consumesVolumeMl: 0.450
-        # Row D: load from intermediate, discharge to D
-        - tool: micropipette
-          source: dilution_tube_carb_intermediate
-          liquid: carboplatin
-          volumeMl: 0.050
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: carboplatin
-              volumeMl: 0.050
-              colorKey: carboplatin
-        - tool: micropipette
-          destination: dilution_tube_carb_d
-          liquid: carboplatin
-          consumesVolumeMl: 0.050
-        - tool: micropipette
-          source: media_bottle
-          liquid: media
-          volumeMl: 0.450
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: media
-              volumeMl: 0.450
-              colorKey: media
-        - tool: micropipette
-          destination: dilution_tube_carb_d
-          liquid: media
-          consumesVolumeMl: 0.450
-        # Row E: load from intermediate, discharge to E
-        - tool: micropipette
-          source: dilution_tube_carb_intermediate
-          liquid: carboplatin
-          volumeMl: 0.050
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: carboplatin
-              volumeMl: 0.050
-              colorKey: carboplatin
-        - tool: micropipette
-          destination: dilution_tube_carb_e
-          liquid: carboplatin
-          consumesVolumeMl: 0.050
-        - tool: micropipette
-          source: media_bottle
-          liquid: media
-          volumeMl: 0.450
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: media
-              volumeMl: 0.450
-              colorKey: media
-        - tool: micropipette
-          destination: dilution_tube_carb_e
-          liquid: media
-          consumesVolumeMl: 0.450
-        # Row F: load from intermediate, discharge to F
-        - tool: micropipette
-          source: dilution_tube_carb_intermediate
-          liquid: carboplatin
-          volumeMl: 0.050
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: carboplatin
-              volumeMl: 0.050
-              colorKey: carboplatin
-        - tool: micropipette
-          destination: dilution_tube_carb_f
-          liquid: carboplatin
-          consumesVolumeMl: 0.050
-        - tool: micropipette
-          source: media_bottle
-          liquid: media
-          volumeMl: 0.450
-          stateChange:
-            heldLiquid:
-              tool: micropipette
-              liquid: media
-              volumeMl: 0.450
-              colorKey: media
-        - tool: micropipette
-          destination: dilution_tube_carb_f
-          liquid: media
-          consumesVolumeMl: 0.450
-          completionEvent: carb-low-range-confirm
-    nextId: carb_high_range
-
-  - id: carb_high_range
-    label: "Set up 2 high-range working stocks"
-    action: "Set up 2 high-range working stocks from the 10 mM stock"
-    why: "These give the 5 uM and 25 uM final concentrations for rows G and H."
-    partId: part4_dilute
-    dayId: day2
-    stepIndex: 3
-    requiredItems: [micropipette, carboplatin_stock, media_bottle, dilution_tube_carb_g, dilution_tube_carb_h]
-    scene: hood
-    errorHints:
-      wrong_count: "You need 2 high-range working stocks (rows G and H)."
-    completionPath:
-      kind: interactionSequence
-      interactions:
-        # Row G: load 10 uL carboplatin
-        - tool: micropipette
-          source: carboplatin_stock
           liquid: carboplatin
           volumeMl: 0.010
           stateChange:
@@ -513,12 +351,10 @@ steps:
               liquid: carboplatin
               volumeMl: 0.010
               colorKey: carboplatin
-        # Row G: discharge to dilution_tube_carb_g
         - tool: micropipette
-          destination: dilution_tube_carb_g
+          destination: dilution_tube_carb_b
           liquid: carboplatin
           consumesVolumeMl: 0.010
-        # Row G: load 990 uL media
         - tool: micropipette
           source: media_bottle
           liquid: media
@@ -529,14 +365,42 @@ steps:
               liquid: media
               volumeMl: 0.990
               colorKey: media
-        # Row G: discharge to dilution_tube_carb_g
         - tool: micropipette
-          destination: dilution_tube_carb_g
+          destination: dilution_tube_carb_b
           liquid: media
           consumesVolumeMl: 0.990
-        # Row H: load 50 uL carboplatin
+        # Row C: 20 uL parent + 980 uL media -> 8 uM working (0.2 uM final)
         - tool: micropipette
-          source: carboplatin_stock
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.020
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.020
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_c
+          liquid: carboplatin
+          consumesVolumeMl: 0.020
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.980
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.980
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_c
+          liquid: media
+          consumesVolumeMl: 0.980
+        # Row D: 50 uL parent + 950 uL media -> 20 uM working (0.5 uM final)
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
           liquid: carboplatin
           volumeMl: 0.050
           stateChange:
@@ -545,12 +409,10 @@ steps:
               liquid: carboplatin
               volumeMl: 0.050
               colorKey: carboplatin
-        # Row H: discharge to dilution_tube_carb_h
         - tool: micropipette
-          destination: dilution_tube_carb_h
+          destination: dilution_tube_carb_d
           liquid: carboplatin
           consumesVolumeMl: 0.050
-        # Row H: load 950 uL media
         - tool: micropipette
           source: media_bottle
           liquid: media
@@ -561,60 +423,161 @@ steps:
               liquid: media
               volumeMl: 0.950
               colorKey: media
-        # Row H: discharge to dilution_tube_carb_h (final)
         - tool: micropipette
-          destination: dilution_tube_carb_h
+          destination: dilution_tube_carb_d
           liquid: media
           consumesVolumeMl: 0.950
-          completionEvent: carb-high-range-confirm
+        # Row E: 100 uL parent + 900 uL media -> 40 uM working (1 uM final)
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.100
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.100
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_e
+          liquid: carboplatin
+          consumesVolumeMl: 0.100
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.900
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.900
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_e
+          liquid: media
+          consumesVolumeMl: 0.900
+        # Row F: 200 uL parent + 800 uL media -> 80 uM working (2 uM final)
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.200
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.200
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_f
+          liquid: carboplatin
+          consumesVolumeMl: 0.200
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.800
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.800
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_f
+          liquid: media
+          consumesVolumeMl: 0.800
+        # Row G: 500 uL parent + 500 uL media -> 200 uM working (5 uM final)
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 0.500
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 0.500
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_g
+          liquid: carboplatin
+          consumesVolumeMl: 0.500
+        - tool: micropipette
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.500
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: media
+              volumeMl: 0.500
+              colorKey: media
+        - tool: micropipette
+          destination: dilution_tube_carb_g
+          liquid: media
+          consumesVolumeMl: 0.500
+        # Row H: 400 uM parent is already the target concentration; transfer as-is for 10 uM final
+        - tool: micropipette
+          source: dilution_tube_carb_intermediate
+          liquid: carboplatin
+          volumeMl: 1.000
+          stateChange:
+            heldLiquid:
+              tool: micropipette
+              liquid: carboplatin
+              volumeMl: 1.000
+              colorKey: carboplatin
+        - tool: micropipette
+          destination: dilution_tube_carb_h
+          liquid: carboplatin
+          consumesVolumeMl: 1.000
+          completionEvent: carb-low-range-confirm
     nextId: metformin_stock
 
   - id: metformin_stock
     label: "Set up metformin working stock"
-    action: "Set up Metformin 10 mM working stock (10 uL + 990 uL)"
-    why: "Fresh metformin working stock is prepared on the day of treatment."
+    action: "Set up 200 mM metformin working stock from 1 M stock"
+    why: "200 mM working stock gives 5 mM final when 5 uL is added to 200 uL wells."
     partId: part4_dilute
     dayId: day2
-    stepIndex: 4
-    requiredItems: [micropipette, metformin_stock_bottle, sterile_water, dilution_tube_metformin_working]
+    stepIndex: 3
+    requiredItems: [micropipette, metformin_stock_bottle, media_bottle, dilution_tube_metformin_working]
     scene: hood
     errorHints:
-      volume_off: "Use 10 uL stock and 990 uL sterile water for a 10 mM working stock."
+      volume_off: "Use 200 uL stock and 800 uL media for a 200 mM working stock."
     completionPath:
       kind: interactionSequence
       interactions:
-        # Load 10 uL metformin
+        # Load 200 uL metformin
         - tool: micropipette
           source: metformin_stock_bottle
           liquid: metformin
-          volumeMl: 0.010
+          volumeMl: 0.200
           stateChange:
             heldLiquid:
               tool: micropipette
               liquid: metformin
-              volumeMl: 0.010
+              volumeMl: 0.200
               colorKey: metformin
         # Discharge to dilution_tube_metformin_working
         - tool: micropipette
           destination: dilution_tube_metformin_working
           liquid: metformin
-          consumesVolumeMl: 0.010
-        # Load 990 uL sterile water
+          consumesVolumeMl: 0.200
+        # Load 800 uL media
         - tool: micropipette
-          source: sterile_water
-          liquid: water
-          volumeMl: 0.990
+          source: media_bottle
+          liquid: media
+          volumeMl: 0.800
           stateChange:
             heldLiquid:
               tool: micropipette
-              liquid: water
-              volumeMl: 0.990
-              colorKey: water
+              liquid: media
+              volumeMl: 0.800
+              colorKey: media
         # Discharge to dilution_tube_metformin_working (final)
         - tool: micropipette
           destination: dilution_tube_metformin_working
-          liquid: water
-          consumesVolumeMl: 0.990
+          liquid: media
+          consumesVolumeMl: 0.800
           completionEvent: metformin-stock-prepare
     nextId: prewarm_media
 
@@ -637,15 +600,20 @@ steps:
 
   - id: media_adjust
     label: "Add media adjustment to each well"
-    action: "Add media adjustment to each well"
-    why: "Media adjustment keeps total volume at 100 uL after adding drugs."
+    action: "Bring every well to 200 µL by adding media before drugs"
+    why: "Add media first so each well has the correct working volume. Different rows and columns receive different volumes."
+    details:
+      - "Row A, cols 1-6: add 100 µL."
+      - "Row A, cols 7-12: add 95 µL (will also get 5 µL metformin)."
+      - "Rows B-H, cols 1-6: add 95 µL."
+      - "Rows B-H, cols 7-12: add 90 µL (will also get 5 µL metformin)."
     partId: part5_treat
     dayId: day2
     stepIndex: 1
     requiredItems: [well_plate, multichannel_pipette, media_bottle]
     scene: hood
     errorHints:
-      wrong_volume: "Columns 1-6 row A need 100 uL; rows B-H need 95 uL. Columns 7-12 subtract 10 uL."
+      wrong_volume: "Row A: cols 1-6 need 100 uL, cols 7-12 need 95 uL. Rows B-H: cols 1-6 need 95 uL, cols 7-12 need 90 uL."
     completionPath:
       kind: interactionSequence
       interactions:
@@ -658,7 +626,7 @@ steps:
   - id: add_carboplatin
     label: "Add carboplatin working stocks to the plate"
     action: "Add 5 uL carboplatin working stock per well (rows B-H)"
-    why: "The 7-point dose series lets you compute an IC50 curve."
+    why: "The 1-2-5 dose series (0.1, 0.2, 0.5, 1, 2, 5, 10 µM final) gives clean log-spaced doses for graphing."
     partId: part5_treat
     dayId: day2
     stepIndex: 2
@@ -779,8 +747,8 @@ steps:
 
   - id: add_metformin
     label: "Add metformin working stock to columns 7-12"
-    action: "Add 5 uL metformin working stock to columns 7-12"
-    why: "Metformin sensitizes cells so the +metformin curve shifts left."
+    action: "Add 5 uL of 200 mM metformin working stock to columns 7-12"
+    why: "5 mM metformin sensitizes cells to carboplatin, so the +metformin curve shifts left."
     partId: part5_treat
     dayId: day2
     stepIndex: 3

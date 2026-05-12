@@ -11,6 +11,8 @@ const ARTIFACTS_DIR = path.join(REPO_ROOT, 'artifacts', 'ui-review');
 const PORT = 4173;
 const HOST = '127.0.0.1';
 const BASE_URL = process.env.BASE_URL || null;
+const REVIEW_PROTOCOL = process.env.REVIEW_PROTOCOL || 'cell_culture';
+const PLATE_REVIEW_PROTOCOL = process.env.PLATE_REVIEW_PROTOCOL || 'tutorial_plate_drug_additions';
 
 const CONTENT_TYPES = {
 	'.css': 'text/css',
@@ -99,19 +101,72 @@ async function main() {
 		problems.push(`page error: ${err.message}`);
 	});
 
-	const reviewUrl = BASE_URL ?? `http://${HOST}:${PORT}/`;
-	await page.goto(reviewUrl, { waitUntil: 'networkidle' });
+	const rootUrl = BASE_URL ?? `http://${HOST}:${PORT}/`;
+	const screenshots = [];
+
+	await page.goto(rootUrl, { waitUntil: 'networkidle' });
 	await page.screenshot({
-		path: path.join(ARTIFACTS_DIR, 'desktop.png'),
+		path: path.join(ARTIFACTS_DIR, 'launcher-desktop.png'),
 		fullPage: true,
 	});
+	screenshots.push('artifacts/ui-review/launcher-desktop.png');
+
+	const protocolUrl = new URL(rootUrl);
+	protocolUrl.searchParams.set('protocol', REVIEW_PROTOCOL);
+
+	await page.goto(protocolUrl.toString(), { waitUntil: 'networkidle' });
+	const startButton = page.locator('#welcome-start-btn');
+	if (await startButton.count() > 0) {
+		await startButton.click();
+	}
+	await page.waitForSelector('#hood-scene svg', { timeout: 5000 });
+	await page.screenshot({
+		path: path.join(ARTIFACTS_DIR, 'hood-desktop.png'),
+		fullPage: true,
+	});
+	screenshots.push('artifacts/ui-review/hood-desktop.png');
+
+	const plateTutorialUrl = new URL(rootUrl);
+	plateTutorialUrl.searchParams.set('protocol', PLATE_REVIEW_PROTOCOL);
+	await page.goto(plateTutorialUrl.toString(), { waitUntil: 'networkidle' });
+	const plateStartButton = page.locator('#welcome-start-btn');
+	if (await plateStartButton.count() > 0) {
+		await plateStartButton.click();
+	}
+	await page.waitForSelector('[data-item-id="well_plate"]', { timeout: 5000 });
+	await page.locator('[data-item-id="well_plate"]').click();
+	// Intro step is kind: modal — render.ts injects the SVG into #plate-overlay.modal-content, not the workspace container.
+	await page.waitForSelector('#plate-overlay.active .plate-workspace-svg', { timeout: 5000 });
+	await page.screenshot({
+		path: path.join(ARTIFACTS_DIR, 'plate-tutorial-intro-desktop.png'),
+		fullPage: true,
+	});
+	screenshots.push('artifacts/ui-review/plate-tutorial-intro-desktop.png');
+
+	await page.locator('#confirm-plate-intro').click();
+	await page.waitForSelector('#well-plate-workspace-scene', { timeout: 5000 });
+	await page.waitForFunction(() => {
+		const overlay = document.querySelector('#plate-overlay');
+		return overlay !== null && !overlay.classList.contains('active');
+	}, { timeout: 5000 });
+	await page.screenshot({
+		path: path.join(ARTIFACTS_DIR, 'plate-tutorial-workspace-desktop.png'),
+		fullPage: true,
+	});
+	screenshots.push('artifacts/ui-review/plate-tutorial-workspace-desktop.png');
 
 	await page.setViewportSize({ width: 390, height: 844 });
-	await page.reload({ waitUntil: 'networkidle' });
+	await page.goto(protocolUrl.toString(), { waitUntil: 'networkidle' });
+	const mobileStartButton = page.locator('#welcome-start-btn');
+	if (await mobileStartButton.count() > 0) {
+		await mobileStartButton.click();
+	}
+	await page.waitForSelector('#hood-scene svg', { timeout: 5000 });
 	await page.screenshot({
-		path: path.join(ARTIFACTS_DIR, 'mobile.png'),
+		path: path.join(ARTIFACTS_DIR, 'hood-mobile.png'),
 		fullPage: true,
 	});
+	screenshots.push('artifacts/ui-review/hood-mobile.png');
 
 	const title = await page.title();
 	const bodyText = await page.locator('body').innerText();
@@ -122,12 +177,12 @@ async function main() {
 	}
 
 	const report = {
-		url: reviewUrl,
+		url: rootUrl,
+		protocolUrl: protocolUrl.toString(),
+		protocol: REVIEW_PROTOCOL,
+		plateTutorialProtocol: PLATE_REVIEW_PROTOCOL,
 		title,
-		screenshots: [
-			'artifacts/ui-review/desktop.png',
-			'artifacts/ui-review/mobile.png',
-		],
+		screenshots,
 		problems,
 		bodyPreview: bodyText.slice(0, 1000),
 	};

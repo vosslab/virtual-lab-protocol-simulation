@@ -12,7 +12,8 @@ BIND="${BIND:-127.0.0.1}"
 PLAYWRIGHT_IMAGE="${PLAYWRIGHT_IMAGE:-mcr.microsoft.com/playwright:v1.59.1-noble}"
 BASE_URL="${BASE_URL:-http://host.containers.internal:${PORT}}"
 
-mkdir -p artifacts/ui-review test-results
+mkdir -p .cache/npm artifacts/ui-review test-results
+export npm_config_cache="$REPO_ROOT/.cache/npm"
 
 bash build_github_pages.sh
 

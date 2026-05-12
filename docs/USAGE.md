@@ -147,7 +147,7 @@ Run on a specific protocol:
 ```bash
 source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tutorial_split
 source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tutorial_hemocytometer_count
-source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tutorial_plate_intro
+source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tutorial_plate_drug_additions
 ```
 
 Skip the build step for speed during iteration:

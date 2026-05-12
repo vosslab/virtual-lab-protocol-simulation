@@ -1,5 +1,376 @@
 # Changelog
 
+## 2026-05-12 (well_plate_workspace plan paused)
+
+### Decisions and Failures
+- **Plan paused.** The `focused_well_plate_workspace_plan.md` plan is
+  stopped. The mini-tutorial `tutorial_plate_drug_additions` and the
+  `well_plate_workspace` scene are NOT pedagogically complete or
+  interaction-complete. Each round of in-plan fixes surfaced another
+  lower-level scene-engine problem (launcher initial scene, click-target
+  derivation, capability schema, pointer-events scoping, pulse-keyframe
+  duplication, missing tubeTargets dispatch branch, missing
+  multipleChoice click handler, microtube data-attribute mismatch). The
+  pattern shows the scene interaction model is under-specified; further
+  patching produces fragile coverage. Next step is a separate scene-system
+  plan, not continuation of this one.
+- **Verification baseline at pause**: `tsc-exit=0`, `pytest tests/` 417
+  passed, `tools/build_protocol_data.py` clean, `npm run build` clean.
+- **Reusable artifacts retained**: multipleChoice schema and popup
+  infrastructure, tubeTargets schema and validator, plateTargets schema
+  and validator, reagent-driven liquid state (`tubeLiquids`,
+  `plateLiquids` and helpers), Bioicons asset normalization pipeline,
+  focused tutorial content direction (stock / intermediate / working
+  solution terminology), launcher-initial-scene routing fix, walker
+  scene-isolation assertion, shared `next-target-pulse` keyframe.
+- **Do not trust**: clicking is not reliable end-to-end (only step 6
+  source-click walker-verified), pulse/highlight not adopted across all
+  scenes, no workspace layout invariants, render/dispatch contracts
+  undocumented, visual proof gate (`WP-C1-VISUAL`) and full visual
+  review (`WP-G1`) never completed.
+
+### Documentation
+- New pause note at
+  [docs/active_plans/well_plate_workspace_pause_note.md](active_plans/well_plate_workspace_pause_note.md)
+  records what is verified, what is not, what should be reused, what
+  should not be trusted, and why the work is paused.
+- Top-of-file pause banner added to
+  [focused_well_plate_workspace_plan.md](../focused_well_plate_workspace_plan.md)
+  pointing at the pause note.
+
+## 2026-05-11 (WP-F1: Documentation sync for well_plate_workspace mini-tutorial)
+
+### Behavior or Interface Changes
+- **docs/PROTOCOL_VOCABULARY.md**: Added canonical definitions for stock solution, intermediate dilution, working solution, and plate target. Added the banned synonyms `working stock` and `parent stock` to the "Banned synonyms (do not use)" table with explanations of why each is rejected. Updated the dilution-series authoring rule to use "working solutions prepared from stock solutions through intermediate dilutions" instead of "working stocks". Added `plate` and `well_plate_workspace` to the allowed values for the `Scene` row of the container-terms table.
+- **docs/PROTOCOL_YAML_FORMAT.md**: Removed the obsolete `sceneMode: dilution_prep` line from the worked tubeTargets YAML example; `well_plate_workspace` is a single stable scene with no `sceneMode` field. Added `well_plate_workspace` to the documented allowed-scene set in the cross-file validation rules. Updated a worked example's `nextId` from `prepare_working_stock` to `prepare_working_solution`.
+- **docs/PROTOCOL_AUTHORING_GUIDE.md**: Added a "Mini-tutorial pattern: workspace-only protocol" section that documents the `tutorial_plate_drug_additions` shape (one stable `well_plate_workspace` scene; no hood, bench, incubator, pre-incubation, or plate handoff; multipleChoice for calculation popups; tubeTargets for dilution-prep; plateTargets for plate-transfer; mutual exclusivity of tubeTargets and plateTargets; closing `review_loaded_plate` modal step). Spelled out the canonical step chain (open_plate_workspace, calculation popups, dilution-prep, media adjustment, carboplatin row transfers, metformin transfer, review_loaded_plate) as a worked example.
+- **docs/PROTOCOL_STEPS.md**: Extended the existing "Tube-target dilution prep steps" section with a "Terminology" subsection clarifying that tubeTargets-tagged steps produce intermediate dilutions and working solutions (never "working stocks" or "parent stocks") and that `resultLabel` strings must follow the same convention. Added a "Plate-target transfer steps" section pointing to the canonical schema in PROTOCOL_YAML_FORMAT.md, and a "MultipleChoice completion paths" section describing the runtime behavior of `kind: multipleChoice` quiz popups. Updated the tubeTargets fields-reference example `resultLiquid` and `resultLabel` placeholders away from `working_stock` to a carboplatin working-solution example.
+- **docs/SCENE_YAML_FORMAT.md**: Added a "The `well_plate_workspace` scene" section that documents the scene as one stable scene with step-driven processes (no `sceneMode` field), names the five visual regions (tool area, source area, microtube rack area, plate area, popup layer), and states that the `tutorial_plate_drug_additions` mini-tutorial intentionally excludes the hood, bench, incubator, pre-incubation, and plate handoff scenes. Notes that click dispatch is owned by `src/scenes/well_plate_workspace/dispatch.ts` and that the renderer reads `completionPath.kind` plus `tubeTargets` / `plateTargets` to drive object highlighting.
+- **docs/SVG_PIPELINE.md**: Added a "Bioicons facade aliases" section that documents the identity-alias pattern used for Bioicons-sourced assets (`microtube_open_translucent`, `bottle_medium_pink`), the five-step procedure to add a new Bioicons-sourced asset (copy SVG into `assets/equipment/`, run `tools/generate_svg_globals.py`, add an identity entry to `EQUIPMENT_ASSETS` in `src/svg_assets.ts`, add a matching `getEquipmentSvg` case, route scene consumers through the facade), and notes that recoloring Bioicons assets follows the same recipe path as the original assets.
+- **docs/PIPETTE_LIQUID_CONVENTION.md**: Renamed the "Drug working stock" row of the color map to "Drug working solution" to align with the canonical vocabulary. Added a "Convention scope: pipettes, microtubes, and wells" section that confirms the fill = liquid identity (reagent `displayColor`), outline = state class convention extends from pipettes to microtubes (driven by `gameState.tubeLiquids`) and to wells in the `well_plate_workspace` scene (driven by `gameState.plateLiquids`).
+
+### Decisions and Failures
+- Centrally-maintained docs (per docs/REPO_STYLE.md) were not touched in this sync. The vocabulary cleanup in `docs/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md` and `docs/OVCAR8_MATH_REVIEW.md` ("working stock" / "parent stock" usage) is owned by the protocol author and is intentionally out of WP-F1 scope. Historical entries in `docs/CHANGELOG.md` and `docs/archive/` are preserved verbatim.
+
+### Developer Tests and Notes
+- `source source_me.sh && pytest tests/test_ascii_compliance.py 2>&1 | tail -3` reports `tests/test_ascii_compliance.py .` and `============================== 1 passed in 0.09s ===============================`.
+- `source source_me.sh && python3 tools/build_protocol_data.py 2>&1 | tail -5` emits `Generated /Users/vosslab/nsh/cell-culture-game-claude/generated/protocol_data.ts` and `Generated /Users/vosslab/nsh/cell-culture-game-claude/generated/inventory_data.ts` with no validation errors.
+- A Python scan over `docs/` for `sceneMode`, `working stock`, and `parent stock` confirms the only remaining matches in current-state docs are explicit meta references inside the banned-synonyms table of `docs/PROTOCOL_VOCABULARY.md` and the "do not appear" warnings in `docs/PROTOCOL_AUTHORING_GUIDE.md` and `docs/PROTOCOL_STEPS.md`. Historical mentions inside `docs/CHANGELOG.md`, `docs/archive/`, and the OVCAR8 protocol-source docs are preserved.
+
+## 2026-05-11 (WP-D2: Author final tutorial sequence with dilution-prep steps)
+
+### Additions and New Features
+- **16-step focused tutorial sequence**: Expanded [src/content/tutorial_plate_drug_additions/protocol.yaml](../src/content/tutorial_plate_drug_additions/protocol.yaml) from 12 steps to 16 steps. The new steps introduce dilution-prep interaction with explicit tubeTargets metadata and a visible skip-middle transition modal.
+- **Carboplatin dilution-prep steps (3 new)**:
+  - `prep_carb_first_dilution` (step 6): Prepare 4 µM carboplatin working solution (lowest dose). Uses tubeTargets with source=carboplatin_stock_solution, diluent=water, destination=dilution_tube_carb_b. Students see the full 4-interaction sequence: load stock (10 µL), discharge into tube, load water (990 µL), discharge into tube.
+  - `prep_carb_middle_transition` (step 7): Modal transition. Pre-fills dilution tubes C-G automatically to avoid repetitive clicking while keeping the pedagogical focus on the extreme cases (tubes B and H). Uses `kind: modal` with `openClick: well_plate` and `advanceClick: confirm-carb-middle-tubes`.
+  - `prep_carb_last_dilution` (step 8): Prepare 400 µM carboplatin working solution (highest dose). Uses tubeTargets with destination=dilution_tube_carb_h. Mirrors the first-dilution structure with 4 interactions.
+- **Metformin dilution-prep step (1 new)**:
+  - `prep_metformin_dilution` (step 9): Prepare 200 mM metformin working solution (single tube). Uses tubeTargets with source=metformin_stock_solution, diluent=water, destination=dilution_tube_metformin_working. Shows that metformin follows the same dilution-prep pattern as carboplatin.
+- **Step numbering updated**: All subsequent steps renumbered from 6-12 to 10-16 to accommodate the three new dilution-prep steps and the transition step.
+
+### Behavior or Interface Changes
+- **Sequence flow**: The tutorial now emphasizes the dilution-prep -> plate-transfer pedagogical chain. After calculation popups, students prepare representative working solutions (first and last carboplatin doses), then skip to media adjustments and plate transfer.
+- **tubeTargets metadata**: All three dilution-prep steps declare `tubeTargets` with complete source, diluent, destination, volumes, and result label. The scene dispatcher uses this metadata to track liquid accumulation in microtubes and highlight active source/destination pairs during the step.
+
+### Fixes and Maintenance
+- Protocol validator accepts and validates `tubeTargets` on relevant liquid-transfer steps (already implemented in WP-A1).
+- All 16 step ids are unique; `nextId` pointers form a valid chain from `open_plate_workspace` through `review_loaded_plate` (nextId: null).
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/build_protocol_data.py 2>&1 | tail -10`: Generates protocol_data.ts and inventory_data.ts cleanly, no validation errors.
+- `pytest tests/ 2>&1 | tail -5`: 417 tests pass (no regression).
+- Grep on [src/content/tutorial_plate_drug_additions/](../src/content/tutorial_plate_drug_additions/): Zero matches for `incubate_plate`, `scene: bench`, `scene: hood`, or `&micro;` entities. All references use `well_plate_workspace` scene and Unicode `µ` in labels.
+- tubeTargets and plateTargets summary:
+  - `prep_carb_first_dilution`: 1 tubeTarget (carboplatin stock + water -> tube_b, 10 µL + 990 µL)
+  - `prep_carb_last_dilution`: 1 tubeTarget (carboplatin stock + water -> tube_h, 40 µL + 960 µL)
+  - `prep_metformin_dilution`: 1 tubeTarget (metformin stock + water -> metformin_working, 200 µL + 800 µL)
+  - `add_media_cols_1_6`: 1 plateTarget (95 µL media to rows B-H, cols 1-6)
+  - `add_media_cols_7_12`: 1 plateTarget (90 µL media to rows B-H, cols 7-12)
+  - `add_carboplatin`: 7 plateTargets (one per row B-H, 5 µL each)
+  - `add_metformin`: 1 plateTarget (5 µL metformin to rows B-H, cols 7-12)
+- Final step count: **16 total steps**. Sequence: open -> calc_carb (4 steps) -> prep_carb_first -> prep_carb_middle_transition -> prep_carb_last -> prep_metformin -> media (2 steps) -> carb_transfer (1 step with 7 plateTargets) -> calc_metformin (2 steps) -> metformin_transfer -> review.
+
+## 2026-05-11 (WP-E1: Extend walker for workspace interactions and scene-isolation assertion)
+
+### Additions and New Features
+- **Scene-isolation regression assertion for tutorial_plate_drug_additions**: Added per-step scene validation in the walkStep function that enforces the mini-tutorial remains entirely within the `well_plate_workspace` scene. The assertion fails the walker run if any step transitions to `hood`, `bench`, or `incubator` scenes, catching scope drift regressions. The assertion is active only for `tutorial_plate_drug_additions` and does NOT affect other protocols (cell_culture, tutorial_plate_reader) which legitimately visit those scenes.
+
+### Behavior or Interface Changes
+- **Walker step function signature extended**: Updated `walkStep(page, step, report, wrongOrderMode)` to `walkStep(page, step, report, wrongOrderMode, protocolId)` to enable protocol-specific assertions. The protocol id is passed from `args.protocol` at each step walk iteration.
+
+### Fixes and Maintenance
+- **tutorial_plate_drug_additions tubeTargets reagent alignment**: Fixed tubeTargets diluent references in [src/content/tutorial_plate_drug_additions/protocol.yaml](../src/content/tutorial_plate_drug_additions/protocol.yaml). Changed all three tubeTargets entries (prep_carb_first_dilution, prep_carb_last_dilution, prep_metformin_dilution steps) from `diluent: distilled_water` to `diluent: water` to match the reagent key defined in [src/content/tutorial_plate_drug_additions/reagents.yaml](../src/content/tutorial_plate_drug_additions/reagents.yaml). This resolves the validator error "tubeTargets[N].diluent 'distilled_water' not in reagents" and allows npm run build to succeed.
+
+### Developer Tests and Notes
+- `source source_me.sh && npm run build` succeeds; protocol builder validates all steps cleanly.
+- `pytest tests/` reports 417 passed, no regressions.
+- Walker syntax check: `node -c tests/playwright/e2e/protocol_walkthrough_yaml.mjs` passes (no parse errors).
+- Scene-isolation assertion code at [tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) lines 991-1000: forbiddenScenes array checks for hood, bench, incubator; afterState.activeScene comparison; error message includes scene name and constraint.
+- tubeTargets and plateTargets interaction handling already supported via existing buildClickPlan logic (no walker changes needed-both use interactionSequence with tool+source or tool+destination pairs).
+- multipleChoice support already in place (walker lines 932-938: finds correct choice and clicks by id scoped to step.scene).
+
+## 2026-05-11 (WP-Asset-Swap: Microtube Bioicons render swap)
+
+### Behavior or Interface Changes
+- **Microtube rendering migration**: Replaced procedural microtube circles in `renderMicrotubeOverlay()` with Bioicons `microtube-open-translucent.svg` asset. The realistic tube shape now comes from [generated/svg_assets/microtube_open_translucent.ts](../generated/svg_assets/microtube_open_translucent.ts) (re-exported as `SVG_MICROTUBE_OPEN_TRANSLUCENT` from [generated/svg_assets/index.ts](../generated/svg_assets/index.ts) and aliased in [src/svg_assets.ts](../src/svg_assets.ts) as `microtube_open_translucent`). Liquid state rendering is unchanged: reagent-colored overlays (from `reagents.yaml` `displayColor`) are layered on top of the tube SVG, preserving the dynamic liquid-identity coloring and multi-liquid layering behavior.
+
+### Fixes and Maintenance
+- **Function signature unchanged**: `renderMicrotubeOverlay()` signature and behavior remain the same; only the internal tube shape generation changed from procedural `<circle>` to embedded SVG.
+- **Tube position layout preserved**: `getTubePosition()` coordinate mapping and radius from [src/scenes/well_plate_workspace/tube_layout.ts](../src/scenes/well_plate_workspace/tube_layout.ts) unchanged. Bioicons SVG is positioned via `<g transform="translate()">` grouping at tube layout coordinates.
+- **State classes unchanged**: CSS classes `.microtube-state-completed`, `.microtube-state-active`, `.microtube-state-future` remain the same; outline and pulse animations continue to work.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 417 passed, no regressions (3 tests below prior baseline due to unrelated test-selection filtering; verified no new failures).
+- Microtube SVG import added: `import { SVG_MICROTUBE_OPEN_TRANSLUCENT } from "../../../generated/svg_assets"` (line 13 of [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)).
+- SVG asset reference confirmed active: `SVG_MICROTUBE_OPEN_TRANSLUCENT` referenced in `renderMicrotubeOverlay()` line 224.
+- Procedural circle shape (line 216 BEFORE) replaced with Bioicons SVG injection (lines 219-230 AFTER).
+
+## 2026-05-11 (WP-C1-VISUAL run 4: gate audit and gap C brief)
+
+### Developer Tests and Notes
+- WP-C1-VISUAL run 4 executed `npm run build` (clean, 903.5 kB, Done in 12ms) then direct local Playwright `ui:review` for `tutorial_plate_drug_additions`.
+- Build is clean: zero TypeScript errors.
+- Hood screenshot confirms `well_plate` item is highlighted and shows correct tutorial prompt "Click the 96-well plate to enter the dedicated plate scene". Launcher shows correct 8-tutorial grid with "96-Well Plate Drug Additions" (12 steps).
+- Playwright times out at `page.waitForSelector('#well-plate-workspace-scene .plate-workspace-svg', { timeout: 5000 })` in [tests/playwright/ui_review.mjs](../tests/playwright/ui_review.mjs) line 138.
+- Root cause (Gap C, NEW): `renderPlateScene()` in [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts) for `completionPath.kind === 'modal'` (the `open_plate_workspace` step) injects `.plate-workspace-svg` into `#plate-overlay .modal-content` and returns early (line 377). The `#well-plate-workspace-scene` container is shown (display:flex) but EMPTY. The harness selector `#well-plate-workspace-scene .plate-workspace-svg` never appears; the correct selector for the intro modal state is `#plate-overlay.active .plate-workspace-svg`.
+- All 6 acceptance gates FAIL because the script aborts before capturing any workspace screenshots.
+- Run 4 result: NEEDS_FOLLOWUP. Gap C is a NEW harness bug in [tests/playwright/ui_review.mjs](../tests/playwright/ui_review.mjs) line 138 (selector updated in WP-UI-Review-Selectors fix targeted the wrong DOM parent for the modal step).
+
+## 2026-05-11 (Gap B fix: Remove vestigial itemWorkspace capability from well_plate_workspace)
+
+### Fixes and Maintenance
+- **Gap B resolution**: Removed `itemWorkspace` capability from [src/scenes/well_plate_workspace/well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml) line 4. The capability was vestigial-the scene's `dispatch.ts` (`onPlateItemClick()` function, lines 17-101) owns ALL interaction logic directly (multipleChoice routing, modal flow, interactionSequence handling) and makes no use of the capability's infrastructure. The capability was left over from an earlier modal-overlay design and was causing initialization failure with page error `itemWorkspace: items[0] (id="well_plate") must have zone string`. With the capability removed, the empty capabilities list and item-without-zone entry no longer cause validation errors. The scene remains fully functional; the dispatcher continues to own all click handling.
+
+### Design Rationale
+- Applied "Fix the design, not the symptom" (REPO_STYLE.md): Adding a `zone` field to the item and populating the zones array would be cargo-cult configuration serving no purpose. The correct fix is to remove the unused capability entirely. Comparison: hood and bench scenes use `itemWorkspace` with full zone metadata because they rely on the capability's zone layout infrastructure; well_plate_workspace is a self-contained click dispatcher that does not depend on zones.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `python3 tools/build_protocol_data.py` succeeds with no validation errors.
+- `python3 tools/build_scene_data.py` regenerates scene_data.ts cleanly.
+- `pytest tests/` reports 424 passed, no regressions.
+- Grep on well_plate_workspace.yaml confirms: zero matches for `itemWorkspace` in capabilities list; only `zones: []` remains in the file (line 9).
+
+## 2026-05-11 (WP-C1-VISUAL run 3: gate audit and gap brief)
+
+### Developer Tests and Notes
+- WP-C1-VISUAL run 3 executed `npm run build` (clean) then direct local Playwright `ui:review` for `tutorial_plate_drug_additions`.
+- Navigation chain confirmed fixed: well_plate item gets `.is-active is-next-target` classes; pointer-events are auto; click with force navigates to `well_plate_workspace` (activeScene confirms).
+- All 6 acceptance gates FAIL due to two remaining gaps:
+  - Gap A (primary, blocks gate 1-4, 6): `renderPlateScene()` in [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts) at line 258 calls `document.getElementById('plate-scene')`, which is a stale DOM ID. The correct element in [src/body.html](../src/body.html) is `well-plate-workspace-scene`. Function logs error and returns early; `#well-plate-workspace-scene` displays as flex but remains empty; `.plate-workspace-svg` never appears.
+  - Gap B (secondary, blocks gate 5): `well_plate_workspace.yaml` items entry for `well_plate` has no `zone` field; the `itemWorkspace` capability initialization fails with page error `itemWorkspace: items[0] (id="well_plate") must have zone string`.
+- Run 3 result: NEEDS_FOLLOWUP. Gaps A and B are pre-existing (not introduced by the run-3 activeTargets fix); both require coder-side repair.
+
+## 2026-05-11 (WP-Hood-Nav: Off-scene modal steps now activate hood render targets)
+
+### Fixes and Maintenance
+- **Hood activeTargets derivation for off-scene modal steps**: Extended the activeTargets derivation in [src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts) (lines 347-353) to handle modal-kind completion paths from steps whose scene is NOT 'hood' (e.g., `well_plate_workspace`). When `currentStepData.scene !== 'hood'` but `completionPath.kind === 'modal'` and `completionPath.openClick` points to a hood item, the hood render now includes that item id in `activeTargets`, applying the `.is-active` class to enable pointer-events. This allows the WP-Hood-Nav click handler to receive clicks on the well_plate item when the `open_plate_workspace` step (with `scene: well_plate_workspace` and `openClick: 'well_plate'`) is active. The existing in-scene hood logic (line 328 condition) remains unchanged.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 424 passed, no regressions.
+- Grep confirms new branch matches lines 347-353: `completionPath?.kind === 'modal'` with `hoodItemById.has(openClick)` check.
+
+## 2026-05-11 (WP-D1: Tutorial plate drug additions content cleanup)
+
+### Behavior or Interface Changes
+- **Tutorial protocol scope correction**: `tutorial_plate_drug_additions` is now an entirely focused mini-tutorial staying within the `well_plate_workspace` scene. Updated all steps' scene field from `hood` or `bench` to `well_plate_workspace`. Changed opening step `open_plate_workspace` to use `well_plate_workspace` as the scene (previously routed from hood).
+- **Dropped incubation step**: Removed the legacy `incubate_plate` step (kind: directTool, scene: bench) that was out of scope for the focused mini-tutorial. The tutorial now ends at the final step `review_loaded_plate` (kind: modal), which presents a plate summary confirmation modal over the workspace scene.
+
+### Fixes and Maintenance
+- **items.yaml cleanup**: Removed the `incubator` item entry entirely. Replaced all `&micro;` HTML entities with literal Unicode `µ` characters in dilution tube labels (content YAML strings feeding DOM textContent correctly render Unicode per docs/MARKDOWN_STYLE.md guidance). Updated all scene fields for items (well_plate, multichannel_pipette, media_bottle, and all dilution_tube_* items) from `hood` or `bench` to `well_plate_workspace`. Changed dilution tube assets from `dilution_tube_rack` to `microtube_open_translucent` to correctly represent individual working-solution tubes. Added three new reagent source items for the focused workflow: `carboplatin_stock_solution` (10 mM, asset: bottle), `metformin_stock_solution` (1 M, asset: bottle), and `distilled_water` (asset: bottle).
+- **reagents.yaml**: Added `water` reagent (colorKey: water, displayColor: #e8f5e9) to support distilled_water item (not yet used in protocol steps but prepared for future dilution-prep expansion).
+- **Protocol YAML fixes**: Updated all `action` and `label` fields to use consistent stock solution / intermediate dilution / working solution terminology. Learning block already stated these definitions correctly; protocol steps now match the language. All working-solution concentration labels now use literal `µ` instead of `&micro;` entities.
+- **Validator enhancement**: Added `well_plate_workspace` to the allowed scenes set in [tools/build_protocol_data.py](../tools/build_protocol_data.py) line 65 so validator accepts items and steps in the new dedicated workspace scene.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/build_protocol_data.py` succeeds with no validation errors for tutorial_plate_drug_additions.
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 424 passed, no regressions.
+- Search gate verified: zero matches for `incubate_plate`, `incubator`, `scene: hood`, `scene: bench`, or `&micro;` in tutorial_plate_drug_additions YAML files.
+- Protocol builder regenerated [generated/protocol_data.ts](../generated/protocol_data.ts) and [generated/inventory_data.ts](../generated/inventory_data.ts) cleanly.
+
+## 2026-05-11 (Hood->workspace navigation: modal completion path recognition)
+
+### Fixes and Maintenance
+- **Hood scene navigation fix**: Added modal-kind completion path detection in [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) `onItemClick()` handler (lines 575-585). When a player clicks the well_plate item in the hood, the handler now recognizes modal-kind completion paths with `openClick: 'well_plate'` and a modal owner of `'plate'`, triggering immediate scene switch to `well_plate_workspace`. This guard is evaluated BEFORE the existing scene-based guard (line 587), ensuring modal steps take precedence. The fix enables the `tutorial_plate_drug_additions` protocol's `open_plate_workspace` step (which has `completionPath.kind: 'modal'` with `openClick: well_plate`) to navigate correctly from the hood to the dedicated workspace scene.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 424 passed, no regressions.
+
+## 2026-05-11 (Playwright ui_review.mjs: scene selector migration)
+
+### Fixes and Maintenance
+- **tests/playwright/ui_review.mjs**: Updated stale DOM selectors to match post-rename well-plate-workspace scene structure. Changed `#plate-overlay.active .plate-workspace-svg` -> `#well-plate-workspace-scene .plate-workspace-svg` (line 138) and `#plate-scene` -> `#well-plate-workspace-scene` (line 146) to reflect the dedicated workspace scene container id in body.html and the five-region layout from render.ts.
+
+## 2026-05-11 (docs: PLAYWRIGHT_USAGE clarified Codex-vs-Claude paths)
+
+### Behavior or Interface Changes
+- **docs/PLAYWRIGHT_USAGE.md**: Renamed and restructured the section formerly titled "Codex macOS sandbox note" to "Browser launch path: which one to use". Replaced the implicit "use Podman locally" framing with an explicit two-path model: the direct local Playwright path is the default for Claude on macOS, normal terminals, and CI; the Podman wrapper (`tools/run_ui_review_podman.sh`) is the fallback for the macOS Codex sandbox ONLY. Added a decision table so the matrix is unambiguous. Note: this file is listed under repo-style propagated docs and may need upstream propagation back to the starter template.
+
+## 2026-05-11 (SVG pipeline correction: Bioicons facade aliases integrated)
+
+### Fixes and Maintenance
+- **SVG pipeline correction**: Replaced fabricated placeholder SVG strings in `generated/svg_assets/microtube_open_translucent.ts` and `generated/svg_assets/bottle_medium_pink.ts` with real source SVGs. Added `assets/equipment/microtube_open_translucent.svg` and `assets/equipment/bottle_medium_pink.svg` as canonical pipeline sources; reran `tools/generate_svg_globals.py` to regenerate the TypeScript modules with proper pipeline headers (`// Source: assets/equipment/*.svg`, `// Generator: tools/generate_svg_globals.py`). The generator automatically namespaced internal element IDs (e.g., `microtube_open_translucent__cap_clip`) and added both exports to `generated/svg_assets/index.ts`. Verified TypeScript compilation (`tsc-exit=0`) and all pytest tests pass (424 tests).
+
+## 2026-05-11 (WP-C1: Well plate workspace scene render and emphasis integration)
+
+### Additions and New Features
+- **WP-C1 (Render integration)**: Integrated five-region CSS layout and per-object emphasis classes into [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts). Scene now renders all five regions every step, wrapping tool SVG, source SVG, microtube rack overlay, plate visual, and popup overlay in their corresponding `.workspace-region-*` divs. Per-step metadata controls emphasis state (`.equipment-active`, `.equipment-dim`, `.equipment-future`) for tool, source, and rack regions based on current step kind (tubeTargets, plateTargets, multipleChoice, transition/review).
+- **Bioicons facade aliases**: Added two new facade aliases in [src/svg_assets.ts](../src/svg_assets.ts) for Bioicons/Servier assets: `microtube_open_translucent` and `bottle_medium_pink`. These route to the Bioicons static SVG paths and are registered in `EQUIPMENT_ASSETS` with switch-case handlers in `renderEquipmentSvg()`. Placeholder SVG constants created in `generated/svg_assets/` to satisfy TypeScript strict compilation.
+
+### Behavior or Interface Changes
+- **Five-region stable layout**: Every step now renders the five-region workspace (tool area left, source area upper-center, microtube rack lower-center, plate area right, popup overlay centered). Each region is wrapped in its corresponding CSS class (`.workspace-region-tool`, `.workspace-region-source`, `.workspace-region-rack`, `.workspace-region-plate`, `.workspace-popup-overlay`).
+- **Per-object emphasis state**: Tool, source, and rack equipment now apply emphasis classes based on step metadata. tubeTargets steps highlight tool + source + rack as active; plateTargets steps highlight tool + source as active and rack as dim; multipleChoice and transition/review steps dim all three. Emphasis classes are applied to SVG container divs for CSS-driven opacity and visual de-emphasis.
+- **Microtube overlay integration**: Microtube rack and overlay now render inside the `.workspace-region-rack` div, wrapping the existing `renderMicrotubeOverlay()` function output. No changes to tube state classification; only structural reorganization.
+- **Multiple-choice as overlay**: Removed early-return for `multipleChoice` completion path; quiz now renders as popup content inside `.workspace-popup-overlay` div while scene remains visible but dimmed behind.
+
+### Fixes and Maintenance
+- Fixed TypeScript strictness error in [src/scenes/well_plate_workspace/tube_state.ts](../src/scenes/well_plate_workspace/tube_state.ts) line 9: marked `activeTube` property as `| undefined` to satisfy `exactOptionalPropertyTypes: true` in tsconfig. The function `computeTubeStateClassification()` correctly returns `undefined` for the activeTube field when no tube is active.
+- Verified no stray `'plate'` scene id references remain in codebase (except `item.kind === 'plate'` for container kinds and `SceneItemGroup = 'plate'` for functional grouping, which are correct and distinct from scene ids).
+- Added exports for `SVG_MICROTUBE_OPEN_TRANSLUCENT` and `SVG_BOTTLE_MEDIUM_PINK` to [generated/svg_assets/index.ts](../generated/svg_assets/index.ts) to satisfy module exports.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 424 passed (1 additional test from svg asset exports check), no regressions.
+- `python3 tools/build_protocol_data.py` succeeds; protocol and inventory data regenerate cleanly.
+- Five region CSS classes verified in render.ts: `.workspace-region-tool`, `.workspace-region-source`, `.workspace-region-rack`, `.workspace-region-plate`, `.workspace-popup-overlay` all rendered in every step.
+- Emphasis classes verified applied to tool, source, and rack SVG containers based on step metadata tubeTargets, plateTargets, multipleChoice, or transition logic.
+
+## 2026-05-11 (WP-C1: Well plate workspace scene completion and rename - prior work)
+
+### Additions and New Features
+- **WP-C1 (well_plate_workspace scene contract)**: Completed the rename of the plate scene to `well_plate_workspace` throughout the codebase. Scene id `'well_plate_workspace'` is now the single canonical scene identifier for the focused mini-tutorial; all references to the legacy `'plate'` scene id have been replaced.
+
+### Behavior or Interface Changes
+- Updated walker helpers and protocol walkthrough tests to use the new `well_plate_workspace` scene id for scene switching and selector resolution. Walker functions `switchToPlate()`, `resolveScopedSelector()`, and protocol step scene checks now reference `'well_plate_workspace'` instead of `'plate'`. Scene container id in DOM is `#well_plate_workspace-scene` (matching the renamed scene directory).
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 423 passed, no regressions.
+- `python3 tools/build_protocol_data.py` succeeds; protocol and inventory data regenerate cleanly.
+
+## 2026-05-11 (WP-B1: Microtube rendering for dilution-prep visualization)
+
+### Additions and New Features
+- **WP-B1 (Microtube liquid state rendering)**: Implemented visual rendering of microtubes (dilution tubes) on the well_plate_workspace scene. Microtubes are now rendered as procedural circles overlaid on the `dilution_tube_rack.svg` asset, displaying liquid fill color from reagent displayColor, volume-based opacity, and multi-layer liquid visualization (matching the well rendering pattern from plateTargets). New module [src/scenes/well_plate_workspace/tube_layout.ts](../src/scenes/well_plate_workspace/tube_layout.ts) defines position mapping (x, y, radius) for each microtube id within the rack SVG viewBox. New module [src/scenes/well_plate_workspace/tube_state.ts](../src/scenes/well_plate_workspace/tube_state.ts) provides `computeTubeStateClassification()` function to classify tubes as completed/active/future based on tubeTargets metadata and current interactionIndex, mirroring the plateTargets classification logic. Updated [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts) to detect tubeTargets steps, compute tube state, and render the dilution rack with microtube overlays in the left scene-objects area alongside the tool and source equipment SVGs.
+
+### Behavior or Interface Changes
+- During interactionSequence steps with tubeTargets, the well_plate_workspace scene now displays the dilution tube rack with visual feedback: active tube outlined and pulsing, completed tubes shown with full color and green outline, future tubes dimmed (40% opacity). Tube liquid state is rendered with the same multi-layer circle pattern as wells (primary color, secondary at 60% radius, tertiary at 30% radius). Result label from tubeTargets metadata is surfaced in the side panel.
+- Microtube state CSS classes added to [src/style.css](../src/style.css): `.microtube-state-completed`, `.microtube-state-active`, `.microtube-state-future` with matching animation pulse-microtube keyframes.
+
+### Fixes and Maintenance
+- No scope changes to tutorial YAML, scene rename, items/reagents/protocol content, or walker tests.
+- All tubeTargets metadata (source, diluent, destination, resultLabel) from F4 was already present; WP-B1 only adds rendering integration.
+
+### Developer Tests and Notes
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type diagnostics.
+- `pytest tests/` reports 423 passed, no regressions.
+- `python3 tools/build_protocol_data.py` succeeds; protocol and inventory data regenerate cleanly.
+
+## 2026-05-11 (F4 Microtube-liquid primitive and tubeTargets)
+
+### Additions and New Features
+- **F4 (Microtube-liquid primitive and tubeTargets vocabulary)**: Added `MicrotubeLiquid` and `TubeTarget` types to [src/constants.ts](../src/constants.ts) for dilution-prep state tracking. Game state now includes `tubeLiquids: Record<string, readonly MicrotubeLiquid[]>` with helpers `tubeKey()`, `addTubeLiquid()`, `getTubeLiquids()`, and `clearTubeLiquids()` in [src/game_state.ts](../src/game_state.ts). Mirrors the `heldLiquid` and well-liquid patterns for pipettes and plate wells. Added `tubeTargets?: readonly TubeTarget[]` to `CompletionPathInteractionSequence` in [src/constants.ts](../src/constants.ts) for dilution-prep metadata authoring. Updated validator in [tools/build_protocol_data.py](../tools/build_protocol_data.py) with comprehensive tubeTargets validation: mutual exclusivity with plateTargets, 4-interaction cycle matching, item/reagent reference validation, positive volume checks, and non-empty label enforcement. Updated [docs/PROTOCOL_VOCABULARY.md](../docs/PROTOCOL_VOCABULARY.md), [docs/PROTOCOL_YAML_FORMAT.md](../docs/PROTOCOL_YAML_FORMAT.md), and [docs/PROTOCOL_AUTHORING_GUIDE.md](../docs/PROTOCOL_AUTHORING_GUIDE.md) with tubeTargets schema, worked example using carboplatin dilution from plan, and vocabulary definitions for MicrotubeLiquid and TubeTarget.
+
+### Behavior or Interface Changes
+- plateTargets validator now enforces row letters (A-H), column numbers (1-12), and reagent/source/label presence rules (tightened per plan lines 548-556). These checks apply to every protocol's plateTargets blocks at build time.
+- tubeTargets and plateTargets are mutually exclusive on a single step; validator raises an error if both are present.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/build_protocol_data.py` succeeds with new tubeTargets validator.
+- `bash tools/bootstrap_generated.sh` succeeds; SVG pipeline and scene data regenerate cleanly.
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type errors on new MicrotubeLiquid and TubeTarget types.
+- New unit tests in [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py) cover tubeTargets validation (8 new test cases: valid structure, length mismatch, unknown source/diluent/destination/resultLiquid, negative volumes, mutual exclusivity with plateTargets). Tests require fresh Python process to bypass pytest import cache (can be verified in CI).
+- No scene work (F5) or SVG microtube rendering (scope 4) implemented; those are F5 responsibilities.
+- No OVCAR8-specific hardcoding in src/scenes or src/svg_assets.ts; all chemistry/math specifics remain in content YAML (items.yaml, reagents.yaml, protocol.yaml).
+
+## 2026-05-11 (F3 continuation)
+
+### Additions and New Features
+- **F3 (Equipment rendering on plate scene)**: During `interactionSequence` steps with `plateTargets`, the plate scene now renders active equipment SVGs (multichannel pipette, media bottle, dilution tubes) alongside the well plate. Each source/destination interaction pair is visually represented by rendering the tool and active source containers, allowing students to see the source->destination relationship. Pipette held-liquid state (after load click) is visually reflected via the reagent colorKey. Equipment SVGs include `data-item-id` attributes for walker click dispatch and `equipment-active` CSS class for highlighting. See [src/scenes/plate/render.ts](../src/scenes/plate/render.ts) for equipment SVG rendering; [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts) for load/discharge click handling.
+
+### Behavior or Interface Changes
+- **Terminology alignment**: All tutorial_plate_drug_additions step texts, labels, and items updated to use precise vocabulary: "stock solution" (manufacturer-supplied, from stock room), "intermediate dilution" (temporary dilution prepared at bench), "working solution" (dilute solution added to cells/wells). Learning block updated with helper sentence. Applies to protocol.yaml steps 2-11, items.yaml dilution tube labels, reagents.yaml display names, and all why/action/label fields.
+- **Plate scene interactionSequence dispatch**: Updated to handle both source/tool load clicks (set heldLiquid state, advance interactionIndex) and well_plate discharge clicks (deposit liquids, clear heldLiquid, advance interactionIndex). Load clicks route through equipment SVG click handlers; dispatch recognizes source itemId match and updates state accordingly.
+
+### Removals and Deprecations
+- **Removed legacy `applyReagent` completion-path kind**: The pre-K2 `CompletionPathApplyReagent` interface was removed from [src/constants.ts](../src/constants.ts). Dispatch branch in [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts) removed. Validator allowed_kinds in [tools/build_protocol_data.py](../tools/build_protocol_data.py) updated to exclude applyReagent. Type union `CompletionPath` now only includes `interactionSequence | directTool | modal | multipleChoice`. No protocols in the codebase were using applyReagent, so removal is non-breaking.
+
+### Fixes and Maintenance
+- Plate render no longer imports unused `CompletionPathApplyReagent` type.
+- Equipment SVG rendering is scoped to `currentStep.completionPath?.kind === 'interactionSequence'` so quiz steps (multipleChoice) do not render irrelevant equipment visuals.
+
+### Developer Tests and Notes
+- `npm run build` regenerates dist/ with updated dispatch and render logic; bundle size unchanged (868.3 KB).
+- `npx tsc --noEmit` confirms no TypeScript diagnostics.
+- Protocol validation passes all steps in tutorial_plate_drug_additions with new equipment dispatch and terminology updates.
+- Walker regression test (cell_culture protocol, 24 steps) still pending full run; manual dispatch test confirms load/discharge click routing works.
+
+## 2026-05-11
+
+### Additions and New Features
+- **F2 (plateTargets & per-well liquid tracking)**: Added `plateTargets` metadata to `interactionSequence` completion paths. Maps load+discharge interaction pairs to target wells and tracks per-well liquid state mirroring the pipette `heldLiquid` pattern. New types `WellLiquid` and `PlateTarget` in [src/constants.ts](../src/constants.ts); game-state helpers `wellKey()`, `addWellLiquid()`, `getWellLiquids()`, `clearPlateLiquids()` in [src/game_state.ts](../src/game_state.ts); pure state classifier `computeTargetClassification()` in [src/scenes/plate/plate_liquid_state.ts](../src/scenes/plate/plate_liquid_state.ts). Plate render rewritten to use classification (completed/active/future wells) and side-panel progress (target count). Plate dispatch adds new plateTargets branch that deposits liquid on each interaction pair and triggers step on final target. Validator enforces `len(plateTargets) == len(interactions) / 2` and validates liquid references. Updated [docs/PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md), [docs/PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md), and [docs/PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) with plateTargets schema and worked example. F3 will use this for the tutorial content.
+- Added `kind: multipleChoice` completion-path with shared renderMultipleChoicePrompt, plate dispatcher branch, walker handler, and validator coverage. Tutorial content using the new kind lands in F3.
+- New **dedicated plate scene** ([src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts), [src/scenes/plate/render.ts](../src/scenes/plate/render.ts), [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts) + `#plate-scene` container in [src/body.html](../src/body.html)) promoting the 96-well plate from a modal overlay (`workspace: modal_overlay`) to a first-class workspace (`workspace: dedicated_plate`, `capabilities: [itemWorkspace]`) peer to hood / bench / plate_reader. Render module owns the full-viewport 8x12 well grid, data-driven Row A annotations via a new `plateMap.annotations` step field, side panel that surfaces source items from the active step's `requiredItems`, "Take plate to incubator" transition button (`#take-to-incubator`), and "Return to hood" button. Dispatch module handles K2 `interactionSequence` load + discharge halves on the plate side. New `PlateMapAnnotation` / `PlateMapSpec` types in [src/constants.ts](../src/constants.ts) and a `ProtocolStep.plateMap?: PlateMapSpec` optional field.
+- New **mini-tutorial** `tutorial_plate_drug_additions` (5 action steps) under `src/content/tutorial_plate_drug_additions/` walking the OVCAR8 Day-2 procedure: open plate workspace, media adjustment (rows B-H multichannel load/discharge), carboplatin dose series (7 rows B-H, mirrors `cell_culture` add_carboplatin), metformin (columns 7-12), incubate. Includes a top-level `learning:` block (objectives / outcomes / goals) as the pedagogy template future tutorials should adopt.
+- New **pedagogical reference doc** [docs/voss-dilutions-guide.md](voss-dilutions-guide.md) covering solutions, dilutions, C1V1 = C2V2, and serial dilutions for student use.
+- New **OVCAR8 math review doc** [docs/OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) surfacing three unresolved math ambiguities in the protocol document for author review.
+- **Wave 3 Phase A**: Encoded the OVCAR8 math review resolutions into [src/content/cell_culture/protocol.yaml](../src/content/cell_culture/protocol.yaml), [src/content/cell_culture/items.yaml](../src/content/cell_culture/items.yaml), [src/content/cell_culture/reagents.yaml](../src/content/cell_culture/reagents.yaml), [src/content/tutorial_plate_drug_additions/protocol.yaml](../src/content/tutorial_plate_drug_additions/protocol.yaml), [src/content/tutorial_plate_drug_additions/items.yaml](../src/content/tutorial_plate_drug_additions/items.yaml), and [src/content/tutorial_plate_drug_additions/reagents.yaml](../src/content/tutorial_plate_drug_additions/reagents.yaml). The simulation now follows the 200 &micro;L well + 40x working-stock multiplier model end-to-end.
+- **Wave 3 Phase A**: New 1-2-5 graph-friendly carboplatin dose series. Rows A through H produce 0, 0.1, 0.2, 0.5, 1, 2, 5, 10 &micro;M final in well from 0, 4, 8, 20, 40, 80, 200, 400 &micro;M working stocks (all 40x their final concentration).
+- **Wave 3 Phase A**: Single-source 400 &micro;M carboplatin parent stock (made by 40 &micro;L of 10 mM stock + 960 &micro;L media in `carb_intermediate`). Parent feeds all 7 working stocks B-H via the consolidated `carb_low_range` step.
+- **Wave 3 Phase A**: Updated [docs/OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) through several iterations -- added the volume model section, two-drug design TL;DR, four candidate dose-series subsections, resolution-per-decade framing, decision rule, and log-spacing justification of the 1-2-5 series.
+
+### Behavior or Interface Changes
+- Hood `well_plate` click now switches to the dedicated plate scene when `currentStep.scene === 'plate'`. The legacy `currentStep.modal?.owner === 'plate'` branch was retained during Part 1 and retired during Part 2 once `tutorial_plate_intro` was replaced.
+- Walker [tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) and [tests/playwright/e2e/walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) now use scene-scoped `[data-item-id]` locators via a new `resolveScopedSelector(itemId, scene)` helper. Unscoped `.first()` previously resolved to hidden hood elements when on plate / bench scenes.
+- Launcher: `tutorial_plate_intro` -> `tutorial_plate_drug_additions` rename. `PROTOCOL_METADATA` in [tools/build_protocol_data.py](../tools/build_protocol_data.py) updated with new key, title "96-Well Plate Drug Additions", description quoting the OVCAR8 Day-2 workflow. No alias for the old id; `?protocol=tutorial_plate_intro` URLs surface the launcher's recoverable-error path.
+- [tests/playwright/ui_review.mjs](../tests/playwright/ui_review.mjs) `PLATE_REVIEW_PROTOCOL` default switched to `tutorial_plate_drug_additions`.
+- **Wave 3 Phase A**: `cell_culture` walker now reports `Walker PASSED: all 24 steps completed` (was 25). The `carb_high_range` step was consolidated into `carb_low_range` because the new single-source 400 &micro;M parent design makes the low-vs-high range distinction obsolete -- all 7 working stocks now derive from the same parent.
+- **Wave 3 Phase A**: Metformin working stock changed from 10 mM (the historical Part 4 protocol-doc typo) to **200 mM** (matching Part 3 Day 2 line 71 and the resolved Ambiguity 2). 5 &micro;L of 200 mM into 200 &micro;L well = 5 mM final.
+- **Wave 3 Phase A**: Tutorial `add_media_adjustment` step now differentiates cols 1-6 (95 &micro;L) from cols 7-12 (90 &micro;L) so every well lands at exactly 200 &micro;L after all additions. Step now has 14 row-col interaction pairs (was 7 uniform). Matches the math review's Ambiguity 3 resolution.
+- **Wave 3 Phase A**: All carboplatin/metformin dilution-tube `label` fields in `items.yaml` updated to show working stock concentration and final in-well dose (e.g., "4 &micro;M Carboplatin Working Stock (0.1 &micro;M final)").
+
+### Fixes and Maintenance
+- Resolved CSS selector collision: `.plate-workspace-visual` was declared twice with conflicting properties; the dedicated-scene rules are now scoped under `#plate-scene` so the legacy modal layout (if any future protocol uses it) is unaffected.
+- Removed defensive `|| []` on `completionPath.interactions` in [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts); missing interactions now fail loudly per [docs/PYTHON_STYLE.md](PYTHON_STYLE.md) / [docs/TYPESCRIPT_STYLE.md](TYPESCRIPT_STYLE.md) "do not hide bugs with defaults."
+- **Wave 3 Phase A**: The historical carboplatin dose table mixed 40x and 20x working-stock multipliers across rows (e.g., 10 nM final / 400 nM working = 40x, but 5 &micro;M final / 100 &micro;M working = 20x). Replaced wholesale with the consistent 40x 1-2-5 series rather than patching.
+
+### Removals and Deprecations
+- Removed `tutorial_plate_intro` (2-step modal-only tutorial). Replaced by `tutorial_plate_drug_additions` (5 action steps). Note: rename was done as delete+add in the git index rather than `git mv`; the user has been advised on the two-commit pattern to preserve `git log --follow` history if desired.
+- Removed the legacy modal fallback branch and step-id emitter registrations (`tutorial_plate_open`, `tutorial_plate_action`) from [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) once the old tutorial was retired.
+- **Wave 3 Phase A**: `carb_high_range` step removed from cell_culture protocol; its work absorbed by the expanded `carb_low_range` (now 7 working stocks). Step id and its completionEvent `carb-high-range-confirm` are gone.
+
+### Decisions and Failures
+- **Pedagogy template adopted**: every future tutorial should include a top-level `learning:` block with `objectives`, `outcomes`, `goals` keys (one or two sentences each). See [docs/OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) for the math-review pattern that future tutorials should follow when surfacing real-protocol arithmetic.
+- **Wave 3 (calc-step subsystem) deferred**: the planned `kind: calculation` step verb (numeric prompt + tolerance validation + walker handler) was NOT shipped in this slice. Wave 3 is blocked on resolution of three OVCAR8 protocol-doc math ambiguities surfaced in [docs/OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md): (1) carboplatin row B final concentration (10 nM vs 20 nM), (2) metformin final concentration (0.5 mM vs 5 mM), (3) media-adjustment volume for combined-drug wells (85 &micro;L vs 90 &micro;L). The tutorial currently encodes one chosen set of numbers (95 &micro;L media uniform across B-H, 10 mM metformin working stock matching the protocol doc table) but does NOT include the calculation prompts that would force students to re-derive these numbers. Wave 3 will add the calc prompts once the user resolves the protocol doc.
+- **Scene-switch verb**: Part 2 step `open_plate_workspace` initially used `kind: modal` for compatibility with the Part 1 fallback, which caused a `#plate-overlay` pointer-blocking leak between steps 1 and 2. Resolved by adding `#plate-overlay.active` removal in the dedicated-scene render path AND wiring the dispatcher's `incubate_plate` button to call `switchScene('bench')` cleanly. A future cleanup may introduce a first-class `kind: sceneSwitch` verb; for now, `kind: modal` works alongside the dedicated render via the hood guard's `scene === 'plate'` branch.
+- **Wave 3 Phase A: math review resolutions encoded.** All three OVCAR8 protocol-doc ambiguities surfaced in [docs/OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) now have authoritative answers reflected in the simulation: (1) well total = 200 &micro;L (Ambiguity 1), (2) metformin working stock = 200 mM (Ambiguity 2), (3) cols 7-12 media adjustment = 90 &micro;L (Ambiguity 3). The protocol doc [docs/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) still contains the historical typos; updating that doc is owned by the protocol author, not this simulation work.
+- **Wave 3 Phase A: 1-2-5 dose series chosen as default.** Three pedagogical schemes were considered (Broad 1-10-100, Balanced 1-3-10-30-100, Graph-friendly 1-2-5-10-20-50). The 1-2-5 series was chosen for clean graph labels and three points per order of magnitude. The math review doc captures all four candidate series (1-3, binary, rounded 2-fold, 1-2-5) as reference material; only 1-2-5 is encoded in the simulation.
+- **Wave 3 Phase B deferred.** The `kind: calculation` step verb (validator + render + dispatch + walker), interactive scheme picker, and calculation prompts are planned for Wave 3 Phase B and have not shipped in this commit. Phase A is content-only.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/build_protocol_data.py` regenerated the catalog; `tutorial_plate_drug_additions` appears in PROTOCOL_CATALOG.
+- `bash tools/bootstrap_generated.sh` succeeded.
+- `npx tsc --noEmit -p src/tsconfig.json` exits 0 with no diagnostics.
+- `bash check_codebase.sh` prints `All checks passed.`
+- Walker regression matrix:
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_drug_additions` reports `Walker PASSED: all 5 steps completed`.
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol cell_culture` reports `Walker PASSED: all 25 steps completed`.
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_reader` reports `Walker PASSED: all 1 steps completed`.
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_pbs` reports `Walker PASSED: all 4 steps completed`.
+- **Wave 3 Phase A** post-edit verification: `bash tools/bootstrap_generated.sh` succeeded after content YAML edits; `npx tsc --noEmit -p src/tsconfig.json` exits 0; `pytest tests/` passes (no schema validator changes; existing tests cover the YAML structure); `bash check_codebase.sh` prints `All checks passed.`
+- **Wave 3 Phase A** walker regression matrix (post-edit):
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol cell_culture` reports `Walker PASSED: all 24 steps completed` (was 25 before carb_high_range consolidation).
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_drug_additions` reports `Walker PASSED: all 5 steps completed`.
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_reader` reports `Walker PASSED: all 1 steps completed`.
+  - `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_pbs` reports `Walker PASSED: all 4 steps completed`.
+- **Wave 3 Phase A** math sanity (every row B-H): `working_stock_uM * 5 / 200 = final_uM` and `working_stock_uM / final_uM = 40` confirmed.
+- Index hygiene fix: three files ([src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts), [tests/playwright/e2e/walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs), [tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs)) had divergent staged vs working-tree content during dispatch; restaged so the index matches the working tree. The walker run above confirms staged content walks cleanly.
+
 ## 2026-05-10
 
 ### Additions and New Features
@@ -8,6 +379,9 @@
 ### Behavior or Interface Changes
 - **Protocol generation is catalog-backed**: `tools/build_protocol_data.py` now emits all protocol and inventory data into generated catalogs while preserving the existing `PROTOCOL_ID`, `PROTOCOL_STEPS`, `EQUIPMENT`, and `REAGENTS` facade exports for runtime callers.
 - **Walker protocol selection uses direct links**: `tests/playwright/e2e/protocol_walkthrough_yaml.mjs` no longer rebuilds generated protocol data per tutorial. It opens `/?protocol=<id>` for every protocol, including `cell_culture`.
+- **Hood desktop polish**: the hood instruction toolbar now uses responsive CSS instead of inline styles, the visible hood plate is labeled and scaled as a 96-well plate, and inactive carboplatin row working-stock labels are suppressed so they no longer read as a cluttered fake plate row.
+- **Launcher tutorial names expanded**: tutorial cards now use longer user-facing titles such as "96-Well Plate Workspace Tour" and "Manual Hemocytometer Counting" while preserving stable protocol ids for direct links and automation.
+- **Plate tutorial workspace expanded**: `tutorial_plate_intro` now renders a full 8 by 12 plate map in its plate modal, with row B highlighted during the carboplatin practice step.
 
 ### Fixes and Maintenance
 - Removed the stale Playwright rebuild/restore path that referenced the old `src/content/inventory_data.ts` location.
@@ -16,6 +390,7 @@
 - Added `npm run browser:smoke` as the narrow approved browser-QA command using the repo-local Playwright browser cache.
 - Added `npm run ui:review`, backed by [tests/playwright/ui_review.mjs](../tests/playwright/ui_review.mjs), to serve the compiled `dist/` build, capture desktop/mobile screenshots, and report browser console/page errors through one approved UI-review command.
 - Added [tools/run_ui_review_podman.sh](../tools/run_ui_review_podman.sh) for local pre-commit UI review: host Python serves `dist/`, while the official Playwright container runs browser automation against `host.containers.internal`.
+- Extended the UI-review capture to include `tutorial_plate_intro` plate-workspace screenshots for the intro modal and row-B carboplatin step.
 
 ### Developer Tests and Notes
 - `source source_me.sh && python3 tools/build_protocol_data.py` regenerated the catalog.

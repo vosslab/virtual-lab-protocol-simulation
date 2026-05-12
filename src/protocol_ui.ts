@@ -6,8 +6,7 @@
 // Helper: Escape HTML special characters
 // ============================================
 import type { ProtocolStep } from "./constants";
-import { PROTOCOL_STEPS } from "./protocol";
-import { PROTOCOL_SUMMARY } from "../generated/protocol_data";
+import { PROTOCOL_STEPS, PROTOCOL_SUMMARY } from "./protocol";
 import { gameState, getCurrentStep, showNotification } from "./game_state";
 // Static asset access goes through the svg_assets facade (M4): protocol_ui
 // no longer imports per-asset SVG strings from `generated/`.
@@ -154,12 +153,24 @@ export function renderDayRibbon(currentDayId: string): string {
 
 // ============================================
 // renderStepCard(step: ProtocolStep): string
-// Current step card with action, why, and required items
+// Current step card with action, why, details, and required items
 // ============================================
 export function renderStepCard(step: ProtocolStep): string {
 	// Escape action and why text
 	const action = escapeHtml(step.action);
 	const why = escapeHtml(step.why);
+
+	// Render details as bulleted list if present
+	const details = step.details || [];
+	let detailsHtml = '';
+	if (details.length > 0) {
+		let bulletList = '<ul>';
+		for (const detail of details) {
+			bulletList += `<li>${escapeHtml(detail)}</li>`;
+		}
+		bulletList += '</ul>';
+		detailsHtml = `<div class="step-details">${bulletList}</div>`;
+	}
 
 	// Required items: show up to 4, collapse excess to "+N more"
 	const requiredItems = step.requiredItems || [];
@@ -185,6 +196,7 @@ export function renderStepCard(step: ProtocolStep): string {
 		<div class="protocol-step-card">
 			<div class="step-action">${action}</div>
 			<div class="step-why">${why}</div>
+			${detailsHtml}
 			${itemsSection}
 		</div>
 	`;

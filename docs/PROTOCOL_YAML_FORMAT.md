@@ -178,6 +178,33 @@ reagents:
 Three top-level blocks: `parts`, `days`, and `steps`. Parts organize steps by lab workflow
 part; days mark when each part runs. Steps are the runnable units of the protocol.
 
+An optional top-level `learning` block carries pedagogy metadata for tutorials.
+
+### Learning block (optional)
+
+Optional top-level block that records the pedagogy contract for a tutorial
+or full protocol. All three sub-keys are optional strings (one or two
+sentences each). The block is advisory metadata; the runtime does not yet
+read it, but the OVCAR8 math review references it as the canonical home
+for tutorial pedagogy. See the Pedagogy section in
+[OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md).
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `objectives` | string | What students will achieve fluency with. |
+| `outcomes` | string | What students will be able to do unsupervised after the tutorial. |
+| `goals` | string | Overall purpose, including how the tutorial fits into the broader protocol curriculum. |
+
+Example (from `src/content/tutorial_plate_drug_additions/protocol.yaml`):
+
+```yaml
+learning:
+  objectives: Students completing this mini-tutorial will have achieved fluency with
+    the OVCAR8 96-well plate map and the media-adjustment-before-drug ordering rule.
+  outcomes: Students will be able to dose a 96-well assay plate Day-2 unsupervised.
+  goals: Bridge the single-technique tutorials to the full OVCAR8 protocol.
+```
+
 ### Parts block
 
 List of part definitions (order matters for UI display).
@@ -213,13 +240,15 @@ is determined by `nextId` linked-list pointers, not by array position.
 | `partId` | string | yes | Reference to a part id in the parts block |
 | `dayId` | string | yes | Reference to a day id in the days block |
 | `stepIndex` | number | yes | 1-based position within the part |
-| `scene` | string | yes | Where this step's interactions happen: `hood`, `bench`, `incubator`, `microscope`, or `plate_reader` |
+| `scene` | string | yes | Where this step's interactions happen: `hood`, `bench`, `incubator`, `microscope`, `plate`, or `plate_reader` |
 | `requiredItems` | array of strings | yes | Item ids that must be available (shown in step card) |
 | `usedItems` | array of strings | generated (not authored) | Derived item summary: items appearing in the step's interaction sequence, in first-use order (tool, source, destination). Required in generated TypeScript; never written in author YAML. |
 | `completionPath` | object | yes | The completion path for this step. Carries a `kind` discriminator and the kind-specific fields. See "Completion paths" section below. |
 | `completionTrigger` | object | derived (build-time), do not author | Step-level listener that maps a scene completion event to step completion. The builder synthesizes this from `step.scene` and `step.completionPath` (see "Derived fields"). Author YAML must NOT include this field; the validator rejects author-written `completionTrigger`. |
 | `nextId` | string or null | yes | Id of the next step, or `null` if this is the final step |
 | `errorHints` | map of strings | no | Feedback messages keyed by error type (e.g. `wrong_tool`, `volume_off`) |
+| `plateMap` | object | no | Plate-scene annotations rendered as overlay labels on the 96-well plate SVG. See "plateMap" section below. |
+| `details` | array of strings | no | Optional list of short strings rendered as a bulleted side-panel beneath the main instruction in [src/protocol_ui.ts](../src/protocol_ui.ts) `renderStepCard`. Use for exact per-column volumes or other concrete bullets that would clutter `why`. |
 
 ## Completion paths
 
@@ -243,13 +272,14 @@ behind narrowly-typed fields the runtime had to interpret. Authors choose a
 `kind` that matches the player experience; the validator and walker enforce
 the rest.
 
-The three allowed kinds are:
+The four allowed kinds are:
 
 | Kind | Use when the player |
 | --- | --- |
 | `interactionSequence` | performs an ordered click flow (load liquid then discharge, etc.) |
 | `directTool` | clicks one item once to complete the step (covers both hand tools like ethanol spray and instrument controls like incubator door, water bath, plate-reader scan button) |
 | `modal` | opens a modal scene and clicks an advance control inside it |
+| `multipleChoice` | answers a quiz question by clicking the correct answer button |
 
 The `directTool` kind covers what older drafts split into "direct tool" and
 "instrument" kinds. Mechanically the two cases are identical: one click on an
@@ -269,6 +299,13 @@ Required fields under `completionPath`:
 | --- | --- | --- |
 | `kind` | string | Must be `interactionSequence` |
 | `interactions` | list of objects | Ordered list of interactions; see "Interaction object structure" below |
+
+Optional fields under `completionPath`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `plateTargets` | list of objects | Optional: per-well liquid targets for plate scene. When present, maps each load+discharge interaction pair (every 2 interactions) to a set of wells and a liquid. Length must equal `interactions.length / 2`. Mutually exclusive with `tubeTargets`. See "Plate target object structure" below. |
+| `tubeTargets` | list of objects | Optional: microtube liquid targets for dilution-prep steps. When present, maps each 4-interaction cycle (solute load+discharge + diluent load+discharge) to a destination microtube. Length must equal `interactions.length / 4`. Mutually exclusive with `plateTargets`. See "Tube target object structure" below. |
 
 Banned fields under `completionPath` for this kind: `tool`, `openClick`,
 `advanceClick`. Those belong to other kinds.
@@ -308,6 +345,150 @@ Walker contract: the walker iterates `completionPath.interactions` in order.
 For each interaction it clicks the `tool` first, then any `source` or
 `destination`, waits for progress, and advances `interactionIndex`. The
 final interaction's `completionEvent` completes the step.
+
+### Plate target object structure (plateTargets)
+
+When `completionPath.plateTargets` is present, each entry maps a load+discharge
+interaction pair to the wells that receive liquid:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `rows` | list of strings | Non-empty list of row letters (e.g., `["B", "C", "D"]`). Case-sensitive. |
+| `cols` | list of integers | Non-empty list of 1-indexed column numbers (e.g., `[1, 2, 3]`). Must be in range 1-12 for a 96-well plate. |
+| `liquid` | string | Reagent id to deposit in the target wells (must match a reagent declared in `reagents.yaml`). |
+| `volumeMl` | number | Volume in milliliters to deposit per well (must be positive). |
+| `label` | string | User-facing label for the target (e.g., "Row B-H media adjustment"). Shown in the side panel. |
+
+Worked YAML example with plateTargets:
+
+```yaml
+- id: add_media_adjustment
+  label: "Adjust media in rows B-H"
+  scene: plate
+  requiredItems: [multichannel_pipette, media_bottle]
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 95
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 95
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: media
+        consumesVolumeMl: 95
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 90
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 90
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: media
+        consumesVolumeMl: 90
+        completionEvent: media_adjustment_complete
+    plateTargets:
+      - rows: [B, C, D, E, F, G, H]
+        cols: [1, 2, 3, 4, 5, 6]
+        liquid: media
+        volumeMl: 0.095
+        label: "Cols 1-6: 95 µL media"
+      - rows: [B, C, D, E, F, G, H]
+        cols: [7, 8, 9, 10, 11, 12]
+        liquid: media
+        volumeMl: 0.090
+        label: "Cols 7-12: 90 µL media"
+  nextId: add_carboplatin
+```
+
+The plate scene dispatcher uses `plateTargets` to track per-well liquid state
+and advance the active target on each interaction-pair completion. The length
+of `plateTargets` must equal `interactions.length / 2` (one target per
+load+discharge pair). The validator enforces this constraint.
+
+### Tube target object structure (tubeTargets)
+
+When `completionPath.tubeTargets` is present (mutually exclusive with
+`plateTargets` on a single step), each entry describes a dilution-prep
+destination microtube:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `source` | string | Item id of the stock solution or earlier dilution tube (must match a declared item in `items.yaml`). |
+| `diluent` | string | Reagent id of the dilution reagent, typically "distilled_water" (must match a declared reagent in `reagents.yaml`). |
+| `destination` | string | Item id of the destination microtube (must match a declared item in `items.yaml`). |
+| `soluteVolumeMl` | number | Volume in milliliters of solute to transfer (must be positive). |
+| `diluentVolumeMl` | number | Volume in milliliters of diluent to transfer (must be positive). |
+| `resultLiquid` | string | Reagent id of the resulting liquid in the microtube (must match a declared reagent in `reagents.yaml`). |
+| `resultLabel` | string | User-facing label for the resulting tube (e.g., "400 µM carboplatin working solution"). |
+
+Worked YAML example with tubeTargets:
+
+```yaml
+- id: make_carb_first_dilution
+  label: "Prepare 400 uM carboplatin intermediate dilution from stock"
+  scene: well_plate_workspace
+  requiredItems: [p200_pipette, carboplatin_stock_solution, distilled_water, dilution_tube_carb_h]
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: p200_pipette
+        source: carboplatin_stock_solution
+        liquid: carboplatin
+        volumeMl: 0.040
+        stateChange:
+          heldLiquid:
+            tool: p200_pipette
+            liquid: carboplatin
+            volumeMl: 0.040
+            colorKey: carboplatin
+      - tool: p200_pipette
+        destination: dilution_tube_carb_h
+        liquid: carboplatin
+        consumesVolumeMl: 0.040
+      - tool: p200_pipette
+        source: distilled_water
+        liquid: distilled_water
+        volumeMl: 0.960
+        stateChange:
+          heldLiquid:
+            tool: p200_pipette
+            liquid: distilled_water
+            volumeMl: 0.960
+            colorKey: distilled_water
+      - tool: p200_pipette
+        destination: dilution_tube_carb_h
+        liquid: distilled_water
+        consumesVolumeMl: 0.960
+        completionEvent: carb_first_dilution_done
+    tubeTargets:
+      - source: carboplatin_stock_solution
+        diluent: distilled_water
+        destination: dilution_tube_carb_h
+        soluteVolumeMl: 0.040
+        diluentVolumeMl: 0.960
+        resultLiquid: carboplatin
+        resultLabel: "400 µM carboplatin working solution"
+  nextId: make_carb_second_dilution
+```
+
+The dilution-prep scene dispatcher uses `tubeTargets` to track microtube liquid
+state and advance the active destination on each 4-interaction cycle
+(solute load+discharge + diluent load+discharge). The length of `tubeTargets`
+must equal `interactions.length / 4` (one target per 4-interaction cycle).
+The validator enforces this constraint. `tubeTargets` and `plateTargets` are
+mutually exclusive on a single step.
 
 ### Kind: `directTool`
 
@@ -461,13 +642,71 @@ with the same `openClick`, a different `advanceClick` string, and its own
 This keeps every step's completion path self-contained: one open click, one
 advance click, one completion event.
 
+### Kind: `multipleChoice`
+
+Use for quiz or knowledge-check steps where the player answers a question
+by clicking the correct choice from a list. This kind is useful for
+assessment steps, calculation verification, or protocol comprehension checks.
+
+Required fields under `completionPath`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `kind` | string | Must be `multipleChoice` |
+| `question` | string | The quiz question text |
+| `choices` | list of objects | List of answer choices (minimum 2 choices) |
+| `completionEvent` | string | Completion event emitted when correct choice is clicked |
+
+Each choice object must have:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `id` | string | yes | Unique choice identifier (used by walker and dispatch) |
+| `text` | string | yes | Display text for the choice button |
+| `feedback` | string | yes | Feedback message shown after selection |
+| `correct` | boolean | no | If `true`, marks this as the correct answer (exactly one choice must be correct) |
+
+Banned fields under `completionPath` for this kind: `interactions`, `tool`,
+`source`, `destination`, `openClick`, `advanceClick`.
+
+Worked YAML example:
+
+```yaml
+- id: verify_calculation
+  label: "Verify dilution calculation"
+  scene: hood
+  requiredItems: [flask]
+  completionPath:
+    kind: multipleChoice
+    question: "If 40 µL of 10 mM stock is added to 960 µL media, what is the final concentration?"
+    choices:
+      - id: choice_400
+        text: "400 µM"
+        feedback: "Correct! 40 µL / 1000 µL total = 0.04 = 4%, so 10 mM * 0.04 = 400 µM."
+        correct: true
+      - id: choice_4
+        text: "4 µM"
+        feedback: "Incorrect. The calculation is: (40 µL / 1000 µL) * 10 mM = 0.4 mM = 400 µM."
+      - id: choice_100
+        text: "100 µM"
+        feedback: "Incorrect. Recheck your math: we need mL not µL. (0.04 mL / 1 mL) * 10 mM = 0.4 mM = 400 µM."
+    completionEvent: calculation_verified
+  nextId: prepare_working_solution
+```
+
+Walker contract: the walker finds the choice with `correct: true`, resolves
+its `id` to a DOM element with matching `data-item-id`, and clicks it. The
+correct choice's `feedback` message is displayed, and the step completes via
+the `completionEvent`.
+
 ### Validator behavior
 
 The validator (Rule 8) enforces:
 
 - `completionPath` is present on every step. Steps that omit it fail.
-- `completionPath.kind` is one of `interactionSequence`, `directTool`, or
-  `modal`. Any other value (including the now-removed `instrument`) fails.
+- `completionPath.kind` is one of `interactionSequence`, `directTool`,
+  `modal`, or `multipleChoice`. Any other value (including the now-removed
+  `instrument`) fails.
 - For each kind, the kind-specific required fields are present and the
   banned fields are absent. Mixing fields across kinds fails.
 - For `kind: interactionSequence`, the existing rules continue to apply to
@@ -486,6 +725,11 @@ The validator (Rule 8) enforces:
   scene code surfaces modal advance controls). The check is by string
   presence (existence in the modal-control registry or grep over scene
   `.ts` files), not by item-id resolution.
+- For `kind: multipleChoice`, the `question` and `choices` fields are
+  validated as strings. The `choices` list must have at least 2 entries.
+  Each choice must have `id` (string), `text` (string), and `feedback`
+  (string) fields. Exactly ONE choice must have `correct: true`; zero or
+  multiple correct choices fail validation.
 - Author-written `step.completionTrigger` is rejected. Authors MUST NOT
   write `completionTrigger` in YAML; the builder synthesizes it (see
   "Derived fields" below).
@@ -556,6 +800,45 @@ Pure incubation or animation steps with no interaction:
 | Field | Type | Description |
 | --- | --- | --- |
 | `isIncubation` | boolean | if `true`, the step is routed through `step_dispatch` with no resolver |
+
+### plateMap (plate-scene annotations)
+
+Optional step-level block consumed by the plate scene renderer
+([src/scenes/plate/render.ts](../src/scenes/plate/render.ts)). When the
+step's `scene` is `plate`, the annotations render as text overlays on
+specific row/column ranges of the 96-well plate SVG. Used by
+`tutorial_plate_drug_additions` to label Row A control wells
+("Untreated control", "Metformin-only control (5 mM)").
+
+The `plateMap` block has one sub-field:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `annotations` | array of objects | List of label overlays to render on the plate. |
+
+Each annotation object:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `row` | string | Plate row letter (`A` through `H`). |
+| `colRange` | array of two ints | Inclusive `[start, end]` column range (1-12). |
+| `text` | string | Label text to render across the column range. |
+
+The TypeScript types are `PlateMapSpec` and `PlateMapAnnotation` in
+[src/constants.ts](../src/constants.ts).
+
+Example:
+
+```yaml
+plateMap:
+  annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+```
 
 ### Interaction object structure
 
@@ -667,7 +950,7 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 - `nextId` references an existing step id or is `null`. Exactly one terminator.
 - Walking `nextId` from the first step visits every step (no orphans).
 - `partId` and `dayId` reference declared `parts` and `days`.
-- `scene` is one of `hood | bench | incubator | microscope | plate_reader`.
+- `scene` is one of `hood | bench | incubator | microscope | plate | plate_reader | well_plate_workspace`.
 
 ### Item validation
 

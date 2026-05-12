@@ -275,11 +275,462 @@ body.launcher-active {
 	background: rgba(25, 118, 210, 0.95);
 }
 
+.hood-toolbar {
+	position: absolute;
+	top: 8px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 100;
+	max-width: min(560px, calc(100% - 240px));
+	padding: 10px 24px 10px 18px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	background: rgba(255, 255, 255, 0.96);
+	border: 2px solid #2e7d32;
+	border-left-width: 6px;
+	border-radius: 8px;
+	color: #1a1a1a;
+	font-size: 17px;
+	font-weight: 700;
+	line-height: 1.25;
+	letter-spacing: 0;
+	box-shadow: 0 2px 7px rgba(0, 0, 0, 0.12);
+}
+
+.hood-toolbar-kicker {
+	flex: 0 0 auto;
+	color: #2e7d32;
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.hood-toolbar-text {
+	min-width: 0;
+	white-space: normal;
+}
+
+.hood-toolbar-put-down {
+	flex: 0 0 auto;
+	padding: 5px 12px;
+	background: #ef5350;
+	color: #fff;
+	border: none;
+	border-radius: 12px;
+	font-size: 13px;
+	font-weight: 600;
+	cursor: pointer;
+}
+
+.plate-workspace-panel {
+	display: grid;
+	grid-template-columns: minmax(210px, 0.7fr) minmax(420px, 1.3fr);
+	gap: 18px;
+	align-items: center;
+	margin: 14px 0 18px;
+	padding: 16px;
+	background: #f5f7f9;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	text-align: left;
+}
+
+.plate-workspace-copy {
+	min-width: 0;
+}
+
+.plate-workspace-kicker {
+	margin: 0 0 8px;
+	color: var(--color-steel-gray);
+	font-size: 12px;
+	font-weight: 700;
+	line-height: 1.2;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.plate-workspace-lede {
+	margin: 0 0 10px;
+	color: var(--color-text-dark);
+	font-size: 15px;
+	font-weight: 600;
+	line-height: 1.4;
+}
+
+.plate-workspace-note {
+	margin: 0;
+	color: var(--color-text-light);
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.plate-workspace-visual {
+	min-width: 0;
+}
+
+.plate-workspace-svg {
+	display: block;
+	width: 100%;
+	height: auto;
+	background: #ffffff;
+	border: 1px solid #cdd7df;
+	border-radius: 8px;
+}
+
+/* ===== Dedicated Plate Scene ===== */
+#plate-scene {
+	display: flex;
+	width: 100%;
+	height: 100%;
+	background: #f0f2f5;
+	gap: 0;
+}
+
+.plate-workspace-container {
+	display: grid;
+	grid-template-columns: 180px 1fr 2fr;
+	grid-template-rows: 1fr 1fr;
+	grid-template-areas:
+		"tool source plate"
+		"tool rack plate";
+	width: 100%;
+	height: 100%;
+	gap: 12px;
+	padding: 12px;
+	overflow: hidden;
+	position: relative;
+}
+
+/* Plate scene visual (dedicated scene only, not modal) */
+#plate-scene .plate-workspace-visual {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	padding: 20px;
+	overflow: auto;
+}
+
+.plate-side-panel {
+	width: 280px;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+	padding: 20px;
+}
+
+.plate-panel-instruction {
+	margin-bottom: 24px;
+	border-bottom: 1px solid #eceff1;
+	padding-bottom: 16px;
+}
+
+.plate-panel-instruction h3 {
+	margin: 0 0 12px 0;
+	font-size: 16px;
+	font-weight: 700;
+	color: var(--color-text-dark);
+}
+
+.plate-panel-instruction p {
+	margin: 0;
+	font-size: 13px;
+	color: var(--color-text-light);
+	line-height: 1.5;
+}
+
+.plate-panel-sources {
+	margin-bottom: 20px;
+}
+
+.plate-panel-sources h4 {
+	margin: 0 0 12px 0;
+	font-size: 13px;
+	font-weight: 700;
+	text-transform: uppercase;
+	color: var(--color-steel-gray);
+	letter-spacing: 0.06em;
+}
+
+.plate-source-tile {
+	padding: 10px 12px;
+	margin-bottom: 8px;
+	background: #f5f7f9;
+	border: 1px solid #d9e2e8;
+	border-radius: 6px;
+	font-size: 13px;
+	color: var(--color-text-dark);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-align: center;
+}
+
+.plate-source-tile:hover {
+	background: #e8ecf1;
+	border-color: #c9d4dd;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.plate-panel-actions {
+	margin-top: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.plate-panel-actions button {
+	flex: 1;
+	padding: 10px 12px;
+	font-size: 13px;
+	font-weight: 600;
+	border-radius: 6px;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.btn-primary {
+	background: var(--color-accent-green);
+	color: white;
+}
+
+.btn-primary:hover {
+	background: #45a049;
+	box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+}
+
+.btn-secondary {
+	background: #eceff1;
+	color: var(--color-text-dark);
+	border: 1px solid #d9e2e8;
+}
+
+.btn-secondary:hover {
+	background: #dfe6eb;
+	border-color: #c9d4dd;
+}
+
+/* Mobile breakpoint: stack side panel above plate */
+@media (max-width: 1200px) {
+	.plate-workspace-container {
+		flex-direction: column;
+	}
+
+	.plate-side-panel {
+		width: 100%;
+		max-height: 220px;
+	}
+
+	#plate-scene .plate-workspace-visual {
+		flex: 1;
+		min-height: 300px;
+	}
+}
+
 /* Align SVGs to top of their container so empty space falls below */
 .hood-item {
 	display: flex;
 	align-items: flex-start;
 	justify-content: center;
+}
+
+/* ===== Well Plate Workspace Region States ===== */
+/* CSS classes for the five-region stable scene layout */
+
+.workspace-region-tool {
+	grid-area: tool;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	padding: 8px;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.workspace-region-source {
+	grid-area: source;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	padding: 8px;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.workspace-region-rack {
+	grid-area: rack;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	padding: 8px;
+	overflow: hidden;
+	min-height: 0;
+}
+
+.workspace-region-plate {
+	grid-area: plate;
+	background: #ffffff;
+	border: 1px solid #d9e2e8;
+	border-radius: 8px;
+	padding: 8px;
+	overflow: hidden;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.workspace-popup-overlay {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	z-index: 100;
+	max-width: 600px;
+	max-height: 80%;
+	overflow: auto;
+	pointer-events: auto;
+}
+
+/* The popup overlay is only visible space when it has rendered content;
+   when empty, do not block clicks or cover the scene. */
+.workspace-popup-overlay:empty {
+	display: none;
+}
+
+/* Inside each region, the inline-style .plate-scene-objects wrapper lays out
+   its children (one scene-object per static item). Use flex so multiple
+   pipettes / bottles distribute evenly. The tool region stacks vertically;
+   source row arranges horizontally; rack is single SVG centered. */
+.workspace-region-tool .plate-scene-objects {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	height: 100%;
+}
+
+.workspace-region-source .plate-scene-objects {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	height: 100%;
+	align-items: stretch;
+	justify-content: space-around;
+}
+
+.workspace-region-rack .plate-scene-objects {
+	display: flex;
+	flex-direction: row;
+	gap: 8px;
+	height: 100%;
+	align-items: center;
+	justify-content: center;
+}
+
+/* Scene objects (SVG wrappers) inside the regions: each owns a slice of the
+   region and scales its SVG to fit. The SVG itself uses viewBox so it
+   preserves aspect ratio within the wrapper. */
+.workspace-region-tool .scene-object,
+.workspace-region-source .scene-object,
+.workspace-region-rack .scene-object {
+	flex: 1 1 0;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.workspace-region-tool .scene-object svg,
+.workspace-region-source .scene-object svg,
+.workspace-region-rack .scene-object svg,
+.workspace-region-plate svg {
+	max-width: 100%;
+	max-height: 100%;
+	width: auto;
+	height: auto;
+	display: block;
+}
+
+/* ============================================================
+ * Shared scene primitives: active-target pulse + state classes.
+ *
+ * THIS SECTION IS SCENE-AGNOSTIC. Every selector here is keyed on a
+ * generic class, NOT on a scene-specific parent (no .hood-item,
+ * .bench-item, .scene-object, etc. prefix). Any scene's render layer
+ * can put `.is-next-target` on any clickable element and get the pulse.
+ *
+ * Class contract:
+ *   .is-next-target  -> the dispatcher's expected next click target.
+ *                      Pulsing green ripple. Cursor pointer.
+ *   .is-dim          -> visible but not the active target. Faded,
+ *                      grayscaled, pointer-events disabled so misclicks
+ *                      don't fire dispatcher no-ops.
+ *   .is-future       -> far-future state (more faded than .is-dim).
+ *
+ * Scene-specific aliases (legacy) consume these primitives:
+ *   - .hood-item.is-next-target  -> kept for backward compat (hood adds
+ *     `.is-next-target` to its `.hood-item` children).
+ *   - .equipment-active          -> alias for `.is-next-target` for the
+ *     well_plate_workspace render; preserved while migration to the
+ *     shared class name completes.
+ *
+ * Bench, microscope, plate_reader, incubator scenes currently DO NOT
+ * emit `.is-next-target` on their items. To opt in, those scene
+ * adapters can add `is-next-target` to the active item's class list
+ * - no CSS changes required here.
+ * ============================================================ */
+
+@keyframes next-target-pulse {
+	0%, 100% {
+		transform: scale(1);
+		box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5);
+	}
+	50% {
+		transform: scale(1.06);
+		box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
+	}
+}
+
+.is-next-target,
+.equipment-active {
+	opacity: 1;
+	cursor: pointer;
+	outline: 2px solid #2e7d32;
+	outline-offset: 4px;
+	border-radius: 4px;
+	transform-origin: center center;
+	animation: next-target-pulse 1.1s ease-in-out infinite;
+	transition: opacity 0.3s ease, outline-color 0.3s ease;
+	pointer-events: auto;
+}
+
+.is-dim,
+.equipment-dim {
+	opacity: 0.45;
+	cursor: default;
+	filter: grayscale(0.4);
+	pointer-events: none;
+	transition: opacity 0.3s ease, filter 0.3s ease;
+}
+
+.is-future,
+.equipment-future {
+	opacity: 0.3;
+	cursor: default;
+	filter: grayscale(0.6);
+	pointer-events: none;
+	transition: opacity 0.3s ease, filter 0.3s ease;
 }
 
 /* ===== Protocol Panel ===== */
@@ -525,6 +976,20 @@ body.launcher-active {
 	overflow-y: auto;
 	animation: slideUp 0.3s ease-out;
 	position: relative;
+}
+
+#plate-overlay .modal-content {
+	width: min(880px, calc(100vw - 56px));
+	padding: 28px 30px 24px;
+}
+
+#plate-overlay .modal-content h2 {
+	margin: 0 44px 16px 0;
+	font-size: 24px;
+	line-height: 1.25;
+	font-weight: 700;
+	letter-spacing: 0;
+	color: var(--color-text-dark);
 }
 
 @keyframes slideUp {
@@ -943,26 +1408,18 @@ body.launcher-active {
 
 /* Disable pointer-events for inactive hood items in the hood scene to prevent interception.
  * Only apply in #hood-items-layer so bench items are not affected.
- * Exception: biohazard_decant is a destination that needs to be clickable for the decant step. */
+ * Exception: biohazard_decant is a destination that needs to be clickable for the decant step.
+ * NOTE: this is hood-specific because the hood layout layers items in #hood-items-layer
+ * with absolute positioning. The shared `.is-dim` / `.is-future` primitives above already
+ * handle pointer-events for scenes that put those classes on items directly. */
 #hood-items-layer .hood-item:not(.is-active):not(.is-selected):not([data-item-id="biohazard_decant"]) {
 	pointer-events: none !important;
 }
 
-.hood-item.is-next-target {
-	animation: next-target-pulse 1.1s ease-in-out infinite;
-	transform-origin: center center;
-}
-
-@keyframes next-target-pulse {
-	0%, 100% {
-		transform: scale(1);
-		box-shadow: 0 0 0 0 rgba(76, 175, 80, 0.5);
-	}
-	50% {
-		transform: scale(1.06);
-		box-shadow: 0 0 0 10px rgba(76, 175, 80, 0);
-	}
-}
+/* .hood-item.is-next-target is already covered by the scene-agnostic
+ * .is-next-target rule in the "Shared scene primitives" section above.
+ * Kept here as a no-op comment marker so future editors searching for
+ * hood-specific pulse styling find the centralized rule. */
 
 /* is-selected: the tool the student is currently holding. Strongest
  * visual cue in the scene -- dominates is-active because the held tool
@@ -1421,4 +1878,158 @@ body.launcher-active {
 @keyframes fadeOut {
 	from { opacity: 1; transform: translateY(0); }
 	to { opacity: 0; transform: translateY(-10px); }
+}
+
+/* Multiple-choice prompt styles */
+.multiple-choice-prompt {
+	padding: 24px;
+	max-width: 600px;
+	margin: 0 auto;
+	background: var(--color-white);
+	border-radius: 8px;
+	box-shadow: 0 2px 8px var(--color-shadow);
+}
+
+.mc-question {
+	margin-bottom: 24px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid var(--color-border);
+}
+
+.mc-question h2 {
+	margin: 0;
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--color-text-dark);
+	line-height: 1.4;
+}
+
+.mc-choice-grid {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.mc-choice-button {
+	padding: 16px 12px;
+	border: 2px solid var(--color-border);
+	border-radius: 6px;
+	background: var(--color-white);
+	color: var(--color-text-dark);
+	font-size: 14px;
+	font-weight: 500;
+	text-align: center;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	min-height: 60px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mc-choice-button:hover {
+	border-color: var(--color-accent-green);
+	background: #f0f9f0;
+}
+
+.mc-choice-button:focus {
+	outline: none;
+	border-color: var(--color-accent-green);
+	box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+}
+
+.mc-choice-button:active {
+	background: #e8f5e9;
+}
+
+.mc-feedback {
+	padding: 12px;
+	border-radius: 4px;
+	background: #f5f5f5;
+	color: var(--color-text-dark);
+	font-size: 13px;
+	font-style: italic;
+	text-align: center;
+	min-height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+@media (max-width: 600px) {
+	.mc-choice-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.multiple-choice-prompt {
+		padding: 16px;
+	}
+
+	.mc-question h2 {
+		font-size: 18px;
+	}
+}
+
+/* ===== Well state visual feedback (plateTargets) ===== */
+/* Fill color is always from liquid colorKey (set inline in SVG). */
+/* State class controls stroke, outline, and animation. */
+
+.well-item.well-state-completed {
+	stroke: #4caf50 !important;
+	stroke-width: 2 !important;
+}
+
+.well-item.well-state-active {
+	stroke: #2e7d32 !important;
+	stroke-width: 2.5 !important;
+	animation: pulse-well 1.5s ease-in-out infinite;
+}
+
+.well-item.well-state-future {
+	opacity: 0.4;
+}
+
+@keyframes pulse-well {
+	0%, 100% {
+		filter: brightness(1);
+	}
+	50% {
+		filter: brightness(1.2);
+	}
+}
+
+/* ===== Microtube state visual feedback (tubeTargets) ===== */
+/* Fill color is driven by liquid colorKey (set inline in SVG). */
+/* State class controls stroke, outline, and animation. */
+
+.microtube-item.microtube-state-completed {
+	stroke: #4caf50 !important;
+	stroke-width: 2 !important;
+}
+
+.microtube-item.microtube-state-active {
+	stroke: #2e7d32 !important;
+	stroke-width: 2.5 !important;
+	animation: pulse-microtube 1.5s ease-in-out infinite;
+}
+
+.microtube-item.microtube-state-future {
+	opacity: 0.4;
+}
+
+.microtube-label {
+	font-size: 10px;
+	font-weight: 500;
+	fill: #333333;
+	text-anchor: middle;
+}
+
+@keyframes pulse-microtube {
+	0%, 100% {
+		filter: brightness(1);
+	}
+	50% {
+		filter: brightness(1.2);
+	}
 }

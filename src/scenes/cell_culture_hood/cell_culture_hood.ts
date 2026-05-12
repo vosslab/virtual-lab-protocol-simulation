@@ -56,7 +56,6 @@ registeredEmitters.add('add_mtt');
 registeredEmitters.add('decant_mtt');
 registeredEmitters.add('add_dmso');
 registeredEmitters.add('carb_low_range');
-registeredEmitters.add('carb_high_range');
 registeredEmitters.add('metformin_stock');
 registeredEmitters.add('add_carboplatin');
 registeredEmitters.add('add_metformin');
@@ -303,19 +302,6 @@ function dispatchInteractionClick(itemId: string): void {
 					}
 				}
 				showNotification('Low-range carboplatin stocks prepared.', 'success');
-				renderGame();
-				return;
-			}
-			if (result.completionEvent === 'carb-high-range-confirm') {
-				gameState.selectedTool = null;
-				gameState.heldLiquid = null;
-				if (result.indexDelta === 1) {
-					gameState.interactionIndex++;
-					if (gameState.interactionIndex >= interactions.length) {
-						triggerStep(activeStep.id);
-					}
-				}
-				showNotification('High-range carboplatin stocks prepared.', 'success');
 				renderGame();
 				return;
 			}
@@ -586,8 +572,20 @@ function onItemClick(itemId: string): void {
 		}
 
 		const currentStep = getCurrentStep();
-		if (itemId === 'well_plate' && currentStep && currentStep.completionPath && currentStep.completionPath.kind === 'modal' && currentStep.modal?.owner === 'plate') {
-			switchScene('plate');
+		// Modal-kind completion path targeting well_plate (e.g., open_plate_workspace step)
+		if (
+			itemId === 'well_plate'
+			&& currentStep
+			&& currentStep.completionPath?.kind === 'modal'
+			&& currentStep.completionPath.openClick === 'well_plate'
+			&& currentStep.modal?.owner === 'plate'
+		) {
+			switchScene('well_plate_workspace');
+			return;
+		}
+		// New dedicated well_plate_workspace scene flow
+		if (itemId === 'well_plate' && currentStep && currentStep.scene === 'well_plate_workspace') {
+			switchScene('well_plate_workspace');
 			return;
 		}
 

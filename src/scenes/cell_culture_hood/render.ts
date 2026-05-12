@@ -26,6 +26,25 @@ if (!HOOD_CONFIG_OPTIONAL) {
 
 const HOOD_CONFIG = HOOD_CONFIG_OPTIONAL;
 
+const COMPACT_STORAGE_LABEL_IDS = new Set<string>([
+	'dilution_tube_carb_intermediate',
+	'dilution_tube_carb_b',
+	'dilution_tube_carb_c',
+	'dilution_tube_carb_d',
+	'dilution_tube_carb_e',
+	'dilution_tube_carb_f',
+	'dilution_tube_carb_g',
+	'dilution_tube_carb_h',
+	'dilution_tube_metformin_working',
+]);
+
+function shouldRenderHoodLabel(itemId: string, isTarget: boolean, isSelected: boolean): boolean {
+	if (COMPACT_STORAGE_LABEL_IDS.has(itemId) && !isTarget && !isSelected) {
+		return false;
+	}
+	return itemId !== 'flask';
+}
+
 //============================================
 // deriveActiveInteractionTargets(step, interactionIndex, selectedTool, heldLiquid)
 //
@@ -238,9 +257,6 @@ export function getAvailableActions(): string[] {
 		case 'carb_low_range':
 			actions.push('Pick up the micropipette, load from the intermediate, discharge to rows B-F with media');
 			break;
-		case 'carb_high_range':
-			actions.push('Click Prepare high-range stocks in the carboplatin modal');
-			break;
 		case 'metformin_stock':
 			actions.push('Click Prepare metformin stock in the metformin modal');
 			break;
@@ -295,6 +311,13 @@ export function renderHoodScene(): void {
 		labelOffsetY: HOOD_CONFIG.layoutRules?.labelOffsetY || 0,
 	};
 	const hoodItems = (HOOD_CONFIG.items || []) as unknown as import('../../scene_types').SceneItem[];
+	const hoodItemById = new Map<string, import('../../scene_types').SceneItem>();
+	for (let i = 0; i < hoodItems.length; i++) {
+		const item = hoodItems[i];
+		if (item) {
+			hoodItemById.set(item.id, item);
+		}
+	}
 	const layout = computeSceneLayout(
 		hoodItems, ASSET_SPECS, hoodLayoutRules,
 		viewportW, viewportH
@@ -320,6 +343,12 @@ export function renderHoodScene(): void {
 			if (openClick) {
 				activeTargets = [openClick];
 			}
+		}
+	} else if (currentStepData && currentStepData.completionPath?.kind === 'modal' && currentStepData.completionPath.openClick) {
+		// Allow modal-kind steps from other scenes (e.g., well_plate_workspace) to mark their target item active in hood
+		const openClick = currentStepData.completionPath.openClick;
+		if (hoodItemById.has(openClick)) {
+			activeTargets = [openClick];
 		}
 	}
 	const nextPulseTarget = activeTargets.length > 0 ? activeTargets[0] : null;
@@ -354,9 +383,11 @@ export function renderHoodScene(): void {
 		itemsHtml += svgHtml;
 		itemsHtml += '</div>';
 
-		if (item.id !== 'flask') {
+		const sceneItem = hoodItemById.get(item.id);
+		if (shouldRenderHoodLabel(item.id, isTarget, isSelected)) {
 			const multiClass = item.labelMultiline ? ' multiline' : '';
-			labelsHtml += '<div class="hood-item-label' + multiClass + '"';
+			const zoneClass = sceneItem ? ' zone-' + sceneItem.zone : '';
+			labelsHtml += '<div class="hood-item-label' + multiClass + zoneClass + '"';
 			labelsHtml += ' style="left:' + item.labelX.toFixed(1) + '%;';
 			labelsHtml += 'top:' + item.labelY.toFixed(1) + '%;';
 			labelsHtml += 'width:' + item.labelWidth.toFixed(1) + '%;">';
@@ -446,18 +477,12 @@ export function renderHoodScene(): void {
 		}
 	}
 
-	html += '<div id="hood-toolbar" style="position:absolute;top:8px;left:50%;transform:translateX(-50%);';
-	html += 'background:#ffffff;padding:12px 28px 12px 22px;border-radius:10px;';
-	html += 'border:2px solid #2e7d32;border-left-width:6px;';
-	html += 'font-size:18px;font-weight:700;color:#1a1a1a;letter-spacing:0.2px;';
-	html += 'white-space:nowrap;z-index:100;display:flex;align-items:center;gap:14px;">';
-	html += '<span style="font-size:12px;font-weight:700;text-transform:uppercase;';
-	html += 'letter-spacing:1.2px;color:#2e7d32;">Next</span>';
-	html += '<span>' + hintText + '</span>';
+	html += '<div id="hood-toolbar" class="hood-toolbar">';
+	html += '<span class="hood-toolbar-kicker">Next</span>';
+	html += '<span class="hood-toolbar-text">' + hintText + '</span>';
 	if (gameState.selectedTool) {
-		html += '<button id="put-down-btn" style="padding:4px 12px;background:#ef5350;color:#fff;';
-		html += 'border:none;border-radius:12px;font-size:13px;font-weight:600;cursor:pointer;">';
-		html += 'Put down (Esc)</button>';
+		html += '<button id="put-down-btn" class="hood-toolbar-put-down">';
+		html += 'Put down</button>';
 	}
 	html += '</div>';
 

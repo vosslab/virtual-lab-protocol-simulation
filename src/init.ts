@@ -42,7 +42,7 @@ import "./scenes/capabilities/grid_counting_workspace";
 import "./scenes/bench/bench";
 import "./scenes/cell_culture_hood/cell_culture_hood";
 import "./scenes/incubator/incubator";
-import "./scenes/plate/plate";
+import "./scenes/well_plate_workspace/well_plate_workspace";
 import "./scenes/plate_reader/plate_reader";
 import "./scenes/microscope/microscope";
 
@@ -396,9 +396,12 @@ setRenderGame(function(): void {
 	// sit on top of whichever persistent scene is showing.
 	const hoodEl = document.getElementById('hood-scene');
 	const benchEl = document.getElementById('bench-scene');
+	const wellPlateEl = document.getElementById('well-plate-workspace-scene');
 	const showBench = gameState.activeScene === 'bench';
-	if (hoodEl) hoodEl.style.display = showBench ? 'none' : 'flex';
+	const showWellPlate = gameState.activeScene === 'well_plate_workspace';
+	if (hoodEl) hoodEl.style.display = (showBench || showWellPlate) ? 'none' : 'flex';
 	if (benchEl) benchEl.style.display = showBench ? 'flex' : 'none';
+	if (wellPlateEl) wellPlateEl.style.display = showWellPlate ? 'flex' : 'none';
 
 	// Each scene case: call runSceneRender (one-time per frame), then runScene if first time.
 	// runSceneRender: adapter's render() method handles DOM update.
@@ -432,11 +435,11 @@ setRenderGame(function(): void {
 				runScene('microscope');
 			}
 			break;
-		case 'plate':
-			runSceneRender('plate');
-			if (!DRIVER_INITIALIZED_SCENES.has('plate')) {
-				DRIVER_INITIALIZED_SCENES.add('plate');
-				runScene('plate');
+		case 'well_plate_workspace':
+			runSceneRender('well_plate_workspace');
+			if (!DRIVER_INITIALIZED_SCENES.has('well_plate_workspace')) {
+				DRIVER_INITIALIZED_SCENES.add('well_plate_workspace');
+				runScene('well_plate_workspace');
 			}
 			break;
 		case 'plate_reader':

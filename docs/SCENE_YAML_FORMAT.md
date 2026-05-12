@@ -67,7 +67,7 @@ behavior. Scene YAML is not author-facing content and does not live under
 | field | type | required | consumed by | meaning |
 | --- | --- | --- | --- | --- |
 | `sceneId` | string | yes | `runScene` ([scene_driver.ts:132](../src/scenes/scene_driver.ts)); validators in every capability under [src/scenes/capabilities/](../src/scenes/capabilities/) | Stable id used to look up scene config and adapter; must match directory name and adapter `sceneId`. |
-| `workspace` | string | yes | None at runtime today | Advisory label naming the workspace family (`equipment_bench`, `wet_lab_hood`, `modal_overlay`). Declared in all five YAMLs; not yet read by any TypeScript code. Tracked in the schema so future selectors or telemetry have a stable field name. Candidate for either runtime adoption or removal. |
+| `workspace` | string | yes | None at runtime today | Advisory label naming the workspace family (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, `dedicated_plate`). Declared in every scene YAML; not yet read by any TypeScript code. Tracked in the schema so future selectors or telemetry have a stable field name. Candidate for either runtime adoption or removal. |
 | `capabilities` | string[] | yes | `runScene` ([scene_driver.ts:158-175](../src/scenes/scene_driver.ts)) iterates and mounts each one through `CAPABILITY_REGISTRY` | Names the capabilities that should mount for this scene. Each name must match a registered capability id (see "Capability names"). |
 | `elementId` | string | no | `runScene` ([scene_driver.ts:181](../src/scenes/scene_driver.ts)) | DOM element id where the driver attaches its capture-phase click listener. Defaults to `${sceneId}-scene` if absent. Used by `cell_culture_hood` (`hood-scene`) and `microscope` (`instrument-overlay`) where the DOM id does not match the sceneId. |
 | `items` | object[] | no | `itemWorkspace` capability ([item_workspace.ts:62](../src/scenes/capabilities/item_workspace.ts)) for item-zone scenes; declared but minimal in the microscope grid scene | Item declarations consumed by the item workspace capability for click dispatch. See "Items". |
@@ -415,6 +415,35 @@ wrongOrderMessage:  # reserved; currently not consumed by the runtime
   template: "Try the {expectedLabel}."
   toastDurationMs: 2000
 ```
+
+## The `well_plate_workspace` scene
+
+`well_plate_workspace` is a dedicated single-scene workspace used by the
+`tutorial_plate_drug_additions` mini-tutorial. It renders one stable layout
+with five visual regions (tool area, source area, microtube rack area,
+plate area, popup layer) and changes only which objects are active or
+highlighted as the active step advances. The scene does NOT carry a
+`sceneMode` field. There is no separate "dilution prep" scene or
+"plate transfer" scene; both processes happen inside this same scene,
+driven by step metadata (`completionPath.kind`, `tubeTargets`,
+`plateTargets`) rather than by a scene-mode switch.
+
+Mini-tutorial scope: the `tutorial_plate_drug_additions` flow that uses
+`well_plate_workspace` intentionally excludes the `hood`, `bench`, and
+`incubator` scenes. There is no pre-incubation, no plate handoff, and no
+incubation step. The tutorial begins by opening the workspace from a
+modal step and ends at a `review_loaded_plate` confirmation; full
+incubator and bench workflows live in the `cell_culture` protocol, not
+in this mini-tutorial.
+
+The scene YAML for `well_plate_workspace` declares the scene id, an
+empty `capabilities` list (the scene owns dispatch through its own
+`dispatch.ts`), and a minimal item set. Click routing for plate wells,
+microtubes, pipettes, and source bottles is implemented in
+[src/scenes/well_plate_workspace/dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts);
+the renderer reads the current step's `completionPath.kind` and any
+`tubeTargets` or `plateTargets` metadata to choose which objects to
+highlight.
 
 ## Current limitations and reserved fields
 

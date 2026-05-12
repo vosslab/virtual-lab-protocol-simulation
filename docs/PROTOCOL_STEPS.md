@@ -259,3 +259,96 @@ explicit function calls, not via auto-discovery from step metadata.
 A future refactor could centralize event dispatch (moving "which step completes
 on this event" logic from scene code into a data-driven resolver), but this
 is out of scope for the current pass. See [docs/TODO.md](TODO.md).
+
+## Tube-target dilution prep steps
+
+Steps with `tubeTargets` metadata track dilution preparation in microtube vessels.
+Each `TubeTarget` specifies source reagent, diluent, destination microtube, exact
+volumes, and result liquid identity.
+
+### Runtime behavior
+
+A tube-prep step's `interactionSequence` contains exactly `4 * len(tubeTargets)`
+interactions, enforced at build time by `validate_completion_path_contract()`:
+
+- **Interaction 1 (solute load):** Student picks transfer tool, sources exact
+  `soluteVolumeMl` from the item specified in `TubeTarget.source`. Field
+  `liquid` is set by the interaction's `liquid` field (e.g., `stock`).
+- **Interaction 2 (solute discharge):** Tool discharges into destination microtube
+  specified by `TubeTarget.destination`. Scene calls `addTubeLiquid(tubeId,
+  liquid, volumeMl)` via the `GameState` helper. This writes a
+  `MicrotubeLiquid` entry to `gameState.tubeLiquids[tubeId]`.
+- **Interaction 3 (diluent load):** Student sources exact `diluentVolumeMl`
+  from the item specified in `TubeTarget.diluent`.
+- **Interaction 4 (diluent discharge):** Tool discharges into the same
+  destination. Scene calls `addTubeLiquid(tubeId, diluent, volumeMl)` again.
+  This stacks a second `MicrotubeLiquid` entry on top of the first.
+
+After all four interactions complete, `gameState.tubeLiquids[tubeId]` contains
+two entries: one for solute (from interaction 2) and one for diluent (from
+interaction 4). The final liquid state is identified by `TubeTarget.resultLiquid`
+(a reagent id) and displayed to the student using `TubeTarget.resultLabel`.
+
+### Fields reference
+
+| Field | Type | Purpose |
+| --- | --- | --- |
+| `source` | `string` | Item id of the solute source (e.g., `stock_bottle`) |
+| `diluent` | `string` | Item id of the diluent source (e.g., `water_bottle`) |
+| `destination` | `string` | Microtube id where solute and diluent are combined (e.g., `tube_a`) |
+| `soluteVolumeMl` | `number` | Exact volume in mL to aspirate from source (e.g., `0.040` for 40 µL) |
+| `diluentVolumeMl` | `number` | Exact volume in mL to aspirate from diluent (e.g., `0.960` for 960 µL) |
+| `resultLiquid` | `string` | Reagent id of the combined result (e.g., `carboplatin` for a carboplatin working solution) |
+| `resultLabel` | `string` | Student-facing label describing the final result (e.g., `400 uM carboplatin working solution`) |
+
+### Mutual exclusivity
+
+A single step cannot have both `tubeTargets` and `plateTargets`. This is enforced
+at build time. If a protocol requires both dilution prep and plate preparation in
+one workflow, split into two consecutive steps.
+
+### Terminology
+
+Tube-target steps prepare an **intermediate dilution** or a **working
+solution** from a **stock solution**:
+
+- The `source` references a stock solution bottle or an earlier
+  intermediate-dilution tube.
+- The `diluent` references the dilution reagent (typically distilled
+  water or media).
+- `resultLiquid` is the reagent identity of the resulting liquid.
+- `resultLabel` is the human-readable tier label (for example, "400
+  uM carboplatin working solution" or "carboplatin intermediate
+  dilution").
+
+Use stock solution, intermediate dilution, and working solution
+consistently in `resultLabel` strings. The banned synonyms "working
+stock" and "parent stock" do not appear in label text or in
+authoring docs (see
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)).
+
+## Plate-target transfer steps
+
+Plate-target metadata is the symmetric structure for plate-transfer
+steps: each entry in `plateTargets` maps one load+discharge interaction
+pair to the wells that receive liquid. See the "Plate target object
+structure" section of
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for the schema and a
+worked example. The runtime plate dispatcher consumes `plateTargets` to
+classify each well (completed, active, future), deposit liquid into the
+active well set, and advance to the next target when the active target
+finishes.
+
+## MultipleChoice completion paths
+
+A step whose `completionPath.kind` is `multipleChoice` is a
+quiz-style or calculation-check step. The runtime renders the
+question as a popup card with one button per choice. Clicking the
+choice flagged `correct: true` emits the step's `completionEvent`
+and advances the protocol; clicking an incorrect choice shows that
+choice's `feedback` string but does not complete the step. See the
+"Kind: `multipleChoice`" subsection of
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for the schema
+and worked example. Use this completion path for calculation
+popups inside a workspace-only mini-tutorial; do not navigate to a
+separate quiz scene.

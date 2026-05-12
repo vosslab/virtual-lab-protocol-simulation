@@ -42,7 +42,7 @@ Liquid colors are driven by reagent `colorKey` values from `inventory_data.ts:RE
 | PBS buffer | pbs | #b8e5ff | Light blue |
 | Trypsin | trypsin | #ffe082 | Yellow |
 | Cell suspension | cells | #f3d6a2 | Cloudy tan |
-| Drug working stock | drug | #d8b4ff | Violet |
+| Drug working solution | drug | #d8b4ff | Violet |
 | MTT reagent | mtt | #fff59d | Pale yellow |
 | DMSO | dmso | #e0e0e0 | Gray |
 
@@ -101,6 +101,36 @@ case 'serological_pipette':
 	}
 	return getSeroPipetteSvg();
 ```
+
+## Convention scope: pipettes, microtubes, and wells
+
+The same convention extends to microtubes and to wells in the
+`well_plate_workspace` scene:
+
+- **Fill = liquid identity.** The fill color is driven by the reagent's
+  `displayColor` (resolved from `inventory_data.ts:REAGENTS`). Carboplatin
+  fills are violet, media fills are pink, distilled water fills are pale,
+  and so on. The fill never encodes progress state.
+- **Outline = state class.** Active, completed, and future tubes or wells
+  are distinguished by an outline CSS class (for example, glow for
+  active, normal stroke for completed, dimmed for future). State
+  rendering does not touch the fill color, so reagent identity stays
+  readable at every progress stage.
+
+For microtubes, the renderer reads `gameState.tubeLiquids[<tubeId>]`
+(the layered `MicrotubeLiquid` entries written by
+`addTubeLiquid` during dilution prep) and composites a fill rectangle
+clipped to the Bioicons `microtube_open_translucent` interior. The
+result reagent's `displayColor` provides the visible color; the
+state class on the host element provides the outline treatment.
+
+For wells, the plate renderer reads
+`gameState.plateLiquids[<wellId>]` populated by the plate-transfer
+dispatcher and fills each well with the reagent `displayColor`. The
+active well receives the active outline class; completed wells keep
+their fill but switch to the completed outline class. See
+[src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)
+for the implementation.
 
 ## Future Extensions
 

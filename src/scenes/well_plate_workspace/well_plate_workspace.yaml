@@ -1,9 +1,6 @@
-sceneId: plate
-workspace: modal_overlay
-capabilities:
-  - itemWorkspace
-  - modalWorkspace
-  - plateReaderWorkspace
+sceneId: well_plate_workspace
+workspace: dedicated_plate
+capabilities: []
 
 items:
   - id: well_plate

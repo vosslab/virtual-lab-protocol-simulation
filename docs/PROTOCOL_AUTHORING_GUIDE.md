@@ -308,8 +308,11 @@ pick the `kind` that matches what the player actually does:
    its `data-walker-advance` kebab-case attribute, not by an
    `items.yaml` id. A modal that needs multiple meaningful confirmations
    decomposes into multiple modal steps.
+4. `multipleChoice` -- the player answers a quiz question by clicking
+   the correct choice from a list. Use this kind for assessment steps,
+   calculation verification, or protocol comprehension checks.
 
-The three kinds and their required fields are specified in
+The four kinds and their required fields are specified in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md). Pick the kind first,
 then fill in only that kind's fields. Mixing fields across kinds fails
 the validator.
@@ -352,6 +355,181 @@ not protocol items.
 `step.completionTrigger` is NOT authored. The builder synthesizes it from
 `step.scene` and `step.completionPath.completionEvent` at build time. The
 validator rejects YAML that writes `completionTrigger` by hand.
+
+### Worked example: a multipleChoice step
+
+For assessment and calculation-verification steps, use `multipleChoice`:
+
+```yaml
+- id: calculate_dilution
+  label: Calculate the dilution ratio
+  action: Answer the question about dilution math
+  why: Understanding dilution calculations is essential for accurate dosing.
+  partId: training_part
+  dayId: training_day
+  stepIndex: 1
+  requiredItems:
+    - well_plate
+  scene: plate
+  errorHints:
+    wrong_answer: "Check your math using C1V1 = C2V2."
+  completionPath:
+    kind: multipleChoice
+    question: "You have a 10 mM stock solution. You need 1 mL of 200 µM working solution. Which recipe is correct?"
+    choices:
+      - id: option_a
+        text: "20 µL stock solution + 980 µL media"
+        feedback: "That would make 200 µM. Correct!"
+        correct: true
+      - id: option_b
+        text: "100 µL stock solution + 900 µL media"
+        feedback: "That would make 1000 µM. Check your math."
+      - id: option_c
+        text: "10 µL stock solution + 990 µL media"
+        feedback: "That would make 100 µM. Try again."
+    completionEvent: calculate_dilution
+  plateMap:
+    annotations:
+      - row: A
+        colRange: [1, 12]
+        text: Control row
+  nextId: apply_working_solution
+```
+
+The player sees the `question` text and four `choices`. Each choice has a
+`text` label, `feedback` (shown regardless of whether the choice is correct),
+and a boolean `correct` flag. Only one choice should be marked `correct: true`.
+
+When the player clicks the correct choice, the `feedback` is shown as a
+notification, and the step completes (emitting `completionEvent`).
+Incorrect choices also show their feedback, but do not advance the step.
+
+The `scene` for a multipleChoice step is typically `plate` (for well-dose
+questions), `hood` (for prep questions), or `microscope` (for observation
+questions), depending on which scene provides context.
+
+### Worked example: an interactionSequence step with tubeTargets
+
+For dilution-prep steps, use `interactionSequence` with `tubeTargets` metadata:
+
+```yaml
+- id: make_carb_first_dilution
+  label: Prepare carboplatin 400 µM working solution
+  action: Transfer stock carboplatin and distilled water to dilution tube
+  why: The dilution step teaches C1V1 = C2V2 and builds the working solutions for plate dosing.
+  partId: part_dilution
+  dayId: day2
+  stepIndex: 1
+  requiredItems: [p200_pipette, carboplatin_stock_solution, distilled_water, dilution_tube_carb_h]
+  scene: well_plate_workspace
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: p200_pipette
+        source: carboplatin_stock_solution
+        liquid: carboplatin
+        volumeMl: 0.040
+        stateChange:
+          heldLiquid:
+            tool: p200_pipette
+            liquid: carboplatin
+            volumeMl: 0.040
+            colorKey: carboplatin
+      - tool: p200_pipette
+        destination: dilution_tube_carb_h
+        liquid: carboplatin
+        consumesVolumeMl: 0.040
+      - tool: p200_pipette
+        source: distilled_water
+        liquid: distilled_water
+        volumeMl: 0.960
+        stateChange:
+          heldLiquid:
+            tool: p200_pipette
+            liquid: distilled_water
+            volumeMl: 0.960
+            colorKey: distilled_water
+      - tool: p200_pipette
+        destination: dilution_tube_carb_h
+        liquid: distilled_water
+        consumesVolumeMl: 0.960
+        completionEvent: carb_first_dilution_done
+    tubeTargets:
+      - source: carboplatin_stock_solution
+        diluent: distilled_water
+        destination: dilution_tube_carb_h
+        soluteVolumeMl: 0.040
+        diluentVolumeMl: 0.960
+        resultLiquid: carboplatin
+        resultLabel: "400 µM carboplatin working solution"
+  nextId: make_carb_second_dilution
+```
+
+The `tubeTargets` metadata maps the 4-interaction cycle (solute load+discharge +
+diluent load+discharge) to a destination microtube. The resulting liquid color is
+derived from `resultLiquid` (a reagent id), and the label is displayed to the
+student during the step. The dilution-prep scene dispatcher uses `tubeTargets`
+to track liquid accumulation in the microtube and highlight the active source and
+destination together.
+
+## Mini-tutorial pattern: workspace-only protocol
+
+A workspace-only mini-tutorial is a focused protocol that lives inside a
+single dedicated scene (typically `well_plate_workspace`) and excludes the
+`hood`, `bench`, and `incubator` scenes. The active reference
+implementation is `tutorial_plate_drug_additions`. Use this pattern when
+the goal is to teach one focused workflow (for example, loading a 96-well
+plate from prepared dilutions) without sending students through a full
+end-to-end protocol.
+
+Authoring rules for this pattern:
+
+- Set `scene: well_plate_workspace` on every step. Do not switch scenes
+  mid-tutorial. Calculation popups, dilution prep, plate transfer, and
+  the final review all run inside the same scene.
+- Do not include any step whose `scene` is `hood`, `bench`, `incubator`,
+  `microscope`, or `plate_reader`. No pre-incubation step, no plate
+  handoff step, no full-protocol continuation.
+- Use stock solution, intermediate dilution, and working solution
+  consistently in `label`, `action`, and `resultLabel` strings. The
+  banned synonyms "working stock" and "parent stock" must not appear.
+- Use `multipleChoice` completion paths for calculation popups. Each
+  popup renders as an overlay over the same scene; do not navigate away
+  to a separate quiz scene.
+- Use `tubeTargets` metadata for dilution-prep steps and `plateTargets`
+  metadata for plate-transfer steps. Both kinds of metadata sit under
+  `completionPath` on `interactionSequence` steps. The two are mutually
+  exclusive on a single step.
+- End the tutorial with a `review_loaded_plate`-style step whose
+  `completionPath.kind` is `modal`. The review modal summarizes the
+  final plate state and completes the protocol.
+
+The canonical step chain is:
+
+```
+open_plate_workspace      (kind: modal, scene: well_plate_workspace)
+  calc_popup_carb_high    (kind: multipleChoice)
+  prep_carb_first         (kind: interactionSequence + tubeTargets)
+  calc_popup_metformin    (kind: multipleChoice)
+  prep_metformin          (kind: interactionSequence + tubeTargets)
+  adjust_media_cols_1_6   (kind: interactionSequence + plateTargets)
+  adjust_media_cols_7_12  (kind: interactionSequence + plateTargets)
+  transfer_carb_row_B     (kind: interactionSequence + plateTargets)
+  ... transfer_carb_row_H
+  calc_popup_metformin_well (kind: multipleChoice)
+  transfer_metformin      (kind: interactionSequence + plateTargets)
+  review_loaded_plate     (kind: modal)
+```
+
+Each calculation popup uses `multipleChoice`: it presents one question
+with several plausible answers, one of which is marked `correct: true`.
+When the student picks the correct choice, the step completes and the
+next dilution-prep or transfer step becomes active inside the same
+scene. The dilution-prep steps carry one `tubeTarget` per destination
+microtube; the transfer steps carry one `plateTarget` per row or column
+range that receives liquid. The final `review_loaded_plate` step opens a
+modal that confirms the loaded plate and ends the protocol; there is no
+`nextId` past it.
 
 ## Per-step authoring checklist
 
@@ -429,6 +607,69 @@ The audit reports four status levels:
 - `[WARN]` -- Step has an `interactionSequence` BUT some `requiredItems`
   element is missing from derived `usedItems`.
 - `[ERROR]` -- A missing item/reagent or an unused non-visual item.
+
+## Per-well liquid tracking with plateTargets
+
+When a step uses the `plate` scene and involves depositing liquid into
+specific wells, use the optional `plateTargets` metadata on
+`completionPath.kind: interactionSequence`. This field maps each load+discharge
+interaction pair (every 2 interactions) to the wells that receive liquid.
+
+**Structure**: `plateTargets` is a list of objects. Each object defines:
+- `rows`: list of row letters (e.g., `["B", "C", "D"]`)
+- `cols`: list of 1-indexed column numbers (e.g., `[1, 2, 3]`)
+- `liquid`: reagent id (must exist in `reagents.yaml`)
+- `volumeMl`: volume in milliliters per well
+- `label`: user-facing label shown in the side panel
+
+**Length requirement**: `len(plateTargets)` must equal `len(interactions) / 2`.
+Each target corresponds to exactly one load+discharge pair. The validator
+enforces this constraint.
+
+**Example**: A step with 4 interactions (2 load+discharge pairs) should have
+exactly 2 plateTargets:
+
+```yaml
+- id: add_media_and_drug
+  scene: plate
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 95
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: media
+        consumesVolumeMl: 95
+      - tool: multichannel_pipette
+        source: carb_dilution_b
+        liquid: carboplatin
+        volumeMl: 5
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 5
+        completionEvent: add_media_drug_complete
+    plateTargets:
+      - rows: [B, C, D, E, F, G, H]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: media
+        volumeMl: 0.095
+        label: "Add 95 µL media per well"
+      - rows: [B]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "Add 5 µL carboplatin (0.1 µM final) to row B"
+```
+
+The runtime plate dispatcher uses `plateTargets` to:
+1. Classify each well (completed, active, future) during rendering.
+2. Deposit liquid into the target wells when each interaction pair completes.
+3. Advance to the next target when the active target finishes.
+4. Complete the step when all targets are deposited.
 
 ## Auto-walker contract
 

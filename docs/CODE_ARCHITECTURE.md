@@ -93,9 +93,16 @@ emitter via `triggerStep(stepId)`.
   The legacy `src/bench_config.ts` and `src/hood_config.ts` modules were
   retired in the 2026-05-09 scene migration; YAML is the single source of
   truth for layout in those scenes.
-- [src/plate_config.ts](../src/plate_config.ts) - Plate scene layout config
-  (bounds/zones/items/rules); exports are present but currently consumed by
-  the modal-style renderer only, full layout-engine wiring is a follow-up.
+- Plate layout: declared in scene YAML at
+  [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml). The plate
+  is now a dedicated first-class scene (workspace `dedicated_plate`); the
+  adapter is [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) with
+  render assembly in [src/scenes/plate/render.ts](../src/scenes/plate/render.ts)
+  and click dispatch in [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts).
+- [src/plate_config.ts](../src/plate_config.ts) - Legacy plate layout
+  exports retained for the modal-style renderer; superseded by the
+  dedicated plate scene under [src/scenes/plate/](../src/scenes/plate/)
+  and slated for removal once the modal path is fully retired.
 - [src/scene_types.ts](../src/scene_types.ts) - Scene/zone enums and types.
 - [src/style_constants.ts](../src/style_constants.ts) - Color and style
   tokens used by SVG and DOM rendering.
@@ -138,7 +145,7 @@ emitter via `triggerStep(stepId)`.
   [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/),
   [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/),
   [src/content/tutorial_pbs/](../src/content/tutorial_pbs/),
-  [src/content/tutorial_plate_intro/](../src/content/tutorial_plate_intro/),
+  [src/content/tutorial_plate_drug_additions/](../src/content/tutorial_plate_drug_additions/),
   [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/),
   [src/content/tutorial_split/](../src/content/tutorial_split/).
 - [src/content/tools.ts](../src/content/tools.ts), [src/content/validate.ts](../src/content/validate.ts) -
@@ -276,7 +283,7 @@ For authoring a new protocol from scratch, see
 protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
 + metformin MTT workflow). Tutorial protocols (`tutorial_bench_direct`,
 `tutorial_cell_counter`, `tutorial_drug_dilution`, `tutorial_hood_transfer`,
-`tutorial_pbs`, `tutorial_plate_intro`, `tutorial_plate_reader`,
+`tutorial_pbs`, `tutorial_plate_drug_additions`, `tutorial_plate_reader`,
 `tutorial_split`) cover smaller subsets and exist primarily for walker
 exercises.
 

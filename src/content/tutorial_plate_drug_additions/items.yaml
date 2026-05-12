@@ -1,0 +1,143 @@
+items:
+  well_plate:
+    label: 96-Well Plate
+    role: culture_vessel
+    asset: well_plate_96
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - media
+    - carboplatin
+    - metformin
+  multichannel_pipette:
+    label: Multichannel pipette
+    role: transfer_tool
+    asset: multichannel_pipette
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 300
+    allowedLiquids:
+    - media
+    - carboplatin
+    - metformin
+  media_bottle:
+    label: Complete media
+    role: reagent_source
+    asset: media_bottle
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids:
+    - media
+    contains: media
+  carboplatin_stock_solution:
+    label: "10 mM carboplatin stock solution"
+    role: reagent_source
+    asset: bottle
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 50
+    allowedLiquids:
+    - carboplatin
+    contains: carboplatin
+  metformin_stock_solution:
+    label: "1 M metformin stock solution"
+    role: reagent_source
+    asset: bottle
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 50
+    allowedLiquids:
+    - metformin
+    contains: metformin
+  distilled_water:
+    label: "Distilled water"
+    role: reagent_source
+    asset: bottle
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 500
+    allowedLiquids:
+    - water
+    contains: water
+  dilution_tube_carb_b:
+    label: "4 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_c:
+    label: "8 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_d:
+    label: "20 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_e:
+    label: "40 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_f:
+    label: "80 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_g:
+    label: "200 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_carb_h:
+    label: "400 µM carboplatin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - carboplatin
+    - media
+  dilution_tube_metformin_working:
+    label: "200 mM metformin working solution"
+    role: culture_vessel
+    asset: microtube_open_translucent
+    scene: well_plate_workspace
+    liquidCapable: true
+    capacityMl: 1
+    allowedLiquids:
+    - metformin
+    - media

@@ -66,7 +66,7 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/scene_types.ts](../src/scene_types.ts) | Scene/zone enums |
 | [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml) | Bench scene layout (YAML; replaced retired `src/bench_config.ts` in the 2026-05-09 scene migration) |
 | [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml) | Hood scene layout (YAML; replaced retired `src/hood_config.ts` in the 2026-05-09 scene migration) |
-| [src/plate_config.ts](../src/plate_config.ts) | Plate scene layout config (modal renderer only; full layout-engine wiring TBD) |
+| [src/plate_config.ts](../src/plate_config.ts) | Legacy plate layout config for the modal-style renderer; superseded by the dedicated plate scene under [src/scenes/plate/](../src/scenes/plate/) |
 | [src/style_constants.ts](../src/style_constants.ts) | Color and style tokens |
 | [src/asset_specs.ts](../src/asset_specs.ts) | Asset metadata |
 | [src/brands.ts](../src/brands.ts) | Brand-name helpers |
@@ -131,7 +131,7 @@ for the layered model.
 | --- | --- |
 | [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml), [bench.ts](../src/scenes/bench/bench.ts) | Bench adapter (owns render + dispatch) and scene config |
 | [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml), [cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts), [render.ts](../src/scenes/cell_culture_hood/render.ts) | Sterile hood adapter; render assembly split into sibling `render.ts` by responsibility seam, dispatch + adapter registration in `cell_culture_hood.ts` |
-| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts) | 96-well plate adapter (owns render + dispatch) and scene config |
+| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts), [render.ts](../src/scenes/plate/render.ts), [dispatch.ts](../src/scenes/plate/dispatch.ts) | 96-well plate adapter (dedicated `dedicated_plate` workspace) with render assembly in sibling `render.ts` and click dispatch in sibling `dispatch.ts`; `plate.ts` registers the adapter |
 | [src/scenes/microscope/microscope.yaml](../src/scenes/microscope/microscope.yaml), [microscope.ts](../src/scenes/microscope/microscope.ts) | Microscope adapter (automated counter and manual hemocytometer; owns render + dispatch) and scene config |
 | [src/scenes/incubator/incubator.yaml](../src/scenes/incubator/incubator.yaml), [incubator.ts](../src/scenes/incubator/incubator.ts) | Incubator adapter (owns render + dispatch) and scene config |
 | [src/scenes/plate_reader/plate_reader.yaml](../src/scenes/plate_reader/plate_reader.yaml), [plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Plate-reader adapter (owns render + dispatch) and scene config |
@@ -157,7 +157,7 @@ for the layered model.
 | [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/) | Tutorial protocol (manual hemocytometer quadrant counting) |
 | [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/) | Tutorial protocol (hood `interactionSequence`) |
 | [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) | Tutorial protocol (PBS wash repetition) |
-| [src/content/tutorial_plate_intro/](../src/content/tutorial_plate_intro/) | Tutorial protocol (96-well plate intro and carboplatin addition) |
+| [src/content/tutorial_plate_drug_additions/](../src/content/tutorial_plate_drug_additions/) | Tutorial protocol (96-well plate drug additions; media adjustment, carboplatin dose series, metformin fixed dose) |
 | [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/) | Tutorial protocol (plate-reader modal) |
 | [src/content/tutorial_split/](../src/content/tutorial_split/) | Tutorial protocol (split / passage) |
 | [src/content/tools.ts](../src/content/tools.ts) | Build-side helper module |
@@ -270,6 +270,8 @@ as a reference snapshot. New shell or Python E2E runners belong here as
 | [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
 | [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) | Step-flow architecture |
 | [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |
+| [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) | Reconciliation of math discrepancies in the OVCAR8 protocol doc; dose-series options and well-volume model |
+| [VOSS_DILUTIONS_GUIDE.md](VOSS_DILUTIONS_GUIDE.md) | Reference guide for solutions, dilutions, C1V1 = C2V2, and serial dilutions |
 | [E2E_TESTS.md](E2E_TESTS.md) | E2E test conventions |
 | [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md) | Playwright usage notes |
 | [PYTEST_STYLE.md](PYTEST_STYLE.md) | Pytest conventions |

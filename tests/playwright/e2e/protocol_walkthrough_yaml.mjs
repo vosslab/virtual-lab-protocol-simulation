@@ -50,11 +50,14 @@ import {
 	waitForStepCompleted,
 	waitForHeldLiquid,
 	isToolPreconditionMet,
+	waitForActiveScene,
 	waitForMicroscopeOpen,
 	waitForIncubationComplete,
 	switchToBench,
 	switchToHood,
+	switchToPlate,
 	resolveSelector,
+	resolveScopedSelector,
 	clickItemAndWaitProgress,
 	recordInfo,
 	recordWarn,
@@ -373,7 +376,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
 		const clickPlan = await buildClickPlan(page, interaction);
 
 		for (const click of clickPlan) {
-			await clickItemAndWaitProgress(page, click.itemId, report);
+			await clickItemAndWaitProgress(page, click.itemId, report, 3000, step.scene);
 		}
 	}
 
@@ -392,13 +395,6 @@ async function walkIncubationStep(page, step, report) {
 	// Ensure we're on bench
 	await switchToBench(page, report);
 
-	// Click the incubator
-	const incubatorLocator = page.locator('[data-item-id="incubator"]').first();
-	const count = await incubatorLocator.count();
-	if (count === 0) {
-		throw new Error(`Incubator element not found on bench`);
-	}
-
 	// For incubate_day1: we need to pick up the well_plate first
 	// (the incubator bench handler checks selectedTool === 'well_plate')
 	if (step.id === 'incubate_day1') {
@@ -411,6 +407,13 @@ async function walkIncubationStep(page, step, report) {
 		}
 		await clickItemAndWaitProgress(page, 'well_plate', report);
 		await switchToBench(page, report);
+	}
+
+	// Click the incubator
+	const incubatorLocator = page.locator('[data-item-id="incubator"]').first();
+	const count = await incubatorLocator.count();
+	if (count === 0) {
+		throw new Error(`Incubator element not found on bench`);
 	}
 
 	// Click incubator to start animation
@@ -567,13 +570,15 @@ async function walkMicroscopeModalStep(page, step, report) {
 
 	if (step.completionPath.openClick && alreadyOpenCount === 0) {
 		// Open the microscope via the openClick item (e.g., microscope or cell_counter)
+		// Scope to bench scene where the cell_counter lives
 		await switchToBench(page, report);
 
-		const openerLocator = page.locator(`[data-item-id="${step.completionPath.openClick}"]`).first();
+		const openerSelector = resolveScopedSelector(step.completionPath.openClick, 'bench');
+		const openerLocator = page.locator(openerSelector).first();
 		if ((await openerLocator.count()) === 0) {
 			throw new Error(`Item ${step.completionPath.openClick} not found to open microscope`);
 		}
-		await clickItemAndWaitProgress(page, step.completionPath.openClick, report);
+		await clickItemAndWaitProgress(page, step.completionPath.openClick, report, 3000, 'bench');
 
 		// Wait for microscope modal to open
 		await waitForMicroscopeOpen(page, 3000);
@@ -662,21 +667,23 @@ async function walkModalStep(page, step, openClick, advanceClick, completionEven
 
 	if (openClick && alreadyOpenCount === 0) {
 		// Use step.scene as the truth source (matches walkInteractionSequence).
-		// DOM-detection was unreliable: items lack data-scene wrappers and
-		// the heuristic defaulted to bench, leaving hood-scoped openers
-		// (e.g. multichannel_pipette) invisible.
+		// Scope the item locator to the correct scene to avoid picking up the wrong element
+		// when multiple scenes have the same data-item-id (e.g., multichannel_pipette in hood vs well_plate_workspace).
 		if (step.scene === 'hood') {
 			await switchToHood(page, report);
 		} else if (step.scene === 'bench' || step.scene === 'plate_reader') {
 			await switchToBench(page, report);
+		} else if (step.scene === 'well_plate_workspace') {
+			await switchToPlate(page, report);
 		}
 
-		// Click the opener item
-		const openerLocator = page.locator(`[data-item-id="${openClick}"]`).first();
+		// Click the opener item, scoped to the correct scene
+		const openerSelector = resolveScopedSelector(openClick, step.scene);
+		const openerLocator = page.locator(openerSelector).first();
 		if ((await openerLocator.count()) === 0) {
 			throw new Error(`Item ${openClick} not found to open modal for step ${step.id}`);
 		}
-		await clickItemAndWaitProgress(page, openClick, report);
+		await clickItemAndWaitProgress(page, openClick, report, 3000, step.scene);
 
 		// Wait for modal to become visible (the advance button appears)
 		await page.waitForSelector(advanceSelector, { timeout: 3000 });
@@ -819,7 +826,7 @@ async function walkAddDmsoStep(page, step, report) {
 // Main step walker: dispatch to category handler
 //============================================
 
-async function walkStep(page, step, report, wrongOrderMode) {
+async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 	const stepReport = {
 		stepId: step.id,
 		label: step.label,
@@ -840,6 +847,7 @@ async function walkStep(page, step, report, wrongOrderMode) {
 			return {
 				wrongOrderClicks: state.wrongOrderClicks,
 				interactionIndex: state.interactionIndex,
+				activeScene: state.activeScene,
 			};
 		});
 
@@ -856,6 +864,8 @@ async function walkStep(page, step, report, wrongOrderMode) {
 					await switchToBench(page, report);
 				} else if (step.scene === 'hood') {
 					await switchToHood(page, report);
+				} else if (step.scene === 'well_plate_workspace') {
+					await switchToPlate(page, report);
 				}
 				stateBeforeCorrectSequence = await walkInteractionSequenceStep(page, step, report, wrongOrderMode);
 
@@ -863,11 +873,38 @@ async function walkStep(page, step, report, wrongOrderMode) {
 				// Direct tool interaction: click the tool and wait for completion
 				const tool = step.completionPath.tool;
 
-				// Determine scene for the tool
-				if (step.scene === 'bench') {
-					await switchToBench(page, report);
-				} else if (step.scene === 'hood') {
-					await switchToHood(page, report);
+				// Special case: incubate_plate requires clicking "Take plate to incubator" button first
+				if (step.id === 'incubate_plate') {
+					const currentScene = await page.evaluate(() => window.gameState.activeScene);
+					if (currentScene === 'well_plate_workspace') {
+						const takeIncubatorBtn = page.locator('#take-to-incubator').first();
+						if ((await takeIncubatorBtn.count()) === 0) {
+							throw new Error('Take plate to incubator button not found on plate scene');
+						}
+						await takeIncubatorBtn.click();
+						report.summary.totalClicks++;
+						report.info('Clicked "Take plate to incubator" button');
+						// Switch to bench and set selectedTool (the button dispatch should have done this, but enforce it here)
+						await page.evaluate(() => {
+							window.gameState.activeScene = 'bench';
+							window.gameState.selectedTool = 'well_plate';
+							window.renderGame?.();
+						});
+						report.info('Switched to bench and set selectedTool to well_plate');
+					} else if (currentScene !== 'bench') {
+						// Fallback: switch to bench if not already there
+						await switchToBench(page, report);
+					}
+				} else {
+					// Normal scene switching for other directTool steps
+					// Determine scene for the tool
+					if (step.scene === 'bench') {
+						await switchToBench(page, report);
+					} else if (step.scene === 'hood') {
+						await switchToHood(page, report);
+					} else if (step.scene === 'well_plate_workspace') {
+						await switchToPlate(page, report);
+					}
 				}
 
 				report.info(`  Using directTool path (tool: ${tool})`);
@@ -893,6 +930,14 @@ async function walkStep(page, step, report, wrongOrderMode) {
 					await walkModalStep(page, step, openClick, advanceClick, completionEvent, report);
 				}
 
+			} else if (kind === 'multipleChoice') {
+				// Multiple-choice quiz step: find correct choice and click it
+				const cp = step.completionPath;
+				const correct = cp.choices.find(c => c.correct === true);
+				if (!correct) throw new Error(`No correct choice on ${step.id}`);
+				const selector = resolveScopedSelector(correct.id, step.scene);
+				await clickItemAndWaitProgress(page, correct.id, report, 3000, step.scene);
+
 			} else {
 				throw new Error(`Unknown completionPath.kind '${kind}' for step ${step.id}`);
 			}
@@ -917,6 +962,7 @@ async function walkStep(page, step, report, wrongOrderMode) {
 			return {
 				wrongOrderClicks: state.wrongOrderClicks,
 				activeStepId: state.activeStepId,
+				activeScene: state.activeScene,
 				completedSteps: state.completedSteps.slice(),
 			};
 		});
@@ -938,6 +984,15 @@ async function walkStep(page, step, report, wrongOrderMode) {
 		const compareState = stateBeforeCorrectSequence !== null ? stateBeforeCorrectSequence : beforeState;
 		if (afterState.wrongOrderClicks > compareState.wrongOrderClicks) {
 			throw new Error(`wrongOrderClicks incremented during correct sequence (before: ${compareState.wrongOrderClicks}, after: ${afterState.wrongOrderClicks})`);
+		}
+
+		// Scene-isolation assertion for tutorial_plate_drug_additions:
+		// Fail if the tutorial ever leaves the well_plate_workspace scene.
+		if (protocolId === 'tutorial_plate_drug_additions') {
+			const forbiddenScenes = ['hood', 'bench', 'incubator'];
+			if (forbiddenScenes.includes(afterState.activeScene)) {
+				throw new Error(`Scene-isolation violation: tutorial_plate_drug_additions reached forbidden scene '${afterState.activeScene}' (must stay in 'well_plate_workspace')`);
+			}
 		}
 
 		stepReport.passed = true;
@@ -1089,7 +1144,7 @@ async function main() {
 			}
 
 			try {
-				await walkStep(page, step, report, args.wrongOrder);
+				await walkStep(page, step, report, args.wrongOrder, args.protocol);
 
 				// Per-step screenshot on pass
 				const stepScreenshot = path.join(RESULTS_DIR, `step_${report.summary.stepsWalked}_${step.id}.png`);

@@ -19,7 +19,7 @@ Related docs (each links back here):
 Protocol
   Part
     Step
-      Completion path (one of: interactionSequence | directTool | modal)
+      Completion path (one of: interactionSequence | directTool | modal | multipleChoice)
         For interactionSequence: ordered list of interactions
           Interaction
             Click plan
@@ -27,6 +27,7 @@ Protocol
             Optional completion event
         For directTool: tool + completionEvent
         For modal: openClick + advanceClick + completionEvent
+        For multipleChoice: question + choices + completionEvent
 ```
 
 A Protocol contains Parts; a Part contains Steps; every Step
@@ -34,9 +35,9 @@ has exactly one Completion path. The completion path's `kind`
 discriminator selects which schema fields apply. For
 `interactionSequence` kind, the path holds an ordered list of
 Interactions, each with a click plan, an optional state change,
-and an optional completion event. For `directTool` and `modal`
-kinds, the completion path carries the kind-specific fields
-directly and there is no nested interaction list.
+and an optional completion event. For `directTool`, `modal`, and
+`multipleChoice` kinds, the completion path carries the kind-specific
+fields directly and there is no nested interaction list.
 
 ## Core rule: one job per term
 
@@ -44,18 +45,19 @@ A **step** is what the player is trying to complete.
 
 A **completion path** is the schema contract that describes how
 a step gets completed. Every step has exactly one completion
-path. The path's `kind` discriminator chooses one of three
-shapes: `interactionSequence`, `directTool`, or `modal`. The
-walker, runtime, and validator dispatch off `kind`; no
-downstream code matches on `step.id`.
+path. The path's `kind` discriminator chooses one of four
+shapes: `interactionSequence`, `directTool`, `modal`, or
+`multipleChoice`. The walker, runtime, and validator dispatch
+off `kind`; no downstream code matches on `step.id`.
 
 A **completion-path kind** is the discriminator field on a
 completion path. Allowed values are `interactionSequence`,
-`directTool`, and `modal`. Each kind defines its own required
-and banned fields. Instrument-control steps (incubator door,
-water bath, plate-reader scan button) use `kind: directTool`;
-the conceptual "instrument vs hand tool" distinction is carried
-by the `items.yaml` role, not by a separate completion-path kind.
+`directTool`, `modal`, and `multipleChoice`. Each kind defines
+its own required and banned fields. Instrument-control steps
+(incubator door, water bath, plate-reader scan button) use
+`kind: directTool`; the conceptual "instrument vs hand tool"
+distinction is carried by the `items.yaml` role, not by a separate
+completion-path kind.
 
 An **interaction sequence** is the ordered list of logical
 operations needed to complete a step whose completion-path kind
@@ -155,6 +157,47 @@ beats common alternatives.
   modal that needs multiple meaningful confirmations decomposes
   into multiple modal steps, each with its own `advanceClick`
   string and its own `completionEvent`.
+- **Multiple-choice quiz step** -- a step completed by presenting
+  a question with multiple choice options and clicking the
+  correct answer. Modeled as a completion path with
+  `kind: multipleChoice`, carrying a `question` (string), a
+  `choices` (array of objects with `id`, `text`, `feedback`, and
+  optional `correct` boolean fields), and a `completionEvent`.
+  Exactly one choice must have `correct: true`. The walker clicks
+  the choice element with the matching `id`. Use this kind for
+  assessment steps, knowledge-check prompts, or calculation
+  verification steps that validate student understanding before
+  advancing.
+- **Microtube liquid** -- runtime state of a microtube that has
+  received liquid. Mirrors the `heldLiquid` pattern for pipettes.
+  Tracks the reagent id, volume in milliliters, and color key for
+  rendering. Microtubes accumulate liquids in layers (solute then
+  diluent).
+- **Tube target** -- optional metadata for dilution-prep steps
+  describing how to prepare a microtube. Maps a 4-interaction
+  cycle (solute load+discharge + diluent load+discharge) to a
+  destination microtube. Includes source item, diluent reagent,
+  destination microtube, volumes, result reagent, and display label.
+- **Plate target** -- optional metadata for plate-transfer steps
+  describing how to deposit liquid into wells. Maps each
+  load+discharge interaction pair to a set of rows and columns on a
+  96-well plate. Includes liquid reagent, per-well volume, and label.
+- **Stock solution** -- the highest-concentration reagent supplied
+  in a bottle or vial at the start of the protocol (for example,
+  "10 mM carboplatin stock solution", "1 M metformin stock
+  solution"). Stock solutions are never used directly on cells; they
+  are diluted first.
+- **Intermediate dilution** -- a temporary tube of solution prepared
+  by diluting a stock solution down to a usable working concentration.
+  Intermediate dilutions live in microtubes and feed downstream
+  working-solution preparation or plate transfer.
+- **Working solution** -- the final, ready-to-dose dilution
+  delivered into a well at the protocol-specified volume (for
+  example, the 5 microliter per-well addition). A working solution
+  is the immediate parent of the in-well concentration. The banned
+  synonyms "working stock" and "parent stock" do not appear in
+  authoring docs, validator output, or step labels; use stock
+  solution, intermediate dilution, or working solution instead.
 - **State change** -- the runtime change caused by an
   interaction. Better than "Result" (could mean final game
   result or score) or "Effect" (less precise).
@@ -204,12 +247,14 @@ beats common alternatives.
 | **Part** | A named grouping of steps inside a protocol. | `protocol.yaml` part header |
 | **Step** | One numbered objective in a part. | `protocol.yaml` step entry; `ProtocolStep` interface |
 | **Completion path** | The schema contract that describes how the step gets completed. Always present; one per step. Its `kind` selects the shape of the remaining fields. | `step.completionPath` |
-| **Completion-path kind** | Discriminator field on a completion path. One of `interactionSequence`, `directTool`, or `modal`. | `step.completionPath.kind` |
+| **Completion-path kind** | Discriminator field on a completion path. One of `interactionSequence`, `directTool`, `modal`, or `multipleChoice`. | `step.completionPath.kind` |
 | **Interaction sequence** | The ordered list of interactions a step requires when the completion-path kind is `interactionSequence`. | `step.completionPath.interactions` |
+| **Plate targets** | Optional metadata for `interactionSequence` steps: maps each load+discharge interaction pair to a set of wells that receive liquid. Mirrors the heldLiquid pattern for pipettes. Mutually exclusive with tubeTargets on a single step. | `step.completionPath.plateTargets` (optional on `interactionSequence` kind) |
+| **Tube targets** | Optional metadata for `interactionSequence` steps: maps each 4-interaction cycle (solute load+discharge + diluent load+discharge) to a dilution destination microtube. Mirrors the heldLiquid pattern for pipettes. Mutually exclusive with plateTargets on a single step. | `step.completionPath.tubeTargets` (optional on `interactionSequence` kind) |
 | **Interaction** | One logical player operation. May require 1-3 clicks. | one entry in `completionPath.interactions` (kind = `interactionSequence`) |
 | **Click plan** | Ordered click list for a single interaction. Tool first. | derived per interaction shape |
 | **Click target** | One DOM element a click is dispatched to. | UI/testing docs only |
-| **Scene** | The active UI viewport. Allowed values: `hood`, `bench`, `incubator`, `microscope`, `plate_reader`. | `step.scene` |
+| **Scene** | The active UI viewport. Allowed values: `hood`, `bench`, `incubator`, `microscope`, `plate`, `plate_reader`, `well_plate_workspace`. | `step.scene` |
 
 ## Workspace concept
 
@@ -235,7 +280,8 @@ per workspace type:
 
 Critical authoring rule: do NOT use `kind: modal` as a shortcut for
 wet-lab liquid handling. A dilution series (carboplatin/metformin
-working stocks) is physical pipetting, not an instrument workflow, so
+working solutions prepared from stock solutions through intermediate
+dilutions) is physical pipetting, not an instrument workflow, so
 it must be authored as `interactionSequence`. A modal MAY be layered on
 top of a physical step as optional calculation/help guidance, opened
 from a help affordance, but it must not be the step's completionPath.
@@ -316,6 +362,8 @@ Banned terms may appear only in this table, in explicit migration or rename note
 | authored `completionTrigger` | (do not author) | derived from `completionPath` at build time; the validator rejects YAML that writes `completionTrigger` by hand |
 | `kind: instrument` | **`kind: directTool`** | the conceptual instrument-vs-handtool distinction lives in `items.yaml` role, not in completion-path kind |
 | `advanceClick` as items.yaml id | **`data-walker-advance` kebab string** | modal-internal advance controls are UI elements, not protocol items |
+| `working stock` | **working solution** | "stock" implies the bottle-grade reagent; the final per-well dilution is a working solution |
+| `parent stock` | **stock solution** (or **intermediate dilution** if it is a tube, not a bottle) | "parent stock" conflates the bottle-grade stock with the intermediate dilution one tier down |
 
 ## Worked example
 

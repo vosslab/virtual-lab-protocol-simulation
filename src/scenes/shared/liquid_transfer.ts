@@ -12,13 +12,16 @@ import type { BottleLiquid } from "../../svg_assets";
 // Formerly BOTTLE_ASSET_LIQUID in layout_engine.ts; renamed for clarity.
 // Centralized here so dispatchers stay consistent.
 export const LIQUID_BY_ASSET_ID: Record<string, BottleLiquid> = {
-	media_bottle:      "media",
-	pbs_bottle:        "pbs",
-	trypsin_bottle:    "trypsin",
-	dmso_bottle:       "dmso",
-	sterile_water:     "sterileWater",
-	carboplatin_stock: "carboplatin",
-	metformin_stock:   "metformin",
+	media_bottle:               "media",
+	pbs_bottle:                 "pbs",
+	trypsin_bottle:             "trypsin",
+	dmso_bottle:                "dmso",
+	sterile_water:              "sterileWater",
+	carboplatin_stock:          "carboplatin",
+	carboplatin_stock_solution: "carboplatin",
+	metformin_stock:            "metformin",
+	metformin_stock_solution:   "metformin",
+	distilled_water:            "sterileWater",
 };
 
 //============================================

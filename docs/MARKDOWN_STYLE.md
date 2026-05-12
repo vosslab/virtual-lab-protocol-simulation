@@ -5,6 +5,7 @@ Keep documentation concise, scannable, and consistent.
 ## Content
 - use ASCII and ISO-8859-1 character encoding
 - escape UTF-8 symbols such as &alpha;, &beta;, etc.
+- Note: This rule applies to Markdown documentation files. Content YAML strings (e.g., in `src/content/**/*.yaml`) that feed runtime UI text MAY use Unicode characters (e.g., µ, ×, ±) since they flow into the DOM via `textContent`, which does not decode HTML entities.
 
 ## Headings
 - Use sentence case.

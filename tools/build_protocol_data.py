@@ -62,7 +62,7 @@ def validate_items(items, repo_root, reagents):
 		'culture_vessel', 'cell_container', 'waste_target',
 		'instrument', 'modal_tool', 'virtual_target', 'decoration'
 	}
-	required_scenes = {'hood', 'bench', 'overlay', 'virtual', 'none'}
+	required_scenes = {'hood', 'bench', 'overlay', 'virtual', 'none', 'well_plate_workspace'}
 	reagent_ids = set(reagents.keys())
 
 	items_with_assets = set()
@@ -186,10 +186,126 @@ def parse_completion_path(step, items, reagents):
 		interactions = cp['interactions']
 		if not isinstance(interactions, list):
 			raise ValueError(f"Step '{step['id']}': completionPath.interactions must be a list")
-		return {
+
+		result = {
 			'kind': 'interactionSequence',
 			'interactions': interactions,
 		}
+
+		# Check tubeTargets and plateTargets are mutually exclusive FIRST
+		if 'tubeTargets' in cp and 'plateTargets' in cp:
+			raise ValueError(f"Step '{step['id']}': tubeTargets and plateTargets are mutually exclusive on a single step")
+
+		# plateTargets is optional for interactionSequence
+		if 'plateTargets' in cp:
+			plate_targets = cp['plateTargets']
+			if not isinstance(plate_targets, list):
+				raise ValueError(f"Step '{step['id']}': completionPath.plateTargets must be a list")
+
+			# For interactionSequence with plateTargets: len(plateTargets) must equal len(interactions) / 2
+			# Each plateTarget corresponds to one load+discharge pair
+			if len(plate_targets) * 2 != len(interactions):
+				raise ValueError(
+					f"Step '{step['id']}': plateTargets length ({len(plate_targets)}) must equal "
+					f"interactions length ({len(interactions)}) / 2"
+				)
+
+			# Validate each plateTarget
+			for target_idx, target in enumerate(plate_targets):
+				if not isinstance(target, dict):
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}] is not a dict")
+				for field in ['rows', 'cols', 'liquid', 'volumeMl', 'label']:
+					if field not in target:
+						raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}] missing '{field}'")
+				if not isinstance(target['rows'], list) or len(target['rows']) == 0:
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].rows must be a non-empty list")
+				# Validate each row is A-H
+				for row in target['rows']:
+					if not isinstance(row, str) or row not in ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']:
+						raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].rows contains invalid row '{row}', must be A-H")
+				if not isinstance(target['cols'], list) or len(target['cols']) == 0:
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].cols must be a non-empty list")
+				# Validate each column is 1-12
+				for col in target['cols']:
+					if not isinstance(col, int) or col < 1 or col > 12:
+						raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].cols contains invalid column {col}, must be 1-12")
+				if not isinstance(target['liquid'], str):
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].liquid must be a string")
+				# liquid must reference a known reagent
+				if target['liquid'] not in reagents:
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].liquid '{target['liquid']}' not in reagents")
+				if not isinstance(target['volumeMl'], (int, float)) or target['volumeMl'] <= 0:
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].volumeMl must be a positive number")
+				if not isinstance(target['label'], str) or len(target['label']) == 0:
+					raise ValueError(f"Step '{step['id']}': plateTargets[{target_idx}].label must be a non-empty string")
+
+			result['plateTargets'] = plate_targets
+
+		# tubeTargets is optional for interactionSequence
+		if 'tubeTargets' in cp:
+
+			tube_targets = cp['tubeTargets']
+			if not isinstance(tube_targets, list):
+				raise ValueError(f"Step '{step['id']}': completionPath.tubeTargets must be a list")
+
+			# For interactionSequence with tubeTargets: len(tubeTargets) must equal len(interactions) / 4
+			# Each tubeTarget corresponds to 4 interactions (solute load+discharge + diluent load+discharge)
+			if len(tube_targets) * 4 != len(interactions):
+				raise ValueError(
+					f"Step '{step['id']}': tubeTargets length ({len(tube_targets)}) * 4 must equal "
+					f"interactions length ({len(interactions)})"
+				)
+
+			# Validate each tubeTarget
+			for target_idx, target in enumerate(tube_targets):
+				if not isinstance(target, dict):
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}] is not a dict")
+				for field in ['source', 'diluent', 'destination', 'soluteVolumeMl', 'diluentVolumeMl', 'resultLiquid', 'resultLabel']:
+					if field not in target:
+						raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}] missing '{field}'")
+
+				# Validate source is a known item
+				source = target['source']
+				if not isinstance(source, str):
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].source must be a string")
+				if source not in items:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].source '{source}' not in items")
+
+				# Validate diluent is a known reagent
+				diluent = target['diluent']
+				if not isinstance(diluent, str):
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].diluent must be a string")
+				if diluent not in reagents:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].diluent '{diluent}' not in reagents")
+
+				# Validate destination is a known item
+				destination = target['destination']
+				if not isinstance(destination, str):
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].destination must be a string")
+				if destination not in items:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].destination '{destination}' not in items")
+
+				# Validate volumes are positive numbers
+				if not isinstance(target['soluteVolumeMl'], (int, float)) or target['soluteVolumeMl'] <= 0:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].soluteVolumeMl must be a positive number")
+				if not isinstance(target['diluentVolumeMl'], (int, float)) or target['diluentVolumeMl'] <= 0:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].diluentVolumeMl must be a positive number")
+
+				# Validate resultLiquid is a known reagent
+				result_liquid = target['resultLiquid']
+				if not isinstance(result_liquid, str):
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].resultLiquid must be a string")
+				if result_liquid not in reagents:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].resultLiquid '{result_liquid}' not in reagents")
+
+				# Validate resultLabel is a non-empty string
+				result_label = target['resultLabel']
+				if not isinstance(result_label, str) or len(result_label) == 0:
+					raise ValueError(f"Step '{step['id']}': tubeTargets[{target_idx}].resultLabel must be a non-empty string")
+
+			result['tubeTargets'] = tube_targets
+
+		return result
 
 	elif kind == 'directTool':
 		if 'tool' not in cp:
@@ -219,8 +335,91 @@ def parse_completion_path(step, items, reagents):
 			result['openClick'] = cp['openClick']
 		return result
 
+	elif kind == 'applyReagent':
+		# Direct-manipulation plate interaction: apply reagent to target wells
+		# Required fields: tool, source, liquid, volumeMl, targetWells, completionEvent
+		required_fields = ['tool', 'source', 'liquid', 'volumeMl', 'targetWells', 'completionEvent']
+		for field in required_fields:
+			if field not in cp:
+				raise ValueError(f"Step '{step['id']}': completionPath with kind 'applyReagent' missing '{field}'")
+
+		# Validate targetWells structure: must have rows and cols
+		target_wells = cp['targetWells']
+		if not isinstance(target_wells, dict):
+			raise ValueError(f"Step '{step['id']}': completionPath.targetWells must be a dict")
+		if 'rows' not in target_wells or 'cols' not in target_wells:
+			raise ValueError(f"Step '{step['id']}': completionPath.targetWells must have 'rows' and 'cols'")
+		if not isinstance(target_wells['rows'], list):
+			raise ValueError(f"Step '{step['id']}': completionPath.targetWells.rows must be a list")
+		if not isinstance(target_wells['cols'], list):
+			raise ValueError(f"Step '{step['id']}': completionPath.targetWells.cols must be a list")
+
+		return {
+			'kind': 'applyReagent',
+			'tool': cp['tool'],
+			'source': cp['source'],
+			'liquid': cp['liquid'],
+			'volumeMl': cp['volumeMl'],
+			'targetWells': target_wells,
+			'completionEvent': cp['completionEvent'],
+		}
+
+	elif kind == 'multipleChoice':
+		# Multiple-choice quiz step
+		# Required fields: question, choices (list), completionEvent
+		required_fields = ['question', 'choices', 'completionEvent']
+		for field in required_fields:
+			if field not in cp:
+				raise ValueError(f"Step '{step['id']}': completionPath with kind 'multipleChoice' missing '{field}'")
+
+		question = cp['question']
+		if not isinstance(question, str):
+			raise ValueError(f"Step '{step['id']}': completionPath.question must be a string")
+
+		choices = cp['choices']
+		if not isinstance(choices, list):
+			raise ValueError(f"Step '{step['id']}': completionPath.choices must be a list")
+		if len(choices) < 2:
+			raise ValueError(f"Step '{step['id']}': completionPath.choices must have at least 2 choices")
+
+		# Validate each choice
+		correct_count = 0
+		for choice_idx, choice in enumerate(choices):
+			if not isinstance(choice, dict):
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} is not a dict")
+			if 'id' not in choice:
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} missing 'id'")
+			if 'text' not in choice:
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} missing 'text'")
+			if 'feedback' not in choice:
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} missing 'feedback'")
+			if not isinstance(choice['id'], str):
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} id must be a string")
+			if not isinstance(choice['text'], str):
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} text must be a string")
+			if not isinstance(choice['feedback'], str):
+				raise ValueError(f"Step '{step['id']}': choice {choice_idx} feedback must be a string")
+			if choice.get('correct'):
+				correct_count += 1
+
+		if correct_count != 1:
+			raise ValueError(f"Step '{step['id']}': multipleChoice must have exactly one choice with correct: true (found {correct_count})")
+
+		# Banned fields for multipleChoice
+		banned_fields = ['interactions', 'tool', 'source', 'destination', 'openClick', 'advanceClick']
+		for field in banned_fields:
+			if field in cp:
+				raise ValueError(f"Step '{step['id']}': completionPath with kind 'multipleChoice' cannot have '{field}'")
+
+		return {
+			'kind': 'multipleChoice',
+			'question': question,
+			'choices': choices,
+			'completionEvent': cp['completionEvent'],
+		}
+
 	else:
-		raise ValueError(f"Step '{step['id']}': completionPath kind '{kind}' not in ['interactionSequence', 'directTool', 'modal']")
+		raise ValueError(f"Step '{step['id']}': completionPath kind '{kind}' not in ['interactionSequence', 'directTool', 'modal', 'applyReagent', 'multipleChoice']")
 
 
 #============================================
@@ -508,7 +707,7 @@ def validate_completion_path_contract(step, items, reagents):
 
 	Validates:
 	(a) completionPath is required on every step
-	(b) completionPath.kind is one of: interactionSequence, directTool, modal
+	(b) completionPath.kind is one of: interactionSequence, directTool, modal, multipleChoice
 	(c) For kind: interactionSequence:
 	    - interactions is a non-empty list
 	    - Banned fields: tool, openClick, advanceClick, completionEvent at kind-block level
@@ -521,6 +720,10 @@ def validate_completion_path_contract(step, items, reagents):
 	    - advanceClick is a non-empty kebab-case string (regex: ^[a-z][a-z0-9-]*$)
 	    - completionEvent is a non-empty string (no 'click:' prefix)
 	    - Banned fields: interactions, tool
+	(e2) For kind: multipleChoice:
+	    - question, choices (list with 2+ items), completionEvent required
+	    - Exactly one choice must have correct: true
+	    - Banned fields: interactions, tool, source, destination, openClick, advanceClick
 	(f) Reject legacy top-level interactionSequence field
 	(g) Reject author-written completionTrigger and targetItems (derived fields)
 
@@ -528,6 +731,7 @@ def validate_completion_path_contract(step, items, reagents):
 	"""
 	step_id = step['id']
 	item_ids = set(items.keys())
+	reagent_ids = set(reagents.keys())
 
 	# (a) completionPath is required
 	if 'completionPath' not in step:
@@ -539,12 +743,12 @@ def validate_completion_path_contract(step, items, reagents):
 	if not isinstance(cp, dict):
 		raise ValueError(f"Step '{step_id}': completionPath must be a dict")
 
-	# (b) kind must be one of the three allowed values
+	# (b) kind must be one of the allowed values
 	if 'kind' not in cp:
 		raise ValueError(f"Step '{step_id}': completionPath missing 'kind'")
 
 	kind = cp['kind']
-	allowed_kinds = {'interactionSequence', 'directTool', 'modal'}
+	allowed_kinds = {'interactionSequence', 'directTool', 'modal', 'multipleChoice'}
 	if kind not in allowed_kinds:
 		raise ValueError(
 			f"Step '{step_id}': completionPath kind '{kind}' not in {allowed_kinds}"
@@ -568,6 +772,126 @@ def validate_completion_path_contract(step, items, reagents):
 			raise ValueError(
 				f"Step '{step_id}': completionPath kind 'interactionSequence' has banned fields: {found_banned}"
 			)
+
+		# Validate plateTargets if present
+		if 'plateTargets' in cp:
+			plate_targets = cp['plateTargets']
+			if not isinstance(plate_targets, list):
+				raise ValueError(
+					f"Step '{step_id}': completionPath.plateTargets must be a list"
+				)
+			# plateTargets length must equal interactions length / 2
+			if len(plate_targets) * 2 != len(interactions):
+				raise ValueError(
+					f"Step '{step_id}': plateTargets length ({len(plate_targets)}) must equal "
+					f"interactions length ({len(interactions)}) / 2"
+				)
+			# Validate each target
+			for target_idx, target in enumerate(plate_targets):
+				if not isinstance(target, dict):
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}] is not a dict"
+					)
+				for field in ['rows', 'cols', 'liquid', 'volumeMl', 'label']:
+					if field not in target:
+						raise ValueError(
+							f"Step '{step_id}': plateTargets[{target_idx}] missing required field '{field}'"
+						)
+				# Validate rows
+				rows = target['rows']
+				if not isinstance(rows, list) or len(rows) == 0:
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}].rows must be a non-empty list"
+					)
+				# Validate cols
+				cols = target['cols']
+				if not isinstance(cols, list) or len(cols) == 0:
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}].cols must be a non-empty list"
+					)
+				# Validate liquid references a known reagent
+				liquid = target['liquid']
+				if liquid not in reagent_ids:
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}].liquid '{liquid}' not in reagents"
+					)
+				# Validate volumeMl
+				volume_ml = target['volumeMl']
+				if not isinstance(volume_ml, (int, float)) or volume_ml <= 0:
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}].volumeMl must be a positive number, got {volume_ml}"
+					)
+				# Validate label
+				label = target['label']
+				if not isinstance(label, str) or not label:
+					raise ValueError(
+						f"Step '{step_id}': plateTargets[{target_idx}].label must be a non-empty string"
+					)
+
+		# Check tubeTargets and plateTargets are mutually exclusive
+		if 'tubeTargets' in cp and 'plateTargets' in cp:
+			raise ValueError(
+				f"Step '{step_id}': tubeTargets and plateTargets are mutually exclusive on a single step"
+			)
+
+		# Validate tubeTargets if present
+		if 'tubeTargets' in cp:
+			tube_targets = cp['tubeTargets']
+			if not isinstance(tube_targets, list):
+				raise ValueError(
+					f"Step '{step_id}': completionPath.tubeTargets must be a list"
+				)
+			# tubeTargets length must equal interactions length / 4
+			if len(tube_targets) * 4 != len(interactions):
+				raise ValueError(
+					f"Step '{step_id}': tubeTargets length ({len(tube_targets)}) * 4 must equal "
+					f"interactions length ({len(interactions)})"
+				)
+			# Validate each target
+			for target_idx, target in enumerate(tube_targets):
+				if not isinstance(target, dict):
+					raise ValueError(
+						f"Step '{step_id}': tubeTargets[{target_idx}] is not a dict"
+					)
+				for field in ['source', 'diluent', 'destination', 'soluteVolumeMl', 'diluentVolumeMl', 'resultLiquid', 'resultLabel']:
+					if field not in target:
+						raise ValueError(
+							f"Step '{step_id}': tubeTargets[{target_idx}] missing required field '{field}'"
+						)
+				# Validate source is a known item
+				source = target['source']
+				if not isinstance(source, str):
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].source must be a string")
+				if source not in item_ids:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].source '{source}' not in items")
+				# Validate diluent is a known reagent
+				diluent = target['diluent']
+				if not isinstance(diluent, str):
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].diluent must be a string")
+				if diluent not in reagent_ids:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].diluent '{diluent}' not in reagents")
+				# Validate destination is a known item
+				destination = target['destination']
+				if not isinstance(destination, str):
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].destination must be a string")
+				if destination not in item_ids:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].destination '{destination}' not in items")
+				# Validate volumes are positive numbers
+				if not isinstance(target['soluteVolumeMl'], (int, float)) or target['soluteVolumeMl'] <= 0:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].soluteVolumeMl must be a positive number")
+				if not isinstance(target['diluentVolumeMl'], (int, float)) or target['diluentVolumeMl'] <= 0:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].diluentVolumeMl must be a positive number")
+				# Validate resultLiquid is a known reagent
+				result_liquid = target['resultLiquid']
+				if not isinstance(result_liquid, str):
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].resultLiquid must be a string")
+				if result_liquid not in reagent_ids:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].resultLiquid '{result_liquid}' not in reagents")
+				# Validate resultLabel is a non-empty string
+				result_label = target['resultLabel']
+				if not isinstance(result_label, str) or not result_label:
+					raise ValueError(f"Step '{step_id}': tubeTargets[{target_idx}].resultLabel must be a non-empty string")
+
 		# Validate interactions with existing rules
 		validate_step_interactions(step, items, reagents)
 
@@ -637,6 +961,91 @@ def validate_completion_path_contract(step, items, reagents):
 				f"Step '{step_id}': completionPath kind 'modal' has banned fields: {found_banned}"
 			)
 
+	elif kind == 'multipleChoice':
+		# Validate question
+		if 'question' not in cp:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'multipleChoice' missing 'question'"
+			)
+		question = cp['question']
+		if not isinstance(question, str) or not question:
+			raise ValueError(
+				f"Step '{step_id}': completionPath.question must be a non-empty string"
+			)
+
+		# Validate choices
+		if 'choices' not in cp:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'multipleChoice' missing 'choices'"
+			)
+		choices = cp['choices']
+		if not isinstance(choices, list) or len(choices) < 2:
+			raise ValueError(
+				f"Step '{step_id}': completionPath.choices must be a list with at least 2 entries"
+			)
+
+		# Validate each choice
+		correct_count = 0
+		for choice_idx, choice in enumerate(choices):
+			if not isinstance(choice, dict):
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] is not a dict"
+				)
+			if 'id' not in choice:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] missing 'id'"
+				)
+			if 'text' not in choice:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] missing 'text'"
+				)
+			if 'feedback' not in choice:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] missing 'feedback'"
+				)
+			if not isinstance(choice['id'], str) or not choice['id']:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] id must be a non-empty string"
+				)
+			if not isinstance(choice['text'], str) or not choice['text']:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] text must be a non-empty string"
+				)
+			if not isinstance(choice['feedback'], str) or not choice['feedback']:
+				raise ValueError(
+					f"Step '{step_id}': completionPath.choices[{choice_idx}] feedback must be a non-empty string"
+				)
+			if choice.get('correct'):
+				correct_count += 1
+
+		if correct_count != 1:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'multipleChoice' must have exactly one choice with correct: true (found {correct_count})"
+			)
+
+		# Validate completionEvent
+		if 'completionEvent' not in cp:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'multipleChoice' missing 'completionEvent'"
+			)
+		completion_event = cp['completionEvent']
+		if not isinstance(completion_event, str) or not completion_event:
+			raise ValueError(
+				f"Step '{step_id}': completionPath.completionEvent must be a non-empty string"
+			)
+		if completion_event.startswith('click:'):
+			raise ValueError(
+				f"Step '{step_id}': completionPath.completionEvent '{completion_event}' must not start with 'click:'"
+			)
+
+		# Check banned fields
+		banned_at_kind = {'interactions', 'tool', 'source', 'destination', 'openClick', 'advanceClick'}
+		found_banned = banned_at_kind & set(cp.keys())
+		if found_banned:
+			raise ValueError(
+				f"Step '{step_id}': completionPath kind 'multipleChoice' has banned fields: {found_banned}"
+			)
+
 	# (f) Reject legacy top-level interactionSequence
 	if 'interactionSequence' in step:
 		raise ValueError(
@@ -701,7 +1110,7 @@ def validate_steps(steps, items, reagents, parts, days):
 	reagent_ids = set(reagents.keys())
 	valid_modal_owners = {'drug_treatment', 'microscope', 'incubator', 'plate', 'plate_reader'}
 
-	valid_scenes = {'hood', 'bench', 'incubator', 'microscope', 'plate', 'plate_reader'}
+	valid_scenes = {'hood', 'bench', 'incubator', 'microscope', 'well_plate_workspace', 'plate_reader'}
 
 	step_ids = set()
 	first_step_id = None
@@ -970,48 +1379,48 @@ PROTOCOL_METADATA = {
 		'kind': 'full_protocol',
 	},
 	'tutorial_bench_direct': {
-		'title': 'Bench Direct Tutorial',
-		'description': 'Complete a simple one-click bench action.',
+		'title': 'Bench Equipment Quick Start',
+		'description': 'Complete a one-click bench instrument action and confirm the scene switch flow.',
 		'kind': 'tutorial',
 	},
 	'tutorial_cell_counter': {
-		'title': 'Cell Counter Tutorial',
-		'description': 'Capture a cell count with the automated counter.',
+		'title': 'Automated Cell Counter Practice',
+		'description': 'Send a prepared sample through the cell counter and capture the reported cell count.',
 		'kind': 'tutorial',
 	},
 	'tutorial_drug_dilution': {
-		'title': 'Drug Dilution Tutorial',
-		'description': 'Prepare a simple drug dilution.',
+		'title': 'Drug Dilution Setup Practice',
+		'description': 'Prepare a basic working dilution before applying drug treatment steps.',
 		'kind': 'tutorial',
 	},
 	'tutorial_hemocytometer_count': {
-		'title': 'Hemocytometer Count Tutorial',
-		'description': 'Practice manual count entry.',
+		'title': 'Manual Hemocytometer Counting',
+		'description': 'Practice entering quadrant counts and estimating cell density by hand.',
 		'kind': 'tutorial',
 	},
 	'tutorial_hood_transfer': {
-		'title': 'Hood Transfer Tutorial',
-		'description': 'Move liquid safely in the hood.',
+		'title': 'Sterile Hood Liquid Transfer',
+		'description': 'Practice a safe pipette transfer between hood reagents and culture vessels.',
 		'kind': 'tutorial',
 	},
 	'tutorial_pbs': {
-		'title': 'PBS Tutorial',
-		'description': 'Practice a repeat pipette transfer.',
+		'title': 'PBS Wash Transfer Practice',
+		'description': 'Repeat a PBS pipette transfer and learn the rinse workflow used during splitting.',
 		'kind': 'tutorial',
 	},
-	'tutorial_plate_intro': {
-		'title': 'Plate Intro Tutorial',
-		'description': 'Learn the plate workspace.',
+	'tutorial_plate_drug_additions': {
+		'title': '96-Well Plate Drug Additions',
+		'description': 'Practice the OVCAR8 Day-2 workflow: media adjustment, carboplatin dose series across rows B-H, metformin in columns 7-12, then incubate.',
 		'kind': 'tutorial',
 	},
 	'tutorial_plate_reader': {
-		'title': 'Plate Reader Tutorial',
-		'description': 'Read an assay plate.',
+		'title': 'Plate Reader Assay Readout',
+		'description': 'Run the assay plate through the reader and review the endpoint measurement.',
 		'kind': 'tutorial',
 	},
 	'tutorial_split': {
-		'title': 'Split Tutorial',
-		'description': 'Practice the first split workflow.',
+		'title': 'Cell Splitting Workflow Practice',
+		'description': 'Walk through the first split actions: spray, aspirate, wash, and prepare the flask.',
 		'kind': 'tutorial',
 	},
 }
@@ -1439,13 +1848,13 @@ def main():
 	else:
 		protocol_names = discover_protocols(repo_root)
 
-	try:
-		protocol_catalog = build_protocol_catalog(repo_root, protocol_names)
-	except (FileNotFoundError, ValueError) as err:
-		print(f"Error: {err}", file=sys.stderr)
-		return 1
-
 	if args.validate_only:
+		# Validate requested protocols without building full catalog
+		try:
+			build_protocol_catalog(repo_root, protocol_names)
+		except (FileNotFoundError, ValueError) as err:
+			print(f"Error: {err}", file=sys.stderr)
+			return 1
 		print("Validation passed.")
 		return 0
 

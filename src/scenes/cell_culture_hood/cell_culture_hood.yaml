@@ -10,12 +10,12 @@ items:
   #   center: flask (dominant working object)
   #   right : serological, aspirating, multichannel pipettes
   - id: well_plate
-    label: 24-Well Plate
+    label: 96-Well Plate
     zone: back_row
     depthTier: 1
-    svgAsset: well_plate
+    svgAsset: well_plate_96
     kind: plate
-    widthScale: 1.0
+    widthScale: 1.12
     anchorY: bottom
     alignStop: left
   - id: media_bottle

@@ -1,0 +1,866 @@
+learning:
+  objectives: Students completing this mini-tutorial will have achieved fluency with the OVCAR8 96-well plate map, carboplatin dilution mathematics, and the media-adjustment-before-drug ordering rule that keeps every well at a final 200 µL volume. A stock solution is the concentrated source stored in the stock room. An intermediate dilution is a temporary dilution prepared in a microtube to feed working solutions. A working solution is what goes into the cells or wells.
+  outcomes: Students completing this mini-tutorial will be able to dose a 96-well assay plate Day-2 unsupervised using the 1-2-5 carboplatin dose series, fixed-dose metformin, and media-adjusted wells.
+  goals: Overall, this mini-tutorial aims to accomplish bridging the single-technique tutorials to the full OVCAR8 carboplatin + metformin MTT IC50 protocol and establishing a pedagogy-first template that all future tutorials in this repo adopt.
+parts:
+- id: tutorial_plate_drug_additions_part
+  label: 'Tutorial: 96-Well Plate Drug Additions'
+  dayId: tutorial_plate_day
+days:
+- id: tutorial_plate_day
+  label: Tutorial Day
+steps:
+# Step 1: Open plate workspace (modal transition to dedicated plate scene)
+- id: open_plate_workspace
+  label: Open the 96-well plate workspace
+  action: Click the 96-well plate to enter the dedicated plate scene
+  why: Drug additions are easier to see when the plate is the whole scene, not a modal popup.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 1
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    not_loaded: Click the 96-well plate to begin.
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: confirm-plate-intro
+    completionEvent: plate-workspace-opened
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_carb_parent_stock
+
+# Step 2: Calculate carboplatin intermediate dilution (multipleChoice)
+- id: calc_carb_parent_stock
+  label: Calculate carboplatin intermediate dilution concentration
+  action: Answer the dilution question about making 400 µM intermediate dilution from 10 mM carboplatin
+  why: Understanding how to make intermediate dilutions is the foundation for the dose series.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 2
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Check your math using C1V1 = C2V2.
+  completionPath:
+    kind: multipleChoice
+    question: "The carboplatin stock solution from the stock room is 10 mM. You need a 400 µM intermediate dilution. Which recipe makes 1 mL?"
+    choices:
+      - id: carb_parent_a
+        text: "4 µL stock solution + 996 µL water"
+        feedback: "That would make 40 µM, not 400 µM."
+      - id: carb_parent_b
+        text: "40 µL stock solution + 960 µL water"
+        correct: true
+        feedback: "Correct. 10 mM = 10,000 µM, and 400 × 1000 / 10,000 = 40 µL."
+      - id: carb_parent_c
+        text: "100 µL stock solution + 900 µL water"
+        feedback: "That would make 1,000 µM."
+      - id: carb_parent_d
+        text: "400 µL stock solution + 600 µL water"
+        feedback: "That would make 4,000 µM."
+    completionEvent: calc_carb_parent_stock
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_carb_first_dilution
+
+# Step 3: Calculate carboplatin first working solution (multipleChoice)
+- id: calc_carb_first_dilution
+  label: Calculate carboplatin first working solution concentration
+  action: Answer the dilution question about making 200 µM from 400 µM intermediate dilution
+  why: Working solutions are prepared step-by-step to avoid large pipetting errors.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 3
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Check your math using C1V1 = C2V2.
+  completionPath:
+    kind: multipleChoice
+    question: "From the 400 µM carboplatin intermediate dilution, make a 200 µM working solution. Which recipe makes 1 mL?"
+    choices:
+      - id: carb_first_a
+        text: "100 µL of 400 µM + 900 µL media"
+        feedback: "That would make 40 µM."
+      - id: carb_first_b
+        text: "500 µL of 400 µM + 500 µL media"
+        correct: true
+        feedback: "Correct. 400 × 500 / 1000 = 200 µM."
+      - id: carb_first_c
+        text: "250 µL of 400 µM + 750 µL media"
+        feedback: "That would make 100 µM."
+      - id: carb_first_d
+        text: "900 µL of 400 µM + 100 µL media"
+        feedback: "That would make 360 µM."
+    completionEvent: calc_carb_first_dilution
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_carb_pattern_check
+
+# Step 4: Identify the dilution pattern (multipleChoice)
+- id: calc_carb_pattern_check
+  label: Identify the 1-2-5 dose-series pattern
+  action: Answer the question about the pattern used in carboplatin dose series
+  why: Understanding why 1-2-5 is used helps you defend your dose choices on a graph.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 4
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Think about what makes a dose series easy to graph and interpret.
+  completionPath:
+    kind: multipleChoice
+    question: "The middle working solutions are prepared using the same C1V1 = C2V2 logic. Which pattern best describes the 1-2-5 series?"
+    choices:
+      - id: carb_pattern_a
+        text: "Each step is always 2×"
+        feedback: "That would give a binary series."
+      - id: carb_pattern_b
+        text: "The values repeat 1, 2, 5 across each order of magnitude"
+        correct: true
+        feedback: "Correct. 1-2-5 gives three points per decade with graph-friendly numbers."
+      - id: carb_pattern_c
+        text: "Each step is always 10×"
+        feedback: "That would give one point per decade."
+      - id: carb_pattern_d
+        text: "The values are random"
+        feedback: "The values are chosen for graph readability."
+    completionEvent: calc_carb_pattern_check
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_carb_last_dilution
+
+# Step 5: Calculate final carboplatin working solution (multipleChoice)
+- id: calc_carb_last_dilution
+  label: Calculate the lowest carboplatin working solution concentration
+  action: Answer the dilution question about making 4 µM from 8 µM
+  why: The lowest dose row needs the most heavily diluted working solution.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 5
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Check your math using C1V1 = C2V2.
+  completionPath:
+    kind: multipleChoice
+    question: "From an 8 µM carboplatin working solution, make a 4 µM working solution. Which recipe makes 1 mL?"
+    choices:
+      - id: carb_last_a
+        text: "500 µL of 8 µM + 500 µL media"
+        correct: true
+        feedback: "Correct. 8 × 500 / 1000 = 4 µM."
+      - id: carb_last_b
+        text: "250 µL of 8 µM + 750 µL media"
+        feedback: "That would make 2 µM."
+      - id: carb_last_c
+        text: "100 µL of 8 µM + 900 µL media"
+        feedback: "That would make 0.8 µM."
+      - id: carb_last_d
+        text: "900 µL of 8 µM + 100 µL media"
+        feedback: "That would make 7.2 µM."
+    completionEvent: calc_carb_last_dilution
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: prep_carb_first_dilution
+
+# Step 6: Prepare 4 µM carboplatin working solution (first dilution) (interactionSequence with tubeTargets)
+- id: prep_carb_first_dilution
+  label: Prepare 4 µM carboplatin working solution (lowest dose)
+  action: Transfer stock carboplatin and media to dilution tube B
+  why: The lowest dose row needs the most heavily diluted working solution prepared first.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 6
+  requiredItems:
+  - multichannel_pipette
+  - carboplatin_stock_solution
+  - media_bottle
+  - dilution_tube_carb_b
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Transfer carboplatin stock and media to dilution tube B.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: carboplatin_stock_solution
+        liquid: carboplatin
+        volumeMl: 0.010
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.010
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: dilution_tube_carb_b
+        liquid: carboplatin
+        consumesVolumeMl: 0.010
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 0.990
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 0.990
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: dilution_tube_carb_b
+        liquid: media
+        consumesVolumeMl: 0.990
+        completionEvent: carb_first_dilution_done
+    tubeTargets:
+      - source: carboplatin_stock_solution
+        diluent: media
+        destination: dilution_tube_carb_b
+        soluteVolumeMl: 0.010
+        diluentVolumeMl: 0.990
+        resultLiquid: carboplatin
+        resultLabel: "4 µM carboplatin working solution"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: prep_carb_middle_transition
+
+# Step 7: Transition: skip the middle carboplatin dilutions (modal with autoFillTubes)
+- id: prep_carb_middle_transition
+  label: "Skip-ahead: Pre-fill dilution tubes C-G"
+  action: Review the pre-filled intermediate dilution tubes
+  why: The middle working solutions follow the same C1V1 = C2V2 logic as tube B and tube H. We prepare them automatically here to focus on the extreme cases.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 7
+  requiredItems:
+  - dilution_tube_carb_c
+  - dilution_tube_carb_d
+  - dilution_tube_carb_e
+  - dilution_tube_carb_f
+  - dilution_tube_carb_g
+  scene: well_plate_workspace
+  errorHints:
+    not_loaded: Review the pre-filled tubes and click advance to continue.
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: confirm-carb-middle-tubes
+    completionEvent: carb_middle_transition_done
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: prep_carb_last_dilution
+
+# Step 8: Prepare 400 µM carboplatin working solution (last dilution) (interactionSequence with tubeTargets)
+- id: prep_carb_last_dilution
+  label: Prepare 400 µM carboplatin working solution (highest dose)
+  action: Transfer stock carboplatin and media to dilution tube H
+  why: The highest dose row needs a less diluted working solution prepared last.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 8
+  requiredItems:
+  - multichannel_pipette
+  - carboplatin_stock_solution
+  - media_bottle
+  - dilution_tube_carb_h
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Transfer carboplatin stock and media to dilution tube H.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: carboplatin_stock_solution
+        liquid: carboplatin
+        volumeMl: 0.040
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.040
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: dilution_tube_carb_h
+        liquid: carboplatin
+        consumesVolumeMl: 0.040
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 0.960
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 0.960
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: dilution_tube_carb_h
+        liquid: media
+        consumesVolumeMl: 0.960
+        completionEvent: carb_last_dilution_done
+    tubeTargets:
+      - source: carboplatin_stock_solution
+        diluent: media
+        destination: dilution_tube_carb_h
+        soluteVolumeMl: 0.040
+        diluentVolumeMl: 0.960
+        resultLiquid: carboplatin
+        resultLabel: "400 µM carboplatin working solution"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: prep_metformin_dilution
+
+# Step 9: Prepare metformin working solution (interactionSequence with tubeTargets)
+- id: prep_metformin_dilution
+  label: Prepare 200 mM metformin working solution
+  action: Transfer stock metformin and media to dilution tube
+  why: Metformin is the fixed modifier drug; the working solution is prepared the same way as carboplatin.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 9
+  requiredItems:
+  - multichannel_pipette
+  - metformin_stock_solution
+  - media_bottle
+  - dilution_tube_metformin_working
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Transfer metformin stock and media to dilution tube.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: metformin_stock_solution
+        liquid: metformin
+        volumeMl: 0.200
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: metformin
+            volumeMl: 0.200
+            colorKey: metformin
+      - tool: multichannel_pipette
+        destination: dilution_tube_metformin_working
+        liquid: metformin
+        consumesVolumeMl: 0.200
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 0.800
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 0.800
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: dilution_tube_metformin_working
+        liquid: media
+        consumesVolumeMl: 0.800
+        completionEvent: metformin_dilution_done
+    tubeTargets:
+      - source: metformin_stock_solution
+        diluent: media
+        destination: dilution_tube_metformin_working
+        soluteVolumeMl: 0.200
+        diluentVolumeMl: 0.800
+        resultLiquid: metformin
+        resultLabel: "200 mM metformin working solution"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: add_media_cols_1_6
+
+# Step 10: Add media to columns 1-6 (interactionSequence with plateTargets)
+- id: add_media_cols_1_6
+  label: Add 95 µL media to columns 1-6
+  action: Use the multichannel pipette to apply media to rows B-H, columns 1-6
+  why: Add media first so each well has the correct working volume before any drugs.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 10
+  requiredItems:
+  - well_plate
+  - multichannel_pipette
+  - media_bottle
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Click the highlighted wells to apply media.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 0.095
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 0.095
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: media
+        consumesVolumeMl: 0.095
+        completionEvent: media-cols-1-6-confirm
+    plateTargets:
+      - rows: [B, C, D, E, F, G, H]
+        cols: [1, 2, 3, 4, 5, 6]
+        liquid: media
+        volumeMl: 0.095
+        label: "95 µL media to rows B-H, columns 1-6"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: add_media_cols_7_12
+
+# Step 11: Add media to columns 7-12 (interactionSequence with plateTargets)
+- id: add_media_cols_7_12
+  label: Add 90 µL media to columns 7-12
+  action: Use the multichannel pipette to apply media to rows B-H, columns 7-12
+  why: These wells will also receive metformin, so they get less media to stay at 200 µL total.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 11
+  requiredItems:
+  - well_plate
+  - multichannel_pipette
+  - media_bottle
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Click the highlighted wells to apply media.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: media_bottle
+        liquid: media
+        volumeMl: 0.090
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: media
+            volumeMl: 0.090
+            colorKey: media
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: media
+        consumesVolumeMl: 0.090
+        completionEvent: media-cols-7-12-confirm
+    plateTargets:
+      - rows: [B, C, D, E, F, G, H]
+        cols: [7, 8, 9, 10, 11, 12]
+        liquid: media
+        volumeMl: 0.090
+        label: "90 µL media to rows B-H, columns 7-12"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: add_carboplatin
+
+# Step 12: Add carboplatin 1-2-5 dose series (interactionSequence with 7 plateTargets)
+- id: add_carboplatin
+  label: Add carboplatin 1-2-5 dose series (rows B-H)
+  action: Add 5 µL carboplatin working solution per well, one row at a time
+  why: The 1-2-5 dose series (0.1, 0.2, 0.5, 1, 2, 5, 10 µM final) gives clean log-spaced doses for graphing.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 12
+  requiredItems:
+  - well_plate
+  - multichannel_pipette
+  - dilution_tube_carb_b
+  - dilution_tube_carb_c
+  - dilution_tube_carb_d
+  - dilution_tube_carb_e
+  - dilution_tube_carb_f
+  - dilution_tube_carb_g
+  - dilution_tube_carb_h
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Add carboplatin to each row, starting with row B (lowest dose).
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      # Row B: 0.1 µM final (4 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_b
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row C: 0.2 µM final (8 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_c
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row D: 0.5 µM final (20 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_d
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row E: 1 µM final (40 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_e
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row F: 2 µM final (80 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_f
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row G: 5 µM final (200 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_g
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+      # Row H: 10 µM final (400 µM working stock)
+      - tool: multichannel_pipette
+        source: dilution_tube_carb_h
+        liquid: carboplatin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: carboplatin
+            volumeMl: 0.005
+            colorKey: carboplatin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: carboplatin
+        consumesVolumeMl: 0.005
+        completionEvent: carb-add-confirm
+    plateTargets:
+      - rows: [B]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "0.1 µM carboplatin working solution to row B"
+      - rows: [C]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "0.2 µM carboplatin working solution to row C"
+      - rows: [D]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "0.5 µM carboplatin working solution to row D"
+      - rows: [E]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "1 µM carboplatin working solution to row E"
+      - rows: [F]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "2 µM carboplatin working solution to row F"
+      - rows: [G]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "5 µM carboplatin working solution to row G"
+      - rows: [H]
+        cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+        liquid: carboplatin
+        volumeMl: 0.005
+        label: "10 µM carboplatin working solution to row H"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_metformin_working_stock
+
+# Step 13: Calculate metformin working solution (multipleChoice)
+- id: calc_metformin_working_stock
+  label: Calculate metformin working solution concentration
+  action: Answer the dilution question about making 200 mM metformin working solution
+  why: Metformin is the fixed modifier drug; students need to understand its concentration as well.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 13
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Check your math using C1V1 = C2V2.
+  completionPath:
+    kind: multipleChoice
+    question: "The metformin stock solution from the stock room is 1 M. You need a 200 mM working solution. Which recipe makes 1 mL?"
+    choices:
+      - id: metformin_a
+        text: "20 µL stock solution + 980 µL media"
+        feedback: "That would make 20 mM."
+      - id: metformin_b
+        text: "100 µL stock solution + 900 µL media"
+        feedback: "That would make 100 mM."
+      - id: metformin_c
+        text: "200 µL stock solution + 800 µL media"
+        correct: true
+        feedback: "Correct. 1000 mM × 200 / 1000 = 200 mM."
+      - id: metformin_d
+        text: "500 µL stock solution + 500 µL media"
+        feedback: "That would make 500 mM."
+    completionEvent: calc_metformin_working_stock
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: calc_metformin_final_well
+
+# Step 14: Calculate final metformin concentration in well (multipleChoice)
+- id: calc_metformin_final_well
+  label: Calculate final metformin concentration in well
+  action: Answer the question about the final metformin concentration after adding to the well
+  why: Understanding how dilution on the plate works is crucial for dose calculations.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 14
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    wrong_answer: Use C1V1 = C2V2. Check your units carefully.
+  completionPath:
+    kind: multipleChoice
+    question: "You add 5 µL of 200 mM metformin working solution into a 200 µL final well. What is the final metformin concentration?"
+    choices:
+      - id: metformin_final_a
+        text: "0.5 mM"
+        feedback: "Check the working solution and the well volume."
+      - id: metformin_final_b
+        text: "2.5 mM"
+        feedback: "Check the working solution and the well volume."
+      - id: metformin_final_c
+        text: "5 mM"
+        correct: true
+        feedback: "Correct. 200 mM × 5 µL / 200 µL = 5 mM."
+      - id: metformin_final_d
+        text: "10 mM"
+        feedback: "That would need 10 µL or a higher stock solution."
+    completionEvent: calc_metformin_final_well
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: add_metformin
+
+# Step 15: Add metformin (interactionSequence with 1 plateTarget)
+- id: add_metformin
+  label: Add 5 mM metformin to columns 7-12
+  action: Use the multichannel pipette to apply metformin working stock to rows B-H, columns 7-12
+  why: Metformin is the fixed modifier drug, applied only to the combination-treatment columns.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 15
+  requiredItems:
+  - well_plate
+  - multichannel_pipette
+  - dilution_tube_metformin_working
+  scene: well_plate_workspace
+  errorHints:
+    incomplete: Click the highlighted wells to apply metformin.
+  completionPath:
+    kind: interactionSequence
+    interactions:
+      - tool: multichannel_pipette
+        source: dilution_tube_metformin_working
+        liquid: metformin
+        volumeMl: 0.005
+        stateChange:
+          heldLiquid:
+            tool: multichannel_pipette
+            liquid: metformin
+            volumeMl: 0.005
+            colorKey: metformin
+      - tool: multichannel_pipette
+        destination: well_plate
+        liquid: metformin
+        consumesVolumeMl: 0.005
+        completionEvent: metformin-add-confirm
+    plateTargets:
+      - rows: [B, C, D, E, F, G, H]
+        cols: [7, 8, 9, 10, 11, 12]
+        liquid: metformin
+        volumeMl: 0.005
+        label: "5 mM metformin from 200 mM working solution to rows B-H, columns 7-12"
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: review_loaded_plate
+
+# Step 16: Review loaded plate (modal)
+- id: review_loaded_plate
+  label: Review the loaded plate
+  action: Review the completed plate summary
+  why: Confirm that all wells are properly loaded and ready for incubation.
+  partId: tutorial_plate_drug_additions_part
+  dayId: tutorial_plate_day
+  stepIndex: 16
+  requiredItems:
+  - well_plate
+  scene: well_plate_workspace
+  errorHints:
+    not_loaded: Review the plate summary.
+  completionPath:
+    kind: modal
+    openClick: well_plate
+    advanceClick: confirm-loaded-plate
+    completionEvent: review-loaded-plate
+  plateMap:
+    annotations:
+    - row: A
+      colRange: [1, 6]
+      text: Untreated control
+    - row: A
+      colRange: [7, 12]
+      text: Metformin-only control (5 mM)
+  nextId: null

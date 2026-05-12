@@ -177,7 +177,7 @@ items:
 
   # Hood items - individual dilution tubes (content-named per protocol Part 4)
   dilution_tube_carb_intermediate:
-    label: "Carb 200 uM intermediate"
+    label: "400 µM Carboplatin Parent Stock"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -186,7 +186,7 @@ items:
     allowedLiquids: [carboplatin, water]
 
   dilution_tube_carb_b:
-    label: "Carb row B"
+    label: "4 µM Carboplatin Working Stock (0.1 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -195,7 +195,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_c:
-    label: "Carb row C"
+    label: "8 µM Carboplatin Working Stock (0.2 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -204,7 +204,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_d:
-    label: "Carb row D"
+    label: "20 µM Carboplatin Working Stock (0.5 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -213,7 +213,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_e:
-    label: "Carb row E"
+    label: "40 µM Carboplatin Working Stock (1 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -222,7 +222,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_f:
-    label: "Carb row F"
+    label: "80 µM Carboplatin Working Stock (2 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -231,7 +231,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_g:
-    label: "Carb row G"
+    label: "200 µM Carboplatin Working Stock (5 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -240,7 +240,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_carb_h:
-    label: "Carb row H"
+    label: "400 µM Carboplatin Working Stock (10 µM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood
@@ -249,7 +249,7 @@ items:
     allowedLiquids: [carboplatin, media]
 
   dilution_tube_metformin_working:
-    label: "Metformin 10 mM working stock"
+    label: "200 mM Metformin Working Stock (5 mM final)"
     role: culture_vessel
     asset: dilution_tube_rack
     scene: hood

@@ -1166,3 +1166,662 @@ def test_rule_8g_fail_authored_target_items():
 
 	with pytest.raises(ValueError):
 		validator.validate_completion_path_contract(step, items, reagents)
+
+
+#--- (f) multipleChoice kind validation ---
+
+def test_rule_8f_pass_valid_multiple_choice():
+	"""Rule 8(f): valid multipleChoice with question, choices, and exactly one correct pass."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'What is the color of PBS?',
+			'choices': [
+				{'id': 'choice_blue', 'text': 'Blue', 'correct': True, 'feedback': 'Correct!'},
+				{'id': 'choice_red', 'text': 'Red', 'feedback': 'Incorrect, PBS is colorless to pale yellow.'},
+				{'id': 'choice_green', 'text': 'Green', 'feedback': 'No, PBS is not green.'},
+			],
+			'completionEvent': 'color_quiz_done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	# Should not raise
+	validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_question():
+	"""Rule 8(f): multipleChoice without question raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True, 'feedback': 'Yes'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_choices():
+	"""Rule 8(f): multipleChoice without choices raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_completion_event():
+	"""Rule 8(f): multipleChoice without completionEvent raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True, 'feedback': 'Yes'},
+			],
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_less_than_two_choices():
+	"""Rule 8(f): multipleChoice with less than 2 choices raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True, 'feedback': 'Yes'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_no_correct_choice():
+	"""Rule 8(f): multipleChoice with no correct choice raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'feedback': 'Nope'},
+				{'id': 'choice_b', 'text': 'B', 'feedback': 'Also nope'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_two_correct_choices():
+	"""Rule 8(f): multipleChoice with two correct choices raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True, 'feedback': 'Yes'},
+				{'id': 'choice_b', 'text': 'B', 'correct': True, 'feedback': 'Also yes'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_choice_id():
+	"""Rule 8(f): choice without id raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'text': 'A', 'correct': True, 'feedback': 'Yes'},
+				{'id': 'choice_b', 'text': 'B', 'feedback': 'Nope'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_choice_text():
+	"""Rule 8(f): choice without text raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'correct': True, 'feedback': 'Yes'},
+				{'id': 'choice_b', 'text': 'B', 'feedback': 'Nope'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_missing_choice_feedback():
+	"""Rule 8(f): choice without feedback raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True},
+				{'id': 'choice_b', 'text': 'B', 'feedback': 'Nope'},
+			],
+			'completionEvent': 'done',
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_rule_8f_fail_banned_interactions_field():
+	"""Rule 8(f): multipleChoice with banned 'interactions' field raises ValueError."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'multipleChoice',
+			'question': 'Pick one',
+			'choices': [
+				{'id': 'choice_a', 'text': 'A', 'correct': True, 'feedback': 'Yes'},
+				{'id': 'choice_b', 'text': 'B', 'feedback': 'Nope'},
+			],
+			'completionEvent': 'done',
+			'interactions': [],
+		}
+	}
+	items = {}
+	reagents = {}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+#============================================
+# plateTargets validation (F2)
+#============================================
+
+def test_plate_targets_pass_valid_structure():
+	"""plateTargets with valid structure and liquid reference passes."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'pipette', 'source': 'media_bottle', 'liquid': 'media', 'volumeMl': 100},
+				{'tool': 'pipette', 'destination': 'well_plate', 'liquid': 'media', 'completionEvent': 'test_done'},
+			],
+			'plateTargets': [
+				{
+					'rows': ['A', 'B'],
+					'cols': [1, 2, 3],
+					'liquid': 'media',
+					'volumeMl': 0.1,
+					'label': 'Test target',
+				}
+			],
+		}
+	}
+	items = {
+		'pipette': {'role': 'transfer_tool'},
+		'media_bottle': {'role': 'reagent_source'},
+		'well_plate': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'media': {'label': 'Media', 'colorKey': 'media', 'displayColor': '#ffffff'},
+	}
+
+	# Should not raise
+	validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_plate_targets_fail_length_mismatch():
+	"""plateTargets length must equal interactions length / 2."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'pipette', 'source': 'media_bottle', 'liquid': 'media', 'volumeMl': 100},
+				{'tool': 'pipette', 'destination': 'well_plate', 'liquid': 'media', 'completionEvent': 'test_done'},
+			],
+			'plateTargets': [
+				{'rows': ['A'], 'cols': [1], 'liquid': 'media', 'volumeMl': 0.1, 'label': 'Target 1'},
+				{'rows': ['B'], 'cols': [1], 'liquid': 'media', 'volumeMl': 0.1, 'label': 'Target 2'},
+			],
+		}
+	}
+	items = {
+		'pipette': {'role': 'transfer_tool'},
+		'media_bottle': {'role': 'reagent_source'},
+		'well_plate': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'media': {'label': 'Media', 'colorKey': 'media', 'displayColor': '#ffffff'},
+	}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_plate_targets_fail_unknown_liquid():
+	"""plateTargets.liquid must reference a known reagent."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'pipette', 'source': 'media_bottle', 'liquid': 'media', 'volumeMl': 100},
+				{'tool': 'pipette', 'destination': 'well_plate', 'liquid': 'media', 'completionEvent': 'test_done'},
+			],
+			'plateTargets': [
+				{'rows': ['A'], 'cols': [1], 'liquid': 'unknown_reagent', 'volumeMl': 0.1, 'label': 'Bad target'},
+			],
+		}
+	}
+	items = {
+		'pipette': {'role': 'transfer_tool'},
+		'media_bottle': {'role': 'reagent_source'},
+		'well_plate': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'media': {'label': 'Media', 'colorKey': 'media', 'displayColor': '#ffffff'},
+	}
+
+	with pytest.raises(ValueError):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+#============================================
+# tubeTargets validation tests
+#============================================
+
+def test_tube_targets_pass():
+	"""tubeTargets with valid structure passes."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock', 'completionEvent': None},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'distilled_water', 'completionEvent': 'tube_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	# Should not raise
+	validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_length_mismatch():
+	"""tubeTargets length must match interactions / 4."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'distilled_water', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				},
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_b',
+					'soluteVolumeMl': 0.020,
+					'diluentVolumeMl': 0.980,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '200 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+		'tube_b': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="tubeTargets length"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_unknown_source():
+	"""tubeTargets.source must reference a known item."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'unknown_source', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'distilled_water', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'unknown_source',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="not in items"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_unknown_diluent():
+	"""tubeTargets.diluent must reference a known reagent."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'unknown_diluent', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'unknown_diluent', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'unknown_diluent',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="diluent.*not in reagents"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_unknown_destination():
+	"""tubeTargets.destination must reference a known item."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'unknown_tube', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'unknown_tube', 'liquid': 'distilled_water', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'unknown_tube',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="destination.*not in items"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_negative_volume():
+	"""tubeTargets volumes must be positive."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'distilled_water', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': -0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="soluteVolumeMl.*positive"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_fail_unknown_result_liquid():
+	"""tubeTargets.resultLiquid must reference a known reagent."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock'},
+				{'tool': 'p200', 'source': 'water_bottle', 'liquid': 'distilled_water', 'volumeMl': 960},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'distilled_water', 'completionEvent': 'test_done'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'unknown_result',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'water_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+	}
+
+	with pytest.raises(ValueError, match="resultLiquid.*not in reagents"):
+		validator.validate_completion_path_contract(step, items, reagents)
+
+
+def test_tube_targets_mutually_exclusive_with_plate_targets():
+	"""tubeTargets and plateTargets cannot both be present on a single step."""
+	step = {
+		'id': 'test_step',
+		'completionPath': {
+			'kind': 'interactionSequence',
+			'interactions': [
+				{'tool': 'p200', 'source': 'stock_bottle', 'liquid': 'stock', 'volumeMl': 40},
+				{'tool': 'p200', 'destination': 'tube_a', 'liquid': 'stock', 'completionEvent': 'test_done'},
+			],
+			'plateTargets': [
+				{'rows': ['A'], 'cols': [1], 'liquid': 'stock', 'volumeMl': 0.1, 'label': 'Test'},
+			],
+			'tubeTargets': [
+				{
+					'source': 'stock_bottle',
+					'diluent': 'distilled_water',
+					'destination': 'tube_a',
+					'soluteVolumeMl': 0.040,
+					'diluentVolumeMl': 0.960,
+					'resultLiquid': 'working_stock',
+					'resultLabel': '400 uM working stock',
+				}
+			],
+		}
+	}
+	items = {
+		'p200': {'role': 'transfer_tool'},
+		'stock_bottle': {'role': 'reagent_source'},
+		'tube_a': {'role': 'culture_vessel'},
+	}
+	reagents = {
+		'stock': {'label': 'Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+		'distilled_water': {'label': 'Water', 'colorKey': 'water', 'displayColor': '#ffffff'},
+		'working_stock': {'label': 'Working Stock', 'colorKey': 'stock', 'displayColor': '#000000'},
+	}
+
+	with pytest.raises(ValueError, match="mutually exclusive"):
+		validator.validate_completion_path_contract(step, items, reagents)

@@ -1,5 +1,12 @@
 # Cell culture standard operating protocol
 
+> Editor's note: this protocol document predates the simulation work in this repo.
+> Three quantitative discrepancies have been identified and are tracked in
+> [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md): (1) the well-volume sum
+> in Part 5, (2) the metformin working-stock concentration in Part 4, and
+> (3) the cols 7-12 media-adjustment volume in Part 5. The simulation uses the
+> reconciled values; this document is pending a corresponding revision.
+
 OVCAR8 | Carboplatin IC50 +/- Metformin (5 mM) | 72h MTT assay
 
 - Drug 1: Carboplatin

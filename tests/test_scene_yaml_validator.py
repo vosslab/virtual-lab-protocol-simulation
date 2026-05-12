@@ -67,26 +67,37 @@ def extract_reagent_ids() -> set:
 
 	content = inventory_path.read_text()
 
-	# Parse both EQUIPMENT and REAGENTS exports.
+	# Parse INVENTORY_CATALOG to extract all protocol equipment and reagents.
 	import re
 	item_ids = set()
 
-	# Extract EQUIPMENT keys from: export const EQUIPMENT: Record<string, InventoryItem> = {
-	equipment_match = re.search(r'export const EQUIPMENT:.*?\{(.*?)\};', content, re.DOTALL)
-	if equipment_match:
-		equipment_block = equipment_match.group(1)
-		# Match pattern like "item_key":{
-		pattern = r'([a-z_0-9]+):\s*\{'
-		matches = re.findall(pattern, equipment_block)
-		item_ids.update(matches)
+	# Extract the INVENTORY_CATALOG object
+	catalog_match = re.search(
+		r'export const INVENTORY_CATALOG:.*?\{(.*?)\n\};',
+		content,
+		re.DOTALL
+	)
+	if catalog_match:
+		catalog_block = catalog_match.group(1)
+		# Find all equipment and reagents blocks within each protocol
+		# Match "equipment: {" and "reagents: {" sections
+		# Equipment keys come before reagents within each protocol
+		equipment_pattern = r'equipment:\s*\{(.*?)\n\s*\},'
+		reagents_pattern = r'reagents:\s*\{(.*?)\n\s*\}(?:,\s*}|,)'
 
-	# Extract REAGENTS keys from: export const REAGENTS: Record<string, InventoryReagent> = {
-	reagents_match = re.search(r'export const REAGENTS:.*?\{(.*?)\};', content, re.DOTALL)
-	if reagents_match:
-		reagents_block = reagents_match.group(1)
-		pattern = r'([a-z_0-9]+):\s*\{'
-		matches = re.findall(pattern, reagents_block)
-		item_ids.update(matches)
+		# Extract all equipment keys
+		for equipment_match in re.finditer(equipment_pattern, catalog_block, re.DOTALL):
+			equipment_block = equipment_match.group(1)
+			pattern = r'([a-z_0-9]+):\s*\{'
+			matches = re.findall(pattern, equipment_block)
+			item_ids.update(matches)
+
+		# Extract all reagent keys
+		for reagents_match in re.finditer(reagents_pattern, catalog_block, re.DOTALL):
+			reagents_block = reagents_match.group(1)
+			pattern = r'([a-z_0-9]+):\s*\{'
+			matches = re.findall(pattern, reagents_block)
+			item_ids.update(matches)
 
 	return item_ids
 

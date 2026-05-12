@@ -18,7 +18,7 @@ export const FLASK_MAX_VOLUME_ML = 20;
 export const FLASK_STARTING_MEDIA_ML = 12;
 export const FRESH_MEDIA_TARGET_ML = 15;
 export const WELL_VOLUME_UL = 500; // microliters per well
-export const DRUG_STOCK_CONCENTRATION_UM = 100; // micromolar stock solution
+export const DRUG_STOCK_CONCENTRATION_MM = 10; // millimolar stock solution (10 mM)
 
 // Cell parameters
 export const INITIAL_CELL_COUNT = 500000;
@@ -46,7 +46,7 @@ export const STAR_THRESHOLDS = {
 // for each protocol step. Advisory in this pass; future refactors will
 // use this for step-driven trigger resolution.
 export type TriggerSpec = {
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader';
+	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
 	completionEvent: string;
 };
 
@@ -87,6 +87,8 @@ export interface Interaction {
 export interface CompletionPathInteractionSequence {
 	kind: 'interactionSequence';
 	interactions: Interaction[];
+	plateTargets?: readonly PlateTarget[];  // optional: per-well liquid targets for plate scene
+	tubeTargets?: readonly TubeTarget[];    // optional: microtube liquid targets for dilution prep
 }
 
 export interface CompletionPathDirectTool {
@@ -102,9 +104,71 @@ export interface CompletionPathModal {
 	completionEvent: string;
 }
 
-export type CompletionPath = CompletionPathInteractionSequence | CompletionPathDirectTool | CompletionPathModal;
+export type MultipleChoiceOption = {
+	readonly id: string;
+	readonly text: string;
+	readonly correct?: boolean;
+	readonly feedback: string;
+};
+
+export interface CompletionPathMultipleChoice {
+	kind: 'multipleChoice';
+	question: string;
+	choices: readonly MultipleChoiceOption[];
+	completionEvent: string;
+}
+
+export type CompletionPath = CompletionPathInteractionSequence | CompletionPathDirectTool | CompletionPathModal | CompletionPathMultipleChoice;
 
 //============================================
+// Well-liquid tracking for plateTargets (mirrors heldLiquid pattern for pipettes)
+//============================================
+
+export interface WellLiquid {
+	readonly liquid: string;      // reagent id
+	readonly volumeMl: number;    // volume in milliliters
+	readonly colorKey: string;    // color role for rendering
+}
+
+export interface PlateTarget {
+	readonly rows: readonly string[];     // e.g. ['B', 'C', 'D']
+	readonly cols: readonly number[];     // 1-indexed: e.g. [1, 2, 3]
+	readonly liquid: string;              // reagent id
+	readonly volumeMl: number;            // volume per well
+	readonly label: string;               // user-facing label
+}
+
+//============================================
+// Microtube-liquid tracking for tubeTargets (mirrors wellLiquid pattern for dilution prep)
+//============================================
+
+export interface MicrotubeLiquid {
+	readonly liquid: string;      // reagent id
+	readonly volumeMl: number;    // volume in milliliters
+	readonly colorKey: string;    // color role for rendering
+}
+
+export interface TubeTarget {
+	readonly source: string;              // item id of stock or earlier dilution tube
+	readonly diluent: string;             // reagent id, typically "distilled_water"
+	readonly destination: string;         // item id of destination microtube
+	readonly soluteVolumeMl: number;      // volume of solute to add
+	readonly diluentVolumeMl: number;     // volume of diluent to add
+	readonly resultLiquid: string;        // reagent id that ends up in destination
+	readonly resultLabel: string;         // user-facing label
+}
+
+//============================================
+
+export interface PlateMapAnnotation {
+	readonly row?: string;
+	readonly colRange?: readonly [number, number];
+	readonly text: string;
+}
+
+export interface PlateMapSpec {
+	readonly annotations?: readonly PlateMapAnnotation[];
+}
 
 export interface ProtocolStep {
 	id: string;
@@ -116,7 +180,7 @@ export interface ProtocolStep {
 	stepIndex: number;
 	requiredItems: string[];
 	errorHints: Record<string, string>;
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'plate' | 'plate_reader';
+	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
 	correctVolumeMl?: number;
 	toleranceMl?: number;
 	// Explicit successor for the state machine. null marks the final step.
@@ -134,8 +198,12 @@ export interface ProtocolStep {
 	// gets completed. The kind discriminator selects one of three shapes:
 	// interactionSequence, directTool, or modal.
 	completionPath?: CompletionPath;
+	// Plate-specific configuration (annotations for Row A labels, etc.)
+	plateMap?: PlateMapSpec;
 	// Derived list of items used in this step, ordered by first appearance.
 	usedItems: string[];
+	// Optional structured details (e.g., column-specific volumes) rendered as bullets.
+	details?: readonly string[];
 }
 
 

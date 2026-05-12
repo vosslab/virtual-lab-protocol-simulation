@@ -30,28 +30,6 @@ import { getModalOwnedSteps } from "../step_dispatch";
 import { renderProtocolPanel, renderScoreDisplay } from "../ui_rendering";
 import { applyPlateDoseMap } from "./plate_96";
 
-
-export const DILUTION_OPTIONS = [
-	{
-		label: 'Half-log dilution (10x to vehicle)',
-		doses: [0, 0.1, 0.5, 1, 5, 10],
-		correct: true,
-		description: 'Spans 3 orders of magnitude for a full dose-response curve.',
-	},
-	{
-		label: 'Binary dilution (2-fold serial)',
-		doses: [0, 0.5, 1, 2, 4, 8],
-		correct: false,
-		description: 'Only 16-fold range -- too narrow to capture the full dose-response.',
-	},
-	{
-		label: 'Shallow gradient (uniform spacing)',
-		doses: [0, 2, 4, 6, 8, 10],
-		correct: false,
-		description: 'Linear spacing misses the low-dose region where the curve is most informative.',
-	},
-];
-
 // Per-step screen content. Keyed by protocol step id. Each entry
 // describes the modal body for that one step. The dispatcher reads
 // the active step id from gameState and looks up the matching entry.
@@ -64,20 +42,11 @@ export type DrugModalScreen = {
 
 export const DRUG_MODAL_SCREENS: Record<string, DrugModalScreen> = {
 	carb_intermediate: {
-		title: 'Carboplatin 200 uM Intermediate Stock',
-		recipe: 'Mix 20 &micro;L 10 mM carboplatin with 980 &micro;L sterile water. '
-			+ 'This 200 &micro;M intermediate is the source for the low-range working stocks.',
+		title: 'Carboplatin 400 µM Parent Stock',
+		recipe: 'Mix 40 &micro;L 10 mM carboplatin with 960 &micro;L sterile water. '
+			+ 'This 400 &micro;M parent stock is the source for the low-range working stocks.',
 		buttonLabel: 'Prepare intermediate stock',
-		successMessage: 'Carboplatin intermediate prepared (200 uM).',
-	},
-	carb_high_range: {
-		title: 'Carboplatin High-Range Working Stocks',
-		recipe: 'From the 10 mM carboplatin stock, make 2 high-range working stocks: '
-			+ '<br>5 &micro;M stock: 10 &micro;L stock + 990 &micro;L media.'
-			+ '<br>25 &micro;M stock: 50 &micro;L stock + 950 &micro;L media.'
-			+ '<br>These give the 5 &micro;M and 25 &micro;M final concentrations for rows G and H.',
-		buttonLabel: 'Prepare high-range stocks',
-		successMessage: 'Carboplatin high-range working stocks prepared.',
+		successMessage: 'Carboplatin parent stock prepared (400 µM).',
 	},
 	metformin_stock: {
 		title: 'Metformin 10 mM Working Stock',
@@ -199,69 +168,6 @@ export function renderSingleButtonScreen(modal: HTMLElement, stepId: string): vo
 			advanceDrugModalStep(stepId);
 		});
 	}
-}
-
-// ============================================
-// carb_low_range screen: three dilution-series options. The
-// correct answer (half-log) still advances the step; wrong answers
-// also advance but register a warning that lands in scoring
-// feedback later.
-export function renderDilutionChoiceScreen(modal: HTMLElement): void {
-	let html = '<button class="modal-close" data-walker-advance="modal-close" aria-label="Close">&times;</button>';
-	html += '<h2>Choose Low-Range Dilution Series</h2>';
-	html += '<div style="padding:0 8px 16px 8px;">';
-	html += '<p style="font-size:14px;color:#212121;margin:0 0 16px 0;">';
-	html += 'Pick the dilution scheme that walks from the 200 &micro;M intermediate '
-		+ 'to the low-range working stocks for rows B-F of the plate:</p>';
-
-	for (let i = 0; i < DILUTION_OPTIONS.length; i++) {
-		const opt = DILUTION_OPTIONS[i]!; // invariant: loop index guaranteed in bounds
-		const bgColor = '#f5f5f5';
-		const borderColor = '#e0e0e0';
-		html += '<button class="dilution-choice" data-dilution-index="' + i + '" data-walker-advance="dilution-choice" ';
-		html += 'style="display:block;width:100%;text-align:left;padding:14px 16px;margin-bottom:10px;';
-		html += 'background:' + bgColor + ';border:2px solid ' + borderColor + ';border-radius:8px;';
-		html += 'cursor:pointer;transition:all 0.2s ease;font-size:14px;">';
-		html += '<div style="font-weight:600;margin-bottom:4px;">' + opt.label + '</div>';
-		html += '<div style="font-size:12px;color:#757575;">Concentrations (&micro;M): ' + opt.doses.join(', ') + '</div>';
-		html += '</button>';
-	}
-
-	html += '</div>';
-	modal.innerHTML = html;
-
-	const buttons = modal.querySelectorAll('.dilution-choice');
-	buttons.forEach((btn) => {
-		const el = btn as HTMLElement;
-		const idx = parseInt(el.getAttribute('data-dilution-index') || '0');
-		el.addEventListener('click', () => {
-			selectLowRangeDilution(idx);
-		});
-		el.addEventListener('mouseenter', () => {
-			el.style.transform = 'translateX(4px)';
-			el.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-		});
-		el.addEventListener('mouseleave', () => {
-			el.style.transform = '';
-			el.style.boxShadow = '';
-		});
-	});
-}
-
-// ============================================
-export function selectLowRangeDilution(index: number): void {
-	const option = DILUTION_OPTIONS[index];
-	if (!option) return; // narrows option to defined type
-	if (option.correct) {
-		showNotification(
-			'Half-log dilution applied -- good choice for a full dose-response!',
-			'success',
-		);
-	} else {
-		registerWarning('Suboptimal dilution: ' + option.description);
-		gameState.dilutionErrors = (gameState.dilutionErrors || 0) + 1;
-	}
-	advanceDrugModalStep('carb_low_range');
 }
 
 // ============================================
