@@ -269,6 +269,7 @@ as a reference snapshot. New shell or Python E2E runners belong here as
 | [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) | Canonical terms for the scene system |
 | [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
 | [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) | Step-flow architecture |
+| [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md) | Real-browser protocol walkthrough guide |
 | [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |
 | [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) | Reconciliation of math discrepancies in the OVCAR8 protocol doc; dose-series options and well-volume model |
 | [VOSS_DILUTIONS_GUIDE.md](VOSS_DILUTIONS_GUIDE.md) | Reference guide for solutions, dilutions, C1V1 = C2V2, and serial dilutions |
@@ -280,9 +281,9 @@ as a reference snapshot. New shell or Python E2E runners belong here as
 | [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md) | Markdown formatting |
 | [REPO_STYLE.md](REPO_STYLE.md) | Repo-wide conventions |
 | [CLAUDE_HOOK_USAGE_GUIDE.md](CLAUDE_HOOK_USAGE_GUIDE.md) | Claude Code permissions hook |
-| [LAYOUT_METRICS.md](LAYOUT_METRICS.md) | Layout-engine metric reference |
+| [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) | Layout-engine placement reference |
 | [SCALING_MODEL.md](SCALING_MODEL.md) | Scaling model notes |
-| [PIPETTE_LIQUID_CONVENTION.md](PIPETTE_LIQUID_CONVENTION.md) | Pipette-liquid convention |
+| [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) | Liquid rendering convention |
 | [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) | Third-party asset attribution |
 | [active_plans/](active_plans/) | In-flight plan documents |
 | [archive/](archive/) | Archived plans, status snapshots, and design notes |

@@ -1,0 +1,43 @@
+# Virtual lab protocol games
+
+This document defines the hard design contract for the virtual lab protocol games repo. These rules are permanent invariants. This document is short on purpose: it lists only non-negotiable rules.
+
+Agent-editable documents include the philosophy and rationale in [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md). The full technical specification lives in [PRIMARY_SPEC.md](PRIMARY_SPEC.md).
+
+If any other document or any code conflicts with this contract, this contract wins. The conflicting document or code must be fixed.
+
+New contract items require user approval. Agents may not add, remove, or edit contract items without approval.
+
+## Contract items
+
+1. **Scene and protocol configuration live in YAML.**
+   All scene and protocol configuration options live in YAML files. Shared behavior and common runtime systems live in TypeScript. For example, SVG object declarations and object layout belong in YAML. Object highlighting and the layout engine belong in TypeScript. Earlier TypeScript was developed around the hood scene, with other scenes treated as derivatives. That design is no longer acceptable.
+
+2. **Large protocols are compiled from mini-protocols.**
+   Large protocols are assembled from individual mini-protocols in sequence. This keeps building and testing atomic, in line with `REPO_STYLE.md`. Moving forward, each mini-protocol compiles to its own HTML file. The repo should not return to one monolithic 12,000-line HTML file.
+
+3. **Clickable objects are SVG-backed scene objects laid out by the layout engine.**
+   All clickable objects, including pipettes, instruments, bottles, flasks, plates, racks, tubes, and wells, have SVG representations stored in `assets/`. All asset SVG files must be normalized. All SVGs used in a scene are declared in that scene's YAML file.
+
+   Scene object layout is handled by the layout engine. Scenes must use the layout engine for positioning clickable objects. Custom geometry is allowed only for subparts inside a structured scientific object, such as wells inside a plate, tubes inside a rack, lanes inside a gel, or marks inside an instrument display. The structured object itself still remains a YAML-declared scene object placed by the layout engine.
+
+   See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md). All liquids in objects are handled by [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md). Liquids should not be hard-coded into objects. This will take effort before inserting a new asset.
+
+4. **A mini-protocol is not complete until the visible interaction works.**
+   A walkthrough script must run through each step, click each required interaction, and save a screenshot at each step. Passing TypeScript, validators, and walker setup is not enough. For interactive scene work, completion requires browser evidence showing the intended objects, highlights, click targets, and visible state changes.
+
+5. **A mini-protocol is scoped by its learning block.**
+   Every mini-protocol must define `learning.objectives`, `learning.outcomes`, and `learning.goals`. These fields define what the mini-protocol teaches, what students can do afterward, and why the mini-protocol exists in the broader curriculum. A mini-protocol teaches one focused self-contained workflow.
+   - `learning objectives`: begins with "Students completing this mini-protocol will have achieved..." and states what students will gain fluency with.
+   - `learning outcomes`: begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol.
+   - `learning goals`: begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose.
+
+## Related references
+
+- [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) explains how scenes are wired and run at runtime.
+- [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) defines canonical scene-system terms.
+- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) defines scene YAML schema.
+- [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) explains how to author protocols.
+- [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) describes canonical protocol step behavior.
+- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) defines canonical protocol terms.
+- [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) defines protocol YAML schema.

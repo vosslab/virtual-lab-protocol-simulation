@@ -1,5 +1,8 @@
 # Layout Metrics
 
+Archived note. The current layout-engine reference is
+[LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md).
+
 <!-- Verified current: 2026-05-07 (invariants confirmed against src/; stale paths and M3 framing removed) -->
 
 Visual layout invariants and scaling ratios for the professor coach card, bench scene, and equipment.
@@ -108,7 +111,7 @@ The test logs pass/fail status for each viewport and assertion. Final exit code 
 
 ## References
 
-- [src/bench_config.ts](../src/bench_config.ts) - bench zone and item layout configuration
-- [src/asset_specs.ts](../src/asset_specs.ts) - equipment widthScale and visual metrics
-- [src/professor_overlay.ts](../src/professor_overlay.ts) - coach card rendering and mood
-- [devel/test_layout_metrics.mjs](../devel/test_layout_metrics.mjs) - automated layout test
+- [src/scenes/bench/bench.yaml](../../src/scenes/bench/bench.yaml) - current bench scene layout declaration
+- [src/asset_specs.ts](../../src/asset_specs.ts) - equipment widthScale and visual metrics
+- [src/professor_overlay.ts](../../src/professor_overlay.ts) - coach card rendering and mood
+- Retired `devel/test_layout_metrics.mjs` - automated layout test referenced by this archived note

@@ -28,7 +28,6 @@ but it is not a mathematically exact Bezier or arc extrema solver.
 from __future__ import annotations
 
 import argparse
-import math
 import re
 import shutil
 import sys

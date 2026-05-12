@@ -2,6 +2,45 @@
 
 ## 2026-05-12 (well_plate_workspace plan paused)
 
+### Documentation
+- Added [docs/WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md), a practical
+  reference for the real-browser protocol walkthrough. The guide documents the
+  current headless Playwright walker, startup sequence, output files,
+  schema-driven click dispatch, scene scoping, failure modes, wrong-order mode,
+  implementation nuances, edge cases for new coders, step-level screenshot
+  evidence, a new-mini-protocol setup checklist, walkthrough-ready definition,
+  update triggers for future guide edits, and required future work for
+  per-interaction or per-click screenshots.
+- Updated [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) to define row, zone, and
+  depth fit as the criterion for using the layout engine, clarify that CSS or
+  zone declarations are not complete without renderer integration through
+  `computeSceneLayout()`, and require screenshot evidence for layout-affecting
+  changes.
+- Expanded [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) with implementation
+  details from [src/layout_engine.ts](../src/layout_engine.ts), including
+  percent-unit outputs, alignment invariants, footprint math, overflow
+  behavior, label wrapping and collision rules, depth resolution, and
+  `sceneBounds` translation behavior.
+- Added onboarding guidance to [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) with
+  a new-scene setup checklist, minimal YAML skeleton, and layout-ready
+  definition.
+- Added [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md), a dedicated reference for
+  the scene layout engine. The guide documents the current placement method in
+  [src/layout_engine.ts](../src/layout_engine.ts), including zone/item inputs,
+  adapter responsibilities, footprint-based row placement, depth and baseline
+  behavior, labels, scene bounds, and a workflow for laying out a new scene.
+- Moved the older layout metrics note to
+  [docs/archive/LAYOUT_METRICS.md](archive/LAYOUT_METRICS.md) so
+  [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) is the current layout-engine
+  reference.
+- New pause note at
+  [docs/active_plans/well_plate_workspace_pause_note.md](active_plans/well_plate_workspace_pause_note.md)
+  records what is verified, what is not, what should be reused, what
+  should not be trusted, and why the work is paused.
+- Top-of-file pause banner added to
+  [focused_well_plate_workspace_plan.md](../focused_well_plate_workspace_plan.md)
+  pointing at the pause note.
+
 ### Decisions and Failures
 - **Plan paused.** The `focused_well_plate_workspace_plan.md` plan is
   stopped. The mini-tutorial `tutorial_plate_drug_additions` and the
@@ -28,15 +67,6 @@
   scenes, no workspace layout invariants, render/dispatch contracts
   undocumented, visual proof gate (`WP-C1-VISUAL`) and full visual
   review (`WP-G1`) never completed.
-
-### Documentation
-- New pause note at
-  [docs/active_plans/well_plate_workspace_pause_note.md](active_plans/well_plate_workspace_pause_note.md)
-  records what is verified, what is not, what should be reused, what
-  should not be trusted, and why the work is paused.
-- Top-of-file pause banner added to
-  [focused_well_plate_workspace_plan.md](../focused_well_plate_workspace_plan.md)
-  pointing at the pause note.
 
 ## 2026-05-11 (WP-F1: Documentation sync for well_plate_workspace mini-tutorial)
 

@@ -449,7 +449,7 @@ export function renderPlateScene(ctx: SceneContext): void {
 
 	function emphasisClass(itemId: string, regionDefault: string): string {
 		// Only the dispatcher's expected click target gets the active emphasis.
-		// The tool field (pipette) is logical-only — clicking it is a no-op
+		// The tool field (pipette) is logical-only - clicking it is a no-op
 		// during interactionSequence steps. Marking it active would mislead
 		// the player into clicking it expecting something to happen.
 		if (itemId && itemId === activeClickTarget) return 'equipment-active';
@@ -584,7 +584,7 @@ export function renderPlateScene(ctx: SceneContext): void {
 	}
 
 	// Wire clicks on every tool and every source SVG (static workspace inventory).
-	// querySelectorAll, not querySelector — multiple tools and sources are rendered
+	// querySelectorAll, not querySelector - multiple tools and sources are rendered
 	// at every step and any of them can be the active click target depending on
 	// the current step's interaction.
 	const toolObjs = container.querySelectorAll('.scene-tool');

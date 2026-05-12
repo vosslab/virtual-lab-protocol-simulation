@@ -137,7 +137,7 @@ re-verifying.
     cannot be clicked" primitive yet.
 
 - Scene layout lacks stable design invariants
-  - `docs/LAYOUT_METRICS.md` defines pixel-level layout invariants for hood
+  - `docs/archive/LAYOUT_METRICS.md` defines pixel-level layout invariants for hood
     and bench (widthScale ratios, occupancy thresholds, overlap budgets,
     empty-space fraction, pipette-height constraint) and enforces them via
     `devel/test_layout_metrics.mjs`. There is no equivalent for
@@ -210,7 +210,7 @@ The next step is a separate scene-system plan that nails down:
   what state mutation happens, how the step advances),
 - one stable visual contract (active vs dim vs future, cursor, pointer-
   events, pulse) shared across all scenes,
-- a per-scene layout invariant doc analogous to `LAYOUT_METRICS.md` for
+- a per-scene layout invariant doc analogous to `docs/archive/LAYOUT_METRICS.md` for
   hood/bench,
 - a screenshot gate that runs against the contract, not against a specific
   protocol's content.
