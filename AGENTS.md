@@ -1,15 +1,49 @@
-## Coding Style
-See Python coding style in docs/PYTHON_STYLE.md.
-See Markdown style in docs/MARKDOWN_STYLE.md.
-See repo style in docs/REPO_STYLE.md.
-See SVG asset pipeline ownership in [docs/SVG_PIPELINE.md](docs/SVG_PIPELINE.md).
-SVG string constants live under `generated/svg_assets/<name>.ts` (gitignored, regenerated from `assets/equipment/*.svg`); `src/svg_globals.ts` and `src/svg_globals.d.ts` no longer exist.
-When making edits, document them in docs/CHANGELOG.md.
-When in doubt, implement the changes the user asked for rather than waiting for a response; the user is not the best reader and will likely miss your request and then be confused why it was not implemented or fixed.
-When changing code always run focused tests on changed code, documentation does not require tests.
-Agents may find pytest programs to run in the tests folder, including smoke tests and pyflakes runner scripts. These should all be capable of the -k flag, such as pytest test_feature.py -k changed_file.py
+# AGENTS.md
 
-## Python Environment
-AI agents (Codex/Claude) must run Python using `source source_me.sh && python3` (use Python 3.12 only).
-This is only for AI agents runtime, not a requirement for repo scripts.
-On this user's macOS (Homebrew Python 3.12), Python modules are installed to `/opt/homebrew/lib/python3.12/site-packages/`.
+This repo builds virtual lab protocol games. Treat the project as a protocol-authoring and simulation system.
+
+## Required reading
+
+Before making nontrivial edits, read:
+
+- docs/PRIMARY_CONTRACT.md
+- docs/REPO_STYLE.md
+- docs/PYTHON_STYLE.md
+- docs/MARKDOWN_STYLE.md
+- docs/TYPESCRIPT_STYLE.md
+- docs/PLAYWRIGHT_USAGE.md
+- docs/SVG_PIPELINE.md
+
+`PRIMARY_CONTRACT.md` wins over other docs and code. New contract items require user approval.
+
+## Where to find things
+
+- Repo map: docs/FILE_STRUCTURE.md
+- Architecture: docs/CODE_ARCHITECTURE.md
+- Scene system: docs/SCENE_ARCHITECTURE.md, docs/SCENE_VOCABULARY.md, docs/SCENE_YAML_FORMAT.md
+- Protocol system: docs/PROTOCOL_AUTHORING_GUIDE.md, docs/PROTOCOL_VOCABULARY.md, docs/PROTOCOL_YAML_FORMAT.md
+- Layout, liquids, and walkthroughs: docs/LAYOUT_ENGINE.md, docs/LIQUID_CONVENTION.md, docs/WALKTHROUGH_GUIDE.md
+- Current work: docs/TODO.md, docs/ROADMAP.md, docs/active_plans/
+
+## Project invariants
+
+- Scene and protocol configuration live in YAML.
+- Shared behavior and runtime systems live in TypeScript.
+- Clickable scene objects are SVG-backed assets declared in YAML.
+- Scene object layout is handled by the layout engine.
+- Custom geometry is only for subparts inside structured scientific objects.
+- Liquids are handled by the liquid convention.
+- Large protocols are assembled from mini-protocols.
+- A mini-protocol is scoped by its `learning:` block.
+- A mini-protocol is complete only when the visible browser interaction works.
+
+## Editing behavior
+
+Make the requested change when the next safe step is clear. Prefer minimal edits and preserve the user's wording and document structure when possible.
+
+When changing code, run focused tests on changed code. Document user-visible changes in docs/CHANGELOG.md.
+
+## Python environment
+
+Agents must run Python with `source source_me.sh && python3`.
+On this user's macOS, Homebrew Python 3.12 modules are installed to `/opt/homebrew/lib/python3.12/site-packages/`.
