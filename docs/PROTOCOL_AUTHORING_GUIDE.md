@@ -375,18 +375,18 @@ For assessment and calculation-verification steps, use `multipleChoice`:
     wrong_answer: "Check your math using C1V1 = C2V2."
   completionPath:
     kind: multipleChoice
-    question: "You have a 10 mM stock solution. You need 1 mL of 200 µM working solution. Which recipe is correct?"
+    question: "You have a 10 mM stock solution. You need 1 mL of 200 uM working solution. Which recipe is correct?"
     choices:
       - id: option_a
-        text: "20 µL stock solution + 980 µL media"
-        feedback: "That would make 200 µM. Correct!"
+        text: "20 uL stock solution + 980 uL media"
+        feedback: "That would make 200 uM. Correct!"
         correct: true
       - id: option_b
-        text: "100 µL stock solution + 900 µL media"
-        feedback: "That would make 1000 µM. Check your math."
+        text: "100 uL stock solution + 900 uL media"
+        feedback: "That would make 1000 uM. Check your math."
       - id: option_c
-        text: "10 µL stock solution + 990 µL media"
-        feedback: "That would make 100 µM. Try again."
+        text: "10 uL stock solution + 990 uL media"
+        feedback: "That would make 100 uM. Try again."
     completionEvent: calculate_dilution
   plateMap:
     annotations:
@@ -414,7 +414,7 @@ For dilution-prep steps, use `interactionSequence` with `tubeTargets` metadata:
 
 ```yaml
 - id: make_carb_first_dilution
-  label: Prepare carboplatin 400 µM working solution
+  label: Prepare carboplatin 400 uM working solution
   action: Transfer stock carboplatin and distilled water to dilution tube
   why: The dilution step teaches C1V1 = C2V2 and builds the working solutions for plate dosing.
   partId: part_dilution
@@ -461,7 +461,7 @@ For dilution-prep steps, use `interactionSequence` with `tubeTargets` metadata:
         soluteVolumeMl: 0.040
         diluentVolumeMl: 0.960
         resultLiquid: carboplatin
-        resultLabel: "400 µM carboplatin working solution"
+        resultLabel: "400 uM carboplatin working solution"
   nextId: make_carb_second_dilution
 ```
 
@@ -581,7 +581,7 @@ build error.
 ## Protocol audit tool
 
 The protocol audit script
-([tools/analyze_protocol_audit.py](../../tools/analyze_protocol_audit.py))
+([tools/analyze_protocol_audit.py](../tools/analyze_protocol_audit.py))
 analyzes your protocol and reports completeness issues by comparing
 `requiredItems` against the items derived from `interactionSequence`.
 
@@ -610,8 +610,8 @@ The audit reports four status levels:
 
 ## Per-well liquid tracking with plateTargets
 
-When a step uses the `plate` scene and involves depositing liquid into
-specific wells, use the optional `plateTargets` metadata on
+When a step uses the `well_plate_workspace` scene and involves depositing
+liquid into specific wells, use the optional `plateTargets` metadata on
 `completionPath.kind: interactionSequence`. This field maps each load+discharge
 interaction pair (every 2 interactions) to the wells that receive liquid.
 
@@ -631,7 +631,7 @@ exactly 2 plateTargets:
 
 ```yaml
 - id: add_media_and_drug
-  scene: plate
+  scene: well_plate_workspace
   completionPath:
     kind: interactionSequence
     interactions:
@@ -657,15 +657,15 @@ exactly 2 plateTargets:
         cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         liquid: media
         volumeMl: 0.095
-        label: "Add 95 µL media per well"
+        label: "Add 95 uL media per well"
       - rows: [B]
         cols: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         liquid: carboplatin
         volumeMl: 0.005
-        label: "Add 5 µL carboplatin (0.1 µM final) to row B"
+        label: "Add 5 uL carboplatin (0.1 uM final) to row B"
 ```
 
-The runtime plate dispatcher uses `plateTargets` to:
+The well-plate workspace dispatcher uses `plateTargets` to:
 1. Classify each well (completed, active, future) during rendering.
 2. Deposit liquid into the target wells when each interaction pair completes.
 3. Advance to the next target when the active target finishes.

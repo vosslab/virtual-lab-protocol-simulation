@@ -4,6 +4,27 @@ Triage backlog for issues surfaced but not fixed during recent work. See the
 active plans under `~/.claude/plans/` or [ROADMAP.md](ROADMAP.md) for queued
 work.
 
+## Rendering and content display
+
+### Fix unit rendering for browser-displayed YAML labels
+
+Authored YAML strings that render in the browser should support proper
+scientific unit display, especially micro units. The desired browser display is
+`&mu;L` and `&mu;M`, but the source must remain safe and consistent with the
+repo's ASCII documentation rules. Current workaround is to write `uL` and `uM`
+in YAML labels and fenced code examples.
+
+Acceptance criteria:
+
+- Browser-displayed YAML labels can show `&mu;L` and `&mu;M` correctly.
+- HTML entities such as `&mu;` or `&micro;` do not appear literally in the UI.
+- The rendering path uses safe text handling and does not introduce unsafe
+  HTML injection.
+- Docs clarify the final convention for Markdown prose, fenced YAML examples,
+  and authored YAML labels.
+- Existing ASCII compliance checks still pass, or the exception is explicitly
+  documented if source files are allowed to contain Unicode units.
+
 ## Pre-existing failures surfaced during M1b (2026-05-09)
 
 These were uncovered while landing M1b of the SVG asset pipeline refactor

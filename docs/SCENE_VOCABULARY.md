@@ -14,16 +14,20 @@ test name uses any of these terms, it must use them with these meanings.
 
 | term | one-line definition |
 | --- | --- |
-| scene | A self-contained interactive surface (bench, hood, microscope, etc.) with one DOM root, one adapter, and one YAML config where static scene config exists. |
+| scene | A self-contained interactive surface with one DOM root, one adapter, and one YAML config where static scene config exists. |
 | scene id | The stable string id for a scene; matches the directory name and YAML basename and is the key into `SCENE_CONFIGS` and the scene registry. |
 | adapter | The per-scene TypeScript object that owns `render` and `dispatchInteraction` for one scene id. |
 | capability | A reusable runtime mechanic (click routing, modal flow, grid counting) that scenes opt into by listing in their YAML `capabilities` array. |
-| workspace | A YAML-declared advisory family label naming a scene's surface kind (`equipment_bench`, `wet_lab_hood`, `modal_overlay`); reserved for future runtime use. |
+| workspace | A YAML-declared advisory family label naming a scene's surface kind; reserved for future runtime use. |
 | item | A clickable element declared by `items[]` in scene YAML and dispatched by `data-item-id`. |
+| scene object | A YAML-declared scene item rendered as a visible object in a scene. |
 | zone | A layout region declared by `zones[]` in scene YAML; items reference zones by id. |
+| layout engine | Shared placement system that positions YAML-declared scene items in zones. |
+| structured surface | An object with meaningful internal coordinates or subparts, such as wells, lanes, slots, or readout marks. |
+| subpart | A visual or clickable element inside a structured surface. |
 | wrongOrderMessage | A YAML block with a per-scene wrong-order toast template; RESERVED today (the toast helper hardcodes the message). |
 | elementId | The DOM element id where the driver attaches its capture-phase click listener; defaults to `${sceneId}-scene` if omitted. |
-| instrument-overlay | The shared modal-slot DOM element used by both microscope and plate_reader; only one scene is visible in the slot at a time. |
+| instrument-overlay | The shared modal-slot DOM element used by instrument-style scenes; only one scene is visible in the slot at a time. |
 | module-load side effect | Top-level statement in an adapter or capability module that runs when the module is imported (registration, emitter pre-registration, listener attach, registry mutation). |
 | completion event | The string id passed to `triggerStep(stepId)` to signal that a step has completed; pre-registered via `registeredEmitters.add(...)`. |
 | render | The adapter's `render(ctx)` method; rebuilds the scene's DOM/SVG and rewires its listeners. |
@@ -42,9 +46,8 @@ root element and one TypeScript adapter, and where it has declarable
 static scene config that config lives in one YAML file. Scenes that are
 render-only or programmatically configured may opt out of YAML; today
 every shipped scene has a YAML, but the rule is "one YAML where static
-config exists," not "every scene must have a YAML." There are six scenes
-today: bench, cell_culture_hood, incubator, microscope, plate, plate_reader.
-Adapter files live under `src/scenes/<scene>/<scene>.ts`.
+config exists," not "every scene must have a YAML." Adapter files live
+under `src/scenes/<scene_name>/<scene_name>.ts`.
 
 ### scene id
 
@@ -52,10 +55,9 @@ The stable string id for a scene. It matches the directory name, the YAML
 basename, the adapter's `sceneId` field, the key in
 `generated/scene_data.ts` `SCENE_CONFIGS` (consumed via the
 [src/scene_configs.ts](../src/scene_configs.ts) facade),
-and the key in the scene registry. Example: `bench`, `cell_culture_hood`,
-`plate_reader`. The discoverer in
+and the key in the scene registry. The discoverer in
 [tools/build_scene_data.py](../tools/build_scene_data.py) globs
-`src/scenes/<scene>/<scene>.yaml` to pick scenes up.
+`src/scenes/<scene_name>/<scene_name>.yaml` to pick scenes up.
 
 ### adapter
 
@@ -63,8 +65,6 @@ The per-scene TypeScript object that implements `SceneAdapter`
 ([src/scenes/scene_registry.ts:31-36](../src/scenes/scene_registry.ts)).
 Owns `render(ctx)` and `dispatchInteraction(itemId, ctx)` for one scene
 id. Adapters are registered at module load via `registerScene(adapter)`.
-Example: the bench adapter at
-[src/scenes/bench/bench.ts:609-619](../src/scenes/bench/bench.ts).
 
 ### capability
 
@@ -79,7 +79,7 @@ for which are ACTIVE versus RESERVED.
 ### workspace
 
 A YAML field naming the workspace family for a scene; values seen today
-are `equipment_bench`, `wet_lab_hood`, and `modal_overlay`. Required by
+are stable strings used to classify scene surface kinds. Required by
 the validator
 ([tools/build_scene_data.py](../tools/build_scene_data.py)) but not yet
 read by any TypeScript code. `workspace` is required by the scene YAML
@@ -87,8 +87,8 @@ validator, but it is advisory at runtime today. Reserved for future
 selectors, telemetry, or scene-profile dispatch. Example:
 
 ```yaml
-sceneId: bench
-workspace: equipment_bench
+sceneId: <scene_name>
+workspace: <workspace_kind>
 ```
 
 ### item
@@ -101,12 +101,41 @@ elements bearing a matching `data-item-id` through capabilities and the
 adapter's `dispatchInteraction`. Schema: see
 [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) "Items".
 
+### scene object
+
+A scene object is a YAML-declared scene item rendered as a visible object
+in a scene. Scene objects normally carry stable ids, labels, SVG asset
+references, and layout metadata. Protocol steps and scene dispatch refer
+to scene objects by item id.
+
 ### zone
 
 A layout region declared by an entry in the scene YAML's `zones[]` array.
 Items reference zones by id via `items[].zone`. Layout-engine zones carry
 `x0`, `x1`, `baseline`, `gap`, and `align` for the layout engine.
 Schema: see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) "Zones".
+
+### layout engine
+
+The shared placement system that positions YAML-declared scene items in
+zones. It computes placement from scene YAML and asset metadata; renderers
+consume the computed placement and produce visible DOM or SVG.
+
+The layout engine is the shared system used by row-and-zone scene layouts.
+Structured-surface internals may use their own coordinate geometry.
+
+### structured surface
+
+An object with meaningful internal coordinates or subparts, such as wells,
+lanes, slots, or readout marks. A structured surface can itself be a scene
+object, while its internal subparts may need custom geometry in the
+renderer.
+
+### subpart
+
+A visual or clickable element inside a structured surface. A subpart is
+positioned relative to that structured surface's internal coordinate
+system rather than directly by a scene zone.
 
 ### wrongOrderMessage
 
@@ -124,17 +153,12 @@ The DOM element id where the driver attaches its capture-phase click
 listener. Optional in the YAML; defaults to `${sceneId}-scene` when
 absent. The runtime read happens in
 [src/scenes/scene_driver.ts:174-175](../src/scenes/scene_driver.ts).
-Used by the cell_culture_hood scene (`hood-scene`) and the microscope
-and plate_reader scenes (both `instrument-overlay`) where the DOM id
-does not match `${sceneId}-scene`.
+Used by scenes whose DOM id does not match `${sceneId}-scene`.
 
 ### instrument-overlay
 
-The shared modal-slot DOM element used by both the microscope and
-plate_reader scenes. Both adapters render into the same container; only
-one is visible at a time. The shared name reflects the shared role; do
-not add a third instrument-style scene without adopting the same slot or
-introducing a clearly-named new slot. Rationale and the constraint live
+The shared modal-slot DOM element used by instrument-style scenes. Only
+one scene is visible in the slot at a time. Rationale and constraints live
 in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md).
 
 ### module-load side effect

@@ -53,8 +53,7 @@ off `kind`; no downstream code matches on `step.id`.
 A **completion-path kind** is the discriminator field on a
 completion path. Allowed values are `interactionSequence`,
 `directTool`, `modal`, and `multipleChoice`. Each kind defines
-its own required and banned fields. Instrument-control steps
-(incubator door, water bath, plate-reader scan button) use
+its own required and banned fields. Instrument-control steps use
 `kind: directTool`; the conceptual "instrument vs hand tool"
 distinction is carried by the `items.yaml` role, not by a separate
 completion-path kind.
@@ -114,10 +113,8 @@ beats common alternatives.
   than "Item" (modals/buttons can also be click targets) or
   "Object" (vague).
 - **Tool** -- the item used to perform an interaction. A tool
-  may be a handheld tool (`serological_pipette`), an
-  instrument (`centrifuge`, `microscope`), or a direct-action
-  item (`incubator`, `water_bath`, `ethanol_bottle`). A tool
-  can be the only click in an interaction; see "Direct tool
+  may be a handheld tool, an instrument, or a direct-action
+  item. A tool can be the only click in an interaction; see "Direct tool
   interaction" below. Lab language; better than "Actor"
   (abstract).
 - **Source** -- the item providing liquid or material during a
@@ -134,10 +131,7 @@ beats common alternatives.
   clicking the tool itself. Modeled as a completion path with
   `kind: directTool`, carrying a `tool` and a `completionEvent`
   and no `source` or `destination`. Covers both hand-tool steps
-  (for example, spraying ethanol with a spray bottle) and
-  instrument-control steps (for example, closing the incubator
-  door, starting the water bath, pressing the plate-reader scan
-  button). The conceptual difference between a hand tool and an
+  and instrument-control steps. The conceptual difference between a hand tool and an
   instrument is carried by `items.yaml` role; the completion-path
   schema is the same. The walker clicks the tool; the step
   completes.
@@ -150,8 +144,7 @@ beats common alternatives.
   inside the modal scene), and a `completionEvent`. The
   `advanceClick` value is NOT an `items.yaml` id; modal-internal
   advance buttons are UI controls, not protocol items. Use this
-  kind for the drug-treatment modal, MTT modal, hemocytometer
-  modal, and similar modal-driven steps. The walker clicks the
+  kind for modal-driven steps. The walker clicks the
   open target, waits for the modal, then clicks the element
   carrying the matching `data-walker-advance` attribute. A
   modal that needs multiple meaningful confirmations decomposes
@@ -183,10 +176,8 @@ beats common alternatives.
   load+discharge interaction pair to a set of rows and columns on a
   96-well plate. Includes liquid reagent, per-well volume, and label.
 - **Stock solution** -- the highest-concentration reagent supplied
-  in a bottle or vial at the start of the protocol (for example,
-  "10 mM carboplatin stock solution", "1 M metformin stock
-  solution"). Stock solutions are never used directly on cells; they
-  are diluted first.
+  in a bottle or vial at the start of the protocol. Stock solutions
+  are never used directly on cells; they are diluted first.
 - **Intermediate dilution** -- a temporary tube of solution prepared
   by diluting a stock solution down to a usable working concentration.
   Intermediate dilutions live in microtubes and feed downstream
@@ -254,37 +245,40 @@ beats common alternatives.
 | **Interaction** | One logical player operation. May require 1-3 clicks. | one entry in `completionPath.interactions` (kind = `interactionSequence`) |
 | **Click plan** | Ordered click list for a single interaction. Tool first. | derived per interaction shape |
 | **Click target** | One DOM element a click is dispatched to. | UI/testing docs only |
-| **Scene** | The active UI viewport. Allowed values: `hood`, `bench`, `incubator`, `microscope`, `plate`, `plate_reader`, `well_plate_workspace`. | `step.scene` |
+| **Scene** | The active UI viewport. Allowed values are defined by the protocol schema and TypeScript `ProtocolStep.scene` type. | `step.scene` |
 
 ## Workspace concept
 
 The protocol takes place across distinct **workspaces** -- the locations
 where the student performs each action in the wet lab:
 
-- `hood` -- aseptic liquid handling (sterile work surface).
-- `bench` -- general equipment and staging.
-- `cell_counter` -- automated counting instrument (rendered as a modal
-  overlay opened from the bench cell counter equipment).
-- `incubator` -- incubation instrument.
-- `plate_reader` -- absorbance instrument (rendered as a modal overlay).
+- `<scene_name>` values name the workspace or viewport where a step's
+  interactions occur.
 
 In current YAML, the rendered viewport is the `scene:` field. "Workspace"
 is the conceptual layer; until a mechanical rename lands, treat
 `scene:` as "workspace" and pick the appropriate `completionPath.kind`
 per workspace type:
 
-- Physical transfer in hood/bench -> `kind: interactionSequence`.
+- Physical transfer -> `kind: interactionSequence`.
 - One-click physical or instrument action -> `kind: directTool`.
-- Instrument/control UI workflow (cell counter, plate reader) ->
+- Instrument/control UI workflow ->
   `kind: modal`.
 
 Critical authoring rule: do NOT use `kind: modal` as a shortcut for
-wet-lab liquid handling. A dilution series (carboplatin/metformin
-working solutions prepared from stock solutions through intermediate
-dilutions) is physical pipetting, not an instrument workflow, so
-it must be authored as `interactionSequence`. A modal MAY be layered on
+wet-lab liquid handling. A dilution series prepared from stock
+solutions through intermediate dilutions is physical pipetting, not an
+instrument workflow, so it must be authored as `interactionSequence`.
+A modal MAY be layered on
 top of a physical step as optional calculation/help guidance, opened
 from a help affordance, but it must not be the step's completionPath.
+
+For examples in vocabulary docs, prefer author-readable placeholders:
+`<protocol_name>`, `<scene_name>`, `<item_name>`, `<step_name>`, and
+`<reagent_name>`. Use `<*_id>` only when the doc is specifically
+discussing the YAML or code field named `id`. In YAML, these names
+usually appear in fields such as `id`, `scene`, `tool`, `source`,
+`destination`, or `liquid`.
 
 ## Field-level terms (modern YAML keys)
 
@@ -296,7 +290,7 @@ from a help affordance, but it must not be the step's completionPath.
 | **Tool** | The item performing the interaction. Always clicked first. | `interaction.tool` (renamed from `actor`) |
 | **Source** | The item being drawn from during a load. | `interaction.source` |
 | **Destination** | The item that physically receives transferred liquid, cells, waste, or material during a discharge. Click target. Do not use for context or scene affordances. | `interaction.destination` (renamed from `target`) |
-| **Direct tool interaction** | A one-click step completed by clicking the tool itself. Has `tool` + `completionEvent`; no `source`, no `destination`. Covers both hand-tool steps (spray ethanol) and instrument-control steps (close incubator door, start water bath); the role distinction lives in `items.yaml`. | `step.completionPath` with `kind: directTool` |
+| **Direct tool interaction** | A one-click step completed by clicking the tool itself. Has `tool` + `completionEvent`; no `source`, no `destination`. Covers both hand-tool steps and instrument-control steps; the role distinction lives in `items.yaml`. | `step.completionPath` with `kind: directTool` |
 | **Modal step** | A step completed by opening a modal scene and clicking its advance control. Has `openClick` (items.yaml id) + `advanceClick` (kebab-case `data-walker-advance` string) + `completionEvent`. | `step.completionPath` with `kind: modal` |
 | **State change** | Optional runtime change caused by the interaction. | `interaction.stateChange` (renamed from `result`) |
 | **Held liquid** | Runtime state of a tool that has drawn liquid. Mirrors `stateChange.heldLiquid`. | `gameState.heldLiquid` |
@@ -310,18 +304,18 @@ from a help affordance, but it must not be the step's completionPath.
 | Term | Definition | Code surface |
 | --- | --- | --- |
 | **Interaction index** | Zero-based position of the current required interaction inside the active step's interaction sequence. Reset on step entry; advances when an interaction completes. | `gameState.interactionIndex` (renamed from `cursor`) |
-| **Active highlight items** | Runtime set of items currently glowing in the UI. Derived per-frame from the active interaction's `tool`/`source`/`destination`. Distinct from `usedItems`. | [src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts) |
+| **Active highlight items** | Runtime set of items currently glowing in the UI. Derived per-frame from the active interaction's `tool`/`source`/`destination`. Distinct from `usedItems`. | scene render code |
 | **Step-order error** | Existing soft-fail signal: a `completeStep` call for the wrong step id. | `gameState.stepsOutOfOrder`, `outOfOrderAttempts` |
 | **Wrong-order click** | A click that does not satisfy the current interaction. Soft-fail in gameplay; hard-fail in the auto-walker. | `gameState.wrongOrderClicks` (renamed from `outOfSequenceClicks`) |
-| **Completion-event emitter** | The scene/modal code path that emits a completion event when the player completes the matching interaction. | per-scene adapter `.ts` files under `src/scenes/<scene>/` (e.g., `cell_culture_hood/cell_culture_hood.ts`, `bench/bench.ts`), modal handlers |
-| **Completion-event coverage** | Startup check that every declared `completionTrigger` has a matching emitter. Strict for `cell_culture`; relaxed for tutorials. | `src/init.ts` |
+| **Completion-event emitter** | The scene/modal code path that emits a completion event when the player completes the matching interaction. | per-scene adapter `.ts` files under `src/scenes/<scene_name>/`, modal handlers |
+| **Completion-event coverage** | Startup check that every declared `completionTrigger` has a matching emitter. Coverage policy is selected by runtime protocol category. | `src/init.ts` |
 
 ## Test-tier terms
 
 | Term | Definition | Tool |
 | --- | --- | --- |
-| **Graph smoke** | Fast data-layer test that walks `nextId` by calling internal APIs. Proves the protocol graph is connected. Proves nothing about gameplay. | `devel/protocol_graph_smoke.mjs` |
-| **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. | `devel/protocol_walkthrough_yaml.mjs` |
+| **Graph smoke** | Fast data-layer test that walks `nextId` by calling internal APIs. Proves the protocol graph is connected. Proves nothing about gameplay. | graph-smoke script |
+| **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. | protocol walker script |
 | **Wrong-order UI pass** | Variant of the walker that injects a wrong-order click before each correct sequence and asserts soft-fail behavior. | walker `--wrong-order` flag |
 | **Human playtest** | A human plays the game. The only thing that judges UX clarity. | a human |
 
@@ -367,60 +361,62 @@ Banned terms may appear only in this table, in explicit migration or rename note
 
 ## Worked example
 
-Modern YAML for a PBS wash:
+Modern YAML for a liquid-transfer step:
+
+For example, a transfer step might load a reagent from a bottle into a
+pipette, then discharge that reagent into a flask, well, or tube.
 
 ```yaml
-- id: pbs_wash
-  label: "Wash the flask with 4 mL PBS"
-  scene: hood
+- id: <step_name>
+  label: "<step_label>"
+  scene: <scene_name>
   completionPath:
     kind: interactionSequence
     interactions:
-      - tool: serological_pipette
-        source: pbs_bottle
-        liquid: pbs
+      - tool: <tool_item_name>
+        source: <source_item_name>
+        liquid: <reagent_name>
         stateChange:
           heldLiquid:
-            tool: serological_pipette
-            liquid: pbs
-            volumeMl: 4
-            colorKey: pbs
-      - tool: serological_pipette
-        destination: flask
-        liquid: pbs
-        consumesVolumeMl: 4
-        completionEvent: pbs_wash
-  nextId: add_trypsin
+            tool: <tool_item_name>
+            liquid: <reagent_name>
+            volumeMl: 1
+            colorKey: <reagent_color_key>
+      - tool: <tool_item_name>
+        destination: <destination_item_name>
+        liquid: <reagent_name>
+        consumesVolumeMl: 1
+        completionEvent: <completion_event>
+  nextId: <next_step_name>
 ```
 
 Required click plans (canonical):
 
 ```
-Step: Wash cells with PBS
+Step: <step_label>
 
-  Interaction 0: Load PBS into pipette
+  Interaction 0: Load reagent into tool
     Click plan:
-      1. serological_pipette   (tool first)
-      2. pbs_bottle            (source)
+      1. <tool_item_name>        (tool first)
+      2. <source_item_name>      (source)
     State change:
-      - serological_pipette holds 4 mL PBS
+      - tool holds reagent
     Completion event:
       - none
 
-  Interaction 1: Add PBS to flask
+  Interaction 1: Discharge reagent
     Click plan:
-      1. serological_pipette   (only if not still selected)
-      2. flask                 (destination)
+      1. <tool_item_name>        (only if not still selected)
+      2. <destination_item_name> (destination)
     State change:
-      - flask receives PBS
+      - destination receives reagent
     Completion event:
-      - pbs_wash
+      - <completion_event>
 ```
 
-Note: the YAML's `completionTrigger.completionEvent: "click:pbs_wash"`
-names the event, but the step only completes when the runtime code
-in [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) actually emits it. That code path is the
-**completion-event emitter** for `pbs_wash`. The startup
+Note: the YAML's `completionTrigger.completionEvent` names the event, but
+the step only completes when runtime code actually emits it. That code
+path is the **completion-event emitter** for the event. The startup
 **completion-event coverage** check enforces that every declared
 trigger has a matching emitter.
 
@@ -428,15 +424,14 @@ Derived `usedItems` (summary; first-use order, tool -> source ->
 destination):
 
 ```
-usedItems: [serological_pipette, pbs_bottle, flask]
+usedItems: [<tool_item_name>, <source_item_name>, <destination_item_name>]
 ```
 
 ## State-change vs. completion rule
 
-A state change is not a step completion. Loading the pipette
-changes state but does not complete the step. Discharging into
-the flask changes state AND emits the completion event that
-completes the step.
+A state change is not a step completion. Loading a tool changes state
+but does not complete the step. Discharging into a destination changes
+state AND emits the completion event that completes the step.
 
 In this schema, a completion event is the signal that the step
 is complete. Each step may have at most one completion event,
@@ -452,7 +447,7 @@ supported. The validator rejects any interaction that has
 `source`, `destination`, `liquid`, or `stateChange` but does not
 declare `tool` (the only exception is an interaction that
 explicitly declares `direct: true`, allowed for direct-action
-items like opening an incubator door).
+items).
 
 ## Status
 

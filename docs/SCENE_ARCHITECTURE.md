@@ -127,7 +127,7 @@ itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 | Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only (Patch C1, 2026-05-09): the legacy compatibility-token ladder folded into completionPath dispatch and `buildLegacyToken` was retired. |
 | Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
 | Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted (Patch C3, 2026-05-09) into sibling [manual_hemocytometer.ts](../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
-| Plate | [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) | Modal scene for the 96-well plate UI. |
+| Well-plate workspace | [src/scenes/well_plate_workspace/well_plate_workspace.ts](../src/scenes/well_plate_workspace/well_plate_workspace.ts) | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts). |
 | Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
 
 The microscope and plate_reader adapters share a single DOM modal slot, the
@@ -272,14 +272,10 @@ its concern.
   `showWrongOrderToast(message)` for the transient warning toast. Today
   the toast styling and 2 s lifetime are hardcoded; the per-scene
   `wrongOrderMessage` YAML field is RESERVED for future wiring.
-- [scene_layout.ts](../src/scenes/shared/scene_layout.ts) - Re-exports
-  `computeSceneLayout` and the layout types from the core engine. Future
-  layout-policy hooks will land here.
-- [scene_label_metrics.ts](../src/scenes/shared/scene_label_metrics.ts),
-  [scene_item_lookup.ts](../src/scenes/shared/scene_item_lookup.ts) -
-  Layout-helper re-exports introduced during the bench/hood YAML
-  layout migration (B10/B11) so adapters can resolve label-metric and
-  item-id lookups against scene YAML without duplicating the work.
+- [scene_item_lookup.ts](../src/scenes/shared/scene_item_lookup.ts) -
+  Item-id lookup helpers introduced during the bench/hood YAML layout
+  migration so adapters can resolve scene items without duplicating the
+  lookup rules.
 
 The legacy `src/scenes/shared/legacy_tokens.ts` module (and its
 `buildLegacyToken` API) was deleted in Patch C4 (2026-05-09) once the

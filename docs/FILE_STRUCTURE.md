@@ -66,7 +66,7 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/scene_types.ts](../src/scene_types.ts) | Scene/zone enums |
 | [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml) | Bench scene layout (YAML; replaced retired `src/bench_config.ts` in the 2026-05-09 scene migration) |
 | [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml) | Hood scene layout (YAML; replaced retired `src/hood_config.ts` in the 2026-05-09 scene migration) |
-| [src/plate_config.ts](../src/plate_config.ts) | Legacy plate layout config for the modal-style renderer; superseded by the dedicated plate scene under [src/scenes/plate/](../src/scenes/plate/) |
+| [src/plate_config.ts](../src/plate_config.ts) | Legacy plate constants retained for older helpers; well-plate interaction now lives under [src/scenes/well_plate_workspace/](../src/scenes/well_plate_workspace/) |
 | [src/style_constants.ts](../src/style_constants.ts) | Color and style tokens |
 | [src/asset_specs.ts](../src/asset_specs.ts) | Asset metadata |
 | [src/brands.ts](../src/brands.ts) | Brand-name helpers |
@@ -119,9 +119,7 @@ for the layered model.
 | File | Purpose |
 | --- | --- |
 | [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) | Wrong-order toast and message templating |
-| [src/scenes/shared/scene_layout.ts](../src/scenes/shared/scene_layout.ts) | Item-position math and label-collision wrapping |
 | [src/scenes/shared/liquid_transfer.ts](../src/scenes/shared/liquid_transfer.ts) | `deriveHeldLiquid`, `canonicalTool`, `BOTTLE_ASSET_LIQUID` (single source of truth) |
-| [src/scenes/shared/scene_label_metrics.ts](../src/scenes/shared/scene_label_metrics.ts) | Label-metric helpers used by adapters during the bench/hood YAML layout migration |
 | [src/scenes/shared/scene_item_lookup.ts](../src/scenes/shared/scene_item_lookup.ts) | Item-id lookup helpers used by adapters during the bench/hood YAML layout migration |
 | (removed 2026-05-09: `src/scenes/shared/legacy_tokens.ts` and the `buildLegacyToken` API; hood K2-only dispatch obsoleted both) |
 
@@ -131,9 +129,9 @@ for the layered model.
 | --- | --- |
 | [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml), [bench.ts](../src/scenes/bench/bench.ts) | Bench adapter (owns render + dispatch) and scene config |
 | [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml), [cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts), [render.ts](../src/scenes/cell_culture_hood/render.ts) | Sterile hood adapter; render assembly split into sibling `render.ts` by responsibility seam, dispatch + adapter registration in `cell_culture_hood.ts` |
-| [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml), [plate.ts](../src/scenes/plate/plate.ts), [render.ts](../src/scenes/plate/render.ts), [dispatch.ts](../src/scenes/plate/dispatch.ts) | 96-well plate adapter (dedicated `dedicated_plate` workspace) with render assembly in sibling `render.ts` and click dispatch in sibling `dispatch.ts`; `plate.ts` registers the adapter |
 | [src/scenes/microscope/microscope.yaml](../src/scenes/microscope/microscope.yaml), [microscope.ts](../src/scenes/microscope/microscope.ts) | Microscope adapter (automated counter and manual hemocytometer; owns render + dispatch) and scene config |
 | [src/scenes/incubator/incubator.yaml](../src/scenes/incubator/incubator.yaml), [incubator.ts](../src/scenes/incubator/incubator.ts) | Incubator adapter (owns render + dispatch) and scene config |
+| [src/scenes/well_plate_workspace/well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml), [well_plate_workspace.ts](../src/scenes/well_plate_workspace/well_plate_workspace.ts), [render.ts](../src/scenes/well_plate_workspace/render.ts), [dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts) | 96-well plate workspace adapter with render assembly and click dispatch in sibling modules |
 | [src/scenes/plate_reader/plate_reader.yaml](../src/scenes/plate_reader/plate_reader.yaml), [plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Plate-reader adapter (owns render + dispatch) and scene config |
 
 #### Step modules
@@ -141,7 +139,6 @@ for the layered model.
 | File | Purpose |
 | --- | --- |
 | [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) | Media aspirate / add |
-| [src/steps/dilution_prep.ts](../src/steps/dilution_prep.ts) | Drug-dilution prep modal |
 | [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) | Drug pipetting flow |
 | [src/steps/mtt_readout.ts](../src/steps/mtt_readout.ts) | MTT plate readout |
 | [src/steps/plate_96.ts](../src/steps/plate_96.ts) | 96-well plate rendering |
@@ -229,26 +226,20 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | --- | --- |
 | [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Canonical YAML walker (clicks DOM only) |
 | [walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) | Shared helpers for the walker |
-| [test_bench_layout.mjs](../tests/playwright/e2e/test_bench_layout.mjs) | Bench-scene layout |
-| [test_hood_layout.mjs](../tests/playwright/e2e/test_hood_layout.mjs) | Hood-scene layout |
-| [test_dilution_prep.mjs](../tests/playwright/e2e/test_dilution_prep.mjs) | Dilution-prep workflow |
-| [test_flask_variants.mjs](../tests/playwright/e2e/test_flask_variants.mjs) | Flask design rendering |
-| [test_layout_engine.mjs](../tests/playwright/e2e/test_layout_engine.mjs) | Layout engine calculations |
-| [test_layout_metrics.mjs](../tests/playwright/e2e/test_layout_metrics.mjs) | Layout metric verification |
-| [test_pipette_liquid.mjs](../tests/playwright/e2e/test_pipette_liquid.mjs) | Pipette-liquid handling |
-| [test_plate_96.mjs](../tests/playwright/e2e/test_plate_96.mjs) | 96-well plate layout |
-| [test_protocol_flow.mjs](../tests/playwright/e2e/test_protocol_flow.mjs) | Full protocol flow walkthrough |
-| [test_scoring.mjs](../tests/playwright/e2e/test_scoring.mjs) | Score calculation |
-| [test_step_completeness.mjs](../tests/playwright/e2e/test_step_completeness.mjs) | Step-completion tracking |
-| [test_step_dispatch.mjs](../tests/playwright/e2e/test_step_dispatch.mjs) | Step dispatch routing |
-| [test_target_handlers.mjs](../tests/playwright/e2e/test_target_handlers.mjs) | UI target element handlers |
-| [test_yaml_swap_runtime.mjs](../tests/playwright/e2e/test_yaml_swap_runtime.mjs) | Swap protocol at runtime |
+
+Focused Playwright browser checks live one level up in
+[tests/playwright/](../tests/playwright/), including layout, scoring,
+resolver, SVG, and smoke checks. The `e2e/` subfolder is reserved for the
+full-path walker and its helpers.
 
 #### [tests/e2e/](../tests/e2e/) - Non-browser E2E (reserved)
 
-Currently contains [tests/e2e/legacy_cell_culture_game.html](../tests/e2e/legacy_cell_culture_game.html)
-as a reference snapshot. New shell or Python E2E runners belong here as
-`e2e_*.sh` or `e2e_*.py`.
+Contains standalone non-browser E2E runners such as
+[e2e_bandit_security.py](../tests/e2e/e2e_bandit_security.py) and
+[e2e_facade_smoke.py](../tests/e2e/e2e_facade_smoke.py). New shell or
+Python E2E runners belong here as `e2e_*.sh` or `e2e_*.py`. The legacy
+single-file parity snapshot lives under
+[tests/fixtures/](../tests/fixtures/).
 
 ### [docs/](../docs/) - Documentation
 
@@ -322,7 +313,6 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 | --- | --- |
 | [dist/](../dist/) | [build_github_pages.sh](../build_github_pages.sh) output (GitHub Pages bundle) |
 | [dist-single/game.html](../dist-single/) | [export_single_file.sh](../export_single_file.sh) output (portable single-file) |
-| `cell_culture_game.html` | Legacy bundled output; bootstrap-built by tests on demand |
 | `generated/svg_assets/*.ts` (per-asset SVG constants + `index.ts` barrel) | [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) |
 | `generated/svg_manifest.ts` (`SVG_IDS`, `SVG_GROUPS`) | [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) |
 | `generated/protocol_data.ts`, `generated/inventory_data.ts`, `generated/scene_data.ts` (gitignored, regenerated; consumed via `src/protocol.ts`, `src/inventory.ts`, `src/scene_configs.ts` facades) | [tools/build_protocol_data.py](../tools/build_protocol_data.py), [tools/build_scene_data.py](../tools/build_scene_data.py) |
@@ -336,7 +326,7 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 | Type | Location |
 | --- | --- |
 | Game runtime | New `.ts` file under [src/](../src/), imported from [src/init.ts](../src/init.ts) or a scene |
-| New scene | [src/scenes/](../src/scenes/) and dispatcher branch in [src/init.ts](../src/init.ts) |
+| New scene | [src/scenes/](../src/scenes/) with scene YAML, an adapter, a side-effect import in [src/init.ts](../src/init.ts), and a render switch case |
 | New step UI / emitter | [src/steps/](../src/steps/) |
 | Protocol content | New folder under [src/content/](../src/content/) with `items.yaml`, `reagents.yaml`, `protocol.yaml` |
 | Build/audit tooling | [tools/](../tools/) (Python, single-purpose) |

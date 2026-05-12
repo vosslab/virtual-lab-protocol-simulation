@@ -169,7 +169,7 @@ For "open a local HTML file, click things, take screenshots", use `playwright`.
 import { chromium } from 'playwright';
 import path from 'path';
 
-const gamePath = path.resolve('cell_culture_game.html');
+const gamePath = path.resolve('dist-single/game.html');
 const url = `file://${gamePath}`;
 
 const browser = await chromium.launch();

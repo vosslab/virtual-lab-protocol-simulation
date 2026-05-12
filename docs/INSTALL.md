@@ -1,7 +1,8 @@
 # Install
 
 The game builds from TypeScript source into a single self-contained HTML file.
-"Installed" means you can run `bash export_single_file.sh` and open the output in a browser.
+"Installed" means you can run `bash export_single_file.sh` and open
+`dist-single/game.html` in a browser.
 The HTML file is a generated artifact and is not committed to git.
 
 ## Requirements
@@ -79,7 +80,7 @@ See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full asset pipeline rules.
 ## Verify install
 
 ```bash
-bash export_single_file.sh && test -f cell_culture_game.html && echo "OK"
+bash export_single_file.sh && test -f dist-single/game.html && echo "OK"
 ```
 
 This confirms the TypeScript compilation succeeded and the output HTML exists.
@@ -96,10 +97,9 @@ Python dev dependencies are listed in
 [pip_requirements-dev.txt](../pip_requirements-dev.txt): bandit, packaging,
 pyflakes, pytest, rich.
 
-For the E2E browser walkthrough test, Playwright and Chromium are also required
-(see [pip_extras.txt](../pip_extras.txt)).
+For browser smoke tests and walkthroughs, Playwright and Chromium are also
+required. See [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md).
 
 ## Known gaps
 
 - TODO: Confirm minimum Node.js version required by esbuild
-- TODO: Document Playwright/Chromium install steps for E2E testing

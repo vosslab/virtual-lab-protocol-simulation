@@ -61,8 +61,6 @@ emitter via `triggerStep(stepId)`.
 
 - [src/steps/feed_cells.ts](../src/steps/feed_cells.ts) - Media aspirate /
   add with volume validation.
-- [src/steps/dilution_prep.ts](../src/steps/dilution_prep.ts) - Drug
-  dilution preparation modal.
 - [src/steps/drug_treatment.ts](../src/steps/drug_treatment.ts) - Drug
   pipetting flow.
 - [src/steps/mtt_readout.ts](../src/steps/mtt_readout.ts) - MTT plate
@@ -93,16 +91,16 @@ emitter via `triggerStep(stepId)`.
   The legacy `src/bench_config.ts` and `src/hood_config.ts` modules were
   retired in the 2026-05-09 scene migration; YAML is the single source of
   truth for layout in those scenes.
-- Plate layout: declared in scene YAML at
-  [src/scenes/plate/plate.yaml](../src/scenes/plate/plate.yaml). The plate
-  is now a dedicated first-class scene (workspace `dedicated_plate`); the
-  adapter is [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) with
-  render assembly in [src/scenes/plate/render.ts](../src/scenes/plate/render.ts)
-  and click dispatch in [src/scenes/plate/dispatch.ts](../src/scenes/plate/dispatch.ts).
+- Well-plate workspace layout: declared in scene YAML at
+  [src/scenes/well_plate_workspace/well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml).
+  The workspace is a first-class scene for plate-transfer and tube-prep
+  mini-protocols, with render assembly in
+  [src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)
+  and click dispatch in
+  [src/scenes/well_plate_workspace/dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts).
 - [src/plate_config.ts](../src/plate_config.ts) - Legacy plate layout
-  exports retained for the modal-style renderer; superseded by the
-  dedicated plate scene under [src/scenes/plate/](../src/scenes/plate/)
-  and slated for removal once the modal path is fully retired.
+  exports retained for older helpers; superseded for interactive work by
+  [src/scenes/well_plate_workspace/](../src/scenes/well_plate_workspace/).
 - [src/scene_types.ts](../src/scene_types.ts) - Scene/zone enums and types.
 - [src/style_constants.ts](../src/style_constants.ts) - Color and style
   tokens used by SVG and DOM rendering.
@@ -474,7 +472,7 @@ scene's render assembly and dispatch.
 | --- | --- | --- | --- |
 | Bench | [src/scenes/bench/bench.ts](../src/scenes/bench/bench.ts) | adapter | [bench.yaml](../src/scenes/bench/bench.yaml) |
 | Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | sibling [render.ts](../src/scenes/cell_culture_hood/render.ts) (assembly seam) | [cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml) |
-| Plate | [src/scenes/plate/plate.ts](../src/scenes/plate/plate.ts) | adapter | [plate.yaml](../src/scenes/plate/plate.yaml) |
+| Well-plate workspace | [src/scenes/well_plate_workspace/well_plate_workspace.ts](../src/scenes/well_plate_workspace/well_plate_workspace.ts) | sibling [render.ts](../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts) | [well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml) |
 | Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | adapter | [microscope.yaml](../src/scenes/microscope/microscope.yaml) |
 | Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | adapter | [incubator.yaml](../src/scenes/incubator/incubator.yaml) |
 | Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | adapter | [plate_reader.yaml](../src/scenes/plate_reader/plate_reader.yaml) |

@@ -222,10 +222,10 @@ Field-presence check. Ensures every step has required fields (`id`,
 
 ## Graph smoke test
 
-`tests/protocol_graph_smoke.mjs` is a fast data-layer smoke test that proves
+`tests/playwright/protocol_graph_smoke.mjs` is a fast data-layer smoke test that proves
 the `nextId` graph is reachable from start to finish. It walks the chain from
 the first step to `null`, calling `completeStep(id)` for each step via
-`page.evaluate` and screenshotting into `test-results/walkthrough/NN_<id>.png`
+`page.evaluate` and screenshotting into `build/walkthrough/NN_<id>.png`
 (1-indexed). Asserts final state: all steps completed, `stepsOutOfOrder === 0`,
 `activeStepId === null`. Also reads `window.__protocolValidation` set by
 `validateCompletionEventCoverage` on the `load` event; any validation failure exits
@@ -296,8 +296,8 @@ interaction 4). The final liquid state is identified by `TubeTarget.resultLiquid
 | `source` | `string` | Item id of the solute source (e.g., `stock_bottle`) |
 | `diluent` | `string` | Item id of the diluent source (e.g., `water_bottle`) |
 | `destination` | `string` | Microtube id where solute and diluent are combined (e.g., `tube_a`) |
-| `soluteVolumeMl` | `number` | Exact volume in mL to aspirate from source (e.g., `0.040` for 40 µL) |
-| `diluentVolumeMl` | `number` | Exact volume in mL to aspirate from diluent (e.g., `0.960` for 960 µL) |
+| `soluteVolumeMl` | `number` | Exact volume in mL to aspirate from source (e.g., `0.040` for 40 &mu;L) |
+| `diluentVolumeMl` | `number` | Exact volume in mL to aspirate from diluent (e.g., `0.960` for 960 &mu;L) |
 | `resultLiquid` | `string` | Reagent id of the combined result (e.g., `carboplatin` for a carboplatin working solution) |
 | `resultLabel` | `string` | Student-facing label describing the final result (e.g., `400 uM carboplatin working solution`) |
 

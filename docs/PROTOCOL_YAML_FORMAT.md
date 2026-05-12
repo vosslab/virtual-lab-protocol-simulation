@@ -403,12 +403,12 @@ Worked YAML example with plateTargets:
         cols: [1, 2, 3, 4, 5, 6]
         liquid: media
         volumeMl: 0.095
-        label: "Cols 1-6: 95 µL media"
+        label: "Cols 1-6: 95 uL media"
       - rows: [B, C, D, E, F, G, H]
         cols: [7, 8, 9, 10, 11, 12]
         liquid: media
         volumeMl: 0.090
-        label: "Cols 7-12: 90 µL media"
+        label: "Cols 7-12: 90 uL media"
   nextId: add_carboplatin
 ```
 
@@ -431,7 +431,7 @@ destination microtube:
 | `soluteVolumeMl` | number | Volume in milliliters of solute to transfer (must be positive). |
 | `diluentVolumeMl` | number | Volume in milliliters of diluent to transfer (must be positive). |
 | `resultLiquid` | string | Reagent id of the resulting liquid in the microtube (must match a declared reagent in `reagents.yaml`). |
-| `resultLabel` | string | User-facing label for the resulting tube (e.g., "400 µM carboplatin working solution"). |
+| `resultLabel` | string | User-facing label for the resulting tube (e.g., "400 &mu;M carboplatin working solution"). |
 
 Worked YAML example with tubeTargets:
 
@@ -479,7 +479,7 @@ Worked YAML example with tubeTargets:
         soluteVolumeMl: 0.040
         diluentVolumeMl: 0.960
         resultLiquid: carboplatin
-        resultLabel: "400 µM carboplatin working solution"
+        resultLabel: "400 uM carboplatin working solution"
   nextId: make_carb_second_dilution
 ```
 
@@ -678,18 +678,18 @@ Worked YAML example:
   requiredItems: [flask]
   completionPath:
     kind: multipleChoice
-    question: "If 40 µL of 10 mM stock is added to 960 µL media, what is the final concentration?"
+    question: "If 40 uL of 10 mM stock is added to 960 uL media, what is the final concentration?"
     choices:
       - id: choice_400
-        text: "400 µM"
-        feedback: "Correct! 40 µL / 1000 µL total = 0.04 = 4%, so 10 mM * 0.04 = 400 µM."
+        text: "400 uM"
+        feedback: "Correct! 40 uL / 1000 uL total = 0.04 = 4%, so 10 mM * 0.04 = 400 uM."
         correct: true
       - id: choice_4
-        text: "4 µM"
-        feedback: "Incorrect. The calculation is: (40 µL / 1000 µL) * 10 mM = 0.4 mM = 400 µM."
+        text: "4 uM"
+        feedback: "Incorrect. The calculation is: (40 uL / 1000 uL) * 10 mM = 0.4 mM = 400 uM."
       - id: choice_100
-        text: "100 µM"
-        feedback: "Incorrect. Recheck your math: we need mL not µL. (0.04 mL / 1 mL) * 10 mM = 0.4 mM = 400 µM."
+        text: "100 uM"
+        feedback: "Incorrect. Recheck your math: we need mL not uL. (0.04 mL / 1 mL) * 10 mM = 0.4 mM = 400 uM."
     completionEvent: calculation_verified
   nextId: prepare_working_solution
 ```
@@ -801,13 +801,13 @@ Pure incubation or animation steps with no interaction:
 | --- | --- | --- |
 | `isIncubation` | boolean | if `true`, the step is routed through `step_dispatch` with no resolver |
 
-### plateMap (plate-scene annotations)
+### plateMap (well-plate workspace annotations)
 
-Optional step-level block consumed by the plate scene renderer
-([src/scenes/plate/render.ts](../src/scenes/plate/render.ts)). When the
-step's `scene` is `plate`, the annotations render as text overlays on
-specific row/column ranges of the 96-well plate SVG. Used by
-`tutorial_plate_drug_additions` to label Row A control wells
+Optional step-level block consumed by the well-plate workspace renderer
+([src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)).
+When the step's `scene` is `well_plate_workspace`, the annotations render
+as text overlays on specific row/column ranges of the 96-well plate SVG.
+Used by `tutorial_plate_drug_additions` to label Row A control wells
 ("Untreated control", "Metformin-only control (5 mM)").
 
 The `plateMap` block has one sub-field:

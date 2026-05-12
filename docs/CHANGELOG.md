@@ -3,6 +3,20 @@
 ## 2026-05-12 (well_plate_workspace plan paused)
 
 ### Documentation
+- Cleaned vocabulary docs so [docs/PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)
+  and [docs/SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) define stable terms
+  with generic author-readable placeholders instead of changeable protocol
+  or scene examples.
+- Cleaned up cross-doc consistency outside the vocabulary docs: updated
+  install and usage examples to point at `dist-single/game.html`, aligned
+  Playwright output descriptions with `test-results/walker/`, removed stale
+  `src/scenes/plate/` and `tests/playwright/e2e/test_*.mjs` references from
+  current architecture/file-structure docs, and aligned plate-transfer docs
+  with `well_plate_workspace`.
+- Added the unit-rendering TODO and clarified the current unit convention:
+  normal Markdown prose uses `&mu;L` and `&mu;M`, fenced YAML examples and
+  browser-rendered YAML labels use `uL` and `uM` until safe browser display of
+  micro units is fixed.
 - Added [docs/WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md), a practical
   reference for the real-browser protocol walkthrough. The guide documents the
   current headless Playwright walker, startup sequence, output files,

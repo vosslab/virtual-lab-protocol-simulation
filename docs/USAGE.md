@@ -9,7 +9,7 @@ protocol or focused tutorials in the browser.
 
 ```bash
 bash export_single_file.sh
-open cell_culture_game.html
+open dist-single/game.html
 ```
 
 The build compiles all TypeScript files in [src/](../src/) into a single
@@ -74,8 +74,10 @@ A 1-3 star rating is shown on the results screen.
 ## Inputs and outputs
 
 - **Source:** TypeScript modules in [src/](../src/) and HTML/CSS templates
-- **Build output:** `cell_culture_game.html` (single file, no external deps)
-- **Test outputs:** `report_*.txt` files and `test-results/walkthrough/*.png` screenshots
+- **Build outputs:** [dist/](../dist/) for the served build and
+  `dist-single/game.html` for the portable single-file export
+- **Test outputs:** `report_*.txt`, `test-results/walker/`, and other
+  `test-results/` browser screenshots and reports
 
 ## Protocol builder
 
@@ -122,8 +124,8 @@ npm run build
 npm run ui:review
 ```
 
-For local pre-commit review on macOS Codex, prefer the Podman wrapper so the
-browser runs in the Playwright container:
+For local pre-commit review on macOS Codex only, use the Podman wrapper when
+the local browser launch hits sandbox failures:
 
 ```bash
 tools/run_ui_review_podman.sh
@@ -201,4 +203,4 @@ for the full pipeline.
 
 ## Known gaps
 
-- TODO: Document expected Playwright walkthrough screenshot output
+- TODO: Confirm minimum Node.js version required by esbuild.
