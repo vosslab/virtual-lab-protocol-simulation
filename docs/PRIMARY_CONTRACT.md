@@ -24,7 +24,11 @@ New contract items require user approval. Agents may not add, remove, or edit co
    See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md). All liquids in objects are handled by [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md). Liquids should not be hard-coded into objects. This will take effort before inserting a new asset.
 
 4. **A mini-protocol is not complete until the visible interaction works.**
-   A walkthrough script must run through each step, click each required interaction, and save a screenshot at each step. Passing TypeScript, validators, and walker setup is not enough. For interactive scene work, completion requires browser evidence showing the intended objects, highlights, click targets, and visible state changes.
+   A walkthrough script must load the page normally and complete the mini-protocol through the same visible UI path a student would use. The script must click visible scene objects, buttons, modal controls, and answer choices. It must not advance progress by calling internal APIs, mutating game state, forcing scene changes, or using hidden controls.
+
+   The walkthrough must run every step, perform every required interaction, and save browser screenshots showing the intended objects, highlights, click targets, and visible state changes. Screenshots should provide evidence before and after meaningful interactions, not only at the final state.
+
+   Passing TypeScript, validators, build steps, or walker setup is not enough. For interactive scene work, completion requires browser evidence that the mini-protocol can be completed by a real user through the visible interface.
 
 5. **A mini-protocol is scoped by its learning block.**
    Every mini-protocol must define `learning.objectives`, `learning.outcomes`, and `learning.goals`. These fields define what the mini-protocol teaches, what students can do afterward, and why the mini-protocol exists in the broader curriculum. A mini-protocol teaches one focused self-contained workflow.
