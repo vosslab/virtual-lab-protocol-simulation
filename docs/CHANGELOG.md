@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-05-14 (unified interaction vocabulary: M1 evidence)
+
+### Additions and New Features
+- **Unified interaction vocabulary plan**: Added
+  `docs/active_plans/unified_interaction_vocabulary_plan.md`, the approved
+  docs-first plan to design one scene-agnostic protocol interaction vocabulary
+  (`target + mode + action`) ratified against all four source protocols
+  before any code changes.
+- **Protocol interaction inventory (M1 evidence artifact)**: Added
+  `docs/active_plans/protocol_interaction_inventory.md`, consolidating the
+  evidence base: the click-target fields and 54-step mapping across the 7
+  shipped `content/*/protocol.yaml` files, the legacy
+  `src/interaction_resolver.ts` action model, the `target + mode + action`
+  mappings of OVCAR8 / Miraculin / SDS-PAGE, the candidate base primitives and
+  composed-action categories, the candidate mode set, the residual gaps, and
+  the known content inconsistencies.
+
+### Decisions and Failures
+- **Drift origin recorded**: The protocol vocabulary was designed against the
+  cell-culture scene; `plateTargets` / `tubeTargets` and the four
+  `completionPath.kind` step types are scene-specific drift. The M0 doc audit
+  (`docs/active_plans/scene_runtime_doc_conflicts.md`) mis-classified the
+  `plateTargets` / `tubeTargets` sections as `matches-contract`; the new plan
+  supersedes that verdict. `tubeTargets` is broken in the modern runtime
+  (contract types it as `{tubeId}`, YAML authors `{source, diluent, ...}`).
+
 ## 2026-05-14 (scene_runtime spine and subsystems: M3-M6)
 
 ### Additions and New Features

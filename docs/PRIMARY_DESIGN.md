@@ -63,6 +63,24 @@ A mini-protocol is designed around what a student can see and do. The walkthroug
 
 The walker may read generated protocol data to know the expected path, but it must not write game state, skip scenes, call internal APIs, or click hidden controls. If the walker cannot complete the mini-protocol through visible UI, the YAML, scene affordance, or runtime behavior is incomplete and must be fixed before the mini-protocol is considered complete.
 
+## Semantic inheritance and composition
+
+The system prefers semantic inheritance over scene-specific duplication.
+
+Higher-level behaviors should inherit stable meaning from lower-level primitives rather than redefining behavior per scene, protocol, or UI structure. A protocol action inherits meaning from the primitive actions it composes. A scene implementation inherits behavioral guarantees from the protocol vocabulary it renders.
+
+Inheritance in this repository is semantic first, not necessarily class-based. The architecture does not require TypeScript subclassing. The requirement is that derived concepts preserve the guarantees, constraints, and meaning of their parent concepts.
+
+Composition is preferred over taxonomy explosion. New behavior should first be expressed as a composition of existing primitives before introducing a new primitive or top-level category.
+
+A new primitive requires evidence that:
+
+- existing primitives cannot express the behavior clearly,
+- the behavior appears across multiple protocols or scenes,
+- and the primitive defines a stable reusable semantic unit.
+
+This repository treats primitives as durable vocabulary infrastructure, not short-term implementation conveniences.
+
 ## Source-code and content layout
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated protocol, scene, inventory, and registry data emits under `generated/` at the repo root. Generated files do not live under `src/`.

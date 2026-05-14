@@ -1,67 +1,67 @@
 # SDS-PAGE Protocol
 
-### BCHM 356/456 – Spring 2026
+### BCHM 356/456 - Spring 2026
 
 Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0\_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit](https://docs.google.com/document/d/1WCDT4y1Lw0_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit)
 
 ## **Required materials provided by the students**
 
-**Assigned student**: Ulises  
+**Assigned student**: Ulises
 **Reviewing student**: Meet
 
-1. Safety 	Glasses  
-2. Lab Coat – no paper lab coats  
-3. Lab Notebook and sharpie marker  
-4. Long pants and closed shoes  
-5. Written out procedures in lab notebook  
-6. Sharpie marker  
-7. Copy of this lab manual (at least one per group)  
-8. A timer or a phone with a timer 
+1. Safety 	Glasses
+2. Lab Coat - no paper lab coats
+3. Lab Notebook and sharpie marker
+4. Long pants and closed shoes
+5. Written out procedures in lab notebook
+6. Sharpie marker
+7. Copy of this lab manual (at least one per group)
+8. A timer or a phone with a timer
 
 ## **Provided Materials**
 
-**Assigned student**: Raj  
-**Reviewing student**: Ulises  
+**Assigned student**: Raj
+**Reviewing student**: Ulises
 Students check to make sure all of these items are available
 
 ### Equipment
 
-* BioRad electrophoresis apparatus  
-* DC Power supply  
-* Heating block set to 95°C  
-* Gel opening tool  
-* Microwave  
-* Staining tray  
+* BioRad electrophoresis apparatus
+* DC Power supply
+* Heating block set to 95°C
+* Gel opening tool
+* Microwave
+* Staining tray
 * Shaker
 
 ### Materials
 
-* SDS buffer  
-* Mini-PROTEAN precast gel  
-* 10X running buffer  
-* Deionized water  
-* Protein ladder  
-* 4x Laemmli Sample Buffer  (BioRad \#1610747)  
-* Β-mercaptoethanol (liquid)  
-* Micropipettes and tips  
-* Coomassie stain solution  
-* Destain solution  
+* SDS buffer
+* Mini-PROTEAN precast gel
+* 10X running buffer
+* Deionized water
+* Protein ladder
+* 4x Laemmli Sample Buffer  (BioRad \#1610747)
+* &beta;-mercaptoethanol (liquid)
+* Micropipettes and tips
+* Coomassie stain solution
+* Destain solution
 * Kimwipes
 
 Ulises Suggestions:
 
-* Freeze-dried miracle berries (Synsepalum dulcificum).  
-* Coffee grinder or blender.  
-* Pestle and mortar.  
-* Deionized water.  
-* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).  
-* 1 M NaOH and 1 M HCl  
-* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.  
-* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.  
-* Ammonium sulfate (solid) for protein precipitation (salting out).  
-* Parafilm to seal test tubes during mechanical shaking.  
-* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300–500 mM NaCl at pH 7.0–7.2.  
-* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.  
+* Freeze-dried miracle berries (Synsepalum dulcificum).
+* Coffee grinder or blender.
+* Pestle and mortar.
+* Deionized water.
+* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).
+* 1 M NaOH and 1 M HCl
+* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.
+* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.
+* Ammonium sulfate (solid) for protein precipitation (salting out).
+* Parafilm to seal test tubes during mechanical shaking.
+* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.
+* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.
 * SDS-PAGE:
 
   \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
@@ -70,75 +70,75 @@ Ulises Suggestions:
 
   \-2X Laemmli sample buffer and beta-mercaptoethanol (BME) or DTT.
 
-  \-Protein molecular weight ladder (covering the 24–28 kDa and 50 kDa ranges).
+  \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
 
   \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
 
-* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).  
-* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.  
-* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.  
-* Micropipettes (P10, P20, P100, P1000) and tips.  
+* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).
+* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.
+* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.
+* Micropipettes (P10, P20, P100, P1000) and tips.
 * Homogenizer for uniform mixing of powder and buffers.
 
-Specific Steps:  
+Specific Steps:
 IMAC Column Setup and Nickel Charging
 
-* Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.  
-* Chromatography Column: 6 mL capacity, 15 cm in length  
-* Ring stand and two clamps to secure the column vertically  
-* One stopcock valve and a waste container.  
-* Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.  
-* Glassware: 250 mL beaker for mixing the nickel solution and a pipette to rinse the sides of the beaker.  
-* Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris–HCl (pH 7.0–7.2) for binding  
-* Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).  
-* Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.  
-* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-α-D-glucoside for elution.  
+* Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.
+* Chromatography Column: 6 mL capacity, 15 cm in length
+* Ring stand and two clamps to secure the column vertically
+* One stopcock valve and a waste container.
+* Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.
+* Glassware: 250 mL beaker for mixing the nickel solution and a pipette to rinse the sides of the beaker.
+* Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding
+* Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).
+* Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.
+* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.
 * Size-Exclusion/Desalting: Sephadex G-75 (for dimer/monomer separation) and Sephadex G-25 (for removing salts or imidazole).
 
 **Additional Equipment**
 
-* Bio-Rad Laboratories electrophoresis apparatus  
-* DC power supply  
-* Heating block set to 95°C  
-* Gel opening tool  
-* Microwave  
-* Staining tray  
+* Bio-Rad Laboratories electrophoresis apparatus
+* DC power supply
+* Heating block set to 95°C
+* Gel opening tool
+* Microwave
+* Staining tray
 * Shaker
 
 **Additional Materials**
 
-* SDS buffer  
-* 10X running buffer  
-* Kimwipe  
-    
-  Pictures of equipment used:  
-  ![][image1]![][image2]![][image3]![][image4]  
+* SDS buffer
+* 10X running buffer
+* Kimwipe
+
+  Pictures of equipment used:
+  ![][image1]![][image2]![][image3]![][image4]
   ![][image5]
 
 ## **Laboratory Learning Objectives**
 
-**Assigned student**: Meet  
-**Reviewing student**: Raj  
+**Assigned student**: Meet
+**Reviewing student**: Raj
 Students completing this lab protocol will have achieved:
 
-The purpose of this lab is to learn how to prepare, run, stain, and analyze the results on an SDS-PAGE gel for protein separation. Protein samples are prepared using Laemmli sample buffer and beta-mercapthenol (BME) prior to electrophoresis. The experiment includes assembly of the of the Bio-RAD electrophoresis apparatus, preparation of running buffer, loading of protein samples and molecular weight ladder into gel wells, and with the use of power supply to achieve protein separation through the polyacrylamide gel matrix. Following electrophoresis, the gel is stained and detained to visualize protein bands and evaluate protein size, sample quality, and relative purity. Protein concentration may also be estimated using the Bradford assay before sample loading. 
+The purpose of this lab is to learn how to prepare, run, stain, and analyze the results on an SDS-PAGE gel for protein separation. Protein samples are prepared using Laemmli sample buffer and beta-mercapthenol (BME) prior to electrophoresis. The experiment includes assembly of the of the Bio-RAD electrophoresis apparatus, preparation of running buffer, loading of protein samples and molecular weight ladder into gel wells, and with the use of power supply to achieve protein separation through the polyacrylamide gel matrix. Following electrophoresis, the gel is stained and detained to visualize protein bands and evaluate protein size, sample quality, and relative purity. Protein concentration may also be estimated using the Bradford assay before sample loading.
 
 ## **Laboratory Learning Outcomes**
 
-**Assigned student**: Ulises  
-**Reviewing student**: Bansari  
+**Assigned student**: Ulises
+**Reviewing student**: Bansari
 Students completing this lab protocol will be able to:
 
 ## **Potential Hazards and Waste Disposal**
 
-**Assigned student**: Gary  
+**Assigned student**: Gary
 **Reviewing student**: Raj
 
 BME smells, where to dispose of waste
 
 ## **Pre-Laboratory Questions**
 
-**Assigned student**: Olivia  
+**Assigned student**: Olivia
 **Reviewing student**: Gary
 
 Homework questions to complete before lab
@@ -147,17 +147,17 @@ Homework questions to complete before lab
 
 ### Theory of SDS-PAGE (1 page)
 
-**Assigned student**: Gary  
+**Assigned student**: Gary
 **Reviewing student**: Olivia
 
 How does gel electrophoresis work? What do SDS and BME do? Why run a gel to assess purity?
 
 ### Equipment (1 page)
 
-**Assigned student**: Meet  
-**Reviewing student**: Raj  
-![][image6]  
-![][image7]  
+**Assigned student**: Meet
+**Reviewing student**: Raj
+![][image6]
+![][image7]
 Explain the parts of a biorad electrophoresis apparatus box
 
 ## **Pre-Laboratory Procedure**
@@ -166,17 +166,17 @@ Things to do one week or one day before day of lab
 
 ### Part 1: Assess Protein Concentration Using Bradford Dye
 
-**Assigned student**: Meet  
-**Reviewing student**: Raj  
-Assuming a 20uL sample in 2mL dye solution.  
-Concentration (ug/mL) \= 2633 x A595 – 52
+**Assigned student**: Meet
+**Reviewing student**: Raj
+Assuming a 20uL sample in 2mL dye solution.
+Concentration (ug/mL) \= 2633 x A595 - 52
 
-- Determine 
+- Determine
 
 ### Part 2: Sample Concentration Range
 
-**Assigned student**: Olivia  
-**Reviewing student**: Bansari  
+**Assigned student**: Olivia
+**Reviewing student**: Bansari
 Make sure samples are within the required concentration range of the gel. Too concentrated and your sample will smear, too little and it will be invisible. For practical SDS-PAGE loading:
 
 | Protein per band | Expected visibility |
@@ -197,52 +197,52 @@ Assuming the well of the gel holds 30uL, 1.5 uL for BME, 7.5uL for Laemmli buffe
 | 25 µg/mL | 525 ng | Very strong |
 | \> 50 µg/mL | \> 1 µg | Too saturated for quantification, likely to smear |
 
-### 
+###
 
 ### Part 3: Increasing Protein Concentration using 10k MWCO Filter
 
-**Assigned student**: Gary/Ulises  
+**Assigned student**: Gary/Ulises
 **Reviewing student**: Olivia
 
 ### Part 4: Preparation of Coomassie Stain and/or Destain Solution
 
-**Assigned student**: Bansari  
+**Assigned student**: Bansari
 **Reviewing student**: Raj
 
 ## **Experimental Procedure**
 
 ### Overview
 
-**Assigned student**: Bansari  
-**Reviewing student**: Meet  
+**Assigned student**: Bansari
+**Reviewing student**: Meet
 Brief outline of steps in the procedure
 
 ### Part 1: Prepare Protein Sample and MW Ladder
 
-**Assigned student**: Gary  
-**Reviewing student**: Raj  
-Mix BME, Laemmli, and protein sample (provide more details), heat, etc.  
-Protein sample to load is x uL  
-Total volume is y \= x/0.7 uL  
-BME \= y/20  
-Laemmli \= y/4  
+**Assigned student**: Gary
+**Reviewing student**: Raj
+Mix BME, Laemmli, and protein sample (provide more details), heat, etc.
+Protein sample to load is x uL
+Total volume is y \= x/0.7 uL
+BME \= y/20
+Laemmli \= y/4
 ![][image8]
 
 ### Part 2: Prepare Tris/Glycine/SDS electrophoresis buffer
 
-**Assigned student**: Raj  
+**Assigned student**: Raj
 **Reviewing student**: Olivia
 
 SDS buffer (volume):
 
-**Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O). 
+**Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O).
 
-### 
+###
 
 ### Part 3: Prepare the BioRad Gel cassette
 
-**Assigned student**: Ulises  
-**Reviewing student**: Meet  
+**Assigned student**: Ulises
+**Reviewing student**: Meet
 Remove the strip
 
 ### Preparation of the BioRad Gel Cassette
@@ -259,46 +259,46 @@ Remove the strip
 
 6. ### Fill the inner chamber and the outer tank with 1X Tris/Glycine/SDS running buffer until it reaches the same level where the wells are filled.
 
-### 
+###
 
 ### Part 4: Assemble the BioRad electrophoresis apparatus
 
-**Assigned student**: Gary  
-**Reviewing student**: Ulises  
+**Assigned student**: Gary
+**Reviewing student**: Ulises
 Spacers, SDS buffer (volume), check for leaks
 
-### 
+###
 
 ### Part 5: Sample Loading in the Well
 
-**Assigned student**: Ulises  
+**Assigned student**: Ulises
 **Reviewing student**: Gary
 
-### 
+###
 
 ### Step-by-Step Loading Procedure
 
 1. ### Determine the loading volumes calculated from your BSA at 595 nm, and determine the exact volume of your protein concentration is needed to reach 2 ug of protein per well. Add that into a small microtube.
 
-   ### 
+   ###
 
    ### Example:
 
    ### Your protein concentration is C=0.40ug/uL
 
-   ###  
+   ###
 
    ### \-Your target loading amount is:
 
-   ### 
+   ###
 
    ### 2 ug protein per well
 
-   ### 
+   ###
 
    ### \-Use the standard concentration equation:
 
-   ### ![][image9] 
+   ### ![][image9]
 
    ### \-Substitute the values:
 
@@ -308,21 +308,21 @@ Spacers, SDS buffer (volume), check for leaks
 
    ###      5 ul of the concentration solution should be added
 
-   ###  
+   ###
 
    ### 2\.     Then, the protein sample will be added alongside the 2X Laemmli sample buffer \+ beta-mercaptoethanol in a 1:1 volume ratio mixture in the same microtube.
 
-   ###  
+   ###
 
    ### Tips for adding solutions into the wells:
 
    ### \-Make sure to use two hands to stabilize the entry of the micropipette tip into the well.
 
-   ### \-Don’t push into the well too hard or the cassette will shift and possibly contaminate the surrounding wells.
+   ### \-Don't push into the well too hard or the cassette will shift and possibly contaminate the surrounding wells.
 
    ### \-When applying the solution into the well, push on the plunger very slowly as to not let the solution spill over into the other wells
 
-   ### \-Fill at least half of the well’s volume to make sure nothing spills over
+   ### \-Fill at least half of the well's volume to make sure nothing spills over
 
    ### \-For each well used, use a new gel-loading tip to draw up your calculated sample volume to avoid contamination.
 
@@ -334,12 +334,12 @@ Spacers, SDS buffer (volume), check for leaks
 
 6. ### Once all samples and the ladder are loaded, ensure the inner chamber is filled to where the wells are with buffer and prepare to connect the power supply to begin the run at 110 V.
 
-### 
+###
 
 ### Part 6: Connect Power Supply and Run the Gel
 
-**Assigned student**: Raj  
-**Reviewing student**: Olivia  
+**Assigned student**: Raj
+**Reviewing student**: Olivia
 Voltage, amps, how long to run, visual cue and time
 
 | Voltage | Run time |
@@ -349,64 +349,64 @@ Voltage, amps, how long to run, visual cue and time
 
 Note : If bands have reached the bottom of the gel, turn off the power supply and remove SDS-PAGE gel.
 
-### 
+###
 
 ### Part 7: Recycle the SDS buffer and store
 
-**Assigned student**: Olivia  
+**Assigned student**: Olivia
 **Reviewing student**: Meet
 
-### 
+###
 
 ### Part 8: Separate the Gel from its Cassette
 
-**Assigned student**: Meet  
-**Reviewing student**: Ulises  
+**Assigned student**: Meet
+**Reviewing student**: Ulises
 Use the tool
 
-### 
+###
 
 ### Part 9: Staining the Gel
 
-**Assigned student**: Olivia  
-**Reviewing student**: Raj  
+**Assigned student**: Olivia
+**Reviewing student**: Raj
 Stain and destain, microwave, shake
 
-### 
+###
 
 ### Part 10: Imaging the Gel
 
-**Assigned student**: Meet  
-**Reviewing student**: Gary  
+**Assigned student**: Meet
+**Reviewing student**: Gary
 Light box, smartphone camera
 
 ## **Timing Estimates**
 
-**Assigned student**: Ulises  
+**Assigned student**: Ulises
 **Reviewing student**: Meet
 
-Provide an estimate for each of the parts above and total time of the run.  
+Provide an estimate for each of the parts above and total time of the run.
 **Estimated time of all steps**: 4 hours 30 minutes
 
 ## **Post-Experiment Analysis**
 
-**Assigned student**: Bansari  
+**Assigned student**: Bansari
 **Reviewing student**: Gary
 
-Estimating the molecular weight of your bands from the MW ladder  
+Estimating the molecular weight of your bands from the MW ladder
 ![][image12]
 
 ## **Expected Results**
 
-**Assigned student**: Olivia  
-**Reviewing student**: Bansari  
-![][image13]  
-![][image14]  
+**Assigned student**: Olivia
+**Reviewing student**: Bansari
+![][image13]
+![][image14]
 ![][image15]
 
 ## **TA Material Preparation**
 
-**Assigned student**: Meet  
+**Assigned student**: Meet
 **Reviewing student**: Raj
 
 Items that the TA might need to prepare before class to make sure the lab goes smooth for the students
