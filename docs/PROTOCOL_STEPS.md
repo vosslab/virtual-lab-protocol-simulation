@@ -2,7 +2,7 @@
 
 Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
-**Schema status:** This document describes the canonical schema and final-state implementation.
+**Schema status:** This document describes the canonical protocol step schema. Some runtime wiring sections describe the current implementation and are maintained for runtime maintainers.
 
 How the active tissue culture protocol is stored, ordered, triggered,
 and validated at load time.
@@ -26,11 +26,10 @@ The `ProtocolStep` interface defines the shape of each compiled entry. Every ste
 | `dayId` | `'day1' \| 'day2' \| 'day4'` | Which experiment day. Used for the day-ribbon UI. |
 | `stepIndex` | `number` | 1-based position inside `partId`. Used for "Step N of M" rendering inside a part. |
 | `requiredItems` | `string[]` | Scene item ids the student must interact with to complete this step. |
-| `usedItems` | `string[]` | Derived step-level summary of every `tool`/`source`/`destination` id in the interaction sequence, in first-use order. Not authored. The active highlight items are derived from the current interaction, not directly from `usedItems`. |
-| `interactionSequence` | `Interaction[]` | Ordered list of logical player operations (tool picks, loads, destinations, etc.). See [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for interaction structure. |
-| `completionTrigger` | `CompletionTrigger \| null` | Completion trigger: declarative wiring intent (`{completionEvent}`). Validated at build time to match the final interaction's completion event. |
+| `usedItems` | `string[]` | Derived step-level summary of every `tool`/`source`/`destination` id in the completion path, in first-use order. Not authored. The active highlight items are derived from the current interaction, not directly from `usedItems`. |
+| `completionPath` | object | The completion path describes how the step is completed. The `kind` field selects one of four shapes: `interactionSequence`, `directTool`, `modal`, or `multipleChoice`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for details. |
 | `errorHints` | `Record<string, string>` | Named hint strings surfaced when the student makes a specific mistake. |
-| `scene` | union | Which scene owns this step (`hood`, `bench`, `incubator`, `microscope`, `plate_reader`). |
+| `scene` | string | Which scene owns this step. |
 | `correctVolumeMl` | `number?` | Optional exact volume the student must pipette, for pipette steps. |
 | `toleranceMl` | `number?` | Optional tolerance around `correctVolumeMl`. |
 
@@ -70,28 +69,22 @@ step is two: remove the entry, update the predecessor's `nextId`.
 
 ## Adding a new step
 
-1. Add a new entry to `src/content/protocol.yaml`. The YAML build process
-   compiles steps into `generated/protocol_data.ts` at build time
-   (consumed via the `src/protocol.ts` facade).
-2. Set `nextId` on the new entry to the id of the step that should
-   follow it (or `null` if it is the new final step).
-3. Find the step that should now come *before* the new step and change
-   its `nextId` to the new id.
-4. Rebuild and reload the game in the browser. `tools/build_protocol_data.py`
-   compiles YAML to TypeScript. `validateProtocolGraph()` runs on
-   `DOMContentLoaded`.
+1. Add a new entry to `src/content/protocol.yaml` with `id`, `label`, `scene`, and `completionPath`.
+2. Choose the `completionPath.kind` (one of `interactionSequence`, `directTool`, `modal`, `multipleChoice`).
+3. Fill in the kind-specific fields.
+4. Wire `nextId` to the next step (or `null` for the last step).
+5. Find the step that should now come *before* the new step and change its `nextId` to the new id.
+6. Rebuild via `tools/build_protocol_data.py` so the typed protocol data regenerates.
+7. Reload the game in the browser. `validateProtocolGraph()` runs on `DOMContentLoaded` to verify the step graph is connected.
 
-4a. Add a `triggerStep('<new_id>')` call somewhere in the scene code
-    that owns the step. See [Triggering a step](#triggering-a-step) below.
-4b. Add a module-scope `registeredEmitters.add('<new_id>')` line near
-    the top of the scene file, paired with the `triggerStep` call. This
-    lets `validateCompletionEventCoverage()` (see below) pass at page load time
-    before any clicks happen.
-
-## Triggering a step
+## Current runtime implementation: completion-trigger wiring
 
 This section describes the scene-code wiring contract that implements step completion.
 Scenes wire steps manually via `triggerStep`.
+
+### Triggering a step
+
+This describes the runtime maintainer work, not part of authoring a step in YAML.
 
 Scene code never calls `completeStep(id)` directly. It calls
 `triggerStep(id)`, a wrapper defined in `src/game_state.ts`:
@@ -247,10 +240,7 @@ for real-world behavior validation.
 
 ## Completion trigger wiring
 
-The `completionTrigger` field on each step specifies the completion event
-(e.g., `click:ethanol_bottle`, `modal_ok:incubator_confirm`) that marks the
-step as complete. This field is validated at build time to match the final
-interaction's `completionEvent`.
+The generated `completionTrigger` field maps the completion event declared in `completionPath` to step completion.
 
 At runtime, when a completion event occurs, `triggerStep(id)` is called by
 scene code. This is the current wiring contract: scenes announce events via

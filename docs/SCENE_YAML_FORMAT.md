@@ -49,18 +49,11 @@ type-check pass.
 
 ## File location
 
-Each scene YAML lives beside its TypeScript adapter at
-`src/scenes/<scene>/<scene>.yaml`. The directory name and the YAML basename
-must match (the discoverer in `tools/build_scene_data.py` globs
-`src/scenes/<scene>/<scene>.yaml`).
+Each scene YAML lives beside its TypeScript adapter. The directory name and
+the YAML basename must match. Scene YAML is build-time engine configuration
+consumed by the scene driver and does not live under `src/content/`.
 
-This colocation is a locked decision from the scene-render-ownership
-migration (see
-[docs/archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md)).
-Scene YAML lives next to its adapter because both files describe the same
-scene from two angles: YAML for static runtime config, TypeScript for
-behavior. Scene YAML is not author-facing content and does not live under
-`src/content/`.
+Author-facing protocol content lives separately under `src/content/<protocol_name>/`.
 
 ## Top-level fields
 
@@ -287,10 +280,8 @@ A seventh capability id, `liquidTransfer`, is whitelisted in the validator
 but is not yet implemented as a capability module and is not declared by any
 current scene YAML. Treat it as RESERVED.
 
-The broader capability runtime (rich per-capability config blocks, full
-behavior migration off the adapter render bodies) is not yet built; today
-each capability validates a small slice of config and mounts as a click
-router or no-op state holder.
+Today each capability validates a small slice of its declared config and
+mounts as a click router or no-op state holder.
 
 ## What scene YAML must not contain
 

@@ -7,8 +7,7 @@ scene YAML is documented separately in
 [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md); the canonical terms are in
 [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md). Read this doc when you need to
 understand the driver, registry, adapter, or capability layers, when you are
-adding a new scene, or when you are debugging why an adapter's module-load
-side effects did not fire.
+adding a new scene, or when you are debugging runtime behavior.
 
 This doc covers the runtime side only. It does not duplicate the YAML schema
 and it does not document author-facing protocol concepts (those live under the
@@ -142,11 +141,10 @@ the YAML `capabilities` array. Each capability conforms to the
 `SceneCapability` contract (`mount`, `onStepChange`, `onClick`, `unmount`)
 and registers at module load.
 
-Six capability ids are registered today. Their runtime status varies: the
-larger capability runtime (rich per-capability config blocks, full behavior
-migration off the adapter render bodies) is unbuilt today; most capabilities
-serve as click routers or no-op state holders. This matches the status
-recorded in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md).
+Six capability ids are registered today. Their runtime status varies: most
+capabilities serve as click routers or no-op state holders and validate a
+small slice of their declared config. This matches the status recorded in
+[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md).
 
 | Capability id | Module | Status |
 | --- | --- | --- |
@@ -229,34 +227,11 @@ re-render.
 
 ## How to add a new scene
 
-1. Create the scene YAML at `src/scenes/<name>/<name>.yaml` with the
-   required fields (`sceneId`, `workspace`, `capabilities`, optional
-   `elementId`, `items`, `zones`). See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)
-   for the schema.
-2. Create the adapter at `src/scenes/<name>/<name>.ts`. The adapter must
-   export a registered object with `sceneId: '<name>'`,
-   `dispatchInteraction(itemId, ctx)`, and `render(ctx)`. Call
-   `registerScene(adapter)` at module load. If the scene emits any
-   completion events, call `registeredEmitters.add('<event>')` at module
-   load too.
-3. Add a side-effect import at the bottom of the adapter import block in
-   [src/init.ts](../src/init.ts) (lines 28-40):
-   `import "./scenes/<name>/<name>";`. Without this import, the adapter
-   never loads, registration never runs, and emitter pre-registration
-   silently fails.
-4. Add a `case '<scene>':` to the `setRenderGame` dispatch switch in
-   [src/init.ts:229-275](../src/init.ts) that calls
-   `runSceneRender('<name>')` and gates `runScene('<name>')` on the
-   `DRIVER_INITIALIZED_SCENES` set.
-5. If the scene declares emitters, write a paragraph-level MODULE-LOAD
-   warning comment above the `registeredEmitters.add(...)` calls so the
-   next editor knows that removing the import in step 3 will break
-   protocol-startup validation.
-
-After (1)-(5), run `tools/build_scene_data.py` to regenerate
-`generated/scene_data.ts` (gitignored; consumed via the `src/scene_configs.ts`
-facade), then `npx tsc` to verify types, then exercise
-the new scene through a Playwright walker.
+See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for the complete scene
+YAML schema. A new scene requires both a YAML configuration file and a
+TypeScript adapter module that implement the runtime and rendering behavior.
+At build time, the scene YAML is validated and compiled into generated
+TypeScript exports consumed by the driver.
 
 ## Shared infrastructure
 

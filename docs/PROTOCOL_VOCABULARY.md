@@ -85,8 +85,8 @@ The vocabulary is chosen to fit lab authors, not interaction-
 model abstractions. Each tier explains why the canonical word
 beats common alternatives.
 
-- **Protocol** -- the entire authored lab experiment (parts,
-  reagents, items, steps). Better than "Game" (too broad,
+- **Protocol** -- the complete student-facing lab pathway. May span many
+  scenes and may be assembled from mini-protocols. Better than "Game" (too broad,
   includes UI/scoring/rendering), "Scene" (too narrow,
   protocols span multiple scenes), or "Workflow" (less
   lab-specific).
@@ -196,13 +196,16 @@ beats common alternatives.
   interaction completed the step. Better than
   "Event" (too generic) or "Trigger" (collides with the
   step-level listener field).
-- **Completion trigger** -- the step-level listener that fires
-  on a completion event. Better than bare "Trigger".
+- **Completion trigger** -- a derived step-level listener synthesized by
+  the builder from `step.scene` and the completion event declared in
+  `completionPath`. Authors do not write `completionTrigger` in YAML.
+  Each generated `completionTrigger` must have a matching runtime emitter.
+  Better than bare "Trigger".
 - **Completion-event emitter** -- the scene or modal code
   path that emits a completion event after the player
-  completes the matching interaction. Each declared
-  `completionTrigger` in YAML must have a matching emitter
-  in runtime code; otherwise the step can never complete.
+  completes the matching interaction. Each generated
+  `completionTrigger` in the generated TypeScript must have a matching
+  emitter in runtime code; otherwise the step can never complete.
   Better than "scene wiring" (vague) or bare "trigger"
   (collides with the YAML field).
 - **Completion-event coverage** -- the startup validation
@@ -237,6 +240,7 @@ beats common alternatives.
 | **Protocol** | The complete lab procedure. Lives as a self-contained folder under `src/content/<protocol_name>/` with `items.yaml`, `reagents.yaml`, `protocol.yaml`. | folder name; `--protocol <name>` build flag |
 | **Part** | A named grouping of steps inside a protocol. | `protocol.yaml` part header |
 | **Step** | One numbered objective in a part. | `protocol.yaml` step entry; `ProtocolStep` interface |
+| **Entry block** | A top-level protocol YAML block declaring the first scene and first step for the protocol. Required for every mini-protocol. | `entry` |
 | **Completion path** | The schema contract that describes how the step gets completed. Always present; one per step. Its `kind` selects the shape of the remaining fields. | `step.completionPath` |
 | **Completion-path kind** | Discriminator field on a completion path. One of `interactionSequence`, `directTool`, `modal`, or `multipleChoice`. | `step.completionPath.kind` |
 | **Interaction sequence** | The ordered list of interactions a step requires when the completion-path kind is `interactionSequence`. | `step.completionPath.interactions` |
@@ -249,29 +253,30 @@ beats common alternatives.
 
 ## Workspace concept
 
-The protocol takes place across distinct **workspaces** -- the locations
-where the student performs each action in the wet lab:
+A mini-protocol starts in its declared entry scene. Every step takes place
+in a specific scene (the rendered viewport where the student performs each
+action):
 
-- `<scene_name>` values name the workspace or viewport where a step's
-  interactions occur.
+- The `scene:` field in each step names the workspace where interactions occur.
+- A mini-protocol must declare which scene is its entry point (the scene
+  where the first step takes place).
+- Do not route through intermediate scenes unless the authored steps require it.
+- In particular, do not default to the hood unless the first authored step
+  takes place there.
 
-In current YAML, the rendered viewport is the `scene:` field. "Workspace"
-is the conceptual layer; until a mechanical rename lands, treat
-`scene:` as "workspace" and pick the appropriate `completionPath.kind`
-per workspace type:
+Pick the appropriate `completionPath.kind` per scene type:
 
-- Physical transfer -> `kind: interactionSequence`.
+- Physical transfer and liquid handling -> `kind: interactionSequence`.
 - One-click physical or instrument action -> `kind: directTool`.
-- Instrument/control UI workflow ->
-  `kind: modal`.
+- Instrument control or UI workflow -> `kind: modal`.
+- Quiz or calculation question -> `kind: multipleChoice`.
 
 Critical authoring rule: do NOT use `kind: modal` as a shortcut for
-wet-lab liquid handling. A dilution series prepared from stock
-solutions through intermediate dilutions is physical pipetting, not an
-instrument workflow, so it must be authored as `interactionSequence`.
-A modal MAY be layered on
-top of a physical step as optional calculation/help guidance, opened
-from a help affordance, but it must not be the step's completionPath.
+wet-lab liquid handling. A dilution series prepared from stock solutions
+through intermediate dilutions is physical pipetting, not an instrument
+workflow, so it must be authored as `interactionSequence`. A modal MAY be
+layered on top of a physical step as optional calculation or help guidance,
+opened from a help affordance, but it must not be the step's completionPath.
 
 For examples in vocabulary docs, prefer author-readable placeholders:
 `<protocol_name>`, `<scene_name>`, `<item_name>`, `<step_name>`, and

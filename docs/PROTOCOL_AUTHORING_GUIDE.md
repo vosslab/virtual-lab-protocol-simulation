@@ -17,6 +17,16 @@ Related references:
 - [tests/playwright/e2e/protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs):
   the YAML-driven UI walker (canonical real-UI regression test).
 
+## Terminology
+
+A protocol is the complete student-facing lab pathway. It may span many scenes in sequence.
+
+A mini-protocol is a focused subprotocol. It usually runs in one scene, or across a small scene transition where the transition is part of the workflow.
+
+A sequence runner is a protocol that connects mini-protocols in order to form the full student-facing protocol.
+
+A developer smoke protocol is a very small diagnostic protocol used to check that a scene or object works.
+
 ## What a protocol is
 
 A protocol is a self-contained folder under `src/content/<protocol_name>/`
@@ -29,6 +39,7 @@ src/content/<protocol_name>/
   protocol.yaml   # parts, days, and the ordered list of steps
 ```
 
+A mini-protocol is a focused subprotocol that teaches and verifies one smaller workflow. Every mini-protocol must define a `learning` block with required fields `objectives`, `outcomes`, and `goals` that describe what students will learn and be able to do after completing it, and an `entry` block that declares the initial scene and first step. Larger protocols may be assembled from mini-protocols (called a sequence runner), or a protocol may be a developer smoke protocol (a short diagnostic protocol). See [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) for the hierarchy and [PRIMARY_SPEC.md](PRIMARY_SPEC.md) for the schema.
 A Python builder (`tools/build_protocol_data.py`) reads these files,
 validates them, and emits two TypeScript modules (`protocol_data.ts`,
 `inventory_data.ts`) that the browser bundle imports. No YAML is parsed
@@ -36,10 +47,15 @@ at runtime.
 
 ## Worked example: tutorial_split
 
-The repo ships a 3-step tutorial protocol at
+The repo ships a 3-step developer smoke protocol at
 `src/content/tutorial_split/`. It is intentionally minimal: spray the
-hood, wash a flask with PBS, repeat the wash. This guide uses it as the
-worked example. You can open the live files alongside this guide.
+hood, wash a flask with PBS, repeat the wash. This example is a developer
+smoke protocol, not a student-facing mini-protocol (which usually span
+6 to 10 meaningful steps and include a required `learning` block). Developer smoke
+protocols serve as a quick sanity check for the YAML tooling and runtime.
+This guide uses the tutorial_split smoke protocol as the worked example
+to keep the introduction brief. You can open the live files alongside
+this guide.
 
 ### Step 1: write items.yaml
 
@@ -188,12 +204,10 @@ steps:
     scene: hood
     errorHints:
       skipped: "Always spray the hood first."
-    interactionSequence:
-      - tool: ethanol_bottle
-        completionEvent: spray_ethanol
-    completionTrigger:
-      scene: hood
-      completionEvent: "click:spray_ethanol"
+    completionPath:
+      kind: directTool
+      tool: ethanol_bottle
+      completionEvent: spray_ethanol
     nextId: tutorial_aspirate_media
 
   # Step 2: a two-interaction step (load then discharge). The first
@@ -211,29 +225,28 @@ steps:
     scene: hood
     errorHints:
       volume_off: "Use about 4 mL of PBS."
-    interactionSequence:
-      - tool: serological_pipette
-        source: pbs_bottle
-        liquid: pbs
-        volumeMl: 4
-        stateChange:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: pbs
-            volumeMl: 4
-            colorKey: pbs
-      - tool: serological_pipette
-        destination: flask
-        liquid: pbs
-        consumesVolumeMl: 4
-        completionEvent: pbs_wash
-    completionTrigger:
-      scene: hood
-      completionEvent: "click:pbs_wash"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
     nextId: tutorial_final_wash
 
   # Step 3: same shape as step 2; nextId is null because this is the
-  # final step in the protocol.
+  # final step in the developer smoke protocol.
   - id: tutorial_final_wash
     label: "Final PBS rinse"
     action: "Add more PBS to complete the wash"
@@ -245,41 +258,32 @@ steps:
     scene: hood
     errorHints:
       volume_off: "Use about 4 mL of PBS."
-    interactionSequence:
-      - tool: serological_pipette
-        source: pbs_bottle
-        liquid: pbs
-        volumeMl: 4
-        stateChange:
-          heldLiquid:
-            tool: serological_pipette
-            liquid: pbs
-            volumeMl: 4
-            colorKey: pbs
-      - tool: serological_pipette
-        destination: flask
-        liquid: pbs
-        consumesVolumeMl: 4
-        completionEvent: pbs_wash
-    completionTrigger:
-      scene: hood
-      completionEvent: "click:pbs_wash"
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: serological_pipette
+          source: pbs_bottle
+          liquid: pbs
+          volumeMl: 4
+          stateChange:
+            heldLiquid:
+              tool: serological_pipette
+              liquid: pbs
+              volumeMl: 4
+              colorKey: pbs
+        - tool: serological_pipette
+          destination: flask
+          liquid: pbs
+          consumesVolumeMl: 4
+          completionEvent: pbs_wash
     nextId: null
 ```
 
-Note on derived fields: the live `tutorial_split/protocol.yaml` snapshot
-above still uses the legacy top-level `interactionSequence` and a
-hand-written `completionTrigger`. The post-SP-K2 author schema wraps
-interactions under `completionPath.kind: interactionSequence` and the
-builder synthesizes `completionTrigger` from `step.scene` and the final
-interaction's `completionEvent`. New steps and any author edits should
-omit `completionTrigger` entirely; see "Step shapes: pick a completion
-path" below.
+Do not author `completionTrigger`. The builder derives it from `step.scene` and the final `completionEvent` in `completionPath`.
 
-How the three step shapes break down:
+How the step shapes break down:
 
-- **Single discharge** (step 1): one interaction with `tool` plus
-  `destination`. The completion event lives on that interaction.
+- **Direct tool step** (step 1): one click on the tool itself.
 - **Load then discharge** (steps 2 and 3): two interactions. The first
   has `tool` plus `source` plus `liquid` and records a `stateChange`.
   The second has `tool` plus `destination` plus `liquid` plus
@@ -472,9 +476,9 @@ student during the step. The dilution-prep scene dispatcher uses `tubeTargets`
 to track liquid accumulation in the microtube and highlight the active source and
 destination together.
 
-## Mini-tutorial pattern: workspace-only protocol
+## Mini-protocol pattern: workspace-only protocol
 
-A workspace-only mini-tutorial is a focused protocol that lives inside a
+A workspace-only mini-protocol is a focused protocol that lives inside a
 single dedicated scene (typically `well_plate_workspace`) and excludes the
 `hood`, `bench`, and `incubator` scenes. The active reference
 implementation is `tutorial_plate_drug_additions`. Use this pattern when
@@ -500,7 +504,7 @@ Authoring rules for this pattern:
   metadata for plate-transfer steps. Both kinds of metadata sit under
   `completionPath` on `interactionSequence` steps. The two are mutually
   exclusive on a single step.
-- End the tutorial with a `review_loaded_plate`-style step whose
+- End the mini-protocol with a `review_loaded_plate`-style step whose
   `completionPath.kind` is `modal`. The review modal summarizes the
   final plate state and completes the protocol.
 

@@ -37,11 +37,11 @@ src/content/
     protocol.yaml     # protocol steps, parts, and days
 ```
 
-The active protocol is `cell_culture`:
+Each mini-protocol is self-contained under `src/content/<protocol_name>/`:
 
-- `src/content/cell_culture/items.yaml`: item definitions
-- `src/content/cell_culture/reagents.yaml`: reagent definitions
-- `src/content/cell_culture/protocol.yaml`: protocol steps, parts, and days
+- `src/content/<protocol_name>/items.yaml`: item definitions
+- `src/content/<protocol_name>/reagents.yaml`: reagent definitions
+- `src/content/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
 
 A Python generator at `tools/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
@@ -85,7 +85,7 @@ Each item is a mapping keyed by snake_case id. Required fields vary by role.
 
 | Field | Type | When required | Description |
 | --- | --- | --- | --- |
-| `asset` | string | when `scene` != `virtual` and `scene` != `none` | SVG asset basename in `assets/equipment/` (no .svg). This is distinct from the legacy ASSET_SPECS lookup key in `src/hood_config.ts`. M1.C reconciles the two namespaces at build time. |
+| `asset` | string | when `scene` != `virtual` and `scene` != `none` | SVG asset basename in `assets/equipment/` (no .svg). |
 | `liquidCapable` | boolean | items that hold liquid | whether the item can be filled/emptied |
 | `capacityMl` | number | if `liquidCapable: true` | max volume in mL |
 | `allowedLiquids` | array of strings | if `liquidCapable: true` | list of reagent ids that can be stored (e.g. `[media, pbs, trypsin]`) |
@@ -178,31 +178,53 @@ reagents:
 Three top-level blocks: `parts`, `days`, and `steps`. Parts organize steps by lab workflow
 part; days mark when each part runs. Steps are the runnable units of the protocol.
 
-An optional top-level `learning` block carries pedagogy metadata for tutorials.
+A required top-level `learning` block carries pedagogy metadata for every mini-protocol.
 
-### Learning block (optional)
+### Learning block (required for mini-protocols)
 
-Optional top-level block that records the pedagogy contract for a tutorial
-or full protocol. All three sub-keys are optional strings (one or two
-sentences each). The block is advisory metadata; the runtime does not yet
-read it, but the OVCAR8 math review references it as the canonical home
-for tutorial pedagogy. See the Pedagogy section in
-[OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md).
+Every mini-protocol must include a `learning` block that records the pedagogy
+contract. All three sub-keys are required strings (one or two sentences each).
+The block is authored metadata that documents what the mini-protocol teaches,
+what students will be able to do afterward, and why the mini-protocol exists
+in the broader curriculum.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `objectives` | string | What students will achieve fluency with. |
-| `outcomes` | string | What students will be able to do unsupervised after the tutorial. |
-| `goals` | string | Overall purpose, including how the tutorial fits into the broader protocol curriculum. |
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `objectives` | string | For mini-protocols | Begins with "Students completing this mini-protocol will have achieved..." and states what students will gain fluency with. |
+| `outcomes` | string | For mini-protocols | Begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol. |
+| `goals` | string | For mini-protocols | Begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose. |
+
+Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [PRIMARY_SPEC.md](PRIMARY_SPEC.md) for the full learning-block schema.
+
+### Entry block (required for mini-protocols)
+
+The `entry` block declares where the protocol starts. It is required for every mini-protocol.
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `scene` | string | yes | Scene id where the protocol begins. Must match the first authored step's `scene`. |
+| `step` | string | yes | Step id of the first authored step. Must match the first step in the `steps` list. |
+
+Example:
+
+```yaml
+entry:
+  scene: well_plate_workspace
+  step: open_plate_workspace
+```
+
+Validation rules: `entry.step` must be the id of the first authored step, and `entry.scene` must equal that step's `scene`. See [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md) for full validation.
+
+### Learning block example
 
 Example (from `src/content/tutorial_plate_drug_additions/protocol.yaml`):
 
 ```yaml
 learning:
-  objectives: Students completing this mini-tutorial will have achieved fluency with
+  objectives: Students completing this mini-protocol will have achieved fluency with
     the OVCAR8 96-well plate map and the media-adjustment-before-drug ordering rule.
-  outcomes: Students will be able to dose a 96-well assay plate Day-2 unsupervised.
-  goals: Bridge the single-technique tutorials to the full OVCAR8 protocol.
+  outcomes: Students completing this mini-protocol will be able to dose a 96-well assay plate Day-2 unsupervised.
+  goals: Overall, this mini-protocol aims to accomplish bridging the single-technique tutorials to the full OVCAR8 protocol.
 ```
 
 ### Parts block

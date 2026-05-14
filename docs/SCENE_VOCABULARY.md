@@ -46,8 +46,7 @@ root element and one TypeScript adapter, and where it has declarable
 static scene config that config lives in one YAML file. Scenes that are
 render-only or programmatically configured may opt out of YAML; today
 every shipped scene has a YAML, but the rule is "one YAML where static
-config exists," not "every scene must have a YAML." Adapter files live
-under `src/scenes/<scene_name>/<scene_name>.ts`.
+config exists," not "every scene must have a YAML."
 
 ### scene id
 
