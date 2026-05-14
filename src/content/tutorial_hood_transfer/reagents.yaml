@@ -1,5 +1,0 @@
-reagents:
-  pbs:
-    label: "1x PBS"
-    colorKey: pbs
-    displayColor: "#87CEEB"

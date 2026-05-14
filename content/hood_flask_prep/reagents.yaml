@@ -1,0 +1,20 @@
+reagents:
+  pbs:
+    label: "1x PBS"
+    colorKey: pbs
+    displayColor: "#b8e5ff"
+
+  trypsin:
+    label: "Trypsin solution"
+    colorKey: trypsin
+    displayColor: "#e8d4f0"
+
+  media:
+    label: "Complete media"
+    colorKey: media
+    displayColor: "#f7a6b8"
+
+  cells:
+    label: "Cell suspension"
+    colorKey: cells
+    displayColor: "#ffd4a3"

@@ -1,0 +1,10 @@
+reagents:
+  mtt:
+    label: "MTT reagent"
+    colorKey: mtt
+    displayColor: "#fff59d"
+
+  dmso:
+    label: "DMSO"
+    colorKey: dmso
+    displayColor: "#e0e0e0"

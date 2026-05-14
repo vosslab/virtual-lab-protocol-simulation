@@ -51,18 +51,8 @@ items:
     allowedLiquids:
     - metformin
     contains: metformin
-  distilled_water:
-    label: "Distilled water"
-    role: reagent_source
-    asset: bottle
-    scene: well_plate_workspace
-    liquidCapable: true
-    capacityMl: 500
-    allowedLiquids:
-    - water
-    contains: water
   dilution_tube_carb_b:
-    label: "4 µM carboplatin working solution"
+    label: "4 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -72,7 +62,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_c:
-    label: "8 µM carboplatin working solution"
+    label: "8 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -82,7 +72,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_d:
-    label: "20 µM carboplatin working solution"
+    label: "20 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -92,7 +82,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_e:
-    label: "40 µM carboplatin working solution"
+    label: "40 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -102,7 +92,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_f:
-    label: "80 µM carboplatin working solution"
+    label: "80 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -112,7 +102,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_g:
-    label: "200 µM carboplatin working solution"
+    label: "200 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace
@@ -122,7 +112,7 @@ items:
     - carboplatin
     - media
   dilution_tube_carb_h:
-    label: "400 µM carboplatin working solution"
+    label: "400 uM carboplatin working solution"
     role: culture_vessel
     asset: microtube_open_translucent
     scene: well_plate_workspace

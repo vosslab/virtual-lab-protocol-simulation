@@ -1,0 +1,8 @@
+items:
+  well_plate:
+    label: "96-well plate"
+    role: culture_vessel
+    asset: well_plate_96
+    scene: well_plate_workspace
+    liquidCapable: true
+    visualOnly: false

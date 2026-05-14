@@ -11,7 +11,3 @@ reagents:
     label: Metformin
     colorKey: metformin
     displayColor: '#b0e0ff'
-  water:
-    label: Distilled water
-    colorKey: water
-    displayColor: '#e8f5e9'

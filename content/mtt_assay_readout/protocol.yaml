@@ -1,0 +1,164 @@
+# intended_entry_scene: cell_culture_hood
+
+protocolType: mini_protocol
+
+learning:
+  objectives: Students completing this mini-protocol will have achieved fluency with the MTT viability assay, from reagent addition through data interpretation.
+  outcomes: Students completing this mini-protocol will be able to perform an MTT assay readout unsupervised, including proper waste handling and absorbance measurement.
+  goals: Overall, this mini-protocol aims to accomplish teaching the full MTT workflow as a self-contained readout tutorial that bridges cell culture technique to quantitative assay results.
+
+parts:
+  - id: part1_mtt_incubation
+    label: "Part 1: MTT addition and incubation"
+    dayId: day1
+  - id: part2_mtt_readout
+    label: "Part 2: Solubilization and plate reading"
+    dayId: day1
+
+days:
+  - id: day1
+    label: "Day 1"
+
+steps:
+  - id: add_mtt
+    label: "Add 25 uL 12 mM MTT per well"
+    action: "Add 25 uL 12 mM MTT per well"
+    why: "MTT is reduced to formazan only by live cells; the color shows viability."
+    partId: part1_mtt_incubation
+    dayId: day1
+    stepIndex: 1
+    scene: hood
+    requiredItems: [well_plate, multichannel_pipette, mtt_vial]
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: multichannel_pipette
+          source: mtt_vial
+          liquid: mtt
+          volumeMl: 0.025
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: mtt
+              volumeMl: 0.025
+              colorKey: mtt
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: mtt
+          consumesVolumeMl: 0.025
+          completionEvent: add_mtt
+    errorHints:
+      wrong_volume: "Add 25 uL MTT for a 1.5 mM final concentration."
+    nextId: incubate_mtt
+
+  - id: incubate_mtt
+    label: "Incubate 1.5 h at 37C"
+    action: "Incubate 1.5 h at 37C"
+    why: "Live cells need time to convert MTT into purple formazan crystals."
+    partId: part1_mtt_incubation
+    dayId: day1
+    stepIndex: 2
+    scene: bench
+    requiredItems: [incubator, well_plate]
+    isIncubation: true
+    completionPath:
+      kind: directTool
+      tool: incubator
+      completionEvent: place_in_incubator_mtt
+    errorHints:
+      skipped: "The MTT must incubate 1.5 h or the signal is too weak."
+    nextId: decant_mtt
+
+  - id: decant_mtt
+    label: "Decant MTT into the biohazard bin"
+    action: "Decant MTT into the biohazard bin"
+    why: "MTT is toxic. It must leave the plate before DMSO solubilization."
+    partId: part1_mtt_incubation
+    dayId: day1
+    stepIndex: 3
+    scene: hood
+    requiredItems: [well_plate, biohazard_decant]
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: well_plate
+          destination: biohazard_decant
+          completionEvent: decant_mtt
+    errorHints:
+      wrong_waste: "MTT goes into the biohazard bin, not the vacuum waste."
+    nextId: add_dmso
+
+  - id: add_dmso
+    label: "Add 200 uL DMSO per well and mix"
+    action: "Add 200 uL DMSO per well and mix"
+    why: "DMSO dissolves formazan so the plate reader can measure absorbance."
+    partId: part2_mtt_readout
+    dayId: day1
+    stepIndex: 1
+    scene: hood
+    requiredItems: [well_plate, multichannel_pipette, dmso_bottle]
+    completionPath:
+      kind: interactionSequence
+      interactions:
+        - tool: multichannel_pipette
+          source: dmso_bottle
+          liquid: dmso
+          volumeMl: 0.200
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: dmso
+              volumeMl: 0.200
+              colorKey: dmso
+        - tool: multichannel_pipette
+          destination: well_plate
+          liquid: dmso
+          consumesVolumeMl: 0.200
+          completionEvent: add_dmso
+    errorHints:
+      wrong_volume: "Add 200 uL DMSO per well and pipette up and down 10 times."
+    nextId: plate_read
+
+  - id: plate_read
+    label: "Read absorbance at 560 nm"
+    action: "Read absorbance at 560 nm"
+    why: "Formazan absorbs at 560 nm; more signal means more live cells."
+    partId: part2_mtt_readout
+    dayId: day1
+    stepIndex: 2
+    scene: bench
+    requiredItems: [well_plate, plate_reader]
+    completionPath:
+      kind: modal
+      openClick: plate_reader
+      advanceClick: complete-plate-read
+      completionEvent: plate-read-complete
+    errorHints:
+      wrong_wavelength: "Read at 560 nm. Other wavelengths miss the formazan peak."
+    nextId: review_results
+
+  - id: review_results
+    label: "Interpret viability data"
+    action: "Review and interpret the absorbance data"
+    why: "Comparing absorbance values across wells reveals which conditions impact cell viability."
+    partId: part2_mtt_readout
+    dayId: day1
+    stepIndex: 3
+    scene: bench
+    requiredItems: [plate_reader]
+    completionPath:
+      kind: multipleChoice
+      question: "If untreated cells show an absorbance of 0.8 and drug-treated cells show 0.3, what does this suggest?"
+      choices:
+        - id: choice_reduced_viability
+          text: "The drug reduces cell viability"
+          feedback: "Correct! Lower absorbance indicates fewer live cells converting MTT to formazan, suggesting the drug is toxic or growth-inhibitory."
+          correct: true
+        - id: choice_higher_viability
+          text: "The drug increases cell viability"
+          feedback: "Incorrect. Higher absorbance (0.8 vs 0.3) indicates more viable cells, so the lower reading means fewer viable drug-treated cells."
+        - id: choice_no_difference
+          text: "There is no difference in viability"
+          feedback: "Incorrect. The 0.3 vs 0.8 difference is significant and indicates a substantial reduction in cell viability in the drug-treated wells."
+      completionEvent: results_interpreted
+    nextId: null
