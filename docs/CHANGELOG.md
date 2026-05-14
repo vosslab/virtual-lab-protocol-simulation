@@ -3,6 +3,7 @@
 ## 2026-05-13 (Contract alignment for canonical docs)
 
 ### Additions and New Features
+- Added [docs/TARGET_FILE_STRUCTURE.md](TARGET_FILE_STRUCTURE.md), a durable design reference describing the desired steady-state repository layout (source/content/generated/archive boundaries, folder ownership rules, and rationale). It is not an implementation checklist. Implementation sequencing for the moves lives in the new transient companion [docs/active_plans/target_file_structure_migration.md](active_plans/target_file_structure_migration.md). [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) is untouched and continues to describe the repository as it exists today.
 - Extended [docs/PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) with two new sections (Protocol and mini-protocol hierarchy, Visible interaction standard) that lock the vocabulary hierarchy and the visible-interaction standard at the design layer so the canonical SCENE and PROTOCOL docs can reference them as the single source of truth.
 - Wrote [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md) with the technical specification covering protocol types, top-level YAML fields, entry block, learning block, completion paths, derived fields, sequence runners, and walker requirement. The spec replaces the previously empty file and gives the seven canonical SCENE and PROTOCOL docs a stable upstream schema reference.
 

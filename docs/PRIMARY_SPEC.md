@@ -13,7 +13,7 @@ Every protocol declares a `protocolType` field with one of four values:
 
 ## Protocol YAML top-level fields
 
-Each protocol lives in `src/content/<protocol_name>/protocol.yaml` and declares the following top-level fields:
+Each protocol lives in `content/<protocol_name>/protocol.yaml` and declares the following top-level fields:
 
 ```yaml
 protocolType: mini_protocol
@@ -114,3 +114,19 @@ The walker must not:
 - click DOM nodes that are present but not visibly clickable.
 
 If the walker cannot complete a step through visible UI, the YAML schema, the scene affordance, or the runtime behavior is incomplete. The fix is to extend the YAML, fix the scene, or fix the runtime; the fix is never a per-step or per-protocol walker branch.
+
+## Source-code and content layout
+
+Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
+
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate. Smoke fixtures declare `protocolType: dev_smoke`.
+
+Legacy code retired during a refactor is archived at `archive/code/<name>_<YYYY_MM>/` at the repo root, not under `src/`.
+
+Files named `legacy_*.ts` under `src/` are temporary residents during an active refactor. The `legacy_` prefix marks them for review at refactor close: any helper that survives loses the prefix and moves into its appropriate `src/` subfolder; any helper that no longer serves a runtime purpose moves to `archive/code/<name>_<YYYY_MM>/`. No `legacy_*.ts` file may remain under `src/` after a refactor closes.
+
+Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `hood_flask_prep.html`, `plate_drug_treatment.html`, `cell_culture_full.html`.
+
+## Sequence runners and friendly terminology
+
+The `protocolType` schema value `sequence_runner` is rendered in docs and student-facing content as "full protocol runner" or "full protocol". Schema value stays stable; only the human-readable label changes.

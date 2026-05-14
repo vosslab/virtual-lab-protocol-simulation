@@ -63,3 +63,17 @@ A mini-protocol is designed around what a student can see and do. The walkthroug
 
 The walker may read generated protocol data to know the expected path, but it must not write game state, skip scenes, call internal APIs, or click hidden controls. If the walker cannot complete the mini-protocol through visible UI, the YAML, scene affordance, or runtime behavior is incomplete and must be fixed before the mini-protocol is considered complete.
 
+## Source-code and content layout
+
+Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated protocol, scene, inventory, and registry data emits under `generated/` at the repo root. Generated files do not live under `src/`.
+
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. Smoke protocols use the same YAML schema, builder, and walker path as curriculum mini-protocols, but they are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate.
+
+Legacy code that is retired during a refactor is archived at `archive/code/<name>_<YYYY_MM>/` at the repo root, not under `src/`. Keeping `src/` reserved for active source code prevents accidental imports of retired modules.
+
+The `legacy_` filename prefix is a temporary marker used during refactors. It signals that a helper file is on a deletion or relocation path before the refactor closes. After the refactor closes, no `legacy_*` files remain under active source.
+
+## Sequence runners and friendly terminology
+
+The schema-level `protocolType` value `sequence_runner` is referred to in docs and student-facing content as the "full protocol runner" or simply "full protocol". The schema value stays stable; only the human-readable label changes.
+
