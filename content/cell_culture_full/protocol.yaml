@@ -1,4 +1,3 @@
-# intended_entry_scene: cell_culture_hood
 # Sequence runner: complete cell culture workflow pathway.
 # schema-note: sequence field uses `sequence:` top-level list of mini-protocol ids (readable names, no tutorial_ prefix).
 # This runner connects five mini-protocols into a complete student-facing protocol.

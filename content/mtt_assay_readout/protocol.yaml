@@ -1,6 +1,9 @@
-# intended_entry_scene: cell_culture_hood
 
 protocolType: mini_protocol
+
+entry:
+  scene: cell_culture_hood
+  step: add_mtt
 
 learning:
   objectives: Students completing this mini-protocol will have achieved fluency with the MTT viability assay, from reagent addition through data interpretation.
@@ -27,7 +30,7 @@ steps:
     partId: part1_mtt_incubation
     dayId: day1
     stepIndex: 1
-    scene: hood
+    scene: cell_culture_hood
     requiredItems: [well_plate, multichannel_pipette, mtt_vial]
     completionPath:
       kind: interactionSequence
@@ -76,7 +79,7 @@ steps:
     partId: part1_mtt_incubation
     dayId: day1
     stepIndex: 3
-    scene: hood
+    scene: cell_culture_hood
     requiredItems: [well_plate, biohazard_decant]
     completionPath:
       kind: interactionSequence
@@ -95,7 +98,7 @@ steps:
     partId: part2_mtt_readout
     dayId: day1
     stepIndex: 1
-    scene: hood
+    scene: cell_culture_hood
     requiredItems: [well_plate, multichannel_pipette, dmso_bottle]
     completionPath:
       kind: interactionSequence

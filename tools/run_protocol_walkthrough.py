@@ -30,8 +30,8 @@ def get_repo_root():
 
 
 def discover_protocols(repo_root):
-	"""Discover available protocols by globbing src/content/*/protocol.yaml."""
-	content_dir = repo_root / 'src' / 'content'
+	"""Discover available protocols by globbing content/*/protocol.yaml."""
+	content_dir = repo_root / 'content'
 	if not content_dir.is_dir():
 		return []
 

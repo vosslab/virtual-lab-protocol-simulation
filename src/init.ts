@@ -407,7 +407,7 @@ setRenderGame(function(): void {
 	// runSceneRender: adapter's render() method handles DOM update.
 	// runScene: one-time driver initialization (registers interaction handlers, etc).
 	switch (gameState.activeScene) {
-		case 'hood':
+		case 'cell_culture_hood':
 			runSceneRender('cell_culture_hood');
 			if (!DRIVER_INITIALIZED_SCENES.has('cell_culture_hood')) {
 				DRIVER_INITIALIZED_SCENES.add('cell_culture_hood');

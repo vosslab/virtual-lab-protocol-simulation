@@ -18,7 +18,7 @@ SKIP_FILE_PATTERNS = [
 ]
 SKIP_FILE_REGEXES = [re.compile(pattern) for pattern in SKIP_FILE_PATTERNS]
 SKIP_PATH_PATTERNS = [
-	r"^src/content/.*\.yaml$",
+	r"^content/.*\.yaml$",
 ]
 SKIP_PATH_REGEXES = [re.compile(pattern) for pattern in SKIP_PATH_PATTERNS]
 ERROR_SAMPLE_COUNT = 5

@@ -147,18 +147,17 @@ for the layered model.
 
 | Path | Purpose |
 | --- | --- |
-| [src/content/cell_culture/](../src/content/cell_culture/) | Active protocol YAML (`items`, `reagents`, `protocol`) |
-| [src/content/tutorial_bench_direct/](../src/content/tutorial_bench_direct/) | Tutorial protocol (single bench `directTool` interaction) |
-| [src/content/tutorial_cell_counter/](../src/content/tutorial_cell_counter/) | Tutorial protocol (cell counter modal) |
-| [src/content/tutorial_drug_dilution/](../src/content/tutorial_drug_dilution/) | Tutorial protocol (drug-dilution modal) |
-| [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/) | Tutorial protocol (manual hemocytometer quadrant counting) |
-| [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/) | Tutorial protocol (hood `interactionSequence`) |
-| [src/content/tutorial_pbs/](../src/content/tutorial_pbs/) | Tutorial protocol (PBS wash repetition) |
-| [src/content/tutorial_plate_drug_additions/](../src/content/tutorial_plate_drug_additions/) | Tutorial protocol (96-well plate drug additions; media adjustment, carboplatin dose series, metformin fixed dose) |
-| [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/) | Tutorial protocol (plate-reader modal) |
-| [src/content/tutorial_split/](../src/content/tutorial_split/) | Tutorial protocol (split / passage) |
-| [src/content/tools.ts](../src/content/tools.ts) | Build-side helper module |
-| [src/content/validate.ts](../src/content/validate.ts) | Build-side validator helpers |
+| [content/cell_culture/](../content/cell_culture/) | Legacy monolithic protocol YAML (kept for reference; deletion deferred to M9) |
+| [content/cell_culture_full/](../content/cell_culture_full/) | Sequence runner that chains the OVCAR8 mini-protocols end to end |
+| [content/hood_flask_prep/](../content/hood_flask_prep/) | Mini-protocol: hood prep and flask handling |
+| [content/cell_counting_and_seeding/](../content/cell_counting_and_seeding/) | Mini-protocol: hemocytometer count and seeding |
+| [content/drug_dilution_setup/](../content/drug_dilution_setup/) | Mini-protocol: stock to working-solution dilution prep |
+| [content/plate_drug_treatment/](../content/plate_drug_treatment/) | Mini-protocol: 96-well plate drug additions |
+| [content/mtt_assay_readout/](../content/mtt_assay_readout/) | Mini-protocol: MTT assay plate-reader readout |
+| [tests/content/dev_smoke/bench_direct_check/](../tests/content/dev_smoke/bench_direct_check/) | Developer smoke protocol (bench `directTool` interaction; exempt from mini-protocol gates) |
+| [tests/content/dev_smoke/plate_reader_check/](../tests/content/dev_smoke/plate_reader_check/) | Developer smoke protocol (plate-reader modal; exempt from mini-protocol gates) |
+| [src/legacy_tc_tools.ts](../src/legacy_tc_tools.ts) | Legacy types, deletion deferred to M9 (moved from `content/tools.ts`) |
+| [src/legacy_tc_validate.ts](../src/legacy_tc_validate.ts) | Legacy validator helpers, deletion deferred to M9 (moved from `content/validate.ts`) |
 | [src/protocol.ts](../src/protocol.ts) | Facade re-exporting `generated/protocol_data.ts` (`PROTOCOL_STEPS`, `PROTOCOL_ID`) |
 | [src/inventory.ts](../src/inventory.ts) | Facade re-exporting `generated/inventory_data.ts` |
 | [src/scene_configs.ts](../src/scene_configs.ts) | Facade re-exporting `generated/scene_data.ts` |

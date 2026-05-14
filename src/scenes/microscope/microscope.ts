@@ -186,7 +186,7 @@ function captureCellCount(): void {
 	}
 	const overlay = document.getElementById('instrument-overlay');
 	if (overlay) overlay.classList.remove('active');
-	switchScene('hood');
+	switchScene('cell_culture_hood');
 }
 
 //============================================
@@ -256,7 +256,7 @@ function renderMicroscopeScene(): void {
 				if (!confirmed) return;
 			}
 			overlay.classList.remove('active');
-			switchScene('hood');
+			switchScene('cell_culture_hood');
 		});
 	}
 }

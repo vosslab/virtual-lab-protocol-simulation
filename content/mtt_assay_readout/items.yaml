@@ -3,7 +3,7 @@ items:
     label: "96-Well plate"
     role: culture_vessel
     asset: well_plate_96
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 0.400
     allowedLiquids: [mtt, dmso]
@@ -12,7 +12,7 @@ items:
     label: "Multichannel pipette"
     role: transfer_tool
     asset: multichannel_pipette
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 0.200
     allowedLiquids: [mtt, dmso]
@@ -21,7 +21,7 @@ items:
     label: "MTT reagent vial"
     role: reagent_source
     asset: mtt_vial
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 10
     allowedLiquids: [mtt]
@@ -31,7 +31,7 @@ items:
     label: "DMSO bottle"
     role: reagent_source
     asset: dmso_bottle
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 50
     allowedLiquids: [dmso]
@@ -41,7 +41,7 @@ items:
     label: "Biohazard waste bin"
     role: waste_target
     asset: biohazard_decant
-    scene: hood
+    scene: cell_culture_hood
 
   incubator:
     label: "Incubator"

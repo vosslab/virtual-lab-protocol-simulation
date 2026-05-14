@@ -33,7 +33,7 @@
 //   node tests/protocol_walkthrough_yaml.mjs [OPTIONS]
 //
 // Options:
-//   -p, --protocol NAME    Protocol id under src/content/ to walk (default: cell_culture).
+//   -p, --protocol NAME    Protocol id under content/ to walk (default: cell_culture).
 //   --wrong-order          Drive interactions in wrong order (negative test).
 //   -h, --help             Show help message and exit.
 //
@@ -96,7 +96,7 @@ Walk through a protocol end-to-end in a headless browser, validating that every
 step can be completed via real DOM interactions.
 
 Options:
-  -p, --protocol NAME    Protocol id under src/content/ to walk (default: cell_culture).
+  -p, --protocol NAME    Protocol id under content/ to walk (default: cell_culture).
                          Examples: cell_culture, tutorial_hemocytometer_count,
                          tutorial_split, tutorial_cell_counter, tutorial_hood_transfer,
                          tutorial_drug_dilution, tutorial_bench_direct,
@@ -669,7 +669,7 @@ async function walkModalStep(page, step, openClick, advanceClick, completionEven
 		// Use step.scene as the truth source (matches walkInteractionSequence).
 		// Scope the item locator to the correct scene to avoid picking up the wrong element
 		// when multiple scenes have the same data-item-id (e.g., multichannel_pipette in hood vs well_plate_workspace).
-		if (step.scene === 'hood') {
+		if (step.scene === 'cell_culture_hood') {
 			await switchToHood(page, report);
 		} else if (step.scene === 'bench' || step.scene === 'plate_reader') {
 			await switchToBench(page, report);
@@ -862,7 +862,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 				// Ensure correct scene before walking
 				if (step.scene === 'bench') {
 					await switchToBench(page, report);
-				} else if (step.scene === 'hood') {
+				} else if (step.scene === 'cell_culture_hood') {
 					await switchToHood(page, report);
 				} else if (step.scene === 'well_plate_workspace') {
 					await switchToPlate(page, report);
@@ -900,7 +900,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 					// Determine scene for the tool
 					if (step.scene === 'bench') {
 						await switchToBench(page, report);
-					} else if (step.scene === 'hood') {
+					} else if (step.scene === 'cell_culture_hood') {
 						await switchToHood(page, report);
 					} else if (step.scene === 'well_plate_workspace') {
 						await switchToPlate(page, report);
@@ -989,7 +989,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 		// Scene-isolation assertion for tutorial_plate_drug_additions:
 		// Fail if the tutorial ever leaves the well_plate_workspace scene.
 		if (protocolId === 'tutorial_plate_drug_additions') {
-			const forbiddenScenes = ['hood', 'bench', 'incubator'];
+			const forbiddenScenes = ['cell_culture_hood', 'bench', 'incubator'];
 			if (forbiddenScenes.includes(afterState.activeScene)) {
 				throw new Error(`Scene-isolation violation: tutorial_plate_drug_additions reached forbidden scene '${afterState.activeScene}' (must stay in 'well_plate_workspace')`);
 			}

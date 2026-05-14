@@ -1,0 +1,13 @@
+items:
+  centrifuge:
+    label: "Centrifuge"
+    role: instrument
+    asset: centrifuge
+    scene: bench
+
+  conical_15ml_rack:
+    label: "15 mL Tubes"
+    role: decoration
+    asset: conical_15ml_rack
+    scene: bench
+    visualOnly: true

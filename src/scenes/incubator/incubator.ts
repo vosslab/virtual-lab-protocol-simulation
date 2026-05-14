@@ -125,7 +125,7 @@ function renderIncubatorScene(): void {
 				}
 			}
 		}
-		switchScene('hood');
+		switchScene('cell_culture_hood');
 	});
 }
 

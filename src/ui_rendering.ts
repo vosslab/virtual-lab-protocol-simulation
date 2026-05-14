@@ -442,7 +442,7 @@ export const renderToolbar = (): string => {
 	// Determine which tools are available based on current scene and step
 	let tools: Array<{ id: string; label: string; icon: string }> = [];
 
-	if (gameState.activeScene === 'hood') {
+	if (gameState.activeScene === 'cell_culture_hood') {
 		// Derive available tools from completionPath.interactions[*].tool in order of first appearance.
 		// Modal-driven steps have completionPath.kind !== 'interactionSequence'; they use the modal UI instead.
 		if (currentStep.completionPath?.kind === 'interactionSequence' && currentStep.completionPath.interactions.length > 0) {

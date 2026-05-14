@@ -2,19 +2,23 @@ learning:
   objectives: Students completing this mini-protocol will have achieved fluency with the OVCAR8 96-well plate map and the media-adjustment-before-drug ordering rule that keeps every well at a final 200 uL volume.
   outcomes: Students completing this mini-protocol will be able to dose a 96-well assay plate Day-2 unsupervised using the 1-2-5 carboplatin dose series, fixed-dose metformin, and media-adjusted wells.
   goals: Overall, this mini-protocol aims to accomplish the Day-2 plate dosing workflow, applying the dilution strategies and plate-loading discipline learned in the planning mini-protocol.
+
 protocolType: mini_protocol
+
 entry:
   scene: well_plate_workspace
   step: open_plate_workspace
+
 parts:
-- id: tutorial_plate_drug_additions_part
-  label: 'Day 2: 96-Well Plate Drug Additions'
-  dayId: tutorial_plate_day
+  - id: tutorial_plate_drug_additions_part
+    label: 'Day 2: 96-Well Plate Drug Additions'
+    dayId: tutorial_plate_day
+
 days:
-- id: tutorial_plate_day
-  label: Day 2
+  - id: tutorial_plate_day
+    label: Day 2
+
 steps:
-# intended_entry_scene: well_plate_workspace
 # Step 1: Open plate workspace (modal transition to dedicated plate scene)
 - id: open_plate_workspace
   label: Open the 96-well plate workspace

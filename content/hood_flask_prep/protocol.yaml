@@ -1,8 +1,11 @@
-# intended_entry_scene: cell_culture_hood
 # Mini-protocol: Hood setup and flask preparation through trypsinization and spin-down.
 # Maps the first seven steps of the monolithic cell_culture protocol.
 
 protocolType: mini_protocol
+
+entry:
+  scene: cell_culture_hood
+  step: spray_hood
 
 learning:
   objectives: "Students completing this mini-protocol will have achieved proficiency with aseptic hood technique, media aspiration, PBS washing, enzymatic cell detachment with trypsin, protease neutralization, centrifugation, and resuspension of cell pellets."
@@ -27,7 +30,7 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [ethanol_bottle]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       skipped: "Always spray the hood before starting. Contaminants wreck experiments."
     completionPath:
@@ -44,7 +47,7 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [flask, aspirating_pipette, waste_container]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_tool: "Use the aspirating pipette. A serological pipette will splash media."
       missed_waste: "Route waste to the vacuum waste container, not elsewhere."
@@ -65,7 +68,7 @@ steps:
     dayId: day1
     stepIndex: 3
     requiredItems: [flask, pbs_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_reagent: "PBS is the wash buffer. Media will stop trypsin from working."
       volume_off: "Use about 4 mL of PBS so the whole surface is rinsed."
@@ -97,7 +100,7 @@ steps:
     dayId: day1
     stepIndex: 4
     requiredItems: [flask, trypsin_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use 3 mL of trypsin. Too much stresses the cells and reduces viability."
     completionPath:
@@ -128,7 +131,7 @@ steps:
     dayId: day1
     stepIndex: 5
     requiredItems: [flask, media_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     correctVolumeMl: 9
     toleranceMl: 1
     errorHints:
@@ -178,7 +181,7 @@ steps:
     dayId: day1
     stepIndex: 7
     requiredItems: [flask, media_bottle, serological_pipette, waste_container]
-    scene: hood
+    scene: cell_culture_hood
     correctVolumeMl: 12
     toleranceMl: 1
     errorHints:

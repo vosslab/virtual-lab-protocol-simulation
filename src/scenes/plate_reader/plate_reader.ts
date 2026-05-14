@@ -154,7 +154,7 @@ function renderPlateReaderScene(): void {
 				}
 			}
 			overlay.classList.remove('active');
-			switchScene('hood');
+			switchScene('cell_culture_hood');
 		});
 	}
 }

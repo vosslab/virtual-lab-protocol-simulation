@@ -73,7 +73,7 @@ items:
     label: "Serological pipette"
     role: transfer_tool
     asset: sero_pipette
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 10
     allowedLiquids: [pbs]
@@ -82,7 +82,7 @@ items:
     label: "Aspirating pipette"
     role: aspirate_tool
     asset: aspirating_pipette
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 10
     allowedLiquids: [media]
@@ -92,7 +92,7 @@ items:
     label: "T-75 Flask"
     role: cell_container
     asset: t75_flask
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 20
     allowedLiquids: [media, pbs]
@@ -102,7 +102,7 @@ items:
     label: "1x PBS"
     role: reagent_source
     asset: pbs_bottle
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 500
     allowedLiquids: [pbs]
@@ -112,7 +112,7 @@ items:
     label: "70% Ethanol"
     role: reagent_source
     asset: ethanol_spray
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 500
     allowedLiquids: [ethanol]
@@ -123,7 +123,7 @@ items:
     label: "Vacuum waste container"
     role: waste_target
     asset: waste_container
-    scene: hood
+    scene: cell_culture_hood
 ```
 
 Notes on this file:
@@ -177,6 +177,20 @@ reagents fail the validator.
 are the runnable units; their execution order is set by the `nextId`
 linked-list pointer, not by array position.
 
+Every mini-protocol must also declare a top-level `entry:` block with
+`scene` and `step`. `entry.step` is the id of the first authored step
+(must match the first step in `steps:`). `entry.scene` is that step's
+`scene`. The no-hood-default rule applies: do not use
+`entry.scene: cell_culture_hood` unless the first step is also in the
+hood. The full schema and validation rules live in
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
+
+```yaml
+entry:
+  scene: cell_culture_hood
+  step: tutorial_spray_hood
+```
+
 `src/content/tutorial_split/protocol.yaml` (annotated):
 
 ```yaml
@@ -201,7 +215,7 @@ steps:
     dayId: tutorial_day_1
     stepIndex: 1
     requiredItems: [ethanol_bottle]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       skipped: "Always spray the hood first."
     completionPath:
@@ -222,7 +236,7 @@ steps:
     dayId: tutorial_day_1
     stepIndex: 2
     requiredItems: [flask, pbs_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use about 4 mL of PBS."
     completionPath:
@@ -255,7 +269,7 @@ steps:
     dayId: tutorial_day_1
     stepIndex: 3
     requiredItems: [flask, pbs_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use about 4 mL of PBS."
     completionPath:
@@ -409,7 +423,7 @@ notification, and the step completes (emitting `completionEvent`).
 Incorrect choices also show their feedback, but do not advance the step.
 
 The `scene` for a multipleChoice step is typically `plate` (for well-dose
-questions), `hood` (for prep questions), or `microscope` (for observation
+questions), `cell_culture_hood` (for prep questions), or `microscope` (for observation
 questions), depending on which scene provides context.
 
 ### Worked example: an interactionSequence step with tubeTargets
@@ -480,7 +494,7 @@ destination together.
 
 A workspace-only mini-protocol is a focused protocol that lives inside a
 single dedicated scene (typically `well_plate_workspace`) and excludes the
-`hood`, `bench`, and `incubator` scenes. The active reference
+`cell_culture_hood`, `bench`, and `incubator` scenes. The active reference
 implementation is `tutorial_plate_drug_additions`. Use this pattern when
 the goal is to teach one focused workflow (for example, loading a 96-well
 plate from prepared dilutions) without sending students through a full
@@ -491,7 +505,7 @@ Authoring rules for this pattern:
 - Set `scene: well_plate_workspace` on every step. Do not switch scenes
   mid-tutorial. Calculation popups, dilution prep, plate transfer, and
   the final review all run inside the same scene.
-- Do not include any step whose `scene` is `hood`, `bench`, `incubator`,
+- Do not include any step whose `scene` is `cell_culture_hood`, `bench`, `incubator`,
   `microscope`, or `plate_reader`. No pre-incubation step, no plate
   handoff step, no full-protocol continuation.
 - Use stock solution, intermediate dilution, and working solution

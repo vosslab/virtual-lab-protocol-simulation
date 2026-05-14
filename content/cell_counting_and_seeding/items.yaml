@@ -36,25 +36,25 @@ items:
     label: "Serological pipette"
     role: transfer_tool
     asset: sero_pipette
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 10
-    allowedLiquids: [media, pbs, trypsin, cells]
+    allowedLiquids: [media, cells]
 
   flask:
     label: "T-75 Flask"
     role: cell_container
     asset: t75_flask
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 20
-    allowedLiquids: [media, trypsin, cells]
+    allowedLiquids: [media, cells]
 
   well_plate:
     label: "96-Well Plate"
     role: culture_vessel
     asset: well_plate_96
-    scene: hood
+    scene: cell_culture_hood
     liquidCapable: true
     capacityMl: 1
-    allowedLiquids: [media, cells, mtt, dmso, carboplatin, metformin]
+    allowedLiquids: [media, cells]

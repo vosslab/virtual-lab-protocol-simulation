@@ -186,7 +186,7 @@ function renderManualHemocytometerViabilityScreen(): void {
 	if (closeBtn) {
 		closeBtn.addEventListener('click', () => {
 			overlay.classList.remove('active');
-			switchScene('hood');
+			switchScene('cell_culture_hood');
 		});
 	}
 }
@@ -242,7 +242,7 @@ function renderManualHemocytometerCountingScreen(): void {
 				if (!confirmed) return;
 			}
 			overlay.classList.remove('active');
-			switchScene('hood');
+			switchScene('cell_culture_hood');
 		});
 	}
 }
@@ -299,7 +299,7 @@ function submitManualHemocytometerCount(): void {
 
 	const overlay = document.getElementById('instrument-overlay');
 	if (overlay) overlay.classList.remove('active');
-	switchScene('hood');
+	switchScene('cell_culture_hood');
 }
 
 //============================================

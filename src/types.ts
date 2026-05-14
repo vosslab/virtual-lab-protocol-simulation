@@ -2,7 +2,7 @@
 // types.ts - Shared content/protocol types for legacy content/* files
 // ============================================
 // These types support the legacy TC_PROTOCOL / TC_TOOLS / validateProtocol
-// surface in src/content/. They are not wired into the active runtime
+// surface in src/legacy_tc_tools.ts and src/legacy_tc_validate.ts. They are not wired into the active runtime
 // (src/init.ts) but exist so strict tsc --noEmit succeeds on these files.
 
 export type TargetRole = "source" | "target" | "tool" | "reagent";

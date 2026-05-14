@@ -1,3 +1,7 @@
+entry:
+  scene: cell_culture_hood
+  step: spray_hood
+
 parts:
   - id: part1_split
     label: "Part 1: Split"
@@ -38,7 +42,7 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [ethanol_bottle]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       skipped: "Always spray the hood before starting. Contaminants wreck experiments."
     completionPath:
@@ -55,7 +59,7 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [flask, aspirating_pipette, waste_container]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_tool: "Aspirating pipette is the correct tool. Serological will splash media."
       missed_waste: "Waste went somewhere it should not. Route it to the vacuum waste."
@@ -76,7 +80,7 @@ steps:
     dayId: day1
     stepIndex: 3
     requiredItems: [flask, pbs_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_reagent: "PBS is the wash buffer. Media will stop trypsin from working."
       volume_off: "Use about 4 mL of PBS so the whole surface is rinsed."
@@ -108,7 +112,7 @@ steps:
     dayId: day1
     stepIndex: 4
     requiredItems: [flask, trypsin_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use 3 mL of trypsin. Too much stresses the cells."
     completionPath:
@@ -139,7 +143,7 @@ steps:
     dayId: day1
     stepIndex: 5
     requiredItems: [flask, media_bottle, serological_pipette]
-    scene: hood
+    scene: cell_culture_hood
     correctVolumeMl: 9
     toleranceMl: 1
     errorHints:
@@ -189,7 +193,7 @@ steps:
     dayId: day1
     stepIndex: 2
     requiredItems: [flask, media_bottle, serological_pipette, waste_container]
-    scene: hood
+    scene: cell_culture_hood
     correctVolumeMl: 12
     toleranceMl: 1
     errorHints:
@@ -240,7 +244,7 @@ steps:
     dayId: day1
     stepIndex: 1
     requiredItems: [well_plate, serological_pipette, flask]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_volume: "Seed 100 uL per well. Less means sparse wells and noisy readings."
     completionPath:
@@ -289,7 +293,7 @@ steps:
     dayId: day2
     stepIndex: 1
     requiredItems: [carboplatin_stock, sterile_water, micropipette, dilution_tube_carb_intermediate]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use 40 uL drug and 960 uL water. Wrong ratios break the dose series."
     completionPath:
@@ -334,7 +338,7 @@ steps:
     dayId: day2
     stepIndex: 2
     requiredItems: [micropipette, dilution_tube_carb_intermediate, media_bottle, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f, dilution_tube_carb_g, dilution_tube_carb_h]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_count: "You need 7 working stocks, one per row B-H."
     completionPath:
@@ -540,7 +544,7 @@ steps:
     dayId: day2
     stepIndex: 3
     requiredItems: [micropipette, metformin_stock_bottle, media_bottle, dilution_tube_metformin_working]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       volume_off: "Use 200 uL stock and 800 uL media for a 200 mM working stock."
     completionPath:
@@ -611,7 +615,7 @@ steps:
     dayId: day2
     stepIndex: 1
     requiredItems: [well_plate, multichannel_pipette, media_bottle]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_volume: "Row A: cols 1-6 need 100 uL, cols 7-12 need 95 uL. Rows B-H: cols 1-6 need 95 uL, cols 7-12 need 90 uL."
     completionPath:
@@ -631,7 +635,7 @@ steps:
     dayId: day2
     stepIndex: 2
     requiredItems: [well_plate, multichannel_pipette, dilution_tube_carb_b, dilution_tube_carb_c, dilution_tube_carb_d, dilution_tube_carb_e, dilution_tube_carb_f, dilution_tube_carb_g, dilution_tube_carb_h]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_volume: "Add 5 uL per well. Row A stays drug-free as a control."
     completionPath:
@@ -753,7 +757,7 @@ steps:
     dayId: day2
     stepIndex: 3
     requiredItems: [well_plate, multichannel_pipette, dilution_tube_metformin_working]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_cols: "Metformin only goes in columns 7-12. Columns 1-6 stay carboplatin only."
     completionPath:
@@ -804,7 +808,7 @@ steps:
     dayId: day4
     stepIndex: 1
     requiredItems: [well_plate, multichannel_pipette, mtt_vial]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_volume: "Add 25 uL MTT for a 1.5 mM final concentration."
     completionPath:
@@ -842,7 +846,7 @@ steps:
     dayId: day4
     stepIndex: 3
     requiredItems: [well_plate, biohazard_decant]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_waste: "MTT goes into the biohazard bin, not the vacuum waste."
     completionPath:
@@ -861,7 +865,7 @@ steps:
     dayId: day4
     stepIndex: 4
     requiredItems: [well_plate, multichannel_pipette, dmso_bottle]
-    scene: hood
+    scene: cell_culture_hood
     errorHints:
       wrong_volume: "Add 200 uL DMSO per well and pipette up and down 10 times."
     completionPath:

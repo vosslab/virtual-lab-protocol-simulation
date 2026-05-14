@@ -1,4 +1,5 @@
-# intended_entry_scene: well_plate_workspace
+
+protocolType: mini_protocol
 
 learning:
   objectives: Students completing this mini-protocol will have achieved fluency with the carboplatin and metformin dilution calculations needed to prepare the OVCAR8 dose-response plate, including stock-to-intermediate, intermediate-to-working, and final-concentration-in-well math.

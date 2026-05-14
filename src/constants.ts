@@ -46,7 +46,7 @@ export const STAR_THRESHOLDS = {
 // for each protocol step. Advisory in this pass; future refactors will
 // use this for step-driven trigger resolution.
 export type TriggerSpec = {
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
+	scene: 'cell_culture_hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
 	completionEvent: string;
 };
 
@@ -180,7 +180,7 @@ export interface ProtocolStep {
 	stepIndex: number;
 	requiredItems: string[];
 	errorHints: Record<string, string>;
-	scene: 'hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
+	scene: 'cell_culture_hood' | 'bench' | 'incubator' | 'microscope' | 'well_plate_workspace' | 'plate_reader';
 	correctVolumeMl?: number;
 	toleranceMl?: number;
 	// Explicit successor for the state machine. null marks the final step.
