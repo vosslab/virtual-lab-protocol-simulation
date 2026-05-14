@@ -151,23 +151,44 @@ dedicated tools (Read, Grep, Glob) instead.
 ### Local runtimes
 
 **Node.js:**
-`node` is allowed for running `.js`, `.mjs`, and `.cjs` files, syntax checking with
-`-c` or `--check`, inline evaluation with `-e` or `--eval`, and `--version` queries.
+`node` is allowed for local script execution with a known set of dev/test
+flags. Auto-allowed shape:
+`node <flags> <path>.{js,mjs,cjs,ts,tsx} [script args...]`.
+Whitelisted flags before the script: `--test`, `--watch`, `--check`, `-c`,
+`--loader=<arg>` / `--loader <arg>`, `--import=<arg>` / `--import <arg>`, and
+any short `-<letters>` flag. Arguments **after** the script path are
+intentionally allowed -- once the script is a known local file, its own argv
+is the script's concern. The match is full-command anchored (`$`), not a
+prefix match, so nothing can hide between the extension and end-of-command.
+Bare diagnostic forms `--test`, `--version`, `--help` are also allowed. Inline JS (`-e` / `--eval`) and unrecognized
+`--long-flags` (`--inspect`, `--experimental-*`, etc.) **passthrough** for
+user approval -- `node` is a general-purpose interpreter (shell spawn, fs,
+network), so inline code is the dangerous shape. Command substitution
+(`` ` ``, `$(...)`) is blocked unconditionally.
 
 ```bash
-node script.js
-node -c script.js
-node -e "require('./data.json')"
-node --version
+node script.js                              # allowed
+node --test tests/test_foo.mjs              # allowed
+node --loader=tsx tests/walker.mjs          # allowed
+node --loader tsx/esm --test tests/x.ts    # allowed
+node --watch script.mjs                     # allowed
+node -c script.js                           # allowed
+node --test                                 # allowed (default test glob)
+node --version                              # allowed
+node -e "require('./data.json')"            # passthrough (inline JS)
+node --eval "console.log(1)"                # passthrough (inline JS)
+node --inspect tests/x.mjs                  # passthrough (unknown long-flag)
+node --experimental-vm-modules tests/x.mjs  # passthrough
 ```
 
 **npx (whitelisted packages):**
 `npx` is allowed for a whitelist of known-safe local dev tool packages: `tsc`,
-`eslint`, `prettier`, `playwright`, `esbuild`. Unknown packages still require
-user approval (passthrough).
+`tsx`, `eslint`, `prettier`, `playwright`, `esbuild`. Unknown packages still
+require user approval (passthrough).
 
 ```bash
 npx tsc --noEmit              # allowed
+npx tsx --test tests/x.ts     # allowed (TypeScript file runner)
 npx eslint src/               # allowed
 npx prettier --check .        # allowed
 npx playwright screenshot ... # allowed
@@ -264,6 +285,11 @@ The `rm` command is denied by default, but these specific patterns are allowed:
 | `/tmp/` paths | `rm /tmp/test_output.json` |
 | Cache directories | `rm -rf __pycache__`, `rm -r ~/Library/Caches/foo` |
 | `git rm` with relative paths | `git rm old_file.py` |
+| `rmdir` (empty-dir only) | `rmdir /tmp/empty`, `rmdir src/content/old/` |
+
+`rmdir` is allowed unconditionally because POSIX `rmdir` refuses to remove
+non-empty directories (no `-r`/`-R` behavior). Useful after `git mv A/* B/`
+chains to remove the now-empty source dir.
 
 ### Package managers
 
@@ -511,7 +537,10 @@ Underscore-prefixed files can be removed freely.
 
 ### `for` and `while` loops
 
-**Blocked:** `for f in *.py; do ...`, `while read line; do ...`
+**Blocked:** `for f in *.py; do ...`, `while read line; do ...`, and pipeline
+forms like `ls *.md | while read f; do ...; done` or
+`cmd; while true; do ...; done`. The deny anchors at start-of-leaf, after
+`|`/`;`/`&&`/`||`, and inside `do ... done` blocks.
 
 **Why:** Loop logic belongs in script files, not inline Bash.
 
