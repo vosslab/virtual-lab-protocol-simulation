@@ -1,5 +1,68 @@
 # Changelog
 
+## 2026-05-14 (unified interaction vocabulary: M2 design - WP-SLOT1, WP-SOP1)
+
+### Additions and New Features
+- **Two-level step/interaction model**: Reworked
+  `docs/active_plans/unified_interaction_vocabulary_design.md` from the
+  superseded flat `target + mode + action` first-pass draft into a two-level
+  model. A `step` owns an ordered `sequence` of `interaction` entries, so one
+  step can span multiple gestures (for example, "wash the flask with 4 mL PBS"
+  is one step, three gestures).
+- **Step slots defined**: A `step` has six slots: `name` (stable snake_case
+  identifier), `prompt`, `sequence` (ordered list of interactions),
+  `step_validator`, `outcome` (complete / retry / feedback), and `next_step`.
+  An optional `sequence_mode: unordered` relaxes interaction ordering within a
+  step.
+- **Naming and ordering rules**: Protocol flow is explicit through
+  `next_step`, which names the next step by its `name`; flow is never inferred
+  from YAML file order. `step_index` is display-only and carries no flow
+  meaning.
+- **Interaction slots defined**: Each `interaction` has an optional snake_case
+  `name`, a `target` (an addressable semantic named scene object that declares
+  its `kind`, so the kind carries task semantics and no separate task-type
+  slot is needed), a `gesture` (`click` / `drag` / `adjust` / `select` /
+  `type`, where `adjust` is the skill-based continuous set-point gesture), a
+  `validator` (checks one gesture on one target), and a `response`.
+- **`response` container defined**: The per-interaction `response` container
+  holds post-validation system behavior: an ordered `scene_operations` list of
+  typed primitives, an optional `feedback` block structured into `correct` /
+  `incorrect` messages, and an optional `state_update` for limited non-visual
+  runtime bookkeeping that cannot be expressed as a typed scene operation.
+- **Six `scene_operation` typed primitives**: Ratified `SvgSwap`,
+  `ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, and
+  `LiquidDisplayChange`, each specified with typed fields to a
+  durable-primitive standard. `LiquidDisplayChange` is first-class because it
+  tracks liquid quantity and well-contents state.
+- **Domain-verb mechanism and cost guardrail**: Added a domain-verb mechanism
+  of named compositions that expand at the interaction level to one
+  interaction or at the step level to a whole sequence plus `step_validator`,
+  with no hidden state change. A cost guardrail keeps domain verbs cheap while
+  new `gesture` values and new `scene_operation` primitives are expensive and
+  evidence-gated.
+
+### Decisions and Failures
+- **Flat model could not express a multi-gesture step**: The first-pass flat
+  six-slot model could not represent a single step that needs several
+  gestures, which forced the course-correction to the two-level
+  step/interaction model. An earlier seven-slot variant was also tightened to
+  six slots.
+- **`scene_operation` kept distinct from `response`**: `scene_operation`
+  stays the durable typed-primitive layer and was deliberately not renamed to
+  `response`. The first pass's "base actions" are renamed to `scene_operation`
+  primitives because they describe how the scene changes, not what the learner
+  does (OQ-10).
+- **Uniform snake_case, vocabulary rewrite not a compatibility layer**: Chose
+  snake_case uniformly across the vocabulary for readability and repo
+  consistency, and applied a uniform snake_case sweep across the design doc.
+  This is a vocabulary rewrite: legacy camelCase terms such as
+  `completionPath`, `volumeMl`, and `plateTargets` are removed from the
+  target-state vocabulary, not preserved (OQ-10).
+- **Naming and ordering rules locked in**: Ratified that `step.name` is the
+  stable identifier, `next_step` names the next step explicitly, `step_index`
+  is display-only, and `sequence_mode` is the opt-in unordered relaxation
+  (OQ-9).
+
 ## 2026-05-14 (unified interaction vocabulary: M1 evidence)
 
 ### Additions and New Features
