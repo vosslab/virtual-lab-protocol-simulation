@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // hood_shared.ts - Shared hood utilities and setup
 // Event listener setup used by both render.ts and cell_culture_hood.ts

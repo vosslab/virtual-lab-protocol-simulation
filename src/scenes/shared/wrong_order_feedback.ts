@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // wrong_order_feedback.ts
 // Toast notification for wrong order interactions

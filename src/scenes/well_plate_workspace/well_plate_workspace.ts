@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // well_plate_workspace.ts - Well plate workspace adapter (thin wrapper)
 // Responsibility seams split:

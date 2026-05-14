@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // item_workspace.ts - ItemWorkspace scene capability
 // First concrete capability: handles item-in-zone interactions.

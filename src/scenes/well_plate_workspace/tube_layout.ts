@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // tube_layout.ts - Microtube position and layout mapping
 // Maps microtube item ids to their positions within the dilution_tube_rack SVG

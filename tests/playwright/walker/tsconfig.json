@@ -1,0 +1,25 @@
+{
+	"compilerOptions": {
+		"ignoreDeprecations": "6.0",
+		"target": "es2020",
+		"module": "esnext",
+		"moduleResolution": "bundler",
+		"strict": false,
+		"noUncheckedIndexedAccess": false,
+		"exactOptionalPropertyTypes": false,
+		"noImplicitOverride": false,
+		"verbatimModuleSyntax": true,
+		"useUnknownInCatchVariables": false,
+		"noEmit": false,
+		"skipLibCheck": true,
+		"declaration": false,
+		"outDir": ".",
+		"rootDir": ".",
+		"lib": ["es2020", "dom"]
+	},
+	"files": [
+		"index.ts",
+		"click_resolver.ts",
+		"screenshot.ts"
+	]
+}

@@ -1,5 +1,17 @@
 # Build artifacts
+.claude
+.agents
+skills-lock.json
 .cache/
+src/scene_runtime/*.js
+src/scene_runtime/**/*.js
+# stray tsc emits at repo root (misconfigured outDir); source of truth is the .ts
+/contract.js
+/types.js
+/dispatch/
+/highlight/
+/layout/
+/liquid/
 artifacts/ui-review/
 generated/
 cell_culture_game.html

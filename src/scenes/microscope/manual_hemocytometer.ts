@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // manual_hemocytometer.ts - Manual hemocytometer viability and counting workflow
 // Extracted from microscope.ts (Patch C3).

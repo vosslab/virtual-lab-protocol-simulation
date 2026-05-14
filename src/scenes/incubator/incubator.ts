@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // incubator.ts - Incubator scene adapter (driver mode)
 // Render ownership: moved from src/scenes/incubator.ts in Patch A4

@@ -294,6 +294,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
   - `src/init.ts` no longer special-cases scene-id aliases.
   - Static no-branch enforcement test still passes.
   - No new walker source code added during migration.
+  - For every M8 walker run, the manager generates `test-results/walker/<protocol_id>/VISUAL_EVAL.md` via an image-to-text evaluator over the screenshot set. The evaluator checks that the expected scene is visible, required SVG-backed objects are visible as lab objects (not snake_case fallback buttons), the next-target highlight is visible before each click, the clicked target produces a visible state change after the click, modals and answer choices are visible when used, and no hidden API or state mutation is needed to complete the step. Human screenshot review is required only if VISUAL_EVAL.md reports uncertainty, mismatch, or missing visual evidence.
   - `docs/CHANGELOG.md` entry per workstream.
 - Parallel-plan ready: yes -- max parallel doers: 3.
 
@@ -351,8 +352,8 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Owner: tester.
 - Interfaces:
   - Needs: M3 exit (contract types and generated data shape locked).
-  - Provides: `tests/playwright/walker/` engine and `tests/playwright/walker.mjs` CLI entry consumed by every adapter from M5 onward.
-- Expected patches: 2-3.
+  - Provides: `tests/playwright/walker/` engine and `tests/playwright/walker.mjs` CLI entry consumed by every adapter from M5 onward. Also provides `tools/evaluate_walker_screenshots.py` (WP-VISUAL-1), which consumes walker screenshot output and emits the per-protocol `VISUAL_EVAL.md` used by M8 close criteria.
+- Expected patches: 3-4.
 
 ### Workstream WS-WP-VERTICAL: One well_plate visible step
 
@@ -887,6 +888,19 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Verification commands: `source source_me.sh && pytest tests/test_walker_no_step_branches.py`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
+### Work package WP-VISUAL-1: Automated screenshot evaluator
+
+- Owner: tester.
+- Workstream: WS-WALKER-ENGINE (sibling to the walker CLI; the evaluator consumes walker output rather than walker source, so a separate WS-VISUAL workstream was rejected to avoid splitting tester ownership of the walker-side artifacts).
+- Touch points: `tools/evaluate_walker_screenshots.py` (new); `docs/WALKTHROUGH_GUIDE.md` (update to describe walker pass plus visual-evaluation pass as the M8 close gate).
+- Depends on: WP-WALKER-4.
+- Acceptance criteria:
+  - Script reads PNGs under `test-results/walker/<protocol_id>/` and emits `test-results/walker/<protocol_id>/VISUAL_EVAL.md` covering the six checks defined in the Automated screenshot evaluation section (scene visible, SVG objects visible vs snake_case fallback, highlight before click, state change after click, modals/choices visible, no hidden state mutation).
+  - Report flags uncertainty cases explicitly so the manager knows when human review is required.
+  - Initial implementation may be a stub that writes the expected report format with TODO markers per check; the image-to-text evaluation itself is refined during M8 once real screenshots from migrated adapters exist.
+- Verification commands: `source source_me.sh && python3 tools/evaluate_walker_screenshots.py --protocol smoke` produces a non-empty `test-results/walker/smoke/VISUAL_EVAL.md`.
+- Obvious follow-ons: `docs/CHANGELOG.md` entry; refinement patches during M8 as adapter screenshots come online.
+
 ### Work package WP-LIQUID-1: Liquid state model
 
 - Owner: typescript-engineer.
@@ -1218,11 +1232,26 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Visual review: `artifacts/ui-review/` screenshots produced for each migrated scene at M5, M6, and M8 exits via `npm run ui:review`.
 - Failure semantics: any walker step that fails blocks the milestone; flaky walker is treated as a block, not a warning. Walker failure that points to YAML or runtime gap is routed back to the spine workstream, not the walker workstream.
 
+## Automated screenshot evaluation
+
+- Scope split: the walker generates the screenshot set; a separate evaluator interprets the screenshots. The walker is responsible for driving the visible UI and producing before/after PNGs per click. The evaluator reads those PNGs and emits a single report.
+- Six checks the evaluator must answer for each walker run:
+  - The expected scene is visible (correct lab workspace rendered, not the launcher or a blank screen).
+  - Required SVG-backed scene objects are visible as lab objects (pipettes, plates, racks, instruments) rather than snake_case fallback buttons.
+  - The next-target highlight is visible in the before-click screenshot for each step.
+  - The clicked target produces a visible state change in the after-click screenshot (highlight moves, liquid level updates, modal opens, choice resolves).
+  - Modals and answer-choice UI are visible in the screenshots for steps that use them.
+  - No hidden API call or state mutation is needed to complete the step (no evidence of a step advancing without a visible click target on screen).
+- Boundary: image-to-text evaluation does NOT substitute for the walker. The walker proves the UI can be driven by visible clicks. The evaluator explains whether the screenshots look like the intended lab scene. Both must pass.
+- Report location: one report per protocol at `test-results/walker/<protocol_id>/VISUAL_EVAL.md`, written next to the screenshot set produced by the walker.
+- Pass criteria: walker pass AND VISUAL_EVAL.md reports no uncertainty, no mismatch, and no missing visual evidence. Manual screenshot inspection is no longer routine; it is required only when VISUAL_EVAL.md flags a problem.
+
 ## Migration and compatibility policy
 
 - Additive rollout: `src/scene_runtime/` ships alongside `src/scenes/` from M3 through M8. Both trees compile.
 - Backward compatibility: during M2 through M8, the existing `?protocol=<id>` URL parameter routes to whichever runtime owns the protocol. M7 launcher continues to honor this URL parameter for direct linking.
 - Legacy extension policy: after M3, no new feature work in `src/scenes/`. Compatibility shims required to keep existing tests green are allowed, must be flagged with a `// COMPAT SHIM:` comment, and must be removed by M9 (WP-CLEAN-2).
+- `src/scenes/` is now **FROZEN**, not just under a "no new feature work" guideline. The freeze is actively gated by `tests/test_scenes_freeze_baseline.py`, which records per-file line counts in `tests/data/scenes_freeze_baseline.json` and fails when a file grows past its baseline plus a small drift allowance. Allowed edits are limited to mechanical renames, type-union updates, the WP-SPINE-6 legacy banner header, and small `// COMPAT SHIM:` blocks marked for M9 removal. Forbidden edits include any new scene-specific behavior, any new hardcoded dispatch branch, and any new feature logic. New work lives in `src/scene_runtime/` (TypeScript) plus `content/*/protocol.yaml`, `content/*/items.yaml`, and `content/scenes/*.yaml` (declarative). The full policy, including replacement direction and pointers to the enforcing tests, lives in [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md).
 - Legacy banner: every file under `src/scenes/` gets a `// LEGACY: superseded by src/scene_runtime/*. Do not extend.` header at the top of M3 (WP-SPINE-6).
 - Deletion criteria: M8 exit met and zero imports remain from `src/scenes/` (grep-enforced gate in WP-CLEAN-1).
 - Rollback strategy:

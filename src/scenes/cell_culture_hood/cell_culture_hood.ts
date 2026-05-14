@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // cell_culture_hood.ts - Hood scene adapter (driver mode)
 // Render ownership: moved from src/scenes/hood.ts in Patch A3

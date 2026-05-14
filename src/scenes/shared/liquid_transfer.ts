@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // liquid_transfer.ts
 // Liquid handling abstractions: deriveHeldLiquid, canonicalTool, and liquid asset mapping.

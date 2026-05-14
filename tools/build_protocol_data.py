@@ -1094,6 +1094,97 @@ def validate_step_interactions(step, items, reagents):
 #============================================
 
 
+def validate_protocol_contract(protocol, protocol_name):
+	"""
+	Validate protocol contract requirements (WP-SPINE-3).
+
+	NOTE: M1 content gap: existing protocols do not have 'protocolType' field.
+	Validation gracefully handles this by inferring type from protocol structure:
+	- If 'sequence' field exists: sequence_runner
+	- Otherwise: mini_protocol (default legacy format)
+
+	Core validations (WP-SPINE-3):
+	1. entry.scene and entry.step must exist
+	2. For inferred mini_protocol: entry.step must match first step id
+	3. For inferred mini_protocol: entry.scene must match first step's scene
+	4. For sequence_runner: sequence field must exist and be non-empty
+
+	Raises ValueError on contract violation.
+	"""
+	if 'entry' not in protocol:
+		raise ValueError(f"Protocol '{protocol_name}': missing 'entry'")
+	entry = protocol['entry']
+	if not isinstance(entry, dict):
+		raise ValueError(f"Protocol '{protocol_name}': entry must be a dict")
+	if 'scene' not in entry:
+		raise ValueError(f"Protocol '{protocol_name}': entry.scene is required")
+	if 'step' not in entry:
+		raise ValueError(f"Protocol '{protocol_name}': entry.step is required")
+
+	entry_scene = entry['scene']
+	entry_step = entry['step']
+
+	# Infer protocolType from content (M1 gap workaround)
+	is_sequence_runner = 'sequence' in protocol
+
+	if is_sequence_runner:
+		# sequence_runner requires sequence field with non-empty list
+		sequence = protocol['sequence']
+		if not isinstance(sequence, list) or len(sequence) == 0:
+			raise ValueError(
+				f"Protocol '{protocol_name}': sequence must be a non-empty list"
+			)
+		# For sequence_runner, entry validation is deferred to runtime (sequences are loaded later)
+		return
+
+	# For mini_protocol (default): validate entry.step and entry.scene match first step
+	steps = protocol.get('steps', [])
+	if len(steps) == 0:
+		raise ValueError(
+			f"Protocol '{protocol_name}': inferred mini_protocol requires "
+			f"non-empty 'steps' array"
+		)
+
+	first_step = steps[0]
+	first_step_id = first_step.get('id')
+	if first_step_id != entry_step:
+		raise ValueError(
+			f"Protocol '{protocol_name}': entry.step '{entry_step}' does not match "
+			f"first step id '{first_step_id}'"
+		)
+
+	first_step_scene = first_step.get('scene')
+	if first_step_scene != entry_scene:
+		raise ValueError(
+			f"Protocol '{protocol_name}': entry.scene '{entry_scene}' does not match "
+			f"first step's scene '{first_step_scene}'"
+		)
+
+
+def validate_completion_path_kinds(step):
+	"""
+	Validate completionPath.kind is one of the valid contract values.
+	Raises ValueError if not valid.
+	"""
+	step_id = step['id']
+	if 'completionPath' not in step:
+		return
+
+	cp = step['completionPath']
+	if not isinstance(cp, dict):
+		raise ValueError(f"Step '{step_id}': completionPath must be a dict")
+
+	if 'kind' not in cp:
+		raise ValueError(f"Step '{step_id}': completionPath.kind is required")
+
+	kind = cp['kind']
+	valid_kinds = {'interactionSequence', 'directTool', 'modal', 'multipleChoice'}
+	if kind not in valid_kinds:
+		raise ValueError(
+			f"Step '{step_id}': completionPath.kind '{kind}' not in {valid_kinds}"
+		)
+
+
 def validate_steps(steps, items, reagents, parts, days):
 	"""
 	Validate all protocol steps.
@@ -1173,6 +1264,9 @@ def validate_steps(steps, items, reagents, parts, days):
 
 		# Rule 8: Validate completionPath contract (SP-K2c)
 		validate_completion_path_contract(step, items, reagents)
+
+		# Contract validation: check completionPath.kind
+		validate_completion_path_kinds(step)
 
 		# Validate interactionSequence field if present (for legacy/hybrid steps)
 		if 'interactionSequence' in step:
@@ -1306,6 +1400,34 @@ def validate_steps(steps, items, reagents, parts, days):
 	terminators = [s for s in steps if s.get('nextId') is None]
 	if len(terminators) != 1:
 		raise ValueError(f"Expected 1 terminator, found {len(terminators)}")
+
+
+def check_no_typescript_identifiers(obj, path=''):
+	"""
+	Validate that object does not contain TypeScript identifiers or computed fields.
+	Search for ${...}, import, require, function patterns in string values.
+	Raises ValueError if found.
+	"""
+	if isinstance(obj, dict):
+		for key, value in obj.items():
+			new_path = f"{path}.{key}" if path else key
+			check_no_typescript_identifiers(value, new_path)
+	elif isinstance(obj, list):
+		for idx, item in enumerate(obj):
+			new_path = f"{path}[{idx}]"
+			check_no_typescript_identifiers(item, new_path)
+	elif isinstance(obj, str):
+		forbidden_patterns = [
+			(r'\$\{', 'template literal'),
+			(r'\bimport\s+', 'import statement'),
+			(r'\brequire\s*\(', 'require() call'),
+			(r'\bfunction\s+', 'function declaration'),
+		]
+		for pattern, desc in forbidden_patterns:
+			if re.search(pattern, obj):
+				raise ValueError(
+					f"Path '{path}': contains {desc} pattern, which is not allowed in YAML: {obj}"
+				)
 
 
 def ts_escape_string(s):
@@ -1481,9 +1603,22 @@ def load_protocol_bundle(repo_root, protocol_name):
 	days = protocol.get('days', [])
 	steps = protocol.get('steps', [])
 
+	# Contract validation: check protocol structure (WP-SPINE-3)
+	validate_protocol_contract(protocol, protocol_name)
+
+	# Check for TypeScript identifiers in YAML content
+	check_no_typescript_identifiers(protocol, f"protocol[{protocol_name}]")
+	check_no_typescript_identifiers(items_data, f"items[{protocol_name}]")
+	check_no_typescript_identifiers(reagents_data, f"reagents[{protocol_name}]")
+
 	validate_reagents(reagents)
 	validate_items(items, repo_root, reagents)
-	validate_steps(steps, items, reagents, parts, days)
+
+	# Only validate steps for mini_protocol (default) mode
+	# sequence_runner protocols are allowed to have empty steps
+	is_sequence_runner = 'sequence' in protocol
+	if not is_sequence_runner:
+		validate_steps(steps, items, reagents, parts, days)
 
 	for step in steps:
 		cp = parse_completion_path(step, items, reagents)
@@ -1616,6 +1751,8 @@ def generate_protocol_catalog_data(protocol_catalog, default_protocol='cell_cult
 		'// AUTO-GENERATED by tools/build_protocol_data.py from all content/*/*.yaml. DO NOT EDIT BY HAND.',
 		'',
 		'import type { ProtocolStep } from "../src/constants";',
+		'// Contract types imported for future integration and documentation (WP-SPINE-3)',
+		'import type { ProtocolConfig, ProtocolCatalogEntry as ContractCatalogEntry } from "../src/scene_runtime/contract";',
 		'',
 		'export interface ProtocolPart {',
 		'\tid: string;',
@@ -1760,6 +1897,8 @@ def generate_inventory_catalog_data(protocol_catalog, default_protocol='cell_cul
 		'// AUTO-GENERATED by tools/build_protocol_data.py from all content/*/*.yaml. DO NOT EDIT BY HAND.',
 		'',
 		'import { DEFAULT_PROTOCOL_ID, SELECTED_PROTOCOL_ID, type ProtocolId } from "./protocol_data";',
+		'// Contract types imported for documentation and future integration (WP-SPINE-3)',
+		'import type { SceneItem, SceneReagent } from "../src/scene_runtime/contract";',
 		'',
 		'export interface InventoryItem {',
 		'\tlabel: string;',

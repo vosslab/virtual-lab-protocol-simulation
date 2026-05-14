@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // render.ts - Hood scene rendering assembly
 //============================================
@@ -325,7 +326,7 @@ export function renderHoodScene(): void {
 
 	const currentStepData = getCurrentStep();
 	let activeTargets: string[] = [];
-	if (currentStepData && currentStepData.scene === 'hood') {
+	if (currentStepData && currentStepData.scene === 'cell_culture_hood') {
 		if (currentStepData.completionPath && currentStepData.completionPath.kind === 'interactionSequence') {
 			const heldLiquid = deriveHeldLiquid(gameState.selectedTool);
 			activeTargets = deriveActiveInteractionTargets(

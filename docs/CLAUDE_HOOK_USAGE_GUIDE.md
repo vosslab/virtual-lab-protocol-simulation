@@ -116,13 +116,15 @@ cargo fmt --check
 
 ```bash
 bash script.sh
-bash -n script.sh        # syntax check only
 ./script.sh
 ./script.py
 ./subdir/script.py
 tools/runner.py          # bare relative-path scripts
 scripts/build.sh
 ```
+
+`bash -n script.sh` (syntax check) is denied -- inspect the script with the
+Read tool instead. See the denied commands section.
 
 ### Safe utilities
 
@@ -151,6 +153,10 @@ dedicated tools (Read, Grep, Glob) instead.
 ### Local runtimes
 
 **Node.js:**
+To get unstuck fast: use `node <script>` or `node --test <test-file>` for
+local project files. For non-trivial inline logic, write a `_temp.js` file
+and run `node _temp.js` instead of `node -e "..."`.
+
 `node` is allowed for local script execution with a known set of dev/test
 flags. Auto-allowed shape:
 `node <flags> <path>.{js,mjs,cjs,ts,tsx} [script args...]`.
@@ -160,11 +166,12 @@ any short `-<letters>` flag. Arguments **after** the script path are
 intentionally allowed -- once the script is a known local file, its own argv
 is the script's concern. The match is full-command anchored (`$`), not a
 prefix match, so nothing can hide between the extension and end-of-command.
-Bare diagnostic forms `--test`, `--version`, `--help` are also allowed. Inline JS (`-e` / `--eval`) and unrecognized
-`--long-flags` (`--inspect`, `--experimental-*`, etc.) **passthrough** for
-user approval -- `node` is a general-purpose interpreter (shell spawn, fs,
-network), so inline code is the dangerous shape. Command substitution
-(`` ` ``, `$(...)`) is blocked unconditionally.
+Bare diagnostic forms `--test`, `--version`, `--help` are also allowed.
+Inline JS (`-e` / `--eval`) and unrecognized `--long-flags` (`--inspect`,
+`--experimental-*`, etc.) **passthrough** for user approval -- `node` is a
+general-purpose interpreter (shell spawn, fs, network), so inline code is the
+dangerous shape. Command substitution (`` ` ``, `$(...)`) is blocked
+unconditionally.
 
 ```bash
 node script.js                              # allowed
@@ -287,9 +294,10 @@ The `rm` command is denied by default, but these specific patterns are allowed:
 | `git rm` with relative paths | `git rm old_file.py` |
 | `rmdir` (empty-dir only) | `rmdir /tmp/empty`, `rmdir src/content/old/` |
 
-`rmdir` is allowed unconditionally because POSIX `rmdir` refuses to remove
-non-empty directories (no `-r`/`-R` behavior). Useful after `git mv A/* B/`
-chains to remove the now-empty source dir.
+`rmdir`, including `rmdir -p` (remove the empty parent chain), is allowed
+because POSIX `rmdir` only removes empty directories. It fails when any
+target directory is non-empty (no `-r`/`-R` behavior). To clean up after a
+`git mv A/* B/` chain, run `rmdir A/` to drop the now-empty source dir.
 
 ### Package managers
 
@@ -539,12 +547,15 @@ Underscore-prefixed files can be removed freely.
 
 **Blocked:** `for f in *.py; do ...`, `while read line; do ...`, and pipeline
 forms like `ls *.md | while read f; do ...; done` or
-`cmd; while true; do ...; done`. The deny anchors at start-of-leaf, after
-`|`/`;`/`&&`/`||`, and inside `do ... done` blocks.
+`cmd; while true; do ...; done`. The deny anchors the loop keyword at
+start-of-leaf, after a `|`, `;`, or `&` character, or after a `do ` (a loop
+nested inside a `do ... done` body).
 
 **Why:** Loop logic belongs in script files, not inline Bash.
 
-**Instead:** Write the logic in a `_temp.py` or `_temp.sh` file and execute it.
+**Instead:** Write the loop into a `_temp.py` or `_temp.sh` file, run it with
+`bash _temp.sh` (or `source source_me.sh && python3 _temp.py`), then remove
+the temp file.
 
 ### `bash -c` / `bash -lc`
 
@@ -553,7 +564,18 @@ forms like `ls *.md | while read f; do ...; done` or
 **Why:** The Bash tool already runs bash. `bash -c` is redundant bash-in-bash.
 
 **Instead:** Run the command directly: `source source_me.sh && python3 script.py`.
-Running script files (`bash script.sh`, `bash -n script.sh`) is still allowed.
+Running a script file (`bash script.sh`) is still allowed. `bash -n script.sh`
+(syntax check) is denied separately -- inspect the script with the Read tool.
+
+### `bash`/`sh`/`zsh -n` (syntax check)
+
+**Blocked:** `bash -n script.sh`, `sh -n x.sh`, `zsh -n x.sh`. Covers
+absolute-path and `command`/`env` prefixes.
+
+**Why:** Steers agents away from using the shell as a script-analysis tool.
+
+**Instead:** Inspect the script with the Read tool. If you need to run it,
+use `bash script.sh` (allowed) or ask for explicit user approval.
 
 ### `sudo`
 

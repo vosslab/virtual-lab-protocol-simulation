@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // plate_reader_workspace.ts - Plate reader specific UI flows
 // Handles plate reader chassis interactions: insert plate, start read, display results.

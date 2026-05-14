@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // incubator_workspace.ts - Incubator overlay state and trypsin-incubation lifecycle
 // Owns: incubation overlay state, progress tracking, helper methods for adapters

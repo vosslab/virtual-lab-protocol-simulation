@@ -36,6 +36,7 @@ Before making nontrivial edits, read:
 - Large protocols are assembled from mini-protocols.
 - A mini-protocol is scoped by its `learning:` block.
 - A mini-protocol is complete only when the visible browser interaction works.
+- src/scenes/ is frozen. See [docs/active_plans/SRC_SCENES_FREEZE.md](docs/active_plans/SRC_SCENES_FREEZE.md).
 
 ## Editing behavior
 

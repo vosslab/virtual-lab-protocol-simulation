@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Plate Drug Treatment Fixture</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			padding: 20px;
+			background: #f5f5f5;
+		}
+		.container {
+			max-width: 1000px;
+			margin: 0 auto;
+			background: white;
+			padding: 20px;
+			border-radius: 8px;
+			box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+		}
+		h1 {
+			color: #333;
+		}
+		.section {
+			margin: 20px 0;
+			padding: 15px;
+			border: 1px solid #ddd;
+			border-radius: 4px;
+			background: #fafafa;
+		}
+		.plate-container {
+			margin: 20px 0;
+			padding: 20px;
+			background: #e8f5e9;
+			border-left: 4px solid #4caf50;
+			border-radius: 4px;
+		}
+		button, [role="button"] {
+			padding: 8px 16px;
+			margin: 5px;
+			background: #2196f3;
+			color: white;
+			border: none;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 14px;
+			transition: background 0.2s;
+		}
+		button:hover, [role="button"]:hover {
+			background: #1976d2;
+		}
+		button:disabled, [role="button"].disabled {
+			background: #ccc;
+			cursor: not-allowed;
+		}
+		button.completed {
+			background: #4caf50;
+		}
+		.modal {
+			display: none;
+			position: fixed;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			background: white;
+			padding: 30px;
+			border-radius: 8px;
+			box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+			z-index: 1000;
+			min-width: 400px;
+		}
+		.modal.visible {
+			display: block;
+		}
+		.modal-backdrop {
+			display: none;
+			position: fixed;
+			top: 0;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			background: rgba(0,0,0,0.5);
+			z-index: 999;
+		}
+		.modal-backdrop.visible {
+			display: block;
+		}
+		.modal-content {
+			margin: 20px 0;
+		}
+		.completed-steps {
+			margin-top: 20px;
+			padding: 10px;
+			background: #e3f2fd;
+			border-radius: 4px;
+		}
+		.completed-steps h3 {
+			margin-top: 0;
+		}
+		.status {
+			padding: 10px;
+			margin: 10px 0;
+			border-radius: 4px;
+			font-weight: bold;
+		}
+		.status.success {
+			background: #d4edda;
+			color: #155724;
+		}
+		.status.error {
+			background: #f8d7da;
+			color: #721c24;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Plate Drug Treatment Fixture</h1>
+		<p>Step 1: Open the 96-well plate workspace (modal kind).</p>
+
+		<div class="section">
+			<h2>Step 1: Open Plate Workspace</h2>
+			<div class="plate-container">
+				<p>Click the 96-well plate to open the dedicated plate scene:</p>
+				<button data-item-id="well_plate">96-Well Plate</button>
+			</div>
+		</div>
+
+		<div class="completed-steps">
+			<h3>Progress</h3>
+			<div id="status" class="status" style="display: none;"></div>
+			<div id="completed-list"></div>
+		</div>
+	</div>
+
+	<div class="modal-backdrop" id="modal-backdrop"></div>
+	<div class="modal" id="plate-modal">
+		<h2>Plate Workspace Introduction</h2>
+		<div class="modal-content">
+			<p>You are now entering the dedicated 96-well plate workspace.</p>
+			<p>In this view, you will perform all drug additions to the OVCAR8 assay plate.</p>
+			<p>The plate map shows the layout and current state of all wells.</p>
+		</div>
+		<button data-step-id="confirm-plate-intro">Continue to Plate</button>
+	</div>
+
+	<script>
+		// Initialize game state
+		window.gameState = {
+			activeScene: 'well_plate_workspace',
+			completedSteps: [],
+		};
+
+		let platePassed = false;
+
+		// Button click handlers
+		const affordances = {
+			'well_plate': handlePlateClick,
+			'confirm-plate-intro': handleModalAdvance,
+		};
+
+		function handlePlateClick(event) {
+			// Show modal
+			const modal = document.getElementById('plate-modal');
+			const backdrop = document.getElementById('modal-backdrop');
+			modal.classList.add('visible');
+			backdrop.classList.add('visible');
+			updateCompletedList();
+		}
+
+		function handleModalAdvance(event) {
+			if (platePassed) return;
+			// Hide modal
+			const modal = document.getElementById('plate-modal');
+			const backdrop = document.getElementById('modal-backdrop');
+			modal.classList.remove('visible');
+			backdrop.classList.remove('visible');
+			platePassed = true;
+			markStepCompleted('open_plate_workspace');
+			updateCompletedList();
+		}
+
+		function markStepCompleted(stepId) {
+			window.gameState.completedSteps.push(stepId);
+
+			// All steps completed
+			if (window.gameState.completedSteps.length === 1) {
+				showStatus('Step 1 completed! Plate workspace opened.', 'success');
+			}
+		}
+
+		function updateCompletedList() {
+			const list = document.getElementById('completed-list');
+			if (window.gameState.completedSteps.length === 0) {
+				list.innerHTML = '<p>No steps completed yet.</p>';
+				return;
+			}
+
+			const items = window.gameState.completedSteps.map((id, idx) =>
+				`<div>${idx + 1}. ${id}</div>`
+			).join('');
+
+			list.innerHTML = `
+				<p><strong>Completed Steps (${window.gameState.completedSteps.length}/1):</strong></p>
+				${items}
+			`;
+		}
+
+		function showStatus(message, type) {
+			const status = document.getElementById('status');
+			status.textContent = message;
+			status.className = `status ${type}`;
+			status.style.display = 'block';
+		}
+
+		// Set up event listeners
+		document.addEventListener('click', (event) => {
+			const btn = event.target.closest('button');
+			if (!btn) return;
+
+			const itemId = btn.getAttribute('data-item-id');
+			const stepId = btn.getAttribute('data-step-id');
+
+			if (itemId && affordances[itemId]) {
+				affordances[itemId](event);
+			} else if (stepId && affordances[stepId]) {
+				affordances[stepId](event);
+			}
+		});
+
+		// Initialize display
+		updateCompletedList();
+	</script>
+</body>
+</html>

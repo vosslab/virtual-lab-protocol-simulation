@@ -8,7 +8,7 @@ entry:
   step: spray_hood
 
 learning:
-  objectives: "Students completing this mini-protocol will have achieved proficiency with aseptic hood technique, media aspiration, PBS washing, enzymatic cell detachment with trypsin, protease neutralization, centrifugation, and resuspension of cell pellets."
+  objectives: "Students completing this mini-protocol will have achieved fluency with aseptic flask passaging, including all stages from hood preparation through enzymatic dissociation and cell resuspension."
   outcomes: "Students completing this mini-protocol will be able to prepare an adherent flask culture through complete media removal, enzymatic dissociation, and resuspension at a known cell concentration."
   goals: "Overall, this mini-protocol aims to accomplish the foundational cell-handling workflow: cleaning the hood, removing spent media, enzymatic passaging with trypsin, and producing a single-cell suspension for downstream counting and seeding."
 
@@ -48,14 +48,19 @@ steps:
     stepIndex: 2
     requiredItems: [flask, aspirating_pipette, waste_container]
     scene: cell_culture_hood
+    correctVolumeMl: 9
+    toleranceMl: 1
     errorHints:
       wrong_tool: "Use the aspirating pipette. A serological pipette will splash media."
       missed_waste: "Route waste to the vacuum waste container, not elsewhere."
+      volume_off: "Aspirate most of the spent media from the flask (approximately 9 mL)."
     completionPath:
       kind: interactionSequence
       interactions:
         - tool: aspirating_pipette
           source: flask
+          liquid: media
+          volumeMl: 9
           destination: waste_container
           completionEvent: aspirate
     nextId: pbs_wash
@@ -180,7 +185,7 @@ steps:
     partId: flask_prep_part
     dayId: day1
     stepIndex: 7
-    requiredItems: [flask, media_bottle, serological_pipette, waste_container]
+    requiredItems: [flask, media_bottle, serological_pipette]
     scene: cell_culture_hood
     correctVolumeMl: 12
     toleranceMl: 1
@@ -192,16 +197,16 @@ steps:
         - tool: serological_pipette
           source: media_bottle
           liquid: media
-          volumeMl: 10
+          volumeMl: 12
           stateChange:
             heldLiquid:
               tool: serological_pipette
               liquid: media
-              volumeMl: 10
+              volumeMl: 12
               colorKey: media
         - tool: serological_pipette
           destination: flask
           liquid: media
-          consumesVolumeMl: 10
+          consumesVolumeMl: 12
           completionEvent: resuspend
     nextId: null

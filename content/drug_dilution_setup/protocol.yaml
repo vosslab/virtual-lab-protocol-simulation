@@ -2,9 +2,9 @@
 protocolType: mini_protocol
 
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with the carboplatin and metformin dilution calculations needed to prepare the OVCAR8 dose-response plate, including stock-to-intermediate, intermediate-to-working, and final-concentration-in-well math.
-  outcomes: Students completing this mini-protocol will be able to calculate and verify the concentration of each carboplatin working solution in the 1-2-5 dose series, the metformin working solution concentration, and the final drug concentrations in the plate without reference materials.
-  goals: Overall, this mini-protocol aims to accomplish bridging single-calculation tutorials (which teach one dilution step in isolation) to the full dose-response protocol (which requires managing a cascade of interdependent dilutions).
+  objectives: Students completing this mini-protocol will have achieved fluency with the carboplatin and metformin dilution calculations required to plan and verify the preparation of a dose-response plate, including stock-to-intermediate, intermediate-to-working, and final-concentration-in-well math.
+  outcomes: Students completing this mini-protocol will be able to calculate and verify the complete dilution cascade for a multi-drug dose-response experiment, including carboplatin working solutions for the 1-2-5 dose series, metformin working solution concentration, and final drug concentrations in each well.
+  goals: Overall, this mini-protocol aims to accomplish mastery of dilution planning and calculation verification for complex multi-drug experiments, bridging single-calculation tutorials to the planning phase of the full OVCAR8 dose-response protocol.
 
 entry:
   scene: well_plate_workspace
@@ -20,11 +20,11 @@ days:
     label: "Planning Day"
 
 steps:
-  # Step 1: "Calculate parent stock (carboplatin 10 mM -> 400 uM)"
+  # Step 1: "Verify carboplatin intermediate dilution recipe (10 mM -> 400 uM)"
   - id: calc_carb_stock
-    label: Calculate carboplatin intermediate dilution
-    action: Answer the dilution question about making 400 uM intermediate from 10 mM stock
-    why: The 400 uM intermediate dilution serves as the parent for all seven carboplatin working stocks (rows B-H).
+    label: Verify carboplatin intermediate dilution recipe
+    action: Verify the recipe that makes 400 uM intermediate from 10 mM stock
+    why: Planning begins with the first step in the dilution cascade. The 400 uM intermediate serves as the parent for all seven carboplatin working stocks (rows B-H).
     partId: planning_part
     dayId: planning_day
     stepIndex: 1
@@ -60,11 +60,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: calc_carb_working_b
 
-  # Step 2: "Calculate Row B (carboplatin 400 uM -> 4 uM via 200 uM intermediate)"
+  # Step 2: "Verify final carboplatin concentration for Row B (0.1 uM)"
   - id: calc_carb_working_b
-    label: Calculate Row B carboplatin concentration (0.1 uM final)
-    action: Answer the dilution question about the 4 uM working solution that becomes 0.1 uM in the well
-    why: Row B receives the lowest carboplatin dose; understanding the full dilution chain prepares you for the serial dilutions.
+    label: Verify final carboplatin concentration for Row B
+    action: Verify the final concentration when 4 uM working solution is added to the well
+    why: Understanding the complete dilution chain from intermediate to working solution to final concentration is essential for planning the entire dose series.
     partId: planning_part
     dayId: planning_day
     stepIndex: 2
@@ -100,11 +100,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: calc_carb_series
 
-  # Step 3: Recognize the 1-2-5 pattern
+  # Step 3: Recognize the 1-2-5 dose-series pattern
   - id: calc_carb_series
-    label: Identify the 1-2-5 dose-series pattern
-    action: Choose the pattern that describes the carboplatin dose series
-    why: The 1-2-5 pattern (repeated 1x, 2x, 5x across each decade) produces clean log-spaced doses for graphing.
+    label: Recognize the 1-2-5 dose-series pattern
+    action: Recognize the pattern that describes the carboplatin dose series across rows B-H
+    why: Recognizing the 1-2-5 pattern (repeated 1x, 2x, 5x across each decade) allows you to plan working stocks efficiently and produce clean log-spaced doses for graphing.
     partId: planning_part
     dayId: planning_day
     stepIndex: 3
@@ -140,11 +140,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: calc_carb_low_range
 
-  # Step 4: "Calculate the low-range working stock recipe (400 uM -> 4 uM)"
+  # Step 4: "Verify the low-range carboplatin working stock recipe (400 uM -> 4 uM)"
   - id: calc_carb_low_range
-    label: Calculate the recipe for 4 uM carboplatin (Row B)
-    action: Choose the correct volumes to make 4 uM working stock from 400 uM intermediate
-    why: The first working solution in the series acts as the parent for further serial dilutions.
+    label: Verify the recipe for 4 uM carboplatin working stock
+    action: Verify the volumes needed to make 4 uM working stock from 400 uM intermediate
+    why: Verifying the recipe for the first working solution is critical because subsequent dilutions depend on this accurate parent concentration.
     partId: planning_part
     dayId: planning_day
     stepIndex: 4
@@ -180,11 +180,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: calc_metformin_stock_prep
 
-  # Step 5: "Calculate metformin working stock (1 M -> 200 mM)"
+  # Step 5: "Verify metformin working stock recipe (1 M -> 200 mM)"
   - id: calc_metformin_stock_prep
-    label: Calculate metformin working stock concentration
-    action: Choose the recipe to make 200 mM metformin working stock from 1 M stock
-    why: Metformin is the fixed modifier drug (5 mM final in columns 7-12), requiring its own dilution calculation.
+    label: Verify metformin working stock recipe
+    action: Verify the recipe to make 200 mM metformin working stock from 1 M stock
+    why: Planning requires handling the second active ingredient. Metformin is the fixed modifier drug (5 mM final in columns 7-12), requiring its own dilution calculation independent of carboplatin.
     partId: planning_part
     dayId: planning_day
     stepIndex: 5
@@ -220,11 +220,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: calc_metformin_final
 
-  # Step 6: "Calculate final metformin in well (200 mM -> 5 mM)"
+  # Step 6: "Verify final metformin concentration in well (200 mM -> 5 mM)"
   - id: calc_metformin_final
-    label: Calculate final metformin concentration in well
-    action: Calculate the final metformin concentration after adding 5 uL working stock to a 200 uL well
-    why: Understanding how dilution occurs on the plate is crucial for predicting dose responses.
+    label: Verify final metformin concentration in well
+    action: Verify the final metformin concentration after adding 5 uL working stock to a 200 uL well
+    why: Verifying the final concentration in the well (after volume-adjusted dilution) is essential for accurate dose-response planning and analysis.
     partId: planning_part
     dayId: planning_day
     stepIndex: 6
@@ -260,11 +260,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: prewarm_media_check
 
-  # Step 7: Verify pre-warming requirement
+  # Step 7: Verify pre-warming requirement for media
   - id: prewarm_media_check
-    label: Explain why media adjustments must be pre-warmed
-    action: Choose the best reason for pre-warming media before adding to cells
-    why: Pre-warming prevents osmotic shock and maintains consistent dose-response kinetics.
+    label: Verify the requirement to pre-warm media adjustments
+    action: Verify the reason media adjustments must be pre-warmed before adding to cells
+    why: Planning must account for practical considerations. Pre-warming media prevents osmotic shock and maintains consistent dose-response kinetics during execution.
     partId: planning_part
     dayId: planning_day
     stepIndex: 7
@@ -300,11 +300,11 @@ steps:
           text: Metformin-only control (5 mM)
     nextId: planning_summary
 
-  # Step 8: Summary and readiness check
+  # Step 8: Verify the complete dilution strategy
   - id: planning_summary
-    label: Review the complete dilution strategy
-    action: Confirm your understanding of the full dilution cascade and the plate layout
-    why: Before performing the wet-lab work, verifying your mental model reduces errors and speeds execution.
+    label: Verify the complete dilution strategy
+    action: Verify your understanding of the full dilution cascade and the plate layout
+    why: Planning concludes with a complete picture. Verifying the full strategy ensures the cascade of dilutions is coherent and ready for execution.
     partId: planning_part
     dayId: planning_day
     stepIndex: 8

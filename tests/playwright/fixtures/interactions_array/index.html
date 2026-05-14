@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Interactions Array Fixture</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			background: #f0f0f0;
+			padding: 20px;
+		}
+		.container {
+			max-width: 600px;
+			margin: 0 auto;
+			background: white;
+			padding: 20px;
+			border-radius: 8px;
+		}
+		button {
+			background: #4CAF50;
+			color: white;
+			border: none;
+			padding: 10px 20px;
+			margin: 5px;
+			border-radius: 4px;
+			cursor: pointer;
+		}
+		button:hover {
+			background: #45a049;
+		}
+		#status {
+			margin-top: 20px;
+			padding: 10px;
+			border-radius: 4px;
+			display: none;
+		}
+		#status.success {
+			background: #d4edda;
+			color: #155724;
+			display: block;
+		}
+	</style>
+</head>
+<body>
+	<div class="container">
+		<h1>Interactions Array Fixture</h1>
+		<p>This fixture tests the walker engine with array-form interactions.</p>
+
+		<div id="scene">
+			<p>Equipment:</p>
+			<button data-item-id="multichannel_pipette">Multichannel Pipette</button>
+			<button data-item-id="media_bottle">Media Bottle</button>
+			<button data-item-id="well_plate">96-Well Plate</button>
+		</div>
+
+		<div id="status"></div>
+	</div>
+
+	<script>
+		// Minimal game state tracking for walker verification.
+		window.gameState = {
+			activeScene: 'well_plate_workspace',
+			selectedTool: null,
+			stepCompleted: false,
+			completedSteps: [],
+		};
+
+		window.currentProtocol = null;
+
+		// Import and set the protocol config.
+		(async () => {
+			const { interactionsArrayProtocol } = await import('./protocol.mjs');
+			window.currentProtocol = interactionsArrayProtocol;
+		})();
+
+		// Track clicks and mark interactions as complete.
+		let clickCount = 0;
+		const expectedClicks = 2; // tool + source, tool + destination
+
+		document.addEventListener('click', (event) => {
+			const target = event.target;
+			if (target.tagName === 'BUTTON' && target.hasAttribute('data-item-id')) {
+				clickCount += 1;
+				const itemId = target.getAttribute('data-item-id');
+				console.log(`Clicked: ${itemId} (${clickCount}/${expectedClicks})`);
+
+				if (clickCount >= expectedClicks) {
+					window.gameState.stepCompleted = true;
+					window.gameState.completedSteps.push('simple_interaction');
+					showStatus('Step completed successfully!');
+				}
+			}
+		});
+
+		function showStatus(message) {
+			const statusEl = document.getElementById('status');
+			statusEl.textContent = message;
+			statusEl.className = 'success';
+		}
+	</script>
+</body>
+</html>

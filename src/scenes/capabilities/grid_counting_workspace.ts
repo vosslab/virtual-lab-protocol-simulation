@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // grid_counting_workspace.ts - GridCountingWorkspace scene capability
 // Manual hemocytometer grid counting: quadrant selection, per-quadrant counts, submission.

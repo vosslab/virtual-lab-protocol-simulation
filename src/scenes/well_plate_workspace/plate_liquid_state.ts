@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // plate/plate_liquid_state.ts - Pure state classification for well rendering
 // Owns: computeTargetClassification - maps step + interaction index to well state sets

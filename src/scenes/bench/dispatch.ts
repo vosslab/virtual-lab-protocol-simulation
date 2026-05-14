@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // bench/dispatch.ts - Bench scene interaction dispatch
 //============================================

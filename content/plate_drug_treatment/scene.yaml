@@ -1,0 +1,83 @@
+sceneId: well_plate_workspace
+workspace: dedicated_plate
+
+items:
+  # 96-well plate (primary structure; custom geometry allowed per contract item 3)
+  - id: well_plate
+    label: 96-Well Plate
+    scene: main_plate_area
+
+  # Multichannel pipette (layout-engine placed)
+  - id: multichannel_pipette
+    label: Multichannel pipette
+    scene: top_left_bench
+
+  # Reagent bottles and dilution tubes (layout-engine placed around the well plate)
+  - id: carboplatin_stock_solution
+    label: 10 mM carboplatin stock solution
+    scene: top_left_bench
+
+  - id: media_bottle
+    label: Complete media
+    scene: top_left_bench
+
+  - id: dilution_tube_carb_b
+    label: 4 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_c
+    label: 8 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_d
+    label: 20 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_e
+    label: 40 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_f
+    label: 80 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_g
+    label: 200 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: dilution_tube_carb_h
+    label: 400 uM carboplatin working solution
+    scene: right_shelf
+
+  - id: metformin_stock_solution
+    label: 200 mM metformin stock solution
+    scene: top_left_bench
+
+  - id: dilution_tube_metformin_working
+    label: 200 mM metformin working solution
+    scene: right_shelf
+
+zones:
+  # Main plate zone (large central area)
+  - id: main_plate_area
+    x0: 0
+    x1: 1
+    baseline: 80
+    gap: 10
+    align: center
+
+  # Top-left bench for tools and reagents
+  - id: top_left_bench
+    x0: 0
+    x1: 0.35
+    baseline: 10
+    gap: 8
+    align: tab-stops
+
+  # Right shelf for dilution tubes
+  - id: right_shelf
+    x0: 0.65
+    x1: 1
+    baseline: 50
+    gap: 6
+    align: tab-stops

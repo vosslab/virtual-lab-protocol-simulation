@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // tube_state.ts - Microtube state classification
 // Mirrors plate_liquid_state.ts but for microtube tracking

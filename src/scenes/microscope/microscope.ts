@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // microscope.ts - Microscope scene adapter (driver mode)
 // Render ownership: moved from src/scenes/microscope.ts in Patch A6a

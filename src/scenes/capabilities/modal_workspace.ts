@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // modal_workspace.ts - Generic modal screen sequencing capability
 // Reusable modal state machine for multi-step modal workflows.
@@ -234,7 +235,7 @@ export function registerModalScreenHandler(
  * closeModalScreen - Clear the active modal screen and return to the previous scene.
  *
  * Called by adapters when the user closes the modal (e.g., clicks the close button).
- * Adapters are responsible for switching scenes (e.g., switchScene('hood')).
+ * Adapters are responsible for switching scenes (e.g., switchScene('cell_culture_hood')).
  *
  * @param sceneId - The scene id
  * @throws Error - If scene not mounted

@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // plate_reader.ts - Plate reader scene adapter (driver mode)
 // Owns render for plate_reader scene (MTT assay results modal)

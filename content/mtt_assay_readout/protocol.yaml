@@ -6,9 +6,9 @@ entry:
   step: add_mtt
 
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with the MTT viability assay, from reagent addition through data interpretation.
-  outcomes: Students completing this mini-protocol will be able to perform an MTT assay readout unsupervised, including proper waste handling and absorbance measurement.
-  goals: Overall, this mini-protocol aims to accomplish teaching the full MTT workflow as a self-contained readout tutorial that bridges cell culture technique to quantitative assay results.
+  objectives: Students completing this mini-protocol will have achieved fluency with the MTT viability assay, from reagent addition through data interpretation and safe waste handling.
+  outcomes: Students completing this mini-protocol will be able to perform a complete MTT assay readout, including reagent addition, incubation, safe waste disposal, solubilization, and absorbance measurement at 560 nm.
+  goals: Overall, this mini-protocol aims to accomplish teaching the full MTT viability assay workflow as a self-contained practical that bridges cell culture technique to quantitative viability assessment.
 
 parts:
   - id: part1_mtt_incubation
@@ -73,22 +73,34 @@ steps:
     nextId: decant_mtt
 
   - id: decant_mtt
-    label: "Decant MTT into the biohazard bin"
-    action: "Decant MTT into the biohazard bin"
-    why: "MTT is toxic. It must leave the plate before DMSO solubilization."
+    label: "Remove spent MTT with multichannel pipette"
+    action: "Remove spent MTT into the biohazard bin"
+    why: "MTT is toxic. Safe removal with a pipette prevents spills and proper waste containment."
     partId: part1_mtt_incubation
     dayId: day1
     stepIndex: 3
     scene: cell_culture_hood
-    requiredItems: [well_plate, biohazard_decant]
+    requiredItems: [well_plate, multichannel_pipette, biohazard_decant]
     completionPath:
       kind: interactionSequence
       interactions:
-        - tool: well_plate
+        - tool: multichannel_pipette
+          source: well_plate
+          liquid: mtt
+          volumeMl: 0.025
+          stateChange:
+            heldLiquid:
+              tool: multichannel_pipette
+              liquid: mtt
+              volumeMl: 0.025
+              colorKey: mtt
+        - tool: multichannel_pipette
           destination: biohazard_decant
+          liquid: mtt
+          consumesVolumeMl: 0.025
           completionEvent: decant_mtt
     errorHints:
-      wrong_waste: "MTT goes into the biohazard bin, not the vacuum waste."
+      wrong_waste: "Use the multichannel pipette to safely remove MTT into the biohazard bin."
     nextId: add_dmso
 
   - id: add_dmso
@@ -155,13 +167,15 @@ steps:
       choices:
         - id: choice_reduced_viability
           text: "The drug reduces cell viability"
-          feedback: "Correct! Lower absorbance indicates fewer live cells converting MTT to formazan, suggesting the drug is toxic or growth-inhibitory."
+          feedback: "Correct! The lower absorbance in drug-treated cells (0.3 vs 0.8) indicates fewer live cells, since higher MTT conversion correlates with more viable cells. The drug is toxic or growth-inhibitory."
           correct: true
         - id: choice_higher_viability
           text: "The drug increases cell viability"
-          feedback: "Incorrect. Higher absorbance (0.8 vs 0.3) indicates more viable cells, so the lower reading means fewer viable drug-treated cells."
+          feedback: "Incorrect. The untreated cells have higher absorbance (0.8), meaning more live cells and more MTT conversion. The drug-treated cells show lower absorbance (0.3), indicating the drug reduces viability."
         - id: choice_no_difference
           text: "There is no difference in viability"
-          feedback: "Incorrect. The 0.3 vs 0.8 difference is significant and indicates a substantial reduction in cell viability in the drug-treated wells."
+          feedback: "Incorrect. The 0.5 absorbance unit difference (0.8 vs 0.3) is significant and indicates a substantial reduction in cell viability in the drug-treated wells compared to untreated controls."
       completionEvent: results_interpreted
+    errorHints:
+      wrong_answer: "Review the data: lower absorbance (0.3) means fewer viable cells, indicating the drug reduced viability."
     nextId: null

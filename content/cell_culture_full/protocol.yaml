@@ -1,6 +1,3 @@
-# Sequence runner: complete cell culture workflow pathway.
-# schema-note: sequence field uses `sequence:` top-level list of mini-protocol ids (readable names, no tutorial_ prefix).
-# This runner connects five mini-protocols into a complete student-facing protocol.
 
 protocolType: sequence_runner
 
@@ -12,6 +9,10 @@ learning:
   objectives: "Students completing this protocol will have achieved fluency with aseptic hood technique, cell counting, dilution calculations, plate preparation, drug dosing, and quantitative viability assay readout."
   outcomes: "Students completing this protocol will be able to execute a complete cell culture dose-response workflow from flask passaging through MTT assay readout unsupervised."
   goals: "Overall, this protocol aims to accomplish teaching the full OVCAR8 cell culture and pharmacological assay pipeline as an integrated multi-day laboratory experience."
+
+parts: []
+days: []
+steps: []
 
 sequence:
   - hood_flask_prep

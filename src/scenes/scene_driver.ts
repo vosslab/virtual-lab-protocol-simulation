@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 // ============================================
 // scene_driver.ts - Universal scene runtime skeleton
 // ============================================

@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 // ============================================
 // multiple_choice_prompt.ts - Render multiple-choice quiz UI
 // ============================================

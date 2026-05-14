@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // bench.ts - Bench scene adapter (thin wrapper)
 // Responsibility seams split in Patch C2:

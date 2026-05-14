@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // well_plate_workspace/render.ts - Well plate workspace render logic
 // Owns: stable five-region layout, SVG generation, highlight logic, well and tube states

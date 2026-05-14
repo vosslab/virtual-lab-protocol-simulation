@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // bench/render.ts - Bench scene rendering
 //============================================
@@ -224,7 +225,7 @@ export function renderBenchScene(onItemClick: (itemId: string) => void): void {
 	const toHoodBtn = document.getElementById('bench-to-hood-btn');
 	if (toHoodBtn) {
 		toHoodBtn.addEventListener('click', () => {
-			switchScene('hood');
+			switchScene('cell_culture_hood');
 			renderGame();
 		});
 	}

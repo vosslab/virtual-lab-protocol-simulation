@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // instrument_workspace.ts - Mounted instrument surface capability
 // Generic lifecycle for instruments (microscope, plate reader chassis, etc.)

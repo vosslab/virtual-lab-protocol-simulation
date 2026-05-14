@@ -1,4 +1,5 @@
 {
+  "type": "module",
   "scripts": {
     "build": "bash build_github_pages.sh",
     "browser:smoke": "PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright node tests/playwright/test_game_ui.mjs",
@@ -7,6 +8,7 @@
   "devDependencies": {
     "@playwright/test": "^1.60.0",
     "playwright": "^1.59.1",
+    "tsx": "^4.21.0",
     "typescript": "^6.0.2"
   }
 }

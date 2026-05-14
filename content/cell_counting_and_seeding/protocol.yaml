@@ -2,9 +2,9 @@
 protocolType: mini_protocol
 
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with cell counting on an automated cell counter, hemocytometer-based cell dilution calculations, and accurate seeding of defined cell densities into multi-well culture plates for downstream pharmacological assays."
-  outcomes: "Students completing this mini-protocol will be able to count cells using both an automated counter and manual hemocytometer, calculate accurate cell dilution factors to achieve target seeding density, and seed a 96-well plate at exactly 2e4 cells per well for dose-response studies."
-  goals: "Overall, this mini-protocol aims to accomplish a foundational workflow in tissue culture: preparing a cell suspension of known density and distributing it evenly across a plate at the density required for the downstream assay, while building competence in quantitative liquid handling and cell biology calculations."
+  objectives: "Students completing this mini-protocol will have achieved fluency with hemocytometer-based manual cell counting, dilution factor calculations for precise cell density targeting, and accurate seeding of defined cell densities into multi-well culture plates."
+  outcomes: "Students completing this mini-protocol will be able to count cells using a hemocytometer, calculate the exact dilution factor to reach a target cell concentration, determine the correct seeding volume for a 96-well plate, and seed the plate at approximately 2e4 cells per well."
+  goals: "Overall, this mini-protocol aims to accomplish a foundational cell culture workflow: manually counting cells, calculating a precise dilution to reach the target density, and seeding a 96-well plate at the correct density for downstream pharmacological assays."
 
 entry:
   scene: bench
@@ -72,13 +72,14 @@ steps:
       incomplete: "Count cells in all four corner quadrants before submitting."
     completionPath:
       kind: modal
+      openClick: hemocytometer
       advanceClick: submit-cell-count
       completionEvent: hemocytometer-count-submitted
     nextId: calculate_dilution
 
   - id: calculate_dilution
     label: "Calculate the dilution factor"
-    action: "Determine the volume of media needed to dilute the cell suspension to 2e4 cells per mL"
+    action: "Determine the volume of media needed to dilute the cell suspension to 2e5 cells per mL"
     why: "Accurate dilution calculation ensures the plate will be seeded at the target density of 2e4 cells per well."
     partId: part1_count_and_dilute
     dayId: day1
@@ -89,7 +90,7 @@ steps:
       calculation_error: "Double-check your math: if you have N cells at concentration C, and need concentration C-target, then V-media = (V-cells) * (C - C-target) / C-target."
     completionPath:
       kind: multipleChoice
-      question: "How much sterile water should you add to your cell suspension to dilute to exactly 2e4 cells per mL?"
+      question: "How much sterile media should you add to your cell suspension to dilute to exactly 2e5 cells per mL?"
       choices:
         - id: calculate_dilution_a
           text: "Add enough media to the original volume to reach the target concentration"
@@ -97,52 +98,52 @@ steps:
         - id: calculate_dilution_b
           text: "Use the formula V-media = (V-cells) * (C-current - C-target) / C-target, then combine them in a new tube"
           correct: true
-          feedback: "Correct. This formula calculates the exact volume of media needed based on current and target concentrations."
+          feedback: "Correct. This formula calculates the exact volume of media needed based on current and target concentrations. At 2e5 cells/mL and 100 uL per well, each well will receive 2e4 cells."
         - id: calculate_dilution_c
           text: "Simply add 1:1 ratio of media to cells regardless of the count"
-          feedback: "A fixed ratio ignores the actual cell concentration and will not reach your target density."
+          feedback: "A fixed ratio ignores the actual cell concentration and will not reach your target density of 2e5 cells/mL."
       completionEvent: dilution-factor-calculated
     nextId: calculate_seeding_volume
 
   - id: calculate_seeding_volume
     label: "Calculate the seeding volume per well"
     action: "Determine how many microliters of the diluted cell suspension to pipette into each well"
-    why: "Each well must receive exactly 100 uL of the diluted suspension to achieve 2e4 cells per well across the plate."
+    why: "Each well must receive the correct volume of the 2e5 cells/mL suspension to achieve approximately 2e4 cells per well."
     partId: part1_count_and_dilute
     dayId: day1
     stepIndex: 5
     requiredItems: [well_plate, serological_pipette]
     scene: bench
     errorHints:
-      volume_error: "Each well of a 96-well plate should receive 100 uL of the 2e4 cells/mL suspension."
+      volume_error: "Each well of a 96-well plate should receive 100 uL of the 2e5 cells/mL suspension to reach 2e4 cells per well."
     completionPath:
       kind: multipleChoice
-      question: "You have a diluted cell suspension at 2e4 cells per mL. How many microliters should you pipette into each well?"
+      question: "You have a diluted cell suspension at 2e5 cells per mL. How many microliters should you pipette into each well to seed at approximately 2e4 cells per well?"
       choices:
         - id: calculate_seeding_volume_a
           text: "50 uL per well"
-          feedback: "At 2e4 cells/mL, 50 uL would give only 1e3 cells per well, which is too sparse."
+          feedback: "At 2e5 cells/mL, 50 uL would deliver 1e4 cells per well, which is half the target density."
         - id: calculate_seeding_volume_b
           text: "100 uL per well"
           correct: true
-          feedback: "Correct. At 2e4 cells/mL, 100 uL delivers exactly 2e3 cells per well (2e4 cells/mL x 0.1 mL = 2e3 cells)."
+          feedback: "Correct. At 2e5 cells/mL, 100 uL delivers approximately 2e4 cells per well (2e5 cells/mL x 0.1 mL = 2e4 cells)."
         - id: calculate_seeding_volume_c
           text: "200 uL per well"
-          feedback: "At 2e4 cells/mL, 200 uL would give 4e3 cells per well, which is too dense for this assay."
+          feedback: "At 2e5 cells/mL, 200 uL would deliver 4e4 cells per well, which is twice the target density."
       completionEvent: seeding-volume-calculated
     nextId: seed_plate
 
   - id: seed_plate
     label: "Seed 100 uL cell suspension per well"
-    action: "Seed 100 uL cell suspension per well"
-    why: "Seeds the 96-well plate at 2e4 cells per well for dosing tomorrow."
+    action: "Seed 100 uL cell suspension per well into the 96-well plate"
+    why: "Seeds the 96-well plate at approximately 2e4 cells per well for overnight incubation and dosing studies."
     partId: part2_seed_and_incubate
     dayId: day1
     stepIndex: 1
     requiredItems: [well_plate, serological_pipette, flask]
     scene: cell_culture_hood
     errorHints:
-      wrong_volume: "Seed 100 uL per well. Less means sparse wells and noisy readings."
+      wrong_volume: "Seed 100 uL per well of the 2e5 cells/mL suspension to reach the target ~2e4 cells per well."
     completionPath:
       kind: interactionSequence
       interactions:

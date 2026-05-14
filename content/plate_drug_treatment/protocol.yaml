@@ -1,7 +1,7 @@
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with the OVCAR8 96-well plate map and the media-adjustment-before-drug ordering rule that keeps every well at a final 200 uL volume.
-  outcomes: Students completing this mini-protocol will be able to dose a 96-well assay plate Day-2 unsupervised using the 1-2-5 carboplatin dose series, fixed-dose metformin, and media-adjusted wells.
-  goals: Overall, this mini-protocol aims to accomplish the Day-2 plate dosing workflow, applying the dilution strategies and plate-loading discipline learned in the planning mini-protocol.
+  objectives: Students completing this mini-protocol will have achieved fluency with logarithmic dose-response assay design (1-2-5 series), media-adjustment discipline for maintaining constant final volume, and fixed-dose modifier approaches in combination drug studies.
+  outcomes: Students completing this mini-protocol will be able to dose a 96-well OVCAR8 assay plate on Day 2 using the 1-2-5 carboplatin dose series (0.1-10 uM final), fixed-dose 5 mM metformin, and media-adjusted wells (200 uL final per well).
+  goals: Overall, this mini-protocol aims to accomplish the complete Day-2 plate-dosing workflow, integrating carboplatin dilution series, metformin fixed-dose application, and media-adjustment sequencing to set up a combination dose-response experiment ready for incubation.
 
 protocolType: mini_protocol
 
@@ -372,7 +372,7 @@ steps:
   completionPath:
     kind: interactionSequence
     interactions:
-      # Row B: 0.1 uM final (4 uM working stock)
+      # Generic load-and-deliver pattern; specific row/dose driven by plateTargets
       - tool: multichannel_pipette
         source: dilution_tube_carb_b
         liquid: carboplatin
@@ -387,7 +387,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row C: 0.2 uM final (8 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_c
         liquid: carboplatin
@@ -402,7 +401,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row D: 0.5 uM final (20 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_d
         liquid: carboplatin
@@ -417,7 +415,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row E: 1 uM final (40 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_e
         liquid: carboplatin
@@ -432,7 +429,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row F: 2 uM final (80 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_f
         liquid: carboplatin
@@ -447,7 +443,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row G: 5 uM final (200 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_g
         liquid: carboplatin
@@ -462,7 +457,6 @@ steps:
         destination: well_plate
         liquid: carboplatin
         consumesVolumeMl: 0.005
-      # Row H: 10 uM final (400 uM working stock)
       - tool: multichannel_pipette
         source: dilution_tube_carb_h
         liquid: carboplatin

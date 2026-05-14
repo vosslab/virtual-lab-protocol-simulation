@@ -1,3 +1,4 @@
+// LEGACY: superseded by src/scene_runtime/*. Do not extend.
 //============================================
 // scene_item_lookup.ts - Shared helper for looking up scene items
 //============================================

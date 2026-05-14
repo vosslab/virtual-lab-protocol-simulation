@@ -4,7 +4,7 @@
 // No Zod dependency. Returns arrays of error strings (empty = valid).
 // Validates structural correctness only, not biological realism or pedagogy.
 
-import type { Protocol, Step, TargetRole, ToolDefinition } from "../types";
+import type { Protocol, Step, TargetRole, ToolDefinition } from "./types";
 
 // ============================================
 // Allowed values for role validation

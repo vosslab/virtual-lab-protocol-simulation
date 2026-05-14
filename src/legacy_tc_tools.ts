@@ -2,7 +2,7 @@
 // content/tc_tools.ts - Tool registry for tissue culture protocol
 // ============================================
 
-import type { ToolDefinition } from "../types";
+import type { ToolDefinition } from "./types";
 
 
 // ============================================

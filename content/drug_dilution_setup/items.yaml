@@ -5,4 +5,6 @@ items:
     asset: well_plate_96
     scene: well_plate_workspace
     liquidCapable: true
+    capacityMl: 5000
+    allowedLiquids: [media, carboplatin, metformin]
     visualOnly: false
