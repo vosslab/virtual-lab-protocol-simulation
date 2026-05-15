@@ -1,21 +1,4 @@
-# Plan: Unified protocol interaction vocabulary (original first-pass working plan)
-
-## Plan status: closed
-
-This plan is CLOSED. Milestones M1 through M4, the primary-doc reconcile
-(`PRIMARY_SPEC.md` / `PRIMARY_DESIGN.md`), the 4-pass audit, the 5 audit-fix
-passes, and the final terminology gate are all complete and committed in git
-commit 3bb25fa. Per OQ-4, the follow-on work is tracked in the separate
-[protocol_vocabulary_code_migration_plan.md](protocol_vocabulary_code_migration_plan.md)
-code-migration plan.
-
-> **Superseded / historical.** This document predates the ratified unified
-> interaction vocabulary and uses earlier, abandoned framing. The final model
-> is the two-level `protocol -> step -> interaction -> response` spec. See
-> [unified_interaction_vocabulary_design.md](unified_interaction_vocabulary_design.md)
-> and the canonical docs [PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md) and
-> [SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md). Kept for historical context only;
-> do not use it to guide new work.
+# Plan: Design a unified, pedagogy-first protocol interaction vocabulary
 
 ## Context
 
@@ -65,32 +48,171 @@ This is PRIMARY_CONTRACT item 1's documented failure -- "TypeScript was
 developed around the hood scene ... no longer acceptable" -- reappearing one
 layer up, in the protocol vocabulary, plus a pedagogy regression on top.
 
+### Course-corrections: from overloaded `action` to a two-level step/interaction model
+
+A first pass through M1 and M2 converged on a `target + mode + action` model.
+Review found the real defect: the word `action` was carrying four distinct
+meanings at once -- what the learner does, how correctness is judged, what the
+scene changes, and what pedagogical skill is taught. That overloading, not bad
+reasoning, is the vocabulary collapse. The hard insights from the first pass
+all stand: scene-specific drift is real, pedagogy is separate from
+implementation, composition beats taxonomy, primitives are separate from
+composed behavior, and the system needs a stable semantic substrate. Only the
+terminology failed.
+
+QTI (the IMS Question and Test Interoperability model) exposed the missing
+separations. A first refinement split the overloaded `action` into seven flat
+slots; review tightened that to six (`prompt`, `target`, `gesture`,
+`validator`, `scene_operation`, `outcome`), dropping a redundant `interaction`
+task-type enum because the `target`'s kind already carries the task semantics.
+Then a fit check found the deeper defect: the flat model assumed one step
+equals one gesture, and real protocol steps do not work that way. "Wash the
+flask with 4 mL PBS" is one step but three gestures -- click the pipette,
+click the source, click the destination -- each its own target / gesture /
+validator with its own local effect. The flat six-slot model had no place for
+that nesting.
+
+QTI handles exactly this with multipart items: one item contains several
+interactions, each with its own response variable, and response processing
+combines those into item-level outcomes. The corrected model copies that
+structure. It is two levels, not one:
+
+- A `step` has six slots: a stable snake_case `name`, a `prompt`, an ordered
+  `sequence` of interactions, a `step_validator` (checks the whole sequence or
+  the final state), an `outcome` (complete, retry, feedback), and a
+  `next_step`. The `name` is the step's stable identifier; `next_step` names the
+  next step by its `name`, so protocol flow is explicit and never depends on
+  YAML file order or a numeric index. (`step_index` may still exist for display
+  order but must not control flow.) `sequence` order is meaningful by default;
+  an optional `sequence_mode: unordered` is allowed only where interaction
+  order truly does not matter. Step order is controlled by `next_step`;
+  interaction order is controlled by `sequence` list order -- the two are
+  deliberately separate.
+- An `interaction` -- one entry in the `sequence` -- has an optional
+  snake_case `name` (for reference, debugging, and testing), a `target`, a
+  `gesture`, a `validator` (checks that one gesture on that one target), and a
+  `response`.
+- A `response` is a container, not a primitive: it holds `scene_operations`
+  (the durable primitive vocabulary -- `SvgSwap`, `ColorChange`,
+  `CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`), an
+  optional `feedback`, and an optional `state_update`. `response` is broader
+  than a scene effect -- it can be feedback only, a modal open or close, or no
+  visible change at all -- which is why it stays distinct from the
+  `scene_operation` primitive layer beneath it.
+
+The two-level split preserves local validation (did the learner click the
+right tool?) without losing whole-step correctness (did the flask end up with
+4 mL PBS, in the right order?). The first pass's "base actions" (`SvgSwap` and
+the rest) were never learner actions -- they are the `scene_operation`
+primitives inside a `response`. The first pass's `mode` axis (`click`, `dial`)
+is the `gesture` slot (`click`, `drag`, `adjust`, `select`, `type`). The word
+`action` is retired.
+
+QTI lineage and its limits. The model inherits QTI's conceptual decomposition
+(see [QTI_v3_SPEC.md](QTI_v3_SPEC.md), a reference copy of the QTI 3 guide):
+`prompt` is QTI's item body and `qti-prompt`; a `step` holding a `sequence` of
+interactions is QTI's multipart item; the interaction `validator` and the
+`step_validator` together are QTI's `qti-response-processing` at two scopes;
+`outcome` is QTI's outcome variables and feedback. QTI's interaction-type
+concept is deliberately not a slot here. QTI separates interaction-type from
+target because LMS systems need analytics, accessibility, alternate
+renderers, keyboard navigation, and delivery-engine portability. This repo is
+a simulator, not an assessment interchange format -- the `target` is a
+semantic, addressable scene object (`pipette`, `well_A1`, `voltage_dial`), and
+its kind carries the task meaning QTI would have placed in an interaction
+type. QTI's interaction names still inform target typing: `hotspot`, for
+example, gave the right mental model but the wrong formal term, because the
+runtime tracks a named scene object, not a coordinate region on an image, and
+the glow is presentation, not target identity. The `gesture` slot, the
+`scene_operation` primitive layer, the `response` container, and the
+reframing of `target` from QTI's declared response variable to an addressable
+scene object are this repo's lab-sim extension. The plan adopts QTI's ideas,
+not its format: QTI 3 is XML with web-component vocabularies and PCI
+Javascript bridges, and that machinery is explicitly out of scope. The
+conceptual separation is the durable insight; the XML is not.
+
+This plan is course-corrected, not restarted. M1's evidence artifact stands.
+The M2 design doc's first WP-SLOT1 draft (`target + mode + action`, boolean
+base) and the intermediate flat six-slot model are both superseded; M2's model
+work is reworked under the two-level step/interaction model.
+
 The user's stated goal: a unified interaction vocabulary for all simulations
 going forward, not locked to any scene, designed pedagogy-first. The intended
-outcome of this plan is that vocabulary -- the `target + mode + action` model,
-its action inventory, and its mode set -- written into
+outcome of this plan is that vocabulary -- the two-level step/interaction
+model, its slot definitions, the `scene_operation` primitives, the `response`
+container, and the domain-verb composition rule -- written into
 `docs/PROTOCOL_VOCABULARY.md` and `docs/SCENE_VOCABULARY.md`, ratified against
 all four protocols, and ready for a separate follow-on plan to implement.
 
 ## Objectives
 
-- Define one scene-agnostic interaction model: an interaction has a `target`
-  (scene object), a `mode` (how the student inputs), and an `action` (what it
-  does, from a closed vocabulary).
-- Define the interaction `mode` axis: `click` (the simple mode) and `dial`
-  (continuous, skill-based set-points), with an extension rule for further
-  modes.
-- Define the `action` vocabulary as a class hierarchy in the vocabulary sense
-  (not necessarily TypeScript inheritance): a small ratified initial set of
-  base primitive actions (SVG / layout / cursor / scene operations) plus a
-  composition rule -- a composed action is built from one or more base
-  primitives -- covering every action the four source protocols require.
-- Document each initial base action to a higher standard than composed
-  actions, as a durable vocabulary primitive (see the base-action
-  documentation requirement under M2).
-- Establish pedagogy-first as a binding design rule: each interaction's mode
-  and action are chosen to teach a specific skill; the anti-pattern is
-  collapsing a skill-based interaction into a rote click.
+- Define one scene-agnostic two-level interaction model: a `step` has `name`,
+  `prompt`, an ordered `sequence` of interactions, a `step_validator`, an
+  `outcome`, and a `next_step`; each `interaction` in the `sequence` has an
+  optional `name`, a `target`, a `gesture`, a `validator`, and a `response`.
+  No single term carries learner behavior, validation, scene mutation, and
+  pedagogy at once, and one step can hold many gestures.
+- Define the `step` level: `name` (the stable snake_case identifier), `prompt`
+  (the instruction text), the ordered `sequence` of interactions, the
+  `step_validator` (whole-sequence or final-state correctness), the `outcome`
+  (complete, retry, feedback), and `next_step` (names the next step by its
+  `name`). Protocol flow is explicit via `next_step`, never YAML file order or
+  a numeric index; `step_index` may exist for display order only. Define
+  `sequence_mode` (default ordered; optional `unordered`) and the rule that
+  step order is governed by `next_step` while interaction order is governed by
+  `sequence` list order.
+- Define the `target` slot (interaction level): the addressable, semantic
+  scene object or control the student acts on (`pipette`, `well_A1`,
+  `voltage_dial`, `answer_choice`). The target's kind carries the task
+  semantics QTI would have placed in a separate interaction-type; define how a
+  target declares its kind.
+- Define the `gesture` slot (interaction level): the low-level user motion
+  (`click`, `drag`, `adjust`, `select`, `type`), with an extension rule.
+  `adjust` is the continuous, skill-based set-point gesture (volume, voltage,
+  pH-to-target) -- the first pass called this `dial` mode.
+- Define the two validation scopes: the interaction `validator` (one gesture
+  on one target) and the `step_validator` (the whole sequence or the final
+  state), and spell out how interaction validators compose into step
+  validation -- including the iterative loop (`step_validator` plus
+  `outcome: retry`).
+- Define the `response` container (interaction level): it holds
+  `scene_operations` (a list of typed primitives), an optional `feedback`, and
+  an optional `state_update`. State why `response` is broader than a scene
+  effect -- it can be feedback only, a modal open or close, or no visible
+  change -- so it stays distinct from the `scene_operation` primitive layer.
+- Define the `scene_operation` primitive vocabulary as a class hierarchy in
+  the vocabulary sense (not necessarily TypeScript inheritance): a small
+  ratified initial set of typed primitives (`SvgSwap`, `ColorChange`,
+  `CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`, plus any
+  further the evidence forces) -- the first five are the first pass's
+  mis-named "base actions"; `LiquidDisplayChange` was forced by the fit check,
+  where liquid-transfer steps recur across every cell-culture protocol -- plus
+  a composition rule. `scene_operation` stays the durable primitive layer
+  inside a `response`; it is not renamed to `response`.
+- Specify every `scene_operation` primitive with typed fields, not prose. A
+  `response` may read like prose in worked examples, but the spec for each
+  primitive must define typed fields (for example `LiquidDisplayChange` has
+  `type`, `target`, `liquid`, `volume_ml`, `operation`).
+- Document each initial `scene_operation` primitive to a higher standard than
+  composed behavior, as a durable vocabulary primitive (see the
+  scene-operation documentation requirement under M2).
+- Define `outcome` (step level): complete, retry, feedback, advance -- distinct
+  from what the learner does and what the scene changes.
+- Define domain verbs (grind, draw, dispense, assemble) as named compositions.
+  An interaction-level domain verb expands to one `target / gesture /
+  validator / response`; a step-level domain verb expands to a whole
+  `sequence` plus its `step_validator`. Each has a documented expansion. A
+  domain verb is authoring vocabulary, not base vocabulary, and implies no
+  hidden state change -- all state change is explicit in a `response`, as a
+  `scene_operation` mutation or a `state_update`. A domain verb that cannot be
+  expressed as slots is evidence the model is incomplete or the verb hides a
+  new `scene_operation`.
+- Establish the cost guardrail: new domain verbs are cheap; new `gesture`
+  values and new `scene_operation` primitives are expensive and require
+  evidence.
+- Establish pedagogy-first as a binding design rule: each interaction's
+  `target` and `gesture` are chosen to teach a specific skill; the
+  anti-pattern is collapsing a skill-based interaction into a rote click.
 - Define the runtime state and event model the vocabulary depends on.
 - Draw an explicit scene-vs-protocol boundary: what the protocol vocabulary
   names versus what a scene adapter owns.
@@ -114,17 +236,59 @@ a vocabulary the code does not yet implement. This leans on "Long-term over
 short-term" and "Fix the design, not the symptom" (`docs/REPO_STYLE.md`): the
 durable fix is a vocabulary proven against the hardest inputs first.
 
+The plan also commits to separation of concerns over a single clever term, and
+to matching the model's shape to the work. The first pass produced one word,
+`action`, that meant four things; the corrected model spends named slots at
+two levels to keep learner behavior, validation, scene mutation, and pedagogy
+from collapsing into each other. Three alternatives were rejected: the compact
+`target + mode + action` triple -- compact, but exactly the overloading that
+failed; the seven-slot model that added an `interaction` task-type enum on top
+of `target`, redundant because the target already carries the task semantics;
+and the flat six-slot model, which assumed one step equals one gesture and so
+could not express a step like "wash the flask with 4 mL PBS" that is one
+instruction but three gestures. The two-level step/interaction model is the
+durable fix: a `step` owns a `sequence` of interactions and whole-step
+correctness, each `interaction` owns one gesture and its local correctness.
+The cost guardrail enforces the discipline: new domain verbs (named
+compositions over the slots, at either level) are cheap and expected; new
+`gesture` values and new `scene_operation` primitives are expensive and need
+evidence. That keeps authors productive without re-growing the scene-specific
+taxonomy QTI just helped collapse.
+
+This is a course-correction, not a restart. The first pass's conceptual work
+-- scene-specific drift, pedagogy versus implementation, composition over
+taxonomy, primitives versus composed behavior, the need for a stable semantic
+substrate -- is sound and carried forward. Only the terminology is reworked.
+
 ## Scope
 
 - Consolidate the existing interaction inventory into one committed evidence
   artifact: the 54-step content mapping, the legacy resolver model, and the
-  exhaustive action/mode mapping of all four protocols (already drafted during
-  the investigation that produced this plan).
-- Design the `target + mode + action` model.
-- Design the `mode` axis (`click`, `dial`, extension rule).
-- Design the base-action vocabulary, composition rule, and author-facing
-  composed-action categories.
-- Write the pedagogy-first rule: how mode and action are chosen to teach.
+  exhaustive mapping of all four protocols (already drafted during the
+  investigation that produced this plan).
+- Design the two-level step/interaction model: a `step` (`name`, `prompt`,
+  `sequence`, `step_validator`, `outcome`, `next_step`) wrapping an ordered
+  `sequence` of interactions (optional `name`, `target`, `gesture`,
+  `validator`, `response`), with the naming and ordering rules (`name` as
+  stable identifier, `next_step` flow, `step_index` display-only,
+  `sequence_mode`).
+- Design the `target` slot (semantic addressable scene object; how a target
+  declares its kind) and the `gesture` slot (`click`, `drag`, `adjust`,
+  `select`, `type`, extension rule).
+- Design the interaction `validator` and the `step_validator` as the two
+  validation scopes, and how the first composes into the second.
+- Design the `response` container (`scene_operations`, optional `feedback`,
+  optional `state_update`).
+- Design the `scene_operation` typed-primitive vocabulary, its typed-field
+  spec requirement, its documentation standard, and the composition rule.
+- Design the `outcome` slot (complete, retry, feedback, advance), including
+  the iterative loop as `step_validator` plus `outcome: retry`.
+- Design the domain-verb mechanism: named compositions at the interaction
+  level (one interaction) or the step level (a whole sequence), each with a
+  documented expansion, plus the cost guardrail (verbs cheap, gestures and
+  primitives expensive).
+- Write the pedagogy-first rule: how an interaction's `target` and `gesture`
+  are chosen to teach.
 - Design the state and event model.
 - Define the scene-vs-protocol boundary.
 - Ratify the design: map all four protocols and the 7 content files to it;
@@ -133,23 +297,25 @@ durable fix is a vocabulary proven against the hardest inputs first.
 - Add a "Semantic inheritance and composition" section to
   `docs/PRIMARY_DESIGN.md` -- the repo-wide architectural philosophy the
   vocabulary design rests on (agent-editable philosophy, not a contract
-  change).
+  change). (Done in the first pass; reconcile its wording with the two-level
+  step/interaction model.)
 - Align every `docs/` file that references the interaction model -- the three
   protocol docs (`PROTOCOL_YAML_FORMAT.md`, `PROTOCOL_STEPS.md`,
   `PROTOCOL_AUTHORING_GUIDE.md`), the scene docs (`SCENE_ARCHITECTURE.md`,
-  `SCENE_YAML_FORMAT.md`), and -- because base actions are SVG / layout
-  primitives -- `SVG_PIPELINE.md`, `LAYOUT_ENGINE.md`, `LIQUID_CONVENTION.md`,
-  plus any others a `docs/` audit surfaces -- to the new vocabulary, or
-  margin-note the sections the follow-on code plan must rewrite. The whole doc
-  set stays in sync.
+  `SCENE_YAML_FORMAT.md`), and -- because `scene_operation` primitives are SVG
+  / layout operations -- `SVG_PIPELINE.md`, `LAYOUT_ENGINE.md`,
+  `LIQUID_CONVENTION.md`, plus any others a `docs/` audit surfaces -- to the
+  new vocabulary. No transitional notes: each affected section is rewritten to
+  the new vocabulary, deleted if obsolete, or moved to `docs/archive/` if it
+  is still useful as historical context. The whole doc set stays in sync.
 - Mark sections that describe unimplemented behavior as target-state, while
   keeping current-code sections clearly labeled.
 
 ## Non-goals
 
-- Building the `dial`-mode interaction (the continuous volume/voltage control)
-  -- the user wants it built, but building is code; this plan *defines* the
-  mode, the follow-on code plan builds it.
+- Building the `adjust`-gesture interaction (the continuous volume/voltage
+  control) -- the user wants it built, but building is code; this plan
+  *defines* the gesture, the follow-on code plan builds it.
 - Changing `src/scene_runtime/contract.ts` or any runtime code.
 - Editing `src/scenes/` -- frozen per `SRC_SCENES_FREEZE.md`.
 - Migrating `content/*/protocol.yaml` files -- ratification maps them on
@@ -161,46 +327,123 @@ durable fix is a vocabulary proven against the hardest inputs first.
   `consumesVolumeMl`, per-interaction `completionEvent`, `requiredItems`) --
   the new state/event model supersedes these, but deleting them is code work.
 - Building Miraculin or SDS-PAGE scenes -- they are ratification inputs only.
+- Adopting QTI XML, the QTI web-component vocabularies, or QTI Portable Custom
+  Interactions -- `docs/QTI_v3_SPEC.md` is a conceptual reference only. The
+  plan inherits QTI's multipart-item decomposition and its two-scope
+  response-processing idea, not its format or interop machinery.
 
 ## Current state summary
 
-The model after the investigation: an interaction is `target + mode + action`.
+The model after the course-corrections is two levels. No single term carries
+more than one concern, and one step can hold many gestures.
 
-- `target` -- a scene object or control that receives the student's
-  interaction.
-- `mode` -- `click` (simple) or `dial` (continuous, skill-based set-point).
-  Pedagogy chooses the mode.
-- `action` -- a class hierarchy in the vocabulary sense (not necessarily a
-  TypeScript inheritance requirement), not a flat list:
-  - *base actions* are SVG / layout / cursor / scene primitives: `SvgSwap`,
-    `ColorChange`, `CursorAttach` (a picked-up tool follows the cursor),
-    `SceneChange`, `LayoutMove`. This set is still settling.
-  - *composed actions* are pedagogically-named actions a designer builds by
-    composing one or more base actions -- composition, not single-parent
-    inheritance: draw, dispense, grind, assemble, and the rest. The earlier
-    "families" (`liquid`, `equipment`, `object`, `choose`, `popup`,
-    `question`, `navigate`) are composed actions, not the base. The
-    berry-to-powder example appears to reduce mainly to `SvgSwap`; M2 should
-    confirm whether any solid-handling cases need more primitives.
-  Defining the base set and the composition rule is M2's central task.
+Step level (six slots):
 
-Coverage already established by the investigation: all 54 current content
-steps fit; OVCAR8 fits fully; Miraculin's reverse-micelle core fits (its
-chromatography Parts 5-7 are unwritten stubs); SDS-PAGE fits once `dial` mode
-absorbs voltage and volume set-points. The `dial` mode resolves the three
-biggest gaps the coverage pass flagged (continuous voltage, volume set-point,
-pH titration) -- they are not `question`-family popups.
+- `name` -- the step's stable snake_case identifier. `next_step` and tests
+  reference a step by `name`, never by file position or numeric index.
+- `prompt` -- the instruction or question text shown to the student.
+- `sequence` -- the ordered list of interactions the step is made of.
+  Interaction order is meaningful by default; an optional
+  `sequence_mode: unordered` is set only where order truly does not matter.
+- `step_validator` -- how whole-step correctness is judged: all required
+  interactions completed (in order where order matters) and the final state
+  reached. This is where the first pass's boolean-return idea lives, at step
+  scope. The iterative loop is a `step_validator` condition plus
+  `outcome: retry`.
+- `outcome` -- what happens after the step: complete, retry, feedback.
+- `next_step` -- names the next step by its `name`. Protocol flow is explicit
+  here, not derived from YAML file order; `step_index` may exist for display
+  order only and must not control flow. Step order is governed by `next_step`;
+  interaction order is governed by `sequence` list order -- the two are
+  separate.
 
-Residual genuine gaps, flagged and not yet designed: the iterative loop (a
-step that repeats until a state condition, e.g. destain until background
-clear, rather than a fixed click count), and timed-wait visualization
-(duration as a property of `equipment` actions).
+Interaction level (one entry in `sequence`):
+
+- `name` -- optional snake_case identifier for an interaction, used when it
+  needs to be referenced, debugged, or tested.
+- `target` -- the addressable, semantic scene object or control the student
+  acts on (`pipette`, `well_A1`, `voltage_dial`, `answer_choice`). The
+  target's kind carries the task semantics; an `interaction` task-type enum is
+  not a separate slot because it would only restate what the target already
+  is.
+- `gesture` -- the low-level user motion: `click`, `drag`, `adjust`, `select`,
+  `type`. `adjust` is the continuous skill-based set-point gesture (the first
+  pass's `dial`). This set is still settling.
+- `validator` -- how this one interaction is judged: the correct `gesture` on
+  the correct `target` with the required state satisfied.
+- `response` -- a container for what the interaction produces:
+  `scene_operations` (a list of typed primitives), an optional `feedback`
+  string, and an optional `state_update`. A `response` may be `feedback` only,
+  a modal open or close, or no visible change at all, which is why it stays
+  broader than -- and distinct from -- the `scene_operation` layer.
+
+`scene_operation` is the durable typed-primitive vocabulary inside a
+`response`: `SvgSwap`, `ColorChange`, `CursorAttach` (a picked-up tool follows
+the cursor), `SceneChange`, `LayoutMove`, `LiquidDisplayChange` (liquid
+appears, a volume changes, or well contents update), plus any further the
+evidence forces. The first five are the first pass's mis-named "base actions";
+`LiquidDisplayChange` was forced by the fit check. Every primitive is
+specified with typed fields, not prose -- for example a `LiquidDisplayChange`
+has `type`, `target`, `liquid`, `volume_ml`, `operation`. This set is still
+settling.
+
+Domain verbs (grind, draw, dispense, assemble, wash) are named compositions:
+author-facing macros with a documented expansion. An interaction-level domain
+verb expands to one `target / gesture / validator / response`; a step-level
+domain verb expands to a whole `sequence` plus its `step_validator`. For
+example a step-level `wash` expands to a three-interaction sequence (click the
+pipette, click the source, click the destination), each interaction carrying
+its own `validator` and `response`, with a `step_validator` checking the
+destination received the right liquid and volume. An interaction-level `grind`
+expands to `target: pestle`, `gesture: adjust` or `click`, `validator: correct
+gesture on pestle with sample present`, `response: { scene_operations:
+[SvgSwap(berries -> powder)] }`. A domain verb is authoring vocabulary, not
+base vocabulary, and implies no hidden state change -- all state change is
+explicit in a `response`, as a `scene_operation` mutation or a `state_update`.
+The first pass's "families" (`liquid`, `equipment`, `object`, `choose`,
+`popup`, `question`, `navigate`) were a half-formed version of this layer.
+Cost guardrail: new domain verbs are cheap; new `gesture` values and new
+`scene_operation` primitives are expensive and require evidence. A domain verb
+that cannot be expressed as the two-level model is evidence the model is
+incomplete or the verb hides a new `scene_operation`.
+
+Defining the two levels, the `response` container, the `scene_operation`
+typed-primitive set, and the domain-verb expansion mechanism is M2's central
+task.
+
+Coverage already established by the investigation (under the first pass's
+terms, still valid as evidence): all 54 current content steps fit; OVCAR8 fits
+fully; Miraculin's reverse-micelle core fits (its chromatography Parts 5-7 are
+unwritten stubs); SDS-PAGE fits once the `adjust` gesture absorbs voltage and
+volume set-points. The `adjust` gesture resolves the three biggest gaps the
+coverage pass flagged (continuous voltage, volume set-point, pH titration) --
+they are not multiple-choice prompts. M3 re-ratifies all of this against the
+two-level model.
+
+A fit check against the cell-culture protocol family (multiple-choice
+planning steps, direct-tool steps, pipetting / liquid transfer, modal review
+steps) produced the two-level model. It first confirmed the slot set is
+sufficient -- every step is some combination of click or `adjust` targets,
+validators, scene operations, and a completion outcome, with no seventh
+`interaction` slot needed -- and then exposed the nesting gap: a pipetting
+step is one instruction but three gestures, which a flat one-step-one-gesture
+model cannot hold. The same check forced one `scene_operation` addition,
+`LiquidDisplayChange`, because liquid appearing, a volume changing, or well
+contents updating recurs in every one of those protocols and clears the cost
+guardrail's evidence bar.
+
+Residual genuine gaps: none open. The iterative loop is handled by a
+`step_validator` condition plus `outcome.on_failure: retry`; timed-wait is
+handled by the `TimedWait` `scene_operation` primitive (WP-STA1). Both were
+flagged in M1 and are now designed into the model, not deferred.
 
 What is broken in the docs:
 
-- `docs/PROTOCOL_VOCABULARY.md` has no term for a single interaction, no term
-  for the action it performs, no concept of an interaction mode, and never
-  spells out the interaction -> action -> state change chain. `plate target`
+- `docs/PROTOCOL_VOCABULARY.md` has no term for an interaction's `target`, no
+  term for the `gesture`, no concept of an interaction `validator`, a
+  `step_validator`, a `response` container, or a `scene_operation` primitive,
+  and never spells out the step / sequence / interaction nesting or the
+  interaction -> response -> step_validator -> outcome chain. `plate target`
   and `tube target` are scene-specific.
 - `docs/SCENE_VOCABULARY.md` ties `completion event` to the legacy
   `triggerStep` / `registeredEmitters` model and names the same concept as
@@ -238,14 +481,39 @@ This plan produces documentation only. "Components" are the doc artifacts.
 
 Durable terminology: the plan's milestones / workstreams / work packages never
 enter doc identifiers. The durable labels are the vocabulary terms the design
-defines -- the interaction primitive, the base action names, the mode names,
-the composition terms, and the author-facing composed-action categories -- and
-naming them well for YAML authors is the plan's central deliverable.
+defines -- the step and interaction slot names, the `gesture` value set, the
+target-kind mechanism, the `response` container, the `scene_operation`
+primitive names, and the domain-verb mechanism -- and naming them well for
+YAML authors is the plan's central deliverable.
 
-### Primitive-action contract
+### Response container and scene-operation primitive contract
 
-Base primitive actions are the smallest protocol-visible interaction effects
-the runtime guarantees across all scenes. A primitive action may:
+A `response` is the interaction-level container for post-validation system
+behavior -- what the system does after an interaction is validated. It is not
+itself a primitive. A `response` holds:
+
+- `scene_operations` -- an ordered list of typed `scene_operation` primitives
+  (may be empty).
+- `feedback` -- optional learner-facing messaging, structured by case
+  (`correct`, `incorrect`).
+- `state_update` -- optional, limited non-visual runtime bookkeeping (for
+  example `held_tool`). `state_update` is only for runtime state that cannot be
+  represented as a typed `scene_operation`; anything with a visual effect
+  belongs in `scene_operations`.
+
+The `scene_operation` primitives -- `CursorAttach`, `SvgSwap`, `ColorChange`,
+`SceneChange`, `LayoutMove`, `LiquidDisplayChange` -- describe how the scene
+changes, not what the learner does. The first pass's "base actions" are these
+`scene_operation` primitives renamed: they must not be called actions, because
+an action is a learner behavior and these are system scene effects.
+
+A `response` may be `feedback` only, a modal open or close, or no visible
+change at all. That breadth is why `response` stays distinct from the
+`scene_operation` layer beneath it and is not renamed.
+
+`scene_operation` primitives are the smallest protocol-visible scene effects
+the runtime guarantees across all scenes. They are not learner actions; they
+are what the scene does inside a `response`. A `scene_operation` primitive may:
 
 - mutate runtime state
 - mutate scene presentation
@@ -253,8 +521,13 @@ the runtime guarantees across all scenes. A primitive action may:
 - transition scene context
 - move or re-layout scene objects
 
-A primitive action must define:
+Every `scene_operation` primitive is specified with typed fields, not prose. A
+`response` may read like prose in a worked example, but the spec for each
+primitive must define typed fields (for example `LiquidDisplayChange` has
+`type`, `target`, `liquid`, `volume_ml`, `operation`). For each primitive the
+spec must define:
 
+- its typed fields and their value types
 - its required inputs
 - the state it reads
 - the state it may mutate
@@ -263,11 +536,17 @@ A primitive action must define:
 - whether it is instantaneous or duration-based
 - whether it emits completion or progress events
 
-Composed actions are declarative combinations of primitives chosen for
-pedagogy and author readability. The runtime executes primitives; protocol
-authors primarily reason in composed actions.
+Domain verbs are declarative named compositions, chosen for pedagogy and
+author readability. An interaction-level domain verb expands to one
+interaction; a step-level domain verb expands to a whole `sequence` plus its
+`step_validator`. Each domain verb has a documented expansion and implies no
+hidden state change -- all state change is explicit in a `response`, as a
+`scene_operation` mutation or a `state_update`. The runtime executes steps,
+interactions, and primitives; protocol authors primarily reason in domain
+verbs. Cost guardrail: domain verbs are cheap to add; `gesture` values and
+`scene_operation` primitives are expensive and require evidence.
 
-Layout semantics are treated here only as protocol-visible interaction
+Layout semantics are treated here only as protocol-visible `scene_operation`
 effects. The underlying layout engine remains the responsibility of
 scene / runtime architecture and is out of scope for this plan.
 
@@ -277,10 +556,10 @@ scene / runtime architecture and is out of scope for this plan.
 | --- | --- | --- |
 | M1 / WS-EV | `docs/active_plans/protocol_interaction_inventory.md` | 1 to 2 |
 | M2 / WS-PHIL | `docs/PRIMARY_DESIGN.md` -- semantic inheritance section | 1 |
-| M2 / WS-MOD | design doc -- interaction primitive + mode axis | 1 |
-| M2 / WS-ACT | design doc -- action class hierarchy + base-action docs | 1 |
+| M2 / WS-SLOT | design doc -- two-level step/interaction model, target + gesture slots | 1 |
+| M2 / WS-SOP | design doc -- response container, scene_operation primitives, domain-verb mechanism | 1 |
 | M2 / WS-PED | design doc -- pedagogy-first rule | 1 |
-| M2 / WS-STA | design doc -- state + event model | 1 |
+| M2 / WS-STA | design doc -- interaction validator, step_validator, outcome, state + event model | 1 |
 | M2 / WS-BND | design doc -- scene/protocol boundary | 1 |
 | M3 / WS-RAT-A | ratification: OVCAR8 + 7 current content files | 1 |
 | M3 / WS-RAT-B | ratification: Miraculin | 1 |
@@ -304,67 +583,110 @@ for one owner and one reviewable patch.
 - Exit criteria:
   - One committed artifact catalogs: every click-target field across the 7
     content files; the 54-step interaction mapping; the legacy
-    `interaction_resolver.ts` action model; and the exhaustive
-    `target + mode + action` mapping of OVCAR8, Miraculin, and SDS-PAGE
-    (formalized from the investigation's draft tables).
-  - The artifact lists candidate author-facing composed-action categories,
-    candidate base primitives, the candidate mode set (`click`, `dial`), and
-    the residual gaps (iterative loop, timed-wait visualization), each tagged
-    with the requiring protocol(s).
+    `interaction_resolver.ts` action model; and the exhaustive interaction
+    mapping of OVCAR8, Miraculin, and SDS-PAGE (formalized from the
+    investigation's draft tables).
+  - The artifact lists candidate interaction effects, candidate primitives,
+    candidate skill-based gestures, and the residual gaps (iterative loop,
+    timed-wait visualization), each tagged with the requiring protocol(s).
   - Known inconsistencies recorded (e.g. `decant_mtt` expressed two ways;
     `resuspend` volume mismatch; `completionEvent` naming chaos).
   - `docs/CHANGELOG.md` draft entry started.
+- Note: M1 is complete. Its artifact uses the first pass's `target + mode +
+  action` terms; that is valid evidence and M2 re-reads it under the
+  two-level step/interaction model rather than rewriting it.
 - Parallel-plan ready: no -- a single consolidation artifact authored by one
   owner; splitting it creates merge churn on one file. Max parallel doers: 1.
 
 ### Milestone M2: Design the unified model
 
 - Depends on: M1 -- the design works from the consolidated evidence.
-- Workstreams: WS-PHIL, WS-MOD, WS-ACT, WS-PED, WS-STA, WS-BND.
-- Entry criteria: M1 artifact complete; OQ-1, OQ-2, OQ-3 resolved by the user.
+- Workstreams: WS-PHIL, WS-SLOT, WS-SOP, WS-PED, WS-STA, WS-BND.
+- Entry criteria: M1 artifact complete; the two-level step/interaction
+  course-correction accepted; OQ-6 and OQ-7 resolved.
 - Exit criteria:
-  - The interaction primitive is defined: one term for an interaction, and
-    the interaction -> action -> state change chain spelled out.
-  - The mode axis is defined: `click` and `dial`, what each means for a YAML
-    author, how a scene renders each, and the extension rule for further
-    modes. `dial` is defined as the skill-based continuous set-point mode
-    (volume, voltage, pH-to-target).
-  - The action vocabulary is defined as a class hierarchy in the vocabulary
-    sense (not necessarily TypeScript inheritance): the base primitive actions
-    (SVG / layout / cursor / scene operations) are named and ratified for the
-    initial vocabulary, and the composition rule is written -- a composed
-    action is built from one or more base primitives. Every composed action the four protocols use is shown as
-    a composition of base actions, named in YAML-author language.
-  - Base-action documentation requirement: the base-action set is extensible,
-    but not casual. M2 must document each initial base action as a durable
-    vocabulary primitive, defining for each one: what the action means; what
-    state it may read; what state it may change; what visual effect it
-    produces; what it must not do; examples from at least two protocols where
-    possible; common mistakes or anti-patterns; and how composed actions may
-    build on it. Adding a new base action later requires the same
-    documentation standard and a clear reason why composition from existing
-    primitives is not sufficient.
-  - The pedagogy-first rule is written: how an author chooses mode and action
-    to teach a skill, with the skill-to-timed-click regression named as the
-    anti-pattern.
+  - The two-level model is defined: a `step` (`name`, `prompt`, `sequence`,
+    `step_validator`, `outcome`, `next_step`) wrapping an ordered `sequence` of
+    interactions (optional `name`, `target`, `gesture`, `validator`,
+    `response`), each slot with a one-line charter saying which single concern
+    it owns, and the interaction -> response -> step_validator -> outcome
+    chain spelled out. The naming and ordering rules are written: step `name`
+    is the stable identifier, `next_step` governs protocol flow by `name`,
+    `step_index` is display-only, `sequence` is ordered by default with an
+    optional `sequence_mode: unordered`, and step order (via `next_step`) is
+    kept separate from interaction order (via `sequence` list order).
+  - The `target` slot is defined: the addressable, semantic scene object or
+    control; how a target declares its kind; and why the target's kind carries
+    the task semantics so no separate `interaction` task-type slot is needed.
+  - The `gesture` slot is defined: `click`, `drag`, `adjust`, `select`,
+    `type`, what each means for a YAML author, how a scene renders each, and
+    the extension rule. `adjust` is defined as the skill-based continuous
+    set-point gesture (volume, voltage, pH-to-target).
+  - The two validation scopes are defined: the interaction `validator` (the
+    correct `gesture` on the correct `target` with required state satisfied --
+    this carries the legacy derive-don't-declare model and the boolean-return
+    idea at interaction scope) and the `step_validator` (all required
+    interactions completed, in order where order matters, and the final state
+    reached). How interaction validators compose into step validation is
+    written.
+  - The `response` container is defined: `scene_operations` (a list of typed
+    primitives), optional `feedback`, optional `state_update`; why `response`
+    is broader than a scene effect and stays distinct from the
+    `scene_operation` layer; and why it is not renamed.
+  - The `scene_operation` vocabulary is defined as a class hierarchy in the
+    vocabulary sense (not necessarily TypeScript inheritance): the typed
+    primitives (`SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
+    `LayoutMove`, `LiquidDisplayChange`, plus any further the evidence forces)
+    are named and ratified for the initial vocabulary, and the composition
+    rule is written.
+  - Scene-operation documentation requirement: the primitive set is
+    extensible, but not casual. M2 must specify each initial `scene_operation`
+    primitive with typed fields, not prose, and document it as a durable
+    vocabulary primitive, defining for each one: its typed fields and their
+    value types; what it means; what state it may read; what state it may
+    change; what visual effect it produces; what it must not do; examples from
+    at least two protocols where possible; common mistakes or anti-patterns;
+    and how domain verbs may build on it. Adding a new primitive later
+    requires the same documentation standard and evidence that composition
+    from existing primitives is not sufficient.
+  - The domain-verb mechanism is defined: an interaction-level domain verb
+    expands to one interaction, a step-level domain verb expands to a whole
+    `sequence` plus its `step_validator`, each with a documented expansion,
+    and it implies no hidden state change. The cost guardrail is written --
+    domain verbs cheap, `gesture` values and `scene_operation` primitives
+    expensive. Every domain verb the four protocols need (grind, draw,
+    dispense, assemble, wash, and the rest) is shown as a worked expansion in
+    YAML-author language.
+  - The `outcome` slot is defined: complete, retry, feedback, advance; the
+    iterative loop is a `step_validator` condition plus `outcome: retry`.
+  - The pedagogy-first rule is written: how an author chooses an
+    interaction's `target` and `gesture` to teach a skill, with the
+    skill-to-timed-click regression named as the anti-pattern.
   - The state and event model is defined: what runtime state the vocabulary
-    assumes, how an action implies its state change (recovering the legacy
-    derive-don't-declare model), how events are emitted and named.
+    assumes; state change is explicit in a `response` (a `scene_operation`
+    mutation or a `state_update`), and domain verbs do not imply hidden state
+    changes; how events are emitted and named.
   - The scene-vs-protocol boundary is written as an explicit rule: the
     protocol vocabulary names no plate, well, tube, gel, or column; the scene
-    adapter owns geometry, target expansion, and how a mode is rendered.
-  - The two residual gaps (iterative loop, timed-wait) each have a written
-    disposition: designed into the model, or deferred with a reason.
-  - The "Semantic inheritance and composition" section is added to
-    `docs/PRIMARY_DESIGN.md` (agent-editable philosophy).
+    adapter owns geometry, target expansion, and how a `gesture` is rendered.
+  - The residual gap (timed-wait visualization) has a written disposition:
+    designed into the model, or deferred with a reason. The iterative loop is
+    recorded as resolved by the two-level model, not deferred.
+  - The "Semantic inheritance and composition" section in
+    `docs/PRIMARY_DESIGN.md` (added in the first pass) is reconciled with the
+    two-level step/interaction terminology.
+  - The first pass's superseded WP-SLOT1 draft content in the design doc is
+    reworked to the two-level model; no `target + mode + action` language, no
+    seven-slot `interaction` slot, and no flat six-slot framing survives in
+    the design doc.
   - All other design output lives in the working design doc; the canonical
     vocabulary docs (`PROTOCOL_VOCABULARY.md`, `SCENE_VOCABULARY.md`) are
     untouched until M4.
 - Parallel-plan ready: yes -- the six workstreams own disjoint artifacts and
-  share only the M1 evidence artifact (read-only). WS-ACT, WS-PED, WS-STA,
-  WS-BND consume WS-MOD's primitive + mode definitions, so they start a beat
-  behind; WS-PHIL (which writes `docs/PRIMARY_DESIGN.md`) runs fully in
-  parallel. Max parallel doers: 6.
+  share only the M1 evidence artifact (read-only). WS-SOP, WS-PED, WS-STA,
+  WS-BND consume WS-SLOT's slot definitions, so they start a beat behind;
+  WS-PHIL (which writes `docs/PRIMARY_DESIGN.md`) runs fully in parallel. Max
+  parallel doers: 6.
 
 ### Milestone M3: Ratify the design against all four protocols
 
@@ -373,14 +695,19 @@ for one owner and one reviewable patch.
 - Entry criteria: M2 design doc complete.
 - Exit criteria:
   - Every step of OVCAR8 and all 7 current `content/*/protocol.yaml` files is
-    mapped to the model: target, mode, composed action, base primitive
-    composition, completion (WS-RAT-A).
+    mapped to the two-level model: the step slots (`prompt`, `sequence`,
+    `step_validator`, `outcome`) and, for each interaction in the `sequence`,
+    its slots (`target`, `gesture`, `validator`, `response`), plus the domain
+    verb if one applies (WS-RAT-A).
   - Every Miraculin procedure step with real content is mapped (WS-RAT-B).
   - Every SDS-PAGE procedure step with real content is mapped (WS-RAT-C).
-  - Each workstream flags any step the model cannot express and any step
-    whose pedagogy is unclear (which skill does it teach, is the mode right).
+  - Each workstream flags any step or interaction the model cannot express and
+    any interaction whose pedagogy is unclear (which skill does it teach, is
+    the `target` and `gesture` pairing right).
   - A consolidated residual-gap list names every unmappable step and says
-    whether it needs a new action sub-type, a new mode, or a design revision.
+    whether it needs a new domain verb (cheap), a new `gesture` value
+    (medium), a new `scene_operation` primitive (expensive), or a design
+    revision (expensive).
   - If ratification surfaces a design gap, M2's design doc is revised and the
     revision noted; M3 is not "done" until the gap list is empty or every
     entry has an accepted disposition.
@@ -395,22 +722,26 @@ for one owner and one reviewable patch.
 - Workstreams: WS-DOC-P, WS-DOC-S, WS-DOC-D, WS-DOC-C.
 - Entry criteria: M3 ratification complete; residual-gap list dispositioned.
 - Exit criteria:
-  - `docs/PROTOCOL_VOCABULARY.md` rewritten: the interaction primitive, the
-    mode axis, the action vocabulary, the pedagogy-first rule, the state/event
-    model, the scene/protocol boundary. Target-state sections clearly
-    labeled; current-code sections clearly labeled.
+  - `docs/PROTOCOL_VOCABULARY.md` rewritten: the two-level step/interaction
+    model, the `target` slot and target-kind mechanism, the `gesture` value
+    set, the two validation scopes, the `response` container, the
+    `scene_operation` typed-primitive vocabulary, the domain-verb mechanism,
+    the pedagogy-first rule, the state/event model, the scene/protocol
+    boundary. Target-state sections clearly labeled; current-code sections
+    clearly labeled.
   - `docs/SCENE_VOCABULARY.md` rewritten: the scene side of the boundary,
-    including how a scene renders `click` versus `dial`, with explicit
+    including how a scene renders each `gesture`, with explicit
     cross-references to `PROTOCOL_VOCABULARY.md` for shared concepts.
   - Every `docs/` file that references the interaction model (the protocol
     docs plus the scene / SVG / layout / liquid docs, full set confirmed by a
-    `docs/` audit) is aligned to the new vocabulary or margin-noted for the
-    follow-on code plan -- the doc set is in sync, no file contradicting the
-    canonical two.
+    `docs/` audit) is aligned to the new vocabulary -- each affected section
+    rewritten, deleted if obsolete, or moved to `docs/archive/` if still
+    useful as history; no transitional notes. The doc set is in sync, no file
+    contradicting the canonical two.
   - `docs/CHANGELOG.md` entry finalized.
   - A follow-on code-migration plan is stubbed in `docs/active_plans/`,
     pointing at the ratified vocabulary as its input and naming the
-    `dial`-mode build as an early deliverable.
+    `adjust`-gesture build as an early deliverable.
   - `docs/active_plans/scene_runtime_doc_conflicts.md` annotated where this
     plan supersedes its `matches-contract` verdict on the
     `plateTargets` / `tubeTargets` sections.
@@ -435,56 +766,70 @@ for one owner and one reviewable patch.
 - Interfaces:
   - Needs: M1 evidence artifact.
   - Provides: the repo-wide semantic-inheritance / composition-over-duplication
-    philosophy, written into `docs/PRIMARY_DESIGN.md`, that WS-MOD, WS-ACT,
+    philosophy, written into `docs/PRIMARY_DESIGN.md`, that WS-SLOT, WS-SOP,
     and WS-BND build on.
 - Expected patches: 1.
 
-### Workstream WS-MOD: Interaction primitive and mode axis
+### Workstream WS-SLOT: Two-level step/interaction model, target and gesture slots
 
 - Owner: architect.
 - Interfaces:
   - Needs: M1 evidence artifact.
-  - Provides: the interaction primitive, the `click` / `dial` mode
-    definitions, and the mode extension rule to WS-ACT, WS-PED, WS-STA,
-    WS-BND, and all of M3.
+  - Provides: the two-level step/interaction model (step slots `name`,
+    `prompt`, `sequence`, `step_validator`, `outcome`, `next_step`; interaction
+    slots optional `name`, `target`, `gesture`, `validator`, `response`), the
+    naming and ordering rules (`name` as stable identifier, `next_step` flow,
+    `step_index` display-only, `sequence_mode`), the `target` slot and
+    target-kind mechanism, the `gesture` value set (`click`, `drag`, `adjust`,
+    `select`, `type`), and the gesture extension rule to WS-SOP, WS-PED,
+    WS-STA, WS-BND, and all of M3.
 - Expected patches: 1.
 
-### Workstream WS-ACT: Action vocabulary
+### Workstream WS-SOP: Response container, scene-operation primitives, domain-verb mechanism
 
 - Owner: planner.
 - Interfaces:
-  - Needs: M1 evidence artifact; WS-MOD's primitive definition.
-  - Provides: the action class hierarchy (the documented base primitive
-    actions plus the composition rule) and the worked compositions for the
-    four protocols' actions.
+  - Needs: M1 evidence artifact; WS-SLOT's slot definitions.
+  - Provides: the `response` container definition (`scene_operations`,
+    `feedback`, `state_update`), the `scene_operation` typed-primitive class
+    hierarchy (the documented typed primitives plus the composition rule), the
+    domain-verb mechanism with the cost guardrail, and the worked expansions
+    for the four protocols' domain verbs at both the interaction and step
+    levels.
 - Expected patches: 1.
 
 ### Workstream WS-PED: Pedagogy-first rule
 
 - Owner: planner.
 - Interfaces:
-  - Needs: WS-MOD's mode axis; WS-ACT's action families.
-  - Provides: the rule for choosing mode and action to teach a skill, with the
-    skill-to-timed-click anti-pattern, to M3 (which checks pedagogy) and M4.
+  - Needs: WS-SLOT's target and gesture slots; WS-SOP's domain verbs.
+  - Provides: the rule for choosing the `target` and `gesture` to teach a
+    skill, with the skill-to-timed-click anti-pattern, to M3 (which checks
+    pedagogy) and M4.
 - Expected patches: 1.
 
-### Workstream WS-STA: State and event model
+### Workstream WS-STA: Interaction validator, step_validator, outcome, state and event model
 
 - Owner: planner.
 - Interfaces:
-  - Needs: WS-MOD's primitive; WS-ACT's action families.
-  - Provides: the state model, the action-implies-state-change rule, the
-    event-emission rule, and the event-naming convention.
+  - Needs: WS-SLOT's slot definitions; WS-SOP's `response` container and
+    `scene_operation` primitives.
+  - Provides: the interaction `validator` definition, the `step_validator`
+    definition, how the first composes into the second, the `outcome` slot
+    definition (including the iterative loop), the state model, the
+    state-change-is-explicit-in-a-response rule, the event-emission rule, and
+    the event-naming convention.
 - Expected patches: 1.
 
 ### Workstream WS-BND: Scene-vs-protocol boundary
 
 - Owner: architect.
 - Interfaces:
-  - Needs: WS-MOD's mode axis; WS-ACT's action families; M1 evidence on
-    scene-specific drift.
+  - Needs: WS-SLOT's slot definitions; WS-SOP's scene_operation primitives;
+    M1 evidence on scene-specific drift.
   - Provides: the boundary rule -- protocol names no geometry; adapter owns
-    expansion and mode rendering -- to WS-DOC-P and WS-DOC-S.
+    geometry, target expansion, and gesture rendering -- to WS-DOC-P and
+    WS-DOC-S.
 - Expected patches: 1.
 
 ### Workstream WS-RAT-A: Ratify OVCAR8 and the 7 current content files
@@ -534,8 +879,10 @@ for one owner and one reviewable patch.
 - Owner: planner.
 - Interfaces:
   - Needs: the finished WS-DOC-P and WS-DOC-S text.
-  - Provides: aligned-or-margin-noted dependent docs -- every `docs/` file that
-    references the interaction model. Known set: `PROTOCOL_YAML_FORMAT.md`,
+  - Provides: aligned dependent docs (each affected section rewritten, deleted
+    if obsolete, or moved to `docs/archive/` -- no transitional notes) -- every
+    `docs/` file that references the interaction model. Known set:
+    `PROTOCOL_YAML_FORMAT.md`,
     `PROTOCOL_STEPS.md`, `PROTOCOL_AUTHORING_GUIDE.md`, `SCENE_ARCHITECTURE.md`,
     `SCENE_YAML_FORMAT.md`, `SVG_PIPELINE.md`, `LAYOUT_ENGINE.md`,
     `LIQUID_CONVENTION.md`; WP-DOC-D1 audits `docs/` to confirm the full list.
@@ -596,101 +943,209 @@ for one owner and one reviewable patch.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Cross-reference the new section from the M2 design doc so the vocabulary
-    design cites its philosophical basis.
+  - Cross-reference the new section from the M2 design doc, and reconcile its
+    wording with the two-level step/interaction model once WP-SLOT1 lands.
 
-### Work package WP-MOD1: Define the interaction primitive and mode axis
+### Work package WP-SLOT1: Define the two-level step/interaction model and the target and gesture slots
 
 - Owner: architect.
 - Touch points: `docs/active_plans/unified_interaction_vocabulary_design.md`
-  (new) -- the primitive and mode sections.
+  -- the model, target, and gesture sections. Reworks the first pass's
+  superseded `target + mode + action` draft and the intermediate flat
+  six-slot framing in this file.
 - Depends on: WP-EV1.
 - Acceptance criteria:
-  - Defines one term for an interaction and writes the
-    interaction -> action -> state change chain.
-  - Defines `click` and `dial` modes in YAML-author language; defines `dial`
-    as the skill-based continuous set-point mode (volume, voltage,
-    pH-to-target).
-  - States the mode extension rule for adding modes later.
+  - Defines the two-level model: a `step` (`name`, `prompt`, `sequence`,
+    `step_validator`, `outcome`, `next_step`) wrapping an ordered `sequence` of
+    interactions (optional `name`, `target`, `gesture`, `validator`,
+    `response`), each slot with a one-line charter naming the single concern
+    it owns.
+  - Writes the naming and ordering rules: a step's `name` is its stable
+    snake_case identifier; `next_step` names the next step by its `name` so
+    protocol flow is explicit and independent of YAML file order; `step_index`
+    may exist for display order only and must not control flow; `sequence`
+    order is meaningful by default with an optional `sequence_mode: unordered`
+    only where order truly does not matter; step order (via `next_step`) and
+    interaction order (via `sequence` list order) are separate; an
+    `interaction` may carry an optional snake_case `name` for reference,
+    debugging, and testing. Names are snake_case, not numbers or opaque codes.
+  - Writes the step / sequence / interaction nesting and the
+    interaction -> response -> step_validator -> outcome chain, with a worked
+    example of a multi-gesture step (the "wash the flask with 4 mL PBS"
+    three-interaction sequence) that shows the step `name`, interaction
+    `name`s, and `next_step`.
+  - Defines the `target` slot in YAML-author language: the addressable,
+    semantic scene object or control; how a target declares its kind; and why
+    the target's kind carries the task semantics so no separate `interaction`
+    task-type slot is needed. Records that QTI interaction names (Choice, Hot
+    Spot, Slider, Position Object, Order) informed target typing but are not
+    adopted as formal terms -- the runtime tracks named scene objects, not
+    coordinate regions or response variables.
+  - Defines the `gesture` value set (`click`, `drag`, `adjust`, `select`,
+    `type`) in YAML-author language; defines `adjust` as the skill-based
+    continuous set-point gesture (volume, voltage, pH-to-target); states the
+    extension rule. Documents the `select` versus `click` distinction clearly
+    (OQ-8 watch item) so a later merge of `select` into `click` would be a
+    small evidence-driven change, not a redesign.
+  - Removes all `target + mode + action` language, the boolean-return base
+    framing, the seven-slot `interaction` slot, and the flat six-slot framing
+    from the design doc; that content is superseded.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Hand the primitive and mode definitions to WP-ACT1, WP-PED1, WP-STA1,
+  - Hand the model and slot definitions to WP-SOP1, WP-PED1, WP-STA1,
     WP-BND1.
 
-### Work package WP-ACT1: Define and document the action class hierarchy
+### Work package WP-SOP1: Define the response container, scene_operation primitives, and domain-verb mechanism
 
 - Owner: planner.
-- Touch points: the action sections of the design doc.
-- Depends on: WP-MOD1.
+- Touch points: the `response`, scene_operation, and domain-verb sections of
+  the design doc.
+- Depends on: WP-SLOT1.
 - Acceptance criteria:
-  - Defines and ratifies the initial set of base primitive actions -- SVG /
-    layout / cursor / scene operations such as `SvgSwap`, `ColorChange`,
-    `CursorAttach`, `SceneChange`, `LayoutMove`, plus any others the evidence
-    forces.
-  - Defines the composition rule: a composed action is built from one or more
-    base primitives (composition, not single-parent inheritance).
-  - Documents each base action to the durable-primitive standard. For each
-    base action the docs define: what the action means; what state it may
-    read; what state it may change; what visual effect it produces; what it
-    must not do; examples from at least two protocols where possible; common
-    mistakes or anti-patterns; how composed actions may build on it.
-  - Shows every action the four protocols need as a named composition of base
-    actions, in YAML-author language.
-  - Confirms `question`-style knowledge prompts and `dial`-mode
+  - Defines the `response` container as post-validation system behavior --
+    what the system does after an interaction is validated. It holds
+    `scene_operations` (an ordered list of typed primitives), an optional
+    `feedback` structured by case (`correct`, `incorrect`), and an optional
+    `state_update` (limited non-visual runtime bookkeeping, for example
+    `held_tool`). States plainly why `response` is broader than a scene effect
+    (it can be feedback only, a modal open or close, or no visible change) and
+    why it is not renamed to `scene_operation`. Constrains `state_update` to
+    non-visual runtime bookkeeping that cannot be represented as a typed
+    `scene_operation`.
+  - States plainly that the six `scene_operation` primitives describe how the
+    scene changes, not what the learner does, and that the first pass's "base
+    actions" are renamed to `scene_operation` primitives -- they must not
+    remain called actions.
+  - Defines and ratifies the initial set of `scene_operation` primitives --
+    `SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`,
+    `LiquidDisplayChange`, plus any further the evidence forces. States
+    plainly that these are scene effects, not learner actions.
+    `LiquidDisplayChange` is the one primitive the fit check already forced;
+    document why it is first-class and not a `SvgSwap` / `ColorChange`
+    composition (it tracks a liquid quantity and well-contents state, not just
+    an image swap).
+  - Specifies every `scene_operation` primitive with typed fields, not prose.
+    A `response` may read like prose in worked examples, but each primitive's
+    spec defines typed fields (for example `LiquidDisplayChange` has `type`,
+    `target`, `liquid`, `volume_ml`, `operation`).
+  - Defines the composition rule and the domain-verb mechanism: an
+    interaction-level domain verb expands to one interaction, a step-level
+    domain verb expands to a whole `sequence` plus its `step_validator`, each
+    with a documented expansion; a domain verb implies no hidden state change
+    -- all state change is explicit in a `response`, as a `scene_operation`
+    mutation or a `state_update`.
+  - Writes the cost guardrail: new domain verbs are cheap; new `gesture`
+    values and new `scene_operation` primitives are expensive and require
+    evidence. States that a domain verb that cannot be expressed as the
+    two-level model is evidence the model is incomplete or the verb hides a
+    new `scene_operation`.
+  - Documents each `scene_operation` primitive to the durable-primitive
+    standard. For each: its typed fields and their value types; what it means;
+    what state it may read; what state it may change; what visual effect it
+    produces; what it must not do; examples from at least two protocols where
+    possible; common mistakes or anti-patterns; how domain verbs may build on
+    it.
+  - Shows every domain verb the four protocols need (grind, draw, dispense,
+    assemble, wash, and the rest) as a documented expansion at the right
+    level (interaction or step), in YAML-author language.
+  - Confirms multiple-choice knowledge prompts and `adjust`-gesture
     parameter-setting are kept distinct.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Flag any sub-type whose meaning conflicts with a mode back to WP-MOD1
-    before M3.
+  - Flag any domain verb that will not expand cleanly back to WP-SLOT1's model
+    before M3 -- it means a slot or a level is missing.
 
 ### Work package WP-PED1: Write the pedagogy-first rule
 
 - Owner: planner.
 - Touch points: the pedagogy section of the design doc.
-- Depends on: WP-MOD1, WP-ACT1.
+- Depends on: WP-SLOT1, WP-SOP1.
 - Acceptance criteria:
-  - States how an author chooses mode and action to teach a specific skill.
+  - States how an author chooses an interaction's `target` and `gesture` to
+    teach a specific skill.
   - Names the skill-to-timed-click regression as the anti-pattern, with the
     pipetting example.
-  - Gives at least one worked example per mode (a `click` step and a `dial`
-    step) showing the skill each teaches.
+  - Gives at least one worked example per gesture (a `click` interaction and
+    an `adjust` interaction) showing the skill each teaches.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Hand the rule to WS-RAT-* so ratification can check each step's pedagogy.
+  - Hand the rule to WS-RAT-* so ratification can check each interaction's
+    pedagogy.
 
-### Work package WP-STA1: Define the state and event model
+### Work package WP-STA1: Tighten to the linear spec; define validators, outcome, state and event model
 
 - Owner: planner.
-- Touch points: the state/event section of the design doc.
-- Depends on: WP-MOD1, WP-ACT1.
-- Acceptance criteria:
-  - Defines the runtime state the vocabulary assumes (held material, target
-    contents, set-point values, equipment state, phase state, object
-    appearance).
-  - Maps each base primitive action to the runtime state it changes, and
-    states how a composed action's state change follows from its base actions
-    -- documenting how the target model would supersede hand-authored
-    `stateChange` in the follow-on code plan.
-  - Defines the event-emission rule and a single event-naming convention.
+- Touch points: the design doc -- the validator / step_validator / outcome /
+  state / event sections, plus the tightening sweep across the model code
+  block, slot charters, worked example, `response` section, and primitive set.
+- Depends on: WP-SLOT1, WP-SOP1.
+- Acceptance criteria (the user resolved every shape; encode them, do not
+  re-decide):
+  - Applies the tightening course-correction (see "Course-correction: tighten
+    to a linear protocol spec"): adds the `protocol` level (`name`,
+    `entry_step`, `steps[]`); drops `sequence_mode`, the optional interaction
+    `name`, and `state_update` from `response`; defers complex branching. The
+    tight model is `protocol -> step(name, prompt, sequence, step_validator,
+    outcome, next_step) -> interaction(target, gesture, validator, response)
+    -> response(scene_operations[], feedback?)`.
+  - Interaction `validator` is a named preset with typed parameters:
+    `{preset: <name>, ...params}` -- for example `{preset: correct_target}`,
+    `{preset: correct_choice}`, `{preset: target_with_value, value:
+    {volume_ml: 4}}`. Interaction validators check local correctness only.
+  - `step_validator` is a named preset with typed parameters -- for example
+    `{preset: sequence_complete}`, `{preset: final_state_matches, target:
+    flask, contains: {liquid: pbs, volume_ml: 4}}`. It checks only whole-step
+    completion; it does not re-run interaction validators.
+  - Writes the initial **validator preset library**: at minimum
+    `correct_target`, `correct_choice`, `target_with_value` (interaction
+    presets) and `sequence_complete`, `final_state_matches` (step presets).
+    Each preset documents its required fields, what it checks, where it can be
+    used, and examples. New presets require ratification evidence -- the same
+    cost-guardrail discipline as a new `scene_operation` primitive. Content
+    creators select from the library; they never write custom validation
+    logic.
+  - `outcome` is the simple mapping `{on_success: complete, on_failure:
+    retry}`. `retry` restarts the whole step (the entire `sequence` resets).
+    Advancing is `next_step`'s job. Update the worked example, the slot
+    charter, and all prose to this shape.
+  - State change is explicit in a `response` via a `scene_operation` mutation
+    only (`state_update` is dropped). Domain verbs imply no hidden state
+    change. Map each `scene_operation` primitive to the runtime state it
+    changes. No arbitrary state changes; a later plan may revisit with
+    evidence.
+  - Settles `LiquidDisplayChange.operation`: `hold` (cursor/tool-carried
+    contents), `set` (directly assign displayed content/state, e.g. a
+    preloaded well), `add` (destination transfer). `fill` is renamed to `add`;
+    emptying a tool is `set` with `volume_ml: 0`. State the one-line
+    discriminator and reconcile the worked example and the
+    `draw`/`dispense`/`aspirate` expansions.
+  - Adds `TimedWait` as a seventh `scene_operation` primitive (typed fields
+    `type`, `target`, `duration_min`, `display`), documented to the
+    durable-primitive standard. It covers incubation, centrifugation,
+    staining, destaining, and timed equipment runs -- handled as a
+    `scene_operation`, not a special step type.
+  - Defines the event-emission rule and a single snake_case event-naming
+    convention (replacing the legacy `completionEvent` inconsistency named in
+    the evidence artifact).
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Note which current fields the new model supersedes, for the follow-on
-    code plan.
+  - Note which legacy fields the new model supersedes, for the follow-on code
+    plan.
 
 ### Work package WP-BND1: Define the scene-vs-protocol boundary
 
 - Owner: architect.
 - Touch points: the boundary section of the design doc.
-- Depends on: WP-MOD1, WP-ACT1.
+- Depends on: WP-SLOT1, WP-SOP1.
 - Acceptance criteria:
   - Writes the boundary rule: the protocol vocabulary names no plate, well,
     tube, gel, or column; the scene adapter owns geometry, target expansion,
-    and how each mode is rendered.
-  - Maps each design concept to its side of the boundary.
+    and how each `gesture` is rendered.
+  - Maps each step and interaction slot to its side of the boundary.
   - Resolves the `PROTOCOL_VOCABULARY.md` "click target" vs
     `SCENE_VOCABULARY.md` `ClickTarget` naming collision.
 - Verification commands:
@@ -703,30 +1158,32 @@ for one owner and one reviewable patch.
 - Owner: reviewer.
 - Touch points: a ratification matrix section in
   `docs/active_plans/protocol_interaction_inventory.md`.
-- Depends on: WP-MOD1, WP-ACT1, WP-PED1, WP-STA1, WP-BND1.
+- Depends on: WP-SLOT1, WP-SOP1, WP-PED1, WP-STA1, WP-BND1.
 - Acceptance criteria:
-  - Every step of OVCAR8 and all 54 content steps mapped: target, mode,
-    composed action, base primitive composition, completion, and the skill it
-    teaches.
-  - Unmappable steps and unclear-pedagogy steps flagged.
+  - Every step of OVCAR8 and all 54 content steps mapped to the two-level
+    model (the step slots and each interaction's slots) plus the domain verb
+    if one applies, with the skill each interaction teaches.
+  - Unmappable steps or interactions and unclear-pedagogy interactions
+    flagged.
   - Owns the consolidated residual-gap list (merges WS-RAT-B and WS-RAT-C
     entries).
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - If a gap requires a design revision, file it against WP-MOD1 / WP-ACT1
+  - If a gap requires a design revision, file it against WP-SLOT1 / WP-SOP1
     and re-ratify the affected steps before closing M3.
 
 ### Work package WP-RAT-B1: Ratify Miraculin
 
 - Owner: reviewer.
 - Touch points: a Miraculin ratification matrix.
-- Depends on: WP-MOD1, WP-ACT1, WP-PED1, WP-STA1, WP-BND1.
+- Depends on: WP-SLOT1, WP-SOP1, WP-PED1, WP-STA1, WP-BND1.
 - Acceptance criteria:
   - Every Miraculin procedure step with real content mapped.
-  - Phase separation (`choose`), grinding (an `equipment` action with an
-    SVG-swap effect), and pH titration (`dial`) explicitly tested against the
-    design.
+  - Phase separation (an `answer_choice` target, `select` gesture), grinding
+    (the `grind` domain verb expanding to an interaction whose `response`
+    carries a `SvgSwap` scene_operation), and pH titration (an `adjust`
+    gesture) explicitly tested against the design.
   - Gap entries handed to WP-RAT-A1.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
@@ -738,11 +1195,14 @@ for one owner and one reviewable patch.
 
 - Owner: reviewer.
 - Touch points: an SDS-PAGE ratification matrix.
-- Depends on: WP-MOD1, WP-ACT1, WP-PED1, WP-STA1, WP-BND1.
+- Depends on: WP-SLOT1, WP-SOP1, WP-PED1, WP-STA1, WP-BND1.
 - Acceptance criteria:
   - Every SDS-PAGE procedure step with real content mapped.
-  - Ordered assembly (`object`), voltage and volume set-points (`dial`), and
-    the iterative destain loop explicitly tested against the design.
+  - Ordered assembly (a `sequence` of `drag` or `select` interactions on
+    ordered targets, with an order-checking `step_validator`), voltage and
+    volume set-points (an `adjust` gesture), and the iterative destain loop (a
+    `step_validator` condition plus `outcome: retry`) explicitly tested
+    against the design.
   - Gap entries handed to WP-RAT-A1.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
@@ -755,8 +1215,11 @@ for one owner and one reviewable patch.
 - Touch points: `docs/PROTOCOL_VOCABULARY.md`.
 - Depends on: WP-RAT-A1 (ratification complete, gaps dispositioned).
 - Acceptance criteria:
-  - Encodes the ratified interaction primitive, mode axis, action vocabulary,
-    pedagogy-first rule, state/event model, and boundary rule.
+  - Encodes the ratified two-level step/interaction model, the `target` slot
+    and target-kind mechanism, the `gesture` value set, the interaction
+    `validator` and `step_validator`, the `response` container, the
+    `scene_operation` typed-primitive vocabulary, the domain-verb mechanism,
+    the pedagogy-first rule, the state/event model, and the boundary rule.
   - `plate target` / `tube target` removed.
   - Target-state sections clearly labeled; current-code sections clearly
     labeled.
@@ -764,7 +1227,8 @@ for one owner and one reviewable patch.
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
   - Update the banned-synonyms section to flag the removed scene-specific
-    terms and the retired `kind` taxonomy.
+    terms, the retired `kind` taxonomy, and the retired overloaded `action`
+    term.
 
 ### Work package WP-DOC-S1: Rewrite SCENE_VOCABULARY.md
 
@@ -773,7 +1237,7 @@ for one owner and one reviewable patch.
 - Depends on: WP-RAT-A1, WP-DOC-P1.
 - Acceptance criteria:
   - Encodes the scene side of the boundary rule, including how a scene renders
-    `click` versus `dial`.
+    each `gesture` (`click`, `drag`, `adjust`, `select`, `type`).
   - Cross-references `PROTOCOL_VOCABULARY.md` for every shared concept; the
     `ClickTarget` naming collision is resolved.
   - Target-state sections clearly labeled; current-code sections clearly
@@ -794,10 +1258,12 @@ for one owner and one reviewable patch.
 - Depends on: WP-DOC-P1, WP-DOC-S1.
 - Acceptance criteria:
   - Audits `docs/` and lists every file that references the interaction
-    model, step `kind`s, `plateTargets` / `tubeTargets`, or the action and
-    base-action concepts.
-  - Each such section aligned to the new vocabulary or carrying a margin note
-    for the follow-on code plan.
+    model, step `kind`s, `plateTargets` / `tubeTargets`, or the retired
+    `action` / `base-action` / `mode` / `interaction`-slot / flat-six-slot
+    concepts.
+  - No transitional notes: each affected section is rewritten to the new
+    vocabulary, deleted if obsolete, or moved to `docs/archive/` if it is
+    still useful as historical context.
   - No `docs/` file contradicts the rewritten canonical docs -- the doc set is
     in sync.
 - Verification commands:
@@ -816,7 +1282,7 @@ for one owner and one reviewable patch.
 - Acceptance criteria:
   - `docs/CHANGELOG.md` entry finalized under the correct categories.
   - The follow-on code-migration plan is stubbed, pointing at the ratified
-    vocabulary as its input and naming the `dial`-mode build as an early
+    vocabulary as its input and naming the `adjust`-gesture build as an early
     deliverable.
   - `scene_runtime_doc_conflicts.md` annotated where this plan supersedes its
     `plateTargets` / `tubeTargets` verdict.
@@ -830,21 +1296,25 @@ for one owner and one reviewable patch.
 - Per-patch gate: every doc patch passes `tests/test_ascii_compliance.py` and
   conforms to `docs/MARKDOWN_STYLE.md` (sentence-case headings, ASCII tables,
   working relative links).
-- Integration gate (end of M2): the design doc defines the interaction
-  primitive, the mode axis (`click`, `dial`), the action class hierarchy with
-  every base action documented to the durable-primitive standard, the
+- Integration gate (end of M2): the design doc defines the two-level
+  step/interaction model, the `target` slot and target-kind mechanism, the
+  `gesture` value set, the interaction `validator` and the `step_validator`,
+  the `response` container, the `scene_operation` typed-primitive class
+  hierarchy with every primitive documented to the durable-primitive standard,
+  the domain-verb mechanism with the cost guardrail, the `outcome` slot, the
   pedagogy-first rule, the state/event model, and the boundary rule -- with no
-  "TBD" in any of those sections, and a written disposition for both residual
-  gaps.
+  "TBD" in any of those sections, no `target + mode + action` language, no
+  seven-slot `interaction` slot, and no flat six-slot framing surviving, and a
+  written disposition for the timed-wait residual gap.
 - Integration gate (end of M3): every step of all four protocols and the 7
-  content files appears in a ratification matrix with its mode, action, and
-  taught skill; the residual-gap list is empty or every entry has an accepted
-  disposition.
+  content files appears in a ratification matrix with its step slots, each
+  interaction's slots, its domain verb if any, and its taught skill; the
+  residual-gap list is empty or every entry has an accepted disposition.
 - Manual review gate (end of M4): a human confirms `PROTOCOL_VOCABULARY.md`
   and `SCENE_VOCABULARY.md` are internally consistent, target-state sections
   are clearly labeled and current-code sections clearly labeled, the
-  scene/protocol boundary reads as a usable rule, and the
-  pedagogy-first rule is concrete enough that an author could choose a mode
+  scene/protocol boundary reads as a usable rule, and the pedagogy-first rule
+  is concrete enough that an author could choose a `target` and `gesture`
   from it.
 
 ## Test and verification strategy
@@ -857,11 +1327,12 @@ for one owner and one reviewable patch.
   residual-gap entry that forces an M2 revision. A step whose pedagogy is
   unclear under the rule is also a failure.
 - Coverage is measured by the ratification matrix: percent of steps mapped
-  cleanly, count of residual gaps, and whether each gap is "needs a new
-  sub-type" (cheap), "needs a new mode" (medium), or "needs a design revision"
+  cleanly, count of residual gaps, and whether each gap is "needs a new domain
+  verb" (cheap), "needs a new `gesture` value" (medium), "needs a new
+  `scene_operation` primitive" (expensive), or "needs a design revision"
   (expensive, M2 reopens).
 - The follow-on code plan -- not this plan -- carries the TypeScript, build,
-  and walker gates, including building the `dial`-mode interaction.
+  and walker gates, including building the `adjust`-gesture interaction.
 
 ## Migration and compatibility policy
 
@@ -869,15 +1340,22 @@ for one owner and one reviewable patch.
   ratified, and only then is promoted into the canonical
   `docs/PROTOCOL_VOCABULARY.md` / `docs/SCENE_VOCABULARY.md` at M4.
 - Backward compatibility: the docs will, after this plan, describe a
-  vocabulary the code does not implement -- including the `dial` mode, which
-  does not exist in the runtime yet. This is intentional and explicit:
+  vocabulary the code does not implement -- including the `adjust` gesture,
+  which does not exist in the runtime yet. This is intentional and explicit:
   target-state sections are clearly labeled and current-code sections clearly
   labeled. The follow-on code plan flips target-state sections to current-code
   as it implements.
+- Vocabulary rewrite, not a compatibility layer: target-state docs and
+  examples use only the new snake_case vocabulary. Legacy camelCase terms
+  (`nextId`, `completionPath` and its four `kind` types, `volumeMl`,
+  `plateTargets`, `tubeTargets`, ...) are removed, not preserved -- they may be
+  named only in a migration note or a historical explanation, never in a
+  target-state example.
 - Deletion criteria for legacy doc content: the four-`kind` taxonomy and the
-  `plateTargets` / `tubeTargets` sections in the dependent docs are aligned or
-  margin-noted in this plan, not deleted. The follow-on code plan deletes them
-  once the code stops using them.
+  `plateTargets` / `tubeTargets` sections in the dependent docs are rewritten
+  to the new vocabulary, deleted if obsolete, or moved to `docs/archive/` if
+  still useful as history -- no transitional notes left in the canonical path.
+  Code that still uses the legacy fields is the follow-on code plan's concern.
 - Rollback strategy: the work is documentation on an `agent/` branch. If
   ratification (M3) shows the design is unworkable, the design doc is revised
   in place; the canonical docs were never touched, so there is nothing to roll
@@ -887,31 +1365,35 @@ for one owner and one reviewable patch.
 
 | Risk | Impact | Trigger | Owner | Mitigation |
 | --- | --- | --- | --- | --- |
-| Mode axis is incomplete | High | M3 finds a skill-based interaction that is neither `click` nor `dial` | architect (WS-MOD) | The mode extension rule (WP-MOD1) makes adding a mode possible; M3 ratifies all four protocols in parallel to surface this early, not after the docs are written. |
-| Pedagogy rule is too vague to apply | High | M3 reviewers cannot decide a step's mode from the rule; M4 manual gate fails | planner (WS-PED) | WP-PED1 must ship worked examples per mode, not just principles; the rule is tested in M3, before the canonical rewrite. |
+| gesture set is incomplete | High | M3 finds a skill-based interaction that fits no `gesture` value | architect (WS-SLOT) | The gesture extension rule (WP-SLOT1) makes adding a value possible; M3 ratifies all four protocols in parallel to surface this early, not after the docs are written. |
+| Pedagogy rule is too vague to apply | High | M3 reviewers cannot decide a step's target and gesture from the rule; M4 manual gate fails | planner (WS-PED) | WP-PED1 must ship worked examples per gesture, not just principles; the rule is tested in M3, before the canonical rewrite. |
 | Rough-draft protocols give thin evidence | Medium | Miraculin / SDS-PAGE steps too stubbed to map | reviewer (WS-RAT-B/C) | Map only steps with real procedure content; record stubbed sections as "protocol needs polishing", not as vocabulary gaps. |
-| Action vocabulary churns after M2 | Medium | M3 keeps finding unmappable steps | planner (WS-ACT) | Composition from existing base primitives absorbs most new actions cheaply; a design revision is only forced when a genuinely new base primitive or mode is missing. Resolve OQ-1/2/3 before M2. |
+| Slot model churns after M2 | Medium | M3 keeps finding unmappable steps | planner (WS-SOP) | The domain-verb layer absorbs most new behavior cheaply via slot composition; a design revision is only forced when a genuinely new `gesture` value or `scene_operation` primitive is missing. |
+| "action" re-collapse, `interaction` slot creeps back, or the two levels flatten | Medium | A doer reintroduces one term spanning learner behavior, validation, scene mutation, and pedagogy; re-adds a task-type enum on top of `target`; or collapses the `step` / `sequence` / `interaction` nesting back to one-step-one-gesture | architect (WS-SLOT) | The two-level model and the one-line per-slot charter make the separation explicit; the target's kind carries task semantics, so no `interaction` slot is needed; the "wash the flask" worked example shows why nesting is required; reviewers reject any doc text that merges slots, re-adds the enum, or flattens the levels. |
 | Design over-fits to one protocol | Medium | A construct works for cell culture but not SDS-PAGE assembly or Miraculin extraction | architect (WS-BND) | M2 work packages each cite evidence from at least two protocols; M3 ratifies all four in parallel. |
-| Iterative-loop gap is deferred and forgotten | Low | The follow-on code plan hits the destain loop with no design | planner (WS-STA) | WP-STA1 must give the iterative loop a written disposition (designed or explicitly deferred with a reason); M2 integration gate checks for it. |
-| Scope creep back into code | Low | A doer "just builds" the `dial` mode or edits `contract.ts` | planner | Non-goals are explicit; reviewers reject any code change in this plan. |
+| Timed-wait gap is deferred and forgotten | Low | The follow-on code plan hits a timed incubation step with no design | planner (WS-STA) | WP-STA1 must give timed-wait a written disposition (designed into a `scene_operation` typed field or explicitly deferred with a reason); M2 integration gate checks for it. The iterative loop is no longer a gap -- the two-level model handles it as `step_validator` plus `outcome: retry`. |
+| Scope creep back into code | Low | A doer "just builds" the `adjust` gesture or edits `contract.ts` | planner | Non-goals are explicit; reviewers reject any code change in this plan. |
 
 ## Rollout and release checklist
 
-- [x] OQ-1, OQ-2, OQ-3 resolved.
-- [x] M1 evidence artifact committed.
-- [x] M2 design doc complete; integration gate passed (no TBD; both residual
-  gaps dispositioned).
-- [x] M3 ratification matrices complete for all four protocols and the 7
-  content files; every step has a mode, action, and taught skill;
-  residual-gap list dispositioned.
-- [x] M2 design doc revised if M3 surfaced gaps; affected steps re-ratified.
-- [x] `docs/PROTOCOL_VOCABULARY.md` rewritten; target-state and current-code
+- [ ] Two-level step/interaction course-correction accepted; OQ-6 and OQ-7
+  resolved.
+- [ ] M1 evidence artifact committed.
+- [ ] M2 design doc complete; first pass's `target + mode + action` draft, the
+  seven-slot `interaction` slot, and the flat six-slot framing reworked away;
+  integration gate passed (no TBD; timed-wait residual gap dispositioned).
+- [ ] M3 ratification matrices complete for all four protocols and the 7
+  content files; every step has its step slots, each interaction's slots, its
+  domain verb if any, and a taught skill; residual-gap list dispositioned.
+- [ ] M2 design doc revised if M3 surfaced gaps; affected steps re-ratified.
+- [ ] `docs/PROTOCOL_VOCABULARY.md` rewritten; target-state and current-code
   sections clearly labeled.
-- [x] `docs/SCENE_VOCABULARY.md` rewritten; cross-references resolve.
-- [x] Dependent docs aligned or margin-noted.
-- [x] `docs/CHANGELOG.md` entry finalized.
-- [x] Follow-on code-migration plan stubbed; `dial`-mode build named.
-- [x] `scene_runtime_doc_conflicts.md` annotated.
+- [ ] `docs/SCENE_VOCABULARY.md` rewritten; cross-references resolve.
+- [ ] Dependent docs aligned (rewritten, deleted, or archived -- no
+  transitional notes).
+- [ ] `docs/CHANGELOG.md` entry finalized.
+- [ ] Follow-on code-migration plan stubbed; `adjust`-gesture build named.
+- [ ] `scene_runtime_doc_conflicts.md` annotated.
 - [ ] Human review of the two canonical docs for internal consistency, a
   usable scene/protocol boundary, and an applicable pedagogy rule.
 
@@ -922,11 +1404,13 @@ for one owner and one reviewable patch.
   there. `docs/active_plans/scene_runtime_doc_conflicts.md` is annotated where
   this plan supersedes its verdict.
 - `docs/CHANGELOG.md` entry: owner WS-DOC-C; expected categories "Additions
-  and New Features" (the unified vocabulary, the mode axis, the evidence
-  artifact), "Behavior or Interface Changes" (the rewritten canonical docs),
-  "Decisions and Failures" (the drift origin, the mis-classified M0 audit, the
-  skill-to-timed-click pedagogy regression, the decision to design docs-first
-  ahead of code).
+  and New Features" (the two-level step/interaction vocabulary, the `response`
+  container, the domain-verb mechanism, the evidence artifact), "Behavior or
+  Interface Changes" (the rewritten canonical docs), "Decisions and Failures"
+  (the drift origin, the mis-classified M0 audit, the skill-to-timed-click
+  pedagogy regression, the "action" overload course-correction, the
+  seven-slot-to-six-slot tightening, the flat-six-slot-to-two-level nesting
+  course-correction, the decision to design docs-first ahead of code).
 - Archive / closure notes: this plan stays in `docs/active_plans/` until M4
   closes; closure is recorded when the follow-on code plan picks up the
   ratified vocabulary.
@@ -934,13 +1418,18 @@ for one owner and one reviewable patch.
 ## Patch plan and reporting format
 
 - Patch 1: `protocol_interaction_inventory.md` -- consolidated evidence
-  (WP-EV1).
+  (WP-EV1). Done.
 - Patch 2: `docs/PRIMARY_DESIGN.md` -- semantic inheritance and composition
-  section (WP-PHIL1).
-- Patch 3: design doc -- interaction primitive and mode axis (WP-MOD1).
-- Patch 4: design doc -- action class hierarchy + base-action docs (WP-ACT1).
+  section (WP-PHIL1). Done; reconcile wording with the two-level
+  step/interaction model.
+- Patch 3: design doc -- two-level step/interaction model, target and gesture
+  slots (WP-SLOT1). Reworks the superseded first-pass draft and the flat
+  six-slot framing.
+- Patch 4: design doc -- response container, scene_operation primitives,
+  domain-verb mechanism (WP-SOP1).
 - Patch 5: design doc -- pedagogy-first rule (WP-PED1).
-- Patch 6: design doc -- state and event model (WP-STA1).
+- Patch 6: design doc -- interaction validator, step_validator, outcome,
+  state and event model (WP-STA1).
 - Patch 7: design doc -- scene/protocol boundary (WP-BND1).
 - Patch 8: ratification matrix -- OVCAR8 + 7 content files + gap list
   (WP-RAT-A1).
@@ -958,28 +1447,265 @@ ASCII / link gate output, not test runs.
 
 ## Open questions and decisions needed
 
-- OQ-1: The mode set. The plan proposes `click` and `dial`. Is `dial` the
-  right author word for the continuous skill-based mode, and are two modes
-  enough, or is a third needed now (for example a `drag` mode for moving an
-  object along a path during assembly)? Decision owner: user. WP-MOD1 ships a
-  concrete proposal so this is a confirm-or-extend, not an open design.
-  Layout movement is considered only as an action effect in this plan;
-  broader layout-engine semantics are deferred.
-- OQ-2: The action model -- does an action name carry fixed state-change
-  semantics in the runtime ("action implies it", recovering the legacy
-  `interaction_resolver.ts` behavior), or does each interaction declare its
-  own state change? The plan assumes "action implies it"; WP-STA1 ships the
-  concrete proposal. Decision owner: user.
-- OQ-3: Step completion -- does each interaction carry an explicit "completes
-  the step" flag, or does the runtime derive it (last interaction in the
-  ordered list; the correct answer for a `question`; the set-point reached for
-  a `dial`)? This also covers the iterative-loop case (a step that completes
-  on a state condition). Decision owner: user; WP-MOD1 / WP-STA1 ship a
-  proposal.
-- OQ-4: Where the evidence artifact and design doc live -- both under
-  `docs/active_plans/` as proposed, or does the evidence artifact belong in a
-  more permanent `docs/` location since it outlives the plan? Decision owner:
-  user / architect.
-- OQ-5: Scope of the dependent-doc alignment (WP-DOC-D1) -- align the three
-  dependent docs fully now, or only margin-note them and let the follow-on
-  code plan do the full rewrite alongside the code? Decision owner: user.
+- OQ-1, OQ-2, OQ-3: resolved by the course-corrections. The first pass's
+  `mode` set became the `gesture` slot (`click`, `drag`, `adjust`, `select`,
+  `type`), `dial` is now `adjust` (was OQ-1). State change is explicit in a
+  `response` -- a `scene_operation` mutation or a `state_update` -- and domain
+  verbs do not imply hidden state changes; owned by WP-STA1 (was OQ-2). Step
+  completion is the `step_validator` plus `outcome` slots, owned by WP-STA1;
+  the iterative loop is a `step_validator` condition plus `outcome: retry`
+  (was OQ-3).
+- OQ-4: resolved. The evidence artifact, the design doc, this plan, and the
+  follow-on code-plan stub all stay in `docs/active_plans/` while the plan is
+  live. Rule: `docs/active_plans/` holds live plans only. Once a plan closes,
+  the plan and its temporary working artifacts move to `docs/archive/`, unless
+  an artifact has become durable reference material -- durable material is
+  promoted into normal `docs/`, not archived. For this plan: the design doc is
+  expected to archive; the evidence artifact may deserve promotion into
+  `docs/` later. A plan "closes" when the canonical docs are rewritten,
+  dependent docs are aligned, the changelog is updated, the follow-on code
+  plan exists, and the plan is no longer being edited.
+  `docs/active_plans/scene_runtime_doc_conflicts.md` is archived only after
+  this plan annotates it and the superseding canonical docs are in place.
+- OQ-5: resolved. The plan leaves no transitional notes in canonical docs.
+  Each dependent-doc section affected by the new vocabulary is rewritten to
+  match it, deleted if obsolete, or moved to `docs/archive/` if it is still
+  useful as historical context. WP-DOC-D1 applies this rule.
+- OQ-6: resolved. The slot *content* is settled: no seventh `interaction`
+  slot is needed -- the `target`'s kind carries the task semantics
+  (`target: voltage_dial` + `gesture: adjust`, not `interaction: set_value` on
+  top), and QTI's interaction names (Choice, Hot Spot, Slider, Position
+  Object, Order) inform target typing but are not adopted as formal terms.
+  The `gesture` value set is confirmed as `click`, `drag`, `adjust`,
+  `select`, `type`, with the extension rule owned by WP-SLOT1. The same fit
+  check forced one `scene_operation` addition: `LiquidDisplayChange` becomes a
+  first-class typed primitive (liquid appears, a volume changes, or well
+  contents update), because that effect recurs across every cell-culture
+  protocol and clears the cost guardrail's evidence bar; WP-SOP1 documents it
+  to the durable-primitive standard alongside the original five. The fit
+  check also exposed a structural defect the flat slot list could not fix --
+  see OQ-7.
+- OQ-7: resolved by the two-level course-correction. The flat slot list
+  assumed one step equals one gesture; the cell-culture fit check showed real
+  steps are multi-gesture ("wash the flask with 4 mL PBS" is one step, three
+  gestures). The model is now two levels: a `step` (`name`, `prompt`,
+  `sequence`, `step_validator`, `outcome`, `next_step`) wraps an ordered
+  `sequence` of interactions (optional `name`, `target`, `gesture`,
+  `validator`, `response`); a `response` is the container for post-validation
+  system behavior, holding `scene_operations` (typed primitives), an optional
+  `feedback` structured by case (`correct`, `incorrect`), and an optional
+  `state_update` (limited non-visual bookkeeping, for example `held_tool`).
+  `scene_operation` stays the durable typed-primitive layer and is not renamed
+  to `response`; the first pass's "base actions" are the `scene_operation`
+  primitives renamed -- they must not remain called actions, because they
+  describe how the scene changes, not what the learner does. Names confirmed
+  by the user: `step_validator` is kept (it clearly means whole-step
+  validation; `completion` was rejected as too narrow); the `response`
+  sub-field names are `scene_operations`, `feedback`, `state_update`.
+- OQ-8 (watch item, not blocking): `select` may later collapse into `click`.
+  It is kept in the initial `gesture` set for now; WP-SLOT1 must document the
+  `select` versus `click` distinction clearly so a later merge is a small,
+  evidence-driven change rather than a redesign.
+- OQ-9: resolved by the user. The step `name` / `next_step` / ordering rules
+  are locked in before docs implementation. A step carries a stable snake_case
+  `name`; `next_step` names the next step by its `name`, making protocol flow
+  explicit and independent of YAML file order; `step_index` may remain for
+  display order only and must not control flow; `sequence` order is meaningful
+  by default, with an optional `sequence_mode: unordered` only where
+  interaction order truly does not matter; step order (via `next_step`) and
+  interaction order (via `sequence` list order) are separate concerns; an
+  `interaction` may carry an optional snake_case `name` for reference,
+  debugging, and testing. All authored names are snake_case, never numbers or
+  opaque codes. WP-SLOT1 encodes these rules.
+- OQ-10: resolved by the user. The vocabulary uses **snake_case uniformly** --
+  every YAML key (`scene_operations`, `state_update`, `next_step`,
+  `step_validator`, `sequence_mode`, `volume_ml`, `held_tool`, ...) and every
+  authored identifier value (`pbs_wash`, `load_pbs`, ...). The only exception
+  is the `scene_operation` primitive type names, which stay PascalCase as the
+  values of the `type` field (`SvgSwap`, `ColorChange`, `CursorAttach`,
+  `SceneChange`, `LayoutMove`, `LiquidDisplayChange`) -- they are class-like
+  type names, not keys. snake_case was chosen for readability and to match the
+  repo's Python, docs, and filename conventions. This is a vocabulary rewrite,
+  not a compatibility layer: target-state docs and examples use **only** the
+  new snake_case vocabulary. Legacy camelCase terms -- `nextId`,
+  `completionPath` and its four `kind` types, `volumeMl`, `plateTargets`,
+  `tubeTargets`, and the rest -- are removed, not preserved. They appear only
+  when named briefly in a migration note or a historical explanation, never in
+  a target-state example. No mixed-case keys and no legacy terms survive in
+  target-state vocabulary. All work packages and the canonical docs follow
+  this rule.
+- OQ-11: resolved by the user. **Protocol flow is graph-driven.** A protocol
+  is a learning tree / learning graph, not just a list of steps. The model
+  gains a `protocol` level above `step` (`entry_step`, `steps`). A step points
+  to the next step by semantic `name`. The default is a linear learning path,
+  but the model is shaped so branching can be added later without changing
+  shape: `outcome` is a mapping that can carry branch keys
+  (`on_success`, `on_failure`, `on_hint_requested`, ...), and `next_step` can
+  later expand to a `branches` mapping keyed on validator results,
+  remediation, hints, or adaptive review. Spec text to encode: "Protocol flow
+  is graph-driven. A step points to the next step by semantic name. The
+  default is a linear learning path, but the model allows future branching
+  based on validator results, remediation, hints, or adaptive review. YAML
+  file order is not protocol flow." Keep it mostly linear for now; design for
+  branching, do not overbuild it. Call this "protocol flow" or "learning
+  flow".
+- OQ-12: resolved by the user. **Standard units** are encoded as snake_case
+  suffixed keys: `volume_ml`, `duration_min`, `concentration_um`,
+  `temperature_c`, `voltage_v`. All authored quantities use these.
+- OQ-13: resolved by the user (minor confirmations). `sequence_mode: ordered`
+  is the explicit default; `unordered` is the opt-in. Multiple
+  `scene_operations` in one `response` execute in listed order. `state_update`
+  stays bounded to non-visual runtime bookkeeping that cannot be a typed
+  `scene_operation`.
+
+### Spec-completeness open questions (decisions needed before the dependent docs)
+
+These are the remaining under-defined pieces of the protocol spec. The user
+named the first three -- validator schema, retry/branching, target resolution
+-- as the biggest to resolve next.
+
+- OQ-14: resolved by the user. **Validators are named presets with typed
+  parameters.** A validator is written as `{preset: <name>, ...typed
+  params}`, never free-form prose and never an inline expression. Examples:
+  `validator: {preset: correct_target}`; `validator: {preset:
+  correct_choice}`; `validator: {preset: target_with_value, value:
+  {volume_ml: 4}}`; `step_validator: {preset: sequence_complete}`;
+  `step_validator: {preset: final_state_matches, target: flask, contains:
+  {liquid: pbs, volume_ml: 4}}`. Both the interaction `validator` and the
+  `step_validator` use named presets. Content creators select from a
+  documented preset library; they do not write custom validation logic. Each
+  preset must document its required fields, what it checks, where it can be
+  used, and examples. New presets require evidence from protocol ratification
+  -- the same cost-guardrail discipline as new `scene_operation` primitives.
+  WP-STA1 writes the initial preset library.
+- OQ-15: resolved by the user. **`retry` restarts the whole step.** When
+  `outcome.on_failure: retry` fires, the entire `sequence` resets and the
+  learner redoes the step from its first interaction. `outcome` is the simple
+  mapping `{on_success: complete, on_failure: retry}`. Complex branching
+  (`on_hint_requested`, a `branches` mapping, adaptive review) is deferred --
+  see the tightening course-correction below. WP-STA1 encodes the simple
+  mapping.
+- OQ-16: resolved by the user. **Target resolution: adapter registry + named
+  groups in the scene.** The scene adapter maps each `target` name to a scene
+  object. Grouped targets (rows B-H, wells A1-A12) are **named groups defined
+  in the scene YAML** (`target: row_b`, with the scene defining
+  `row_b: [b1, b2, ...]`), so the protocol vocabulary stays geometry-free --
+  no ranges or plate structure in the protocol YAML. WP-BND1 encodes this.
+- OQ-17: largely resolved by the tightening course-correction below. In the
+  tight linear spec, `step` slots (`name`, `prompt`, `sequence`,
+  `step_validator`, `outcome`, `next_step`) are all required (`next_step` may
+  be `null`); `interaction` slots (`target`, `gesture`, `validator`,
+  `response`) are all required; `response.scene_operations` is required (may
+  be empty) and `response.feedback` is optional; a `scene_operation` requires
+  its `type` plus that type's documented typed fields. WP-STA1 / WP-SLOT1
+  state this explicitly.
+- OQ-18: resolved by the tightening course-correction below. Feedback lives
+  in `response.feedback` (structured `correct` / `incorrect`). It is not in
+  the `validator` and not in the `outcome`.
+- OQ-19: resolved by the user. **Domain verbs are authoring vocabulary and
+  documentation shorthand, not protocol YAML fields in the initial tight
+  spec.** The executable YAML is the expanded two-level model: `step`,
+  `sequence`, `target`, `gesture`, `validator`, `response`, `scene_operations`,
+  `step_validator`, `outcome`, `next_step`. Authoring docs may teach with
+  domain verbs such as `wash`, `dispense`, `grind`, and `assemble`, but each
+  must show its explicit expansion to literal slots. A future plan may add
+  domain-verb macros only after the expanded form is stable. WP-DOC-D1 encodes
+  this: `PROTOCOL_AUTHORING_GUIDE.md` teaches domain verbs with explicit
+  expansions; `PROTOCOL_YAML_FORMAT.md` documents the literal slot schema only,
+  with no domain-verb keys.
+- OQ-20: resolved by the tightening course-correction below. A terminal step
+  uses `next_step: null`. Flow is never inferred from YAML file order.
+
+## Course-correction: tighten to a linear protocol spec
+
+The user tightened the model to a controllable first target: a tight LINEAR
+protocol spec, not the full learning tree yet. The two-level model and the
+`scene_operation` primitives stand; the over-built elements are dropped or
+deferred. This block is authoritative where it conflicts with earlier
+over-built wording elsewhere in the plan.
+
+The tight model:
+
+```
+protocol
+  name
+  entry_step
+  steps[]
+step
+  name
+  prompt
+  sequence[]
+  step_validator
+  outcome
+  next_step
+interaction
+  target
+  gesture
+  validator
+  response
+response
+  scene_operations[]
+  feedback?
+scene_operation
+  type
+```
+
+Dropped or deferred (not in the first target; a later plan may revisit with
+evidence):
+
+- `sequence_mode` -- dropped. Sequence order is always meaningful.
+- the optional interaction `name` -- deferred.
+- `state_update` in `response` -- dropped. `response` is `scene_operations`
+  plus optional `feedback` only. No arbitrary state changes unless a later
+  plan proves they are needed.
+- complex branching -- deferred. No `on_hint_requested`, no `branches`
+  mapping, no adaptive review yet. `outcome` stays the simple
+  `{on_success: complete, on_failure: retry}` mapping. The graph-flow framing
+  (OQ-11) is kept as a stated future direction but not built now.
+- many validator shapes -- ruled out. Validators are named presets only
+  (OQ-14).
+
+Rules of the tight spec:
+
+- Step flow is linear: `next_step` names the next step, or `next_step: null`
+  for a terminal step. YAML file order is never protocol flow.
+- Sequence order is always meaningful; interactions run and validate in list
+  order.
+- Every interaction validates locally via its `validator` preset.
+- `step_validator` checks only whole-step completion (via a step-validator
+  preset such as `sequence_complete` or `final_state_matches`).
+- `response` contains `scene_operations` and optional `feedback`; nothing
+  else.
+- No arbitrary state changes unless a later plan proves they are needed.
+- A `protocol` wraps `name`, `entry_step`, and `steps[]`.
+
+This supersedes: OQ-9's `sequence_mode` mention and optional interaction
+`name` (both now dropped/deferred), OQ-11's "build the graph now" reading
+(branching is deferred; the linear path is the first target), OQ-13's
+`sequence_mode` default (the slot is dropped, not defaulted). The first
+deliverable is a tight linear protocol spec; the learning tree is a later
+plan.
+
+## Open question OQ-21: the set-point scene operation
+
+- OQ-21: resolved by the user. WP-PED1's `adjust` worked example surfaced a
+  real gap: the `adjust` gesture sets a set-point (pipette volume, voltage,
+  pH), the runtime state model lists "set-point values" as a state row, but no
+  `scene_operation` primitive wrote set-point state. Resolution: add
+  **`SetPointDisplayChange`** as the eighth `scene_operation` primitive. It is
+  a narrow, typed, protocol-visible display/state operation -- not a broad
+  state primitive and not a renderer design. Typed fields: `type`, `target`
+  (a configured display target, for example `pipette_volume_display` or
+  `power_supply_display`), and `value` (a mapping such as `{volume_ml: 4}` or
+  `{voltage_v: 150}`). Rule: adjustable values are shown through configured
+  display targets; the scene adapter decides whether that display is text, an
+  SVG state, overlay layers, or another rendering strategy -- the primitive
+  names the visible change, it does not design the renderer. `ColorChange`,
+  `LiquidDisplayChange`, and `SetPointDisplayChange` form a loose conceptual
+  `DisplayChange` family; this is a clarifying note, not a new hierarchy in
+  the primitive set. The ratified `scene_operation` set is now eight: the
+  original five (`SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
+  `LayoutMove`), plus `LiquidDisplayChange`, `TimedWait`, and
+  `SetPointDisplayChange`. Guidance for the work package: we are defining
+  protocol-visible scene operations, not renderer implementation -- keep each
+  primitive narrow and typed, do not design the renderer.
