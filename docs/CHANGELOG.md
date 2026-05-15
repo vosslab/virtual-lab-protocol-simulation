@@ -176,6 +176,15 @@
   the resolution mechanism ratified under WP-BND1 / OQ-16.
 
 ### Behavior or Interface Changes
+- **Self-contained spec cleanup**: Stripped temporary-plan citations
+  (RD-N codes, M0..M3 milestone references, WP-* work-package codes),
+  archive/active_plans links, and `current-code` / `target-state` /
+  `for now` / `previously` / `eventually` transitional wording from
+  every file under `docs/specs/` plus `docs/PRIMARY_SPEC.md` and
+  `docs/PRIMARY_DESIGN.md`. The spec set now reads as a single
+  ratified normative surface; historical justification stays in
+  `docs/archive/` and `docs/active_plans/` for anyone wanting it.
+  Plan: out-of-tree, not in the repo tree.
 - **docs/specs/ expanded by 7 more docs (Patch 3 of docs reorg plan)**:
   Seven additional spec-surface docs `git mv`'d into `docs/specs/`:
   `LAYOUT_ENGINE.md`, `LIQUID_CONVENTION.md`, `SCALING_MODEL.md`,

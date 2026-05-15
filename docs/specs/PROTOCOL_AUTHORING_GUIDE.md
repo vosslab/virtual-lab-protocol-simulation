@@ -6,15 +6,6 @@ canonical vocabulary defined in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Read that document first;
 this guide assumes those terms.
 
-## Target-state vs current-code
-
-This guide teaches the **target-state** two-level interaction model: a
-`protocol` of `step` blocks, each wrapping an ordered `sequence` of
-`interaction` blocks with the four literal slots `target`, `gesture`,
-`validator`, `response`. The model is ratified; the runtime, builder, and
-shipped YAML do not implement it yet. Sections that describe build and
-walk tooling as it runs today are labeled current-code.
-
 Related references:
 
 - [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms and the
@@ -65,8 +56,6 @@ modules that the browser bundle imports. No YAML is parsed at runtime.
 
 ## The two-level model
 
-Status: **target-state.**
-
 Every protocol is a tight linear spec with three nested levels: `protocol`,
 `step`, and `interaction`.
 
@@ -98,8 +87,6 @@ individual gestures live inside it in the ordered `sequence`. Each
 
 ## Writing items.yaml and reagents.yaml
 
-Status: **current-code.**
-
 `items.yaml` declares every physical item the protocol references. Each
 item has a unique snake_case id, a `label`, a `role` from the closed set,
 a `scene`, and (for everything except `virtual` and `none` scenes) an
@@ -107,22 +94,15 @@ a `scene`, and (for everything except `virtual` and `none` scenes) an
 `target`.
 
 `reagents.yaml` declares every liquid the protocol references. Each reagent
-has a `label`, a `colorKey`, and a `displayColor`. Per RD-13 of the
-scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
-a reagent id is what an `ObjectStateChange` `scene_operation` writes into
-an object's flat declared `liquid_id` (or `held_liquid_id`) `state_field`.
-Note: `colorKey` is a legacy field listed in the retired-terms table of
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md), slated for removal by the
-code-migration plan.
+has a `label`, a `colorKey`, and a `displayColor`. A reagent id is what an
+`ObjectStateChange` `scene_operation` writes into an object's flat declared
+`liquid_id` (or `held_liquid_id`) `state_field`. Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
 The full `items.yaml` and `reagents.yaml` field tables, the closed `role`
 set, and the cross-file validation rules are in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 
 ## Writing protocol.yaml
-
-Status: **target-state.**
 
 `protocol.yaml` carries the `learning` block, the `entry` block, the `parts`
 and `days` organizational metadata, and the `steps` list. Steps are the
@@ -247,9 +227,7 @@ by the object via `structure.subparts` (see
 single subpart as `<object_id>.<subpart_id>` (for example
 `treatment_plate.A1`).
 
-Per RD-9 of the scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
-named groups are deferred from this vocabulary pass: a step that acts on
+Named groups are deferred from this vocabulary pass: a step that acts on
 several subparts emits one interaction per subpart. Worked example for two
 wells in row B:
 
@@ -300,8 +278,6 @@ groups may be revisited as a separate vocabulary addition.
 
 ## Domain verbs: authoring shorthand only
 
-Status: **target-state.**
-
 A domain verb -- `wash`, `dispense`, `grind`, `assemble`, `draw`,
 `titrate`, and so on -- is the word a YAML author naturally reaches for.
 Domain verbs are **authoring vocabulary and documentation shorthand, not
@@ -322,8 +298,7 @@ is stable.
 
 `draw` is shorthand for one interaction -- one `target`, one `gesture`, one
 `validator`, one `response`. "Draw 4 mL PBS into the pipette" expands to
-an `ObjectStateChange` writing the pipette's flat declared liquid fields
-(per RD-13):
+an `ObjectStateChange` writing the pipette's flat declared liquid fields:
 
 ```yaml
 - target: pbs_bottle
@@ -355,8 +330,6 @@ verb except the slots it expands to.
 
 ## The pedagogy-first rule
 
-Status: **target-state.**
-
 An author chooses each interaction's `target` and `gesture` so the
 interaction teaches the specific lab skill the step is about. The shape of
 an interaction is a pedagogical decision, not just a UI decision:
@@ -374,8 +347,6 @@ a `click` instead of using `gesture: adjust`. See
 
 ## Per-step authoring checklist
 
-Status: **target-state.**
-
 Run through this checklist for every step you write.
 
 - **Each interaction has exactly four slots.** Every `interaction` carries
@@ -385,8 +356,8 @@ Run through this checklist for every step you write.
   skill into a rote `click`.
 - **Targets are semantic and geometry-free.** Write a semantic `target`
   name; never write a well coordinate, a row range, or an x/y. A subpart
-  of a structured object is written as `<object_id>.<subpart_id>` (per
-  RD-9, named groups are deferred; emit one interaction per subpart).
+  of a structured object is written as `<object_id>.<subpart_id>` (named
+  groups are deferred; emit one interaction per subpart).
 - **Validators are named presets.** Every `validator` and `step_validator`
   is a preset from the documented library, with that preset's typed
   parameters. Never write free-form validation logic.
@@ -400,16 +371,13 @@ Run through this checklist for every step you write.
 - **Referenced items and reagents exist.** Every interaction `target`
   resolves to a declared item or a declared subpart of a structured object;
   every reagent id written by an `ObjectStateChange` into a flat liquid
-  `state_field` (`liquid_id`, `held_liquid_id`) exists in `reagents.yaml`
-  (per RD-13).
+  `state_field` (`liquid_id`, `held_liquid_id`) exists in `reagents.yaml`.
 - **No retired vocabulary.** Do not use `completionPath`, the four-`kind`
   taxonomy, `plateTargets`, `tubeTargets`, `stateChange`, `completionEvent`,
   `nextId`, the overloaded `action`, or "click target". The full retired
   list is in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
 ## Build and walk loop
-
-Status: **current-code.**
 
 Iterate on a protocol with a short loop: audit, validate, build, walk. Stop
 at the first failure and read the message. The builder runs all schema and

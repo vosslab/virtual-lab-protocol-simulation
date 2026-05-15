@@ -87,10 +87,6 @@ Authored TypeScript source for the shared scene runtime lives under `src/scene_r
 
 Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. Smoke protocols use the same YAML schema, builder, and walker path as curriculum mini-protocols, but they are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate.
 
-Legacy code that is retired during a refactor is archived at `archive/code/<name>_<YYYY_MM>/` at the repo root, not under `src/`. Keeping `src/` reserved for active source code prevents accidental imports of retired modules.
-
-The `legacy_` filename prefix is a temporary marker used during refactors. It signals that a helper file is on a deletion or relocation path before the refactor closes. After the refactor closes, no `legacy_*` files remain under active source.
-
 ## Vocabulary closure and anti-drift
 
 Authoring vocabularies (protocol, object, scene, and the supporting
@@ -123,9 +119,9 @@ Permanent principles:
   use "every current X" and let the inventory artifact carry the count.
 - **Examples illustrate the schema; they do not extend it.** Every field
   shown in an example must already appear in a schema table.
-- **Transitional wording belongs in migration docs.** "For now",
-  "currently", "legacy", "eventually" do not survive in canonical
-  vocabulary docs.
+- **Transitional wording belongs in migration docs.** Canonical
+  vocabulary docs must not carry migration-narrating qualifiers; they
+  state the present rule.
 - **New meaning requires a vocabulary edit.** Authors must not be able
   to expand the vocabulary surface by editing YAML alone. Extension
   points are explicit RFCs, not implicit support.

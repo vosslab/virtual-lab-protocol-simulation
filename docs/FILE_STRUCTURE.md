@@ -52,8 +52,8 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/game_state.ts](../src/game_state.ts) | `GameState`, mutation helpers, `completeStep()` |
 | [src/cell_model.ts](../src/cell_model.ts) | Cell population and drug-response model |
 | [src/scoring.ts](../src/scoring.ts) | Score calculation across four categories |
-| [src/interaction_resolver.ts](../src/interaction_resolver.ts) | Resolves the current interaction in a step (current-code completion-path schema) |
-| [src/step_dispatch.ts](../src/step_dispatch.ts) | Maps the current-code step shape to handlers |
+| [src/interaction_resolver.ts](../src/interaction_resolver.ts) | Resolves the current interaction in a step |
+| [src/step_dispatch.ts](../src/step_dispatch.ts) | Maps the step shape to handlers |
 | [src/protocol_ui.ts](../src/protocol_ui.ts) | Protocol panel rendering |
 | [src/ui_rendering.ts](../src/ui_rendering.ts) | Sidebar HUD, meters, results screen |
 | [src/professor_overlay.ts](../src/professor_overlay.ts) | In-game hint overlay |
@@ -145,18 +145,13 @@ for the layered model.
 
 #### Content and generated data facades
 
-Note: under the three-vocabulary model from the scene-object split plan
-([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)),
-object, scene, and protocol YAML files belong in separate subdirectories
-(proposed `content/objects/`, `content/scenes/`, `content/protocols/`) so
-the three vocabularies map one-to-one to folders. The exact layout
-(per-protocol subfolders, shared object library, naming) is owned by the
-follow-on content/scene-YAML-migration plan; this file documents the
-shipped layout below.
+Object, scene, and protocol YAML files belong in separate subdirectories
+(`content/objects/`, `content/scenes/`, `content/protocols/`) so the three
+vocabularies map one-to-one to folders. This file documents the current layout.
 
 | Path | Purpose |
 | --- | --- |
-| [content/cell_culture/](../content/cell_culture/) | Legacy monolithic protocol YAML (kept for reference; deletion deferred to M9) |
+| [content/cell_culture/](../content/cell_culture/) | Legacy monolithic protocol YAML (kept for reference) |
 | [content/cell_culture_full/](../content/cell_culture_full/) | Sequence runner that chains the OVCAR8 mini-protocols end to end |
 | [content/hood_flask_prep/](../content/hood_flask_prep/) | Mini-protocol: hood prep and flask handling |
 | [content/cell_counting_and_seeding/](../content/cell_counting_and_seeding/) | Mini-protocol: hemocytometer count and seeding |
@@ -165,8 +160,8 @@ shipped layout below.
 | [content/mtt_assay_readout/](../content/mtt_assay_readout/) | Mini-protocol: MTT assay plate-reader readout |
 | [tests/content/dev_smoke/bench_direct_check/](../tests/content/dev_smoke/bench_direct_check/) | Developer smoke protocol (single-interaction bench check; exempt from mini-protocol gates) |
 | [tests/content/dev_smoke/plate_reader_check/](../tests/content/dev_smoke/plate_reader_check/) | Developer smoke protocol (plate-reader modal; exempt from mini-protocol gates) |
-| [src/legacy_tc_tools.ts](../src/legacy_tc_tools.ts) | Legacy types, deletion deferred to M9 (moved from `content/tools.ts`) |
-| [src/legacy_tc_validate.ts](../src/legacy_tc_validate.ts) | Legacy validator helpers, deletion deferred to M9 (moved from `content/validate.ts`) |
+| [src/legacy_tc_tools.ts](../src/legacy_tc_tools.ts) | Legacy types (moved from `content/tools.ts`) |
+| [src/legacy_tc_validate.ts](../src/legacy_tc_validate.ts) | Legacy validator helpers (moved from `content/validate.ts`) |
 | [src/protocol.ts](../src/protocol.ts) | Facade re-exporting `generated/protocol_data.ts` (`PROTOCOL_STEPS`, `PROTOCOL_ID`) |
 | [src/inventory.ts](../src/inventory.ts) | Facade re-exporting `generated/inventory_data.ts` |
 | [src/scene_configs.ts](../src/scene_configs.ts) | Facade re-exporting `generated/scene_data.ts` |

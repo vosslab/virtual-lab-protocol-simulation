@@ -14,41 +14,41 @@ silently expands the vocabulary surface.
 
 ## Scope
 
-Sweep tier 1 (highest priority -- target-state vocabulary and schema):
+Sweep tier 1 (highest priority -- canonical vocabulary and schema):
 
-- `docs/PRIMARY_CONTRACT.md`
-- `docs/PRIMARY_DESIGN.md`
-- `docs/PRIMARY_SPEC.md`
-- `docs/PROTOCOL_VOCABULARY.md`
-- `docs/PROTOCOL_YAML_FORMAT.md`
-- `docs/PROTOCOL_STEPS.md`
-- `docs/PROTOCOL_AUTHORING_GUIDE.md`
-- `docs/SCENE_VOCABULARY.md`
-- `docs/SCENE_YAML_FORMAT.md`
-- `docs/SCENE_ARCHITECTURE.md`
-- `docs/OBJECT_VOCABULARY.md`
-- `docs/OBJECT_YAML_FORMAT.md`
+- `../PRIMARY_CONTRACT.md`
+- `../PRIMARY_DESIGN.md`
+- `../PRIMARY_SPEC.md`
+- `PROTOCOL_VOCABULARY.md`
+- `PROTOCOL_YAML_FORMAT.md`
+- `PROTOCOL_STEPS.md`
+- `PROTOCOL_AUTHORING_GUIDE.md`
+- `SCENE_VOCABULARY.md`
+- `SCENE_YAML_FORMAT.md`
+- `SCENE_ARCHITECTURE.md`
+- `OBJECT_VOCABULARY.md`
+- `OBJECT_YAML_FORMAT.md`
 
 Sweep tier 2 (supporting subsystems with their own vocabulary):
 
-- `docs/LAYOUT_ENGINE.md`
-- `docs/LIQUID_CONVENTION.md`
-- `docs/SVG_PIPELINE.md`
-- `docs/SCALING_MODEL.md`
-- `docs/WALKTHROUGH_GUIDE.md`
-- `docs/THIRD_PARTY_ASSETS.md`
+- `LAYOUT_ENGINE.md`
+- `LIQUID_CONVENTION.md`
+- `SVG_PIPELINE.md`
+- `SCALING_MODEL.md`
+- `WALKTHROUGH_GUIDE.md`
+- `../THIRD_PARTY_ASSETS.md`
 
 Sweep tier 3 (architecture and structure -- lower vocabulary risk, higher
 shadow-term risk):
 
-- `docs/CODE_ARCHITECTURE.md`
-- `docs/FILE_STRUCTURE.md`
-- `docs/TARGET_FILE_STRUCTURE.md`
+- `../CODE_ARCHITECTURE.md`
+- `../FILE_STRUCTURE.md`
+- `TARGET_FILE_STRUCTURE.md`
 
 Sweep tier 4 (external-format docs -- check for schema escape hatches and
 shadow vocabularies that bleed into authoring):
 
-- `docs/QTI_v3_SPEC.md`
+- `QTI_v3_SPEC.md`
 
 Exclude entirely (not vocabulary docs):
 
@@ -78,12 +78,12 @@ Tag every finding:
 
 Every finding also carries a section-context tag:
 
-- `target-state` -- authoring rule for the new format. Findings here matter
-  most.
-- `current-code` -- descriptive of what exists today; flag but lower
-  priority unless the wording will silently become target-state.
-- `migration/history` -- transitional or archive context; lowest priority,
-  flag only if the wording risks bleeding back into canonical vocab.
+- `target-state` -- canonical authoring rule. Findings here describe
+  required behavior.
+- `current-code` -- descriptive prose of what exists today; flag but
+  ensure the wording does not silently bleed into canonical vocab.
+- `migration/history` -- transitional or archive context. Flag only if
+  the wording risks bleeding back into canonical vocab.
 
 False-positive rule: words like `metadata`, `config`, `properties` may
 legitimately appear in current-code or migration/history sections. Flag
@@ -291,10 +291,9 @@ Rule:
 
 Flag protocol-level primitives whose name describes a visual outcome
 (Display, Show, Render, Color, Swap, Animate, Highlight, Move-pixels)
-instead of a state change. The RD-15 test (user, verbatim): "Does this
-primitive change semantic simulation state, or does it merely describe
-how that state appears? If it merely describes appearance, move it to
-object/render."
+instead of a state change. Ask: does this primitive change semantic
+simulation state, or does it merely describe how that state appears?
+If it merely describes appearance, move it to object/render.
 
 Detector keywords in primitive names: `Display`, `Show`, `Render`,
 `Color`, `Swap`, `Animate`, `Highlight`, `Move-pixels`, `Visual`,
@@ -302,25 +301,10 @@ Detector keywords in primitive names: `Display`, `Show`, `Render`,
 spinner", "draw under cursor", "render a progress bar", "tint",
 "fill height", "asset swap", "display result".
 
-Past pitfalls (each named the display result instead of the semantic
-state change; each was reclassified to the object/render layer):
-
-- `SvgSwap` -- named an SVG asset id; resolved by the object's
-  `render_map` instead.
-- `ColorChange` (RD-3) -- named a color value; resolved by the
-  object's `render_map` instead.
-- `LiquidDisplayChange` (RD-13) -- named the fill-height / tint
-  display result; superseded by `ObjectStateChange` writing the
-  object's flat liquid fields with the `render_map` resolving the
-  visual.
-- `SetPointDisplayChange` (RD-14) -- named the numeric overlay
-  display result; superseded by `ObjectStateChange` writing the
-  object's flat set-point fields with the `render_map` resolving the
-  visual.
-
 Rule:
 
-- Apply the RD-15 test before adding any new protocol-level primitive.
+- Before adding any new protocol-level primitive, test whether it changes
+  semantic simulation state or merely describes appearance.
 - Protocol primitives change semantic simulation state -- what the
   simulation IS (declared state, held material, active scene,
   placement, equipment timed phase).
@@ -329,46 +313,8 @@ Rule:
   overlay, spinner, progress bar, cursor-follow visual).
 - A primitive whose name or one-line meaning describes appearance is
   not a protocol primitive; it is a render-layer mechanism.
-- Default severity for this category: `blocker` in target-state
-  vocabulary docs.
-
-## Past pitfalls (cite by name when matching)
-
-- `target_groups` -- groups before subparts; expanded vocabulary surface.
-  Should have been: explicit subparts first, named groups deferred.
-- `total_volume_ml` -- unit baked into field name.
-  Should have been: abstract `volume` + required `unit` metadata.
-- structured `type: liquid` / `type: set_point` -- composite types invite
-  arbitrary nesting; protocol writes become hard to constrain.
-  Should have been: flat primitive fields per object.
-- fused `items[]` carrying identity + placement -- vocabulary did two
-  jobs; one scene format did not generalize.
-  Should have been: object vocabulary + scene placement.
-- `asset_specs.ts` as TypeScript object property store -- object
-  properties not authorable in YAML.
-  Should have been: object YAML.
-- `SvgSwap` / `ColorChange` as protocol primitives -- render mechanism in
-  semantic layer.
-  Should have been: object render_map; protocol sets state semantically.
-- `LiquidDisplayChange` (RD-13) and `SetPointDisplayChange` (RD-14) as
-  protocol primitives -- same drift class as `SvgSwap` / `ColorChange`;
-  each named the display result (a fill height, a tint, a numeric
-  overlay) instead of the semantic state change, and each would have
-  created a second protocol-level path competing with
-  `ObjectStateChange`.
-  Should have been: `ObjectStateChange` writing the object's flat
-  declared liquid fields (`liquid_id`, `liquid_volume`, `liquid_color`;
-  `held_liquid_id`, `held_liquid_volume`) and flat set-point fields
-  (`set_volume`, `set_temperature`, `set_rpm`, etc.); the object's
-  `render_map` resolves how liquid and set-point state appear.
-- "additional properties allowed" / open-ended `constraints:` --
-  validation cannot detect typos or invented fields.
-  Should have been: closed per-type metadata keys.
-- `ObjectStateChange` as universal patch -- a setter that accepts
-  arbitrary nested shapes invites every object to invent its own write
-  schema; protocol becomes hard to validate.
-  Should have been: constrained setter for declared flat state fields
-  only, with values matching the declared primitive type.
+- Default severity for this category: `blocker` in canonical vocabulary
+  docs.
 
 ## Smell-class quick reference
 
@@ -390,7 +336,7 @@ Rule:
 | Negative fossil | scratch term in retired list | shipped terms only |
 | Overpowered setter | multi-field or nested writes without schema | declared fields + primitive types only |
 | Example as spec | example field absent from schema | add to schema or remove from example |
-| Primitive names appearance | Display/Show/Render/Color/Swap/Animate in primitive name; "spinner"/"progress bar"/"tint"/"fill height" in reason text | apply RD-15 test: protocol changes semantic state, render layer describes appearance |
+| Primitive names appearance | Display/Show/Render/Color/Swap/Animate in primitive name; "spinner"/"progress bar"/"tint"/"fill height" in reason text | test: does this primitive change semantic simulation state, or merely describe appearance? If merely appearance, move to render layer |
 
 ## Sweep agent deliverable
 
@@ -415,15 +361,15 @@ Output one consolidated table plus per-doc tally:
 - Read all canonical docs in scope before flagging anything; some smells
   are cross-doc (shadow vocabularies, ownership ambiguity).
 - Cite the past-pitfall name when a finding matches a known pattern.
-- Distinguish "current-code description" (acceptable: descriptive of what
-  exists today) from "target-state authoring rule" (must be tight). Most
-  smells live in target-state sections.
+- Distinguish "current-code description" (acceptable: descriptive prose
+  of what exists today) from "target-state authoring rule" (required
+  behavior). Most smells live in canonical vocabulary sections.
 - Do not propose new vocabulary. Only flag and suggest the closure rule.
 - Do not commit. Do not touch CHANGELOG.
 
 ## Final instruction to the sweep agent
 
-Focus on target-state vocabulary and schema docs first. The goal is not
+Focus on canonical vocabulary and schema docs first. The goal is not
 style cleanup. The goal is to find every place the specs permit
 uncontrolled meaning, hidden semantics, or cross-layer drift.
 

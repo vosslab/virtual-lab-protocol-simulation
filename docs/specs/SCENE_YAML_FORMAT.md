@@ -15,32 +15,11 @@ state, and the state-to-visual map live in object YAML
 state-mutating operations live in protocol YAML
 ([PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)).
 
-## Target-state vs current-code
-
-This doc has two kinds of sections, labeled like
-[OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) and
-[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md):
-
-- **target-state** -- the cleaned scene-side schema after the
-  scene-object split. Object identity, `state_fields`, `render_map`,
-  and `capabilities` are object-side and do not appear on the scene
-  side. Per RD-9, named groups (`target_groups`) are deferred; the
-  scene side never carries them. Each scene `items[]` entry is
-  replaced by a `placements[]` entry that references an object by id
-  and carries only placement and a bounded RD-2 instance-override
-  surface. This schema
-  was ratified in milestones M2 and M3 of the scene-object split plan
-  ([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md))
-  and promoted into [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) in M4.
-- **current-code** -- the fused scene-YAML format the build pipeline
-  reads today. Identity sub-fields and placement sub-fields share one
-  `items[]` entry; `capabilities` is a top-level scene-YAML key. The
-  runtime continues to read this format until the follow-on
-  code-migration plan lands.
-
-If a section is not labeled current-code, treat it as target-state. Removed
-keys and sub-fields are listed in [Migration from the fused
-format](#migration-from-the-fused-format) with their new home.
+Object identity, state_fields, render_map, and capabilities are declared
+object-side and do not appear on the scene side. Named groups are deferred.
+Each scene `items[]` entry is replaced by a `placements[]` entry that
+references an object by id and carries only placement and instance-override
+surface.
 
 ## Purpose
 
@@ -58,8 +37,6 @@ It is distinct from protocol YAML and from object YAML.
 
 ## File location
 
-Status: **target-state** unchanged from current-code.
-
 Each scene YAML lives beside its TypeScript adapter under
 `src/scenes/<scene_name>/<scene_name>.yaml`. The directory name and the
 YAML basename must match. Scene YAML is build-time engine configuration
@@ -70,8 +47,6 @@ Object library files live under `content/objects/` (see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)).
 
 ## Build pipeline
-
-Status: **current-code.**
 
 Scene YAMLs are compiled at build time. The chain is:
 
@@ -98,20 +73,11 @@ The generated `scene_data.ts` file carries the literal header:
 
 The build is invoked by [build_github_pages.sh](../../build_github_pages.sh)
 and [export_single_file.sh](../../export_single_file.sh). `check_codebase.sh`
-does not currently regenerate `scene_data.ts`; if YAML edits are pending,
+does not regenerate `scene_data.ts`; if YAML edits are pending,
 run `source source_me.sh && python3 tools/build_scene_data.py` before the
 type-check pass.
 
-The follow-on code-migration plan extends this pipeline to load the object
-library from `content/objects/` and to resolve `placements[].object_id`
-against it. The cleaned scene YAML schema in this doc is the target the
-follow-on plan ports every current scene YAML to. Per RD-5 of the
-scene-object split plan, the exact count lives in
-[../archive/scene_object_split_inventory.md](../archive/scene_object_split_inventory.md).
-
 ## Top-level fields
-
-Status: **target-state.**
 
 Every scene file is a single YAML mapping with the following top-level
 keys. The "Section" column links to the per-section detail below.
@@ -140,8 +106,6 @@ every key and sub-field that moved off the scene side.
 
 ## Scene identity
 
-Status: **target-state.**
-
 The scene identity block names the scene and the workspace it targets.
 These are scene-side fields; they are not object identity.
 
@@ -153,9 +117,7 @@ These are scene-side fields; they are not object identity.
 
 ## Background
 
-Status: **target-state.**
-
-Per RD-1, a scene background is a pure, static backdrop. The renderer paints
+A scene background is a pure, static backdrop. The renderer paints
 the background asset under everything else; the background is not
 interactive and carries no state. A clickable region that authors might once
 have drawn into the background image (a sink, a benchtop edge, a tool drop
@@ -174,8 +136,6 @@ behavior live on objects; see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 
 ## Scene bounds
-
-Status: **target-state.** Renamed from `sceneBounds`.
 
 The `scene_bounds` block defines the active rendering bounds for the scene
 in normalized percent units. All four fields are required.
@@ -198,8 +158,6 @@ scene_bounds:
 ```
 
 ## Zones
-
-Status: **target-state.**
 
 A zone is a named region inside the scene. Zones are how the scene
 expresses "this group of placements belongs together spatially": the layout
@@ -232,15 +190,13 @@ a single `bounds` rect plus `align`; the gap budget is folded into
 
 ## Placements
 
-Status: **target-state.** Replaces today's `items[]`.
-
 A placement entry references one object from the object library by id and
 states where that placement goes inside a zone. The placement does not
 declare object identity, structure, `state_fields`, `render_map`, or
 `capabilities`; those belong to the object definition (see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)).
 
-Per RD-2, a placement may carry a small bounded set of instance overrides:
+A placement may carry a small bounded set of instance overrides:
 `label`, `short_label`, and the layout hints `default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, and `anchor_y`. A placement may not
 override identity (`id`, `kind`, `inventory_ref`), `state_fields`,
@@ -255,15 +211,15 @@ object-side field list and which fields may be overridden.
 | `zone` | string | yes | Zone id this placement belongs to. Must match a declared `zones[].id`. |
 | `depth_tier` | int | no | Numeric layering hint within the zone (front-to-back ordering). |
 | `align_stop` | enum | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. |
-| `baseline_override` | number (float or int) | no | Per-placement baseline override (rare; one observed use today on the hood flask). |
-| `label` | string | no | Per-RD-2 instance override of the object's default label. |
-| `short_label` | string | no | Per-RD-2 instance override of the object's default short label. |
-| `layout` | mapping | no | Per-RD-2 instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
+| `baseline_override` | number (float or int) | no | Per-placement baseline override (rare; one observed use). |
+| `label` | string | no | Instance override of the object's default label. |
+| `short_label` | string | no | Instance override of the object's default short label. |
+| `layout` | mapping | no | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
 
 Notes:
 
-- A placement may not declare or modify subparts; per RD-4 those are
-  object structure. Named groups are deferred per RD-9.
+- A placement may not declare or modify subparts; those are
+  object structure. Named groups are deferred.
 - A placement may not declare state or a render_map; the object owns state
   and rendering, and the protocol mutates state semantically through
   `ObjectStateChange` (see
@@ -287,8 +243,6 @@ placements:
 ```
 
 ## Layout rules
-
-Status: **target-state.** Renamed from `layoutRules`.
 
 The optional `layout_rules` block carries scene-wide hints the layout
 engine needs to resolve placements. Per-placement overrides go on the
@@ -323,9 +277,6 @@ layout_rules:
 
 ## Accent rules
 
-Status: **target-state.** Renamed from `accentRules`. Reserved; not
-observed in any current scene YAML file at the M2 inventory read.
-
 The optional `accent_rules` block defines styling overrides for placements
 keyed by an accent key. Each key maps to an object with optional stroke,
 fill, and pattern fields.
@@ -348,12 +299,6 @@ accent_rules:
 
 ## Wrong-order messages
 
-Status: **target-state.** Renamed from `wrongOrderMessage`. Reserved
-today: the toast helper in
-[../../src/scenes/shared/wrong_order_feedback.ts](../../src/scenes/shared/wrong_order_feedback.ts)
-hardcodes its styling and a 2 s lifetime; per-scene message templates are
-not yet wired through.
-
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
 | `template` | string | yes (if block present) | Toast text with `{expectedLabel}` placeholder. |
@@ -364,16 +309,13 @@ scene gives feedback, not of any one object's identity or state.
 
 ## Capability names
 
-Status: **target-state** for declaration; capability set unchanged from
-current-code.
-
 Six capability ids are registered in
 [../../src/scenes/capabilities/](../../src/scenes/capabilities/) and mounted at
 module load via `src/init.ts`. The cleaned scene YAML declares the
 capabilities a scene mounts; object capabilities (`clickable`,
 `liquid_container`, `instrument_with_setpoint`, `structured_surface`,
 `cursor_attachable`, `decoration_only`) are object-side and live in
-object YAML. This is the closed six-capability set per RD-6.
+object YAML. This is the closed six-capability set.
 
 | Capability id | Purpose | Status |
 | --- | --- | --- |
@@ -395,11 +337,8 @@ they are runtime registry keys.
 
 ## Validation rules
 
-Status: **current-code** until the follow-on plan extends the validator to
-the cleaned schema.
-
 The validator in [../../tools/build_scene_data.py](../../tools/build_scene_data.py)
-enforces these rules against the current-code fused format:
+enforces these rules against the fused format:
 
 - The YAML root must be a mapping.
 - `sceneId` is required and must be a non-empty string.
@@ -422,23 +361,16 @@ Gaps not validated today:
 - `wrongOrderMessage` is not validated.
 - Cross-references against `inventory_data.ts` are not validated.
 
-The cleaned-schema validator (a follow-on-plan deliverable) replaces the
+The validator will replace the
 `items[]` rules with `placements[]` rules: every `placement.object_id`
 must resolve against the object library, every `placement.zone` must match
 a declared `zones[].id`, and per-placement override fields must be in the
-RD-2 override surface.
+override surface.
 
 ## Migration from the fused format
 
-Status: **target-state -> current-code mapping.**
-
 This section enumerates every key and sub-field that the cleaned schema
-removes, renames, or relocates. Coverage is every top-level key and
-every `items[]` sub-field cataloged in the M2 inventory; per RD-5 the
-exact counts live in
-[../archive/scene_object_split_inventory.md](../archive/scene_object_split_inventory.md).
-Sources are the WP-BND1 per-key and per-sub-field tables in
-[../archive/scene_object_split_design.md](../archive/scene_object_split_design.md).
+removes, renames, or relocates.
 
 ### Top-level keys
 
@@ -447,14 +379,14 @@ Sources are the WP-BND1 per-key and per-sub-field tables in
 | `sceneId` | Scene YAML: renamed to `scene_id` | Scene identity. |
 | `workspace` | Scene YAML: unchanged | Scene identity. |
 | `elementId` | Scene YAML: renamed to `element_id` | Scene identity. |
-| `capabilities` | Scene YAML for capability declarations; object capabilities move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) | The scene-side list still declares which capability modules mount. Object affordance tags (`clickable`, `liquid_container`, `instrument_with_setpoint`, `structured_surface`, `decoration_only`) are object-owned per the boundary rule; per RD-2 a scene placement may not override them. |
+| `capabilities` | Scene YAML for capability declarations; object capabilities move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) | The scene-side list still declares which capability modules mount. Object affordance tags (`clickable`, `liquid_container`, `instrument_with_setpoint`, `structured_surface`, `decoration_only`) are object-owned per the boundary rule; a scene placement may not override them. |
 | `items` | Split: identity sub-fields move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md); placement sub-fields stay scene-side as `placements[]` | See the per-sub-field table below. |
 | `zones` | Scene YAML: unchanged shell, sub-fields restructured to `bounds` plus `align` | The `x0`/`x1`/`baseline` triple is replaced by a single `bounds` rect; `gap` folds into `layout_rules.zone_gap`. |
 | `sceneBounds` | Scene YAML: renamed to `scene_bounds` | Same four fields. |
 | `layoutRules` | Scene YAML: renamed to `layout_rules` | snake_case sub-fields. |
-| `accentRules` | Scene YAML: renamed to `accent_rules` | Reserved; not observed in any current scene YAML. |
-| `tabStops` | Removed | Not observed in any current scene YAML. The cleaned vocabulary expresses tab-stop behavior via `zone.align: tab-stops` plus per-placement `align_stop`. |
-| `target_groups` | Removed | Per RD-9, named groups are deferred. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts (`<object_id>.<subpart_id>`). The scene side never carried this key in any current scene YAML. |
+| `accentRules` | Scene YAML: renamed to `accent_rules` | Reserved. |
+| `tabStops` | Removed | Not observed. Tab-stop behavior is expressed via `zone.align: tab-stops` plus per-placement `align_stop`. |
+| `target_groups` | Removed | Named groups are deferred. Subparts belong to the object; protocols list explicit subparts (`<object_id>.<subpart_id>`). |
 | `wrongOrderMessage` | Scene YAML: renamed to `wrong_order_message`, sub-key renamed to `toast_duration_ms` | Scene-level UI feedback. |
 
 ### items[] sub-fields
@@ -462,29 +394,28 @@ Sources are the WP-BND1 per-key and per-sub-field tables in
 | Fused-format sub-field | New home | Notes |
 | --- | --- | --- |
 | `id` | Object YAML: object `id`. Scene placement carries its own `placement_id`. | A scene may place the same object more than once; placement id and object id are now distinct. |
-| `label` | Object YAML: object `label`. Per RD-2, a scene placement may override via `placement.label`. | Identity-class default lives object-side. |
-| `shortLabel` | Object YAML: object `short_label`. Per RD-2, a scene placement may override via `placement.short_label`. | |
-| `kind` | Object YAML: object `kind` (closed enum). | Per RD-2, a scene placement may not override identity. |
+| `label` | Object YAML: object `label`. A scene placement may override via `placement.label`. | Identity-class default lives object-side. |
+| `shortLabel` | Object YAML: object `short_label`. A scene placement may override via `placement.short_label`. | |
+| `kind` | Object YAML: object `kind` (closed enum). | A scene placement may not override identity. |
 | `svgAsset` | Object YAML: resolved through object `render_map`; not authored as a literal field. | The object owns SVG manipulation. The protocol never names an SVG asset id. |
-| `inventoryRef` | Object YAML: object `inventory_ref`. | Per RD-2, a scene placement may not override identity. Plan-listed; not observed in current YAML. |
-| `anchorY` | Object YAML: object `layout.anchor_y` (layout hint). Per RD-2, a scene placement may override via `placement.layout.anchor_y`. | A serological pipette is anchored at its tip wherever it is placed; the default belongs to the object. |
-| `widthScale` | Object YAML default: object `layout.width_scale`. Per RD-2, a scene placement may override via `placement.layout.width_scale`. | Single object-side field with a bounded scene-side override surface. |
+| `inventoryRef` | Object YAML: object `inventory_ref`. | A scene placement may not override identity. |
+| `anchorY` | Object YAML: object `layout.anchor_y` (layout hint). A scene placement may override via `placement.layout.anchor_y`. | A serological pipette is anchored at its tip wherever it is placed; the default belongs to the object. |
+| `widthScale` | Object YAML default: object `layout.width_scale`. A scene placement may override via `placement.layout.width_scale`. | Single object-side field with a bounded scene-side override surface. |
 | `zone` | Scene YAML: `placement.zone`. | Unchanged role. |
-| `scene` | Removed | Single observed use in `content/plate_drug_treatment/scene.yaml` is rewritten to `placement.zone`. The alternate spelling is dropped. |
+| `scene` | Removed | Alternate spelling is dropped in favor of `placement.zone`. |
 | `depthTier` | Scene YAML: `placement.depth_tier`. | snake_case. |
 | `alignStop` | Scene YAML: `placement.align_stop`. | snake_case. |
-| `baselineOverride` | Scene YAML: `placement.baseline_override`. | snake_case. Rare; one observed use today. |
-| `depth` | Scene YAML: reserved on the placement side (`placement.depth`). | Plan-listed but not observed. |
+| `baselineOverride` | Scene YAML: `placement.baseline_override`. | snake_case. Rare; one observed use. |
+| `depth` | Scene YAML: reserved on the placement side (`placement.depth`). | Not observed. |
 
 ### Quadrant items in the microscope scene
 
-The microscope scene's fused-format minimal items (`quadrant_0` through
+The microscope scene's minimal items (`quadrant_0` through
 `quadrant_3`, with only `id` and `label`) are not lost. Whether the four
 quadrants become subparts of a single microscope object (per the
 structured-surface mechanism in
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)) or stay as four flat
-objects is an M3 ratification call (WP-RAT-A1). Either way they leave the
-scene side as identity-only entries; the scene side carries placements.
+objects is a design decision. Either way the scene side carries placements.
 
 ### Sub-fields and primitives that never appear in scene YAML
 
@@ -493,21 +424,14 @@ cleaned vocabulary and must not be authored in scene YAML:
 
 - `state_fields`, `render_map`, `structure`,
   `capabilities` (the object affordance tags) -- object YAML; see
-  [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). Per RD-9,
-  `target_groups` is deferred and never appears in any vocabulary
-  authoring slot in this pass.
+  [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 - `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`,
   `TimedWait` -- protocol primitives; see
   [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 - `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange` --
-  object/render-layer
-  mechanisms invoked by the object's `render_map`; these never appear as
-  authored slots in either scene YAML or protocol YAML. Per RD-3, RD-13,
-  and RD-14
-  in [../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md),
-  `SvgSwap` and `ColorChange` are render-layer mechanisms (not protocol
-  primitives); the former `LiquidDisplayChange` (RD-13) and the former
-  `SetPointDisplayChange` (RD-14) are likewise render-layer concerns.
+  object/render-layer mechanisms invoked by the object's `render_map`; these never appear as
+  authored slots in either scene YAML or protocol YAML.
+  `SvgSwap` and `ColorChange` are render-layer mechanisms; `LiquidDisplayChange` and `SetPointDisplayChange` are likewise render-layer concerns.
   The protocol-side primitive for liquid and set-point mutation is
   `ObjectStateChange`, which writes the flat declared liquid fields
   (`liquid_id`, `liquid_volume`, `liquid_color`, and the corresponding
@@ -517,8 +441,6 @@ cleaned vocabulary and must not be authored in scene YAML:
 
 ## What scene YAML must not contain
 
-Status: **target-state.**
-
 - No inline JavaScript or TypeScript.
 - No behavior hooks, callbacks, or expressions.
 - No state mutations or side effects.
@@ -526,20 +448,17 @@ Status: **target-state.**
   required field must fail the build loudly, not silently fall back.
 - No object identity (`id`, `kind`, `inventory_ref`), `state_fields`,
   `render_map`, or object affordance capabilities. These are
-  object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). Per
-  RD-9, no `target_groups` either; named groups are deferred.
+  object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). No `target_groups` either; named groups are deferred.
 - No SVG asset ids and no color values. The object's `render_map` is the
   only authoring surface that resolves a state value to an asset or color.
 - No protocol primitives or step content. Steps and `ObjectStateChange`
   live in [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 - No clickable behavior on the background. Clickable regions are objects
-  placed over the backdrop (RD-1).
+  placed over the backdrop.
 
 ## Examples
 
-Status: **target-state.**
-
-Minimal cleaned scene (modal overlay, no placements):
+Minimal scene (modal overlay, no placements):
 
 ```yaml
 scene_id: incubator
@@ -561,7 +480,7 @@ wrong_order_message:
   toast_duration_ms: 2000
 ```
 
-Richer cleaned scene with placements and a background:
+Scene with placements and a background:
 
 ```yaml
 scene_id: bench
@@ -618,31 +537,6 @@ Each placement names an object from the object library by `object_id` and
 states where it goes; the object library file resolves identity, the
 state-to-visual map, and capabilities.
 
-## Current-code reference
-
-Status: **current-code.**
-
-Until the follow-on code-migration plan ports every current scene YAML
-file to the cleaned schema, the build pipeline reads the fused format:
-
-- Top-level keys are camelCase: `sceneId`, `workspace`, `elementId`,
-  `capabilities`, `items`, `zones`, `sceneBounds`, `layoutRules`,
-  `accentRules`, `tabStops`, `wrongOrderMessage`. (`target_groups`
-  was plan-listed but never observed in any current scene YAML; per
-  RD-9 it is now retired with no successor in this vocabulary pass.)
-- Each `items[]` entry carries identity sub-fields (`id`, `label`,
-  `shortLabel`, `kind`, `svgAsset`, `inventoryRef`) and placement
-  sub-fields (`zone`, `depthTier`, `widthScale`, `anchorY`, `alignStop`,
-  `baselineOverride`) inline.
-- Zones declare `x0`, `x1`, `baseline`, `gap`, and `align` sub-fields.
-
-The fused format is the input the validator at
-[../../tools/build_scene_data.py](../../tools/build_scene_data.py) accepts today.
-The mapping from each fused-format key or sub-field to its cleaned-schema
-home is the [Migration from the fused format](#migration-from-the-fused-format)
-section above; that is the source the follow-on code-migration plan
-consumes.
-
 ## Related docs
 
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical scene-system terms.
@@ -656,5 +550,3 @@ consumes.
 - [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) - Scene driver, capability
   registry, and the runtime wiring.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset ownership boundary.
-- [../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md) -
-  The plan that ratified the cleaned schema in M2/M3 and promotes it in M4.

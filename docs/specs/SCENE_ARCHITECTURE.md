@@ -13,16 +13,9 @@ This doc covers the runtime side only. It does not duplicate the YAML schema
 and it does not document author-facing protocol concepts (those live under the
 `PROTOCOL_*` family).
 
-Most of this doc is **current-code**: it describes the driver, registry,
-adapter, and capability layers as the runtime ships them today. Where a
-section describes the target-state unified interaction model -- the adapter
-registry and target resolution -- it is labeled. The current runtime still
-dispatches on the retired `completionPath` schema; references to
-`completionPath` below describe current-code dispatch, and migrating that
-dispatch to the two-level `sequence` / `step_validator` / `outcome` model is
-the follow-on code-migration plan's job. See
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the target-state model
-and the retired-terms table.
+This doc describes the driver, registry,
+adapter, and capability layers. See
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the canonical interaction model.
 
 ## Layered model
 
@@ -130,8 +123,6 @@ no registration runs and the registry stays empty for that scene.
 
 ## Adapter registry (target resolution)
 
-Status: **target-state.**
-
 The adapter registry is the per-scene map that resolves each semantic
 protocol `target` name to a concrete scene object. It is the scene side of
 protocol target resolution: the protocol writes a flat namespace of
@@ -148,10 +139,8 @@ A `target` that addresses one of an object's subparts -- a single well in a
 plate, a single lane in a gel -- resolves through the object's declared
 `structure.subparts` (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md))
 and is written by the protocol as `<object_id>.<subpart_id>` (for example
-`treatment_plate.A1`). Per RD-9 of the scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
-named groups (`target_groups`) are retired with no successor in this
-vocabulary pass; protocols list explicit subparts until a future plan
+`treatment_plate.A1`). Named groups are retired with no successor;
+protocols list explicit subparts until a future plan
 revisits named groups.
 
 This section names the registry concept and where it lives; the canonical
@@ -164,21 +153,16 @@ what adapters own today).
 
 ## Adapters
 
-Status: **current-code** (the `render` and `dispatchInteraction`
-responsibilities) and **target-state** (target resolution, gesture
-rendering, and `scene_operation` rendering, which the adapter will own once
-the runtime migrates to the unified interaction model).
-
 Six first-class adapters live under `src/scenes/<scene>/`. Each registers
 itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 `render(ctx)`.
 
 | Scene | Adapter file | Notes |
 | --- | --- | --- |
-| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam (Patch C2, 2026-05-09): `bench.ts` is a thin wrapper holding module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and K2 completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
-| Cell-culture hood | [../../src/scenes/cell_culture_hood/cell_culture_hood.ts](../../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only (Patch C1, 2026-05-09): the legacy compatibility-token ladder folded into completionPath dispatch and `buildLegacyToken` was retired. |
+| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam: `bench.ts` holds module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
+| Cell-culture hood | [../../src/scenes/cell_culture_hood/cell_culture_hood.ts](../../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only: compatibility-token handling folded into completionPath dispatch. |
 | Incubator | [../../src/scenes/incubator/incubator.ts](../../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
-| Microscope | [../../src/scenes/microscope/microscope.ts](../../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted (Patch C3, 2026-05-09) into sibling [manual_hemocytometer.ts](../../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
+| Microscope | [../../src/scenes/microscope/microscope.ts](../../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted into sibling [manual_hemocytometer.ts](../../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
 | Well-plate workspace | [../../src/scenes/well_plate_workspace/well_plate_workspace.ts](../../src/scenes/well_plate_workspace/well_plate_workspace.ts) | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../../src/scenes/well_plate_workspace/dispatch.ts). |
 | Plate reader | [../../src/scenes/plate_reader/plate_reader.ts](../../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
 
@@ -219,15 +203,8 @@ This section is load-bearing. Every adapter module performs work at module
 load that nothing else triggers; if the adapter is not imported from
 `src/init.ts`, that work silently does not happen.
 
-The lesson comes from the post-execution review in
-[../archive/scene_render_migration_2026-05-09.md](../archive/scene_render_migration_2026-05-09.md):
-two patches (A6a and B1) shipped with orphaned `registeredEmitters.add(...)`
-calls in source modules that nothing imported anymore. The protocol
-validator threw `missing completion-event emitter` at page load and a
-modal-alert overlay blocked walker pointer events on cell_culture step 6.
-The fix was to move the side effects into the owning adapter; the cheaper
-prevention is to enumerate and reason about side effects whenever ownership
-moves.
+Side-effect tracking prevents orphaned registrations. When ownership
+moves, enumerate and move every module-load side effect with the responsibility.
 
 When migrating, retiring, or auditing a scene module, enumerate every kind
 of module-load side effect that lives in it:
@@ -247,8 +224,7 @@ owning module must remain reachable from `src/init.ts` (directly or via the
 chain of side-effect imports starting there).
 
 Three adapter files (cell_culture_hood, plate_reader, microscope) carry an
-explicit MODULE-LOAD warning comment at the top, added during the B5 audit,
-spelling this out for future editors.
+explicit MODULE-LOAD warning comment at the top for future editors.
 
 ## How a frame renders
 
@@ -305,8 +281,7 @@ its concern.
   migration so adapters can resolve scene items without duplicating the
   lookup rules.
 
-The legacy `src/scenes/shared/legacy_tokens.ts` module (and its
-`buildLegacyToken` API) was deleted in Patch C4 (2026-05-09) once the
+The `src/scenes/shared/legacy_tokens.ts` module was deleted once the
 hood ladder folded into K2 completionPath dispatch. There is no
 compatibility-token shim anymore: dispatch reads `completionPath`
 directly.
@@ -334,5 +309,3 @@ migration.
 - [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md) - Higher-level system
   overview; the "Capability-based scene architecture" section there points
   at this doc for the deep dive.
-- [../archive/scene_render_migration_2026-05-09.md](../archive/scene_render_migration_2026-05-09.md) -
-  Archived plan and post-execution lesson on module-load side effects.

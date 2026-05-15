@@ -18,29 +18,6 @@ The core implementation lives in [../../src/layout_engine.ts](../../src/layout_e
 The public types live in [../../src/scene_types.ts](../../src/scene_types.ts), and the
 asset metrics live in [../../src/asset_specs.ts](../../src/asset_specs.ts).
 
-## Target-state vs current-code
-
-This doc is largely **current-code**: it describes the shipped runtime,
-where each scene YAML carries an `items[]` block with `svgAsset` plus
-placement fields, and asset metrics live in `src/asset_specs.ts`. In the
-target-state three-vocabulary model
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)):
-
-- Object identity (`svgAsset`, asset metrics like `defaultWidth` and
-  `labelWidth`, `state_fields`, `render_map`, structured subparts) moves to
-  object YAML, owned by [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) and
-  [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
-- Scene YAML keeps only the placement side: object reference plus
-  `zone`, `depthTier`, `widthScale`, `anchorY`, `alignStop`,
-  `baselineOverride`, `shortLabel`, `label` override, plus zones and
-  optional scene bounds.
-- The `src/asset_specs.ts` table is folded into object YAML by the
-  follow-on TypeScript-migration plan; until then, the engine consumes the
-  current `items[]` shape unchanged.
-
-The placement algorithm itself (zones, alignment, depth, labels, scene
-bounds) is unchanged by the split. The vocabulary in the rest of this doc
-matches the runtime; it will be retitled when the YAML migration lands.
 
 ## Mental model
 
@@ -378,11 +355,11 @@ The layout engine supports three visual depth states:
 The engine only applies the final `depth` value. It does not decide which
 items should be front, mid, or back.
 
-That decision currently happens in
+That decision happens in
 `resolveSceneItemsWithDepth()` in [../../src/game_state.ts](../../src/game_state.ts).
 The resolver promotes active protocol targets to `front`, keeps related grouped
 items at `mid`, and parks unrelated grouped items at `back`. Items without a
-`group` stay `mid`, which keeps legacy layouts visually stable.
+`group` stay `mid`, which keeps layouts visually stable.
 
 If a new scene wants automatic depth behavior, add meaningful `group` values
 to its items and pass the items through `resolveSceneItemsWithDepth()` before
@@ -453,11 +430,8 @@ left and center groups prefer the left edge and log a warning.
 
 ## LayoutMove and the layout engine
 
-Status: **target-state.**
-
 `LayoutMove` is the protocol-side `scene_operation` that names what moves
-and where (see [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). Per RD-10
-of the scene-object split plan, it stays narrow: it does not rewrite layout.
+and where (see [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). It stays narrow: it does not rewrite layout.
 Only two uses are valid:
 
 - Reposition an existing placement within the current scene (a row-to-row
@@ -476,7 +450,7 @@ written through `ObjectStateChange`; they are not layout moves.
 
 ## Adapter responsibilities
 
-The generated scene config currently emits `zones` as an array. The layout
+The generated scene config emits `zones` as an array. The layout
 engine expects `rules.zones` as a record keyed by zone id. Each layout-driven
 adapter must convert the array before calling `computeSceneLayout()`.
 
@@ -712,5 +686,3 @@ Playwright walker or scene-specific smoke test.
 - [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object-definition YAML
   schema referenced by scene placements.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset generation and ownership.
-- [../archive/LAYOUT_METRICS.md](../archive/LAYOUT_METRICS.md) - Older
-  pixel-metric note retained for historical reference.

@@ -73,16 +73,11 @@ emitter via `triggerStep(stepId)`.
 
 #### Interaction and dispatch
 
-The modules below describe the **current-code** runtime, which still uses
-the retired `completionPath` schema. The target-state two-level model --
-`sequence`, `step_validator`, `outcome`, `next_step` -- is defined in
-[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md); migrating these modules to
-it is the follow-on code-migration plan's job.
+The modules below describe the interaction-dispatch runtime.
 
 - [src/interaction_resolver.ts](../src/interaction_resolver.ts) - Resolves
-  the current interaction from the step's completion path (current-code
-  schema).
-- [src/step_dispatch.ts](../src/step_dispatch.ts) - Maps the current-code
+  the current interaction from the step.
+- [src/step_dispatch.ts](../src/step_dispatch.ts) - Maps the
   step shape to handlers.
 - [src/protocol_ui.ts](../src/protocol_ui.ts) - Protocol panel rendering
   (left sidebar).
@@ -295,13 +290,10 @@ protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
 `tutorial_split`) cover smaller subsets and exist primarily for walker
 exercises.
 
-In the target-state model, each step wraps an ordered `sequence` of
-`interaction` blocks, checked by a `step_validator`, resolved by an
-`outcome`, and linked by `next_step`; see
+Each step wraps an ordered `sequence` of `interaction` blocks, checked by
+a `step_validator`, resolved by an `outcome`, and linked by `next_step`; see
 [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and
-[specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md). The current runtime and walker
-still dispatch on the retired `completionPath` schema; that is migration
-debt the follow-on code-migration plan removes.
+[specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md).
 
 ## Scoring
 
@@ -384,9 +376,7 @@ emitters populated by `triggerStep()` calls.
   `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
   re-run [tools/build_protocol_data.py](../tools/build_protocol_data.py).
   See [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) and
-  [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). (The current
-  runtime still expects the retired `completionPath` schema; the
-  code-migration plan switches it to the two-level model.)
+  [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md).
 - **New scenes:** create a folder `src/scenes/<scene>/` with `<scene>.yaml`
   (capabilities + items + optional `elementId`) and `<scene>.ts` (a
   `SceneAdapter` implementation with `dispatchInteraction(itemId, ctx)` and
@@ -398,18 +388,12 @@ emitters populated by `triggerStep()` calls.
 - **Scoring adjustments:** change weights and thresholds in
   [src/scoring.ts](../src/scoring.ts).
 
-## Capability-based scene architecture (current state, 2026-05-09)
+## Capability-based scene architecture
 
-A two-phase migration completed on 2026-05-09. Phase 1 (Patches 1-16,
-plan archived at
-[archive/scene_capability_architecture_2026-05-09.md](archive/scene_capability_architecture_2026-05-09.md))
-moved click dispatch into a capability-based driver. Phase 2 (Patches
-A1-B4, plan archived at
-[archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md))
-moved render ownership into per-scene adapters and retired the flat
-source modules. As of B4, every scene's click dispatch and render are
-both adapter-owned, every protocol routes through the driver, and the
-`sceneRouter` flag has been removed.
+The scene system uses a capability-based driver with click dispatch and
+per-scene adapters. Every scene's click dispatch and render are adapter-owned,
+every protocol routes through the driver, and the `sceneRouter` flag has been
+removed.
 
 ### Ownership model
 
@@ -452,8 +436,7 @@ interface SceneAdapter {
 }
 ```
 
-`render(ctx)` is required (it was an optional `render?(ctx)` bridge
-during Patches A1-A6a, finalized as required at the end of A6b).
+`render(ctx)` is required.
 
 ### Driver infrastructure
 
@@ -510,23 +493,10 @@ first and falls back to `${sceneId}-scene` when absent.
 
 ### Flat files at src/scenes/
 
-After Patch B2, the only flat files at `src/scenes/*.ts` are driver
-infrastructure (`scene_driver.ts`, `scene_registry.ts`). Every scene
-implementation lives under its own folder. The retired source modules
-(`bench.ts`, `hood.ts`, `microscope.ts`, `plate.ts`, `incubator.ts`)
-were `git rm`'d once the adapter `render(ctx)` requirement landed and
-no remaining importers were detected. The duplicate render copy at
-`src/scenes/shared/plate_reader.ts` was likewise removed when the
-plate_reader adapter absorbed its body.
+The only flat files at `src/scenes/*.ts` are driver infrastructure
+(`scene_driver.ts`, `scene_registry.ts`). Every scene implementation lives
+under its own folder.
 
-### sceneRouter (removed)
-
-The per-protocol `sceneRouter` flag was migration scaffolding. Patch B3
-removed it: every protocol used the driver, the alternative
-implementation was retired in B2, and no roadmap product feature
-consumes the field. The `SceneRouterMode` type and `resolveSceneRouter`
-function are also gone. There is one render and one dispatch path; the
-field is intentionally absent rather than missing by oversight.
 
 ## Known gaps
 

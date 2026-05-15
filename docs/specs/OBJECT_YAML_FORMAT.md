@@ -14,30 +14,7 @@ side names the object only by `id`
 declared state through `ObjectStateChange`
 ([PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)).
 
-## Target-state vs current-code
-
-This doc is **target-state** end to end. The runtime does not yet read any
-file in this format; today's runtime carries object-identity sub-fields
-inline in scene YAML `items[]` entries and per-asset visual metrics in
-`src/asset_specs.ts`. The vocabulary this format encodes was ratified in
-milestones M2 and M3 of the scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md))
-and promoted into [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) in M4. This
-format doc is the M4 schema deliverable; the follow-on code-migration plan
-adds the runtime loader, the build pipeline, and the migration of every
-current scene YAML file to this format.
-
-A reader working in the code today will not find an object library file.
-Every section below describes the file shape authors will write once the
-follow-on plan lands.
-
-Per RD-5 of the scene-object split plan, this canonical doc does not
-quote fixed asset or scene counts. Counts live in
-[../archive/scene_object_split_inventory.md](../archive/scene_object_split_inventory.md).
-
 ## File layout
-
-Status: **target-state.**
 
 One object per file. The filename is the object `id` plus `.yaml`, in
 snake_case. Examples: `well_plate_96.yaml`, `serological_pipette.yaml`,
@@ -46,24 +23,19 @@ snake_case. Examples: `well_plate_96.yaml`, `serological_pipette.yaml`,
 The rule is "one object per file" so a file rename always renames exactly
 one object id and a code-search for an object id always lands in exactly one
 file. Grouped library files (one file per `kind`, or one file per scene)
-are explicitly out of scope for this doc; if grouped libraries become
-useful later, the follow-on plan introduces them under a new convention,
-not as a variant of this one.
+are explicitly out of scope for this doc.
 
 Files live under `content/objects/`. Subdirectory grouping by `kind`
-(`content/objects/plate/`, `content/objects/bottle/`, etc.) is a follow-on
-plan decision and is not specified here; for the M4 schema, every object
-file lives directly under `content/objects/`.
+(`content/objects/plate/`, `content/objects/bottle/`, etc.) is allowed.
+Every object file lives directly under `content/objects/` or in a
+subdirectory named after its `kind`.
 
-The object library is the authoring surface. The build pipeline (a
-follow-on plan deliverable, not specified here) compiles the object library
-into a generated TypeScript module the scene driver and adapters consume.
-No YAML parser ships in the browser; runtime callers read the generated
-module.
+The object library is the authoring surface. The build pipeline compiles
+the object library into a generated TypeScript module the scene driver and
+adapters consume. No YAML parser ships in the browser; runtime callers read
+the generated module.
 
 ## Top-level fields
-
-Status: **target-state.**
 
 Every object file is a single YAML mapping with the following top-level
 keys. The "Required" column is the schema rule; the "Section" column links
@@ -91,12 +63,10 @@ are written `state_fields: []`, `render_map: {}`, `capabilities: []`.
 
 ## Object identity
 
-Status: **target-state.**
-
 Identity fields name the object and classify it. They are stable across
-scenes; per RD-2 of the scene-object split plan, a scene placement may not
-override `id`, `kind`, or `inventory_ref`. A scene placement may override
-`label` and `short_label`.
+scenes; a scene placement may not override `id`, `kind`, or
+`inventory_ref`. A scene placement may override `label` and
+`short_label`.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
@@ -115,8 +85,6 @@ declared state; a single literal asset becomes a `render_map` entry with
 one case. See [Render map](#render-map).
 
 ## Structure
-
-Status: **target-state.**
 
 The `structure` block declares addressable internal subparts. It is
 optional. An object with no `structure` block is a flat object (a bottle, a
@@ -139,8 +107,6 @@ specify `custom` schema fields. An object with `layout: custom` is invalid
 under this schema and is rejected by the build pipeline.
 
 ### id_pattern token set
-
-Status: **target-state.**
 
 `structure.id_pattern` is a small templating string. The closed token set
 fixed by this format is:
@@ -166,32 +132,27 @@ Examples:
 - `id_pattern: "lane_{row}"` on a 6x1 grid yields `lane_1`, `lane_2`, ...,
   `lane_6` (a single-column gel convention).
 
-### Named groups deferred (RD-9)
+### Named groups deferred
 
-Status: **target-state.**
-
-Per RD-9 of the scene-object split plan, named groups (`target_groups`)
-are deferred. Protocols list explicit subparts (for example
-`treatment_plate.A1`, `treatment_plate.A2`, ...,
+Named groups (`target_groups`) are deferred. Protocols list explicit
+subparts (for example `treatment_plate.A1`, `treatment_plate.A2`, ...,
 `treatment_plate.A12`). A future addition is gated on real authoring
-pain in shipped protocols. RD-4's "subparts belong to the object, not
+pain in shipped protocols. The "subparts belong to the object, not
 the scene" rule still holds; only the named-groups expression is
 deferred.
 
 ## state_fields
 
-Status: **target-state.**
-
 `state_fields` is the typed schema of declared state variables on this
-object. Per RD-11 of the scene-object split plan, every field is a flat
-primitive: `enum`, `int`, `float`, or `bool`. There is no `string` type
-(use `enum` with a closed `allowed` list) and no composite `liquid` or
-`set_point` type. Liquid contents and instrument set-points are modeled
-as multiple flat fields per object.
+object. Every field is a flat primitive: `enum`, `int`, `float`, or
+`bool`. There is no `string` type (use `enum` with a closed `allowed`
+list) and no composite `liquid` or `set_point` type. Liquid contents
+and instrument set-points are modeled as multiple flat fields per
+object.
 
 Every entry is a mapping with the required keys `name`, `type`,
-`default`, plus per-type metadata (per RD-12) and the optional
-`applies_to` and `description`.
+`default`, plus per-type metadata and the optional `applies_to` and
+`description`.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
@@ -206,14 +167,11 @@ block. Declaring `applies_to: subpart` on a flat object is a build-time
 error. The form is equivalent to listing the same field under
 `structure.subpart_state_fields`; an author may use either form.
 
-### Per-type constraint metadata (RD-12)
+### Per-type constraint metadata
 
-Status: **target-state.**
-
-Per RD-12, constraint metadata is a closed per-type set. Only the keys
-listed below are allowed on a `state_field` entry; an unknown metadata
-key is a build-time error. There is no open-ended `constraints:`
-object.
+Constraint metadata is a closed per-type set. Only the keys listed
+below are allowed on a `state_field` entry; an unknown metadata key is
+a build-time error. There is no open-ended `constraints:` object.
 
 | `type` | Allowed metadata keys (alongside `name`, `type`, `default`, `applies_to`, `description`) |
 | --- | --- |
@@ -228,7 +186,7 @@ Unit strings for numeric fields are ASCII-only per
 micro) are written ASCII-only; a future plan may introduce a unit
 table doc.
 
-### Modeling liquid and set-point state with flat fields (RD-11)
+### Modeling liquid and set-point state with flat fields
 
 Liquid contents are modeled as several flat fields per object or per
 subpart. The canonical pattern is `liquid_id` (an `enum` of allowed
@@ -242,13 +200,11 @@ model is in [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md); render-rule
 helpers (`fill_height`, color tints) are defined in the [formula
 mini-language](#formula-mini-language) below.
 
-Instrument set-points are modeled as a single `float` field with `unit`,
-`min`, `max`, and `step` metadata (for example `set_volume` on a
-serological pipette).
+Instrument set-points are modeled as a single `float` field with
+`unit`, `min`, `max`, and `step` metadata (for example `set_volume`
+on a serological pipette).
 
 ## Render map
-
-Status: **target-state.**
 
 The `render_map` is the object's state-to-visual function. It is a mapping
 keyed by `state_field` name. For each named field, it declares how to
@@ -279,8 +235,6 @@ rendering, or vice versa, is a build-time error.
 
 ### Cases schema
 
-Status: **target-state.**
-
 A `cases` list contains one case mapping per allowed value of the
 `state_field`. Coverage is enforced: every value in the field's `allowed`
 list must appear as a `when` value in exactly one case (for `bool`, both
@@ -308,12 +262,6 @@ layer and each subsequent entry composites over the previous.
 
 ### Formula mini-language
 
-Status: **target-state.**
-
-Resolves [WP-DOC-OV1 concern (a)] -- the closed list of allowed formula
-tokens. Per RD-7 of the scene-object split plan, the token set below is
-closed; an unknown token is a build-time error.
-
 A `formula` value is a string drawn from a closed mini-language. The
 mini-language is intentionally narrow: every token is fixed by this format
 and the runtime resolves it. Per-object formula code is not allowed; if a
@@ -338,9 +286,9 @@ The closed token set is:
 A formula is one expression. Multiple expressions are composed through
 `compose(...)`, not by concatenation or by multi-line strings.
 
-This is the complete token set. An unknown token (per RD-7), an arity
-mismatch (wrong number of operands), or a type mismatch (for example
-`fill_height` applied to a non-numeric field) is a build-time error.
+This is the complete token set. An unknown token, an arity mismatch
+(wrong number of operands), or a type mismatch (for example `fill_height`
+applied to a non-numeric field) is a build-time error.
 
 Color tints for `enum` color fields (typically `liquid_color`) are
 expressed as `render_map.<field>.kind: color` with `cases`, not as a
@@ -351,11 +299,6 @@ Worked formula examples appear in the [worked-example sections](#worked-example-
 below.
 
 ## Capabilities
-
-Status: **target-state.**
-
-Resolves [WP-DOC-OV1 concern (b)] -- the capability mutual-exclusion rule.
-Per RD-6 of the scene-object split plan, the capability list is closed.
 
 `capabilities` is a list of affordance tags drawn from the closed
 vocabulary owned by [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). The
@@ -368,7 +311,7 @@ authority):
 | Capability | Summary |
 | --- | --- |
 | `clickable` | accepts a `click` gesture |
-| `liquid_container` | holds a tracked liquid; expects flat liquid `state_fields` (per RD-11) such as `liquid_id`, `liquid_volume`, and `liquid_color` and matching `render_map` entries |
+| `liquid_container` | holds a tracked liquid; expects flat liquid `state_fields` such as `liquid_id`, `liquid_volume`, and `liquid_color` and matching `render_map` entries |
 | `instrument_with_setpoint` | exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture |
 | `structured_surface` | has a `structure` block with subparts |
 | `cursor_attachable` | may be attached to the cursor by a `CursorAttach` `scene_operation` |
@@ -407,12 +350,9 @@ A capability declared without its required schema is a build-time error.
 
 ## Layout hints
 
-Status: **target-state.**
-
 `layout` is a mapping of object-default visual metrics the layout engine
 ([LAYOUT_ENGINE.md](LAYOUT_ENGINE.md)) consumes when a scene places the
-object. Per RD-2, a scene placement may override every field in the
-`layout` block.
+object. A scene placement may override every field in the `layout` block.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
@@ -428,12 +368,9 @@ defaults listed above.
 
 ## Worked example: 96-well plate
 
-Status: **target-state.**
-
 The 96-well plate is the canonical example for structured surfaces,
-per-subpart flat-primitive `state_fields` (per RD-11), the
-`structured_surface` capability, and per-subpart `render_map`
-entries.
+per-subpart flat-primitive `state_fields`, the `structured_surface`
+capability, and per-subpart `render_map` entries.
 
 ```yaml
 id: well_plate_96
@@ -519,22 +456,19 @@ layout:
 
 Reading: the plate has no plate-level state, 96 wells (`A1..H12`) each
 carrying three flat `state_fields` (`liquid_id`, `liquid_volume`,
-`liquid_color`) per RD-11. Per RD-9, named groups are deferred; a
-protocol that needs to act on row A lists each subpart explicitly
-(`treatment_plate.A1`, ..., `treatment_plate.A12`). Each well's
-`render_map` resolves the three flat fields independently: an SVG case
-table for the reagent, a `fill_height(...)` formula for the volume,
-and a color case table for the visible color. No SVG asset id appears
-in any `state_field`.
+`liquid_color`). Named groups are deferred; a protocol that needs to
+act on row A lists each subpart explicitly (`treatment_plate.A1`, ...,
+`treatment_plate.A12`). Each well's `render_map` resolves the three
+flat fields independently: an SVG case table for the reagent, a
+`fill_height(...)` formula for the volume, and a color case table for
+the visible color. No SVG asset id appears in any `state_field`.
 
 ## Worked example: serological pipette
 
-Status: **target-state.**
-
 The serological pipette is the canonical example for flat-primitive
-`state_fields` on a flat object (per RD-11), the
-`instrument_with_setpoint` and `cursor_attachable` capabilities, the
-`label(...)` formula token, and the `anchor_y: tip` layout hint.
+`state_fields` on a flat object, the `instrument_with_setpoint` and
+`cursor_attachable` capabilities, the `label(...)` formula token, and
+the `anchor_y: tip` layout hint.
 
 ```yaml
 id: serological_pipette
@@ -595,22 +529,19 @@ layout:
 ```
 
 Reading: the pipette is a flat object (no `structure` block, no
-subparts). Per RD-11 it declares three flat `state_fields`:
-`set_volume` (a `float` with `unit`, `min`, `max`, and `step`),
-`held_liquid_id` (an `enum` of which reagent is loaded), and
-`held_liquid_volume` (a `float` for the amount held). The `render_map`
-resolves each independently: the set-point becomes an overlay label,
-the reagent becomes a base SVG, and the volume becomes a fill height.
-No SVG asset id appears in any `state_field`. The layout hints
-replicate today's `serological_pipette` row in `src/asset_specs.ts`
-(`defaultWidth: 3`, `labelWidth: 6`, `anchorYOffset: 0`), now
-object-owned, plus `anchor_y: tip` reclassified from today's per-item
-placement sub-field (a serological pipette is anchored at its tip
-wherever it is placed).
+subparts). It declares three flat `state_fields`: `set_volume` (a
+`float` with `unit`, `min`, `max`, and `step`), `held_liquid_id` (an
+`enum` of which reagent is loaded), and `held_liquid_volume` (a `float`
+for the amount held). The `render_map` resolves each independently:
+the set-point becomes an overlay label, the reagent becomes a base SVG,
+and the volume becomes a fill height. No SVG asset id appears in any
+`state_field`. The layout hints replicate today's `serological_pipette`
+row in `src/asset_specs.ts` (`defaultWidth: 3`, `labelWidth: 6`,
+`anchorYOffset: 0`), now object-owned, plus `anchor_y: tip`
+reclassified from today's per-item placement sub-field (a serological
+pipette is anchored at its tip wherever it is placed).
 
 ## Cross-file validation rules
-
-Status: **target-state.**
 
 The build pipeline (a follow-on plan deliverable) enforces these rules at
 build time. A violating object file fails the build loudly; this format
@@ -629,17 +560,16 @@ does not specify defensive defaults that hide a missing required field.
 - Every token in `structure.id_pattern` is in the closed token set; arity
   matches the layout (`{row_letter}` and `{row}` only valid for grid;
   `{index}` only valid for list).
-- Per RD-9, named groups (`structure.target_groups`) are not part of
-  this schema; an object that declares them is rejected.
+- Named groups (`structure.target_groups`) are not part of this schema;
+  an object that declares them is rejected.
 
 ### state_fields
 
 - Every `state_field.name` is unique within this object's
   `state_fields`.
-- `type` is one of `enum`, `int`, `float`, `bool` (per RD-11).
-- Per-type metadata satisfies the
-  [closed metadata rules](#per-type-constraint-metadata-rd-12) above
-  (per RD-12); unknown metadata keys are rejected.
+- `type` is one of `enum`, `int`, `float`, `bool`.
+- Per-type metadata satisfies the [closed metadata rules](#per-type-constraint-metadata)
+  above; unknown metadata keys are rejected.
 - `default` is present and satisfies the type and metadata.
 - `applies_to: subpart` is only valid when the object has a `structure`
   block.
@@ -656,16 +586,15 @@ does not specify defensive defaults that hide a missing required field.
 - For `enum` and `bool` `state_fields`, every value in the field's
   `allowed` list appears in exactly one `cases[].when`.
 - For `int` and `float` `state_fields`, the `formula` string parses
-  against the closed
-  [formula mini-language](#formula-mini-language) (per RD-7).
+  against the closed [formula mini-language](#formula-mini-language).
 - A `render_map` entry for an `applies_to: subpart` `state_field` is
   itself `applies_to: subpart`.
 
 ### capabilities
 
-- Every entry is in the closed six-value capability list (per RD-6:
-  `clickable`, `liquid_container`, `instrument_with_setpoint`,
-  `structured_surface`, `cursor_attachable`, `decoration_only`).
+- Every entry is in the closed six-value capability list: `clickable`,
+  `liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+  `cursor_attachable`, `decoration_only`.
 - `decoration_only` is mutually exclusive with the other five.
 - Every declared capability's
   [schema dependency](#capability-to-schema-dependencies) is satisfied.
@@ -683,8 +612,6 @@ does not specify defensive defaults that hide a missing required field.
   ids).
 
 ## Generated TypeScript surface
-
-Status: **target-state.**
 
 The follow-on code-migration plan adds the build pipeline that compiles
 the object library into a generated TypeScript module. This format doc
@@ -717,9 +644,3 @@ generated module the build emits.
   `render_map` resolves to asset ids the pipeline owns.
 - [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md) -- ASCII-only and escaping
   rules for YAML and markdown.
-- [../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md) --
-  the plan that ratified this format's vocabulary.
-- [../archive/scene_object_split_design.md](../archive/scene_object_split_design.md) --
-  the M2 design doc the schema encodes.
-- [../archive/scene_object_split_inventory.md](../archive/scene_object_split_inventory.md) --
-  the M3 ratification evidence.

@@ -4,24 +4,7 @@ Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.
 
 How a protocol's steps are shaped, ordered, validated, and resolved.
 
-## Target-state vs current-code
-
-This doc is labeled like [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md):
-
-- **target-state** -- the ratified two-level interaction model: a `step`
-  wraps an ordered `sequence` of `interaction` blocks, checked by a
-  `step_validator`, resolved by an `outcome`, and linked by `next_step`.
-- **current-code** -- the runtime wiring that exists today. The current
-  runtime still uses the retired `completionPath` schema and the legacy
-  completion-event emitter wiring; that migration debt is tracked in the
-  Status section of [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and
-  is the follow-on code-migration plan's job.
-
-If a section is not labeled current-code, treat it as target-state.
-
 ## Source of truth
-
-Status: **target-state.**
 
 All protocol steps are defined in YAML under `src/content/` and compiled at
 build time into a typed TypeScript constant. Each step carries the six
@@ -42,8 +25,6 @@ The full YAML schema for these slots, the `interaction` block, the
 
 ## A step is one pedagogical unit
 
-Status: **target-state.**
-
 A `step` is one thing the student is asked to accomplish. A step is often
 multi-gesture: "Wash the flask with 4 mL PBS" is a single step, but
 completing it takes three gestures. The two-level model keeps the step as
@@ -57,8 +38,6 @@ semantics. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the
 slot charters.
 
 ## The interaction chain
-
-Status: **target-state.**
 
 Within a step, the chain runs:
 
@@ -77,8 +56,6 @@ Within a step, the chain runs:
    runs next. Advancing is not an `outcome` value.
 
 ## Ordering: explicit, not positional
-
-Status: **target-state.**
 
 Protocol flow is `entry_step` plus each step's `next_step` pointer. Array
 position in the `steps` list is reading convenience only and never controls
@@ -107,8 +84,6 @@ the protocol-flow spec and never controls flow.
 
 ## The iterative loop
 
-Status: **target-state.**
-
 An iterative loop -- destaining until the background is clear -- is
 expressed as a `final_state_matches` `step_validator` plus an
 `outcome.on_failure: retry`. While the named state is not reached,
@@ -116,8 +91,6 @@ expressed as a `final_state_matches` `step_validator` plus an
 `repeat_until` construct and no separate loop step type.
 
 ## Adding a new step
-
-Status: **target-state.**
 
 1. Add a new entry to the protocol's `steps` list with `name`, `prompt`,
    `sequence`, `step_validator`, `outcome`, and `next_step`.
@@ -132,8 +105,6 @@ Status: **target-state.**
 
 ## Event emission
 
-Status: **target-state.**
-
 Events are emitted by the runtime on a state transition the rest of the
 protocol may react to: an interaction firing a true `validator`, a step
 resolving `complete`, or a timed-equipment phase elapsing. Events are not
@@ -142,23 +113,7 @@ the `name` of the thing they report: `<step_name>_complete` when a step
 resolves, `<equipment_name>_elapsed` when a timed phase ends. An author who
 renames a step renames its completion event with it.
 
-## Current runtime implementation
-
-Status: **current-code.**
-
-The runtime as it ships today does not yet implement the two-level model.
-It uses the legacy `completionPath` schema and a manual completion-event
-emitter wiring contract: scene code calls `triggerStep(stepId)`, and each
-scene pre-registers its owned step ids at module load so the load-time
-coverage check can confirm every step has an emitter. Migrating the runtime
-to the two-level model -- `sequence`, `step_validator`, `outcome`,
-`next_step`, and runtime-derived events -- is the follow-on code-migration
-plan's job. Until that lands, a reader working in the runtime will still see
-the retired schema; the gap is explicit, not hidden.
-
 ## Startup validation
-
-Status: **current-code.**
 
 Load-time checks verify the step graph before any user interaction:
 
@@ -172,8 +127,6 @@ A validation failure injects a blocking error banner, logs to console, and
 records the failure on a window-scoped validation flag.
 
 ## UI walker
-
-Status: **current-code.**
 
 The canonical real-UI regression test is the YAML-driven UI walker
 documented in [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md). It reads the

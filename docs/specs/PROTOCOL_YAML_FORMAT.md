@@ -5,27 +5,6 @@ Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.
 This document specifies the three-file YAML schema for a protocol.
 The protocol is author-editable at build time, not at runtime.
 
-## Target-state vs current-code
-
-This doc has two kinds of sections, labeled like
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md):
-
-- **target-state** -- the ratified two-level interaction schema: a
-  `protocol` of `step` blocks, each wrapping an ordered `sequence` of
-  `interaction` blocks with the four literal slots `target`, `gesture`,
-  `validator`, `response`. This is the schema authors write going
-  forward. The model is ratified; the runtime, builder, and shipped YAML
-  do not implement it yet.
-- **current-code** -- the `items.yaml` and `reagents.yaml` build inputs
-  and the build pipeline as they run today.
-
-If a section is not labeled current-code, treat it as target-state. The
-retired `completionPath.kind` taxonomy, `plateTargets`, `tubeTargets`,
-`stateChange`, `completionEvent`, `completionTrigger`, `nextId`, and the
-overloaded `action` field are not part of this schema; see the
-retired-terms table in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
-
 ## Design rationale
 
 The protocol is authored in YAML and compiled at build time into TypeScript constants.
@@ -86,15 +65,11 @@ and rebuild.
 
 ## src/content/&lt;protocol_name&gt;/items.yaml and src/content/&lt;protocol_name&gt;/reagents.yaml
 
-Status: **current-code.**
-
 Two YAML files handle items and reagents separately. Namespaces are disjoint:
 item ids appear in layout, reagent ids appear in liquid state. An item id is
 what a step `interaction` names as its `target`; a reagent id is what an
 `ObjectStateChange` `scene_operation` writes into an object's flat declared
-`liquid_id` (or `held_liquid_id`) `state_field` (per RD-13 of the
-scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md))).
+`liquid_id` (or `held_liquid_id`) `state_field`.
 
 ### Items block
 
@@ -141,7 +116,7 @@ Each item is a mapping keyed by snake_case id. Required fields vary by role.
 - `virtual`: no scene rendering; used only in interaction targets
 - `none`: modal-only item; never rendered in a 2D scene
 
-Note (no-hood-default rule): a mini-protocol may not declare `entry.scene: cell_culture_hood` unless its first authored step is also in the cell culture hood. The pytest gate `tests/test_items_scene_no_hood_default.py` enforces this. Full rewrite of scene-vocabulary rules is deferred to M9.
+Note (no-hood-default rule): a mini-protocol may not declare `entry.scene: cell_culture_hood` unless its first authored step is also in the cell culture hood. The pytest gate `tests/test_items_scene_no_hood_default.py` enforces this.
 
 ### Reagents block
 
@@ -153,12 +128,10 @@ Each reagent is a mapping keyed by snake_case id. All fields required.
 | `colorKey` | string | Internal identifier for color selection (legacy field, see note) |
 | `displayColor` | string | CSS hex color code (lowercase, ASCII-only) |
 
-Note: `colorKey` is a legacy field. It is in the retired-terms table in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and is slated for removal by
-the follow-on code-migration plan. It is still accurate for current `reagents.yaml`;
-target-state expresses reagent color via the object's flat `liquid_color`
-`state_field` (per RD-11), written by an `ObjectStateChange` (per RD-13)
-and resolved by the object's `render_map`.
+Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+It is still accurate for current `reagents.yaml`; the canonical schema expresses
+reagent color via the object's flat `liquid_color` `state_field`, written by an
+`ObjectStateChange` and resolved by the object's `render_map`.
 
 ### Items and reagents example
 
@@ -284,8 +257,6 @@ List of day definitions (order matters for UI display).
 
 ### Steps block
 
-Status: **target-state.**
-
 List of protocol steps. Order in this list is reading convenience only; the
 actual protocol flow is `entry_step` plus each step's `next_step` pointer,
 never array position.
@@ -325,8 +296,6 @@ the `completionPath` wrapper is replaced by the `sequence`,
 
 ## The interaction block
 
-Status: **target-state.**
-
 Each entry in a step's `sequence` is one `interaction` block. An
 `interaction` has exactly four literal slots:
 
@@ -351,31 +320,19 @@ A `response` has two fields:
 
 A `scene_operation` requires a `type` field naming one of the five
 ratified protocol-level primitives (`ObjectStateChange`, `CursorAttach`,
-`SceneChange`, `LayoutMove`, `TimedWait`) plus
-that type's documented typed fields. The full per-primitive field list
-lives in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Per RD-3 of
-the scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
-`SvgSwap` and `ColorChange` are reclassified out of the protocol-level set
-into the object/render layer. Per RD-13, `LiquidDisplayChange` is
-reclassified the same way: liquid state mutation is expressed through
-`ObjectStateChange` against the object's flat declared liquid fields
-(`liquid_id`, `liquid_volume`, `liquid_color`; `held_liquid_id`,
-`held_liquid_volume`), and the object's `render_map` resolves the visual.
-Per RD-14, `SetPointDisplayChange` is reclassified the same way:
-set-point state mutation is expressed through `ObjectStateChange`
-against the object's flat declared set-point fields (`set_volume`,
-`set_temperature`, `set_rpm`, etc. per RD-11), and the object's
-`render_map` resolves the digit overlay or display visual.
-The protocol writes semantic state through `ObjectStateChange` and never
-names an SVG asset id, a color value, a liquid display update, or a
-set-point display update. The
-PascalCase type names are the only non-snake_case identifiers in protocol
-YAML.
+`SceneChange`, `LayoutMove`, `TimedWait`) plus that type's documented
+typed fields. The full per-primitive field list lives in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). `SvgSwap` and `ColorChange`
+are reclassified out of the protocol-level set into the object/render layer.
+`LiquidDisplayChange` and `SetPointDisplayChange` are reclassified the same way:
+liquid and set-point state mutation are expressed through `ObjectStateChange`
+against the object's flat declared fields, and the object's `render_map`
+resolves how they appear. The protocol writes semantic state through
+`ObjectStateChange` and never names an SVG asset id, a color value, a liquid
+display update, or a set-point display update. The PascalCase type names are
+the only non-snake_case identifiers in protocol YAML.
 
 ### Validator presets
-
-Status: **target-state.**
 
 Every `validator` and every `step_validator` is a named preset with typed
 parameters, written as a mapping:
@@ -406,8 +363,6 @@ that is `next_step`'s job.
 
 ## Domain verbs are authoring shorthand only
 
-Status: **target-state.**
-
 A domain verb (`wash`, `dispense`, `grind`, `assemble`, and so on) is
 authoring vocabulary and documentation shorthand, not a protocol YAML
 field. The executable YAML is always the expanded two-level model:
@@ -421,24 +376,18 @@ but only after the expanded form is stable.
 
 ## Plate maps and grouped targets
 
-Status: **target-state.**
-
 The protocol YAML is geometry-free: it names no plate, no well, no tube,
 no row, and no coordinate. Subparts of a structured object (wells, lanes,
 slots) are declared by the object via `structure.subparts`; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). A protocol addresses one
 subpart as `<object_id>.<subpart_id>` (for example `treatment_plate.A1`).
-Per RD-9 of the scene-object split plan
-([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
-named groups are deferred from this vocabulary pass; a step that acts on
+Named groups are deferred from this vocabulary pass; a step that acts on
 several subparts emits one interaction per subpart. The retired
 `plateTargets` and `tubeTargets` fields pushed plate and tube geometry
 into protocol YAML; the subpart-id mechanism pulls it back to the object
 side where it belongs.
 
 ## Worked example: pbs_wash step
-
-Status: **target-state.**
 
 "Wash the flask with 4 mL PBS" is one step. It is the canonical
 multi-gesture case, shown here as one step inside a `protocol`'s `steps`
@@ -524,8 +473,6 @@ protocol:
 
 ## Cross-file validation rules
 
-Status: **target-state.**
-
 The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 ### Protocol structure
@@ -545,17 +492,16 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 - Every `target` value resolves to a scene object or to a declared subpart
   of a structured object (`<object_id>.<subpart_id>`) through the scene's
   adapter registry; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) and
-  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Per RD-9 named groups are
-  deferred; explicit subparts only.
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Named groups are deferred;
+  explicit subparts only.
 - `gesture` is one of `click`, `drag`, `adjust`, `select`, `type`.
 - `validator` and `step_validator` each name a preset from the documented
   preset library, with that preset's required typed parameters.
 - `response.scene_operations` is a list (possibly empty); every entry has a
   `type` naming one of the five ratified protocol-level `scene_operation`
-  primitives (per RD-3 `SvgSwap` and `ColorChange`, per RD-13
-  `LiquidDisplayChange`, and per RD-14 `SetPointDisplayChange`, all moved
-  to the object/render layer) plus that
-  type's documented typed fields.
+  primitives (`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
+  `SetPointDisplayChange` have been moved to the object/render layer) plus
+  that type's documented typed fields.
 
 ### Outcome validation
 
@@ -575,19 +521,15 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
   interaction `target`) OR have `visualOnly: true`. Catches dead inventory.
 - Every reagent in reagents.yaml must be referenced by at least one
   `scene_operation` (an `ObjectStateChange` writing the reagent id into
-  an object's flat `liquid_id` or `held_liquid_id` `state_field`, per
-  RD-13; the field's declared `enum` `allowed` list is the binding
-  reference, the same enum-allowed-values mechanism RD-12 specifies for
-  any `enum` `state_field`) or item `contains` field. Catches dead
-  reagents.
+  an object's flat `liquid_id` or `held_liquid_id` `state_field`; the
+  field's declared `enum` `allowed` list is the binding reference) or
+  item `contains` field. Catches dead reagents.
 
 ## Generated TypeScript surface
 
-Status: **current-code.**
-
 This section describes the TypeScript the builder emits today. The
 generated identifiers below are runtime output keys, not protocol YAML
-keys; the target-state YAML schema authors write is the two-level model
+keys; the canonical YAML schema authors write is the two-level model
 documented above.
 
 The Python builder (`tools/build_protocol_data.py`) compiles YAML into two
@@ -649,13 +591,13 @@ The two namespaces are intentionally disjoint:
 - **Only item ids** appear as interaction `target` values, in scene layout,
   and in asset specs.
 - **Only reagent ids** appear written into an object's flat liquid
-  `state_field` (`liquid_id`, `held_liquid_id`) by an `ObjectStateChange`
-  (per RD-13), and in item `contains` fields.
+  `state_field` (`liquid_id`, `held_liquid_id`) by an `ObjectStateChange`,
+  and in item `contains` fields.
 - An `ObjectStateChange` `scene_operation` that writes liquid state
   references both an item id and a reagent id: `target:
   serological_pipette` (item id) plus `state: { held_liquid_id: pbs,
   held_liquid_volume: 4 }` (reagent id in the flat field). The builder
-  verifies that a source item's `contains` matches the liquid id it is
+  verifies that a source item's `contains` matches the reagent id it is
   drawn for.
 
 This prevents accidental name collisions and catches copy-paste errors at build time.
