@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-14 (unified interaction vocabulary: M2 design complete - WP-SLOT1, WP-SOP1, WP-STA1, WP-PED1, WP-BND1)
+## 2026-05-14 (unified interaction vocabulary: M2 design complete, M3 ratification, M4 doc rewrites - WP-SLOT1, WP-SOP1, WP-STA1, WP-PED1, WP-BND1, WP-DOC-D1, WP-DOC-C1)
 
 ### Additions and New Features
 - **Two-level step/interaction model**: Reworked
@@ -106,6 +106,40 @@
   group. All group membership and target expansion live on the scene side,
   which retires `plateTargets` and `tubeTargets`.
 
+- **M3 ratification passed across all four source protocols**: Checked the
+  two-level step/interaction model against 120 steps spanning OVCAR8, the 7
+  shipped `content/*/protocol.yaml` files, Miraculin, and SDS-PAGE. Every step
+  maps cleanly onto the ratified `protocol -> step -> interaction -> response`
+  model with the eight `scene_operation` primitives and the named-preset
+  validators. No M2 design revision was forced by the ratification pass.
+- **M4 canonical-doc rewrites**:
+  [docs/PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md) and
+  [docs/SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md) were fully rewritten to the
+  ratified two-level model. WP-DOC-D1 aligned 10 dependent docs to the same
+  model: [docs/PROTOCOL_YAML_FORMAT.md](../PROTOCOL_YAML_FORMAT.md),
+  [docs/PROTOCOL_STEPS.md](../PROTOCOL_STEPS.md),
+  [docs/PROTOCOL_AUTHORING_GUIDE.md](../PROTOCOL_AUTHORING_GUIDE.md),
+  [docs/SCENE_YAML_FORMAT.md](../SCENE_YAML_FORMAT.md),
+  [docs/SCENE_ARCHITECTURE.md](../SCENE_ARCHITECTURE.md),
+  [docs/CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md),
+  [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md),
+  [docs/LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md),
+  [docs/LIQUID_CONVENTION.md](../LIQUID_CONVENTION.md), and
+  [docs/WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md).
+  [docs/SVG_PIPELINE.md](../SVG_PIPELINE.md) was also audited under WP-DOC-D1
+  and found to contain no interaction-model vocabulary, so it needed no
+  alignment (audited-clean, not skipped). As a follow-on primary-doc pass,
+  [docs/PRIMARY_SPEC.md](../PRIMARY_SPEC.md) and
+  [docs/PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) were reconciled to the
+  ratified model as well (see the Decisions and Failures entry below).
+- **`target_groups` schema section added to SCENE_YAML_FORMAT.md**: Documents
+  the named-group schema (a row of wells, a tube rack, a set of gel lanes) that
+  the scene YAML defines and the protocol `target` resolves against. Group
+  membership and target expansion live entirely on the scene side.
+- **Adapter-registry section added to SCENE_ARCHITECTURE.md**: Documents the
+  registry that maps each semantic `target` name to a concrete scene object,
+  the resolution mechanism ratified under WP-BND1 / OQ-16.
+
 ### Behavior or Interface Changes
 - **Model tightened to a linear protocol spec (WP-STA1)**: A course-correction
   tightened the model to a tight linear protocol spec. It adds the `protocol`
@@ -166,6 +200,45 @@
   is retired from the protocol vocabulary, and `ClickTarget` is scoped to the
   narrow `{itemId}` driver-payload runtime type. This gives the M4
   canonical-doc rewrites one decision to follow.
+- **Ninth `scene_operation` primitive deferred (M3, Option 2 accepted)**: M3
+  ratification surfaced instrument-produced data (absorbance readouts, cell
+  counts, gel band patterns, molecular-weight estimates) as a candidate ninth
+  `scene_operation` primitive, `DataReadout` / `InstrumentReadDisplayChange`.
+  Option 2 was accepted: instrument data stays feedback-only for this pass and
+  is not modeled as a typed primitive. Designing and ratifying the ninth
+  primitive is carried to the follow-on code-migration plan.
+- **OQ-19 resolved: domain verbs are shorthand, not YAML fields**: Domain verbs
+  are authoring and documentation shorthand only. They are not protocol YAML
+  fields; executable protocol YAML is always the expanded two-level model.
+  Domain verbs expand at author time and never appear in the runtime schema.
+- **CHANGELOG / ROADMAP / TODO left untouched as historical record**: A
+  deliberate decision was made to leave `docs/CHANGELOG.md` prior entries,
+  `docs/ROADMAP.md`, and `docs/TODO.md` unedited. They are a historical record
+  of how the vocabulary evolved; rewriting them to the ratified model would
+  destroy that record. Only new dated entries are appended.
+- **Two primary docs reconciled to the ratified model**: A follow-on
+  primary-doc pass reconciled both primary docs to the ratified two-level
+  model. [docs/PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) had its "Flow before
+  implementation" passage rewritten off `completionPath.kind`,
+  `interactionSequence`, and `nextId` onto the two-level model.
+  [docs/PRIMARY_SPEC.md](../PRIMARY_SPEC.md) had its top-level-fields YAML
+  example, entry block, and the completion-paths / derived-fields sections
+  rewritten to the ratified step / interaction / response schema, with
+  clearly-labeled current-code notes where the legacy `completionPath.kind`,
+  `completionEvent`, `completionTrigger`, `usedItems`, and `nextId` fields are
+  still what the runtime reads. [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md)
+  was checked and contains no retired vocabulary. The remaining residual is the
+  code itself, carried to the follow-on code-migration plan.
+
+### Developer Tests and Notes
+- **M3 ratification evidence**: 120 steps across OVCAR8, the 7 shipped
+  `content/*/protocol.yaml` files, Miraculin, and SDS-PAGE all map to the
+  ratified two-level model with no M2 design revision required. The
+  dependent-doc set rewritten under M4 / WP-DOC-D1 is internally consistent;
+  `docs/PRIMARY_SPEC.md` and `docs/PRIMARY_DESIGN.md` are the only known
+  residual contradictions and are handed off to the follow-on code-migration
+  plan stub at
+  [active_plans/protocol_vocabulary_code_migration_plan.md](active_plans/protocol_vocabulary_code_migration_plan.md).
 
 ## 2026-05-14 (unified interaction vocabulary: M1 evidence)
 

@@ -1,5 +1,12 @@
 # Scene runtime doc conflicts
 
+> **Historical audit / partially superseded.** This is a historical
+> conflict-audit table from a prior plan phase. Some verdicts -- specifically
+> the `plateTargets` / `tubeTargets` `matches-contract` classifications -- have
+> been superseded by the unified interaction vocabulary plan; see the inline
+> SUPERSEDED notes below and [PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md).
+> Do not treat stale `matches-contract` verdicts as authoritative.
+
 This is the M0 conflict-audit table for the seven `docs/SCENE_*.md` and
 `docs/PROTOCOL_*.md` docs against [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md)
 and the plan at [docs/active_plans/scene_runtime_spine_plan.md](scene_runtime_spine_plan.md).
@@ -77,9 +84,26 @@ Contract reference shorthand:
 | 269-291 (Note on derived fields, "Step shapes: pick a completion path") | matches-contract | The four-kind taxonomy (interactionSequence, directTool, modal, multipleChoice) is the locked walker dispatch model in the plan's Walker contract. |
 | 292-410 (Worked modal / multipleChoice examples) | matches-contract | Examples align with the walker contract's `completionPath.kind`-only dispatch. |
 | 412-473 (Worked tubeTargets example) | matches-contract | `tubeTargets` schema is a contract-aligned layout extension consistent with C3 (structured surface) and the well_plate scene scope. |
+
+> SUPERSEDED (unified interaction vocabulary plan, WP-DOC-C1): the
+> `matches-contract` verdict on the `tubeTargets` rows is retired. `tubeTargets`
+> is scene-specific drift in the protocol vocabulary, not a contract-aligned
+> extension. The ratified vocabulary retires the `tubeTargets` / `plateTargets`
+> keys entirely; grouped targets are named `target_groups` defined in scene
+> YAML and resolved through the adapter registry. Contract item C3 governs
+> scene geometry, not protocol vocabulary, so classifying a protocol-vocabulary
+> key as `matches-contract` under C3 was a category error.
 | 475-532 (Mini-tutorial pattern: workspace-only protocol) | stale-sections | This section already names the workspace-only pattern that the plan calls "mini-protocol". Margin note: rename in M9 from "mini-tutorial" to "mini-protocol", add the `protocolType` taxonomy (`mini_protocol`, `sequence_runner`, `dev_smoke`), and add `entry:` / `learning:` requirements. Cite C2, C5. |
 | 534-580 (Per-step authoring checklist) | matches-contract | Bullet list aligns with walker contract (tool-first click model, one completionEvent on the final interaction, no banned synonyms). |
 | 581-672 (Protocol audit tool, plateTargets) | matches-contract | Audit script behavior and plateTargets schema are contract-neutral. |
+
+> SUPERSEDED (unified interaction vocabulary plan, WP-DOC-C1): the
+> `matches-contract` verdict on the `plateTargets` portion of this row is
+> retired. `plateTargets` is scene-specific drift in the protocol vocabulary.
+> The ratified vocabulary retires the `plateTargets` / `tubeTargets` keys; row
+> and group targeting moves to scene-YAML `target_groups` resolved through the
+> adapter registry. Contract item C3 governs scene geometry, not protocol
+> vocabulary; the `matches-contract` classification was a category error.
 | 674-733 (Auto-walker contract) | must-rewrite | This section describes the existing hand-authored walker at `tests/playwright/e2e/protocol_walkthrough_yaml.mjs`. Plan M4 replaces it with a generic engine at `tests/playwright/walker/` and a single CLI at `tests/playwright/walker.mjs <protocol_id>`. Margin note: section will be replaced by the Walker contract from the plan (no per-step branches, dispatch on completionPath.kind only, walker reads `entry:` block for startup routing). Cite C4 and the plan's Walker contract. |
 | 734-778 (Build and walk loop) | stale-sections | Commands cite `tools/build_protocol_data.py` and `tools/run_protocol_walkthrough.py`. Margin note: the build pipeline is being split per mini-protocol (M7), and the walkthrough script is replaced by `tests/playwright/walker.mjs <protocol_id>`. |
 
@@ -111,6 +135,14 @@ Contract reference shorthand:
 | 207-251 (Parts, Days, Steps) | matches-contract | Field tables are C4-aligned. |
 | 252-289 (Completion paths overview, four kinds) | matches-contract | Same as PROTOCOL_VOCABULARY.md hierarchy. |
 | 290-491 (interactionSequence kind incl. plateTargets, tubeTargets) | matches-contract | Schema is the locked walker dispatch model. |
+
+> SUPERSEDED (unified interaction vocabulary plan, WP-DOC-C1): the
+> `matches-contract` verdict on the `plateTargets` / `tubeTargets` portions of
+> this row is retired. Those keys are scene-specific drift in the protocol
+> vocabulary; the ratified vocabulary retires them in favor of scene-YAML
+> `target_groups` resolved through the adapter registry. Contract item C3
+> governs scene geometry, not protocol vocabulary, so the original
+> `matches-contract` classification under C3 was a category error.
 | 492-700 (directTool, modal, multipleChoice kinds) | matches-contract | Same. |
 | 701-760 (Validator behavior + Derived fields + Migration status) | matches-contract | C4-aligned: validator dispatches on `completionPath.kind`, derived fields enforced. |
 | 761-803 (Step fields for interaction-driven / non-click / modal-owned) | matches-contract | Same. |

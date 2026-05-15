@@ -1,6 +1,12 @@
 # Primary specification
 
-This document is the technical specification for the virtual lab protocol games repo. [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) defines the hard invariants. [docs/PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) describes the design philosophy. This specification defines the current schema and runtime expectations that implement those invariants.
+This document is the technical specification for the virtual lab protocol games repo. [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) defines the hard invariants. [docs/PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) describes the design philosophy. This specification defines the schema and runtime expectations that implement those invariants.
+
+## Target-state vs current-code
+
+The normative protocol schema in this document is the ratified two-level protocol interaction model: `protocol` / `step` / `interaction` / `response`. That model is canonical in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md). It is **target-state**: the model is ratified, but the runtime, validator, walker, and shipped YAML do not implement it yet. The follow-on code-migration plan changes the runtime to match.
+
+Sections describing the schema below are **target-state** unless a passage is explicitly labeled **current-code**. A current-code note describes what the runtime implements today and exists only to keep the gap between the designed spec and the running code explicit. A reader must never be misled into thinking a target-state section describes the code as it runs now.
 
 ## Protocol types
 
@@ -17,45 +23,47 @@ Each protocol lives in `content/<protocol_name>/protocol.yaml` and declares the 
 
 ```yaml
 protocolType: mini_protocol
-entry:
-  scene: well_plate_workspace
-  step: open_plate_workspace
+name: open_plate_workspace
+entry_step: open_plate_workspace
 learning:
   objectives: "Students completing this mini-protocol will have achieved..."
   outcomes: "Students completing this mini-protocol will be able to..."
   goals: "Overall, this mini-protocol aims to accomplish..."
-parts:
-  - id: part_setup
-    label: "Setup"
-    dayId: day1
-days:
-  - id: day1
-    label: "Day 1"
 steps:
-  - id: open_plate_workspace
-    label: "Open the workspace"
-    scene: well_plate_workspace
-    completionPath:
-      kind: directTool
-      tool: well_plate
-      completionEvent: workspace_opened
-    nextId: null
+  - name: open_plate_workspace
+    prompt: "Open the well plate workspace."
+    sequence:
+      - target: well_plate
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: well_plate_workspace
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null
 ```
 
-Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
+A `protocol` carries `name`, `entry_step`, and `steps`. Each `step` carries `name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
 
-## Entry block
+**Current-code:** the running schema instead uses an `entry` block (`entry.scene`, `entry.step`), `step.id`, `step.scene`, a `completionPath` block with a `kind` discriminator, and `nextId`. Those fields are the legacy schema the follow-on code-migration plan removes; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
-The `entry` block declares where the protocol starts.
+## Entry step
 
-- `entry.scene` is the scene id where the protocol opens.
-- `entry.step` is the id of the first authored step.
+The `entry_step` field declares where protocol flow starts.
+
+- `entry_step` is the `name` of the first step the runtime runs. Flow starts there and follows `next_step` from step to step.
+- The scene a protocol opens in is not a protocol-level field. The protocol vocabulary is geometry-free and scene-free at the flow level; a step's interactions name semantic `target` objects, and the scene adapter resolves those names. A `SceneChange` scene operation in a step's `response` transitions the scene context. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 
 Validation rules:
 
-- `entry.step` must match the id of the first step in the `steps` list.
-- `entry.scene` must equal that step's `scene`.
-- A mini-protocol must not declare `entry.scene` as the hood unless its first authored step takes place in the hood. The hood is not a default starting scene.
+- `entry_step` must name a step present in the `steps` list.
+- A mini-protocol must not open in the hood unless its first step takes place in the hood. The hood is not a default starting scene.
+
+**Current-code:** the running schema uses an `entry` block with `entry.scene` and `entry.step`, and validates `entry.step` against the first `steps` entry id and `entry.scene` against that step's `scene` field. That block is legacy schema the code-migration plan removes.
 
 ## Learning block
 
@@ -71,23 +79,44 @@ For sequence runners the `learning` block carries the overall pathway's pedagogy
 
 Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement.
 
-## Completion paths
+## Step structure
 
-Every step has exactly one `completionPath` with a `kind` discriminator. Allowed kinds:
+A step is one pedagogical unit. Its structure is the same for every step; there is no per-step discriminator that branches the schema. Every step carries:
 
-- `interactionSequence`: an ordered list of clicks (tool, then source, then destination) that together complete the step.
-- `directTool`: a single click on a visible tool or instrument control.
-- `modal`: a click on a visible opener, then a click on a visible advance or confirm control inside a modal.
-- `multipleChoice`: a click on the correct visible answer choice.
+- `name`: the stable snake_case identifier, used for flow, tests, and debugging.
+- `prompt`: what the student is asked to accomplish.
+- `sequence`: the ordered list of interactions that make up the step. Order always matters; there is no unordered mode.
+- `step_validator`: a named preset that checks whole-step completion.
+- `outcome`: the `{on_success, on_failure}` mapping that says how the step resolves.
+- `next_step`: names the next step by its `name`, or `null` for a terminal step.
 
-The walker, validator, and runtime dispatch from `completionPath.kind`. They must not dispatch from `step.id` or from per-protocol special cases.
+Each `interaction` in a `sequence` carries exactly four slots: `target` (the semantic scene object or control acted on), `gesture` (how the student acts on it), `validator` (a named preset checking that one gesture on that one target), and `response` (the post-validation system behavior). The task semantics of an interaction come from the target's `kind` plus the `gesture`; the schema has no separate task-type or completion-path discriminator. What were the legacy `interactionSequence`, `directTool`, `modal`, and `multipleChoice` kinds are all just steps: an ordered `click` sequence, a one-interaction `sequence`, an interaction whose `response` carries a `SceneChange` or `feedback`-only payload, and a `select`-gesture interaction validated by `correct_choice`.
 
-## Derived fields
+### Gestures
 
-The build step derives the following fields. Authors must not write them in YAML.
+A `gesture` is how the student acts on a target. The value set is closed: `click`, `drag`, `adjust`, `select`, `type`. `adjust` is the continuous, skill-based set-point gesture (a pipette volume, a power-supply voltage, a titrated pH); it must not collapse into `click`. `select` picks one option from a presented set; `click` acts on a scene object in the lab space.
 
-- `usedItems`: the set of items referenced by the step's `completionPath`.
-- `completionTrigger`: a step-level listener synthesized from `step.scene` and the `completionEvent` declared in `completionPath`. Each generated `completionTrigger` must have a matching runtime emitter.
+### Scene operations
+
+A `response` holds `scene_operations` (an ordered, possibly empty list of typed primitives) and optional `feedback`. There are eight ratified `scene_operation` primitives, named with PascalCase `type` values: `SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`, `SetPointDisplayChange`, `TimedWait`. They describe how the scene changes in response to a validated interaction. The set is closed but extensible under the cost guardrail in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+
+### Validators and outcome
+
+Every `validator` and every `step_validator` is a named preset with typed parameters; content creators select from the documented preset library and never write custom validation logic. Interaction presets: `correct_target`, `correct_choice`, `target_with_value`. Step presets: `sequence_complete`, `final_state_matches`. The `outcome` mapping has exactly two keys: `on_success: complete` resolves the step, after which flow moves to `next_step`; `on_failure: retry` restarts the whole step, resetting the entire `sequence`. `outcome` never carries an `advance` value and never names a step.
+
+The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a step name or from per-protocol special cases.
+
+**Current-code:** the running schema instead gives every step exactly one `completionPath` with a `kind` discriminator (`interactionSequence`, `directTool`, `modal`, `multipleChoice`), and the walker, validator, and runtime dispatch from `completionPath.kind`. That taxonomy is legacy schema the code-migration plan removes; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+
+## Targets and the scene boundary
+
+A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object; targets that fan out to several scene objects are named groups declared in the scene YAML `target_groups` block. See [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) for the scene side of this boundary.
+
+## Events
+
+Events are emitted by the runtime on a state transition, not hand-authored per step. The runtime emits a `<step_name>_complete` event when a step's `step_validator` passes, and a `<equipment_name>_elapsed` event when a timed phase ends. Event names are snake_case and derived from the `name` of the thing they report; an author who renames a step renames its completion event with it.
+
+**Current-code:** the running schema authors a `completionEvent` inside `completionPath` and the build step synthesizes a `completionTrigger` listener from `step.scene` plus that `completionEvent`, requiring a matching runtime emitter. It also derives a `usedItems` set from the step's `completionPath`. `completionEvent`, `completionTrigger`, and `usedItems` are legacy fields; in the target-state model item summaries are derived from the `sequence`'s `target` slots and completion events are runtime-derived. See the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
 ## Sequence runners
 
@@ -107,7 +136,7 @@ The walker:
 
 The walker must not:
 
-- branch on `step.id`, `protocolId`, or `modal.owner`;
+- branch on a step `name`, a protocol `name`, or any per-protocol special case;
 - write to game state or any internal runtime state;
 - mutate `window.prompt`, `window.confirm`, or similar DOM globals;
 - call internal runtime APIs to make progress;

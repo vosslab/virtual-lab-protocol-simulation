@@ -162,7 +162,7 @@ Important fields:
 
 | Field | Meaning |
 | --- | --- |
-| `id` | Stable item id. Also becomes the `data-item-id` click target in renderers. |
+| `id` | Stable item id. Also becomes the `data-item-id` click-dispatch attribute in renderers. |
 | `svgAsset` | Key into [src/asset_specs.ts](../src/asset_specs.ts) and the SVG facade. |
 | `zone` | Name of the zone that owns the item. |
 | `depthTier` | Sort order inside the zone. Lower numbers are placed first. |
@@ -272,7 +272,7 @@ the space nearest the middle. It then caps label-driven footprint growth at
 
 Footprints are spacing hints only. The renderer should use `x`, `y`, `width`,
 and `height` for the visible object. It should not render the footprint as a
-box or use the footprint as the click target.
+box or use the footprint as the scene object's clickable region.
 
 ## Overflow behavior
 
@@ -558,8 +558,8 @@ zones:
 A scene is layout-ready when every authored item belongs to a valid zone, every
 item has an SVG asset and asset spec, the renderer consumes
 `computeSceneLayout()`, visible DOM elements use the computed boxes directly,
-click targets align with the visible objects, and screenshot evidence shows the
-layout working at more than one viewport size.
+each scene object's clickable region aligns with the visible object, and
+screenshot evidence shows the layout working at more than one viewport size.
 
 ## Tuning order
 

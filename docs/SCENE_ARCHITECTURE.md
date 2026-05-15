@@ -13,6 +13,17 @@ This doc covers the runtime side only. It does not duplicate the YAML schema
 and it does not document author-facing protocol concepts (those live under the
 `PROTOCOL_*` family).
 
+Most of this doc is **current-code**: it describes the driver, registry,
+adapter, and capability layers as the runtime ships them today. Where a
+section describes the target-state unified interaction model -- the adapter
+registry and target resolution -- it is labeled. The current runtime still
+dispatches on the retired `completionPath` schema; references to
+`completionPath` below describe current-code dispatch, and migrating that
+dispatch to the two-level `sequence` / `step_validator` / `outcome` model is
+the follow-on code-migration plan's job. See
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the target-state model
+and the retired-terms table.
+
 ## Layered model
 
 The scene system has four cooperating layers. Each layer owns a different
@@ -87,7 +98,7 @@ context to route clicks back through the adapter without holding a direct
 reference to the registry.
 
 `ClickTarget` is a minimal `{itemId: string}` shape (with extension fields).
-The capture-phase click handler reads `data-item-id` from the click target
+The capture-phase click handler reads `data-item-id` from the clicked
 element and feeds it to capability `onClick` handlers as a `ClickTarget`.
 
 ## Registry (`scene_registry.ts`)
@@ -114,7 +125,42 @@ imported from `src/init.ts`: importing the module triggers its top-level
 `registerScene(...)` or `registerCapability(...)` call. Without the import,
 no registration runs and the registry stays empty for that scene.
 
+## Adapter registry (target resolution)
+
+Status: **target-state.**
+
+The adapter registry is the per-scene map that resolves each semantic
+protocol `target` name to a concrete scene object. It is the scene side of
+protocol target resolution: the protocol writes a flat namespace of
+geometry-free `target` names, and the adapter registry grounds each name in
+the scene's geometry. The protocol writes `target: flask`; the adapter
+registry resolves `flask` to the scene's flask object.
+
+The adapter registry is distinct from the scene registry and the capability
+registry described above: those are runtime maps keyed by scene id and
+capability id. The adapter registry is the per-scene `target`-name to
+scene-object map.
+
+A `target` that fans out to several scene objects -- a row of wells, a tube
+rack -- resolves through a named group declared in the scene YAML
+`target_groups` block; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for
+the `target_groups` schema. The adapter registry resolves a group name to
+the list of scene objects it expands to.
+
+This section names the registry concept and where it lives; the canonical
+term is in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md), and the protocol-side
+half of the boundary is in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). The concrete TypeScript
+shape of the registry is future work for the code-migration plan; the
+runtime does not implement target resolution yet (see "Adapters" below for
+what adapters own today).
+
 ## Adapters
+
+Status: **current-code** (the `render` and `dispatchInteraction`
+responsibilities) and **target-state** (target resolution, gesture
+rendering, and `scene_operation` rendering, which the adapter will own once
+the runtime migrates to the unified interaction model).
 
 Six first-class adapters live under `src/scenes/<scene>/`. Each registers
 itself at module load and provides `dispatchInteraction(itemId, ctx)` and

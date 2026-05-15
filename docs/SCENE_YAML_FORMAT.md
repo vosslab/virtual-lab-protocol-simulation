@@ -70,13 +70,14 @@ Author-facing protocol content lives separately under `src/content/<protocol_nam
 | `accentRules` | object | no | Reserved for render styling (future). | Optional accent styling rules keyed by item id. See "Accent rules". |
 | `wrongOrderMessage` | object | no | None at runtime today | Toast template for wrong-order feedback. The shared toast helper in [src/scenes/shared/wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) uses hardcoded values; the YAML field is reserved for future per-scene toast messaging. See "Wrong-order messages". |
 | `tabStops` | object[] | no | Reserved for future layout refinement. | Optional grouping of item ids that share a tab stop for keyboard navigation. |
+| `target_groups` | object | no (target-state) | Scene adapter target resolution | Declares named groups that map one semantic protocol `target` name to the list of scene objects it expands to. See "Target groups". |
 
 **Note on `workspace`:** The `workspace` field is required for schema stability even though no runtime consumer reads it yet. Do not add new `workspace` values without updating this doc.
 
 ## Items
 
 Item declarations are consumed by the `itemWorkspace` capability for
-click-target dispatch and (where applicable) by the layout engine via
+click dispatch and (where applicable) by the layout engine via
 adapter-side config. The schema supports two item variants: `LayoutSceneItem`
 for items laid out by the layout engine (bench, hood) and `DispatchOnlySceneItem`
 for minimal items that exist for dispatch only (microscope, plate).
@@ -162,6 +163,48 @@ zones:
     gap: 3
     align: tab-stops
 ```
+
+## Target groups
+
+Status: **target-state.**
+
+The `target_groups` block is the scene side of protocol target resolution.
+It is the mechanism that retires `plateTargets` and `tubeTargets` from the
+protocol vocabulary: instead of the protocol naming plate-and-well or
+tube-and-rack geometry, the protocol writes one semantic `target` name and
+the scene YAML owns the group that name expands to.
+
+A `target` that fans out to several scene objects -- a row of wells, a tube
+rack, a set of gel lanes -- is a **named group**. The scene YAML declares
+each named group as a key under `target_groups`; the key is the semantic
+group name a protocol may write as a `target`, and the value is the list of
+scene object ids the group expands to.
+
+| field | type | meaning |
+| --- | --- | --- |
+| `<group_name>` | string[] | A semantic group name a protocol writes as a `target`. The value is the non-empty list of scene object ids the group expands to. The group name is snake_case. |
+
+Example:
+
+```yaml
+target_groups:
+  row_b: [well_b1, well_b2, well_b3, well_b4, well_b5, well_b6,
+          well_b7, well_b8, well_b9, well_b10, well_b11, well_b12]
+  tube_rack: [tube_a, tube_b, tube_c, tube_d]
+```
+
+The protocol writes `target: row_b` and never lists a well or a coordinate.
+The scene owns `row_b` -- which scene objects it contains and, through the
+layout engine and structured-surface geometry, where each one sits. All
+group membership and all target expansion live on the scene side.
+
+The adapter registry resolves each `target` name -- whether it is a single
+scene object id or a `target_groups` key -- to the concrete scene object or
+group of scene objects. The registry's concrete shape is scene-system
+architecture; see [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md). The
+canonical terms are in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md), and the
+protocol-side rule that the protocol vocabulary stays geometry-free is in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
 ## Scene bounds
 
@@ -409,32 +452,30 @@ wrongOrderMessage:  # reserved; currently not consumed by the runtime
 
 ## The `well_plate_workspace` scene
 
-`well_plate_workspace` is a dedicated single-scene workspace used by the
-`tutorial_plate_drug_additions` mini-tutorial. It renders one stable layout
-with five visual regions (tool area, source area, microtube rack area,
-plate area, popup layer) and changes only which objects are active or
-highlighted as the active step advances. The scene does NOT carry a
-`sceneMode` field. There is no separate "dilution prep" scene or
-"plate transfer" scene; both processes happen inside this same scene,
-driven by step metadata (`completionPath.kind`, `tubeTargets`,
-`plateTargets`) rather than by a scene-mode switch.
+`well_plate_workspace` is a dedicated single-scene workspace used by a
+plate-dosing mini-tutorial. It renders one stable layout with five visual
+regions (tool area, source area, microtube rack area, plate area, popup
+layer) and changes only which objects are active or highlighted as the
+active step advances. The scene does NOT carry a `sceneMode` field. There
+is no separate "dilution prep" scene or "plate transfer" scene; both
+processes happen inside this same scene, driven by which `target` each
+step's interactions name -- including `target_groups` named groups for
+rows of wells and tube racks -- not by a scene-mode switch.
 
-Mini-tutorial scope: the `tutorial_plate_drug_additions` flow that uses
+Mini-tutorial scope: the plate-dosing flow that uses
 `well_plate_workspace` intentionally excludes the `hood`, `bench`, and
 `incubator` scenes. There is no pre-incubation, no plate handoff, and no
-incubation step. The tutorial begins by opening the workspace from a
-modal step and ends at a `review_loaded_plate` confirmation; full
-incubator and bench workflows live in the `cell_culture` protocol, not
-in this mini-tutorial.
+incubation step. Full incubator and bench workflows live in the
+`cell_culture` protocol, not in this mini-tutorial.
 
 The scene YAML for `well_plate_workspace` declares the scene id, an
 empty `capabilities` list (the scene owns dispatch through its own
-`dispatch.ts`), and a minimal item set. Click routing for plate wells,
-microtubes, pipettes, and source bottles is implemented in
+`dispatch.ts`), a minimal item set, and the `target_groups` block that
+names the well rows and tube groups the protocol addresses. Click routing
+for plate wells, microtubes, pipettes, and source bottles is implemented in
 [src/scenes/well_plate_workspace/dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts);
-the renderer reads the current step's `completionPath.kind` and any
-`tubeTargets` or `plateTargets` metadata to choose which objects to
-highlight.
+the renderer resolves each step interaction's `target` -- a single scene
+object id or a `target_groups` key -- to choose which objects to highlight.
 
 ## Current limitations and reserved fields
 

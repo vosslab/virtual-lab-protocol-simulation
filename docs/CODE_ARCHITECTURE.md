@@ -70,10 +70,17 @@ emitter via `triggerStep(stepId)`.
 
 #### Interaction and dispatch
 
+The modules below describe the **current-code** runtime, which still uses
+the retired `completionPath` schema. The target-state two-level model --
+`sequence`, `step_validator`, `outcome`, `next_step` -- is defined in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md); migrating these modules to
+it is the follow-on code-migration plan's job.
+
 - [src/interaction_resolver.ts](../src/interaction_resolver.ts) - Resolves
-  the current interaction from `step.completionPath.interactions`.
-- [src/step_dispatch.ts](../src/step_dispatch.ts) - Maps step kind
-  (`interactionSequence` / `directTool` / `modal`) to handlers.
+  the current interaction from the step's completion path (current-code
+  schema).
+- [src/step_dispatch.ts](../src/step_dispatch.ts) - Maps the current-code
+  step shape to handlers.
 - [src/protocol_ui.ts](../src/protocol_ui.ts) - Protocol panel rendering
   (left sidebar).
 - [src/ui_rendering.ts](../src/ui_rendering.ts) - Sidebar HUD, meters,
@@ -285,9 +292,13 @@ protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
 `tutorial_split`) cover smaller subsets and exist primarily for walker
 exercises.
 
-Each step declares one `completionPath` of kind `interactionSequence`,
-`directTool`, or `modal`. The walker dispatches by kind; legacy
-`step.id`-based branches were removed in the K2 migration.
+In the target-state model, each step wraps an ordered `sequence` of
+`interaction` blocks, checked by a `step_validator`, resolved by an
+`outcome`, and linked by `next_step`; see
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and
+[PROTOCOL_STEPS.md](PROTOCOL_STEPS.md). The current runtime and walker
+still dispatch on the retired `completionPath` schema; that is migration
+debt the follow-on code-migration plan removes.
 
 ## Scoring
 
@@ -366,12 +377,13 @@ emitters populated by `triggerStep()` calls.
 ## Extension points
 
 - **New protocol steps:** edit
-  `src/content/<protocol>/protocol.yaml`, add a `completionPath` block
-  (kind + required fields), wire a matching `triggerStep(id)` call in the
-  scene that owns the step, and re-run
-  [tools/build_protocol_data.py](../tools/build_protocol_data.py). See
-  [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) and
-  [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md).
+  `src/content/<protocol>/protocol.yaml`, add a `step` with its
+  `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
+  re-run [tools/build_protocol_data.py](../tools/build_protocol_data.py).
+  See [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) and
+  [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md). (The current
+  runtime still expects the retired `completionPath` schema; the
+  code-migration plan switches it to the two-level model.)
 - **New scenes:** create a folder `src/scenes/<scene>/` with `<scene>.yaml`
   (capabilities + items + optional `elementId`) and `<scene>.ts` (a
   `SceneAdapter` implementation with `dispatchInteraction(itemId, ctx)` and

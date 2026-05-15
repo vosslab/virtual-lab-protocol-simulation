@@ -1,4 +1,12 @@
-# Plan: Design a unified, pedagogy-first protocol interaction vocabulary
+# Plan: Protocol step-vocabulary refinement to a two-level step and interaction model
+
+> **Superseded / historical.** This document predates the ratified unified
+> interaction vocabulary and uses earlier, abandoned framing. The final model
+> is the two-level `protocol -> step -> interaction -> response` spec. See
+> [unified_interaction_vocabulary_design.md](unified_interaction_vocabulary_design.md)
+> and the canonical docs [PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md) and
+> [SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md). Kept for historical context only;
+> do not use it to guide new work.
 
 ## Context
 

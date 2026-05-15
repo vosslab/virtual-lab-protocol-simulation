@@ -20,6 +20,22 @@ but it is not a full protocol walkthrough.
 The goal is to prove that a mini-protocol is playable through visible browser
 interactions, not merely schema-valid.
 
+## Target-state vs current-code
+
+This guide is **current-code**: it describes the walker as it runs today,
+against the current runtime. The current runtime and walker still dispatch
+on the retired `completionPath` schema (`completionPath.kind`,
+`interactionSequence` / `directTool` / `modal` / `multipleChoice`, `nextId`,
+`heldLiquid` -- see the retired-terms table in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). The target-state interaction model -- a `step` wrapping an
+ordered `sequence` of four-slot `interaction` blocks, with `step_validator`,
+`outcome`, and `next_step` -- is defined in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Migrating the runtime and
+the walker to that model is the follow-on code-migration plan's job; until
+that lands, the walker dispatch and progress predicates documented below
+reflect the legacy schema, and that is the honest current state, not a
+contradiction of the canonical vocabulary.
+
 ## System overview
 
 The walkthrough has four layers:

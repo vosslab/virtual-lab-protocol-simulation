@@ -52,8 +52,8 @@ type-check pass uses [src/tsconfig.json](../src/tsconfig.json).
 | [src/game_state.ts](../src/game_state.ts) | `GameState`, mutation helpers, `completeStep()` |
 | [src/cell_model.ts](../src/cell_model.ts) | Cell population and drug-response model |
 | [src/scoring.ts](../src/scoring.ts) | Score calculation across four categories |
-| [src/interaction_resolver.ts](../src/interaction_resolver.ts) | Resolves current interaction from `completionPath` |
-| [src/step_dispatch.ts](../src/step_dispatch.ts) | Maps step kind to handlers |
+| [src/interaction_resolver.ts](../src/interaction_resolver.ts) | Resolves the current interaction in a step (current-code completion-path schema) |
+| [src/step_dispatch.ts](../src/step_dispatch.ts) | Maps the current-code step shape to handlers |
 | [src/protocol_ui.ts](../src/protocol_ui.ts) | Protocol panel rendering |
 | [src/ui_rendering.ts](../src/ui_rendering.ts) | Sidebar HUD, meters, results screen |
 | [src/professor_overlay.ts](../src/professor_overlay.ts) | In-game hint overlay |
@@ -154,7 +154,7 @@ for the layered model.
 | [content/drug_dilution_setup/](../content/drug_dilution_setup/) | Mini-protocol: stock to working-solution dilution prep |
 | [content/plate_drug_treatment/](../content/plate_drug_treatment/) | Mini-protocol: 96-well plate drug additions |
 | [content/mtt_assay_readout/](../content/mtt_assay_readout/) | Mini-protocol: MTT assay plate-reader readout |
-| [tests/content/dev_smoke/bench_direct_check/](../tests/content/dev_smoke/bench_direct_check/) | Developer smoke protocol (bench `directTool` interaction; exempt from mini-protocol gates) |
+| [tests/content/dev_smoke/bench_direct_check/](../tests/content/dev_smoke/bench_direct_check/) | Developer smoke protocol (single-interaction bench check; exempt from mini-protocol gates) |
 | [tests/content/dev_smoke/plate_reader_check/](../tests/content/dev_smoke/plate_reader_check/) | Developer smoke protocol (plate-reader modal; exempt from mini-protocol gates) |
 | [src/legacy_tc_tools.ts](../src/legacy_tc_tools.ts) | Legacy types, deletion deferred to M9 (moved from `content/tools.ts`) |
 | [src/legacy_tc_validate.ts](../src/legacy_tc_validate.ts) | Legacy validator helpers, deletion deferred to M9 (moved from `content/validate.ts`) |

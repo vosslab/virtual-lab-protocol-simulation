@@ -94,10 +94,11 @@ the individual gestures live inside it in an ordered `sequence`.
 - A `scene_operation` requires `type` plus that type's documented
   typed fields.
 
-The `interaction` has exactly four slots. There is no interaction
-`name` in the tight spec (deferred, not forbidden forever) and no
-separate interaction task-type slot -- the target's `kind` carries
-the task semantics.
+The `interaction` has exactly four slots. The initial tight spec
+uses four interaction slots: `target`, `gesture`, `validator`, and
+`response`. Referenced interaction names are deferred until a later
+plan shows the need. There is no separate interaction task-type
+slot -- the target's `kind` carries the task semantics.
 
 ### The `protocol` level
 
@@ -379,8 +380,10 @@ anything visible in the scene belongs in `scene_operations`.
 ### State change is explicit only
 
 State change is **explicit in a `response` via a `scene_operation`
-mutation only.** There is no `state_update` field and no arbitrary
-non-visual state path. If a protocol later proves it needs
+mutation only.** In the ratified tight spec, `response` has two
+fields: `scene_operations` and optional `feedback`. Additional
+bookkeeping paths require a future evidence-gated vocabulary
+update. If a protocol later proves it needs
 non-visual bookkeeping no `scene_operation` can carry, that is
 evidence for a future plan under the cost guardrail; the tight spec
 does not assume it.
@@ -451,9 +454,11 @@ state. The M3 disposition was Option 2: instrument-produced data
 stays `feedback`-only in this vocabulary pass, and a candidate
 ninth primitive (working names `DataReadout` or
 `InstrumentReadDisplayChange`) is carried forward as a named
-follow-on proposal for the code-migration plan. It is **not**
-current vocabulary; do not author it. It is mentioned here only as
-a noted future proposal.
+follow-on proposal for the code-migration plan. Instrument-produced
+data is deferred to the follow-on code-migration plan. Until that
+primitive is ratified, instrument results are represented as
+`feedback`-only. It is mentioned here only as a noted future
+proposal.
 
 ## Domain verbs
 
@@ -1038,6 +1043,7 @@ no `completionPath` and no `kind` discriminator in the new model.
 | Retired | Use instead | Reason |
 | --- | --- | --- |
 | `action` (bare, overloaded) | `gesture` (learner input), `scene_operation` (scene change), or `validator` (the correctness check) | the overloaded legacy term that confused learner input with scene response |
+| `mode` | the `gesture` slot | the second axis in the retired `target + mode + action` model; the ratified model uses the `gesture` slot instead (`click`, `drag`, `adjust`, `select`, `type`), and the old `dial` mode value is now the `adjust` gesture |
 | "click target" | **`target`** (protocol side) / **`scene object`** (scene side) | a UI/DOM-level phrase that never belonged in the protocol vocabulary |
 | `stateChange` / `heldLiquid` / `consumesVolumeMl` / `colorKey` | a `LiquidDisplayChange` `scene_operation` in a `response` | hand-authored camelCase state blocks; state change is now explicit in a `scene_operation` mutation only |
 | `completionEvent` (authored, no naming convention) | the runtime-derived `<step_name>_complete` / `<equipment_name>_elapsed` event | events are derived by the runtime, not hand-authored, and follow one snake_case convention |
@@ -1045,9 +1051,6 @@ no `completionPath` and no `kind` discriminator in the new model.
 | `nextId` | **`next_step`** | a numeric-style camelCase flow field; flow is named, snake_case |
 | `volumeMl` (on a `click` interaction) | `volume_ml` inside a `LiquidDisplayChange`, or a `target_with_value` set-point | a camelCase legacy field; also the timed-click regression when used to skip an `adjust` gesture |
 | `targetItems` / `usedItems` / `requiredItems` | derived from the `sequence`'s `target` slots | legacy step-level item summaries; not authored vocabulary in the new model |
-| `state_update` (on a `response`) | a `scene_operation` mutation | the dropped non-visual bookkeeping field; there is no arbitrary non-visual state path |
-| `sequence_mode` | (removed) | the dropped unordered-sequence slot; `sequence` order always matters |
-| interaction `name` | (deferred) | dropped from the tight spec; a later plan may reintroduce it with evidence |
 
 All authored YAML keys and identifier values are snake_case. The
 only PascalCase in the vocabulary is the eight `scene_operation`
