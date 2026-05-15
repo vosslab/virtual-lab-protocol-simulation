@@ -9,12 +9,12 @@ laboratory techniques. The game is authored as TypeScript ES modules under
 [src/](../src/) and bundled by esbuild into a browser bundle. Two artifacts
 are produced from the same sources:
 
-- A GitHub Pages-ready directory at [dist/](../dist/) (separate `index.html`,
+- A GitHub Pages-ready directory at `dist/` (separate `index.html`,
   `style.css`, `main.js`).
 - A portable, fully self-contained single-file HTML at
-  [dist-single/game.html](../dist-single/) for sharing without a server.
+  `dist-single/game.html` for sharing without a server.
 
-Protocol content lives as YAML in [src/content/](../src/content/) and is
+Protocol content lives as YAML in `src/content/` and is
 compiled into TypeScript modules by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
 before each build. A pytest test suite plus Playwright browser tests support
 local development.
@@ -141,19 +141,19 @@ it is the follow-on code-migration plan's job.
 
 #### Content and generated data facades
 
-- [src/content/cell_culture/](../src/content/cell_culture/) - Active
+- `src/content/cell_culture/` - Active
   protocol authored as YAML (items, reagents, protocol).
 - Tutorial protocols (minimal protocols used by walker exercises):
-  [src/content/tutorial_bench_direct/](../src/content/tutorial_bench_direct/),
-  [src/content/tutorial_cell_counter/](../src/content/tutorial_cell_counter/),
-  [src/content/tutorial_drug_dilution/](../src/content/tutorial_drug_dilution/),
-  [src/content/tutorial_hemocytometer_count/](../src/content/tutorial_hemocytometer_count/),
-  [src/content/tutorial_hood_transfer/](../src/content/tutorial_hood_transfer/),
-  [src/content/tutorial_pbs/](../src/content/tutorial_pbs/),
-  [src/content/tutorial_plate_drug_additions/](../src/content/tutorial_plate_drug_additions/),
-  [src/content/tutorial_plate_reader/](../src/content/tutorial_plate_reader/),
-  [src/content/tutorial_split/](../src/content/tutorial_split/).
-- [src/content/tools.ts](../src/content/tools.ts), [src/content/validate.ts](../src/content/validate.ts) -
+  `src/content/tutorial_bench_direct/`,
+  `src/content/tutorial_cell_counter/`,
+  `src/content/tutorial_drug_dilution/`,
+  `src/content/tutorial_hemocytometer_count/`,
+  `src/content/tutorial_hood_transfer/`,
+  `src/content/tutorial_pbs/`,
+  `src/content/tutorial_plate_drug_additions/`,
+  `src/content/tutorial_plate_reader/`,
+  `src/content/tutorial_split/`.
+- `src/content/tools.ts`, `src/content/validate.ts` -
   Build-side helpers that mirror generated data.
 - **Authored content facades:**
   - [src/protocol.ts](../src/protocol.ts) - Re-exports protocol steps and protocol ID
@@ -200,7 +200,7 @@ Two build entry points share a common pre-step:
 3. `npx tsc --noEmit -p src/tsconfig.json` type-checks (no JS emit from tsc).
 4. `npx esbuild src/init.ts --bundle ...` produces the JS bundle.
 
-[build_github_pages.sh](../build_github_pages.sh) wipes [dist/](../dist/),
+[build_github_pages.sh](../build_github_pages.sh) wipes `dist/`,
 emits `--format=esm` to `dist/main.js`, copies `style.css`, assembles
 `dist/index.html` from `head.html` + `body.html` + `tail.html` (linking
 the external CSS and JS), and writes `.nojekyll` for GitHub Pages.
@@ -215,7 +215,7 @@ neither script touches the other's output directory.
 
 [run_web_server.sh](../run_web_server.sh) runs
 [build_github_pages.sh](../build_github_pages.sh) and serves
-[dist/](../dist/) on a LAN-visible HTTP port (default 5080). This is the
+`dist/` on a LAN-visible HTTP port (default 5080). This is the
 canonical preview path. Playwright tests bootstrap-build their own
 artifact via [tests/playwright/build_game_if_missing.mjs](../tests/playwright/build_game_if_missing.mjs).
 

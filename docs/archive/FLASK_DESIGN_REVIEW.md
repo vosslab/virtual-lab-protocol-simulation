@@ -147,5 +147,5 @@ All three variants have been tested for:
 
 ## Related Documentation
 
-- Plan: [docs/fluttering-squishing-firefly.md](docs/fluttering-squishing-firefly.md) Section 5, Milestone M5
+- Plan: `docs/fluttering-squishing-firefly.md` Section 5, Milestone M5
 - Protocol assets guide: `docs/REPO_STYLE.md`

@@ -321,7 +321,7 @@ candidates.
 Figure 1  Figure showing a person
 sitting at a computer taking a test.
 
-See Accessibility and Accommodations[](h.gio2zmx6d5zb) (Section 5) for
+See Accessibility and Accommodations`h.gio2zmx6d5zb` (Section 5) for
 more information on personalizing the assessment experience for
 candidates.
 

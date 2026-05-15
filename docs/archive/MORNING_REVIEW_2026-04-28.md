@@ -10,21 +10,21 @@ All milestones M1 through M5 landed overnight. Walkthrough 25/25 throughout.
 - **M1.5**: `parts/interaction_resolver.ts` routes the first 8 steps' clicks data-driven
   from YAML `allowedInteractions`. `devel/test_yaml_swap_runtime.mjs` proves a YAML-only
   edit changes runtime behavior.
-- **M2**: 25-step audit at [docs/STEP_AUDIT_2026-04-28.md](docs/STEP_AUDIT_2026-04-28.md).
+- **M2**: 25-step audit at `docs/STEP_AUDIT_2026-04-28.md`.
   Wired `microscope` into `count_cells`, marked unused items `visualOnly`. New
   `devel/test_step_completeness.mjs` (152/152) wired into `walkthrough.sh`.
 - **M3**: Professor coach card overlay (top-left, `pointer-events:none`, mood swings on
   errors/successes). Bench equipment widthScale ratios applied; `back_shelf` populated
   with `tip_box`, `glove_box`, `waste_tray`. `devel/test_layout_metrics.mjs` enforces
-  invariants. See [docs/LAYOUT_METRICS.md](docs/LAYOUT_METRICS.md).
+  invariants. See `docs/LAYOUT_METRICS.md`.
 - **M4**: Serological pipette liquid fill via `anchor_liquid_clip`. `gameState.heldLiquid`
   added; legacy `_with_X` tokens kept for one milestone. Color map in
   `parts/style_constants.ts` matches `reagents.yaml`. See
-  [docs/PIPETTE_LIQUID_CONVENTION.md](docs/PIPETTE_LIQUID_CONVENTION.md).
+  `docs/PIPETTE_LIQUID_CONVENTION.md`.
 - **M5**: Two flask variants shipped as available assets:
   `assets/equipment/t75_flask_v2.svg` (vented modern) and `t75_flask_v3.svg` (classic
   Corning). Default unchanged. See
-  [docs/FLASK_DESIGN_REVIEW.md](docs/FLASK_DESIGN_REVIEW.md) for side-by-side screenshots.
+  `docs/FLASK_DESIGN_REVIEW.md` for side-by-side screenshots.
 
 ## Decisions awaiting you
 

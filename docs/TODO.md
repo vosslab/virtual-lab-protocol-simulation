@@ -55,7 +55,7 @@ triage; M1c does NOT fix either. See the M1b CHANGELOG entry under
 ### `tests/_compile_for_test.mjs` missing helper (RESOLVED 2026-05-09)
 
 - Outcome: fixed. M6 of the SVG asset pipeline refactor authored the
-  missing helper at [tests/_compile_for_test.mjs](../tests/_compile_for_test.mjs)
+  missing helper at `tests/_compile_for_test.mjs`
   (uses `npx esbuild --bundle --platform=node --define:window=globalThis`
   to compile a `.ts` entry to a tempdir `.mjs` and dynamic-import it).
   Both [tests/test_svg_color_patch.mjs](../tests/test_svg_color_patch.mjs)

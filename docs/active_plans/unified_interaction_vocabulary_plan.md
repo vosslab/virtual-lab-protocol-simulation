@@ -109,7 +109,7 @@ is the `gesture` slot (`click`, `drag`, `adjust`, `select`, `type`). The word
 `action` is retired.
 
 QTI lineage and its limits. The model inherits QTI's conceptual decomposition
-(see [QTI_v3_SPEC.md](QTI_v3_SPEC.md), a reference copy of the QTI 3 guide):
+(see `QTI_v3_SPEC.md`, a reference copy of the QTI 3 guide):
 `prompt` is QTI's item body and `qti-prompt`; a `step` holding a `sequence` of
 interactions is QTI's multipart item; the interaction `validator` and the
 `step_validator` together are QTI's `qti-response-processing` at two scopes;

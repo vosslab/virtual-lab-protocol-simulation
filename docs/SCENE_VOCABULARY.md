@@ -314,7 +314,7 @@ description) and **target-state** (the target-resolution and
 gesture-rendering responsibilities).
 
 The per-scene TypeScript object that implements `SceneAdapter`
-([src/scenes/scene_registry.ts:31-36](../src/scenes/scene_registry.ts)).
+(`src/scenes/scene_registry.ts:31-36`).
 Today it owns `render(ctx)` and `dispatchInteraction(itemId, ctx)` for
 one scene id and is registered at module load via
 `registerScene(adapter)`. On the target-state unified model, the adapter
@@ -374,7 +374,7 @@ Status: **current-code.**
 
 A reusable runtime mechanic shared across scenes. Implements the
 `SceneCapability` interface
-([src/scenes/scene_driver.ts:35-73](../src/scenes/scene_driver.ts)) with
+(`src/scenes/scene_driver.ts:35-73`) with
 `mount`, `onStepChange`, `onClick`, and `unmount`. Capability modules
 self-register via `registerCapability(capability)` at module load. Six
 capability ids exist; see [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md)
@@ -477,7 +477,7 @@ Status: **current-code.**
 The DOM element id where the driver attaches its capture-phase click
 listener. Optional in the YAML; defaults to `${sceneId}-scene` when
 absent. The runtime read happens in
-[src/scenes/scene_driver.ts:174-175](../src/scenes/scene_driver.ts).
+`src/scenes/scene_driver.ts:174-175`.
 Used by scenes whose DOM id does not match `${sceneId}-scene`.
 
 ### instrument-overlay
@@ -531,7 +531,7 @@ The adapter's `render(ctx)` method. Rebuilds the scene's DOM/SVG and
 reattaches its listeners on every frame. Required (not optional) on
 `SceneAdapter` since the end of the A6b migration. Called from
 `runSceneRender(sceneId)` at
-[src/scenes/scene_driver.ts:91-108](../src/scenes/scene_driver.ts).
+`src/scenes/scene_driver.ts:91-108`.
 
 ### dispatchInteraction
 
@@ -549,7 +549,7 @@ Status: **current-code.**
 
 The runtime context object created by the driver and passed to capability
 and adapter methods. Defined at
-[src/scenes/scene_driver.ts:21-29](../src/scenes/scene_driver.ts).
+`src/scenes/scene_driver.ts:21-29`.
 Carries `sceneId` and a `dispatchInteraction(itemId)` callback bound to
 the resolved adapter. Open for extension; capability-cross-talk fields
 (DOM container, event dispatcher, item registry) are planned in later
@@ -561,7 +561,7 @@ Status: **current-code.**
 
 The minimal click-event target shape the driver builds when a click
 arrives on a `data-item-id` element. Defined at
-[src/scenes/scene_driver.ts:12-15](../src/scenes/scene_driver.ts). Today
+`src/scenes/scene_driver.ts:12-15`. Today
 the only required field is `itemId`; the index signature reserves room
 for capability-specific extension.
 
@@ -579,7 +579,7 @@ click-event payload only. See
 Status: **current-code.**
 
 The internal `SCENE_REGISTRY` map at
-[src/scenes/scene_registry.ts:38](../src/scenes/scene_registry.ts). Keyed
+`src/scenes/scene_registry.ts:38`. Keyed
 by scene id; values are `SceneAdapter` objects. Populated by
 `registerScene(adapter)` calls that run at module load when each scene
 file is imported from [src/init.ts](../src/init.ts). Looked up via
@@ -592,7 +592,7 @@ objects within one scene.
 Status: **current-code.**
 
 The `CAPABILITY_REGISTRY` map at
-[src/scenes/scene_registry.ts:18](../src/scenes/scene_registry.ts). Keyed
+`src/scenes/scene_registry.ts:18`. Keyed
 by capability id; values are `SceneCapability` objects. Populated by
 `registerCapability(capability)` calls that run at module load when each
 capability file is imported from [src/init.ts](../src/init.ts). Read by

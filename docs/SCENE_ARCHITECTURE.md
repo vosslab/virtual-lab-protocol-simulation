@@ -72,14 +72,14 @@ behavior; YAML carries that scene id's static configuration.
 The driver is the universal scene runtime. Two entry points matter:
 
 - `runSceneRender(sceneId)` at
-  [src/scenes/scene_driver.ts:91-108](../src/scenes/scene_driver.ts) -
+  `src/scenes/scene_driver.ts:91-108` -
   Looks up the registered adapter for `sceneId`, builds a `SceneContext`, and
   calls `adapter.render(ctx)`. Throws a loud error if no adapter is
   registered. Called every frame from the `setRenderGame` switch in
   [src/init.ts](../src/init.ts).
 
 - `runScene(sceneId)` at
-  [src/scenes/scene_driver.ts:123-210](../src/scenes/scene_driver.ts) -
+  `src/scenes/scene_driver.ts:123-210` -
   Called once per scene (the first time the scene is shown). Looks up the
   scene config from `SCENE_CONFIGS`, mounts every declared capability, and
   attaches a single capture-phase click listener to the scene's DOM element.
@@ -106,16 +106,16 @@ element and feeds it to capability `onClick` handlers as a `ClickTarget`.
 The registry is two simple maps and four functions:
 
 - `registerCapability(capability)` and the `CAPABILITY_REGISTRY` map at
-  [src/scenes/scene_registry.ts:18,54-60](../src/scenes/scene_registry.ts) -
+  `src/scenes/scene_registry.ts:18,54-60` -
   Capability modules call this at module load. Duplicate ids throw loudly.
 
 - `registerScene(adapter)` and an internal `SCENE_REGISTRY` map at
-  [src/scenes/scene_registry.ts:38,76-83](../src/scenes/scene_registry.ts) -
+  `src/scenes/scene_registry.ts:38,76-83` -
   Scene adapter modules call this at module load. Duplicate scene ids throw
   loudly.
 
 - `getRegisteredScene(sceneId)` at
-  [src/scenes/scene_registry.ts:97-99](../src/scenes/scene_registry.ts) -
+  `src/scenes/scene_registry.ts:97-99` -
   The driver uses this to look up the adapter for a scene. Returns
   `undefined` if not registered (the driver throws on `undefined` so the
   registry stays a pure data-store).
@@ -261,7 +261,7 @@ A single click-to-frame round trip looks like this:
    `triggerStep(stepId)` to advance the protocol, and finally calls
    `renderGame()`.
 6. `renderGame()` runs the `setRenderGame` switch in
-   [src/init.ts:216-287](../src/init.ts). The case for the active scene
+   `src/init.ts:216-287`. The case for the active scene
    calls `runSceneRender(sceneId)`.
 7. `runSceneRender` looks up the adapter and calls `adapter.render(ctx)`.
    The adapter rebuilds its DOM/SVG and reattaches its listeners.

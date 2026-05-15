@@ -22,7 +22,7 @@ For local development with a web server, use [run_web_server.sh](../run_web_serv
 bash run_web_server.sh
 ```
 
-This rebuilds [dist/](../dist/) and serves it on a local port. The root URL
+This rebuilds `dist/` and serves it on a local port. The root URL
 (`/`) opens a browser launcher where players can choose the full protocol or
 one of the short tutorials. Direct links use the protocol query parameter:
 
@@ -47,7 +47,7 @@ phases:
   absorbance, view results).
 
 The full ordered step list is generated from
-[src/content/cell_culture/protocol.yaml](../src/content/cell_culture/protocol.yaml);
+`src/content/cell_culture/protocol.yaml`;
 see [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) for the
 authoring contract and
 [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)
@@ -74,7 +74,7 @@ A 1-3 star rating is shown on the results screen.
 ## Inputs and outputs
 
 - **Source:** TypeScript modules in [src/](../src/) and HTML/CSS templates
-- **Build outputs:** [dist/](../dist/) for the served build and
+- **Build outputs:** `dist/` for the served build and
   `dist-single/game.html` for the portable single-file export
 - **Test outputs:** `report_*.txt`, `test-results/walker/`, and other
   `test-results/` browser screenshots and reports

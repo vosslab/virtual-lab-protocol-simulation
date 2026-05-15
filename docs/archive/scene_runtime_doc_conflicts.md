@@ -9,7 +9,7 @@
 
 This is the M0 conflict-audit table for the seven `docs/SCENE_*.md` and
 `docs/PROTOCOL_*.md` docs against [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md)
-and the plan at [docs/active_plans/scene_runtime_spine_plan.md](scene_runtime_spine_plan.md).
+and the plan at `docs/active_plans/scene_runtime_spine_plan.md`.
 
 Status values:
 

@@ -15,15 +15,15 @@ The cell-culture-game-claude codebase has been moving from
 TypeScript-source-of-truth scenes toward data-driven scenes for
 several patch series. The 2026-05-09 render-ownership patch series
 (commit `b983004`, archived plan
-[docs/archive/scene_render_migration_2026-05-09.md](../../nsh/cell-culture-game-claude/docs/archive/scene_render_migration_2026-05-09.md))
+`docs/archive/scene_render_migration_2026-05-09.md`)
 shipped one slice; the SVG pipeline retirement of `src/svg_globals.ts`
 just shipped another (
-[docs/SVG_PIPELINE.md](../../nsh/cell-culture-game-claude/docs/SVG_PIPELINE.md)).
+`docs/SVG_PIPELINE.md`).
 Three concrete gaps remain visible to the user and each must close
 before the migration is honestly "done":
 
 1. **Legacy adapter code lingers**, per
-   [docs/ROADMAP.md](../../nsh/cell-culture-game-claude/docs/ROADMAP.md)
+   `docs/ROADMAP.md`
    "Scene adapter responsibility-seam decomposition". Each adapter
    still owns dispatch wiring, completion-event emission, modal
    rendering, and a compatibility-token interaction ladder in one
@@ -107,7 +107,7 @@ importer in one diff, because the prior render-ownership migration
 showed that two-patch sequencing leaves the codebase importing both
 old and new paths at the same time. Repo principles `Fix the
 design, not the symptom` and `Atomic task decomposition` from
-[docs/REPO_STYLE.md](../../nsh/cell-culture-game-claude/docs/REPO_STYLE.md)
+`docs/REPO_STYLE.md`
 are the load-bearing references.
 
 ## Scope
@@ -1316,7 +1316,7 @@ patches assume Plan B is closed.
 | C5 | C | docs | Close-out + archive + docs freshness grep |
 
 Reporting format per
-[docs/REPO_STYLE.md](../../nsh/cell-culture-game-claude/docs/REPO_STYLE.md):
+`docs/REPO_STYLE.md`:
 each landed patch or tightly related patch group updates
 `docs/CHANGELOG.md` with the user-visible change, important
 implementation choice, failure, or verification evidence -- not a
@@ -1330,7 +1330,7 @@ Patches B10 and B11 are the largest; they may split into a
 data-move sub-patch and an importer-retire sub-patch if review
 becomes the bottleneck. Doer cadence guidance: 1-2 reviewable
 patches per coder per week, per
-[references/CAPACITY_AND_SIZING.md](../skills/blueprint-plan-drafter/references/CAPACITY_AND_SIZING.md).
+`references/CAPACITY_AND_SIZING.md`.
 Each patch is bounded by its own sub-plan's close criteria and
 needs no proof of work outside that sub-plan.
 

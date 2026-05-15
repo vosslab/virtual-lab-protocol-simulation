@@ -42,14 +42,14 @@ The walkthrough has four layers:
 
 | Layer | File | Responsibility |
 | --- | --- | --- |
-| Built app | [dist/](../dist/) | Browser-rendered game output produced by the build |
+| Built app | `dist/` | Browser-rendered game output produced by the build |
 | Node walker | [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
 | Helper library | [walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers |
 | Python wrapper | [run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Optional build-and-run convenience around the Node walker |
 
 The core loop is:
 
-1. Serve the compiled [dist/](../dist/) directory.
+1. Serve the compiled `dist/` directory.
 2. Launch headless Chromium through Playwright.
 3. Open the requested protocol with `/?protocol=<id>`.
 4. Reset browser persistence with `localStorage.clear()` and reload.
@@ -70,7 +70,7 @@ every intermediate rendered state.
 
 ## What the walkthrough proves
 
-A passing walkthrough proves that the compiled [dist/](../dist/) app can be
+A passing walkthrough proves that the compiled `dist/` app can be
 served locally and completed through the same visible click path a learner uses.
 
 Specifically, it proves:
@@ -117,7 +117,7 @@ is not yet strong enough to prove fine-grained visual pedagogy at every click.
 ## How to run it
 
 Normal walkthroughs use local headless Playwright against the compiled
-[dist/](../dist/) app. Build first, then run the Node walker from the repo root:
+`dist/` app. Build first, then run the Node walker from the repo root:
 
 ```bash
 npm run build
@@ -128,7 +128,7 @@ node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plat
 
 The Node walker:
 
-- Serves [dist/](../dist/) with `python3 -m http.server`.
+- Serves `dist/` with `python3 -m http.server`.
 - Uses port `8126`.
 - Opens `http://127.0.0.1:8126/?protocol=<protocol_name>`.
 - Launches Chromium through the Playwright library.
@@ -153,7 +153,7 @@ The wrapper also supports:
 - `--list-protocols`: list `src/content/*/protocol.yaml` protocol ids.
 - `--wrong-order`: pass wrong-order mode through to the Node walker.
 - `--no-build`: skip its build step and run the walker against the existing
-  [dist/](../dist/) output.
+  `dist/` output.
 
 The three workflows are:
 
@@ -206,7 +206,7 @@ API to place the app in a ready state.
 
 The current sequence is:
 
-1. Start a local static server for [dist/](../dist/).
+1. Start a local static server for `dist/`.
 2. Launch Chromium headlessly with Playwright.
 3. Open `/?protocol=<protocol_name>`.
 4. Wait for browser exports:

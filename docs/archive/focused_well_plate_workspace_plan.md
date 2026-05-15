@@ -4,7 +4,7 @@
 > `well_plate_workspace` scene are NOT pedagogically or interaction
 > complete. The repo is buildable but the scene behavior is not
 > trustworthy enough to keep iterating in-plan. See
-> [docs/active_plans/well_plate_workspace_pause_note.md](docs/active_plans/well_plate_workspace_pause_note.md)
+> `docs/active_plans/well_plate_workspace_pause_note.md`
 > for the verified vs unverified inventory, the reusable artifacts, and
 > the reasons for the pause. Do not mark WP-G1, WP-C1-VISUAL,
 > WP-Bottle-Swap, or breadcrumb cleanup complete. Next work should be a
@@ -92,7 +92,7 @@ Scene code should import SVGs only through `src/svg_assets.ts`. Generic renderer
 
 `well_plate_workspace` is one stable scene. The layout does not switch between separate modes. The current step changes the active process and highlighted objects.
 
-The current scene YAML is too sparse. It declares only `well_plate` as a scene item, so it does not yet describe the source liquids, pipettes, microtube rack, or transfer objects needed for the tutorial.  [oai_citation:0?well_plate_workspace.yaml](sediment://file_000000000d58720c93900a1da16ecd43)
+The current scene YAML is too sparse. It declares only `well_plate` as a scene item, so it does not yet describe the source liquids, pipettes, microtube rack, or transfer objects needed for the tutorial.  `oai_citation:0?well_plate_workspace.yaml`
 
 The scene must render the same major spatial regions throughout the tutorial:
 

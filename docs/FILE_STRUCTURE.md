@@ -10,9 +10,9 @@
 | [VERSION](../VERSION) | CalVer version string |
 | [LICENSE.LGPL_v3](../LICENSE.LGPL_v3) | Code license |
 | [LICENSE.CC_BY_4_0](../LICENSE.CC_BY_4_0) | Content license |
-| [build_github_pages.sh](../build_github_pages.sh) | Canonical bundled build into [dist/](../dist/) |
-| [export_single_file.sh](../export_single_file.sh) | Portable single-file build into [dist-single/](../dist-single/) |
-| [run_web_server.sh](../run_web_server.sh) | Build then serve [dist/](../dist/) on local network |
+| [build_github_pages.sh](../build_github_pages.sh) | Canonical bundled build into `dist/` |
+| [export_single_file.sh](../export_single_file.sh) | Portable single-file build into `dist-single/` |
+| [run_web_server.sh](../run_web_server.sh) | Build then serve `dist/` on local network |
 | [check_codebase.sh](../check_codebase.sh) | Aggregate lint/test gate runner |
 | [dist_clean.sh](../dist_clean.sh) | Clean generated/ and dist/ artifacts |
 | [source_me.sh](../source_me.sh) | Bash environment for Python 3.12 |
@@ -188,7 +188,7 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | [tests/conftest.py](../tests/conftest.py) | Pytest config and `collect_ignore` for `e2e` and `playwright` |
 | [tests/git_file_utils.py](../tests/git_file_utils.py) | Shared git helpers |
 | [tests/test_pyflakes_code_lint.py](../tests/test_pyflakes_code_lint.py) | Pyflakes lint gate |
-| [tests/test_bandit_security.py](../tests/test_bandit_security.py) | Bandit security scan |
+| `tests/test_bandit_security.py` | Bandit security scan |
 | [tests/test_ascii_compliance.py](../tests/test_ascii_compliance.py) | ASCII source check |
 | [tests/test_indentation.py](../tests/test_indentation.py) | Tab indentation enforcement |
 | [tests/test_whitespace.py](../tests/test_whitespace.py) | Trailing whitespace check |
@@ -201,7 +201,7 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | [tests/test_test_naming_conventions.py](../tests/test_test_naming_conventions.py) | Test layout and naming linting |
 | [tests/test_svg_pipeline.mjs](../tests/test_svg_pipeline.mjs) | SVG asset and manifest generation tests |
 | [tests/test_svg_color_patch.mjs](../tests/test_svg_color_patch.mjs) | Pure Node test for color-patch logic |
-| [tests/_compile_for_test.mjs](../tests/_compile_for_test.mjs) | Bootstrap bundler for tests |
+| `tests/_compile_for_test.mjs` | Bootstrap bundler for tests |
 | [tests/check_ascii_compliance.py](../tests/check_ascii_compliance.py) | Single-file ASCII checker |
 | [tests/fix_ascii_compliance.py](../tests/fix_ascii_compliance.py) | Single-file ASCII fixer |
 | [tests/fix_whitespace.py](../tests/fix_whitespace.py) | Whitespace fixer |
@@ -240,7 +240,7 @@ Python E2E runners belong here as `e2e_*.sh` or `e2e_*.py`. The legacy
 single-file parity snapshot lives under
 [tests/fixtures/](../tests/fixtures/).
 
-### [docs/](../docs/) - Documentation
+### `docs/` - Documentation
 
 | File | Purpose |
 | --- | --- |
@@ -310,8 +310,8 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 
 | Path | Source |
 | --- | --- |
-| [dist/](../dist/) | [build_github_pages.sh](../build_github_pages.sh) output (GitHub Pages bundle) |
-| [dist-single/game.html](../dist-single/) | [export_single_file.sh](../export_single_file.sh) output (portable single-file) |
+| `dist/` | [build_github_pages.sh](../build_github_pages.sh) output (GitHub Pages bundle) |
+| `dist-single/game.html` | [export_single_file.sh](../export_single_file.sh) output (portable single-file) |
 | `generated/svg_assets/*.ts` (per-asset SVG constants + `index.ts` barrel) | [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) |
 | `generated/svg_manifest.ts` (`SVG_IDS`, `SVG_GROUPS`) | [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) |
 | `generated/protocol_data.ts`, `generated/inventory_data.ts`, `generated/scene_data.ts` (gitignored, regenerated; consumed via `src/protocol.ts`, `src/inventory.ts`, `src/scene_configs.ts` facades) | [tools/build_protocol_data.py](../tools/build_protocol_data.py), [tools/build_scene_data.py](../tools/build_scene_data.py) |
@@ -327,10 +327,10 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 | Game runtime | New `.ts` file under [src/](../src/), imported from [src/init.ts](../src/init.ts) or a scene |
 | New scene | [src/scenes/](../src/scenes/) with scene YAML, an adapter, a side-effect import in [src/init.ts](../src/init.ts), and a render switch case |
 | New step UI / emitter | [src/steps/](../src/steps/) |
-| Protocol content | New folder under [src/content/](../src/content/) with `items.yaml`, `reagents.yaml`, `protocol.yaml` |
+| Protocol content | New folder under `src/content/` with `items.yaml`, `reagents.yaml`, `protocol.yaml` |
 | Build/audit tooling | [tools/](../tools/) (Python, single-purpose) |
 | Game styles | [src/style.css](../src/style.css) |
 | Pytest tests | `tests/test_*.py` |
 | Browser tests | `tests/playwright/test_*.mjs` (smoke) or `tests/playwright/e2e/*.mjs` (walkthroughs) |
 | Non-browser E2E | `tests/e2e/e2e_*.sh` or `e2e_*.py` |
-| Documentation | [docs/](../docs/) with SCREAMING_SNAKE_CASE filename |
+| Documentation | `docs/` with SCREAMING_SNAKE_CASE filename |
