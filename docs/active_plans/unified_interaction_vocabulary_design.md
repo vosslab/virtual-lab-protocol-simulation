@@ -15,6 +15,8 @@ typed-primitive vocabulary, and the domain-verb composition mechanism. WP-STA1
 tightens the model to the linear spec and defines the interaction `validator`,
 the `step_validator`, the `outcome` mapping, the runtime state model, the
 event-emission rule, and the `TimedWait` seventh `scene_operation` primitive.
+WP-SOP1 later adds `SetPointDisplayChange` as the eighth `scene_operation`
+primitive, resolving plan open question OQ-21 -- the set-point scene operation.
 The tight model is `protocol -> step(name, prompt, sequence, step_validator,
 outcome, next_step) -> interaction(target, gesture, validator, response) ->
 response(scene_operations[], feedback?)`.
@@ -26,9 +28,8 @@ from `response`. It defers complex branching: `outcome` stays the simple
 `scene_operations` and optional `feedback`. The interaction `validator` and the
 `step_validator` are named presets with typed parameters, drawn from a
 documented preset library. The pedagogy-first rule (WP-PED1) and the
-scene/protocol boundary (WP-BND1) are written by later work packages. This doc
-names those remaining slots and gives each a one-line charter, but it does not
-specify their internals.
+scene/protocol boundary (WP-BND1) are also written; all M2 work packages have
+landed.
 
 ## What changed from the first pass
 
@@ -220,7 +221,7 @@ controls.
   `entry_step` targets, and `next_step` targets are always snake_case -- never
   numbers, never opaque codes. The vocabulary is uniformly snake_case: every
   YAML key and every authored identifier value uses snake_case. The only
-  exception is the seven `scene_operation` primitive type names, which stay
+  exception is the eight `scene_operation` primitive type names, which stay
   PascalCase because they are class-like type names used as the value of the
   `type` field.
 
@@ -530,13 +531,12 @@ value -- the real pipetting skill the timed-click anti-pattern destroys.
   gesture: adjust
   validator: { preset: target_with_value, value: { volume_ml: 4 } }
   response:
-    # the pipette's set-point display updates to the chosen volume
+    # the pipette's volume set-point display updates to the chosen volume
     scene_operations:
-      - type: LiquidDisplayChange
-        target: serological_pipette
-        liquid: pbs
-        volume_ml: 4
-        operation: hold
+      - type: SetPointDisplayChange
+        target: pipette_volume_display
+        value:
+          volume_ml: 4
     feedback:
       correct: Pipette set to 4 mL.
       incorrect: Set the pipette volume to 4 mL.
@@ -545,10 +545,13 @@ value -- the real pipetting skill the timed-click anti-pattern destroys.
 The skill taught: a volume set-point. The `target` kind is a liquid-handling
 tool with a continuous control; the `gesture` is `adjust`; the
 `target_with_value` preset checks the control reached `volume_ml: 4`. The
-pedagogy lives in the `gesture` plus the validator preset: `adjust` makes the
-student move the control, and `target_with_value` checks they moved it to the
-right value. Swap `adjust` for `click` and the set-point skill is gone -- that
-is the regression.
+`response` carries a `SetPointDisplayChange` -- setting the dial updates the
+pipette's volume set-point display, which is a set-point change, not the pipette
+holding any liquid. No liquid is drawn yet; that happens in a later `click`
+interaction on a reagent source. The pedagogy lives in the `gesture` plus the
+validator preset: `adjust` makes the student move the control, and
+`target_with_value` checks they moved it to the right value. Swap `adjust` for
+`click` and the set-point skill is gone -- that is the regression.
 
 ### The connection to ratification
 
@@ -657,7 +660,7 @@ the two are deliberately separate slots.
 
 ### The initial primitive set
 
-Seven `scene_operation` primitives are ratified for the initial vocabulary:
+Eight `scene_operation` primitives are ratified for the initial vocabulary:
 
 | Primitive | What the scene does |
 | --- | --- |
@@ -667,12 +670,21 @@ Seven `scene_operation` primitives are ratified for the initial vocabulary:
 | `SceneChange` | Transitions the scene context to another scene. |
 | `LayoutMove` | Moves or re-lays-out a scene object via the layout engine. |
 | `LiquidDisplayChange` | Updates a tracked liquid: appears, volume changes, or well contents update. |
+| `SetPointDisplayChange` | Updates an adjustable set-point shown on a configured display target. |
 | `TimedWait` | Runs a timed phase on a piece of equipment, with a visible progress display. |
 
 The first five are the first pass's mis-named "base actions".
 `LiquidDisplayChange` was forced by the M2 fit check (see below). `TimedWait`
 is the seventh primitive, ratified by WP-STA1 to close the timed-wait residual
-gap (see below). The set is closed but extensible under the cost guardrail.
+gap (see below). `SetPointDisplayChange` is the eighth primitive, ratified by
+WP-SOP1 to close the set-point gap -- no earlier primitive wrote the set-point
+values the runtime state model already lists (see below). The set is closed but
+extensible under the cost guardrail.
+
+`ColorChange`, `LiquidDisplayChange`, and `SetPointDisplayChange` form a loose
+conceptual `DisplayChange` family: each names a visible display update on a
+target without swapping the asset or moving the object. This is a clarifying
+note only -- the eight primitives stay a flat set, not a nested taxonomy.
 
 ### Every primitive is specified with typed fields
 
@@ -870,6 +882,70 @@ well contents update.
   step-level verb whose sequence chains a `CursorAttach` and several
   `LiquidDisplayChange` operations.
 
+### Primitive: `SetPointDisplayChange`
+
+Updates an adjustable set-point shown on a configured display target.
+
+- **Typed fields:**
+  - `type` (string, literal `SetPointDisplayChange`)
+  - `target` (string, a configured display target, for example
+    `pipette_volume_display` or `power_supply_display`)
+  - `value` (a mapping of the set-point value, for example `{ volume_ml: 4 }`,
+    `{ voltage_v: 150 }`, or `{ ph: 8.0 }`)
+- **What it means:** the named display target now shows the given set-point
+  value. It is the visible scene change caused by an `adjust` gesture -- the
+  student moved a continuous control, and the control's display reflects the
+  new value.
+- **State it may read:** the current set-point value on the display target.
+- **State it may change:** the set-point value tracked for the display target
+  (the "set-point values" runtime state row).
+- **Visual effect:** the configured display target re-renders showing the new
+  set-point value.
+- **What it must not do:** it must not draw, transfer, or carry a liquid (that
+  is `LiquidDisplayChange`), swap an asset (that is `SvgSwap`), move the object
+  (that is `LayoutMove`), or run a timed phase (that is `TimedWait`). It names
+  the set-point change and nothing else. It does not specify which SVG file
+  changes, text versus overlapping SVG layers, or any renderer detail --
+  adjustable values are shown through configured display targets, and the scene
+  adapter decides whether that display is rendered as text, an SVG state,
+  overlay layers, or another rendering strategy. How the `target` display is
+  rendered is WP-BND1 / scene-adapter territory.
+- **Examples:** setting the serological pipette volume to 4 mL in a
+  `cell_culture` or `hood_flask_prep` pipetting step -- the pipette volume
+  display shows `volume_ml: 4`. Setting the SDS-PAGE power supply to 150 V --
+  the power-supply display shows `voltage_v: 150`. Titrating a Miraculin buffer
+  to a target pH shows `ph` on the configured display target. Pipette volume
+  and power-supply voltage set-points both recur across the four source
+  protocols.
+- **Anti-pattern:** expressing a set-point with a `LiquidDisplayChange`
+  `operation: hold` carrying a liquid -- setting a dial happens before any
+  liquid is drawn, and the tool is not holding that liquid. Faking the set-point
+  with an `SvgSwap` to a "dial-at-4" asset is also wrong: that loses the tracked
+  set-point value the `step_validator` and `target_with_value` preset check.
+- **Domain verbs build on it:** the `adjust`-gesture set-point verbs -- setting
+  a pipette volume, a power-supply voltage, or a titration pH -- each expand to
+  an interaction whose `response` carries one `SetPointDisplayChange`.
+
+Canonical use:
+
+```yaml
+scene_operations:
+  - type: SetPointDisplayChange
+    target: pipette_volume_display
+    value:
+      volume_ml: 4
+```
+
+and for voltage:
+
+```yaml
+scene_operations:
+  - type: SetPointDisplayChange
+    target: power_supply_display
+    value:
+      voltage_v: 150
+```
+
 ### Primitive: `TimedWait`
 
 Runs a timed phase on a piece of equipment, with a visible progress display.
@@ -892,7 +968,7 @@ Runs a timed phase on a piece of equipment, with a visible progress display.
   `LayoutMove`), swap its asset (that is `SvgSwap`), or transfer a liquid (that
   is `LiquidDisplayChange`). It runs a timed phase and nothing else. It is not
   a special step type: a timed wait is a `scene_operation` inside a `response`,
-  the same as the other six primitives.
+  the same as the other seven primitives.
 - **Examples:** `cell_culture` `incubate_day1` -- the incubator runs its timed
   incubation phase. SDS-PAGE running the gel -- the gel tank runs its timed
   electrophoresis phase. It also covers centrifugation duration, staining, and
@@ -1094,10 +1170,12 @@ and authors should add the verbs their protocols read naturally with. New
 permanent addition to the base vocabulary and requires the same evidence bar
 [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition)
 sets -- a recurring shape, across more than one protocol, that no existing
-primitive or composition expresses. `LiquidDisplayChange` and `TimedWait` are
-the two primitives that have already cleared this bar: `LiquidDisplayChange`
-for tracked liquid quantity, `TimedWait` for timed equipment phases with a
-progress display.
+primitive or composition expresses. `LiquidDisplayChange`, `TimedWait`, and
+`SetPointDisplayChange` are the three primitives that have already cleared this
+bar: `LiquidDisplayChange` for tracked liquid quantity, `TimedWait` for timed
+equipment phases with a progress display, and `SetPointDisplayChange` for
+set-point values that recur across protocols -- pipette volume, voltage, pH --
+that no existing primitive expressed.
 
 A domain verb that **cannot** be expressed as the two-level model is itself
 evidence: either the model is missing a slot or a level, or the verb is hiding
@@ -1345,7 +1423,7 @@ later proves it needs state that no `scene_operation` can carry, that is
 evidence for a future plan to add a path under the cost guardrail; the tight
 spec does not assume one.
 
-Each of the seven `scene_operation` primitives maps to the runtime state it
+Each of the eight `scene_operation` primitives maps to the runtime state it
 changes:
 
 | Primitive | Runtime state it changes |
@@ -1356,7 +1434,11 @@ changes:
 | `SceneChange` | the active scene id (a scene-context state, not a per-object state). |
 | `LayoutMove` | object appearance -- the target's layout slot. |
 | `LiquidDisplayChange` | held material and target contents -- the tracked liquid identity and volume on the target. |
+| `SetPointDisplayChange` | set-point values -- the current value of a continuous control shown on the display target. |
 | `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
+
+Every "set-point values" row in the runtime state model now has a primitive
+that writes it: `SetPointDisplayChange`.
 
 This model supersedes the hand-authored `stateChange` of the shipped content.
 The legacy `stateChange.heldLiquid` interaction field, the `consumesVolumeMl`
@@ -1433,24 +1515,263 @@ interaction whose `response` carries one `TimedWait` `scene_operation`, plus an
 `_elapsed` event the rest of the protocol reacts to. The construct added is a
 durable primitive, ratified under the cost guardrail, not a one-off slot.
 
+## The scene-vs-protocol boundary
+
+WP-BND1 writes the hard boundary between what the protocol vocabulary names and
+what a scene adapter owns. The rest of this doc names slots, primitives,
+validators, and the runtime state model; this section draws the line through
+that model and says, slot by slot, which side owns each concern.
+
+The boundary exists because of a documented failure. PRIMARY_CONTRACT item 1
+records that earlier TypeScript was built around the hood scene and treated
+other scenes as derivatives. That same failure reappeared one layer up: the
+shipped protocol vocabulary carries `plateTargets`, `tubeTargets`, and the
+four-`kind` completion-path taxonomy -- all of them cell-culture-scene drift
+baked into what should be a scene-agnostic protocol vocabulary (see Part 1 and
+Part 9 of
+[protocol_interaction_inventory.md](protocol_interaction_inventory.md)). A
+protocol vocabulary that names plates, wells, tubes, or columns has already
+lost; it can only describe the scenes that happen to have those things. The
+boundary rule below is the explicit guardrail that keeps that drift out.
+
+### The boundary rule
+
+The quotable rule a doc reviewer and a YAML author both apply:
+
+**The protocol vocabulary names no plate, no well, no tube, no gel, no column,
+no lane, no rack, and no coordinate. It names semantic targets, gestures,
+validators, and named runtime state. The scene adapter owns all geometry, all
+target expansion, and how every `gesture` is rendered and input. If a protocol
+YAML file contains a geometric noun or a coordinate, that is a boundary
+violation -- the geometry belongs on the scene side, addressed through a
+semantic target name.**
+
+Two consequences follow directly:
+
+- **The protocol YAML is geometry-free.** No well coordinates, no `A1:A12`
+  spans, no row or column ranges, no plate structure, no x/y. A protocol step
+  that treats a row of wells writes one semantic target name; the scene resolves
+  it (see "The target boundary: OQ-16" below).
+- **The scene adapter is the only place geometry lives.** Where a target sits,
+  how big it is, how a `gesture` is captured as input, how a set-point display
+  is drawn, how a timed-wait progress bar animates -- all scene-adapter
+  territory. The protocol vocabulary never reaches across this line.
+
+### Slot-by-slot ownership
+
+Every slot in the model sits on one side of the boundary, or is shared with a
+clean split. The table is the full map; the notes below it cover the slots that
+need more than a line.
+
+| Level | Slot | Side | What each side owns |
+| --- | --- | --- | --- |
+| protocol | `name` | protocol | The protocol's stable snake_case identifier. |
+| protocol | `entry_step` | protocol | Names the first step; pure protocol flow. |
+| protocol | `steps` | protocol | The list of steps; pure protocol flow. |
+| step | `name` | protocol | The step's stable snake_case identifier. |
+| step | `prompt` | protocol | The student-facing instruction text. |
+| step | `sequence` | protocol | The ordered list of interactions; order is protocol-owned. |
+| step | `step_validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
+| step | `outcome` | protocol | The `on_success` / `on_failure` mapping; pure protocol flow. |
+| step | `next_step` | protocol | Names the next step; pure protocol flow. |
+| interaction | `target` | shared | Protocol names a semantic target; scene resolves it to geometry. |
+| interaction | `gesture` | shared | Protocol names the gesture; scene owns how it is rendered and input. |
+| interaction | `validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
+| interaction | `response` | shared | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
+
+Notes on the shared slots:
+
+- **`target` (OQ-16).** The protocol names a semantic target -- `flask`,
+  `pbs_bottle`, `row_b`. The scene adapter resolves that name to a concrete
+  scene object or a group of scene objects. The protocol never names the
+  geometry; the scene owns it. The resolution mechanism is "The target
+  boundary: OQ-16" below.
+- **`gesture`.** The protocol names the gesture -- `click`, `drag`, `adjust`,
+  `select`, `type`. The scene adapter owns how that gesture is captured: what
+  counts as a click hit region, how a drag path is tracked, how an `adjust`
+  control is presented and read, how a `select` option set is laid out. The
+  protocol says which gesture; the scene says how the student physically
+  performs it.
+- **`validator` and `step_validator`.** The protocol selects a named preset
+  from the documented library and supplies its typed parameters. The runtime
+  and scene supply the state the preset reads: the runtime state model rows
+  (held material, target contents, set-point values, equipment state, phase
+  state, object appearance). The protocol picks the check; the scene and
+  runtime hold the state being checked. A preset never names geometry -- it
+  names a semantic target and a state shape.
+- **`response`.** The protocol names the `scene_operations` list and the
+  `feedback`. The scene adapter renders each `scene_operation` -- it decides
+  what the swap, the color, the move, the liquid level, the set-point display,
+  or the timed-wait progress actually looks like. The protocol names the
+  effect; the scene draws it.
+
+### Scene-operation `target` fields
+
+Every `scene_operation` primitive that carries a `target` field names a
+semantic target. The protocol writes the name; the scene adapter configures and
+renders the thing the name points at. This holds for all eight primitives:
+
+- `SvgSwap`, `ColorChange`, `CursorAttach`, `LayoutMove`, `LiquidDisplayChange`,
+  `TimedWait` -- the `target` is a named scene object; the scene adapter owns
+  its geometry, its asset set, its color palette, its layout slots, its liquid
+  rendering, and its timed-phase display.
+- `LayoutMove`'s `to_slot` names a layout slot; the layout engine and scene
+  adapter own where that slot is. The protocol never writes coordinates -- that
+  is the documented `LayoutMove` anti-pattern.
+- `SceneChange`'s `to_scene` names a scene id; the scene system owns what that
+  scene is.
+- `SetPointDisplayChange`'s `target` names a **configured display target** --
+  `pipette_volume_display`, `power_supply_display`. The protocol names the
+  display target; the scene adapter configures it and decides whether it
+  renders as text, an SVG state, overlay layers, or any other strategy. The
+  protocol names the set-point and the display target; the scene adapter owns
+  the rendering. This is the line the `SetPointDisplayChange` primitive section
+  already points at as WP-BND1 territory.
+
+### The target boundary: OQ-16
+
+OQ-16 -- how a protocol target resolves to a scene object -- is resolved:
+**target resolution is an adapter registry plus named groups in the scene.**
+
+- **The adapter registry maps a `target` name to a scene object.** The scene
+  adapter holds a registry that maps each semantic `target` name the protocol
+  uses to a concrete scene object. The protocol writes `target: flask`; the
+  adapter's registry resolves `flask` to the scene's flask object. The protocol
+  side of this is a flat namespace of names; the scene side is the registry
+  that grounds each name in geometry.
+- **Grouped targets are named groups defined in the scene YAML.** A row of
+  wells, a tube rack, a set of gel lanes -- any target that fans out to several
+  scene objects -- is a **named group declared in the scene YAML**. The
+  protocol writes one semantic group name, for example `target: row_b`. The
+  scene YAML defines `row_b` as the list of scene objects it expands to. All
+  group membership and all target expansion live on the scene side.
+- **The protocol vocabulary stays geometry-free.** No ranges, no plate
+  structure, no well coordinates, no `A1:A12` spans in protocol YAML. The
+  protocol names a target; it never describes the target's shape, size, or
+  position. This is what retires `plateTargets` and `tubeTargets`: those fields
+  pushed plate and tube geometry into the protocol vocabulary; the named-group
+  mechanism pulls it back to the scene side where it belongs.
+
+Worked example -- which file owns which:
+
+```yaml
+# protocol.yaml -- names a semantic target, no geometry
+- name: add_media_row_b
+  prompt: "Add 100 uL media to every well in row B."
+  sequence:
+    - target: serological_pipette
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: CursorAttach
+            target: serological_pipette
+            operation: attach
+    - target: media_bottle
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: LiquidDisplayChange
+            target: serological_pipette
+            liquid: media
+            volume_ml: 0.7
+            operation: hold
+    - target: row_b
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: LiquidDisplayChange
+            target: row_b
+            liquid: media
+            volume_ml: 0.1
+            operation: add
+  step_validator:
+    preset: final_state_matches
+    target: row_b
+    contains: { liquid: media }
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_media_row_c
+```
+
+```yaml
+# scene YAML -- defines the named group; owns the geometry
+target_groups:
+  row_b: [well_b1, well_b2, well_b3, well_b4, well_b5, well_b6,
+          well_b7, well_b8, well_b9, well_b10, well_b11, well_b12]
+```
+
+The protocol YAML writes `target: row_b` and never lists a well or a
+coordinate. The scene YAML owns `row_b` -- which scene objects it contains and,
+through the layout engine and structured-surface geometry, where each one is.
+Fan-out is a scene-side expansion of a named group, not a protocol-vocabulary
+construct: this is exactly the disposition Part 2 of
+[protocol_interaction_inventory.md](protocol_interaction_inventory.md) flagged
+for the eight `plateTargets` / `tubeTargets` fan-out steps.
+
+### The naming-collision resolution
+
+`PROTOCOL_VOCABULARY.md` and `SCENE_VOCABULARY.md` name the protocol-to-scene
+addressable concept two different ways, with no cross-reference:
+`PROTOCOL_VOCABULARY.md` says "click target" ("a single DOM element a click is
+dispatched to"); `SCENE_VOCABULARY.md` says `ClickTarget` (the minimal
+`{itemId}` shape the driver builds). WP-BND1 resolves the collision so the M4
+canonical-doc rewrites (WP-DOC-P1 for the protocol doc, WP-DOC-S1 for the scene
+doc) have one decision to follow.
+
+The resolution uses the vocabulary this design doc already established. The two
+sides of the boundary are named, and neither is called "click target":
+
+- **`target` is the protocol-side term.** A `target` is the semantic,
+  geometry-free name a protocol author writes -- the protocol-side slot defined
+  in "The `target` slot" above. The protocol vocabulary doc
+  ([PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md)) uses `target` for this
+  concept and retires "click target" entirely. "Click target" is a UI/DOM-level
+  phrase; it never belonged in the protocol vocabulary, and the design doc's
+  `target` slot is the canonical protocol-side term.
+- **`scene object` is the scene-side term.** A `scene object` is the concrete,
+  geometry-bearing thing the adapter registry resolves a `target` name to --
+  the term already canonical in
+  [SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md). The scene vocabulary doc keeps
+  `scene object` as the resolved, addressable scene-side object.
+- **`ClickTarget` is scoped to one narrow runtime type.** `ClickTarget` stays
+  as the name of the specific `{itemId}` driver shape it already denotes in
+  `SCENE_VOCABULARY.md` -- a low-level click-event payload, not the
+  addressable-object concept. The M4 scene-doc rewrite should keep `ClickTarget`
+  only as that runtime type and add a cross-reference making clear it is not
+  the protocol-side `target` and not the scene-side `scene object`.
+
+The single canonical split, for the M4 rewrites to encode: a protocol names a
+**`target`**; the scene adapter resolves that name to a **`scene object`** (or
+a named group of scene objects). The phrase "click target" is retired from the
+protocol vocabulary. `ClickTarget` survives only as the narrow driver-payload
+type name in the scene vocabulary, with a cross-reference that disambiguates it
+from `target` and `scene object`.
+
 ## What this work package does not define
 
 This doc now defines the `protocol` level, the two-level step/interaction model,
 the `target` and `gesture` slots (WP-SLOT1), the `response` container, the
-`scene_operation` primitive set, and the domain-verb mechanism (WP-SOP1), the
-interaction `validator`, the `step_validator`, the validator preset library,
+eight-primitive `scene_operation` set, and the domain-verb mechanism (WP-SOP1),
+the interaction `validator`, the `step_validator`, the validator preset library,
 the `outcome` mapping, the runtime state model, the event-emission rule, and the
-`TimedWait` seventh primitive (WP-STA1), and the pedagogy-first rule for
-choosing a `target` and `gesture` to teach a specific skill (WP-PED1). It does
-not yet define:
+`TimedWait` seventh primitive (WP-STA1), the `SetPointDisplayChange` eighth
+primitive resolving OQ-21 (WP-SOP1), the pedagogy-first rule for choosing a
+`target` and `gesture` to teach a specific skill (WP-PED1), and the
+scene-vs-protocol boundary -- the slot-by-slot ownership map, the OQ-16 target
+resolution mechanism, and the "click target" / `ClickTarget` naming-collision
+resolution (WP-BND1). It does not yet define:
 
-- The scene-vs-protocol boundary. WP-BND1 writes the rule for what the protocol
-  vocabulary names versus what the scene adapter owns. This doc states that
-  targets are named and the scene adapter owns geometry -- that `LayoutMove`
-  names a layout slot rather than coordinates, that the runtime state model is
-  named while its rendering is the scene adapter's, and that timed-wait
-  progress rendering is the scene adapter's -- but does not write the full
-  boundary.
+- The internals of the scene adapter. WP-BND1 names what the scene side owns --
+  the adapter registry, named-group expansion, geometry, gesture rendering,
+  set-point display rendering, timed-wait progress rendering -- but does not
+  design those internals. The adapter registry shape, the scene YAML
+  `target_groups` schema, the layout engine, and the SVG pipeline remain
+  scene/runtime architecture, specified by the scene-system docs, not this
+  protocol-vocabulary design doc.
 
 It also defers, by design: complex branching (the `outcome` mapping stays the
 simple `{on_success, on_failure}` shape; the graph-flow framing is a stated
@@ -1488,9 +1809,6 @@ model to the linear spec and lands its content:
   event-emission rule and snake_case naming convention, and the `TimedWait`
   seventh `scene_operation` primitive that closes the timed-wait residual gap.
 
-The ratified `scene_operation` set is now seven: `SvgSwap`, `ColorChange`,
-`CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`, `TimedWait`.
-
 WP-PED1 lands the pedagogy-first rule: an author chooses each interaction's
 `target` (and its `kind`) and its `gesture` to teach the specific lab skill the
 step is about, so the interaction's shape is a pedagogical choice. It names the
@@ -1499,4 +1817,28 @@ documented timed-click pipetting regression -- and gives worked `click` and
 `adjust` examples showing the skill each teaches. The rule is the standard M3
 ratification checks each interaction against.
 
-Target-state. Pending WP-BND1.
+WP-SOP1 adds `SetPointDisplayChange` as the eighth `scene_operation` primitive,
+resolving plan open question OQ-21. It is the narrow, typed, protocol-visible
+display change an `adjust` gesture causes -- a pipette volume, a power-supply
+voltage, a titration pH shown on a configured display target. It gives the
+"set-point values" runtime state row a primitive that writes it, and it fixes
+the WP-PED1 `adjust` worked example, which previously misused a
+`LiquidDisplayChange` `operation: hold` to render a set-point.
+
+The ratified `scene_operation` set is now eight: `SvgSwap`, `ColorChange`,
+`CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`,
+`SetPointDisplayChange`, `TimedWait`.
+
+WP-BND1 lands the scene-vs-protocol boundary: the quotable boundary rule (the
+protocol vocabulary names no plate, well, tube, gel, column, lane, rack, or
+coordinate; the scene adapter owns all geometry, target expansion, and gesture
+rendering), the slot-by-slot ownership map across the `protocol`, `step`,
+`interaction`, and `response` slots, the OQ-16 target-resolution mechanism (an
+adapter registry maps each `target` name to a scene object; grouped targets are
+named groups defined in the scene YAML; protocol YAML stays geometry-free), and
+the resolution of the "click target" / `ClickTarget` naming collision (a
+protocol names a `target`; the scene adapter resolves it to a `scene object`;
+"click target" is retired and `ClickTarget` is scoped to the narrow
+driver-payload runtime type).
+
+Target-state. WP-BND1 complete; all M2 work packages landed.

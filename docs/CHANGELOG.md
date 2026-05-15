@@ -1,6 +1,6 @@
 # Changelog
 
-## 2026-05-14 (unified interaction vocabulary: M2 design - WP-SLOT1, WP-SOP1)
+## 2026-05-14 (unified interaction vocabulary: M2 design complete - WP-SLOT1, WP-SOP1, WP-STA1, WP-PED1, WP-BND1)
 
 ### Additions and New Features
 - **Two-level step/interaction model**: Reworked
@@ -11,35 +11,117 @@
   is one step, three gestures).
 - **Step slots defined**: A `step` has six slots: `name` (stable snake_case
   identifier), `prompt`, `sequence` (ordered list of interactions),
-  `step_validator`, `outcome` (complete / retry / feedback), and `next_step`.
-  An optional `sequence_mode: unordered` relaxes interaction ordering within a
-  step.
+  `step_validator`, `outcome` (the `on_success` / `on_failure` mapping), and
+  `next_step`. In the tightened model `sequence` order is always meaningful;
+  there is no unordered mode.
 - **Naming and ordering rules**: Protocol flow is explicit through
   `next_step`, which names the next step by its `name`; flow is never inferred
   from YAML file order. `step_index` is display-only and carries no flow
   meaning.
-- **Interaction slots defined**: Each `interaction` has an optional snake_case
-  `name`, a `target` (an addressable semantic named scene object that declares
-  its `kind`, so the kind carries task semantics and no separate task-type
-  slot is needed), a `gesture` (`click` / `drag` / `adjust` / `select` /
-  `type`, where `adjust` is the skill-based continuous set-point gesture), a
-  `validator` (checks one gesture on one target), and a `response`.
+- **Interaction slots defined**: Each `interaction` has exactly four slots: a
+  `target` (an addressable semantic named scene object that declares its
+  `kind`, so the kind carries task semantics and no separate task-type slot is
+  needed), a `gesture` (`click` / `drag` / `adjust` / `select` / `type`, where
+  `adjust` is the skill-based continuous set-point gesture), a `validator`
+  (checks one gesture on one target), and a `response`. In the tightened model
+  the interaction carries no `name` slot; the optional snake_case `name` is
+  deferred until evidence shows interactions need naming.
 - **`response` container defined**: The per-interaction `response` container
   holds post-validation system behavior: an ordered `scene_operations` list of
-  typed primitives, an optional `feedback` block structured into `correct` /
-  `incorrect` messages, and an optional `state_update` for limited non-visual
-  runtime bookkeeping that cannot be expressed as a typed scene operation.
-- **Six `scene_operation` typed primitives**: Ratified `SvgSwap`,
-  `ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, and
-  `LiquidDisplayChange`, each specified with typed fields to a
-  durable-primitive standard. `LiquidDisplayChange` is first-class because it
-  tracks liquid quantity and well-contents state.
+  typed primitives plus an optional `feedback` block structured into `correct`
+  / `incorrect` messages. In the tightened model `response` has exactly those
+  two fields; state change is explicit through a `scene_operation` mutation
+  only -- there is no `state_update` field.
+- **Initial six `scene_operation` typed primitives**: The first WP-SOP1 pass
+  ratified `SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
+  `LayoutMove`, and `LiquidDisplayChange`, each specified with typed fields to
+  a durable-primitive standard. `LiquidDisplayChange` is first-class because it
+  tracks liquid quantity and well-contents state. WP-STA1 and the WP-SOP1
+  follow-up later grew the ratified set to eight by adding `TimedWait` and
+  `SetPointDisplayChange` (see the WP-STA1 and WP-SOP1 follow-up lines below).
 - **Domain-verb mechanism and cost guardrail**: Added a domain-verb mechanism
   of named compositions that expand at the interaction level to one
   interaction or at the step level to a whole sequence plus `step_validator`,
   with no hidden state change. A cost guardrail keeps domain verbs cheap while
   new `gesture` values and new `scene_operation` primitives are expensive and
   evidence-gated.
+- **`protocol` level added (WP-STA1)**: Added a `protocol` level above `step`
+  with three slots: `name` (stable snake_case identifier), `entry_step` (names
+  the first step the runtime runs), and `steps` (the list of steps; list order
+  is reading convenience, never flow). The level exists so protocol flow has a
+  defined start instead of an implied file-order first step.
+- **Named-preset validator system and preset library (WP-STA1)**: The
+  interaction `validator` and the `step_validator` are now named presets with
+  typed parameters (`{ preset: <name>, ...params }`); content creators select
+  from a documented library and never write custom validation logic. The
+  initial library has three interaction presets (`correct_target`,
+  `correct_choice`, `target_with_value`) and two step presets
+  (`sequence_complete`, `final_state_matches`). A new preset requires
+  ratification evidence under the cost guardrail.
+- **`outcome` mapping defined (WP-STA1)**: The step `outcome` is the simple
+  two-key mapping `{ on_success: complete, on_failure: retry }`, where `retry`
+  restarts the whole step and the entire `sequence` resets. `outcome` never
+  carries an `advance` value; advancing is `next_step`'s job. The mapping shape
+  absorbs future keys without a redefinition.
+- **`TimedWait` seventh `scene_operation` primitive (WP-STA1)**: Ratified
+  `TimedWait` with typed fields `type`, `target`, `duration_min`, and
+  `display`. It runs a timed phase on a piece of equipment with a visible
+  progress display, covering incubation, centrifugation, staining, destaining,
+  and timed equipment runs. It is a `scene_operation` inside a `response`, not
+  a special step type, closing the timed-wait residual gap.
+- **Runtime state model, event-emission rule, and event naming (WP-STA1)**:
+  Defined the named, non-positional runtime state the validator presets read
+  (held material, target contents, set-point values, equipment state, phase
+  state, object appearance), the rule that the runtime emits events on state
+  transitions, and a single snake_case event-naming convention
+  (`<step_name>_complete`, `<equipment_name>_elapsed`) that replaces the legacy
+  `completionEvent` inconsistency. Event names are derived, not hand-authored.
+- **Pedagogy-first rule (WP-PED1)**: Added the rule that an author chooses each
+  interaction's `target` (and its `kind`) and its `gesture` to teach the
+  specific lab skill the step is about -- the shape of an interaction is a
+  pedagogical decision, not just a UI decision. Includes worked `click` and
+  `adjust` examples showing the skill each teaches. This is the standard M3
+  ratification checks each interaction against.
+- **`SetPointDisplayChange` eighth `scene_operation` primitive (WP-SOP1
+  follow-up)**: Ratified `SetPointDisplayChange` with typed fields `type`,
+  `target` (a configured display target such as `pipette_volume_display` or
+  `power_supply_display`), and `value` (a mapping such as `{ volume_ml: 4 }` or
+  `{ voltage_v: 150 }`). It names the visible change an `adjust` gesture
+  causes, giving the "set-point values" runtime state row a primitive that
+  writes it (OQ-21). `ColorChange`, `LiquidDisplayChange`, and
+  `SetPointDisplayChange` form a loose conceptual `DisplayChange` family -- a
+  clarifying note only, not a nested taxonomy; the eight primitives stay a flat
+  set.
+- **Scene-vs-protocol boundary rule and slot-by-slot ownership map (WP-BND1)**:
+  Added the quotable boundary rule -- the protocol vocabulary names no plate,
+  well, tube, gel, column, lane, rack, or coordinate; the scene adapter owns
+  all geometry, target expansion, and gesture rendering -- plus a slot-by-slot
+  ownership map (protocol-owned / scene-owned / shared) across the `protocol`,
+  `step`, `interaction`, and `response` slots. Protocol YAML is geometry-free.
+- **Target-resolution mechanism (WP-BND1, OQ-16)**: Resolved how a protocol
+  `target` resolves to a scene object: an adapter registry maps each semantic
+  `target` name to a concrete scene object, and grouped targets (a row of
+  wells, a tube rack, a set of gel lanes) are named groups defined in the scene
+  YAML. The protocol writes `target: row_b`; the scene YAML defines the `row_b`
+  group. All group membership and target expansion live on the scene side,
+  which retires `plateTargets` and `tubeTargets`.
+
+### Behavior or Interface Changes
+- **Model tightened to a linear protocol spec (WP-STA1)**: A course-correction
+  tightened the model to a tight linear protocol spec. It adds the `protocol`
+  level, drops `sequence_mode` (sequence order is always meaningful), drops the
+  optional interaction `name` (deferred), drops `state_update` from `response`
+  (`response` is `scene_operations` plus optional `feedback`), and defers
+  complex branching (`outcome` stays the simple `{ on_success, on_failure }`
+  mapping). The tight model is `protocol -> step(name, prompt, sequence,
+  step_validator, outcome, next_step) -> interaction(target, gesture,
+  validator, response) -> response(scene_operations[], feedback?)`.
+- **`LiquidDisplayChange.operation` set settled (WP-STA1)**: The
+  `LiquidDisplayChange` operation set settled to `hold` (tool-carried
+  contents), `set` (direct absolute assign; empty a tool or vessel via
+  `volume_ml: 0`), and `add` (a destination transfer). The earlier `fill`
+  operation is renamed `add`, and the earlier `empty` is expressed as `set`
+  with `volume_ml: 0`.
 
 ### Decisions and Failures
 - **Flat model could not express a multi-gesture step**: The first-pass flat
@@ -59,9 +141,31 @@
   `completionPath`, `volumeMl`, and `plateTargets` are removed from the
   target-state vocabulary, not preserved (OQ-10).
 - **Naming and ordering rules locked in**: Ratified that `step.name` is the
-  stable identifier, `next_step` names the next step explicitly, `step_index`
-  is display-only, and `sequence_mode` is the opt-in unordered relaxation
-  (OQ-9).
+  stable identifier, `next_step` names the next step explicitly, and
+  `step_index` is display-only. In the tightened model `sequence` order is
+  always meaningful; the earlier opt-in `sequence_mode: unordered` relaxation
+  is dropped (OQ-9).
+- **Tighten to a linear spec first, defer the branching model (WP-STA1)**:
+  Decided to tighten the model to a tight linear protocol spec now and defer
+  the learning-tree / complex-branching model. The `outcome` mapping stays the
+  simple `{ on_success, on_failure }` shape; the graph-flow framing is a stated
+  future direction, not built. Unordered sequences, the interaction `name`, and
+  any non-visual bookkeeping path are likewise deferred until a later plan has
+  evidence (OQ-14, OQ-15).
+- **Set-point gap forced `SetPointDisplayChange` (WP-SOP1 follow-up)**: Found a
+  real gap -- the `adjust` gesture sets a set-point and the runtime state model
+  lists "set-point values" as a state row, but no `scene_operation` primitive
+  wrote it. Ratified `SetPointDisplayChange` as the eighth primitive to close
+  it (OQ-21), and fixed the stale WP-PED1 `adjust` worked example, which
+  previously misused a `LiquidDisplayChange` `operation: hold` to render a
+  set-point.
+- **"click target" / `ClickTarget` naming collision resolved (WP-BND1)**:
+  Resolved the `PROTOCOL_VOCABULARY.md` "click target" versus
+  `SCENE_VOCABULARY.md` `ClickTarget` naming collision. A protocol names a
+  `target`; the scene adapter resolves it to a `scene object`; "click target"
+  is retired from the protocol vocabulary, and `ClickTarget` is scoped to the
+  narrow `{itemId}` driver-payload runtime type. This gives the M4
+  canonical-doc rewrites one decision to follow.
 
 ## 2026-05-14 (unified interaction vocabulary: M1 evidence)
 

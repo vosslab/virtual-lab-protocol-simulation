@@ -4,461 +4,1073 @@ This document is the canonical vocabulary for protocol authoring,
 runtime code, tests, and documentation in this repository. Every
 protocol-related doc, code comment, error message, validator
 output, and authoring guide must use these exact terms with
-these exact meanings. Synonyms listed in the banned table are
-not used.
+these exact meanings. Synonyms listed in the retired-terms table
+are not used.
 
-Related docs (each links back here):
+## Target-state vs current-code
+
+This doc encodes a designed vocabulary the runtime does not yet
+implement. That is intentional. The plan that produced this doc
+([active_plans/unified_interaction_vocabulary_plan.md](active_plans/unified_interaction_vocabulary_plan.md))
+ratified a unified, scene-agnostic protocol interaction model in
+milestones M2 and M3, then promoted it into this canonical doc in
+milestone M4. The follow-on code-migration plan changes the runtime
+to match.
+
+Every section below is labeled:
+
+- **target-state** -- describes the designed vocabulary. The model
+  is ratified (M3 mapped 120 real protocol steps with no model
+  revision forced), but the runtime, validator, walker, and
+  shipped YAML do not implement it yet.
+- **current-code** -- describes what the runtime implements today.
+
+If a section is not labeled current-code, treat it as target-state.
+A reader must never be misled into thinking a target-state section
+describes the code as it runs now.
+
+The full M2 model is the source of truth for this doc:
+[active_plans/unified_interaction_vocabulary_design.md](active_plans/unified_interaction_vocabulary_design.md).
+The M3 ratification evidence is in
+[active_plans/protocol_interaction_inventory.md](active_plans/protocol_interaction_inventory.md).
+
+Related docs:
+
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md)
+- [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md)
+- [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) -- the scene-side
+  vocabulary; the scene-vs-protocol boundary section below
+  cross-references it.
 - [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md)
-- [USAGE.md](USAGE.md)
 
-## Strict hierarchy
+## The two-level model
+
+Status: **target-state.**
+
+The model is a tight linear protocol spec with three nested levels:
+`protocol`, `step`, and `interaction`. A `step` wraps an ordered
+`sequence` of interactions. Each interaction is one `gesture` on one
+`target`, checked by its own `validator`, with its own `response`.
+
+The full shape:
 
 ```
-Protocol
-  Part
-    Step
-      Completion path (one of: interactionSequence | directTool | modal | multipleChoice)
-        For interactionSequence: ordered list of interactions
-          Interaction
-            Click plan
-            Optional state change
-            Optional completion event
-        For directTool: tool + completionEvent
-        For modal: openClick + advanceClick + completionEvent
-        For multipleChoice: question + choices + completionEvent
+protocol
+  name                    # stable snake_case identifier for this protocol
+  entry_step              # name of the first step
+  steps[]                 # the steps that make up the protocol
+step
+  name                    # stable snake_case identifier for this step
+  prompt                  # what the student is asked to accomplish
+  sequence[]              # ordered list of interactions; order always matters
+    interaction
+      target              # the addressable scene object or control
+      gesture             # how the student acts on the target
+      validator           # named preset: checks this gesture on this target
+      response            # container: scene_operations, optional feedback
+  step_validator          # named preset: checks whole-step completion
+  outcome                 # mapping: on_success, on_failure
+  next_step               # names the next step by its name, or null
 ```
 
-A Protocol contains Parts; a Part contains Steps; every Step
-has exactly one Completion path. The completion path's `kind`
-discriminator selects which schema fields apply. For
-`interactionSequence` kind, the path holds an ordered list of
-Interactions, each with a click plan, an optional state change,
-and an optional completion event. For `directTool`, `modal`, and
-`multipleChoice` kinds, the completion path carries the kind-specific
-fields directly and there is no nested interaction list.
+A `step` is one pedagogical unit -- one thing the student is asked
+to accomplish. A step is often multi-gesture. "Wash the flask with
+4 mL PBS" is a single step, but completing it takes three gestures:
+click the pipette, click the PBS source, click the flask. The
+two-level model exists so the step stays the pedagogical unit while
+the individual gestures live inside it in an ordered `sequence`.
 
-## Core rule: one job per term
+### Required slots
 
-A **step** is what the player is trying to complete.
+- A `protocol` requires `name`, `entry_step`, and `steps`.
+- All six `step` slots are required: `name`, `prompt`, `sequence`,
+  `step_validator`, `outcome`, `next_step`. `next_step` may be
+  `null` for a terminal step, but the slot must be present.
+- All four `interaction` slots are required: `target`, `gesture`,
+  `validator`, `response`.
+- `response.scene_operations` is required (it may be an empty
+  list); `response.feedback` is optional.
+- A `scene_operation` requires `type` plus that type's documented
+  typed fields.
 
-A **completion path** is the schema contract that describes how
-a step gets completed. Every step has exactly one completion
-path. The path's `kind` discriminator chooses one of four
-shapes: `interactionSequence`, `directTool`, `modal`, or
-`multipleChoice`. The walker, runtime, and validator dispatch
-off `kind`; no downstream code matches on `step.id`.
+The `interaction` has exactly four slots. There is no interaction
+`name` in the tight spec (deferred, not forbidden forever) and no
+separate interaction task-type slot -- the target's `kind` carries
+the task semantics.
 
-A **completion-path kind** is the discriminator field on a
-completion path. Allowed values are `interactionSequence`,
-`directTool`, `modal`, and `multipleChoice`. Each kind defines
-its own required and banned fields. Instrument-control steps use
-`kind: directTool`; the conceptual "instrument vs hand tool"
-distinction is carried by the `items.yaml` role, not by a separate
-completion-path kind.
+### The `protocol` level
 
-An **interaction sequence** is the ordered list of logical
-operations needed to complete a step whose completion-path kind
-is `interactionSequence`. It lives at
-`completionPath.interactions`.
+A `protocol` is the top level. It wraps the whole linear sequence
+of steps and has three slots:
 
-An **interaction** is one logical player operation.
+- **`name`** -- a stable snake_case identifier for the protocol,
+  for example `name: cell_culture`.
+- **`entry_step`** -- the `name` of the first step the runtime
+  runs. Flow starts here and follows `next_step` from step to step.
+- **`steps`** -- the list of steps. List order is reading
+  convenience only; protocol flow is `entry_step` plus `next_step`,
+  never `steps` list order.
 
-A **click plan** is the ordered list of clicks that perform one
-interaction. The first click is always the tool.
+The `protocol` level exists so flow has a defined start. Without
+`entry_step`, the first step would be implied by file order, and
+file order is never flow.
 
-A **click target** is a single DOM element a click is dispatched
-to.
+### The interaction chain
 
-A **state change** is an optional runtime change caused by an
-interaction.
+Within a step, the chain runs:
 
-A **completion event** is an optional runtime signal emitted by
-an interaction. A completion event signals step completion. Each
-step may have at most one completion event, and it must be on
-the final interaction.
+1. The student performs a `gesture` on a `target`. That pair is one
+   `interaction`.
+2. The interaction's `validator` -- a named preset -- checks that
+   one gesture on that one target: was the right gesture done on
+   the right target?
+3. A valid interaction fires its `response`: the scene operations
+   the gesture causes plus optional feedback.
+4. The step's interactions run in `sequence` order. When the
+   sequence is satisfied, the step's `step_validator` -- also a
+   named preset -- checks whole-step completion.
+5. The `step_validator` result drives the `outcome` mapping:
+   `on_success` resolves the step, `on_failure` retries the whole
+   step (the entire `sequence` resets). Once the step resolves,
+   `next_step` names which step runs next. Advancing is not an
+   `outcome` value.
 
-## Why these terms
+### Slot charters
 
-The vocabulary is chosen to fit lab authors, not interaction-
-model abstractions. Each tier explains why the canonical word
-beats common alternatives.
+Each slot owns one concern.
 
-- **Protocol** -- the complete student-facing lab pathway. May span many
-  scenes and may be assembled from mini-protocols. Better than "Game" (too broad,
-  includes UI/scoring/rendering), "Scene" (too narrow,
-  protocols span multiple scenes), or "Workflow" (less
-  lab-specific).
-- **Part** -- a named section of the protocol (Split, Count,
-  Treat, Read). Organizational, not behavioral. Better than
-  "Phase" (sounds runtime), "Section" (too document-y),
-  "Chapter" (too narrative).
-- **Step** -- the smallest unit of protocol progress. Better
-  than "Action" (would conflict with instruction text), "Task"
-  (collides with TaskCreate orchestration), "Objective" (too
-  broad).
-- **Interaction sequence** -- the ordered required list inside
-  a step. The name makes ordering explicit. Better than
-  "Allowed interactions" ("allowed" reads as optional;
-  ordering is hidden) or "Recipe" (informal).
-- **Interaction** -- one logical player operation. Higher-level
-  than a click. Better than "Click" (too low-level; one
-  interaction is 1-3 clicks), "Action" (overloaded), or
-  "Operation" (less lab-native).
-- **Click plan** -- the ordered click list for one interaction.
-  Better than "Click sequence" (collides with interaction
-  sequence) or "Click pattern".
-- **Click target** -- one DOM element. UI-level only. Better
-  than "Item" (modals/buttons can also be click targets) or
-  "Object" (vague).
-- **Tool** -- the item used to perform an interaction. A tool
-  may be a handheld tool, an instrument, or a direct-action
-  item. A tool can be the only click in an interaction; see "Direct tool
-  interaction" below. Lab language; better than "Actor"
-  (abstract).
-- **Source** -- the item providing liquid or material during a
-  load. Already clear; kept.
-- **Destination** -- the item that physically receives
-  transferred liquid, cells, waste, or material during a
-  discharge. Use `destination` only when the player should
-  click the receiving item. Do not use a `destination` field
-  to describe background context or scene affordances; for
-  one-click actions performed by the tool itself, use a
-  Direct tool interaction. Better than "Target" (overloaded
-  with `targetItems` and "click target").
-- **Direct tool interaction** -- a one-click step completed by
-  clicking the tool itself. Modeled as a completion path with
-  `kind: directTool`, carrying a `tool` and a `completionEvent`
-  and no `source` or `destination`. Covers both hand-tool steps
-  and instrument-control steps. The conceptual difference between a hand tool and an
-  instrument is carried by `items.yaml` role; the completion-path
-  schema is the same. The walker clicks the tool; the step
-  completes.
-- **Modal step** -- a step completed by opening a modal scene
-  and clicking an advance control inside the modal. Modeled as
-  a completion path with `kind: modal`, carrying an `openClick`
-  (the `items.yaml` id whose click opens the modal), an
-  `advanceClick` (a kebab-case string that matches a
-  `data-walker-advance="<string>"` attribute on a DOM control
-  inside the modal scene), and a `completionEvent`. The
-  `advanceClick` value is NOT an `items.yaml` id; modal-internal
-  advance buttons are UI controls, not protocol items. Use this
-  kind for modal-driven steps. The walker clicks the
-  open target, waits for the modal, then clicks the element
-  carrying the matching `data-walker-advance` attribute. A
-  modal that needs multiple meaningful confirmations decomposes
-  into multiple modal steps, each with its own `advanceClick`
-  string and its own `completionEvent`.
-- **Multiple-choice quiz step** -- a step completed by presenting
-  a question with multiple choice options and clicking the
-  correct answer. Modeled as a completion path with
-  `kind: multipleChoice`, carrying a `question` (string), a
-  `choices` (array of objects with `id`, `text`, `feedback`, and
-  optional `correct` boolean fields), and a `completionEvent`.
-  Exactly one choice must have `correct: true`. The walker clicks
-  the choice element with the matching `id`. Use this kind for
-  assessment steps, knowledge-check prompts, or calculation
-  verification steps that validate student understanding before
-  advancing.
-- **Microtube liquid** -- runtime state of a microtube that has
-  received liquid. Mirrors the `heldLiquid` pattern for pipettes.
-  Tracks the reagent id, volume in milliliters, and color key for
-  rendering. Microtubes accumulate liquids in layers (solute then
-  diluent).
-- **Tube target** -- optional metadata for dilution-prep steps
-  describing how to prepare a microtube. Maps a 4-interaction
-  cycle (solute load+discharge + diluent load+discharge) to a
-  destination microtube. Includes source item, diluent reagent,
-  destination microtube, volumes, result reagent, and display label.
-- **Plate target** -- optional metadata for plate-transfer steps
-  describing how to deposit liquid into wells. Maps each
-  load+discharge interaction pair to a set of rows and columns on a
-  96-well plate. Includes liquid reagent, per-well volume, and label.
-- **Stock solution** -- the highest-concentration reagent supplied
-  in a bottle or vial at the start of the protocol. Stock solutions
-  are never used directly on cells; they are diluted first.
-- **Intermediate dilution** -- a temporary tube of solution prepared
-  by diluting a stock solution down to a usable working concentration.
-  Intermediate dilutions live in microtubes and feed downstream
-  working-solution preparation or plate transfer.
-- **Working solution** -- the final, ready-to-dose dilution
-  delivered into a well at the protocol-specified volume (for
-  example, the 5 microliter per-well addition). A working solution
-  is the immediate parent of the in-well concentration. The banned
-  synonyms "working stock" and "parent stock" do not appear in
-  authoring docs, validator output, or step labels; use stock
-  solution, intermediate dilution, or working solution instead.
-- **State change** -- the runtime change caused by an
-  interaction. Better than "Result" (could mean final game
-  result or score) or "Effect" (less precise).
-- **Completion event** -- the runtime signal that an
-  interaction completed the step. Better than
-  "Event" (too generic) or "Trigger" (collides with the
-  step-level listener field).
-- **Completion trigger** -- a derived step-level listener synthesized by
-  the builder from `step.scene` and the completion event declared in
-  `completionPath`. Authors do not write `completionTrigger` in YAML.
-  Each generated `completionTrigger` must have a matching runtime emitter.
-  Better than bare "Trigger".
-- **Completion-event emitter** -- the scene or modal code
-  path that emits a completion event after the player
-  completes the matching interaction. Each generated
-  `completionTrigger` in the generated TypeScript must have a matching
-  emitter in runtime code; otherwise the step can never complete.
-  Better than "scene wiring" (vague) or bare "trigger"
-  (collides with the YAML field).
-- **Completion-event coverage** -- the startup validation
-  check that confirms every step's `completionTrigger`
-  has a matching completion-event emitter. Strict for the
-  active protocol; relaxed (or warning-only) for tutorial
-  protocols by design. Better than "trigger coverage" or
-  "scene wiring coverage".
-- **Interaction index** -- the zero-based position of the
-  current required interaction inside the active step's
-  interaction sequence. Better than "Cursor" (sounds like the
-  mouse arrow on screen).
-- **Used items** -- the derived, de-duplicated step-level
-  summary of every `tool`/`source`/`destination` id in the
-  step's interaction sequence, in first-use order. Not
-  authored, not the live highlight set. Better than
-  `targetItems` (collides with `destination`) and better than
-  `highlightItems` (which sounds like the live highlight
-  state).
-- **Active highlight items** -- the runtime set of items
-  currently glowing in the UI. Derived per-frame from the
-  active interaction's `tool`/`source`/`destination`. Distinct
-  from `usedItems`.
-- **Wrong-order click** -- a click that does not satisfy the
-  current interaction. Better than `outOfSequenceClicks`
-  (long; technical).
+| Level | Slot | Charter |
+| --- | --- | --- |
+| protocol | `name` | The stable snake_case identifier for the protocol. |
+| protocol | `entry_step` | Names the first step by its `name`; flow starts here. |
+| protocol | `steps` | The list of steps; list order is not protocol flow. |
+| step | `name` | The stable snake_case identifier for the step, used for flow, tests, and debugging. |
+| step | `prompt` | States what the student is asked to accomplish in this step. |
+| step | `sequence` | The ordered list of interactions that make up the step; order always matters. |
+| step | `step_validator` | Named preset that checks whole-step completion, not one gesture. |
+| step | `outcome` | A mapping that says how the step resolves: `on_success` and `on_failure`. |
+| step | `next_step` | Names the next step by its `name`, or `null` for a terminal step; this controls protocol flow. |
+| interaction | `target` | Names the addressable scene object or control acted on. |
+| interaction | `gesture` | Names how the student acts on the target. |
+| interaction | `validator` | Named preset that checks this one gesture on this one target. |
+| interaction | `response` | Container for post-validation system behavior: `scene_operations` and optional structured `feedback`. |
+
+## Step naming and protocol flow
+
+Status: **target-state.**
+
+- **`name` is the stable identifier.** Every step has a `name`: a
+  stable snake_case semantic identifier, for example
+  `name: pbs_wash`. It is chosen for meaning, not for position. It
+  is the step's stable reference for protocol flow, tests,
+  debugging, and future code migration.
+- **`next_step` controls flow.** A step's `next_step` slot names
+  the next step by its `name`, for example `next_step: add_trypsin`.
+  Flow does not come from YAML file order and does not come from a
+  numeric index.
+- **`next_step: null` is a terminal step.** A step with
+  `next_step: null` has no successor; the protocol ends when it
+  resolves. The slot is always present; `null` is its terminal
+  value.
+- **YAML file order is not flow.** Reordering step blocks in the
+  YAML must not change protocol flow. Flow is `entry_step` plus
+  `next_step` only. A `step_index` may exist for display order
+  only -- it is not part of the protocol-flow spec and never
+  controls flow.
+- **`outcome` has no `advance`.** Advancing to the next step is
+  `next_step`'s job. `outcome` never carries an `advance` value and
+  never names a step.
+
+### Sequence ordering
+
+- **`sequence` order is always meaningful.** The interactions in a
+  step's `sequence` run and validate in the order listed -- always.
+  There is no unordered mode.
+- **Step order and interaction order do not mix.** Step order is
+  controlled by `next_step`. Interaction order is controlled by
+  `sequence` list order.
+- **All authored names are snake_case.** The step `name`, the
+  protocol `name`, `entry_step` targets, and `next_step` targets
+  are always snake_case. Every YAML key and every authored
+  identifier value is snake_case. The only exception is the eight
+  `scene_operation` primitive type names, which stay PascalCase
+  because they are class-like type names used as the value of the
+  `type` field.
+
+## The `target` slot
+
+Status: **target-state.**
+
+A `target` is the addressable, semantic scene object or control the
+student acts on. It is named, not positional: the runtime tracks
+named scene objects (`serological_pipette`, `pbs_bottle`, `flask`,
+`incubator`, a specific answer choice), not coordinate regions or
+response variables. A protocol author writes the target's name; the
+scene adapter owns where that object is and how it is drawn.
+
+### A target declares its kind
+
+A target declares its `kind`. The kind says what sort of thing the
+target is and, with that, what acting on it means. A liquid-handling
+tool, a reagent source, a destination vessel, a piece of timed
+equipment, a popup control, an answer choice -- each is a target
+kind. The kind is the target's stable semantic type.
+
+### The kind carries the task semantics
+
+Because the target's kind carries the task semantics, the model
+needs no separate interaction task-type slot. The work a gesture
+does is determined by the gesture plus the kind of target it lands
+on. Clicking a reagent-source target means "draw from this
+source"; clicking a destination-vessel target means "dispense into
+this destination"; clicking an answer-choice target means "select
+this answer". The author does not also tag the interaction with a
+task type -- the target's kind already says it.
+
+This is why this doc does not name `plate target` or `tube target`.
+Those were scene-specific task-type metadata. The target's kind
+plus the gesture carries the task semantics with no plate- or
+tube-shaped slot.
+
+## The `gesture` slot
+
+Status: **target-state.**
+
+A `gesture` is how the student acts on a target. It is the physical
+input the student performs. The gesture value set is closed:
+
+| Gesture | What the student does |
+| --- | --- |
+| `click` | Clicks the target. The simple, discrete gesture. |
+| `drag` | Drags the target, or drags from the target to another target. |
+| `adjust` | Moves a continuous control to a set-point value. The skill-based gesture. |
+| `select` | Picks one option from a presented set of choices. |
+| `type` | Enters a value or text. |
+
+### `adjust` is the skill-based set-point gesture
+
+`adjust` is the continuous, skill-based set-point gesture. The
+student moves a continuous control until it reaches a target value:
+a pipette volume, a power-supply voltage, a pH titrated to a
+target. Setting a pipette to 4 mL is a lab skill; collapsing it
+into a `click` teaches the student nothing about volume set-points.
+`adjust` keeps skill-based parameter-setting from collapsing into
+`click`.
+
+### `select` versus `click`
+
+`select` and `click` are kept distinct:
+
+- `click` is acting on a scene object in the lab space -- a
+  pipette, a bottle, an incubator. The target is a thing in the
+  world.
+- `select` is picking one option from a presented set -- an answer
+  choice, a phase to keep after centrifugation. The target is one
+  option among a set the runtime presented.
+
+The author's intent differs and the scene renders them differently,
+so the two gestures stay separate.
+
+### The gesture extension rule
+
+The gesture value set is closed but extensible. A new gesture may
+be added only when the evidence shows a student input that none of
+`click`, `drag`, `adjust`, `select`, or `type` expresses, that the
+input recurs across more than one protocol, and that it is a
+stable, reusable input shape. Adding a gesture requires the same
+justification as adding a base primitive (see the cost guardrail
+below).
+
+## The pedagogy-first rule
+
+Status: **target-state.**
+
+The `target` and `gesture` slots are not just UI plumbing. They are
+a pedagogical choice. The rule:
+
+**An author chooses each interaction's `target` (and its `kind`)
+and its `gesture` so the interaction teaches the specific lab skill
+the step is about. The shape of an interaction is a pedagogical
+decision, not just a UI decision.**
+
+The `kind` plus the `gesture` determine what the interaction
+teaches:
+
+- `adjust` on a continuous control teaches a **set-point skill**.
+- `click` on a scene object teaches **recognition and sequencing**.
+- `select` on an answer-choice target teaches a **decision**.
+- `drag` on a scene object teaches a **spatial placement** skill.
+- `type` on a control teaches **entering a precise value**.
+
+### The anti-pattern: collapsing a skill into a rote click
+
+The anti-pattern this rule exists to catch is collapsing a
+skill-based interaction into a rote `click`. The clearest case is
+pipetting: setting a serological pipette to 4 mL is a real lab
+skill, and encoding it as a timed `click` or a plain `click` with
+no set-point teaches nothing about volume set-points. M3
+ratification flagged this as a real regression in the shipped
+content -- every shipped liquid-handling step encodes volume as a
+field on a `click` with no `adjust` gesture. The correct shape is
+`gesture: adjust` on the tool target, validated by
+`target_with_value` with the set-point value.
+
+This rule is the standard M3 ratification checks each interaction
+against: an interaction whose `target`/`gesture` pairing does not
+match its step's skill is a ratification finding, not an author
+preference.
+
+## The `response` container
+
+Status: **target-state.**
+
+A `response` is the interaction's fourth slot. It is the container
+for post-validation system behavior -- what the system does after
+an interaction is validated. It is not itself a primitive: it holds
+primitives. A `response` has exactly two fields:
+
+| Field | Required | What it holds |
+| --- | --- | --- |
+| `scene_operations` | yes (may be empty) | An ordered list of typed `scene_operation` primitives. |
+| `feedback` | no | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
+
+The canonical shape of a `response`:
+
+```yaml
+response:
+  scene_operations:
+    - type: CursorAttach
+      target: serological_pipette
+      operation: attach
+    - type: LiquidDisplayChange
+      target: serological_pipette
+      operation: hold
+      liquid: pbs
+      volume_ml: 4
+  feedback:
+    correct: PBS loaded.
+    incorrect: Use the PBS bottle.
+```
+
+### Why `response` is broader than a scene effect
+
+A validated interaction does not always change the scene. It can be
+`feedback` only (a correct multiple-choice answer with an empty
+`scene_operations` list), a modal open or close, or a full scene
+mutation. `response` is the broad container; `scene_operation` is
+the narrow typed layer inside it.
+
+### `scene_operations`
+
+`scene_operations` is an ordered list of typed `scene_operation`
+primitives. It may be empty. Order matters: the runtime applies the
+list top to bottom, so the pipette-empty operation must precede the
+flask-fill operation when one liquid moves between two objects.
+
+### `feedback`
+
+`feedback` is optional learner-facing messaging tied to this one
+interaction. It is structured into two sub-keys: `correct`, the
+message shown when the interaction validates, and `incorrect`, the
+corrective hint shown when it does not. It carries no scene effect;
+anything visible in the scene belongs in `scene_operations`.
+
+### State change is explicit only
+
+State change is **explicit in a `response` via a `scene_operation`
+mutation only.** There is no `state_update` field and no arbitrary
+non-visual state path. If a protocol later proves it needs
+non-visual bookkeeping no `scene_operation` can carry, that is
+evidence for a future plan under the cost guardrail; the tight spec
+does not assume it.
+
+## Scene operation primitives
+
+Status: **target-state.**
+
+A `scene_operation` is one of a small, ratified set of typed
+primitives. Each is the smallest protocol-visible scene effect the
+runtime guarantees across every scene. `scene_operation` primitives
+**describe how the scene changes, not what the learner does**: the
+learner acts with a `gesture` on a `target`; the `scene_operation`
+is what the scene does in response.
+
+### The eight ratified primitives
+
+Eight `scene_operation` primitives are ratified for the initial
+vocabulary. Each is named with its typed fields. The full
+durable-primitive specification for each -- the value types, the
+state it may read and change, the visual effect, the anti-patterns,
+and how domain verbs build on it -- lives in the M2 design doc, in
+the "Scene operation primitives" section of
+[active_plans/unified_interaction_vocabulary_design.md](active_plans/unified_interaction_vocabulary_design.md).
+A future canonical scene-operation spec under `docs/` will carry
+the same detail.
+
+| Primitive | Typed fields | One-line meaning |
+| --- | --- | --- |
+| `SvgSwap` | `type`, `target`, `from_asset`, `to_asset` | Replaces one SVG asset on a target with another. |
+| `ColorChange` | `type`, `target`, `property`, `color_key` | Changes a fill or stroke color on a target. |
+| `CursorAttach` | `type`, `target`, `operation` (`attach` or `detach`) | Attaches a target to the cursor, or detaches it. |
+| `SceneChange` | `type`, `to_scene` | Transitions the scene context to another scene. |
+| `LayoutMove` | `type`, `target`, `to_slot` | Moves or re-lays-out a scene object via the layout engine. |
+| `LiquidDisplayChange` | `type`, `target`, `liquid`, `volume_ml`, `operation` (`hold`, `set`, or `add`) | Updates a tracked liquid: appears, volume changes, or well contents update. |
+| `SetPointDisplayChange` | `type`, `target`, `value` (a mapping, for example `{ volume_ml: 4 }`) | Updates an adjustable set-point shown on a configured display target. |
+| `TimedWait` | `type`, `target`, `duration_min`, `display` | Runs a timed phase on a piece of equipment, with a visible progress display. |
+
+`ColorChange`, `LiquidDisplayChange`, and `SetPointDisplayChange`
+form a loose conceptual display-change family -- each names a
+visible display update on a target without swapping the asset or
+moving the object. This is a clarifying note only; the eight
+primitives stay a flat set, not a nested taxonomy.
+
+### `LiquidDisplayChange` operations
+
+`LiquidDisplayChange` is first-class because it tracks a liquid
+quantity and well-contents state, not just an image. Its
+`operation` field has three values:
+
+- `hold` -- tool-carried contents: the target (a tool) now carries
+  `volume_ml` of `liquid`. Drawing into a held tool uses `hold`.
+- `set` -- directly assigns the target's content to exactly
+  `volume_ml` of `liquid`, regardless of what it held before.
+  Emptying a tool or vessel is `set` with `volume_ml: 0`.
+- `add` -- a destination transfer: `volume_ml` of `liquid` is added
+  into a destination vessel on top of whatever it already holds.
+
+### The set is closed but extensible
+
+The eight primitives are a closed but extensible set, governed by
+the cost guardrail below. A ninth `scene_operation` primitive is
+**not** part of the ratified vocabulary. M3 ratification surfaced
+one recurring shape that crossed the cost-guardrail evidence bar --
+instrument-produced data (a cell count, an absorbance value, a gel
+band pattern) has no `scene_operation` that records it as runtime
+state. The M3 disposition was Option 2: instrument-produced data
+stays `feedback`-only in this vocabulary pass, and a candidate
+ninth primitive (working names `DataReadout` or
+`InstrumentReadDisplayChange`) is carried forward as a named
+follow-on proposal for the code-migration plan. It is **not**
+current vocabulary; do not author it. It is mentioned here only as
+a noted future proposal.
+
+## Domain verbs
+
+Status: **target-state.**
+
+A domain verb is an author-facing named composition over the
+two-level model. `grind`, `draw`, `dispense`, `assemble`, `wash` --
+these are the words a YAML author actually writes. A domain verb is
+**authoring vocabulary, not base vocabulary**: it expands to slots
+that are already defined, and it adds no new runtime concept.
+
+### The composition rule
+
+A domain verb expands at one of the two levels:
+
+- An **interaction-level** domain verb expands to **one
+  interaction** -- one `target`, one `gesture`, one `validator`,
+  one `response`.
+- A **step-level** domain verb expands to a **whole `sequence` plus
+  its `step_validator`** -- several interactions and the whole-step
+  check.
+
+Each domain verb has a documented expansion. The expansion is the
+verb's definition; there is nothing to a domain verb except the
+slots it expands to.
+
+### A domain verb implies no hidden state change
+
+A domain verb implies **no hidden state change**. All state change
+is explicit in a `response` as a `scene_operation` mutation. A
+domain verb never reaches past the `response` container to mutate
+runtime state on the side. If a verb appears to need a side effect,
+that side effect must surface as a `scene_operation` in one of the
+interactions the verb expands to. A verb that cannot be expressed
+as the two-level model is itself evidence the model is missing
+something -- it is a finding to escalate, not a special case to
+code around.
+
+### Ratified domain verbs
+
+M3 ratified these verbs across the four source protocols and seven
+shipped content files. The baseline interaction-level verbs are
+`draw`, `dispense`, `grind`, `aspirate`, `pour`, `mix`, `spray`,
+`move`, `use` (equipment), `navigate`, and `select` (answer). The
+baseline step-level verbs are `wash` and `assemble`. M3 surfaced 12
+additional cheap verbs (`titrate`, `dissect`, `place`, `clamp`,
+`unwrap`, `remove`, `open`, `connect`, `image`, `set`, `stain`,
+`destain`), each with a documented expansion. New domain verbs are
+the cheap, expected layer: authors add them with documented
+expansions as their protocols read naturally.
+
+## Cost guardrail
+
+Status: **target-state.**
+
+The three layers have different costs to extend, and the difference
+is deliberate.
+
+| Layer | Cost to add | Bar to clear |
+| --- | --- | --- |
+| Domain verb | Cheap | A documented expansion to existing slots. |
+| `gesture` value | Expensive | Evidence: a recurring input shape no current gesture expresses. |
+| `scene_operation` primitive | Expensive | Evidence: a recurring scene effect no composition of existing primitives expresses. |
+| Validator preset | Expensive | Evidence: a recurring validation shape no existing preset expresses. |
+
+New domain verbs are cheap and expected. New `gesture` values, new
+`scene_operation` primitives, and new validator presets are
+expensive: each is a permanent addition to the base vocabulary and
+requires evidence -- a recurring shape, across more than one
+protocol, that no existing primitive or composition expresses. The
+cheap layer is cheap precisely because it cannot smuggle in
+expensive behavior.
+
+## The validator and state model
+
+Status: **target-state.**
+
+There are two validation scopes: the per-gesture interaction
+`validator` and the whole-step `step_validator`. Both are named
+presets with typed parameters.
+
+### Validators are named presets
+
+Every `validator` and every `step_validator` is a **named preset
+with typed parameters**:
+
+```yaml
+validator: { preset: <name>, ...typed params }
+```
+
+A validator is never free-form prose, never an inline expression,
+and never a raw structured object the author writes by hand.
+Content creators select from the documented preset library below;
+they never write custom validation logic. A new preset requires
+ratification evidence -- the same cost-guardrail discipline as a
+new `scene_operation` primitive.
+
+### The interaction `validator`
+
+The interaction `validator` judges one interaction: did the student
+perform the correct `gesture` on the correct `target`. It is narrow
+on purpose -- one gesture, one target, one yes-or-no result. It
+checks **local correctness only** and does not look at the rest of
+the sequence; it does not check the final state of the step. A true
+result fires the interaction's `response`; a false result does not,
+and drives the step's `outcome.on_failure`.
+
+### The `step_validator`
+
+The `step_validator` judges the whole step: did the step reach its
+intended completion. It runs only after every interaction in the
+`sequence` has fired its `validator` and the runtime has applied
+each `response`. It checks **only whole-step completion**: it does
+not re-run the interaction validators. A step can have every
+interaction validate and still fail a `final_state_matches`
+`step_validator` if the sequence added up wrong -- that is exactly
+the wide check the `step_validator` exists for.
+
+The two scopes are deliberate and separate: the interaction
+`validator` answers "did the student do this one part right", the
+`step_validator` answers "did the step complete".
+
+### The validator preset library
+
+The initial preset library has five presets: three interaction
+presets and two step presets.
+
+| Preset | Scope | Required fields | What it checks |
+| --- | --- | --- | --- |
+| `correct_target` | interaction `validator` only | `preset` | The student performed the interaction's `gesture` on the interaction's `target`. |
+| `correct_choice` | interaction `validator` only | `preset` | The student selected the correct answer-choice target from a presented set (a `select`-gesture interaction). |
+| `target_with_value` | interaction `validator` only | `preset`, `value` (a mapping of typed value keys) | The student performed the `gesture` on the `target` and the target reached the named `value` -- the preset an `adjust`-gesture interaction uses. |
+| `sequence_complete` | `step_validator` only | `preset` | Every interaction in the step's `sequence` validated, in order. |
+| `final_state_matches` | `step_validator` only | `preset`, `target`, `contains` (a mapping of expected target state) | After the sequence runs, the named `target` is in the state described by `contains`, regardless of the exact path. |
+
+Preset shapes in YAML:
+
+```yaml
+validator: { preset: correct_target }
+validator: { preset: correct_choice }
+validator: { preset: target_with_value, value: { volume_ml: 4 } }
+step_validator: { preset: sequence_complete }
+step_validator:
+  preset: final_state_matches
+  target: flask
+  contains: { liquid: pbs, volume_ml: 4 }
+```
+
+New presets are added under the cost guardrail. Content creators
+never write custom validation logic; they request a new preset
+with evidence, and the preset is ratified into this library.
+
+### The `outcome` slot
+
+`outcome` is a **mapping**, not a bare scalar. It has exactly two
+keys:
+
+```yaml
+outcome:
+  on_success: complete
+  on_failure: retry
+```
+
+| Key | Meaning |
+| --- | --- |
+| `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`. |
+| `on_failure` | What happens when the `step_validator` does not pass, or an interaction `validator` returned false. `retry` restarts the whole step -- the entire `sequence` resets and the student redoes the step from its first interaction. |
+
+`outcome` is a mapping so a later plan can grow it without changing
+shape. The bare-scalar form `outcome: complete` is rejected: it
+cannot say what happens on failure. Complex branching is deferred;
+there is no `on_hint_requested`, no `branches` mapping, and no
+adaptive review in the tight spec.
+
+`outcome` does not advance the protocol. Advancing is `next_step`'s
+job.
+
+The iterative loop -- destaining until the background is clear --
+is expressed as a `final_state_matches` `step_validator` plus an
+`outcome.on_failure: retry`. While the named state is not reached,
+`on_failure: retry` restarts the whole step. There is no separate
+`repeat_until` construct and no separate loop step type.
+
+### The runtime state model
+
+The vocabulary assumes a small, named runtime state. Every
+`validator` preset and every `step_validator` preset reads this
+state; every state change is written by a `response`.
+
+| State | What it tracks |
+| --- | --- |
+| held material | Which tool, if any, is attached to the cursor, and what liquid it carries. |
+| target contents | The tracked liquid identity and volume on each vessel and tool. |
+| set-point values | The current value of a continuous control (a pipette volume, a power-supply voltage, a titration pH). |
+| equipment state | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. |
+| phase state | A multi-phase result the student must resolve (a centrifuged tube holding an aqueous and an organic phase). |
+| object appearance | The current asset id, color, and layout slot of each scene object. |
+
+This state is named and non-positional, the same as `target`: the
+runtime tracks it by name. The scene adapter renders it; the
+protocol vocabulary names the state, not the rendering.
+
+Each `scene_operation` primitive maps to the runtime state it
+changes:
+
+| Primitive | Runtime state it changes |
+| --- | --- |
+| `SvgSwap` | object appearance -- the target's asset id. |
+| `ColorChange` | object appearance -- the target's named color property. |
+| `CursorAttach` | held material -- the cursor-attachment state of the target. |
+| `SceneChange` | the active scene id. |
+| `LayoutMove` | object appearance -- the target's layout slot. |
+| `LiquidDisplayChange` | held material and target contents -- the tracked liquid identity and volume on the target. |
+| `SetPointDisplayChange` | set-point values -- the current value of a continuous control. |
+| `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
+
+This model supersedes the hand-authored `stateChange` block of the
+shipped content. The legacy camelCase fields `stateChange`,
+`heldLiquid`, `consumesVolumeMl`, and `colorKey` are named here only
+as fields the new model supersedes; they are not vocabulary in the
+new model and never appear in a target-state example.
+
+### The event-emission rule
+
+- **The emission rule.** An event is emitted on a state transition
+  the rest of the protocol may react to: an interaction firing a
+  true `validator`, a step resolving `complete`, or a
+  timed-equipment phase elapsing. Events are emitted by the
+  runtime, not hand-authored per interaction. The runtime emits a
+  `<step_name>_complete` event when the `step_validator` passes.
+- **The naming convention.** Event names are snake_case, derived
+  from the `name` of the thing they report, suffixed with the
+  transition: `<step_name>_complete` when a step resolves,
+  `<equipment_name>_elapsed` when a timed phase ends. There is one
+  convention; the legacy kebab-case and mixed forms are retired.
+
+Event names are derived, not separately authored: because the step
+`name` and the equipment `target` name are already stable
+snake_case identifiers, the event name follows from them. An author
+who renames a step renames its completion event with it.
+
+## The scene-vs-protocol boundary
+
+Status: **target-state.**
+
+This is the hard boundary between what the protocol vocabulary
+names and what a scene adapter owns. It exists because of a
+documented failure: PRIMARY_CONTRACT item 1 records that earlier
+TypeScript was built around the hood scene and treated other scenes
+as derivatives. The same failure reappeared one layer up -- the
+shipped protocol vocabulary carried `plateTargets`, `tubeTargets`,
+and the four-`kind` completion-path taxonomy, all of them
+cell-culture-scene drift baked into what should be a scene-agnostic
+protocol vocabulary. The boundary rule is the guardrail that keeps
+that drift out. Removing `plate target` and `tube target` from this
+canonical vocabulary is the direct result.
+
+### The boundary rule
+
+The quotable rule a doc reviewer and a YAML author both apply:
+
+**The protocol vocabulary names no plate, no well, no tube, no gel,
+no column, no lane, no rack, and no coordinate. It names semantic
+targets, gestures, validators, and named runtime state. The scene
+adapter owns all geometry, all target expansion, and how every
+`gesture` is rendered and input. If a protocol YAML file contains a
+geometric noun or a coordinate, that is a boundary violation -- the
+geometry belongs on the scene side, addressed through a semantic
+target name.**
+
+Two consequences follow:
+
+- **The protocol YAML is geometry-free.** No well coordinates, no
+  `A1:A12` spans, no row or column ranges, no plate structure, no
+  x/y. A protocol step that treats a row of wells writes one
+  semantic target name; the scene resolves it.
+- **The scene adapter is the only place geometry lives.** Where a
+  target sits, how big it is, how a `gesture` is captured as input,
+  how a set-point display is drawn, how a timed-wait progress bar
+  animates -- all scene-adapter territory.
+
+### Slot-by-slot ownership
+
+| Level | Slot | Side | What each side owns |
+| --- | --- | --- | --- |
+| protocol | `name` | protocol | The protocol's stable snake_case identifier. |
+| protocol | `entry_step` | protocol | Names the first step; pure protocol flow. |
+| protocol | `steps` | protocol | The list of steps; pure protocol flow. |
+| step | `name` | protocol | The step's stable snake_case identifier. |
+| step | `prompt` | protocol | The student-facing instruction text. |
+| step | `sequence` | protocol | The ordered list of interactions; order is protocol-owned. |
+| step | `step_validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
+| step | `outcome` | protocol | The `on_success` / `on_failure` mapping; pure protocol flow. |
+| step | `next_step` | protocol | Names the next step; pure protocol flow. |
+| interaction | `target` | shared | Protocol names a semantic target; scene resolves it to geometry. |
+| interaction | `gesture` | shared | Protocol names the gesture; scene owns how it is rendered and input. |
+| interaction | `validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
+| interaction | `response` | shared | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
+
+### Target resolution: adapter registry plus named groups
+
+How a protocol `target` resolves to a concrete scene object is the
+adapter-registry plus named-groups mechanism:
+
+- **The adapter registry maps a `target` name to a scene object.**
+  The scene adapter holds a registry that maps each semantic
+  `target` name the protocol uses to a concrete scene object. The
+  protocol writes `target: flask`; the adapter's registry resolves
+  `flask` to the scene's flask object.
+- **Grouped targets are named groups defined in the scene YAML.** A
+  row of wells, a tube rack, a set of gel lanes -- any target that
+  fans out to several scene objects -- is a named group declared in
+  the scene YAML. The protocol writes one semantic group name, for
+  example `target: row_b`. The scene YAML defines `row_b` as the
+  list of scene objects it expands to. All group membership and all
+  target expansion live on the scene side.
+- **The protocol vocabulary stays geometry-free.** No ranges, no
+  plate structure, no well coordinates in protocol YAML.
+
+This named-group mechanism is what replaces `plate target` and
+`tube target`. Those fields pushed plate and tube geometry into the
+protocol vocabulary; the named-group mechanism pulls it back to the
+scene side where it belongs.
+
+Worked example -- which file owns which:
+
+```yaml
+# protocol YAML -- names a semantic target, no geometry
+- name: add_media_row_b
+  prompt: "Add 100 uL media to every well in row B."
+  sequence:
+    - target: serological_pipette
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: CursorAttach
+            target: serological_pipette
+            operation: attach
+    - target: media_bottle
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: LiquidDisplayChange
+            target: serological_pipette
+            liquid: media
+            volume_ml: 0.7
+            operation: hold
+    - target: row_b
+      gesture: click
+      validator: { preset: correct_target }
+      response:
+        scene_operations:
+          - type: LiquidDisplayChange
+            target: row_b
+            liquid: media
+            volume_ml: 0.1
+            operation: add
+  step_validator:
+    preset: final_state_matches
+    target: row_b
+    contains: { liquid: media }
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_media_row_c
+```
+
+```yaml
+# scene YAML -- defines the named group; owns the geometry
+target_groups:
+  row_b: [well_b1, well_b2, well_b3, well_b4, well_b5, well_b6,
+          well_b7, well_b8, well_b9, well_b10, well_b11, well_b12]
+```
+
+The protocol YAML writes `target: row_b` and never lists a well or
+a coordinate. The scene YAML owns `row_b`.
+
+### The "click target" / `ClickTarget` collision
+
+`PROTOCOL_VOCABULARY.md` once said "click target" and
+`SCENE_VOCABULARY.md` says `ClickTarget`, with no cross-reference.
+The resolution:
+
+- **`target` is the protocol-side term.** A `target` is the
+  semantic, geometry-free name a protocol author writes. This doc
+  uses `target` for that concept and retires "click target"
+  entirely. "Click target" was a UI/DOM-level phrase that never
+  belonged in the protocol vocabulary.
+- **`scene object` is the scene-side term.** A `scene object` is
+  the concrete, geometry-bearing thing the adapter registry
+  resolves a `target` name to. It is the scene-side term, canonical
+  in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
+- **`ClickTarget` is scoped to one narrow runtime type.**
+  `ClickTarget` stays as the name of the specific `{itemId}` driver
+  payload it denotes in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md)
+  -- a low-level click-event payload, not the addressable-object
+  concept.
+
+The single canonical split: a protocol names a **`target`**; the
+scene adapter resolves that name to a **`scene object`** (or a
+named group of scene objects). This doc encodes the protocol-side
+half. The scene-side half -- `scene object` and the narrow
+`ClickTarget` runtime type -- is owned by
+[SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
+
+## Worked example: a multi-gesture step
+
+Status: **target-state.**
+
+"Wash the flask with 4 mL PBS" is one step. It is the canonical
+multi-gesture case, shown here as one step inside a `protocol`'s
+`steps` list:
+
+```yaml
+protocol:
+  name: cell_culture
+  entry_step: pbs_wash
+  steps:
+    - name: pbs_wash
+      prompt: "Wash the flask with 4 mL PBS."
+      sequence:
+        - target: serological_pipette
+          gesture: click
+          validator: { preset: correct_target }
+          response:
+            # the pipette is picked up and follows the cursor
+            scene_operations:
+              - type: CursorAttach
+                target: serological_pipette
+                operation: attach
+        - target: pbs_bottle
+          gesture: click
+          validator: { preset: correct_target }
+          response:
+            # 4 mL PBS is drawn into the held pipette
+            scene_operations:
+              - type: LiquidDisplayChange
+                target: serological_pipette
+                liquid: pbs
+                volume_ml: 4
+                operation: hold
+            feedback:
+              correct: PBS loaded.
+              incorrect: Use the PBS bottle.
+        - target: flask
+          gesture: click
+          validator: { preset: correct_target }
+          response:
+            # the PBS is dispensed from the pipette into the flask
+            scene_operations:
+              - type: LiquidDisplayChange
+                target: serological_pipette
+                liquid: pbs
+                volume_ml: 0
+                operation: set
+              - type: LiquidDisplayChange
+                target: flask
+                liquid: pbs
+                volume_ml: 4
+                operation: add
+      step_validator:
+        preset: final_state_matches
+        target: flask
+        contains:
+          liquid: pbs
+          volume_ml: 4
+      outcome:
+        on_success: complete
+        on_failure: retry
+      next_step: add_trypsin
+```
+
+Reading the chain:
+
+- One `protocol`, `name: cell_culture`, with `entry_step: pbs_wash`
+  -- flow starts at the `pbs_wash` step.
+- One `step`, `name: pbs_wash`, with one `prompt`. The student is
+  asked to accomplish one thing.
+- Three `interaction` entries in the `sequence`, each with exactly
+  four slots: `target`, `gesture`, `validator`, `response`. Each is
+  one `gesture` on one `target`.
+- Each interaction has its own `validator` preset; `correct_target`
+  checks just that gesture on just that target.
+- Each interaction has its own `response`: `scene_operations` plus
+  optional `feedback`. State change is explicit in the
+  `scene_operation` mutations -- there is no `state_update` slot.
+- After the three interactions run in order, the `step_validator`
+  preset `final_state_matches` asserts the flask holds 4 mL PBS.
+- The `outcome` mapping resolves the step on success and restarts
+  the whole step on failure. Flow then moves to `next_step`:
+  `add_trypsin`.
 
 ## Container terms
 
+Status: **target-state.**
+
 | Term | Definition | Where it surfaces |
 | --- | --- | --- |
-| **Protocol** | The complete lab procedure. Lives as a self-contained folder under `src/content/<protocol_name>/` with `items.yaml`, `reagents.yaml`, `protocol.yaml`. | folder name; `--protocol <name>` build flag |
-| **Part** | A named grouping of steps inside a protocol. | `protocol.yaml` part header |
-| **Step** | One numbered objective in a part. | `protocol.yaml` step entry; `ProtocolStep` interface |
-| **Entry block** | A top-level protocol YAML block declaring the first scene and first step for the protocol. Required for every mini-protocol. | `entry` |
-| **Completion path** | The schema contract that describes how the step gets completed. Always present; one per step. Its `kind` selects the shape of the remaining fields. | `step.completionPath` |
-| **Completion-path kind** | Discriminator field on a completion path. One of `interactionSequence`, `directTool`, `modal`, or `multipleChoice`. | `step.completionPath.kind` |
-| **Interaction sequence** | The ordered list of interactions a step requires when the completion-path kind is `interactionSequence`. | `step.completionPath.interactions` |
-| **Plate targets** | Optional metadata for `interactionSequence` steps: maps each load+discharge interaction pair to a set of wells that receive liquid. Mirrors the heldLiquid pattern for pipettes. Mutually exclusive with tubeTargets on a single step. | `step.completionPath.plateTargets` (optional on `interactionSequence` kind) |
-| **Tube targets** | Optional metadata for `interactionSequence` steps: maps each 4-interaction cycle (solute load+discharge + diluent load+discharge) to a dilution destination microtube. Mirrors the heldLiquid pattern for pipettes. Mutually exclusive with plateTargets on a single step. | `step.completionPath.tubeTargets` (optional on `interactionSequence` kind) |
-| **Interaction** | One logical player operation. May require 1-3 clicks. | one entry in `completionPath.interactions` (kind = `interactionSequence`) |
-| **Click plan** | Ordered click list for a single interaction. Tool first. | derived per interaction shape |
-| **Click target** | One DOM element a click is dispatched to. | UI/testing docs only |
-| **Scene** | The active UI viewport. Allowed values are defined by the protocol schema and TypeScript `ProtocolStep.scene` type. | `step.scene` |
+| **Protocol** | The complete, single, linear lab procedure. The top model level. | `protocol` block; `--protocol <name>` build flag |
+| **Step** | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture. | one entry in `protocol.steps` |
+| **Sequence** | The ordered list of interactions inside a step; order always matters. | `step.sequence` |
+| **Interaction** | One `gesture` on one `target`, with its own `validator` and `response`. | one entry in `step.sequence` |
+| **Target** | The addressable, semantic scene object or control the student acts on. Named, not positional. | `interaction.target` |
+| **Gesture** | How the student acts on the target. One of `click`, `drag`, `adjust`, `select`, `type`. | `interaction.gesture` |
+| **Validator** | A named preset that checks one gesture on one target. | `interaction.validator` |
+| **Step validator** | A named preset that checks whole-step completion. | `step.step_validator` |
+| **Response** | The container for post-validation system behavior: `scene_operations` and optional `feedback`. | `interaction.response` |
+| **Scene operation** | One of the eight ratified typed primitives describing how the scene changes. | `response.scene_operations[]` |
+| **Outcome** | The `{on_success, on_failure}` mapping that says how the step resolves. | `step.outcome` |
+| **Domain verb** | An author-facing named composition over the two-level model. Expands to existing slots. | authoring shorthand; expands to `step`/`interaction` slots |
 
-## Workspace concept
+## Reagent and material terms
 
-A mini-protocol starts in its declared entry scene. Every step takes place
-in a specific scene (the rendered viewport where the student performs each
-action):
+Status: **target-state.**
 
-- The `scene:` field in each step names the workspace where interactions occur.
-- A mini-protocol must declare which scene is its entry point (the scene
-  where the first step takes place).
-- Do not route through intermediate scenes unless the authored steps require it.
-- In particular, do not default to the hood unless the first authored step
-  takes place there.
+These lab-domain terms are kept; they describe substances, not
+model structure.
 
-Pick the appropriate `completionPath.kind` per scene type:
-
-- Physical transfer and liquid handling -> `kind: interactionSequence`.
-- One-click physical or instrument action -> `kind: directTool`.
-- Instrument control or UI workflow -> `kind: modal`.
-- Quiz or calculation question -> `kind: multipleChoice`.
-
-Critical authoring rule: do NOT use `kind: modal` as a shortcut for
-wet-lab liquid handling. A dilution series prepared from stock solutions
-through intermediate dilutions is physical pipetting, not an instrument
-workflow, so it must be authored as `interactionSequence`. A modal MAY be
-layered on top of a physical step as optional calculation or help guidance,
-opened from a help affordance, but it must not be the step's completionPath.
-
-For examples in vocabulary docs, prefer author-readable placeholders:
-`<protocol_name>`, `<scene_name>`, `<item_name>`, `<step_name>`, and
-`<reagent_name>`. Use `<*_id>` only when the doc is specifically
-discussing the YAML or code field named `id`. In YAML, these names
-usually appear in fields such as `id`, `scene`, `tool`, `source`,
-`destination`, or `liquid`.
-
-## Field-level terms (modern YAML keys)
-
-| Term | Definition | Field |
-| --- | --- | --- |
-| **Item** | A physical game item defined in `items.yaml`. Identified at the DOM by `data-item-id`. | `items.yaml` |
-| **Reagent** | A substance defined in `reagents.yaml`. | `reagents.yaml` |
-| **Liquid** | A reagent currently being moved or held. | `interaction.liquid` |
-| **Tool** | The item performing the interaction. Always clicked first. | `interaction.tool` (renamed from `actor`) |
-| **Source** | The item being drawn from during a load. | `interaction.source` |
-| **Destination** | The item that physically receives transferred liquid, cells, waste, or material during a discharge. Click target. Do not use for context or scene affordances. | `interaction.destination` (renamed from `target`) |
-| **Direct tool interaction** | A one-click step completed by clicking the tool itself. Has `tool` + `completionEvent`; no `source`, no `destination`. Covers both hand-tool steps and instrument-control steps; the role distinction lives in `items.yaml`. | `step.completionPath` with `kind: directTool` |
-| **Modal step** | A step completed by opening a modal scene and clicking its advance control. Has `openClick` (items.yaml id) + `advanceClick` (kebab-case `data-walker-advance` string) + `completionEvent`. | `step.completionPath` with `kind: modal` |
-| **State change** | Optional runtime change caused by the interaction. | `interaction.stateChange` (renamed from `result`) |
-| **Held liquid** | Runtime state of a tool that has drawn liquid. Mirrors `stateChange.heldLiquid`. | `gameState.heldLiquid` |
-| **Completion event** | Optional runtime signal emitted by an interaction. | `interaction.completionEvent` (renamed from `event`) |
-| **Completion trigger** | Step-level listener that fires on a completion event. Derived (build-time), do not author: the builder synthesizes `step.completionTrigger` from `step.scene` and `step.completionPath` and rejects YAML that writes it by hand. | `step.completionTrigger` (renamed from `trigger`; derived) |
-| **Required items** | Flat set of items declared on the step as logically required. | `step.requiredItems` (kept) |
-| **Used items** | Derived, de-duplicated step-level summary in first-use order. Not authored, not the live highlight set. | `step.usedItems` (derived; replaces `targetItems`) |
-
-## Runtime / state terms
-
-| Term | Definition | Code surface |
-| --- | --- | --- |
-| **Interaction index** | Zero-based position of the current required interaction inside the active step's interaction sequence. Reset on step entry; advances when an interaction completes. | `gameState.interactionIndex` (renamed from `cursor`) |
-| **Active highlight items** | Runtime set of items currently glowing in the UI. Derived per-frame from the active interaction's `tool`/`source`/`destination`. Distinct from `usedItems`. | scene render code |
-| **Step-order error** | Existing soft-fail signal: a `completeStep` call for the wrong step id. | `gameState.stepsOutOfOrder`, `outOfOrderAttempts` |
-| **Wrong-order click** | A click that does not satisfy the current interaction. Soft-fail in gameplay; hard-fail in the auto-walker. | `gameState.wrongOrderClicks` (renamed from `outOfSequenceClicks`) |
-| **Completion-event emitter** | The scene/modal code path that emits a completion event when the player completes the matching interaction. | per-scene adapter `.ts` files under `src/scenes/<scene_name>/`, modal handlers |
-| **Completion-event coverage** | Startup check that every declared `completionTrigger` has a matching emitter. Coverage policy is selected by runtime protocol category. | `src/init.ts` |
+| Term | Definition |
+| --- | --- |
+| **Reagent** | A substance defined in the protocol's reagent data. |
+| **Liquid** | A reagent currently being moved, held, or tracked, named in a `LiquidDisplayChange`. |
+| **Stock solution** | The highest-concentration reagent supplied in a bottle or vial at the start of the protocol. Never used directly on cells; diluted first. |
+| **Intermediate dilution** | A temporary tube of solution prepared by diluting a stock solution down toward a usable working concentration. |
+| **Working solution** | The final, ready-to-dose dilution delivered into a vessel at the protocol-specified volume. |
 
 ## Test-tier terms
 
-| Term | Definition | Tool |
+Status: **current-code.**
+
+These describe the test tooling the repo runs today. They are
+unchanged by the vocabulary redesign.
+
+| Term | Definition |
+| --- | --- |
+| **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. |
+| **Wrong-order UI pass** | Variant of the walker that injects a wrong-order click before each correct sequence and asserts soft-fail behavior. |
+| **Human playtest** | A human plays the game. The only thing that judges UX clarity. |
+
+## Retired terms (do not use)
+
+Status: **target-state** (the list of retired terms) and
+**current-code** (the note on where they still appear in the
+runtime).
+
+Retired terms may appear only in this table and in explicit
+migration or rename notes. They must not appear in normal prose,
+target-state examples, code comments, or error messages. Some still
+appear as identifiers in the current runtime and shipped YAML;
+those uses are migration debt the follow-on code-migration plan
+removes.
+
+### Scene-specific drift terms (removed entirely)
+
+These named scene-specific geometry inside the protocol vocabulary.
+They are removed; target resolution is the adapter-registry plus
+named-groups mechanism.
+
+| Retired | Use instead | Reason |
 | --- | --- | --- |
-| **Graph smoke** | Fast data-layer test that walks `nextId` by calling internal APIs. Proves the protocol graph is connected. Proves nothing about gameplay. | graph-smoke script |
-| **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. | protocol walker script |
-| **Wrong-order UI pass** | Variant of the walker that injects a wrong-order click before each correct sequence and asserts soft-fail behavior. | walker `--wrong-order` flag |
-| **Human playtest** | A human plays the game. The only thing that judges UX clarity. | a human |
+| `plate target` / `plateTargets` | a semantic **`target`** name resolved by the scene's named groups | named plate-and-well geometry in protocol YAML; a scene/protocol boundary violation |
+| `tube target` / `tubeTargets` | a semantic **`target`** name resolved by the scene's named groups | named tube-and-rack geometry in protocol YAML; a boundary violation, and `tubeTargets` was additionally a broken legacy field |
 
-## Banned synonyms (do not use)
+### Retired `completionPath.kind` taxonomy
 
-Banned terms may appear only in this table, in explicit migration or rename notes, and in code identifiers (until Patch 1 mechanical rename). They must not appear in normal prose, examples, code comments, or error messages.
+The legacy four-`kind` completion-path taxonomy is retired. There is
+no `completionPath` and no `kind` discriminator in the new model.
 
-| Banned | Use instead | Reason |
+| Retired | Use instead | Reason |
 | --- | --- | --- |
-| `actor` | **tool** | abstract; lab-author-unfriendly |
-| `target` | **destination** | overloaded with `targetItems` and "click target" |
-| `targetItems` | **usedItems** | conflated with destination |
-| `allowedInteractions` | **interactionSequence** | "allowed" reads as optional/unordered |
-| `result` | **stateChange** | could mean game score/result |
-| `event` | **completionEvent** | too generic; collides with DOM events |
-| `trigger` (alone) | **completionTrigger** | vague |
-| `cursor` | **interaction index** | sounds like the mouse arrow |
-| `outOfSequenceClicks` | **wrongOrderClicks** | technical and long |
-| `requiredAction` | (removed) | deleted; not replaced |
-| `highlightItems` | **usedItems** (summary) or **active highlight items** (live) | sounded like live state, but was the summary |
-| "object" (clickable) | **item** | overloaded with JS object literals |
-| "action" (bare) | **interaction**, **click**, or **completion event** | overloaded |
-| "sequence" (bare) | **interaction sequence**, **click plan**, or **step chain** | always specify which level |
-| "task" | **step** | collides with TaskCreate/TaskUpdate |
-| "phase" (planning) | **milestone** | per repo planning conventions |
-| "stage" (planning) | **milestone** | reserve "stage" for code-level pipeline |
-| "drag" / "drop" / "carry" | **load** (for source) / **discharge** (for destination) / **held liquid** | game has no drag-and-drop |
-| "ingredient" | **reagent** or **liquid** | undefined in this codebase |
-| "scene step" / "screen" | **scene** | one canonical viewport word |
-| "recipe" | **interaction sequence** | informal |
-| "source-first" | (unsupported) | tool-first is the canonical click model |
-| `scene wiring` | **completion-event emitter** | vague; conflates YAML field, runtime signal, and emitter code |
-| `trigger coverage` | **completion-event coverage** | "trigger" alone collides with the YAML field |
-| `registered triggers` | **registered emitters** | same |
-| `trigger` (bare, in code/runtime context) | **completion event** OR **completion-event emitter** | always specify which level |
-| "fake interactionSequence" (modal/instrument step pretending to be a tool/source/destination row) | use the correct **completionPath.kind** (`modal` or `instrument`) | misleading YAML, brittle runtime |
-| `step.interactionSequence` (top-level) | **completionPath.interactions** when `completionPath.kind` is `interactionSequence` | every step has a completion path; the interactions list is nested under it |
-| authored `completionTrigger` | (do not author) | derived from `completionPath` at build time; the validator rejects YAML that writes `completionTrigger` by hand |
-| `kind: instrument` | **`kind: directTool`** | the conceptual instrument-vs-handtool distinction lives in `items.yaml` role, not in completion-path kind |
-| `advanceClick` as items.yaml id | **`data-walker-advance` kebab string** | modal-internal advance controls are UI elements, not protocol items |
-| `working stock` | **working solution** | "stock" implies the bottle-grade reagent; the final per-well dilution is a working solution |
-| `parent stock` | **stock solution** (or **intermediate dilution** if it is a tube, not a bottle) | "parent stock" conflates the bottle-grade stock with the intermediate dilution one tier down |
+| `completionPath` | the `step` slots `sequence`, `step_validator`, `outcome`, `next_step` | the legacy schema-contract wrapper; the two-level model has no completion-path wrapper |
+| `completionPath.kind` | the target's `kind` plus the `gesture` | the legacy four-value discriminator; the target kind carries the task semantics |
+| `interactionSequence` (as a `kind`) | a `step` with an ordered `sequence` of `click` interactions | a retired `kind` value |
+| `directTool` (as a `kind`) | a `step` with a one-interaction `sequence` | a retired `kind` value |
+| `modal` (as a `kind`) | a `step` whose interactions carry a `SceneChange` or `feedback`-only `response` | a retired `kind` value |
+| `multipleChoice` (as a `kind`) | a `step` with a `select`-gesture interaction validated by `correct_choice` | a retired `kind` value |
 
-## Worked example
+### Retired overloaded and legacy field terms
 
-Modern YAML for a liquid-transfer step:
+| Retired | Use instead | Reason |
+| --- | --- | --- |
+| `action` (bare, overloaded) | `gesture` (learner input), `scene_operation` (scene change), or `validator` (the correctness check) | the overloaded legacy term that confused learner input with scene response |
+| "click target" | **`target`** (protocol side) / **`scene object`** (scene side) | a UI/DOM-level phrase that never belonged in the protocol vocabulary |
+| `stateChange` / `heldLiquid` / `consumesVolumeMl` / `colorKey` | a `LiquidDisplayChange` `scene_operation` in a `response` | hand-authored camelCase state blocks; state change is now explicit in a `scene_operation` mutation only |
+| `completionEvent` (authored, no naming convention) | the runtime-derived `<step_name>_complete` / `<equipment_name>_elapsed` event | events are derived by the runtime, not hand-authored, and follow one snake_case convention |
+| `completionTrigger` (authored) | the runtime-derived completion event | derived, not authored |
+| `nextId` | **`next_step`** | a numeric-style camelCase flow field; flow is named, snake_case |
+| `volumeMl` (on a `click` interaction) | `volume_ml` inside a `LiquidDisplayChange`, or a `target_with_value` set-point | a camelCase legacy field; also the timed-click regression when used to skip an `adjust` gesture |
+| `targetItems` / `usedItems` / `requiredItems` | derived from the `sequence`'s `target` slots | legacy step-level item summaries; not authored vocabulary in the new model |
+| `state_update` (on a `response`) | a `scene_operation` mutation | the dropped non-visual bookkeeping field; there is no arbitrary non-visual state path |
+| `sequence_mode` | (removed) | the dropped unordered-sequence slot; `sequence` order always matters |
+| interaction `name` | (deferred) | dropped from the tight spec; a later plan may reintroduce it with evidence |
 
-For example, a transfer step might load a reagent from a bottle into a
-pipette, then discharge that reagent into a flask, well, or tube.
-
-```yaml
-- id: <step_name>
-  label: "<step_label>"
-  scene: <scene_name>
-  completionPath:
-    kind: interactionSequence
-    interactions:
-      - tool: <tool_item_name>
-        source: <source_item_name>
-        liquid: <reagent_name>
-        stateChange:
-          heldLiquid:
-            tool: <tool_item_name>
-            liquid: <reagent_name>
-            volumeMl: 1
-            colorKey: <reagent_color_key>
-      - tool: <tool_item_name>
-        destination: <destination_item_name>
-        liquid: <reagent_name>
-        consumesVolumeMl: 1
-        completionEvent: <completion_event>
-  nextId: <next_step_name>
-```
-
-Required click plans (canonical):
-
-```
-Step: <step_label>
-
-  Interaction 0: Load reagent into tool
-    Click plan:
-      1. <tool_item_name>        (tool first)
-      2. <source_item_name>      (source)
-    State change:
-      - tool holds reagent
-    Completion event:
-      - none
-
-  Interaction 1: Discharge reagent
-    Click plan:
-      1. <tool_item_name>        (only if not still selected)
-      2. <destination_item_name> (destination)
-    State change:
-      - destination receives reagent
-    Completion event:
-      - <completion_event>
-```
-
-Note: the YAML's `completionTrigger.completionEvent` names the event, but
-the step only completes when runtime code actually emits it. That code
-path is the **completion-event emitter** for the event. The startup
-**completion-event coverage** check enforces that every declared
-trigger has a matching emitter.
-
-Derived `usedItems` (summary; first-use order, tool -> source ->
-destination):
-
-```
-usedItems: [<tool_item_name>, <source_item_name>, <destination_item_name>]
-```
-
-## State-change vs. completion rule
-
-A state change is not a step completion. Loading a tool changes state
-but does not complete the step. Discharging into a destination changes
-state AND emits the completion event that completes the step.
-
-In this schema, a completion event is the signal that the step
-is complete. Each step may have at most one completion event,
-and it must be on the final interaction. Setup or intermediate
-interactions carry `stateChange` but not `completionEvent`. The
-validator enforces this exactly.
-
-## Tool-first click model
-
-The tool is always clicked before its source or destination.
-Source-first or destination-first click models are not
-supported. The validator rejects any interaction that has
-`source`, `destination`, `liquid`, or `stateChange` but does not
-declare `tool` (the only exception is an interaction that
-explicitly declares `direct: true`, allowed for direct-action
-items).
+All authored YAML keys and identifier values are snake_case. The
+only PascalCase in the vocabulary is the eight `scene_operation`
+type names (`SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
+`LayoutMove`, `LiquidDisplayChange`, `SetPointDisplayChange`,
+`TimedWait`). Legacy camelCase terms appear only in this table and
+in migration notes, never in a target-state example.
 
 ## Status
 
-This vocabulary is the only vocabulary used in the repo. The K2
-migration completed in Patch 2 (see [CHANGELOG.md](CHANGELOG.md)
-entry for SP-K2g): the legacy top-level `step.interactionSequence`
-field is gone and runtime, validator, walker, and YAML all read
-`step.completionPath` exclusively. There is no compatibility layer
-for legacy field names.
+Status: **current-code** (this section).
+
+This doc is **target-state**. The vocabulary it encodes is
+ratified -- M3 mapped 120 real protocol steps (OVCAR8, four source
+protocols, seven shipped content files) to the two-level model with
+no model revision forced -- but the runtime, validator, walker, and
+shipped YAML do not implement it yet.
+
+The current runtime still uses the legacy vocabulary: `completionPath`
+with its four-`kind` discriminator, hand-authored `stateChange`
+blocks, `completionEvent` fields, `plateTargets`, `tubeTargets`,
+and camelCase field names. Migrating the runtime to this vocabulary
+is the follow-on code-migration plan's job. Until then, a reader
+working in the code will see the retired terms; this doc names them
+in the retired-terms table so the gap between the designed
+vocabulary and the running code is explicit, not hidden.
