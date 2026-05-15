@@ -1088,8 +1088,68 @@ each rule directly; the design doc cites this section and does not relitigate.
   side of the boundary table; WP-DOC-DEP1 reconciles
   `PROTOCOL_AUTHORING_GUIDE.md` and `SCENE_VOCABULARY.md` accordingly.
 
+- RD-5: **No fixed asset / scene counts in plan prose or canonical docs.**
+  Counts belong in the inventory artifact, not the plan or docs. Replace
+  "31 / 45 entries" wording with "every current `src/asset_specs.ts`
+  entry" (and similar for scenes). Counts in
+  `docs/active_plans/scene_object_split_inventory.md` remain authoritative
+  as a snapshot. Owner: WS-DOC-DEP / WS-DOC-C; sweep applies to the plan,
+  OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md, SCENE_VOCABULARY.md,
+  SCENE_YAML_FORMAT.md, PROTOCOL_VOCABULARY.md.
+- RD-6: **`capabilities` is a closed list.** No open-ended capability
+  objects. Initial closed set: `clickable`, `liquid_container`,
+  `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`,
+  `decoration_only`. `decoration_only` mutually exclusive with the others.
+  Adding a capability value requires an explicit vocabulary edit. Owner:
+  WS-OBJ; encoded in OBJECT_VOCABULARY.md and OBJECT_YAML_FORMAT.md.
+- RD-7: **`render_map` formula mini-language is a small closed token set,
+  defined in M4.** No prose formulas. Closed set lives in
+  OBJECT_YAML_FORMAT.md (already drafted by WP-DOC-OY1). Unknown tokens =
+  build error. Owner: WS-DOC-OY.
+- RD-8: **`ObjectStateChange` only sets declared `state_fields`.** No
+  arbitrary nested writes. Target a named state field; provide a value
+  matching the field's declared primitive type. Validator rejects unknown
+  fields and type-mismatched values. Owner: WS-PROTO; encoded in
+  PROTOCOL_VOCABULARY.md and OBJECT_VOCABULARY.md.
+- RD-9: **Drop `target_groups` from initial object vocabulary.** Protocols
+  list explicit subparts (`treatment_plate.A1`, `treatment_plate.A2`, ...).
+  Named groups deferred until real authoring pain appears, then revisited
+  as a separate vocabulary addition. Supersedes the named-groups portion of
+  RD-4; RD-4's "subparts belong to the object, not the scene" rule still
+  holds. Owner: WS-OBJ; sweep OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md,
+  SCENE_VOCABULARY.md to remove `target_groups` and named-group references.
+- RD-10: **`LayoutMove` stays narrow.** Move an existing placement only;
+  do not rewrite layout. Scope includes (a) row-to-row reposition handled
+  by layout engine for the current scene, and (b) cross-scene transitions:
+  remove placement from one scene, add to another (e.g., pipette moves
+  from hood to bench; protocol with two bench areas). Layout engine owns
+  the visible motion; `LayoutMove` names what moves and where. Owner:
+  WS-PROTO; encoded in PROTOCOL_VOCABULARY.md and LAYOUT_ENGINE.md
+  (touched by WP-DOC-DEP1).
+- RD-11: **State-field types are flat primitives only.** Allowed types:
+  `enum`, `int`, `float`, `bool`. No `string` (use `enum` with a closed
+  `allowed` list). No structured `liquid` or `set_point` composite types.
+  Model liquid and set-point state as multiple flat fields per object.
+  Supersedes the structured `type: liquid` / `type: set_point` shapes
+  drafted in OBJECT_VOCABULARY.md and OBJECT_YAML_FORMAT.md. Worked
+  rewrites:
+  - Well: `liquid_id` (enum), `liquid_volume` (float, unit=ul),
+    `liquid_color` (enum).
+  - Pipette: `set_volume` (float, unit=ml, min=0.1, max=25), and a
+    separate `held_liquid_id` + `held_liquid_volume` if it carries liquid.
+  Owner: WS-OBJ; sweep OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md,
+  PROTOCOL_VOCABULARY.md (`ObjectStateChange` examples), and
+  LIQUID_CONVENTION.md (touched by WP-DOC-DEP1).
+- RD-12: **Per-type constraint metadata is closed.** No open-ended
+  `constraints:` object. Allowed metadata keys per primitive type:
+  - `enum`: `allowed`, `default`.
+  - `int` / `float`: `unit`, `min`, `max`, `step`, `default`.
+  - `bool`: `default`.
+  Unknown metadata keys = build error. Owner: WS-DOC-OY; encoded in
+  OBJECT_YAML_FORMAT.md.
+
 ## Open questions and decisions needed
 
-- None open at plan-publication time. RD-1 through RD-4 settle the four
-  decisions raised during plan review. Any new question that surfaces during
-  M2 or M3 lands here with an owner and a resolve-by milestone.
+- None open at plan-publication time. RD-1 through RD-12 settle the
+  decisions raised during plan review. Any new question that surfaces
+  lands here with an owner and a resolve-by milestone.
