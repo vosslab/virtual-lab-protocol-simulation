@@ -32,7 +32,7 @@ The flow sketch is the design source for:
 - screenshot checkpoints
 - transitions between steps
 
-The YAML should then encode that flow using the two-level protocol model: a `protocol` with an `entry_step` and `steps`, each `step` carrying an ordered `sequence` of interactions and a `next_step` that names the step that runs next. Each `interaction` is one `gesture` on one `target`, with its own `validator` and `response`. The protocol vocabulary treats a step as one pedagogical unit whose `sequence` is the ordered list of interactions that complete it, each interaction naming the scene object it acts on and the scene operations its `response` causes. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) for the canonical model.
+The YAML should then encode that flow using the two-level protocol model: a `protocol` with an `entry_step` and `steps`, each `step` carrying an ordered `sequence` of interactions and a `next_step` that names the next `step_name`. Each `interaction` is one `gesture` on one `target`, with its own `validator` and `response`. The protocol vocabulary treats a step as one pedagogical unit whose `sequence` is the ordered list of interactions that complete it, each interaction naming the scene object it acts on and the scene operations its `response` causes. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) for the canonical model.
 
 ## Learning block
 

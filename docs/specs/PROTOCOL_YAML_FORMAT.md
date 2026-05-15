@@ -80,8 +80,7 @@ Each contents entry is a mapping keyed by snake_case name. All fields required.
 | Field | Type | Description |
 | --- | --- | --- |
 | `label` | string | Display name (shown in UI and step text) |
-| `colorKey` | string | Internal identifier for color selection |
-| `displayColor` | string | CSS hex color code (lowercase, ASCII-only) |
+| `display_color` | string | CSS hex color code (lowercase, ASCII-only) |
 
 ### Contents example
 
@@ -90,13 +89,11 @@ content/protocols/cell_culture/contents.yaml:
 contents:
   pbs:
     label: "1x PBS"
-    colorKey: pbs
-    displayColor: "#b8e5ff"
+    display_color: "#b8e5ff"
 
   media:
     label: "Complete media"
-    colorKey: media
-    displayColor: "#f7a6b8"
+    display_color: "#f7a6b8"
 ```
 
 ## content/protocols/&lt;protocol_name&gt;/protocol.yaml
@@ -111,15 +108,15 @@ A required top-level `learning` block carries pedagogy metadata for every mini-p
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
 | `protocol_type` | enum | yes | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
-| `name` | string | yes | Stable snake_case identifier for the protocol. |
-| `entry_step` | string | yes | Name of the first step the runtime runs. |
+| `protocol_name` | string | yes | Stable snake_case identifier for the protocol. |
+| `entry_step` | string | yes | `step_name` of the first step the runtime runs. |
 | `steps` | list | yes | List of authored step entries (omitted for `sequence_runner`). |
 
 Example top of a mini-protocol `protocol.yaml`:
 
 ```yaml
 protocol_type: mini_protocol
-name: hood_flask_prep
+protocol_name: hood_flask_prep
 entry_step: open_hood
 ```
 
@@ -139,24 +136,31 @@ in the broader curriculum.
 
 Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the full learning-block schema.
 
-### Entry block (required for mini-protocols)
+### Entry step (required for mini-protocols)
 
-The `entry` block declares where the protocol starts. It is required for every mini-protocol.
+The top-level `entry_step` field declares where protocol flow starts. It is
+required for every mini-protocol.
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `scene` | string | yes | Scene id where the protocol begins. Must match the first authored step's `scene`. |
-| `step` | string | yes | Step id of the first authored step. Must match the first step in the `steps` list. |
+| `entry_step` | string | yes | The `step_name` of the first step the runtime runs. Must match a declared step in the `steps` list. |
 
 Example:
 
 ```yaml
-entry:
-  scene: well_plate_workspace
-  step: open_plate_workspace
+entry_step: open_plate_workspace
 ```
 
-Validation rules: `entry.step` must be the id of the first authored step, and `entry.scene` must equal that step's `scene`. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for full validation.
+The scene a protocol opens in is not a protocol-level field. Protocol YAML is
+geometry-free and scene-free at the flow level; a step's interactions name
+semantic `target` objects, and the scene adapter resolves those names. A
+`SceneChange` `scene_operation` in a step's `response` transitions the scene
+context. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the canonical entry
+rule.
+
+Validation rules: `entry_step` must name a `step_name` present in the `steps`
+list. A mini-protocol must not open in the hood unless its first step takes
+place in the hood; the hood is not a default starting scene.
 
 ### Learning block example
 
@@ -176,9 +180,9 @@ List of part definitions (order matters for UI display).
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Unique snake_case identifier |
+| `part_name` | string | Unique snake_case identifier |
 | `label` | string | Display name (e.g. "Part 1: Split") |
-| `dayId` | string | Reference to a day id below |
+| `day_name` | string | Reference to a `day_name` in the days block below |
 
 ### Days block
 
@@ -186,7 +190,7 @@ List of day definitions (order matters for UI display).
 
 | Field | Type | Description |
 | --- | --- | --- |
-| `id` | string | Unique snake_case identifier (e.g. day1, day2, day4) |
+| `day_name` | string | Unique snake_case identifier (e.g. day1, day2, day4) |
 | `label` | string | Display name (e.g. "Day 1") |
 
 ### Steps block
@@ -202,12 +206,12 @@ A `step` has six required slots, all defined in
 
 | Field | Type | Required | Description |
 | --- | --- | --- | --- |
-| `name` | string | yes | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
+| `step_name` | string | yes | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
 | `prompt` | string | yes | States what the student is asked to accomplish in this step. |
 | `sequence` | list of interactions | yes | The ordered list of `interaction` blocks that make up the step; order always matters. |
 | `step_validator` | mapping | yes | Named preset that checks whole-step completion. See "Validator presets". |
 | `outcome` | mapping | yes | The `{on_success, on_failure}` mapping that says how the step resolves. |
-| `next_step` | string or null | yes | The `name` of the next step, or `null` for a terminal step. The slot is always present. |
+| `next_step` | string or null | yes | The `step_name` of the next step, or `null` for a terminal step. The slot is always present. |
 
 Optional step-level fields used for display only:
 
@@ -321,10 +325,10 @@ list:
 
 ```yaml
 protocol:
-  name: cell_culture
+  protocol_name: cell_culture
   entry_step: pbs_wash
   steps:
-    - name: pbs_wash
+    - step_name: pbs_wash
       prompt: "Wash the flask with 4 mL PBS."
       sequence:
         - target: serological_pipette
@@ -394,7 +398,7 @@ protocol:
   fired.
 - **Outcome** (`outcome`): the `{on_success, on_failure}` mapping that
   resolves the step or restarts it.
-- **Next step** (`next_step`): names the next step by its `name`, or
+- **Next step** (`next_step`): names the next step by its `step_name`, or
   `null` to mark a terminal step.
 
 ## Cross-file validation rules
@@ -403,7 +407,7 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 ### Protocol structure
 
-- Every step `name` is unique and snake_case.
+- Every `step_name` is unique and snake_case.
 - `entry_step` names a declared step. `next_step` names a declared step or
   is `null`. Exactly one step has `next_step: null` (the terminal step).
 - Walking `next_step` from `entry_step` visits every step (no orphans).
@@ -425,9 +429,8 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
   preset library, with that preset's required typed parameters.
 - `response.scene_operations` is a list (possibly empty); every entry has a
   `type` naming one of the five ratified protocol-level `scene_operation`
-  primitives (`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
-  `SetPointDisplayChange` have been moved to the object/render layer) plus
-  that type's documented typed fields.
+  primitives (`ObjectStateChange`, `CursorAttach`, `SceneChange`,
+  `LayoutMove`, `TimedWait`) plus that type's documented typed fields.
 
 ### Outcome validation
 
@@ -463,7 +466,7 @@ facades `src/protocol.ts` and `src/inventory.ts`):
 
 ```typescript
 export const PROTOCOL_STEPS: readonly ProtocolStep[] = [
-  // auto-generated from src/content/cell_culture/protocol.yaml
+  // auto-generated from content/protocols/cell_culture/protocol.yaml
   { id: 'spray_hood', label: '...', ... },
   { id: 'gather_supplies', label: '...', ... },
   // ... remaining steps ...
@@ -471,7 +474,7 @@ export const PROTOCOL_STEPS: readonly ProtocolStep[] = [
 
 export const PROTOCOL_PARTS: readonly Record<string, ProtocolPart> = {
   // keyed by part id
-  part1_split: { id: 'part1_split', label: 'Part 1: Split', dayId: 'day1' },
+  part1_split: { part_name: 'part1_split', label: 'Part 1: Split', day_name: 'day1' },
   // ...
 };
 
@@ -493,7 +496,7 @@ export const EQUIPMENT: readonly Record<string, InventoryItem> = {
 
 export const REAGENTS: readonly Record<string, InventoryReagent> = {
   // keyed by reagent id
-  pbs: { label: '1x PBS', colorKey: 'pbs', displayColor: '#b8e5ff' },
+  pbs: { label: '1x PBS', display_color: '#b8e5ff' },
   // ...
 };
 ```
@@ -502,10 +505,12 @@ Scene code imports and consumes these exports directly; no YAML parsing happens
 at runtime. The generated types are read-only arrays and records, enforcing
 immutability at compile time.
 
-## Stable-id discipline
+## Stable-name discipline
 
-Every cross-reference uses snake_case ids, never display labels. Labels are free to
-change without breaking the build; ids are durable.
+Every cross-reference uses the snake_case `_name` handles (`protocol_name`,
+`step_name`, `object_name`, `field_name`, `part_name`, `day_name`,
+`placement_name`), never display labels. Labels are free to change without
+breaking the build; the `_name` handles are durable.
 
 ## Contents reference model
 

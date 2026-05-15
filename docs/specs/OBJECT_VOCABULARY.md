@@ -139,7 +139,7 @@ The runtime contents-state model decomposes across these flat fields.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `name` | yes | Field name, snake_case, scoped to this object. |
+| `field_name` | yes | Field name, snake_case, scoped to this object. |
 | `type` | yes | One of `enum`, `int`, `float`, `bool`. |
 | `default` | yes | Initial value. Required so an object's start state is never undefined. Must satisfy the per-type metadata below. |
 | `applies_to` | no | `object` (default) or `subpart`. When `subpart`, the field is declared per subpart instead of per object. Equivalent to listing the same field under `structure.subpart_state_fields`. |
@@ -329,13 +329,13 @@ structure:
   name_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso, drug_a, drug_b]
     default: empty
     applies_to: subpart
     description: Contents currently in this well.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ul
     min: 0
@@ -399,7 +399,7 @@ kind: pipette
 label: Serological pipette
 
 state_fields:
-  - name: set_volume
+  - field_name: set_volume
     type: float
     unit: ml
     min: 0.1
@@ -407,12 +407,12 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - name: held_contents_name
+  - field_name: held_contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso]
     default: empty
     description: Contents currently aspirated in the pipette barrel.
-  - name: held_contents_volume
+  - field_name: held_contents_volume
     type: float
     unit: ml
     min: 0

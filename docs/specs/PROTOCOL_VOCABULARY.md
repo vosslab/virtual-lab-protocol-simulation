@@ -57,11 +57,11 @@ The full shape:
 ```
 protocol
   protocol_type           # one of mini_protocol, sequence_runner, dev_smoke
-  name                    # stable snake_case identifier for this protocol
-  entry_step              # name of the first step
+  protocol_name           # stable snake_case identifier for this protocol
+  entry_step              # step_name of the first step
   steps[]                 # the steps that make up the protocol
 step
-  name                    # stable snake_case identifier for this step
+  step_name               # stable snake_case identifier for this step
   prompt                  # what the student is asked to accomplish
   sequence[]              # ordered list of interactions; order always matters
     interaction
@@ -71,7 +71,7 @@ step
       response            # container: scene_operations, optional feedback
   step_validator          # named preset: checks whole-step completion
   outcome                 # mapping: on_success, on_failure
-  next_step               # names the next step by its name, or null
+  next_step               # names the next step by its step_name, or null
 ```
 
 A `step` is one pedagogical unit -- one thing the student is asked
@@ -83,9 +83,9 @@ the individual gestures live inside it in an ordered `sequence`.
 
 ### Required slots
 
-- A `protocol` requires `protocol_type`, `name`, `entry_step`, and
-  `steps`.
-- All six `step` slots are required: `name`, `prompt`, `sequence`,
+- A `protocol` requires `protocol_type`, `protocol_name`, `entry_step`,
+  and `steps`.
+- All six `step` slots are required: `step_name`, `prompt`, `sequence`,
   `step_validator`, `outcome`, `next_step`. `next_step` may be
   `null` for a terminal step, but the slot must be present.
 - All four `interaction` slots are required: `target`, `gesture`,
@@ -109,9 +109,9 @@ of steps and has four slots:
 - **`protocol_type`** -- the kind of protocol authored. A closed
   enum: one of `mini_protocol`, `sequence_runner`, or `dev_smoke`.
   See [Protocol kinds](#protocol-kinds) for definitions.
-- **`name`** -- a stable snake_case identifier for the protocol,
-  for example `name: cell_culture`.
-- **`entry_step`** -- the `name` of the first step the runtime
+- **`protocol_name`** -- a stable snake_case identifier for the protocol,
+  for example `protocol_name: cell_culture`.
+- **`entry_step`** -- the `step_name` of the first step the runtime
   runs. Flow starts here and follows `next_step` from step to step.
 - **`steps`** -- the list of steps. List order is reading
   convenience only; protocol flow is `entry_step` plus `next_step`,
@@ -148,15 +148,15 @@ Each slot owns one concern.
 | Level | Slot | Charter |
 | --- | --- | --- |
 | protocol | `protocol_type` | The kind of protocol authored: one of `mini_protocol`, `sequence_runner`, `dev_smoke`. Closed enum. |
-| protocol | `name` | The stable snake_case identifier for the protocol. |
-| protocol | `entry_step` | Names the first step by its `name`; flow starts here. |
+| protocol | `protocol_name` | The stable snake_case identifier for the protocol. |
+| protocol | `entry_step` | Names the first step by its `step_name`; flow starts here. |
 | protocol | `steps` | The list of steps; list order is not protocol flow. |
-| step | `name` | The stable snake_case identifier for the step, used for flow, tests, and debugging. |
+| step | `step_name` | The stable snake_case identifier for the step, used for flow, tests, and debugging. |
 | step | `prompt` | States what the student is asked to accomplish in this step. |
 | step | `sequence` | The ordered list of interactions that make up the step; order always matters. |
 | step | `step_validator` | Named preset that checks whole-step completion, not one gesture. |
 | step | `outcome` | A mapping that says how the step resolves: `on_success` and `on_failure`. |
-| step | `next_step` | Names the next step by its `name`, or `null` for a terminal step; this controls protocol flow. |
+| step | `next_step` | Names the next step by its `step_name`, or `null` for a terminal step; this controls protocol flow. |
 | interaction | `target` | Names the addressable scene object or control acted on. |
 | interaction | `gesture` | Names how the student acts on the target. |
 | interaction | `validator` | Named preset that checks this one gesture on this one target. |
@@ -164,13 +164,13 @@ Each slot owns one concern.
 
 ## Step naming and protocol flow
 
-- **`name` is the stable identifier.** Every step has a `name`: a
-  stable snake_case semantic identifier, for example
-  `name: pbs_wash`. It is chosen for meaning, not for position. It
+- **`step_name` is the stable identifier.** Every step has a `step_name`:
+  a stable snake_case semantic identifier, for example
+  `step_name: pbs_wash`. It is chosen for meaning, not for position. It
   is the step's stable reference for protocol flow, tests,
   debugging, and future code migration.
 - **`next_step` controls flow.** A step's `next_step` slot names
-  the next step by its `name`, for example `next_step: add_trypsin`.
+  the next step by its `step_name`, for example `next_step: add_trypsin`.
   Flow does not come from YAML file order and does not come from a
   numeric index.
 - **`next_step: null` is a terminal step.** A step with
@@ -194,8 +194,8 @@ Each slot owns one concern.
 - **Step order and interaction order do not mix.** Step order is
   controlled by `next_step`. Interaction order is controlled by
   `sequence` list order.
-- **All authored names are snake_case.** The step `name`, the
-  protocol `name`, `entry_step` targets, and `next_step` targets
+- **All authored names are snake_case.** The `step_name`, the
+  `protocol_name`, `entry_step` targets, and `next_step` targets
   are always snake_case. Every YAML key and every authored
   identifier value is snake_case. The only exception is the six
   `scene_operation` primitive type names, which stay PascalCase
@@ -715,13 +715,13 @@ visual; see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
   runtime, not hand-authored per interaction. The runtime emits a
   `<step_name>_complete` event when the `step_validator` passes.
 - **The naming convention.** Event names are snake_case, derived
-  from the `name` of the thing they report, suffixed with the
-  transition: `<step_name>_complete` when a step resolves,
-  `<equipment_name>_elapsed` when a timed phase ends. There is one
-  convention; the legacy kebab-case and mixed forms are retired.
+  from the `step_name` or equipment name of the thing they report,
+  suffixed with the transition: `<step_name>_complete` when a step
+  resolves, `<equipment_name>_elapsed` when a timed phase ends. There
+  is one convention; the legacy kebab-case and mixed forms are retired.
 
-Event names are derived, not separately authored: because the step
-`name` and the equipment `target` name are already stable
+Event names are derived, not separately authored: because the
+`step_name` and the equipment `target` name are already stable
 snake_case identifiers, the event name follows from them. An author
 who renames a step renames its completion event with it.
 
@@ -767,10 +767,10 @@ Two consequences follow:
 
 | Level | Slot | Side | What each side owns |
 | --- | --- | --- | --- |
-| protocol | `name` | protocol | The protocol's stable snake_case identifier. |
+| protocol | `protocol_name` | protocol | The protocol's stable snake_case identifier. |
 | protocol | `entry_step` | protocol | Names the first step; pure protocol flow. |
 | protocol | `steps` | protocol | The list of steps; pure protocol flow. |
-| step | `name` | protocol | The step's stable snake_case identifier. |
+| step | `step_name` | protocol | The step's stable snake_case identifier. |
 | step | `prompt` | protocol | The student-facing instruction text. |
 | step | `sequence` | protocol | The ordered list of interactions; order is protocol-owned. |
 | step | `step_validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
@@ -812,7 +812,7 @@ Worked example -- which file owns which:
 
 ```yaml
 # protocol YAML -- names semantic targets and flat-primitive state, no geometry
-- name: add_media_row_b
+- step_name: add_media_row_b
   prompt: "Add 100 uL media to every well in row B."
   sequence:
     - target: serological_pipette
@@ -897,10 +897,10 @@ multi-gesture case, shown here as one step inside a `protocol`'s
 
 ```yaml
 protocol:
-  name: cell_culture
+  protocol_name: cell_culture
   entry_step: pbs_wash
   steps:
-    - name: pbs_wash
+    - step_name: pbs_wash
       prompt: "Wash the flask with 4 mL PBS."
       sequence:
         - target: serological_pipette

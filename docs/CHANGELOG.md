@@ -1,5 +1,52 @@
 # Changelog
 
+## 2026-05-15 (spec doc sweep: key normalization, camelCase removal, retired-language cleanup - giggly-mixing-minsky)
+
+### Additions and New Features
+- **`docs/specs/SPEC_DESIGN_CHECKLIST.md` Author YAML vocabulary lock extended (Class L1)**: Added ratified rule 8 to lock scope-specific identity handles in authored YAML. Bare `name:` is banned; the allowed handles are `protocol_name` (protocol), `step_name` (step), `object_name` (object identity, instruments included), and `field_name` (object state-field). Ordinary prose may still use the English word "name"; the ban applies to YAML fields and schema-table field-name cells. `entry_step` and `next_step` reference `step_name`. Any "the name of X" schema wording becomes "the `X_name`".
+- **`docs/specs/SPEC_DESIGN_CHECKLIST.md` smell-class 29 (Class L1)**: New blocker-severity smell class flagging bare `name:` in authored YAML and schema tables. RD-16 records the live rule only; no retired-term table rows.
+- **`tests/test_spec_vocabulary.py` G7, G8, G9 gates (Class L2)**: New hard-pass assertions enforce the vocabulary lock. G7 bans bare `name:` (excludes the checklist). G8 bans the retired root-of-protocol `entry:` block shape. G9 bans camelCase YAML keys in YAML fenced blocks and schema-table field-name cells, with a documented capability-id allowlist (`itemWorkspace`, `modalWorkspace`, `instrumentWorkspace`, `gridCountingWorkspace`, `incubatorWorkspace`, `plateReaderWorkspace`, `liquidTransfer`) and a fence-language parser that excludes TypeScript and other code-language fences.
+
+### Behavior or Interface Changes
+- **Tier 1 key normalization across `docs/PRIMARY_*.md` and `docs/specs/*.md`**:
+  - **Protocol handle (Class A)**: bare `name:` -> `protocol_name:` in protocol-level schema tables and YAML examples. `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md` updated.
+  - **Step handle (Class B)**: bare `name:` -> `step_name:` in step schema tables, YAML examples, and all "the `name`" prose. `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/PROTOCOL_STEPS.md`, `docs/specs/PROTOCOL_AUTHORING_GUIDE.md`, `docs/specs/WALKTHROUGH_GUIDE.md` updated. `next_step` and `entry_step` prose now reference `step_name`.
+  - **Object state-field handle (Class C)**: bare `name:` -> `field_name:` in object `state_fields` entries. `docs/specs/OBJECT_VOCABULARY.md` and `docs/specs/OBJECT_YAML_FORMAT.md` updated.
+  - **Instrument/object handle (Class D)**: `docs/specs/SCALING_MODEL.md` "Adding a new object" example flattened to canonical `object_name:` form. Removed redundant outer wrapper that introduced a bare `name:` field.
+- **Tier 2 camelCase removal (Class E)**:
+  - `colorKey` retired entirely from authored `contents.yaml` (legacy runtime field). `display_color` is the sole authored color field; it remains live as `contents.yaml` metadata, distinct from the retired object-state `liquid_color`.
+  - `displayColor` -> `display_color` in `docs/specs/PROTOCOL_YAML_FORMAT.md` schema table and YAML example; the generated TypeScript example now reflects the renamed field.
+  - `dayId` -> `day_name` in the Parts block schema and TypeScript example in `docs/specs/PROTOCOL_YAML_FORMAT.md`. The `id` row in the Parts table becomes `part_name`.
+  - `sceneId` -> `scene_name` in the SCENE_YAML_FORMAT validator-rule prose (line 380), eliminating the contradiction with line 113.
+  - `wrongOrderMessage` -> `wrong_order_message` and `toastDurationMs` -> `toast_duration_ms` in `docs/specs/SCENE_YAML_FORMAT.md` validator-gap list and in `docs/specs/SCENE_VOCABULARY.md` entry.
+  - `{expectedLabel}` -> `{expected_label}` in toast-template field description and YAML examples (`docs/specs/SCENE_YAML_FORMAT.md`).
+- **Tier 3 retired language and contradictions**:
+  - **Retired step kinds (Class F)**: `interactionSequence`, `directTool`, `multipleChoice` removed from `docs/specs/WALKTHROUGH_GUIDE.md` "How the walker decides what to click" and "Completion-path support" sections. Replaced with the current interaction model: the walker dispatches from each interaction's `target.kind` plus `gesture`, not from a per-step kind discriminator. Legacy-to-current mapping documented so authors can find their bearings.
+  - **Retired `src/content/` paths (Class G)**: `src/content/` -> `content/protocols/` (or `content/scenes/`) in `docs/specs/PROTOCOL_STEPS.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/SCENE_ARCHITECTURE.md`, `docs/specs/SCENE_YAML_FORMAT.md`, `docs/specs/WALKTHROUGH_GUIDE.md`.
+  - **Retired `_id` identity in prose (Class H)**: `<object_id>.<subpart_id>` -> `<object_name>.<subpart_name>` in `docs/specs/SCENE_ARCHITECTURE.md`.
+  - **`entry:` block contradiction (Class I)**: `docs/specs/PROTOCOL_YAML_FORMAT.md` "Entry block" section rewritten to the canonical flat top-level `entry_step:` field. Dropped the `scene:` and `step:` subkeys entirely; PRIMARY_SPEC.md wins by contract precedence per `docs/PRIMARY_CONTRACT.md`. Validation rules now match the canonical form.
+  - **Retired `liquid_*` authored fields (Class J)**: `docs/specs/SCENE_YAML_FORMAT.md` `ObjectStateChange` prose rewritten from `liquid_id` / `liquid_volume` / `held_liquid_id` / `held_liquid_volume` to `contents_name` / `contents_volume` / `held_contents_name` / `held_contents_volume`, consistent with the broader `liquid_*` -> `contents_*` migration completed earlier.
+  - **RD-10 runtime drift (Class K)**: `docs/specs/LIQUID_CONVENTION.md` reframed. The "Color Map" section now grounds color sourcing in `contents.yaml` `display_color` instead of `inventory_data.ts:REAGENTS:displayColor` and `style_constants.ts:COLOR_MAP`. The "Game State Integration" and "Rendering in Hood Scene" sections rewritten as an "Authored state model" section that names the canonical `held_contents_name` / `held_contents_volume` / `contents_name` / `contents_volume` authored fields and the `ObjectStateChange` protocol primitive that writes them; runtime-state names (`gameState.heldLiquid`, `gameState.tubeLiquids`, `gameState.plateLiquids`, `addTubeLiquid`) are no longer surfaced as authoring vocabulary. `docs/specs/SCENE_YAML_FORMAT.md` "Gaps not validated today" cross-reference updated from `inventory_data.ts` to `contents.yaml` and the object library.
+
+### Fixes and Maintenance
+- `docs/specs/PROTOCOL_YAML_FORMAT.md` generated-TypeScript example (the runtime emit shape) updated to drop retired `colorKey` and to use the renamed `display_color` and `day_name` / `part_name` fields, so the documented emit matches the authored YAML form.
+
+### Removals and Deprecations
+- `colorKey` removed from authored `contents.yaml` schema entirely (Class E). Color now derives solely from `display_color`.
+- `interactionSequence`, `directTool`, `multipleChoice` removed from WALKTHROUGH_GUIDE normative dispatch description (Class F). These per-step kinds are retired per `docs/PRIMARY_SPEC.md`.
+- The `entry:` multi-key block (`entry: { scene:, step: }`) removed from PROTOCOL_YAML_FORMAT.md (Class I). The flat top-level `entry_step:` field is the sole canonical form.
+- Bare `name:` retired as an authored YAML field across protocol, step, object, and instrument surfaces (Classes A-D, locked by L1, gated by L2).
+
+### Decisions and Failures
+- **Instrument handle merged into `object_name`**: An earlier plan draft introduced `instrument_name` as a fourth scope-specific handle alongside `protocol_name` / `step_name` / `field_name`. Audit of object docs showed that instruments are already objects (instrument set-points live in `state_fields`; there is no separate instrument identity layer). The lock now states "Object identity handle is `object_name` (instruments included)" to avoid a synonym for the same concept and to honor "one canonical term per concept" from `docs/PRIMARY_DESIGN.md`.
+- **Class L split into L1 (lock-first) and L2 (gate-last)**: L1 extends `SPEC_DESIGN_CHECKLIST.md` before any content edits so every subsequent class cites a canonical reference. L2 adds the pytest gates after Classes A-K land, so the test suite turns green in the same commit as the final cleanup.
+- **`display_color` kept; `colorKey` dropped**: `contents.yaml` retains `display_color` as live authored color metadata for contents. `colorKey` is legacy runtime language with no current authoring use; dropping rather than renaming.
+- **G9 table-cell regex requires backticks**: First-cut Markdown table parser flagged glossary tables like `| dispatchInteraction | The adapter's ...`. Tightened the regex to require backticks around the field-name cell (`` | `fieldName` | ``), the documented schema-table convention. Glossary tables (no backticks) stay out of scope.
+
+### Developer Tests and Notes
+- `source source_me.sh && pytest tests/test_spec_vocabulary.py -q`: **9 passed in 0.11s** (G1-G9).
+- `tests/test_markdown_links.py` failures are pre-existing (unrelated CHANGELOG and FILE_STRUCTURE links); not introduced by this sweep.
+
 ## 2026-05-15 (protocol_type vocabulary consolidation)
 
 ### Additions and New Features
@@ -1092,11 +1139,11 @@
   - Applied `.is-filled` class to completed wells for green background visual confirmation.
   - Added CSS rule for `.well.is-filled` with green background (#c8e6c9) and border (#4caf50).
 
-- Extended [tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs](../tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs):
+- Extended `tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs`:
   - Added step 5 (`add_media_cols_1_6`) as first protocol step using `plateTargets` (rows: [B-H], cols: [1-6]).
   - Step 5 completionPath includes 2 interactions (tool/source, tool/destination) plus plateTargets array.
 
-- Extended [tests/playwright/fixtures/plate_drug_treatment_real/index.html](../tests/playwright/fixtures/plate_drug_treatment_real/index.html):
+- Extended `tests/playwright/fixtures/plate_drug_treatment_real/index.html`:
   - Added `step5` variable with plateTargets configuration matching YAML spec.
   - Added `renderStep5()` function to instantiate real adapter with step 5.
   - Updated `completeStep()` to transition from step 4 to step 5 (added `prep_metformin_dilution` -> `add_media_cols_1_6` branch).
@@ -1136,7 +1183,7 @@
 ## 2026-05-14 (M6 WS-WP-SCENE / WS-WP-WALKER: real adapter load path + steps 1-4 fixture expansion)
 
 ### Additions and New Features
-- Extended [tests/playwright/fixtures/plate_drug_treatment_real/](../tests/playwright/fixtures/plate_drug_treatment_real/) to define and render steps 1-4 (previously only 1-2 defined):
+- Extended `tests/playwright/fixtures/plate_drug_treatment_real/` to define and render steps 1-4 (previously only 1-2 defined):
   - Added step 3 (`prep_carb_last_dilution`) and step 4 (`prep_metformin_dilution`) as JavaScript constants with `kind: interactionSequence`.
   - Added `renderStep3()` and `renderStep4()` functions that call `initWellPlateAdapter()` with step 3-4 definitions.
   - Updated `completeStep()` to transition to step 3 when step 2 completes, and to step 4 when step 3 completes.
@@ -1160,7 +1207,7 @@
   - Now generates `adapter-wrapped.js` from `adapter.js` by wrapping ES6 exports in `window.adapterExports = { ... }` for file:// protocol compatibility.
   - Fixture HTML loads wrapped version via `<script>` tag, avoiding CORS issues.
 
-- Updated [tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs](../tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs) walker protocol source:
+- Updated `tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs` walker protocol source:
   - Added step 3 (`prep_carb_last_dilution`) and step 4 (`prep_metformin_dilution`) step definitions to plateDrugTreatmentFullProtocol.steps array.
   - Each step faithfully transcribed from `content/plate_drug_treatment/protocol.yaml` with correct ids, labels, actions, requiredItems, stepIndex, and interactionSequence completionPaths.
   - Walker now drives steps 1-4 end-to-end through generic Playwright fixture dispatcher.
@@ -1187,8 +1234,8 @@
 
 ### Additions and New Features
 - [tools/build_test_fixture.sh](../tools/build_test_fixture.sh): new build script to bundle scene_runtime adapters into browser-loadable JavaScript using esbuild. Outputs adapter.js alongside fixture HTML. Example: `bash tools/build_test_fixture.sh plate_drug_treatment_real`.
-- [tests/playwright/fixtures/plate_drug_treatment_real/adapter.js](../tests/playwright/fixtures/plate_drug_treatment_real/adapter.js): bundled well_plate adapter (18.3 KB). Contains full adapter tree (dispatch, highlight, layout, render) as single ESM module. Exports initWellPlateAdapter directly for fixture import.
-- [tests/playwright/fixtures/plate_drug_treatment_real/index.html](../tests/playwright/fixtures/plate_drug_treatment_real/index.html): completely rewritten to eliminate fake inline adapters (second-protocol-engine violation). Now:
+- `tests/playwright/fixtures/plate_drug_treatment_real/adapter.js`: bundled well_plate adapter (18.3 KB). Contains full adapter tree (dispatch, highlight, layout, render) as single ESM module. Exports initWellPlateAdapter directly for fixture import.
+- `tests/playwright/fixtures/plate_drug_treatment_real/index.html`: completely rewritten to eliminate fake inline adapters (second-protocol-engine violation). Now:
   - Loads real adapter via `import('./adapter.js')` at module startup; throws on import failure (fails loud per spec).
   - Step 1 (open_plate_workspace, modal kind): custom HTML render with button[data-item-id="well_plate"]. Walker successfully clicks through modal sequence; step 1/2 passes.
   - Step 2 (prep_carb_first_dilution, interactionSequence kind): calls `initWellPlateAdapter(sceneConfig, step2, config)` to render workspace via real adapter. Passes SceneConfig derived from scene.yaml (items: Record<string, SceneItem> with id/label/scene zone).
@@ -1243,7 +1290,7 @@
   - [src/scene_runtime/adapters/well_plate/render.ts](../src/scene_runtime/adapters/well_plate/render.ts): pure `renderWorkspace(scene: SceneConfig, highlights: HighlightState): string` renders SVG-backed equipment (pipettes, bottles, tubes) and custom 96-well grid (8x12 with row/col labels A-H and 1-12). Equipment items and plate container apply is-next-target highlight class. Reuses deriveHighlights() and getWorkspaceStyles() for CSS-in-JS. Under 350 lines.
   - [src/scene_runtime/adapters/well_plate/index.ts](../src/scene_runtime/adapters/well_plate/index.ts): `initWellPlateAdapter(scene, step, config)` mounts workspace, injects styles, wires click handlers for all [data-item-id] elements. On matched click, re-renders highlights and re-wires handlers. Calls config.onClickMatched() for each valid click and config.onStepComplete(stepId) when step completes. Imports dispatchClick(), deriveHighlights() (pure subsystems); no branching on step.id. Under 250 lines.
 - WP-WP-3: Real entrypoint HTML:
-  - [tests/playwright/fixtures/plate_drug_treatment_real/index.html](../tests/playwright/fixtures/plate_drug_treatment_real/index.html): loads PROTOCOL_CATALOG['plate_drug_treatment'] and INVENTORY_CATALOG['plate_drug_treatment'] from generated/* data. Mounts well_plate adapter on step 1 (open_plate_workspace, modal kind). Inline JavaScript (no ES modules for file:// compatibility) renders workspace, wires workspace item clicks to show modal, wires modal confirm button to record step completion. Verified: walker passes step 1 end-to-end via visible clicks (well_plate -> confirm-plate-intro); saves 5 screenshots to test-results/walker/plate_drug_treatment_real/step_01/.
+  - `tests/playwright/fixtures/plate_drug_treatment_real/index.html`: loads PROTOCOL_CATALOG['plate_drug_treatment'] and INVENTORY_CATALOG['plate_drug_treatment'] from generated/* data. Mounts well_plate adapter on step 1 (open_plate_workspace, modal kind). Inline JavaScript (no ES modules for file:// compatibility) renders workspace, wires workspace item clicks to show modal, wires modal confirm button to record step completion. Verified: walker passes step 1 end-to-end via visible clicks (well_plate -> confirm-plate-intro); saves 5 screenshots to test-results/walker/plate_drug_treatment_real/step_01/.
 - build_protocol_data.py: already supports scene.yaml parsing (no changes needed); scene YAML is for documentation/future layout-engine integration; current adapter reads from INVENTORY_CATALOG generated data.
 
 ### Behavior or Interface Changes

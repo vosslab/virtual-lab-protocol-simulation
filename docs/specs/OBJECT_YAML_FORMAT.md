@@ -144,13 +144,13 @@ list) and no composite `liquid` or `set_point` type. Liquid contents
 and instrument set-points are modeled as multiple flat fields per
 object.
 
-Every entry is a mapping with the required keys `name`, `type`,
+Every entry is a mapping with the required keys `field_name`, `type`,
 `default`, plus per-type metadata and the optional `applies_to` and
 `description`.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
-| `name` | string | yes | snake_case, unique within this object's `state_fields` | none |
+| `field_name` | string | yes | snake_case, unique within this object's `state_fields` | none |
 | `type` | enum string | yes | one of `enum`, `int`, `float`, `bool` | none |
 | `default` | matches `type` | yes | must satisfy `type` and the per-type metadata below | none |
 | `applies_to` | enum string | no | one of `object`, `subpart` | `object` |
@@ -167,7 +167,7 @@ Constraint metadata is a closed per-type set. Only the keys listed
 below are allowed on a `state_field` entry; an unknown metadata key is
 a build-time error. There is no open-ended `constraints:` object.
 
-| `type` | Allowed metadata keys (alongside `name`, `type`, `default`, `applies_to`, `description`) |
+| `type` | Allowed metadata keys (alongside `field_name`, `type`, `default`, `applies_to`, `description`) |
 | --- | --- |
 | `enum` | `allowed` (non-empty list of strings, required); `default` is one value from `allowed` |
 | `int` | `unit` (string), `min` (int), `max` (int), `step` (int); `default` is an int satisfying `min`/`max`/`step` when present |
@@ -374,13 +374,13 @@ structure:
   name_pattern: "{row_letter}{col}"
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso, drug_a, drug_b]
     default: empty
     applies_to: subpart
     description: Contents currently in this well.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ul
     min: 0
@@ -441,7 +441,7 @@ kind: pipette
 label: Serological pipette
 
 state_fields:
-  - name: set_volume
+  - field_name: set_volume
     type: float
     unit: ml
     min: 0.1
@@ -449,12 +449,12 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - name: held_contents_name
+  - field_name: held_contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso]
     default: empty
     description: Contents currently aspirated in the pipette barrel.
-  - name: held_contents_volume
+  - field_name: held_contents_volume
     type: float
     unit: ml
     min: 0

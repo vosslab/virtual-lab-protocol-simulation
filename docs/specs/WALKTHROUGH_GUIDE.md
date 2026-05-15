@@ -39,7 +39,7 @@ The core loop is:
 4. Reset browser persistence with `localStorage.clear()` and reload.
 5. Enter through the visible welcome/start UI.
 6. Read the already-compiled protocol steps from `window.PROTOCOL_STEPS`.
-7. For each step, dispatch by `completionPath.kind`.
+7. For each step, walk the `sequence` and perform each interaction's `gesture` on its `target`.
 8. Click visible DOM targets and wait for state progress.
 9. Verify step completion and next-step advancement.
 10. Save report and screenshot evidence.
@@ -69,8 +69,8 @@ Specifically, it proves:
 - Clicks go through browser event handlers, not direct protocol APIs.
 - Each click that uses `clickItemAndWaitProgress()` produces observable state
   progress.
-- Each step reaches `gameState.completedSteps`.
-- `activeStepId` advances to the step's `nextId` or to `null` at the end.
+- Each step's `step_validator` passes and emits a `<step_name>_complete` event.
+- The runtime advances to the step's `next_step`, or to a terminal state when `next_step` is `null`.
 - The final result screen exists.
 - Console errors and same-origin network failures are captured in the report.
 
@@ -86,8 +86,8 @@ checks, focused unit tests, or visual regression tests.
 Current limits:
 
 - It does not save a screenshot after every click.
-- It does not save a screenshot after every interaction inside an
-  `interactionSequence`.
+- It does not save a screenshot after every interaction inside a step's
+  `sequence`.
 - It does not attach screenshot paths to individual click entries in
   `playthrough_report.json`.
 - It does not compare screenshots against golden baselines.
@@ -134,7 +134,7 @@ source source_me.sh && python3 tools/run_protocol_walkthrough.py --protocol tuto
 
 The wrapper also supports:
 
-- `--list-protocols`: list `src/content/*/protocol.yaml` protocol ids.
+- `--list-protocols`: list `content/protocols/*/protocol.yaml` protocol names.
 - `--wrong-order`: pass wrong-order mode through to the Node walker.
 - `--no-build`: skip its build step and run the walker against the existing
   `dist/` output.
@@ -193,17 +193,14 @@ The current sequence is:
 1. Start a local static server for `dist/`.
 2. Launch Chromium headlessly with Playwright.
 3. Open `/?protocol=<protocol_name>`.
-4. Wait for browser exports:
-   `window.gameState`, `window.PROTOCOL_STEPS`, and
-   `window.resolveInteractionByIndex`.
+4. Wait for browser exports: `window.gameState` and
+   `window.PROTOCOL_STEPS` (runtime debug surface).
 5. Clear `localStorage`.
 6. Reload the page.
 7. Wait for exports again.
-8. Override `window.prompt` to return `20` for microscope quadrant-count
-   prompts.
-9. Click the welcome/start button if present.
-10. Read `window.PROTOCOL_STEPS` from the page.
-11. Save `initial_state.png`.
+8. Click the welcome/start button if present.
+9. Read `window.PROTOCOL_STEPS` from the page.
+10. Save `initial_state.png`.
 
 This matters because persisted browser state can hide runtime bugs. The walker
 is expected to start from fresh browser state and enter through the same UI path
@@ -211,39 +208,36 @@ as a normal user.
 
 ## How the walker decides what to click
 
-The walker is schema-driven. `walkStep()` dispatches from
-`completionPath.kind`, not from a hand-authored recipe table.
+The walker is schema-driven. `walkStep()` dispatches from each interaction's
+`target.kind` plus its `gesture`, not from a per-step kind discriminator and
+not from a hand-authored recipe table. Step kinds are retired entirely; see
+[../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the canonical interaction model.
 
-For `interactionSequence` steps,
-`walkInteractionSequenceStep()` reads each interaction and builds a click plan
-from `tool`, `source`, and `destination`:
+For every step, the walker reads the ordered `sequence` of `interaction`
+blocks and, for each interaction, performs the named `gesture` on the named
+`target`. `click` gestures click the resolved DOM element; `select` gestures
+click the matching choice; `adjust` gestures perform the set-point input;
+`drag` and `type` follow the corresponding visible UI affordance.
 
-- `tool` only: click the tool.
-- `tool` plus `source`: click the tool if the tool precondition is not already
-  met, then click the source.
-- `tool` plus `destination`: click the tool if the tool precondition is not
-  already met, then click the destination.
-- `tool`, `source`, and `destination`: click the tool, then click the source.
-- `destination` only: click the destination.
-
-The tool-precondition check reads `gameState.selectedTool`, canonicalizes any
-`_with_` suffix, and compares it to the interaction's tool. It intentionally
-does not use `gameState.heldLiquid` as the source of truth because held liquid
-can be derived from the selected tool and may be stale across steps.
+Tool-preconditions (where one interaction must precede another) are encoded
+by the `sequence` order itself. The walker does not consult retired
+`gameState.heldLiquid`, `selectedTool`, or `_with_` canonical-tool strings;
+held state is derived from the `ObjectStateChange` `scene_operations` that
+prior interactions emit.
 
 The central click helper is `clickItemAndWaitProgress()`. It resolves a
 `data-item-id` selector, optionally scopes it to a scene container, verifies
 that the element exists, verifies that it is visible, clicks it, increments
 `report.summary.totalClicks`, and waits for observable state progress.
 
-The progress predicate accepts any of these state changes:
+The progress predicate accepts any observable state change produced by a
+validated interaction's `response.scene_operations`:
 
-- `selectedTool` changed.
-- `heldLiquid` changed.
-- `interactionIndex` changed.
-- `activeStepId` changed.
-- `activeScene` changed.
-- `completedSteps.length` increased.
+- An `ObjectStateChange` mutated a declared `state_field`.
+- A `CursorAttach` attached or detached a tool from the cursor.
+- A `SceneChange` switched the active scene.
+- A `LayoutMove` repositioned an object.
+- A step resolved `complete` (the `<step_name>_complete` event fired).
 
 If none of those changes occur before the click budget expires, the helper
 throws:
@@ -274,36 +268,32 @@ The walker switches scenes through visible UI paths where possible:
 This catches scene-wiring problems that direct `gameState.activeScene` writes
 would hide.
 
-## Completion-path support
+## Interaction support
 
-The current walker supports:
+The walker dispatches from each interaction's closed `gesture` set
+(`click`, `drag`, `adjust`, `select`, `type`) and the resolved `target`. The
+retired per-step kinds (`interactionSequence`, `directTool`, `modal`,
+`multipleChoice`) are no longer dispatchable shapes; every step is one
+ordered `sequence` of interactions per [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md).
 
-- `interactionSequence`: YAML-driven item interactions.
-- `directTool`: direct click on the configured tool.
-- `modal`: open a modal if needed, then click the configured advance control.
-- `multipleChoice`: find the configured correct choice and click it.
+What were the legacy kinds map to interaction shapes as follows:
 
-It also retains legacy support for `isIncubation` steps that do not yet have a
-`completionPath`.
+- A legacy `interactionSequence` step is an ordered `click` sequence.
+- A legacy `directTool` step is a one-interaction `sequence` with a `click`.
+- A legacy `modal` step is an interaction whose `response` carries a
+  `SceneChange` (open a modal) or a `feedback`-only payload (advance once
+  inside).
+- A legacy `multipleChoice` step is a `select`-gesture interaction validated
+  by the `correct_choice` preset.
 
-Modal handling includes these details:
+Modal handling details (microscope viability, counting screens, plate-reader
+modal) are scene-side affordances reached through the same gesture model;
+the walker has no per-step branch for them.
 
-- Generic modal steps use `data-walker-advance="<advanceClick>"` to find the
-  advance button.
-- If the advance button is already present, the walker treats the modal as
-  already open and skips `openClick`.
-- Microscope viability and counting screens have a specialized modal path.
-- Counting screens click all four `.quadrant-btn` buttons, use a prompt
-  override for count entry, wait for selected styling, then click
-  `#submit-cell-count`.
-
-`multipleChoice` handling reads the `choices` array, finds the choice with
-`correct: true`, and clicks that choice id in the step scene.
-
-The walker should remain schema-driven. Step-id-specific branches should be
-treated as temporary debt unless the behavior cannot yet be represented in the
-protocol schema. Legacy branches should be treated as migration debt unless
-they are backed by schema fields.
+The walker stays schema-driven. Step-name-specific branches and per-protocol
+special cases are not allowed; if the visible UI cannot be exercised by the
+closed gesture set, the fix is to extend the YAML, scene, or runtime, never
+to add a walker branch.
 
 ## Implementation nuances
 
@@ -351,36 +341,45 @@ adding special-case code.
 | `Element ... does not exist in DOM` | Item id is missing from scene YAML, render output, or modal markup | Add the item to the scene/render path or fix the id |
 | `Element ... is not visible` | Wrong scene is active, hidden duplicate was selected, or overlay state blocks the target | Fix scene switching or pass a scoped scene selector |
 | `click_did_not_advance` | Click handler is missing, handler changes only CSS, or state signal is delayed beyond budget | Add the runtime handler or expose an observable state change |
-| `activeStepId ... !== expected nextId` | Step completes but advances to the wrong next step | Fix protocol YAML `nextId` or completion dispatch |
+| Active step advances to the wrong `step_name` | Step completes but the runtime resolves `next_step` to a wrong or missing step | Fix protocol YAML `next_step` value or completion dispatch |
 | Final result screen missing | Terminal step completed without rendering the scoring/results screen | Fix terminal UI flow, not the walker |
-| Wrong-order injection advances the step | Runtime accepts a non-required click as valid progress | Tighten interaction dispatch or active-target checks |
-| Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol | Fix protocol scene metadata or scene transition handlers |
-| Modal advance button missing | `advanceClick` does not match a `data-walker-advance` attribute | Fix modal markup or protocol YAML |
-| Multiple-choice step cannot click answer | Choice id is not rendered as a scene-scoped click target | Fix choice rendering/data attributes |
+| Wrong-order injection advances the step | Runtime accepts a non-required interaction as valid progress | Tighten interaction-validator dispatch and active-target checks |
+| Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol | Fix the `SceneChange` `scene_operation` chain in the affected step's `response` |
+| Modal advance control missing | Modal scene's advance affordance is not rendered or not clickable | Fix modal scene rendering and the step's interaction `target` |
+| `select`-gesture step cannot click answer | Choice id is not rendered as a scene-scoped click target | Fix choice rendering and the interaction `target` |
 
 Prefer fixing runtime schema, YAML, render output, or dispatch behavior before
 adding walker branches. The walker is most valuable when it remains a generic
 consumer of the same schema the app uses.
 
-## Adding new completion behavior
+## Adding new interaction behavior
 
-When a new `completionPath.kind` or interaction shape is needed, update the
-runtime and walker together.
+When a step needs a behavior the existing closed gesture set cannot express,
+update the YAML vocabulary, runtime, and walker together. Step kinds are
+retired; behavior extends through the gesture set, the `scene_operation`
+primitives, and the validator preset library.
 
 The minimum implementation contract is:
 
-- The YAML schema describes the behavior without relying on a step id.
-- Runtime rendering exposes visible click targets with stable ids.
-- Runtime dispatch advances game state through normal click handlers.
-- The walker can resolve the same ids from the schema.
-- Every walker click has an observable state-progress signal.
-- Step completion lands in `completedSteps`.
-- The active step advances to `nextId`.
-- Screenshot evidence still captures the before/after step boundary.
+- The YAML schema describes the behavior through `gesture`, `target`,
+  `validator`, and `response.scene_operations` without relying on a
+  `step_name`.
+- Runtime rendering exposes visible click targets with stable ids resolved
+  from `object_name` (or `<object_name>.<subpart_name>`).
+- Runtime dispatch advances state through normal handlers for the named
+  gesture, firing the validator preset and the response's
+  `scene_operations`.
+- The walker resolves the same ids from the schema.
+- Every walker interaction produces an observable state-progress signal
+  through an `ObjectStateChange`, `CursorAttach`, `SceneChange`,
+  `LayoutMove`, or step-complete event.
+- The step's `step_validator` resolves and the runtime advances to
+  `next_step`.
+- Screenshot evidence captures before/after step boundary.
 
-Avoid encoding protocol knowledge in the walker. A branch such as "if this step
-is `some_specific_id`, click these three things" is usually a sign that the
-schema is missing a concept.
+Avoid encoding protocol knowledge in the walker. A branch such as "if this
+step is `some_specific_step_name`, click these three things" is usually a
+sign that the schema or scene affordance is missing a concept.
 
 ## Adding a walkthrough for a new mini-protocol
 
@@ -388,30 +387,30 @@ To make a new mini-protocol walkthrough-ready:
 
 1. Add the mini-protocol under `content/protocols/<protocol_name>/`.
 2. Make sure `protocol.yaml` has a complete step chain.
-3. Give every step a stable `name`.
-4. Give every step a `scene`.
-5. Give every step a `completionPath.kind`, unless it is still on a documented
-   legacy path.
+3. Give every step a stable `step_name`.
+4. Give every step a `sequence` of one or more interactions.
+5. Each interaction declares a `target`, a `gesture`, a `validator`, and a
+   `response`; the closed gesture set is `click`, `drag`, `adjust`,
+   `select`, `type`.
 6. Give every step a `next_step`, or `next_step: null` for the final step.
-7. Make sure every clicked object exists in `content/objects/` and is placed in
-   the relevant protocol scene.
+7. Make sure every clicked object exists in `content/objects/` and is
+   placed in the relevant protocol scene.
 8. Make sure every clicked object renders with `data-item-id="<object_name>"`.
-9. Make sure every click changes observable game state.
-10. Add any new `completionPath.kind` to both runtime dispatch and the walker.
-11. Build the app.
-12. Run the walkthrough.
-13. Inspect `test-results/walker/playthrough_report.json`.
-14. Inspect the screenshots in `test-results/walker/`.
+9. Make sure every interaction's `response.scene_operations` produces an
+   observable state change.
+10. Build the app.
+11. Run the walkthrough.
+12. Inspect `test-results/walker/playthrough_report.json`.
+13. Inspect the screenshots in `test-results/walker/`.
 
-Observable state for walker clicks currently means at least one of these values
-changes:
+Observable state for walker interactions currently means at least one of
+these signals fires:
 
-- `selectedTool`
-- `heldLiquid`
-- `interactionIndex`
-- `activeStepId`
-- `activeScene`
-- `completedSteps.length`
+- An `ObjectStateChange` mutates a declared `state_field`.
+- A `CursorAttach` attaches or detaches a tool.
+- A `SceneChange` switches the active scene.
+- A `LayoutMove` repositions an object.
+- A `<step_name>_complete` event fires.
 
 Use this run pattern:
 
@@ -446,8 +445,8 @@ failure cases include:
 - A click produces no observable state change.
 - A step exceeds its per-step budget.
 - The whole run exceeds its run budget.
-- A step is not added to `completedSteps`.
-- `activeStepId` does not match the expected `nextId`.
+- A step's `step_validator` does not pass, so no `<step_name>_complete` event fires.
+- The runtime advances to the wrong `step_name`, or `next_step` resolves to a missing step.
 - Wrong-order clicks are accepted during the correct sequence.
 - The final result screen is missing.
 - Console errors are detected.
@@ -464,16 +463,16 @@ Current budgets:
 
 ## Wrong-order mode
 
-`--wrong-order` mode is a negative test. Before each correct
-`interactionSequence` interaction, the walker tries to find a visible
-`data-item-id` element that is not one of the required `tool`, `source`, or
-`destination` ids for that interaction.
+`--wrong-order` mode is a negative test. Before each correct interaction
+in a step's `sequence`, the walker tries to find a visible
+`data-item-id` element that is not the required `target` for that
+interaction.
 
 The wrong-order click must:
 
-- Increment `gameState.wrongOrderClicks`.
-- Leave `gameState.interactionIndex` unchanged.
-- Leave `gameState.activeStepId` unchanged.
+- Trigger the scene's `wrong_order_message` toast affordance.
+- Leave the step's interaction position unchanged.
+- Leave the active step unchanged.
 
 After the injected click is verified, the walker performs the correct click
 sequence and checks that wrong-order count does not increase during the correct

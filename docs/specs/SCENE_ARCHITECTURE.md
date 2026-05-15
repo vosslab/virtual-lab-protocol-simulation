@@ -138,7 +138,7 @@ scene-object map.
 A `target` that addresses one of an object's subparts -- a single well in a
 plate, a single lane in a gel -- resolves through the object's declared
 `structure.subparts` (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md))
-and is written by the protocol as `<object_id>.<subpart_id>` (for example
+and is written by the protocol as `<object_name>.<subpart_name>` (for example
 `treatment_plate.A1`). Named groups are retired with no successor;
 protocols list explicit subparts until a future plan
 revisits named groups.
@@ -291,7 +291,7 @@ interprets it. See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for the
 schema, the validator rules, and the build pipeline that emits
 `generated/scene_data.ts` (consumed via `src/scene_configs.ts`). Scene YAML is engine-facing configuration
 today, not author-facing content; if scene YAML becomes author-facing
-later, the file location moves under `src/content/scenes/` in a separate
+later, the file location moves under `content/scenes/` in a separate
 migration.
 
 ## Related docs

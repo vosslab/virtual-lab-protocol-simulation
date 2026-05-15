@@ -419,11 +419,11 @@ adapter and routed via `data-item-id`. Every item is the rendering of
 one [placement](#placement); identity sub-fields move to the
 object library, and the scene-side entry is purely a placement.
 
-### wrongOrderMessage
+### wrong_order_message
 
-A YAML block with two fields, `template` and `toastDurationMs`,
-declaring a per-scene wrong-order toast template. The cleaned spelling is
-[`wrong_order_message`](#scene-level-ui-feedback).
+A YAML block with two fields, `template` and `toast_duration_ms`,
+declaring a per-scene wrong-order toast template. See
+[scene-level UI feedback](#scene-level-ui-feedback).
 
 ### instrument-overlay
 

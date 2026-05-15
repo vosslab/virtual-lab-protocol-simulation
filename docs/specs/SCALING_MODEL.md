@@ -55,11 +55,10 @@ These values are tuned so that:
 
 1. Create or update `content/objects/<object_name>.yaml` with layout fields:
    ```yaml
-   my_instrument:
-     name: my_instrument
-     label: "My Instrument"
-     layout:
-       display_width_cm: 45
+   object_name: my_instrument
+   label: "My Instrument"
+   layout:
+     display_width_cm: 45
    ```
 
 2. Rebuild with `bash build_game.sh` (generates object metadata)

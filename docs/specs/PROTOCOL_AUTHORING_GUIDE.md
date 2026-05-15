@@ -58,11 +58,11 @@ Every protocol is a tight linear spec with three nested levels: `protocol`,
 
 ```
 protocol
-  name                    # stable snake_case identifier for this protocol
-  entry_step              # name of the first step
+  protocol_name           # stable snake_case identifier for this protocol
+  entry_step              # step_name of the first step
   steps[]                 # the steps that make up the protocol
 step
-  name                    # stable snake_case identifier for this step
+  step_name               # stable snake_case identifier for this step
   prompt                  # what the student is asked to accomplish
   sequence[]              # ordered list of interactions; order always matters
     interaction
@@ -72,7 +72,7 @@ step
       response            # container: scene_operations, optional feedback
   step_validator          # named preset: checks whole-step completion
   outcome                 # mapping: on_success, on_failure
-  next_step               # names the next step by its name, or null
+  next_step               # names the next step by its step_name, or null
 ```
 
 A `step` is one pedagogical unit. A step is often multi-gesture; the
@@ -87,19 +87,19 @@ individual gestures live inside it in the ordered `sequence`. Each
 `contents.yaml` declares every material the protocol references: reagents,
 liquids, cells, waste, mixtures, suspensions, diluted drugs, or other
 contents. Each contents entry has a unique snake_case name, a `label`,
-a `colorKey`, and a `displayColor`. A contents name is what an
-`ObjectStateChange` `scene_operation` writes into an object's flat declared
-`contents_name` (or `held_contents_name`) `state_field`.
+and a `display_color`. A contents name is what an `ObjectStateChange`
+`scene_operation` writes into an object's flat declared `contents_name`
+(or `held_contents_name`) `state_field`.
 
 The full `contents.yaml` field tables and cross-file validation rules are in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 
 ## Writing protocol.yaml
 
-`protocol.yaml` carries the `learning` block, the `entry` block, the `parts`
-and `days` organizational metadata, and the `steps` list. Steps are the
-runnable units; protocol flow is `entry_step` plus each step's `next_step`,
-not array position.
+`protocol.yaml` carries the `learning` block, the top-level `entry_step`
+field, the `parts` and `days` organizational metadata, and the `steps` list.
+Steps are the runnable units; protocol flow is `entry_step` plus each
+step's `next_step`, not array position.
 
 ### A worked step
 
@@ -107,7 +107,7 @@ not array position.
 multi-gesture case:
 
 ```yaml
-- name: pbs_wash
+- step_name: pbs_wash
   prompt: "Wash the flask with 4 mL PBS."
   sequence:
     - target: serological_pipette
@@ -165,7 +165,7 @@ adjust` and the `target_with_value` validator preset, never as a plain
 `click` with a volume field:
 
 ```yaml
-- name: set_pipette_volume
+- step_name: set_pipette_volume
   prompt: "Set the serological pipette to 4 mL."
   sequence:
     - target: serological_pipette
@@ -190,7 +190,7 @@ A multiple-choice or phase-keep decision is a `select`-gesture interaction
 validated by `correct_choice`:
 
 ```yaml
-- name: choose_dilution
+- step_name: choose_dilution
   prompt: "Which recipe makes 1 mL of 200 uM working solution from a 10 mM stock?"
   sequence:
     - target: choice_20uL_stock
@@ -224,7 +224,7 @@ several subparts emits one interaction per subpart. Worked example for two
 wells in row B:
 
 ```yaml
-- name: add_media_row_b
+- step_name: add_media_row_b
   prompt: "Add 100 uL media to wells B1 and B2."
   sequence:
     - target: serological_pipette
@@ -358,8 +358,9 @@ Run through this checklist for every step you write.
   optional. All state change is a `scene_operation` mutation.
 - **Outcome is a mapping.** `outcome` always has `on_success` and
   `on_failure`. The bare-scalar form is rejected.
-- **Flow is named.** `next_step` names the next step by its `name`, or is
-  `null` for a terminal step. `entry_step` names the first step.
+- **Flow is named.** `next_step` names the next step by its `step_name`, or
+  is `null` for a terminal step. `entry_step` names the first step by its
+  `step_name`.
 - **Referenced contents exist.** Every contents name written by an
   `ObjectStateChange` into a flat liquid `state_field` (`contents_name`,
   `held_contents_name`) exists in `contents.yaml`.

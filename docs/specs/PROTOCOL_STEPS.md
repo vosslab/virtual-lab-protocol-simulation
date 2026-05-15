@@ -6,18 +6,19 @@ How a protocol's steps are shaped, ordered, validated, and resolved.
 
 ## Source of truth
 
-All protocol steps are defined in YAML under `src/content/` and compiled at
-build time into a typed TypeScript constant. Each step carries the six
+All protocol steps are defined in YAML under `content/protocols/` and
+compiled at build time into a typed TypeScript constant. Each step carries
+the six
 required slots from [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md):
 
 | Slot | Purpose |
 | --- | --- |
-| `name` | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
+| `step_name` | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
 | `prompt` | States what the student is asked to accomplish in this step. |
 | `sequence` | The ordered list of `interaction` blocks; order always matters. |
 | `step_validator` | Named preset that checks whole-step completion. |
 | `outcome` | The `{on_success, on_failure}` mapping that says how the step resolves. |
-| `next_step` | Names the next step by its `name`, or `null` for a terminal step. |
+| `next_step` | Names the next step by its `step_name`, or `null` for a terminal step. |
 
 The full YAML schema for these slots, the `interaction` block, the
 `response` container, and the validator presets is documented in
@@ -92,13 +93,13 @@ expressed as a `final_state_matches` `step_validator` plus an
 
 ## Adding a new step
 
-1. Add a new entry to the protocol's `steps` list with `name`, `prompt`,
-   `sequence`, `step_validator`, `outcome`, and `next_step`.
+1. Add a new entry to the protocol's `steps` list with `step_name`,
+   `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`.
 2. For each interaction in the `sequence`, fill the four slots: `target`,
    `gesture`, `validator`, `response`.
-3. Wire `next_step` to the next step's `name` (or `null` for the last step).
+3. Wire `next_step` to the next step's `step_name` (or `null` for the last step).
 4. Find the step that should now come before the new step and change its
-   `next_step` to the new step's `name`.
+   `next_step` to the new step's `step_name`.
 5. If this is the first step, update the protocol's `entry_step`.
 6. Rebuild so the typed protocol data regenerates, and walk the protocol
    through the real UI (see [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md)).
@@ -109,9 +110,9 @@ Events are emitted by the runtime on a state transition the rest of the
 protocol may react to: an interaction firing a true `validator`, a step
 resolving `complete`, or a timed-equipment phase elapsing. Events are not
 hand-authored per interaction. Event names are snake_case and derived from
-the `name` of the thing they report: `<step_name>_complete` when a step
-resolves, `<equipment_name>_elapsed` when a timed phase ends. An author who
-renames a step renames its completion event with it.
+the `step_name` or equipment name of the thing they report: `<step_name>_complete`
+when a step resolves, `<equipment_name>_elapsed` when a timed phase ends. An
+author who renames a step renames its completion event with it.
 
 ## Startup validation
 

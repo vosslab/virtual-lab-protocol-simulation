@@ -61,7 +61,7 @@ are excluded from pytest collection by [tests/conftest.py](../tests/conftest.py)
 | [tests/test_import_star.py](../tests/test_import_star.py) | Forbids `from X import *` |
 | [tests/test_import_requirements.py](../tests/test_import_requirements.py) | Third-party imports declared |
 | [tests/test_init_files.py](../tests/test_init_files.py) | Minimal `__init__.py` rule |
-| [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py) | Eight protocol-YAML rules |
+| [tests/test_spec_vocabulary.py](../tests/test_spec_vocabulary.py) | Spec doc vocabulary gates (G1-G9) |
 | [tests/test_test_naming_conventions.py](../tests/test_test_naming_conventions.py) | Test layout and naming linting |
 | [tests/test_svg_pipeline.mjs](../tests/test_svg_pipeline.mjs) | SVG asset and manifest generation tests |
 | [tests/test_svg_color_patch.mjs](../tests/test_svg_color_patch.mjs) | Pure Node test for color-patch logic |
@@ -102,7 +102,7 @@ Contains standalone non-browser E2E runners such as
 [e2e_facade_smoke.py](../tests/e2e/e2e_facade_smoke.py). New shell or
 Python E2E runners belong here as `e2e_*.sh` or `e2e_*.py`. The legacy
 single-file parity snapshot lives under
-[tests/fixtures/](../tests/fixtures/).
+`tests/fixtures/`.
 
 ### `docs/` - Documentation
 

@@ -1,19 +1,35 @@
 # Protocol entry audit
 
-## Purpose
+## Status: superseded by Class I (entry_step) sweep
+
+The original WP-ENTRY-1/WP-ENTRY-2 design inserted a compound `entry: { scene:, step: }`
+block at the top of every `protocol.yaml`. That shape was retired by the
+2026-05-15 spec doc sweep (Class I). The canonical form is now a flat
+top-level `entry_step:` field referencing a `step_name`; the scene is not a
+protocol-level field. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) and
+[../specs/PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md).
+
+The per-protocol step inventory below is still useful: each "Intended
+entry.step" value is the `step_name` that should become the protocol's
+`entry_step:`. WP-ENTRY-2 (now folded into Class I) consists of writing
+`entry_step: <step_name>` at the top of each `protocol.yaml`. The
+"Intended entry.scene" column is no longer relevant; scene transitions
+belong inside step interactions via `SceneChange` `scene_operations`.
+
+## Purpose (historical)
 
 This document is the WP-ENTRY-1 deliverable for the scene-runtime spine plan
 (see [scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md)). It records
-the intended `entry.scene` and `entry.step` values for every protocol currently
-tracked under `content/` and `tests/content/dev_smoke/`. The goal is to give
-WP-ENTRY-2 a single source of truth so the formal `entry:` block can be
-inserted into each `protocol.yaml` without re-deriving the decision.
+the intended `entry_step` (and, historically, scene) values for every protocol currently
+tracked under `content/` and `tests/content/dev_smoke/`.
 
 Evidence for each row comes from one or more of:
 
-- the explicit `# intended_entry_scene:` comment at the top of the file,
-- an already-present formal `entry:` block,
-- the `scene:` field on the first authored step,
+- the explicit `# intended_entry_scene:` comment at the top of the file
+  (now informational only; scene is no longer a protocol-level field),
+- an already-present formal `entry_step:` or legacy `entry:` block,
+- the `scene:` field on the first authored step (historically used to
+  derive the scene; now informational),
 - the curriculum map in
   [curriculum_decomposition.md](curriculum_decomposition.md).
 

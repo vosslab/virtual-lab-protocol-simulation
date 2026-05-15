@@ -26,6 +26,12 @@ sweeps and spec edits obey these rules.
 5. `liquid_container` capability renamed to `contents_container` everywhere.
 6. `render_map` retired. Closed-enum `visual_states` is the only state-to-visual surface.
 7. Retired-term tables and retired-term mentions do not live inside any spec doc. Retired terms appear only in `docs/CHANGELOG.md`, archived plans, and git history.
+8. Authored YAML identity handles are scope-specific. Bare `name:` is not allowed as an authored YAML field or as a schema-table field name. Use the scope-specific handle in every authored YAML schema, example, and field-row label:
+   - Protocol handle is `protocol_name`.
+   - Step handle is `step_name`.
+   - Object identity handle is `object_name` (instruments included; the object is the instrument).
+   - Object state-field handle is `field_name`.
+   Ordinary prose may still use the English word "name"; the ban is only on YAML fields and schema field-name cells. `entry_step` and `next_step` reference a `step_name` value. Any "the name of X" schema wording becomes "the `X_name`" when X is a YAML handle.
 
 ### Object identity
 
@@ -553,6 +559,31 @@ Rule:
   introduction in an example or migration note.
 - Default severity: `blocker`.
 
+### 29. Bare `name:` is banned in authored YAML
+
+Extends rule 25 (author-facing YAML handles use `_name`, not `_id`) by
+banning the scope-ambiguous bare `name:`. Locked in ratified rule 8.
+
+Flag: any authored YAML schema row, YAML fenced-block field key, or
+schema-table field-name cell that uses bare `name:` instead of the
+scope-specific handle.
+
+Rule:
+
+- Bare `name:` is not a valid authored YAML field. Use the scope-specific
+  handle in every authored YAML schema, example, and field-row label:
+  - Protocol handle is `protocol_name`.
+  - Step handle is `step_name`.
+  - Object identity handle is `object_name` (instruments included).
+  - Object state-field handle is `field_name`.
+- `entry_step` and `next_step` reference a `step_name` value; their prose
+  must say so.
+- Any "the name of X" schema wording becomes "the `X_name`" when X is a
+  YAML handle.
+- Ordinary prose may still use the English word "name"; the ban is only
+  on YAML fields and schema field-name cells.
+- Default severity: `blocker`.
+
 ## Smell-class quick reference
 
 | Class | Detector keyword set | Rule |
@@ -586,6 +617,7 @@ Rule:
 | Objects declare closed `visual_states`; no generic rendering map | `render_map`, `render_config`, expressions, templating | closed enumeration only; no template or expression evaluator; no metadata/extras escape hatches |
 | Layer ownership: object names assets in `visual_states`, scene names objects/placements, protocol stays semantic | asset names at object top-level or in behavior; visual config in scene; implementation details in protocol | strict three-layer: object YAML -> assets in visual_states only; scene YAML -> objects/placements; protocol YAML -> targets/steps/parts/scenes semantic only |
 | Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/scenes/`, `content/protocols/<name>/{protocol,contents}.yaml`, or `content/protocols/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
+| Bare `name:` banned in authored YAML | `name:` field in YAML examples or schema tables for protocol, step, object, or state-field | use scope-specific handle: `protocol_name`, `step_name`, `object_name`, `field_name` |
 
 ## Sweep agent deliverable
 

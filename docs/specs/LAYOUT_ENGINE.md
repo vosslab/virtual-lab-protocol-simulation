@@ -49,7 +49,8 @@ The engine remains responsible for:
 The current layout-driven scenes follow this data path:
 
 ```
-src/scenes/<scene>/<scene>.yaml
+content/scenes/<base_scene_name>.yaml                       (shared base scenes)
+content/protocols/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
         |
         v
 tools/build_scene_data.py

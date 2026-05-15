@@ -257,7 +257,7 @@ Archived day blocks from 2026-05-05 through 2026-05-11. Rotated from docs/CHANGE
 - `source source_me.sh && python3 tools/build_protocol_data.py` succeeds with new tubeTargets validator.
 - `bash tools/bootstrap_generated.sh` succeeds; SVG pipeline and scene data regenerate cleanly.
 - `npx tsc --noEmit -p src/tsconfig.json` exits 0; no type errors on new MicrotubeLiquid and TubeTarget types.
-- New unit tests in [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py) cover tubeTargets validation (8 new test cases: valid structure, length mismatch, unknown source/diluent/destination/resultLiquid, negative volumes, mutual exclusivity with plateTargets). Tests require fresh Python process to bypass pytest import cache (can be verified in CI).
+- New unit tests in `tests/test_protocol_yaml_validator.py` cover tubeTargets validation (8 new test cases: valid structure, length mismatch, unknown source/diluent/destination/resultLiquid, negative volumes, mutual exclusivity with plateTargets). Tests require fresh Python process to bypass pytest import cache (can be verified in CI).
 - No scene work (F5) or SVG microtube rendering (scope 4) implemented; those are F5 responsibilities.
 - No OVCAR8-specific hardcoding in src/scenes or src/svg_assets.ts; all chemistry/math specifics remain in content YAML (items.yaml, reagents.yaml, protocol.yaml).
 

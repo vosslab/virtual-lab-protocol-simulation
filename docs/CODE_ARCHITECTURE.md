@@ -14,9 +14,10 @@ are produced from the same sources:
 - A portable, fully self-contained single-file HTML at
   `dist-single/game.html` for sharing without a server.
 
-Protocol content lives as YAML in `src/content/` and is
+Protocol content lives as YAML in `content/protocols/` and is
 compiled into TypeScript modules by [tools/build_protocol_data.py](../tools/build_protocol_data.py)
-before each build. A pytest test suite plus Playwright browser tests support
+before each build. Object library YAML lives under `content/objects/`;
+shared base scenes under `content/scenes/`. A pytest test suite plus Playwright browser tests support
 local development.
 
 ## Major components
@@ -139,20 +140,14 @@ The modules below describe the interaction-dispatch runtime.
 
 #### Content and generated data facades
 
-- `src/content/cell_culture/` - Active
-  protocol authored as YAML (items, reagents, protocol).
-- Tutorial protocols (minimal protocols used by walker exercises):
-  `src/content/tutorial_bench_direct/`,
-  `src/content/tutorial_cell_counter/`,
-  `src/content/tutorial_drug_dilution/`,
-  `src/content/tutorial_hemocytometer_count/`,
-  `src/content/tutorial_hood_transfer/`,
-  `src/content/tutorial_pbs/`,
-  `src/content/tutorial_plate_drug_additions/`,
-  `src/content/tutorial_plate_reader/`,
-  `src/content/tutorial_split/`.
-- `src/content/tools.ts`, `src/content/validate.ts` -
-  Build-side helpers that mirror generated data.
+- `content/protocols/<protocol_name>/` - Authored protocols (each
+  carrying `protocol.yaml`, `contents.yaml`, and optional protocol-scoped
+  scene overrides under `scenes/`).
+- `content/objects/<object_name>.yaml` - Object library (shared across
+  protocols).
+- `content/scenes/<base_scene_name>.yaml` - Shared base scenes.
+- Build-side helpers that mirror generated data live in `src/` next to
+  the facade modules listed below.
 - **Authored content facades:**
   - [src/protocol.ts](../src/protocol.ts) - Re-exports protocol steps and protocol ID
     from `generated/protocol_data.ts`.
@@ -184,11 +179,12 @@ The modules below describe the interaction-dispatch runtime.
 Two build entry points share a common pre-step:
 
 1. [tools/build_protocol_data.py](../tools/build_protocol_data.py) parses
-   `src/content/<protocol>/*.yaml`, applies the eight schema rules
-   (including the `completionPath` Rule 8), and writes
-   `generated/protocol_data.ts` + `generated/inventory_data.ts` (gitignored;
-   consumed via the `src/protocol.ts` and `src/inventory.ts` facades). Build
-   scripts run this with `--validate-only` first as a fast gate.
+   `content/protocols/<protocol_name>/*.yaml`, applies the cross-file schema
+   rules (see [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md)),
+   and writes `generated/protocol_data.ts` + `generated/inventory_data.ts`
+   (gitignored; consumed via the `src/protocol.ts` and `src/inventory.ts`
+   facades). Build scripts run this with `--validate-only` first as a fast
+   gate.
 2. [tools/generate_svg_globals.py](../tools/generate_svg_globals.py) reads
    `assets/equipment/*.svg`, namespaces ids, and emits
    `generated/svg_assets/<name>.ts` (per-asset SVG modules),
@@ -322,7 +318,7 @@ node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --wrong-order
 - **Imports:** no `import *`, no relative imports, all third-party in
   requirements files.
 - **Protocol YAML:** eight validator rules enforced by
-  [tests/test_protocol_yaml_validator.py](../tests/test_protocol_yaml_validator.py).
+  `tests/test_protocol_yaml_validator.py`.
 - **Browser walker:** drives the full protocol via DOM clicks; the
   `--wrong-order` flag injects bad clicks and verifies soft-fail recovery.
 
@@ -372,7 +368,7 @@ emitters populated by `triggerStep()` calls.
 ## Extension points
 
 - **New protocol steps:** edit
-  `src/content/<protocol>/protocol.yaml`, add a `step` with its
+  `content/protocols/<protocol_name>/protocol.yaml`, add a `step` with its
   `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
   re-run [tools/build_protocol_data.py](../tools/build_protocol_data.py).
   See [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) and

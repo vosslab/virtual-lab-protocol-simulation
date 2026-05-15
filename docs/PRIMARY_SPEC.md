@@ -12,14 +12,14 @@ Each protocol lives in `content/<protocol_name>/protocol.yaml` and declares the 
 
 ```yaml
 protocol_type: mini_protocol
-name: open_plate_workspace
+protocol_name: open_plate_workspace
 entry_step: open_plate_workspace
 learning:
   objectives: "Students completing this mini-protocol will have achieved..."
   outcomes: "Students completing this mini-protocol will be able to..."
   goals: "Overall, this mini-protocol aims to accomplish..."
 steps:
-  - name: open_plate_workspace
+  - step_name: open_plate_workspace
     prompt: "Open the well plate workspace."
     sequence:
       - target: well_plate
@@ -36,18 +36,18 @@ steps:
     next_step: null
 ```
 
-A `protocol` carries `name`, `entry_step`, and `steps`. Each `step` carries `name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
+A `protocol` carries `protocol_name`, `entry_step`, and `steps`. Each `step` carries `step_name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
 
 ## Entry step
 
 The `entry_step` field declares where protocol flow starts.
 
-- `entry_step` is the `name` of the first step the runtime runs. Flow starts there and follows `next_step` from step to step.
+- `entry_step` is the `step_name` of the first step the runtime runs. Flow starts there and follows `next_step` from step to step.
 - The scene a protocol opens in is not a protocol-level field. The protocol vocabulary is geometry-free and scene-free at the flow level; a step's interactions name semantic `target` objects, and the scene adapter resolves those names. A `SceneChange` scene operation in a step's `response` transitions the scene context. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md).
 
 Validation rules:
 
-- `entry_step` must name a step present in the `steps` list.
+- `entry_step` must name a `step_name` present in the `steps` list.
 - A mini-protocol must not open in the hood unless its first step takes place in the hood. The hood is not a default starting scene.
 
 ## Learning block
@@ -68,12 +68,12 @@ Developer smoke protocols and internal diagnostic protocols are exempt from the 
 
 A step is one pedagogical unit. Its structure is the same for every step; there is no per-step discriminator that branches the schema. Every step carries:
 
-- `name`: the stable snake_case identifier, used for flow, tests, and debugging.
+- `step_name`: the stable snake_case identifier, used for flow, tests, and debugging.
 - `prompt`: what the student is asked to accomplish.
 - `sequence`: the ordered list of interactions that make up the step. Order always matters; there is no unordered mode.
 - `step_validator`: a named preset that checks whole-step completion.
 - `outcome`: the `{on_success, on_failure}` mapping that says how the step resolves.
-- `next_step`: names the next step by its `name`, or `null` for a terminal step.
+- `next_step`: names the next step by its `step_name`, or `null` for a terminal step.
 
 Each `interaction` in a `sequence` carries exactly four slots: `target` (the semantic scene object or control acted on), `gesture` (how the student acts on it), `validator` (a named preset checking that one gesture on that one target), and `response` (the post-validation system behavior). The task semantics of an interaction come from the target's `kind` plus the `gesture`; the schema has no separate task-type or completion-path discriminator. What were the legacy `interactionSequence`, `directTool`, `modal`, and `multipleChoice` kinds are all just steps: an ordered `click` sequence, a one-interaction `sequence`, an interaction whose `response` carries a `SceneChange` or `feedback`-only payload, and a `select`-gesture interaction validated by `correct_choice`.
 
@@ -89,7 +89,7 @@ A `response` holds `scene_operations` (an ordered, possibly empty list of typed 
 
 Every `validator` and every `step_validator` is a named preset with typed parameters; content creators select from the documented preset library and never write custom validation logic. Interaction presets: `correct_target`, `correct_choice`, `target_with_value`. Step presets: `sequence_complete`, `final_state_matches`. The `outcome` mapping has exactly two keys: `on_success: complete` resolves the step, after which flow moves to `next_step`; `on_failure: retry` restarts the whole step, resetting the entire `sequence`. `outcome` never carries an `advance` value and never names a step.
 
-The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a step name or from per-protocol special cases.
+The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a `step_name` or from per-protocol special cases.
 
 ## Targets and the scene boundary
 
@@ -97,11 +97,11 @@ A `target` is the addressable, semantic scene object or control a student acts o
 
 ## Events
 
-Events are emitted by the runtime on a state transition, not hand-authored per step. The runtime emits a `<step_name>_complete` event when a step's `step_validator` passes, and a `<equipment_name>_elapsed` event when a timed phase ends. Event names are snake_case and derived from the `name` of the thing they report; an author who renames a step renames its completion event with it.
+Events are emitted by the runtime on a state transition, not hand-authored per step. The runtime emits a `<step_name>_complete` event when a step's `step_validator` passes, and a `<equipment_name>_elapsed` event when a timed phase ends. Event names are snake_case and derived from the `step_name` or equipment name of the thing they report; an author who renames a step renames its completion event with it.
 
 ## Sequence runners
 
-A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry` block (matching the first mini-protocol's entry) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step gate that applies to mini-protocols.
+A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry_step` (matching the first mini-protocol's `entry_step`) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step gate that applies to mini-protocols.
 
 ## Walker requirement
 
@@ -117,7 +117,7 @@ The walker:
 
 The walker must not:
 
-- branch on a step `name`, a protocol `name`, or any per-protocol special case;
+- branch on a `step_name`, a `protocol_name`, or any per-protocol special case;
 - write to game state or any internal runtime state;
 - mutate `window.prompt`, `window.confirm`, or similar DOM globals;
 - call internal runtime APIs to make progress;

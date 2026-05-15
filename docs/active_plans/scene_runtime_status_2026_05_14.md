@@ -21,7 +21,7 @@ started.
 
 - M0 doc conflict table: complete.
 - M1 curriculum decomposition: complete.
-- M2 protocol `entry:` blocks: complete.
+- M2 protocol `entry_step` fields: complete. (Originally tracked as `entry:` blocks; the multi-key `entry: { scene:, step: }` shape was retired in the 2026-05-15 Class I spec sweep in favour of a flat top-level `entry_step:` field referencing a `step_name`. See [../specs/PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md).)
 - M3 runtime spine (`contract.ts`, `types.ts`, loader): complete.
 - M4 generic walker engine: complete.
 - M5 vertical proof: complete.

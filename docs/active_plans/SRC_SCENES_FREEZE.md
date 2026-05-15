@@ -8,9 +8,9 @@ new features, and no growth.
 This policy is actively enforced by
 [tests/test_scenes_freeze_baseline.py](../../tests/test_scenes_freeze_baseline.py)
 and complements the legacy banner gate
-[tests/test_scenes_legacy_banner.py](../../tests/test_scenes_legacy_banner.py)
+`tests/test_scenes_legacy_banner.py`
 and the no-imports gate
-[tests/test_scene_runtime_no_scenes_imports.py](../../tests/test_scene_runtime_no_scenes_imports.py).
+`tests/test_scene_runtime_no_scenes_imports.py`.
 
 ## Why
 
@@ -36,7 +36,7 @@ Only the following mechanical, non-behavioral edits are allowed to files under
   satisfy `tsc --noEmit` after a contract update elsewhere.
 - **Legacy banner header.** The single-line header required by WP-SPINE-6:
   `// LEGACY: superseded by src/scene_runtime/*. Do not extend.`
-  See [tests/test_scenes_legacy_banner.py](../../tests/test_scenes_legacy_banner.py).
+  See `tests/test_scenes_legacy_banner.py`.
 - **Compatibility shim that compiles.** Each shim must be the minimum code
   needed to keep the legacy tree compiling against an updated contract. Every
   shim must carry the marker `// COMPAT SHIM:` on or immediately above the
@@ -91,5 +91,5 @@ All new declarative scene and protocol configuration lives in YAML under
 - Contract: [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md).
 - Enforcement gates:
   - [tests/test_scenes_freeze_baseline.py](../../tests/test_scenes_freeze_baseline.py)
-  - [tests/test_scene_runtime_no_scenes_imports.py](../../tests/test_scene_runtime_no_scenes_imports.py)
-  - [tests/test_scenes_legacy_banner.py](../../tests/test_scenes_legacy_banner.py)
+  - `tests/test_scene_runtime_no_scenes_imports.py`
+  - `tests/test_scenes_legacy_banner.py`

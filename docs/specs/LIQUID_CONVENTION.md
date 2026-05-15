@@ -34,103 +34,82 @@ Two invisible anchor rects help position overlays:
 
 ## Color Map
 
-Liquid colors are driven by reagent `colorKey` values from `inventory_data.ts:REAGENTS`:
+Liquid colors derive from the authored `contents.yaml` `display_color` field
+for each contents name. The authored color is the source of truth; the
+runtime resolves a `contents_name` (or `held_contents_name`) state value to
+its `display_color` through the object's `visual_states`. See
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) for the `contents.yaml`
+schema.
 
-| Reagent | Color Key | Hex Code | Notes |
-| --- | --- | --- | --- |
-| Complete media | media | #f7a6b8 | Pink |
-| PBS buffer | pbs | #b8e5ff | Light blue |
-| Trypsin | trypsin | #ffe082 | Yellow |
-| Cell suspension | cells | #f3d6a2 | Cloudy tan |
-| Drug working solution | drug | #d8b4ff | Violet |
-| MTT reagent | mtt | #fff59d | Pale yellow |
-| DMSO | dmso | #e0e0e0 | Gray |
+Reference palette in current curriculum content:
 
-Colors are defined in `src/style_constants.ts:COLOR_MAP` and must match the `displayColor` field in `inventory_data.ts`.
+| Contents name | Hex code | Notes |
+| --- | --- | --- |
+| media | #f7a6b8 | Pink |
+| pbs | #b8e5ff | Light blue |
+| trypsin | #ffe082 | Yellow |
+| cells | #f3d6a2 | Cloudy tan |
+| drug | #d8b4ff | Violet |
+| mtt | #fff59d | Pale yellow |
+| dmso | #e0e0e0 | Gray |
 
-## Implementation: createPipetteLiquidOverlay
+These hex codes are the values authors write into `contents.yaml`; the
+runtime never overrides them.
 
-```typescript
-function createPipetteLiquidOverlay(
-	equipmentId: string,        // e.g., "sero_pipette"
-	volumeMl: number,           // volume in milliliters
-	capacityMl: number,         // total capacity in milliliters
-	color: string,              // hex color code
-	svgString: string           // base SVG to parse anchors from
-): string
-```
+## Runtime implementation note (not authoring vocabulary)
 
-The function:
+The pipette liquid overlay is rendered at runtime from the resolved
+`held_contents_name` plus `held_contents_volume` state. The runtime computes
+fill height as `height * (volume / capacity)`, positions the fill rect at
+the bottom of `anchor_liquid_bounds`, and clips to `anchor_liquid_clip`.
+Function names, parameter names, and module paths in `src/` are
+implementation detail; authoring never names them. See `src/` for the
+current implementation surface.
 
-1. Clamps volume to [0, capacityMl]
-2. Parses `anchor_liquid_bounds` from the base SVG
-3. Computes fill height as `height * (volume / capacity)`
-4. Positions the rect at the bottom of the bounds (bottom-anchored)
-5. Clips the rect to `anchor_liquid_clip`
-6. Returns SVG string injected into `overlay_root`
+## Authored state model
 
-## Game State Integration
+The authored state surface for held liquid on a tool is the flat
+`held_contents_name` plus `held_contents_volume` `state_fields` declared
+on the tool's object YAML (see
+[OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)). The protocol-side primitive
+that writes these is `ObjectStateChange`; for example, picking up PBS into a
+serological pipette is one interaction whose `response` carries an
+`ObjectStateChange` setting `held_contents_name: pbs` and
+`held_contents_volume: 4`.
 
-When a pipette is loaded with liquid via `resolveInteraction`, the state change populates:
+For containers (flasks, microtubes, wells), the authored state is the flat
+`contents_name` plus `contents_volume` pair, declared on the object via
+`state_fields` (per object) or `structure.subpart_state_fields` (per
+subpart). Discharging from a pipette into a well is one interaction whose
+`response` carries two `ObjectStateChange` ops: one clearing the pipette's
+held fields and one setting the well's `contents_name` / `contents_volume`.
 
-```typescript
-gameState.heldLiquid = {
-	tool: 'serological_pipette',
-	liquid: 'pbs',
-	volumeMl: 4,
-	colorKey: 'pbs'
-};
-```
-
-When the pipette is used (discharged) or put down, `heldLiquid` is cleared:
-
-```typescript
-gameState.heldLiquid = null;
-```
-
-## Rendering in Hood Scene
-
-[../../src/scenes/cell_culture_hood/render.ts](../../src/scenes/cell_culture_hood/render.ts) in the `getItemSvgHtml()` function checks if `gameState.heldLiquid.tool` matches the item being rendered:
-
-```typescript
-case 'serological_pipette':
-	if (gameState.heldLiquid && gameState.heldLiquid.tool === 'serological_pipette') {
-		const reagent = REAGENTS[gameState.heldLiquid.liquid];
-		const color = reagent ? reagent.displayColor : COLOR_MAP[gameState.heldLiquid.colorKey];
-		return getSeroPipetteSvg(gameState.heldLiquid.volumeMl, color);
-	}
-	return getSeroPipetteSvg();
-```
+The internal runtime state shape (the in-memory representation, whatever
+its keys) is not the authored surface; runtime keys are derivable and may
+differ from `held_contents_name`. Do not surface runtime field names as
+authoring vocabulary.
 
 ## Convention scope: pipettes, microtubes, and wells
 
 The same convention extends to microtubes and to wells in the
 `well_plate_workspace` scene:
 
-- **Fill = liquid identity.** The fill color is driven by the reagent's
-  `displayColor` (resolved from `inventory_data.ts:REAGENTS`). Carboplatin
-  fills are violet, media fills are pink, distilled water fills are pale,
-  and so on. The fill never encodes progress state.
+- **Fill = contents identity.** The fill color is driven by the
+  `display_color` declared for the value of `contents_name` (or
+  `held_contents_name`) in `contents.yaml`. Carboplatin fills are violet,
+  media fills are pink, distilled water fills are pale, and so on. The
+  fill never encodes progress state.
 - **Outline = state class.** Active, completed, and future tubes or wells
   are distinguished by an outline CSS class (for example, glow for
   active, normal stroke for completed, dimmed for future). State
-  rendering does not touch the fill color, so reagent identity stays
+  rendering does not touch the fill color, so contents identity stays
   readable at every progress stage.
 
-For microtubes, the renderer reads `gameState.tubeLiquids[<tubeId>]`
-(the layered `MicrotubeLiquid` entries written by
-`addTubeLiquid` during dilution prep) and composites a fill rectangle
-clipped to the Bioicons `microtube_open_translucent` interior. The
-result reagent's `displayColor` provides the visible color; the
-state class on the host element provides the outline treatment.
-
-For wells, the plate renderer reads
-`gameState.plateLiquids[<wellId>]` populated by the plate-transfer
-dispatcher and fills each well with the reagent `displayColor`. The
-active well receives the active outline class; completed wells keep
-their fill but switch to the completed outline class. See
-[../../src/scenes/well_plate_workspace/render.ts](../../src/scenes/well_plate_workspace/render.ts)
-for the implementation.
+For microtubes, the renderer resolves the subpart's `contents_name` through
+the object's `visual_states` and composites a fill rectangle clipped to the
+microtube interior; the resolved `display_color` provides the visible
+color, and the state class on the host element provides the outline
+treatment. For wells, the plate renderer does the same per-well lookup.
 
 ## Future Extensions
 
@@ -143,5 +122,5 @@ for the implementation.
 `devel/test_pipette_liquid.mjs` uses Playwright to verify:
 
 1. Liquid overlay present when pipette is loaded
-2. Overlay color matches expected reagent color
+2. Overlay color matches the `display_color` for the held `contents_name`
 3. Fill height is non-zero and consistent with volume/capacity ratio
