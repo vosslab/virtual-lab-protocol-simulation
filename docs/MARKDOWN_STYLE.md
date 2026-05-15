@@ -5,12 +5,6 @@ Keep documentation concise, scannable, and consistent.
 ## Content
 - use ASCII and ISO-8859-1 character encoding
 - escape UTF-8 symbols such as &alpha;, &beta;, etc.
-- In normal Markdown prose, write micro units with HTML entities such as
-  `&mu;L` and `&mu;M`.
-- In fenced code blocks, especially YAML examples, use ASCII unit text such
-  as `uL` and `uM`.
-- Authored YAML strings that render in the browser currently use `uL` and
-  `uM` until unit rendering supports safe display of micro symbols.
 
 ## Headings
 - Use sentence case.

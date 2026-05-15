@@ -23,80 +23,11 @@ by `npx playwright install`.
 ### Quick install script
 
 Repos propagated from the starter template ship `devel/setup_playwright.sh`,
-which automates the install end-to-end (chromium and firefox, idempotent):
+which automates the install end-to-end (chromium only, idempotent):
 
 ```bash
 bash devel/setup_playwright.sh
 ```
-
-The script uses repo-local cache directories under `.cache/` for npm and
-Playwright browser downloads. This avoids writes to `~/.npm` and
-`~/Library/Caches/ms-playwright` when running inside Codex/Claude sandboxes.
-For browser runs that need those repo-local browser binaries, export the path
-printed by the setup script:
-
-```bash
-export PLAYWRIGHT_BROWSERS_PATH="$(pwd)/.cache/ms-playwright"
-```
-
-## Codex macOS sandbox note
-
-Real Playwright browser launches may fail inside the default macOS Codex
-sandbox even when setup and browser downloads succeed. Treat these launch
-errors as sandbox infrastructure failures, not application failures:
-
-- `MachPortRendezvousServer ... Permission denied`
-- `bootstrap_check_in ... Permission denied (1100)`
-- `Firefox ... SIGABRT` immediately after headless launch
-- `kill EPERM` while Playwright cleans up a failed browser process
-- `listen EPERM 127.0.0.1`
-
-Do not edit app code to fix those signatures. Use the narrow browser command
-with approval/escalation when real browser QA is needed:
-
-```bash
-npm run browser:smoke
-```
-
-For a screenshot-oriented UI review of the compiled [dist/](../dist/) build,
-use:
-
-```bash
-npm run build
-npm run ui:review
-```
-
-Run `npm run build` in the normal sandbox. Run `npm run ui:review` with
-approval/escalation on macOS Codex when browser launch hits the sandbox
-signatures above. The review script opens the launcher, then launches the
-review protocol (`cell_culture` by default), dismisses the welcome overlay, and
-writes launcher plus hood desktop/mobile screenshots and `report.json` to
-`artifacts/ui-review/`.
-
-### Podman UI review path for Codex only
-
-This repo also provides a Podman-based UI review path for **Codex macOS
-sandboxes only**. Use it when Codex cannot launch a local browser because of
-the sandbox errors listed above.
-
-Do not use this path in Claude Code. In Claude Code, run the normal build and
-UI review commands directly, or use the available browser/test workflow for the
-environment.
-
-```bash
-tools/run_ui_review_podman.sh
-```
-
-This script builds [dist/](../dist/), serves it on the host with
-`python3 -m http.server`, then runs `npm run ui:review` inside the official
-Playwright container against `http://host.containers.internal:<port>`. It writes
-server logs to `test-results/ui-review-server.log` and screenshots/report files
-to `artifacts/ui-review/`. Set `REVIEW_PROTOCOL=<id>` to capture another
-protocol.
-
-Use this Podman script only for screenshot-oriented UI review of the compiled
-build in Codex. It is not the default Playwright path, and it is not required
-for ordinary Playwright scripts.
 
 The script installs `@playwright/test` (the test runner) rather than the bare
 `playwright` library. Use it when the repo's tests rely on the test-runner
@@ -169,7 +100,7 @@ For "open a local HTML file, click things, take screenshots", use `playwright`.
 import { chromium } from 'playwright';
 import path from 'path';
 
-const gamePath = path.resolve('dist-single/game.html');
+const gamePath = path.resolve('cell_culture_game.html');
 const url = `file://${gamePath}`;
 
 const browser = await chromium.launch();

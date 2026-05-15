@@ -7,7 +7,7 @@ preferred alternatives for denied patterns.
 This doc is Claude-specific and does not apply to Codex.
 
 This guide documents current Claude hook behavior. Repo style conventions live in
-[docs/REPO_STYLE.md](REPO_STYLE.md) and [docs/PYTHON_STYLE.md](PYTHON_STYLE.md).
+[REPO_STYLE.md](REPO_STYLE.md) and [PYTHON_STYLE.md](PYTHON_STYLE.md).
 
 ## Trust model
 

@@ -17,10 +17,6 @@ SKIP_FILE_PATTERNS = [
 	r"^human_readable-.*\.html$",
 ]
 SKIP_FILE_REGEXES = [re.compile(pattern) for pattern in SKIP_FILE_PATTERNS]
-SKIP_PATH_PATTERNS = [
-	r"^content/.*\.yaml$",
-]
-SKIP_PATH_REGEXES = [re.compile(pattern) for pattern in SKIP_PATH_PATTERNS]
 ERROR_SAMPLE_COUNT = 5
 PROGRESS_EVERY = 1
 
@@ -160,8 +156,6 @@ def filter_files(repo_root: str, paths: list[str]) -> list[str]:
 			continue
 		base_name = os.path.basename(abs_path)
 		if any(regex.match(base_name) for regex in SKIP_FILE_REGEXES):
-			continue
-		if any(regex.match(rel_path) for regex in SKIP_PATH_REGEXES):
 			continue
 		ext = os.path.splitext(abs_path)[1].lower()
 		if ext not in EXTENSIONS:

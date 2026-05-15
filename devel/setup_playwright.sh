@@ -11,20 +11,7 @@
 
 set -e
 
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-cd "$REPO_ROOT"
-
-SANDBOX_CACHE_DIR="$REPO_ROOT/.cache"
-NPM_CACHE_DIR="$SANDBOX_CACHE_DIR/npm"
-PLAYWRIGHT_BROWSER_DIR="$SANDBOX_CACHE_DIR/ms-playwright"
-
-mkdir -p "$NPM_CACHE_DIR" "$PLAYWRIGHT_BROWSER_DIR"
-
-# Keep setup self-contained for Codex/Claude sandboxes. The default npm cache
-# lives under ~/.npm and Playwright's browser cache lives under ~/Library/Caches
-# on macOS; both can be outside the writable sandbox.
-export npm_config_cache="$NPM_CACHE_DIR"
-export PLAYWRIGHT_BROWSERS_PATH="$PLAYWRIGHT_BROWSER_DIR"
+cd "$(git rev-parse --show-toplevel)"
 
 if ! command -v npm >/dev/null 2>&1; then
 	echo "ERROR: npm not found. Install Node.js first (e.g., 'brew install node')." >&2
@@ -40,10 +27,6 @@ npx playwright install chromium
 echo "Downloading firefox browser for Playwright..."
 npx playwright install firefox
 
-echo
-echo "Playwright browsers installed under: $PLAYWRIGHT_BROWSER_DIR"
-echo "For sandboxed Playwright runs, export:"
-echo "  export PLAYWRIGHT_BROWSERS_PATH=\"$PLAYWRIGHT_BROWSER_DIR\""
 echo
 echo "Playwright setup complete. See templates/playwright_smoke_test.md"
 echo "for the smoke-test recipe used between batches."
