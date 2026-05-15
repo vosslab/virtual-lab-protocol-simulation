@@ -445,7 +445,7 @@ Only two uses are valid:
 
 Anything broader (rebuilding zones, redefining alignment policy, swapping
 the asset shown) is out of `LayoutMove`'s scope. Asset and color changes
-are object/render-layer concerns owned by the object's `render_map` and
+are object/render-layer concerns owned by the object's `visual_states` and
 written through `ObjectStateChange`; they are not layout moves.
 
 ## Adapter responsibilities
@@ -532,7 +532,7 @@ Use this workflow when laying out a new row-and-zone scene:
 To make a new scene use the layout engine:
 
 1. Create the scene YAML file under
-   `src/scenes/<scene_id>/<scene_id>.yaml`.
+   `content/scenes/<base_scene_name>.yaml`.
 2. Define scene `items` with stable ids, `svgAsset`, `zone`, `depthTier`,
    `widthScale`, `label`, and `anchorY`.
 3. Define scene `zones` with `id`, `x0`, `x1`, `baseline`, `gap`, and

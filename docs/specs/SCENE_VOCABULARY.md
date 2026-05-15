@@ -50,10 +50,10 @@ should happen on the scene (that is protocol-side; see
 The scene replaces today's split between identity-bearing `items[]`
 entries and placement-bearing `items[]` entries in the fused scene
 YAML. After the split, every entry on the scene side is a placement:
-it references an object by id and says where that object goes. Object
+it references an object by name and says where that object goes. Object
 identity sub-fields (today's `id`, `label`, `shortLabel`, `kind`,
 `svgAsset`, `inventoryRef`) move out of the scene; the scene names
-objects through `object_id` and authors no identity data.
+objects through `object_name` and authors no identity data.
 
 ## The scene side of the boundary
 
@@ -71,14 +71,14 @@ by id, places them inside named [zones](#zones), declares the outer
 [scene_bounds](#scene-bounds) and the
 [layout_rules](#layout-rules) the layout engine consumes, and declares
 the static [background](#background-as-a-static-backdrop) backdrop.
-A scene never declares object identity, `state_fields`, `render_map`,
+A scene never declares object identity, `state_fields`, `visual_states`,
 `target_groups`, or `capabilities`.
 
-A scene placement may carry exactly one bounded set of instance overrides: the object's `label` (and `short_label`) and the
+A scene placement may carry exactly one bounded set of instance overrides: the
 object's layout hints (`default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may not
 override identity (`id`, `kind`, `inventory_ref`), `state_fields`,
-`render_map`, or `capabilities`. The full override rule lives on the
+`visual_states`, or `capabilities`. The full override rule lives on the
 object side; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 
@@ -113,8 +113,8 @@ the backdrop in the appropriate zone. See
 
 The scene declares one optional `background` block with an asset reference and the
 scene-side bounds it covers; it never declares clickable behavior on
-the background and never attaches state, capabilities, or a
-`render_map` to it.
+the background and never attaches state, capabilities, or
+`visual_states` to it.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
@@ -126,28 +126,26 @@ the background and never attaches state, capabilities, or a
 A scene places objects by id. Each placement entry in the scene's
 `placements` list names exactly one object from the object library
 and states where that placement goes. The placement does not declare
-object identity, structure, `state_fields`, `render_map`, or
+object identity, structure, `state_fields`, `visual_states`, or
 `capabilities`; those belong to the object definition (see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)).
 
 A placement may carry a small set of instance overrides:
-`label`, `short_label`, and the layout hints `default_width`,
+the layout hints `default_width`,
 `label_width`, `anchor_y_offset`, `width_scale`, and `anchor_y`. A
-placement may not override identity, `state_fields`, `render_map`,
+placement may not override identity, `state_fields`, `visual_states`,
 `target_groups`, or `capabilities`. The full override surface is in
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## The object side of
 the boundary".
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `placement.placement_id` | yes | Stable per-scene id for this placement. Distinct from `object_id`: a scene may place the same object more than once, and each placement needs its own scene-scoped id. |
-| `placement.object_id` | yes | The id of the object in the object library. The object resolves identity, structure, state, rendering, and capabilities. |
+| `placement.placement_name` | yes | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name. |
+| `placement.object_name` | yes | The name of the object in the object library. The object resolves identity, structure, state, rendering, and capabilities. |
 | `placement.zone` | yes | The [zone](#zones) this placement belongs to. |
 | `placement.depth_tier` | no | Numeric layering hint within the zone. |
 | `placement.align_stop` | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. |
 | `placement.baseline_override` | no | Per-instance baseline override. |
-| `placement.label` | no | Instance override of the object's default label. |
-| `placement.short_label` | no | Instance override of the object's default short label. |
 | `placement.layout` | no | Instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
 
 Notes:
@@ -228,11 +226,10 @@ the scene and the workspace it targets; they are not object identity.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `scene_id` | yes | Stable scene id. |
+| `scene_name` | yes | Stable scene name. |
 | `workspace` | yes | Workspace this scene targets. |
-| `element_id` | no | DOM mount point for the scene. |
 
-The `scene_id` value matches the directory name and YAML basename
+The `scene_name` value matches the directory name and YAML basename
 and is the key into the [scene registry](#scene-registry) and the
 generated `SCENE_CONFIGS` table.
 
@@ -246,8 +243,8 @@ three-way split:
   name a protocol author writes. Canonical in
   [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). The phrase "click
   target" is retired from the protocol vocabulary entirely.
-- **An object id is the addressable identity.** The scene names
-  objects by `object_id` (see
+- **An object name is the addressable identity.** The scene names
+  objects by `object_name` (see
   [Object-by-id placement](#object-by-id-placement)); the object
   declares the structure and capabilities behind that name. Canonical
   on the object side: see
@@ -268,11 +265,11 @@ nothing else.
 | term | one-line definition |
 | --- | --- |
 | scene | A self-contained interactive surface with one DOM root, one adapter, and one YAML config where static scene config exists. |
-| scene id | The stable string id for a scene; matches the directory name and YAML basename and is the key into `SCENE_CONFIGS` and the scene registry. |
-| adapter | The per-scene TypeScript object that owns `render` and `dispatchInteraction` for one scene id. |
-| placement | A scene-side entry that names an object by `object_id` and states where that object goes (zone, depth tier, align stop, optional layout overrides). |
-| placement id | The stable per-scene id for one placement; distinct from `object_id` because a scene may place the same object more than once. |
-| object id | The id of an object in the object library; the only handle the scene side uses to name an object. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). |
+| scene name | The stable string name for a scene; matches the directory name and YAML basename and is the key into `SCENE_CONFIGS` and the scene registry. |
+| adapter | The per-scene TypeScript object that owns `render` and `dispatchInteraction` for one scene name. |
+| placement | A scene-side entry that names an object by `object_name` and states where that object goes (zone, depth tier, align stop, optional layout overrides). |
+| placement name | The stable per-scene name for one placement; distinct from `object_name` because a scene may place the same object more than once. |
+| object name | The name of an object in the object library; the only handle the scene side uses to name an object. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). |
 | background | The static backdrop asset declared on the scene; not interactive, carries no state. |
 | zone | A layout region declared by `zones[]` in scene YAML; placements reference zones by id. |
 | scene_bounds | Outer bounds of the scene surface. |
@@ -306,9 +303,9 @@ out of YAML; today every shipped scene has a YAML, but the rule is
 "one YAML where static config exists," not "every scene must have a
 YAML."
 
-### scene id
+### scene name
 
-The stable string id for a scene. It matches the directory name, the
+The stable string name for a scene. It matches the directory name, the
 YAML basename, the adapter's `sceneId` field, the key in
 `generated/scene_data.ts` `SCENE_CONFIGS` (consumed via the
 [../../src/scene_configs.ts](../../src/scene_configs.ts) facade), and the key
@@ -326,26 +323,26 @@ at module load via `registerScene(adapter)`.
 ### placement
 
 A scene-side entry that references one object from the object
-library by `object_id` and states where the object goes (its zone,
+library by `object_name` and states where the object goes (its zone,
 depth tier, align stop, and instance overrides). See
 [Object-by-id placement](#object-by-id-placement) for the field
-table. Each placement carries its own `placement_id` because a scene
+table. Each placement carries its own `placement_name` because a scene
 may place the same object more than once; the runtime DOM id remains
-the placement id, and clicks dispatch through `data-item-id` against
-that id (see [item](#item)).
+the placement name, and clicks dispatch through `data-item-id` against
+that name (see [item](#item)).
 
-### placement id
+### placement name
 
-The stable per-scene id for one [placement](#placement). Distinct
-from `object_id`: two placements may reference the same object (for
+The stable per-scene name for one [placement](#placement). Distinct
+from `object_name`: two placements may reference the same object (for
 example two `dilution_tube_rack` instances on a hood scene), and
-each placement gets its own scene-scoped id so the runtime can
+each placement gets its own scene-scoped name so the runtime can
 address them independently.
 
-### object id
+### object name
 
-The id of an object in the object library. The scene side names
-objects only by `object_id`; identity, structure, state, render
+The name of an object in the object library. The scene side names
+objects only by `object_name`; identity, structure, state, render
 rules, and capabilities are resolved object-side. Canonical
 definition: [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object
 identity".
@@ -403,7 +400,7 @@ side only knows that a placement references such an object by id.
 A visual or clickable element inside a structured surface. Subparts
 are declared on the object via the structure block; the scene
 neither declares subparts nor names them. A protocol addresses a
-subpart as `<object_id>.<subpart_id>` (for example
+subpart as `<object_name>.<subpart_name>` (for example
 `treatment_plate.A1`); named groups are deferred, so a
 protocol acting on several subparts lists each one explicitly. See
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
@@ -419,7 +416,7 @@ Reserved for future selectors, telemetry, or scene-profile
 dispatch. Example:
 
 ```yaml
-scene_id: <scene_name>
+scene_name: <scene_name>
 workspace: <workspace_kind>
 ```
 
@@ -436,13 +433,13 @@ A YAML block with two fields, `template` and `toastDurationMs`,
 declaring a per-scene wrong-order toast template. The cleaned spelling is
 [`wrong_order_message`](#scene-level-ui-feedback).
 
-### elementId
+### element_id (retired from authored YAML)
 
-The DOM element id where the driver attaches its capture-phase
-click listener. Optional in the YAML; defaults to `${sceneId}-scene`
-when absent. The runtime read happens in
-`src/scenes/scene_driver.ts:174-175`. Used by scenes whose DOM id
-does not match `${sceneId}-scene`.
+Retired author-facing field. The DOM mount handle is runtime-derived as
+`mount_element = ${scene_name}-scene` and is internal to the runtime; it is
+not authored in YAML. Legacy scenes whose DOM id does not match
+`${scene_name}-scene` override this mapping through a non-YAML
+configuration path (see `src/scenes/scene_driver.ts:174-175`).
 
 ### instrument-overlay
 
@@ -559,9 +556,9 @@ examples, code comments, or error messages.
 
 | Retired | Use instead | Reason |
 | --- | --- | --- |
-| "click target" | **`target`** (protocol side) / **`object id`** (scene-side handle) | A prior canonical phrase for the protocol-to-scene addressable concept; ambiguous against the runtime `ClickTarget` type. The boundary split names the protocol side `target` and the scene side names objects by `object_id`; `ClickTarget` is scoped to the narrow `{itemId}` driver payload only. |
+| "click target" | **`target`** (protocol side) / **`object name`** (scene-side handle) | A prior canonical phrase for the protocol-to-scene addressable concept; ambiguous against the runtime `ClickTarget` type. The boundary split names the protocol side `target` and the scene side names objects by `object_name`; `ClickTarget` is scoped to the narrow `{itemId}` driver payload only. |
 | `scene:` (alternate spelling for `zone:`) | `placement.zone` | Single observed use in `content/plate_drug_treatment/scene.yaml`; the cleaned vocabulary keeps `zone` and drops the alternate. |
-| `target_groups` (top-level scene-YAML key) | retired with no successor in this vocabulary pass; named groups are deferred until shipped authoring pain appears | Subparts are on the object side; the named-groups expression itself is deferred. Protocols list explicit subparts (`<object_id>.<subpart_id>`) until a future plan revisits named groups. |
+| `target_groups` (top-level scene-YAML key) | retired with no successor in this vocabulary pass; named groups are deferred until shipped authoring pain appears | Subparts are on the object side; the named-groups expression itself is deferred. Protocols list explicit subparts (`<object_name>.<subpart_name>`) until a future plan revisits named groups. |
 
 ### Moved to OBJECT_VOCABULARY.md
 
@@ -571,16 +568,16 @@ underlying identity, structure, state, or render data.
 
 | Retired here | New home | Reason |
 | --- | --- | --- |
-| `items[].id` (object identity) | object `id` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Identity is object-owned; the scene names objects only by `object_id` on a placement. |
-| `items[].label` | object `label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the default label; a placement may override per-instance. |
-| `items[].shortLabel` | object `short_label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the default short label; a placement may override. |
+| `items[].id` (object identity) | object `id` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Identity is object-owned; the scene names objects only by `object_name` on a placement. |
+| `items[].label` | object `label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the label; placement overrides are retired. |
+| `items[].shortLabel` | object `short_label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the short label; placement overrides are retired. |
 | `items[].kind` | object `kind` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Closed enum on the object; identity-class, scene may not override. |
-| `items[].svgAsset` | object `render_map` entry ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Render map") | The object owns SVG manipulation; the asset id lives in `render_map` only. |
+| `items[].svgAsset` | object `visual_states` entry ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Visual states") | The object owns SVG manipulation; the asset id lives in `visual_states` only. |
 | `items[].inventoryRef` | object `inventory_ref` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Identity-class; the scene YAML never carries it. |
 | `items[].anchorY` (placement sub-field) | object `layout.anchor_y` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Layout hints") | A serological pipette is tip-anchored regardless of placement; a scene placement may still override. |
 | `items[].widthScale` (as the canonical home) | object `layout.width_scale` default ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Layout hints"); placement may override via `placement.layout.width_scale` | Per-asset visual metric; the object owns the default. |
 | `capabilities` (top-level scene-YAML key) | object `capabilities` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Capabilities") | A capability is a property of what the thing is, not where it is placed; closed list, scene may not override. |
-| adapter registry (as a scene-vocabulary term) | resolved by the object library: the scene names objects by `object_id` and the object library answers ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The protocol writes `target` (protocol-side) and the scene names the object by `object_id`; identity resolution is object-side. The runtime [scene registry](#scene-registry) and [capability registry](#capability-registry) remain as runtime maps. |
+| adapter registry (as a scene-vocabulary term) | resolved by the object library: the scene names objects by `object_name` and the object library answers ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The protocol writes `target` (protocol-side) and the scene names the object by `object_name`; identity resolution is object-side. The runtime [scene registry](#scene-registry) and [capability registry](#capability-registry) remain as runtime maps. |
 | named group (as a scene-vocabulary term) | retired with no successor in this vocabulary pass; protocols list explicit subparts | Named groups are deferred. Subparts belong to the object. |
-| `scene object` (as a scene-vocabulary term) | object library entry referenced by [object id](#object-id) | The addressable identity is the [object id](#object-id) (object-side); the in-scene rendering is the [item](#item) (scene-side runtime). |
-| `state_fields`, `render_map` (as scene-vocabulary terms) | object `state_fields`, object `render_map` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The scene declares neither state nor rendering; both are object-owned. |
+| `scene object` (as a scene-vocabulary term) | object library entry referenced by [object name](#object-name) | The addressable identity is the [object name](#object-name) (object-side); the in-scene rendering is the [item](#item) (scene-side runtime). |
+| `state_fields`, `visual_states` (as scene-vocabulary terms) | object `state_fields`, object `visual_states` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The scene declares neither state nor rendering; both are object-owned. |

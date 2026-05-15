@@ -34,10 +34,10 @@ those files.
 - `tools/build_scene_data.py` -- update or replace the build script that
   currently validates the fused scene YAML; it must validate the new
   object and scene formats.
-- Walker / dispatch code that reads the old `items[]` shape (scene
+- Walker / dispatch code that reads the old object shape (scene
   walker, click dispatch, highlight subsystems).
 - Renderer / scene-adapter code that owns SVG manipulation: implement
-  `render_map` resolution from declared `state_fields`; retire the
+  `visual_states` resolution from declared `state_fields`; retire the
   protocol-side `SvgSwap` / `ColorChange` / `LiquidDisplayChange`
   paths in favor of `ObjectStateChange` writes.
 
@@ -58,7 +58,7 @@ those files.
 
 - The walker and dispatch code carry assumptions about the old fused
   shape; a partial migration leaves both shapes alive at once.
-- `render_map` formula evaluation needs a small closed token set per
+- `visual_states` formula evaluation needs a small closed token set per
   RD-7; the runtime must reject unknown tokens (build error) rather
   than silently fall back.
 - Performance regressions on the 96-well plate if every well subpart
@@ -66,7 +66,7 @@ those files.
 
 ## Suggested entry milestone
 
-M1: implement object loading, render_map resolution, and the
+M1: implement object loading, visual_states resolution, and the
 `ObjectStateChange` writer for one small migrated scene end-to-end;
 ship a Playwright walkthrough as evidence; only then fan out to the
 larger scenes and to the dispatch / walker rewrite.

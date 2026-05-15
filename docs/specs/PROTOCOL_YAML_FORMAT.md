@@ -22,26 +22,32 @@ This separation achieves:
 
 ## Where YAML lives
 
-Protocol YAML files are human-authored source content. They live under `src/content/<protocol_name>/` because the build treats them as app source inputs and compiles them into generated TypeScript modules under `generated/` (gitignored). Do not edit `generated/protocol_data.ts` or `generated/inventory_data.ts` by hand; runtime callers consume them via the authored facades `src/protocol.ts` and `src/inventory.ts`. Edit the YAML files and rebuild.
+Protocol YAML files are human-authored source content. They live under `content/<protocol_name>/` and are compiled at build time into generated TypeScript modules. Do not edit generated output files by hand; edit the YAML source files and rebuild.
 
 ## File locations
 
-Protocol-specific YAML files are organized in subfolders under `src/content/`. Each
+Protocol-specific YAML files are organized in subfolders under `content/`. Each
 protocol is self-contained:
 
 ```
-src/content/
-  <protocol_name>/
-    items.yaml        # item definitions
-    reagents.yaml     # reagent definitions
-    protocol.yaml     # protocol steps, parts, and days
+content/
+  protocols/
+    <protocol_name>/
+      protocol.yaml     # protocol steps, parts, and days
+      contents.yaml     # contents (reagents, liquids, cells, waste)
+      scenes/
+        <scene_name>.yaml
+  objects/
+    <object_name>.yaml
+  scenes/
+    <base_scene_name>.yaml
 ```
 
-Each mini-protocol is self-contained under `src/content/<protocol_name>/`:
+Each mini-protocol is self-contained under `content/protocols/<protocol_name>/`:
 
-- `src/content/<protocol_name>/items.yaml`: item definitions
-- `src/content/<protocol_name>/reagents.yaml`: reagent definitions
-- `src/content/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
+- `content/protocols/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
+- `content/protocols/<protocol_name>/contents.yaml`: contents definitions (reagents, liquids, cells, waste)
+- `content/protocols/<protocol_name>/scenes/`: protocol-specific scene overrides
 
 A Python generator at `tools/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
@@ -52,7 +58,7 @@ TypeScript modules:
 ### Multiple protocols
 
 To support future protocols (e.g. western blot, flow cytometry), each protocol is a
-self-contained subfolder under `src/content/`. At build time, specify the protocol:
+self-contained subfolder under `content/protocols/`. At build time, specify the protocol:
 
 ```bash
 python3 tools/build_protocol_data.py --protocol cell_culture
@@ -60,67 +66,16 @@ python3 tools/build_protocol_data.py --protocol western_blot  # future
 ```
 
 The `--protocol` flag defaults to `cell_culture` if omitted. To add a new protocol,
-copy `src/content/cell_culture/` to `src/content/<new_protocol_name>/`, edit the YAML files,
+copy `content/protocols/cell_culture/` to `content/protocols/<new_protocol_name>/`, edit the YAML files,
 and rebuild.
 
-## src/content/&lt;protocol_name&gt;/items.yaml and src/content/&lt;protocol_name&gt;/reagents.yaml
+## content/protocols/&lt;protocol_name&gt;/contents.yaml
 
-Two YAML files handle items and reagents separately. Namespaces are disjoint:
-item ids appear in layout, reagent ids appear in liquid state. An item id is
-what a step `interaction` names as its `target`; a reagent id is what an
-`ObjectStateChange` `scene_operation` writes into an object's flat declared
-`liquid_id` (or `held_liquid_id`) `state_field`.
+The `contents.yaml` file defines the materials used in the protocol: reagents, liquids, cells, waste, mixtures, suspensions, and diluted drugs. Contents are materials currently inside or held by an object. A contents id is what an `ObjectStateChange` `scene_operation` writes into an object's flat declared `contents_name` (or `held_contents_name`) `state_field`.
 
-### Items block
+### Contents block
 
-Each item is a mapping keyed by snake_case id. Required fields vary by role.
-
-#### Item fields (all items)
-
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `label` | string | yes | Display name (shown in UI) |
-| `role` | string | yes | Item category; must be one of the closed set below |
-| `scene` | string | yes | Where the item lives: `cell_culture_hood`, `bench`, `overlay`, `virtual`, or `none` |
-
-#### Item fields (optional by role)
-
-| Field | Type | When required | Description |
-| --- | --- | --- | --- |
-| `asset` | string | when `scene` != `virtual` and `scene` != `none` | SVG asset basename in `assets/equipment/` (no .svg). |
-| `liquidCapable` | boolean | items that hold liquid | whether the item can be filled/emptied |
-| `capacityMl` | number | if `liquidCapable: true` | max volume in mL |
-| `allowedLiquids` | array of strings | if `liquidCapable: true` | list of reagent ids that can be stored (e.g. `[media, pbs, trypsin]`) |
-| `contains` | string | reagent sources only | reagent id currently inside (e.g. `pbs_bottle` contains `pbs`) |
-| `containsAny` | array of strings | when `contains` is insufficient | reagent ids that might be inside (future use) |
-| `visualOnly` | boolean | decoration items | if `true`, exempts the item from "must be referenced by a step" validation rule |
-
-#### Role vocabulary (closed set, validated)
-
-- `transfer_tool`: a pipette used to move liquid (serological, multichannel)
-- `aspirate_tool`: a pipette used to draw off liquid (aspirating pipette)
-- `reagent_source`: a bottle or vial holding a reagent (media_bottle, pbs_bottle)
-- `culture_vessel`: a multi-well plate (well_plate_24, etc.)
-- `cell_container`: a tissue culture vessel (flask)
-- `waste_target`: a disposal container (waste_container)
-- `instrument`: bench equipment (centrifuge, incubator)
-- `modal_tool`: an item used only inside a modal (mtt_vial)
-- `virtual_target`: a documentation marker for items that are not addressable scene objects. **virtual_target items must not be named as an interaction `target`.**
-- `decoration`: visual-only non-interactive item (professor, glove_box)
-
-#### Scene vocabulary (closed set, required)
-
-- `cell_culture_hood`: item renders in the cell culture hood scene
-- `bench`: item renders in the bench scene
-- `overlay`: persistent UI overlay (reserved for professor card)
-- `virtual`: no scene rendering; used only in interaction targets
-- `none`: modal-only item; never rendered in a 2D scene
-
-Note (no-hood-default rule): a mini-protocol may not declare `entry.scene: cell_culture_hood` unless its first authored step is also in the cell culture hood. The pytest gate `tests/test_items_scene_no_hood_default.py` enforces this.
-
-### Reagents block
-
-Each reagent is a mapping keyed by snake_case id. All fields required.
+Each contents entry is a mapping keyed by snake_case name. All fields required.
 
 | Field | Type | Description |
 | --- | --- | --- |
@@ -129,48 +84,15 @@ Each reagent is a mapping keyed by snake_case id. All fields required.
 | `displayColor` | string | CSS hex color code (lowercase, ASCII-only) |
 
 Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
-It is still accurate for current `reagents.yaml`; the canonical schema expresses
-reagent color via the object's flat `liquid_color` `state_field`, written by an
-`ObjectStateChange` and resolved by the object's `render_map`.
+It is still accurate for current `contents.yaml`; the canonical schema expresses
+liquid color via the object's flat `liquid_color` `state_field`, written by an
+`ObjectStateChange` and resolved by the object's `visual_states`.
 
-### Items and reagents example
+### Contents example
 
-src/content/cell_culture/items.yaml:
+content/protocols/cell_culture/contents.yaml:
 ```yaml
-items:
-  serological_pipette:
-    label: "Serological pipette"
-    role: transfer_tool
-    asset: sero_pipette
-    scene: cell_culture_hood
-    liquidCapable: true
-    capacityMl: 10
-    allowedLiquids: [media, pbs, trypsin, cells]
-
-  pbs_bottle:
-    label: "PBS bottle"
-    role: reagent_source
-    asset: pbs_bottle
-    scene: cell_culture_hood
-    liquidCapable: true
-    contains: pbs
-
-  hood_surface:
-    label: "Hood work surface"
-    role: virtual_target
-    scene: virtual
-
-  professor:
-    label: "Professor"
-    role: decoration
-    asset: angry_professor
-    scene: overlay
-    visualOnly: true
-```
-
-src/content/cell_culture/reagents.yaml:
-```yaml
-reagents:
+contents:
   pbs:
     label: "1x PBS"
     colorKey: pbs
@@ -182,7 +104,7 @@ reagents:
     displayColor: "#f7a6b8"
 ```
 
-## src/content/&lt;protocol_name&gt;/protocol.yaml
+## content/protocols/&lt;protocol_name&gt;/protocol.yaml
 
 Three top-level blocks: `parts`, `days`, and `steps`. Parts organize steps by lab workflow
 part; days mark when each part runs. Steps are the runnable units of the protocol.
@@ -226,7 +148,7 @@ Validation rules: `entry.step` must be the id of the first authored step, and `e
 
 ### Learning block example
 
-Example (from `src/content/tutorial_plate_drug_additions/protocol.yaml`):
+Example (from `content/protocols/tutorial_plate_drug_additions/protocol.yaml`):
 
 ```yaml
 learning:
@@ -281,8 +203,8 @@ Optional step-level fields used for display only:
 | --- | --- | --- | --- |
 | `label` | string | no | Short display name shown in the protocol panel. |
 | `why` | string | no | One-line rationale shown under the step card. |
-| `part_id` | string | no | Reference to a part id in the parts block; UI grouping only. |
-| `day_id` | string | no | Reference to a day id in the days block; UI grouping only. |
+| `part_name` | string | no | Reference to a part name in the parts block; UI grouping only. |
+| `day_name` | string | no | Reference to a day name in the days block; UI grouping only. |
 | `step_index` | number | no | 1-based display position within the part. Display order only; never controls flow. |
 | `scene` | string | no | The scene this step's interactions happen in. |
 | `details` | list of strings | no | Short strings rendered as a bulleted side panel beneath the prompt. |
@@ -326,7 +248,7 @@ typed fields. The full per-primitive field list lives in
 are reclassified out of the protocol-level set into the object/render layer.
 `LiquidDisplayChange` and `SetPointDisplayChange` are reclassified the same way:
 liquid and set-point state mutation are expressed through `ObjectStateChange`
-against the object's flat declared fields, and the object's `render_map`
+against the object's flat declared fields, and the object's `visual_states`
 resolves how they appear. The protocol writes semantic state through
 `ObjectStateChange` and never names an SVG asset id, a color value, a liquid
 display update, or a set-point display update. The PascalCase type names are
@@ -380,7 +302,7 @@ The protocol YAML is geometry-free: it names no plate, no well, no tube,
 no row, and no coordinate. Subparts of a structured object (wells, lanes,
 slots) are declared by the object via `structure.subparts`; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). A protocol addresses one
-subpart as `<object_id>.<subpart_id>` (for example `treatment_plate.A1`).
+subpart as `<object_name>.<subpart_name>` (for example `treatment_plate.A1`).
 Named groups are deferred from this vocabulary pass; a step that acts on
 several subparts emits one interaction per subpart. The retired
 `plateTargets` and `tubeTargets` fields pushed plate and tube geometry
@@ -417,8 +339,8 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_liquid_id: pbs
-                  held_liquid_volume: 4
+                  held_contents_name: pbs
+                  held_contents_volume: 4
             feedback:
               correct: PBS loaded.
               incorrect: Use the PBS bottle.
@@ -430,19 +352,19 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_liquid_id: null
-                  held_liquid_volume: 0
+                  held_contents_name: null
+                  held_contents_volume: 0
               - type: ObjectStateChange
                 target: flask
                 state:
-                  liquid_id: pbs
-                  liquid_volume: 4
+                  contents_name: pbs
+                  contents_volume: 4
       step_validator:
         preset: final_state_matches
         target: flask
         contains:
-          liquid_id: pbs
-          liquid_volume: 4
+          contents_name: pbs
+          contents_volume: 4
       outcome:
         on_success: complete
         on_failure: retry
@@ -481,7 +403,7 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 - `entry_step` names a declared step. `next_step` names a declared step or
   is `null`. Exactly one step has `next_step: null` (the terminal step).
 - Walking `next_step` from `entry_step` visits every step (no orphans).
-- `part_id` and `day_id`, when present, reference declared `parts` and
+- `part_name` and `day_name`, when present, reference declared `parts` and
   `days`.
 - `scene`, when present, names a declared scene.
 
@@ -490,7 +412,7 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 - Every `interaction` carries exactly the four slots `target`, `gesture`,
   `validator`, and `response`.
 - Every `target` value resolves to a scene object or to a declared subpart
-  of a structured object (`<object_id>.<subpart_id>`) through the scene's
+  of a structured object (`<object_name>.<subpart_name>`) through the scene's
   adapter registry; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) and
   [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Named groups are deferred;
   explicit subparts only.
@@ -517,13 +439,10 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 - ASCII-only across all YAML. UTF-8 glyphs escaped per [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md)
   (e.g. `&alpha;`, `&micro;`).
-- Every item in items.yaml must be referenced by at least one step (as an
-  interaction `target`) OR have `visualOnly: true`. Catches dead inventory.
-- Every reagent in reagents.yaml must be referenced by at least one
-  `scene_operation` (an `ObjectStateChange` writing the reagent id into
-  an object's flat `liquid_id` or `held_liquid_id` `state_field`; the
-  field's declared `enum` `allowed` list is the binding reference) or
-  item `contains` field. Catches dead reagents.
+- Every contents entry in contents.yaml must be referenced by at least one
+  `scene_operation` (an `ObjectStateChange` writing the contents name into
+  an object's flat `contents_name` or `held_contents_name` `state_field`; the
+  field's declared `enum` `allowed` list is the binding reference). Catches dead contents.
 
 ## Generated TypeScript surface
 
@@ -584,23 +503,23 @@ immutability at compile time.
 Every cross-reference uses snake_case ids, never display labels. Labels are free to
 change without breaking the build; ids are durable.
 
-## Item vs reagent namespace
+## Contents reference model
 
-The two namespaces are intentionally disjoint:
+Contents entries are referenced in protocol steps through `ObjectStateChange`
+`scene_operations`. An `ObjectStateChange` targeting an object or subpart
+writes contents names into the object's flat liquid `state_fields`
+(`contents_name`, `held_contents_name`):
 
-- **Only item ids** appear as interaction `target` values, in scene layout,
-  and in asset specs.
-- **Only reagent ids** appear written into an object's flat liquid
-  `state_field` (`liquid_id`, `held_liquid_id`) by an `ObjectStateChange`,
-  and in item `contains` fields.
-- An `ObjectStateChange` `scene_operation` that writes liquid state
-  references both an item id and a reagent id: `target:
-  serological_pipette` (item id) plus `state: { held_liquid_id: pbs,
-  held_liquid_volume: 4 }` (reagent id in the flat field). The builder
-  verifies that a source item's `contains` matches the reagent id it is
-  drawn for.
+```yaml
+- type: ObjectStateChange
+  target: serological_pipette
+  state:
+    held_contents_name: pbs
+    held_contents_volume: 4
+```
 
-This prevents accidental name collisions and catches copy-paste errors at build time.
+The builder verifies that every contents name written by an `ObjectStateChange`
+is declared in the protocol's `contents.yaml` file.
 
 ## See also
 

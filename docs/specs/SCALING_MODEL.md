@@ -27,16 +27,17 @@ These values are tuned so that:
 
 ## How sizing works
 
-1. Item definition includes `displayWidthCm` in `src/content/cell_culture/items.yaml`:
+1. Object definition includes display sizing in `content/objects/<object_name>.yaml`:
    ```yaml
    centrifuge:
-     displayWidthCm: 60  # 60 cm (exaggerated, real ~40cm)
+     layout:
+       displayWidthCm: 60  # 60 cm (exaggerated, real ~40cm)
    ```
 
-2. The value is compiled into `EQUIPMENT` in `generated/inventory_data.ts`
-   (gitignored; consumed via the `src/inventory.ts` facade).
+2. The value is compiled into object metadata in `generated/object_data.ts`
+   (gitignored; consumed via the runtime object registry).
 
-3. Scene YAML under `src/scenes/<scene>/<scene>.yaml` (bench and hood)
+3. Scene YAML under `content/scenes/<base_scene_name>.yaml` (bench and hood)
    together with the layout engine compute `widthScale` from `displayWidthCm`:
    ```typescript
    widthScale = computeWidthScaleFromDisplay(displayWidthCm, scene, defaultWidth)
@@ -48,40 +49,44 @@ These values are tuned so that:
    ```
    where `pxPerScenePercent = 11.52` (empirical: 1280px viewport, 90% usable = 1152px)
 
-5. Layout engine uses `widthScale` to render items at the computed size
+5. Layout engine uses `widthScale` to render objects at the computed size
 
-## Adding a new item
+## Adding a new object
 
-1. Add to `src/content/cell_culture/items.yaml` with `displayWidthCm`:
+1. Create or update `content/objects/<object_name>.yaml` with layout fields:
    ```yaml
    my_instrument:
+     name: my_instrument
      label: "My Instrument"
-     ...
-     displayWidthCm: 45
+     layout:
+       displayWidthCm: 45
    ```
 
-2. Rebuild with `bash build_game.sh` (generates `inventory_data.ts`)
+2. Rebuild with `bash build_game.sh` (generates object metadata)
 
-3. Add to scene config (e.g., `bench_config.ts`):
-   ```typescript
-   { id: 'my_instrument', ..., widthScale: getHoodItemWidthScale('my_instrument', 10), ... }
+3. Add to scene placement in the relevant `content/scenes/` or `content/protocols/<protocol_name>/scenes/`:
+   ```yaml
+   items:
+     - object_name: my_instrument
+       zone: bench
+       depthTier: 1
    ```
 
 4. Test with `source source_me.sh && python3 tools/run_protocol_walkthrough.py` to ensure layout fits
 
 ## Current fallback behavior
 
-Items **without** `displayWidthCm` fall back to hardcoded `widthScale` values in scene configs:
+Objects **without** `layout.displayWidthCm` fall back to hardcoded `widthScale` values in scene configs:
 ```typescript
 const legacyScales: Record<string, number> = {
   tip_box: 0.80,
-  // ... other items
+  // ... other objects
 };
 ```
 
-To migrate an item to `displayWidthCm`:
-1. Add `displayWidthCm` to `src/content/cell_culture/items.yaml`
-2. Remove the item from `legacyScales`
+To migrate an object to `layout.displayWidthCm`:
+1. Add `layout.displayWidthCm` to `content/objects/<object_name>.yaml`
+2. Remove the object from `legacyScales`
 3. Verify layout with tests
 
 ## Tuning displayCm values

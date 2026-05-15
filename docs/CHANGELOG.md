@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-05-15 (vocabulary audit sweep: retired-terms inventory and spec-consistency gates - WP-F1)
+
+### Additions and New Features
+- **`docs/specs/SPEC_DESIGN_CHECKLIST.md` extended**: Added four new checklist smell classes with examples and severity labels covering vocabulary drift:
+  - RD-10 (semantic vs runtime): Flag authored YAML that uses runtime implementation terms (prefixes, coordinates, element names, internal state names) instead of semantic author vocabulary (object_name, scene_name, contents_name).
+  - RD-13 (layer boundaries): Flag author vocabulary that mixes protocol layer (intent), object layer (state and visual), and scene layer (placement and geometry). Protocol must not name assets; scene must not name protocol steps; object must not read protocol sequencing.
+  - RD-14 (closed visual variants): Objects declare closed `visual_states` enumeration only; no generic `render_map`, `render_config`, templating, expressions, or metadata escape hatches.
+  - RD-15 (retired-terms closure): Sweepable audit table with fifteen retired-term renames and seven retired-field removals, guarded in examples and new authoring.
+- **Retired-terms closure table (SPEC_DESIGN_CHECKLIST.md RD-15)**: Fifteen author-YAML renames documented as ratified migrations (liquid_id -> contents_name, object_id -> object_name, render_map -> visual_states, etc.). Seven retired authored fields documented as removed (element_id, liquid_color authored separately, inventory_ref, items.yaml, reagents.yaml, src/content/<protocol>/). Enables systematic sweep validation in future spec audits.
+
+### Behavior or Interface Changes
+- **Author-YAML semantic renaming (vocabulary closure WP-F1)**: Author-written YAML migrates from runtime-oriented naming to semantic author vocabulary:
+  - liquid-state fields: `liquid_id` / `held_liquid_id` -> `contents_name` / `held_contents_name` (reflects semantic scope: reagents, waste, media, cells, mixtures, suspensions, drugs).
+  - volume fields: `liquid_volume` / `held_liquid_volume` -> `contents_volume` / `held_contents_volume`.
+  - identity fields: `object_id` -> `object_name`, `scene_id` -> `scene_name`, `placement_id` -> `placement_name`, `subpart_id` -> `subpart_name`, `step_id` -> `step_name`, `protocol_id` -> `protocol_name`, `part_id` -> `part_name`, `day_id` -> `day_name` (closure: all identity fields use _name suffix, not _id).
+  - asset identity: `asset_id` -> `asset_name`, `overlay_id` -> `overlay_name` (consistency with subparts and elements).
+  - rendering surface: `render_map` -> `visual_states` (emphasizes closed enumeration, not generic template or expression engine).
+- **Authoring layout restructure**: Authored content relocates from protocol-centric `src/content/<protocol_name>/` to multi-layer organization under `content/`: protocols to `content/protocols/<protocol_name>/{protocol.yaml, contents.yaml, scenes/}`, shared objects to `content/objects/`, shared scenes to `content/scenes/`.
+- **Contents registry unification**: `items.yaml` and `reagents.yaml` consolidated into `contents.yaml` reflecting unified semantic scope (reagents, waste, media, cells, mixtures, suspensions, drugs, not separate item/reagent categories).
+
+### Removals and Deprecations
+- **Dropped authored fields**: `element_id` (runtime derives mount identifier as `${scene_name}-scene`); `liquid_color` as authored state field (color derived from `contents_name` via object `visual_states`); scene-placement `label` / `short_label` overrides (use scene-global naming); `inventory_ref` (inventory external to author YAML).
+- **Retired authored files**: `items.yaml`, `reagents.yaml` (merged into `contents.yaml`).
+- **Retired path structure**: `src/content/<protocol_name>/` (moved to `content/protocols/<protocol_name>/`).
+- **Retired rendering surface**: `render_map` (replaced by closed `visual_states` enumeration; no generic template, expression, or metadata-blob rendering engine).
+
 ## 2026-05-15 (scene_object_split: three-vocabulary model close-out - WP-EV1 through WP-DOC-C1)
 
 ### Additions and New Features

@@ -11,12 +11,12 @@ Related references:
 - [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms and the
   retired-terms table.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): full schema for
-  `items.yaml`, `reagents.yaml`, and `protocol.yaml`.
+  `contents.yaml` and `protocol.yaml`.
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md): the step model and runtime
   resolution.
 - [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md): the scene placement schema.
 - [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md): canonical object terms
-  (`state_fields`, `render_map`, structured surfaces and subparts) the
+  (`state_fields`, `visual_states`, structured surfaces and subparts) the
   protocol's `target` names resolve against.
 - [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
   (canonical real-UI regression test).
@@ -33,17 +33,19 @@ A developer smoke protocol is a very small diagnostic protocol used to check tha
 
 ## What a protocol is
 
-A protocol is a self-contained folder under `src/content/<protocol_name>/`
-with three files:
+A protocol is a self-contained folder under `content/protocols/<protocol_name>/`
+with files:
 
 ```
-src/content/<protocol_name>/
-  items.yaml      # physical game items (pipettes, bottles, flasks, ...)
-  reagents.yaml   # liquids and their colors
-  protocol.yaml   # parts, days, and the ordered list of steps
+content/protocols/<protocol_name>/
+  protocol.yaml     # parts, days, and the ordered list of steps
+  contents.yaml     # liquids, reagents, cells, waste, and other materials
+  scenes/
+    <scene_name>.yaml     # protocol-specific scene overrides (optional)
 ```
 
-A mini-protocol is a focused subprotocol that teaches and verifies one
+Shared objects live in `content/objects/`. Protocol scenes place them under
+`content/protocols/<protocol_name>/scenes/`. A mini-protocol is a focused subprotocol that teaches and verifies one
 smaller workflow. Every mini-protocol must define a `learning` block with
 required fields `objectives`, `outcomes`, and `goals`, and an `entry` block
 that declares the initial scene and first step. Larger protocols may be
@@ -85,21 +87,16 @@ individual gestures live inside it in the ordered `sequence`. Each
 (`click`, `drag`, `adjust`, `select`, `type`) are in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
-## Writing items.yaml and reagents.yaml
+## Writing contents.yaml
 
-`items.yaml` declares every physical item the protocol references. Each
-item has a unique snake_case id, a `label`, a `role` from the closed set,
-a `scene`, and (for everything except `virtual` and `none` scenes) an
-`asset` basename. An item id is what a step `interaction` names as its
-`target`.
-
-`reagents.yaml` declares every liquid the protocol references. Each reagent
-has a `label`, a `colorKey`, and a `displayColor`. A reagent id is what an
+`contents.yaml` declares every material the protocol references: reagents,
+liquids, cells, waste, mixtures, suspensions, diluted drugs, or other
+contents. Each contents entry has a unique snake_case name, a `label`,
+a `colorKey`, and a `displayColor`. A contents name is what an
 `ObjectStateChange` `scene_operation` writes into an object's flat declared
-`liquid_id` (or `held_liquid_id`) `state_field`. Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+`contents_name` (or `held_contents_name`) `state_field`. Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
-The full `items.yaml` and `reagents.yaml` field tables, the closed `role`
-set, and the cross-file validation rules are in
+The full `contents.yaml` field tables and cross-file validation rules are in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 
 ## Writing protocol.yaml
@@ -134,8 +131,8 @@ multi-gesture case:
           - type: ObjectStateChange
             target: serological_pipette
             state:
-              held_liquid_id: pbs
-              held_liquid_volume: 4
+              held_contents_name: pbs
+              held_contents_volume: 4
         feedback:
           correct: PBS loaded.
           incorrect: Use the PBS bottle.
@@ -147,19 +144,19 @@ multi-gesture case:
           - type: ObjectStateChange
             target: serological_pipette
             state:
-              held_liquid_id: null
-              held_liquid_volume: 0
+              held_contents_name: null
+              held_contents_volume: 0
           - type: ObjectStateChange
             target: flask
             state:
-              liquid_id: pbs
-              liquid_volume: 4
+              contents_name: pbs
+              contents_volume: 4
   step_validator:
     preset: final_state_matches
     target: flask
     contains:
-      liquid_id: pbs
-      liquid_volume: 4
+      contents_name: pbs
+      contents_volume: 4
   outcome:
     on_success: complete
     on_failure: retry
@@ -224,7 +221,7 @@ The protocol YAML is geometry-free: it names no plate, no well, no row,
 no x/y. Subparts of a structured object (wells, lanes, slots) are declared
 by the object via `structure.subparts` (see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). A protocol addresses a
-single subpart as `<object_id>.<subpart_id>` (for example
+single subpart as `<object_name>.<subpart_name>` (for example
 `treatment_plate.A1`).
 
 Named groups are deferred from this vocabulary pass: a step that acts on
@@ -251,8 +248,8 @@ wells in row B:
           - type: ObjectStateChange
             target: treatment_plate.B1
             state:
-              liquid_id: media
-              liquid_volume: 100
+              contents_name: media
+              contents_volume: 100
     - target: treatment_plate.B2
       gesture: click
       validator: { preset: correct_target }
@@ -261,12 +258,12 @@ wells in row B:
           - type: ObjectStateChange
             target: treatment_plate.B2
             state:
-              liquid_id: media
-              liquid_volume: 100
+              contents_name: media
+              contents_volume: 100
   step_validator:
     preset: final_state_matches
     target: treatment_plate.B2
-    contains: { liquid_id: media }
+    contains: { contents_name: media }
   outcome:
     on_success: complete
     on_failure: retry
@@ -309,8 +306,8 @@ an `ObjectStateChange` writing the pipette's flat declared liquid fields:
       - type: ObjectStateChange
         target: serological_pipette
         state:
-          held_liquid_id: pbs
-          held_liquid_volume: 4
+          held_contents_name: pbs
+          held_contents_volume: 4
 ```
 
 ### Step-level domain verb: `wash`
@@ -318,10 +315,10 @@ an `ObjectStateChange` writing the pipette's flat declared liquid fields:
 `wash` is shorthand for a whole `sequence` plus its `step_validator`. "Wash
 the flask with 4 mL PBS" expands to the three-interaction `pbs_wash` step
 shown in "A worked step" above: pick up the pipette (`CursorAttach`), draw
-the PBS (`ObjectStateChange` writing `held_liquid_id` and
-`held_liquid_volume`), dispense into the flask (`ObjectStateChange`
-clearing the pipette's `held_liquid_*` fields and writing the flask's
-`liquid_id` and `liquid_volume`), checked by a `final_state_matches`
+the PBS (`ObjectStateChange` writing `held_contents_name` and
+`held_contents_volume`), dispense into the flask (`ObjectStateChange`
+clearing the pipette's `held_contents_*` fields and writing the flask's
+`contents_name` and `contents_volume`), checked by a `final_state_matches`
 `step_validator`.
 
 When you write a protocol, think in domain verbs, then write the expanded
@@ -356,7 +353,7 @@ Run through this checklist for every step you write.
   skill into a rote `click`.
 - **Targets are semantic and geometry-free.** Write a semantic `target`
   name; never write a well coordinate, a row range, or an x/y. A subpart
-  of a structured object is written as `<object_id>.<subpart_id>` (named
+  of a structured object is written as `<object_name>.<subpart_name>` (named
   groups are deferred; emit one interaction per subpart).
 - **Validators are named presets.** Every `validator` and `step_validator`
   is a preset from the documented library, with that preset's typed
@@ -368,10 +365,9 @@ Run through this checklist for every step you write.
   `on_failure`. The bare-scalar form is rejected.
 - **Flow is named.** `next_step` names the next step by its `name`, or is
   `null` for a terminal step. `entry_step` names the first step.
-- **Referenced items and reagents exist.** Every interaction `target`
-  resolves to a declared item or a declared subpart of a structured object;
-  every reagent id written by an `ObjectStateChange` into a flat liquid
-  `state_field` (`liquid_id`, `held_liquid_id`) exists in `reagents.yaml`.
+- **Referenced contents exist.** Every contents name written by an
+  `ObjectStateChange` into a flat liquid `state_field` (`contents_name`,
+  `held_contents_name`) exists in `contents.yaml`.
 - **No retired vocabulary.** Do not use `completionPath`, the four-`kind`
   taxonomy, `plateTargets`, `tubeTargets`, `stateChange`, `completionEvent`,
   `nextId`, the overloaded `action`, or "click target". The full retired

@@ -15,7 +15,7 @@ state, and the state-to-visual map live in object YAML
 state-mutating operations live in protocol YAML
 ([PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)).
 
-Object identity, state_fields, render_map, and capabilities are declared
+Object identity, state_fields, visual_states, and capabilities are declared
 object-side and do not appear on the scene side. Named groups are deferred.
 Each scene `items[]` entry is replaced by a `placements[]` entry that
 references an object by id and carries only placement and instance-override
@@ -84,9 +84,8 @@ keys. The "Section" column links to the per-section detail below.
 
 | Field | Type | Required | Section |
 | --- | --- | --- | --- |
-| `scene_id` | string | yes | [Scene identity](#scene-identity) |
+| `scene_name` | string | yes | [Scene identity](#scene-identity) |
 | `workspace` | string | yes | [Scene identity](#scene-identity) |
-| `element_id` | string | no | [Scene identity](#scene-identity) |
 | `capabilities` | list of string | yes | [Capability names](#capability-names) |
 | `background` | mapping | no | [Background](#background) |
 | `scene_bounds` | mapping | yes | [Scene bounds](#scene-bounds) |
@@ -111,9 +110,10 @@ These are scene-side fields; they are not object identity.
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
-| `scene_id` | string | yes | Stable scene id. Must match the scene directory name and the adapter `sceneId`. |
+| `scene_name` | string | yes | Stable scene name. Must match the scene directory name and the adapter `sceneId`. |
 | `workspace` | string | yes | Workspace family this scene targets (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, `dedicated_plate`). Today advisory; the field is required so future selectors and telemetry have a stable name. |
-| `element_id` | string | no | DOM element id where the scene driver attaches its capture-phase click listener. Defaults to `${scene_id}-scene` if absent. Used today by the `cell_culture_hood` scene (`hood-scene`) and the `microscope` scene (`instrument-overlay`). |
+
+At runtime, the scene driver derives the DOM mount element id as `${scene_name}-scene`. This is an internal runtime handle, not an authored YAML field. Scenes that use a custom DOM id (such as the `cell_culture_hood` scene using `hood-scene`) override this mapping through a separate, non-YAML configuration path.
 
 ## Background
 
@@ -123,7 +123,7 @@ interactive and carries no state. A clickable region that authors might once
 have drawn into the background image (a sink, a benchtop edge, a tool drop
 zone) is not a background sub-field. It is an object placed over the
 backdrop through `placements[]`; the object library declares what the
-region is (identity, capabilities such as `clickable`, `render_map`).
+region is (identity, capabilities such as `clickable`, `visual_states`).
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
@@ -131,7 +131,7 @@ region is (identity, capabilities such as `clickable`, `render_map`).
 | `background.bounds` | mapping (rect) | no | Optional explicit bounds (`left`, `right`, `top`, `bottom`, percent of scene). Defaults to the scene's `scene_bounds`. |
 
 The cleaned scene YAML never declares clickable behavior on the background
-and never attaches state, capabilities, or a render_map to it. State and
+and never attaches state, capabilities, or visual_states to it. State and
 behavior live on objects; see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 
@@ -190,37 +190,35 @@ a single `bounds` rect plus `align`; the gap budget is folded into
 
 ## Placements
 
-A placement entry references one object from the object library by id and
+A placement entry references one object from the object library by name and
 states where that placement goes inside a zone. The placement does not
-declare object identity, structure, `state_fields`, `render_map`, or
+declare object identity, structure, `state_fields`, `visual_states`, or
 `capabilities`; those belong to the object definition (see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)).
 
 A placement may carry a small bounded set of instance overrides:
-`label`, `short_label`, and the layout hints `default_width`, `label_width`,
+the layout hints `default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, and `anchor_y`. A placement may not
 override identity (`id`, `kind`, `inventory_ref`), `state_fields`,
-`render_map`, or `capabilities`. The boundary rule is authoritative;
+`visual_states`, or `capabilities`. The boundary rule is authoritative;
 see [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) for the full
 object-side field list and which fields may be overridden.
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
-| `placement_id` | string | yes | Stable per-scene id for this placement. Distinct from `object_id`: a scene may place the same object more than once, and each placement needs its own scene-scoped id (for example two `dilution_tube_rack` instances). |
-| `object_id` | string | yes | Id of the object in the object library. The object resolves identity, structure, `state_fields`, `render_map`, and `capabilities`. |
+| `placement_name` | string | yes | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name (for example two `dilution_tube_rack` instances). |
+| `object_name` | string | yes | Name of the object in the object library. The object resolves identity, structure, `state_fields`, `visual_states`, and `capabilities`. |
 | `zone` | string | yes | Zone id this placement belongs to. Must match a declared `zones[].id`. |
 | `depth_tier` | int | no | Numeric layering hint within the zone (front-to-back ordering). |
 | `align_stop` | enum | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. |
 | `baseline_override` | number (float or int) | no | Per-placement baseline override (rare; one observed use). |
-| `label` | string | no | Instance override of the object's default label. |
-| `short_label` | string | no | Instance override of the object's default short label. |
 | `layout` | mapping | no | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
 
 Notes:
 
 - A placement may not declare or modify subparts; those are
-  object structure. Named groups are deferred.
-- A placement may not declare state or a render_map; the object owns state
+  object structure; the scene never authors `subpart_name`. Named groups are deferred.
+- A placement may not declare state or visual_states; the object owns state
   and rendering, and the protocol mutates state semantically through
   `ObjectStateChange` (see
   [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)).
@@ -231,8 +229,8 @@ Example placement:
 
 ```yaml
 placements:
-  - placement_id: hood_flask
-    object_id: t75_flask
+  - placement_name: hood_flask
+    object_name: t75_flask
     zone: back_row
     depth_tier: 4
     align_stop: center
@@ -251,31 +249,31 @@ worked examples, see [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md).
 
 The five inheritance keys are:
 
-- `extends` -- base scene id (required in an extending scene)
+- `extends` -- base scene name (required in an extending scene)
 - `add_placements` -- new placements declared by the protocol scene
-- `reposition_placements` -- reposition inherited placements by placement_id
-- `deactivate_placements` -- deactivate inherited placements by placement_id
-- `remove_placements` -- remove inherited placements by placement_id
+- `reposition_placements` -- reposition inherited placements by placement_name
+- `deactivate_placements` -- deactivate inherited placements by placement_name
+- `remove_placements` -- remove inherited placements by placement_name
 
-Base placements must declare a stable `placement_id` so that mutation
+Base placements must declare a stable `placement_name` so that mutation
 operations can select them reliably.
 
 Example protocol scene extending a base:
 
 ```yaml
-scene_id: hood_flask_prep_hood_setup
+scene_name: hood_flask_prep_hood_setup
 extends: hood_basic
 add_placements:
-  - placement_id: flask_center
-    object_id: t25_flask
+  - placement_name: flask_center
+    object_name: t25_flask
     zone: center
 reposition_placements:
-  - placement_id: hood_waste_container
+  - placement_name: hood_waste_container
     zone: rear_right_far
 deactivate_placements:
-  - placement_id: hood_ethanol_bottle
+  - placement_name: hood_ethanol_bottle
 remove_placements:
-  - placement_id: hood_optional_water_bath
+  - placement_name: hood_optional_water_bath
 ```
 
 ## Layout rules
@@ -356,11 +354,11 @@ object YAML. This is the closed six-capability set.
 | Capability id | Purpose | Status |
 | --- | --- | --- |
 | `itemWorkspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | ACTIVE; consumes `placements` and `zones`. |
-| `modalWorkspace` | Modal-screen scenes (microscope, plate, plate_reader). Validates only `scene_id`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-| `instrumentWorkspace` | Instrument workspace (microscope automated counter). Validates only `scene_id`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
+| `modalWorkspace` | Modal-screen scenes (microscope, plate, plate_reader). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
+| `instrumentWorkspace` | Instrument workspace (microscope automated counter). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
 | `gridCountingWorkspace` | Grid-quadrant counting (manual hemocytometer). Validates an optional `quadrants` array. | ACTIVE for declaration and click routing; per-scene `quadrants` block is RESERVED. |
-| `incubatorWorkspace` | Incubator overlay flow. Validates only `scene_id`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-| `plateReaderWorkspace` | Plate-reader modal (results table). Validates only `scene_id`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
+| `incubatorWorkspace` | Incubator overlay flow. Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
+| `plateReaderWorkspace` | Plate-reader modal (results table). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
 
 A seventh capability id, `liquidTransfer`, is whitelisted in the validator
 but is not yet implemented as a capability module and is not declared by any
@@ -398,7 +396,7 @@ Gaps not validated today:
 - Cross-references against `inventory_data.ts` are not validated.
 
 The validator will replace the
-`items[]` rules with `placements[]` rules: every `placement.object_id`
+`items[]` rules with `placements[]` rules: every `placement.object_name`
 must resolve against the object library, every `placement.zone` must match
 a declared `zones[].id`, and per-placement override fields must be in the
 override surface.
@@ -412,9 +410,9 @@ removes, renames, or relocates.
 
 | Fused-format key | New home | Notes |
 | --- | --- | --- |
-| `sceneId` | Scene YAML: renamed to `scene_id` | Scene identity. |
+| `sceneId` | Scene YAML: renamed to `scene_name` | Scene identity. |
 | `workspace` | Scene YAML: unchanged | Scene identity. |
-| `elementId` | Scene YAML: renamed to `element_id` | Scene identity. |
+| `elementId` | retired from author YAML; runtime-derived as `${scene_name}-scene` | Scenes with custom DOM ids (such as `cell_culture_hood`) override this through non-YAML configuration. |
 | `capabilities` | Scene YAML for capability declarations; object capabilities move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) | The scene-side list still declares which capability modules mount. Object affordance tags (`clickable`, `liquid_container`, `instrument_with_setpoint`, `structured_surface`, `decoration_only`) are object-owned per the boundary rule; a scene placement may not override them. |
 | `items` | Split: identity sub-fields move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md); placement sub-fields stay scene-side as `placements[]` | See the per-sub-field table below. |
 | `zones` | Scene YAML: unchanged shell, sub-fields restructured to `bounds` plus `align` | The `x0`/`x1`/`baseline` triple is replaced by a single `bounds` rect; `gap` folds into `layout_rules.zone_gap`. |
@@ -422,18 +420,18 @@ removes, renames, or relocates.
 | `layoutRules` | Scene YAML: renamed to `layout_rules` | snake_case sub-fields. |
 | `accentRules` | Scene YAML: renamed to `accent_rules` | Reserved. |
 | `tabStops` | Removed | Not observed. Tab-stop behavior is expressed via `zone.align: tab-stops` plus per-placement `align_stop`. |
-| `target_groups` | Removed | Named groups are deferred. Subparts belong to the object; protocols list explicit subparts (`<object_id>.<subpart_id>`). |
+| `target_groups` | Removed | Named groups are deferred. Subparts belong to the object; protocols list explicit subparts (`<object_name>.<subpart_name>`). |
 | `wrongOrderMessage` | Scene YAML: renamed to `wrong_order_message`, sub-key renamed to `toast_duration_ms` | Scene-level UI feedback. |
 
 ### items[] sub-fields
 
 | Fused-format sub-field | New home | Notes |
 | --- | --- | --- |
-| `id` | Object YAML: object `id`. Scene placement carries its own `placement_id`. | A scene may place the same object more than once; placement id and object id are now distinct. |
+| `id` | Object YAML: object `id`. Scene placement carries its own `placement_name`. | A scene may place the same object more than once; placement name and object name are now distinct. |
 | `label` | Object YAML: object `label`. A scene placement may override via `placement.label`. | Identity-class default lives object-side. |
-| `shortLabel` | Object YAML: object `short_label`. A scene placement may override via `placement.short_label`. | |
+| `shortLabel` | Object YAML: object `short_label`. A scene placement may override via `placement.short_label`. | Object-owned label; placement-side override is retired. |
 | `kind` | Object YAML: object `kind` (closed enum). | A scene placement may not override identity. |
-| `svgAsset` | Object YAML: resolved through object `render_map`; not authored as a literal field. | The object owns SVG manipulation. The protocol never names an SVG asset id. |
+| `svgAsset` | Object YAML: resolved through object `visual_states`; not authored as a literal field. | The object owns SVG manipulation. The protocol never names an SVG asset id. |
 | `inventoryRef` | Object YAML: object `inventory_ref`. | A scene placement may not override identity. |
 | `anchorY` | Object YAML: object `layout.anchor_y` (layout hint). A scene placement may override via `placement.layout.anchor_y`. | A serological pipette is anchored at its tip wherever it is placed; the default belongs to the object. |
 | `widthScale` | Object YAML default: object `layout.width_scale`. A scene placement may override via `placement.layout.width_scale`. | Single object-side field with a bounded scene-side override surface. |
@@ -458,14 +456,14 @@ objects is a design decision. Either way the scene side carries placements.
 The following identifiers are explicitly object-side or protocol-side in the
 cleaned vocabulary and must not be authored in scene YAML:
 
-- `state_fields`, `render_map`, `structure`,
+- `state_fields`, `visual_states`, `structure`,
   `capabilities` (the object affordance tags) -- object YAML; see
   [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 - `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`,
   `TimedWait` -- protocol primitives; see
   [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 - `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange` --
-  object/render-layer mechanisms invoked by the object's `render_map`; these never appear as
+  object/render-layer mechanisms invoked by the object's `visual_states`; these never appear as
   authored slots in either scene YAML or protocol YAML.
   `SvgSwap` and `ColorChange` are render-layer mechanisms; `LiquidDisplayChange` and `SetPointDisplayChange` are likewise render-layer concerns.
   The protocol-side primitive for liquid and set-point mutation is
@@ -483,9 +481,9 @@ cleaned vocabulary and must not be authored in scene YAML:
 - No defensive defaults that hide missing required fields. A missing
   required field must fail the build loudly, not silently fall back.
 - No object identity (`id`, `kind`, `inventory_ref`), `state_fields`,
-  `render_map`, or object affordance capabilities. These are
+  `visual_states`, or object affordance capabilities. These are
   object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). No `target_groups` either; named groups are deferred.
-- No SVG asset ids and no color values. The object's `render_map` is the
+- No SVG asset ids and no color values. The object's `visual_states` is the
   only authoring surface that resolves a state value to an asset or color.
 - No protocol primitives or step content. Steps and `ObjectStateChange`
   live in [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
@@ -497,7 +495,7 @@ cleaned vocabulary and must not be authored in scene YAML:
 Minimal scene (modal overlay, no placements):
 
 ```yaml
-scene_id: incubator
+scene_name: incubator
 workspace: modal_overlay
 capabilities:
   - incubatorWorkspace
@@ -519,7 +517,7 @@ wrong_order_message:
 Scene with placements and a background:
 
 ```yaml
-scene_id: bench
+scene_name: bench
 workspace: equipment_bench
 capabilities:
   - itemWorkspace
@@ -542,20 +540,18 @@ zones:
     align: tab-stops
 
 placements:
-  - placement_id: bench_centrifuge
-    object_id: centrifuge
+  - placement_name: bench_centrifuge
+    object_name: centrifuge
     zone: mid_bench
     depth_tier: 1
     align_stop: left
-  - placement_id: bench_water_bath
-    object_id: water_bath
+  - placement_name: bench_water_bath
+    object_name: water_bath
     zone: mid_bench
     depth_tier: 2
     align_stop: left
-    label: 37C Water Bath
-    short_label: Water Bath
-  - placement_id: bench_tip_box
-    object_id: tip_box
+  - placement_name: bench_tip_box
+    object_name: tip_box
     zone: back_shelf
     depth_tier: 1
     align_stop: left
@@ -569,7 +565,7 @@ wrong_order_message:
   toast_duration_ms: 2000
 ```
 
-Each placement names an object from the object library by `object_id` and
+Each placement names an object from the object library by `object_name` and
 states where it goes; the object library file resolves identity, the
 state-to-visual map, and capabilities.
 
@@ -578,7 +574,7 @@ state-to-visual map, and capabilities.
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical scene-system terms.
 - [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) - Canonical object terms.
 - [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object library YAML
-  schema (the target of every scene `placements[].object_id`).
+  schema (the target of every scene `placements[].object_name`).
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) - Protocol YAML
   schema; declares steps and `ObjectStateChange`.
 - [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) - How the layout engine consumes

@@ -258,7 +258,7 @@ single-file parity snapshot lives under
 | [TODO.md](TODO.md) | Backlog scratchpad |
 | [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) | Canonical protocol vocabulary (what should happen) |
 | [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md) | Protocol YAML schema reference |
-| [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary (what a thing is, state_fields, render_map, structured subparts) |
+| [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary (what a thing is, state_fields, visual_states, structured subparts) |
 | [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) | Object-definition YAML schema reference |
 | [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) | Scene YAML schema reference (cleaned to scene-side placement only; object identity moved to OBJECT_YAML_FORMAT.md) |
 | [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) | Scene driver, registry, adapters, capabilities |
@@ -332,7 +332,9 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 | Game runtime | New `.ts` file under [src/](../src/), imported from [src/init.ts](../src/init.ts) or a scene |
 | New scene | [src/scenes/](../src/scenes/) with scene YAML, an adapter, a side-effect import in [src/init.ts](../src/init.ts), and a render switch case |
 | New step UI / emitter | [src/steps/](../src/steps/) |
-| Protocol content | New folder under `src/content/` with `items.yaml`, `reagents.yaml`, `protocol.yaml` |
+| Protocol content | New folder under `content/protocols/<protocol_name>/` with `protocol.yaml`, `contents.yaml`, and `scenes/` subfolder |
+| Shared objects | Authored under `content/objects/<object_name>.yaml` (referenced by protocols) |
+| Shared scenes | Authored under `content/scenes/<base_scene_name>.yaml` (referenced by protocols) |
 | Build/audit tooling | [tools/](../tools/) (Python, single-purpose) |
 | Game styles | [src/style.css](../src/style.css) |
 | Pytest tests | `tests/test_*.py` |

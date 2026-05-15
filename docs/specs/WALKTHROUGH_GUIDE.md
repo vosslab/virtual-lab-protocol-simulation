@@ -166,8 +166,8 @@ Current outputs include:
   errors, and same-origin network errors.
 - `initial_state.png`: screenshot after browser entry, localStorage clearing,
   reload, and welcome dismissal.
-- `step_<n>_<step_id>.png`: screenshot after each passed step.
-- `fail_<step_id>.png`: screenshot after a step failure.
+- `step_<n>_<step_name>.png`: screenshot after each passed step.
+- `fail_<step_name>.png`: screenshot after a step failure.
 - `final_screen.png`: screenshot after final checks.
 - `crash_screen.png`: screenshot if the top-level walker crashes.
 
@@ -249,7 +249,7 @@ If none of those changes occur before the click budget expires, the helper
 throws:
 
 ```text
-click_did_not_advance: click on <item_id> produced no state change after <ms>ms
+click_did_not_advance: click on <object_name> produced no state change after <ms>ms
 ```
 
 ## Scene scoping
@@ -386,16 +386,16 @@ schema is missing a concept.
 
 To make a new mini-protocol walkthrough-ready:
 
-1. Add the mini-protocol under `src/content/<protocol_id>/`.
+1. Add the mini-protocol under `content/protocols/<protocol_name>/`.
 2. Make sure `protocol.yaml` has a complete step chain.
-3. Give every step a stable `id`.
+3. Give every step a stable `name`.
 4. Give every step a `scene`.
 5. Give every step a `completionPath.kind`, unless it is still on a documented
    legacy path.
-6. Give every step a `nextId`, or `nextId: null` for the final step.
-7. Make sure every clicked object exists in the relevant `items.yaml` or scene
-   YAML.
-8. Make sure every clicked object renders with `data-item-id="<item_id>"`.
+6. Give every step a `next_step`, or `next_step: null` for the final step.
+7. Make sure every clicked object exists in `content/objects/` and is placed in
+   the relevant protocol scene.
+8. Make sure every clicked object renders with `data-item-id="<object_name>"`.
 9. Make sure every click changes observable game state.
 10. Add any new `completionPath.kind` to both runtime dispatch and the walker.
 11. Build the app.
@@ -417,13 +417,13 @@ Use this run pattern:
 
 ```bash
 npm run build
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <protocol_id>
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <protocol_name>
 ```
 
 For a negative-order pass, also run:
 
 ```bash
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <protocol_id> --wrong-order
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <protocol_name> --wrong-order
 ```
 
 ## Walkthrough-ready definition

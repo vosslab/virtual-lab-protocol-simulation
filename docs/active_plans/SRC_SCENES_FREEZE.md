@@ -76,10 +76,12 @@ All new scene runtime code lives in:
 All new declarative scene and protocol configuration lives in YAML under
 [content/](../../content/):
 
-- `content/<protocol_id>/protocol.yaml` - per-protocol step list and entry
+- `content/<protocol_name>/protocol.yaml` - per-protocol step list and entry
   block.
-- `content/<protocol_id>/items.yaml` - per-protocol scene-item declarations.
-- `content/scenes/<scene_id>.yaml` - per-scene declarations shared across
+- `content/objects/` - object definitions extracted from per-protocol content.
+- `content/protocols/<protocol_name>/scenes/<scene_name>.yaml` - per-scene
+  declarations (protocol-scoped, extending base scenes).
+- `content/scenes/<scene_name>.yaml` - per-scene base declarations shared across
   protocols.
 
 ## Pointers

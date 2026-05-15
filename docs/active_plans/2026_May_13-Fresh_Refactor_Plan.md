@@ -11,7 +11,7 @@ Continuing to surgically clean the existing tree keeps preserving hood's center 
 - Ship a contract-compliant scene/protocol runtime in fresh modules (`src/scene_runtime/`) that no current scene adapter contaminates.
 - Prove the new runtime by running the decomposed `plate_drug_treatment` end-to-end with the generic Playwright walker for all 8-10 of its steps.
 - Decompose the curriculum first: break the 909-line `cell_culture` and the 866-line `plate_drug_treatment` into coherent 6-10 step mini-protocols, each with its own learning block; absorb or reclassify the existing tiny (<30 line, 1-2 step) tutorials.
-- Rescope items in `items.yaml` so each clickable item lives in the scene where the student actually uses it, not in hood by default.
+- Rescope scene placements so each clickable object lives in the scene where the student actually uses it, not in hood by default.
 - Add a protocol-level `entry:` block (initial scene plus first step) so a mini-protocol can start in its declared scene without a hood detour, and route the launcher accordingly.
 - Migrate cell_culture_hood, bench, microscope, and capability workspaces to the new runtime as peer adapters.
 - Compile each mini-protocol to its own HTML, linked from a launcher index page, with a shared library bundle.
@@ -53,7 +53,7 @@ Curriculum-first rule. Mini-protocol decomposition (M1) happens before any new r
 ## Current state summary
 
 - Generic-looking core (`scene_driver.ts`, `scene_registry.ts`, `layout_engine.ts`, `capabilities/`, `shared/`) exists but is hood-leaky: hood-specific completion events, label rules, and item-id checks live in `src/scenes/cell_culture_hood/`. `src/init.ts` lines 410-414 special-case the legacy `'hood'` activeScene name.
-- Nine protocols live under `content/<protocol>/` as `items.yaml`, `reagents.yaml`, `protocol.yaml`. Mini-protocols are selected at runtime via `?protocol=<id>` URL parameter and compile to a single `dist/index.html` (~914 KB), not per-HTML.
+- Nine protocols live under `content/<protocol_name>/` as scene and object declarations, `contents.yaml`, and `protocol.yaml`. (Legacy: formerly `items.yaml` and `reagents.yaml` in the hood-centric model.) Mini-protocols are selected at runtime via `?protocol=<protocol_name>` URL parameter and compile to a single `dist/index.html` (~914 KB), not per-HTML.
 - `well_plate_workspace` bypasses the layout engine, declares `capabilities: []`, hard-codes a five-region CSS grid in TypeScript, and inlines dispatch logic. Pause note (2026-05-12) records only step 6 of 16 walker-verified, with discharge/multi-tube/plate-transfer at 0% coverage. `WP-C1-VISUAL` and `WP-G1` visual gates never passed. Breadcrumb metadata broken; `distilled_water` orphaned.
 - Reusable artifacts retained from prior work: `multipleChoice` / `tubeTargets` / `plateTargets` schemas and validators, reagent-driven liquid state (`tubeLiquids`, `plateLiquids`), Bioicons asset normalization pipeline, launcher-initial-scene routing fix, walker scene-isolation assertion, shared `next-target-pulse` keyframe.
 - Verification baseline at pause: `tsc-exit=0`, `pytest tests/` 417 passed, `tools/build_protocol_data.py` clean, `npm run build` clean.
@@ -92,7 +92,7 @@ Ownership rules:
 | Milestone / Workstream | Component | Expected patches |
 | --- | --- | --- |
 | M0 / WS-DOC | `docs/SCENE_*`, `docs/PROTOCOL_*`, `docs/active_plans/scene_runtime_doc_conflicts.md` | 2-4 |
-| M1 / WS-DECOMP | curriculum decomposition: new `content/<mini_protocol>/` folders for the proposed mini-protocol set; reclassify tiny tutorials; rescope `items.yaml` per scene | 4-7 |
+| M1 / WS-DECOMP | curriculum decomposition: new `content/<mini_protocol>/` folders for the proposed mini-protocol set; reclassify tiny tutorials; rescope scene placements per scene | 4-7 |
 | M2 / WS-ENTRY | protocol YAML `entry:` block schema, loader validation, `src/init.ts` startup routing, per-protocol audit | 2-3 |
 | M3 / WS-SPINE | `src/scene_runtime/contract.ts`, `types.ts`, build-time `loader.ts` | 3-5 |
 | M4 / WS-WALKER-ENGINE | `tests/playwright/walker/`, `tests/playwright/walker.mjs` | 2-3 |
@@ -126,7 +126,7 @@ The E2E walker is a runtime verifier generated from the same protocol and scene 
   - `multipleChoice` -- click the visible answer choice declared in `choices`.
 - Resolve click targets from YAML fields: `tool`, `source`, `destination`, `openClick`, `advanceClick`, `choices`. Use scene YAML to know which DOM nodes should exist and where.
 - Read `window.gameState` and scene DOM only for verification (visibility checks, highlight assertions, completion confirmation).
-- Screenshot the visible viewport before and after every meaningful action (every click), filed under `test-results/walker/<protocol_id>/step_<NN>/<action_NN>_<before|after>.png`. End-of-step summary screenshot also retained.
+- Screenshot the visible viewport before and after every meaningful action (every click), filed under `test-results/walker/<protocol_name>/step_<NN>/<action_NN>_<before|after>.png`. End-of-step summary screenshot also retained.
 
 ### Forbidden walker behavior
 
@@ -176,12 +176,12 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
     - `plate_drug_treatment` (8-10 steps, well_plate_workspace, `protocolType: mini_protocol`; replaces current 866-line monolith)
     - `mtt_assay_readout` (6-8 steps, hood or bench, `protocolType: mini_protocol`)
     - `cell_culture_full` (linked sequence runner of the above; `protocolType: sequence_runner`; launcher entry only)
-  - Each new mini-protocol has its own folder with `protocol.yaml`, `items.yaml`, `reagents.yaml`.
+  - Each new mini-protocol has its own folder with `protocol.yaml`, `contents.yaml`, and scene YAML files declaring scene-scoped objects.
   - Each `protocol.yaml` declares `protocolType` and (for `mini_protocol`) `learning.objectives`, `learning.outcomes`, `learning.goals` per contract item 5.
   - Each `mini_protocol` has between 6 and 10 steps. `sequence_runner` and `dev_smoke` are exempt.
-  - Each new `protocol.yaml` records the intended entry scene at the top of the file as a comment line `# intended_entry_scene: <scene_id>` (the formal `entry:` block lands in M2).
+  - Each new `protocol.yaml` records the intended entry scene at the top of the file as a comment line `# intended_entry_scene: <scene_name>` (the formal `entry:` block lands in M2).
   - Existing tiny tutorials (`bench_direct_check` 26 lines, `tutorial_cell_counter` 27 lines, `plate_reader_check` 27 lines, `tutorial_hood_transfer` 40 lines, `tutorial_hemocytometer_count` 50 lines, `tutorial_drug_dilution` 54 lines) audited: each is absorbed into a new mini-protocol as steps, retired to `tests/content/dev_smoke/` with `protocolType: dev_smoke`, or expanded to >=6 steps with `protocolType: mini_protocol` and a learning block.
-  - Items rescoped per scene: every `items.yaml` entry declares the scene where the student uses the item. Shared physical items (micropipette, media_bottle, etc.) appear as a scene object in each scene they appear in, with a shared inventory identity if state must persist across scenes. No item defaults to hood unless hood is its real teaching scene.
+  - Objects rescoped per scene: every scene YAML file declares the objects the student uses in that scene. Shared physical objects (micropipette, media_bottle, etc.) appear as a scene object in each scene they appear in, with a shared inventory identity if state must persist across scenes. No object defaults to hood unless hood is its real teaching scene.
   - Curriculum map filed at `docs/active_plans/curriculum_decomposition.md` showing source-step-to-mini-protocol mapping for both the 909-line `cell_culture` and the 866-line `plate_drug_treatment`, plus intended entry scene per mini-protocol.
   - Pytest gate (`tests/test_mini_protocol_size_and_learning.py`): every protocol under `content/` with `protocolType: mini_protocol` has 6-10 steps and a complete `learning` block. `sequence_runner` and `dev_smoke` types are exempt from the step-count check.
   - M1 validation scope is content-shape only: YAML parses; step counts pass per `protocolType`; `learning` block present where required; `completionPath` fields are syntactically present. Full schema validation (entry-block enforcement, completionPath kind checks) happens in M2 and M3.
@@ -227,7 +227,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Entry criteria: M3 exit met.
 - Exit criteria:
   - `tests/playwright/walker/` exports a walker engine that dispatches only on `completionPath.kind`. Click resolver uses YAML fields (`tool`, `source`, `destination`, `openClick`, `advanceClick`, `choices`).
-  - `tests/playwright/walker.mjs <protocol_id>` runs against any protocol id and produces per-action before/after screenshots.
+  - `tests/playwright/walker.mjs <protocol_name>` runs against any protocol name and produces per-action before/after screenshots.
   - Walker starts every run by loading the page normally and lets the runtime's `entry:` routing reach the first scene.
   - Walker smoke-tested against a dedicated private fixture under `tests/playwright/fixtures/smoke/` (not a public mini-protocol). The fixture exercises one of each `completionPath.kind` value end-to-end.
   - Static enforcement test (`tests/test_walker_no_step_branches.py`) green.
@@ -259,7 +259,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Exit criteria:
   - The decomposed `plate_drug_treatment` (8-10 steps) runs end-to-end on `src/scene_runtime/` driven only by visible UI.
   - Generic walker completes every step with zero per-step or per-protocol branches.
-  - Per-action before/after screenshots under `test-results/walker/plate_drug_treatment/`.
+  - Per-action before/after screenshots under `test-results/walker/plate_drug_treatment/` (keyed by protocol name).
   - `WP-C1-VISUAL` and `WP-G1` visual gates pass.
   - `distilled_water` orphan and broken breadcrumb metadata removed.
   - Adapter declares zero custom CSS grid; layout via runtime layout engine for the workspace zone (96-well plate retains custom geometry per contract item 3).
@@ -278,7 +278,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
   - Shared library bundled separately so per-HTML stays under the size budget.
   - The plate-additions mini-protocol HTML runs standalone from a static file server.
   - Launcher `dist/index.html` lists all current mini-protocols with link per HTML and `learning.goals` as subtitle. The launcher presents the curriculum (set of mini-protocols) plus the full-protocol runner.
-  - `?protocol=<id>` URL parameter still functional for direct linking.
+  - `?protocol=<protocol_name>` URL parameter still functional for direct linking.
   - `docs/USAGE.md` updated.
   - `docs/CHANGELOG.md` entry.
 - Parallel-plan ready: yes -- max parallel doers: 2.
@@ -294,7 +294,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
   - `src/init.ts` no longer special-cases scene-id aliases.
   - Static no-branch enforcement test still passes.
   - No new walker source code added during migration.
-  - For every M8 walker run, the manager generates `test-results/walker/<protocol_id>/VISUAL_EVAL.md` via an image-to-text evaluator over the screenshot set. The evaluator checks that the expected scene is visible, required SVG-backed objects are visible as lab objects (not snake_case fallback buttons), the next-target highlight is visible before each click, the clicked target produces a visible state change after the click, modals and answer choices are visible when used, and no hidden API or state mutation is needed to complete the step. Human screenshot review is required only if VISUAL_EVAL.md reports uncertainty, mismatch, or missing visual evidence.
+  - For every M8 walker run, the manager generates `test-results/walker/<protocol_name>/VISUAL_EVAL.md` via an image-to-text evaluator over the screenshot set. The evaluator checks that the expected scene is visible, required SVG-backed objects are visible as lab objects (not snake_case fallback buttons), the next-target highlight is visible before each click, the clicked target produces a visible state change after the click, modals and answer choices are visible when used, and no hidden API or state mutation is needed to complete the step. Human screenshot review is required only if VISUAL_EVAL.md reports uncertainty, mismatch, or missing visual evidence.
   - `docs/CHANGELOG.md` entry per workstream.
 - Parallel-plan ready: yes -- max parallel doers: 3.
 
@@ -328,7 +328,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Owner: bptools-writer.
 - Interfaces:
   - Needs: M0 conflict table.
-  - Provides: new `content/<mini_protocol>/` folders, curriculum map, rescoped `items.yaml` per scene, pytest gate enforcing 6-10 steps and learning block. Consumed by WS-ENTRY (entry blocks added to new mini-protocols) and WS-WP-CONTENT.
+  - Provides: new `content/<mini_protocol>/` folders, curriculum map, rescoped scene placements per scene, pytest gate enforcing 6-10 steps and learning block. Consumed by WS-ENTRY (entry blocks added to new mini-protocols) and WS-WP-CONTENT.
 - Expected patches: 4-7.
 
 ### Workstream WS-ENTRY: Protocol entry and launcher routing
@@ -560,13 +560,13 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ### Work package WP-DECOMP-1: Author hood_flask_prep
 
 - Owner: bptools-writer.
-- Touch points: `content/hood_flask_prep/protocol.yaml`, `items.yaml`, `reagents.yaml` (new).
+- Touch points: `content/hood_flask_prep/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
 - Acceptance criteria:
   - `protocolType: mini_protocol`.
   - 6-8 steps with completionPath per step.
   - `learning.objectives`, `learning.outcomes`, `learning.goals` present.
-  - All `items.yaml` items scoped to hood (matches first authored step).
+  - All scene objects scoped to hood (matches first authored step).
   - Intended entry scene recorded as `# intended_entry_scene: cell_culture_hood` comment.
 - Verification commands: content-shape check only at M1 -- `source source_me.sh && pytest tests/test_mini_protocol_size_and_learning.py -k hood_flask_prep`. Full schema validator runs at M2/M3.
 - Obvious follow-ons: none (milestone changelog entry covers).
@@ -574,25 +574,25 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ### Work package WP-DECOMP-2: Author cell_counting_and_seeding
 
 - Owner: bptools-writer.
-- Touch points: `content/cell_counting_and_seeding/protocol.yaml`, `items.yaml`, `reagents.yaml` (new).
+- Touch points: `content/cell_counting_and_seeding/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; items scoped to bench or hood per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to bench or hood per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate cell_counting_and_seeding`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
 ### Work package WP-DECOMP-3: Author drug_dilution_setup
 
 - Owner: bptools-writer.
-- Touch points: `content/drug_dilution_setup/protocol.yaml`, `items.yaml`, `reagents.yaml` (new).
+- Touch points: `content/drug_dilution_setup/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-10 steps; learning block complete; items scoped to well_plate_workspace or hood per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocolType: mini_protocol`; 6-10 steps; learning block complete; scene objects scoped to well_plate_workspace or hood per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate drug_dilution_setup`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
 ### Work package WP-DECOMP-4: Author plate_drug_treatment (decomposed)
 
 - Owner: bptools-writer.
-- Touch points: `content/plate_drug_treatment/protocol.yaml`, `items.yaml`, `reagents.yaml` (rewrite from 866-line monolith).
+- Touch points: `content/plate_drug_treatment/protocol.yaml`, `contents.yaml`, scene YAML files (rewrite from 866-line monolith).
 - Depends on: WP-DECOMP-0.
 - Acceptance criteria: `protocolType: mini_protocol`; 8-10 steps; learning block complete; intended entry scene `well_plate_workspace` recorded as `# intended_entry_scene:` comment (formal `entry:` block lands in M2); `distilled_water` orphan removed; broken breadcrumb metadata fixed.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate plate_drug_treatment`.
@@ -601,9 +601,9 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ### Work package WP-DECOMP-5: Author mtt_assay_readout
 
 - Owner: bptools-writer.
-- Touch points: `content/mtt_assay_readout/protocol.yaml`, `items.yaml`, `reagents.yaml` (new).
+- Touch points: `content/mtt_assay_readout/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; items scoped to hood or bench per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to hood or bench per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate mtt_assay_readout`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -628,16 +628,16 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Verification commands: `source source_me.sh && pytest tests/test_mini_protocol_size_and_learning.py` (gate passes for every `mini_protocol`).
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
-### Work package WP-DECOMP-8: items.yaml rescope per scene
+### Work package WP-DECOMP-8: Scene-scoped object placement
 
 - Owner: bptools-writer.
-- Touch points: `content/<each_mini_protocol>/items.yaml`.
+- Touch points: `content/<each_mini_protocol>/scenes/<scene_name>.yaml` (object placement declarations).
 - Depends on: WP-DECOMP-1..6.
 - Acceptance criteria:
-  - Every item's `scene:` field matches the scene where the student actually uses it.
-  - Shared physical items (micropipette, media_bottle, well plate when it appears in multiple scenes, etc.) are declared as a scene object per scene that uses them. If state must persist across scenes, the item carries a shared `inventoryId` referenced from each scene's declaration. No item is faked into a single global scene.
-  - No item defaults to hood unless hood is its real teaching scene.
-- Verification commands: `source source_me.sh && pytest tests/test_items_scene_no_hood_default.py` (new test under WP-ENTRY-3).
+  - Every scene YAML file declares the objects the student uses in that scene. (Legacy: formerly `items.yaml` entries with `scene:` field.)
+  - Shared physical objects (micropipette, media_bottle, well plate when it appears in multiple scenes, etc.) are declared as a scene object per scene that uses them. If state must persist across scenes, the object carries a shared `inventoryId` referenced from each scene's declaration. No object is faked into a single global scene.
+  - No object defaults to hood unless hood is its real teaching scene.
+- Verification commands: `source source_me.sh && pytest tests/test_scene_objects_no_hood_default.py` (new test under WP-ENTRY-3).
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
 ### Work package WP-DECOMP-9: Mini-protocol size and learning-block gate
@@ -676,14 +676,14 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Verification commands: `source source_me.sh && pytest tests/test_protocol_entry_no_hood_default.py` (created in WP-ENTRY-4).
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
-### Work package WP-ENTRY-3: Items-scene no-hood-default test
+### Work package WP-ENTRY-3: Scene-object placement no-hood-default test
 
 - Owner: tester.
-- Touch points: `tests/test_items_scene_no_hood_default.py` (new).
+- Touch points: `tests/test_scene_objects_no_hood_default.py` (new).
 - Depends on: WP-DECOMP-8.
 - Acceptance criteria:
-  - Test asserts every `items.yaml` entry's `scene` matches the scene where its protocol step uses it (or, for shared items, an explicit allow-list).
-- Verification commands: `source source_me.sh && pytest tests/test_items_scene_no_hood_default.py`.
+  - Test asserts every scene object declaration's scene matches the scene where its protocol step uses it (or, for shared objects, an explicit allow-list). (Legacy: formerly `items.yaml` entries with `scene:` field.)
+- Verification commands: `source source_me.sh && pytest tests/test_scene_objects_no_hood_default.py`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
 ### Work package WP-ENTRY-4: Protocol entry no-hood-default test
@@ -860,7 +860,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Touch points: `tests/playwright/walker/screenshot.ts` (new).
 - Depends on: WP-WALKER-1.
 - Acceptance criteria:
-  - Captures before/after screenshots for every click under `test-results/walker/<protocol_id>/step_<NN>/<action_NN>_<before|after>.png`.
+  - Captures before/after screenshots for every click under `test-results/walker/<protocol_name>/step_<NN>/<action_NN>_<before|after>.png`.
   - End-of-step summary screenshot retained.
 - Verification commands: `node tests/playwright/walker.mjs hood_flask_prep` (smoke).
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
@@ -871,7 +871,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Touch points: `tests/playwright/walker.mjs` (new); `tests/playwright/fixtures/smoke/` (new private fixture: a small generated protocol exercising one of each `completionPath.kind`).
 - Depends on: WP-WALKER-2, WP-WALKER-3.
 - Acceptance criteria:
-  - `node tests/playwright/walker.mjs <protocol_id>` runs the engine against any compiled protocol id.
+  - `node tests/playwright/walker.mjs <protocol_name>` runs the engine against any compiled protocol name.
   - The private smoke fixture exercises `interactionSequence`, `directTool`, `modal`, and `multipleChoice` paths end-to-end. The fixture lives in the test tree, never in `content/`, and is not surfaced in the launcher.
   - Non-zero exit on any walker failure.
 - Verification commands: `node tests/playwright/walker.mjs --fixture smoke`.
@@ -895,7 +895,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Touch points: `tools/evaluate_walker_screenshots.py` (new); `docs/WALKTHROUGH_GUIDE.md` (update to describe walker pass plus visual-evaluation pass as the M8 close gate).
 - Depends on: WP-WALKER-4.
 - Acceptance criteria:
-  - Script reads PNGs under `test-results/walker/<protocol_id>/` and emits `test-results/walker/<protocol_id>/VISUAL_EVAL.md` covering the six checks defined in the Automated screenshot evaluation section (scene visible, SVG objects visible vs snake_case fallback, highlight before click, state change after click, modals/choices visible, no hidden state mutation).
+  - Script reads PNGs under `test-results/walker/<protocol_name>/` and emits `test-results/walker/<protocol_name>/VISUAL_EVAL.md` covering the six checks defined in the Automated screenshot evaluation section (scene visible, SVG objects visible vs snake_case fallback, highlight before click, state change after click, modals/choices visible, no hidden state mutation).
   - Report flags uncertainty cases explicitly so the manager knows when human review is required.
   - Initial implementation may be a stub that writes the expected report format with TODO markers per check; the image-to-text evaluation itself is refined during M8 once real screenshots from migrated adapters exist.
 - Verification commands: `source source_me.sh && python3 tools/evaluate_walker_screenshots.py --protocol smoke` produces a non-empty `test-results/walker/smoke/VISUAL_EVAL.md`.
@@ -958,11 +958,11 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ### Work package WP-WP-3: well_plate scene YAML
 
 - Owner: bptools-writer.
-- Touch points: `content/plate_drug_treatment/scene.yaml` (new), `content/plate_drug_treatment/items.yaml` (rewrite).
+- Touch points: `content/plate_drug_treatment/scenes/<scene_name>.yaml` (new), scene object declarations (new).
 - Depends on: WP-DECOMP-4.
 - Acceptance criteria:
   - Scene YAML declares all SVG-backed scene objects needed for the 8-10 step protocol.
-  - Items scoped to well_plate_workspace.
+  - Scene objects scoped to well_plate_workspace.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate plate_drug_treatment`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -1008,7 +1008,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Acceptance criteria:
   - `dist/index.html` lists every mini-protocol in the curriculum plus the full-protocol runner with a link per HTML.
   - Each entry shows protocol title and `learning.goals` as subtitle.
-  - `?protocol=<id>` URL parameter still functional for direct linking.
+  - `?protocol=<protocol_name>` URL parameter still functional for direct linking.
 - Verification commands: `npm run build && ls dist/index.html`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -1211,7 +1211,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ## Acceptance criteria and gates
 
 - Per-patch gate: `npx tsc --noEmit` clean, `source source_me.sh && pytest tests/` 417 or more passing (includes walker no-branch enforcement test), no new pyflakes warnings.
-- Per-mini-protocol gate: generic walker (`tests/playwright/walker.mjs <protocol_id>`) completes every step with per-action before/after screenshots under `test-results/walker/<protocol_id>/`.
+- Per-mini-protocol gate: generic walker (`tests/playwright/walker.mjs <protocol_name>`) completes every step with per-action before/after screenshots under `test-results/walker/<protocol_name>/`.
 - Walker source gate: zero `step.id ===`, `protocolId ===`, `modal.owner ===`, `gameState.<prop> =`, `activeScene =`, `selectedTool =`, `window.prompt =`, `window.confirm =` occurrences in `tests/playwright/walker/`.
 - Curriculum gate: every protocol under `content/` (excluding `dev_smoke/`) has 6-10 steps and a complete `learning` block.
 - Entry-scene gate: no protocol declares `entry.scene === 'cell_culture_hood'` unless its first authored step is in the hood.
@@ -1223,9 +1223,9 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 ## Test and verification strategy
 
 - Unit (pytest plus node tests): pure functions in `src/scene_runtime/` (layout, dispatch, highlight, liquid). Each subsystem work package in M3 (types) and M6 (subsystems) ships with unit tests.
-- Curriculum tests (pytest): `tests/test_mini_protocol_size_and_learning.py`, `tests/test_protocol_entry_no_hood_default.py`, `tests/test_items_scene_no_hood_default.py` enforce M1 and M2 contracts. Run on every `pytest tests/` invocation from M1 onward.
+- Curriculum tests (pytest): `tests/test_mini_protocol_size_and_learning.py`, `tests/test_protocol_entry_no_hood_default.py`, `tests/test_scene_objects_no_hood_default.py` enforce M1 and M2 contracts. Run on every `pytest tests/` invocation from M1 onward.
 - Integration: build-time loader parses real YAML for each mini-protocol; loader rejection cases asserted.
-- E2E (Playwright): single generic walker entry `tests/playwright/walker.mjs <protocol_id>` runs against every mini-protocol. No per-protocol walker file. Per-action before/after screenshots filed under `test-results/walker/<protocol_id>/`.
+- E2E (Playwright): single generic walker entry `tests/playwright/walker.mjs <protocol_name>` runs against every mini-protocol. No per-protocol walker file. Per-action before/after screenshots filed under `test-results/walker/<protocol_name>/`.
 - Walker source enforcement: `tests/test_walker_no_step_branches.py` greps walker source for forbidden patterns each `pytest tests/` run.
 - Repo-wide no-scenes-import enforcement: `tests/test_no_scenes_imports_repo_wide.py` (added at M9) verifies the legacy tree is no longer referenced.
 - Regression: baseline `pytest tests/` (417 passing plus the new gates) must stay green across all milestones; a regression is a milestone blocker.
@@ -1243,15 +1243,15 @@ Work packages are file-scoped where practical so multiple doers can run concurre
   - Modals and answer-choice UI are visible in the screenshots for steps that use them.
   - No hidden API call or state mutation is needed to complete the step (no evidence of a step advancing without a visible click target on screen).
 - Boundary: image-to-text evaluation does NOT substitute for the walker. The walker proves the UI can be driven by visible clicks. The evaluator explains whether the screenshots look like the intended lab scene. Both must pass.
-- Report location: one report per protocol at `test-results/walker/<protocol_id>/VISUAL_EVAL.md`, written next to the screenshot set produced by the walker.
+- Report location: one report per protocol at `test-results/walker/<protocol_name>/VISUAL_EVAL.md`, written next to the screenshot set produced by the walker.
 - Pass criteria: walker pass AND VISUAL_EVAL.md reports no uncertainty, no mismatch, and no missing visual evidence. Manual screenshot inspection is no longer routine; it is required only when VISUAL_EVAL.md flags a problem.
 
 ## Migration and compatibility policy
 
 - Additive rollout: `src/scene_runtime/` ships alongside `src/scenes/` from M3 through M8. Both trees compile.
-- Backward compatibility: during M2 through M8, the existing `?protocol=<id>` URL parameter routes to whichever runtime owns the protocol. M7 launcher continues to honor this URL parameter for direct linking.
+- Backward compatibility: during M2 through M8, the existing `?protocol=<protocol_name>` URL parameter routes to whichever runtime owns the protocol. M7 launcher continues to honor this URL parameter for direct linking.
 - Legacy extension policy: after M3, no new feature work in `src/scenes/`. Compatibility shims required to keep existing tests green are allowed, must be flagged with a `// COMPAT SHIM:` comment, and must be removed by M9 (WP-CLEAN-2).
-- `src/scenes/` is now **FROZEN**, not just under a "no new feature work" guideline. The freeze is actively gated by `tests/test_scenes_freeze_baseline.py`, which records per-file line counts in `tests/data/scenes_freeze_baseline.json` and fails when a file grows past its baseline plus a small drift allowance. Allowed edits are limited to mechanical renames, type-union updates, the WP-SPINE-6 legacy banner header, and small `// COMPAT SHIM:` blocks marked for M9 removal. Forbidden edits include any new scene-specific behavior, any new hardcoded dispatch branch, and any new feature logic. New work lives in `src/scene_runtime/` (TypeScript) plus `content/*/protocol.yaml`, `content/*/items.yaml`, and `content/scenes/*.yaml` (declarative). The full policy, including replacement direction and pointers to the enforcing tests, lives in [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md).
+- `src/scenes/` is now **FROZEN**, not just under a "no new feature work" guideline. The freeze is actively gated by `tests/test_scenes_freeze_baseline.py`, which records per-file line counts in `tests/data/scenes_freeze_baseline.json` and fails when a file grows past its baseline plus a small drift allowance. Allowed edits are limited to mechanical renames, type-union updates, the WP-SPINE-6 legacy banner header, and small `// COMPAT SHIM:` blocks marked for M9 removal. Forbidden edits include any new scene-specific behavior, any new hardcoded dispatch branch, and any new feature logic. New work lives in `src/scene_runtime/` (TypeScript) plus `content/<protocol_name>/protocol.yaml`, `content/<protocol_name>/contents.yaml`, and `content/scenes/<scene_name>.yaml` (declarative). The full policy, including replacement direction and pointers to the enforcing tests, lives in [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md).
 - Legacy banner: every file under `src/scenes/` gets a `// LEGACY: superseded by src/scene_runtime/*. Do not extend.` header at the top of M3 (WP-SPINE-6).
 - Deletion criteria: M8 exit met and zero imports remain from `src/scenes/` (grep-enforced gate in WP-CLEAN-1).
 - Rollback strategy:
@@ -1269,7 +1269,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 | Per-HTML bundle balloons | medium | bundle exceeds size budget | coder | Shared library bundle plus code splitting; budget gate enforced in WP-BUILD-2 |
 | Hood migration uncovers latent hood-only assumptions | medium | WS-HOOD walker fail at M8 | typescript-engineer | Hood is migrated after M6/M7 so spine is locked; failures become adapter bugs, not spine bugs |
 | Doc audit creates churn that conflicts with code shape | low | doc rewrites in M0 contradict M3 APIs | planner | M0 emits conflict table plus margin notes only; full rewrites deferred to M9 (WS-DOCS-FINAL) |
-| Parallel doers collide on shared walker fixtures | medium | fixture conflicts between WS-WP-WALKER and WS-HOOD/WS-BENCH walkers at M8 | tester | Per-mini-protocol fixture isolation under `tests/playwright/fixtures/<protocol_id>/`; one fixture owner per protocol |
+| Parallel doers collide on shared walker fixtures | medium | fixture conflicts between WS-WP-WALKER and WS-HOOD/WS-BENCH walkers at M8 | tester | Per-mini-protocol fixture isolation under `tests/playwright/fixtures/<protocol_name>/`; one fixture owner per protocol |
 | Architecture astronautics relapse | high | M3 adds more than types and loader, or M6 grows beyond four subsystems, or any milestone proposes folder renames | planner | Hard cap. Any addition requires user approval |
 | Legacy archive breaks unmigrated content paths | medium | WP-CLEAN-2 patch fails `npm run build` | maintainer | Pre-archive grep sweep (WP-CLEAN-1) is M9 entry gate; M8 exit confirms zero legacy refs |
 | Loader strictness blocks valid YAML | medium | WP-DECOMP or WP-WP-3 fails validation despite contract-clean YAML | typescript-engineer | Loader emits a structured error with line refs and an opt-in escape hatch documented in `docs/scene_runtime/CONTRACT.md` |
@@ -1321,14 +1321,14 @@ Each work package closes with one patch. Patches are listed by milestone in appr
 - Patches 4-8: per-mini-protocol authoring (WP-DECOMP-1..5, parallel).
 - Patch 9: full-sequence runner (WP-DECOMP-6, blocked by 4-8).
 - Patch 10: tiny-stub triage (WP-DECOMP-7, parallel with 4-8).
-- Patch 11: items.yaml rescope (WP-DECOMP-8, blocked by 4-8).
+- Patch 11: scene-scoped object placement (WP-DECOMP-8, blocked by 4-8).
 - Patch 12: mini-protocol size and learning-block gate (WP-DECOMP-9).
 
 **M2 (WS-ENTRY):**
 
 - Patch 13: entry-block schema doc (WP-ENTRY-1).
 - Patch 14: entry block added to every protocol.yaml (WP-ENTRY-2, parallel within file boundaries).
-- Patch 15: items-scene no-hood-default test (WP-ENTRY-3).
+- Patch 15: scene-object placement no-hood-default test (WP-ENTRY-3).
 - Patch 16: protocol-entry no-hood-default test (WP-ENTRY-4).
 - Patch 17: src/init.ts routing patch (WP-ENTRY-5, blocked by 14-16).
 

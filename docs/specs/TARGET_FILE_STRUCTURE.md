@@ -14,14 +14,22 @@ src/                  authored TypeScript and bundled web shell source
   protocol.ts         protocol data facade
   inventory.ts        inventory data facade
 
-content/              authored protocol and scene YAML
-  hood_flask_prep/
-  cell_counting_and_seeding/
-  drug_dilution_setup/
-  plate_drug_treatment/
-  mtt_assay_readout/
-  cell_culture_full/
-  scenes/             scene YAML, owned by content not src
+content/              authored protocol, scene, and object YAML
+  objects/            reusable object definitions
+    <object_name>.yaml
+  scenes/             reusable base scene YAML
+    <base_scene_name>.yaml
+  protocols/          protocol-specific content (each protocol a folder)
+    hood_flask_prep/
+      protocol.yaml
+      contents.yaml
+      scenes/
+        <scene_name>.yaml
+    cell_counting_and_seeding/
+    drug_dilution_setup/
+    plate_drug_treatment/
+    mtt_assay_readout/
+    cell_culture_full/
 
 generated/            emitted build outputs only (gitignored)
   protocol_data.ts

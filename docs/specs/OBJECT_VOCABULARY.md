@@ -32,9 +32,9 @@ happen to it (that is protocol-side; see
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)).
 
 The object owns SVG manipulation. The protocol sets semantic state
-through `ObjectStateChange`; the object's `render_map` resolves the
-state value to a visual asset. The protocol never names an SVG asset id
-and never names a color value. This central design rule means every part
+through `ObjectStateChange`; the object's `visual_states` resolves the
+state value to a visual asset. The protocol never names an SVG asset name
+and never names a visual variant. This central design rule means every part
 of the schema below enforces this separation.
 
 The object replaces today's split between identity-bearing `items[]`
@@ -43,16 +43,16 @@ sub-fields in scene YAML (`id`, `label`, `shortLabel`, `kind`,
 `src/asset_specs.ts` (`defaultWidth`, `labelWidth`, `anchorYOffset`,
 `widthScale`). After the split, every object-identity slot lives in one
 place -- the object library -- and the scene side names objects only by
-id.
+object_name.
 
 ## Canonical object identity, no extends
 
-Objects are canonical-by-id. Each object definition lives in
-`content/objects/<id>.yaml` and is the single authoritative source for that
-object's identity, state schema, render map, and capabilities. Objects have
+Objects are canonical-by-object_name. Each object definition lives in
+`content/objects/<object_name>.yaml` and is the single authoritative source for that
+object's identity, state schema, visual_states, and capabilities. Objects have
 no `extends` and no template-object layer.
 
-If an object differs meaningfully from an existing one, mint a new object id
+If an object differs meaningfully from an existing one, mint a new object_name
 rather than reusing or templating the existing object. This rule preserves
 object identity as a permanent, versioned, stand-alone contract.
 
@@ -66,16 +66,15 @@ scenes; a scene placement may not override them.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `id` | yes | Stable object id. Unique across the object library. The scene side names this object only by `id`. |
+| `object_name` | yes | Stable object name. Unique across the object library. The scene side names this object only by `object_name`. |
 | `kind` | yes | Coarse classification. Closed enum: `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration`. The eight values mirror today's `kind` sub-field; the inventory observed all eight in shipped scene YAML. |
 | `label` | yes | Default human-readable name. A scene placement may override; the object owns the default. |
 | `short_label` | no | Optional shorter label for tight zones. Object-owned default; scene may override. |
-| `inventory_ref` | no | Reference into a curriculum-level inventory entry. Reserved on the object side so the cleaned scene YAML never carries it. |
 
-`svgAsset` (today's `items[]` sub-field) is **not** an identity field on
-the object. The object resolves an asset through `render_map` from
-declared state, so a single `svgAsset` literal is just a `render_map`
-with one entry. See [Render map](#render-map) below.
+`asset_name` (today's `items[]` sub-field) is **not** an identity field on
+the object. The object resolves an asset through `visual_states` from
+declared state, so a single asset literal is just a `visual_states`
+entry with one case. See [Visual states](#visual-states) below.
 
 ## Structured surfaces and subparts
 
@@ -102,15 +101,14 @@ first-class addressable units inside that object's namespace.
 | `structure.rows` | grid only | Row count. |
 | `structure.cols` | grid only | Column count. |
 | `structure.count` | list only | Subpart count. |
-| `structure.id_pattern` | yes (if structure present) | How a subpart id is built from its row, col, or index. For example `{row_letter}{col}` for a 96-well plate (A1..H12); `slot_{index}` for a list-layout rack (slot_0..slot_n). |
+| `structure.name_pattern` | yes (if structure present) | How a subpart name is built from its row, col, or index. For example `{row_letter}{col}` for a 96-well plate (A1..H12); `slot_{index}` for a list-layout rack (slot_0..slot_n). |
 | `structure.subpart_state_fields` | no | A schema of state variables that every subpart carries. Same shape as the object-level `state_fields` schema, applied per subpart. |
 
 Subpart state is not a separate vocabulary. It is the same
 [`state_fields`](#state_fields) schema applied at subpart granularity.
 A 96-well plate has zero or few plate-level state fields and several
-flat per-well fields (`liquid_id`, `liquid_volume`,
-`liquid_color`); a multichannel pipette has the same flat liquid
-fields per channel.
+flat per-well fields (`contents_name`, `contents_volume`);
+a multichannel pipette has the same flat contents fields per channel.
 
 ### Named groups deferred
 
@@ -118,28 +116,35 @@ Named groups (`target_groups`) are not declared on the object in the
 initial vocabulary. A protocol that needs to act on a row of wells, a
 tube column, or a set of gel lanes lists each subpart by reference
 (for example `treatment_plate.A1`, `treatment_plate.A2`, ...,
-`treatment_plate.A12`). The object's `id_pattern` is the only naming
+`treatment_plate.A12`). The object's `name_pattern` is the only naming
 contract; the scene never sees grouping. Named groups become a
 separate vocabulary addition once real authoring pain appears in
 shipped protocols.
+
+## Contents
+
+**Contents** is the material currently inside or held by an object. This may
+be a reagent, waste, old media, cells, a mixture, suspension, or diluted
+drug. The `contents_name` field (on objects holding contents) or
+`held_contents_name` field (on tools carrying contents) reference entries in
+a `contents.yaml` registry.
 
 ## state_fields
 
 `state_fields` is the object's typed schema of declared state
 variables. It is the contract between the protocol and the object: a
 protocol reads or sets a `state_field` by name; the object resolves
-what that state means visually through [`render_map`](#render-map).
+what that state means visually through [`visual_states`](#visual-states).
 Anything not in `state_fields` is not part of the object's authoring
 surface.
 
 Every `state_field` is a flat primitive. Allowed types are `enum`,
 `int`, `float`, and `bool`. There is no `string` type (use `enum`
-with a closed `allowed` list) and no composite `liquid` or `set_point`
-type. Liquid contents and instrument set-points are modeled as multiple
-flat fields per object (for example `liquid_id` plus `liquid_volume`
-plus `liquid_color` for a well; `set_volume` for a pipette set-point).
-The runtime liquid-state model (`LiquidEntry`, `ContainerLiquid`,
-`LiquidState`) decomposes across these flat fields.
+with a closed `allowed` list) and no composite `contents` or `set_point`
+type. Contents and instrument set-points are modeled as multiple
+flat fields per object (for example `contents_name` plus `contents_volume`
+for a well; `set_volume` for a pipette set-point).
+The runtime contents-state model decomposes across these flat fields.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
@@ -162,7 +167,7 @@ error. There is no open-ended `constraints` object.
 | `float` | `unit` (string), `min` (float), `max` (float), `step` (float), `default` (float, required) |
 | `bool` | `default` (`true` or `false`, required) |
 
-The `render_map` entry for an `enum` field must cover every value in
+The `visual_states` entry for an `enum` field must cover every value in
 `allowed`. Numeric fields (`int`, `float`) are resolved through the
 formula mini-language defined in
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). `bool` fields use the
@@ -170,40 +175,40 @@ formula mini-language defined in
 
 The `applies_to: subpart` form is the bridge between object-level
 `state_fields` and `structure.subpart_state_fields`. An author may
-declare "every well has a `liquid_volume` field" once at the object
+declare "every well has a `contents_volume` field" once at the object
 level with `applies_to: subpart`, instead of restating it under
 structure. Both forms are equivalent.
 
-## Render map
+## Visual states
 
-The `render_map` is the object's state-to-visual function. The protocol
-sets semantic state via `ObjectStateChange`; the object's `render_map`
-resolves the new state value to a visual asset (an SVG file, a color,
-an overlay). The `render_map` is the only place an SVG asset id or a
-color value appears in object authoring. `ColorChange` is classified
-as an object/render-layer mechanism alongside `SvgSwap`; the protocol
-stays semantic, the object owns the visual.
+The `visual_states` is the object's state-to-visual function. The protocol
+sets semantic state via `ObjectStateChange`; the object's `visual_states`
+resolves the new state value to a visual asset (an SVG file, an overlay).
+An object declares named closed visual variants; `visual_states` is not a
+generic rendering map or expression surface. Unknown variants are a build
+error. The object owns the visual representation; the protocol stays
+semantic.
 
-The `render_map` is keyed by `state_field` name. For each named
+The `visual_states` is keyed by `state_field` name. For each named
 `state_field`, it maps state values to visual outputs.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `render_map.<field>.kind` | yes | One of `svg`, `color`, `overlay`, `composite`. `svg` names a base SVG asset id. `color` names a color key (matching the runtime `LiquidEntry.colorKey`). `overlay` names an SVG fragment composited over the base. `composite` is a list of any of the above. |
-| `render_map.<field>.cases` | yes for `enum` / `bool` | One case per allowed value of the `state_field`. Each case has a `when` (the state value) and an output (svg id, color, overlay, or composite list). |
-| `render_map.<field>.formula` | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `liquid_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
-| `render_map.<field>.applies_to` | no | `object` or `subpart`. When `subpart`, the `render_map` applies per subpart (for example one fill per well). Default: `object`. |
+| `visual_states.<field>.kind` | yes | One of `svg`, `overlay`, `composite`. `svg` names a base SVG asset name. `overlay` names an SVG fragment composited over the base. `composite` is a list of any of the above. |
+| `visual_states.<field>.cases` | yes for `enum` / `bool` | One case per allowed value of the `state_field`. Each case has a `when` (the state value) and an output (asset_name, overlay_name, or composite list). |
+| `visual_states.<field>.formula` | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `contents_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
+| `visual_states.<field>.applies_to` | no | `object` or `subpart`. When `subpart`, the `visual_states` applies per subpart (for example one fill per well). Default: `object`. |
 
 Rules:
 
 - Every value in a `state_field`'s `allowed` list must have a
-  `render_map` case (`enum`, `bool`) or be covered by a formula
+  `visual_states` case (`enum`, `bool`) or be covered by a formula
   (numeric `int` and `float` fields).
-- A `render_map` entry for an `applies_to: subpart` `state_field` must
+- A `visual_states` entry for an `applies_to: subpart` `state_field` must
   itself be `applies_to: subpart`.
-- The `render_map` is the only object-side authoring surface that names
-  SVG asset ids or color keys. An identity field, a `state_field`, a
-  capability, or a layout hint never names an asset id.
+- The `visual_states` is the only object-side authoring surface that names
+  SVG asset names or overlay names. An identity field, a `state_field`, a
+  capability, or a layout hint never names an asset name.
 
 The full set of allowed `formula` tokens (the formula mini-language) is
 intentionally narrow; the canonical enumeration belongs in
@@ -230,14 +235,14 @@ vocabulary. The closed list is:
 | Capability | Meaning |
 | --- | --- |
 | `clickable` | The object accepts a `click` gesture (per the `gesture` set in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). An object that is not `clickable` is never clickable, regardless of placement. |
-| `liquid_container` | The object holds a tracked liquid; expects flat `state_fields` such as `liquid_id`, `liquid_volume`, and `liquid_color` and a render rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
+| `contents_container` | The object holds tracked contents; expects flat `state_fields` such as `contents_name` and `contents_volume` and a visual rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
 | `instrument_with_setpoint` | The object exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture from the protocol side. |
 | `structured_surface` | The object has a `structure` block with subparts. Every plate, gel, rack, and multichannel pipette carries this capability. |
 | `cursor_attachable` | The object may be attached to the cursor by a `CursorAttach` `scene_operation`. Tools that the learner picks up and carries (a serological pipette, a transfer pipette) carry this capability. |
 | `decoration_only` | The object is rendered as a static visual and accepts no gestures and no state mutation. Mutually exclusive with every other capability above. |
 
 `decoration_only` is mutually exclusive with `clickable`,
-`liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+`contents_container`, `instrument_with_setpoint`, `structured_surface`,
 and `cursor_attachable`. The other five are freely combinable.
 
 A scene placement may not override `capabilities`. An object that
@@ -266,14 +271,14 @@ besides `label` and `short_label`).
 
 The object owns the state-to-visual map and SVG manipulation. The
 protocol sets semantic state through `ObjectStateChange`; the object's
-`render_map` resolves the asset. The protocol never names an SVG asset
-id and never names a color value.
+`visual_states` resolves the asset. The protocol never names an SVG asset
+name and never names a visual variant.
 
 This rule is binding on:
 
 - [`state_fields`](#state_fields) -- the only authoring surface for
   declared state.
-- [`render_map`](#render-map) -- the only authoring surface for
+- [`visual_states`](#visual-states) -- the only authoring surface for
   state-to-visual resolution.
 - `ObjectStateChange` (defined in
   [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)) -- the only
@@ -283,14 +288,9 @@ This rule is binding on:
   `int`, `float`, or `bool`). Nested writes are not allowed. The
   validator rejects unknown field names and type-mismatched values.
   Example payload (well at A1 receives 100 ul of PBS): `state: {
-  liquid_id: pbs, liquid_volume: 100, liquid_color: clear }`. The
+  contents_name: pbs, contents_volume: 100 }`. The
   earlier nested form `state: { held_liquid: { reagent: pbs, volume:
   100 } }` is not valid.
-- The `SvgSwap` and `ColorChange` reclassification -- both are
-  object/render-layer mechanisms invoked by the object's `render_map`,
-  not protocol-level operations. See the retired-terms table in
-  [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the protocol-side
-  retirement note.
 
 ## The object side of the boundary
 
@@ -303,15 +303,15 @@ The three-way boundary names what each vocabulary owns:
 - **Object** names what a thing is and how its state appears. An
   object declares identity, structure (subparts; named groups are
   deferred), the typed flat-primitive `state_fields` schema, the
-  `render_map` from state value to visual asset, the closed
+  `visual_states` from state value to visual asset, the closed
   `capabilities` set, and object-default layout hints. The object
   owns the state-to-visual map and SVG manipulation. The object never
   names where it goes in any one scene.
 - **Scene** names where things appear and how the space is arranged.
-  A scene references objects by id, places them inside named zones,
+  A scene references objects by object_name, places them inside named zones,
   declares the outer scene bounds and the layout rules the layout
   engine consumes, and declares the static background backdrop. A
-  scene never declares object identity, `state_fields`, `render_map`,
+  scene never declares object identity, `state_fields`, `visual_states`,
   or `capabilities`. Canonical doc:
   [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 
@@ -319,7 +319,7 @@ A scene placement may carry exactly one bounded set of instance
 overrides: the object's `label` (and `short_label`) and the object's
 layout hints (`default_width`, `label_width`, `anchor_y_offset`,
 `width_scale`, `anchor_y`). A placement may not override identity
-(`id`, `kind`, `inventory_ref`), `state_fields`, `render_map`, or
+(`object_name`, `kind`), `state_fields`, `visual_states`, or
 `capabilities`.
 
 ## Worked example: 96-well plate
@@ -329,7 +329,7 @@ per-subpart flat-primitive `state_fields`. The candidate is the
 `well_plate_96` asset observed in the inventory.
 
 ```yaml
-id: well_plate_96
+object_name: well_plate_96
 kind: plate
 label: 96-well plate
 short_label: 96-well
@@ -339,71 +339,49 @@ structure:
   layout: grid
   rows: 8
   cols: 12
-  id_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
+  name_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
 
 state_fields:
-  - name: liquid_id
+  - name: contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso, drug_a, drug_b]
     default: empty
     applies_to: subpart
-    description: Reagent currently in this well.
-  - name: liquid_volume
+    description: Contents currently in this well.
+  - name: contents_volume
     type: float
     unit: ul
     min: 0
     max: 300
     default: 0
     applies_to: subpart
-    description: Volume of liquid in this well, in microliters.
-  - name: liquid_color
-    type: enum
-    allowed: [clear, red, pink, yellow, blue, brown]
-    default: clear
-    applies_to: subpart
-    description: Visible color of the well contents.
+    description: Volume of contents in this well, in microliters.
 
-render_map:
-  liquid_id:
+visual_states:
+  contents_name:
     kind: svg
     applies_to: subpart
     cases:
       - when: empty
-        output: { svg: well_empty }
+        output: { asset_name: well_empty }
       - when: pbs
-        output: { svg: well_filled }
+        output: { asset_name: well_filled }
       - when: media
-        output: { svg: well_filled }
+        output: { asset_name: well_filled }
       - when: trypsin
-        output: { svg: well_filled }
+        output: { asset_name: well_filled }
       - when: dmso
-        output: { svg: well_filled }
+        output: { asset_name: well_filled }
       - when: drug_a
-        output: { svg: well_filled }
+        output: { asset_name: well_filled }
       - when: drug_b
-        output: { svg: well_filled }
-  liquid_volume:
+        output: { asset_name: well_filled }
+  contents_volume:
     kind: composite
     applies_to: subpart
-    formula: fill_height(state(liquid_volume), capacity_ul=300)
-  liquid_color:
-    kind: color
-    applies_to: subpart
-    cases:
-      - when: clear
-        output: { color: clear }
-      - when: red
-        output: { color: red }
-      - when: pink
-        output: { color: pink }
-      - when: yellow
-        output: { color: yellow }
-      - when: blue
-        output: { color: blue }
-      - when: brown
-        output: { color: brown }
+    formula: fill_height(state(contents_volume), capacity_ul=300)
 
-capabilities: [clickable, structured_surface, liquid_container]
+capabilities: [clickable, structured_surface, contents_container]
 
 layout:
   default_width: 14
@@ -411,16 +389,15 @@ layout:
 ```
 
 Reading: the plate has no plate-level state, 96 wells (A1..H12) each
-carrying three flat `state_fields` (`liquid_id`, `liquid_volume`,
-`liquid_color`). A protocol that needs to act on row A lists each
-subpart explicitly: `treatment_plate.A1`, `treatment_plate.A2`, ...,
-`treatment_plate.A12`. Each well's `render_map` resolves the three
-flat fields to a base SVG, a fill height, and a color tint
-independently. No SVG asset id appears in any `state_field`. The
-`row_letter` and `col` tokens in `id_pattern` are object-vocabulary
-literals (the row index 0..7 maps to A..H; the col index 1..12 maps
-to itself); the same pattern would express `slot_0..slot_7` for a
-list-layout rack via `id_pattern: "slot_{index}"`.
+carrying two flat `state_fields` (`contents_name`, `contents_volume`).
+A protocol that needs to act on row A lists each subpart explicitly:
+`treatment_plate.A1`, `treatment_plate.A2`, ..., `treatment_plate.A12`.
+Each well's `visual_states` resolves the two flat fields to a base SVG
+and a fill height independently. No SVG asset name appears in any
+`state_field`. The `row_letter` and `col` tokens in `name_pattern` are
+object-vocabulary literals (the row index 0..7 maps to A..H; the col
+index 1..12 maps to itself); the same pattern would express `slot_0..slot_7`
+for a list-layout rack via `name_pattern: "slot_{index}"`.
 
 ## Worked example: serological pipette
 
@@ -430,7 +407,7 @@ held-liquid pair. The candidate is the `serological_pipette` asset
 observed in the inventory.
 
 ```yaml
-id: serological_pipette
+object_name: serological_pipette
 kind: pipette
 label: Serological pipette
 short_label: Pipette
@@ -444,41 +421,41 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - name: held_liquid_id
+  - name: held_contents_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso]
     default: empty
-    description: Reagent currently aspirated in the pipette barrel.
-  - name: held_liquid_volume
+    description: Contents currently aspirated in the pipette barrel.
+  - name: held_contents_volume
     type: float
     unit: ml
     min: 0
     max: 25.0
     default: 0
-    description: Volume of liquid currently held, in milliliters.
+    description: Volume of contents currently held, in milliliters.
 
-render_map:
+visual_states:
   set_volume:
     kind: overlay
     formula: label(state(set_volume), format="{value} ml")
-  held_liquid_id:
+  held_contents_name:
     kind: svg
     cases:
       - when: empty
-        output: { svg: pipette_empty }
+        output: { asset_name: pipette_empty }
       - when: pbs
-        output: { svg: pipette_filled }
+        output: { asset_name: pipette_filled }
       - when: media
-        output: { svg: pipette_filled }
+        output: { asset_name: pipette_filled }
       - when: trypsin
-        output: { svg: pipette_filled }
+        output: { asset_name: pipette_filled }
       - when: dmso
-        output: { svg: pipette_filled }
-  held_liquid_volume:
+        output: { asset_name: pipette_filled }
+  held_contents_volume:
     kind: composite
-    formula: fill_height(state(held_liquid_volume), capacity_ml=25.0)
+    formula: fill_height(state(held_contents_volume), capacity_ml=25.0)
 
-capabilities: [clickable, liquid_container, instrument_with_setpoint, cursor_attachable]
+capabilities: [clickable, contents_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3
@@ -489,11 +466,11 @@ layout:
 
 Reading: the pipette is a flat object (no `structure` block, no
 subparts). It declares three flat `state_fields`: `set_volume` (a
-`float` set-point), `held_liquid_id` (an `enum` of which reagent is
-loaded), and `held_liquid_volume` (a `float` for the amount held).
-The `render_map` resolves each independently: the set-point becomes an
-overlay label, the reagent becomes a base SVG, and the volume becomes
-a fill height. No SVG asset id appears in any `state_field`. The
+`float` set-point), `held_contents_name` (an `enum` of which contents is
+loaded), and `held_contents_volume` (a `float` for the amount held).
+The `visual_states` resolves each independently: the set-point becomes an
+overlay label, the contents becomes a base SVG, and the volume becomes
+a fill height. No SVG asset name appears in any `state_field`. The
 layout hints replicate today's `serological_pipette` row in
 `src/asset_specs.ts` (`defaultWidth: 3`, `labelWidth: 6`,
 `anchorYOffset: 0`), now object-owned, plus `anchor_y: tip`
@@ -503,15 +480,16 @@ reclassified from today's per-item placement sub-field.
 
 | Term | One-line definition |
 | --- | --- |
-| object | The unit of authoring for "what a thing is"; one identity, one structure, one schema of state, one render map, one capability set, one set of layout hints. |
-| object library | The collection of object definitions a scene references by `id`; the home of every object-identity slot. |
-| object id | The stable string id for an object; the only handle the scene side names. |
+| object | The unit of authoring for "what a thing is"; one identity, one structure, one schema of state, one visual_states map, one capability set, one set of layout hints. |
+| object library | The collection of object definitions a scene references by `object_name`; the home of every object-identity slot. |
+| object_name | The stable string name for an object; the only handle the scene side names. |
+| contents | Material currently inside or held by an object (reagent, waste, old media, cells, mixture, suspension, diluted drug). |
 | flat object | An object with no `structure` block; no subparts. |
 | structured surface | An object with a `structure` block declaring addressable subparts. |
 | subpart | An addressable internal unit of a structured surface (a `well`, `tube`, `lane`, `slot`, `channel`). |
 | `state_field` | One declared, typed flat-primitive state variable on an object or per subpart; the contract between the protocol and the object. |
-| `render_map` | The object's state-to-visual function; resolves a `state_field` value to an SVG asset, color, overlay, or composite. |
-| capability | A closed-vocabulary affordance tag declared on the object: `clickable`, `liquid_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`. |
+| `visual_states` | The object's state-to-visual function; resolves a `state_field` value to an SVG asset name, overlay name, or composite. |
+| capability | A closed-vocabulary affordance tag declared on the object: `clickable`, `contents_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`. |
 | layout hint | An object-default visual metric the layout engine consumes (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). |
 | `ObjectStateChange` | The protocol-level primitive that mutates declared `state_fields` on an object; defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). |
 
@@ -522,12 +500,19 @@ into the object vocabulary from somewhere else.
 
 | Reclassified or retired | Use instead | Reason |
 | --- | --- | --- |
-| `items[].svgAsset` (literal asset id in scene YAML) | a `render_map` entry on the object | the object owns SVG manipulation; the asset id lives in `render_map` only |
-| `items[].kind`, `items[].id`, `items[].label`, `items[].shortLabel`, `items[].inventoryRef` (object-identity sub-fields in scene YAML) | object identity (`id`, `kind`, `label`, `short_label`, `inventory_ref`) | identity is object-owned; the scene names objects only by `id` |
+| `items[].svgAsset` (literal asset name in scene YAML) | a `visual_states` entry on the object | the object owns SVG manipulation; the asset name lives in `visual_states` only |
+| `items[].kind`, `items[].id`, `items[].label`, `items[].shortLabel` (object-identity sub-fields in scene YAML) | object identity (`object_name`, `kind`, `label`, `short_label`) | identity is object-owned; the scene names objects only by `object_name` |
+| `items[].inventoryRef` (object-identity sub-field in scene YAML) | retired; moved to schema but removed from authored surface | curriculum-level inventory is decoupled from object schema |
 | `items[].anchorY` (placement sub-field in scene YAML) | object `layout.anchor_y` (a scene placement may still override) | a serological pipette is tip-anchored regardless of placement; the anchor is an object property |
 | `capabilities` (top-level scene YAML key) | object `capabilities` (closed list) | a capability is a property of what the thing is, not where it is placed |
 | `target_groups` (top-level scene YAML key) | retired with no successor in this vocabulary pass; named groups are deferred until shipped authoring pain appears | structure belongs to the object but the named-groups expression is deferred; protocols list explicit subparts instead |
 | per-asset entries in `src/asset_specs.ts` (`defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale`) | object `layout` block | per-asset visual metrics are object properties, not engine constants |
-| `SvgSwap` (as a protocol-level `scene_operation`) | invoked by the object's `render_map` from an `ObjectStateChange` mutation | render-layer mechanism, not a protocol semantic primitive; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) |
-| `ColorChange` (as a protocol-level `scene_operation`) | invoked by the object's `render_map` from an `ObjectStateChange` mutation | render-layer mechanism; a future colorimetric-reading primitive is reserved but is not generic `ColorChange` |
+| `liquid_id`, `held_liquid_id` | `contents_name`, `held_contents_name` | semantic rename: object vocabulary uses contents-terminology; supports contents.yaml registry |
+| `liquid_volume`, `held_liquid_volume` | `contents_volume`, `held_contents_volume` | semantic rename: object vocabulary uses contents-terminology |
+| `liquid_color` (authored `state_field`) | derived from `contents_name` via `visual_states` | color is a visual property; render rules read contents and map to visual appearance |
+| `id_pattern` token-pattern naming | `name_pattern` | subpart naming is conceptually separate from identity ids; uses `object_name.subpart_name` |
+| `render_map` (state-to-visual mapping) | `visual_states` (named closed visual variants) | `visual_states` emphasizes that variants are closed and explicit, not a generic rendering surface |
+| `SvgSwap` (as a protocol-level `scene_operation`) | invoked by the object's `visual_states` from an `ObjectStateChange` mutation | render-layer mechanism, not a protocol semantic primitive; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) |
+| `ColorChange` (as a protocol-level `scene_operation`) | derived color from `contents_name` via the object's `visual_states` | render-layer mechanism; color is not an authored state, it is derived from contents |
+| `liquid_container` (capability) | `contents_container` | semantic rename: capability labels objects that hold tracked contents |
 

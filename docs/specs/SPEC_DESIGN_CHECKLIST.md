@@ -185,9 +185,9 @@ Rule:
 
 Flag the same concept named differently across docs:
 
-- `object_ref` vs `object_id`
+- `object_ref` vs `object_name`
 - `slot` vs `subpart`
-- `state_map` vs `render_map`
+- `state_map` vs `visual_states`
 - `item` vs `placement`
 - `kind` vs `type` vs `category`
 
@@ -372,7 +372,7 @@ Rule:
 
 - Mutation operations may not change fields locked by the base scene
   (workspace, background, bounds, zones, layout_rules, capabilities,
-  object identity, label, state_fields, render_map).
+  object identity, state_fields, visual_states).
 - `reposition_placements` may change only: `zone`, `position`, `depth`,
   `anchor`.
 - `add_placements` may declare only placement fields; not object identity,
@@ -381,16 +381,16 @@ Rule:
   inheritance table.
 - Default severity: `high`.
 
-### 21. Base placement missing placement_id
+### 21. Base placement missing placement_name
 
-Flag: placements in a base scene that do not declare a `placement_id`.
+Flag: placements in a base scene that do not declare a `placement_name`.
 
 Rule:
 
-- Every placement in a base scene must carry a stable `placement_id`.
-- The `placement_id` is the canonical selector for all mutation operations
+- Every placement in a base scene must carry a stable `placement_name`.
+- The `placement_name` is the canonical selector for all mutation operations
   (`reposition_placements`, `deactivate_placements`, `remove_placements`).
-- Selection by object id is rejected because a base scene may carry several
+- Selection by `object_name` is rejected because a base scene may carry several
   placements of the same object.
 - See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the full rule.
 - Default severity: `high`.
@@ -423,6 +423,99 @@ Rule:
   [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 - Default severity: `high`.
 
+### 24. Author YAML names semantic things; runtime derives DOM handles and visual colors
+
+Flag: any YAML vocabulary doc that names runtime-derived values (DOM mount
+points, computed visual colors, internal renderer state) as if they were
+author vocabulary.
+
+Rule:
+
+- Authors name semantic things in YAML: scene names, object names, placement
+  names, target names, step names, interaction sequences, contents names.
+- The runtime derives implementation details from author-named semantic values.
+  Examples: `${scene_name}-scene` mount elements (not authored), palette
+  colors computed from `visual_states` (not authored).
+- Specs must not surface derived values as authoring vocabulary.
+- YAML vocabulary remains clean and semantic; derivation is a runtime concern.
+- Default severity: `blocker`.
+
+### 25. Author-facing YAML handles use `_name`; `_id` does not appear in author YAML
+
+Flag: any author-facing YAML field named with `_id` suffix (e.g.,
+`object_id`, `scene_id`, `placement_id`, `step_id`, etc.).
+
+Rule:
+
+- Author-facing YAML uses `_name` suffixes to name semantic entities:
+  `object_name`, `scene_name`, `placement_name`, `target_name`, `step_name`,
+  `part_name`, `day_name`, `asset_name`, `overlay_name`, `contents_name`,
+  `held_contents_name`.
+- `_id` does not appear in author-facing YAML vocabulary. The runtime may
+  use `_id` internally for deduplication, indexing, or DOM binding; that is
+  a runtime implementation detail.
+- Field renames from `_id` to `_name` are canonical vocabulary migrations,
+  not optional aliases. Old `_id` fields are retired terms.
+- Default severity: `blocker`.
+
+### 26. Objects declare closed `visual_states`; no generic rendering map or expression surface
+
+Flag: any OBJECT_VOCABULARY.md or OBJECT_YAML_FORMAT.md text that permits
+objects to declare a generic rendering map, render-expression language,
+templating surface, or free-form visual-configuration escape hatch
+(including fields named `render_map`, `render_config`, `appearance`,
+`style_map`, `expression`, `template`, `metadata`, or similar).
+
+Rule:
+
+- Objects declare closed named `visual_states`, each with a fixed visual
+  configuration.
+- `visual_states` is a closed enumeration, not a template or rule engine.
+  Authors select from the declared set; unknown state names are a build error.
+- Objects do NOT expose a generic rendering map, expression evaluator,
+  templating surface, or free-form visual configuration.
+- Asset names appear only inside `visual_states` declarations (not at the
+  object top level or in behavior fields).
+- Default severity: `blocker`.
+
+### 27. Layer ownership: object YAML names assets only inside visual_states; scene YAML names objects and placements; protocol YAML stays semantic
+
+Flag: any cross-layer leakage of naming responsibility.
+
+Rule:
+
+- Object YAML declares an object's identity, state fields, capabilities, and
+  closed `visual_states`. Asset names appear only inside `visual_states`.
+- Scene YAML names objects and placements, declares placement positions and
+  layout operations, and defines scene-level layout and zones.
+- Protocol YAML names targets, steps, interactions, parts, days, and scenes.
+  Protocol YAML does not name assets (no SVG references), does not name
+  visual configurations or render mechanics, and does not declare scene
+  structure.
+- This layering ensures no YAML layer tries to invent meaning at a lower
+  layer and no lower layer exposes implementation details upward.
+- Default severity: `blocker`.
+
+### 28. Authoring surfaces are closed
+
+Flag: any spec or example that introduces an authoring file outside the
+approved layout.
+
+Allowed authoring files:
+
+- `content/objects/<object_name>.yaml`
+- `content/scenes/<scene_name>.yaml`
+- `content/protocols/<protocol_name>/protocol.yaml`
+- `content/protocols/<protocol_name>/contents.yaml`
+- `content/protocols/<protocol_name>/scenes/<scene_name>.yaml`
+
+Rule:
+
+- No other authoring files are valid unless the vocabulary is edited first.
+- A new authoring file kind requires a ratified spec edit, not an ad-hoc
+  introduction in an example or migration note.
+- Default severity: `blocker`.
+
 ## Smell-class quick reference
 
 | Class | Detector keyword set | Rule |
@@ -448,9 +541,14 @@ Rule:
 | Scene inheritance chain longer than one level | base extends base, protocol extends protocol, multi-level depth | strictly one level: base extends nothing, protocol extends one base |
 | Scene introduces a fifth mutation operation or generic overrides block | undefined operation names, `overrides:`, `patch:`, generic `metadata:` | four operations only: add, reposition, deactivate, remove |
 | Scene operation targets a locked field | operation changes workspace, background, bounds, zones, layout_rules, capabilities, object fields | only changeable via four operations; some fields locked |
-| Base placement missing placement_id | placement without `placement_id` in base scene | every base placement must declare stable `placement_id` |
+| Base placement missing placement_name | placement without `placement_name` in base scene | every base placement must declare stable `placement_name` |
 | Object schema introduces an extends field | `extends:` on objects, template-object layer | objects canonical-by-id, no `extends`, mint new id if different |
 | Protocol schema introduces an extends field | `extends:` on protocols, template-protocol layer | spec-shaped protocols, no templates, reuse via `sequence_runner` |
+| Author YAML names semantic things; runtime derives DOM and colors | naming runtime-derived values as YAML vocabulary | author YAML names semantic entities; runtime derives implementation (DOM mount points, colors) |
+| Author YAML uses `_name` not `_id` | `_id` suffix in author-facing fields | rename all `_id` to `_name`; `_id` is runtime internal only |
+| Objects declare closed `visual_states`; no generic rendering map | `render_map`, `render_config`, expressions, templating | closed enumeration only; no template or expression evaluator; no metadata/extras escape hatches |
+| Layer ownership: object names assets in `visual_states`, scene names objects/placements, protocol stays semantic | asset names at object top-level or in behavior; visual config in scene; implementation details in protocol | strict three-layer: object YAML -> assets in visual_states only; scene YAML -> objects/placements; protocol YAML -> targets/steps/parts/scenes semantic only |
+| Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/scenes/`, `content/protocols/<name>/{protocol,contents}.yaml`, or `content/protocols/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
 
 ## Sweep agent deliverable
 
