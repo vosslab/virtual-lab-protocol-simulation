@@ -207,7 +207,7 @@ engine arranges placements within a zone using the zone's own rules, then
 arranges zones within the scene using `scene_bounds`. Zones are scene-side
 because they describe where things go, not what any one thing is. A zone
 carries geometry and arrangement; it never carries identity, state, or
-rendering. See [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md) for how the layout
+rendering. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) for how the layout
 engine consumes zones.
 
 | Field | Type | Required | Meaning |
@@ -292,7 +292,7 @@ Status: **target-state.** Renamed from `layoutRules`.
 
 The optional `layout_rules` block carries scene-wide hints the layout
 engine needs to resolve placements. Per-placement overrides go on the
-placement, not here. See [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md).
+placement, not here. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md).
 
 | Field | Type | Required | Meaning |
 | --- | --- | --- | --- |
@@ -651,10 +651,10 @@ consumes.
   schema (the target of every scene `placements[].object_id`).
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) - Protocol YAML
   schema; declares steps and `ObjectStateChange`.
-- [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md) - How the layout engine consumes
+- [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) - How the layout engine consumes
   zones, placements, and `layout_rules`.
 - [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) - Scene driver, capability
   registry, and the runtime wiring.
-- [../SVG_PIPELINE.md](../SVG_PIPELINE.md) - SVG asset ownership boundary.
+- [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset ownership boundary.
 - [../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md) -
   The plan that ratified the cleaned schema in M2/M3 and promotes it in M4.

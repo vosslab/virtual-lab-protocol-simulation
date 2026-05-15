@@ -72,7 +72,7 @@ dist-single/          portable single-file HTML build (gitignored)
 
 ## Relationship to FILE_STRUCTURE.md
 
-[FILE_STRUCTURE.md](FILE_STRUCTURE.md) describes the repository as it exists today. [TARGET_FILE_STRUCTURE.md](TARGET_FILE_STRUCTURE.md) describes the desired steady-state layout. Once this layout becomes the current repository structure, fold this document into [FILE_STRUCTURE.md](FILE_STRUCTURE.md) and archive it.
+[../FILE_STRUCTURE.md](../FILE_STRUCTURE.md) describes the repository as it exists today. [TARGET_FILE_STRUCTURE.md](TARGET_FILE_STRUCTURE.md) describes the desired steady-state layout. Once this layout becomes the current repository structure, fold this document into [../FILE_STRUCTURE.md](../FILE_STRUCTURE.md) and archive it.
 
 ## Out of scope
 

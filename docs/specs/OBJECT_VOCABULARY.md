@@ -63,14 +63,14 @@ Related docs:
   declared object state.
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) -- the scene-side
   vocabulary, including object-by-id placement and the adapter registry.
-- [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md) -- the shared placement system
+- [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the shared placement system
   that consumes object-side layout hints.
-- [../LIQUID_CONVENTION.md](../LIQUID_CONVENTION.md) -- the shared liquid
+- [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) -- the shared liquid
   convention. Per RD-11, liquid state on an object is modeled as
   multiple flat `state_fields` (typically `liquid_id`, `liquid_volume`,
   `liquid_color`); the liquid convention informs the render rules
   (`fill_height`, color tints) the `render_map` invokes.
-- [../SVG_PIPELINE.md](../SVG_PIPELINE.md) -- the SVG asset pipeline whose
+- [SVG_PIPELINE.md](SVG_PIPELINE.md) -- the SVG asset pipeline whose
   asset ids the object's `render_map` resolves to.
 
 ## What an object is
@@ -310,7 +310,7 @@ every scene that places it.
 Status: **target-state.**
 
 **Layout hints** are object-side defaults that the layout engine
-([../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md)) consumes when the scene places
+([LAYOUT_ENGINE.md](LAYOUT_ENGINE.md)) consumes when the scene places
 the object. They replace today's `src/asset_specs.ts` properties
 (`defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale`), which
 are visual metrics of the object itself, not of any one scene. Per

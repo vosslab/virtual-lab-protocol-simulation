@@ -6,17 +6,17 @@ This document explains how the layout engine places objects in a scene and
 how future scene authors should use it when building a new layout-driven
 scene.
 
-The scene runtime is documented in [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md).
+The scene runtime is documented in [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md).
 The scene YAML schema is documented in
-[specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md); object identity (state, assets,
-subparts) is documented in [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
-[specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md). This guide focuses on the
+[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md); object identity (state, assets,
+subparts) is documented in [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) and
+[OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). This guide focuses on the
 placement method itself: how object placements, zones, asset metrics, depth,
 labels, and scene bounds become positioned DOM elements.
 
-The core implementation lives in [src/layout_engine.ts](../src/layout_engine.ts).
-The public types live in [src/scene_types.ts](../src/scene_types.ts), and the
-asset metrics live in [src/asset_specs.ts](../src/asset_specs.ts).
+The core implementation lives in [../../src/layout_engine.ts](../../src/layout_engine.ts).
+The public types live in [../../src/scene_types.ts](../../src/scene_types.ts), and the
+asset metrics live in [../../src/asset_specs.ts](../../src/asset_specs.ts).
 
 ## Target-state vs current-code
 
@@ -24,12 +24,12 @@ This doc is largely **current-code**: it describes the shipped runtime,
 where each scene YAML carries an `items[]` block with `svgAsset` plus
 placement fields, and asset metrics live in `src/asset_specs.ts`. In the
 target-state three-vocabulary model
-([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)):
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)):
 
 - Object identity (`svgAsset`, asset metrics like `defaultWidth` and
   `labelWidth`, `state_fields`, `render_map`, structured subparts) moves to
-  object YAML, owned by [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
-  [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md).
+  object YAML, owned by [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) and
+  [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 - Scene YAML keeps only the placement side: object reference plus
   `zone`, `depthTier`, `widthScale`, `anchorY`, `alignStop`,
   `baselineOverride`, `shortLabel`, `label` override, plus zones and
@@ -106,10 +106,10 @@ not mutate the source scene config and does not install click handlers.
 
 Bench and hood are the main layout-engine examples:
 
-- [src/scenes/bench/bench.yaml](../src/scenes/bench/bench.yaml)
-- [src/scenes/bench/render.ts](../src/scenes/bench/render.ts)
-- [src/scenes/cell_culture_hood/cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml)
-- [src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts)
+- [../../src/scenes/bench/bench.yaml](../../src/scenes/bench/bench.yaml)
+- [../../src/scenes/bench/render.ts](../../src/scenes/bench/render.ts)
+- [../../src/scenes/cell_culture_hood/cell_culture_hood.yaml](../../src/scenes/cell_culture_hood/cell_culture_hood.yaml)
+- [../../src/scenes/cell_culture_hood/render.ts](../../src/scenes/cell_culture_hood/render.ts)
 
 ## When to use it
 
@@ -148,7 +148,7 @@ Poor fits:
 - Instrument control panel.
 
 Dedicated SVG-coordinate workspaces such as
-[src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)
+[../../src/scenes/well_plate_workspace/render.ts](../../src/scenes/well_plate_workspace/render.ts)
 do not use the general layout engine for their internal plate or tube grid.
 They own a custom geometric layout because their primary objects are structured
 scientific grids, not row-and-zone bench objects.
@@ -182,14 +182,14 @@ pre-subtract that padding in YAML.
 
 A layout item is a semantic object that needs a rendered visual box. The
 required fields are defined by `SceneItem` in
-[src/scene_types.ts](../src/scene_types.ts).
+[../../src/scene_types.ts](../../src/scene_types.ts).
 
 Important fields:
 
 | Field | Meaning |
 | --- | --- |
 | `id` | Stable item id. Also becomes the `data-item-id` click-dispatch attribute in renderers. |
-| `svgAsset` | Key into [src/asset_specs.ts](../src/asset_specs.ts) and the SVG facade. |
+| `svgAsset` | Key into [../../src/asset_specs.ts](../../src/asset_specs.ts) and the SVG facade. |
 | `zone` | Name of the zone that owns the item. |
 | `depthTier` | Sort order inside the zone. Lower numbers are placed first. |
 | `widthScale` | Per-scene multiplier on the asset's base width. |
@@ -211,7 +211,7 @@ asset larger or smaller without changing global asset metrics.
 
 ## Asset specs
 
-[src/asset_specs.ts](../src/asset_specs.ts) defines the default metrics that
+[../../src/asset_specs.ts](../../src/asset_specs.ts) defines the default metrics that
 make a visual asset usable by the layout engine:
 
 | Field | Meaning |
@@ -379,7 +379,7 @@ The engine only applies the final `depth` value. It does not decide which
 items should be front, mid, or back.
 
 That decision currently happens in
-`resolveSceneItemsWithDepth()` in [src/game_state.ts](../src/game_state.ts).
+`resolveSceneItemsWithDepth()` in [../../src/game_state.ts](../../src/game_state.ts).
 The resolver promotes active protocol targets to `front`, keeps related grouped
 items at `mid`, and parks unrelated grouped items at `back`. Items without a
 `group` stay `mid`, which keeps legacy layouts visually stable.
@@ -456,7 +456,7 @@ left and center groups prefer the left edge and log a warning.
 Status: **target-state.**
 
 `LayoutMove` is the protocol-side `scene_operation` that names what moves
-and where (see [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)). Per RD-10
+and where (see [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). Per RD-10
 of the scene-object split plan, it stays narrow: it does not rewrite layout.
 Only two uses are valid:
 
@@ -546,7 +546,7 @@ Use this workflow when laying out a new row-and-zone scene:
 4. Add items with stable ids, `svgAsset`, `kind`, `zone`, `depthTier`,
    `widthScale`, `label`, `anchorY`, and `alignStop`.
 5. Add `shortLabel` for labels that may collide or wrap awkwardly.
-6. Add missing asset specs in [src/asset_specs.ts](../src/asset_specs.ts).
+6. Add missing asset specs in [../../src/asset_specs.ts](../../src/asset_specs.ts).
 7. Build the adapter render path by copying the bench or hood conversion
    pattern from generated zones to `SceneLayoutRules`.
 8. Render the scene and inspect at several viewport sizes.
@@ -566,7 +566,7 @@ To make a new scene use the layout engine:
 4. Use `tab-stops` when one row has left, center, and right object clusters.
 5. Add missing SVG facade entries if the asset is new.
 6. Add missing `ASSET_SPECS` entries in
-   [src/asset_specs.ts](../src/asset_specs.ts).
+   [../../src/asset_specs.ts](../../src/asset_specs.ts).
 7. Create or update the scene adapter render path.
 8. Convert generated `zones` arrays into a `Record<string, ZoneDef>`.
 9. Call `computeSceneLayout()` with scene items, `ASSET_SPECS`, layout rules,
@@ -667,7 +667,7 @@ Use the visual symptom to choose the fix:
 - Click target exists but visual is elsewhere: the renderer probably added its
   own offsets after layout. Use the computed box directly.
 
-Console warnings from [src/layout_engine.ts](../src/layout_engine.ts) are
+Console warnings from [../../src/layout_engine.ts](../../src/layout_engine.ts) are
 specific:
 
 - `alignment anchor violated` means the visual-edge invariant failed for a
@@ -702,15 +702,15 @@ Playwright walker or scene-specific smoke test.
 
 ## Related docs
 
-- [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) - Runtime scene driver,
+- [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) - Runtime scene driver,
   registry, adapter, and capability model.
-- [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) - Scene YAML fields and build
+- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML fields and build
   pipeline.
-- [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) - Canonical scene terms.
-- [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) - Canonical object terms;
+- [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical scene terms.
+- [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) - Canonical object terms;
   asset metrics like `defaultWidth` migrate here in the follow-on plan.
-- [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) - Object-definition YAML
+- [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object-definition YAML
   schema referenced by scene placements.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset generation and ownership.
-- [archive/LAYOUT_METRICS.md](archive/LAYOUT_METRICS.md) - Older
+- [../archive/LAYOUT_METRICS.md](../archive/LAYOUT_METRICS.md) - Older
   pixel-metric note retained for historical reference.

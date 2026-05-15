@@ -12,8 +12,6 @@ Three T-75 tissue culture flask design variants have been created and are availa
 
 ### V1: Current Default (Angled Neck, Rectangular Body)
 
-![t75_flask_v1](/docs/images/flask_review/t75_flask_v1.png)
-
 **File:** `assets/equipment/t75_flask.svg`
 
 **Characteristics:**
@@ -32,8 +30,6 @@ Three T-75 tissue culture flask design variants have been created and are availa
 **Status:** Default (unchanged in M5)
 
 ### V2: Refined Modern Design (Slanted Neck, Vented Cap)
-
-![t75_flask_v2](/docs/images/flask_review/t75_flask_v2.png)
 
 **File:** `assets/equipment/t75_flask_v2.svg`
 
@@ -54,8 +50,6 @@ Three T-75 tissue culture flask design variants have been created and are availa
 **Design rationale:** The slanted neck and visible vent holes emphasize the vented flask design, which is scientifically more accurate for the OVCAR8 protocol (gas exchange during culture). Vented T-75 flasks are the standard in cell biology labs.
 
 ### V3: Classic Corning Style (Straight Neck, Compact)
-
-![t75_flask_v3](/docs/images/flask_review/t75_flask_v3.png)
 
 **File:** `assets/equipment/t75_flask_v3.svg`
 

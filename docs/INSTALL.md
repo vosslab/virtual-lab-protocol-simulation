@@ -75,7 +75,7 @@ To wipe `generated/` (and other build artifacts) for fresh-start testing:
 bash dist_clean.sh
 ```
 
-See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full asset pipeline rules.
+See [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for the full asset pipeline rules.
 
 ## Verify install
 

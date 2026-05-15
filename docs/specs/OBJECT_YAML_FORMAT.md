@@ -238,7 +238,7 @@ and `liquid_color` (an `enum` of color names) for a vessel; or
 liquid. Reagent ids in the `enum`'s `allowed` list must resolve to
 declared reagents in the protocol's reagents file (see
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)). The shared liquid
-model is in [../LIQUID_CONVENTION.md](../LIQUID_CONVENTION.md); render-rule
+model is in [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md); render-rule
 helpers (`fill_height`, color tints) are defined in the [formula
 mini-language](#formula-mini-language) below.
 
@@ -410,7 +410,7 @@ A capability declared without its required schema is a build-time error.
 Status: **target-state.**
 
 `layout` is a mapping of object-default visual metrics the layout engine
-([../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md)) consumes when a scene places the
+([LAYOUT_ENGINE.md](LAYOUT_ENGINE.md)) consumes when a scene places the
 object. Per RD-2, a scene placement may override every field in the
 `layout` block.
 
@@ -708,12 +708,12 @@ generated module the build emits.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) -- the protocol
   YAML schema; reagent ids referenced by `liquid` `state_fields` are
   declared there.
-- [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md) -- the layout engine that
+- [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the layout engine that
   consumes object-side layout hints.
-- [../LIQUID_CONVENTION.md](../LIQUID_CONVENTION.md) -- the shared liquid
+- [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) -- the shared liquid
   model that the `liquid` `state_field` type and the `fill_height` /
   `tint` formula tokens build on.
-- [../SVG_PIPELINE.md](../SVG_PIPELINE.md) -- the SVG asset pipeline; the
+- [SVG_PIPELINE.md](SVG_PIPELINE.md) -- the SVG asset pipeline; the
   `render_map` resolves to asset ids the pipeline owns.
 - [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md) -- ASCII-only and escaping
   rules for YAML and markdown.

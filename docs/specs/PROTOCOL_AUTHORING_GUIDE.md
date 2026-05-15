@@ -27,7 +27,7 @@ Related references:
 - [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md): canonical object terms
   (`state_fields`, `render_map`, structured surfaces and subparts) the
   protocol's `target` names resolve against.
-- [../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
+- [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
   (canonical real-UI regression test).
 
 ## Terminology
@@ -426,7 +426,7 @@ cross-file rules; the walker plays the protocol through the real DOM.
 Run Python tooling through the repo environment: `source source_me.sh && python3 ...`.
 
 The build and walk commands and their exact flags are documented in
-[../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md). When the protocol audits
+[WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md). When the protocol audits
 clean, validates, builds, and walks green, it is shippable -- but a
 mini-protocol is not complete until the visible interaction works through
 the same path a student uses.

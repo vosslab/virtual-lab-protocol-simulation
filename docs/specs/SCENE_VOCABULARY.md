@@ -59,8 +59,8 @@ Related docs:
 - [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) -- the
   protocol-side vocabulary; the boundary section below cross-references
   it.
-- [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md) -- the shared placement system.
-- [../LIQUID_CONVENTION.md](../LIQUID_CONVENTION.md) -- the shared liquid
+- [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the shared placement system.
+- [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) -- the shared liquid
   convention referenced from object render rules.
 
 ## What a scene is
@@ -490,7 +490,7 @@ hints, and asset metadata; renderers consume the computed placement
 and produce visible DOM or SVG. Structured-surface internals may
 use their own coordinate geometry declared on the object. The
 layout engine is scene-side geometry; the protocol vocabulary never
-reaches into it. See [../LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md).
+reaches into it. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md).
 
 ### structured surface
 

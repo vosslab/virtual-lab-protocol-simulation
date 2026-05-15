@@ -176,6 +176,22 @@
   the resolution mechanism ratified under WP-BND1 / OQ-16.
 
 ### Behavior or Interface Changes
+- **docs/specs/ expanded by 7 more docs (Patch 3 of docs reorg plan)**:
+  Seven additional spec-surface docs `git mv`'d into `docs/specs/`:
+  `LAYOUT_ENGINE.md`, `LIQUID_CONVENTION.md`, `SCALING_MODEL.md`,
+  `SPEC_DESIGN_CHECKLIST.md`, `SVG_PIPELINE.md`,
+  `TARGET_FILE_STRUCTURE.md`, `WALKTHROUGH_GUIDE.md`. 142 markdown link
+  errors closed: inbound references rewritten across all callers via
+  the same Patch-2 migration script (expanded target list to 17);
+  outbound `specs/X.md` and `../X` forms inside the moved files
+  repointed to bare-sibling and `../../X` respectively. Two pre-existing
+  broken-image references in `docs/archive/FLASK_DESIGN_REVIEW.md` and
+  one nonexistent `images/` row in [FILE_STRUCTURE.md](FILE_STRUCTURE.md)
+  removed per RD-G (target file or directory does not exist;
+  surrounding text preserved). `AGENTS.md` "Core rules" and "Where to
+  find things" inline path strings updated for `LIQUID_CONVENTION.md`
+  and `SPEC_DESIGN_CHECKLIST.md`. `pytest tests/test_markdown_links.py`
+  and `pytest tests/test_ascii_compliance.py` both pass.
 - **docs/specs/ folder added; 10 spec docs relocated (Patch 2 of docs reorg plan)**:
   Created `docs/specs/` and `git mv`'d the ten specification-surface docs into
   it: all four `PROTOCOL_*` (`PROTOCOL_AUTHORING_GUIDE.md`, `PROTOCOL_STEPS.md`,

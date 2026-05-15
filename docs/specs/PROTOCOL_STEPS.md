@@ -128,7 +128,7 @@ Status: **target-state.**
    `next_step` to the new step's `name`.
 5. If this is the first step, update the protocol's `entry_step`.
 6. Rebuild so the typed protocol data regenerates, and walk the protocol
-   through the real UI (see [../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md)).
+   through the real UI (see [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md)).
 
 ## Event emission
 
@@ -176,7 +176,7 @@ records the failure on a window-scoped validation flag.
 Status: **current-code.**
 
 The canonical real-UI regression test is the YAML-driven UI walker
-documented in [../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md). It reads the
+documented in [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md). It reads the
 compiled protocol data and drives real DOM clicks through the same visible
 path a student uses. It is the primary CI gate for whether a mini-protocol
 is playable.
@@ -189,4 +189,4 @@ is playable.
   interaction YAML schema.
 - [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md): how to author
   a protocol end to end.
-- [../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md): the real-UI walker.
+- [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md): the real-UI walker.

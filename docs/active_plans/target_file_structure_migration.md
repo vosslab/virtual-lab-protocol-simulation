@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Implementation sequencing for moving the repo from its current layout, described in [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md), to the steady-state layout described in [docs/TARGET_FILE_STRUCTURE.md](../TARGET_FILE_STRUCTURE.md). This doc tracks moves and order; it does not duplicate folder-purpose rationale.
+Implementation sequencing for moving the repo from its current layout, described in [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md), to the steady-state layout described in [../specs/TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md). This doc tracks moves and order; it does not duplicate folder-purpose rationale.
 
 ## Moves
 
@@ -21,5 +21,5 @@ Ordering within the broader refactor is owned by [docs/archive/scene_runtime_spi
 When all moves are complete:
 
 - Fold the target layout into [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md).
-- Archive [docs/TARGET_FILE_STRUCTURE.md](../TARGET_FILE_STRUCTURE.md) under `docs/archive/`.
+- Archive [../specs/TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md) under `docs/archive/`.
 - Archive this migration doc under `docs/archive/`.

@@ -9,12 +9,12 @@ for observable game-state progress, records a JSON report, and saves
 screenshots.
 
 The canonical walker is
-[protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs).
+[protocol_walkthrough_yaml.mjs](../../tests/playwright/e2e/protocol_walkthrough_yaml.mjs).
 Shared helpers live in
-[walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs). The optional
+[walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs). The optional
 Python wrapper is
-[run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py). The fast
-browser smoke wrapper [run_smoke.py](../tools/run_smoke.py) is useful context,
+[run_protocol_walkthrough.py](../../tools/run_protocol_walkthrough.py). The fast
+browser smoke wrapper [run_smoke.py](../../tools/run_smoke.py) is useful context,
 but it is not a full protocol walkthrough.
 
 The goal is to prove that a mini-protocol is playable through visible browser
@@ -27,10 +27,10 @@ against the current runtime. The current runtime and walker still dispatch
 on the retired `completionPath` schema (`completionPath.kind`,
 `interactionSequence` / `directTool` / `modal` / `multipleChoice`, `nextId`,
 `heldLiquid` -- see the retired-terms table in
-[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)). The target-state interaction model -- a `step` wrapping an
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). The target-state interaction model -- a `step` wrapping an
 ordered `sequence` of four-slot `interaction` blocks, with `step_validator`,
 `outcome`, and `next_step` -- is defined in
-[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). Migrating the runtime and
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Migrating the runtime and
 the walker to that model is the follow-on code-migration plan's job; until
 that lands, the walker dispatch and progress predicates documented below
 reflect the legacy schema, and that is the honest current state, not a
@@ -43,9 +43,9 @@ The walkthrough has four layers:
 | Layer | File | Responsibility |
 | --- | --- | --- |
 | Built app | `dist/` | Browser-rendered game output produced by the build |
-| Node walker | [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
-| Helper library | [walker_helpers.mjs](../tests/playwright/e2e/walker_helpers.mjs) | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers |
-| Python wrapper | [run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Optional build-and-run convenience around the Node walker |
+| Node walker | [protocol_walkthrough_yaml.mjs](../../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
+| Helper library | [walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs) | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers |
+| Python wrapper | [run_protocol_walkthrough.py](../../tools/run_protocol_walkthrough.py) | Optional build-and-run convenience around the Node walker |
 
 The core loop is:
 
@@ -91,7 +91,7 @@ Specifically, it proves:
 - Console errors and same-origin network failures are captured in the report.
 
 This is the browser evidence side of
-[PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md): a mini-protocol is not complete
+[../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md): a mini-protocol is not complete
 until the visible interaction works.
 
 ## Current proof boundary
@@ -539,7 +539,7 @@ after each interaction.
 ## Headless browser contract
 
 The walkthrough uses Chromium through the Playwright library, launched headless
-by default. This aligns with [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md): the
+by default. This aligns with [../PLAYWRIGHT_USAGE.md](../PLAYWRIGHT_USAGE.md): the
 canonical pattern is `chromium.launch()` with no headed option, and existing
 scripts already run headless.
 
@@ -550,8 +550,8 @@ walkthrough contract.
 
 ## Relationship to smoke tests
 
-[run_smoke.py](../tools/run_smoke.py) builds the app and runs
-[test_game_ui.mjs](../tests/playwright/test_game_ui.mjs). That smoke test
+[run_smoke.py](../../tools/run_smoke.py) builds the app and runs
+[test_game_ui.mjs](../../tests/playwright/test_game_ui.mjs). That smoke test
 checks that the app loads, key UI elements render, and basic early gates pass.
 
 Use smoke tests for fast browser sanity checks. Use the walkthrough when the
@@ -566,11 +566,11 @@ future coders are likely to hit.
 
 ## Related docs
 
-- [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md): non-negotiable mini-protocol
+- [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md): non-negotiable mini-protocol
   completion rule.
-- [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md): Playwright conventions,
+- [../PLAYWRIGHT_USAGE.md](../PLAYWRIGHT_USAGE.md): Playwright conventions,
   headless default, and Codex-only Podman fallback.
-- [E2E_TESTS.md](E2E_TESTS.md): browser test placement and E2E conventions.
-- [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md): protocol
+- [../E2E_TESTS.md](../E2E_TESTS.md): browser test placement and E2E conventions.
+- [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md): protocol
   authoring workflow and validation gates.
-- [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md): protocol schema.
+- [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): protocol schema.

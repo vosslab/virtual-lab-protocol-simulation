@@ -138,7 +138,7 @@ it is the follow-on code-migration plan's job.
   (`build_github_pages.sh`, `export_single_file.sh`) regenerate it
   before `tsc` and the bundler; `tests/conftest.py` regenerates it once
   per pytest session if `generated/svg_manifest.ts` is missing.
-- See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full SVG asset
+- See [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for the full SVG asset
   ownership boundary and the rule that scenes import only
   `svg_assets.ts`.
 
@@ -181,7 +181,7 @@ it is the follow-on code-migration plan's job.
     (emitted by [tools/generate_svg_globals.py](../tools/generate_svg_globals.py)).
   - `generated/svg_manifest.ts` - SVG id/group registry and type definitions
     (emitted by [tools/generate_svg_globals.py](../tools/generate_svg_globals.py)).
-  - See [SVG_PIPELINE.md](SVG_PIPELINE.md) for the full SVG asset
+  - See [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for the full SVG asset
     pipeline and ownership rules.
 
 ### Build pipeline

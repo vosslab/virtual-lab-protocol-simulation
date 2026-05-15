@@ -94,9 +94,9 @@ The `legacy_` filename prefix is a temporary marker used during refactors. It si
 ## Vocabulary closure and anti-drift
 
 Authoring vocabularies (protocol, object, scene, and the supporting
-subsystem vocabularies in [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md),
-[LIQUID_CONVENTION.md](LIQUID_CONVENTION.md), and
-[SVG_PIPELINE.md](SVG_PIPELINE.md)) are closed surfaces. Authors compose
+subsystem vocabularies in [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md),
+[specs/LIQUID_CONVENTION.md](specs/LIQUID_CONVENTION.md), and
+[specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md)) are closed surfaces. Authors compose
 existing terms; they do not invent new ones by editing YAML alone.
 
 Permanent principles:
@@ -135,7 +135,7 @@ classes, severity labels, section-context tags, and past-pitfall
 references. The checklist is the reusable audit tool; it is invoked when
 auditing existing canonical docs or onboarding a new spec.
 
-See [SPEC_DESIGN_CHECKLIST.md](SPEC_DESIGN_CHECKLIST.md) for the full
+See [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) for the full
 checklist.
 
 ## Sequence runners and friendly terminology

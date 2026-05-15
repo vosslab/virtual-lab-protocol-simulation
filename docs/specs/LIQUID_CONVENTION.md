@@ -1,6 +1,6 @@
 # Pipette Liquid Fill Convention
 
-Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
 ## Target-state vs current-code
 
@@ -10,15 +10,15 @@ runtime liquid state it shows (`gameState.heldLiquid` with its `volumeMl`
 and `colorKey` fields) is the legacy runtime shape. In the target-state
 model, liquid is not a composite typed field on a single primitive; per
 RD-11 of the scene-object split plan
-([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)),
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
 state-field types are flat primitives only (`enum`, `int`, `float`,
 `bool`). A liquid change is expressed as an `ObjectStateChange`
-`scene_operation` (per [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md))
+`scene_operation` (per [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md))
 that writes the object's flat liquid `state_fields`: `liquid_id` (enum),
 `liquid_volume` (float, unit=ul or ml depending on the object), and
 optional `liquid_color` (enum) -- or, for a tool that carries liquid,
 `held_liquid_id` and `held_liquid_volume`. The object's `render_map`
-(per [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)) resolves those state
+(per [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) resolves those state
 values to the visible asset and color. Migrating the runtime liquid state
 to flat `state_fields` is the follow-on code-migration plan's job; the
 SVG and color conventions below are unaffected by that migration.
@@ -97,8 +97,8 @@ shape; per RD-11 the target-state model writes flat liquid `state_fields`
 (`held_liquid_id`, `held_liquid_volume` for tools; `liquid_id`,
 `liquid_volume`, optional `liquid_color` for vessels) via an
 `ObjectStateChange` `scene_operation` (see
-[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and
-[specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)).
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and
+[OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)).
 
 When a pipette is loaded with liquid via `resolveInteraction`, the state change populates:
 
@@ -119,7 +119,7 @@ gameState.heldLiquid = null;
 
 ## Rendering in Hood Scene
 
-[src/scenes/cell_culture_hood/render.ts](../src/scenes/cell_culture_hood/render.ts) in the `getItemSvgHtml()` function checks if `gameState.heldLiquid.tool` matches the item being rendered:
+[../../src/scenes/cell_culture_hood/render.ts](../../src/scenes/cell_culture_hood/render.ts) in the `getItemSvgHtml()` function checks if `gameState.heldLiquid.tool` matches the item being rendered:
 
 ```typescript
 case 'serological_pipette':
@@ -158,7 +158,7 @@ For wells, the plate renderer reads
 dispatcher and fills each well with the reagent `displayColor`. The
 active well receives the active outline class; completed wells keep
 their fill but switch to the completed outline class. See
-[src/scenes/well_plate_workspace/render.ts](../src/scenes/well_plate_workspace/render.ts)
+[../../src/scenes/well_plate_workspace/render.ts](../../src/scenes/well_plate_workspace/render.ts)
 for the implementation.
 
 ## Future Extensions

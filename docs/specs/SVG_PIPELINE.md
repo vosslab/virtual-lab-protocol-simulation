@@ -8,7 +8,7 @@ flows through recolor primitives and semantic recipes, and converges in a
 single composition facade that scenes consume.
 
 The hard rule is: scene adapters and capabilities import only
-[src/svg_assets.ts](../src/svg_assets.ts). They never import the generated
+[../../src/svg_assets.ts](../../src/svg_assets.ts). They never import the generated
 SVG manifest, the recolor primitives, or the recipe layer directly.
 
 The generated SVG manifest lives under `generated/`, not under `src/`, so
@@ -69,14 +69,14 @@ Each layer has one job:
   emits one `generated/svg_assets/<asset>.ts` per source SVG, and emits
   `generated/svg_manifest.ts` carrying `SVG_IDS` and `SVG_GROUPS`. Output
   is deterministic so reruns produce byte-identical files.
-- [src/svg_color_patch.ts](../src/svg_color_patch.ts) provides the recolor
+- [../../src/svg_color_patch.ts](../../src/svg_color_patch.ts) provides the recolor
   primitives (`applyPatches`, `expandGroupPatch`, `validatePatchIds`,
   `SvgColorPatch`, `SvgGroupPatch`).
-- [src/svg_recipes.ts](../src/svg_recipes.ts) maps semantic state enums
+- [../../src/svg_recipes.ts](../../src/svg_recipes.ts) maps semantic state enums
   (`T75LiquidVisual`, `BottleLiquid`) to concrete patch lists
   (`flaskResiduePatches`, `bottleLiquidPatches`, `bottleLiquidLabel`,
   `deriveT75Visual`).
-- [src/svg_assets.ts](../src/svg_assets.ts) composes manifest, patches,
+- [../../src/svg_assets.ts](../../src/svg_assets.ts) composes manifest, patches,
   and recipes into rendered SVG strings and exposes the public API to
   scenes.
 
@@ -84,30 +84,30 @@ Each layer has one job:
 
 Scene adapters under `src/scenes/**` and capability implementations under
 `src/scenes/capabilities/**` import from
-[src/svg_assets.ts](../src/svg_assets.ts) only.
+[../../src/svg_assets.ts](../../src/svg_assets.ts) only.
 
 Forbidden imports from any scene or capability file:
 
 - `generated/svg_assets/**` (per-asset constants and barrel).
 - `generated/svg_manifest.ts` (`SVG_IDS`, `SVG_GROUPS`).
-- [src/svg_color_patch.ts](../src/svg_color_patch.ts) (recolor primitives).
-- [src/svg_recipes.ts](../src/svg_recipes.ts) (semantic state to patch
+- [../../src/svg_color_patch.ts](../../src/svg_color_patch.ts) (recolor primitives).
+- [../../src/svg_recipes.ts](../../src/svg_recipes.ts) (semantic state to patch
   lists).
 
 If a scene needs a new asset, a new state, or a new overlay, expose the new
 behavior through `svg_assets.ts` and import that. Reaching past the facade
 defeats the boundary the pipeline is built around.
 
-Two authored modules may import from `generated/`: [src/svg_assets.ts](../src/svg_assets.ts)
-(composition facade that uses the barrel re-export) and [src/svg_color_patch.ts](../src/svg_color_patch.ts)
+Two authored modules may import from `generated/`: [../../src/svg_assets.ts](../../src/svg_assets.ts)
+(composition facade that uses the barrel re-export) and [../../src/svg_color_patch.ts](../../src/svg_color_patch.ts)
 (recolor-primitives layer that imports the manifest for color-group metadata). Other authored
-consumers ([src/layout_engine.ts](../src/layout_engine.ts) for aspect ratios and
-[src/protocol_ui.ts](../src/protocol_ui.ts) for static SVGs) consume through `svg_assets.ts`;
+consumers ([../../src/layout_engine.ts](../../src/layout_engine.ts) for aspect ratios and
+[../../src/protocol_ui.ts](../../src/protocol_ui.ts) for static SVGs) consume through `svg_assets.ts`;
 new code must not add direct `generated/` imports outside these two boundary modules.
 
 ## How to add an equipment asset
 
-1. Drop the new SVG into [assets/equipment/](../assets/equipment/) using
+1. Drop the new SVG into [../../assets/equipment/](../../assets/equipment/) using
    the existing naming convention (lowercase, underscores, descriptive).
 2. If the asset needs named groups of element ids that should be recolored
    together, add a sibling `<asset>.colormap.json` sidecar. The sidecar
@@ -122,7 +122,7 @@ new code must not add direct `generated/` imports outside these two boundary mod
    `generated/svg_manifest.ts` (`SVG_IDS` and `SVG_GROUPS` entries for the
    new asset).
 4. If the asset is scene-facing, expose it through
-   [src/svg_assets.ts](../src/svg_assets.ts). The scene adapter calls into
+   [../../src/svg_assets.ts](../../src/svg_assets.ts). The scene adapter calls into
    the facade by asset id, never the generated module directly.
 5. Commit ONLY the new SVG and the optional `<name>.colormap.json`
    sidecar. Do not commit anything under `generated/` -- that tree is
@@ -144,7 +144,7 @@ library rather than from the original `assets/equipment/` set. To keep
 scene callers stable, the Bioicons SVG is copied into
 `assets/equipment/<name>.svg` under a repo-stable snake_case name, and an
 identity alias is registered in the
-[src/svg_assets.ts](../src/svg_assets.ts) `EQUIPMENT_ASSETS` map (the
+[../../src/svg_assets.ts](../../src/svg_assets.ts) `EQUIPMENT_ASSETS` map (the
 alias key equals its value because the asset id already matches the file
 basename). The facade's `getEquipmentSvg` switch returns the generated
 SVG constant for that asset.
@@ -165,14 +165,14 @@ To add a new Bioicons-sourced asset:
    repo-stable snake_case basename (no spaces, no hyphens). Verify the
    `assets/equipment/` license terms match the source (Bioicons assets
    are typically CC-BY-3.0; record the attribution in
-   [docs/THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md)).
+   [../THIRD_PARTY_ASSETS.md](../THIRD_PARTY_ASSETS.md)).
 2. Rerun the generator so the new SVG flows through into
    `generated/svg_assets/<name>.ts` and `generated/svg_manifest.ts`:
    ```
    source source_me.sh && python3 tools/generate_svg_globals.py
    ```
 3. Add an identity entry to `EQUIPMENT_ASSETS` in
-   [src/svg_assets.ts](../src/svg_assets.ts):
+   [../../src/svg_assets.ts](../../src/svg_assets.ts):
    ```ts
    <name>: "<name>",
    ```
@@ -187,7 +187,7 @@ To add a new Bioicons-sourced asset:
 
 Coloring a Bioicons asset by liquid identity follows the same recipe
 path as the original assets: a recipe in
-[src/svg_recipes.ts](../src/svg_recipes.ts) maps a semantic state to a
+[../../src/svg_recipes.ts](../../src/svg_recipes.ts) maps a semantic state to a
 patch list against ids declared in the asset's colormap sidecar; the
 scene asks the facade for the colored variant rather than recoloring
 inline.
@@ -196,17 +196,17 @@ inline.
 
 A recipe maps a semantic state (a TypeScript enum like `T75LiquidVisual`
 or `BottleLiquid`) to a concrete list of recolor patches. Recipes live in
-[src/svg_recipes.ts](../src/svg_recipes.ts).
+[../../src/svg_recipes.ts](../../src/svg_recipes.ts).
 
 1. Define or extend the state enum in
-   [src/svg_recipes.ts](../src/svg_recipes.ts). Enums describe what the
+   [../../src/svg_recipes.ts](../../src/svg_recipes.ts). Enums describe what the
    asset looks like in semantic terms (empty, full, residue, color
    variant), not pixel-level details.
 2. Add or extend the patch-list function for the new state. Patches use
    `SvgColorPatch` or `SvgGroupPatch` from
-   [src/svg_color_patch.ts](../src/svg_color_patch.ts) and target ids
+   [../../src/svg_color_patch.ts](../../src/svg_color_patch.ts) and target ids
    that exist in `SVG_IDS` for the relevant asset.
-3. Expose the recipe through [src/svg_assets.ts](../src/svg_assets.ts).
+3. Expose the recipe through [../../src/svg_assets.ts](../../src/svg_assets.ts).
    The facade is the only place a scene asks for "flask in residue
    state" or "bottle of trypsin." Scenes never import the recipe module.
 4. Verify the patch ids resolve against the manifest (the recipe
@@ -218,7 +218,7 @@ then write the recipe. Recipes do not invent ids.
 
 ## Generator behavior summary
 
-[tools/generate_svg_globals.py](../tools/generate_svg_globals.py) is the
+[../../tools/generate_svg_globals.py](../../tools/generate_svg_globals.py) is the
 source of truth; this section is a high-level summary.
 
 - Deterministic output. Source SVGs are sorted before iteration; emitted
@@ -242,8 +242,8 @@ source of truth; this section is a high-level summary.
 - Module-name and export-constant collisions fail loudly with both source
   paths in the error message.
 
-The generator is wired into [build_github_pages.sh](../build_github_pages.sh)
-and [export_single_file.sh](../export_single_file.sh) so release builds
+The generator is wired into [build_github_pages.sh](../../build_github_pages.sh)
+and [export_single_file.sh](../../export_single_file.sh) so release builds
 regenerate `generated/` before tsc and the bundler. `tests/conftest.py`
 runs the generator once per pytest session if `generated/svg_manifest.ts`
 is missing, so pytest works on a fresh clone without manual setup.
@@ -252,15 +252,15 @@ exists and does not regenerate. This split keeps build scripts as the
 authoritative writers and keeps the check runner free of side effects.
 
 To validate that the build/check scripts correctly regenerate `generated/`
-on a clean checkout, run [dist_clean.sh](../dist_clean.sh) at the repo root;
+on a clean checkout, run [dist_clean.sh](../../dist_clean.sh) at the repo root;
 it wipes `generated/`, `dist/`, and other build artifacts so a subsequent
 build can be exercised end-to-end.
 
 ## Related docs
 
-- [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) - Scene YAML schema and the
+- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML schema and the
   scene driver and capability runtime that consume the SVG facade.
-- [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) - System design overview;
+- [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md) - System design overview;
   the SVG modules section points here for the ownership rule.
-- [FILE_STRUCTURE.md](FILE_STRUCTURE.md) - Directory map for `src/`,
+- [../FILE_STRUCTURE.md](../FILE_STRUCTURE.md) - Directory map for `src/`,
   `generated/`, and `dist/`.

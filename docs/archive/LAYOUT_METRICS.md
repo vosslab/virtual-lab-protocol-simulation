@@ -1,7 +1,7 @@
 # Layout Metrics
 
 Archived note. The current layout-engine reference is
-[LAYOUT_ENGINE.md](../LAYOUT_ENGINE.md).
+[LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md).
 
 <!-- Verified current: 2026-05-07 (invariants confirmed against src/; stale paths and M3 framing removed) -->
 

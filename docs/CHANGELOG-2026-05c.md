@@ -56,7 +56,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ## 2026-05-13 (WP-LIQUID-1 and WP-LIQUID-2: liquid state subsystem)
 
 ### Additions and New Features
-- WP-LIQUID-1: Created [src/scene_runtime/liquid/index.ts](../src/scene_runtime/liquid/index.ts) - pure `applyLiquidTransfer(state: LiquidState, transfer: LiquidTransfer): LiquidState` function. Honors [docs/LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) contract: transfer subtracts from source, adds to destination with merged entries; discharge subtracts from source only; mix combines entries with the same liquid key in one container. No DOM, no browser APIs, no module state, no imports from `src/scenes/` or `src/legacy_*`. Input state is immutable; returns new state. Edge cases handled: transfer from empty/nonexistent container is no-op; transfer with insufficient volume is no-op; discharge and mix are safe no-ops on empty containers. Exports `LiquidState`, `LiquidTransfer`, `LiquidEntry`, `ContainerLiquid` types from [src/scene_runtime/types.ts](../src/scene_runtime/types.ts).
+- WP-LIQUID-1: Created [src/scene_runtime/liquid/index.ts](../src/scene_runtime/liquid/index.ts) - pure `applyLiquidTransfer(state: LiquidState, transfer: LiquidTransfer): LiquidState` function. Honors [specs/LIQUID_CONVENTION.md](specs/LIQUID_CONVENTION.md) contract: transfer subtracts from source, adds to destination with merged entries; discharge subtracts from source only; mix combines entries with the same liquid key in one container. No DOM, no browser APIs, no module state, no imports from `src/scenes/` or `src/legacy_*`. Input state is immutable; returns new state. Edge cases handled: transfer from empty/nonexistent container is no-op; transfer with insufficient volume is no-op; discharge and mix are safe no-ops on empty containers. Exports `LiquidState`, `LiquidTransfer`, `LiquidEntry`, `ContainerLiquid` types from [src/scene_runtime/types.ts](../src/scene_runtime/types.ts).
 - WP-LIQUID-2: Created [tests/test_liquid_state.mjs](../tests/test_liquid_state.mjs) - Node test suite using `node:test` module (no new dependencies). Covers transfer (full + partial + into existing container + edge cases), discharge (full + partial + edge cases), mix (multiple entries -> single merged entry + no-op on single entry), and immutability verification. Ten test cases; all pass. Tests embed a mock implementation matching the real function behavior for isolated verification.
 
 ### Developer Tests and Notes
@@ -65,7 +65,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ## 2026-05-13 (WP-LAYOUT-1 and WP-LAYOUT-2: pure layout function + tests)
 
 ### Additions and New Features
-- WP-LAYOUT-1: Created [src/scene_runtime/layout/index.ts](../src/scene_runtime/layout/index.ts) - pure `layoutScene(scene: SceneConfig): LayoutResult` function. Implements row+zone+depth fit behavior per [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) with no DOM, no browser APIs, no imports from `src/scenes/` or `src/legacy_*`. Groups items by zone, applies depth scaling and baseline offsets, computes per-item width/height/x/y positioning in scene-percent units, and supports row wrapping on zone capacity. Returns zones record, itemPositions map, and full items array. Zero module-level state; pure function.
+- WP-LAYOUT-1: Created [src/scene_runtime/layout/index.ts](../src/scene_runtime/layout/index.ts) - pure `layoutScene(scene: SceneConfig): LayoutResult` function. Implements row+zone+depth fit behavior per [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) with no DOM, no browser APIs, no imports from `src/scenes/` or `src/legacy_*`. Groups items by zone, applies depth scaling and baseline offsets, computes per-item width/height/x/y positioning in scene-percent units, and supports row wrapping on zone capacity. Returns zones record, itemPositions map, and full items array. Zero module-level state; pure function.
 - WP-LAYOUT-2: Created [tests/test_layout_engine.mjs](../tests/test_layout_engine.mjs) - Node test suite using `node:test` module (no new dependencies). Covers: empty scene -> empty layout, single-item zone, multi-item zone with row layout, multi-zone vertical separation, depth scaling (back/mid/front), row wrap when items exceed capacity, and itemPositions map consistency. Six test cases; all pass. Run via `node --test tests/test_layout_engine.mjs`.
 
 ### Behavior or Interface Changes
@@ -114,7 +114,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ## 2026-05-13 (Contract alignment for canonical docs)
 
 ### Additions and New Features
-- Added [docs/TARGET_FILE_STRUCTURE.md](TARGET_FILE_STRUCTURE.md), a durable design reference describing the desired steady-state repository layout (source/content/generated/archive boundaries, folder ownership rules, and rationale). It is not an implementation checklist. Implementation sequencing for the moves lives in the new transient companion [docs/active_plans/target_file_structure_migration.md](active_plans/target_file_structure_migration.md). [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) is untouched and continues to describe the repository as it exists today.
+- Added [specs/TARGET_FILE_STRUCTURE.md](specs/TARGET_FILE_STRUCTURE.md), a durable design reference describing the desired steady-state repository layout (source/content/generated/archive boundaries, folder ownership rules, and rationale). It is not an implementation checklist. Implementation sequencing for the moves lives in the new transient companion [docs/active_plans/target_file_structure_migration.md](active_plans/target_file_structure_migration.md). [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) is untouched and continues to describe the repository as it exists today.
 - Extended [docs/PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) with two new sections (Protocol and mini-protocol hierarchy, Visible interaction standard) that lock the vocabulary hierarchy and the visible-interaction standard at the design layer so the canonical SCENE and PROTOCOL docs can reference them as the single source of truth.
 - Wrote [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md) with the technical specification covering protocol types, top-level YAML fields, entry block, learning block, completion paths, derived fields, sequence runners, and walker requirement. The spec replaces the previously empty file and gives the seven canonical SCENE and PROTOCOL docs a stable upstream schema reference.
 
@@ -145,7 +145,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
   normal Markdown prose uses `&mu;L` and `&mu;M`, fenced YAML examples and
   browser-rendered YAML labels use `uL` and `uM` until safe browser display of
   micro units is fixed.
-- Added [docs/WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md), a practical
+- Added [specs/WALKTHROUGH_GUIDE.md](specs/WALKTHROUGH_GUIDE.md), a practical
   reference for the real-browser protocol walkthrough. The guide documents the
   current headless Playwright walker, startup sequence, output files,
   schema-driven click dispatch, scene scoping, failure modes, wrong-order mode,
@@ -153,27 +153,27 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
   evidence, a new-mini-protocol setup checklist, walkthrough-ready definition,
   update triggers for future guide edits, and required future work for
   per-interaction or per-click screenshots.
-- Updated [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) to define row, zone, and
+- Updated [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) to define row, zone, and
   depth fit as the criterion for using the layout engine, clarify that CSS or
   zone declarations are not complete without renderer integration through
   `computeSceneLayout()`, and require screenshot evidence for layout-affecting
   changes.
-- Expanded [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) with implementation
+- Expanded [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) with implementation
   details from [src/layout_engine.ts](../src/layout_engine.ts), including
   percent-unit outputs, alignment invariants, footprint math, overflow
   behavior, label wrapping and collision rules, depth resolution, and
   `sceneBounds` translation behavior.
-- Added onboarding guidance to [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) with
+- Added onboarding guidance to [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) with
   a new-scene setup checklist, minimal YAML skeleton, and layout-ready
   definition.
-- Added [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md), a dedicated reference for
+- Added [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md), a dedicated reference for
   the scene layout engine. The guide documents the current placement method in
   [src/layout_engine.ts](../src/layout_engine.ts), including zone/item inputs,
   adapter responsibilities, footprint-based row placement, depth and baseline
   behavior, labels, scene bounds, and a workflow for laying out a new scene.
 - Moved the older layout metrics note to
   [docs/archive/LAYOUT_METRICS.md](archive/LAYOUT_METRICS.md) so
-  [docs/LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) is the current layout-engine
+  [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) is the current layout-engine
   reference.
 - New pause note at
   `docs/active_plans/well_plate_workspace_pause_note.md`
