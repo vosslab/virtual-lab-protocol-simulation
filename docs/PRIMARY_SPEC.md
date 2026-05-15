@@ -4,19 +4,14 @@ This document is the technical specification for the virtual lab protocol games 
 
 ## Protocol types
 
-Every protocol declares a `protocolType` field with one of four values:
-
-- `protocol`: a complete student-facing pathway.
-- `mini_protocol`: a focused subprotocol, usually one scene or a small scene transition.
-- `sequence_runner`: a protocol that connects mini-protocols in order.
-- `dev_smoke`: a diagnostic protocol for testing scenes or objects. Not student-facing curriculum.
+Every protocol declares a `protocol_type` field. The active enum values are `mini_protocol`, `sequence_runner`, and `dev_smoke`. Definitions for each kind, the protocol package surface, and the structural use of the word "protocol" live in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds).
 
 ## Protocol YAML top-level fields
 
 Each protocol lives in `content/<protocol_name>/protocol.yaml` and declares the following top-level fields:
 
 ```yaml
-protocolType: mini_protocol
+protocol_type: mini_protocol
 name: open_plate_workspace
 entry_step: open_plate_workspace
 learning:
@@ -106,7 +101,7 @@ Events are emitted by the runtime on a state transition, not hand-authored per s
 
 ## Sequence runners
 
-A sequence runner is a protocol with `protocolType: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry` block (matching the first mini-protocol's entry) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step gate that applies to mini-protocols.
+A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry` block (matching the first mini-protocol's entry) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step gate that applies to mini-protocols.
 
 ## Walker requirement
 
@@ -134,10 +129,7 @@ If the walker cannot complete a step through visible UI, the YAML schema, the sc
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
 
-Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate. Smoke fixtures declare `protocolType: dev_smoke`.
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate. Smoke fixtures declare `protocol_type: dev_smoke`.
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `hood_flask_prep.html`, `plate_drug_treatment.html`, `cell_culture_full.html`.
 
-## Sequence runners and friendly terminology
-
-The `protocolType` schema value `sequence_runner` is rendered in docs and student-facing content as "full protocol runner" or "full protocol". Schema value stays stable; only the human-readable label changes.

@@ -415,7 +415,7 @@ class ProtocolValidator:
 			if retired in protocol:
 				errors.append(f"{path}: retired key '{retired}' found")
 
-		required = ['protocolType', 'name', 'entry_step', 'learning', 'steps']
+		required = ['protocol_type', 'name', 'entry_step', 'learning', 'steps']
 		for key in required:
 			if key not in protocol:
 				errors.append(f"{path}: missing required key '{key}'")
@@ -428,17 +428,17 @@ class ProtocolValidator:
 		return errors
 
 	def _validate_protocol_type(self, protocol: Dict[str, Any], path: str) -> List[str]:
-		"""Validate protocolType per PRIMARY_SPEC.md."""
+		"""Validate protocol_type per PRIMARY_SPEC.md."""
 		errors = []
-		ptype = protocol.get('protocolType')
+		ptype = protocol.get('protocol_type')
 		if ptype not in PROTOCOL_TYPES:
-			errors.append(f"{path}: protocolType '{ptype}' not in {PROTOCOL_TYPES}")
+			errors.append(f"{path}: protocol_type '{ptype}' not in {PROTOCOL_TYPES}")
 		return errors
 
 	def _validate_learning(self, protocol: Dict[str, Any], path: str) -> List[str]:
 		"""Validate learning block per PRIMARY_SPEC.md."""
 		errors = []
-		ptype = protocol.get('protocolType')
+		ptype = protocol.get('protocol_type')
 		learning = protocol.get('learning')
 
 		if ptype in ('mini_protocol', 'protocol'):
@@ -507,7 +507,7 @@ class ProtocolValidator:
 		if terminal_count != 1:
 			errors.append(f"{path}: must have exactly one terminal step, found {terminal_count}")
 
-		ptype = protocol.get('protocolType')
+		ptype = protocol.get('protocol_type')
 		if ptype == 'mini_protocol':
 			num_steps = len(steps)
 			if num_steps < 6 or num_steps > 10:
@@ -604,7 +604,7 @@ def print_verbose_details(file_path: str, data: Dict[str, Any], file_type: str) 
 			print(f"{indent}remove_placements: {remove_count}")
 
 	elif file_type == 'protocol':
-		proto_type = data.get('protocolType', 'unknown')
+		proto_type = data.get('protocol_type', 'unknown')
 		steps = data.get('steps', [])
 		step_count = len(steps)
 		entry_step = data.get('entry_step', 'unknown')
@@ -625,7 +625,7 @@ def print_verbose_details(file_path: str, data: Dict[str, Any], file_type: str) 
 									to_scene = op.get('to_scene')
 									if to_scene:
 										scenes_ref.add(to_scene)
-		print(f"{indent}protocolType: {proto_type}")
+		print(f"{indent}protocol_type: {proto_type}")
 		print(f"{indent}steps: {step_count}")
 		print(f"{indent}entry_step: {entry_step}")
 		print(f"{indent}terminal_steps: {terminal_count}")
@@ -968,7 +968,7 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 					if remove_count > 0:
 						print(f"{indent}remove_placements: {remove_count}")
 				elif file_type == 'protocol':
-					proto_type = file_data.get('protocolType', 'unknown')
+					proto_type = file_data.get('protocol_type', 'unknown')
 					steps = file_data.get('steps', [])
 					step_count = len(steps)
 					entry_step = file_data.get('entry_step', 'unknown')
@@ -987,7 +987,7 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 												to_scene = op.get('to_scene')
 												if to_scene:
 													scenes_ref.add(to_scene)
-					print(f"{indent}protocolType: {proto_type}")
+					print(f"{indent}protocol_type: {proto_type}")
 					print(f"{indent}steps: {step_count}")
 					print(f"{indent}entry_step: {entry_step}")
 					print(f"{indent}terminal_steps: {terminal_count}")

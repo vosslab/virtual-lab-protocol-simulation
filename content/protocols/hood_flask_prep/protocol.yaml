@@ -1,4 +1,4 @@
-protocolType: mini_protocol
+protocol_type: mini_protocol
 name: hood_flask_prep
 entry_step: spray_hood
 

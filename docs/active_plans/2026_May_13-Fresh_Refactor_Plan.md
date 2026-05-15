@@ -64,7 +64,7 @@ Ownership layers (grouped by content, runtime, test, and build concerns):
 
 | Layer | Owns |
 | --- | --- |
-| Protocol YAML | `learning` block, `entry:` block, `protocolType`, steps, completion paths, sequencing |
+| Protocol YAML | `learning` block, `entry:` block, `protocol_type`, steps, completion paths, sequencing |
 | Scene YAML | SVG object declarations, layout zones, static scene config |
 | Build-time loader (`tools/build_protocol_data.py`) | parses YAML, validates schema, emits typed generated TypeScript / JSON |
 | `src/scene_runtime/` shared TypeScript | layout engine, click routing, highlight derivation, completion dispatch, liquid state. Consumes generated typed data; no YAML parser in browser |
@@ -170,21 +170,21 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Entry criteria: M0 exit met.
 - Exit criteria:
   - Proposed mini-protocol set authored under `content/` (confirmed per resolved decisions):
-    - `hood_flask_prep` (6-8 steps, hood, `protocolType: mini_protocol`)
-    - `cell_counting_and_seeding` (6-8 steps, bench or hood, `protocolType: mini_protocol`)
-    - `drug_dilution_setup` (6-10 steps, well_plate_workspace or hood, `protocolType: mini_protocol`)
-    - `plate_drug_treatment` (8-10 steps, well_plate_workspace, `protocolType: mini_protocol`; replaces current 866-line monolith)
-    - `mtt_assay_readout` (6-8 steps, hood or bench, `protocolType: mini_protocol`)
-    - `cell_culture_full` (linked sequence runner of the above; `protocolType: sequence_runner`; launcher entry only)
+    - `hood_flask_prep` (6-8 steps, hood, `protocol_type: mini_protocol`)
+    - `cell_counting_and_seeding` (6-8 steps, bench or hood, `protocol_type: mini_protocol`)
+    - `drug_dilution_setup` (6-10 steps, well_plate_workspace or hood, `protocol_type: mini_protocol`)
+    - `plate_drug_treatment` (8-10 steps, well_plate_workspace, `protocol_type: mini_protocol`; replaces current 866-line monolith)
+    - `mtt_assay_readout` (6-8 steps, hood or bench, `protocol_type: mini_protocol`)
+    - `cell_culture_full` (linked sequence runner of the above; `protocol_type: sequence_runner`; launcher entry only)
   - Each new mini-protocol has its own folder with `protocol.yaml`, `contents.yaml`, and scene YAML files declaring scene-scoped objects.
-  - Each `protocol.yaml` declares `protocolType` and (for `mini_protocol`) `learning.objectives`, `learning.outcomes`, `learning.goals` per contract item 5.
+  - Each `protocol.yaml` declares `protocol_type` and (for `mini_protocol`) `learning.objectives`, `learning.outcomes`, `learning.goals` per contract item 5.
   - Each `mini_protocol` has between 6 and 10 steps. `sequence_runner` and `dev_smoke` are exempt.
   - Each new `protocol.yaml` records the intended entry scene at the top of the file as a comment line `# intended_entry_scene: <scene_name>` (the formal `entry:` block lands in M2).
-  - Existing tiny tutorials (`bench_direct_check` 26 lines, `tutorial_cell_counter` 27 lines, `plate_reader_check` 27 lines, `tutorial_hood_transfer` 40 lines, `tutorial_hemocytometer_count` 50 lines, `tutorial_drug_dilution` 54 lines) audited: each is absorbed into a new mini-protocol as steps, retired to `tests/content/dev_smoke/` with `protocolType: dev_smoke`, or expanded to >=6 steps with `protocolType: mini_protocol` and a learning block.
+  - Existing tiny tutorials (`bench_direct_check` 26 lines, `tutorial_cell_counter` 27 lines, `plate_reader_check` 27 lines, `tutorial_hood_transfer` 40 lines, `tutorial_hemocytometer_count` 50 lines, `tutorial_drug_dilution` 54 lines) audited: each is absorbed into a new mini-protocol as steps, retired to `tests/content/dev_smoke/` with `protocol_type: dev_smoke`, or expanded to >=6 steps with `protocol_type: mini_protocol` and a learning block.
   - Objects rescoped per scene: every scene YAML file declares the objects the student uses in that scene. Shared physical objects (micropipette, media_bottle, etc.) appear as a scene object in each scene they appear in, with a shared inventory identity if state must persist across scenes. No object defaults to hood unless hood is its real teaching scene.
   - Curriculum map filed at `docs/active_plans/curriculum_decomposition.md` showing source-step-to-mini-protocol mapping for both the 909-line `cell_culture` and the 866-line `plate_drug_treatment`, plus intended entry scene per mini-protocol.
-  - Pytest gate (`tests/test_mini_protocol_size_and_learning.py`): every protocol under `content/` with `protocolType: mini_protocol` has 6-10 steps and a complete `learning` block. `sequence_runner` and `dev_smoke` types are exempt from the step-count check.
-  - M1 validation scope is content-shape only: YAML parses; step counts pass per `protocolType`; `learning` block present where required; `completionPath` fields are syntactically present. Full schema validation (entry-block enforcement, completionPath kind checks) happens in M2 and M3.
+  - Pytest gate (`tests/test_mini_protocol_size_and_learning.py`): every protocol under `content/` with `protocol_type: mini_protocol` has 6-10 steps and a complete `learning` block. `sequence_runner` and `dev_smoke` types are exempt from the step-count check.
+  - M1 validation scope is content-shape only: YAML parses; step counts pass per `protocol_type`; `learning` block present where required; `completionPath` fields are syntactically present. Full schema validation (entry-block enforcement, completionPath kind checks) happens in M2 and M3.
   - WS-DECOMP coordinator rule: no two doers may edit the same existing tutorial folder concurrently during WP-DECOMP-7. Tiny-stub triage proceeds only after WP-DECOMP-1..5 land.
   - `docs/CHANGELOG.md` entry.
 - Parallel-plan ready: yes -- max parallel doers: 5 (one per new mini-protocol via WP-DECOMP-1..5). WP-DECOMP-7 (triage) runs sequentially after authors finish.
@@ -563,7 +563,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Touch points: `content/hood_flask_prep/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
 - Acceptance criteria:
-  - `protocolType: mini_protocol`.
+  - `protocol_type: mini_protocol`.
   - 6-8 steps with completionPath per step.
   - `learning.objectives`, `learning.outcomes`, `learning.goals` present.
   - All scene objects scoped to hood (matches first authored step).
@@ -576,7 +576,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Owner: bptools-writer.
 - Touch points: `content/cell_counting_and_seeding/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to bench or hood per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocol_type: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to bench or hood per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate cell_counting_and_seeding`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -585,7 +585,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Owner: bptools-writer.
 - Touch points: `content/drug_dilution_setup/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-10 steps; learning block complete; scene objects scoped to well_plate_workspace or hood per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocol_type: mini_protocol`; 6-10 steps; learning block complete; scene objects scoped to well_plate_workspace or hood per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate drug_dilution_setup`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -594,7 +594,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Owner: bptools-writer.
 - Touch points: `content/plate_drug_treatment/protocol.yaml`, `contents.yaml`, scene YAML files (rewrite from 866-line monolith).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 8-10 steps; learning block complete; intended entry scene `well_plate_workspace` recorded as `# intended_entry_scene:` comment (formal `entry:` block lands in M2); `distilled_water` orphan removed; broken breadcrumb metadata fixed.
+- Acceptance criteria: `protocol_type: mini_protocol`; 8-10 steps; learning block complete; intended entry scene `well_plate_workspace` recorded as `# intended_entry_scene:` comment (formal `entry:` block lands in M2); `distilled_water` orphan removed; broken breadcrumb metadata fixed.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate plate_drug_treatment`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -603,7 +603,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Owner: bptools-writer.
 - Touch points: `content/mtt_assay_readout/protocol.yaml`, `contents.yaml`, scene YAML files (new).
 - Depends on: WP-DECOMP-0.
-- Acceptance criteria: `protocolType: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to hood or bench per first authored step; intended entry scene recorded.
+- Acceptance criteria: `protocol_type: mini_protocol`; 6-8 steps; learning block complete; scene objects scoped to hood or bench per first authored step; intended entry scene recorded.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate mtt_assay_readout`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -612,7 +612,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Owner: bptools-writer.
 - Touch points: `content/cell_culture_full/protocol.yaml` (new).
 - Depends on: WP-DECOMP-1, WP-DECOMP-2, WP-DECOMP-3, WP-DECOMP-4, WP-DECOMP-5.
-- Acceptance criteria: `protocolType: sequence_runner`; declares the sequence of constituent mini-protocols; no duplicated steps; `learning` block scoped to the overall goal; intended entry scene recorded as the first mini-protocol's entry scene; exempt from 6-10 step gate.
+- Acceptance criteria: `protocol_type: sequence_runner`; declares the sequence of constituent mini-protocols; no duplicated steps; `learning` block scoped to the overall goal; intended entry scene recorded as the first mini-protocol's entry scene; exempt from 6-10 step gate.
 - Verification commands: `source source_me.sh && pytest tests/test_mini_protocol_size_and_learning.py` (sequence_runner type passes the size-exempt branch).
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -622,7 +622,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Touch points: `content/bench_direct_check/`, `tutorial_cell_counter/`, `plate_reader_check/`, `tutorial_hood_transfer/`, `tutorial_hemocytometer_count/`, `tutorial_drug_dilution/`, `tutorial_pbs/`, `tutorial_split/`; `tests/content/dev_smoke/` (new).
 - Depends on: WP-DECOMP-1, WP-DECOMP-2, WP-DECOMP-3, WP-DECOMP-4, WP-DECOMP-5 -- must run after new mini-protocols land so absorption is unambiguous.
 - Acceptance criteria:
-  - Each existing tutorial classified: absorbed (steps merged into a new mini-protocol; original folder deleted), retired (moved to `tests/content/dev_smoke/<name>/` with `protocolType: dev_smoke`), or kept (expanded to >=6 steps with `protocolType: mini_protocol` and learning block).
+  - Each existing tutorial classified: absorbed (steps merged into a new mini-protocol; original folder deleted), retired (moved to `tests/content/dev_smoke/<name>/` with `protocol_type: dev_smoke`), or kept (expanded to >=6 steps with `protocol_type: mini_protocol` and learning block).
   - Decision recorded per tutorial in `docs/active_plans/curriculum_decomposition.md`.
   - Coordinator rule: no two doers edit the same existing tutorial folder concurrently. WP-DECOMP-7 is single-threaded by design.
 - Verification commands: `source source_me.sh && pytest tests/test_mini_protocol_size_and_learning.py` (gate passes for every `mini_protocol`).
@@ -647,10 +647,10 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Depends on: WP-DECOMP-1..6.
 - Acceptance criteria:
   - Pytest enumerates `content/*/protocol.yaml` and asserts:
-    - `protocolType: mini_protocol` -- 6-10 steps and a complete `learning` block.
-    - `protocolType: sequence_runner` -- exempt from step-count check; must have a `learning` block scoped to the overall goal.
-    - `protocolType: dev_smoke` -- exempt from both gates; lives only under `tests/content/dev_smoke/`.
-  - Test fails loud if a protocol declares an unknown `protocolType`.
+    - `protocol_type: mini_protocol` -- 6-10 steps and a complete `learning` block.
+    - `protocol_type: sequence_runner` -- exempt from step-count check; must have a `learning` block scoped to the overall goal.
+    - `protocol_type: dev_smoke` -- exempt from both gates; lives only under `tests/content/dev_smoke/`.
+  - Test fails loud if a protocol declares an unknown `protocol_type`.
 - Verification commands: `source source_me.sh && pytest tests/test_mini_protocol_size_and_learning.py`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
@@ -738,7 +738,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Depends on: WP-SPINE-1, WP-SPINE-2.
 - Acceptance criteria:
   - Loader parses scene and protocol YAML at build time and emits typed generated TypeScript/JSON under `generated/`.
-  - Loader validates the `entry:` block, `protocolType`, and `completionPath.kind` per the contract.
+  - Loader validates the `entry:` block, `protocol_type`, and `completionPath.kind` per the contract.
   - Loader rejects YAML that embeds TypeScript identifiers or computed fields.
   - Browser runtime imports only generated data; no YAML parser shipped in browser bundle.
 - Verification commands: `source source_me.sh && python3 tools/build_protocol_data.py --validate`; `npm run build`.
@@ -1395,7 +1395,7 @@ Resolved decisions:
 - Source-code home for shared scene runtime modules: src/scene_runtime/ for authored TypeScript source only. Generated protocol, scene, inventory, and registry data emits under generated/ at the repo root. Generated files do not live under src/.
 - Legacy tree at M9: archive under archive/code/scenes_legacy_<YYYY_MM>/ at the repo root, not under src/. Archiving inside src/ muddies source ownership and risks accidental imports. Default: archive only; delete deferred to a follow-up patch.
 - Mini-protocol HTML filename convention: <protocol_name>.html. Use the readable protocol name, not an opaque id. Examples: hood_flask_prep.html, plate_drug_treatment.html, cell_culture_full.html.
-- Protocol type hierarchy and friendly terminology: protocol is the complete student-facing pathway. mini_protocol is a focused workflow component, usually one scene or a short scene transition. sequence_runner is the schema-level protocolType value; in docs and student-facing content it is referred to as the "full protocol runner". dev_smoke is a developer diagnostic protocol, not curriculum, and lives under tests/content/dev_smoke/.
+- Protocol type hierarchy and friendly terminology: protocol is the complete student-facing pathway. mini_protocol is a focused workflow component, usually one scene or a short scene transition. sequence_runner is the schema-level protocol_type value; in docs and student-facing content it is referred to as the "full protocol runner". dev_smoke is a developer diagnostic protocol, not curriculum, and lives under tests/content/dev_smoke/.
 - Dev/test content root: builder and walker support tests/content/ as an explicit dev/test content root for smoke fixtures. content/ stays reserved for curriculum mini-protocols and full protocol runners. Smoke fixtures are excluded from the student launcher, full-protocol sequencing, and the 6-to-10 step curriculum gate, while remaining validatable and runnable in dev/test mode.
 
 Still open:

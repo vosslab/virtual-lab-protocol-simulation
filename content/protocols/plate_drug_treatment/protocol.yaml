@@ -1,4 +1,4 @@
-protocolType: mini_protocol
+protocol_type: mini_protocol
 name: plate_drug_treatment
 entry_step: inspect_seeded_plate
 

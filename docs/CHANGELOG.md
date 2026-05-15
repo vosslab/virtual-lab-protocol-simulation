@@ -1,5 +1,23 @@
 # Changelog
 
+## 2026-05-15 (protocol_type vocabulary consolidation)
+
+### Additions and New Features
+- **`docs/specs/PROTOCOL_VOCABULARY.md` Protocol kinds section** added: canonical home for protocol package terminology and the allowed `protocol_type` values. New rows in Container Terms for protocol package, protocol type, mini-protocol, sequence runner, and developer smoke. New `protocol_type` slot added to the protocol-level slot charters table; new closed-enum row added to the cost-guardrail table.
+- **`docs/specs/PROTOCOL_YAML_FORMAT.md` top-level protocol-fields table** added with the `protocol_type` enum row and a worked YAML example.
+
+### Behavior or Interface Changes
+- **Field renamed: `protocolType` -> `protocol_type`** across normative docs (`docs/PRIMARY_DESIGN.md`, `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_*.md`, `docs/active_plans/*.md`), content YAML (`content/protocols/*/protocol.yaml`), runtime contract (`src/scene_runtime/contract.ts`), validator and builder (`tools/validate_content_yaml.py`, `tools/build_protocol_data.py`), tests (`tests/test_protocol_entry_no_hood_default.py`), and Playwright fixtures (`tests/playwright/fixtures/*/protocol.mjs`). Aligns with the snake_case authored-field rule from `SPEC_DESIGN_CHECKLIST.md` Author YAML vocabulary lock.
+- **Terminology surfaces trimmed to pointers**: `docs/specs/PROTOCOL_AUTHORING_GUIDE.md` "Terminology" section, `docs/PRIMARY_DESIGN.md` "Protocol and mini-protocol hierarchy" section, and `docs/PRIMARY_SPEC.md` "Protocol types" section now link into `PROTOCOL_VOCABULARY.md#protocol-kinds` instead of redefining the kinds independently.
+- **Friendly-label paragraphs absorbed**: `PRIMARY_DESIGN.md` and `PRIMARY_SPEC.md` "Sequence runners and friendly terminology" sections removed; the "may be rendered as 'full protocol'" note now lives inside the canonical Sequence runner definition in `PROTOCOL_VOCABULARY.md`.
+
+### Removals and Deprecations
+- **Retired `protocol_type` value: `protocol`.** Active enum is now `{mini_protocol, sequence_runner, dev_smoke}` (`tools/validate_content_yaml.py` `PROTOCOL_TYPES`). The audit confirmed no in-tree content declared the retired value; no reclassification was required. The bare word "protocol" is no longer a formal kind or enum value, but it remains valid in structural contexts (`protocol.yaml`, protocol package, protocol-level field, `protocol_type` field name).
+- **Retired field name: `protocolType`.** The camelCase form has no validator special case; an authored file that uses it fails the existing missing-required-key and unknown-extra-key checks. Historical changelog entries and archived planning docs that reference the old name are preserved (per REPO_STYLE "entries are never removed").
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/validate_content_yaml.py`: validator runs clean across the migrated `content/protocols/*/protocol.yaml` set after the rename.
+
 ## 2026-05-15 (M2 Wave 2a: five mini-protocols + 25 objects - sorted-snacking-kettle)
 
 ### Additions and New Features

@@ -21,7 +21,7 @@ No `protocol.yaml` is modified by this audit. The audit is read-only.
 
 ## Per-protocol intended entry block
 
-| Protocol folder                                  | protocolType     | Intended entry.scene  | Intended entry.step   | Source of decision                                   | Notes                                                                                                          |
+| Protocol folder                                  | protocol_type     | Intended entry.scene  | Intended entry.step   | Source of decision                                   | Notes                                                                                                          |
 | ------------------------------------------------ | ---------------- | --------------------- | --------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
 | content/cell_culture                             | (none declared)  | hood                  | spray_hood            | First step `scene: hood` (line 41); curriculum map   | Legacy monolith. No top-of-file comment, no formal entry block. Scheduled for deletion at M9; audit for record. |
 | content/hood_flask_prep                          | mini_protocol    | hood                  | spray_hood            | First step `scene: hood` (line 30); comment mismatch | Comment line 1 reads `cell_culture_hood`, but first step declares `scene: hood`. Treat step scene as canonical. |
@@ -48,7 +48,7 @@ No `protocol.yaml` is modified by this audit. The audit is read-only.
   but WP-ENTRY-2 should not silently paper this over: either every reference
   becomes `hood`, or every reference becomes `cell_culture_hood`. This
   decision needs an explicit ruling before WP-ENTRY-2 inserts entry blocks.
-- The legacy `content/cell_culture` monolith has no `protocolType`, no
+- The legacy `content/cell_culture` monolith has no `protocol_type`, no
   top-of-file `# intended_entry_scene:` comment, and no formal `entry:` block.
   The intended values above are inferred from its first authored step and from
   the curriculum decomposition map. Because the file is slated for deletion

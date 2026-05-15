@@ -22,35 +22,31 @@ Related references:
 
 ## Terminology
 
-A protocol is the complete student-facing lab pathway. It may span many scenes in sequence.
+The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and
+the surrounding structural terms (protocol package, `protocol_type`,
+`protocol.yaml`) are defined canonically in
+[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md#protocol-kinds). This
+guide uses those terms.
 
-A mini-protocol is a focused subprotocol. It usually runs in one scene, or across a small scene transition where the transition is part of the workflow.
+## What a protocol package is
 
-A sequence runner is a protocol that connects mini-protocols in order to form the full student-facing protocol.
-
-A developer smoke protocol is a very small diagnostic protocol used to check that a scene or object works.
-
-## What a protocol is
-
-A protocol is a self-contained folder under `content/protocols/<protocol_name>/`
-with files:
+A protocol package is a self-contained folder under
+`content/protocols/<protocol_name>/` with files:
 
 ```
 content/protocols/<protocol_name>/
-  protocol.yaml     # parts, days, and the ordered list of steps
+  protocol.yaml     # protocol_type, parts, days, and the ordered list of steps
   contents.yaml     # liquids, reagents, cells, waste, and other materials
   scenes/
     <scene_name>.yaml     # protocol-specific scene overrides (optional)
 ```
 
 Shared objects live in `content/objects/`. Protocol scenes place them under
-`content/protocols/<protocol_name>/scenes/`. A mini-protocol is a focused subprotocol that teaches and verifies one
-smaller workflow. Every mini-protocol must define a `learning` block with
-required fields `objectives`, `outcomes`, and `goals`, and an `entry` block
-that declares the initial scene and first step. Larger protocols may be
-assembled from mini-protocols (a sequence runner), or a protocol may be a
-developer smoke protocol. See [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) for the
-hierarchy and [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the schema.
+`content/protocols/<protocol_name>/scenes/`. Every `protocol.yaml` declares
+a `protocol_type` (one of `mini_protocol`, `sequence_runner`, `dev_smoke`).
+A mini-protocol must define a `learning` block with required fields
+`objectives`, `outcomes`, and `goals`, and an `entry` block that declares
+the initial scene and first step.
 
 A Python builder reads these files, validates them, and emits TypeScript
 modules that the browser bundle imports. No YAML is parsed at runtime.

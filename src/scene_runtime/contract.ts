@@ -116,7 +116,7 @@ export interface ProtocolDay {
 }
 
 export interface ProtocolConfig {
-	protocolType: ProtocolType;
+	protocol_type: ProtocolType;
 	entry: ProtocolEntry;
 	id?: string;
 	title?: string;

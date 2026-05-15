@@ -1,4 +1,4 @@
-protocolType: mini_protocol
+protocol_type: mini_protocol
 name: cell_counting_and_seeding
 entry_step: transfer_suspension_to_conical
 

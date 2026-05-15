@@ -1098,7 +1098,7 @@ def validate_protocol_contract(protocol, protocol_name):
 	"""
 	Validate protocol contract requirements (WP-SPINE-3).
 
-	NOTE: M1 content gap: existing protocols do not have 'protocolType' field.
+	NOTE: M1 content gap: existing protocols do not have 'protocol_type' field.
 	Validation gracefully handles this by inferring type from protocol structure:
 	- If 'sequence' field exists: sequence_runner
 	- Otherwise: mini_protocol (default legacy format)
@@ -1124,7 +1124,7 @@ def validate_protocol_contract(protocol, protocol_name):
 	entry_scene = entry['scene']
 	entry_step = entry['step']
 
-	# Infer protocolType from content (M1 gap workaround)
+	# Infer protocol_type from content (M1 gap workaround)
 	is_sequence_runner = 'sequence' in protocol
 
 	if is_sequence_runner:

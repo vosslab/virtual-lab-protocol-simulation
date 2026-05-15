@@ -1,4 +1,4 @@
-protocolType: mini_protocol
+protocol_type: mini_protocol
 name: mtt_assay_readout
 entry_step: prep_multichannel
 

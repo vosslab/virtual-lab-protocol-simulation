@@ -106,6 +106,23 @@ part; days mark when each part runs. Steps are the runnable units of the protoco
 
 A required top-level `learning` block carries pedagogy metadata for every mini-protocol.
 
+### Top-level protocol fields
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `protocol_type` | enum | yes | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
+| `name` | string | yes | Stable snake_case identifier for the protocol. |
+| `entry_step` | string | yes | Name of the first step the runtime runs. |
+| `steps` | list | yes | List of authored step entries (omitted for `sequence_runner`). |
+
+Example top of a mini-protocol `protocol.yaml`:
+
+```yaml
+protocol_type: mini_protocol
+name: hood_flask_prep
+entry_step: open_hood
+```
+
 ### Learning block (required for mini-protocols)
 
 Every mini-protocol must include a `learning` block that records the pedagogy

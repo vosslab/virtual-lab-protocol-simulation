@@ -16,6 +16,35 @@ Related docs:
   cross-references it.
 - [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md)
 
+## Protocol kinds
+
+Every authored protocol YAML file declares a top-level
+`protocol_type` field. The value is drawn from a closed enum. The
+authored kinds, and the structural terms that surround them, are:
+
+- **Protocol package** -- the folder under
+  `content/protocols/<name>/` that holds `protocol.yaml`,
+  `contents.yaml`, and `scenes/`. A structural unit, not a
+  `protocol_type` value.
+- **Mini-protocol** (`protocol_type: mini_protocol`) -- one
+  authored student-facing workflow with normal steps, a `learning`
+  block, scenes, contents, and referenced objects. Usually 6 to 10
+  meaningful steps. Scope is set by its `learning` block.
+- **Sequence runner** (`protocol_type: sequence_runner`) -- an
+  ordered pathway that connects mini-protocols into a larger
+  student-facing sequence. Declares its sequence in place of
+  authored steps; exempt from the 6-to-10 step gate. May be
+  rendered in student-facing content as "full protocol".
+- **Developer smoke** (`protocol_type: dev_smoke`) -- diagnostic
+  protocol used to verify a scene or object works. Excluded from
+  the student launcher and the curriculum step-count gate.
+
+The bare word "protocol" is not a formal kind or enum value.
+Precise terms (`protocol.yaml`, protocol package, protocol-level
+field, `protocol_type`, mini-protocol, sequence runner, developer
+smoke) stay valid and are preferred in schema and file-structure
+contexts. There is no `protocol_type: protocol` value.
+
 ## The two-level model
 
 The model is a tight linear protocol spec with three nested levels:
@@ -27,6 +56,7 @@ The full shape:
 
 ```
 protocol
+  protocol_type           # one of mini_protocol, sequence_runner, dev_smoke
   name                    # stable snake_case identifier for this protocol
   entry_step              # name of the first step
   steps[]                 # the steps that make up the protocol
@@ -53,7 +83,8 @@ the individual gestures live inside it in an ordered `sequence`.
 
 ### Required slots
 
-- A `protocol` requires `name`, `entry_step`, and `steps`.
+- A `protocol` requires `protocol_type`, `name`, `entry_step`, and
+  `steps`.
 - All six `step` slots are required: `name`, `prompt`, `sequence`,
   `step_validator`, `outcome`, `next_step`. `next_step` may be
   `null` for a terminal step, but the slot must be present.
@@ -73,8 +104,11 @@ slot -- the target's `kind` carries the task semantics.
 ### The `protocol` level
 
 A `protocol` is the top level. It wraps the whole linear sequence
-of steps and has three slots:
+of steps and has four slots:
 
+- **`protocol_type`** -- the kind of protocol authored. A closed
+  enum: one of `mini_protocol`, `sequence_runner`, or `dev_smoke`.
+  See [Protocol kinds](#protocol-kinds) for definitions.
 - **`name`** -- a stable snake_case identifier for the protocol,
   for example `name: cell_culture`.
 - **`entry_step`** -- the `name` of the first step the runtime
@@ -113,6 +147,7 @@ Each slot owns one concern.
 
 | Level | Slot | Charter |
 | --- | --- | --- |
+| protocol | `protocol_type` | The kind of protocol authored: one of `mini_protocol`, `sequence_runner`, `dev_smoke`. Closed enum. |
 | protocol | `name` | The stable snake_case identifier for the protocol. |
 | protocol | `entry_step` | Names the first step by its `name`; flow starts here. |
 | protocol | `steps` | The list of steps; list order is not protocol flow. |
@@ -506,6 +541,7 @@ is deliberate.
 | `gesture` value | Expensive | Evidence: a recurring input shape no current gesture expresses. |
 | `scene_operation` primitive | Expensive | Evidence: a recurring scene effect no composition of existing primitives expresses. |
 | Validator preset | Expensive | Evidence: a recurring validation shape no existing preset expresses. |
+| `protocol_type` value | Expensive | Evidence: a recurring authoring shape no existing kind expresses. Closed enum; same bar as a new `scene_operation` primitive. |
 
 New domain verbs are cheap and expected. New `gesture` values, new
 `scene_operation` primitives, and new validator presets are
@@ -944,7 +980,12 @@ Reading the chain:
 
 | Term | Definition | Where it surfaces |
 | --- | --- | --- |
-| **Protocol** | The complete, single, linear lab procedure. The top model level. | `protocol` block; `--protocol <name>` build flag |
+| **Protocol package** | The folder under `content/protocols/<name>/` that holds `protocol.yaml`, `contents.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<name>/` |
+| **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
+| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, contents, and referenced objects. Usually 6 to 10 meaningful steps. | `protocol_type: mini_protocol` |
+| **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |
+| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher and the curriculum step-count gate. | `protocol_type: dev_smoke` |
+| **Protocol** | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value. | `protocol` block in `protocol.yaml` |
 | **Step** | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture. | one entry in `protocol.steps` |
 | **Sequence** | The ordered list of interactions inside a step; order always matters. | `step.sequence` |
 | **Interaction** | One `gesture` on one `target`, with its own `validator` and `response`. | one entry in `step.sequence` |

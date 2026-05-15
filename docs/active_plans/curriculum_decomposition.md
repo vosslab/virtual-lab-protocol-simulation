@@ -15,7 +15,7 @@ work package. Source line ranges below are taken from the current HEAD of
 The plan replaces the two monoliths with five focused mini-protocols and one
 sequence runner that strings them together.
 
-| New protocol id                            | protocolType     | Draft step count | Entry scene             | One-line learning goal                                                                       |
+| New protocol id                            | protocol_type     | Draft step count | Entry scene             | One-line learning goal                                                                       |
 | ------------------------------------------ | ---------------- | ---------------- | ----------------------- | -------------------------------------------------------------------------------------------- |
 | hood_flask_prep                            | mini_protocol    | 7                | hood                    | Set up the sterile hood and prepare an adherent flask through trypsinization and spin-down.  |
 | cell_counting_and_seeding                  | mini_protocol    | 7                | bench                   | Count cells on a hemocytometer and seed a defined density into a 96-well plate.              |
@@ -101,19 +101,19 @@ objects.
 The legacy tutorial folders predate the mini-protocol contract. WP-DECOMP-7
 will act on these recommendations. The table classifies each tutorial as
 absorb (its content folds into a new mini-protocol), retire-to-dev_smoke (it
-becomes a `protocolType: dev_smoke` diagnostic, not student curriculum), or
+becomes a `protocol_type: dev_smoke` diagnostic, not student curriculum), or
 expand-and-keep (it stays as a standalone mini-protocol after a content
 expansion to meet the 6-to-10 step gate).
 
 | Tutorial folder                  | Lines | Status | Disposition                                          | Evidence                                                                                      |
 | -------------------------------- | ----- | ------ | ---------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| tutorial_bench_direct            | 26    | DONE   | Moved to tests/content/dev_smoke/bench_direct_check/ with protocolType: dev_smoke         | git mv tracked files; protocolType set; git status confirms renames (R, RM)                   |
+| tutorial_bench_direct            | 26    | DONE   | Moved to tests/content/dev_smoke/bench_direct_check/ with protocol_type: dev_smoke         | git mv tracked files; protocol_type set; git status confirms renames (R, RM)                   |
 | tutorial_cell_counter            | 27    | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
 | tutorial_drug_dilution           | 54    | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
 | tutorial_hemocytometer_count     | 50    | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
 | tutorial_hood_transfer           | 40    | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
 | tutorial_pbs                     | 133   | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
-| tutorial_plate_reader            | 27    | DONE   | Moved to tests/content/dev_smoke/plate_reader_check/ with protocolType: dev_smoke        | git mv tracked files; protocolType set; git status confirms renames (R, RM)                   |
+| tutorial_plate_reader            | 27    | DONE   | Moved to tests/content/dev_smoke/plate_reader_check/ with protocol_type: dev_smoke        | git mv tracked files; protocol_type set; git status confirms renames (R, RM)                   |
 | tutorial_split                   | 88    | DONE   | Deleted via git rm; no tracked files remain         | Six absorb tutorials deleted; git status confirms (D) entries                                 |
 
 After absorption, no standalone tutorial in the table survives as a

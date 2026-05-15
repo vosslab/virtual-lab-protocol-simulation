@@ -45,17 +45,9 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish..."
 ```
 
-## Protocol and mini-protocol hierarchy
+## Protocol kinds
 
-A protocol is the complete student-facing lab pathway. It may span many scenes in sequence.
-
-A mini-protocol is a focused subprotocol that teaches and verifies one smaller workflow. A mini-protocol usually runs in one scene, or across a small scene transition where the transition is part of the workflow.
-
-Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
-
-A sequence runner is a protocol that connects mini-protocols in order to form a complete student-facing protocol.
-
-A developer smoke protocol is a short diagnostic protocol used to check that a scene, object, or interaction still works. It is not a student-facing protocol and it is not a mini-protocol.
+The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and the surrounding structural terms (protocol package, `protocol_type`, `protocol.yaml`) are defined canonically in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds). Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
 
 ## Visible interaction standard
 
@@ -133,8 +125,4 @@ auditing existing canonical docs or onboarding a new spec.
 
 See [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) for the full
 checklist.
-
-## Sequence runners and friendly terminology
-
-The schema-level `protocolType` value `sequence_runner` is referred to in docs and student-facing content as the "full protocol runner" or simply "full protocol". The schema value stays stable; only the human-readable label changes.
 
