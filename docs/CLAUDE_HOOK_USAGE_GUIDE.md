@@ -7,7 +7,7 @@ preferred alternatives for denied patterns.
 This doc is Claude-specific and does not apply to Codex.
 
 This guide documents current Claude hook behavior. Repo style conventions live in
-[REPO_STYLE.md](REPO_STYLE.md) and [PYTHON_STYLE.md](PYTHON_STYLE.md).
+[docs/REPO_STYLE.md](REPO_STYLE.md) and [docs/PYTHON_STYLE.md](PYTHON_STYLE.md).
 
 ## Trust model
 
@@ -131,7 +131,7 @@ Read tool instead. See the denied commands section.
 These commands are allowed as single commands. Command substitution is blocked.
 
 **File and text processing:**
-`awk`, `cat`, `colordiff`, `comm`, `cut`, `diff`, `expand`, `file`, `fmt`, `fold`,
+`cat`, `colordiff`, `comm`, `cut`, `diff`, `expand`, `file`, `fmt`, `fold`,
 `grep`, `head`, `jq`, `mediainfo`, `nl`, `od`, `paste`, `pdftotext`, `rg`, `sed`,
 `seq`, `shuf`, `sort`, `tac`, `tail`, `tee`, `tr`, `unexpand`, `uniq`, `wc`, `xargs`
 
@@ -148,7 +148,8 @@ These commands are allowed as single commands. Command substitution is blocked.
 
 Note: Some of these (like `cat`, `grep`, `head`, `tail`) have deny rules that block
 them when used with file path arguments. See the denied commands section. Use the
-dedicated tools (Read, Grep, Glob) instead.
+dedicated tools (Read, Grep, Glob) instead. `awk` is not in this list at all -- it
+is denied entirely (see the `awk` denied section below).
 
 ### Local runtimes
 
@@ -434,6 +435,22 @@ recursive patterns directly.
 For a shell-side file listing, `ls <dir>` and `git ls-files <pathspec>` are
 both allowed.
 
+### `awk`
+
+**Blocked:** All `awk` invocations -- `awk '/pat/{print}' file`, `awk '{print $2}'`,
+`gawk`, `mawk`, absolute-path and `command`/`env`-prefixed forms, and pipeline
+leaves (`... | awk ...`). Unlike `cat`/`grep`/`sed`, there is no pipe exception:
+`awk` is denied even as a stdin filter.
+
+**Why:** Almost all agent `awk` usage is line-matching ("find lines matching X,
+print them"), which the Grep tool does directly. `awk`'s `/regex/` syntax also
+makes a reliable file-vs-stdin guard impractical, so the deny is unconditional.
+
+**Instead:** For line-matching, invoke the Grep tool with `pattern`, `path`,
+`glob`, `output_mode`, and `head_limit`. For genuine field extraction, pipe the
+source through `cut`, or read the file with the Read tool and process it in a
+`_temp.py` script.
+
 ### `sed -n` with file paths
 
 **Blocked:** `sed -n '10,20p' file.txt`
@@ -454,9 +471,12 @@ Other sed operations (substitution, etc.) are allowed.
 chained or piped, since the decomposer splits leaves before matching:
 `echo hi && Read README.md`, `cat /tmp/x | Grep foo`.
 
-A grep pattern that *contains* a tool name is not affected:
-`grep "Grep\|Read" file` is allowed (the deny anchors at start-of-leaf,
-so only the lowercase `grep` token matters).
+A grep pattern that *contains* a tool name does not hit *this* deny:
+`grep "Grep\|Read" file` is not flagged as a tool-name-in-Bash command
+(the deny anchors at start-of-leaf, so only the lowercase `grep` token
+matters). Note it is still denied by the file-`grep` rule above if a
+file path argument is present -- a file search is a file search
+regardless of what the pattern spells.
 
 **Why:** `Grep`, `Read`, `Glob`, `Edit`, `Write`, `Task`, `WebFetch`, and
 `WebSearch` are Claude Code TOOLS, not shell commands. Pasting the tool
@@ -711,9 +731,13 @@ useless.
 
 **Instead:** N/A. GitHub operations are not available via CLI.
 
-### Homebrew python `-c`
+### python `-c` (inline code)
 
-**Blocked:** `/opt/homebrew/bin/python3 -c "print('hello')"`
+**Blocked:** Every `python -c` form -- bare `python3 -c "print(1)"`, `python -c`,
+version-suffixed `python3.12 -c`, absolute-path binaries
+(`/opt/homebrew/bin/python3 -c`), `command`/`env` prefixes, and interpreter
+flags before `-c` (`python3 -B -c`). `python3 script.py` and `python3 -m pytest`
+are unaffected -- only the `-c` inline-code form is denied.
 
 **Why:** Inline code is hard to lint and debug.
 
