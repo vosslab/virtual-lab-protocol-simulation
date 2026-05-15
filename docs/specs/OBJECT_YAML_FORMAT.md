@@ -46,7 +46,6 @@ to the per-section detail below.
 | `object_name` | string | yes | [Object identity](#object-identity) |
 | `kind` | enum string | yes | [Object identity](#object-identity) |
 | `label` | string | yes | [Object identity](#object-identity) |
-| `short_label` | string | no | [Object identity](#object-identity) |
 | `structure` | mapping | no | [Structure](#structure) |
 | `state_fields` | list of mapping | yes (may be empty) | [state_fields](#state_fields) |
 | `visual_states` | mapping | yes (may be empty) | [Visual states](#visual-states) |
@@ -64,14 +63,13 @@ are written `state_fields: []`, `visual_states: {}`, `capabilities: []`.
 
 Identity fields name the object and classify it. They are stable across
 scenes; a scene placement may not override `object_name` or `kind`.
-A scene placement may override `label` and `short_label`.
+A scene placement may override `label`.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
 | `object_name` | string | yes | snake_case, unique across the object library | none (must be set) |
 | `kind` | enum string | yes | one of `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration` | none (must be set) |
 | `label` | string | yes | any non-empty string | none (must be set) |
-| `short_label` | string | no | any non-empty string | unset; UI falls back to `label` |
 
 The `object_name` value must equal the filename without the `.yaml` extension. The
 build pipeline rejects a mismatch.
@@ -368,7 +366,6 @@ capability, and per-subpart `visual_states` entries.
 object_name: well_plate_96
 kind: plate
 label: 96-well plate
-short_label: 96-well
 
 structure:
   subpart_kind: well
@@ -443,7 +440,6 @@ the `anchor_y: tip` layout hint.
 object_name: serological_pipette
 kind: pipette
 label: Serological pipette
-short_label: Pipette
 
 state_fields:
   - name: set_volume

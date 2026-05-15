@@ -47,14 +47,6 @@ hints are object-side; see
 should happen on the scene (that is protocol-side; see
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)).
 
-The scene replaces today's split between identity-bearing `items[]`
-entries and placement-bearing `items[]` entries in the fused scene
-YAML. After the split, every entry on the scene side is a placement:
-it references an object by name and says where that object goes. Object
-identity sub-fields (today's `id`, `label`, `shortLabel`, `kind`,
-`svgAsset`, `inventoryRef`) move out of the scene; the scene names
-objects through `object_name` and authors no identity data.
-
 ## The scene side of the boundary
 
 The three-way boundary names what each vocabulary owns:

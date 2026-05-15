@@ -1,0 +1,39 @@
+object_name: waste_container
+kind: waste
+label: Waste container
+
+state_fields:
+  - name: contents_name
+    type: enum
+    allowed: [empty, media, pbs, mixed]
+    default: empty
+    description: Waste type (empty, single liquid, or mixed).
+  - name: contents_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 1000
+    default: 0
+    description: Volume of accumulated liquid waste, in milliliters.
+
+visual_states:
+  contents_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: waste_container_empty }
+      - when: media
+        output: { asset_name: waste_container_filled }
+      - when: pbs
+        output: { asset_name: waste_container_filled }
+      - when: mixed
+        output: { asset_name: waste_container_filled }
+  contents_volume:
+    kind: composite
+    formula: fill_height(state(contents_volume), capacity_ml=1000)
+
+capabilities: [clickable, contents_container]
+
+layout:
+  default_width: 4
+  label_width: 5

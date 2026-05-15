@@ -1,0 +1,25 @@
+object_name: hood_surface
+kind: equipment
+label: BSC workspace
+
+state_fields:
+  - name: surface_cleanliness
+    type: enum
+    allowed: [dirty, ethanol_sprayed]
+    default: dirty
+    description: Whether the hood surface has been cleaned with ethanol.
+
+visual_states:
+  surface_cleanliness:
+    kind: svg
+    cases:
+      - when: dirty
+        output: { asset_name: hood_surface_dirty }
+      - when: ethanol_sprayed
+        output: { asset_name: hood_surface_clean }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 50
+  label_width: 8

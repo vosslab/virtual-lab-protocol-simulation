@@ -37,14 +37,6 @@ state value to a visual asset. The protocol never names an SVG asset name
 and never names a visual variant. This central design rule means every part
 of the schema below enforces this separation.
 
-The object replaces today's split between identity-bearing `items[]`
-sub-fields in scene YAML (`id`, `label`, `shortLabel`, `kind`,
-`svgAsset`, `inventoryRef`) and the per-asset visual metrics in
-`src/asset_specs.ts` (`defaultWidth`, `labelWidth`, `anchorYOffset`,
-`widthScale`). After the split, every object-identity slot lives in one
-place -- the object library -- and the scene side names objects only by
-object_name.
-
 ## Canonical object identity, no extends
 
 Objects are canonical-by-object_name. Each object definition lives in

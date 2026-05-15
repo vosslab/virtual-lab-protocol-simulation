@@ -429,7 +429,6 @@ removes, renames, or relocates.
 | --- | --- | --- |
 | `id` | Object YAML: object `id`. Scene placement carries its own `placement_name`. | A scene may place the same object more than once; placement name and object name are now distinct. |
 | `label` | Object YAML: object `label`. A scene placement may override via `placement.label`. | Identity-class default lives object-side. |
-| `shortLabel` | Object YAML: object `short_label`. A scene placement may override via `placement.short_label`. | Object-owned label; placement-side override is retired. |
 | `kind` | Object YAML: object `kind` (closed enum). | A scene placement may not override identity. |
 | `svgAsset` | Object YAML: resolved through object `visual_states`; not authored as a literal field. | The object owns SVG manipulation. The protocol never names an SVG asset id. |
 | `inventoryRef` | Object YAML: object `inventory_ref`. | A scene placement may not override identity. |
