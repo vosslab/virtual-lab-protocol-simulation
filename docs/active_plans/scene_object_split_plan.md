@@ -747,12 +747,17 @@ for one owner and one reviewable patch.
 - Touch points: `docs/SCENE_ARCHITECTURE.md`, `docs/LAYOUT_ENGINE.md`,
   `docs/SVG_PIPELINE.md`, `docs/LIQUID_CONVENTION.md`,
   `docs/PROTOCOL_AUTHORING_GUIDE.md`, `docs/PROTOCOL_YAML_FORMAT.md`,
-  `docs/CODE_ARCHITECTURE.md`; confirm the full set by auditing `docs/` first.
+  `docs/CODE_ARCHITECTURE.md`, `docs/FILE_STRUCTURE.md`; confirm the full set
+  by auditing `docs/` first.
 - Depends on: WP-DOC-OV1, WP-DOC-OY1, WP-DOC-SV1, WP-DOC-SY1, WP-DOC-PV1.
 - Acceptance criteria:
   - Audits `docs/` and lists every file referencing the scene/object model.
   - Each affected section rewritten, deleted if obsolete, or moved to
     `docs/archive/` if still useful as history -- no transitional notes.
+  - `docs/FILE_STRUCTURE.md` updated: adds the new `OBJECT_VOCABULARY.md` and
+    `OBJECT_YAML_FORMAT.md` entries; updates the scene-doc rows to reflect
+    the cleaned scope; notes that content/ folder layout (objects vs scenes
+    vs protocols subdirs) is owned by the follow-on YAML-migration plan.
   - No `docs/` file contradicts the new canonical docs.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
@@ -936,7 +941,16 @@ order. WP-DOC-C1 stubs all three under `docs/active_plans/`.
 - Targets: the 7 `src/scenes/*.yaml` files plus
   `content/plate_drug_treatment/scene.yaml`. Migrate each into an object-def
   set plus a cleaned scene-placement file.
-- Scope: YAML rewrites and any new object YAML files. No TypeScript.
+- First decision the follow-on plan must make: **content/ folder layout**.
+  Object, scene, and protocol YAML files now live side-by-side in
+  `src/scenes/` and `content/`. The migration must split them into separate
+  subdirectories (proposed: `content/objects/`, `content/scenes/`,
+  `content/protocols/`) so the three vocabularies have a one-to-one mapping
+  to folders. The exact tree (per-protocol subfolders, shared object
+  library, naming conventions) is a follow-on-plan design decision; this
+  plan flags it as a required up-front task, not as decided.
+- Scope: YAML rewrites, new object YAML files, and the content/ folder
+  reshape. No TypeScript.
 
 ### Follow-on 2: TypeScript migration
 
