@@ -1,5 +1,14 @@
 # Plan: Unified protocol interaction vocabulary (original first-pass working plan)
 
+## Plan status: closed
+
+This plan is CLOSED. Milestones M1 through M4, the primary-doc reconcile
+(`PRIMARY_SPEC.md` / `PRIMARY_DESIGN.md`), the 4-pass audit, the 5 audit-fix
+passes, and the final terminology gate are all complete and committed in git
+commit 3bb25fa. Per OQ-4, the follow-on work is tracked in the separate
+[protocol_vocabulary_code_migration_plan.md](protocol_vocabulary_code_migration_plan.md)
+code-migration plan.
+
 > **Superseded / historical.** This document predates the ratified unified
 > interaction vocabulary and uses earlier, abandoned framing. The final model
 > is the two-level `protocol -> step -> interaction -> response` spec. See
@@ -888,21 +897,21 @@ for one owner and one reviewable patch.
 
 ## Rollout and release checklist
 
-- [ ] OQ-1, OQ-2, OQ-3 resolved.
-- [ ] M1 evidence artifact committed.
-- [ ] M2 design doc complete; integration gate passed (no TBD; both residual
+- [x] OQ-1, OQ-2, OQ-3 resolved.
+- [x] M1 evidence artifact committed.
+- [x] M2 design doc complete; integration gate passed (no TBD; both residual
   gaps dispositioned).
-- [ ] M3 ratification matrices complete for all four protocols and the 7
+- [x] M3 ratification matrices complete for all four protocols and the 7
   content files; every step has a mode, action, and taught skill;
   residual-gap list dispositioned.
-- [ ] M2 design doc revised if M3 surfaced gaps; affected steps re-ratified.
-- [ ] `docs/PROTOCOL_VOCABULARY.md` rewritten; target-state and current-code
+- [x] M2 design doc revised if M3 surfaced gaps; affected steps re-ratified.
+- [x] `docs/PROTOCOL_VOCABULARY.md` rewritten; target-state and current-code
   sections clearly labeled.
-- [ ] `docs/SCENE_VOCABULARY.md` rewritten; cross-references resolve.
-- [ ] Dependent docs aligned or margin-noted.
-- [ ] `docs/CHANGELOG.md` entry finalized.
-- [ ] Follow-on code-migration plan stubbed; `dial`-mode build named.
-- [ ] `scene_runtime_doc_conflicts.md` annotated.
+- [x] `docs/SCENE_VOCABULARY.md` rewritten; cross-references resolve.
+- [x] Dependent docs aligned or margin-noted.
+- [x] `docs/CHANGELOG.md` entry finalized.
+- [x] Follow-on code-migration plan stubbed; `dial`-mode build named.
+- [x] `scene_runtime_doc_conflicts.md` annotated.
 - [ ] Human review of the two canonical docs for internal consistency, a
   usable scene/protocol boundary, and an applicable pedagogy rule.
 

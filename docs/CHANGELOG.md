@@ -157,6 +157,29 @@
   operation is renamed `add`, and the earlier `empty` is expressed as `set`
   with `volume_ml: 0`.
 
+### Fixes and Maintenance
+- **Unified interaction vocabulary plan marked closed**: Added a
+  `Plan status: closed` section to
+  [docs/active_plans/unified_interaction_vocabulary_plan.md](active_plans/unified_interaction_vocabulary_plan.md)
+  and flipped 10 rollout-checklist boxes to checked. The plan's M1-M4 work
+  (canonical doc rewrites, dependent-doc alignment, primary-doc reconcile,
+  4-pass audit, final terminology gate) was already complete and committed
+  earlier; this was stale plan-file bookkeeping only. The human-review gate
+  checkbox was left unchecked because it is a human-only gate.
+
+### Removals and Deprecations
+- **Archived 4 stale plan files**: Moved four superseded plan files from
+  `docs/active_plans/` to `docs/archive/` with `git mv`:
+  `focused_well_plate_workspace_plan.md` and
+  `well_plate_workspace_pause_note.md` (paused 2026-05-12, superseded by the
+  Fresh Refactor Plan), `protocol-step-vocab-refinement-plan.md` (superseded by
+  the unified interaction vocabulary plan), and `scene_runtime_doc_conflicts.md`
+  (superseded M0 audit, already annotated by WP-DOC-C1). References to the old
+  paths in `scene_runtime_spine_plan.md`,
+  `2026_May_13-Fresh_Refactor_Plan.md`, and
+  `unified_interaction_vocabulary_plan.md` were left as-is because they are plan
+  steps that anticipate the archival.
+
 ### Decisions and Failures
 - **Flat model could not express a multi-gesture step**: The first-pass flat
   six-slot model could not represent a single step that needs several
