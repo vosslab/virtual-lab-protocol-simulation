@@ -13,552 +13,23 @@ Standalone tool. Not a pytest. Not imported by build pipeline or src/.
 
 import argparse
 import sys
-import yaml
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
-# ============================================
-# CONSTANTS WITH SPEC CITATIONS
-# ============================================
-
-# Object kinds - from OBJECT_YAML_FORMAT.md "Object identity" table
-OBJECT_KINDS = {'plate', 'bottle', 'flask', 'pipette', 'rack', 'waste', 'equipment', 'decoration'}
-
-# Object capabilities - from OBJECT_VOCABULARY.md "Capabilities" table
-OBJECT_CAPABILITIES = {
-	'clickable',
-	'contents_container',
-	'instrument_with_setpoint',
-	'structured_surface',
-	'cursor_attachable',
-	'decoration_only',
-}
-
-# Retired object fields - user-stated retirement list and docs/specs/OBJECT_VOCABULARY.md
-RETIRED_OBJECT_KEYS = {
-	'short_label',
-	'id',
-	'role',
-	'colorKey',
-	'render_map',
-	'liquid_container',
-	'liquid_color',
-	'liquid_id',
-	'liquid_volume',
-	'asset_name',
-	'inventory_ref',
-	'inventoryRef',
-	'shortLabel',
-	'sceneId',
-}
-
-# Base scene top-level keys - from SCENE_YAML_FORMAT.md "Top-level fields" table
-BASE_SCENE_REQUIRED_KEYS = {'scene_name', 'workspace', 'capabilities', 'scene_bounds', 'zones', 'placements'}
-BASE_SCENE_OPTIONAL_KEYS = {'background', 'layout_rules', 'accent_rules', 'wrong_order_message'}
-BASE_SCENE_ALL_KEYS = BASE_SCENE_REQUIRED_KEYS | BASE_SCENE_OPTIONAL_KEYS
-
-# Retired base scene keys
-RETIRED_BASE_SCENE_KEYS = {
-	'element_id',
-	'sceneId',
-	'elementId',
-	'short_label',
-}
-
-# Protocol-scene top-level keys - from plan "Protocol-scene schema (closed)"
-PROTOCOL_SCENE_ALLOWED_KEYS = {
-	'scene_name', 'extends', 'add_placements', 'reposition_placements',
-	'deactivate_placements', 'remove_placements', 'scene_notes'
-}
-
-# Locked fields within placements (object-owned)
-PLACEMENT_LOCKED_FIELDS = {
-	'label', 'kind', 'state_fields', 'visual_states', 'capabilities', 'layout'
-}
-
-# Reposition-only fields - from plan
-REPOSITION_ALLOWED_FIELDS = {'placement_name', 'zone', 'position', 'depth', 'anchor', 'depth_tier', 'align_stop'}
-
-# Protocol types - from PRIMARY_SPEC.md "Protocol types"
-PROTOCOL_TYPES = {'protocol', 'mini_protocol', 'sequence_runner', 'dev_smoke'}
-
-# Gestures - from PRIMARY_SPEC.md "Gestures"
-VALID_GESTURES = {'click', 'drag', 'adjust', 'select', 'type'}
-
-# Scene operations - from PRIMARY_SPEC.md "Scene operations"
-VALID_SCENE_OPERATIONS = {'ObjectStateChange', 'CursorAttach', 'SceneChange', 'LayoutMove', 'TimedWait'}
-
-# Interaction validator presets - from PROTOCOL_YAML_FORMAT.md "Validator presets"
-INTERACTION_VALIDATOR_PRESETS = {'correct_target', 'correct_choice', 'target_with_value'}
-
-# State field types - from OBJECT_YAML_FORMAT.md "state_fields"
-STATE_FIELD_TYPES = {'enum', 'int', 'float', 'bool'}
-
-# Retired protocol keys - from PROTOCOL_YAML_FORMAT.md
-RETIRED_PROTOCOL_KEYS = {
-	'action',
-	'nextId',
-	'stepIndex',
-	'requiredItems',
-	'usedItems',
-	'completionPath',
-	'completionTrigger',
-	'colorKey',
-}
+# Import validators module
+from validators.yaml_io import load_yaml
+from validators.findings import Finding, Severity
+from validators.constants import OBJECT_KINDS, RETIRED_OBJECT_KEYS
+from validators.database import ContentDatabase
+from validators.object_validator import ObjectValidator
+from validators.scene_base_validator import BaseSceneValidator
+from validators.scene_protocol_validator import ProtocolSceneValidator
+from validators.protocol_validator import ProtocolValidator
 
 
 class ValidationError(Exception):
 	"""Raised when validation fails."""
 	pass
-
-
-class ObjectValidator:
-	"""Validates object YAML files per OBJECT_YAML_FORMAT.md."""
-
-	def validate(self, obj: Dict[str, Any], path: str) -> List[str]:
-		"""
-		Validate an object definition.
-		Returns list of error messages (empty if valid).
-		"""
-		errors = []
-
-		# Required top-level keys per OBJECT_YAML_FORMAT.md table
-		required = ['object_name', 'kind', 'label', 'state_fields', 'visual_states', 'capabilities', 'layout']
-		for key in required:
-			if key not in obj:
-				errors.append(f"{path}: missing required key '{key}'")
-
-		# Check for retired keys
-		for retired in RETIRED_OBJECT_KEYS:
-			if retired in obj:
-				errors.append(f"{path}: retired key '{retired}' found (no longer supported)")
-
-		if not errors:
-			errors.extend(self._validate_identity(obj, path))
-			errors.extend(self._validate_state_fields(obj, path))
-			errors.extend(self._validate_capabilities(obj, path))
-
-		return errors
-
-	def _validate_identity(self, obj: Dict[str, Any], path: str) -> List[str]:
-		"""Validate object_name, kind, label per OBJECT_YAML_FORMAT.md."""
-		errors = []
-
-		object_name = obj.get('object_name')
-		if object_name and not self._is_snake_case(object_name):
-			errors.append(f"{path}: object_name '{object_name}' is not snake_case")
-
-		kind = obj.get('kind')
-		if kind and kind not in OBJECT_KINDS:
-			errors.append(f"{path}: kind '{kind}' not in allowed set {OBJECT_KINDS}")
-
-		label = obj.get('label')
-		if not label or not isinstance(label, str) or not label.strip():
-			errors.append(f"{path}: label is required and must be non-empty string")
-
-		return errors
-
-	def _validate_state_fields(self, obj: Dict[str, Any], path: str) -> List[str]:
-		"""Validate state_fields per OBJECT_YAML_FORMAT.md."""
-		errors = []
-
-		state_fields = obj.get('state_fields')
-		if not isinstance(state_fields, list):
-			errors.append(f"{path}: state_fields must be a list")
-			return errors
-
-		seen_names = set()
-		for idx, field in enumerate(state_fields):
-			field_path = f"{path}.state_fields[{idx}]"
-
-			if not isinstance(field, dict):
-				errors.append(f"{field_path}: state_field entry must be a mapping")
-				continue
-
-			if 'name' not in field:
-				errors.append(f"{field_path}: missing required key 'name'")
-			if 'type' not in field:
-				errors.append(f"{field_path}: missing required key 'type'")
-			if 'default' not in field:
-				errors.append(f"{field_path}: missing required key 'default'")
-
-			field_name = field.get('name')
-			if field_name:
-				if field_name in seen_names:
-					errors.append(f"{field_path}: duplicate field name '{field_name}'")
-				else:
-					seen_names.add(field_name)
-
-			field_type = field.get('type')
-			if field_type and field_type not in STATE_FIELD_TYPES:
-				errors.append(f"{field_path}: type '{field_type}' not in {STATE_FIELD_TYPES}")
-
-			if field_type == 'enum' and 'allowed' not in field:
-				errors.append(f"{field_path}: enum field missing required 'allowed' list")
-
-		return errors
-
-	def _validate_capabilities(self, obj: Dict[str, Any], path: str) -> List[str]:
-		"""Validate capabilities per OBJECT_VOCABULARY.md."""
-		errors = []
-
-		capabilities = obj.get('capabilities')
-		if not isinstance(capabilities, list):
-			errors.append(f"{path}: capabilities must be a list")
-			return errors
-
-		has_decoration = 'decoration_only' in capabilities
-		other_caps = set(capabilities) - {'decoration_only'}
-
-		if has_decoration and other_caps:
-			errors.append(f"{path}: decoration_only is mutually exclusive with other capabilities")
-
-		for cap in capabilities:
-			if cap not in OBJECT_CAPABILITIES:
-				errors.append(f"{path}: unknown capability '{cap}'")
-
-		return errors
-
-	@staticmethod
-	def _is_snake_case(s: str) -> bool:
-		"""Check if string is snake_case."""
-		if not s:
-			return False
-		return all(c.isalnum() or c == '_' for c in s) and not s[0].isdigit()
-
-
-class BaseSceneValidator:
-	"""Validates base scene YAML files per SCENE_YAML_FORMAT.md."""
-
-	def __init__(self):
-		self.all_objects: Set[str] = set()
-
-	def set_object_names(self, names: Set[str]) -> None:
-		"""Set known object names for cross-reference validation."""
-		self.all_objects = names
-
-	def validate(self, scene: Dict[str, Any], path: str) -> List[str]:
-		"""Validate a base scene definition."""
-		errors = []
-
-		if 'extends' in scene:
-			errors.append(f"{path}: base scenes must not have 'extends' field")
-
-		for retired in RETIRED_BASE_SCENE_KEYS:
-			if retired in scene:
-				errors.append(f"{path}: retired key '{retired}' found")
-
-		for key in BASE_SCENE_REQUIRED_KEYS:
-			if key not in scene:
-				errors.append(f"{path}: missing required key '{key}'")
-
-		for key in scene:
-			if key not in BASE_SCENE_ALL_KEYS:
-				errors.append(f"{path}: unknown top-level key '{key}'")
-
-		if not errors:
-			zone_errors, zone_ids = self._validate_zones(scene, path)
-			errors.extend(zone_errors)
-			errors.extend(self._validate_placements(scene, path, zone_ids))
-
-		return errors
-
-	def _validate_zones(self, scene: Dict[str, Any], path: str) -> Tuple[List[str], Set[str]]:
-		"""Validate zones per SCENE_YAML_FORMAT.md."""
-		errors = []
-		zones = scene.get('zones', [])
-
-		if not isinstance(zones, list):
-			errors.append(f"{path}: zones must be a list")
-			return errors, set()
-
-		zone_ids = set()
-		for idx, zone in enumerate(zones):
-			zone_path = f"{path}.zones[{idx}]"
-			if not isinstance(zone, dict):
-				errors.append(f"{zone_path}: zone entry must be a mapping")
-				continue
-
-			if 'id' not in zone:
-				errors.append(f"{zone_path}: zone missing required 'id'")
-			else:
-				zone_id = zone['id']
-				if zone_id in zone_ids:
-					errors.append(f"{zone_path}: duplicate zone id '{zone_id}'")
-				else:
-					zone_ids.add(zone_id)
-
-		return errors, zone_ids
-
-	def _validate_placements(self, scene: Dict[str, Any], path: str, zone_ids: Set[str]) -> List[str]:
-		"""Validate placements per SCENE_YAML_FORMAT.md."""
-		errors = []
-		placements = scene.get('placements', [])
-
-		if not isinstance(placements, list):
-			errors.append(f"{path}: placements must be a list")
-			return errors
-
-		placement_names = set()
-		for idx, placement in enumerate(placements):
-			placement_path = f"{path}.placements[{idx}]"
-			if not isinstance(placement, dict):
-				errors.append(f"{placement_path}: placement entry must be a mapping")
-				continue
-
-			if 'placement_name' not in placement:
-				errors.append(f"{placement_path}: placement missing required 'placement_name'")
-			else:
-				pname = placement['placement_name']
-				if pname in placement_names:
-					errors.append(f"{placement_path}: duplicate placement_name '{pname}'")
-				else:
-					placement_names.add(pname)
-
-			if 'object_name' not in placement:
-				errors.append(f"{placement_path}: placement missing required 'object_name'")
-			elif self.all_objects and placement['object_name'] not in self.all_objects:
-				errors.append(f"{placement_path}: object_name '{placement['object_name']}' not found")
-
-		return errors
-
-
-class ProtocolSceneValidator:
-	"""Validates protocol-scene (inherited) YAML files per SCENE_INHERITANCE.md."""
-
-	def __init__(self):
-		self.base_scenes: Dict[str, Dict[str, Any]] = {}
-
-	def set_base_scenes(self, scenes: Dict[str, Dict[str, Any]]) -> None:
-		"""Set known base scenes for inheritance validation."""
-		self.base_scenes = scenes
-
-	def validate(self, scene: Dict[str, Any], path: str) -> List[str]:
-		"""Validate a protocol-scene definition."""
-		errors = []
-
-		for key in scene:
-			if key not in PROTOCOL_SCENE_ALLOWED_KEYS:
-				errors.append(f"{path}: unknown top-level key '{key}' (protocol-scene keys are closed)")
-
-		if 'extends' not in scene:
-			errors.append(f"{path}: protocol-scene missing required 'extends' field")
-		else:
-			extends = scene['extends']
-			if extends not in self.base_scenes:
-				errors.append(f"{path}: extends '{extends}' does not name a known base scene")
-
-		if not errors and 'extends' in scene:
-			errors.extend(self._validate_operations(scene, path))
-
-		return errors
-
-	def _validate_operations(self, scene: Dict[str, Any], path: str) -> List[str]:
-		"""Validate add/remove/reposition/deactivate operations."""
-		errors = []
-
-		base_name = scene['extends']
-		base_scene = self.base_scenes.get(base_name, {})
-		base_placements = base_scene.get('placements', [])
-		base_placement_names = {p.get('placement_name') for p in base_placements if isinstance(p, dict)}
-
-		new_placement_names = set(base_placement_names)
-
-		for op in ['remove_placements', 'deactivate_placements', 'reposition_placements', 'add_placements']:
-			ops = scene.get(op, [])
-			if not isinstance(ops, list):
-				errors.append(f"{path}: {op} must be a list")
-				continue
-
-			for idx, entry in enumerate(ops):
-				entry_path = f"{path}.{op}[{idx}]"
-				if not isinstance(entry, dict):
-					errors.append(f"{entry_path}: entry must be a mapping")
-					continue
-
-				if 'placement_name' not in entry:
-					errors.append(f"{entry_path}: entry missing required 'placement_name'")
-					continue
-
-				pname = entry['placement_name']
-
-				if op == 'add_placements':
-					if pname in base_placement_names:
-						errors.append(f"{entry_path}: add_placements placement_name '{pname}' collides with base")
-					else:
-						new_placement_names.add(pname)
-				else:
-					if pname not in new_placement_names:
-						errors.append(f"{entry_path}: {op} references unknown placement_name '{pname}'")
-
-				if op == 'reposition_placements':
-					for key in entry:
-						if key not in REPOSITION_ALLOWED_FIELDS:
-							errors.append(f"{entry_path}: reposition_placements may only change zone, position, depth, anchor")
-
-				if op == 'add_placements':
-					for key in entry:
-						if key in PLACEMENT_LOCKED_FIELDS:
-							errors.append(f"{entry_path}: add_placements may not set object-owned field '{key}'")
-
-		return errors
-
-
-class ProtocolValidator:
-	"""Validates protocol YAML files per PRIMARY_SPEC.md and PROTOCOL_YAML_FORMAT.md."""
-
-	def validate(self, protocol: Dict[str, Any], path: str) -> List[str]:
-		"""Validate a protocol definition."""
-		errors = []
-
-		for retired in RETIRED_PROTOCOL_KEYS:
-			if retired in protocol:
-				errors.append(f"{path}: retired key '{retired}' found")
-
-		required = ['protocol_type', 'name', 'entry_step', 'learning', 'steps']
-		for key in required:
-			if key not in protocol:
-				errors.append(f"{path}: missing required key '{key}'")
-
-		if not errors:
-			errors.extend(self._validate_protocol_type(protocol, path))
-			errors.extend(self._validate_learning(protocol, path))
-			errors.extend(self._validate_steps(protocol, path))
-
-		return errors
-
-	def _validate_protocol_type(self, protocol: Dict[str, Any], path: str) -> List[str]:
-		"""Validate protocol_type per PRIMARY_SPEC.md."""
-		errors = []
-		ptype = protocol.get('protocol_type')
-		if ptype not in PROTOCOL_TYPES:
-			errors.append(f"{path}: protocol_type '{ptype}' not in {PROTOCOL_TYPES}")
-		return errors
-
-	def _validate_learning(self, protocol: Dict[str, Any], path: str) -> List[str]:
-		"""Validate learning block per PRIMARY_SPEC.md."""
-		errors = []
-		ptype = protocol.get('protocol_type')
-		learning = protocol.get('learning')
-
-		if ptype in ('mini_protocol', 'protocol'):
-			if not isinstance(learning, dict):
-				errors.append(f"{path}: learning block is required and must be a mapping")
-				return errors
-
-			for field in {'objectives', 'outcomes', 'goals'}:
-				if field not in learning:
-					errors.append(f"{path}.learning: missing required key '{field}'")
-
-		return errors
-
-	def _validate_steps(self, protocol: Dict[str, Any], path: str) -> List[str]:
-		"""Validate steps per PRIMARY_SPEC.md."""
-		errors = []
-		steps = protocol.get('steps')
-
-		if not isinstance(steps, list):
-			errors.append(f"{path}: steps must be a list")
-			return errors
-
-		if not steps:
-			errors.append(f"{path}: steps list cannot be empty")
-			return errors
-
-		step_names = set()
-		terminal_count = 0
-
-		for idx, step in enumerate(steps):
-			step_path = f"{path}.steps[{idx}]"
-			if not isinstance(step, dict):
-				errors.append(f"{step_path}: step entry must be a mapping")
-				continue
-
-			required = ['name', 'prompt', 'sequence', 'step_validator', 'outcome', 'next_step']
-			for key in required:
-				if key not in step:
-					errors.append(f"{step_path}: missing required key '{key}'")
-
-			step_name = step.get('name')
-			if step_name:
-				if step_name in step_names:
-					errors.append(f"{step_path}: duplicate step name '{step_name}'")
-				else:
-					step_names.add(step_name)
-
-			errors.extend(self._validate_sequence(step, step_path))
-
-			outcome = step.get('outcome')
-			if isinstance(outcome, dict):
-				if outcome.get('on_success') != 'complete':
-					errors.append(f"{step_path}.outcome.on_success: must be 'complete'")
-				if outcome.get('on_failure') != 'retry':
-					errors.append(f"{step_path}.outcome.on_failure: must be 'retry'")
-				if 'advance' in outcome:
-					errors.append(f"{step_path}.outcome: 'advance' key is not allowed")
-
-			if step.get('next_step') is None:
-				terminal_count += 1
-
-		entry_step = protocol.get('entry_step')
-		if entry_step and entry_step not in step_names:
-			errors.append(f"{path}: entry_step '{entry_step}' does not name any step")
-
-		if terminal_count != 1:
-			errors.append(f"{path}: must have exactly one terminal step, found {terminal_count}")
-
-		ptype = protocol.get('protocol_type')
-		if ptype == 'mini_protocol':
-			num_steps = len(steps)
-			if num_steps < 6 or num_steps > 10:
-				errors.append(f"{path}: mini_protocol must have 6-10 steps, found {num_steps}")
-
-		return errors
-
-	def _validate_sequence(self, step: Dict[str, Any], step_path: str) -> List[str]:
-		"""Validate sequence (list of interactions)."""
-		errors = []
-		sequence = step.get('sequence')
-
-		if not isinstance(sequence, list):
-			errors.append(f"{step_path}: sequence must be a list")
-			return errors
-
-		for idx, interaction in enumerate(sequence):
-			interaction_path = f"{step_path}.sequence[{idx}]"
-			if not isinstance(interaction, dict):
-				errors.append(f"{interaction_path}: interaction entry must be a mapping")
-				continue
-
-			required = ['target', 'gesture', 'validator', 'response']
-			for key in required:
-				if key not in interaction:
-					errors.append(f"{interaction_path}: missing required key '{key}'")
-
-			gesture = interaction.get('gesture')
-			if gesture and gesture not in VALID_GESTURES:
-				errors.append(f"{interaction_path}: gesture '{gesture}' not in {VALID_GESTURES}")
-
-			validator = interaction.get('validator')
-			if isinstance(validator, dict):
-				preset = validator.get('preset')
-				if preset and preset not in INTERACTION_VALIDATOR_PRESETS:
-					errors.append(f"{interaction_path}.validator: preset '{preset}' not recognized")
-
-			response = interaction.get('response')
-			if isinstance(response, dict):
-				scene_ops = response.get('scene_operations', [])
-				if not isinstance(scene_ops, list):
-					errors.append(f"{interaction_path}.response: scene_operations must be a list")
-				else:
-					for op_idx, op in enumerate(scene_ops):
-						op_path = f"{interaction_path}.response.scene_operations[{op_idx}]"
-						if isinstance(op, dict):
-							op_type = op.get('type')
-							if op_type and op_type not in VALID_SCENE_OPERATIONS:
-								errors.append(f"{op_path}: type '{op_type}' not in {VALID_SCENE_OPERATIONS}")
-
-		return errors
 
 
 def print_verbose_details(file_path: str, data: Dict[str, Any], file_type: str) -> None:
@@ -657,15 +128,6 @@ def find_yaml_files(root: str, file_type: str) -> List[Path]:
 	return sorted(files)
 
 
-def load_yaml(path: Path) -> Optional[Dict[str, Any]]:
-	"""Load YAML file safely."""
-	try:
-		with open(path, 'r') as f:
-			return yaml.safe_load(f) or {}
-	except Exception as e:
-		raise ValidationError(f"Failed to load {path}: {e}")
-
-
 def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False) -> Tuple[bool, List[str], Dict[str, int]]:
 	"""
 	Validate entire content tree.
@@ -675,32 +137,36 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	errors = []
 	counts = {'objects': 0, 'base_scenes': 0, 'protocol_scenes': 0, 'protocols': 0}
 
+	# Load content database for Tier 1 cross-file checks
+	db = ContentDatabase()
+	db.load_from_tree(Path(repo_root))
+
+	# Collect findings from database load errors
+	for finding in db.findings:
+		errors.append(finding.format())
+		print(finding.format())
+
 	# Validate objects
 	if verbose:
 		print("=== Objects ===")
 	object_files = find_yaml_files(repo_root, 'object')
-	object_names = set()
 	object_validator = ObjectValidator()
 
 	for obj_file in object_files:
 		rel_path = obj_file.relative_to(repo_root)
+		counts['objects'] += 1
 		try:
 			obj_data = load_yaml(obj_file)
-			obj_errors = object_validator.validate(obj_data, str(rel_path))
-			if obj_errors:
-				errors.extend(obj_errors)
-				for error in obj_errors:
-					print(error)
+			obj_findings = object_validator.validate(obj_data, str(rel_path))
+			if obj_findings:
+				for finding in obj_findings:
+					errors.append(finding.format())
+					print(finding.format())
 			else:
 				if verbose:
 					print(f"PASS: {rel_path}")
 					print_verbose_details(str(rel_path), obj_data, 'object')
-				counts['objects'] += 1
-
-			obj_name = obj_data.get('object_name')
-			if obj_name:
-				object_names.add(obj_name)
-		except ValidationError as e:
+		except RuntimeError as e:
 			error_msg = str(e)
 			errors.append(error_msg)
 			print(error_msg)
@@ -709,29 +175,23 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	if verbose:
 		print("=== Base scenes ===")
 	base_scene_files = find_yaml_files(repo_root, 'base_scene')
-	base_scenes = {}
 	base_scene_validator = BaseSceneValidator()
-	base_scene_validator.set_object_names(object_names)
 
 	for scene_file in base_scene_files:
 		rel_path = scene_file.relative_to(repo_root)
+		counts['base_scenes'] += 1
 		try:
 			scene_data = load_yaml(scene_file)
-			scene_errors = base_scene_validator.validate(scene_data, str(rel_path))
-			if scene_errors:
-				errors.extend(scene_errors)
-				for error in scene_errors:
-					print(error)
+			scene_findings = base_scene_validator.validate(scene_data, str(rel_path))
+			if scene_findings:
+				for finding in scene_findings:
+					errors.append(finding.format())
+					print(finding.format())
 			else:
 				if verbose:
 					print(f"PASS: {rel_path}")
 					print_verbose_details(str(rel_path), scene_data, 'base_scene')
-				counts['base_scenes'] += 1
-
-			scene_name = scene_data.get('scene_name')
-			if scene_name:
-				base_scenes[scene_name] = scene_data
-		except ValidationError as e:
+		except RuntimeError as e:
 			error_msg = str(e)
 			errors.append(error_msg)
 			print(error_msg)
@@ -741,56 +201,54 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 		print("=== Protocol scenes ===")
 	protocol_scene_files = find_yaml_files(repo_root, 'protocol_scene')
 	protocol_scene_validator = ProtocolSceneValidator()
-	protocol_scene_validator.set_base_scenes(base_scenes)
+	protocol_scene_validator.set_base_scenes(db.base_scenes)
 
 	for scene_file in protocol_scene_files:
 		rel_path = scene_file.relative_to(repo_root)
+		counts['protocol_scenes'] += 1
 		try:
 			scene_data = load_yaml(scene_file)
-			scene_errors = protocol_scene_validator.validate(scene_data, str(rel_path))
-			if scene_errors:
-				errors.extend(scene_errors)
-				for error in scene_errors:
-					print(error)
+			scene_findings = protocol_scene_validator.validate(scene_data, str(rel_path))
+			if scene_findings:
+				for finding in scene_findings:
+					errors.append(finding.format())
+					print(finding.format())
 			else:
 				if verbose:
 					print(f"PASS: {rel_path}")
 					print_verbose_details(str(rel_path), scene_data, 'protocol_scene')
-				counts['protocol_scenes'] += 1
-		except ValidationError as e:
+		except RuntimeError as e:
 			error_msg = str(e)
 			errors.append(error_msg)
 			print(error_msg)
 
-	# Validate protocols
+	# Validate protocols with Tier 1 checks enabled
 	if verbose:
 		print("=== Protocols ===")
 	protocol_files = find_yaml_files(repo_root, 'protocol')
-	protocol_validator = ProtocolValidator()
+	protocol_validator = ProtocolValidator(db=db)
 
 	for protocol_file in protocol_files:
 		rel_path = protocol_file.relative_to(repo_root)
+		counts['protocols'] += 1
 		try:
 			protocol_data = load_yaml(protocol_file)
-			protocol_errors = protocol_validator.validate(protocol_data, str(rel_path))
-			if protocol_errors:
-				errors.extend(protocol_errors)
-				for error in protocol_errors:
-					print(error)
+			protocol_findings = protocol_validator.validate(protocol_data, str(rel_path))
+			if protocol_findings:
+				for finding in protocol_findings:
+					errors.append(finding.format())
+					print(finding.format())
 			else:
 				if verbose:
 					print(f"PASS: {rel_path}")
 					print_verbose_details(str(rel_path), protocol_data, 'protocol')
-				counts['protocols'] += 1
-		except ValidationError as e:
+		except RuntimeError as e:
 			error_msg = str(e)
 			errors.append(error_msg)
 			print(error_msg)
 
 	success = len(errors) == 0
 	return success, errors, counts
-
-
 
 
 def list_protocols(repo_root: str) -> List[str]:
@@ -845,6 +303,14 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 		errors.append(f"Protocol '{protocol_name}' not found")
 		return False, errors
 
+	# Load content database for Tier 1 checks
+	db = ContentDatabase()
+	db.load_from_tree(Path(repo_root))
+
+	# Collect findings from database load errors
+	for finding in db.findings:
+		errors.append(finding.format())
+
 	# Load protocol.yaml
 	protocol_yaml = protocol_path / 'protocol.yaml'
 	if not protocol_yaml.exists():
@@ -853,66 +319,60 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 
 	try:
 		protocol_data = load_yaml(protocol_yaml)
-		protocol_validator = ProtocolValidator()
-		proto_errors = protocol_validator.validate(protocol_data, str(protocol_yaml.relative_to(repo_root)))
-		errors.extend(proto_errors)
+		protocol_validator = ProtocolValidator(db=db)
+		proto_findings = protocol_validator.validate(protocol_data, str(protocol_yaml.relative_to(repo_root)))
+		for finding in proto_findings:
+			errors.append(finding.format())
 		rel_path = str(protocol_yaml.relative_to(repo_root))
 		files_checked.append(rel_path)
 		files_data[rel_path] = ('protocol', protocol_data)
-	except ValidationError as e:
+	except RuntimeError as e:
 		errors.append(str(e))
 
 	# Load all objects to build name set
 	object_files = find_yaml_files(repo_root, 'object')
-	object_names = set()
 	object_validator = ObjectValidator()
 	for obj_file in object_files:
 		try:
 			obj_data = load_yaml(obj_file)
-			obj_errors = object_validator.validate(obj_data, str(obj_file.relative_to(repo_root)))
-			errors.extend(obj_errors)
+			obj_findings = object_validator.validate(obj_data, str(obj_file.relative_to(repo_root)))
+			for finding in obj_findings:
+				errors.append(finding.format())
 			rel_path = str(obj_file.relative_to(repo_root))
 			files_checked.append(rel_path)
 			files_data[rel_path] = ('object', obj_data)
-			obj_name = obj_data.get('object_name')
-			if obj_name:
-				object_names.add(obj_name)
-		except ValidationError as e:
+		except RuntimeError as e:
 			errors.append(str(e))
 
 	# Load base scenes
 	base_scene_files = find_yaml_files(repo_root, 'base_scene')
-	base_scenes = {}
 	base_scene_validator = BaseSceneValidator()
-	base_scene_validator.set_object_names(object_names)
 	for scene_file in base_scene_files:
 		try:
 			scene_data = load_yaml(scene_file)
-			scene_errors = base_scene_validator.validate(scene_data, str(scene_file.relative_to(repo_root)))
-			errors.extend(scene_errors)
+			scene_findings = base_scene_validator.validate(scene_data, str(scene_file.relative_to(repo_root)))
+			for finding in scene_findings:
+				errors.append(finding.format())
 			rel_path = str(scene_file.relative_to(repo_root))
 			files_checked.append(rel_path)
 			files_data[rel_path] = ('base_scene', scene_data)
-			scene_name = scene_data.get('scene_name')
-			if scene_name:
-				base_scenes[scene_name] = scene_data
-		except ValidationError as e:
+		except RuntimeError as e:
 			errors.append(str(e))
 
 	# Validate protocol-scene (inherited scenes) for this protocol
 	protocol_scenes_dir = protocol_path / 'scenes'
 	if protocol_scenes_dir.exists():
 		protocol_scene_validator = ProtocolSceneValidator()
-		protocol_scene_validator.set_base_scenes(base_scenes)
 		for scene_file in sorted(protocol_scenes_dir.glob('*.yaml')):
 			try:
 				scene_data = load_yaml(scene_file)
-				scene_errors = protocol_scene_validator.validate(scene_data, str(scene_file.relative_to(repo_root)))
-				errors.extend(scene_errors)
+				scene_findings = protocol_scene_validator.validate(scene_data, str(scene_file.relative_to(repo_root)))
+				for finding in scene_findings:
+					errors.append(finding.format())
 				rel_path = str(scene_file.relative_to(repo_root))
 				files_checked.append(rel_path)
 				files_data[rel_path] = ('protocol_scene', scene_data)
-			except ValidationError as e:
+			except RuntimeError as e:
 				errors.append(str(e))
 
 	# Load contents.yaml if present
@@ -924,7 +384,7 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 			rel_path = str(contents_yaml.relative_to(repo_root))
 			files_checked.append(rel_path)
 			files_data[rel_path] = ('contents', contents_data)
-		except ValidationError as e:
+		except RuntimeError as e:
 			errors.append(str(e))
 
 	success = len(errors) == 0
@@ -1124,15 +584,15 @@ def main():
 		try:
 			obj_data = load_yaml(Path(args.object_file))
 			validator = ObjectValidator()
-			errors = validator.validate(obj_data, args.object_file)
-			if errors:
-				for error in errors:
-					print(error)
-				print(f"{len(errors)} error(s) in {args.object_file}")
+			findings = validator.validate(obj_data, args.object_file)
+			if findings:
+				for finding in findings:
+					print(finding.format())
+				print(f"{len(findings)} error(s) in {args.object_file}")
 			else:
 				print(f"PASS: {args.object_file}")
-			sys.exit(0 if not errors else 1)
-		except ValidationError as e:
+			sys.exit(0 if not findings else 1)
+		except RuntimeError as e:
 			print(str(e))
 			sys.exit(1)
 
@@ -1140,15 +600,15 @@ def main():
 		try:
 			scene_data = load_yaml(Path(args.base_scene_file))
 			validator = BaseSceneValidator()
-			errors = validator.validate(scene_data, args.base_scene_file)
-			if errors:
-				for error in errors:
-					print(error)
-				print(f"{len(errors)} error(s) in {args.base_scene_file}")
+			findings = validator.validate(scene_data, args.base_scene_file)
+			if findings:
+				for finding in findings:
+					print(finding.format())
+				print(f"{len(findings)} error(s) in {args.base_scene_file}")
 			else:
 				print(f"PASS: {args.base_scene_file}")
-			sys.exit(0 if not errors else 1)
-		except ValidationError as e:
+			sys.exit(0 if not findings else 1)
+		except RuntimeError as e:
 			print(str(e))
 			sys.exit(1)
 
@@ -1163,21 +623,21 @@ def main():
 					scene_name = scene_data.get('scene_name')
 					if scene_name:
 						base_scenes[scene_name] = scene_data
-				except ValidationError:
+				except RuntimeError:
 					pass
 
 			scene_data = load_yaml(Path(args.protocol_scene_file))
 			validator = ProtocolSceneValidator()
 			validator.set_base_scenes(base_scenes)
-			errors = validator.validate(scene_data, args.protocol_scene_file)
-			if errors:
-				for error in errors:
-					print(error)
-				print(f"{len(errors)} error(s) in {args.protocol_scene_file}")
+			findings = validator.validate(scene_data, args.protocol_scene_file)
+			if findings:
+				for finding in findings:
+					print(finding.format())
+				print(f"{len(findings)} error(s) in {args.protocol_scene_file}")
 			else:
 				print(f"PASS: {args.protocol_scene_file}")
-			sys.exit(0 if not errors else 1)
-		except ValidationError as e:
+			sys.exit(0 if not findings else 1)
+		except RuntimeError as e:
 			print(str(e))
 			sys.exit(1)
 

@@ -1,0 +1,281 @@
+"""ObjectValidator: validates object YAML per OBJECT_YAML_FORMAT.md."""
+
+from typing import Any, Dict, List
+
+from validators.constants import (
+	OBJECT_KINDS,
+	OBJECT_CAPABILITIES,
+	OBJECT_REQUIRED_KEYS,
+	RETIRED_OBJECT_KEYS,
+	STATE_FIELD_TYPES,
+	STRUCTURE_SUBPART_KINDS,
+	STRUCTURE_LAYOUT_TYPES,
+)
+from validators.findings import Finding, Severity
+
+
+class ObjectValidator:
+	"""Validates object YAML files per OBJECT_YAML_FORMAT.md."""
+
+	def validate(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+		"""
+		Validate an object definition.
+		Returns list of Finding objects (empty if valid).
+		"""
+		findings = []
+
+		# Check for retired keys
+		for retired in RETIRED_OBJECT_KEYS:
+			if retired in obj:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"retired key '{retired}' found (no longer supported)",
+				))
+
+		# Check required keys
+		for key in OBJECT_REQUIRED_KEYS:
+			if key not in obj:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"missing required key '{key}'",
+				))
+				return findings  # Can't continue validation without required keys
+
+		# Identity validation
+		findings.extend(self._validate_identity(obj, path))
+
+		# State fields validation
+		findings.extend(self._validate_state_fields(obj, path))
+
+		# Capabilities validation
+		findings.extend(self._validate_capabilities(obj, path))
+
+		# Structure validation (if present)
+		if 'structure' in obj:
+			findings.extend(self._validate_structure(obj, path))
+
+		return findings
+
+	def _validate_identity(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+		"""Validate object_name, kind, label per OBJECT_YAML_FORMAT.md."""
+		findings = []
+
+		object_name = obj.get('object_name')
+		if object_name and not self._is_snake_case(object_name):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"object_name '{object_name}' is not snake_case",
+			))
+
+		kind = obj.get('kind')
+		if kind and kind not in OBJECT_KINDS:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"kind '{kind}' not in allowed set {OBJECT_KINDS}",
+			))
+
+		label = obj.get('label')
+		if not label or not isinstance(label, str) or not label.strip():
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="label is required and must be non-empty string",
+			))
+
+		return findings
+
+	def _validate_state_fields(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+		"""Validate state_fields per OBJECT_YAML_FORMAT.md."""
+		findings = []
+
+		state_fields = obj.get('state_fields')
+		if not isinstance(state_fields, list):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="state_fields must be a list",
+			))
+			return findings
+
+		seen_names = set()
+		for idx, field in enumerate(state_fields):
+			field_path = f"{path}.state_fields[{idx}]"
+
+			if not isinstance(field, dict):
+				findings.append(Finding(
+					path=field_path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="state_field entry must be a mapping",
+				))
+				continue
+
+			# Check required keys
+			for required_key in ('name', 'type', 'default'):
+				if required_key not in field:
+					findings.append(Finding(
+						path=field_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"missing required key '{required_key}'",
+					))
+
+			field_name = field.get('name')
+			if field_name:
+				if field_name in seen_names:
+					findings.append(Finding(
+						path=field_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"duplicate field name '{field_name}'",
+					))
+				else:
+					seen_names.add(field_name)
+
+			field_type = field.get('type')
+			if field_type and field_type not in STATE_FIELD_TYPES:
+				findings.append(Finding(
+					path=field_path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"type '{field_type}' not in {STATE_FIELD_TYPES}",
+				))
+
+			if field_type == 'enum' and 'allowed' not in field:
+				findings.append(Finding(
+					path=field_path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="enum field missing required 'allowed' list",
+				))
+
+		return findings
+
+	def _validate_capabilities(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+		"""Validate capabilities per OBJECT_VOCABULARY.md."""
+		findings = []
+
+		capabilities = obj.get('capabilities')
+		if not isinstance(capabilities, list):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="capabilities must be a list",
+			))
+			return findings
+
+		has_decoration = 'decoration_only' in capabilities
+		other_caps = set(capabilities) - {'decoration_only'}
+
+		if has_decoration and other_caps:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="decoration_only is mutually exclusive with other capabilities",
+			))
+
+		for cap in capabilities:
+			if cap not in OBJECT_CAPABILITIES:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"unknown capability '{cap}'",
+				))
+
+		return findings
+
+	def _validate_structure(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+		"""Validate structure block if present."""
+		findings = []
+
+		structure = obj.get('structure', {})
+		if not isinstance(structure, dict):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="structure must be a mapping",
+			))
+			return findings
+
+		# Check required keys for structure
+		subpart_kind = structure.get('subpart_kind')
+		if not subpart_kind:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="structure requires 'subpart_kind'",
+			))
+		elif subpart_kind not in STRUCTURE_SUBPART_KINDS:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"subpart_kind '{subpart_kind}' not in {STRUCTURE_SUBPART_KINDS}",
+			))
+
+		layout = structure.get('layout')
+		if not layout:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="structure requires 'layout'",
+			))
+		elif layout not in STRUCTURE_LAYOUT_TYPES:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"layout '{layout}' not in {STRUCTURE_LAYOUT_TYPES}",
+			))
+
+		if layout == 'grid':
+			for key in ('rows', 'cols'):
+				if key not in structure:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"structure.layout=grid requires '{key}'",
+					))
+
+		if layout == 'list':
+			if 'count' not in structure:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="structure.layout=list requires 'count'",
+				))
+
+		if 'name_pattern' not in structure:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="structure requires 'name_pattern'",
+			))
+
+		return findings
+
+	@staticmethod
+	def _is_snake_case(s: str) -> bool:
+		"""Check if string is snake_case."""
+		if not s:
+			return False
+		return all(c.isalnum() or c == '_' for c in s) and not s[0].isdigit()
