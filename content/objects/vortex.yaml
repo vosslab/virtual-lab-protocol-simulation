@@ -1,0 +1,24 @@
+object_name: vortex
+kind: equipment
+label: Vortex
+
+state_fields:
+  - name: running
+    type: bool
+    default: false
+    description: Whether the vortex is currently running.
+
+visual_states:
+  running:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: vortex_idle }
+      - when: true
+        output: { asset_name: vortex_spinning }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 12
+  label_width: 10

@@ -1,0 +1,54 @@
+object_name: serological_pipette
+kind: pipette
+label: Serological pipette
+
+state_fields:
+  - name: set_volume
+    type: float
+    unit: ml
+    min: 0.1
+    max: 25.0
+    step: 0.1
+    default: 1.0
+    description: Volume the pipette is set to dispense.
+  - name: held_contents_name
+    type: enum
+    allowed: [empty, media, pbs, trypsin, cells]
+    default: empty
+    description: Contents currently aspirated in the pipette barrel.
+  - name: held_contents_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 25.0
+    default: 0
+    description: Volume of contents currently held, in milliliters.
+
+visual_states:
+  set_volume:
+    kind: overlay
+    formula: label(state(set_volume), format="{value} ml")
+  held_contents_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: serological_pipette_empty }
+      - when: media
+        output: { asset_name: serological_pipette_filled }
+      - when: pbs
+        output: { asset_name: serological_pipette_filled }
+      - when: trypsin
+        output: { asset_name: serological_pipette_filled }
+      - when: cells
+        output: { asset_name: serological_pipette_filled }
+  held_contents_volume:
+    kind: composite
+    formula: fill_height(state(held_contents_volume), capacity_ml=25.0)
+
+capabilities: [clickable, contents_container, instrument_with_setpoint, cursor_attachable]
+
+layout:
+  default_width: 3
+  label_width: 6
+  anchor_y: tip
+  anchor_y_offset: 0

@@ -1,0 +1,35 @@
+object_name: biohazard_decant
+kind: waste
+label: Biohazard decant
+
+state_fields:
+  - name: contents_name
+    type: enum
+    allowed: [empty, mixed]
+    default: empty
+    description: Waste type (empty or mixed biohazard).
+  - name: contents_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 2000
+    default: 0
+    description: Volume of accumulated liquid waste, in milliliters.
+
+visual_states:
+  contents_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: waste_container_empty }
+      - when: mixed
+        output: { asset_name: waste_container_filled }
+  contents_volume:
+    kind: composite
+    formula: fill_height(state(contents_volume), capacity_ml=2000)
+
+capabilities: [clickable, contents_container]
+
+layout:
+  default_width: 4
+  label_width: 8

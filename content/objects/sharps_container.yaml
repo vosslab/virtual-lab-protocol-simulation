@@ -1,0 +1,13 @@
+object_name: sharps_container
+kind: waste
+label: Sharps container
+
+state_fields: []
+
+visual_states: {}
+
+capabilities: [clickable]
+
+layout:
+  default_width: 4
+  label_width: 6

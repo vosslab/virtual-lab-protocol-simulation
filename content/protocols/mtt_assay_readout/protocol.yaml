@@ -1,0 +1,265 @@
+protocolType: mini_protocol
+name: mtt_assay_readout
+entry_step: prep_multichannel
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with the MTT viability assay workflow: reagent handling, multichannel dispensing, incubation timing, safe waste aspiration, solubilization, and absorbance-based viability measurement."
+  outcomes: "Students completing this mini-protocol will be able to perform a complete MTT assay readout, from MTT addition through plate reader setup and data collection."
+  goals: "Overall, this mini-protocol aims to accomplish teaching the MTT viability assay as a quantitative endpoint for cell culture drug-treatment experiments."
+
+steps:
+  - name: prep_multichannel
+    prompt: "Prepare the multichannel pipette for MTT addition."
+    why: "The multichannel pipette enables rapid 8-channel MTT dispensing across the plate."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: multichannel_pipette
+              operation: attach
+      - target: micropipette_tip_box
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                held_contents_name: empty
+                held_contents_volume: 0
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_mtt
+
+  - name: add_mtt
+    prompt: "Dispense 25 &micro;L of 12 mM MTT per well into all 96 wells."
+    why: "MTT is reduced to purple formazan only by metabolically active (live) cells; this color change indicates cell viability."
+    sequence:
+      - target: multichannel_pipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 25 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 25
+      - target: mtt_vial
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: mtt_vial
+              operation: attach
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: mtt_vial
+              state:
+                contents_volume: 4000
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                contents_name: mtt
+                contents_volume: 125
+          feedback:
+            correct: "MTT added to all wells for a 1.5 mM final concentration."
+            incorrect: "Add 25 &micro;L of 12 mM MTT from the vial to the plate."
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: incubate_mtt
+
+  - name: incubate_mtt
+    prompt: "Incubate the plate in the 37&deg;C incubator for 1.5 hours."
+    why: "Live cells metabolize MTT into purple formazan crystals; incubation duration determines signal intensity and assay sensitivity."
+    sequence:
+      - target: incubator
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: incubator
+              operation: attach
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: incubator
+              duration_min: 90
+              display: "Incubating with MTT for 1.5 hours."
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: retrieve_plate
+
+  - name: retrieve_plate
+    prompt: "Remove the plate from the incubator."
+    why: "After 1.5 hours, the formazan crystals have formed; the plate is ready for aspiration and solubilization."
+    sequence:
+      - target: incubator
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: aspirate_mtt
+
+  - name: aspirate_mtt
+    prompt: "Aspirate the spent MTT-containing media into the biohazard container."
+    why: "MTT is toxic; safe removal via pipette into biohazard waste prevents spills and ensures proper containment before solubilization."
+    sequence:
+      - target: aspirating_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: aspirating_pipette
+              operation: attach
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                contents_name: empty
+                contents_volume: 0
+            - type: ObjectStateChange
+              target: aspirating_pipette
+              state:
+                held_contents_name: mtt
+                held_contents_volume: 200
+          feedback:
+            correct: "Spent MTT aspirated from the wells."
+            incorrect: "Aspirate the MTT-containing media from the plate into the pipette."
+      - target: biohazard_decant
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: biohazard_decant
+              state:
+                contents_name: mtt
+                contents_volume: 200
+            - type: ObjectStateChange
+              target: aspirating_pipette
+              state:
+                held_contents_name: empty
+                held_contents_volume: 0
+          feedback:
+            correct: "Spent MTT safely disposed into the biohazard container."
+            incorrect: "Dispense the aspirated MTT into the biohazard waste container."
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_dmso
+
+  - name: add_dmso
+    prompt: "Add 200 &micro;L of DMSO per well to dissolve formazan crystals."
+    why: "DMSO solubilizes the formazan precipitate into solution, allowing the plate reader to measure absorbance."
+    sequence:
+      - target: dmso_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: dmso_bottle
+              operation: attach
+      - target: multichannel_pipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 200 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 200
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: dmso_bottle
+              state:
+                contents_volume: 800
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                contents_name: dmso
+                contents_volume: 200
+          feedback:
+            correct: "DMSO added to dissolve formazan crystals."
+            incorrect: "Add 200 &micro;L of DMSO per well from the bottle."
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: read_plate
+
+  - name: read_plate
+    prompt: "Set the plate reader wavelength to 570 nm and read the plate."
+    why: "Formazan absorbs maximally at 570 nm; absorbance directly correlates with live cell count and drug effect on viability."
+    sequence:
+      - target: plate_reader
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: plate_reader
+              operation: attach
+      - target: plate_reader
+        gesture: adjust
+        validator: { preset: target_with_value, value: { wavelength_nm: 570 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: plate_reader
+              state:
+                wavelength_nm: 570
+      - target: plate_reader
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: plate_reader
+              state:
+                reading: true
+          feedback:
+            correct: "Plate reader started at 570 nm. Absorbance measured across all wells."
+            incorrect: "Start the plate reader to measure formazan absorbance at 570 nm."
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

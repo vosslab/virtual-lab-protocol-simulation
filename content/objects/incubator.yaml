@@ -1,0 +1,46 @@
+object_name: incubator
+kind: equipment
+label: Incubator
+
+state_fields:
+  - name: set_temperature_c
+    type: float
+    unit: C
+    min: 4
+    max: 45
+    step: 1
+    default: 37
+    description: Temperature setting in degrees Celsius.
+  - name: set_co2_pct
+    type: float
+    unit: pct
+    min: 0
+    max: 10
+    step: 0.5
+    default: 5
+    description: Carbon dioxide concentration setting as a percentage.
+  - name: door_open
+    type: bool
+    default: false
+    description: Whether the incubator door is open.
+
+visual_states:
+  set_temperature_c:
+    kind: overlay
+    formula: label(state(set_temperature_c), format="{value} C")
+  set_co2_pct:
+    kind: overlay
+    formula: label(state(set_co2_pct), format="{value}%")
+  door_open:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: incubator_closed }
+      - when: true
+        output: { asset_name: incubator_open }
+
+capabilities: [clickable, instrument_with_setpoint]
+
+layout:
+  default_width: 22
+  label_width: 14

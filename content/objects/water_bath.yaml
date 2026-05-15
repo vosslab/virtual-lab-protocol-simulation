@@ -1,0 +1,35 @@
+object_name: water_bath
+kind: equipment
+label: Water bath
+
+state_fields:
+  - name: set_temperature_c
+    type: float
+    unit: C
+    min: 20
+    max: 60
+    step: 1
+    default: 37
+    description: Temperature setting in degrees Celsius.
+  - name: running
+    type: bool
+    default: false
+    description: Whether the water bath is currently running.
+
+visual_states:
+  set_temperature_c:
+    kind: overlay
+    formula: label(state(set_temperature_c), format="{value} C")
+  running:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: water_bath_idle }
+      - when: true
+        output: { asset_name: water_bath_heating }
+
+capabilities: [clickable, instrument_with_setpoint]
+
+layout:
+  default_width: 18
+  label_width: 12

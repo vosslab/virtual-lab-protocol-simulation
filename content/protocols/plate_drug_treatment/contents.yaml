@@ -1,0 +1,35 @@
+contents:
+  cell_suspension:
+    label: "Cell suspension (OVCAR8)"
+    colorKey: cells
+    displayColor: "#d89bb8"
+
+  cell_suspension_with_media:
+    label: "Cell suspension with media adjustment"
+    colorKey: media_adjusted
+    displayColor: "#f7a6b8"
+
+  cell_suspension_with_carboplatin:
+    label: "Cell suspension + carboplatin"
+    colorKey: carboplatin
+    displayColor: "#ffe8b6"
+
+  cell_suspension_with_drug_combo:
+    label: "Cell suspension + carboplatin + metformin"
+    colorKey: drug_combo
+    displayColor: "#e8d4e8"
+
+  media:
+    label: "Complete RPMI media"
+    colorKey: media
+    displayColor: "#f7a6b8"
+
+  carboplatin:
+    label: "Carboplatin working stock"
+    colorKey: carboplatin
+    displayColor: "#ffe8b6"
+
+  metformin:
+    label: "Metformin working stock"
+    colorKey: metformin
+    displayColor: "#e8d4e8"

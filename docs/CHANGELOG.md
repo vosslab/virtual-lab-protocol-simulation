@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-05-15 (M2 Wave 2a: five mini-protocols + 25 objects - sorted-snacking-kettle)
+
+### Additions and New Features
+- **25 new shared objects** under `content/objects/`: liquid-bearing (serological_pipette, conical_15ml, multichannel_pipette, micropipette, carboplatin_stock_bottle, metformin_stock_bottle, dmso_bottle, mtt_vial, sterile_water_bottle, microtube_15ml_intermediate, metformin_working_tube), structured (conical_15ml_rack, well_plate_96, dilution_tube_rack_8, hemocytometer), equipment (centrifuge, incubator, microscope, plate_reader, vortex, water_bath, micropipette_tip_box, professor_avatar), waste (biohazard_decant, sharps_container), plus `t75_flask_new` for passage workflow.
+- **Five new mini-protocols** under `content/protocols/`: `drug_dilution_setup` (8 steps), `plate_drug_treatment` (7 steps), `cell_counting_and_seeding` (9 steps), `mtt_assay_readout` (7 steps), `cell_culture` (9 steps). All conform to two-level step/interaction model, closed gesture set, ratified `scene_operation` primitives, and 6-10 step gate.
+
+### Behavior or Interface Changes
+- **Cross-protocol contents standardization**: `cell_suspension` displayColor canonicalized to `#d89bb8`; `media` label canonicalized to "Complete RPMI media"; `trypsin` label canonicalized to "Trypsin-EDTA 0.25%".
+
+### Fixes and Maintenance
+- **Schema conformance fixes** applied across Wave 2a: vortex `running` field name; PDT parts/days `id`/`label` schema; well_plate_96 subpart addressing (A1..H12); contents_name enum alignment; TimedWait `duration_min`/`display` field names; hemocytometer flat state_fields addressing; aspirate_and_wash T-9 split.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/validate_content_yaml.py`: **Validated 42 files (34 objects, 1 base scenes, 1 protocol scenes, 6 protocols). 0 failures.**
+
 ## 2026-05-15 (spec vocabulary consolidation sweep - cheeky-popping-hartmanis)
 
 ### Additions and New Features

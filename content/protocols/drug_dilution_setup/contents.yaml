@@ -1,0 +1,16 @@
+contents:
+  carboplatin_10mM:
+    label: "10 mM carboplatin stock"
+    displayColor: "#c8a2c8"
+
+  carboplatin_400uM:
+    label: "400 &micro;M carboplatin intermediate"
+    displayColor: "#d4b5d4"
+
+  metformin_1M:
+    label: "1 M metformin stock"
+    displayColor: "#e8d4a0"
+
+  metformin_10mM:
+    label: "10 mM metformin working stock"
+    displayColor: "#f0e0b8"

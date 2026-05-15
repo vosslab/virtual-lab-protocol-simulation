@@ -8,11 +8,11 @@ contents:
     displayColor: "#b8e5ff"
 
   trypsin:
-    label: "Trypsin-EDTA"
+    label: "Trypsin-EDTA 0.25%"
     displayColor: "#ffe8b6"
 
   media:
-    label: "Complete RPMI"
+    label: "Complete RPMI media"
     displayColor: "#f7a6b8"
 
   cell_suspension:

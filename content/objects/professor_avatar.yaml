@@ -1,0 +1,13 @@
+object_name: professor_avatar
+kind: decoration
+label: Professor avatar
+
+state_fields: []
+
+visual_states: {}
+
+capabilities: [decoration_only]
+
+layout:
+  default_width: 8
+  label_width: 10

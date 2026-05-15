@@ -1,0 +1,35 @@
+object_name: plate_reader
+kind: equipment
+label: Plate reader
+
+state_fields:
+  - name: wavelength_nm
+    type: int
+    unit: nm
+    min: 400
+    max: 750
+    step: 10
+    default: 570
+    description: Wavelength setting in nanometers.
+  - name: reading
+    type: bool
+    default: false
+    description: Whether the plate reader is currently taking a reading.
+
+visual_states:
+  wavelength_nm:
+    kind: overlay
+    formula: label(state(wavelength_nm), format="{value} nm")
+  reading:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: plate_reader_idle }
+      - when: true
+        output: { asset_name: plate_reader_reading }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 18
+  label_width: 12

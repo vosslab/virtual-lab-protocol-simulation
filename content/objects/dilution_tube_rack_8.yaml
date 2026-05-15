@@ -1,0 +1,48 @@
+object_name: dilution_tube_rack_8
+kind: rack
+label: 8-tube dilution rack
+
+structure:
+  subpart_kind: tube
+  layout: grid
+  rows: 8
+  cols: 1
+  name_pattern: "tube_{row_letter}"
+
+state_fields:
+  - name: contents_name
+    type: enum
+    allowed: [empty, carboplatin, media]
+    default: empty
+    applies_to: subpart
+    description: Contents currently in this tube.
+  - name: contents_volume
+    type: float
+    unit: ul
+    min: 0
+    max: 1000
+    default: 0
+    applies_to: subpart
+    description: Volume of contents in this tube, in microliters.
+
+visual_states:
+  contents_name:
+    kind: svg
+    applies_to: subpart
+    cases:
+      - when: empty
+        output: { asset_name: microtube_empty }
+      - when: carboplatin
+        output: { asset_name: microtube_filled }
+      - when: media
+        output: { asset_name: microtube_filled }
+  contents_volume:
+    kind: composite
+    applies_to: subpart
+    formula: fill_height(state(contents_volume), capacity_ul=1000)
+
+capabilities: [clickable, structured_surface, contents_container]
+
+layout:
+  default_width: 8
+  label_width: 6

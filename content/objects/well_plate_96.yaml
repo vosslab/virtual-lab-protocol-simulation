@@ -1,0 +1,58 @@
+object_name: well_plate_96
+kind: plate
+label: 96-well plate
+
+structure:
+  subpart_kind: well
+  layout: grid
+  rows: 8
+  cols: 12
+  name_pattern: "{row_letter}{col}"
+
+state_fields:
+  - name: contents_name
+    type: enum
+    allowed: [empty, media, cells, carboplatin, metformin, drug_combo, mtt, dmso]
+    default: empty
+    applies_to: subpart
+    description: Contents currently in this well.
+  - name: contents_volume
+    type: float
+    unit: ul
+    min: 0
+    max: 300
+    default: 0
+    applies_to: subpart
+    description: Volume of contents in this well, in microliters.
+
+visual_states:
+  contents_name:
+    kind: svg
+    applies_to: subpart
+    cases:
+      - when: empty
+        output: { asset_name: well_empty }
+      - when: media
+        output: { asset_name: well_filled }
+      - when: cells
+        output: { asset_name: well_filled }
+      - when: carboplatin
+        output: { asset_name: well_filled }
+      - when: metformin
+        output: { asset_name: well_filled }
+      - when: drug_combo
+        output: { asset_name: well_filled }
+      - when: mtt
+        output: { asset_name: well_filled }
+      - when: dmso
+        output: { asset_name: well_filled }
+  contents_volume:
+    kind: composite
+    applies_to: subpart
+    formula: fill_height(state(contents_volume), capacity_ul=300)
+
+capabilities: [clickable, structured_surface, contents_container]
+
+layout:
+  default_width: 14
+  label_width: 8

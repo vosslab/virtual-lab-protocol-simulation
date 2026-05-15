@@ -1,0 +1,20 @@
+contents:
+  cell_suspension:
+    label: "Cell suspension"
+    displayColor: "#d89bb8"
+
+  media:
+    label: "Complete RPMI media"
+    displayColor: "#f7a6b8"
+
+  cell_pellet:
+    label: "Cell pellet"
+    displayColor: "#c9a6d8"
+
+  empty:
+    label: "Empty"
+    displayColor: "#ffffff"
+
+  mixed:
+    label: "Mixed waste"
+    displayColor: "#a0a0a0"
