@@ -11,6 +11,7 @@ Before nontrivial edits, read:
 - `docs/PRIMARY_SPEC.md`
 - `docs/REPO_STYLE.md`
 - `docs/MARKDOWN_STYLE.md`
+- [docs/specs/SPEC_DESIGN_CHECKLIST.md](docs/specs/SPEC_DESIGN_CHECKLIST.md) (Author YAML vocabulary lock)
 
 Read task-specific docs as needed:
 

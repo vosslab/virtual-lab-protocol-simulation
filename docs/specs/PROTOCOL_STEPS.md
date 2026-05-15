@@ -136,8 +136,7 @@ is playable.
 
 ## Related docs
 
-- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms and the
-  retired-terms table.
+- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): full step and
   interaction YAML schema.
 - [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md): how to author

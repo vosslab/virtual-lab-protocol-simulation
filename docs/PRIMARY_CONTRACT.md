@@ -45,3 +45,4 @@ New contract items require user approval. Agents may not add, remove, or edit co
 - [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) describes canonical protocol step behavior.
 - [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) defines canonical protocol terms.
 - [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md) defines protocol YAML schema.
+- [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) defines the Author YAML vocabulary lock that closes authoring surfaces.

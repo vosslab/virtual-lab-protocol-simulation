@@ -27,9 +27,9 @@ concern, and the layers communicate through small, documented interfaces.
 | Layer 4: per-scene YAML config                                   |
 |   src/scenes/<scene>/<scene>.yaml                                |
 |   Owns: scene-side static declarations only -- sceneId,          |
-|   capabilities, object placements, zones, elementId,             |
-|   wrongOrderMessage. Object identity (state_fields, render_map,  |
-|   subparts, capabilities) is owned by object YAML; see           |
+|   capabilities, object placements, zones,                        |
+|   wrongOrderMessage. Object identity (state_fields,              |
+|   visual_states, subparts, capabilities) is object YAML; see     |
 |   OBJECT_VOCABULARY.md and OBJECT_YAML_FORMAT.md. No behavior.   |
 +------------------------------------------------------------------+
                               |
@@ -167,9 +167,7 @@ itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 | Plate reader | [../../src/scenes/plate_reader/plate_reader.ts](../../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
 
 The microscope and plate_reader adapters share a single DOM modal slot, the
-`instrument-overlay` element. See
-[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for the elementId design
-rationale and the constraint on adding a third instrument-style scene.
+`instrument-overlay` element.
 
 ## Capabilities
 
@@ -303,7 +301,7 @@ migration.
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical terms used by
   this doc, the schema doc, and scene-related code.
 - [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) - Canonical object terms
-  (state_fields, render_map, structure, subparts) the scene references.
+  (state_fields, visual_states, structure, subparts) the scene references.
 - [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object-definition YAML
   schema referenced by scene placements.
 - [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md) - Higher-level system

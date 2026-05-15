@@ -52,8 +52,6 @@ Inherited from base, LOCKED (extending scene may not declare these fields at all
 | Field | Owner | Why locked |
 | --- | --- | --- |
 | `workspace` | base | workspace identity |
-| `scene_kind` | base | workspace identity |
-| `element_id` | base | DOM mount id |
 | `scene_bounds` | base | canvas geometry; layout-engine contract |
 | `background` | base | stable student orientation |
 | `zones` | base | zone schema = workspace contract |

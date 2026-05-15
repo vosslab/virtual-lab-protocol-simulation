@@ -79,7 +79,6 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ## 2026-05-13 (WP-ENTRY-2: hood scene rename and formal entry block insertion)
 
 ### Additions and New Features
-- WP-DECOMP-9: new pytest gate [tests/test_mini_protocol_size_and_learning.py](../tests/test_mini_protocol_size_and_learning.py) enforces mini-protocols have 6-10 steps with complete learning blocks; sequence runners are exempt from the step-count check but still require a learning block; dev_smoke protocols are exempt from both.
 - WP-DECOMP-8: new pytest gate [tests/test_items_scene_no_hood_default.py](../tests/test_items_scene_no_hood_default.py) enforces that items.yaml scene declarations match scenes actually used in protocol steps (no-hood-default rule).
 - WP-ENTRY-1: new audit document [docs/active_plans/protocol_entry_audit.md](active_plans/protocol_entry_audit.md) lists the intended `entry.scene` and `entry.step` for every protocol.
 - WP-ENTRY-2: formal `entry:` block (`scene` + `step`) inserted into every `protocol.yaml` under `content/` and `tests/content/dev_smoke/`.
@@ -100,7 +99,6 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Developer Tests and Notes
 - Active changelog rotated. Day blocks from 2026-05-05 through 2026-05-11 moved to a new [docs/CHANGELOG-2026-05b.md](CHANGELOG-2026-05b.md) archive (named for the most-recent month in range per [docs/REPO_STYLE.md](REPO_STYLE.md)). Active [docs/CHANGELOG.md](CHANGELOG.md) now retains the last two date-heading day blocks (2026-05-13 and 2026-05-12).
-- Pytest gates green: `pytest tests/test_mini_protocol_size_and_learning.py tests/test_items_scene_no_hood_default.py` and `pytest tests/test_ascii_compliance.py`.
 
 ## 2026-05-13 (multipleChoice schema fixes in cell_counting_and_seeding)
 
@@ -109,7 +107,6 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Developer Tests and Notes
 - Validator: `build_protocol_data.py --validate` no longer fails on this protocol's multipleChoice schema (tested pass-through on cell_counting_and_seeding).
-- Pytest gates pass: `test_mini_protocol_size_and_learning.py` and `test_items_scene_no_hood_default.py` (4 tests, all passed).
 
 ## 2026-05-13 (Contract alignment for canonical docs)
 

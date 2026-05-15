@@ -62,8 +62,7 @@ are written `state_fields: []`, `visual_states: {}`, `capabilities: []`.
 ## Object identity
 
 Identity fields name the object and classify it. They are stable across
-scenes; a scene placement may not override `object_name` or `kind`.
-A scene placement may override `label`.
+scenes; a scene placement may not override identity.
 
 | Field | Type | Required | Allowed | Default |
 | --- | --- | --- | --- | --- |
@@ -310,15 +309,15 @@ authority):
 ### Mutual-exclusion rule
 
 `decoration_only` is mutually exclusive with `clickable`,
-`liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+`contents_container`, `instrument_with_setpoint`, `structured_surface`,
 and `cursor_attachable`. An object that declares `decoration_only` may
 not declare any of the other five; an object that declares any of the
 other five may not declare `decoration_only`. The build pipeline
 enforces this rule and rejects a violating capability list.
 
 The five non-decoration capabilities are otherwise freely combinable. A
-96-well plate is `[clickable, structured_surface, liquid_container]`; a
-serological pipette is `[clickable, liquid_container,
+96-well plate is `[clickable, structured_surface, contents_container]`; a
+serological pipette is `[clickable, contents_container,
 instrument_with_setpoint, cursor_attachable]`; a benchtop label is
 `[decoration_only]`.
 
@@ -500,11 +499,10 @@ subparts). It declares three flat `state_fields`: `set_volume` (a
 for the amount held). The `visual_states` resolves each independently:
 the set-point becomes an overlay label, the contents becomes a base SVG,
 and the volume becomes a fill height. No SVG asset name appears in any
-`state_field`. The layout hints replicate today's `serological_pipette`
-row in `src/asset_specs.ts` (`defaultWidth: 3`, `labelWidth: 6`,
-`anchorYOffset: 0`), now object-owned, plus `anchor_y: tip`
-reclassified from today's per-item placement sub-field (a serological
-pipette is anchored at its tip wherever it is placed).
+`state_field`. The layout hints (`default_width: 3`, `label_width: 6`,
+`anchor_y_offset: 0`, `anchor_y: tip`) are object-owned; the tip anchor
+reflects that a serological pipette is tip-anchored wherever it is
+placed.
 
 ## Cross-file validation rules
 
@@ -557,7 +555,7 @@ does not specify defensive defaults that hide a missing required field.
 ### capabilities
 
 - Every entry is in the closed six-value capability list: `clickable`,
-  `liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+  `contents_container`, `instrument_with_setpoint`, `structured_surface`,
   `cursor_attachable`, `decoration_only`.
 - `decoration_only` is mutually exclusive with the other five.
 - Every declared capability's

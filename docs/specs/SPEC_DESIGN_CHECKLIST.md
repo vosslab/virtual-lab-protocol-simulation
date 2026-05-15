@@ -12,6 +12,43 @@ The strongest pattern across prior reviews was not "wrong implementation"
 but "underspecified escape hatches." The agent hunts for any concept that
 silently expands the vocabulary surface.
 
+## Author YAML vocabulary lock
+
+This section is the canonical lock for authored YAML vocabulary. Subsequent
+sweeps and spec edits obey these rules.
+
+### Ratified rules
+
+1. `short_label` retired everywhere. No identity row, no override surface, no fallback prose, no example.
+2. Scene placement may not override `label`. `label` is object-owned and required. If a scene needs a different name, declare a new object with a different `object_name`.
+3. `element_id` retired from authored YAML completely. Scene YAML does not declare `element_id`. Runtime derives the mount element from `scene_name`. Any current-code exceptions are adapter/runtime migration issues, not authoring schema fields.
+4. `liquid_color` retired as an authored state field. Color derives from `contents_name` via the object's `visual_states`, sourced from `contents.yaml`.
+5. `liquid_container` capability renamed to `contents_container` everywhere.
+6. `render_map` retired. Closed-enum `visual_states` is the only state-to-visual surface.
+7. Retired-term tables and retired-term mentions do not live inside any spec doc. Retired terms appear only in `docs/CHANGELOG.md`, archived plans, and git history.
+
+### Object identity
+
+Identity is the locked tuple `object_name`, `kind`, `label`.
+
+- `object_name`: required, snake_case, stable across scenes.
+- `kind`: required, closed enum.
+- `label`: required, object-owned.
+
+### Scene placement override surface
+
+Scene placement may set layout hints only: `default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`. Scene placement may not override identity (`object_name`, `kind`, `label`), `state_fields`, `visual_states`, `target_groups`, or `capabilities`.
+
+### YAML naming
+
+All authored YAML fields are snake_case. TypeScript runtime identifiers may stay camelCase; spec docs describing authored YAML must use snake_case.
+
+Valid: `object_name: ethanol_bottle`. Invalid: `objectName: ethanol_bottle`.
+
+### Source of authority
+
+This lock is sourced from `../CHANGELOG.md` entry 2026-05-15, "vocabulary audit sweep: retired-terms inventory and spec-consistency gates - WP-F1".
+
 ## Scope
 
 Sweep tier 1 (highest priority -- canonical vocabulary and schema):

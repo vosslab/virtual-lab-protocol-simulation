@@ -8,8 +8,7 @@ this guide assumes those terms.
 
 Related references:
 
-- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms and the
-  retired-terms table.
+- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): full schema for
   `contents.yaml` and `protocol.yaml`.
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md): the step model and runtime
@@ -94,7 +93,7 @@ liquids, cells, waste, mixtures, suspensions, diluted drugs, or other
 contents. Each contents entry has a unique snake_case name, a `label`,
 a `colorKey`, and a `displayColor`. A contents name is what an
 `ObjectStateChange` `scene_operation` writes into an object's flat declared
-`contents_name` (or `held_contents_name`) `state_field`. Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+`contents_name` (or `held_contents_name`) `state_field`.
 
 The full `contents.yaml` field tables and cross-file validation rules are in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
@@ -368,11 +367,6 @@ Run through this checklist for every step you write.
 - **Referenced contents exist.** Every contents name written by an
   `ObjectStateChange` into a flat liquid `state_field` (`contents_name`,
   `held_contents_name`) exists in `contents.yaml`.
-- **No retired vocabulary.** Do not use `completionPath`, the four-`kind`
-  taxonomy, `plateTargets`, `tubeTargets`, `stateChange`, `completionEvent`,
-  `nextId`, the overloaded `action`, or "click target". The full retired
-  list is in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
-
 ## Build and walk loop
 
 Iterate on a protocol with a short loop: audit, validate, build, walk. Stop

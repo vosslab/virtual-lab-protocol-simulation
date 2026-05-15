@@ -196,12 +196,14 @@ declare object identity, structure, `state_fields`, `visual_states`, or
 `capabilities`; those belong to the object definition (see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)).
 
-A placement may carry a small bounded set of instance overrides:
-the layout hints `default_width`, `label_width`,
+A placement may not override object identity. The identity tuple
+`(object_name, kind, label)` is owned by the object library and is
+locked from scene-side override. A placement may carry instance overrides
+only for the layout hints `default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, and `anchor_y`. A placement may not
-override identity (`id`, `kind`, `inventory_ref`), `state_fields`,
-`visual_states`, or `capabilities`. The boundary rule is authoritative;
-see [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) for the full
+override `state_fields`, `visual_states`, or `capabilities`. The
+boundary rule is authoritative; see
+[OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) for the full
 object-side field list and which fields may be overridden.
 
 | Field | Type | Required | Meaning |
@@ -347,7 +349,7 @@ Six capability ids are registered in
 [../../src/scenes/capabilities/](../../src/scenes/capabilities/) and mounted at
 module load via `src/init.ts`. The cleaned scene YAML declares the
 capabilities a scene mounts; object capabilities (`clickable`,
-`liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+`contents_container`, `instrument_with_setpoint`, `structured_surface`,
 `cursor_attachable`, `decoration_only`) are object-side and live in
 object YAML. This is the closed six-capability set.
 
@@ -377,7 +379,6 @@ enforces these rules against the fused format:
 - The YAML root must be a mapping.
 - `sceneId` is required and must be a non-empty string.
 - `workspace` is required and must be a non-empty string.
-- `elementId`, if present, must be a non-empty string.
 - `capabilities` is required and must be a list of strings.
 - Each capability id must be in the validator's allow list.
 - Capability ids within one scene must be unique.
@@ -401,56 +402,7 @@ must resolve against the object library, every `placement.zone` must match
 a declared `zones[].id`, and per-placement override fields must be in the
 override surface.
 
-## Migration from the fused format
-
-This section enumerates every key and sub-field that the cleaned schema
-removes, renames, or relocates.
-
-### Top-level keys
-
-| Fused-format key | New home | Notes |
-| --- | --- | --- |
-| `sceneId` | Scene YAML: renamed to `scene_name` | Scene identity. |
-| `workspace` | Scene YAML: unchanged | Scene identity. |
-| `elementId` | retired from author YAML; runtime-derived as `${scene_name}-scene` | Scenes with custom DOM ids (such as `cell_culture_hood`) override this through non-YAML configuration. |
-| `capabilities` | Scene YAML for capability declarations; object capabilities move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) | The scene-side list still declares which capability modules mount. Object affordance tags (`clickable`, `liquid_container`, `instrument_with_setpoint`, `structured_surface`, `decoration_only`) are object-owned per the boundary rule; a scene placement may not override them. |
-| `items` | Split: identity sub-fields move to [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md); placement sub-fields stay scene-side as `placements[]` | See the per-sub-field table below. |
-| `zones` | Scene YAML: unchanged shell, sub-fields restructured to `bounds` plus `align` | The `x0`/`x1`/`baseline` triple is replaced by a single `bounds` rect; `gap` folds into `layout_rules.zone_gap`. |
-| `sceneBounds` | Scene YAML: renamed to `scene_bounds` | Same four fields. |
-| `layoutRules` | Scene YAML: renamed to `layout_rules` | snake_case sub-fields. |
-| `accentRules` | Scene YAML: renamed to `accent_rules` | Reserved. |
-| `tabStops` | Removed | Not observed. Tab-stop behavior is expressed via `zone.align: tab-stops` plus per-placement `align_stop`. |
-| `target_groups` | Removed | Named groups are deferred. Subparts belong to the object; protocols list explicit subparts (`<object_name>.<subpart_name>`). |
-| `wrongOrderMessage` | Scene YAML: renamed to `wrong_order_message`, sub-key renamed to `toast_duration_ms` | Scene-level UI feedback. |
-
-### items[] sub-fields
-
-| Fused-format sub-field | New home | Notes |
-| --- | --- | --- |
-| `id` | Object YAML: object `id`. Scene placement carries its own `placement_name`. | A scene may place the same object more than once; placement name and object name are now distinct. |
-| `label` | Object YAML: object `label`. A scene placement may override via `placement.label`. | Identity-class default lives object-side. |
-| `kind` | Object YAML: object `kind` (closed enum). | A scene placement may not override identity. |
-| `svgAsset` | Object YAML: resolved through object `visual_states`; not authored as a literal field. | The object owns SVG manipulation. The protocol never names an SVG asset id. |
-| `inventoryRef` | Object YAML: object `inventory_ref`. | A scene placement may not override identity. |
-| `anchorY` | Object YAML: object `layout.anchor_y` (layout hint). A scene placement may override via `placement.layout.anchor_y`. | A serological pipette is anchored at its tip wherever it is placed; the default belongs to the object. |
-| `widthScale` | Object YAML default: object `layout.width_scale`. A scene placement may override via `placement.layout.width_scale`. | Single object-side field with a bounded scene-side override surface. |
-| `zone` | Scene YAML: `placement.zone`. | Unchanged role. |
-| `scene` | Removed | Alternate spelling is dropped in favor of `placement.zone`. |
-| `depthTier` | Scene YAML: `placement.depth_tier`. | snake_case. |
-| `alignStop` | Scene YAML: `placement.align_stop`. | snake_case. |
-| `baselineOverride` | Scene YAML: `placement.baseline_override`. | snake_case. Rare; one observed use. |
-| `depth` | Scene YAML: reserved on the placement side (`placement.depth`). | Not observed. |
-
-### Quadrant items in the microscope scene
-
-The microscope scene's minimal items (`quadrant_0` through
-`quadrant_3`, with only `id` and `label`) are not lost. Whether the four
-quadrants become subparts of a single microscope object (per the
-structured-surface mechanism in
-[OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)) or stay as four flat
-objects is a design decision. Either way the scene side carries placements.
-
-### Sub-fields and primitives that never appear in scene YAML
+## Sub-fields and primitives that never appear in scene YAML
 
 The following identifiers are explicitly object-side or protocol-side in the
 cleaned vocabulary and must not be authored in scene YAML:
@@ -467,7 +419,7 @@ cleaned vocabulary and must not be authored in scene YAML:
   `SvgSwap` and `ColorChange` are render-layer mechanisms; `LiquidDisplayChange` and `SetPointDisplayChange` are likewise render-layer concerns.
   The protocol-side primitive for liquid and set-point mutation is
   `ObjectStateChange`, which writes the flat declared liquid fields
-  (`liquid_id`, `liquid_volume`, `liquid_color`, and the corresponding
+  (`liquid_id`, `liquid_volume`, and the corresponding
   `held_liquid_id` / `held_liquid_volume` on tools) and the flat
   declared set-point fields (`set_volume`, `set_temperature`,
   `set_rpm`, etc.).
@@ -479,7 +431,7 @@ cleaned vocabulary and must not be authored in scene YAML:
 - No state mutations or side effects.
 - No defensive defaults that hide missing required fields. A missing
   required field must fail the build loudly, not silently fall back.
-- No object identity (`id`, `kind`, `inventory_ref`), `state_fields`,
+- No object identity (`object_name`, `kind`, `label`), `state_fields`,
   `visual_states`, or object affordance capabilities. These are
   object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). No `target_groups` either; named groups are deferred.
 - No SVG asset ids and no color values. The object's `visual_states` is the

@@ -80,13 +80,8 @@ Each contents entry is a mapping keyed by snake_case name. All fields required.
 | Field | Type | Description |
 | --- | --- | --- |
 | `label` | string | Display name (shown in UI and step text) |
-| `colorKey` | string | Internal identifier for color selection (legacy field, see note) |
+| `colorKey` | string | Internal identifier for color selection |
 | `displayColor` | string | CSS hex color code (lowercase, ASCII-only) |
-
-Note: `colorKey` is in the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
-It is still accurate for current `contents.yaml`; the canonical schema expresses
-liquid color via the object's flat `liquid_color` `state_field`, written by an
-`ObjectStateChange` and resolved by the object's `visual_states`.
 
 ### Contents example
 
@@ -209,13 +204,6 @@ Optional step-level fields used for display only:
 | `scene` | string | no | The scene this step's interactions happen in. |
 | `details` | list of strings | no | Short strings rendered as a bulleted side panel beneath the prompt. |
 
-The retired `action`, `requiredItems`, `usedItems`, `completionPath`,
-`completionTrigger`, and `nextId` step fields are not part of this schema.
-`action` is replaced by `prompt`; `nextId` is replaced by `next_step`;
-the `completionPath` wrapper is replaced by the `sequence`,
-`step_validator`, `outcome`, and `next_step` slots; `requiredItems` and
-`usedItems` are derived from the `sequence`'s `target` slots.
-
 ## The interaction block
 
 Each entry in a step's `sequence` is one `interaction` block. An
@@ -304,10 +292,9 @@ slots) are declared by the object via `structure.subparts`; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). A protocol addresses one
 subpart as `<object_name>.<subpart_name>` (for example `treatment_plate.A1`).
 Named groups are deferred from this vocabulary pass; a step that acts on
-several subparts emits one interaction per subpart. The retired
-`plateTargets` and `tubeTargets` fields pushed plate and tube geometry
-into protocol YAML; the subpart-id mechanism pulls it back to the object
-side where it belongs.
+several subparts emits one interaction per subpart. Plate and tube
+geometry lives on the object side; the protocol addresses subparts by
+name only.
 
 ## Worked example: pbs_wash step
 

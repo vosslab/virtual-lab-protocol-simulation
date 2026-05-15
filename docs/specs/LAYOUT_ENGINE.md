@@ -38,7 +38,7 @@ The renderer remains responsible for:
 The engine remains responsible for:
 
 - Grouping items by `zone`.
-- Sorting each zone by `depthTier`, then `id`.
+- Sorting each zone by `depth_tier`, then `id`.
 - Computing horizontal placement from visual width and label footprint.
 - Computing vertical placement from zone baselines, item depth, and anchors.
 - Computing label wrapping, label positioning, and label collision nudges.
@@ -71,7 +71,7 @@ positioned scene DOM
 ```
 
 The engine returns percent units, not pixels. Renderers turn `x`, `y`,
-`width`, `height`, `labelX`, `labelY`, and `labelWidth` into absolutely
+`width`, `height`, `labelX`, `labelY`, and `label_width` into absolutely
 positioned CSS percentages. Object height is derived from the SVG viewBox
 aspect ratio and the current viewport aspect ratio, so resizing the scene can
 change rendered height even when the configured width is unchanged.
@@ -166,24 +166,23 @@ Important fields:
 | Field | Meaning |
 | --- | --- |
 | `id` | Stable item id. Also becomes the `data-item-id` click-dispatch attribute in renderers. |
-| `svgAsset` | Key into [../../src/asset_specs.ts](../../src/asset_specs.ts) and the SVG facade. |
+| `asset_name` | Key into [../../src/asset_specs.ts](../../src/asset_specs.ts) and the SVG facade. |
 | `zone` | Name of the zone that owns the item. |
-| `depthTier` | Sort order inside the zone. Lower numbers are placed first. |
-| `widthScale` | Per-scene multiplier on the asset's base width. |
+| `depth_tier` | Sort order inside the zone. Lower numbers are placed first. |
+| `width_scale` | Per-scene multiplier on the asset's base width. |
 | `label` | Full label used for tooltip and label layout. |
-| `shortLabel` | Optional fallback when the full label does not fit. |
-| `anchorY` | Vertical anchor mode: `bottom`, `tip`, or `top`. |
-| `alignStop` | Left, center, or right stop inside `tab-stops` zones. |
-| `baselineOverride` | Rare per-item baseline override. Used when one object should not sit on the shared zone baseline. |
+| `anchor_y` | Vertical anchor mode: `bottom`, `tip`, or `top`. |
+| `align_stop` | Left, center, or right stop inside `tab-stops` zones. |
+| `baseline_override` | Rare per-item baseline override. Used when one object should not sit on the shared zone baseline. |
 | `group` | Optional functional group for automatic depth resolution. |
 | `depth` | Optional manual depth override: `back`, `mid`, or `front`. |
 
-Use `depthTier` for deterministic ordering, not for visual scale. The engine
-sorts by `depthTier` before placing a zone. It does not infer scale or
+Use `depth_tier` for deterministic ordering, not for visual scale. The engine
+sorts by `depth_tier` before placing a zone. It does not infer scale or
 prominence from the tier number.
 
-Use `widthScale` for scene-specific relative size. The base size comes from
-`ASSET_SPECS[svgAsset].defaultWidth`; `widthScale` lets one scene make the same
+Use `width_scale` for scene-specific relative size. The base size comes from
+`ASSET_SPECS[asset_name].default_width`; `width_scale` lets one scene make the same
 asset larger or smaller without changing global asset metrics.
 
 ## Asset specs
@@ -193,20 +192,20 @@ make a visual asset usable by the layout engine:
 
 | Field | Meaning |
 | --- | --- |
-| `defaultWidth` | Baseline object width in scene-percent units. |
-| `labelWidth` | Minimum estimated label width in scene-percent units. |
-| `anchorYOffset` | Optional vertical adjustment for tip-anchored assets. |
+| `default_width` | Baseline object width in scene-percent units. |
+| `label_width` | Minimum estimated label width in scene-percent units. |
+| `anchor_y_offset` | Optional vertical adjustment for tip-anchored assets. |
 
 The engine derives actual height from the SVG viewBox aspect ratio through
-`getAssetAspectRatio(item.svgAsset)`, then adjusts by viewport aspect ratio.
+`getAssetAspectRatio(item.asset_name)`, then adjusts by viewport aspect ratio.
 Do not hardcode item heights in scene YAML.
 
 When adding a new layout asset:
 
 1. Add or generate the SVG asset through the SVG pipeline.
-2. Add an `ASSET_SPECS` entry with a realistic `defaultWidth`.
-3. Add a conservative `labelWidth`.
-4. Render the scene at several viewport sizes before tuning `widthScale`.
+2. Add an `ASSET_SPECS` entry with a realistic `default_width`.
+3. Add a conservative `label_width`.
+4. Render the scene at several viewport sizes before tuning `width_scale`.
 
 ## Zones
 
@@ -227,7 +226,7 @@ Important fields:
 Zones should represent meaningful physical regions: a bench shelf, a hood back
 row, a front work row, or an instrument row. Avoid creating a new zone for
 every individual object. If a row contains left, center, and right clusters,
-use one `tab-stops` zone and assign each item an `alignStop`.
+use one `tab-stops` zone and assign each item an `align_stop`.
 
 The engine applies `ZONE_PADDING` internally, so items and labels do not hug
 the exact `x0` and `x1` edges.
@@ -242,7 +241,7 @@ The engine supports these zone alignment modes:
 | `right` | Last item visual right edge is flush with the padded right edge. |
 | `center` | Cluster visual midpoint is centered in the padded zone. |
 | `justify` | First and last visual edges are pushed to both padded edges. |
-| `tab-stops` | Items are partitioned by `alignStop` into left, center, and right sub-clusters. |
+| `tab-stops` | Items are partitioned by `align_stop` into left, center, and right sub-clusters. |
 
 `tab-stops` is the preferred mode for lab scenes with visually distinct
 groups. The bench `mid_bench` zone, for example, uses a left equipment cluster,
@@ -258,17 +257,17 @@ room to breathe.
 
 The footprint calculation uses:
 
-- Asset `defaultWidth`.
-- Item `widthScale`.
+- Asset `default_width`.
+- Item `width_scale`.
 - Current item `depth`.
 - Estimated label width.
 - `MAX_FOOTPRINT_RATIO`, which caps how much a long label can spread objects.
 
 This is why a small object with a long label can occupy more row space than its
-SVG appears to need. Tune `shortLabel` before forcing object sizes smaller.
+SVG appears to need.
 
 The label estimate uses `AVG_CHAR_WIDTH_PCT` times the label length, compared
-with the asset's `labelWidth`. If the full label has spaces and appears wider
+with the asset's `label_width`. If the full label has spaces and appears wider
 than the visual object, the engine estimates the widest line after splitting at
 the space nearest the middle. It then caps label-driven footprint growth at
 `MAX_FOOTPRINT_RATIO` times the visual width.
@@ -293,8 +292,7 @@ Fix overflow by changing the scene design:
 
 - Move some objects to a new zone.
 - Use `tab-stops` to group objects more naturally.
-- Reduce `widthScale` for the least important objects.
-- Add `shortLabel`.
+- Reduce `width_scale` for the least important objects.
 - Remove nonessential labels in the renderer for dense storage objects.
 
 Alignment-specific details:
@@ -302,7 +300,7 @@ Alignment-specific details:
 - `left` and `right` keep the configured `gap` when the row fits.
 - `center` may expand gaps, but caps that expansion at `MAX_GAP`.
 - `justify` expands the gap so visual edges fill the row.
-- `tab-stops` partitions items by `alignStop` and runs left, center, and right
+- `tab-stops` partitions items by `align_stop` and runs left, center, and right
   sub-layouts against the same zone.
 - A single `justify` item is centered because one item cannot touch both edges.
 
@@ -322,22 +320,22 @@ computed from the asset aspect ratio and viewport aspect ratio.
 
 Baseline precedence:
 
-1. `item.baselineOverride`, if present.
+1. `item.baseline_override`, if present.
 2. `zone.baseline + depthBaselineOffsetFor(item.depth)`.
 
 Anchor behavior:
 
-| `anchorY` | Placement rule |
+| `anchor_y` | Placement rule |
 | --- | --- |
 | `bottom` | Object bottom sits on the baseline. |
-| `tip` | Object tip sits on the baseline, adjusted by `anchorYOffset`. |
+| `tip` | Object tip sits on the baseline, adjusted by `anchor_y_offset`. |
 | `top` | Current engine fallback centers the object vertically around the baseline. |
 
-Use `baselineOverride` sparingly. It is appropriate when one object in a row
+Use `baseline_override` sparingly. It is appropriate when one object in a row
 has a different visual contact point, such as the hood flask sitting slightly
 lower than neighboring back-row items.
 
-`baselineOverride` replaces depth baseline movement. If an item has a manual
+`baseline_override` replaces depth baseline movement. If an item has a manual
 baseline override, the engine does not add the `back`, `mid`, or `front`
 baseline offset to it. Use this only when an asset's contact point is truly
 different from the row baseline.
@@ -379,16 +377,8 @@ objects with:
 - `labelLines`
 - `labelX`
 - `labelY`
-- `labelWidth`
+- `label_width`
 - `labelMultiline`
-
-Label fitting order:
-
-1. Try the full `label`.
-2. Split the full label at the space nearest the middle.
-3. Try `shortLabel`, if present.
-4. Split `shortLabel`, if needed.
-5. Truncate only when no `shortLabel` exists and no better split fits.
 
 Labels are centered on the visual object, then clamped to the padded zone
 bounds. The label collision pass groups labels by zone, sorts them by `labelX`,
@@ -517,15 +507,14 @@ Use this workflow when laying out a new row-and-zone scene:
 2. Sketch the physical rows first. Turn each row into a zone with `x0`, `x1`,
    `baseline`, `gap`, and `align`.
 3. Use `tab-stops` when a row has left, center, and right clusters.
-4. Add items with stable ids, `svgAsset`, `kind`, `zone`, `depthTier`,
-   `widthScale`, `label`, `anchorY`, and `alignStop`.
-5. Add `shortLabel` for labels that may collide or wrap awkwardly.
-6. Add missing asset specs in [../../src/asset_specs.ts](../../src/asset_specs.ts).
-7. Build the adapter render path by copying the bench or hood conversion
+4. Add items with stable ids, `asset_name`, `kind`, `zone`, `depth_tier`,
+   `width_scale`, `label`, `anchor_y`, and `align_stop`.
+5. Add missing asset specs in [../../src/asset_specs.ts](../../src/asset_specs.ts).
+6. Build the adapter render path by copying the bench or hood conversion
    pattern from generated zones to `SceneLayoutRules`.
-8. Render the scene and inspect at several viewport sizes.
-9. Tune zone baselines and item `widthScale` before changing engine constants.
-10. Add automatic depth only after the static layout is stable.
+7. Render the scene and inspect at several viewport sizes.
+8. Tune zone baselines and item `width_scale` before changing engine constants.
+9. Add automatic depth only after the static layout is stable.
 
 ## Adding a new layout-driven scene
 
@@ -533,8 +522,8 @@ To make a new scene use the layout engine:
 
 1. Create the scene YAML file under
    `content/scenes/<base_scene_name>.yaml`.
-2. Define scene `items` with stable ids, `svgAsset`, `zone`, `depthTier`,
-   `widthScale`, `label`, and `anchorY`.
+2. Define scene `items` with stable ids, `asset_name`, `zone`, `depth_tier`,
+   `width_scale`, `label`, and `anchor_y`.
 3. Define scene `zones` with `id`, `x0`, `x1`, `baseline`, `gap`, and
    `align`.
 4. Use `tab-stops` when one row has left, center, and right object clusters.
@@ -557,14 +546,13 @@ Minimal YAML shape:
 ```yaml
 items:
   - id: media_bottle
-    svgAsset: media_bottle
+    asset_name: media_bottle
     kind: bottle
     zone: back_row
-    depthTier: 10
-    widthScale: 1
+    depth_tier: 10
+    width_scale: 1
     label: Media bottle
-    shortLabel: Media
-    anchorY: bottom
+    anchor_y: bottom
     group: stocks
 
 zones:
@@ -590,12 +578,11 @@ Tune in this order to avoid fighting the engine:
 
 1. Zone geometry (`x0`, `x1`, `baseline`).
 2. Item membership in zones.
-3. `align` and `alignStop`.
-4. Asset `defaultWidth`, if the global asset size is wrong everywhere.
-5. Item `widthScale`, if the asset is only wrong in this scene.
-6. `shortLabel`.
-7. Renderer-level label suppression for dense, secondary items.
-8. `baselineOverride`, only for exceptional visual-contact fixes.
+3. `align` and `align_stop`.
+4. Asset `default_width`, if the global asset size is wrong everywhere.
+5. Item `width_scale`, if the asset is only wrong in this scene.
+6. Renderer-level label suppression for dense, secondary items.
+7. `baseline_override`, only for exceptional visual-contact fixes.
 
 Avoid changing engine constants for a single scene. Constants such as
 `MIN_SCALE`, `MAX_GAP`, and `ZONE_PADDING` affect every layout-driven scene.
@@ -608,13 +595,13 @@ Avoid changing engine constants for a single scene. Constants such as
   top level. Render adapters must pull it into `SceneLayoutRules`.
 - Hardcoding heights in YAML or renderer code. Height comes from SVG aspect
   ratio, item width, and viewport aspect ratio.
-- Using `depthTier` as a visual scale. It is sort order only.
+- Using `depth_tier` as a visual scale. It is sort order only.
 - Adding a zone for every item instead of using tab stops.
 - Fixing a crowded row by shrinking every object until labels become unreadable.
 - Adding renderer-specific x/y offsets after the engine computes positions.
 - Treating CSS classes or zone declarations as a completed layout without
   rendering the scene through `computeSceneLayout()`.
-- Using `baselineOverride` for normal row placement instead of fixing the zone
+- Using `baseline_override` for normal row placement instead of fixing the zone
   baseline.
 - Expecting the engine to understand protocol steps. Step-aware depth belongs
   in the caller.
@@ -627,15 +614,15 @@ Use the visual symptom to choose the fix:
 
 - Item does not render: check for a missing `rules.zones[item.zone]`, missing
   asset spec, or adapter render loop that never consumes the returned layout.
-- Item renders at the wrong row height: check `baseline`, `anchorY`,
-  `anchorYOffset`, depth offset, and `baselineOverride`. Fix the zone baseline
+- Item renders at the wrong row height: check `baseline`, `anchor_y`,
+  `anchor_y_offset`, depth offset, and `baseline_override`. Fix the zone baseline
   before adding per-item overrides.
-- Row hugs the wrong side: check `align`, `alignStop`, `depthTier`, and `id`
+- Row hugs the wrong side: check `align`, `align_stop`, `depth_tier`, and `id`
   sort order.
 - Objects overlap: the zone is overloaded after the `MIN_SCALE` floor. Move
   items to another zone or split the row into tab stops.
 - Labels overlap: labels exceed the zone after the three-pass collision nudge.
-  Add `shortLabel` or suppress secondary labels in the renderer.
+  Suppress secondary labels in the renderer.
 - Whole row shifts unexpectedly: `sceneBounds` translated the zone group. Fix
   zone geometry or item size instead of relying on bounds.
 - Click target exists but visual is elsewhere: the renderer probably added its
@@ -655,7 +642,7 @@ specific:
   vertically; the engine prefers the top edge.
 
 When debugging, inspect both the source item and the computed layout. Source
-items explain semantic inputs (`zone`, `depthTier`, `widthScale`, `anchorY`,
+items explain semantic inputs (`zone`, `depth_tier`, `width_scale`, `anchor_y`,
 `group`), while computed layouts explain renderer inputs (`x`, `y`, `width`,
 `height`, `footprint`, `labelX`, `labelY`, `labelLines`).
 
@@ -682,7 +669,7 @@ Playwright walker or scene-specific smoke test.
   pipeline.
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical scene terms.
 - [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) - Canonical object terms;
-  asset metrics like `defaultWidth` migrate here in the follow-on plan.
+  asset metrics like `default_width` migrate here in the follow-on plan.
 - [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object-definition YAML
   schema referenced by scene placements.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset generation and ownership.

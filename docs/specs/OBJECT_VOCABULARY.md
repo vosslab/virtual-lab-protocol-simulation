@@ -60,8 +60,7 @@ scenes; a scene placement may not override them.
 | --- | --- | --- |
 | `object_name` | yes | Stable object name. Unique across the object library. The scene side names this object only by `object_name`. |
 | `kind` | yes | Coarse classification. Closed enum: `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration`. The eight values mirror today's `kind` sub-field; the inventory observed all eight in shipped scene YAML. |
-| `label` | yes | Default human-readable name. A scene placement may override; the object owns the default. |
-| `short_label` | no | Optional shorter label for tight zones. Object-owned default; scene may override. |
+| `label` | yes | Required human-readable name. Object-owned; scene may not override. |
 
 `asset_name` (today's `items[]` sub-field) is **not** an identity field on
 the object. The object resolves an asset through `visual_states` from
@@ -238,26 +237,24 @@ vocabulary. The closed list is:
 and `cursor_attachable`. The other five are freely combinable.
 
 A scene placement may not override `capabilities`. An object that
-declares `[clickable, liquid_container]` carries those affordances in
+declares `[clickable, contents_container]` carries those affordances in
 every scene that places it.
 
 ## Layout hints
 
 **Layout hints** are object-side defaults that the layout engine
 ([LAYOUT_ENGINE.md](LAYOUT_ENGINE.md)) consumes when the scene places
-the object. They replace today's `src/asset_specs.ts` properties
-(`defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale`), which
-are visual metrics of the object itself, not of any one scene. A scene
-placement may override layout hints (this is the only override category
-besides `label` and `short_label`).
+the object. They are visual metrics of the object itself, not of any
+one scene. A scene placement may override layout hints only; this is
+the only override category.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
-| `layout.default_width` | yes | Default visual width in layout units. Today's `defaultWidth`. |
-| `layout.label_width` | no | Width budget for the label. Today's `labelWidth`. |
-| `layout.anchor_y_offset` | no | Vertical anchor adjustment. Today's `anchorYOffset`; observed on pipette assets. |
-| `layout.width_scale` | no | Per-object width multiplier. Today's `widthScale`; observed mainly on equipment. |
-| `layout.anchor_y` | no | One of `bottom` or `tip`. Today's `anchorY` placement sub-field; reclassified as an object default per the rule that a serological pipette is anchored at its tip wherever it is placed. A scene may override. |
+| `layout.default_width` | yes | Default visual width in layout units. |
+| `layout.label_width` | no | Width budget for the label. |
+| `layout.anchor_y_offset` | no | Vertical anchor adjustment; observed on pipette assets. |
+| `layout.width_scale` | no | Per-object width multiplier; observed mainly on equipment. |
+| `layout.anchor_y` | no | One of `bottom` or `tip`. A serological pipette is anchored at its tip wherever it is placed. A scene may override. |
 
 ## Object ownership of SVG manipulation
 
@@ -308,11 +305,10 @@ The three-way boundary names what each vocabulary owns:
   [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 
 A scene placement may carry exactly one bounded set of instance
-overrides: the object's `label` (and `short_label`) and the object's
-layout hints (`default_width`, `label_width`, `anchor_y_offset`,
-`width_scale`, `anchor_y`). A placement may not override identity
-(`object_name`, `kind`), `state_fields`, `visual_states`, or
-`capabilities`.
+overrides: the object's layout hints (`default_width`, `label_width`,
+`anchor_y_offset`, `width_scale`, `anchor_y`). A placement may not
+override identity (`object_name`, `kind`, `label`), `state_fields`,
+`visual_states`, `target_groups`, or `capabilities`.
 
 ## Worked example: 96-well plate
 
@@ -324,7 +320,6 @@ per-subpart flat-primitive `state_fields`. The candidate is the
 object_name: well_plate_96
 kind: plate
 label: 96-well plate
-short_label: 96-well
 
 structure:
   subpart_kind: well
@@ -402,7 +397,6 @@ observed in the inventory.
 object_name: serological_pipette
 kind: pipette
 label: Serological pipette
-short_label: Pipette
 
 state_fields:
   - name: set_volume
@@ -463,10 +457,9 @@ loaded), and `held_contents_volume` (a `float` for the amount held).
 The `visual_states` resolves each independently: the set-point becomes an
 overlay label, the contents becomes a base SVG, and the volume becomes
 a fill height. No SVG asset name appears in any `state_field`. The
-layout hints replicate today's `serological_pipette` row in
-`src/asset_specs.ts` (`defaultWidth: 3`, `labelWidth: 6`,
-`anchorYOffset: 0`), now object-owned, plus `anchor_y: tip`
-reclassified from today's per-item placement sub-field.
+layout hints (`default_width: 3`, `label_width: 6`, `anchor_y_offset: 0`,
+`anchor_y: tip`) are object-owned; the tip anchor reflects that a
+serological pipette is tip-anchored wherever it is placed.
 
 ## Terms
 
@@ -485,26 +478,4 @@ reclassified from today's per-item placement sub-field.
 | layout hint | An object-default visual metric the layout engine consumes (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). |
 | `ObjectStateChange` | The protocol-level primitive that mutates declared `state_fields` on an object; defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). |
 
-## Retired and reclassified terms
-
-Object-side retirements and reclassifications. Each item below moves
-into the object vocabulary from somewhere else.
-
-| Reclassified or retired | Use instead | Reason |
-| --- | --- | --- |
-| `items[].svgAsset` (literal asset name in scene YAML) | a `visual_states` entry on the object | the object owns SVG manipulation; the asset name lives in `visual_states` only |
-| `items[].kind`, `items[].id`, `items[].label`, `items[].shortLabel` (object-identity sub-fields in scene YAML) | object identity (`object_name`, `kind`, `label`, `short_label`) | identity is object-owned; the scene names objects only by `object_name` |
-| `items[].inventoryRef` (object-identity sub-field in scene YAML) | retired; moved to schema but removed from authored surface | curriculum-level inventory is decoupled from object schema |
-| `items[].anchorY` (placement sub-field in scene YAML) | object `layout.anchor_y` (a scene placement may still override) | a serological pipette is tip-anchored regardless of placement; the anchor is an object property |
-| `capabilities` (top-level scene YAML key) | object `capabilities` (closed list) | a capability is a property of what the thing is, not where it is placed |
-| `target_groups` (top-level scene YAML key) | retired with no successor in this vocabulary pass; named groups are deferred until shipped authoring pain appears | structure belongs to the object but the named-groups expression is deferred; protocols list explicit subparts instead |
-| per-asset entries in `src/asset_specs.ts` (`defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale`) | object `layout` block | per-asset visual metrics are object properties, not engine constants |
-| `liquid_id`, `held_liquid_id` | `contents_name`, `held_contents_name` | semantic rename: object vocabulary uses contents-terminology; supports contents.yaml registry |
-| `liquid_volume`, `held_liquid_volume` | `contents_volume`, `held_contents_volume` | semantic rename: object vocabulary uses contents-terminology |
-| `liquid_color` (authored `state_field`) | derived from `contents_name` via `visual_states` | color is a visual property; render rules read contents and map to visual appearance |
-| `id_pattern` token-pattern naming | `name_pattern` | subpart naming is conceptually separate from identity ids; uses `object_name.subpart_name` |
-| `render_map` (state-to-visual mapping) | `visual_states` (named closed visual variants) | `visual_states` emphasizes that variants are closed and explicit, not a generic rendering surface |
-| `SvgSwap` (as a protocol-level `scene_operation`) | invoked by the object's `visual_states` from an `ObjectStateChange` mutation | render-layer mechanism, not a protocol semantic primitive; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) |
-| `ColorChange` (as a protocol-level `scene_operation`) | derived color from `contents_name` via the object's `visual_states` | render-layer mechanism; color is not an authored state, it is derived from contents |
-| `liquid_container` (capability) | `contents_container` | semantic rename: capability labels objects that hold tracked contents |
 

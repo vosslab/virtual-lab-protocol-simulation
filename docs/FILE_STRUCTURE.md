@@ -192,9 +192,6 @@ Not tracked in git (see [.gitignore](../.gitignore)):
 | Game runtime | New `.ts` file under [src/](../src/), imported from [src/init.ts](../src/init.ts) or a scene |
 | New scene | [src/scenes/](../src/scenes/) with scene YAML, an adapter, a side-effect import in [src/init.ts](../src/init.ts), and a render switch case |
 | New step UI / emitter | [src/steps/](../src/steps/) |
-| Protocol content | New folder under `content/protocols/<protocol_name>/` with `protocol.yaml`, `contents.yaml`, and `scenes/` subfolder |
-| Shared objects | Authored under `content/objects/<object_name>.yaml` (referenced by protocols) |
-| Shared scenes | Authored under `content/scenes/<base_scene_name>.yaml` (referenced by protocols) |
 | Build/audit tooling | [tools/](../tools/) (Python, single-purpose) |
 | Game styles | [src/style.css](../src/style.css) |
 | Pytest tests | `tests/test_*.py` |

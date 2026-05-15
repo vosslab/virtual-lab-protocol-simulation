@@ -1,5 +1,35 @@
 # Changelog
 
+## 2026-05-15 (spec vocabulary consolidation sweep - cheeky-popping-hartmanis)
+
+### Additions and New Features
+- **`docs/specs/SPEC_DESIGN_CHECKLIST.md` extended**: New "Author YAML vocabulary lock" section codifies the closed authored-YAML surface, the identity tuple `(object_name, kind, label)`, the snake_case authored-field rule, the scene-placement override surface restricted to layout hints, and the `contents_container` rename.
+- **`tests/test_spec_vocabulary.py` (new)**: Grep-gate test enforces vocabulary closure across `docs/specs/*.md` and `docs/PRIMARY_*.md`. G1-G4 hard-assert zero occurrences of retired tokens (`short_label`/`shortLabel`, `element_id`/`elementId`, `render_map`, `inventory_ref`/`inventoryRef`, `liquid_container`, camelCase YAML field references). G5-G6 are informational sweeps for residual drift.
+
+### Behavior or Interface Changes
+- **Spec sweep across `docs/specs/*.md` and `docs/PRIMARY_*.md`** (M2.W1-W7): Object, scene, protocol, layout-engine, liquid, SVG, and PRIMARY trio surfaces normalized to the locked vocabulary.
+- **Identity tuple locked**: Object identity expressed exclusively as `(object_name, kind, label)`; legacy `short_label` and `element_id` references retired from normative spec text.
+- **Scene-placement override surface locked**: Authored scene placements may override layout hints only; identity fields are not overridable at placement time.
+- **Authored YAML enforced as snake_case**: `docs/specs/LAYOUT_ENGINE.md` and `docs/specs/SCALING_MODEL.md` camelCase authored-field references renamed to snake_case form.
+- **`liquid_container` -> `contents_container` rename completed** across normative spec text (consistent with the broader `liquid_*` -> `contents_*` migration).
+- **PRIMARY trio cross-links to the lock section added**: `docs/PRIMARY_CONTRACT.md`, `docs/PRIMARY_DESIGN.md`, and `docs/PRIMARY_SPEC.md` now point to the Author YAML vocabulary lock section in `docs/specs/SPEC_DESIGN_CHECKLIST.md`.
+
+### Fixes and Maintenance
+- **Dead-link cleanup** in `docs/CHANGELOG.md` and `docs/CHANGELOG-2026-05a.md`: historical `content/plate_drug_treatment/*.yaml` and `content/cell_culture/{items,reagents}.yaml` link wrappers rephrased to bare backticked paths (per REPO_STYLE "entries are never removed, may be rephrased for accuracy and clarity"). The underlying historical text is unchanged; only the broken hyperlink wrappers are removed because those paths were retired by the 2026-05-15 vocabulary closure.
+- **`docs/FILE_STRUCTURE.md` "Where to add new work" table trimmed** of the `content/protocols/`, `content/objects/`, and `content/scenes/` rows pending layout settling. Content directories still exist on disk; the table rows return when the layout stabilizes.
+
+### Removals and Deprecations
+- **Deleted retired-terms tables** from `docs/specs/OBJECT_VOCABULARY.md`, `docs/specs/SCENE_VOCABULARY.md`, `docs/specs/SCENE_YAML_FORMAT.md`, and `docs/specs/PROTOCOL_VOCABULARY.md` (no quarantine doc; closure is enforced by `tests/test_spec_vocabulary.py`).
+- **Retired tokens removed from normative spec text**: `short_label` / `shortLabel`, `element_id` / `elementId`, `liquid_color` as authored state, `render_map`, `inventory_ref` / `inventoryRef`, scene-placement `label` overrides, and all camelCase YAML field references.
+- Removed `scene_kind` field from authored scene YAML and validator; `workspace` is the sole identity field.
+
+### Decisions and Failures
+- **D1 resolved**: `shortLabel` is fully retired in normative spec text regardless of any runtime residue. Runtime cleanup is tracked separately and is not a blocker for the spec lock.
+- **D2 resolved**: `scene_kind` removed entirely. It duplicated `workspace` as the identity field. Footprint was 4 locations (SCENE_INHERITANCE.md locked-field row, hood_basic.yaml usage, validator optional-keys set, this changelog entry).
+
+### Developer Tests and Notes
+- `source source_me.sh && pytest tests/test_spec_vocabulary.py -q`: **6 passed in 0.08s** (G1-G6).
+
 ## 2026-05-15 (vocabulary audit sweep: retired-terms inventory and spec-consistency gates - WP-F1)
 
 ### Additions and New Features
@@ -832,7 +862,7 @@
 ## 2026-05-14 (Content quality rework: plate_drug_treatment)
 
 ### Fixes and Maintenance
-- **PRIMARY_CONTRACT item 5 compliance and pedagogical clarity**: Reworked learning block in [content/plate_drug_treatment/protocol.yaml](../content/plate_drug_treatment/protocol.yaml) to be more focused on actual learning outcomes and scientific context.
+- **PRIMARY_CONTRACT item 5 compliance and pedagogical clarity**: Reworked learning block in `content/plate_drug_treatment/protocol.yaml` to be more focused on actual learning outcomes and scientific context.
   - `learning.objectives` now emphasizes what students gain fluency with: logarithmic dose-response assay design (1-2-5 series), media-adjustment discipline, and fixed-dose modifier approaches (was overly focused on plate map and media rule).
   - `learning.outcomes` now clearly states what students can do: dose a 96-well OVCAR8 assay plate on Day 2 using the specific dose series (0.1-10 uM final), 5 mM metformin, and 200 uL final volume (was vague about cell type and specific doses).
   - `learning.goals` now articulates the complete workflow integration: carboplatin dilution, metformin application, and media-adjustment sequencing ready for incubation (was generic "Day-2 workflow").
@@ -1079,7 +1109,7 @@
   - Updated `completeStep()` to transition to step 3 when step 2 completes, and to step 4 when step 3 completes.
   - All 4 steps are fully defined, ready for walker navigation.
 
-- Extended [content/plate_drug_treatment/scene.yaml](../content/plate_drug_treatment/scene.yaml) with scene item declarations for steps 3-4:
+- Extended `content/plate_drug_treatment/scene.yaml` with scene item declarations for steps 3-4:
   - Added `dilution_tube_carb_c` through `dilution_tube_carb_h` (6 intermediate dilution tubes for carboplatin dose series).
   - Added `metformin_stock_solution` and `dilution_tube_metformin_working`.
   - All items assigned to appropriate zones: `top_left_bench` for reagent stocks, `right_shelf` for dilution tubes.
@@ -1099,7 +1129,7 @@
 
 - Updated [tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs](../tests/playwright/fixtures/plate_drug_treatment_real/protocol.mjs) walker protocol source:
   - Added step 3 (`prep_carb_last_dilution`) and step 4 (`prep_metformin_dilution`) step definitions to plateDrugTreatmentFullProtocol.steps array.
-  - Each step faithfully transcribed from [content/plate_drug_treatment/protocol.yaml](../content/plate_drug_treatment/protocol.yaml) with correct ids, labels, actions, requiredItems, stepIndex, and interactionSequence completionPaths.
+  - Each step faithfully transcribed from `content/plate_drug_treatment/protocol.yaml` with correct ids, labels, actions, requiredItems, stepIndex, and interactionSequence completionPaths.
   - Walker now drives steps 1-4 end-to-end through generic Playwright fixture dispatcher.
 
 ### Behavior or Interface Changes
@@ -1175,7 +1205,7 @@
 
 
 ### Additions and New Features
-- WP-WP-1: Authored [content/plate_drug_treatment/scene.yaml](../content/plate_drug_treatment/scene.yaml) - scene declarations for well_plate_workspace: well_plate (main_plate_area zone), multichannel_pipette, carboplatin_stock_solution, media_bottle, dilution_tube_carb_b (equipment zones). Minimal schema: id, label, zone per contract item 3 (SVG-backed, layout-engine-placed). No layout-rules/asset-metrics yet (deferred); scene is ready for adapter render.
+- WP-WP-1: Authored `content/plate_drug_treatment/scene.yaml` - scene declarations for well_plate_workspace: well_plate (main_plate_area zone), multichannel_pipette, carboplatin_stock_solution, media_bottle, dilution_tube_carb_b (equipment zones). Minimal schema: id, label, zone per contract item 3 (SVG-backed, layout-engine-placed). No layout-rules/asset-metrics yet (deferred); scene is ready for adapter render.
 - WP-WP-2: Real well_plate adapter implementation:
   - [src/scene_runtime/adapters/well_plate/render.ts](../src/scene_runtime/adapters/well_plate/render.ts): pure `renderWorkspace(scene: SceneConfig, highlights: HighlightState): string` renders SVG-backed equipment (pipettes, bottles, tubes) and custom 96-well grid (8x12 with row/col labels A-H and 1-12). Equipment items and plate container apply is-next-target highlight class. Reuses deriveHighlights() and getWorkspaceStyles() for CSS-in-JS. Under 350 lines.
   - [src/scene_runtime/adapters/well_plate/index.ts](../src/scene_runtime/adapters/well_plate/index.ts): `initWellPlateAdapter(scene, step, config)` mounts workspace, injects styles, wires click handlers for all [data-item-id] elements. On matched click, re-renders highlights and re-wires handlers. Calls config.onClickMatched() for each valid click and config.onStepComplete(stepId) when step completes. Imports dispatchClick(), deriveHighlights() (pure subsystems); no branching on step.id. Under 250 lines.

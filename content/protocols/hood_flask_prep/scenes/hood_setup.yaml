@@ -1,0 +1,28 @@
+scene_name: hood_flask_prep_hood_setup
+extends: hood_basic
+
+add_placements:
+  - placement_name: center_t75_flask
+    object_name: t75_flask
+    zone: center
+    depth_tier: 1
+    align_stop: center
+  - placement_name: rear_left_pbs_bottle
+    object_name: pbs_bottle
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_center_trypsin_bottle
+    object_name: trypsin_bottle
+    zone: rear_center
+    depth_tier: 2
+  - placement_name: rear_right_media_bottle
+    object_name: media_bottle
+    zone: rear_right
+    depth_tier: 1
+
+scene_notes: |
+  Protocol scene for hood_flask_prep (M1 pilot).
+  Adds flask to center workspace, bottles to rear zones (PBS left, trypsin center,
+  media right) within hand reach, aspirating pipette already in base. Reflects
+  the 6-step aseptic cell detachment workflow: spray hood, aspirate media, add PBS,
+  aspirate PBS, add trypsin, neutralize with media.

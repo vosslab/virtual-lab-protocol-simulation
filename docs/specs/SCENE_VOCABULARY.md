@@ -66,12 +66,12 @@ the static [background](#background-as-a-static-backdrop) backdrop.
 A scene never declares object identity, `state_fields`, `visual_states`,
 `target_groups`, or `capabilities`.
 
-A scene placement may carry exactly one bounded set of instance overrides: the
-object's layout hints (`default_width`, `label_width`,
+Scene placement overrides layout hints only. A placement may carry instance
+overrides for the object's layout hints (`default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may not
-override identity (`id`, `kind`, `inventory_ref`), `state_fields`,
-`visual_states`, or `capabilities`. The full override rule lives on the
-object side; see
+override object identity (`object_name`, `kind`, `label`),
+`state_fields`, `visual_states`, or `capabilities`. The full override
+rule lives on the object side; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 
 `target_groups` is retired from the scene vocabulary with no successor in this vocabulary pass; named groups are deferred. A
@@ -122,11 +122,12 @@ object identity, structure, `state_fields`, `visual_states`, or
 `capabilities`; those belong to the object definition (see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)).
 
-A placement may carry a small set of instance overrides:
-the layout hints `default_width`,
+Scene placement overrides layout hints only. A placement may carry instance
+overrides for the layout hints `default_width`,
 `label_width`, `anchor_y_offset`, `width_scale`, and `anchor_y`. A
-placement may not override identity, `state_fields`, `visual_states`,
-`target_groups`, or `capabilities`. The full override surface is in
+placement may not override object identity (`object_name`, `kind`,
+`label`), `state_fields`, `visual_states`, `target_groups`, or
+`capabilities`. The full override surface is in
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## The object side of
 the boundary".
 
@@ -272,7 +273,6 @@ nothing else.
 | workspace | A YAML-declared advisory family label naming a scene's surface kind; reserved for future runtime use. |
 | item | The runtime name for a clickable DOM element rendered by the adapter and dispatched by `data-item-id`; in cleaned authoring, every item is the rendering of one [placement](#object-by-id-placement). |
 | wrong_order_message | A scene-side UI string shown when a learner clicks placements in an order the protocol rejects. |
-| elementId | The DOM element id where the driver attaches its capture-phase click listener. |
 | instrument-overlay | The shared modal-slot DOM element used by instrument-style scenes; only one scene is visible in the slot at a time. |
 | module-load side effect | Top-level statement in an adapter or capability module that runs when the module is imported (registration, emitter pre-registration, listener attach, registry mutation). |
 | completion event | The string id passed to `triggerStep(stepId)` to signal that a step has completed; pre-registered via `registeredEmitters.add(...)`. |
@@ -425,14 +425,6 @@ A YAML block with two fields, `template` and `toastDurationMs`,
 declaring a per-scene wrong-order toast template. The cleaned spelling is
 [`wrong_order_message`](#scene-level-ui-feedback).
 
-### element_id (retired from authored YAML)
-
-Retired author-facing field. The DOM mount handle is runtime-derived as
-`mount_element = ${scene_name}-scene` and is internal to the runtime; it is
-not authored in YAML. Legacy scenes whose DOM id does not match
-`${scene_name}-scene` override this mapping through a non-YAML
-configuration path (see `src/scenes/scene_driver.ts:174-175`).
-
 ### instrument-overlay
 
 The shared modal-slot DOM element used by instrument-style scenes.
@@ -507,7 +499,7 @@ capability-specific extension.
 **not** the protocol-side `target` (the semantic, geometry-free
 name a protocol author writes; see
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)) and **not** the
-[object id](#object-id) the scene names in a placement (the object
+[object name](#object-name) the scene names in a placement (the object
 library handle; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). It is a low-level
 click-event payload only. See
@@ -538,38 +530,3 @@ implementation. It is distinct from the object-side `capabilities`
 list, which declares which affordances an object carries; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Capabilities".
 
-## Retired terms (do not use)
-
-Retired terms may appear only in this table and in explicit
-migration or rename notes. They must not appear in normal prose,
-examples, code comments, or error messages.
-
-### Retired with no successor here
-
-| Retired | Use instead | Reason |
-| --- | --- | --- |
-| "click target" | **`target`** (protocol side) / **`object name`** (scene-side handle) | A prior canonical phrase for the protocol-to-scene addressable concept; ambiguous against the runtime `ClickTarget` type. The boundary split names the protocol side `target` and the scene side names objects by `object_name`; `ClickTarget` is scoped to the narrow `{itemId}` driver payload only. |
-| `scene:` (alternate spelling for `zone:`) | `placement.zone` | Single observed use in `content/plate_drug_treatment/scene.yaml`; the cleaned vocabulary keeps `zone` and drops the alternate. |
-| `target_groups` (top-level scene-YAML key) | retired with no successor in this vocabulary pass; named groups are deferred until shipped authoring pain appears | Subparts are on the object side; the named-groups expression itself is deferred. Protocols list explicit subparts (`<object_name>.<subpart_name>`) until a future plan revisits named groups. |
-
-### Moved to OBJECT_VOCABULARY.md
-
-Every term in this table moved to the object side. The scene side names
-objects only by [object id](#object-id) and never declares the
-underlying identity, structure, state, or render data.
-
-| Retired here | New home | Reason |
-| --- | --- | --- |
-| `items[].id` (object identity) | object `id` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Identity is object-owned; the scene names objects only by `object_name` on a placement. |
-| `items[].label` | object `label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the label; placement overrides are retired. |
-| `items[].shortLabel` | object `short_label` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Object owns the short label; placement overrides are retired. |
-| `items[].kind` | object `kind` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Closed enum on the object; identity-class, scene may not override. |
-| `items[].svgAsset` | object `visual_states` entry ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Visual states") | The object owns SVG manipulation; the asset id lives in `visual_states` only. |
-| `items[].inventoryRef` | object `inventory_ref` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Object identity") | Identity-class; the scene YAML never carries it. |
-| `items[].anchorY` (placement sub-field) | object `layout.anchor_y` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Layout hints") | A serological pipette is tip-anchored regardless of placement; a scene placement may still override. |
-| `items[].widthScale` (as the canonical home) | object `layout.width_scale` default ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Layout hints"); placement may override via `placement.layout.width_scale` | Per-asset visual metric; the object owns the default. |
-| `capabilities` (top-level scene-YAML key) | object `capabilities` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Capabilities") | A capability is a property of what the thing is, not where it is placed; closed list, scene may not override. |
-| adapter registry (as a scene-vocabulary term) | resolved by the object library: the scene names objects by `object_name` and the object library answers ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The protocol writes `target` (protocol-side) and the scene names the object by `object_name`; identity resolution is object-side. The runtime [scene registry](#scene-registry) and [capability registry](#capability-registry) remain as runtime maps. |
-| named group (as a scene-vocabulary term) | retired with no successor in this vocabulary pass; protocols list explicit subparts | Named groups are deferred. Subparts belong to the object. |
-| `scene object` (as a scene-vocabulary term) | object library entry referenced by [object name](#object-name) | The addressable identity is the [object name](#object-name) (object-side); the in-scene rendering is the [item](#item) (scene-side runtime). |
-| `state_fields`, `visual_states` (as scene-vocabulary terms) | object `state_fields`, object `visual_states` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) | The scene declares neither state nor rendering; both are object-owned. |

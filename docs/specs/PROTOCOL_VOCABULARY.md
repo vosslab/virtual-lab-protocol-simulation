@@ -4,8 +4,7 @@ This document is the canonical vocabulary for protocol authoring,
 runtime code, tests, and documentation in this repository. Every
 protocol-related doc, code comment, error message, validator
 output, and authoring guide must use these exact terms with
-these exact meanings. Synonyms listed in the retired-terms table
-are not used.
+these exact meanings.
 
 Related docs:
 
@@ -370,8 +369,8 @@ and the object's `visual_states` resolves how they appear. The protocol stays
 semantic and never names an SVG asset id, a color value, a liquid display
 update, or a set-point display update. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 The semantic primitive that supersedes all four at the protocol level is
-`ObjectStateChange`, which writes the flat declared liquid fields (`contents_name`,
-`contents_volume`, `liquid_color` for vessels and wells; corresponding
+`ObjectStateChange`, which writes the flat declared liquid fields (`contents_name` and
+`contents_volume` for vessels and wells; corresponding
 `held_contents_name` / `held_contents_volume` for tools) and the flat
 declared set-point fields (`set_volume`, `set_temperature`,
 `set_rpm`, etc.).
@@ -412,7 +411,6 @@ of PBS):
   state:
     contents_name: pbs
     contents_volume: 100
-    liquid_color: clear
 ```
 
 The earlier nested form `state: { held_liquid: { reagent: pbs,
@@ -424,7 +422,7 @@ schema and the `visual_states` resolution rule.
 
 Liquid state mutation is expressed through `ObjectStateChange` against
 the object's flat declared liquid fields. Tools and vessels declare those
-fields directly (typically `contents_name`, `contents_volume`, and `liquid_color`
+fields directly (typically `contents_name` and `contents_volume`
 for vessels and wells; `held_contents_name` and `held_contents_volume` for tools).
 The `visual_states` resolves the new field values to a fill height, tint, and asset.
 
@@ -669,13 +667,8 @@ changes:
 | `LayoutMove` | object appearance -- the target's layout slot. |
 | `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
 
-This model supersedes the hand-authored `stateChange` block of the
-shipped content. The legacy camelCase fields `stateChange`,
-`heldLiquid`, `consumesVolumeMl`, and `colorKey` are named here only
-as fields the new model supersedes; they are not vocabulary in the
-new model and never appear in a canonical example. In prior code, the
-term `render_map` referred to the object's `visual_states` in the
-current vocabulary; see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
+The object's `visual_states` resolves declared `state_fields` to a
+visual; see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 
 ### The event-emission rule
 
@@ -987,90 +980,3 @@ unchanged by the vocabulary redesign.
 | **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. |
 | **Wrong-order UI pass** | Variant of the walker that injects a wrong-order click before each correct sequence and asserts soft-fail behavior. |
 | **Human playtest** | A human plays the game. The only thing that judges UX clarity. |
-
-## Retired terms (do not use)
-
-Retired terms may appear only in this table and in explicit
-migration or rename notes. They must not appear in normal prose,
-canonical examples, code comments, or error messages. Some still
-appear as identifiers in the current runtime and shipped YAML;
-those uses are migration debt the follow-on code-migration plan
-removes.
-
-### Scene-specific drift terms (removed entirely)
-
-These named scene-specific geometry inside the protocol vocabulary.
-They are removed; target resolution is the adapter-registry plus
-named-groups mechanism.
-
-| Retired | Use instead | Reason |
-| --- | --- | --- |
-| `plate target` / `plateTargets` | a semantic **`target`** name resolved by the scene's named groups | named plate-and-well geometry in protocol YAML; a scene/protocol boundary violation |
-| `tube target` / `tubeTargets` | a semantic **`target`** name resolved by the scene's named groups | named tube-and-rack geometry in protocol YAML; a boundary violation, and `tubeTargets` was additionally a broken legacy field |
-
-### Retired `completionPath.kind` taxonomy
-
-The legacy four-`kind` completion-path taxonomy is retired. There is
-no `completionPath` and no `kind` discriminator in the new model.
-
-| Retired | Use instead | Reason |
-| --- | --- | --- |
-| `completionPath` | the `step` slots `sequence`, `step_validator`, `outcome`, `next_step` | the legacy schema-contract wrapper; the two-level model has no completion-path wrapper |
-| `completionPath.kind` | the target's `kind` plus the `gesture` | the legacy four-value discriminator; the target kind carries the task semantics |
-| `interactionSequence` (as a `kind`) | a `step` with an ordered `sequence` of `click` interactions | a retired `kind` value |
-| `directTool` (as a `kind`) | a `step` with a one-interaction `sequence` | a retired `kind` value |
-| `modal` (as a `kind`) | a `step` whose interactions carry a `SceneChange` or `feedback`-only `response` | a retired `kind` value |
-| `multipleChoice` (as a `kind`) | a `step` with a `select`-gesture interaction validated by `correct_choice` | a retired `kind` value |
-
-### Reclassified `scene_operation` primitives (render-layer mechanisms)
-
-`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
-`SetPointDisplayChange` are not protocol-level `scene_operation`
-primitives. They are render-layer mechanisms named by the object's
-`visual_states` (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)).
-The protocol stays semantic and never names an SVG asset id, a color
-value, a liquid display update, or a set-point display update; the
-semantic superseder at the protocol level is `ObjectStateChange`, which
-writes the object's flat declared `state_fields` (including the flat liquid
-fields `contents_name`, `contents_volume`, `liquid_color`, and the
-corresponding tool-side `held_contents_name` / `held_contents_volume`, and
-the flat set-point fields `set_volume`, `set_temperature`, `set_rpm`,
-etc.). A single future exception is reserved for a
-colorimetric-reading primitive whose own slot is named when the first
-such mini-protocol is authored; that future primitive is not generic
-`ColorChange`.
-
-| Reclassified | Use instead | Reason |
-| --- | --- | --- |
-| `SvgSwap` (as a protocol `scene_operation`) | `ObjectStateChange` against a declared `state_field`; the object's `visual_states` resolves the SVG asset | render-layer mechanism named by the object's `visual_states`, not a protocol semantic primitive |
-| `ColorChange` (as a protocol `scene_operation`) | `ObjectStateChange` against a declared `state_field`; the object's `visual_states` resolves the color | render-layer mechanism named by the object's `visual_states`, not a protocol semantic primitive |
-| `LiquidDisplayChange` (as a protocol `scene_operation`) | `ObjectStateChange` against the object's flat declared liquid fields (`contents_name`, `contents_volume`, `liquid_color`; `held_contents_name`, `held_contents_volume`); the object's `visual_states` resolves the visual | reclassified to the object/render layer. Protocol mutates liquid via `ObjectStateChange` against flat fields; the object `visual_states` resolves how liquid appears. Named the display result instead of the semantic state change, the same drift as `SvgSwap` and `ColorChange`. The legacy `operation` axis (`hold`, `set`, `add`) is replaced by direct flat-field writes. |
-| `SetPointDisplayChange` (as a protocol `scene_operation`) | `ObjectStateChange` against the object's flat declared set-point fields (`set_volume`, `set_temperature`, `set_rpm`, etc.); the object's `visual_states` resolves the digit overlay or display visual | reclassified to the object/render layer. Protocol mutates set-point state via `ObjectStateChange` against flat numeric fields; the object `visual_states` resolves how the set-point appears. Named the display result (a numeric overlay) instead of the semantic state change, the same drift as `SvgSwap`, `ColorChange`, and `LiquidDisplayChange`. The legacy `value` mapping (for example `{ volume_ml: 4 }`) is replaced by direct flat-field writes. |
-
-### Retired overloaded and legacy field terms
-
-| Retired | Use instead | Reason |
-| --- | --- | --- |
-| `action` (bare, overloaded) | `gesture` (learner input), `scene_operation` (scene change), or `validator` (the correctness check) | the overloaded legacy term that confused learner input with scene response |
-| `mode` | the `gesture` slot | the second axis in the retired `target + mode + action` model; the ratified model uses the `gesture` slot instead (`click`, `drag`, `adjust`, `select`, `type`), and the old `dial` mode value is now the `adjust` gesture |
-| "click target" | **`target`** (protocol side) / **`scene object`** (scene side) | a UI/DOM-level phrase that never belonged in the protocol vocabulary |
-| `stateChange` / `heldLiquid` / `consumesVolumeMl` / `colorKey` | an `ObjectStateChange` `scene_operation` writing the object's flat declared liquid `state_fields` | hand-authored camelCase state blocks; state change is now explicit in a `scene_operation` mutation only |
-| `completionEvent` (authored, no naming convention) | the runtime-derived `<step_name>_complete` / `<equipment_name>_elapsed` event | events are derived by the runtime, not hand-authored, and follow one snake_case convention |
-| `completionTrigger` (authored) | the runtime-derived completion event | derived, not authored |
-| `nextId` | **`next_step`** | a numeric-style camelCase flow field; flow is named, snake_case |
-| `volumeMl` (on a `click` interaction) | the object's flat `contents_volume` (or `held_contents_volume`) `state_field` written via `ObjectStateChange`, or a `target_with_value` set-point | a camelCase legacy field; also the timed-click regression when used to skip an `adjust` gesture |
-| `targetItems` / `usedItems` / `requiredItems` | derived from the `sequence`'s `target` slots | legacy step-level item summaries; not authored vocabulary in the new model |
-
-All authored YAML keys and identifier values are snake_case. The
-only PascalCase in the vocabulary is the five `scene_operation`
-type names (`ObjectStateChange`, `CursorAttach`, `SceneChange`,
-`LayoutMove`, `TimedWait`). The retired
-primitive type names `SvgSwap`, `ColorChange`, `LiquidDisplayChange`,
-and `SetPointDisplayChange` appear only in the retired-terms table
-above; they are object/render-layer mechanisms named by the object's
-`visual_states` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) and are
-no longer
-protocol-level `scene_operation` primitives. Legacy camelCase terms
-appear only in this table and in migration notes, never in a
-canonical example.
-
