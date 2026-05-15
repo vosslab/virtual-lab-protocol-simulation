@@ -1,0 +1,197 @@
+# Scene inheritance
+
+## Purpose
+
+Scenes in the virtual lab system follow a three-layer rule to prevent drift and maintain durable workspace context:
+
+- **Objects** are canonical-by-id with no `extends` and no template-object layer. If an object differs meaningfully from an existing one, mint a new id.
+- **Protocols** are spec-shaped with no template-protocol layer. Cross-protocol reuse is via `sequence_runner` composition.
+- **Scenes** use shallow inheritance (one level only) for stable workspace context. Base scenes give students a consistent visual workspace across mini-protocols, reducing cognitive load. Scene reuse is positive pedagogical value, not author convenience.
+
+This asymmetry exists because each layer has different semantics: objects are stateful and identity-bearing; protocols are pedagogical workflows with their own learning contract; scenes are layout composition containers for shared workspaces. Objects and protocols do not use `extends`; only scenes do.
+
+## Inheritance graph shape
+
+Scene inheritance is strictly one level with no chains:
+
+- **Base scenes** (`content/scenes/*.yaml`) extend nothing.
+- **Protocol scenes** (`content/protocols/<name>/scenes/*.yaml`) extend exactly one base scene.
+- No scene may extend a protocol scene.
+- No scene may extend a scene that already extends another scene.
+
+Cycles, multi-level chains, and unknown bases are build errors. The scene graph is fully resolvable before runtime.
+
+## File location
+
+Base scenes live in `content/scenes/*.yaml`. Protocol scenes live in `content/protocols/<name>/scenes/*.yaml`. A single protocol may declare multiple protocol scene files (one per scene id); each extends its own base independently.
+
+Cross-scene transitions between different workspaces (hood to bench, plate zoom to microscope) use the `SceneChange` `scene_operation` in a step response, not inheritance.
+
+## Schema
+
+A protocol scene file carries these top-level fields:
+
+- `scene_id` (required) -- unique identifier for this scene.
+- `extends` (required) -- the base scene id (resolved against `content/scenes/`). Bare id only; no paths.
+- `add_placements` (optional) -- list of new placements declared by this protocol.
+- `reposition_placements` (optional) -- list of inherited placements to reposition.
+- `deactivate_placements` (optional) -- list of inherited placements to deactivate.
+- `remove_placements` (optional) -- list of inherited placements to remove.
+- `scene_notes` (optional) -- human-readable purpose or notes.
+
+Every other top-level key that appears in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) is inherited from the base and may not appear in the extending file. Unknown fields in protocol scene inheritance files are build errors. The validator rejects any top-level key, any operation key, or any field inside an operation entry that is not named in this spec; new fields require a ratified spec edit.
+
+## Base placement requirement
+
+Every placement in a base scene must carry a stable `placement_id`. The `placement_id` is the canonical selector for all mutation operations. Selection by object id is rejected because a base scene may carry several placements of the same object.
+
+## Field inheritance table
+
+Inherited from base, LOCKED (extending scene may not declare these fields at all):
+
+| Field | Owner | Why locked |
+| --- | --- | --- |
+| `workspace` | base | workspace identity |
+| `scene_kind` | base | workspace identity |
+| `element_id` | base | DOM mount id |
+| `scene_bounds` | base | canvas geometry; layout-engine contract |
+| `background` | base | stable student orientation |
+| `zones` | base | zone schema = workspace contract |
+| `layout_rules` | base | layout-engine hints; drift risk |
+| `accent_rules` | base | visual consistency |
+| `capabilities` | base | workspace contract; if a protocol scene needs a capability, the base scene needs it |
+| `wrong_order_message` (base entries) | base | base entries untouchable; extending may add entries keyed to its own new placements only |
+| camera / zoom defaults | base | stable student orientation |
+| object `label`, `kind`, `state_fields`, `render_map`, `capabilities`, layout defaults | object file | scene inheritance is layout composition, not object mutation |
+
+Declared by the protocol scene file (LOCAL):
+
+| Field | Required | Notes |
+| --- | --- | --- |
+| `scene_id` | yes | unique per file |
+| `extends` | yes | base scene id; exactly one |
+| `scene_notes` | no | optional human-readable purpose |
+
+Inherited from base, CHANGEABLE only via the four named operations:
+
+| Operation | Selector | What it changes | What it may NOT change |
+| --- | --- | --- | --- |
+| `add_placements` | n/a (new entries) | adds protocol-specific placements; each new placement carries its own `placement_id`. An added placement may declare only the same placement fields allowed by [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for a base placement entry. | object identity, state, label, capabilities, render fields |
+| `reposition_placements` | `placement_id` | placement fields only: `zone`, `position`, `depth`, `anchor` | object identity, state, label, capabilities, render fields |
+| `deactivate_placements` | `placement_id` | marks placement as muted and non-clickable while keeping it visible for orientation | object identity, state, label, capabilities, render fields |
+| `remove_placements` | `placement_id` | drops placement entirely | n/a |
+
+## Operation order
+
+The validator applies operations in this fixed order against the base placement set:
+
+1. `remove_placements`
+2. `deactivate_placements`
+3. `reposition_placements`
+4. `add_placements`
+
+A `placement_id` referenced by `deactivate_placements` or `reposition_placements` after being removed by `remove_placements` is a build error. New `placement_id` values in `add_placements` must not collide with surviving base ids.
+
+## No generic override surface
+
+There is no `overrides:` block, no `patch:` block, and no free-form `metadata` that could carry inherited-field mutations. The four named operations are the entire mutation surface. New operations require a ratified spec edit per [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) "Vocabulary closure and anti-drift."
+
+## Validator contract
+
+The scene graph resolves statically before runtime. Build errors include:
+
+- Cycles in the inheritance graph.
+- Multi-level chains (base extends base, or protocol extends protocol).
+- Unknown base ids.
+- Unknown `placement_id` references in mutation operations.
+- Top-level keys outside the protocol scene schema.
+- Any operation argument that targets a locked field.
+- Duplicate `placement_id` values after all `add_placements` are applied.
+
+## Deactivation explanation
+
+Deactivation is a render-time placement flag, not an object mutation. When a placement is deactivated, it remains visible for student orientation but is muted and non-clickable. **Deactivation is placement runtime availability, not object capability mutation.** The object's declared `capabilities` list is unchanged. The renderer chooses the concrete visual treatment (grayscale, opacity, or other) and applies it to the deactivated placement's rendered SVG node.
+
+## Promotion rule
+
+A base scene may be promoted into `content/scenes/` when it is expected to serve multiple protocols OR when it represents a stable workspace contract (hood, bench, plate reader, microscope, centrifuge). Until either condition holds, the scene stays under `content/protocols/<name>/scenes/`. This rule prevents inverse drift (many one-use base scenes, each its own canonical fork) without blocking the first protocol that needs a new workspace from establishing the base. Seed workspace bases named in the migration plan count as stable workspace contracts. See [scene_inheritance_migration.md](../active_plans/scene_inheritance_migration.md) for the migration details.
+
+## Asymmetry rationale
+
+Objects, protocols, and scenes have different asymmetries by design:
+
+- **Objects** are canonical-by-id: no `extends`, no template-object layer. Each object is a named, versioned, identity-bearing thing. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
+- **Protocols** are spec-shaped: no template-protocol layer. Similarity across protocols comes from the shared `learning -> steps -> sequence -> interaction -> response` structure, not from templates. Cross-protocol reuse is via `sequence_runner` composition (see [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md)). See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+- **Scenes** use shallow inheritance: one level only, four named operations, no generic override surface. Scenes are layout composition containers; shallow inheritance reduces student cognitive load and author duplication without introducing the drift risk of deep templates.
+
+This asymmetry is justified by layer semantics, not consistency for its own sake, per the **fix-the-design-not-the-symptom** philosophy in [../REPO_STYLE.md](../REPO_STYLE.md).
+
+## Worked example
+
+### Example 1: Correct inheritance with all four operations
+
+Base scene: `content/scenes/hood_basic.yaml`
+
+```yaml
+# Base scene provides stable hood workspace context
+scene_id: hood_basic
+workspace: hood
+scene_bounds: {...}
+zones: [...]
+placements:
+  - placement_id: hood_waste_container
+    object: waste_container
+    zone: rear_right
+  - placement_id: hood_ethanol_bottle
+    object: ethanol_bottle
+    zone: rear_left
+  - placement_id: hood_optional_water_bath
+    object: water_bath
+    zone: rear_center
+```
+
+Protocol scene: `content/protocols/hood_flask_prep/scenes/hood_setup.yaml`
+
+```yaml
+# Protocol-specific scene using all four operations
+scene_id: hood_flask_prep_hood_setup
+extends: hood_basic
+add_placements:
+  - placement_id: flask_center
+    object: t25_flask
+    zone: center
+  - placement_id: aspirating_pipette
+    object: aspirating_pipette
+    zone: right_tool_area
+reposition_placements:
+  - placement_id: hood_waste_container
+    zone: rear_right_far
+deactivate_placements:
+  - placement_id: hood_ethanol_bottle
+remove_placements:
+  - placement_id: hood_optional_water_bath
+```
+
+### Example 2: Forbidden mutation
+
+The following mutation is a build error:
+
+```yaml
+# WRONG: attempting in-place field mutation (not allowed)
+scene_id: hood_flask_prep_hood_setup
+extends: hood_basic
+reposition_placements:
+  - placement_id: hood_waste_container
+    label: "Waste (not in use)"   # ERROR: label is locked
+    zone: rear_right_far
+```
+
+Build error: `reposition_placements` may only change `zone`, `position`, `depth`, and `anchor`. The `label` field is object-owned and locked. If the label must change, use a new object and a new placement in `add_placements`.
+
+## Future work
+
+Template-to-template inheritance (scene extends scene, each of which may themselves extend other scenes) is intentionally deferred. The one-level rule may be relaxed in the future when a documented pedagogical or author-ergonomics case demonstrates that shallow inheritance is insufficient. At that time, a separate ratified spec edit will define the extended rules, validators, and rejection patterns.
+
+## Out of scope
+
+Validator implementation, content migration, and TypeScript changes are deferred. See [../active_plans/scene_inheritance_migration.md](../active_plans/scene_inheritance_migration.md) for the migration stub that names target work and declares that deferred work gated on the validator landing.

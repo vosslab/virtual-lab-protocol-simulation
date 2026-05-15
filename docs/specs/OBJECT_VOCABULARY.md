@@ -45,6 +45,20 @@ sub-fields in scene YAML (`id`, `label`, `shortLabel`, `kind`,
 place -- the object library -- and the scene side names objects only by
 id.
 
+## Canonical object identity, no extends
+
+Objects are canonical-by-id. Each object definition lives in
+`content/objects/<id>.yaml` and is the single authoritative source for that
+object's identity, state schema, render map, and capabilities. Objects have
+no `extends` and no template-object layer.
+
+If an object differs meaningfully from an existing one, mint a new object id
+rather than reusing or templating the existing object. This rule preserves
+object identity as a permanent, versioned, stand-alone contract.
+
+For the asymmetric design across objects, protocols, and scenes, see
+[SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) "Asymmetry rationale".
+
 ## Object identity
 
 Identity fields name the object and classify it. They are stable across

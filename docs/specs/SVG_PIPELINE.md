@@ -256,6 +256,21 @@ on a clean checkout, run [dist_clean.sh](../../dist_clean.sh) at the repo root;
 it wipes `generated/`, `dist/`, and other build artifacts so a subsequent
 build can be exercised end-to-end.
 
+## Deactivated placements
+
+Deactivation is a render-time placement flag, not an object-capability mutation.
+When a placement is deactivated by a protocol scene's `deactivate_placements`
+operation, the placement remains visible for student orientation but is muted
+and non-clickable. The object's declared `capabilities` list is unchanged;
+only the placement's runtime availability is flagged.
+
+The renderer chooses the concrete visual treatment (grayscale, opacity, or
+other) and the SVG pipeline applies that treatment to the deactivated
+placement's rendered SVG node.
+
+See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the inheritance-side
+definition of `deactivate_placements`.
+
 ## Related docs
 
 - [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML schema and the

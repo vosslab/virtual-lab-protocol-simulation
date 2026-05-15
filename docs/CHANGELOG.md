@@ -174,8 +174,36 @@
 - **Adapter-registry section added to SCENE_ARCHITECTURE.md**: Documents the
   registry that maps each semantic `target` name to a concrete scene object,
   the resolution mechanism ratified under WP-BND1 / OQ-16.
+- **`docs/specs/SCENE_INHERITANCE.md` (new)**: Canonical scene-inheritance
+  policy defining the three-layer asymmetry (objects canonical-by-id with no
+  extends; protocols spec-shaped with no template layer; scenes shallow-extends
+  with closed four-operation mutation surface). Establishes one-level depth
+  maximum per protocol scene file, base-scene residence in `content/scenes/`,
+  protocol-scene location under `content/protocols/<name>/scenes/`, and the four
+  named operations (`add_placements`, `reposition_placements`,
+  `deactivate_placements`, `remove_placements`). Includes the promotion rule: a
+  base scene moves into `content/scenes/` when expected to serve multiple
+  protocols or represents a stable workspace contract.
+- **`docs/active_plans/scene_inheritance_migration.md` (new)**: Deferred
+  content-side migration stub owning the folder-layout reshape, base-scene
+  extraction, conversion of per-protocol `scene.yaml` files to `extends:` form,
+  static scene-graph validator, and supporting-pipeline updates. Identifies six
+  seed base scenes (bench_basic, hood_basic, plate_reader_basic,
+  microscope_workspace_basic, well_plate_workspace_basic,
+  centrifuge_workspace_basic) and current migration candidates.
 
 ### Behavior or Interface Changes
+- **Scene-inheritance policy ratified; five dependent specs updated**: Ratified
+  the three-layer scene-inheritance model in
+  [specs/SCENE_INHERITANCE.md](specs/SCENE_INHERITANCE.md) with one-level depth,
+  four named mutation operations, and a promotion rule. Updated five dependent
+  spec docs: [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) (Inheritance
+  section with four-operation schema), [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)
+  (no-extends subsection), [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)
+  (no-template subsection), [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md)
+  (seven anti-drift smell classes), and [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md)
+  (Deactivated placements section). All five docs remain backward-compatible with
+  current code; migration is deferred to the scene-inheritance migration plan.
 - **Self-contained spec cleanup**: Stripped temporary-plan citations
   (RD-N codes, M0..M3 milestone references, WP-* work-package codes),
   archive/active_plans links, and `current-code` / `target-state` /
@@ -436,6 +464,36 @@
   scene transition is the scene-id state change); no new RD. Only
   `CursorAttach` and `TimedWait` required new RDs (RD-16 and RD-17
   respectively).
+- **RD-18 (scene inheritance is three-layer asymmetric)**: Objects are
+  canonical-by-id with no extends and no template-object layer; protocols are
+  spec-shaped with no template-protocol layer; scenes use shallow one-level
+  extends with a closed four-operation mutation surface. This asymmetry reflects
+  semantic differences: objects are identity-bearing stateful entities; protocols
+  are pedagogical workflows with their own learning contract; scenes are layout
+  containers for shared workspaces. The bounded-inheritance rule prevents
+  template-object proliferation, template-protocol duplication, and multi-level
+  scene-inheritance chains. See SCENE_INHERITANCE.md.
+- **RD-19 (one-level scene inheritance per protocol scene file)**:
+  Scene inheritance is strictly one level with no chains (base -> protocol).
+  No scene may extend a protocol scene, and no scene may extend a scene that
+  already extends another scene. Depth = 1 per protocol scene file; multi-scene
+  protocols allowed (each protocol scene file extends its own base
+  independently). Cycles, multi-level chains, and unknown bases are build
+  errors.
+- **RD-20 (four named mutation operations, no generic overrides)**: Scene
+  inheritance supports exactly four mutation operations on inherited placements:
+  `add_placements`, `reposition_placements`, `deactivate_placements`,
+  `remove_placements`. These are named explicit operations, not a generic
+  `overrides:` block. Unknown operations are build errors. A protocol scene may
+  not override any other field.
+- **RD-21 (scene-inheritance promotion rule)**: A base scene moves from a
+  protocol's internal scenes into `content/scenes/` when it is expected to serve
+  multiple protocols OR when it represents a stable workspace contract shared
+  across the curriculum. Seed workspace bases (bench_basic, hood_basic,
+  plate_reader_basic, microscope_workspace_basic, well_plate_workspace_basic,
+  centrifuge_workspace_basic) are promoted to `content/scenes/` and established
+  as stable workspace context. Authoring convenience alone does not trigger
+  promotion.
 - **Deliberate reopen of just-closed `PROTOCOL_VOCABULARY.md`**: The
   M4-closed protocol vocabulary was reopened intentionally for the
   narrow `SvgSwap` / `ColorChange` / `LiquidDisplayChange`

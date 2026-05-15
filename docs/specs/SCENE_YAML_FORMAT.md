@@ -242,6 +242,42 @@ placements:
       anchor_y: bottom
 ```
 
+## Inheritance
+
+Scenes support shallow inheritance for stable workspace context. Protocol
+scenes may extend a single base scene and apply four named operations to
+inherited placements. For the complete inheritance rule, constraints, and
+worked examples, see [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md).
+
+The five inheritance keys are:
+
+- `extends` -- base scene id (required in an extending scene)
+- `add_placements` -- new placements declared by the protocol scene
+- `reposition_placements` -- reposition inherited placements by placement_id
+- `deactivate_placements` -- deactivate inherited placements by placement_id
+- `remove_placements` -- remove inherited placements by placement_id
+
+Base placements must declare a stable `placement_id` so that mutation
+operations can select them reliably.
+
+Example protocol scene extending a base:
+
+```yaml
+scene_id: hood_flask_prep_hood_setup
+extends: hood_basic
+add_placements:
+  - placement_id: flask_center
+    object_id: t25_flask
+    zone: center
+reposition_placements:
+  - placement_id: hood_waste_container
+    zone: rear_right_far
+deactivate_placements:
+  - placement_id: hood_ethanol_bottle
+remove_placements:
+  - placement_id: hood_optional_water_bath
+```
+
 ## Layout rules
 
 The optional `layout_rules` block carries scene-wide hints the layout

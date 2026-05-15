@@ -316,6 +316,113 @@ Rule:
 - Default severity for this category: `blocker` in canonical vocabulary
   docs.
 
+### 17. Copy-paste scene example becomes the canonical form
+
+Flag: scene examples in docs that look like full copies of base or previous
+protocol scenes, used as "starter templates" for new scenes, without explicit
+`extends:` declarations.
+
+Rule:
+
+- Scene examples must show inheritance syntax (`extends:`, `add_placements`,
+  `reposition_placements`, `deactivate_placements`, `remove_placements`) to
+  prevent author copy-paste duplication and silent forking.
+- When a scene should reuse another scene's workspace, the inheriting scene
+  must declare `extends:` and only the four named operations.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the full rule.
+- Default severity: `high`.
+
+### 18. Scene inheritance chain longer than one level
+
+Flag: scenes where the inheritance graph is not strictly one level.
+
+Rule:
+
+- Base scenes (`content/scenes/*.yaml`) must extend nothing.
+- Protocol scenes (`content/protocols/<name>/scenes/*.yaml`) must extend
+  exactly one base scene.
+- No scene may extend a protocol scene.
+- No scene may extend a scene that already extends another scene.
+- Cycles and multi-level chains are build errors.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the full rule.
+- Default severity: `high`.
+
+### 19. Scene introduces a fifth mutation operation or a generic overrides block
+
+Flag: protocol scene files that define mutation operations beyond the four
+canonical named operations, or that include generic escape-hatch blocks
+like `overrides:`, `patch:`, or `metadata:`.
+
+Rule:
+
+- Scene inheritance has exactly four named mutation operations:
+  `add_placements`, `reposition_placements`, `deactivate_placements`,
+  `remove_placements`.
+- There is no `overrides:` block, no `patch:` block, no generic `metadata`
+  that carries inherited-field mutations.
+- New operations require a ratified spec edit.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the full rule.
+- Default severity: `high`.
+
+### 20. Scene operation targets a locked field
+
+Flag: scene mutation operations that attempt to change locked fields.
+
+Rule:
+
+- Mutation operations may not change fields locked by the base scene
+  (workspace, background, bounds, zones, layout_rules, capabilities,
+  object identity, label, state_fields, render_map).
+- `reposition_placements` may change only: `zone`, `position`, `depth`,
+  `anchor`.
+- `add_placements` may declare only placement fields; not object identity,
+  state, label, capabilities, or render fields.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the complete field
+  inheritance table.
+- Default severity: `high`.
+
+### 21. Base placement missing placement_id
+
+Flag: placements in a base scene that do not declare a `placement_id`.
+
+Rule:
+
+- Every placement in a base scene must carry a stable `placement_id`.
+- The `placement_id` is the canonical selector for all mutation operations
+  (`reposition_placements`, `deactivate_placements`, `remove_placements`).
+- Selection by object id is rejected because a base scene may carry several
+  placements of the same object.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for the full rule.
+- Default severity: `high`.
+
+### 22. Object schema introduces an extends field
+
+Flag: `OBJECT_VOCABULARY.md` or `OBJECT_YAML_FORMAT.md` text that permits
+objects to declare an `extends:` field or to inherit from template objects.
+
+Rule:
+
+- Objects are canonical-by-id with no `extends` and no template-object layer.
+- If an object differs meaningfully from an existing one, mint a new id.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) asymmetry rationale and
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
+- Default severity: `high`.
+
+### 23. Protocol schema introduces an extends field
+
+Flag: `PROTOCOL_VOCABULARY.md` or `PROTOCOL_YAML_FORMAT.md` text that permits
+protocols to declare an `extends:` field or to inherit from template protocols.
+
+Rule:
+
+- Protocols are spec-shaped with no template-protocol layer.
+- Similarity comes from the shared `learning -> steps -> sequence ->
+  interaction -> response` structure, not from templates.
+- Cross-protocol reuse is via `sequence_runner` composition.
+- See [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) asymmetry rationale and
+  [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+- Default severity: `high`.
+
 ## Smell-class quick reference
 
 | Class | Detector keyword set | Rule |
@@ -337,6 +444,13 @@ Rule:
 | Overpowered setter | multi-field or nested writes without schema | declared fields + primitive types only |
 | Example as spec | example field absent from schema | add to schema or remove from example |
 | Primitive names appearance | Display/Show/Render/Color/Swap/Animate in primitive name; "spinner"/"progress bar"/"tint"/"fill height" in reason text | test: does this primitive change semantic simulation state, or merely describe appearance? If merely appearance, move to render layer |
+| Copy-paste scene example becomes canonical form | scene "template" copy-pasted without `extends:` | use `extends:` and four named operations only |
+| Scene inheritance chain longer than one level | base extends base, protocol extends protocol, multi-level depth | strictly one level: base extends nothing, protocol extends one base |
+| Scene introduces a fifth mutation operation or generic overrides block | undefined operation names, `overrides:`, `patch:`, generic `metadata:` | four operations only: add, reposition, deactivate, remove |
+| Scene operation targets a locked field | operation changes workspace, background, bounds, zones, layout_rules, capabilities, object fields | only changeable via four operations; some fields locked |
+| Base placement missing placement_id | placement without `placement_id` in base scene | every base placement must declare stable `placement_id` |
+| Object schema introduces an extends field | `extends:` on objects, template-object layer | objects canonical-by-id, no `extends`, mint new id if different |
+| Protocol schema introduces an extends field | `extends:` on protocols, template-protocol layer | spec-shaped protocols, no templates, reuse via `sequence_runner` |
 
 ## Sweep agent deliverable
 

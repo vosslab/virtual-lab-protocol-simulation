@@ -1,0 +1,65 @@
+# Plan stub: scene inheritance migration
+
+Status: deferred. Owner: TBD. Depends on: validator landing.
+
+## Context
+
+The scene-inheritance policy was ratified in [../specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md) on 2026-05-15. The policy defines a one-level inheritance model where base scenes live in `content/scenes/` and protocol scenes live in `content/protocols/<name>/scenes/` and extend base scenes using the four named operations: `add_placements`, `reposition_placements`, `deactivate_placements`, and `remove_placements`.
+
+This migration plan owns the content-side work to reshape the folder layout, extract base scenes, convert per-protocol `scene.yaml` files to the `extends:` form, implement the static scene-graph validator, and update supporting pipelines.
+
+## Current per-protocol scene.yaml files
+
+The following files exist under `content/*/scene.yaml` and will be migrated:
+
+```
+content/plate_drug_treatment/scene.yaml
+```
+
+## Seed base scenes
+
+These base scenes are named as stable workspace contracts per the promotion rule in [../specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md):
+
+- `bench_basic`
+- `hood_basic`
+- `plate_reader_basic`
+- `microscope_workspace_basic`
+- `well_plate_workspace_basic`
+- `centrifuge_workspace_basic`
+
+Seed base scenes will be promoted to `content/scenes/` and established as the stable workspace context shared across multiple protocols.
+
+## Target folder layout
+
+The migration produces this folder layout:
+
+```
+content/objects/<id>.yaml
+content/scenes/{bench_basic,hood_basic,plate_reader_basic,...}.yaml
+content/protocols/<name>/protocol.yaml
+content/protocols/<name>/scenes/<scene_id>.yaml
+content/protocols/<name>/reagents.yaml
+```
+
+Each protocol may declare multiple protocol scene files under `content/protocols/<name>/scenes/`. Each scene file extends exactly one base scene.
+
+## Deferred work
+
+This plan will own the following work once it activates (gated on the validator landing):
+
+- Extract object definitions from per-protocol `items.yaml` and `scene.yaml` files into `content/objects/`.
+- Establish and promote base scenes from `content/scenes/` as stable workspace context.
+- Convert every per-protocol `scene.yaml` file into `content/protocols/<name>/scenes/*.yaml` with `extends:` declarations.
+- Implement the static scene-graph validator that enforces the one-level inheritance rule, closed schema, field inheritance table, and four named operations.
+- Update the scene loader in `src/scene_runtime/` and the asset pipeline to consume the new layout.
+- Update Playwright walkthroughs and asset pipelines to work with the new structure.
+
+## Status
+
+Migration is DEFERRED, gated on the static scene-graph validator landing. The ratified policy is published; content and code changes await validator implementation and integration. Until the migration lands, current per-protocol `scene.yaml` files remain valid; the spec describes the target contract, not the current state.
+
+## Cross-references
+
+- [../specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md) -- the ratified scene-inheritance policy.
+- [content_yaml_migration_plan.md](content_yaml_migration_plan.md) -- sibling plan for migrating all YAML content to the three-vocabulary model.
+- [typescript_migration_plan.md](typescript_migration_plan.md) -- follow-on plan for updating TypeScript runtime and tooling.

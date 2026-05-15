@@ -517,6 +517,20 @@ protocol, that no existing primitive or composition expresses. The
 cheap layer is cheap precisely because it cannot smuggle in
 expensive behavior.
 
+## No template-protocol layer
+
+Protocols are spec-shaped, not template-based. Protocols do not use
+`extends`, and cross-protocol reuse is not via template inheritance.
+Similarity across protocols comes from the shared `learning -> steps ->
+sequence -> interaction -> response` structure itself, not from
+copied templates. When reusing an entire protocol as part of a larger
+pathway, use the `sequence_runner` composition form already specified
+in [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md). Reopening this design
+decision (for example, adding protocol-level `extends`) is a separate
+ratified decision, not an implicit extension point. See the asymmetry
+rationale in [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md) for why
+protocols, objects, and scenes differ in this regard.
+
 ## The validator and state model
 
 There are two validation scopes: the per-gesture interaction
