@@ -8,7 +8,7 @@
 
 **Tech Stack:** TypeScript (single-file browser build via `cell_culture_game.html` script concatenation), CSS, Playwright for visual verification.
 
-**Spec:** [docs/superpowers/specs/2026-04-09-scene-layout-engine-design.md](../specs/2026-04-09-scene-layout-engine-design.md)
+**Spec:** [2026-04-09-scene-layout-engine-design.md](2026-04-09-scene-layout-engine-design.md)
 
 ---
 

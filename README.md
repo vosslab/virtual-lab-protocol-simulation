@@ -20,7 +20,7 @@ modern browser to play.
 - [docs/INSTALL.md](docs/INSTALL.md): prerequisites and setup
 - [docs/USAGE.md](docs/USAGE.md): how to build and play
 - [docs/CODE_ARCHITECTURE.md](docs/CODE_ARCHITECTURE.md): system design and data flow
-- [docs/PROTOCOL_AUTHORING_GUIDE.md](docs/PROTOCOL_AUTHORING_GUIDE.md): how to author a new protocol (worked example)
+- [docs/specs/PROTOCOL_AUTHORING_GUIDE.md](docs/specs/PROTOCOL_AUTHORING_GUIDE.md): how to author a new protocol (worked example)
 - [docs/FILE_STRUCTURE.md](docs/FILE_STRUCTURE.md): directory map and file purposes
 - [docs/CHANGELOG.md](docs/CHANGELOG.md): record of changes
 - [docs/AUTHORS.md](docs/AUTHORS.md): maintainers and contributors

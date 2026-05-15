@@ -23,9 +23,11 @@ Related references:
   `items.yaml`, `reagents.yaml`, and `protocol.yaml`.
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md): the step model and runtime
   resolution.
-- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md): the `target_groups` schema
-  the scene side owns.
-- [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
+- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md): the scene placement schema.
+- [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md): canonical object terms
+  (`state_fields`, `render_map`, structured surfaces and subparts) the
+  protocol's `target` names resolve against.
+- [../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md): the YAML-driven UI walker
   (canonical real-UI regression test).
 
 ## Terminology
@@ -55,8 +57,8 @@ smaller workflow. Every mini-protocol must define a `learning` block with
 required fields `objectives`, `outcomes`, and `goals`, and an `entry` block
 that declares the initial scene and first step. Larger protocols may be
 assembled from mini-protocols (a sequence runner), or a protocol may be a
-developer smoke protocol. See [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) for the
-hierarchy and [PRIMARY_SPEC.md](PRIMARY_SPEC.md) for the schema.
+developer smoke protocol. See [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) for the
+hierarchy and [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the schema.
 
 A Python builder reads these files, validates them, and emits TypeScript
 modules that the browser bundle imports. No YAML is parsed at runtime.
@@ -105,9 +107,12 @@ a `scene`, and (for everything except `virtual` and `none` scenes) an
 `target`.
 
 `reagents.yaml` declares every liquid the protocol references. Each reagent
-has a `label`, a `colorKey`, and a `displayColor`. A reagent id is what a
-`LiquidDisplayChange` `scene_operation` names as its `liquid`. Note: `colorKey`
-is a legacy field listed in the retired-terms table of
+has a `label`, a `colorKey`, and a `displayColor`. Per RD-13 of the
+scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+a reagent id is what an `ObjectStateChange` `scene_operation` writes into
+an object's flat declared `liquid_id` (or `held_liquid_id`) `state_field`.
+Note: `colorKey` is a legacy field listed in the retired-terms table of
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md), slated for removal by the
 code-migration plan.
 
@@ -146,11 +151,11 @@ multi-gesture case:
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
+          - type: ObjectStateChange
             target: serological_pipette
-            liquid: pbs
-            volume_ml: 4
-            operation: hold
+            state:
+              held_liquid_id: pbs
+              held_liquid_volume: 4
         feedback:
           correct: PBS loaded.
           incorrect: Use the PBS bottle.
@@ -159,22 +164,22 @@ multi-gesture case:
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
+          - type: ObjectStateChange
             target: serological_pipette
-            liquid: pbs
-            volume_ml: 0
-            operation: set
-          - type: LiquidDisplayChange
+            state:
+              held_liquid_id: null
+              held_liquid_volume: 0
+          - type: ObjectStateChange
             target: flask
-            liquid: pbs
-            volume_ml: 4
-            operation: add
+            state:
+              liquid_id: pbs
+              liquid_volume: 4
   step_validator:
     preset: final_state_matches
     target: flask
     contains:
-      liquid: pbs
-      volume_ml: 4
+      liquid_id: pbs
+      liquid_volume: 4
   outcome:
     on_success: complete
     on_failure: retry
@@ -193,12 +198,13 @@ adjust` and the `target_with_value` validator preset, never as a plain
   sequence:
     - target: serological_pipette
       gesture: adjust
-      validator: { preset: target_with_value, value: { volume_ml: 4 } }
+      validator: { preset: target_with_value, value: { set_volume: 4 } }
       response:
         scene_operations:
-          - type: SetPointDisplayChange
+          - type: ObjectStateChange
             target: serological_pipette
-            value: { volume_ml: 4 }
+            state:
+              set_volume: 4
   step_validator: { preset: sequence_complete }
   outcome:
     on_success: complete
@@ -232,14 +238,24 @@ validated by `correct_choice`:
 `scene_operations` may be an empty list here; a correct choice can be
 `feedback`-only.
 
-### A grouped-target step
+### A subpart-targeting step
 
-The protocol YAML is geometry-free. A step that treats a row of wells
-writes one semantic `target` name; the scene YAML owns the named group:
+The protocol YAML is geometry-free: it names no plate, no well, no row,
+no x/y. Subparts of a structured object (wells, lanes, slots) are declared
+by the object via `structure.subparts` (see
+[OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). A protocol addresses a
+single subpart as `<object_id>.<subpart_id>` (for example
+`treatment_plate.A1`).
+
+Per RD-9 of the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+named groups are deferred from this vocabulary pass: a step that acts on
+several subparts emits one interaction per subpart. Worked example for two
+wells in row B:
 
 ```yaml
 - name: add_media_row_b
-  prompt: "Add 100 uL media to every well in row B."
+  prompt: "Add 100 uL media to wells B1 and B2."
   sequence:
     - target: serological_pipette
       gesture: click
@@ -249,39 +265,38 @@ writes one semantic `target` name; the scene YAML owns the named group:
           - type: CursorAttach
             target: serological_pipette
             operation: attach
-    - target: media_bottle
+    - target: treatment_plate.B1
       gesture: click
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
-            target: serological_pipette
-            liquid: media
-            volume_ml: 0.7
-            operation: hold
-    - target: row_b
+          - type: ObjectStateChange
+            target: treatment_plate.B1
+            state:
+              liquid_id: media
+              liquid_volume: 100
+    - target: treatment_plate.B2
       gesture: click
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
-            target: row_b
-            liquid: media
-            volume_ml: 0.1
-            operation: add
+          - type: ObjectStateChange
+            target: treatment_plate.B2
+            state:
+              liquid_id: media
+              liquid_volume: 100
   step_validator:
     preset: final_state_matches
-    target: row_b
-    contains: { liquid: media }
+    target: treatment_plate.B2
+    contains: { liquid_id: media }
   outcome:
     on_success: complete
     on_failure: retry
   next_step: add_media_row_c
 ```
 
-The scene YAML defines `row_b` in its `target_groups` block; the protocol
-never lists a well or a coordinate. See the `target_groups` schema in
-[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md).
+When real authoring pain from per-subpart enumeration appears, named
+groups may be revisited as a separate vocabulary addition.
 
 ## Domain verbs: authoring shorthand only
 
@@ -306,7 +321,9 @@ is stable.
 ### Interaction-level domain verb: `draw`
 
 `draw` is shorthand for one interaction -- one `target`, one `gesture`, one
-`validator`, one `response`. "Draw 4 mL PBS into the pipette" expands to:
+`validator`, one `response`. "Draw 4 mL PBS into the pipette" expands to
+an `ObjectStateChange` writing the pipette's flat declared liquid fields
+(per RD-13):
 
 ```yaml
 - target: pbs_bottle
@@ -314,11 +331,11 @@ is stable.
   validator: { preset: correct_target }
   response:
     scene_operations:
-      - type: LiquidDisplayChange
+      - type: ObjectStateChange
         target: serological_pipette
-        liquid: pbs
-        volume_ml: 4
-        operation: hold
+        state:
+          held_liquid_id: pbs
+          held_liquid_volume: 4
 ```
 
 ### Step-level domain verb: `wash`
@@ -326,9 +343,11 @@ is stable.
 `wash` is shorthand for a whole `sequence` plus its `step_validator`. "Wash
 the flask with 4 mL PBS" expands to the three-interaction `pbs_wash` step
 shown in "A worked step" above: pick up the pipette (`CursorAttach`), draw
-the PBS (`LiquidDisplayChange` `hold`), dispense into the flask
-(`LiquidDisplayChange` `set` then `add`), checked by a
-`final_state_matches` `step_validator`.
+the PBS (`ObjectStateChange` writing `held_liquid_id` and
+`held_liquid_volume`), dispense into the flask (`ObjectStateChange`
+clearing the pipette's `held_liquid_*` fields and writing the flask's
+`liquid_id` and `liquid_volume`), checked by a `final_state_matches`
+`step_validator`.
 
 When you write a protocol, think in domain verbs, then write the expanded
 slots. The expansion is the verb's definition; there is nothing to a domain
@@ -365,8 +384,9 @@ Run through this checklist for every step you write.
   uses `select`; a scene-object action uses `click`. Do not collapse a
   skill into a rote `click`.
 - **Targets are semantic and geometry-free.** Write a semantic `target`
-  name; never write a well coordinate, a row range, or an x/y. Grouped
-  targets are named groups owned by the scene YAML.
+  name; never write a well coordinate, a row range, or an x/y. A subpart
+  of a structured object is written as `<object_id>.<subpart_id>` (per
+  RD-9, named groups are deferred; emit one interaction per subpart).
 - **Validators are named presets.** Every `validator` and `step_validator`
   is a preset from the documented library, with that preset's typed
   parameters. Never write free-form validation logic.
@@ -378,8 +398,10 @@ Run through this checklist for every step you write.
 - **Flow is named.** `next_step` names the next step by its `name`, or is
   `null` for a terminal step. `entry_step` names the first step.
 - **Referenced items and reagents exist.** Every interaction `target`
-  resolves to a declared item or a named group; every `LiquidDisplayChange`
-  `liquid` exists in `reagents.yaml`.
+  resolves to a declared item or a declared subpart of a structured object;
+  every reagent id written by an `ObjectStateChange` into a flat liquid
+  `state_field` (`liquid_id`, `held_liquid_id`) exists in `reagents.yaml`
+  (per RD-13).
 - **No retired vocabulary.** Do not use `completionPath`, the four-`kind`
   taxonomy, `plateTargets`, `tubeTargets`, `stateChange`, `completionEvent`,
   `nextId`, the overloaded `action`, or "click target". The full retired
@@ -404,7 +426,7 @@ cross-file rules; the walker plays the protocol through the real DOM.
 Run Python tooling through the repo environment: `source source_me.sh && python3 ...`.
 
 The build and walk commands and their exact flags are documented in
-[WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md). When the protocol audits
+[../WALKTHROUGH_GUIDE.md](../WALKTHROUGH_GUIDE.md). When the protocol audits
 clean, validates, builds, and walks green, it is shippable -- but a
 mini-protocol is not complete until the visible interaction works through
 the same path a student uses.

@@ -4,7 +4,7 @@ This document is the technical specification for the virtual lab protocol games 
 
 ## Target-state vs current-code
 
-The normative protocol schema in this document is the ratified two-level protocol interaction model: `protocol` / `step` / `interaction` / `response`. That model is canonical in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md). It is **target-state**: the model is ratified, but the runtime, validator, walker, and shipped YAML do not implement it yet. The follow-on code-migration plan changes the runtime to match.
+The normative protocol schema in this document is the ratified two-level protocol interaction model: `protocol` / `step` / `interaction` / `response`. That model is canonical in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md). It is **target-state**: the model is ratified, but the runtime, validator, walker, and shipped YAML do not implement it yet. The follow-on code-migration plan changes the runtime to match.
 
 Sections describing the schema below are **target-state** unless a passage is explicitly labeled **current-code**. A current-code note describes what the runtime implements today and exists only to keep the gap between the designed spec and the running code explicit. A reader must never be misled into thinking a target-state section describes the code as it runs now.
 
@@ -49,14 +49,14 @@ steps:
 
 A `protocol` carries `name`, `entry_step`, and `steps`. Each `step` carries `name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
 
-**Current-code:** the running schema instead uses an `entry` block (`entry.scene`, `entry.step`), `step.id`, `step.scene`, a `completionPath` block with a `kind` discriminator, and `nextId`. Those fields are the legacy schema the follow-on code-migration plan removes; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+**Current-code:** the running schema instead uses an `entry` block (`entry.scene`, `entry.step`), `step.id`, `step.scene`, a `completionPath` block with a `kind` discriminator, and `nextId`. Those fields are the legacy schema the follow-on code-migration plan removes; see the retired-terms table in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md).
 
 ## Entry step
 
 The `entry_step` field declares where protocol flow starts.
 
 - `entry_step` is the `name` of the first step the runtime runs. Flow starts there and follows `next_step` from step to step.
-- The scene a protocol opens in is not a protocol-level field. The protocol vocabulary is geometry-free and scene-free at the flow level; a step's interactions name semantic `target` objects, and the scene adapter resolves those names. A `SceneChange` scene operation in a step's `response` transitions the scene context. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
+- The scene a protocol opens in is not a protocol-level field. The protocol vocabulary is geometry-free and scene-free at the flow level; a step's interactions name semantic `target` objects, and the scene adapter resolves those names. A `SceneChange` scene operation in a step's `response` transitions the scene context. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md).
 
 Validation rules:
 
@@ -98,7 +98,7 @@ A `gesture` is how the student acts on a target. The value set is closed: `click
 
 ### Scene operations
 
-A `response` holds `scene_operations` (an ordered, possibly empty list of typed primitives) and optional `feedback`. There are eight ratified `scene_operation` primitives, named with PascalCase `type` values: `SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`, `SetPointDisplayChange`, `TimedWait`. They describe how the scene changes in response to a validated interaction. The set is closed but extensible under the cost guardrail in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+A `response` holds `scene_operations` (an ordered, possibly empty list of typed primitives) and optional `feedback`. There are five ratified `scene_operation` primitives, named with PascalCase `type` values: `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`. They describe how the scene changes in response to a validated interaction. The set is closed but extensible under the cost guardrail in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). Per RD-3, RD-13, and RD-14 in [docs/archive/scene_object_split_plan.md](archive/scene_object_split_plan.md), `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and `SetPointDisplayChange` are reclassified to the object/render layer (invoked by an object's `render_map`) and `ObjectStateChange` is the sole protocol primitive that mutates declared object state, including liquid fields (`liquid_id`, `liquid_volume`, `liquid_color`, and the corresponding `held_liquid_id` / `held_liquid_volume` on tools) and set-point fields (`set_volume`, `set_temperature`, `set_rpm`, etc.).
 
 ### Validators and outcome
 
@@ -106,17 +106,17 @@ Every `validator` and every `step_validator` is a named preset with typed parame
 
 The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a step name or from per-protocol special cases.
 
-**Current-code:** the running schema instead gives every step exactly one `completionPath` with a `kind` discriminator (`interactionSequence`, `directTool`, `modal`, `multipleChoice`), and the walker, validator, and runtime dispatch from `completionPath.kind`. That taxonomy is legacy schema the code-migration plan removes; see the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+**Current-code:** the running schema instead gives every step exactly one `completionPath` with a `kind` discriminator (`interactionSequence`, `directTool`, `modal`, `multipleChoice`), and the walker, validator, and runtime dispatch from `completionPath.kind`. That taxonomy is legacy schema the code-migration plan removes; see the retired-terms table in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md).
 
 ## Targets and the scene boundary
 
-A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object; targets that fan out to several scene objects are named groups declared in the scene YAML `target_groups` block. See [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) for the scene side of this boundary.
+A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object; targets that fan out to several scene objects are named groups declared in the scene YAML `target_groups` block. See [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) for the scene side of this boundary.
 
 ## Events
 
 Events are emitted by the runtime on a state transition, not hand-authored per step. The runtime emits a `<step_name>_complete` event when a step's `step_validator` passes, and a `<equipment_name>_elapsed` event when a timed phase ends. Event names are snake_case and derived from the `name` of the thing they report; an author who renames a step renames its completion event with it.
 
-**Current-code:** the running schema authors a `completionEvent` inside `completionPath` and the build step synthesizes a `completionTrigger` listener from `step.scene` plus that `completionEvent`, requiring a matching runtime emitter. It also derives a `usedItems` set from the step's `completionPath`. `completionEvent`, `completionTrigger`, and `usedItems` are legacy fields; in the target-state model item summaries are derived from the `sequence`'s `target` slots and completion events are runtime-derived. See the retired-terms table in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+**Current-code:** the running schema authors a `completionEvent` inside `completionPath` and the build step synthesizes a `completionTrigger` listener from `step.scene` plus that `completionEvent`, requiring a matching runtime emitter. It also derives a `usedItems` set from the step's `completionPath`. `completionEvent`, `completionTrigger`, and `usedItems` are legacy fields; in the target-state model item summaries are derived from the `sequence`'s `target` slots and completion events are runtime-derived. See the retired-terms table in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md).
 
 ## Sequence runners
 

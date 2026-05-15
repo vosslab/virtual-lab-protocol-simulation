@@ -14,11 +14,11 @@ interaction vocabulary plan (WP-DOC-C1).
 
 The ratified vocabulary is the input to this plan:
 
-- [docs/PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md) - the ratified
+- [../specs/PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md) - the ratified
   two-level `protocol -> step -> interaction -> response` model.
-- [docs/SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md) - the ratified scene-side
+- [../specs/SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md) - the ratified scene-side
   vocabulary, including the adapter registry and `target_groups`.
-- [docs/active_plans/unified_interaction_vocabulary_design.md](unified_interaction_vocabulary_design.md)
+- [docs/archive/unified_interaction_vocabulary_design.md](../archive/unified_interaction_vocabulary_design.md)
   - the M2 design doc with the full slot definitions, the eight
   `scene_operation` primitives, and the named-preset validators.
 

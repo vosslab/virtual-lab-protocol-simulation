@@ -150,6 +150,11 @@ authoring surface declares them.
 The 8 primitives named in the plan, with their current layer per
 `docs/PROTOCOL_VOCABULARY.md`.
 
+Note: This table reflects the M3 ratification snapshot. Subsequent RD-13
+and RD-14 reclassified `LiquidDisplayChange` and `SetPointDisplayChange`
+to the object/render layer. See [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md)
+for the post-RD authoritative primitive list.
+
 | # | Primitive | Current layer | Notes |
 | --- | --- | --- | --- |
 | 1 | SvgSwap | protocol-level (target) | Currently documented as a `scene_operation`. Plan brainstorm and RD-3 conclude it is render-level and belongs in the object/render layer. |
@@ -379,6 +384,11 @@ applied to a named group (`target=<object_id>.<group_name>` per WP-PROTO1's
 typed fields) sets the same `state_field` value on every member subpart
 through the same `render_map` entry. No state value escapes into a
 scene-side group declaration. RD-4 cross-check: passed.
+
+Note: RD-9 supersedes the named-groups portion of RD-4. The cross-check
+passes only on RD-4's "subparts belong to the object, not the scene"
+rule. Named groups are deferred per RD-9; canonical OBJECT_VOCABULARY.md
+follows the RD-9 supersession (no `target_groups`).
 
 ### Gap entries handed to WP-RAT-A1
 

@@ -1,6 +1,6 @@
 # Pipette Liquid Fill Convention
 
-Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
 ## Target-state vs current-code
 
@@ -8,11 +8,19 @@ This doc is largely **current-code**: it describes the SVG asset structure,
 the color map, and the runtime rendering path as they ship today. The
 runtime liquid state it shows (`gameState.heldLiquid` with its `volumeMl`
 and `colorKey` fields) is the legacy runtime shape. In the target-state
-protocol vocabulary, a liquid change is expressed by a `LiquidDisplayChange`
-`scene_operation` inside an interaction's `response`, with `volume_ml` and
-`liquid` typed fields; see
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Migrating the runtime
-liquid state to that model is the follow-on code-migration plan's job; the
+model, liquid is not a composite typed field on a single primitive; per
+RD-11 of the scene-object split plan
+([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)),
+state-field types are flat primitives only (`enum`, `int`, `float`,
+`bool`). A liquid change is expressed as an `ObjectStateChange`
+`scene_operation` (per [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md))
+that writes the object's flat liquid `state_fields`: `liquid_id` (enum),
+`liquid_volume` (float, unit=ul or ml depending on the object), and
+optional `liquid_color` (enum) -- or, for a tool that carries liquid,
+`held_liquid_id` and `held_liquid_volume`. The object's `render_map`
+(per [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)) resolves those state
+values to the visible asset and color. Migrating the runtime liquid state
+to flat `state_fields` is the follow-on code-migration plan's job; the
 SVG and color conventions below are unaffected by that migration.
 
 ## Overview
@@ -85,9 +93,12 @@ The function:
 ## Game State Integration
 
 Status: **current-code.** The runtime liquid state below is the legacy
-shape; the target-state model expresses the same change as a
-`LiquidDisplayChange` `scene_operation` (see
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)).
+shape; per RD-11 the target-state model writes flat liquid `state_fields`
+(`held_liquid_id`, `held_liquid_volume` for tools; `liquid_id`,
+`liquid_volume`, optional `liquid_color` for vessels) via an
+`ObjectStateChange` `scene_operation` (see
+[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and
+[specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)).
 
 When a pipette is loaded with liquid via `resolveInteraction`, the state change populates:
 

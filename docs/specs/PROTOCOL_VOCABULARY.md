@@ -11,7 +11,7 @@ are not used.
 
 This doc encodes a designed vocabulary the runtime does not yet
 implement. That is intentional. The plan that produced this doc
-([active_plans/unified_interaction_vocabulary_plan.md](active_plans/unified_interaction_vocabulary_plan.md))
+([../archive/unified_interaction_vocabulary_plan.md](../archive/unified_interaction_vocabulary_plan.md))
 ratified a unified, scene-agnostic protocol interaction model in
 milestones M2 and M3, then promoted it into this canonical doc in
 milestone M4. The follow-on code-migration plan changes the runtime
@@ -20,9 +20,11 @@ to match.
 Every section below is labeled:
 
 - **target-state** -- describes the designed vocabulary. The model
-  is ratified (M3 mapped 120 real protocol steps with no model
+  is ratified (M3 mapped every current protocol step with no model
   revision forced), but the runtime, validator, walker, and
-  shipped YAML do not implement it yet.
+  shipped YAML do not implement it yet. Per RD-5 of the
+  scene-object split plan, the exact step count lives in the M3
+  inventory and design artifacts rather than in this canonical doc.
 - **current-code** -- describes what the runtime implements today.
 
 If a section is not labeled current-code, treat it as target-state.
@@ -30,9 +32,9 @@ A reader must never be misled into thinking a target-state section
 describes the code as it runs now.
 
 The full M2 model is the source of truth for this doc:
-[active_plans/unified_interaction_vocabulary_design.md](active_plans/unified_interaction_vocabulary_design.md).
+[../archive/unified_interaction_vocabulary_design.md](../archive/unified_interaction_vocabulary_design.md).
 The M3 ratification evidence is in
-[active_plans/protocol_interaction_inventory.md](active_plans/protocol_interaction_inventory.md).
+[../archive/protocol_interaction_inventory.md](../archive/protocol_interaction_inventory.md).
 
 Related docs:
 
@@ -42,7 +44,7 @@ Related docs:
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) -- the scene-side
   vocabulary; the scene-vs-protocol boundary section below
   cross-references it.
-- [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md)
+- [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md)
 
 ## The two-level model
 
@@ -194,7 +196,7 @@ Status: **target-state.**
 - **All authored names are snake_case.** The step `name`, the
   protocol `name`, `entry_step` targets, and `next_step` targets
   are always snake_case. Every YAML key and every authored
-  identifier value is snake_case. The only exception is the eight
+  identifier value is snake_case. The only exception is the six
   `scene_operation` primitive type names, which stay PascalCase
   because they are class-like type names used as the value of the
   `type` field.
@@ -344,11 +346,11 @@ response:
     - type: CursorAttach
       target: serological_pipette
       operation: attach
-    - type: LiquidDisplayChange
+    - type: ObjectStateChange
       target: serological_pipette
-      operation: hold
-      liquid: pbs
-      volume_ml: 4
+      state:
+        held_liquid_id: pbs
+        held_liquid_volume: 4
   feedback:
     correct: PBS loaded.
     incorrect: Use the PBS bottle.
@@ -399,53 +401,117 @@ runtime guarantees across every scene. `scene_operation` primitives
 learner acts with a `gesture` on a `target`; the `scene_operation`
 is what the scene does in response.
 
-### The eight ratified primitives
+### The five ratified primitives
 
-Eight `scene_operation` primitives are ratified for the initial
-vocabulary. Each is named with its typed fields. The full
-durable-primitive specification for each -- the value types, the
-state it may read and change, the visual effect, the anti-patterns,
-and how domain verbs build on it -- lives in the M2 design doc, in
-the "Scene operation primitives" section of
-[active_plans/unified_interaction_vocabulary_design.md](active_plans/unified_interaction_vocabulary_design.md).
+Five `scene_operation` primitives are ratified at the protocol
+level. Each is named with its typed fields. The full durable-primitive
+specification for each -- the value types, the state it may read and
+change, the visual effect, the anti-patterns, and how domain verbs
+build on it -- lives in the M2 design doc, in the "Scene operation
+primitives" section of
+[../archive/unified_interaction_vocabulary_design.md](../archive/unified_interaction_vocabulary_design.md),
+as updated by the protocol-side touch in
+[../archive/scene_object_split_design.md](../archive/scene_object_split_design.md).
 A future canonical scene-operation spec under `docs/` will carry
 the same detail.
 
+An earlier revision of this section listed a larger set. Per RD-3
+of the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+`SvgSwap` and `ColorChange` are reclassified out of the protocol-level
+set into the object/render layer. Per RD-13, `LiquidDisplayChange` is
+reclassified the same way: it named a display result rather than the
+semantic state change, and the object's `render_map` already resolves
+declared liquid `state_fields` to a fill height, tint, and asset.
+Per RD-14, `SetPointDisplayChange` is reclassified the same way: it
+named a display result (a numeric overlay) instead of the semantic
+state change, and the object's `render_map` resolves declared
+set-point `state_fields` (`set_volume`, `set_temperature`,
+`set_rpm`, etc. per RD-11) to the digit overlay or display visual.
+The protocol stays semantic and never names an SVG asset id, a color
+value, a liquid display update, or a set-point display update. See
+[OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). The semantic primitive
+that supersedes all four at the protocol level is `ObjectStateChange`,
+which writes the flat declared liquid fields (`liquid_id`,
+`liquid_volume`, `liquid_color` for vessels and wells; corresponding
+`held_liquid_id` / `held_liquid_volume` for tools) and the flat
+declared set-point fields (`set_volume`, `set_temperature`,
+`set_rpm`, etc.).
+
 | Primitive | Typed fields | One-line meaning |
 | --- | --- | --- |
-| `SvgSwap` | `type`, `target`, `from_asset`, `to_asset` | Replaces one SVG asset on a target with another. |
-| `ColorChange` | `type`, `target`, `property`, `color_key` | Changes a fill or stroke color on a target. |
-| `CursorAttach` | `type`, `target`, `operation` (`attach` or `detach`) | Attaches a target to the cursor, or detaches it. |
-| `SceneChange` | `type`, `to_scene` | Transitions the scene context to another scene. |
-| `LayoutMove` | `type`, `target`, `to_slot` | Moves or re-lays-out a scene object via the layout engine. |
-| `LiquidDisplayChange` | `type`, `target`, `liquid`, `volume_ml`, `operation` (`hold`, `set`, or `add`) | Updates a tracked liquid: appears, volume changes, or well contents update. |
-| `SetPointDisplayChange` | `type`, `target`, `value` (a mapping, for example `{ volume_ml: 4 }`) | Updates an adjustable set-point shown on a configured display target. |
-| `TimedWait` | `type`, `target`, `duration_min`, `display` | Runs a timed phase on a piece of equipment, with a visible progress display. |
+| `ObjectStateChange` | `type`, `target`, `state` (a flat mapping of `state_field` name to primitive value, per RD-8), optional `transition` (`instant` or `animated`) | Semantic state change: sets one or more declared `state_fields` on a target object or subpart. The object's `render_map` resolves the new state to a visual; the protocol does not name the visual. Per RD-9, named groups are deferred; emit one `ObjectStateChange` per subpart. Per RD-13, this is the sole protocol primitive for liquid state mutation; write the flat declared liquid fields and let the object's `render_map` resolve the visual. Per RD-15, this primitive changes what the simulation IS (declared state), not how it LOOKS. |
+| `CursorAttach` | `type`, `target`, `operation` (`attach` or `detach`) | Semantic state change: per RD-16, sets the runtime's held-material state -- "the learner is now holding this object instance" (`attach`) or "the learner is no longer holding it" (`detach`). It must not be read as "draw the object under the cursor"; the cursor-follow visual is rendered by the scene / object-render layer in response to the held-material state change. Per RD-15, this primitive changes what the simulation IS (held material), not how it LOOKS. |
+| `SceneChange` | `type`, `to_scene` | Semantic state change: transitions the runtime's active scene id to another scene. The protocol names which scene; the scene-runtime renders the transition. Per RD-15, this primitive changes what the simulation IS (the active scene), not how it LOOKS. |
+| `LayoutMove` | `type`, `target`, `to_slot` (and optional `to_scene` for cross-scene transitions) | Semantic placement change: per RD-10, moves an existing placement only. Two valid uses: (a) reposition within the current scene (the layout engine handles row-to-row moves); (b) cross-scene transition (remove the placement from one scene and add it to another, e.g., a pipette moving from hood to bench, or a protocol with two bench areas). Per RD-15, the protocol names what moves and where; it must not encode animation timing, pixel coordinates, layout rules, or visual motion. The layout engine owns the visible motion. |
+| `TimedWait` | `type`, `target`, `duration_min`, `display` | Semantic state change: per RD-17, advances the runtime's equipment-state for the named target -- the timed phase starts and then elapses. It must not be read as "show a spinner" or "render a progress bar"; the visible progress display is owned by the object's `render_map` over the equipment's declared timed-phase state. The protocol names what equipment, for how long, and what timed condition is satisfied; the object / render layer renders the display. The `display` field is an authoring hint to the render layer about display style, not a protocol-side appearance knob and never an SVG asset id. Per RD-15, this primitive changes what the simulation IS (the equipment's timed phase), not how it LOOKS. |
 
-`ColorChange`, `LiquidDisplayChange`, and `SetPointDisplayChange`
-form a loose conceptual display-change family -- each names a
-visible display update on a target without swapping the asset or
-moving the object. This is a clarifying note only; the eight
-primitives stay a flat set, not a nested taxonomy.
+Per RD-13 and RD-14, the liquid display path and the set-point display
+path both moved to the object's `render_map`; there is no longer a
+display-change family at the protocol level.
 
-### `LiquidDisplayChange` operations
+### `ObjectStateChange` is the semantic state-mutation primitive
 
-`LiquidDisplayChange` is first-class because it tracks a liquid
-quantity and well-contents state, not just an image. Its
-`operation` field has three values:
+`ObjectStateChange` is the only protocol primitive that writes into
+declared object `state_fields`. The protocol names a `target` (an
+object id, or a subpart reference such as `treatment_plate.A1`) and
+a `state` mapping of `state_field` name to value. Per RD-9 of the
+scene-object split plan, named groups are deferred; a protocol that
+acts on several subparts emits one `ObjectStateChange` per subpart.
+The object's `render_map` resolves the new state value to a visual
+asset; the protocol never names an SVG asset id and never names a
+color value.
 
-- `hold` -- tool-carried contents: the target (a tool) now carries
-  `volume_ml` of `liquid`. Drawing into a held tool uses `hold`.
-- `set` -- directly assigns the target's content to exactly
-  `volume_ml` of `liquid`, regardless of what it held before.
-  Emptying a tool or vessel is `set` with `volume_ml: 0`.
-- `add` -- a destination transfer: `volume_ml` of `liquid` is added
-  into a destination vessel on top of whatever it already holds.
+Per RD-8, `ObjectStateChange` is flat-field-only: it targets a
+declared `state_field` by name and provides a value matching that
+field's primitive type (per RD-11: `enum`, `int`, `float`, or
+`bool`). Nested writes are not allowed. The validator rejects unknown
+field names and type-mismatched values. Example payload (well A1
+receives 100 ul of PBS):
+
+```yaml
+- type: ObjectStateChange
+  target: treatment_plate.A1
+  state:
+    liquid_id: pbs
+    liquid_volume: 100
+    liquid_color: clear
+```
+
+The earlier nested form `state: { held_liquid: { reagent: pbs,
+volume: 100 } }` is not valid. See
+[OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) for the `state_fields`
+schema and the `render_map` resolution rule.
+
+### Liquid state mutation uses `ObjectStateChange`
+
+Per RD-13, liquid state mutation is expressed through
+`ObjectStateChange` against the object's flat declared liquid fields.
+Tools and vessels declare those fields directly (typically
+`liquid_id`, `liquid_volume`, and `liquid_color` for vessels and
+wells; `held_liquid_id` and `held_liquid_volume` for tools). The
+`render_map` resolves the new field values to a fill height, tint,
+and asset.
+
+The legacy `LiquidDisplayChange` `operation` axis (`hold`, `set`,
+`add`) does not survive the reclassification. Each former operation
+maps to a flat-field write:
+
+- `hold` (a tool drawing liquid) -- write the tool's
+  `held_liquid_id` and `held_liquid_volume` to the new values.
+- `set` (assigning a target's contents directly, including emptying
+  with `volume_ml: 0`) -- write the target's `liquid_id` to the new
+  reagent (or `null` / the empty enum value) and `liquid_volume` to
+  the new value.
+- `add` (a destination receiving a transfer on top of existing
+  contents) -- emit one `ObjectStateChange` for the new total. The
+  protocol computes the resulting volume; the object owns no
+  add-versus-set distinction at the render layer.
 
 ### The set is closed but extensible
 
-The eight primitives are a closed but extensible set, governed by
-the cost guardrail below. A ninth `scene_operation` primitive is
+The five primitives are a closed but extensible set, governed by
+the cost guardrail below. A sixth `scene_operation` primitive is
 **not** part of the ratified vocabulary. M3 ratification surfaced
 one recurring shape that crossed the cost-guardrail evidence bar --
 instrument-produced data (a cell count, an absorbance value, a gel
@@ -655,7 +721,7 @@ state; every state change is written by a `response`.
 | set-point values | The current value of a continuous control (a pipette volume, a power-supply voltage, a titration pH). |
 | equipment state | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. |
 | phase state | A multi-phase result the student must resolve (a centrifuged tube holding an aqueous and an organic phase). |
-| object appearance | The current asset id, color, and layout slot of each scene object. |
+| object appearance | Decomposed per RD-3 and RD-11: the asset id and color shown for each object are render-layer outputs of the object's `render_map` over its declared `state_fields` (per [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)); the layout slot of each scene object stays scene-level placement. The protocol writes declared `state_fields` (via `ObjectStateChange`) and writes layout slots (via `LayoutMove`); it never names an asset id or a color. |
 
 This state is named and non-positional, the same as `target`: the
 runtime tracks it by name. The scene adapter renders it; the
@@ -666,13 +732,10 @@ changes:
 
 | Primitive | Runtime state it changes |
 | --- | --- |
-| `SvgSwap` | object appearance -- the target's asset id. |
-| `ColorChange` | object appearance -- the target's named color property. |
+| `ObjectStateChange` | declared object `state_fields` -- the named, typed state variables an object owns; the object's `render_map` resolves the value to a visual. |
 | `CursorAttach` | held material -- the cursor-attachment state of the target. |
 | `SceneChange` | the active scene id. |
 | `LayoutMove` | object appearance -- the target's layout slot. |
-| `LiquidDisplayChange` | held material and target contents -- the tracked liquid identity and volume on the target. |
-| `SetPointDisplayChange` | set-point values -- the current value of a continuous control. |
 | `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
 
 This model supersedes the hand-authored `stateChange` block of the
@@ -758,35 +821,39 @@ Two consequences follow:
 | interaction | `validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
 | interaction | `response` | shared | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
 
-### Target resolution: adapter registry plus named groups
+### Target resolution: adapter registry plus explicit subparts
 
 How a protocol `target` resolves to a concrete scene object is the
-adapter-registry plus named-groups mechanism:
+adapter-registry plus explicit-subpart mechanism:
 
 - **The adapter registry maps a `target` name to a scene object.**
   The scene adapter holds a registry that maps each semantic
   `target` name the protocol uses to a concrete scene object. The
   protocol writes `target: flask`; the adapter's registry resolves
   `flask` to the scene's flask object.
-- **Grouped targets are named groups defined in the scene YAML.** A
-  row of wells, a tube rack, a set of gel lanes -- any target that
-  fans out to several scene objects -- is a named group declared in
-  the scene YAML. The protocol writes one semantic group name, for
-  example `target: row_b`. The scene YAML defines `row_b` as the
-  list of scene objects it expands to. All group membership and all
-  target expansion live on the scene side.
+- **Grouped targets are listed explicitly per RD-9.** Per RD-9 of
+  the scene-object split plan, named groups (`target_groups`) are
+  deferred from the initial vocabulary. A protocol that needs to
+  act on several subparts -- a row of wells, a tube column, a set
+  of gel lanes -- emits one interaction per subpart, addressing
+  each as `<object_id>.<subpart_id>` (for example
+  `treatment_plate.A1`). The object's `id_pattern` (defined in
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) is the only naming
+  contract.
 - **The protocol vocabulary stays geometry-free.** No ranges, no
-  plate structure, no well coordinates in protocol YAML.
+  plate structure, no well coordinates in protocol YAML; only
+  semantic object ids and subpart ids drawn from the object's
+  declared `id_pattern`.
 
-This named-group mechanism is what replaces `plate target` and
+This explicit-subpart pattern is what replaces `plate target` and
 `tube target`. Those fields pushed plate and tube geometry into the
-protocol vocabulary; the named-group mechanism pulls it back to the
-scene side where it belongs.
+protocol vocabulary; per RD-9, group expansion is deferred and the
+protocol lists each addressable subpart by name.
 
-Worked example -- which file owns which:
+Worked example -- which file owns which (RD-9; RD-11; RD-8):
 
 ```yaml
-# protocol YAML -- names a semantic target, no geometry
+# protocol YAML -- names semantic targets and flat-primitive state, no geometry
 - name: add_media_row_b
   prompt: "Add 100 uL media to every well in row B."
   sequence:
@@ -803,40 +870,38 @@ Worked example -- which file owns which:
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
+          - type: ObjectStateChange
             target: serological_pipette
-            liquid: media
-            volume_ml: 0.7
-            operation: hold
-    - target: row_b
+            state:
+              held_liquid_id: media
+              held_liquid_volume: 1.2
+    # Per RD-9, the protocol lists each well in row B explicitly.
+    # The pattern below repeats once per well B1..B12, dispensing
+    # 0.1 mL into each. Twelve interactions are abbreviated for brevity.
+    - target: treatment_plate.B1
       gesture: click
       validator: { preset: correct_target }
       response:
         scene_operations:
-          - type: LiquidDisplayChange
-            target: row_b
-            liquid: media
-            volume_ml: 0.1
-            operation: add
+          - type: ObjectStateChange
+            target: treatment_plate.B1
+            state:
+              liquid_id: media
+              liquid_volume: 100
   step_validator:
     preset: final_state_matches
-    target: row_b
-    contains: { liquid: media }
+    target: treatment_plate.B1
+    contains: { liquid_id: media, liquid_volume: 100 }
   outcome:
     on_success: complete
     on_failure: retry
   next_step: add_media_row_c
 ```
 
-```yaml
-# scene YAML -- defines the named group; owns the geometry
-target_groups:
-  row_b: [well_b1, well_b2, well_b3, well_b4, well_b5, well_b6,
-          well_b7, well_b8, well_b9, well_b10, well_b11, well_b12]
-```
-
-The protocol YAML writes `target: row_b` and never lists a well or
-a coordinate. The scene YAML owns `row_b`.
+The protocol YAML writes one interaction per subpart and never lists
+a well coordinate or a row range. The object's `id_pattern` resolves
+each `treatment_plate.<subpart_id>` reference; the scene YAML owns
+where the plate is placed but never names subparts.
 
 ### The "click target" / `ClickTarget` collision
 
@@ -849,10 +914,10 @@ The resolution:
   uses `target` for that concept and retires "click target"
   entirely. "Click target" was a UI/DOM-level phrase that never
   belonged in the protocol vocabulary.
-- **`scene object` is the scene-side term.** A `scene object` is
-  the concrete, geometry-bearing thing the adapter registry
-  resolves a `target` name to. It is the scene-side term, canonical
-  in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
+- **`placement` is the scene-side term.** A `placement` is the
+  concrete, geometry-bearing thing the adapter registry
+  resolves a `target` name to. It is the scene-side authoring unit,
+  canonical in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 - **`ClickTarget` is scoped to one narrow runtime type.**
   `ClickTarget` stays as the name of the specific `{itemId}` driver
   payload it denotes in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md)
@@ -860,9 +925,9 @@ The resolution:
   concept.
 
 The single canonical split: a protocol names a **`target`**; the
-scene adapter resolves that name to a **`scene object`** (or a
-named group of scene objects). This doc encodes the protocol-side
-half. The scene-side half -- `scene object` and the narrow
+scene adapter resolves that name to a **`placement`** (or a
+named group of placements). This doc encodes the protocol-side
+half. The scene-side half -- `placement` and the narrow
 `ClickTarget` runtime type -- is owned by
 [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 
@@ -895,13 +960,14 @@ protocol:
           gesture: click
           validator: { preset: correct_target }
           response:
-            # 4 mL PBS is drawn into the held pipette
+            # 4 mL PBS is drawn into the held pipette; flat liquid
+            # state_fields per RD-3, RD-8, RD-11.
             scene_operations:
-              - type: LiquidDisplayChange
+              - type: ObjectStateChange
                 target: serological_pipette
-                liquid: pbs
-                volume_ml: 4
-                operation: hold
+                state:
+                  held_liquid_id: pbs
+                  held_liquid_volume: 4
             feedback:
               correct: PBS loaded.
               incorrect: Use the PBS bottle.
@@ -909,24 +975,25 @@ protocol:
           gesture: click
           validator: { preset: correct_target }
           response:
-            # the PBS is dispensed from the pipette into the flask
+            # the PBS is dispensed from the pipette into the flask;
+            # each side updates its own flat state_fields.
             scene_operations:
-              - type: LiquidDisplayChange
+              - type: ObjectStateChange
                 target: serological_pipette
-                liquid: pbs
-                volume_ml: 0
-                operation: set
-              - type: LiquidDisplayChange
+                state:
+                  held_liquid_id: null
+                  held_liquid_volume: 0
+              - type: ObjectStateChange
                 target: flask
-                liquid: pbs
-                volume_ml: 4
-                operation: add
+                state:
+                  liquid_id: pbs
+                  liquid_volume: 4
       step_validator:
         preset: final_state_matches
         target: flask
         contains:
-          liquid: pbs
-          volume_ml: 4
+          liquid_id: pbs
+          liquid_volume: 4
       outcome:
         on_success: complete
         on_failure: retry
@@ -968,7 +1035,7 @@ Status: **target-state.**
 | **Validator** | A named preset that checks one gesture on one target. | `interaction.validator` |
 | **Step validator** | A named preset that checks whole-step completion. | `step.step_validator` |
 | **Response** | The container for post-validation system behavior: `scene_operations` and optional `feedback`. | `interaction.response` |
-| **Scene operation** | One of the eight ratified typed primitives describing how the scene changes. | `response.scene_operations[]` |
+| **Scene operation** | One of the five ratified typed primitives describing how the scene changes. | `response.scene_operations[]` |
 | **Outcome** | The `{on_success, on_failure}` mapping that says how the step resolves. | `step.outcome` |
 | **Domain verb** | An author-facing named composition over the two-level model. Expands to existing slots. | authoring shorthand; expands to `step`/`interaction` slots |
 
@@ -982,7 +1049,7 @@ model structure.
 | Term | Definition |
 | --- | --- |
 | **Reagent** | A substance defined in the protocol's reagent data. |
-| **Liquid** | A reagent currently being moved, held, or tracked, named in a `LiquidDisplayChange`. |
+| **Liquid** | A reagent currently being moved, held, or tracked. Per RD-13, named in an `ObjectStateChange` writing the object's flat declared liquid fields (for example `liquid_id` / `held_liquid_id`). |
 | **Stock solution** | The highest-concentration reagent supplied in a bottle or vial at the start of the protocol. Never used directly on cells; diluted first. |
 | **Intermediate dilution** | A temporary tube of solution prepared by diluting a stock solution down toward a usable working concentration. |
 | **Working solution** | The final, ready-to-dose dilution delivered into a vessel at the protocol-specified volume. |
@@ -1038,6 +1105,34 @@ no `completionPath` and no `kind` discriminator in the new model.
 | `modal` (as a `kind`) | a `step` whose interactions carry a `SceneChange` or `feedback`-only `response` | a retired `kind` value |
 | `multipleChoice` (as a `kind`) | a `step` with a `select`-gesture interaction validated by `correct_choice` | a retired `kind` value |
 
+### Reclassified `scene_operation` primitives (render-layer mechanisms)
+
+Per RD-3, RD-13, and RD-14 of the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
+`SetPointDisplayChange` are not protocol-level `scene_operation`
+primitives. They are render-layer mechanisms named by the object's
+`render_map`
+([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). The protocol stays
+semantic and never names an SVG asset id, a color value, a liquid
+display update, or a set-point display update; the semantic superseder
+at the protocol level is `ObjectStateChange`, which writes the
+object's flat declared `state_fields` (including the flat liquid
+fields `liquid_id`, `liquid_volume`, `liquid_color`, and the
+corresponding tool-side `held_liquid_id` / `held_liquid_volume`, and
+the flat set-point fields `set_volume`, `set_temperature`, `set_rpm`,
+etc.). A single future exception is reserved for a
+colorimetric-reading primitive whose own slot is named when the first
+such mini-protocol is authored; that future primitive is not generic
+`ColorChange`.
+
+| Reclassified | Use instead | Reason |
+| --- | --- | --- |
+| `SvgSwap` (as a protocol `scene_operation`) | `ObjectStateChange` against a declared `state_field`; the object's `render_map` resolves the SVG asset | render-layer mechanism named by the object's `render_map`, not a protocol semantic primitive |
+| `ColorChange` (as a protocol `scene_operation`) | `ObjectStateChange` against a declared `state_field`; the object's `render_map` resolves the color | render-layer mechanism named by the object's `render_map`, not a protocol semantic primitive (RD-3) |
+| `LiquidDisplayChange` (as a protocol `scene_operation`) | `ObjectStateChange` against the object's flat declared liquid fields (`liquid_id`, `liquid_volume`, `liquid_color`; `held_liquid_id`, `held_liquid_volume`); the object's `render_map` resolves the visual | reclassified to the object/render layer per RD-13. Protocol mutates liquid via `ObjectStateChange` against flat fields; the object `render_map` resolves how liquid appears. Named the display result instead of the semantic state change, the same drift as `SvgSwap` and `ColorChange`. The legacy `operation` axis (`hold`, `set`, `add`) is replaced by direct flat-field writes. |
+| `SetPointDisplayChange` (as a protocol `scene_operation`) | `ObjectStateChange` against the object's flat declared set-point fields (`set_volume`, `set_temperature`, `set_rpm`, etc. per RD-11); the object's `render_map` resolves the digit overlay or display visual | reclassified to the object/render layer per RD-14. Protocol mutates set-point state via `ObjectStateChange` against flat numeric fields; the object `render_map` resolves how the set-point appears. Named the display result (a numeric overlay) instead of the semantic state change, the same drift as `SvgSwap`, `ColorChange`, and `LiquidDisplayChange`. The legacy `value` mapping (for example `{ volume_ml: 4 }`) is replaced by direct flat-field writes. |
+
 ### Retired overloaded and legacy field terms
 
 | Retired | Use instead | Reason |
@@ -1045,29 +1140,37 @@ no `completionPath` and no `kind` discriminator in the new model.
 | `action` (bare, overloaded) | `gesture` (learner input), `scene_operation` (scene change), or `validator` (the correctness check) | the overloaded legacy term that confused learner input with scene response |
 | `mode` | the `gesture` slot | the second axis in the retired `target + mode + action` model; the ratified model uses the `gesture` slot instead (`click`, `drag`, `adjust`, `select`, `type`), and the old `dial` mode value is now the `adjust` gesture |
 | "click target" | **`target`** (protocol side) / **`scene object`** (scene side) | a UI/DOM-level phrase that never belonged in the protocol vocabulary |
-| `stateChange` / `heldLiquid` / `consumesVolumeMl` / `colorKey` | a `LiquidDisplayChange` `scene_operation` in a `response` | hand-authored camelCase state blocks; state change is now explicit in a `scene_operation` mutation only |
+| `stateChange` / `heldLiquid` / `consumesVolumeMl` / `colorKey` | an `ObjectStateChange` `scene_operation` writing the object's flat declared liquid `state_fields` (per RD-13) | hand-authored camelCase state blocks; state change is now explicit in a `scene_operation` mutation only |
 | `completionEvent` (authored, no naming convention) | the runtime-derived `<step_name>_complete` / `<equipment_name>_elapsed` event | events are derived by the runtime, not hand-authored, and follow one snake_case convention |
 | `completionTrigger` (authored) | the runtime-derived completion event | derived, not authored |
 | `nextId` | **`next_step`** | a numeric-style camelCase flow field; flow is named, snake_case |
-| `volumeMl` (on a `click` interaction) | `volume_ml` inside a `LiquidDisplayChange`, or a `target_with_value` set-point | a camelCase legacy field; also the timed-click regression when used to skip an `adjust` gesture |
+| `volumeMl` (on a `click` interaction) | the object's flat `liquid_volume` (or `held_liquid_volume`) `state_field` written via `ObjectStateChange` (per RD-13), or a `target_with_value` set-point | a camelCase legacy field; also the timed-click regression when used to skip an `adjust` gesture |
 | `targetItems` / `usedItems` / `requiredItems` | derived from the `sequence`'s `target` slots | legacy step-level item summaries; not authored vocabulary in the new model |
 
 All authored YAML keys and identifier values are snake_case. The
-only PascalCase in the vocabulary is the eight `scene_operation`
-type names (`SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
-`LayoutMove`, `LiquidDisplayChange`, `SetPointDisplayChange`,
-`TimedWait`). Legacy camelCase terms appear only in this table and
-in migration notes, never in a target-state example.
+only PascalCase in the vocabulary is the five `scene_operation`
+type names (`ObjectStateChange`, `CursorAttach`, `SceneChange`,
+`LayoutMove`, `TimedWait`). The retired
+primitive type names `SvgSwap`, `ColorChange`, `LiquidDisplayChange`,
+and `SetPointDisplayChange` appear only in the retired-terms table
+above; they are object/render-layer mechanisms named by the object's
+`render_map` ([OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) and are
+no longer
+protocol-level `scene_operation` primitives. Legacy camelCase terms
+appear only in this table and in migration notes, never in a
+target-state example.
 
 ## Status
 
 Status: **current-code** (this section).
 
 This doc is **target-state**. The vocabulary it encodes is
-ratified -- M3 mapped 120 real protocol steps (OVCAR8, four source
-protocols, seven shipped content files) to the two-level model with
-no model revision forced -- but the runtime, validator, walker, and
-shipped YAML do not implement it yet.
+ratified -- M3 mapped every current protocol step (OVCAR8, every
+current source protocol, every current shipped content file) to the
+two-level model with no model revision forced -- but the runtime,
+validator, walker, and shipped YAML do not implement it yet. Per
+RD-5 of the scene-object split plan, exact counts live in the M3
+inventory and design artifacts rather than in this canonical doc.
 
 The current runtime still uses the legacy vocabulary: `completionPath`
 with its four-`kind` discriminator, hand-authored `stateChange`

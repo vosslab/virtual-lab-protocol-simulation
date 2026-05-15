@@ -32,7 +32,7 @@ The flow sketch is the design source for:
 - screenshot checkpoints
 - transitions between steps
 
-The YAML should then encode that flow using the two-level protocol model: a `protocol` with an `entry_step` and `steps`, each `step` carrying an ordered `sequence` of interactions and a `next_step` that names the step that runs next. Each `interaction` is one `gesture` on one `target`, with its own `validator` and `response`. The protocol vocabulary treats a step as one pedagogical unit whose `sequence` is the ordered list of interactions that complete it, each interaction naming the scene object it acts on and the scene operations its `response` causes. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) for the canonical model.
+The YAML should then encode that flow using the two-level protocol model: a `protocol` with an `entry_step` and `steps`, each `step` carrying an ordered `sequence` of interactions and a `next_step` that names the step that runs next. Each `interaction` is one `gesture` on one `target`, with its own `validator` and `response`. The protocol vocabulary treats a step as one pedagogical unit whose `sequence` is the ordered list of interactions that complete it, each interaction naming the scene object it acts on and the scene operations its `response` causes. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) for the canonical model.
 
 ## Learning block
 
@@ -90,6 +90,53 @@ Curriculum content lives under `content/<protocol_name>/`. Developer smoke proto
 Legacy code that is retired during a refactor is archived at `archive/code/<name>_<YYYY_MM>/` at the repo root, not under `src/`. Keeping `src/` reserved for active source code prevents accidental imports of retired modules.
 
 The `legacy_` filename prefix is a temporary marker used during refactors. It signals that a helper file is on a deletion or relocation path before the refactor closes. After the refactor closes, no `legacy_*` files remain under active source.
+
+## Vocabulary closure and anti-drift
+
+Authoring vocabularies (protocol, object, scene, and the supporting
+subsystem vocabularies in [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md),
+[LIQUID_CONVENTION.md](LIQUID_CONVENTION.md), and
+[SVG_PIPELINE.md](SVG_PIPELINE.md)) are closed surfaces. Authors compose
+existing terms; they do not invent new ones by editing YAML alone.
+
+Permanent principles:
+
+- **Closure over openness.** Every container has a closed schema. Open
+  maps, free-form objects, `metadata` / `extras` / `params` blobs, and
+  `additionalProperties: true` are escape hatches. They permit
+  uncontrolled vocabulary growth and must be replaced by explicit fields
+  or marked deferred and excluded from current authoring.
+- **Flat primitives over nested blobs.** State fields are flat named
+  fields with primitive types (`enum`, `int`, `float`, `bool`).
+  Composition happens through multiple named fields, not nested objects.
+  Setter primitives may write only declared fields with values matching
+  the declared primitive type.
+- **Layer boundaries are strict.** Protocol = intent. Object =
+  representation and state. Scene = placement and layout. A lower layer
+  must not learn higher-layer meaning, and a higher layer must not name
+  lower-layer mechanisms (no SVG asset names in protocol; no behavior in
+  scene; no protocol sequencing in object).
+- **One canonical term per concept.** Synonyms across docs are shadow
+  vocabularies and must be retired with explicit pointers.
+- **Counts belong in inventories.** Canonical docs describe structure,
+  not snapshots. Phrases like "7 scenes" or "45 assets" age into lies;
+  use "every current X" and let the inventory artifact carry the count.
+- **Examples illustrate the schema; they do not extend it.** Every field
+  shown in an example must already appear in a schema table.
+- **Transitional wording belongs in migration docs.** "For now",
+  "currently", "legacy", "eventually" do not survive in canonical
+  vocabulary docs.
+- **New meaning requires a vocabulary edit.** Authors must not be able
+  to expand the vocabulary surface by editing YAML alone. Extension
+  points are explicit RFCs, not implicit support.
+
+These principles are operationalized as a sweep checklist with smell
+classes, severity labels, section-context tags, and past-pitfall
+references. The checklist is the reusable audit tool; it is invoked when
+auditing existing canonical docs or onboarding a new spec.
+
+See [SPEC_DESIGN_CHECKLIST.md](SPEC_DESIGN_CHECKLIST.md) for the full
+checklist.
 
 ## Sequence runners and friendly terminology
 

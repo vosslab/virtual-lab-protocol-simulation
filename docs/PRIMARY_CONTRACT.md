@@ -38,10 +38,10 @@ New contract items require user approval. Agents may not add, remove, or edit co
 
 ## Related references
 
-- [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) explains how scenes are wired and run at runtime.
-- [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) defines canonical scene-system terms.
-- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) defines scene YAML schema.
-- [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) explains how to author protocols.
-- [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) describes canonical protocol step behavior.
-- [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) defines canonical protocol terms.
-- [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) defines protocol YAML schema.
+- [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) explains how scenes are wired and run at runtime.
+- [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) defines canonical scene-system terms.
+- [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) defines scene YAML schema.
+- [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) explains how to author protocols.
+- [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) describes canonical protocol step behavior.
+- [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) defines canonical protocol terms.
+- [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md) defines protocol YAML schema.

@@ -27,10 +27,10 @@ against the current runtime. The current runtime and walker still dispatch
 on the retired `completionPath` schema (`completionPath.kind`,
 `interactionSequence` / `directTool` / `modal` / `multipleChoice`, `nextId`,
 `heldLiquid` -- see the retired-terms table in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). The target-state interaction model -- a `step` wrapping an
+[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)). The target-state interaction model -- a `step` wrapping an
 ordered `sequence` of four-slot `interaction` blocks, with `step_validator`,
 `outcome`, and `next_step` -- is defined in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Migrating the runtime and
+[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). Migrating the runtime and
 the walker to that model is the follow-on code-migration plan's job; until
 that lands, the walker dispatch and progress predicates documented below
 reflect the legacy schema, and that is the honest current state, not a
@@ -571,6 +571,6 @@ future coders are likely to hit.
 - [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md): Playwright conventions,
   headless default, and Codex-only Podman fallback.
 - [E2E_TESTS.md](E2E_TESTS.md): browser test placement and E2E conventions.
-- [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md): protocol
+- [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md): protocol
   authoring workflow and validation gates.
-- [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): protocol schema.
+- [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md): protocol schema.

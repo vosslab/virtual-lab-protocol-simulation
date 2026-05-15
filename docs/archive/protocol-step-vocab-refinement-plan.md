@@ -4,8 +4,8 @@
 > interaction vocabulary and uses earlier, abandoned framing. The final model
 > is the two-level `protocol -> step -> interaction -> response` spec. See
 > `unified_interaction_vocabulary_design.md`
-> and the canonical docs [PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md) and
-> [SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md). Kept for historical context only;
+> and the canonical docs [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md) and
+> [SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md). Kept for historical context only;
 > do not use it to guide new work.
 
 ## Context

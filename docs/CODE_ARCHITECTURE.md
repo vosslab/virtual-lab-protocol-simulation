@@ -1,6 +1,6 @@
 # Code architecture
 
-Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
 ## Overview
 
@@ -49,10 +49,13 @@ monolithic scene modules remain at `src/scenes/*.ts`. See the
 [Capability-based scene architecture](#capability-based-scene-architecture-current-state-2026-05-09)
 section below for the layered model and the per-adapter file map. Schema
 reference for the per-scene `<scene>.yaml` files lives in
-[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md); the deep-dive on driver,
+[specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md); the deep-dive on driver,
 registry, adapters, and capabilities lives in
-[SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md), and the canonical terms
-in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
+[specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md), the canonical scene terms
+in [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md), and the canonical object
+terms (state_fields, render_map, structured surfaces and subparts) in
+[specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
+[specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md).
 
 #### Step modules
 
@@ -73,7 +76,7 @@ emitter via `triggerStep(stepId)`.
 The modules below describe the **current-code** runtime, which still uses
 the retired `completionPath` schema. The target-state two-level model --
 `sequence`, `step_validator`, `outcome`, `next_step` -- is defined in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md); migrating these modules to
+[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md); migrating these modules to
 it is the follow-on code-migration plan's job.
 
 - [src/interaction_resolver.ts](../src/interaction_resolver.ts) - Resolves
@@ -284,7 +287,7 @@ Results scene -> calculateScore() -> star rating
 ## Game protocol
 
 For authoring a new protocol from scratch, see
-[PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md). The active
+[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). The active
 protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
 + metformin MTT workflow). Tutorial protocols (`tutorial_bench_direct`,
 `tutorial_cell_counter`, `tutorial_drug_dilution`, `tutorial_hood_transfer`,
@@ -295,8 +298,8 @@ exercises.
 In the target-state model, each step wraps an ordered `sequence` of
 `interaction` blocks, checked by a `step_validator`, resolved by an
 `outcome`, and linked by `next_step`; see
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and
-[PROTOCOL_STEPS.md](PROTOCOL_STEPS.md). The current runtime and walker
+[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and
+[specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md). The current runtime and walker
 still dispatch on the retired `completionPath` schema; that is migration
 debt the follow-on code-migration plan removes.
 
@@ -380,8 +383,8 @@ emitters populated by `triggerStep()` calls.
   `src/content/<protocol>/protocol.yaml`, add a `step` with its
   `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
   re-run [tools/build_protocol_data.py](../tools/build_protocol_data.py).
-  See [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) and
-  [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md). (The current
+  See [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) and
+  [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). (The current
   runtime still expects the retired `completionPath` schema; the
   code-migration plan switches it to the two-level model.)
 - **New scenes:** create a folder `src/scenes/<scene>/` with `<scene>.yaml`

@@ -59,8 +59,8 @@ TypeScript).
   `scene_operation` set into the object/render layer, and introduce
   `ObjectStateChange` as the semantic protocol primitive that sets declared
   object state.
-- Ratify the split by decomposing all 7 existing scene YAML files and all 45
-  `src/asset_specs.ts` entries into object definitions plus scene placements,
+- Ratify the split by decomposing every current scene YAML file and every
+  current `src/asset_specs.ts` entry into object definitions plus scene placements,
   with a coverage matrix and a residual-gap list.
 - Leave `docs/OBJECT_VOCABULARY.md`, `docs/OBJECT_YAML_FORMAT.md`,
   `docs/SCENE_VOCABULARY.md`, `docs/SCENE_YAML_FORMAT.md`, and the re-touched
@@ -85,9 +85,9 @@ that gap: first the content/scene YAML migration, then the TypeScript.
 ## Scope
 
 - Consolidate an evidence artifact: every object-identity field and every
-  placement field across the 7 scene YAML files, the 45 `src/asset_specs.ts`
+  placement field across current scene YAML files, every `src/asset_specs.ts`
   entries, the `items[]` sub-fields, the runtime liquid-state model, and the
-  8 ratified `scene_operation` primitives.
+  ratified `scene_operation` primitive set.
 - Design the `object` vocabulary in a working design doc: identity,
   structure/subparts (structured surfaces such as wells, lanes, tubes),
   `state_fields` schema, `render_map`, capabilities, and layout hints.
@@ -98,10 +98,10 @@ that gap: first the content/scene YAML migration, then the TypeScript.
   current scene-YAML key and item sub-field to exactly one vocabulary.
 - Design the protocol-side touch: `ObjectStateChange` as the semantic
   primitive, and the reclassification of `SvgSwap` and asset/overlay
-  selection into the object/render layer; re-partition the 8 `scene_operation`
-  primitives accordingly.
-- Ratify: decompose all 7 scene YAML files and all 45 `asset_specs.ts`
-  entries into object-def plus scene-placement; produce a coverage matrix and
+  selection into the object/render layer; re-partition the ratified
+  `scene_operation` primitive set accordingly.
+- Ratify: decompose every current scene YAML file and every current `asset_specs.ts`
+  entry into object-def plus scene-placement; produce a coverage matrix and
   a residual-gap list.
 - Create `docs/OBJECT_VOCABULARY.md` and `docs/OBJECT_YAML_FORMAT.md`.
 - Rewrite `docs/SCENE_VOCABULARY.md` and `docs/SCENE_YAML_FORMAT.md` to the
@@ -117,7 +117,7 @@ that gap: first the content/scene YAML migration, then the TypeScript.
 
 ## Non-goals
 
-- Migrating the 7 `src/scenes/*.yaml` files or
+- Migrating the current `src/scenes/*.yaml` files or
   `content/plate_drug_treatment/scene.yaml` to the new format -- that is the
   first follow-on plan, not this one.
 - Editing `src/asset_specs.ts`, `src/layout_engine.ts`, `src/scene_runtime/`,
@@ -125,7 +125,7 @@ that gap: first the content/scene YAML migration, then the TypeScript.
 - Building a scene-YAML or object-YAML loader, validator, or JSON schema --
   code work, deferred to the follow-on plans.
 - Editing `src/scenes/` -- frozen per the archived `SRC_SCENES_FREEZE.md`.
-- Implementing any of the 8 `scene_operation` primitives -- they remain
+- Implementing any of the the ratified `scene_operation` primitive set -- they remain
   target-state; this plan only re-partitions which layer owns each.
 - Reopening the settled protocol two-level step/interaction model -- the only
   protocol-doc edit is the `SvgSwap` reclassification and `ObjectStateChange`
@@ -137,7 +137,7 @@ that gap: first the content/scene YAML migration, then the TypeScript.
 
 What exists today (from the M1-feeding investigation):
 
-- 7 scene YAML files:
+- The current scene YAML files:
   `src/scenes/{bench,cell_culture_hood,incubator,microscope,plate_reader,well_plate_workspace}/*.yaml`
   plus `content/plate_drug_treatment/scene.yaml`. No JSON schema; validation
   is hardcoded in `tools/build_scene_data.py`.
@@ -150,7 +150,7 @@ What exists today (from the M1-feeding investigation):
   `inventoryRef` are object identity; `zone`, `depthTier`, `widthScale`,
   `anchorY`, `alignStop`, `depth`, `baselineOverride`, `shortLabel` are
   placement.
-- `src/asset_specs.ts` is the de-facto object-property store: 45 assets keyed
+- `src/asset_specs.ts` is the de-facto object-property store: every asset keyed
   by asset id, each with `defaultWidth`, `labelWidth`, `anchorYOffset`,
   `widthScale`. It is hand-maintained TypeScript, not authorable YAML.
 - No `OBJECT_VOCABULARY.md`, no object-definition YAML, no `state_fields` or
@@ -158,7 +158,7 @@ What exists today (from the M1-feeding investigation):
 - Runtime state is implicit: liquid state lives in
   `src/scene_runtime/types.ts` (`LiquidEntry`, `ContainerLiquid`,
   `LiquidState`), computed at runtime, never declared as schema on an object.
-- The 8 `scene_operation` primitives (`SvgSwap`, `ColorChange`,
+- The ratified `scene_operation` primitive set (`SvgSwap`, `ColorChange`,
   `CursorAttach`, `SceneChange`, `LayoutMove`, `LiquidDisplayChange`,
   `SetPointDisplayChange`, `TimedWait`) are all target-state in
   `docs/PROTOCOL_VOCABULARY.md`; none are implemented. `SvgSwap` is currently
@@ -178,7 +178,7 @@ What is broken / missing:
   semantic primitive set.
 
 Evidence base: the two M1-feeding exploration briefings (scene-doc structure;
-layout-engine + runtime + asset-specs structure), the 7 scene YAML files,
+layout-engine + runtime + asset-specs structure), the current scene YAML files,
 `src/asset_specs.ts`, `src/scene_runtime/contract.ts` and `types.ts`,
 `src/layout_engine.ts`, `tools/build_scene_data.py`, and the M4-closed
 `docs/PROTOCOL_VOCABULARY.md`.
@@ -222,8 +222,8 @@ authors is the plan's central deliverable.
 | M2 / WS-SCN | design doc -- cleaned scene vocabulary section | 1 |
 | M2 / WS-BND | design doc -- three-way boundary + per-key assignment | 1 |
 | M2 / WS-PROTO | design doc -- ObjectStateChange + SvgSwap reclassification | 1 |
-| M3 / WS-RAT-A | ratification: 7 scene YAML files decomposed | 1 |
-| M3 / WS-RAT-B | ratification: 45 asset_specs.ts entries to object defs | 1 |
+| M3 / WS-RAT-A | ratification: the current scene YAML files decomposed | 1 |
+| M3 / WS-RAT-B | ratification: every asset_specs.ts entry to object defs | 1 |
 | M3 / WS-RAT-C | ratification: runtime state model + scene_operation re-partition | 1 |
 | M4 / WS-DOC-OV | `docs/OBJECT_VOCABULARY.md` (new) | 1 to 2 |
 | M4 / WS-DOC-OY | `docs/OBJECT_YAML_FORMAT.md` (new) | 1 to 2 |
@@ -247,7 +247,7 @@ for one owner and one reviewable patch.
 - Exit criteria:
   - One committed artifact catalogs: every `items[]` sub-field across the 7
     scene YAML files, tagged object-identity vs placement; the 12 scene-YAML
-    top-level keys, tagged; all 45 `src/asset_specs.ts` entries with their
+    top-level keys, tagged; all every `src/asset_specs.ts` entry with their
     property names; the runtime liquid-state model
     (`LiquidEntry` / `ContainerLiquid` / `LiquidState`); and the 8
     `scene_operation` primitives with their current layer.
@@ -272,8 +272,10 @@ for one owner and one reviewable patch.
     (state value to visual asset, so the object owns the state-to-visual
     mapping and the protocol never names an asset), capabilities, and layout
     hints -- with a worked object example (a 96-well plate showing subparts
-    plus `state_fields`, and a serological pipette showing
-    `held_liquid` / `set_point` `state_fields`).
+    plus per-well flat-primitive `state_fields` such as `liquid_id`,
+    `liquid_volume`, `liquid_color` per RD-11, and a serological pipette
+    showing flat-primitive `state_fields` such as `set_volume`,
+    `held_liquid_id`, `held_liquid_volume` per RD-11).
   - The cleaned `scene` vocabulary is defined: how a scene references an
     object by id, how it places that object, zones and spatial arrangement;
     and an explicit list of every key and item sub-field that moves out of
@@ -284,7 +286,7 @@ for one owner and one reviewable patch.
   - The protocol-side touch is designed: `ObjectStateChange` is specified as
     the semantic primitive that sets declared object `state_fields`; `SvgSwap`
     and asset/overlay selection are reclassified as object/render-layer
-    mechanisms; the 8 `scene_operation` primitives are re-partitioned into
+    mechanisms; the ratified `scene_operation` primitive set is re-partitioned into
     protocol-level versus object/render-layer.
   - No "TBD" survives in any of those sections.
   - All design output lives in the working design doc; the canonical docs are
@@ -303,14 +305,14 @@ for one owner and one reviewable patch.
 - Workstreams: WS-RAT-A, WS-RAT-B, WS-RAT-C.
 - Entry criteria: M2 design doc complete.
 - Exit criteria:
-  - Every one of the 7 scene YAML files is decomposed on paper into an object
+  - Every one of the the current scene YAML files is decomposed on paper into an object
     set plus a scene-placement file, with each current key and sub-field
     landing in its assigned vocabulary (WS-RAT-A).
-  - All 45 `src/asset_specs.ts` entries are mapped to object definitions,
+  - All every `src/asset_specs.ts` entry are mapped to object definitions,
     showing where `defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale`
     land (object layout hints) and which assets need `state_fields` /
     `render_map` (WS-RAT-B).
-  - The runtime liquid-state model and the 8 `scene_operation` primitives are
+  - The runtime liquid-state model and the the ratified `scene_operation` primitive set are
     checked against the re-partition: every runtime state value maps to a
     declared `state_field`, and every primitive has a confirmed owning layer
     (WS-RAT-C).
@@ -370,7 +372,7 @@ for one owner and one reviewable patch.
 
 - Owner: planner.
 - Interfaces:
-  - Needs: the two M1-feeding exploration briefings; the 7 scene YAML files;
+  - Needs: the two M1-feeding exploration briefings; the the current scene YAML files;
     `src/asset_specs.ts`; `src/scene_runtime/contract.ts` and `types.ts`;
     `docs/PROTOCOL_VOCABULARY.md`.
   - Provides: the consolidated evidence artifact to all of M2.
@@ -414,16 +416,16 @@ for one owner and one reviewable patch.
     `scene_operation` ownership table to WS-RAT-C and WS-DOC-PV.
 - Expected patches: 1.
 
-### Workstream WS-RAT-A: Ratify the 7 scene YAML files
+### Workstream WS-RAT-A: Ratify the the current scene YAML files
 
 - Owner: reviewer.
 - Interfaces:
   - Needs: the M2 design doc.
-  - Provides: a decomposition matrix for the 7 scenes and the consolidated
+  - Provides: a decomposition matrix for the current scenes and the consolidated
     residual-gap list (this workstream owns the serial join).
 - Expected patches: 1.
 
-### Workstream WS-RAT-B: Ratify the 45 asset_specs.ts entries
+### Workstream WS-RAT-B: Ratify the every asset_specs.ts entry
 
 - Owner: reviewer.
 - Interfaces:
@@ -512,12 +514,12 @@ for one owner and one reviewable patch.
 - Touch points: `docs/active_plans/scene_object_split_inventory.md` (new).
 - Depends on: none.
 - Acceptance criteria:
-  - Catalogs every `items[]` sub-field across the 7 scene YAML files, each
+  - Catalogs every `items[]` sub-field across the current scene YAML files, each
     tagged object-identity or placement, with counts.
   - Catalogs the 12 scene-YAML top-level keys, each tagged.
-  - Lists all 45 `src/asset_specs.ts` entries with their four property names.
-  - Records the runtime liquid-state model and the 8 `scene_operation`
-    primitives with current layer.
+  - Lists every `src/asset_specs.ts` entry with their four property names.
+  - Records the runtime liquid-state model and the ratified `scene_operation`
+    primitive set with current layer.
   - Lists candidate `state_fields`, candidate structured surfaces, and the
     known inconsistencies.
 - Verification commands:
@@ -539,13 +541,21 @@ for one owner and one reviewable patch.
   - States plainly that the object owns the state-to-visual map and SVG
     manipulation; the protocol sets semantic state and the object resolves
     the asset.
-  - Per RD-4, defines named groups (`target_groups`) as part of object
-    structure: an object declares its own internal groups (rows of wells,
-    lanes, rack slots) so a protocol can semantically address a group of
-    subparts.
-  - Includes a worked 96-well-plate object (subparts, named groups,
-    `state_fields`) and a serological-pipette object (`held_liquid` and
-    `set_point` `state_fields`).
+  - Per RD-4 (subparts portion only) and RD-9 (named groups dropped):
+    objects declare subparts (wells, lanes, rack slots), but `target_groups`
+    is NOT added to the initial object vocabulary. Protocols address subparts
+    explicitly (`treatment_plate.A1`, `treatment_plate.A2`).
+  - Per RD-11, state_field types are flat primitives only (`enum`, `int`,
+    `float`, `bool`). No structured `liquid` or `set_point` composite types.
+  - Per RD-6, `capabilities` is a closed list (`clickable`,
+    `liquid_container`, `instrument_with_setpoint`, `structured_surface`,
+    `cursor_attachable`, `decoration_only`); `decoration_only` mutually
+    exclusive with the others.
+  - Includes a worked 96-well-plate object (subparts, per-well flat
+    state_fields: `liquid_id` enum, `liquid_volume` float ul, `liquid_color`
+    enum) and a serological-pipette object (flat state_fields:
+    `set_volume` float ml, `held_liquid_id` enum, `held_liquid_volume`
+    float ml).
 - Verification commands:
   - `source source_me.sh && python3 tests/check_ascii_compliance.py -i docs/active_plans/scene_object_split_design.md`
 - Obvious follow-ons:
@@ -581,8 +591,9 @@ for one owner and one reviewable patch.
   - Per RD-2, encodes the instance-override rule: a scene placement may
     override an object's `label` and layout hints only; identity,
     `state_fields`, `render_map`, and `capabilities` stay object-owned.
-  - Per RD-4, places `target_groups` on the object side of the boundary
-    table, not the scene side.
+  - Per RD-9, `target_groups` is dropped from the initial object vocabulary
+    and removed from the boundary table entirely (not assigned to either
+    side). Boundary table notes "deferred" with pointer to RD-9.
 - Verification commands:
   - `source source_me.sh && python3 tests/check_ascii_compliance.py -i docs/active_plans/scene_object_split_design.md`
 - Obvious follow-ons:
@@ -603,21 +614,21 @@ for one owner and one reviewable patch.
     `SvgSwap`. Notes the single exception: a future protocol primitive may set
     color directly when color itself is the learning target (a colorimetric
     reading); that primitive is its own slot, not generic `ColorChange`.
-  - Produces the re-partition table for all 8 `scene_operation` primitives,
+  - Produces the re-partition table for all the ratified `scene_operation` primitive set,
     each assigned to protocol-level or object/render-layer.
 - Verification commands:
   - `source source_me.sh && python3 tests/check_ascii_compliance.py -i docs/active_plans/scene_object_split_design.md`
 - Obvious follow-ons:
   - Hand the re-partition table to WP-RAT-C1 and WP-DOC-PV1.
 
-### Work package WP-RAT-A1: Ratify the 7 scene YAML files
+### Work package WP-RAT-A1: Ratify the the current scene YAML files
 
 - Owner: reviewer.
 - Touch points: a ratification matrix section in
   `docs/active_plans/scene_object_split_inventory.md`.
 - Depends on: WP-OBJ1, WP-SCN1, WP-BND1, WP-PROTO1.
 - Acceptance criteria:
-  - Each of the 7 scene YAML files decomposed on paper into an object set
+  - Each of the the current scene YAML files decomposed on paper into an object set
     plus a scene-placement file, every key and sub-field landing in its
     assigned vocabulary.
   - Unmappable constructs flagged.
@@ -629,13 +640,13 @@ for one owner and one reviewable patch.
   - If a gap requires a design revision, file it against WP-OBJ1 / WP-SCN1 /
     WP-BND1 and re-ratify the affected scenes before closing M3.
 
-### Work package WP-RAT-B1: Ratify the 45 asset_specs.ts entries
+### Work package WP-RAT-B1: Ratify the every asset_specs.ts entry
 
 - Owner: reviewer.
 - Touch points: an asset-mapping matrix in the inventory artifact.
 - Depends on: WP-OBJ1, WP-SCN1, WP-BND1, WP-PROTO1.
 - Acceptance criteria:
-  - All 45 entries mapped to object definitions, showing where
+  - All every entry mapped to object definitions, showing where
     `defaultWidth`, `labelWidth`, `anchorYOffset`, `widthScale` land and which
     assets need `state_fields` / `render_map`.
   - Gap entries handed to WP-RAT-A1.
@@ -653,15 +664,16 @@ for one owner and one reviewable patch.
 - Acceptance criteria:
   - Every runtime liquid-state value (`LiquidEntry` / `ContainerLiquid` /
     `LiquidState`) maps to a declared `state_field`.
-  - Every one of the 8 `scene_operation` primitives has a confirmed owning
-    layer; disagreements with WP-PROTO1 flagged.
+  - Every entry in the ratified `scene_operation` primitive set has a
+    confirmed owning layer; disagreements with WP-PROTO1 flagged.
   - Gap entries handed to WP-RAT-A1.
 - Verification commands:
   - `source source_me.sh && python3 tests/check_ascii_compliance.py -i docs/active_plans/scene_object_split_inventory.md`
 - Obvious follow-ons:
   - Cross-check the re-partition against RD-3 (`ColorChange` and `SvgSwap`
-    both render-layer) and RD-4 (`target_groups` object-side); flag any drift
-    back to WP-PROTO1 or WP-BND1.
+    both render-layer), RD-9 (`target_groups` dropped from initial vocabulary),
+    RD-10 (`LayoutMove` narrow scope), RD-11 (flat primitive state_fields
+    only); flag any drift back to WP-PROTO1 or WP-BND1.
 
 ### Work package WP-DOC-OV1: Create OBJECT_VOCABULARY.md
 
@@ -774,7 +786,7 @@ for one owner and one reviewable patch.
 - Acceptance criteria:
   - `docs/CHANGELOG.md` entry finalized under the correct categories.
   - Follow-on plan 1 stubbed -- content/scene-YAML migration: names the
-    ratified docs as input and the 7 scene YAML files plus
+    ratified docs as input and the current scene YAML files plus
     `content/plate_drug_treatment/scene.yaml` as targets.
   - Follow-on plan 2 stubbed -- TypeScript migration: depends on plan 1;
     targets `src/asset_specs.ts`, `src/layout_engine.ts`,
@@ -800,8 +812,7 @@ for one owner and one reviewable patch.
   hints), the cleaned scene vocabulary, the three-way boundary with a
   per-key assignment table, and the `ObjectStateChange` plus `SvgSwap`
   re-partition -- no "TBD" in any of those sections.
-- Integration gate (end of M3): all 7 scene YAML files and all 45
-  `asset_specs.ts` entries appear in a decomposition matrix; every runtime
+- Integration gate (end of M3): every current scene YAML file and every current `asset_specs.ts` entries appear in a decomposition matrix; every runtime
   state value maps to a declared `state_field`; every `scene_operation`
   primitive has a confirmed layer; the residual-gap list is empty or every
   entry has an accepted disposition.
@@ -852,37 +863,36 @@ for one owner and one reviewable patch.
 
 | Risk | Impact | Trigger | Owner | Mitigation |
 | --- | --- | --- | --- | --- |
-| Object / scene boundary is ambiguous for some keys | High | M3 finds a scene-YAML key or item sub-field that fits neither vocabulary cleanly | architect (WS-BND) | WP-BND1 produces an explicit per-key table, not prose; M3 ratifies all 7 scenes in parallel to surface ambiguity early; the four hardest calls (background, instance overrides, `ColorChange`, `target_groups`) are pre-resolved in the Resolved decisions section (RD-1 through RD-4). |
+| Object / scene boundary is ambiguous for some keys | High | M3 finds a scene-YAML key or item sub-field that fits neither vocabulary cleanly | architect (WS-BND) | WP-BND1 produces an explicit per-key table, not prose; M3 ratifies all current scenes in parallel to surface ambiguity early; hard calls (background, instance overrides, `ColorChange`, `target_groups`, capability list, formula language, ObjectStateChange scope, LayoutMove scope, state_field types, constraint metadata) are pre-resolved in the Resolved decisions section (RD-1 through RD-12). |
 | `state_fields` schema cannot express a real object's state | High | M3 finds runtime state (liquid, set-point, contents) that does not fit the declared schema | architect (WS-OBJ) | WP-OBJ1 must work the 96-well plate and the pipette as worked examples before M3; WP-RAT-C1 maps every runtime state value explicitly. |
 | Reopening the just-closed PROTOCOL_VOCABULARY.md introduces drift | Medium | The `SvgSwap` reclassification contradicts another part of the M4-closed protocol model | planner (WS-DOC-PV) | WP-DOC-PV1 is a narrow edit scoped to the primitive list and retired-terms sections only; WP-RAT-C1 confirms the re-partition before the doc edit; the changelog records the deliberate reopen. |
-| Object data split across YAML and asset_specs.ts is hard to reconcile | Medium | WP-RAT-B1 finds `asset_specs.ts` properties with no clean object-vocabulary home | reviewer (WS-RAT-B) | WP-RAT-B1 maps all 45 entries explicitly; properties with no home become residual-gap entries that force a WP-OBJ1 revision, not a silent drop. |
+| Object data split across YAML and asset_specs.ts is hard to reconcile | Medium | WP-RAT-B1 finds `asset_specs.ts` properties with no clean object-vocabulary home | reviewer (WS-RAT-B) | WP-RAT-B1 maps every entry explicitly; properties with no home become residual-gap entries that force a WP-OBJ1 revision, not a silent drop. |
 | Three docs drift from each other | Medium | A reader finds `OBJECT_VOCABULARY.md` and `SCENE_VOCABULARY.md` defining the same concept differently | planner (WS-DOC-*) | Shared concepts are cross-referenced, not restated; the M4 manual review gate checks internal consistency across all five docs. |
 | Scope creep into code or YAML migration | Low | A doer edits a scene YAML file, `asset_specs.ts`, or TypeScript | planner | Non-goals are explicit; the two follow-on plans own those changes; reviewers reject any non-doc change. |
 
 ## Rollout and release checklist
 
-- [ ] M1 evidence artifact committed.
-- [ ] M2 design doc complete; integration gate passed (no TBD; object
+- [x] M1 evidence artifact committed.
+- [x] M2 design doc complete; integration gate passed (no TBD; object
   vocabulary, cleaned scene vocabulary, boundary table, and protocol
   re-partition all present).
-- [ ] M3 ratification matrices complete for all 7 scene YAML files and all 45
-  `asset_specs.ts` entries; state model and `scene_operation` re-partition
+- [x] M3 ratification matrices complete for every current scene YAML file and every current `asset_specs.ts` entries; state model and `scene_operation` re-partition
   checked; residual-gap list dispositioned.
-- [ ] M2 design doc revised if M3 surfaced gaps; affected items re-ratified.
-- [ ] `docs/OBJECT_VOCABULARY.md` created; target-state sections labeled.
-- [ ] `docs/OBJECT_YAML_FORMAT.md` created; schema typed; examples worked.
-- [ ] `docs/SCENE_VOCABULARY.md` rewritten; scene-side terms defined;
+- [x] M2 design doc revised if M3 surfaced gaps; affected items re-ratified.
+- [x] `docs/OBJECT_VOCABULARY.md` created; target-state sections labeled.
+- [x] `docs/OBJECT_YAML_FORMAT.md` created; schema typed; examples worked.
+- [x] `docs/SCENE_VOCABULARY.md` rewritten; scene-side terms defined;
   object-identity terms point to `OBJECT_VOCABULARY.md`.
-- [ ] `docs/SCENE_YAML_FORMAT.md` rewritten; scene-side schema documented;
+- [x] `docs/SCENE_YAML_FORMAT.md` rewritten; scene-side schema documented;
   migration note added for keys now owned by object YAML.
-- [ ] `docs/PROTOCOL_VOCABULARY.md` re-touched; `SvgSwap` reclassified;
+- [x] `docs/PROTOCOL_VOCABULARY.md` re-touched; `SvgSwap` reclassified;
   `ObjectStateChange` added.
-- [ ] Dependent docs aligned (rewritten, deleted, or archived -- no
+- [x] Dependent docs aligned (rewritten, deleted, or archived -- no
   transitional notes).
-- [ ] `docs/CHANGELOG.md` entry finalized.
-- [ ] Follow-on content/scene-YAML-migration plan stubbed.
-- [ ] Follow-on TypeScript-migration plan stubbed.
-- [ ] Follow-on docs/ folder organization plan stubbed (per the
+- [x] `docs/CHANGELOG.md` entry finalized.
+- [x] Follow-on content/scene-YAML-migration plan stubbed.
+- [x] Follow-on TypeScript-migration plan stubbed.
+- [x] Follow-on docs/ folder organization plan stubbed (per the
   "Follow-on plans" section).
 - [ ] Human review of the five canonical docs for internal consistency, a
   usable three-way boundary, and author-applicability.
@@ -913,8 +923,8 @@ for one owner and one reviewable patch.
 - Patch 4: design doc -- three-way boundary and per-key assignment (WP-BND1).
 - Patch 5: design doc -- `ObjectStateChange` and `SvgSwap` reclassification
   (WP-PROTO1).
-- Patch 6: ratification matrix -- 7 scene YAML files plus gap list (WP-RAT-A1).
-- Patch 7: ratification matrix -- 45 `asset_specs.ts` entries (WP-RAT-B1).
+- Patch 6: ratification matrix -- current scene YAML files plus gap list (WP-RAT-A1).
+- Patch 7: ratification matrix -- every `asset_specs.ts` entry (WP-RAT-B1).
 - Patch 8: ratification -- state model and `scene_operation` re-partition
   (WP-RAT-C1).
 - Patch 9: `docs/OBJECT_VOCABULARY.md` (WP-DOC-OV1).
@@ -938,7 +948,7 @@ order. WP-DOC-C1 stubs all three under `docs/active_plans/`.
 
 - Input: the ratified `OBJECT_VOCABULARY.md`, `OBJECT_YAML_FORMAT.md`,
   `SCENE_VOCABULARY.md`, `SCENE_YAML_FORMAT.md`.
-- Targets: the 7 `src/scenes/*.yaml` files plus
+- Targets: the current `src/scenes/*.yaml` files plus
   `content/plate_drug_treatment/scene.yaml`. Migrate each into an object-def
   set plus a cleaned scene-placement file.
 - First decision the follow-on plan must make: **content/ folder layout**.
@@ -1079,18 +1089,21 @@ each rule directly; the design doc cites this section and does not relitigate.
   target (for example a colorimetric reading), but that is its own primitive,
   not generic `ColorChange`. Owner: WS-PROTO. WP-PROTO1 encodes this in the
   re-partition table.
-- RD-4: **`target_groups` belongs in the object vocabulary.** Named groups of
-  wells, lanes, tubes, or rack slots are object structure (subparts), not
-  scene placement. The object declares its internal groups; the scene places
-  the object. The unified-vocabulary plan's earlier scene-YAML placement is
-  superseded by this plan. Owner: WS-OBJ. WP-OBJ1 encodes
-  subparts and named groups; WP-BND1 removes `target_groups` from the scene
-  side of the boundary table; WP-DOC-DEP1 reconciles
-  `PROTOCOL_AUTHORING_GUIDE.md` and `SCENE_VOCABULARY.md` accordingly.
+- RD-4: **Subparts belong to the object.** Wells in a plate, lanes in a gel,
+  slots in a rack, and similar internal structure are declared by the object,
+  not by the scene. The scene places the object as a whole; subpart identity
+  is part of object structure (`structure.subparts`). The unified-vocabulary
+  plan's earlier scene-YAML placement of subpart structure is superseded by
+  this plan. (Note: the named-groups portion of the original RD-4 is
+  superseded by RD-9, which drops `target_groups` from the initial
+  vocabulary.) Owner: WS-OBJ. WP-OBJ1 encodes subparts; WP-BND1 places
+  subpart structure on the object side of the boundary table; WP-DOC-DEP1
+  reconciles `PROTOCOL_AUTHORING_GUIDE.md` and `SCENE_VOCABULARY.md`
+  accordingly.
 
 - RD-5: **No fixed asset / scene counts in plan prose or canonical docs.**
   Counts belong in the inventory artifact, not the plan or docs. Replace
-  "31 / 45 entries" wording with "every current `src/asset_specs.ts`
+  "31 / every entry" wording with "every current `src/asset_specs.ts`
   entry" (and similar for scenes). Counts in
   `docs/active_plans/scene_object_split_inventory.md` remain authoritative
   as a snapshot. Owner: WS-DOC-DEP / WS-DOC-C; sweep applies to the plan,
@@ -1147,9 +1160,113 @@ each rule directly; the design doc cites this section and does not relitigate.
   - `bool`: `default`.
   Unknown metadata keys = build error. Owner: WS-DOC-OY; encoded in
   OBJECT_YAML_FORMAT.md.
+- RD-13: **`LiquidDisplayChange` is reclassified to the object/render
+  layer alongside `SvgSwap` and `ColorChange`.** Rationale (user,
+  verbatim): "LiquidDisplayChange is the same kind of drift as SvgSwap
+  and ColorChange: it names the display result instead of the semantic
+  state change. Protocol uses ObjectStateChange to set flat declared
+  liquid fields. The object render_map decides how liquid appears."
+  `ObjectStateChange` is the sole protocol primitive for liquid state
+  mutation; it writes the flat declared fields (`liquid_id`,
+  `liquid_volume`, `liquid_color` for vessels and wells; corresponding
+  `held_liquid_id` / `held_liquid_volume` for tools). The object's
+  `render_map` resolves those fields to a fill height, tint, and asset.
+  Consistent with RD-3 (render-layer mechanisms named by `render_map`),
+  RD-8 (`ObjectStateChange` writes only declared `state_fields`), and
+  RD-11 (state-field types are flat primitives only). Prevents two
+  competing liquid paths in canonical docs. The WP-PROTO1 acceptance
+  criteria and the re-partition table now place `LiquidDisplayChange`
+  on the render-layer side alongside `SvgSwap` and `ColorChange`, with
+  `ObjectStateChange` as its protocol-level superseder. Owner: WS-PROTO;
+  sweep applies to PROTOCOL_VOCABULARY.md, PROTOCOL_AUTHORING_GUIDE.md,
+  PROTOCOL_YAML_FORMAT.md, and the design-doc re-partition table.
+- RD-14: **`SetPointDisplayChange` is reclassified to the object/render
+  layer alongside `SvgSwap`, `ColorChange`, and `LiquidDisplayChange`
+  (ratified 2026-05-15).** Rationale (user, verbatim): "Resolve as RD-14
+  with option 1. Reclassify SetPointDisplayChange to the object/render
+  layer. Keep ObjectStateChange as the protocol path for set-point
+  state. This makes RD-13 consistent: display changes belong to object
+  rendering; protocol changes declared state." `ObjectStateChange`
+  writing the object's flat declared set-point fields (per RD-11:
+  `set_volume`, `set_temperature`, `set_rpm`, etc. as flat numeric
+  fields) is the sole protocol primitive for set-point state mutation;
+  the object's `render_map` resolves the digit overlay or display
+  visual. Consistent with RD-3, RD-8, RD-11, and RD-13. Brings the
+  ratified protocol-level primitive count down from six (post RD-13) to
+  five (`ObjectStateChange`, `CursorAttach`, `SceneChange`,
+  `LayoutMove`, `TimedWait`). The WP-PROTO1 acceptance criteria and the
+  re-partition table now place `SetPointDisplayChange` on the
+  render-layer side alongside `SvgSwap`, `ColorChange`, and
+  `LiquidDisplayChange`, with `ObjectStateChange` as its protocol-level
+  superseder. Owner: WS-PROTO; sweep applies to PROTOCOL_VOCABULARY.md,
+  PROTOCOL_AUTHORING_GUIDE.md, PROTOCOL_YAML_FORMAT.md, PRIMARY_SPEC.md,
+  SCENE_YAML_FORMAT.md, SPEC_DESIGN_CHECKLIST.md, and the design-doc
+  re-partition table.
+
+- RD-15: **Semantic-state-vs-appearance rule (ratified 2026-05-15).**
+  Rationale (user, verbatim): "Does this primitive change semantic
+  simulation state, or does it merely describe how that state appears?
+  If it merely describes appearance, move it to object/render." Every
+  protocol-level primitive must change semantic simulation state, not
+  describe appearance. The test: does this primitive change what the
+  simulation IS, or merely how it LOOKS? If it describes appearance, it
+  belongs in the object/render layer. This is the generalized rule
+  behind RD-3 (`ColorChange`), RD-13 (`LiquidDisplayChange`), and RD-14
+  (`SetPointDisplayChange`); each named a display result instead of a
+  state change and was reclassified to the object/render layer.
+  Applies preemptively to every future primitive proposal: a primitive
+  whose name describes a visual outcome (Display, Show, Render, Color,
+  Swap, Animate, Move-pixels, Highlight) is a smell, not a primitive.
+  Owner: WS-PROTO. Sweep: PROTOCOL_VOCABULARY.md primitive-table reason
+  column sharpened to state semantic effect explicitly;
+  SPEC_DESIGN_CHECKLIST.md gets a top-level smell class capturing the
+  rule with the past-pitfalls (`SvgSwap`, `ColorChange`,
+  `LiquidDisplayChange`, `SetPointDisplayChange`) named.
+- RD-16: **`CursorAttach` is the held-material state primitive
+  (ratified 2026-05-15).** `CursorAttach` is protocol-level only when
+  it means "the learner is now holding this object instance" -- a
+  semantic state change to the runtime's held-material state. It must
+  not be read as "draw the object under the cursor" or as a cursor-
+  follow visual; that is a render-layer concern owned by the scene /
+  object-render side. Operations are limited to `attach` (set held
+  material to this target) and `detach` (clear held material). The
+  scene renders the cursor-follow visual in response to the state
+  change; the protocol does not name the visual. Consistent with RD-15
+  (semantic-state-vs-appearance). Owner: WS-PROTO; sweep applies to
+  PROTOCOL_VOCABULARY.md primitive-table reason column.
+- RD-17: **`TimedWait` is the protocol-time-advance primitive
+  (ratified 2026-05-15).** `TimedWait` is protocol-level only when it
+  means "protocol time advances on this equipment" or "the timed
+  condition on this equipment is satisfied" -- a semantic change to
+  the runtime's equipment-state (the equipment's timed phase has
+  started, then elapsed). It must not be read as "show a spinner",
+  "render a progress bar", or any other visual progress display; the
+  visible progress display is owned by the object's `render_map` over
+  the equipment's declared timed-phase `state_fields`. The protocol
+  names what equipment, for how long, and what the timed condition is;
+  the object/render layer handles the display. Consistent with RD-15
+  (semantic-state-vs-appearance). The current `TimedWait` field
+  `display` is an authoring hint to the object render layer about
+  which display style is appropriate, not a protocol-side appearance
+  knob; it does not name visual assets. Owner: WS-PROTO; sweep applies
+  to PROTOCOL_VOCABULARY.md primitive-table reason column.
+
+Per-primitive verdict (RD-15 sweep over the five ratified primitives):
+
+- `ObjectStateChange`: already correctly defined as semantic. RD-8
+  constrains it to declared `state_fields`. No new RD needed.
+- `CursorAttach`: required sharpening; settled by RD-16.
+- `SceneChange`: already correctly defined as semantic (a scene
+  transition is the scene-id state change by definition). No new RD
+  needed.
+- `LayoutMove`: already settled by RD-10 (placement-only; layout
+  engine owns visible motion). RD-15 sharpening encoded in the
+  PROTOCOL_VOCABULARY.md reason column (must not encode animation,
+  pixel offsets, layout rules, visual motion); no new RD needed.
+- `TimedWait`: required sharpening; settled by RD-17.
 
 ## Open questions and decisions needed
 
-- None open at plan-publication time. RD-1 through RD-12 settle the
+- None open at plan-publication time. RD-1 through RD-17 settle the
   decisions raised during plan review. Any new question that surfaces
   lands here with an owner and a resolve-by milestone.

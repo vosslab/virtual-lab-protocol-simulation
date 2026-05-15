@@ -14,7 +14,7 @@ Implementation sequencing for moving the repo from its current layout, described
 
 ## Coordination
 
-Ordering within the broader refactor is owned by [docs/active_plans/scene_runtime_spine_plan.md](scene_runtime_spine_plan.md) and [docs/active_plans/curriculum_decomposition.md](curriculum_decomposition.md). This doc only enumerates the moves; those plans schedule them.
+Ordering within the broader refactor is owned by [docs/archive/scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md) and [docs/active_plans/curriculum_decomposition.md](curriculum_decomposition.md). This doc only enumerates the moves; those plans schedule them.
 
 ## Closure
 

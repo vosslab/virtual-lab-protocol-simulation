@@ -1,6 +1,6 @@
 # Usage
 
-Protocol terminology is defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
 
 Players learn cell culture techniques by completing a guided 25-step laboratory
 protocol or focused tutorials in the browser.
@@ -48,9 +48,9 @@ phases:
 
 The full ordered step list is generated from
 `src/content/cell_culture/protocol.yaml`;
-see [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) for the
+see [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) for the
 authoring contract and
-[OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)
+[protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)
 for the wet-lab source protocol.
 
 Interact by clicking items. Click the tool first, then click the destination

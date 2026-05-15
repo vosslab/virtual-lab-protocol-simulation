@@ -4,7 +4,7 @@
 > conflict-audit table from a prior plan phase. Some verdicts -- specifically
 > the `plateTargets` / `tubeTargets` `matches-contract` classifications -- have
 > been superseded by the unified interaction vocabulary plan; see the inline
-> SUPERSEDED notes below and [PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md).
+> SUPERSEDED notes below and [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md).
 > Do not treat stale `matches-contract` verdicts as authoritative.
 
 This is the M0 conflict-audit table for the seven `docs/SCENE_*.md` and

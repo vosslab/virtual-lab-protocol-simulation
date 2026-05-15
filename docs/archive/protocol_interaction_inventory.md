@@ -797,7 +797,7 @@ validator presets, the five `gesture` values, and the two-level
 ## M3 ratification: Miraculin
 
 This is the WP-RAT-B1 ratification slice: the Miraculin protocol
-([../Miraculin_Protocol_2026.md](../Miraculin_Protocol_2026.md)), a protein
+([../protocols/Miraculin_Protocol_2026.md](../protocols/Miraculin_Protocol_2026.md)), a protein
 purification by reverse-micelle extraction, mapped to the M2 two-level model in
 [unified_interaction_vocabulary_design.md](unified_interaction_vocabulary_design.md).
 The OVCAR8 and shipped-content slice (WP-RAT-A1) and the SDS-PAGE slice
@@ -1148,7 +1148,7 @@ the 18 real Miraculin steps.
 ## M3 ratification: SDS-PAGE
 
 This is the WP-RAT-C1 ratification slice: the SDS-PAGE protocol
-([../SDS-PAGE_Protocol_2026.md](../SDS-PAGE_Protocol_2026.md)), a polyacrylamide
+([../protocols/SDS-PAGE_Protocol_2026.md](../protocols/SDS-PAGE_Protocol_2026.md)), a polyacrylamide
 gel electrophoresis run for protein separation, mapped to the M2 two-level model
 in
 [unified_interaction_vocabulary_design.md](unified_interaction_vocabulary_design.md).

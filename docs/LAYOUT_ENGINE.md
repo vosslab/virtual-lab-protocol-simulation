@@ -6,15 +6,41 @@ This document explains how the layout engine places objects in a scene and
 how future scene authors should use it when building a new layout-driven
 scene.
 
-The scene runtime is documented in [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md).
+The scene runtime is documented in [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md).
 The scene YAML schema is documented in
-[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md). This guide focuses on the
-placement method itself: how items, zones, asset metrics, depth, labels, and
-scene bounds become positioned DOM elements.
+[specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md); object identity (state, assets,
+subparts) is documented in [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
+[specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md). This guide focuses on the
+placement method itself: how object placements, zones, asset metrics, depth,
+labels, and scene bounds become positioned DOM elements.
 
 The core implementation lives in [src/layout_engine.ts](../src/layout_engine.ts).
 The public types live in [src/scene_types.ts](../src/scene_types.ts), and the
 asset metrics live in [src/asset_specs.ts](../src/asset_specs.ts).
+
+## Target-state vs current-code
+
+This doc is largely **current-code**: it describes the shipped runtime,
+where each scene YAML carries an `items[]` block with `svgAsset` plus
+placement fields, and asset metrics live in `src/asset_specs.ts`. In the
+target-state three-vocabulary model
+([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)):
+
+- Object identity (`svgAsset`, asset metrics like `defaultWidth` and
+  `labelWidth`, `state_fields`, `render_map`, structured subparts) moves to
+  object YAML, owned by [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
+  [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md).
+- Scene YAML keeps only the placement side: object reference plus
+  `zone`, `depthTier`, `widthScale`, `anchorY`, `alignStop`,
+  `baselineOverride`, `shortLabel`, `label` override, plus zones and
+  optional scene bounds.
+- The `src/asset_specs.ts` table is folded into object YAML by the
+  follow-on TypeScript-migration plan; until then, the engine consumes the
+  current `items[]` shape unchanged.
+
+The placement algorithm itself (zones, alignment, depth, labels, scene
+bounds) is unchanged by the split. The vocabulary in the rest of this doc
+matches the runtime; it will be retitled when the YAML migration lands.
 
 ## Mental model
 
@@ -425,6 +451,29 @@ zone group, then applies one `dx` and one `dy` to every layout in that group.
 If a group is wider than the bounds, right-aligned groups prefer the right edge;
 left and center groups prefer the left edge and log a warning.
 
+## LayoutMove and the layout engine
+
+Status: **target-state.**
+
+`LayoutMove` is the protocol-side `scene_operation` that names what moves
+and where (see [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)). Per RD-10
+of the scene-object split plan, it stays narrow: it does not rewrite layout.
+Only two uses are valid:
+
+- Reposition an existing placement within the current scene (a row-to-row
+  move). The layout engine owns the visible motion; the protocol writes the
+  semantic `to_slot`.
+- Cross-scene transition: remove the placement from one scene and add it to
+  another (for example, a pipette moves from the hood to the bench, or a
+  protocol uses two bench areas). The protocol writes both `to_scene` and
+  `to_slot`; the layout engine on the destination scene places the object
+  through the same zone/placement pipeline documented above.
+
+Anything broader (rebuilding zones, redefining alignment policy, swapping
+the asset shown) is out of `LayoutMove`'s scope. Asset and color changes
+are object/render-layer concerns owned by the object's `render_map` and
+written through `ObjectStateChange`; they are not layout moves.
+
 ## Adapter responsibilities
 
 The generated scene config currently emits `zones` as an array. The layout
@@ -653,11 +702,15 @@ Playwright walker or scene-specific smoke test.
 
 ## Related docs
 
-- [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) - Runtime scene driver,
+- [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) - Runtime scene driver,
   registry, adapter, and capability model.
-- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML fields and build
+- [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) - Scene YAML fields and build
   pipeline.
-- [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical scene terms.
+- [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) - Canonical scene terms.
+- [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) - Canonical object terms;
+  asset metrics like `defaultWidth` migrate here in the follow-on plan.
+- [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) - Object-definition YAML
+  schema referenced by scene placements.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) - SVG asset generation and ownership.
 - [archive/LAYOUT_METRICS.md](archive/LAYOUT_METRICS.md) - Older
   pixel-metric note retained for historical reference.

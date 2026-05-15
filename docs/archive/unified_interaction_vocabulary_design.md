@@ -1728,14 +1728,14 @@ sides of the boundary are named, and neither is called "click target":
 - **`target` is the protocol-side term.** A `target` is the semantic,
   geometry-free name a protocol author writes -- the protocol-side slot defined
   in "The `target` slot" above. The protocol vocabulary doc
-  ([PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md)) uses `target` for this
+  ([PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md)) uses `target` for this
   concept and retires "click target" entirely. "Click target" is a UI/DOM-level
   phrase; it never belonged in the protocol vocabulary, and the design doc's
   `target` slot is the canonical protocol-side term.
 - **`scene object` is the scene-side term.** A `scene object` is the concrete,
   geometry-bearing thing the adapter registry resolves a `target` name to --
   the term already canonical in
-  [SCENE_VOCABULARY.md](../SCENE_VOCABULARY.md). The scene vocabulary doc keeps
+  [SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md). The scene vocabulary doc keeps
   `scene object` as the resolved, addressable scene-side object.
 - **`ClickTarget` is scoped to one narrow runtime type.** `ClickTarget` stays
   as the name of the specific `{itemId}` driver shape it already denotes in

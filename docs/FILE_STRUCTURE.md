@@ -145,6 +145,15 @@ for the layered model.
 
 #### Content and generated data facades
 
+Note: under the three-vocabulary model from the scene-object split plan
+([archive/scene_object_split_plan.md](archive/scene_object_split_plan.md)),
+object, scene, and protocol YAML files belong in separate subdirectories
+(proposed `content/objects/`, `content/scenes/`, `content/protocols/`) so
+the three vocabularies map one-to-one to folders. The exact layout
+(per-protocol subfolders, shared object library, naming) is owned by the
+follow-on content/scene-YAML-migration plan; this file documents the
+shipped layout below.
+
 | Path | Purpose |
 | --- | --- |
 | [content/cell_culture/](../content/cell_culture/) | Legacy monolithic protocol YAML (kept for reference; deletion deferred to M9) |
@@ -252,17 +261,19 @@ single-file parity snapshot lives under
 | [AUTHORS.md](AUTHORS.md) | Maintainers and contributors |
 | [ROADMAP.md](ROADMAP.md) | Planned work |
 | [TODO.md](TODO.md) | Backlog scratchpad |
-| [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) | Canonical vocabulary |
-| [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) | Protocol YAML schema reference |
-| [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) | Scene YAML schema reference |
-| [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) | Scene driver, registry, adapters, capabilities |
-| [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) | Canonical terms for the scene system |
-| [PROTOCOL_AUTHORING_GUIDE.md](PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
-| [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md) | Step-flow architecture |
+| [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) | Canonical protocol vocabulary (what should happen) |
+| [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md) | Protocol YAML schema reference |
+| [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary (what a thing is, state_fields, render_map, structured subparts) |
+| [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) | Object-definition YAML schema reference |
+| [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) | Scene YAML schema reference (cleaned to scene-side placement only; object identity moved to OBJECT_YAML_FORMAT.md) |
+| [specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md) | Scene driver, registry, adapters, capabilities |
+| [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) | Canonical scene-side vocabulary (where things appear, placement, zones) |
+| [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) | Worked authoring example |
+| [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) | Step-flow architecture |
 | [WALKTHROUGH_GUIDE.md](WALKTHROUGH_GUIDE.md) | Real-browser protocol walkthrough guide |
-| [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |
-| [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) | Reconciliation of math discrepancies in the OVCAR8 protocol doc; dose-series options and well-volume model |
-| [VOSS_DILUTIONS_GUIDE.md](VOSS_DILUTIONS_GUIDE.md) | Reference guide for solutions, dilutions, C1V1 = C2V2, and serial dilutions |
+| [protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) | Wet-lab source protocol |
+| [protocols/OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md) | Reconciliation of math discrepancies in the OVCAR8 protocol doc; dose-series options and well-volume model |
+| [protocols/VOSS_DILUTIONS_GUIDE.md](protocols/VOSS_DILUTIONS_GUIDE.md) | Reference guide for solutions, dilutions, C1V1 = C2V2, and serial dilutions |
 | [E2E_TESTS.md](E2E_TESTS.md) | E2E test conventions |
 | [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md) | Playwright usage notes |
 | [PYTEST_STYLE.md](PYTEST_STYLE.md) | Pytest conventions |

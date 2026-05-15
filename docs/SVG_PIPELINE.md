@@ -258,7 +258,7 @@ build can be exercised end-to-end.
 
 ## Related docs
 
-- [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML schema and the
+- [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) - Scene YAML schema and the
   scene driver and capability runtime that consume the SVG facade.
 - [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) - System design overview;
   the SVG modules section points here for the ownership rule.

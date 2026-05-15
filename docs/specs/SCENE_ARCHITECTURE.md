@@ -33,8 +33,11 @@ concern, and the layers communicate through small, documented interfaces.
 +------------------------------------------------------------------+
 | Layer 4: per-scene YAML config                                   |
 |   src/scenes/<scene>/<scene>.yaml                                |
-|   Owns: static declarations (sceneId, capabilities, items,       |
-|   zones, elementId, wrongOrderMessage). No behavior.             |
+|   Owns: scene-side static declarations only -- sceneId,          |
+|   capabilities, object placements, zones, elementId,             |
+|   wrongOrderMessage. Object identity (state_fields, render_map,  |
+|   subparts, capabilities) is owned by object YAML; see           |
+|   OBJECT_VOCABULARY.md and OBJECT_YAML_FORMAT.md. No behavior.   |
 +------------------------------------------------------------------+
                               |
                               v
@@ -76,7 +79,7 @@ The driver is the universal scene runtime. Two entry points matter:
   Looks up the registered adapter for `sceneId`, builds a `SceneContext`, and
   calls `adapter.render(ctx)`. Throws a loud error if no adapter is
   registered. Called every frame from the `setRenderGame` switch in
-  [src/init.ts](../src/init.ts).
+  [../../src/init.ts](../../src/init.ts).
 
 - `runScene(sceneId)` at
   `src/scenes/scene_driver.ts:123-210` -
@@ -141,11 +144,15 @@ registry described above: those are runtime maps keyed by scene id and
 capability id. The adapter registry is the per-scene `target`-name to
 scene-object map.
 
-A `target` that fans out to several scene objects -- a row of wells, a tube
-rack -- resolves through a named group declared in the scene YAML
-`target_groups` block; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for
-the `target_groups` schema. The adapter registry resolves a group name to
-the list of scene objects it expands to.
+A `target` that addresses one of an object's subparts -- a single well in a
+plate, a single lane in a gel -- resolves through the object's declared
+`structure.subparts` (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md))
+and is written by the protocol as `<object_id>.<subpart_id>` (for example
+`treatment_plate.A1`). Per RD-9 of the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+named groups (`target_groups`) are retired with no successor in this
+vocabulary pass; protocols list explicit subparts until a future plan
+revisits named groups.
 
 This section names the registry concept and where it lives; the canonical
 term is in [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md), and the protocol-side
@@ -168,12 +175,12 @@ itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 
 | Scene | Adapter file | Notes |
 | --- | --- | --- |
-| Bench | [src/scenes/bench/bench.ts](../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam (Patch C2, 2026-05-09): `bench.ts` is a thin wrapper holding module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and K2 completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
-| Cell-culture hood | [src/scenes/cell_culture_hood/cell_culture_hood.ts](../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only (Patch C1, 2026-05-09): the legacy compatibility-token ladder folded into completionPath dispatch and `buildLegacyToken` was retired. |
-| Incubator | [src/scenes/incubator/incubator.ts](../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
-| Microscope | [src/scenes/microscope/microscope.ts](../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted (Patch C3, 2026-05-09) into sibling [manual_hemocytometer.ts](../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
-| Well-plate workspace | [src/scenes/well_plate_workspace/well_plate_workspace.ts](../src/scenes/well_plate_workspace/well_plate_workspace.ts) | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../src/scenes/well_plate_workspace/dispatch.ts). |
-| Plate reader | [src/scenes/plate_reader/plate_reader.ts](../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
+| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam (Patch C2, 2026-05-09): `bench.ts` is a thin wrapper holding module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and K2 completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
+| Cell-culture hood | [../../src/scenes/cell_culture_hood/cell_culture_hood.ts](../../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only (Patch C1, 2026-05-09): the legacy compatibility-token ladder folded into completionPath dispatch and `buildLegacyToken` was retired. |
+| Incubator | [../../src/scenes/incubator/incubator.ts](../../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
+| Microscope | [../../src/scenes/microscope/microscope.ts](../../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted (Patch C3, 2026-05-09) into sibling [manual_hemocytometer.ts](../../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
+| Well-plate workspace | [../../src/scenes/well_plate_workspace/well_plate_workspace.ts](../../src/scenes/well_plate_workspace/well_plate_workspace.ts) | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../../src/scenes/well_plate_workspace/dispatch.ts). |
+| Plate reader | [../../src/scenes/plate_reader/plate_reader.ts](../../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
 
 The microscope and plate_reader adapters share a single DOM modal slot, the
 `instrument-overlay` element. See
@@ -194,12 +201,12 @@ small slice of their declared config. This matches the status recorded in
 
 | Capability id | Module | Status |
 | --- | --- | --- |
-| `itemWorkspace` | [item_workspace.ts](../src/scenes/capabilities/item_workspace.ts) | ACTIVE. Validates `items` and `zones` and dispatches `data-item-id` clicks to the scene adapter. |
-| `modalWorkspace` | [modal_workspace.ts](../src/scenes/capabilities/modal_workspace.ts) | RESERVED. Validates only `sceneId`; per-capability behavior not yet implemented. |
-| `instrumentWorkspace` | [instrument_workspace.ts](../src/scenes/capabilities/instrument_workspace.ts) | RESERVED. Validates only `sceneId`. |
-| `gridCountingWorkspace` | [grid_counting_workspace.ts](../src/scenes/capabilities/grid_counting_workspace.ts) | PARTIAL. Mounts and routes quadrant clicks; the per-scene `quadrants` config block is RESERVED. |
-| `incubatorWorkspace` | [incubator_workspace.ts](../src/scenes/capabilities/incubator_workspace.ts) | RESERVED. Validates only `sceneId`. |
-| `plateReaderWorkspace` | [plate_reader_workspace.ts](../src/scenes/capabilities/plate_reader_workspace.ts) | RESERVED. Validates only `sceneId`. |
+| `itemWorkspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | ACTIVE. Validates `items` and `zones` and dispatches `data-item-id` clicks to the scene adapter. |
+| `modalWorkspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | RESERVED. Validates only `sceneId`; per-capability behavior not yet implemented. |
+| `instrumentWorkspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | RESERVED. Validates only `sceneId`. |
+| `gridCountingWorkspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | PARTIAL. Mounts and routes quadrant clicks; the per-scene `quadrants` config block is RESERVED. |
+| `incubatorWorkspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | RESERVED. Validates only `sceneId`. |
+| `plateReaderWorkspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | RESERVED. Validates only `sceneId`. |
 
 A seventh capability id, `liquidTransfer`, is whitelisted in the YAML
 validator but no capability module is registered for it and no scene
@@ -213,7 +220,7 @@ load that nothing else triggers; if the adapter is not imported from
 `src/init.ts`, that work silently does not happen.
 
 The lesson comes from the post-execution review in
-[archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md):
+[../archive/scene_render_migration_2026-05-09.md](../archive/scene_render_migration_2026-05-09.md):
 two patches (A6a and B1) shipped with orphaned `registeredEmitters.add(...)`
 calls in source modules that nothing imported anymore. The protocol
 validator threw `missing completion-event emitter` at page load and a
@@ -281,19 +288,19 @@ TypeScript exports consumed by the driver.
 
 ## Shared infrastructure
 
-Several modules under [src/scenes/shared/](../src/scenes/shared/) host code
+Several modules under [../../src/scenes/shared/](../../src/scenes/shared/) host code
 that multiple scene adapters reuse. Each is a single source of truth for
 its concern.
 
-- [liquid_transfer.ts](../src/scenes/shared/liquid_transfer.ts) - Liquid
+- [liquid_transfer.ts](../../src/scenes/shared/liquid_transfer.ts) - Liquid
   handling abstractions: `deriveHeldLiquid`, `canonicalTool`, and the
   `LIQUID_BY_ASSET_ID` map. Consolidated in the B1 patch; do not duplicate
   these helpers in adapters.
-- [wrong_order_feedback.ts](../src/scenes/shared/wrong_order_feedback.ts) -
+- [wrong_order_feedback.ts](../../src/scenes/shared/wrong_order_feedback.ts) -
   `showWrongOrderToast(message)` for the transient warning toast. Today
   the toast styling and 2 s lifetime are hardcoded; the per-scene
   `wrongOrderMessage` YAML field is RESERVED for future wiring.
-- [scene_item_lookup.ts](../src/scenes/shared/scene_item_lookup.ts) -
+- [scene_item_lookup.ts](../../src/scenes/shared/scene_item_lookup.ts) -
   Item-id lookup helpers introduced during the bench/hood YAML layout
   migration so adapters can resolve scene items without duplicating the
   lookup rules.
@@ -320,8 +327,12 @@ migration.
   validator rules.
 - [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) - Canonical terms used by
   this doc, the schema doc, and scene-related code.
-- [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) - Higher-level system
+- [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) - Canonical object terms
+  (state_fields, render_map, structure, subparts) the scene references.
+- [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) - Object-definition YAML
+  schema referenced by scene placements.
+- [../CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md) - Higher-level system
   overview; the "Capability-based scene architecture" section there points
   at this doc for the deep dive.
-- [archive/scene_render_migration_2026-05-09.md](archive/scene_render_migration_2026-05-09.md) -
+- [../archive/scene_render_migration_2026-05-09.md](../archive/scene_render_migration_2026-05-09.md) -
   Archived plan and post-execution lesson on module-load side effects.

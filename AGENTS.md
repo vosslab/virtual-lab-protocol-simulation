@@ -13,6 +13,7 @@ Before making nontrivial edits, read:
 - docs/TYPESCRIPT_STYLE.md
 - docs/PLAYWRIGHT_USAGE.md
 - docs/SVG_PIPELINE.md
+- docs/specs/ -- specification surfaces (PROTOCOL_*, SCENE_*, OBJECT_*, QTI)
 
 `PRIMARY_CONTRACT.md` wins over other docs and code. New contract items require user approval.
 
@@ -20,8 +21,11 @@ Before making nontrivial edits, read:
 
 - Repo map: docs/FILE_STRUCTURE.md
 - Architecture: docs/CODE_ARCHITECTURE.md
-- Scene system: docs/SCENE_ARCHITECTURE.md, docs/SCENE_VOCABULARY.md, docs/SCENE_YAML_FORMAT.md
-- Protocol system: docs/PROTOCOL_AUTHORING_GUIDE.md, docs/PROTOCOL_VOCABULARY.md, docs/PROTOCOL_YAML_FORMAT.md
+- Scene system: docs/specs/SCENE_ARCHITECTURE.md, docs/specs/SCENE_VOCABULARY.md, docs/specs/SCENE_YAML_FORMAT.md
+- Protocol system: docs/specs/PROTOCOL_AUTHORING_GUIDE.md, docs/specs/PROTOCOL_VOCABULARY.md, docs/specs/PROTOCOL_YAML_FORMAT.md
+- Object system: docs/specs/OBJECT_VOCABULARY.md, docs/specs/OBJECT_YAML_FORMAT.md
+- QTI spec: docs/specs/QTI_v3_SPEC.md
+- Design philosophy: docs/SPEC_DESIGN_CHECKLIST.md
 - Layout, liquids, and walkthroughs: docs/LAYOUT_ENGINE.md, docs/LIQUID_CONVENTION.md, docs/WALKTHROUGH_GUIDE.md
 - Current work: docs/TODO.md, docs/ROADMAP.md, docs/active_plans/
 

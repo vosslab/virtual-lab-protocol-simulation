@@ -16,8 +16,13 @@ section cites a candidate field, structured surface, or runtime type, the row
 in the inventory artifact is the source.
 
 Resolved decisions binding this doc are in the plan's "## Resolved decisions"
-section (RD-1 through RD-4); each section below cites the RDs that govern it
-by name.
+section (RD-1 through RD-17); each section below cites the RDs that govern it
+by name. RD-5 (no fixed counts in canonical-doc prose), RD-6 (closed
+capability list), RD-7 (closed formula token set), RD-8 (`ObjectStateChange`
+flat-field-only), RD-9 (drop `target_groups` from initial vocabulary),
+RD-10 (`LayoutMove` narrow), RD-11 (state-field types are flat primitives
+only), and RD-12 (closed per-type constraint metadata) postdate the initial
+M2 design draft and are swept into the relevant sections below. RD-13, RD-14, RD-15, RD-16, and RD-17 postdate the initial WP-PROTO1 draft and are swept into the PROTO section below.
 
 ## Object vocabulary
 
@@ -98,26 +103,37 @@ schema applied at subpart granularity. A 96-well plate has zero or few
 plate-level state fields and one `held_liquid` field per well; a multichannel
 pipette has one `held_liquid` field per channel.
 
-#### Named groups (target_groups)
+#### Named groups deferred (RD-9, supersedes the named-groups portion of RD-4)
 
-Per RD-4, `target_groups` is part of object structure, not scene placement.
-A named group is a stable identifier for a subset of subparts that a
-protocol may address as a unit ("row A", "lane 1", "tip column 3"). The
-object declares its own groups; the scene never sees `target_groups`. The
-boundary table in WP-BND1 keeps `target_groups` on the object side.
+Per RD-9 of the scene-object split plan, named groups (`target_groups`)
+are deferred from the initial vocabulary. RD-4's "subparts belong to the
+object, not the scene" rule still holds; only the named-groups
+expression is dropped. A protocol that needs to act on several subparts
+lists each subpart explicitly (for example `treatment_plate.A1`,
+`treatment_plate.A2`). Named groups become a separate vocabulary
+addition once shipped authoring pain appears.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| structure.target_groups | list of group | no | Named subsets of subparts. |
-| group.name | string | yes | Stable group id, scoped to this object. |
-| group.members | list of string | yes | Subpart ids belonging to this group. May reference subparts by id_pattern output (A1..A12) or by enumeration. |
-| group.label | string | no | Optional human-readable label. |
-
-A protocol references a group as `<object_id>.<group_name>` (for example
-`treatment_plate.row_A`); the object resolves the group name to its member
-subpart ids. A scene never declares groups and never overrides them.
+The earlier `structure.target_groups` schema drafted here (with `name`,
+`members`, and `label` sub-fields) is no longer part of the object
+vocabulary. The boundary table in WP-BND1 retires `target_groups` with
+no successor in this vocabulary pass.
 
 ### state_fields schema
+
+This section is superseded by RD-11 (flat primitive types),
+RD-13 (LiquidDisplayChange render-layer reclassification), and RD-14
+(SetPointDisplayChange render-layer reclassification). State-field types
+are flat primitives only: `enum`, `int`, `float`, `bool`. There is no
+`string` type (use `enum` with a closed `allowed` list) and no composite
+`liquid` or `set_point` type. The flat-primitive types are the only ones
+authors may declare; the type list, allowed metadata, and worked-example
+shapes drafted below are superseded by the RD-11 / RD-12 rules encoded
+in [../specs/OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md) and
+[../specs/OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md). The references to
+`SetPointDisplayChange` and `LiquidDisplayChange` later in this section
+are stale per RD-13 / RD-14: both primitives have been moved to the
+object/render layer; `ObjectStateChange` is the sole protocol-side
+primitive that mutates liquid and set-point state.
 
 `state_fields` is the object's typed schema of declared state variables. It
 is the contract between the protocol and the object: a protocol reads or
@@ -197,9 +213,10 @@ Capabilities are coarse declarations of what an object affords (clickable,
 liquid_container, instrument_with_setpoint, structured_surface,
 decoration_only). The capability set is the contract for what kinds of
 interactions a scene and a protocol may attempt against this object. The
-inventory observed `capabilities` as a top-level scene-YAML key on 6 of 7
-files; in the cleaned vocabulary it moves to the object (a capability is a
-property of what the thing is, not where it is placed).
+inventory observed `capabilities` as a top-level scene-YAML key on most
+current scene files (per RD-5, exact counts live in the inventory
+artifact); in the cleaned vocabulary it moves to the object (a capability
+is a property of what the thing is, not where it is placed).
 
 | Field | Type | Required | Purpose |
 | --- | --- | --- | --- |
@@ -221,7 +238,7 @@ override category besides `label`).
 | --- | --- | --- | --- |
 | layout.default_width | float | yes | Default visual width in layout units. Today's `defaultWidth`. |
 | layout.label_width | float | no | Width budget for the label. Today's `labelWidth`. |
-| layout.anchor_y_offset | float | no | Vertical anchor adjustment. Today's `anchorYOffset`; observed only on the three pipette assets. |
+| layout.anchor_y_offset | float | no | Vertical anchor adjustment. Today's `anchorYOffset`; observed only on pipette assets (per RD-5, exact counts live in the inventory artifact). |
 | layout.width_scale | float | no | Per-object width multiplier. Today's `widthScale`; observed mainly on equipment. |
 | layout.anchor_y | enum | no | bottom or tip. Today's `anchorY` placement sub-field; reclassified as an object default per the rule that a serological pipette is anchored at its tip wherever it is placed. A scene may override per RD-2. |
 
@@ -244,9 +261,17 @@ This rule is binding on:
 
 ### Worked example: 96-well plate
 
-The 96-well plate is the WP-OBJ1 acceptance test for structured surfaces,
-named groups, and per-subpart state_fields. The candidate is the
-`well_plate_96` asset observed in the inventory.
+The 96-well plate is the WP-OBJ1 acceptance test for structured surfaces
+and per-subpart state_fields. The candidate is the `well_plate_96`
+asset observed in the inventory.
+
+Note: the YAML below uses the original M2 draft shape (composite
+`liquid` `state_field` plus `target_groups`). Per RD-9 named groups
+are deferred and per RD-11 state-fields are flat primitives only; the
+canonical worked example using the cleaned shape lives in
+[../specs/OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md) and
+[../specs/OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md). The block below
+is retained as a record of the original M2 design.
 
 ```yaml
 id: well_plate_96
@@ -308,9 +333,17 @@ rack via `id_pattern: "slot_{index}"`.
 
 ### Worked example: serological pipette
 
-The serological pipette is the WP-OBJ1 acceptance test for `held_liquid`
-and `set_point` state_fields on a flat object. The candidate is the
+The serological pipette is the WP-OBJ1 acceptance test for set-point
+plus held-liquid state on a flat object. The candidate is the
 `serological_pipette` asset observed in the inventory.
+
+Note: the YAML below uses the original M2 draft shape (composite
+`liquid` and `set_point` `state_field` types). Per RD-11 these are
+modeled as multiple flat primitives; the canonical worked example
+using the cleaned shape lives in
+[../specs/OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md) and
+[../specs/OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md). The block below
+is retained as a record of the original M2 design.
 
 ```yaml
 id: serological_pipette
@@ -380,8 +413,9 @@ anchored at its tip wherever it is placed).
 The inventory cataloged fields and tagged them; it did not propose schema.
 WP-OBJ1 introduced the following concepts that the inventory did not name:
 
-- The `state_fields` four-tuple (name, type, allowed, default) and its
-  six declared types (enum, int, float, bool, string, liquid, set_point).
+- **Note: superseded by RD-11.** The `state_fields` four-tuple (name,
+  type, allowed, default) and its six declared types (enum, int, float,
+  bool, string, liquid, set_point).
   In scope: the WP-OBJ1 acceptance criteria require "name, type, allowed
   values or range, default", and the inventory's candidate state_fields
   table required `liquid` and `set_point` as first-class types.
@@ -410,11 +444,12 @@ WP-OBJ1 introduced the following concepts that the inventory did not name:
   full enumeration.
 - The reclassification of `anchor_y` from a placement sub-field to an
   object layout hint. In scope: the inventory observed `anchor_y` as a
-  placement sub-field on 3 of 7 files, but the value is a property of
-  the asset (a pipette is tip-anchored regardless of placement). RD-2
-  permits a scene override.
+  placement sub-field on a minority of current scene files (per RD-5,
+  exact counts live in the inventory artifact), but the value is a
+  property of the asset (a pipette is tip-anchored regardless of
+  placement). RD-2 permits a scene override.
   Out of scope: whether any scene actually needs to override `anchor_y`;
-  WP-RAT-A1 will check this against the 7 scenes.
+  WP-RAT-A1 will check this against every current scene.
 
 Out of scope for WP-OBJ1 (deliberately deferred):
 
@@ -554,8 +589,9 @@ identity or state. Per-placement overrides go on the placement, not
 here.
 
 The accent-rules and tab-stops top-level keys named in the plan
-(`accentRules`, `tabStops`) were not observed in any of the 7 scene
-YAML files at WP-EV1 read (inventory inconsistency 4). The cleaned
+(`accentRules`, `tabStops`) were not observed in any current scene YAML
+file at WP-EV1 read (inventory inconsistency 4; per RD-5, exact counts
+live in the inventory artifact). The cleaned
 scene vocabulary reserves them as scene-side names but does not
 require them; M3 ratification (WP-RAT-A1) confirms whether either is
 live or dead. Today's tab-stop behavior is expressed by
@@ -588,8 +624,9 @@ scene and the workspace it targets; they are not object identity.
 
 Source list: the inventory artifact
 [scene_object_split_inventory.md](scene_object_split_inventory.md),
-specifically the "## items[] sub-fields across the 7 scene YAML files"
-table and the "## Scene-YAML top-level keys" table. Every entry below is
+specifically the "## items[] sub-fields across the current scene YAML files"
+table and the "## Scene-YAML top-level keys" table (per RD-5, exact
+counts live in the inventory artifact). Every entry below is
 drawn from those tables; the inventory tag and file-presence count are
 the evidence.
 
@@ -608,7 +645,7 @@ versus scene).
 | shortLabel | object-identity | 2 | Object YAML: object identity (`short_label`). Per RD-2, a scene placement may override. |
 | kind | object-identity | 3 | Object YAML: object identity (closed enum: plate, bottle, flask, pipette, rack, waste, equipment, decoration). |
 | svgAsset | object-identity | 3 | Object YAML: resolved through `render_map`, not declared as a literal field. The object owns SVG manipulation. |
-| inventoryRef | object-identity | 0 | Object YAML: object identity (`inventory_ref`). Plan-listed; not observed in any of the 7 files (inventory note 6). |
+| inventoryRef | object-identity | 0 | Object YAML: object identity (`inventory_ref`). Plan-listed; not observed in any current scene file (inventory note 6). |
 
 #### items[] sub-field reclassified to object layout hints
 
@@ -633,7 +670,7 @@ versus scene).
 | Today's top-level key | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
 | --- | --- | --- | --- |
 | capabilities | object-identity | 6 | Object YAML: object capabilities. Per RD-2 a scene placement may not override. |
-| target_groups | object-identity | 0 | Object YAML: object structure (named subpart groups). Per RD-4. Plan-listed; not observed. |
+| target_groups | object-identity | 0 | Retired per RD-9: named groups are deferred from the initial vocabulary. Plan-listed; not observed in any current scene file. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. |
 | items (identity half) | object-identity + placement | 5 | Split: identity sub-fields above move into object YAML; placement sub-fields above stay scene-side as `placements[]`. |
 
 #### Top-level scene-YAML keys that stay scene-side
@@ -674,7 +711,7 @@ WP-BND1 and does not draw the final boundary.
   cell_culture_hood scene reuses the dilution tube rack across multiple
   placements per the inventory).
 - A `background` block with `asset` and optional `bounds`. The
-  inventory cataloged no `background` key in any of the 7 files; the
+  inventory cataloged no `background` key in any current scene file; the
   cleaned scene vocabulary introduces it because RD-1 fixes the
   background as a scene-side concept and authors need a place to
   declare the backdrop asset.
@@ -710,24 +747,28 @@ The three-way boundary is the single rule that governs every authoring slot:
   schema. The protocol asks the object to be in a different declared state
   through `ObjectStateChange`; the object resolves the visual.
 - **Object** names what a thing is and how its state appears. An object
-  declares identity, structure (subparts and `target_groups`), the typed
-  `state_fields` schema, the `render_map` from state value to visual asset,
-  the closed `capabilities` set, and object-default layout hints. The
-  object owns the state-to-visual map and SVG manipulation. The object never
-  names where it goes in any one scene.
+  declares identity, structure (subparts; named groups are deferred per
+  RD-9), the typed `state_fields` schema (flat primitives only per
+  RD-11), the `render_map` from state value to visual asset, the closed
+  `capabilities` set (per RD-6), and object-default layout hints. The
+  object owns the state-to-visual map and SVG manipulation. The object
+  never names where it goes in any one scene.
 - **Scene** names where things appear and how the space is arranged. A scene
   references objects by id, places them inside named zones, declares the
   outer scene_bounds and the layout_rules the layout engine consumes, and
   declares the static background backdrop. A scene never declares object
-  identity, `state_fields`, `render_map`, or `capabilities`.
+  identity, `state_fields`, `render_map`, `capabilities`, or
+  `target_groups` (the last is deferred per RD-9).
 
 Per RD-2, a scene placement may carry exactly one bounded set of instance
 overrides: the object's `label` (and `short_label`) and the object's layout
 hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`,
 `anchor_y`). A placement may not override identity (`id`, `kind`,
-`inventory_ref`), `state_fields`, `render_map`, `target_groups`, or
-`capabilities`. Per RD-4, `target_groups` is object structure; the scene
-side of the boundary table never carries it.
+`inventory_ref`), `state_fields`, `render_map`, or `capabilities`. Per
+RD-9, `target_groups` is deferred from the initial vocabulary (the
+named-groups portion of RD-4 is superseded; RD-4's "subparts belong to
+the object" rule still holds); the boundary table no longer carries it
+on either side.
 
 ### Per-key assignment table: scene-YAML top-level keys
 
@@ -749,7 +790,7 @@ records "n/a" (the key has no object-side counterpart).
 | layoutRules | scene | `layout_rules` (scene-wide arrangement hints) | n/a |
 | accentRules | scene | `accent_rules` (reserved; not observed) | n/a |
 | tabStops | scene | reserved; expressed today as `zone.align: tab-stops` plus per-placement `align_stop` | n/a |
-| target_groups | object | object `structure.target_groups` (RD-4) | no -- structure, scene may not override |
+| target_groups | retired (RD-9) | per RD-9, named groups are deferred from the initial vocabulary; the scene side never carried this key in any current scene YAML, and the object side defers it. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. | n/a |
 | wrongOrderMessage | scene | `wrong_order_message` (scene-level UI feedback) | n/a |
 
 Coverage: 12 keys, each assigned to exactly one vocabulary. The `items` row
@@ -835,10 +876,12 @@ render-layer, with `ObjectStateChange` as the semantic superseder).
 ### Section close: what WP-BND1 leaves to M3 and M4
 
 - M3 ratification (WP-RAT-A1, WP-RAT-B1, WP-RAT-C1) tests the per-key and
-  per-sub-field tables against the 7 scene YAML files, the 31 observed
-  `asset_specs.ts` entries, the runtime liquid-state model, and the eight
-  `scene_operation` primitives. Any sub-field, key, or primitive that does
-  not land in its assigned vocabulary becomes a residual-gap entry.
+  per-sub-field tables against every current scene YAML file, every
+  current `asset_specs.ts` entry, the runtime liquid-state model, and
+  every ratified `scene_operation` primitive. Any sub-field, key, or
+  primitive that does not land in its assigned vocabulary becomes a
+  residual-gap entry. (Per RD-5, exact counts live in the inventory
+  artifact.)
 - M4 doc rewrites (WP-DOC-SV1, WP-DOC-SY1, WP-DOC-OV1, WP-DOC-OY1,
   WP-DOC-PV1) encode the boundary rule and the override surface in the
   canonical docs; the boundary table here is the source the canonical docs
@@ -851,10 +894,11 @@ object/render layer alongside `SvgSwap`); the design philosophy clause that
 the protocol stays semantic and the object owns the state-to-visual map.
 
 Source for the current `scene_operation` primitive set: M4-closed
-[../PROTOCOL_VOCABULARY.md](../PROTOCOL_VOCABULARY.md), which ratifies the
-eight primitives `SvgSwap`, `ColorChange`, `CursorAttach`, `SceneChange`,
-`LayoutMove`, `LiquidDisplayChange`, `SetPointDisplayChange`, and
-`TimedWait`.
+[../specs/PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md), which ratifies the
+currently ratified `scene_operation` primitives `SvgSwap`,
+`ColorChange`, `CursorAttach`, `SceneChange`, `LayoutMove`,
+`LiquidDisplayChange`, `SetPointDisplayChange`, and `TimedWait`. (Per
+RD-5, the exact count lives in the inventory artifact.)
 
 ### ObjectStateChange primitive
 
@@ -871,8 +915,8 @@ Typed fields:
 | Field | Type | Required | Purpose |
 | --- | --- | --- | --- |
 | op | const string | yes | Literal `ObjectStateChange`. Discriminates this primitive in the `scene_operation` union. |
-| target | object_ref | yes | Reference to the object, subpart, or named group whose state is being set. Forms: `<object_id>` (whole object), `<object_id>.<subpart_id>` (one subpart, for example `treatment_plate.A1`), or `<object_id>.<group_name>` (a named group declared by the object, for example `treatment_plate.row_A`). |
-| state | map of state_field name to value | yes | One or more `<state_field_name>: <value>` entries. Each name must exist in the target object's declared `state_fields`; each value must satisfy that field's `type` and `allowed` constraint. A multi-entry map sets fields atomically. |
+| target | object_ref | yes | Reference to the object or subpart whose state is being set. Forms: `<object_id>` (whole object) or `<object_id>.<subpart_id>` (one subpart, for example `treatment_plate.A1`). Per RD-9, named groups are deferred; emit one `ObjectStateChange` per subpart. |
+| state | flat map of state_field name to primitive value | yes | One or more `<state_field_name>: <value>` entries. Per RD-8, the map is flat-field-only: each name must exist in the target object's declared `state_fields` and each value must match that field's primitive type (`enum`, `int`, `float`, or `bool` per RD-11) and per-type metadata (per RD-12). Nested writes are not allowed. The validator rejects unknown field names and type-mismatched values. A multi-entry map sets fields atomically. |
 | transition | enum | no | One of: `instant`, `animated`. Default `instant`. Animation timing is an object/render-layer detail; the protocol only declares intent. |
 
 Rules:
@@ -882,10 +926,10 @@ Rules:
   silent no-op.
 - `state` values must match the field's declared `type` and satisfy
   `allowed`. A value outside `allowed` is an authoring error.
-- When `target` references a named group, the state map applies to every
-  member subpart, with each member resolved through the same `render_map`
-  entry (per the WP-OBJ1 rule that a `render_map` for an `applies_to:
-  subpart` field must itself be `applies_to: subpart`).
+- Per RD-9, named groups are deferred; a protocol acting on several
+  subparts emits one `ObjectStateChange` per subpart. (When named
+  groups are added in a future vocabulary pass, the resolution rule
+  will follow WP-OBJ1's `applies_to: subpart` contract.)
 - `ObjectStateChange` does not name SVG asset ids, color values, overlay
   ids, or layout coordinates. Anything visual is resolved by the object's
   `render_map`.
@@ -935,7 +979,7 @@ exception and reserves the slot but does not specify it; the specification
 belongs to the protocol that introduces the first colorimetric reading
 mini-protocol.
 
-### Re-partition table for the eight scene_operation primitives
+### Re-partition table for the ratified scene_operation primitives
 
 The table assigns each currently-ratified `scene_operation` primitive to
 either the protocol level (a semantic primitive that names declared state
@@ -950,14 +994,14 @@ applicable.
 | ColorChange             | object/render | Names a color value; visual mechanism resolved by the object's render_map. Reclassified per RD-3.        | ObjectStateChange                 |
 | CursorAttach            | protocol      | Names a semantic interaction (the cursor carries a referenced object). No SVG id or color is named.      | n/a (already protocol-level)      |
 | SceneChange             | protocol      | Names a scene-level transition. Outside any single object's render_map; belongs to scene-level intent.   | n/a (already protocol-level)      |
-| LayoutMove              | protocol      | Names a semantic placement change (where an object lives in the scene). Layout coordinates are scene-level, not asset-level. | n/a (already protocol-level)      |
-| LiquidDisplayChange     | object/render | Resolves a `liquid` state_field to a fill height and tint via render_map formula (WP-OBJ1). The protocol sets the underlying `held_liquid` state, not the display. | ObjectStateChange                 |
-| SetPointDisplayChange   | object/render | Resolves a `set_point` state_field to an overlay label via render_map formula (WP-OBJ1). The protocol sets the underlying `set_point` state, not the display. | ObjectStateChange                 |
+| LayoutMove              | protocol      | Names a semantic placement change. Per RD-10, scope is narrow: move an existing placement only -- (a) reposition within the current scene (the layout engine handles row-to-row moves) or (b) cross-scene transition (remove the placement from one scene, add it to another, e.g., a pipette moving from hood to bench). The layout engine owns the visible motion; `LayoutMove` names what moves and where. | n/a (already protocol-level)      |
+| LiquidDisplayChange     | object/render | Reclassified to the object/render layer per RD-13: it named a display result (a fill height, a tint) instead of the semantic state change, the same drift `SvgSwap` and `ColorChange` carried (RD-3). The protocol sets the object's flat declared liquid `state_fields` (per RD-11: `liquid_id`, `liquid_volume`, `liquid_color` for vessels and wells; `held_liquid_id` and `held_liquid_volume` for tools) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the visual. | ObjectStateChange                 |
+| SetPointDisplayChange   | object/render | Reclassified to the object/render layer per RD-14: it named a display result (a numeric overlay label) instead of the semantic state change, the same drift `SvgSwap`, `ColorChange`, and `LiquidDisplayChange` carried (RD-3, RD-13). The protocol sets the object's flat declared set-point `state_fields` (per RD-11: `set_volume`, `set_temperature`, `set_rpm`, etc. as flat numeric fields) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the digit overlay or display visual. | ObjectStateChange                 |
 | TimedWait               | protocol      | Names a semantic pause in protocol flow; no object state and no visual identifier are named.             | n/a (already protocol-level)      |
 
-Reading: three of the eight primitives (`CursorAttach`, `SceneChange`,
-`LayoutMove`, `TimedWait` -- four total) stay at the protocol level because
-they name semantic intent and never name an asset id or color. Four
+Reading: half of the ratified primitives (`CursorAttach`, `SceneChange`,
+`LayoutMove`, `TimedWait`) stay at the protocol level because they name
+semantic intent and never name an asset id or color. The other half
 (`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange`)
 move to the object/render layer because they name a visual identifier (an
 SVG id, a color, a fill display, a numeric overlay) that the object's

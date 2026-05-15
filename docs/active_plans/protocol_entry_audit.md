@@ -3,7 +3,7 @@
 ## Purpose
 
 This document is the WP-ENTRY-1 deliverable for the scene-runtime spine plan
-(see [scene_runtime_spine_plan.md](scene_runtime_spine_plan.md)). It records
+(see [scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md)). It records
 the intended `entry.scene` and `entry.step` values for every protocol currently
 tracked under `content/` and `tests/content/dev_smoke/`. The goal is to give
 WP-ENTRY-2 a single source of truth so the formal `entry:` block can be

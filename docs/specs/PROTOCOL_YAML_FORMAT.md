@@ -90,8 +90,11 @@ Status: **current-code.**
 
 Two YAML files handle items and reagents separately. Namespaces are disjoint:
 item ids appear in layout, reagent ids appear in liquid state. An item id is
-what a step `interaction` names as its `target`; a reagent id is what a
-`LiquidDisplayChange` `scene_operation` names as its `liquid`.
+what a step `interaction` names as its `target`; a reagent id is what an
+`ObjectStateChange` `scene_operation` writes into an object's flat declared
+`liquid_id` (or `held_liquid_id`) `state_field` (per RD-13 of the
+scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md))).
 
 ### Items block
 
@@ -153,7 +156,9 @@ Each reagent is a mapping keyed by snake_case id. All fields required.
 Note: `colorKey` is a legacy field. It is in the retired-terms table in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) and is slated for removal by
 the follow-on code-migration plan. It is still accurate for current `reagents.yaml`;
-target-state expresses reagent color via a `LiquidDisplayChange` scene_operation.
+target-state expresses reagent color via the object's flat `liquid_color`
+`state_field` (per RD-11), written by an `ObjectStateChange` (per RD-13)
+and resolved by the object's `render_map`.
 
 ### Items and reagents example
 
@@ -225,7 +230,7 @@ in the broader curriculum.
 | `outcomes` | string | For mini-protocols | Begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol. |
 | `goals` | string | For mini-protocols | Begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose. |
 
-Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [PRIMARY_SPEC.md](PRIMARY_SPEC.md) for the full learning-block schema.
+Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the full learning-block schema.
 
 ### Entry block (required for mini-protocols)
 
@@ -244,7 +249,7 @@ entry:
   step: open_plate_workspace
 ```
 
-Validation rules: `entry.step` must be the id of the first authored step, and `entry.scene` must equal that step's `scene`. See [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md) for full validation.
+Validation rules: `entry.step` must be the id of the first authored step, and `entry.scene` must equal that step's `scene`. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for full validation.
 
 ### Learning block example
 
@@ -344,13 +349,29 @@ A `response` has two fields:
 | `scene_operations` | list of mappings | yes (may be empty) | An ordered list of typed `scene_operation` primitives. Order matters; the runtime applies the list top to bottom. |
 | `feedback` | mapping | no | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
 
-A `scene_operation` requires a `type` field naming one of the eight
-ratified primitives (`SvgSwap`, `ColorChange`, `CursorAttach`,
-`SceneChange`, `LayoutMove`, `LiquidDisplayChange`,
-`SetPointDisplayChange`, `TimedWait`) plus that type's documented typed
-fields. The full per-primitive field list lives in
-[PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). The PascalCase type
-names are the only non-snake_case identifiers in protocol YAML.
+A `scene_operation` requires a `type` field naming one of the five
+ratified protocol-level primitives (`ObjectStateChange`, `CursorAttach`,
+`SceneChange`, `LayoutMove`, `TimedWait`) plus
+that type's documented typed fields. The full per-primitive field list
+lives in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). Per RD-3 of
+the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+`SvgSwap` and `ColorChange` are reclassified out of the protocol-level set
+into the object/render layer. Per RD-13, `LiquidDisplayChange` is
+reclassified the same way: liquid state mutation is expressed through
+`ObjectStateChange` against the object's flat declared liquid fields
+(`liquid_id`, `liquid_volume`, `liquid_color`; `held_liquid_id`,
+`held_liquid_volume`), and the object's `render_map` resolves the visual.
+Per RD-14, `SetPointDisplayChange` is reclassified the same way:
+set-point state mutation is expressed through `ObjectStateChange`
+against the object's flat declared set-point fields (`set_volume`,
+`set_temperature`, `set_rpm`, etc. per RD-11), and the object's
+`render_map` resolves the digit overlay or display visual.
+The protocol writes semantic state through `ObjectStateChange` and never
+names an SVG asset id, a color value, a liquid display update, or a
+set-point display update. The
+PascalCase type names are the only non-snake_case identifiers in protocol
+YAML.
 
 ### Validator presets
 
@@ -403,14 +424,17 @@ but only after the expanded form is stable.
 Status: **target-state.**
 
 The protocol YAML is geometry-free: it names no plate, no well, no tube,
-no row, and no coordinate. A step that treats a row of wells writes one
-semantic `target` name (for example `target: row_b`); the scene YAML owns
-the named group that the name expands to. See the `target_groups` schema
-in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) and the scene-vs-protocol
-boundary section of [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). The
-retired `plateTargets` and `tubeTargets` fields pushed plate and tube
-geometry into protocol YAML; the named-group mechanism pulls it back to
-the scene side where it belongs.
+no row, and no coordinate. Subparts of a structured object (wells, lanes,
+slots) are declared by the object via `structure.subparts`; see
+[OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). A protocol addresses one
+subpart as `<object_id>.<subpart_id>` (for example `treatment_plate.A1`).
+Per RD-9 of the scene-object split plan
+([../archive/scene_object_split_plan.md](../archive/scene_object_split_plan.md)),
+named groups are deferred from this vocabulary pass; a step that acts on
+several subparts emits one interaction per subpart. The retired
+`plateTargets` and `tubeTargets` fields pushed plate and tube geometry
+into protocol YAML; the subpart-id mechanism pulls it back to the object
+side where it belongs.
 
 ## Worked example: pbs_wash step
 
@@ -441,11 +465,11 @@ protocol:
           validator: { preset: correct_target }
           response:
             scene_operations:
-              - type: LiquidDisplayChange
+              - type: ObjectStateChange
                 target: serological_pipette
-                liquid: pbs
-                volume_ml: 4
-                operation: hold
+                state:
+                  held_liquid_id: pbs
+                  held_liquid_volume: 4
             feedback:
               correct: PBS loaded.
               incorrect: Use the PBS bottle.
@@ -454,22 +478,22 @@ protocol:
           validator: { preset: correct_target }
           response:
             scene_operations:
-              - type: LiquidDisplayChange
+              - type: ObjectStateChange
                 target: serological_pipette
-                liquid: pbs
-                volume_ml: 0
-                operation: set
-              - type: LiquidDisplayChange
+                state:
+                  held_liquid_id: null
+                  held_liquid_volume: 0
+              - type: ObjectStateChange
                 target: flask
-                liquid: pbs
-                volume_ml: 4
-                operation: add
+                state:
+                  liquid_id: pbs
+                  liquid_volume: 4
       step_validator:
         preset: final_state_matches
         target: flask
         contains:
-          liquid: pbs
-          volume_ml: 4
+          liquid_id: pbs
+          liquid_volume: 4
       outcome:
         on_success: complete
         on_failure: retry
@@ -518,15 +542,20 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 - Every `interaction` carries exactly the four slots `target`, `gesture`,
   `validator`, and `response`.
-- Every `target` value resolves to a scene object or a named group through
-  the scene's adapter registry and `target_groups` (see
-  [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)).
+- Every `target` value resolves to a scene object or to a declared subpart
+  of a structured object (`<object_id>.<subpart_id>`) through the scene's
+  adapter registry; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) and
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Per RD-9 named groups are
+  deferred; explicit subparts only.
 - `gesture` is one of `click`, `drag`, `adjust`, `select`, `type`.
 - `validator` and `step_validator` each name a preset from the documented
   preset library, with that preset's required typed parameters.
 - `response.scene_operations` is a list (possibly empty); every entry has a
-  `type` naming one of the eight ratified `scene_operation` primitives plus
-  that type's documented typed fields.
+  `type` naming one of the five ratified protocol-level `scene_operation`
+  primitives (per RD-3 `SvgSwap` and `ColorChange`, per RD-13
+  `LiquidDisplayChange`, and per RD-14 `SetPointDisplayChange`, all moved
+  to the object/render layer) plus that
+  type's documented typed fields.
 
 ### Outcome validation
 
@@ -540,13 +569,17 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 ### Hygiene rules
 
-- ASCII-only across all YAML. UTF-8 glyphs escaped per [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md)
+- ASCII-only across all YAML. UTF-8 glyphs escaped per [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md)
   (e.g. `&alpha;`, `&micro;`).
 - Every item in items.yaml must be referenced by at least one step (as an
   interaction `target`) OR have `visualOnly: true`. Catches dead inventory.
 - Every reagent in reagents.yaml must be referenced by at least one
-  `scene_operation` (a `LiquidDisplayChange` `liquid`) or item `contains`
-  field. Catches dead reagents.
+  `scene_operation` (an `ObjectStateChange` writing the reagent id into
+  an object's flat `liquid_id` or `held_liquid_id` `state_field`, per
+  RD-13; the field's declared `enum` `allowed` list is the binding
+  reference, the same enum-allowed-values mechanism RD-12 specifies for
+  any `enum` `state_field`) or item `contains` field. Catches dead
+  reagents.
 
 ## Generated TypeScript surface
 
@@ -615,17 +648,20 @@ The two namespaces are intentionally disjoint:
 
 - **Only item ids** appear as interaction `target` values, in scene layout,
   and in asset specs.
-- **Only reagent ids** appear in a `LiquidDisplayChange` `liquid` field and
-  in item `contains` fields.
-- A `LiquidDisplayChange` `scene_operation` references both an item id and a
-  reagent id: `target: serological_pipette` (item id) plus `liquid: pbs`
-  (reagent id). The builder verifies that a source item's `contains` matches
-  the liquid id it is drawn for.
+- **Only reagent ids** appear written into an object's flat liquid
+  `state_field` (`liquid_id`, `held_liquid_id`) by an `ObjectStateChange`
+  (per RD-13), and in item `contains` fields.
+- An `ObjectStateChange` `scene_operation` that writes liquid state
+  references both an item id and a reagent id: `target:
+  serological_pipette` (item id) plus `state: { held_liquid_id: pbs,
+  held_liquid_volume: 4 }` (reagent id in the flat field). The builder
+  verifies that a source item's `contains` matches the liquid id it is
+  drawn for.
 
 This prevents accidental name collisions and catches copy-paste errors at build time.
 
 ## See also
 
-- [docs/REPO_STYLE.md](REPO_STYLE.md) for repository conventions
-- [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md) for ASCII-only and escaping rules
-- [AGENTS.md](../AGENTS.md) for agent guidelines on YAML authoring
+- [../REPO_STYLE.md](../REPO_STYLE.md) for repository conventions
+- [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md) for ASCII-only and escaping rules
+- [AGENTS.md](../../AGENTS.md) for agent guidelines on YAML authoring
