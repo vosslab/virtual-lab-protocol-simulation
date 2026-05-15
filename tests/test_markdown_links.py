@@ -48,9 +48,20 @@ def strip_code_regions(text: str) -> list[tuple[int, str]]:
 			masked_lines.append((index, ""))
 			continue
 		# Replace inline code spans with spaces of equal length.
-		masked = INLINE_CODE_RE.sub(lambda match: " " * len(match.group(0)), line)
+		masked = INLINE_CODE_RE.sub(blank_match, line)
 		masked_lines.append((index, masked))
 	return masked_lines
+
+
+#============================================
+def blank_match(match: re.Match) -> str:
+	"""
+	Replacement function for inline-code-span masking.
+
+	Returns spaces of the same length as the matched span so column positions
+	stay aligned for downstream parsing.
+	"""
+	return " " * len(match.group(0))
 
 
 #============================================
@@ -148,12 +159,39 @@ def to_posix(path: str) -> str:
 
 
 #============================================
-def check_path_like_text(link_text: str, url_no_anchor: str) -> str:
+def target_path_tails(target_rel_to_root: str) -> list[str]:
 	"""
-	Check that path-like link text matches the URL.
+	Build the set of accepted path-like text forms for a target.
 
-	If the visible text looks like a path (contains ".md" or "/"), it must
-	equal the full URL or the URL basename. Descriptive text is allowed.
+	A path-like link text is accepted when it names the same file the URL
+	resolves to. That includes the target's full repo-root-relative path and
+	every tail suffix of its path components, so for target
+	`skills/x/y.md` the accepted forms are `skills/x/y.md`, `x/y.md`, and
+	`y.md`. The k=1 tail is the basename, so the older basename rule is
+	covered automatically.
+	"""
+	segments = to_posix(target_rel_to_root).rstrip("/").split("/")
+	tails = []
+	for k in range(1, len(segments) + 1):
+		tails.append("/".join(segments[-k:]))
+	return tails
+
+
+#============================================
+def check_path_like_text(
+	link_text: str,
+	url_no_anchor: str,
+	target_rel_to_root: str,
+) -> str:
+	"""
+	Check that path-like link text matches the link target.
+
+	Descriptive text (no `.md` and no `/`) is always allowed. Path-like text
+	must equal the URL exactly OR any tail suffix of the target's repo-root-
+	relative path components. Catches text/URL mismatches that resolve to
+	different files; tolerates `[skills/foo/bar.md](../skills/foo/bar.md)`
+	style where the source is in a sibling subtree and the text uses the
+	repo-root form.
 
 	Returns:
 		str: Issue description, or "" when the link is fine.
@@ -164,12 +202,16 @@ def check_path_like_text(link_text: str, url_no_anchor: str) -> str:
 		text = text[1:-1]
 	if ".md" not in text and "/" not in text:
 		return ""
-	basename = os.path.basename(url_no_anchor)
-	if text == url_no_anchor or text == basename:
+	# Normalize trailing slashes so [tests/] vs target `tests` compares equal.
+	text_norm = text.rstrip("/")
+	url_norm = url_no_anchor.rstrip("/")
+	tails = target_path_tails(target_rel_to_root)
+	if text_norm == url_norm or text_norm in tails:
 		return ""
 	return (
-		f"path-like link text [{link_text}] must equal the URL "
-		f"({url_no_anchor}) or its basename ({basename})"
+		f"path-like link text [{link_text}] does not match target "
+		f"({to_posix(target_rel_to_root)}); use the URL ({url_no_anchor}), "
+		f"its basename ({tails[0]}), or a tail of the target path"
 	)
 
 
@@ -178,6 +220,7 @@ def check_local_link(
 	repo_root: str,
 	file_dir: str,
 	tracked_set: set,
+	tracked_dirs: set,
 	link_text: str,
 	url: str,
 ) -> str:
@@ -209,10 +252,11 @@ def check_local_link(
 			f"and will not work on GitHub"
 		)
 
-	# Existence: the target must be a tracked file (present on disk is not
-	# enough; untracked files 404 on github.com).
-	if rel_from_root not in tracked_set:
-		return f"local link [{link_text}]({url}) target not found: {rel_from_root}"
+	# Existence: the target must be a tracked file or a tracked directory
+	# (GitHub renders dir links as a directory listing). Untracked files 404.
+	rel_posix = to_posix(rel_from_root)
+	if rel_posix not in tracked_set and rel_posix not in tracked_dirs:
+		return f"local link [{link_text}]({url}) target not found: {rel_posix}"
 
 	# Redundant traversal: the URL uses ".." but a ..-free path exists.
 	if ".." in url_no_anchor.split("/"):
@@ -223,18 +267,42 @@ def check_local_link(
 				f"traversal; use {to_posix(rel_from_dir)}"
 			)
 
-	# Path-like text must match the URL.
-	return check_path_like_text(link_text, url_no_anchor)
+	# Path-like text must name the same file the URL resolves to.
+	return check_path_like_text(link_text, url_no_anchor, rel_posix)
 
 
 #============================================
-def scan_file(repo_root: str, tracked_set: set, md_path: str) -> list[str]:
+def build_tracked_dirs(tracked_set: set) -> set:
+	"""
+	Compute the set of directories implied by tracked files.
+
+	Every parent of every tracked path (in POSIX form) is included so that
+	directory-target links such as `[skills/](../skills/)` resolve to a known
+	location even though no file path matches the bare directory name.
+	"""
+	dirs = set()
+	for path in tracked_set:
+		parts = to_posix(path).split("/")
+		# Build each parent prefix: parts[0], parts[0]/parts[1], ...
+		for end in range(1, len(parts)):
+			dirs.add("/".join(parts[:end]))
+	return dirs
+
+
+#============================================
+def scan_file(
+	repo_root: str,
+	tracked_set: set,
+	tracked_dirs: set,
+	md_path: str,
+) -> list[str]:
 	"""
 	Scan one markdown file for link issues.
 
 	Args:
 		repo_root: Absolute path to the repository root.
 		tracked_set: Set of tracked repo-relative paths.
+		tracked_dirs: Set of tracked-directory repo-relative paths.
 		md_path: Repo-relative path to the markdown file.
 
 	Returns:
@@ -254,6 +322,7 @@ def scan_file(repo_root: str, tracked_set: set, md_path: str) -> list[str]:
 				repo_root,
 				file_dir,
 				tracked_set,
+				tracked_dirs,
 				link_text,
 				url,
 			)
@@ -343,10 +412,11 @@ def test_markdown_links() -> None:
 		return
 
 	tracked_set = set(git_file_utils.list_tracked_files(REPO_ROOT))
+	tracked_dirs = build_tracked_dirs(tracked_set)
 
 	all_issues = []
 	for md_path in sorted(files):
-		all_issues.extend(scan_file(REPO_ROOT, tracked_set, md_path))
+		all_issues.extend(scan_file(REPO_ROOT, tracked_set, tracked_dirs, md_path))
 
 	if not all_issues:
 		print("No errors found!!!")
