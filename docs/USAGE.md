@@ -97,6 +97,76 @@ Validate only (no output files):
 source source_me.sh && python3 tools/build_protocol_data.py --validate-only
 ```
 
+## Protocol stepper
+
+The protocol stepper is the second of two content gates. Run the schema
+validator first, then the stepper:
+
+```bash
+source source_me.sh && python3 tools/validate_content_yaml.py
+source source_me.sh && python3 tools/protocol_stepper.py
+```
+
+The validator catches schema and per-mini authoring errors. The stepper
+loads the validated content and performs whole-protocol simulation: it
+walks every mini-protocol's flow graph, tracks material and set-point
+state on declared objects, runs scene operations against the scene
+adapter, and chains constituent mini-protocols inside every sequence
+runner.
+
+Default invocation walks every mini-protocol plus every sequence runner
+in the content tree. Walk a single protocol:
+
+```bash
+source source_me.sh && python3 tools/protocol_stepper.py --protocol passage_hood_detachment
+```
+
+Verbose mode prints per-step state deltas (which object fields changed,
+which materials moved, which scene operations fired) as the walk
+progresses:
+
+```bash
+source source_me.sh && python3 tools/protocol_stepper.py --protocol passage_hood_detachment --verbose
+```
+
+### Error classes
+
+The stepper surfaces these primary error classes:
+
+- `unknown_material`: a step references a material name not declared in
+  the mini's `materials.yaml`.
+- `state_value_type_mismatch`: a setter primitive writes a value whose
+  type does not match the declared primitive type of the field.
+- `flow_cycle`: `next_step` chains form a loop with no terminal step.
+- `broken_next_step`: a `next_step` names a `step_name` that does not
+  exist in the mini's `steps` list.
+- `runner_of_runner`: a `sequence_runner` lists another `sequence_runner`
+  as a constituent (only `mini_protocol` constituents are allowed).
+- `placement_name_collision`: two scene placements share the same
+  `placement_name`.
+- `capability_mismatch`: a step targets an object that does not declare
+  the capability the gesture requires.
+
+### Flow-shape checks
+
+The stepper also enforces flow-shape invariants:
+
+- every `entry_step` resolves to a real `step_name`;
+- every reachable step terminates (no orphan branches);
+- every `target` in an interaction resolves through the scene adapter to
+  a placed object (currently a WARNING; see the scene-adapter design
+  follow-on in [active_plans/scene_adapter_resolution_design.md](active_plans/scene_adapter_resolution_design.md)).
+
+### Deferred checks
+
+Two related checks are deferred to follow-on RFCs and are not enforced
+by the stepper today:
+
+- Material volume conservation across a step's scene operations. See
+  [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md).
+- `step_kind` semantic gating for `TimedWait` and related primitives.
+  See [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md).
+
 ## Testing
 
 ### Browser smoke test (fast 9-gate check)

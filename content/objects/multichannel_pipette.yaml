@@ -13,7 +13,7 @@ state_fields:
     description: Volume the pipette is set to dispense per channel.
   - field_name: held_material_name
     type: enum
-    allowed: [empty, media, drug_combo, dmso, mtt, carboplatin, metformin]
+    allowed: [empty, media, dmso, mtt, carboplatin, metformin]
     default: empty
     description: Contents currently held in the channels.
   - field_name: held_material_volume
@@ -34,8 +34,6 @@ visual_states:
       - when: empty
         output: { asset_name: multichannel_pipette_empty }
       - when: media
-        output: { asset_name: multichannel_pipette_filled }
-      - when: drug_combo
         output: { asset_name: multichannel_pipette_filled }
       - when: dmso
         output: { asset_name: multichannel_pipette_filled }

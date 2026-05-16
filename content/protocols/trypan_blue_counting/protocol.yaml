@@ -279,8 +279,8 @@ steps:
               target: cell_counter
               state:
                 capture_pressed: true
-                cell_count: null
-                viability_percent: null
+                cell_count: 850000
+                viability_percent: 92.5
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete

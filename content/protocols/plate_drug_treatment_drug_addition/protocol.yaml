@@ -1135,7 +1135,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
             - type: CursorAttach
               target: micropipette
@@ -1148,7 +1148,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.B9
         gesture: click
@@ -1158,7 +1158,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.B10
         gesture: click
@@ -1168,7 +1168,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.B11
         gesture: click
@@ -1178,7 +1178,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.B12
         gesture: click
@@ -1188,7 +1188,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.B12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C7
         gesture: click
@@ -1198,7 +1198,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C8
         gesture: click
@@ -1208,7 +1208,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C9
         gesture: click
@@ -1218,7 +1218,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C10
         gesture: click
@@ -1228,7 +1228,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C11
         gesture: click
@@ -1238,7 +1238,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.C12
         gesture: click
@@ -1248,7 +1248,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.C12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D7
         gesture: click
@@ -1258,7 +1258,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D8
         gesture: click
@@ -1268,7 +1268,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D9
         gesture: click
@@ -1278,7 +1278,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D10
         gesture: click
@@ -1288,7 +1288,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D11
         gesture: click
@@ -1298,7 +1298,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.D12
         gesture: click
@@ -1308,7 +1308,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.D12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E7
         gesture: click
@@ -1318,7 +1318,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E8
         gesture: click
@@ -1328,7 +1328,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E9
         gesture: click
@@ -1338,7 +1338,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E10
         gesture: click
@@ -1348,7 +1348,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E11
         gesture: click
@@ -1358,7 +1358,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.E12
         gesture: click
@@ -1368,7 +1368,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.E12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F7
         gesture: click
@@ -1378,7 +1378,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F8
         gesture: click
@@ -1388,7 +1388,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F9
         gesture: click
@@ -1398,7 +1398,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F10
         gesture: click
@@ -1408,7 +1408,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F11
         gesture: click
@@ -1418,7 +1418,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.F12
         gesture: click
@@ -1428,7 +1428,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.F12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G7
         gesture: click
@@ -1438,7 +1438,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G8
         gesture: click
@@ -1448,7 +1448,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G9
         gesture: click
@@ -1458,7 +1458,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G10
         gesture: click
@@ -1468,7 +1468,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G11
         gesture: click
@@ -1478,7 +1478,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.G12
         gesture: click
@@ -1488,7 +1488,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.G12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H7
         gesture: click
@@ -1498,7 +1498,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H7
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H8
         gesture: click
@@ -1508,7 +1508,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H8
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H9
         gesture: click
@@ -1518,7 +1518,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H9
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H10
         gesture: click
@@ -1528,7 +1528,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H10
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H11
         gesture: click
@@ -1538,7 +1538,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H11
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
       - target: well_plate_96.H12
         gesture: click
@@ -1548,7 +1548,7 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.H12
               state:
-                material_name: drug_combo
+                material_name: carboplatin_metformin_combo
                 material_volume: 110
     step_validator: { preset: sequence_complete }
     outcome:

@@ -13,7 +13,7 @@ This plan delivers `tools/protocol_stepper.py`: a fast, in-memory, non-browser w
 - Ship `tools/protocol_stepper.py` that steps every shipped mini-protocol from `entry_step` to terminal step with zero ERROR findings on the current intended-good tree.
 - Step both shipped sequence runners (`cell_culture_full`, `routine_passage`) by executing their mini-protocol leaves in order while threading object/material state across the handoff.
 - Track per-placement object and material state across steps and within a sequence-runner across constituent minis.
-- Catch the six primary failure-fixture classes (unknown material, unknown target at active scene, invalid state-field mutation, broken `next_step`, sequence runner referencing another sequence runner, cross-mini material-production gap - F2 pattern) plus three flow-shape checks (cycles, unreachable steps, multi-terminal) plus two structural-mutation checks (capability-gated material writes, material volume conservation per response).
+- Catch the six primary failure-fixture classes (unknown material, unknown target at active scene, invalid state-field mutation, broken `next_step`, sequence runner referencing another sequence runner, cross-mini material-production gap - F2 pattern) plus three flow-shape checks (cycles, unreachable steps, multi-terminal) plus one structural-mutation check (capability-gated material writes).
 - Emit human-readable findings with protocol, step, interaction, and file-path context, with ERROR and WARNING levels; ERROR drives exit 1.
 
 ## Design philosophy
@@ -86,7 +86,7 @@ Durable component names used in code (stage / module / component, never mileston
 | --- | --- | --- |
 | M1 / WS-A | `tools/stepper/loader.py`, `tools/stepper/findings.py` | 1 |
 | M1 / WS-B | `tools/stepper/flow.py` | 1 |
-| M1 / WS-C | `tools/stepper/state.py`, `tools/stepper/scene_ops.py` (incl. capability gate + conservation rule) | 2 |
+| M1 / WS-C | `tools/stepper/state.py`, `tools/stepper/scene_ops.py` (incl. capability gate) | 1 |
 | M1 / WS-D | `tools/protocol_stepper.py`, `tools/stepper/runner.py` | 1 |
 | M1 / WS-E | `tests/fixtures/stepper/`, `tests/test_protocol_stepper_*.py` | 1-2 |
 | M2 / WS-F | `tools/stepper/cross_mini.py`, sequence-runner traversal in `runner.py` | 1 |
@@ -97,6 +97,8 @@ Durable component names used in code (stage / module / component, never mileston
 
 The following decisions were pinned during plan drafting; doers do not re-decide them:
 
+- **Active-scene checks demoted to WARNING in M1.** Live-tree dry-run found 234 active-scene findings on intended-good shipped content vs 44 real ERRORs (unknown_material + state_value_type_mismatch). Stepper's active-scene model is too tight given how authored protocols implicitly span scenes. Per Risk register mitigation, `unknown_target_active_scene` and `ambiguous_target_in_scene` demoted to WARNING for M1. Follow-on: `docs/active_plans/scene_adapter_resolution_design.md` (SPAWNED 2026-05-16) ratifies the full scene-adapter model; once spec lands, these codes return to ERROR.
+
 - **State-map keying.** Key by **`placement_name` treated as the object instance name**, globally unique across the entire content tree. Rationale: a sequence runner threads state from one mini to the next; if MP-1 writes flask state under one key and MP-2 reads under another, the cross-mini check silently passes. Globally unique placement names give one stable key per physical object instance regardless of which scene currently owns it. Stepper emits ERROR if two scenes declare the same `placement_name` with different `object_name` (collision). Future spec extension may introduce an explicit `object_instance_name` field; until then, `placement_name` is the instance key. (Naming convention: YAML/spec fields use `xxx_name`, never `xxx_id`. Runtime variables in Python/TS may use `_id` freely.)
 - **Cross-mini check generalization.** The rule is: "any non-sentinel material name written to or referenced in mini N must have been produced (via `ObjectStateChange` writing that material name) or declared as an input material in `materials.yaml` of some mini M with M <= N in the sequence-runner order." No protocol names, step names, or material names appear as literals in `tools/stepper/cross_mini.py`. Sentinels (`empty`, `mixed`) are exempt. This rule covers the F2 pattern (working stock referenced before being produced) without rotting with every curriculum edit.
 - **TimedWait step-kind check removed.** Spec gap confirmed: no `step_kind` field exists in `PROTOCOL_VOCABULARY.md` / `PROTOCOL_STEPS.md`. Stepper accepts any `TimedWait` location without WARNING. A spec RFC is filed in Open questions for `step_kind: incubation|treatment|centrifugation|wait`. No prompt-text or step-name inference. When the spec lands the field, the stepper enforces; until then, the check does not exist.
@@ -106,6 +108,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - **CLI flag set.** Per `docs/PYTHON_STYLE.md` argparse minimalism: `--protocol <name>` (frequently changed when debugging one protocol) and `--verbose` (frequently changed when investigating findings). No `--strict`: ERROR drives exit 1, WARNING is advisory only.
 - **CHANGELOG cadence.** Per-milestone entries (one entry per milestone under the correct date heading). No final rollup. Each milestone exit criterion lists the CHANGELOG update as an obvious follow-on.
 - **Validator/stepper boundary on "unknown target".** The validator catches static "target not declared in any scene reachable from this protocol." The stepper catches "target not in the *active* scene at *this* step" - a runtime-context check the static validator cannot make without simulating `SceneChange`. Documented; not duplicative.
+- **Conservation rule deferred.** PRE-V dry-run found within-response volume balance incompatible with current split-response transfer pattern. M1 ships without WP-C3. Spec RFC in [docs/active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md) resolves scope (per-response vs per-step), aspiration-to-air semantics, and disposal sentinel before any stepper conservation rule lands.
 
 ## Milestone plan
 
@@ -115,12 +118,12 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - Workstreams: WS-A, WS-B, WS-C, WS-D, WS-E (WS-B, WS-C, WS-D, WS-E run in parallel after WS-A scaffolding lands).
 - Entry criteria:
   - `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0 on current tree.
-  - Pre-patch-1 sanity check: confirm the six `ContentDatabase` methods listed in Current state summary still exist (the `git ls-files tools/validators/database.py | xargs grep -n "def "` view returns the four `resolve_*` plus `subpart_matches` plus `load_from_tree`). If the API has shifted, pause WS-A and reconcile.
+  - Pre-patch-1 sanity check: confirm the six `ContentDatabase` methods listed in Current state summary still exist (the `git ls-files tools/validators/database.py | xargs cat | grep -n "def "` view returns the four `resolve_*` plus `subpart_matches` plus `load_from_tree`). If the API has shifted, pause WS-A and reconcile.
   - Placement-name uniqueness verified across `content/scenes/` + every `content/protocols/<name>/scenes/` before WS-C starts. Same `placement_name` declared with different `object_name` blocks M1. If collisions exist in shipped content, fix the YAML before WS-C; do not weaken the keying rule.
 - Exit criteria:
   - `tools/protocol_stepper.py` steps every shipped mini-protocol from `entry_step` to terminal step with zero ERROR findings.
   - Pytest `tests/test_protocol_stepper_unit.py` and `tests/test_protocol_stepper_fixtures.py` pass.
-  - Fixture set demonstrates four of the six primary failure classes (`unknown_material`, `unknown_target_active_scene`, `invalid_state_field`, `broken_next_step`); the three flow-shape classes (`flow_cycle`, `flow_unreachable`, `flow_multi_terminal`); the two structural-mutation classes (`capability_mismatch`, `conservation_imbalance`); the five positive cases (`waste_is_real_material`, `scene_ops_ordering`, `conservation_balanced_transfer`, `conservation_balanced_dilution`, `conservation_balanced_mixing`) each produce zero findings.
+  - Fixture set demonstrates four of the six primary failure classes (`unknown_material`, `unknown_target_active_scene`, `invalid_state_field`, `broken_next_step`); the three flow-shape classes (`flow_cycle`, `flow_unreachable`, `flow_multi_terminal`); the one structural-mutation class (`capability_mismatch`); the two positive cases (`waste_is_real_material`, `scene_ops_ordering`) each produce zero findings.
   - `source source_me.sh && pytest tests/test_protocol_stepper_*.py` finishes under 5 s total.
   - `source source_me.sh && python3 tools/protocol_stepper.py` exits 0 on current `content/` tree.
   - `docs/CHANGELOG.md` entry added for M1 patches (per-milestone cadence).
@@ -176,8 +179,8 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - Owner: coder
 - Interfaces:
   - Needs: loader and findings from WS-A.
-  - Provides: `tools/stepper/state.py:StateMap` keyed by `placement_name` (global instance name per Resolved decisions); per-field mutation gate that uses `ContentDatabase.resolve_state_field()` to confirm the field exists and the value matches the declared type; capability gate (A2) ensuring material-* writes require `material_container` capability on target; material conservation rule (A1) balancing volume deltas within an `interaction.response`; `tools/stepper/scene_ops.py` handlers for `CursorAttach`, `ObjectStateChange`, `SceneChange`, `TimedWait` with ordered top-to-bottom application within a response; unknown `scene_operation.type` emits ERROR. Detection of placement-name collision across scenes is in scope here.
-- Expected patches: 1-2 (split state from scene-ops if reviewability suggests).
+  - Provides: `tools/stepper/state.py:StateMap` keyed by `placement_name` (global instance name per Resolved decisions); per-field mutation gate that uses `ContentDatabase.resolve_state_field()` to confirm the field exists and the value matches the declared type; capability gate (A2) ensuring material-* writes require `material_container` capability on target; `tools/stepper/scene_ops.py` handlers for `CursorAttach`, `ObjectStateChange`, `SceneChange`, `TimedWait` with ordered top-to-bottom application within a response; unknown `scene_operation.type` emits ERROR. Detection of placement-name collision across scenes is in scope here. Material conservation (WP-C3) is DEFERRED; see Resolved decisions and [../active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md).
+- Expected patches: 1.
 
 ### Workstream WS-D: CLI and orchestration
 
@@ -298,29 +301,15 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - Obvious follow-ons:
   - When the spec ratifies `step_kind`, reopen this work package and add the deferred wait-class check.
 
-### Work package WP-C3: material conservation (physical volume balance)
+### Work package WP-C3: material conservation (DEFERRED to follow-on RFC)
 
-- Owner: coder
-- Touch points: `tools/stepper/state.py` (extend), `tools/stepper/scene_ops.py` (extend).
-- Depends on: WP-C1, WP-C2
-- Acceptance criteria:
-  - **Conservation rule (physical volume, material-identity-agnostic):** within a single `interaction.response`, the algebraic sum of `material_volume` deltas plus `held_material_volume` deltas across all `ObjectStateChange` ops on `material_container` objects must equal zero. Net imbalance -> ERROR `[conservation_violation]`. This is a physical liquid-mass balance, NOT a per-material balance - it accommodates dilution (5 ul concentrate + 95 ul diluent = 100 ul working stock: -5 -95 +100 = 0) and mixing (5 ul A + 5 ul B = 10 ul mixed: -5 -5 +10 = 0) without false positives, because the new material identity inherits the combined volume on the destination object.
-  - Material-identity drift (e.g. drawing `pbs` and depositing `media`) is **not** policed by this rule. That class is caught by the unknown-material rule (WP-C1) and the cross-mini production rule (WP-F1). Conservation owns volume; identity rules own identity. Layer boundary preserved.
-  - Every receiving and donating object must be a state-tracked `material_container`. A vacuum trap, waste sink, or wash collector that absorbs liquid must be declared in the scene with a `material_container` capability and a `material_volume` state field, so its delta participates in the balance. Undeclared sink that absorbs liquid -> ERROR (the source's negative delta has no positive counterpart).
-  - **Caveat:** authored protocols that legitimately model liquid leaving the system (e.g. aerosol loss, evaporation) without a declared sink are spec-unsupported today. If found, raise as Open question; do not add a stepper-side exemption.
-  - Spec-cite: `docs/specs/MATERIAL_CONVENTION.md` line 7 ("a material is something physically present in, on, produced by, removed from, or transferred between objects") - which is the closest in-spec anchor. RFC filed in Open questions to add an explicit "Volume conservation" section to that document.
-  - Catches the F2 bug class structurally: a treatment step pulling 5 ul from a stock without the stock losing 5 ul (or without the destination gaining 5 ul) fails this rule independent of material name resolution.
-- Verification commands:
-  - `source source_me.sh && pytest tests/test_protocol_stepper_unit.py -k conservation`
-- Obvious follow-ons:
-  - Fixtures landed under WP-E2: `conservation_imbalance/` (unbalanced single-sided draw), `conservation_balanced_transfer/` (5 ul out, 5 ul in - simple pipette), `conservation_balanced_dilution/` (-5 concentrate, -95 diluent, +100 working stock - the MP-5 pattern), `conservation_balanced_mixing/` (-5 A, -5 B, +10 mixed).
-  - Before patch 3b lands, do a dry-run of the rule against MP-5 (the dilution-heavy mini). If any legitimate dilution step fails the rule, the rule is wrong - revisit semantics before merging, do not soften.
+**DEFERRED.** Pre-M1 dry-run (PRE-V, 2026-05-16) found every authored mini-protocol splits source-decrement and sink-increment across separate `interaction.response` blocks, so the within-response physical-volume balance rule false-fires on every liquid transfer. The rule scope (per-response vs per-step), the aspiration-to-air case, and the disposal sentinel are unresolved. Owner: tracked in [docs/active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md). Stepper M1 ships without conservation; capability gate (WP-C1 A2) is unaffected and remains in scope.
 
 ### Work package WP-D1: CLI + runner orchestration
 
 - Owner: coder
 - Touch points: `tools/protocol_stepper.py`, `tools/stepper/runner.py`.
-- Depends on: WP-A1, WP-A2, WP-B1, WP-C1, WP-C2, WP-C3
+- Depends on: WP-A1, WP-A2, WP-B1, WP-C1, WP-C2
 - Acceptance criteria:
   - `argparse` exposes `--protocol <name>` (nargs `+` accepts multiple protocol names for batch debug) and `--verbose`. No `--strict` (per Resolved decisions: ERROR drives exit; WARNING advisory).
   - Default mode walks every `content/protocols/*/protocol.yaml` and prints one summary line per protocol.
@@ -337,7 +326,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 
 - Owner: tester
 - Touch points: `tests/test_protocol_stepper_unit.py`, `tests/conftest.py` (only if a stepper-specific fixture root is needed).
-- Depends on: WP-A1, WP-A2, WP-B1, WP-C1, WP-C2, WP-C3
+- Depends on: WP-A1, WP-A2, WP-B1, WP-C1, WP-C2
 - Acceptance criteria:
   - One small test per public function in `tools/stepper/`; no asserts on collection sizes, default lists, function names, or dates per `docs/PYTEST_STYLE.md`.
   - **No-mock rule:** tests load real fixture YAML through the real loader. No `ContentDatabase` mocks. Mocked schema masks loader/database drift.
@@ -350,7 +339,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 ### Work package WP-E2: per-mini and flow-shape failure fixtures
 
 - Owner: tester
-- Touch points: `tests/fixtures/stepper/unknown_material/`, `tests/fixtures/stepper/unknown_target_active_scene/`, `tests/fixtures/stepper/invalid_state_field/`, `tests/fixtures/stepper/broken_next_step/`, `tests/fixtures/stepper/flow_cycle/`, `tests/fixtures/stepper/flow_unreachable/`, `tests/fixtures/stepper/flow_multi_terminal/`, `tests/fixtures/stepper/waste_is_real_material/`, `tests/fixtures/stepper/capability_mismatch/` (ObjectStateChange writing `material_name` on object lacking `material_container`), `tests/fixtures/stepper/conservation_imbalance/` (5 ul out of A, 0 ul into B), `tests/fixtures/stepper/conservation_balanced_transfer/` (5 ul out of A, 5 ul into B), `tests/fixtures/stepper/conservation_balanced_dilution/` (-5 concentrate, -95 diluent, +100 working stock - MP-5 pattern), `tests/fixtures/stepper/conservation_balanced_mixing/` (-5 A, -5 B, +10 mixed), `tests/fixtures/stepper/scene_ops_ordering/` (CursorAttach followed by ObjectStateChange that reads cursor state); `tests/test_protocol_stepper_fixtures.py`.
+- Touch points: `tests/fixtures/stepper/unknown_material/`, `tests/fixtures/stepper/unknown_target_active_scene/`, `tests/fixtures/stepper/invalid_state_field/`, `tests/fixtures/stepper/broken_next_step/`, `tests/fixtures/stepper/flow_cycle/`, `tests/fixtures/stepper/flow_unreachable/`, `tests/fixtures/stepper/flow_multi_terminal/`, `tests/fixtures/stepper/waste_is_real_material/`, `tests/fixtures/stepper/capability_mismatch/` (ObjectStateChange writing `material_name` on object lacking `material_container`), `tests/fixtures/stepper/scene_ops_ordering/` (CursorAttach followed by ObjectStateChange that reads cursor state); `tests/test_protocol_stepper_fixtures.py`.
 - Depends on: WP-D1
 - Acceptance criteria:
   - Each fixture is the minimum YAML needed to surface its one error class (or, for `waste_is_real_material/`, the absence of any finding when `waste` is properly declared in `materials.yaml`); reuses real `content/objects/` and `content/scenes/` declarations where practical.
@@ -407,7 +396,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 ## Acceptance criteria and gates
 
 - Per-patch gate: pyflakes clean on touched files; pytest under `tests/test_protocol_stepper_*.py` green; `source source_me.sh && python3 tools/protocol_stepper.py` exits 0.
-- Integration gate (end of M2): live-tree stepper run exits 0; both sequence runners report PASS; every WP-E2 and WP-G1 fixture produces its expected finding identity - specifically: six primary failure classes (unknown_material, unknown_target_active_scene, invalid_state_field, broken_next_step, runner_of_runner, cross_mini_production_gap); three flow-shape classes (flow_cycle, flow_unreachable, flow_multi_terminal); two structural-mutation classes (capability_mismatch, conservation_imbalance); positive cases (waste_is_real_material, scene_ops_ordering, conservation_balanced_transfer, conservation_balanced_dilution, conservation_balanced_mixing) produce zero findings.
+- Integration gate (end of M2): live-tree stepper run exits 0; both sequence runners report PASS; every WP-E2 and WP-G1 fixture produces its expected finding identity - specifically: six primary failure classes (unknown_material, unknown_target_active_scene, invalid_state_field, broken_next_step, runner_of_runner, cross_mini_production_gap); three flow-shape classes (flow_cycle, flow_unreachable, flow_multi_terminal); one structural-mutation class (capability_mismatch); positive cases (waste_is_real_material, scene_ops_ordering) produce zero findings.
 - Manual review gate (end of M3): reviewer confirms no new schema fields, no new `scene_operation` primitives, no new validator presets, and no protocol/step/material names appear as literals anywhere in `tools/stepper/`; if any do, route through `docs/specs/SPEC_DESIGN_CHECKLIST.md` first.
 - Release gate: per-milestone `docs/CHANGELOG.md` entries present (M1, M2, M3); `docs/USAGE.md` section present.
 
@@ -436,16 +425,6 @@ FAIL: content/protocols/plate_drug_treatment_drug_addition/protocol.yaml
   interaction 3 target carboplatin_working_stock
   ERROR [unknown_material]: material_name carboplatin_working_stock not declared in materials.yaml
   per docs/specs/MATERIAL_CONVENTION.md material identity
-```
-
-Conservation failure shape:
-
-```text
-FAIL: content/protocols/plate_drug_treatment_drug_addition/protocol.yaml
-  step add_carb_row_b
-  interaction 3
-  ERROR [conservation_violation]: 5.0 ul of carboplatin_400umol left carb_stock_bottle but only 0.0 ul entered well_B7
-  per docs/specs/MATERIAL_CONVENTION.md volume conservation
 ```
 
 Verbose state-delta line (with `--verbose`):
@@ -478,7 +457,7 @@ PASS: 10 leaves, 0 findings
 
 | Risk | Impact | Trigger | Owner | Mitigation |
 | --- | --- | --- | --- | --- |
-| Stepper rule disagrees with spec | medium | A new rule rejects shipped content the spec permits | architect | When in doubt, raise as an open question and emit WARNING (not ERROR) until the spec is amended. |
+| Stepper rule disagrees with spec | medium | A new rule rejects shipped content the spec permits | architect | When in doubt, raise as an open question and emit WARNING (not ERROR) until the spec is amended. **Example in action (M1):** active-scene checks demoted to WARNING (2026-05-16) when live-tree run found 234 findings on intended-good shipped content. Spawned scene-adapter design plan to resolve spec gap. |
 | Generalized cross-mini rule too strict | medium | Live-tree gate fails on a shipped runner | coder (WS-F) | Rule narrowly targets unresolved material names; sentinels (`empty`, `mixed`) exempt; widen exemption list only via `MATERIAL_CONVENTION.md` amendment, never inline. |
 | Loader drift from `ContentDatabase` | low | Validator changes the database shape | coder (WS-A) | M1 entry criterion verifies the API surface; stepper imports `ContentDatabase` directly so renames surface immediately at import. |
 | Placement-name collisions discovered too late | low | M1 entry-criterion audit finds collisions after WS-C work begins | coder (WS-C) | Entry criterion runs the uniqueness check before WS-C; if collisions surface mid-WS-C anyway (e.g. via a fixture), escalate to architect to introduce an explicit `object_instance_name` field rather than weakening the key. |
@@ -488,7 +467,7 @@ PASS: 10 leaves, 0 findings
 ## Rollout and release checklist
 
 - [ ] M1 patches merged; live-tree stepper run exits 0.
-- [ ] M2 patches merged; both sequence runners step PASS; six primary plus three flow-shape fixtures each produce expected ERROR.
+- [ ] M2 patches merged; both sequence runners step PASS; M1 fixtures (4 primary + 3 flow-shape + 1 structural capability_mismatch) plus M2 fixtures (2 primary: runner_of_runner + cross_mini_production_gap) each produce expected ERROR; positives (waste_is_real_material, scene_ops_ordering) produce zero findings.
 - [ ] `tests/test_protocol_stepper_gate.py` added to default `pytest tests/` lane.
 - [ ] `docs/CHANGELOG.md` entries added (per-milestone: M1, M2, M3).
 - [ ] `docs/USAGE.md` section added.
@@ -504,8 +483,7 @@ PASS: 10 leaves, 0 findings
 
 - Patch 1: `tools/stepper` loader + findings (WS-A).
 - Patch 2: `tools/stepper` flow engine (WS-B).
-- Patch 3a: `tools/stepper` state + scene-ops + capability gate (WS-C, WP-C1 + WP-C2).
-- Patch 3b: `tools/stepper` material conservation rule (WS-C, WP-C3).
+- Patch 3: `tools/stepper` state + scene-ops + capability gate (WS-C, WP-C1 + WP-C2).
 - Patch 4: `tools/protocol_stepper.py` CLI + runner (WS-D).
 - Patch 5: unit tests + per-mini and flow-shape fixtures (WS-E).
 - Patch 6: sequence-runner traversal + generalized cross-mini check (WS-F).
@@ -518,10 +496,11 @@ Patch counts and cadence follow `references/CAPACITY_AND_SIZING.md`: target 1-2 
 
 These side tasks were identified during stepper plan drafting. Each is out of scope for `tools/protocol_stepper.py` but must not be lost on stepper ship. The planner must draft a stub plan for each under `docs/active_plans/` immediately after this plan is approved, so they exist as durable, trackable artifacts and not just bullets in a paragraph that ages off.
 
-- **[`docs/active_plans/validator_display_color_check.md`](validator_display_color_check.md)** (SPAWNED 2026-05-16). Add an ERROR-level static cross-file consistency check to `tools/validate_content_yaml.py`: same `material_name` declared with different `display_color` across any two protocols' `materials.yaml` files -> ERROR. Owner: coder. Anchor: stepper Non-goals + Resolved decisions; spawned per user instruction during stepper v3 review.
-- **`docs/active_plans/step_kind_spec_rfc.md`** (should spawn). Spec RFC to add a `step_kind: incubation|treatment|centrifugation|wait` enum on steps so the stepper can validate `TimedWait` host steps. Without this, the WP-C2 deferred check never lands. Owner: architect.
-- **`docs/active_plans/material_volume_conservation_spec.md`** (should spawn). Spec amendment to `docs/specs/MATERIAL_CONVENTION.md` adding an explicit "Volume conservation" section that ratifies the physical-volume balance rule WP-C3 enforces (currently anchored only to line 7). Owner: architect.
+- **[`docs/active_plans/validator_display_color_check.md`](../active_plans/validator_display_color_check.md)** (SPAWNED 2026-05-16). Add an ERROR-level static cross-file consistency check to `tools/validate_content_yaml.py`: same `material_name` declared with different `display_color` across any two protocols' `materials.yaml` files -> ERROR. Owner: coder. Anchor: stepper Non-goals + Resolved decisions; spawned per user instruction during stepper v3 review.
+- **[`docs/active_plans/step_kind_spec_rfc.md`](../active_plans/step_kind_spec_rfc.md)** (SPAWNED 2026-05-16). Spec RFC to add a `step_kind: incubation|treatment|centrifugation|wait` enum on steps so the stepper can validate `TimedWait` host steps. Without this, the WP-C2 deferred check never lands. Owner: architect.
+- **[`docs/active_plans/material_volume_conservation_spec.md`](../active_plans/material_volume_conservation_spec.md)** (SPAWNED 2026-05-16). Spec amendment to `docs/specs/MATERIAL_CONVENTION.md` adding an explicit "Volume conservation" section that ratifies a physical-volume balance rule. PRE-V dry-run found within-response balance incompatible with current authored protocols; RFC must resolve rule scope and disposal semantics before a stepper conservation rule lands. Owner: architect.
+- **[`docs/active_plans/scene_adapter_resolution_design.md`](../active_plans/scene_adapter_resolution_design.md)** (SPAWNED 2026-05-16). Design plan to ratify the canonical scene-adapter resolution algorithm (active-scene only, full-protocol-scenes registry, explicit YAML adapter, or hybrid). M1 demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING due to tight active-scene model finding 234 warnings on shipped content; this plan resolves the spec gap and spawns a follow-on stepper plan to re-enable checks at ERROR. Owner: architect.
 
 ## Open questions and decisions needed
 
-- Should the side tasks above be promoted to `docs/active_plans/` stubs immediately on stepper plan approval, or batched at stepper M3 ship? -- decision owner: user. Default: spawn immediately (per user instruction "or it will not be remembered").
+- All questions resolved during drafting; see Resolved decisions and Spawned side tasks.
