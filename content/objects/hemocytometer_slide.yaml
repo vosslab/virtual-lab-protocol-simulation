@@ -1,0 +1,35 @@
+object_name: hemocytometer_slide
+kind: equipment
+label: Hemocytometer slide
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty, trypan_blue, cell_suspension, trypan_blue_mixture]
+    default: empty
+    description: Liquid currently loaded on the slide.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 0.1
+    default: 0
+    description: Volume loaded on the slide, in milliliters.
+  - field_name: excess_wiped
+    type: bool
+    default: false
+    description: Whether excess liquid has been wiped from slide edges.
+
+visual_states:
+  material_name:
+    kind: overlay
+    formula: 'label(state(material_name), format="Loaded: {value}")'
+  excess_wiped:
+    kind: overlay
+    formula: 'conditional(state(excess_wiped), "Wiped clean", "Excess present")'
+
+capabilities: [clickable, material_container]
+
+layout:
+  default_width: 8
+  label_width: 10

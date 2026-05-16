@@ -1,0 +1,35 @@
+object_name: mtt_powder_container
+kind: bottle
+label: MTT powder vial
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [mtt_powder, empty]
+    default: mtt_powder
+    description: Contents of this vial.
+  - field_name: material_volume
+    type: float
+    unit: mg
+    min: 0
+    max: 10
+    default: 5
+    description: Mass of MTT powder in milligrams.
+
+visual_states:
+  material_name:
+    kind: svg
+    cases:
+      - when: mtt_powder
+        output: { asset_name: mtt_powder_container }
+      - when: empty
+        output: { asset_name: mtt_powder_container }
+  material_volume:
+    kind: composite
+    formula: fill_height(state(material_volume), capacity_mg=10)
+
+capabilities: [clickable, material_container, cursor_attachable]
+
+layout:
+  default_width: 2
+  label_width: 6

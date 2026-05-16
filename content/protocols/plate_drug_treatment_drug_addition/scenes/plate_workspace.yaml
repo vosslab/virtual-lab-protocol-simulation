@@ -1,0 +1,27 @@
+scene_name: plate_workspace
+extends: hood_basic
+scene_notes: |
+  Hood workspace for drug treatment mini-protocol. Adds carboplatin and
+  metformin working stock rack (rear center zone), seeded well plate
+  (center zone), and multichannel pipette (right tool area).
+
+add_placements:
+  - placement_name: rear_center_carb_stocks
+    object_name: dilution_tube_rack_8
+    zone: rear_center
+    depth_tier: 1
+
+  - placement_name: rear_center_metformin_stock
+    object_name: metformin_working_tube
+    zone: rear_center
+    depth_tier: 2
+
+  - placement_name: center_well_plate
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 1
+
+  - placement_name: right_multichannel_pipette
+    object_name: multichannel_pipette
+    zone: right_tool_area
+    depth_tier: 2

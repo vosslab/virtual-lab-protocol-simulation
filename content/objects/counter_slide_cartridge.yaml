@@ -1,0 +1,22 @@
+object_name: counter_slide_cartridge
+kind: rack
+label: Cell counter slide cartridge
+
+state_fields:
+  - field_name: slide_count
+    type: int
+    min: 0
+    max: 10
+    default: 5
+    description: Number of hemocytometer slides available in the cartridge.
+
+visual_states:
+  slide_count:
+    kind: overlay
+    formula: 'label(state(slide_count), format="Slides: {value}")'
+
+capabilities: [clickable]
+
+layout:
+  default_width: 8
+  label_width: 10

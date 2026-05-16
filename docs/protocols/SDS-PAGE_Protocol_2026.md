@@ -6,8 +6,6 @@ Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0
 
 ## **Required materials provided by the students**
 
-**Assigned student**: Ulises ✅  
-**Reviewing student**: Meet ✔️ 
 
 1. Safety 	Glasses  
 2. Lab Coat - no paper lab coats  
@@ -20,8 +18,6 @@ Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0
 
 ## **Provided Materials**
 
-**Assigned student**: Raj  
-**Reviewing student**: Ulises✔️  
 Students check to make sure all of these items are available
 
 ### Equipment
@@ -42,7 +38,7 @@ Students check to make sure all of these items are available
 * Deionized water  
 * Protein ladder  
 * 4x Laemmli Sample Buffer  (BioRad \#1610747)  
-* Β-mercaptoethanol (liquid)  
+* &Beta;-mercaptoethanol (liquid)  
 * Micropipettes and tips  
 * Coomassie stain solution  
 * Destain solution  
@@ -79,18 +75,13 @@ Students check to make sure all of these items are available
 
 ## **Laboratory Learning Objectives**
 
-**Assigned student**: Meet  
-**Reviewing student**: Raj ✔️   
 Students completing this lab protocol will have achieved:
 
 The purpose of this lab is to learn how to prepare, run, stain, and analyze the results on an SDS-PAGE gel for protein separation. Protein samples are prepared using Laemmli sample buffer and beta-mercapthenol (BME) prior to electrophoresis. The experiment includes assembly of the of the Bio-RAD electrophoresis apparatus, preparation of running buffer, loading of protein samples and molecular weight ladder into gel wells, and with the use of power supply to achieve protein separation through the polyacrylamide gel matrix. Following electrophoresis, the gel is stained and detained to visualize protein bands and evaluate protein size, sample quality, and relative purity. Protein concentration may also be estimated using the Bradford assay before sample loading. 
 
-**Reviewing: Done by Raj. No comments needed.**
 
 ## **Laboratory Learning Outcomes**
 
-**Assigned student**: Ulises✔️   
-**Reviewing student**: Bansari   
 Students completing this lab protocol will be able to:
 
 1. Explain the principles of what SDS-PAGE does and describe how proteins are separated based on molecular weight.  
@@ -108,21 +99,16 @@ Students completing this lab protocol will be able to:
 * Faint bands indicating insufficient protein concentration or underloading.  
     
 8. If the experiment was unsuccessful, know common experimental errors such as smeared bands, streaking, smiling effects, or sample leakage, and explain how these issues may affect gel processes.  
-9. Apply proper laboratory safety practices and hazardous waste disposal procedures when handling electrophoresis equipment, Coomassie stain, methanol, acetic acid, and β-mercaptoethanol.
+9. Apply proper laboratory safety practices and hazardous waste disposal procedures when handling electrophoresis equipment, Coomassie stain, methanol, acetic acid, and &beta;-mercaptoethanol.
 
 ## **Potential Hazards and Waste Disposal**
 
-**Assigned student**: Gary  
-**Reviewing student**: Raj ✔️ 
 
 BME is highly toxic, volatile, and emits a strong, unpleasant odor reminiscent of rotten eggs. All students are required to dispose of biological waste in the designated biohazard bin and non-biological waste in the regular bin. Liquid BME must be stored in an airtight, compatible container and treated as hazardous chemical waste for collection.
 
-**Reviewing: Done by Raj. No comments needed.**
 
 ## **Pre-Laboratory Questions**
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Gary✅  
 ~~Homework questions to complete before lab~~
 
 1. How does SDS-PAGE separate proteins?  
@@ -144,8 +130,6 @@ BME is highly toxic, volatile, and emits a strong, unpleasant odor reminiscent o
 
 ### Theory of SDS-PAGE (1 page)
 
-**Assigned student**: Gary  
-**Reviewing student**: Olivia✅
 
 1. **How does gel electrophoresis work?** 
 
@@ -164,8 +148,6 @@ B-mercaptoethanol (BME) is a potent reducing agent utilized in protein sample pr
 
 ### Equipment (1 page)
 
-**Assigned student**: Meet  
-**Reviewing student**: Raj ✔️   
 ![][image1]  
 ![][image2]  
 Explain the parts of a biorad electrophoresis apparatus box
@@ -188,8 +170,6 @@ Things to do one week or one day before day of lab
 
 ### Part 1: Assess Protein Concentration Using Bradford Dye
 
-**Assigned student**: Meet✔️   
-**Reviewing student**: Raj ✔️   
 Assuming a 20uL sample in 2mL dye solution.  
 Concentration (ug/mL) \= 2633 x A595 - 52
 
@@ -212,12 +192,9 @@ Example calculation for an absorbance value of 0.089:
 
 * Use the calculated protein concentration to determine the appropriate loading volume for SDS-PAGE sample preparation. 
 
-**Reviewing: Done by Raj. No comments needed.**
 
 ### Part 2: Sample Concentration Range
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Bansari ✅
 
 * Use your protein concentration to determine the amount of proteins (by volume) that can be loaded into your sample  
   * Loading too many proteins will cause your sample to smear, but loading too little will cause bands to be invisible.   
@@ -233,39 +210,33 @@ Example calculation for an absorbance value of 0.089:
 
 ### Part 3: Increasing Protein Concentration using 10k MWCO Filter
 
-**Assigned student**: Gary/Ulises✅  
-**Reviewing student**: Olivia ✅
+1. Load the protein sample into the upper reservoir of the Amicon&reg; Ultra Centrifugal Filter (10 kDa MWCO). Ensure the volume does not exceed the 'Max Fill' line.
 
-* Load the protein sample into the upper reservoir of the Amicon® Ultra Centrifugal Filter  
-  (10 kDa MWCO). Ensure the volume does not exceed the 'Max Fill' line.  
-* Counter-balancing: Measure the total mass of the tube containing the unknown protein  
-  sample and use this as the reference weight. Prepare a second tube of equal mass filled  
-  with distilled water to balance the centrifuge if no other students are adding tubes  
-* Centrifugation: Set the centrifuge to 4,000 RPM and run for 15 minutes.   
-  * Ensure tubes are evenly spaced within the centrifuge. For example, if using a four-slot centrifuge with two tubes, place them opposite each other. Repeat centrifugation until the sample volume is at or below 250 &micro;L. If the volume does not reach 250 &micro;L, discard the filtrate, add distilled water above the filter line, rebalance the centrifuge, and repeat the process.  
-* After centrifugation, molecules smaller than the filter's MWCO are collected in the  
-  bottom reservoir. Molecules larger than the MWCO remain in the upper reservoir as the  
-  concentrated sample.  
-* Recovery: Remove the concentrated solution from the upper reservoir using a pipette.  
-* Storage: Transfer the final concentrated sample into a microtube and label appropriately  
-  for gel electrophoresis.
+2. Counter-balancing: Measure the total mass of the tube containing the unknown protein sample and use this as the reference weight. Prepare a second tube of equal mass filled with distilled water to balance the centrifuge if no other students are adding tubes.
+
+3. Centrifugation: Set the centrifuge to 4,000 RPM and run for 15 minutes.
+   * Ensure tubes are evenly spaced within the centrifuge. For example, if using a four-slot centrifuge with two tubes, place them opposite each other. Repeat centrifugation until the sample volume is at or below 250 &micro;L. If the volume does not reach 250 &micro;L, discard the filtrate, add distilled water above the filter line, rebalance the centrifuge, and repeat the process.
+
+4. After centrifugation, molecules smaller than the filter's MWCO are collected in the bottom reservoir. Molecules larger than the MWCO remain in the upper reservoir as the concentrated sample.
+
+5. Recovery: Remove the concentrated solution from the upper reservoir using a pipette.
+
+6. Storage: Transfer the final concentrated sample into a microtube and label appropriately for gel electrophoresis.
 
 ### Part 4: Preparation of Coomassie Stain and/or Destain Solution
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Raj ✔️ 
 
 **Preparation of Coomassie Stain (1 L) Coomassie**   
 stain will be prepared as a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol. 
 
 Reagents:  
- ● 1 g Coomassie R250   
-● 100 mL glacial acetic acid   
-● 400 mL methanol   
-● 500 mL ddH₂O 
+ - 1 g Coomassie R250   
+- 100 mL glacial acetic acid   
+- 400 mL methanol   
+- 500 mL ddH2O 
 
 Procedure:   
-1\. 100 mL of glacial acetic acid will be added to 500 mL of ddH₂O.  
+1\. 100 mL of glacial acetic acid will be added to 500 mL of ddH2O.  
  2\. 400 mL of methanol will be added and mixed.   
 3\. 1 g of Coomassie R250 will be added and mixed.  
  4\. The solution will be filtered to remove particulates.   
@@ -275,12 +246,12 @@ Procedure:
  Destain solution will be prepared as a 1 L solution containing 20% methanol and 10% acetic acid. 
 
 Reagents:  
- ● 200 mL methanol  
- ● 100 mL glacial acetic acid   
-● 700 mL ddH₂O
+ - 200 mL methanol  
+ - 100 mL glacial acetic acid   
+- 700 mL ddH2O
 
  Procedure:  
- 1\. 100 mL of glacial acetic acid will be added to 700 mL of ddH₂O.  
+ 1\. 100 mL of glacial acetic acid will be added to 700 mL of ddH2O.  
  2\. 200 mL of methanol will be added and mixed.  
  3\. The solution will be stored at room temperature in a sealed container. 
 
@@ -288,12 +259,10 @@ Reagents:
 
 ### Overview
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Meet ✔️  
 Brief outline of steps in the procedure
 
 1. Prepare the 1X SDS-PAGE running buffer by diluting the 10X running buffer with deionized water.  
-2. Prepare the miraculin-containing protein sample by mixing it with Laemmli sample buffer and β-mercaptoethanol.  
+2. Prepare the miraculin-containing protein sample by mixing it with Laemmli sample buffer and &beta;-mercaptoethanol.  
 3. Heat the prepared sample at 95°C to denature the proteins before loading.  
 4. Remove the Mini-PROTEAN precast gel from its package and take off the comb and bottom tape.  
 5. Place the gel cassette into the Bio-Rad electrophoresis tank and secure it properly.  
@@ -309,74 +278,54 @@ Brief outline of steps in the procedure
 
 ### Part 1: Prepare Protein Sample and MW Ladder
 
-**Assigned student**: Gary  
-**Reviewing student**: Raj ✔️  
-Mix BME, Laemmli, and protein sample (provide more details), heat, etc.  
-Protein sample to load is x uL  
-Total volume is y \= x/0.7 uL  
-BME \= y/20  
-Laemmli \= y/4
+1. **Prepare the protein sample mixture** using the canonical recipe:
+   - 21 &micro;L of protein sample
+   - 7.5 &micro;L of 4x Laemmli sample buffer (BioRad #1610747)
+   - 1.5 &micro;L of &beta;-mercaptoethanol
+   - Total volume: 30 &micro;L
+   
+   The 4x Laemmli at 7.5 &micro;L in a 30 &micro;L total volume yields a final 1x Laemmli concentration in the loaded sample.
 
-* The protein ladder comprises a mixture of proteins with known sizes, which will be used to estimate the molecular weights of unknown proteins. A total of 20 µL of the protein ladder will be used, and the protein sample to load is 21 uL. 
+2. **Worked example**: For a protein stock at 0.40 &micro;g/&micro;L targeting 2 &micro;g per well:
+   - You need 5 &micro;L of your stock (5 &micro;L × 0.40 &micro;g/&micro;L = 2 &micro;g)
+   - Adjust your sample portion of the recipe: use 5 &micro;L of protein stock in place of the default 21 &micro;L
+   - Keep the 4x Laemmli (7.5 &micro;L) and &beta;-mercaptoethanol (1.5 &micro;L) volumes constant to maintain 1x final Laemmli concentration
+   - Add diluent (deionized water or sample buffer) as needed to reach your target total volume
 
-* The prepared protein sample will consist of the following components:  
+3. **Denature the samples**: Heat the prepared protein sample and the protein ladder (20 &micro;L) at 95°C for 5 minutes immediately before gel loading.
 
-\- 21 µL of the protein sample    
-\- 7.5 µL of 4x Laemmli buffer    
-\- 1.5 µL of β-mercaptoethanol    
-Both the protein ladder and the protein sample will be boiled at 95°C for 5 minutes prior to being loaded into the well.  
 ![][image3]
 
 ### Part 2: Prepare Tris/Glycine/SDS electrophoresis buffer
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Olivia 🤏
 
 SDS buffer (volume):  
 **Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O). 
 
-### 
 
 ### Part 3: Prepare the BioRad Gel cassette
 
-**Assigned student**: Ulises✅  
-**Reviewing student**: Meet ✔️  
 Remove the strip
 
-### 
 
 ### Preparation of the BioRad Gel Cassette
 
-1. ### Obtain a Mini-PROTEAN TGX Precast Gel and open it from its plastic bag. Carefully remove the protective tape from the bottom before placing it in the chamber.
+1. Obtain a Mini-PROTEAN TGX Precast Gel and open it from its plastic bag. Carefully remove the protective tape from the bottom before placing it in the chamber.
 
-   
+2. Orient the cassette so that the well openings should be facing inward toward the center of the tank.
 
-2. ### Orient the cassette so that the well openings should be facing inward toward the center of the tank.
+3. Take out one of the vertical glass walls from the tank and replace it with the gel cassette. Again, make sure the short plate faces inward.
 
-   
+4. Secure the side clamps to create a watertight seal.
 
-3. ### Take out one of the vertical glass walls from the tank and replace it with the gel cassette. Again, make sure the short plate faces inward.
+5. Raise the entire tank to ensure there is no leakage of the tank before proceeding. Once there is no leakage, the green comb can be removed from the cassette.
 
-   
+6. Fill the inner chamber and the outer tank with 1X Tris/Glycine/SDS running buffer until it reaches the same level where the wells are filled. 
 
-4. ### Secure the side clamps to create a watertight seal.
 
-   
-
-5. ### Raise the entire tank to ensure there is no leakage of the tank before proceeding. Once there is no leakage, the green comb can be removed from the cassette.
-
-   
-
-6. ### Fill the inner chamber and the outer tank with 1X Tris/Glycine/SDS running buffer until it reaches the same level where the wells are filled. 
-
-   ### 
-
-### Suggestion: In "Loading the Gel" section, Line 4, the units should be corrected from "5 L to 50 L", and "2 g" to  "5 µL to 50 µL" and "2 µg".
 
 ### Part 4: Assemble the BioRad electrophoresis apparatus
 
-**Assigned student**: Gary ✔️   
-**Reviewing student**: Ulises✔️   
 Spacers, SDS buffer (volume), check for leaks
 
 * Open the wing clamps on the electrode assembly module.   
@@ -386,82 +335,41 @@ Spacers, SDS buffer (volume), check for leaks
 * Fill the inner chamber with 1x running buffer by diluting 100 mL of 10x buffer with 900 mL of deionized water. Pour a small amount into the center to check for leaks. Ensure both the upper and lower reservoirs of the tank are filled with the appropriate conductive running buffer (such as Tris-Glycine-SDS), and that the buffer level in the upper chamber covers the tops of the gel wells to allow proper current flow.   
 * Once this is done, securely place the lid on the tank, verifying that the electrodes are correctly oriented-the negative cathode (black) at the top and the positive anode (red) at the bottom. Finally, connect the leads to the power supply.
 
-### Both parts 4&5 can be combined for efficiency as they overlap in steps.
 
 ### Part 5: Sample Loading in the Well
 
-**Assigned student**: Ulises✅  
-**Reviewing student**: Gary
+1. Determine the loading volumes calculated from your Bradford assay absorbance, and determine the exact volume of your protein concentration needed to reach 2 &micro;g of protein per well. 
 
-### Step-by-Step Loading Procedure
+   Example: If your protein concentration is C = 0.40 &micro;g/&micro;L and your target loading is 2 &micro;g per well, you need 5 &micro;L of the concentration solution to be added.
 
-1. ### Determine the loading volumes calculated from your BSA at 595 nm, and determine the exact volume of your protein concentration needed to reach 2 ug of protein per well. Add that into a small microtube.
+   Use the standard concentration equation: ![][image4]
 
-   ### 
+   Substitute your values: ![][image5]
 
-   ### Example:
+   ![][image6]
 
-   ### Your protein concentration is C=0.40ug/uL
+2. Verify that your miraculin samples have been properly prepared by mixing them with 4x Laemmli sample buffer (containing beta-mercaptoethanol or DTT) and heating them at 90-95°C for 5 minutes to ensure full denaturation.
 
-   ###  
+3. Use the sample mixture prepared in Part 1, which contains 21 &micro;L protein sample + 7.5 &micro;L 4x Laemmli + 1.5 &micro;L BME. Adjust sample volume to deliver the target microgram per well while keeping the final 1x Laemmli concentration.
 
-* ### Your target loading amount is:
+   **Tips for adding solutions to the wells:**
+   - Make sure to use two hands to stabilize the entry of the micropipette tip into the well.
+   - Do not push into the well too hard or the cassette will shift and possibly contaminate the surrounding wells.
+   - When applying the solution into the well, push on the plunger very slowly so as to not let the solution spill over into the other wells.
+   - Fill at least half of the well's volume to make sure nothing spills over.
+   - For each well used, use a new gel-loading tip to draw up your calculated sample volume to avoid contamination.
 
-  ### 
+4. Attach a new loading tip to a P10 micropipette. Draw up the protein molecular weight ladder and carefully dispense it into the middle well. This serves as your reference for identifying the miraculin band.
 
-  ### 2 ug protein per well
+5. Slowly and steadily dispense the sample into the desired well. Make sure to label, on a separate sheet of paper, which solution is in each well to avoid confusion.
 
-  ### 
+6. Do not go over the well's volume capacity to prevent samples from leaking into other lanes.
 
-* ### Use the standard concentration equation:
+7. Once all samples and the ladder are loaded, ensure the inner chamber is filled with buffer to the well level, and prepare to connect the power supply to begin the run at 110 V.
 
-  ### ![][image4] 
-
-* ### Substitute the values:
-
-  ### ![][image5]
-
-  ###     ![][image6]
-
-  ###     5 ul of the concentration solution should be added
-
-  ### 2\. Verify that your miraculin samples have been properly prepared by mixing them with 2X Laemmli sample buffer (containing beta-mercaptoethanol or DTT) and heating them at 90-95°C for 5 minutes to ensure full denaturation.
-
-  ###  
-
-  ### 3\.     Then, the protein sample will be added alongside the 2X Laemmli sample buffer \+ beta-mercaptoethanol in a 1:1 volume ratio mixture in the same microtube.
-
-  ###  
-
-  ### Tips for adding solutions to the wells:
-
-* ### Make sure to use two hands to stabilize the entry of the micropipette tip into the well.
-
-* ### Don't push into the well too hard or the cassette will shift and possibly contaminate the surrounding wells.
-
-* ### When applying the solution into the well, push on the plunger very slowly so as to not let the solution spill over into the other wells
-
-* ### Fill at least half of the well's volume to make sure nothing spills over
-
-* ### For each well used, use a new gel-loading tip to draw up your calculated sample volume to avoid contamination.
-
-  ### 4\. Attach a new loading tip to a P10 micropipette. Draw up the protein molecular weight ladder and carefully dispense it into the middle well. This serves as your reference for identifying the miraculin band.
-
-
-  ### 5\. Slowly and steadily dispense the sample into the desired well. Make sure to label, on a separate sheet of paper, which solution is in each well to avoid confusion.
-
-
-  ### 6\. Do not go over the well's volume capacity to prevent samples from leaking into other lanes.
-
-
-  ### 7\. Once all samples and the ladder are loaded, ensure the inner chamber is filled with buffer to the well level, and prepare to connect the power supply to begin the run at 110 V.
-
-### Loading the Gel
 
 ### Part 6: Connect Power Supply and Run the Gel
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Olivia 🤏  
 Voltage, amps, how long to run, visual cue and time
 
 | Voltage | Run time |
@@ -471,12 +379,9 @@ Voltage, amps, how long to run, visual cue and time
 
 Note : If bands have reached the bottom of the gel, turn off the power supply and remove SDS-PAGE gel.
 
-### 
 
 ### Part 7: Recycle the SDS buffer and store
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Meet
 
 * After the running of the gel has finished, and the gel has been removed, you can recycle the buffer for storage to be used for a later SDS-PAGE  
 * Observe the buffer prior to recycling to check for visible contamination or discoloration  
@@ -492,11 +397,9 @@ Note : If bands have reached the bottom of the gel, turn off the power supply an
 
 ### Part 8: Separate the Gel from its Cassette
 
-**Assigned student**: Meet✅  
-**Reviewing student**: Ulises✅  
 Use the tool
 
-* ### Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
+* Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
 
 * Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.  
 * Pour off and properly dispose of the running buffer solution.   
@@ -510,8 +413,6 @@ Use the tool
 
 ### Part 9: Staining the Gel
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Raj  
 ~~Stain and destain, microwave, shake~~
 
 * Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually  
@@ -542,8 +443,6 @@ Use the tool
 
 ### Part 10: Imaging the Gel
 
-**Assigned student**: Meet ✔️   
-**Reviewing student**: Gary✅  
 Light box, smartphone camera
 
 * After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.  
@@ -554,8 +453,6 @@ Light box, smartphone camera
 
 ## **Timing Estimates**
 
-**Assigned student**: Ulises ✔️  
-**Reviewing student**: Meet ✔️
 
 Provide an estimate for each of the parts above and total time of the run.  
 **Estimated time of all steps**: 4 hours 30 minutes
@@ -598,8 +495,6 @@ This will depend on how many samples are loaded in
 
 ## **Post-Experiment Analysis**
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Gary✅
 
 Estimating the molecular weight of your bands from the MW ladder
 
@@ -613,8 +508,6 @@ The final gel image will be labeled with the ladder lane, sample lanes, and esti
 
 ## **Expected Results**
 
-**Assigned student**: Olivia   
-**Reviewing student**: Bansari ✅
 
 ![][image8]
 
@@ -624,8 +517,6 @@ The final gel image will be labeled with the ladder lane, sample lanes, and esti
 
 ## **TA Material Preparation**
 
-**Assigned student**: Meet ✔️   
-**Reviewing student**: Raj ✔️ 
 
 Items that the TA might need to prepare before class to make sure the lab goes smooth for the students
 
@@ -657,11 +548,8 @@ Items that the TA might need to prepare before class to make sure the lab goes s
 
 All buffers, stain solution, and electrophoresis equipment should be prepared and checked before the start of the lab to ensure efficient workflow and minimize delays. 
 
-**Reviewing: Done by Raj. No comments needed.**
 
 ## **References**
-
-Assigned student: All students: Bansari, Gary, Meet, Olivia, Raj, Ulises
 
 **Bio-Rad Laboratories**. **Mini-PROTEAN® Precast Gels Instruction Manual and Application Guide**. Bio-Rad Laboratories, Inc., **10016085 Rev A**. This comprehensive manual provides instructions for using **Mini-PROTEAN precast gels** with various electrophoresis cells, including the **Mini-PROTEAN Tetra** and **Mini-PROTEAN 3 Dodeca** systems. It covers applications such as **SDS-PAGE**, **Native PAGE**, **peptide analysis**, and **nucleic acid separation**.
 

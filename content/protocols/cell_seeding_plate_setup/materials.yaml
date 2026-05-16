@@ -1,0 +1,12 @@
+materials:
+  cell_suspension:
+    label: "Cell suspension (counted)"
+    display_color: "#cc0066"
+
+  cells:
+    label: "Seeded cells (in plate wells)"
+    display_color: "#cc0066"
+
+  media:
+    label: "Fresh growth media"
+    display_color: "#6c6c00"

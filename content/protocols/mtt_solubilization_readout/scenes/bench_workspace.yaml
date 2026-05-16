@@ -1,0 +1,21 @@
+scene_name: mtt_solubilization_readout_bench_workspace
+extends: bench_basic
+
+add_placements:
+  - placement_name: rear_left_dmso
+    object_name: dmso_bottle
+    zone: rear_left
+    depth_tier: 1
+  - placement_name: center_treatment_plate
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 1
+  - placement_name: right_tool_micropipette
+    object_name: micropipette
+    zone: right_tool_area
+    depth_tier: 1
+
+scene_notes: |
+  Bench workspace for MTT solubilization: DMSO bottle (rear left), treated
+  96-well plate with formazan precipitate (center), and micropipette (right).
+  Student adds DMSO to each well and triaturates to dissolve formazan.

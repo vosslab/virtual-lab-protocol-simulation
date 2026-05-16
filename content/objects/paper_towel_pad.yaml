@@ -1,0 +1,13 @@
+object_name: paper_towel_pad
+kind: decoration
+label: Paper towel pad
+
+state_fields: []
+
+visual_states: {}
+
+capabilities: [clickable]
+
+layout:
+  default_width: 6
+  label_width: 8

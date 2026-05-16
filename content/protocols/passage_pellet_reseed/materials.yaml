@@ -1,19 +1,19 @@
 materials:
   cell_suspension:
     label: "Cell suspension (neutralized)"
-    display_color: "#ffc0cb"
+    display_color: "#cc0066"
 
   cell_pellet:
     label: "Cell pellet (centrifuged)"
-    display_color: "#e6d4c3"
+    display_color: "#cc0066"
 
   media:
     label: "Fresh culture media"
-    display_color: "#f7a6b8"
+    display_color: "#6c6c00"
 
   fresh_media:
     label: "Fresh culture media"
-    display_color: "#f7a6b8"
+    display_color: "#6c6c00"
 
   empty:
     label: "Empty"

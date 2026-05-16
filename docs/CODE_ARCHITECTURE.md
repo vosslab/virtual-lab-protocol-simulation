@@ -278,13 +278,11 @@ Results scene -> calculateScore() -> star rating
 ## Game protocol
 
 For authoring a new protocol from scratch, see
-[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). The active
-protocol id is `cell_culture` (25 steps modeling the OVCAR8 carboplatin
-+ metformin MTT workflow). Tutorial protocols (`tutorial_bench_direct`,
-`tutorial_cell_counter`, `tutorial_drug_dilution`, `tutorial_hood_transfer`,
-`tutorial_pbs`, `tutorial_plate_drug_additions`, `tutorial_plate_reader`,
-`tutorial_split`) cover smaller subsets and exist primarily for walker
-exercises.
+[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). The
+curriculum comprises 10 mini-protocols covering the OVCAR8 carboplatin
++ metformin MTT workflow, assembled into two sequence runners (`cell_culture_full`
+for the complete pathway and `routine_passage` for cell passaging). Each mini-protocol
+teaches one focused workflow and is independently walkable and testable.
 
 Each step wraps an ordered `sequence` of `interaction` blocks, checked by
 a `step_validator`, resolved by an `outcome`, and linked by `next_step`; see
@@ -355,10 +353,10 @@ Each protocol has a coverage policy returned by
 policy controls how missing completion-event emitters are handled at
 startup:
 
-- **STRICT** (used for `cell_culture` and unknown ids): any step missing
+- **STRICT** (used for sequence runners and unknown ids): any step missing
   a matching emitter throws via `showValidationError` with
   `'missing completion-event emitter'`.
-- **RELAXED** (used for `tutorial_*` protocols): missing emitters are
+- **RELAXED** (used for mini-protocols): missing emitters are
   logged via `console.warn`; the page still loads.
 
 `validateCompletionEventCoverage()` runs after all scene render functions

@@ -1,0 +1,54 @@
+object_name: cell_counter
+kind: equipment
+label: Automated cell counter
+
+state_fields:
+  - field_name: slide_loaded
+    type: bool
+    default: false
+    description: Whether a hemocytometer slide is currently inserted in the counter.
+  - field_name: focused
+    type: bool
+    default: false
+    description: Whether the cell counter has auto-focused on the loaded slide.
+  - field_name: capture_pressed
+    type: bool
+    default: false
+    description: Whether the Capture button has been pressed to count cells.
+  - field_name: cell_count
+    type: int
+    min: 0
+    max: 9999999
+    default: null
+    description: Total cell count from the analysis.
+  - field_name: viability_percent
+    type: float
+    unit: percent
+    min: 0
+    max: 100
+    default: null
+    description: Viability percentage (live cells / total cells).
+  - field_name: viability_verified
+    type: bool
+    default: false
+    description: Whether viability has been confirmed to meet gate (>= 90%).
+
+visual_states:
+  slide_loaded:
+    kind: overlay
+    formula: conditional(state(slide_loaded), "Slide loaded", "Empty")
+  focused:
+    kind: overlay
+    formula: conditional(state(focused), "Focused", "Focusing...")
+  cell_count:
+    kind: overlay
+    formula: 'conditional(state(cell_count), label(state(cell_count), format="Count: {value}"), "Ready")'
+  viability_percent:
+    kind: overlay
+    formula: 'conditional(state(viability_percent), label(state(viability_percent), format="Viability: {value}%"), "Analyzing")'
+
+capabilities: [clickable]
+
+layout:
+  default_width: 22
+  label_width: 14

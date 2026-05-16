@@ -1,0 +1,4 @@
+scene_name: cell_counter_workspace
+extends: cell_counter_basic
+
+scene_notes: "Cell counter workspace for automated hemocytometer counting and viability analysis. Shows the cell counter instrument and output display for A25-A28 of the trypan_blue_counting mini-protocol."

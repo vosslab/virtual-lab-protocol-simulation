@@ -1,16 +1,16 @@
 protocol_type: mini_protocol
 protocol_name: drug_dilution_setup
-entry_step: prepare_carb_intermediate
+entry_step: prepare_carb_parent_stock
 
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with multi-step parallel C1V1 = C2V2 dilution calculations, independent working-stock preparation from a master stock, and quality-assurance validation of working-stock volumes."
-  outcomes: "Students completing this mini-protocol will be able to prepare carboplatin working stocks across an 8-dose series from a single intermediate, prepare a fixed-concentration metformin working stock independently, and verify that sufficient metformin volume is available for the full treatment experiment."
-  goals: "Overall, this mini-protocol aims to accomplish the working-stock preparation phase for a two-drug dose-response experiment: carboplatin as a variable dose series and metformin as a fixed modifier. This step bridges the raw master stocks (10 mM carboplatin, 1 M metformin) to the treatment-ready working stocks that will be added to plate wells on Day 2. Each carboplatin working stock (400 nM through 2 mM) is prepared as its own pedagogical step, following one-stock-per-step architecture; metformin is a fixed working stock with its own step; volume verification closes the mini-protocol."
+  objectives: "Students completing this mini-protocol will have achieved fluency with independent working-stock preparation from a master stock via C1V1 = C2V2 calculations, single-source dilution logic for dose-response series design, and quality-assurance validation of working-stock volumes."
+  outcomes: "Students completing this mini-protocol will be able to prepare a carboplatin 400 &micro;M parent stock from the 10 mM master stock, prepare six carboplatin working stocks across a 1-2-5 dose-response series (4, 8, 20, 40, 80, 200 &micro;M) all from the single 400 &micro;M parent stock, prepare a fixed-concentration metformin 200 mM working stock independently, and verify that sufficient working-stock volume is available for the full treatment experiment."
+  goals: "Overall, this mini-protocol aims to accomplish the working-stock preparation phase for a two-drug dose-response experiment: carboplatin as a variable dose series and metformin as a fixed modifier. This step bridges the raw master stocks (10 mM carboplatin, 1 M metformin) to the treatment-ready working stocks that will be added to plate wells on Day 2. The carboplatin working stocks follow a 1-2-5 graph-friendly pattern (0.1, 0.2, 0.5, 1, 2, 5, 10 &micro;M final in well, corresponding to 40x multiplier into 200 &micro;L wells). The 400 &micro;M parent stock serves as the row-H working stock directly (use as-is, no additional dilution). Each diluted working stock is prepared as a separate pedagogical step from the single 400 &micro;M parent stock, following single-source dilution architecture; metformin is a fixed working stock with its own step; volume verification closes the mini-protocol."
 
 steps:
-  # Carboplatin intermediate preparation (A47)
-  - step_name: prepare_carb_intermediate
-    prompt: "Prepare the carboplatin 200 uM intermediate stock from the 10 mM master stock. Calculate the volume needed using C1V1 = C2V2: 10 mM x V1 = 200 uM x 1000 uL, so V1 = 20 uL. Aspirate 20 uL from the master stock and dispense into the intermediate tube, then add 980 uL of sterile water to reach 1 mL total, and vortex."
+  # Carboplatin parent stock preparation (A47)
+  - step_name: prepare_carb_parent_stock
+    prompt: "Prepare the carboplatin 400 &micro;M parent stock from the 10 mM master stock. Calculate using C1V1 = C2V2: 10 mM x V1 = 400 &micro;M x 1000 &micro;L, so V1 = 40 &micro;L. Aspirate 40 &micro;L from the master stock and dispense into the parent stock tube, then add 960 &micro;L of sterile media to reach 1000 &micro;L total, and vortex."
     sequence:
       - target: micropipette
         gesture: click
@@ -19,13 +19,13 @@ steps:
           scene_operations: []
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 20 } }
+        validator: { preset: target_with_value, value: { set_volume: 40 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 20
+                set_volume: 40
       - target: carboplatin_stock_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -40,17 +40,17 @@ steps:
               target: microtube_15ml_intermediate
               state:
                 material_name: carboplatin
-                material_volume: 0.02
+                material_volume: 0.04
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 980 } }
+        validator: { preset: target_with_value, value: { set_volume: 960 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 980
-      - target: sterile_water_bottle
+                set_volume: 960
+      - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
         response:
@@ -82,11 +82,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_carb_working_stocks
+    next_step: prepare_carb_working_200um
 
-  # Carboplatin working stock: 400 nM (A48)
-  - step_name: prepare_carb_stock_400nm
-    prompt: "Prepare the 400 nM carboplatin working stock from the 200 uM intermediate. Calculate using C1V1 = C2V2: 200 uM x V1 = 400 nM x 1000 uL, so V1 = 2 uL. Aspirate 2 uL from the intermediate, dispense into a tube in the dilution rack, add 998 uL of media to reach 1000 uL total."
+  # Carboplatin working stock: 200 uM (A48) — row G (final 5 uM)
+  - step_name: prepare_carb_working_200um
+    prompt: "Prepare the 200 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 200 &micro;M x 1000 &micro;L, so V1 = 500 &micro;L. Aspirate 500 &micro;L from the parent stock and dispense into a dilution rack tube, then add 500 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -95,13 +95,13 @@ steps:
           scene_operations: []
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 2 } }
+        validator: { preset: target_with_value, value: { set_volume: 500 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 2
+                set_volume: 500
       - target: microtube_15ml_intermediate
         gesture: click
         validator: { preset: correct_target }
@@ -116,16 +116,16 @@ steps:
               target: dilution_tube_rack_8
               state:
                 material_name: carboplatin
-                material_volume: 2
+                material_volume: 500
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 998 } }
+        validator: { preset: target_with_value, value: { set_volume: 500 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 998
+                set_volume: 500
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -144,11 +144,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_carb_stock_2um
+    next_step: prepare_carb_working_80um
 
-  # Carboplatin working stock: 2 uM (A49)
-  - step_name: prepare_carb_stock_2um
-    prompt: "Prepare the 2 uM carboplatin working stock from the 200 uM intermediate. Calculate using C1V1 = C2V2: 200 uM x V1 = 2 uM x 1000 uL, so V1 = 10 uL. Aspirate 10 uL from the intermediate, dispense into a tube in the dilution rack, add 990 uL of media to reach 1000 uL total."
+  # Carboplatin working stock: 80 uM (A50) — row F (final 2 uM)
+  - step_name: prepare_carb_working_80um
+    prompt: "Prepare the 80 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 80 &micro;M x 1000 &micro;L, so V1 = 200 &micro;L. Aspirate 200 &micro;L from the parent stock and dispense into a dilution rack tube, then add 800 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -157,13 +157,13 @@ steps:
           scene_operations: []
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 10 } }
+        validator: { preset: target_with_value, value: { set_volume: 200 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 10
+                set_volume: 200
       - target: microtube_15ml_intermediate
         gesture: click
         validator: { preset: correct_target }
@@ -178,16 +178,16 @@ steps:
               target: dilution_tube_rack_8
               state:
                 material_name: carboplatin
-                material_volume: 10
+                material_volume: 200
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 990 } }
+        validator: { preset: target_with_value, value: { set_volume: 800 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 990
+                set_volume: 800
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -206,135 +206,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_carb_stock_5um
+    next_step: prepare_carb_working_40um
 
-  # Carboplatin working stock: 5 uM (A50)
-  - step_name: prepare_carb_stock_5um
-    prompt: "Prepare the 5 uM carboplatin working stock from the 200 uM intermediate. Calculate using C1V1 = C2V2: 200 uM x V1 = 5 uM x 1000 uL, so V1 = 25 uL. Aspirate 25 uL from the intermediate, dispense into a tube in the dilution rack, add 975 uL of media to reach 1000 uL total."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 25 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 25
-      - target: microtube_15ml_intermediate
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_name: carboplatin
-                material_volume: 25
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 975 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 975
-      - target: media_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_volume: 1000
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: prepare_carb_stock_10um
-
-  # Carboplatin working stock: 10 uM (A51)
-  - step_name: prepare_carb_stock_10um
-    prompt: "Prepare the 10 uM carboplatin working stock from the 200 uM intermediate. Calculate using C1V1 = C2V2: 200 uM x V1 = 10 uM x 1000 uL, so V1 = 50 uL. Aspirate 50 uL from the intermediate, dispense into a tube in the dilution rack, add 950 uL of media to reach 1000 uL total."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 50 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 50
-      - target: microtube_15ml_intermediate
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_name: carboplatin
-                material_volume: 50
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 950 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 950
-      - target: media_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_volume: 1000
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: prepare_carb_stock_20um
-
-  # Carboplatin working stock: 20 uM (A52)
-  - step_name: prepare_carb_stock_20um
-    prompt: "Prepare the 20 uM carboplatin working stock from the 200 uM intermediate. Calculate using C1V1 = C2V2: 200 uM x V1 = 20 uM x 1000 uL, so V1 = 100 uL. Aspirate 100 uL from the intermediate, dispense into a tube in the dilution rack, add 900 uL of media to reach 1000 uL total."
+  # Carboplatin working stock: 40 uM (A51) — row E (final 1 uM)
+  - step_name: prepare_carb_working_40um
+    prompt: "Prepare the 40 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 40 &micro;M x 1000 &micro;L, so V1 = 100 &micro;L. Aspirate 100 &micro;L from the parent stock and dispense into a dilution rack tube, then add 900 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -392,73 +268,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_carb_stock_100um
+    next_step: prepare_carb_working_20um
 
-  # Carboplatin working stock: 100 uM (A53)
-  - step_name: prepare_carb_stock_100um
-    prompt: "Prepare the 100 uM carboplatin working stock from the 10 mM master stock. Calculate using C1V1 = C2V2: 10 mM x V1 = 100 uM x 1000 uL, so V1 = 10 uL. Aspirate 10 uL from the master stock, dispense into a tube in the dilution rack, add 990 uL of media to reach 1000 uL total."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 10 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 10
-      - target: carboplatin_stock_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_name: carboplatin
-                material_volume: 10
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 990 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 990
-      - target: media_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: dilution_tube_rack_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: dilution_tube_rack_8
-              state:
-                material_volume: 1000
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: prepare_carb_stock_500um
-
-  # Carboplatin working stock: 500 uM (A54)
-  - step_name: prepare_carb_stock_500um
-    prompt: "Prepare the 500 uM carboplatin working stock from the 10 mM master stock. Calculate using C1V1 = C2V2: 10 mM x V1 = 500 uM x 1000 uL, so V1 = 50 uL. Aspirate 50 uL from the master stock, dispense into a tube in the dilution rack, add 950 uL of media to reach 1000 uL total."
+  # Carboplatin working stock: 20 uM (A52) — row D (final 0.5 uM)
+  - step_name: prepare_carb_working_20um
+    prompt: "Prepare the 20 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 20 &micro;M x 1000 &micro;L, so V1 = 50 &micro;L. Aspirate 50 &micro;L from the parent stock and dispense into a dilution rack tube, then add 950 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -474,7 +288,7 @@ steps:
               target: micropipette
               state:
                 set_volume: 50
-      - target: carboplatin_stock_bottle
+      - target: microtube_15ml_intermediate
         gesture: click
         validator: { preset: correct_target }
         response:
@@ -516,11 +330,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_carb_stock_2mm
+    next_step: prepare_carb_working_8um
 
-  # Carboplatin working stock: 2 mM (A55)
-  - step_name: prepare_carb_stock_2mm
-    prompt: "Prepare the 2 mM carboplatin working stock from the 10 mM master stock. Calculate using C1V1 = C2V2: 10 mM x V1 = 2 mM x 1000 uL, so V1 = 200 uL. Aspirate 200 uL from the master stock, dispense into a tube in the dilution rack, add 800 uL of media to reach 1000 uL total."
+  # Carboplatin working stock: 8 uM (A53) — row C (final 0.2 uM)
+  - step_name: prepare_carb_working_8um
+    prompt: "Prepare the 8 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 8 &micro;M x 1000 &micro;L, so V1 = 20 &micro;L. Aspirate 20 &micro;L from the parent stock and dispense into a dilution rack tube, then add 980 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -529,14 +343,14 @@ steps:
           scene_operations: []
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 200 } }
+        validator: { preset: target_with_value, value: { set_volume: 20 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 200
-      - target: carboplatin_stock_bottle
+                set_volume: 20
+      - target: microtube_15ml_intermediate
         gesture: click
         validator: { preset: correct_target }
         response:
@@ -550,16 +364,16 @@ steps:
               target: dilution_tube_rack_8
               state:
                 material_name: carboplatin
-                material_volume: 200
+                material_volume: 20
       - target: micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 800 } }
+        validator: { preset: target_with_value, value: { set_volume: 980 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: micropipette
               state:
-                set_volume: 800
+                set_volume: 980
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -578,11 +392,11 @@ steps:
     outcome:
       on_success: complete
       on_failure: retry
-    next_step: prepare_metformin_10mm
+    next_step: prepare_carb_working_4um
 
-  # Metformin working stock (A56)
-  - step_name: prepare_metformin_10mm
-    prompt: "Prepare the 10 mM metformin working stock from the 1 M master stock. Calculate using C1V1 = C2V2: 1 M x V1 = 10 mM x 1000 uL, so V1 = 10 uL. Aspirate 10 uL from master stock, dispense into the working tube, add 990 uL media to reach 1 mL total, and vortex to ensure complete mixing."
+  # Carboplatin working stock: 4 uM (A54) — row B (final 0.1 uM)
+  - step_name: prepare_carb_working_4um
+    prompt: "Prepare the 4 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 4 &micro;M x 1000 &micro;L, so V1 = 10 &micro;L. Aspirate 10 &micro;L from the parent stock and dispense into a dilution rack tube, then add 990 &micro;L of media to reach 1000 &micro;L total."
     sequence:
       - target: micropipette
         gesture: click
@@ -598,20 +412,20 @@ steps:
               target: micropipette
               state:
                 set_volume: 10
-      - target: metformin_stock_bottle
+      - target: microtube_15ml_intermediate
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: metformin_working_tube
+      - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: metformin_working_tube
+              target: dilution_tube_rack_8
               state:
-                material_name: metformin_10mmol
+                material_name: carboplatin
                 material_volume: 10
       - target: micropipette
         gesture: adjust
@@ -627,6 +441,44 @@ steps:
         validator: { preset: correct_target }
         response:
           scene_operations: []
+      - target: dilution_tube_rack_8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: dilution_tube_rack_8
+              state:
+                material_volume: 1000
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: prepare_metformin_200mm
+
+  # Metformin working stock (A55)
+  - step_name: prepare_metformin_200mm
+    prompt: "Prepare the 200 mM metformin working stock from the 1 M master stock. Calculate using C1V1 = C2V2: 1 M x V1 = 200 mM x 300 &micro;L, so V1 = 60 &micro;L. Aspirate 60 &micro;L from master stock, dispense into the working tube, add 240 &micro;L media to reach 300 &micro;L total, and vortex to ensure complete mixing. This working stock is used directly for dosing (5 &micro;L into 200 &micro;L well = 5 mM final). Prepare 300 &micro;L to cover 48 wells × 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume / measurement slack."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 60 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 60
+      - target: metformin_stock_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
       - target: metformin_working_tube
         gesture: click
         validator: { preset: correct_target }
@@ -635,7 +487,31 @@ steps:
             - type: ObjectStateChange
               target: metformin_working_tube
               state:
-                material_volume: 1000
+                material_name: metformin
+                material_volume: 60
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 240 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 240
+      - target: media_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: metformin_working_tube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: metformin_working_tube
+              state:
+                material_volume: 300
       - target: vortex
         gesture: click
         validator: { preset: correct_target }
@@ -656,13 +532,13 @@ steps:
       on_failure: retry
     next_step: verify_metformin_volume
 
-  # Metformin volume gate (A57)
+  # Metformin volume gate (A56)
   - step_name: verify_metformin_volume
-    prompt: "Verify that you have prepared at least 60 uL of metformin working stock. Confirm the current volume in the metformin tube is >= 60 uL."
+    prompt: "Verify that you have prepared sufficient metformin working stock. You need at least 300 &micro;L total — 240 &micro;L for dosing 48 wells (48 × 5 &micro;L), plus dead volume. Confirm the current volume in the metformin tube is adequate."
     sequence:
       - target: metformin_working_tube
         gesture: click
-        validator: { preset: target_with_value, value: { material_volume: 1000 } }
+        validator: { preset: target_with_value, value: { material_volume: 300 } }
         response:
           scene_operations: []
     step_validator: { preset: sequence_complete }

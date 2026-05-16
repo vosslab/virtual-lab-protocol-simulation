@@ -1,0 +1,186 @@
+protocol_type: mini_protocol
+protocol_name: cell_seeding_plate_setup
+entry_step: calculate_dilution_volume
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with applying C1V1 = C2V2 dilution calculations to prepare a cell suspension at a specified target concentration."
+  outcomes: "Students completing this mini-protocol will be able to calculate the volume of cell stock needed to prepare 12 mL of 2x10^5 cells/mL suspension, prepare the diluted suspension, seed a 96-well plate at 100 microL per well, and incubate the seeded plate for overnight cell attachment."
+  goals: "Overall, this mini-protocol aims to accomplish the cell-seeding phase for a dose-response experiment: taking the counted cell suspension from MP-3 and preparing a working suspension at the precise concentration and volume needed for experimental seeding. Students apply C1V1 = C2V2 to calculate dilution volume (A29), perform the physical seeding step (A30), and trigger incubation for cell attachment (A31)."
+
+steps:
+  # A29: Calculate dilution volume for target concentration
+  - step_name: calculate_dilution_volume
+    prompt: "Calculate the volume of cell suspension needed to prepare 12 mL of 2x10^5 cells/mL. Using C1V1 = C2V2, where C1 is your counted cell concentration from the hemocytometer (in cells/mL), V1 is the volume of stock cells you need, C2 is 2x10^5 cells/mL, and V2 is 12000 microL. Solve for V1. For example, if the count is 1x10^6 cells/mL, then 1x10^6 x V1 = 2x10^5 x 12000, so V1 = (2x10^5 x 12000) / 1x10^6 = 2400 microL. Adjust your micropipette to the calculated volume."
+    sequence:
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 2400 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 2400
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: prepare_diluted_suspension
+
+  # A29 (continued): Prepare the dilution
+  - step_name: prepare_diluted_suspension
+    prompt: "Prepare the working cell suspension at 2x10^5 cells/mL by mixing your calculated volume of stock suspension with fresh media to reach 12 mL total. Pipette the cell suspension into a fresh 15 mL conical tube, add the appropriate volume of fresh media (12 mL minus your stock volume), and mix gently by inversion or vortex briefly."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 2400 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 2400
+      - target: cell_suspension_tube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                held_material_name: cell_suspension
+                held_material_volume: 2.4
+      - target: conical_tube_for_dilution
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: conical_tube_for_dilution
+              state:
+                material_name: cell_suspension
+                material_volume: 2.4
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 9600 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 9600
+      - target: media_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                held_material_name: media
+                held_material_volume: 9.6
+      - target: conical_tube_for_dilution
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: conical_tube_for_dilution
+              state:
+                material_volume: 12.0
+      - target: vortex
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: conical_tube_for_dilution
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: vortex
+              duration_min: 0.05
+              display: "vortexing"
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: seed_96_well_plate
+
+  # A30: Seed 100 microL per well
+  - step_name: seed_96_well_plate
+    prompt: "Seed the 96-well plate by dispensing 100 microL of the prepared 2x10^5 cells/mL suspension into each well. You may use a multichannel pipette to fill entire rows (columns A-H in one action per row), or a single-channel pipette to fill individual wells. Each well receives exactly 100 microL of the diluted cell suspension."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 100 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 100
+      - target: conical_tube_for_dilution
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                held_material_name: cell_suspension
+                held_material_volume: 100
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                material_name: cells
+                material_volume: 9600
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: incubate_for_attachment
+
+  # A31: Incubate 24 h for attachment
+  - step_name: incubate_for_attachment
+    prompt: "Place the seeded plate into the incubator to allow cells to attach and recover from seeding stress overnight. Incubate at 37 C in a humidified 5% CO2 atmosphere for approximately 24 hours before proceeding to drug treatment on Day 2."
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: incubator
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: incubator
+              state:
+                door_open: false
+            - type: TimedWait
+              target: incubator
+              duration_min: 1440
+              display: "overnight incubation (24 hours)"
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

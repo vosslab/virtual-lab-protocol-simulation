@@ -1,0 +1,2017 @@
+protocol_type: mini_protocol
+protocol_name: mtt_solubilization_readout
+entry_step: add_dmso_to_wells
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with dissolving precipitated colorimetric assay products using organic solvent, trituration technique for complete dissolution, and wavelength selection and optical absorbance measurement on a multi-well plate reader."
+  outcomes: "Students completing this mini-protocol will be able to add DMSO to individual wells of a 96-well plate containing formazan, perform manual trituration to dissolve precipitated formazan, and measure absorbance at 560 nm on a plate reader, recording the optical density for downstream IC50 calculations."
+  goals: "Overall, this mini-protocol aims to accomplish the final quantification step in an MTT viability assay: converting the precipitated, insoluble formazan product into a colored solution amenable to spectrophotometric measurement. This step bridges the incubated, MTT-treated plate to absorbance readout values that indicate cell viability across the dose-response series."
+
+steps:
+  # A44: Add 200 uL DMSO to each well
+  - step_name: add_dmso_to_wells
+    prompt: "Add 200 microL of DMSO to each well of the treated plate. Adjust your pipette to 200 microL, then dispense the solvent into each well systematically. This organic solvent will begin to dissolve the precipitated formazan."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 200 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 200
+      - target: dmso_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: well_plate_96.A1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.A12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.B12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.C12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.D12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.E12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.F12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.G12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H1
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H2
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H3
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H4
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H5
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H6
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H7
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H8
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H9
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H10
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H11
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+      - target: well_plate_96.H12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H12
+              state:
+                material_name: formazan_dmso_solution
+                material_volume: 0.2
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: trituration_to_dissolve
+
+  # A45: Pipette up and down ~10x to dissolve formazan
+  - step_name: trituration_to_dissolve
+    prompt: "Perform trituration to fully dissolve the formazan precipitate. Pipette up and down approximately 10 times in the wells, working systematically across the plate. This mechanical mixing ensures complete dissolution of the yellow formazan product."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: well_plate_96.A1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.A12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.B12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.C12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.D12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.E12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.F12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.G12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G12
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H1
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H2
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H3
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H4
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H5
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H6
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H7
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H8
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H9
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H10
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H11
+              state:
+                material_volume: 0.2
+              transition: animated
+      - target: well_plate_96.H12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H12
+              state:
+                material_volume: 0.2
+              transition: animated
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: read_absorbance
+
+  # A46: Read absorbance at 560 nm on plate reader
+  - step_name: read_absorbance
+    prompt: "Move to the plate reader workspace and measure absorbance. Access the plate reader, set the wavelength to 560 nm, insert the treated plate, and take the measurement. The optical density readings at 560 nm indicate the extent of formazan formation across the dose-response series."
+    sequence:
+      - target: plate_reader
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: mtt_solubilization_readout_plate_reader_workspace
+      - target: plate_reader
+        gesture: adjust
+        validator: { preset: target_with_value, value: { wavelength_nm: 560 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: plate_reader
+              state:
+                wavelength_nm: 560
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: plate_reader
+              state:
+                reading: true
+      - target: plate_reader
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: plate_reader
+              state:
+                reading: false
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

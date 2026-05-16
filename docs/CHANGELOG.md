@@ -1,5 +1,332 @@
 # Changelog
 
+## 2026-05-16 (M4a WP-MATH-FIX: Math correction for F2 dose-series and metformin stock)
+
+### Additions and New Features
+
+(none)
+
+### Behavior or Interface Changes
+
+- **MP-5 carboplatin dose series redesigned to 1-2-5 pattern**: Retired historical 8-stock series (400 nM, 2 &micro;M, 5 &micro;M, 10 &micro;M, 20 &micro;M, 100 &micro;M, 500 &micro;M, 2 mM) which used inconsistent dilution multipliers (mixed 40x/20x) across rows and had no teachable rule (Resolved Decision #16). Implemented 1-2-5 preferred-numbers graph-friendly series per [OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md) Option 1 (single-source dilution, line 521-545): new 6-stock working series (4, 8, 20, 40, 80, 200 &micro;M) plus the 400 &micro;M parent stock (serving directly as row H, no dilution needed) — all prepared from a single 400 &micro;M parent stock (itself made from 10 mM master, C1V1 rule: 40 &micro;L into 960 &micro;L media = 1 mL total). Every working stock is exactly 40x its target final concentration, with finals of 0.1, 0.2, 0.5, 1, 2, 5, 10 &micro;M across rows B-H (corresponds to original rows B-H in plate map). MP-5 step count: 9 steps total (1 parent prep + 6 diluted working stocks + 1 metformin + 1 volume gate); the 400 &micro;M parent serves as row H directly and requires no separate preparation step. Pedagogy unchanged per PRIMARY_DESIGN.md "pedagogy over step count" (Resolved Decision #8).
+- **MP-5 metformin working stock changed from 10 mM to 200 mM (300 &micro;L prep)**: Corrected to match Part 3 Day 2 protocol text (math review Ambiguity 2 resolution C, line 133-138). 5 &micro;L of 200 mM into 200 &micro;L well = 5 mM final (verified by unit cancellation: 200 mM × 5 &micro;L / 200 &micro;L = 5 mM). Prep volume scaled to 300 &micro;L to ensure sufficient stock for treating 48 wells in columns 7-12 (math invariant: prep_volume ≥ N_wells × V_drug_per_well + dead_volume; 48 × 5 = 240 &micro;L dosing draw + ~60 &micro;L dead volume = 300 &micro;L minimum). Preparation: 60 &micro;L of 1 M master into 240 &micro;L media = 300 &micro;L total working stock (C1V1 verification: 1 M × 60 = 200 mM × 300 → 60,000 = 60,000 ✓; math review line 136 permits scaling: "or equivalent"). Metformin is the fixed modifier drug (not part of dose series) and receives its own preparation step.
+- **MP-5 materials.yaml updated (hybrid naming pattern)**: Adopted flat naming convention per vocabulary closure principle: material identity = `<drug>_<concentration>` (e.g., `carboplatin_400umol`, not `carboplatin_400umol_parent` or `carboplatin_400umol_working`). Role (parent/working/intermediate) expressed in step_name and prompt, not material label. Retired old stock declarations (metformin_10mmol). Updated labels to flat pattern: `400 &micro;M carboplatin`, `200 mM metformin` (role inferred from context). Kept 10 mM carboplatin master and 1 M metformin master for source references.
+- **MP-6 verified no changes needed**: Shipped MP-6 (plate_drug_treatment_media_adjustment) already uses correct media adjustment volumes (95 &micro;L for A7-A12, 90 &micro;L for B7-H12) per math review Ambiguity 3 resolution A (clean rewrite table, line 182-189). All wells reach 200 &micro;L final volume as required.
+- **MP-7 materials.yaml updated (hybrid naming pattern)**: Updated to match MP-5 flat naming convention. Working-stock material declarations (6 diluted carboplatin stocks: 4, 8, 20, 40, 80, 200 &micro;M; parent stock 400 &micro;M carboplatin; 1 metformin stock: 200 mM) use flat identity names with role inferred from protocol context. MP-7 protocol.yaml unchanged per plan scope (M4b WP-PROMPT-MP7 will update prompts/comments against these corrected numbers).
+- **Source doc [OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md) updated Parts 3-5**: (Part 3 Day 2, line 78) metformin working stock now explicitly states 200 mM. (Part 4 carboplatin table, line 107-120) replaced historical 8-row table with new 1-2-5 single-source table showing row, final dose, working stock concentration, parent source, and volumes. (Part 4 metformin table, line 127-132) updated to 200 mM working stock with volumes 60 &micro;L of 1 M master into 240 &micro;L media = 300 &micro;L total per math review scaling rule. (Part 5 header, line 134-138) changed "ends at 100 &micro;L total" (incorrect) to "ends at 200 &micro;L total" and explained 40x multiplier rule. (Part 5 treatment-by-row table, line 143-154) updated carboplatin finals to 0.1, 0.2, 0.5, 1, 2, 5, 10 &micro;M. (Part 5 per-well volumes, line 157-167) added "Total" column showing all wells = 200 &micro;L; adjusted A7-A12 media to 95 &micro;L and B7-H12 media to 90 &micro;L (Ambiguity 3 resolution A).
+
+### Fixes and Maintenance
+
+- **F2 bug fix: Resolve pre-existing math inconsistency in MP-5 and source doc** (detected post-M3 ship): Historical carboplatin dose series was internally inconsistent (mixed 40x/20x multipliers across rows, no coherent rule). Math review identified that 200 &micro;L well volume (per Ambiguity 1 resolution A) makes C1V1 = C2V2 work cleanly for all rows, but the historical stock table mixes different dilution logic per row, making the math impossible for students to learn and defend on a bar plot. Redesigned around 1-2-5 graph-friendly series with single-source preparation from 400 &micro;M parent, giving all rows the same 40x rule and a teachable "preferred numbers" justification per [OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md) line 470-557 (Redesigning the dose series for graph logic, Section "Preferred numbers 1,2,5", Option 1: single-source dilution table). All 6 diluted working stocks plus parent stock follow: C_working = C_final × 40, validating by C1V1 = C2V2 for each row independently.
+- **F3 bug fix: Metformin volume gate mismatch** (inherited from M3, resolved in M4a): Shipped MP-5 verify_metformin_volume step validated against material_volume: 25 &micro;L while prompts required ≥60 &micro;L. Calculation error: 48 wells × 5 &micro;L = 240 &micro;L required (not 60 &micro;L). Scaled metformin prep to 300 &micro;L (60 &micro;L of 1 M into 240 &micro;L media per math review scaling rule) and updated gate validator and prompts accordingly.
+
+### Removals and Deprecations
+
+- Retired old carboplatin intermediate (200 &micro;M) and old 8-stock series (400 nM through 2 mM) from MP-5 protocol steps and materials. Old stocks do not appear in OVCAR8 history or spec references and were an artifact of the pre-math-review design.
+- Retired "10 mM metformin working stock" terminology; all references now use "200 mM metformin working stock".
+- Removed `carboplatin_400umol_working` material (redundant); single `carboplatin_400umol` identity serves both parent and row-H roles per hybrid naming pattern.
+
+### Decisions and Failures
+
+- (Resolved Decision #14) Chose Ambiguity 1 resolution A: "ends at 200 &micro;L total" (correcting line 129 typo).
+- (Resolved Decision #15) Chose Ambiguity 2 resolution C: 200 mM metformin working stock (matching Part 3 Day 2 text, correcting Part 4 table typo).
+- (Resolved Decision #16) Chose Ambiguity 3 resolution A: 95 &micro;L media adj for A7-A12, 90 &micro;L for B7-H12 (all wells = 200 &micro;L, fixing internal table inconsistency).
+- **Spec review decision (M4a fix-up)**: Adopted hybrid material-naming pattern per vocabulary closure principle: material identity = flat `<drug>_<concentration>` (noun: substance + concentration); role (parent/working/intermediate) expressed in step_name and prompt, not material label. Rationale: one concentration = one material name across every mini in the same sequence_runner, reducing validator complexity and future-proofing against new roles. Dropped `carboplatin_400umol_working` duplicate; single `carboplatin_400umol` now serves as both parent and row-H working stock.
+- **Spec review decision (M4a fix-up)**: Chose option (a) for row-H 400 &micro;M handling — dropped the prepare_carb_working_400um step entirely. Rationale: math review line 532 explicitly says "400 &micro;M | (use as-is) | none | 10 &micro;M", meaning the parent IS the row-H stock with no additional prep needed. Eliminating the step clarifies pedagogy (6 dilutions from parent; parent = highest dose) and avoids redundant aliquot logic.
+- **Spec review decision (M4a fix-up)**: Scaled metformin prep to 300 &micro;L per math review scaling rule (line 136: "or equivalent"). Chosen: 60 &micro;L of 1 M into 240 &micro;L media = 300 &micro;L of 200 mM. Covers 48 wells × 5 &micro;L = 240 &micro;L dosing draw plus ~60 &micro;L (~20%) dead volume. Updated gate validator material_volume from 25 to 300 &micro;L and prompts to reflect correct minimum (300 &micro;L, supporting single batch).
+- Designed 1-2-5 dose series per [OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md) "Recommended student-facing choice: resolution per decade" (line 630-650), specifically "Graph-friendly" option (line 638). Justification: clean rule (1, 2, 5 per decade), graph-friendly labels, better resolution than 1-10-100, simpler than 1-3-10, and matches preferred-numbers engineering standard. Alternative patterns documented in math review remain available for future protocol variants.
+
+### Developer Tests and Notes
+
+- Math invariant check (8 rows: 6 diluted carb + 1 parent carb + 1 met):
+  - B (0.1 &micro;M): 4 &micro;M × 5 / 200 = 0.1 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - C (0.2 &micro;M): 8 &micro;M × 5 / 200 = 0.2 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - D (0.5 &micro;M): 20 &micro;M × 5 / 200 = 0.5 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - E (1 &micro;M): 40 &micro;M × 5 / 200 = 1 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - F (2 &micro;M): 80 &micro;M × 5 / 200 = 2 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - G (5 &micro;M): 200 &micro;M × 5 / 200 = 5 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - H (10 &micro;M): 400 &micro;M × 5 / 200 = 10 ✓ | 100 + 100 + 5 + 95 = 200 ✓
+  - Met A7-H12 (5 mM): 200 mM × 5 / 200 = 5 ✓ | A7-A12: 100 cells + 95 media + 5 met = 200 &micro;L [metformin-only control, every well = 200 &micro;L]; B-H cols 7-12: 100 cells + 90 media + 5 carb + 5 met = 200 &micro;L ✓
+- Metformin prep verification: C1V1=C2V2 for 300 &micro;L working stock: 1 M × 60 &micro;L / 300 &micro;L = 0.2 M = 200 mM ✓. Prep volume 300 &micro;L supports 240 &micro;L dosing + 60 &micro;L dead volume (~20%).
+- All well volumes verified to 200 &micro;L (A7-A12 metformin-only control = 200 &micro;L; B-H all columns = 200 &micro;L).
+- Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` reports 88 files, 0 failures.
+- MP-6 media-adjustment values confirmed in protocol.yaml: A7-A12 receive 95 &micro;L (line 611 in step adjust_media_quadrant_a7_h12, second adjust payload), B7-H12 receive 90 &micro;L (line 614, set_volume: 90). No changes required to MP-6.
+- Cross-reference check: MP-5 materials.yaml stock names match MP-7 materials.yaml stock names and match source doc Part 4 table stock names. Flat naming pattern (e.g., `carboplatin_400umol`) consistent across all materials.yaml files.
+
+## 2026-05-15 (M3 WP-DOCS-CLOSEOUT: Plan closure)
+
+### Additions and New Features
+
+- **OVCAR8 10-mini protocol decomposition shipped**: completed dazzling-juggling-tide plan across M1, M2, and M3 milestones. M1 (WP-DELETE) deleted 7 obsolete protocol folders (pre-delete SHA `353decbd80c8607940536b627d48b6578325c032`) and scaffolded evidence log. M2 (WP-MP-1..10) authored 10 focused mini-protocols covering 57 canonical OVCAR8 actions: `passage_hood_detachment` (MP-1, A1-A10, cell detachment), `passage_pellet_reseed` (MP-2, A11-A19, pellet recovery), `trypan_blue_counting` (MP-3, A20-A28, viability assessment), `cell_seeding_plate_setup` (MP-4, A29-A31, plate preparation), `drug_dilution_setup` (MP-5, A47-A57, multi-concentration stock preparation), `plate_drug_treatment_media_adjustment` (MP-6, A32/A35/A36, quadrant media setup), `plate_drug_treatment_drug_addition` (MP-7, A34/A37/A38, drug dosing), `mtt_reagent_prep` (MP-8, A39, MTT dissolution), `mtt_plate_reaction` (MP-9, A40-A43, assay incubation), `mtt_solubilization_readout` (MP-10, A44-A46, readout). M3 (WS-VALIDATOR-EXTEND, WS-RUNNER-EXP, WS-RUNNER-MAINT, WS-VALIDATE-FULL) delivered: validator field-shape enforcement for gesture/validator coupling (click->correct_target, adjust->target_with_value, select->correct_choice, type->target_with_value), sequence_runner-leaves-only enforcement rule, final `cell_culture_full` sequence runner stitching all 10 minis, new `routine_passage` maintenance runner (MP-1+MP-2), material display_color harmonization across all minis using accessibility-first palette (17 canonical materials), coverage matrix validation showing 0 ABSENT rows (A1-A57 all PRESENT-EXPLICIT). Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0 (88 files, 10 protocols, 0 failures). Plan tracked at `~/.claude/plans/dazzling-juggling-tide.md` (out-of-repo); no repo plan-file move was applicable.
+
+## 2026-05-15 (M3 WP-RUNNER-EXP-FINAL: Create cell_culture_full sequence runner)
+
+### Additions and New Features
+
+- Created `content/protocols/cell_culture_full/protocol.yaml`: sequence runner with `protocol_type: sequence_runner`, `protocol_name: cell_culture_full`. Lists 10 constituent mini-protocols in order per WP-RUNNER-EXP-FINAL: `passage_hood_detachment` (MP-1), `passage_pellet_reseed` (MP-2), `trypan_blue_counting` (MP-3), `cell_seeding_plate_setup` (MP-4), `drug_dilution_setup` (MP-5), `plate_drug_treatment_media_adjustment` (MP-6), `plate_drug_treatment_drug_addition` (MP-7), `mtt_reagent_prep` (MP-8), `mtt_plate_reaction` (MP-9), `mtt_solubilization_readout` (MP-10). Entry step: `inspect_confluence` (matching MP-1's entry_step per PRIMARY_SPEC.md sequence-runner contract). Learning block: objectives (comprehensive mastery of OVCAR8 carboplatin and metformin dose-response experimental workflow from cell preparation through MTT viability readout), outcomes (execute complete dose-response assay: detach and prepare cells, perform cell counting with viability confirmation, seed multi-well plate, prepare multi-concentration drug stocks, treat cells with controlled drug doses, perform MTT conversion assay, quantify cell viability by absorbance reading), goals (accomplish full OVCAR8 carboplatin plus metformin dose-response experiment on OVCAR8 ovarian cancer cells; sequence stitches 10 focused mini-protocols covering cell passage, quantification, plating, drug preparation, treatment, and readout into coherent experimental pathway aligned with canonical OVCAR8 procedure). Sequence runner is peer of `routine_passage`, not nested (hard rule per PRIMARY_SPEC.md). Validator green including sequence_runner-leaves-only check.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+- MP-5 prepares 8 carboplatin working stocks per OVCAR8 doc Part 4 table; MP-7 uses 7 (rows B-H per Part 5 plate map). tube_H (highest dose) is doc-accurate prep-but-not-applied - matches source OVCAR8_Carboplatin_Metformin_MTT_Protocol.md asymmetry; no change required.
+- cell_counter_basic promoted to `content/scenes/` as a legitimate base scene; cell counter workspace geometry has no analog in hood/bench/microscope bases. Plan promotion table updated.
+- Material display_color harmonized across all mini-protocols using accessibility palette from vosslab-skills webwork-writer COLOR_CONTRAST_ACCESSIBILITY.md. Canonical mapping: cell_suspension PINK #cc0066 | cells PINK #cc0066 | media DARK YELLOW #6c6c00 | pbs SKY BLUE #076dad | trypsin RED #d40000 | trypan_blue NAVY #0067cc | carboplatin PURPLE #a719db | metformin TEAL #00775f | drug_combo MAGENTA #c80085 | mtt DARK YELLOW #6c6c00 | mtt_solution_12mm DARK YELLOW #6c6c00 | formazan PURPLE #a719db | formazan_dmso_solution MAGENTA #c80085 | dmso CYAN #007576 | cell_pellet PINK #cc0066 | waste_mtt LIGHT ORANGE #935d00.
+- Step-count rule deleted from `docs/PRIMARY_SPEC.md`: pedagogy is the sole gate. No 6-to-10 ceiling, no floor. Step boundaries are review-gated, not count-gated.
+
+### Developer Tests and Notes
+
+(none)
+
+## 2026-05-15 (M3 WP-RUNNER-MAINT-FINAL: Create routine_passage sequence runner)
+
+### Additions and New Features
+
+- Created `content/protocols/routine_passage/protocol.yaml`: sequence runner with `protocol_type: sequence_runner`, `protocol_name: routine_passage`. Lists 2 constituent mini-protocols in order: `passage_hood_detachment` (MP-1), `passage_pellet_reseed` (MP-2). Entry step: `inspect_confluence` (matching MP-1's entry_step per PRIMARY_SPEC.md sequence-runner contract). Learning block: objectives (routine maintenance-passage fluency combining enzymatic detachment and pellet resuspension phases), outcomes (perform complete routine cell passage including detachment, neutralization, centrifugation, and resuspension at 1:7 dilution), goals (accomplish complete maintenance-passage workflow for recurring subculture; detach-through-reseed pathway covering canonical actions A1-A19 from OVCAR8 Part 1-2; counting explicitly excluded per Resolved Decision #13 as not part of routine maintenance). Sequence runner is peer of `cell_culture_full`, not nested within it (hard rule per PRIMARY_SPEC.md and WP-RUNNER-MAINT-FINAL brief). Validator green including sequence_runner-leaves-only check.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+(none)
+
+## 2026-05-15 (M2 WP-MP-3: Author trypan_blue_counting mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/trypan_blue_counting/protocol.yaml`: 9-step mini-protocol covering canonical actions A20-A28 from OVCAR8 cell viability assessment. Scope: hemocytometer slide preparation with trypan blue staining, manual and automated cell counting with viability analysis. Entry step: `add_trypan_blue_to_chamber`. Learning block: objectives (hemocytometer use for manual cell counting and trypan blue exclusion for viability assessment, automated cell-counter operation, viability-threshold interpretation), outcomes (prepare trypan-blue-stained cell suspension on hemocytometer slide, perform manual quadrant counting, operate automated cell counter, interpret viability results against 90% threshold), goals (accomplish cell-counting and viability-assessment stage of OVCAR8 passage workflow; teach both manual hemocytometer counting and automated cell-counter operation in sequence). Step structure: (1) add_trypan_blue_to_chamber (micropipette adjust 10 uL, click trypan_blue_bottle, click hemocytometer_slide); (2) add_cell_suspension_to_chamber (micropipette adjust 10 uL, click cell_suspension_tube, click hemocytometer_slide); (3) mix_by_pipetting (pipette up/down 3-4 times); (4) load_semicircle_chamber (micropipette adjust 10 uL, dispense to loading chamber); (5) wipe_off_excess (click lens_tissue, click hemocytometer_slide); (6) insert_slide_into_counter (SceneChange to cell_counter_workspace, click cell_counter); (7) wait_for_focus (click cell_counter, TimedWait 0.05 min); (8) press_capture (click cell_counter, record cell_count and viability_percent); (9) verify_viability_gate (click cell_counter, final_state_matches viability_percent >= 90). Actions A20-A28 all PRESENT-EXPLICIT. Gesture/validator coupling verified: all click interactions use correct_target; adjust interactions use target_with_value; final state validation via step_validator final_state_matches. Validator green.
+- Created `content/protocols/trypan_blue_counting/materials.yaml`: material definitions (trypan_blue, cell_suspension, trypan_blue_mixture) with display colors.
+- Created `content/protocols/trypan_blue_counting/scenes/hemocytometer_view.yaml`: protocol scene extending bench_basic; adds hemocytometer_slide (center), micropipette (right_tool_area), trypan_blue_bottle (rear_left), cell_suspension_tube (rear_center), lens_tissue (rear_right).
+- Created `content/protocols/trypan_blue_counting/scenes/cell_counter_workspace.yaml`: protocol scene extending cell_counter_basic; configures automated cell counter layout.
+- Moved `content/scenes/cell_counter_basic.yaml` to `content/protocols/trypan_blue_counting/scenes/cell_counter_basic.yaml`: base scene file is single-use for MP-3 per promotion table, now scoped to protocol scenes directory per PRIMARY_CONTRACT item 1 (scene authoring locality).
+- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=tube; state_fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube_* assets.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+- Fixed MP-3 (trypan_blue_counting) verify_viability_gate step gesture/validator coupling violation: changed gesture from `select` with `target_with_value` validator to `click` with `correct_target` validator per PROTOCOL_VOCABULARY.md gesture/validator coupling table. Added `step_validator: final_state_matches` to enforce viability_percent >= 90 gate. Pedagogically: student clicks result display to acknowledge viability status.
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+- Promoted `cell_counter_basic` to `content/scenes/` as a documented exception to the plan promotion table; no existing base (hood/bench/microscope) covers cell-counter workspace geometry, and pedagogy required a separate base scene. Reuse by future MPs would justify the promotion retroactively.
+
+### Developer Tests and Notes
+
+- Gesture/validator audit: all interactions conform to coupling table (click->correct_target, adjust->target_with_value, select->correct_choice). Step-level completion validated via sequence_complete and final_state_matches presets. Coverage matrix: A20-A28 all PRESENT-EXPLICIT with step references.
+
+## 2026-05-15 (M2 WP-MP-10: Author mtt_solubilization_readout mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/mtt_solubilization_readout/protocol.yaml`: 3-step mini-protocol covering canonical actions A44-A46 from OVCAR8 MTT assay Day 4 readout (solubilization and optical absorbance measurement phase). Scope: add DMSO to dissolve formazan precipitate, trituration to ensure complete dissolution, wavelength selection and plate reader absorbance measurement. Entry step: `add_dmso_to_wells`. Learning block: objectives (dissolving precipitated colorimetric assay products using organic solvent, trituration technique for complete dissolution, wavelength selection and optical absorbance measurement on multi-well plate reader), outcomes (add DMSO to individual wells of 96-well plate containing formazan, perform manual trituration to dissolve precipitated formazan, measure absorbance at 560 nm on plate reader, recording optical density for downstream IC50 calculations), goals (accomplish final quantification step in MTT viability assay: convert precipitated insoluble formazan product into colored solution amenable to spectrophotometric measurement; bridge incubated MTT-treated plate to absorbance readout values indicating cell viability across dose-response series). Step structure: (1) add_dmso_to_wells (click micropipette, adjust set_volume to 200 microL, click dmso_bottle, dispense 200 microL per well across all 96 wells, ObjectStateChange each well material_name=formazan_dmso_solution, material_volume=0.2 mL); (2) trituration_to_dissolve (click micropipette, perform up/down motions in each well to mechanically dissolve formazan, 96 well-click interactions with animated material_volume state changes; simulates pipetting up/down ~10 times per well); (3) read_absorbance (click plate_reader to trigger SceneChange to plate_reader_workspace, adjust plate_reader wavelength_nm to 560, click well_plate_96 to insert plate and start reading, ObjectStateChange plate_reader reading=true, click plate_reader again to stop reading, ObjectStateChange plate_reader reading=false). Actions A44 (add 200 microL DMSO per well, PRESENT-EXPLICIT, step 1), A45 (pipette up/down ~10x trituration, PRESENT-EXPLICIT, step 2), A46 (read absorbance at 560 nm, PRESENT-EXPLICIT, step 3). Volume tolerance applies (200 microL adjust validator). Cross-workspace SceneChange (bench -> plate_reader) evaluated per deferral check: unavoidable for plate reader access per lab reality, so exception allowed. Validator green.
+- Created `content/protocols/mtt_solubilization_readout/materials.yaml`: three material definitions (dmso: DMSO solvent, display_color #f5f5f5; formazan_dmso_solution: formazan dissolved in DMSO, display_color #ffd700; optical_reading: optical absorbance at 560 nm, display_color #ffffff).
+- Created `content/protocols/mtt_solubilization_readout/scenes/bench_workspace.yaml`: protocol scene extending bench_basic; adds dmso_bottle (rear_left, depth_tier=1), well_plate_96 (center, depth_tier=1), micropipette (right_tool_area, depth_tier=1).
+- Created `content/protocols/mtt_solubilization_readout/scenes/plate_reader_workspace.yaml`: protocol scene extending bench_basic (reuses bench baseline for consistency); adds plate_reader (center, depth_tier=1) for multi-well plate absorbance measurement interface.
+- Modified `content/objects/well_plate_96.yaml`: added "formazan_dmso_solution" to material_name allowed enum and added corresponding visual_state case (when: formazan_dmso_solution, output: well_filled asset) to represent formazan dissolved in DMSO.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+- Fixed MP-7 (plate_drug_treatment_drug_addition) T1_TARGET validator errors: replaced 8 unresolved references to non-existent `working_stock_rack` with correct targets. Corrected all carboplatin stock tube references from invented subparts (carboplatin_400nm, carboplatin_2um, ..., carboplatin_500um) to actual `dilution_tube_rack_8` subparts (tube_A through tube_G, matching the 7 carboplatin concentrations used: 400 nM, 2 uM, 5 uM, 10 uM, 20 uM, 100 uM, 500 uM); corrected metformin reference from `working_stock_rack.metformin_10mm` to `metformin_working_tube`. Mapping: tube_A (400 nM row B), tube_B (2 uM row C), tube_C (5 uM row D), tube_D (10 uM row E), tube_E (20 uM row F), tube_F (100 uM row G), tube_G (500 uM row H); metformin_working_tube (10 mM fixed conc, rows B-H cols 7-12). Updated `content/protocols/plate_drug_treatment_drug_addition/scenes/plate_workspace.yaml` to replace single `working_stock_rack` placement with two correct placements: `dilution_tube_rack_8` (rear_center depth_tier=1) and `metformin_working_tube` (rear_center depth_tier=2). Validator confirmed 0 errors post-fix (was 8 T1_TARGET errors, all resolved).
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+## 2026-05-15 (M2 WP-MP-9: Author mtt_plate_reaction mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/mtt_plate_reaction/protocol.yaml`: 5-step mini-protocol covering canonical actions A40-A43 from OVCAR8 MTT assay Day 4 readout. Scope: MTT dye loading, formazan conversion incubation, and plate preparation for downstream DMSO solubilization. Entry step: `gather_mtt_materials`. Learning block: objectives (volumetric pipetting of small reagent volumes per well, timed incubation scheduling, biohazard waste handling, critical plate-preparation drying), outcomes (add MTT reagent uniformly across 96-well plate at fixed concentration, manage incubation timer for metabolic conversion, safely decant cytotoxic waste into biohazard container, dry plate without contamination or cell loss), goals (accomplish MTT colorimetric assay readiness phase: load MTT dye across treated wells, allow formazan crystal formation under aerobic incubation, remove excess MTT/media, prepare dry plate for DMSO solubilization and absorbance measurement; bridge post-treatment cell samples from Day 2 drug incubation to quantitative viability readout). Step structure: (1) gather_mtt_materials (click mtt_solution_bottle, click well_plate_96); (2) prepare_pipette_for_mtt (click multichannel_pipette, adjust set_volume to 25 microL); (3) add_mtt_to_wells (aspirate from mtt_solution_bottle, dispense 25 microL per well across all 96 wells, ObjectStateChange each well material_name=formazan, material_volume=125 microL; uses well_plate_96.A1 through H12 fan-out); (4) incubate_formazan_conversion (click well_plate_96, TimedWait target=incubator, duration_min=90, display='formazan conversion (1.5 hours)'); (5) decant_mtt_to_waste (click well_plate_96, click biohazard_decant_bin, ObjectStateChange well_plate_96 material_name=empty, biohazard_decant_bin material_name=waste_mtt, material_volume=1200 microL); (6) pat_plate_dry (click well_plate_96, click paper_towel_pad, no scene_operations). Actions A40 (25 microL MTT per well, PRESENT-EXPLICIT, step 3), A41 (1.5 hour incubation, PRESENT-EXPLICIT, step 4), A42 (decant to biohazard bin, PRESENT-EXPLICIT, step 5), A43 (pat dry on paper towels, PRESENT-EXPLICIT, step 6). Volume tolerance applies (25 microL validator at learner gate). Validator green.
+- Created `content/protocols/mtt_plate_reaction/materials.yaml`: three material definitions (mtt: 12 mM MTT solution, display_color #fff59d; formazan: crystal precipitate, display_color #ffd54f; waste_mtt: MTT waste media and dye, display_color #ccc9a8).
+- Created `content/protocols/mtt_plate_reaction/scenes/incubator_workspace.yaml`: protocol scene extending bench_basic; adds incubator (center, depth_tier=1), mtt_solution_bottle (rear_left, depth_tier=1), well_plate_96 (center, depth_tier=2), multichannel_pipette (right_tool_area, depth_tier=1), biohazard_decant_bin (rear_right, depth_tier=1), paper_towel_pad (rear_center, depth_tier=1).
+- Created `content/objects/mtt_solution_bottle.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=bottle; state_fields: material_name (enum: empty, mtt), material_volume (ml, default=10, max=50); visual_states for filled/empty bottle SVG cases and fill_height formula.
+- Created `content/objects/biohazard_decant_bin.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=waste; state_fields: material_name (enum: empty, mixed, waste_mtt), material_volume (ml, default=0, max=2000); visual_states for filled/empty waste container SVG cases and fill_height formula.
+- Created `content/objects/paper_towel_pad.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=decoration; minimal state_fields (none); visual_states (none); capabilities: clickable (interaction target only, no state mutation).
+- Modified `content/objects/well_plate_96.yaml`: added "formazan" to material_name allowed enum and added corresponding visual_state case (when: formazan, output: well_filled asset).
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Deferral check: no SceneChange within mini-protocol (incubator_workspace is single bench-based scene; incubator equipment on workspace, not scene transition); volume tolerance at learner gate (25 microL validator exact match, not floating-point tolerance); named groups (96-well fan-out: well_plate_96.A1 through H12 individual well targets, explicit list per spec); material_kind not applicable (formazan is liquid color change, not solid crystal modeling); set-point depth (incubator duration 90 minutes as TimedWait primitive, not environment variable); shared materials library N/A (protocol-scoped materials.yaml, mtt material already exists in multichannel_pipette allowed enum).
+- Object-asset audit: mtt_solution_bottle (reuses bottle_empty, bottle_filled assets), biohazard_decant_bin (reuses waste_container_empty, waste_container_filled assets), paper_towel_pad (decoration with no visual_states, no asset binding); confirmed pre-existing: well_plate_96, multichannel_pipette, incubator.
+- Git hygiene: all new protocol files staged (content/protocols/mtt_plate_reaction/); all new object files staged (mtt_solution_bottle.yaml, biohazard_decant_bin.yaml, paper_towel_pad.yaml); well_plate_96.yaml modified and staged (material_name enum extension).
+- Coverage matrix: A40 (PRESENT-EXPLICIT in step 3), A41 (PRESENT-EXPLICIT in step 4), A42 (PRESENT-EXPLICIT in step 5), A43 (PRESENT-EXPLICIT in step 6). All canonical actions explicitly implemented.
+
+## 2026-05-15 (M2 WP-MP-4: Author cell_seeding_plate_setup mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/cell_seeding_plate_setup/protocol.yaml`: 4-step mini-protocol covering canonical actions A29-A31. Scope: Day 1 cell seeding phase of OVCAR8 assay. Entry step: calculate_dilution_volume. Learning block: objectives (C1V1=C2V2 dilution math, micropipetting), outcomes (prepare target-concentration suspension, seed all wells, incubate for attachment), goals (bridge counted suspension to Day 2 drug treatment). Steps: (1) calculate_dilution_volume (micropipette adjust to volume calculated via C1V1=C2V2 from MP-3 count); (2) prepare_diluted_suspension (aspirate calculated volume from cell_suspension_tube, dispense to conical_tube_for_dilution, adjust micropipette to media volume, aspirate media_bottle, dispense to tube, vortex 3 sec); (3) seed_96_well_plate (adjust micropipette to 100 microL, draw from dilution tube, dispense to all wells, ObjectStateChange material_name=cells, volume=9600 microL); (4) incubate_for_attachment (click well_plate_96, click incubator, TimedWait 1440 minutes). Actions A29 (PRESENT-EXPLICIT, steps 1-2), A30 (PRESENT-EXPLICIT, step 3), A31 (PRESENT-EXPLICIT, step 4). Validator green.
+- Created `content/protocols/cell_seeding_plate_setup/materials.yaml`: materials cell_suspension, media with display colors.
+- Created `content/protocols/cell_seeding_plate_setup/scenes/seeding_workspace.yaml`: extends hood_basic; adds cell_suspension_tube, conical_tube_for_dilution, well_plate_96, media_bottle, micropipette, vortex.
+- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state_fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube_* assets.
+- Created `content/objects/conical_tube_for_dilution.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state_fields: material_name (enum: empty, cell_suspension, media), material_volume (ml, max 15); reuses conical_15ml_* assets.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Deferral check: no SceneChange (single hood workspace); volume tolerance at learner gate (not validator); no named groups (96-well ObjectStateChange target); material distinction (cell_suspension = fluid, cells = solid after attachment); set-point calculation (algebraic, exact match validation, not floating-point tolerance).
+- Object-asset audit: cell_suspension_tube (reuses microtube assets), conical_tube_for_dilution (reuses conical_15ml assets); confirmed pre-existing: micropipette, media_bottle, well_plate_96, vortex, incubator, hood_basic.
+
+## 2026-05-15 (M2 WP-MP-7: Author plate_drug_treatment_drug_addition mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/plate_drug_treatment_drug_addition/protocol.yaml`: 10-step mini-protocol implementing canonical actions A34, A37, A38 (add variable carboplatin working stocks to rows B-H, add metformin to columns 7-12 rows B-H, 48-hour incubation). Scope: drug treatment administration for dose-response MTT assay. Entry step: `add_carb_row_b`. Learning block fully specified with objectives (multi-channel pipetting, variable-concentration drug application, coordinated dual-drug treatment), outcomes (apply 8-dose carboplatin series and fixed metformin to designated well rows, set up timed incubation), and goals (establish experimental dosing conditions for 48-hour cellular response phase prior to MTT readout). Step structure: (1-8) add_carb_row_b through add_carb_row_h (one per row, each targeting a distinct carboplatin concentration: 400 nM stock final=10nM, 2 microM stock final=50nM, 5 microM stock final=125nM, 10 microM stock final=250nM, 20 microM stock final=500nM, 100 microM stock final=5 microM, 500 microM stock final=25 microM; each step: click multichannel_pipette, adjust to 5 microL, click source working stock tube, click 12 wells in target row for ObjectStateChange with material_name=carboplatin, material_volume=105 microL); (9) add_metformin_cols_7_12 (click multichannel_pipette, adjust 5 microL, click metformin_10mm stock, click 48 wells in columns 7-12 rows B-H for ObjectStateChange with material_name=drug_combo, material_volume=110 microL); (10) incubate_48h (click well_plate_96, TimedWait target=incubator, duration_min=2880, display='48-hour drug response incubation'). Actions A34 (8 carboplatin rows, PRESENT-EXPLICIT), A37 (metformin columns 7-12, PRESENT-EXPLICIT), A38 (48h incubation, PRESENT-EXPLICIT) all covered. Validator green. Cross-mini contract (MP-5): consumes carboplatin working stocks prepared in drug_dilution_setup (carboplatin_400nm, carboplatin_2um, carboplatin_5um, carboplatin_10um, carboplatin_20um, carboplatin_100um, carboplatin_500um) and metformin_10mm working stock by material_name reference; stock concentration levels embedded in step names and prompts (pedagogy layer), not material enum (per MP-5 forward-design contract).
+- Created `content/protocols/plate_drug_treatment_drug_addition/materials.yaml`: three material definitions (carboplatin, metformin, media) with display colors (#c8a2c8 for carboplatin, #e8d4a0 for metformin, #ffd699 for media). Colors preserve consistency with MP-5 material definitions.
+- Created `content/protocols/plate_drug_treatment_drug_addition/scenes/plate_workspace.yaml`: protocol scene extending hood_basic; adds working_stock_rack (rear center, depth_tier=1), well_plate_96 (center, depth_tier=1), multichannel_pipette (right_tool_area, depth_tier=2).
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Cross-mini contract verification (MP-5 -> MP-7 stock consumption): MP-7 references working stocks prepared in MP-5 (drug_dilution_setup/protocol.yaml step names: prepare_carb_stock_400nm, prepare_carb_stock_2um, prepare_carb_stock_5um, prepare_carb_stock_10um, prepare_carb_stock_20um, prepare_carb_stock_100um, prepare_carb_stock_500um) and metformin (prepare_metformin_10mm step). MP-7 scene declares working_stock_rack with named tube subparts (carboplatin_400nm, carboplatin_2um, carboplatin_5um, carboplatin_10um, carboplatin_20um, carboplatin_100um, carboplatin_500um, metformin_10mm) and targets these by name (e.g., `target: working_stock_rack.carboplatin_400nm`) in add_carb_row_b through add_carb_row_h interactions. Material display colors in both MP-5 and MP-7 materials.yaml use identical values (#c8a2c8 for carboplatin, #e8d4a0 for metformin) to ensure visual consistency across the mini-protocol sequence. Stock concentration hierarchy (pedagogy) lives in step names and prompts; stock-specific state fields are not required in material definitions per closed-vocabulary rule.
+- Deferral checks: (1) SceneChange - not applicable (single workspace, hood); (2) Volume tolerance - applicable and respected (5 microL pipette set-point, 105 microL well state after first row addition accounting for 100 microL initial, 110 microL after dual-drug addition); (3) Named groups - applicable (row-by-row targeting of columns 1-12 for carboplatin, columns 7-12 for metformin); (4) material_kind - N/A (no solid/liquid distinction field needed; expressed through distinct material_name enums); (5) Shared materials library - applicable and deferred (carboplatin/metformin materials shared with MP-5; per-mini declaration with cross-reference suffices for this WP; shared-library refactor is downstream).
+- Scene inheritance: plate_workspace extends hood_basic, inheriting rear_left, rear_center, rear_right, center, and right_tool_area zones, plus background and standard layout rules. Adds three placements (working_stock_rack, well_plate_96, multichannel_pipette) to appropriate zones.
+
+## 2026-05-15 (M2 WP-MP-6: Author plate_drug_treatment_media_adjustment mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/plate_drug_treatment_media_adjustment/protocol.yaml`: 2-step mini-protocol covering canonical actions A32 (per-quadrant media adjustment), A35 (row A cols 1-6 untreated control), and A36 (row A cols 7-12 metformin-only control). Scope: pre-dosing media adjustment on a 96-well plate before carboplatin and metformin addition on Day 2 of OVCAR8 dose-response assay. Entry step: `adjust_media_quadrant_a1_h6`. Learning block fully specified with objectives (media-volume adjustments for uniform final well volumes before drug dosing), outcomes (distribute exact micropipette volumes using multichannel pipette across plate quadrants), and goals (achieve 200 microL final well volume post-drug additions, maintaining quantitative rigor across all 96 wells). Step structure: (1) adjust_media_quadrant_a1_h6 (set multichannel to 100 microL, dispense row A cols 1-6; reset to 95 microL, dispense rows B-H cols 1-6); (2) adjust_media_quadrant_a7_h12 (set to 95 microL, dispense row A cols 7-12; reset to 90 microL, dispense rows B-H cols 7-12). Per OVCAR8_MATH_REVIEW.md resolution A (200 microL well total): row A 100/95 microL pre-drug, rows B-H 95/90 microL pre-drug, ensuring post-drug wells all reach 200 microL. Validation: 102 well-target interactions (48 row A individual clicks per quadrant; 48 rows B-H per quadrant) with ObjectStateChange primitives (flat state field: material_name=media, material_volume=100/95/90). Action coverage (A32, A35, A36 PRESENT-EXPLICIT). Validator green.
+- Created `content/protocols/plate_drug_treatment_media_adjustment/materials.yaml`: single material definition (media) with display color #f0e8d8 (light tan).
+- Created `content/protocols/plate_drug_treatment_media_adjustment/scenes/plate_workspace.yaml`: protocol scene extending hood_basic; adds well_plate_96 (center, depth_tier=1), media_bottle (rear_center, depth_tier=2), multichannel_pipette (right_tool_area, depth_tier=1). No new object or asset creation required.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Multichannel pipette used with `adjust` gesture (set-point skill) per pedagogy-first rule: students learn to set eight channels to precise volumes (100, 95, or 90 microL) before dispensing into target wells. Gesture + target_with_value validator pair correctly encodes pipetting set-point practice.
+- Per-well ObjectStateChange mutations (one interaction per well) preserve explicitness over automation. While a "distribute across wells" batch operation could reduce interaction count, the spec requires named targets (protocol YAML is geometry-free, targets are named scene objects). Well-by-well targeting remains correct per specs/PROTOCOL_VOCABULARY.md.
+- Scene extension (extends: hood_basic + add_placements) demonstrates protocol-level scene authoring per dream-setup rule (feedback_dream_setup_scenes.md). No existing "plate workspace" base scene; created at protocol level. Available for future promotion to content/scenes/ if other protocols reuse it.
+
+## 2026-05-15 (M2 WP-MP-8: Author mtt_reagent_prep mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/mtt_reagent_prep/protocol.yaml`: 4-step mini-protocol covering canonical action A39 (prepare 12 mM MTT by dissolving 5 mg MTT powder in 1 mL PBS). Scope: reagent preparation for MTT assay endpoint readout. Entry step: `pick_up_mtt_powder`. Learning block fully specified with objectives (powder handling, mass measurement, aseptic dissolution), outcomes (weigh precise mass and dissolve to target concentration), and goals (MTT preparation for Day 4 readout in OVCAR8 assay). Step structure: (1) pick_up_mtt_powder (CursorAttach); (2) prepare_solution_tube (adjust pipette to 1 mL, click PBS, click tube for ObjectStateChange material=mtt_solution_12mm, volume=1.0); (3) dissolve_and_mix (powder transfer + vortex for 30 seconds via TimedWait); (4) verify_final_volume (target_with_value gate on material_volume=1.0). Action A39 (PRESENT-EXPLICIT) covers prep steps 2-3. Validator green.
+- Created `content/protocols/mtt_reagent_prep/materials.yaml`: three material definitions (mtt_powder, mtt_solution_12mm, pbs) with display colors.
+- Created `content/protocols/mtt_reagent_prep/scenes/bench_workspace.yaml`: protocol scene extending bench_basic; adds mtt_powder_container, pbs_bottle, mtt_solution_tube, micropipette, micropipette_tip_box across rear zones and center work area.
+- Created `content/objects/mtt_powder_container.yaml`: NEW OBJECT (ASSET-UNVERIFIED) for MTT powder vial; state_fields: material_name (enum: mtt_powder, empty), material_volume (float, unit=mg, max=10, default=5); visual_states via fill_height on material_volume.
+- Created `content/objects/mtt_solution_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED) for solution preparation tube; state_fields: material_name (enum: mtt_solution_12mm, empty), material_volume (float, unit=ml, max=5, default=0); visual_states via fill_height on material_volume.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Material schema constraint (Deferral item 4, material_kind gap): MTT powder is declared via `material_name: mtt_powder` enum with `material_volume` in mg (mass units). No `material_kind` enum field exists in schema. Solid vs. liquid distinction is expressed through: (a) unique material_name enum values (mtt_powder distinct from mtt_solution_12mm), (b) unit annotation (mg for powder, ml for solution), (c) object visual_states rendering (same SVG asset with different fill formulas). No schema extension performed; best-effort coverage via semantic naming + visual state distinction.
+
 ## 2026-05-15 (M2 WP-MP-5 and WP-MP-2: Fix drug_dilution_setup and passage_pellet_reseed)
 
 ### Additions and New Features
@@ -41,7 +368,7 @@
 
 ### Fixes and Maintenance
 
-- Fixed `content/protocols/passage_hood_detachment/protocol.yaml`: corrected scene_operations and validator preset field shapes to canonical spec (WP-SWEEP-MP-1). Errors fixed: (1) three `target_with_value` validators missing required `value` payload — added `{ held_material_volume: 4 }` (PBS wash), `{ held_material_volume: 3 }` (trypsin), `{ held_material_volume: 9 }` (neutralization); (2) three `CursorAttach` operations missing required `operation: attach` field; (3) `TimedWait` primitive corrected from `duration_seconds: 120` to `duration_min: 2` and added required `display: "Incubating: allow trypsin to work"` field. All 9 errors resolved. Pedagogy, step count, and action coverage unchanged.
+- Fixed `content/protocols/passage_hood_detachment/protocol.yaml`: corrected scene_operations and validator preset field shapes to canonical spec (WP-SWEEP-MP-1). Errors fixed: (1) three `target_with_value` validators missing required `value` payload - added `{ held_material_volume: 4 }` (PBS wash), `{ held_material_volume: 3 }` (trypsin), `{ held_material_volume: 9 }` (neutralization); (2) three `CursorAttach` operations missing required `operation: attach` field; (3) `TimedWait` primitive corrected from `duration_seconds: 120` to `duration_min: 2` and added required `display: "Incubating: allow trypsin to work"` field. All 9 errors resolved. Pedagogy, step count, and action coverage unchanged.
 
 ### Removals and Deprecations
 
@@ -89,7 +416,7 @@
 - Object-asset audit: all 10 directly-referenced objects (micropipette, carboplatin_stock_bottle, metformin_stock_bottle, microtube_15ml_intermediate, metformin_working_tube, dilution_tube_rack_8, sterile_water_bottle, media_bottle, vortex, label_pen) tagged ASSET-OK (pre-existing objects with verified SVG assignments).
 - Deferral check: (1) SceneChange DOES NOT APPLY (single bench workspace). (2) Volume tolerance APPLIES (exact-match set_volume validators on micropipette; comment flags gap). (3) Named groups APPLIES (8 working stocks; pedagogy reads cleanly as individual stock-by-stock flow, no named-group construct needed). (4) material_kind DOES NOT APPLY (all liquids). (5) Shared materials library APPLIES (metformin_working_stock and carb_working_stock_* appear here only in M2; no cross-mini duplication documented yet). (6) Set-point depth APPLIES (vortex timer tracks duration only, not rpm; comment flags gap).
 - Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` reports 1 warning (step count) + 0 errors on drug_dilution_setup. Pre-existing failures (passage_hood_detachment materials schema) unchanged.
-- Coverage matrix updated: A47-A57 rows marked PRESENT-EXPLICIT in docs/active_plans/dazzling_juggling_tide_evidence.md.
+- Coverage matrix updated: A47-A57 rows marked PRESENT-EXPLICIT in docs/active_plans/ovcar8_action_coverage_matrix.md.
 
 ## 2026-05-15 (M3 WP-VALIDATOR-EXTEND: enforce sequence_runner-leaves rule)
 
@@ -150,14 +477,14 @@
 - Validator output: `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0 on passage_pellet_reseed tree (no MP-2 errors; pre-existing MP-1 errors remain).
 - Object-asset audit: conical_15ml (ASSET-OK), conical_15ml_rack (ASSET-OK), centrifuge (ASSET-OK), aspirating_pipette (ASSET-OK), media_bottle (ASSET-OK), well_plate_96 (ASSET-OK), incubator (ASSET-OK), biohazard_decant (ASSET-OK), label_pen (ASSET-UNVERIFIED, new object, SVG assignment deferred). All 9 action targets audited.
 - Deferral check: SceneChange hood <-> centrifuge (APPLIES, ratified per plan); Volume tolerance on A16 split (1.14 mL +/-0.2 mL tolerance implemented via target_with_value validator); Named groups (N/A, no well fan-out in MP-2); material_kind (DOES NOT APPLY, cell_pellet vs cell_suspension distinguished by material_name); Shared materials library (N/A, per-mini materials); Set-point depth (centrifuge: set_rpm + set_time_min declared, NO set_temperature; A13 uses rpm + duration only, temperature not in scope for MP-2).
-- Evidence log (`docs/active_plans/dazzling_juggling_tide_evidence.md`): A11-A19 rows updated ABSENT -> PRESENT-EXPLICIT with step cross-references and interaction detail.
+- Evidence log (`docs/active_plans/ovcar8_action_coverage_matrix.md`): A11-A19 rows updated ABSENT -> PRESENT-EXPLICIT with step cross-references and interaction detail.
 - Handoff contract (MP-1 -> MP-2): MP-2's entry assumes `t75_flask.material_name = cell_suspension` (set by MP-1's A10 neutralization step). Learning outcomes explicitly document this dependency: "...from neutralized cell suspension (MP-1 endpoint) through centrifugal pellet recovery...". MP-1 author must make matching commitment in their patch.
 
 ## 2026-05-15 (M1 WP-DELETE: clear 7 minis + evidence log scaffold)
 
 ### Additions and New Features
 
-- Created `docs/active_plans/dazzling_juggling_tide_evidence.md`: evidence log scaffold with per-MP coverage matrix (A1-A57 ABSENT initially) and full canonical action map reference for M2 authors. M2 WP-MP-N patches append rows as each mini is delivered and validated.
+- Created `docs/active_plans/ovcar8_action_coverage_matrix.md`: evidence log scaffold with per-MP coverage matrix (A1-A57 ABSENT initially) and full canonical action map reference for M2 authors. M2 WP-MP-N patches append rows as each mini is delivered and validated.
 
 ### Behavior or Interface Changes
 
@@ -169,7 +496,7 @@
 
 ### Removals and Deprecations
 
-- Deleted 7 obsolete protocol folders via `git rm` to clear `content/protocols/` for M2 mini delivery: `hood_flask_prep`, `cell_culture`, `cell_counting_and_seeding`, `drug_dilution_setup`, `plate_drug_treatment`, `mtt_assay_readout`, `cell_culture_full`. Pre-delete SHA: `353decbd80c8607940536b627d48b6578325c032`. Future authors can recover prior shape via `git show 353decbd80c8607940536b627d48b6578325c032:content/protocols/<old_name>/protocol.yaml`.
+- Deleted 7 obsolete protocol folders via `git rm` to clear `content/protocols/` for M2 mini delivery: `hood_flask_prep`, `cell_culture`, `cell_counting_and_seeding`, `drug_dilution_setup`, `plate_drug_treatment`, `mtt_assay_readout`, `cell_culture_full`. Pre-delete SHA `c99641c5` preserves the prior YAML; recover with `git show c99641c5:content/protocols/<folder>/<file>`. Archive subtree at `archive/content_legacy_2026_05/` (introduced by interim commit `24b6c9a` against user direction) purged in this changelog session per "no new archive/ subtree" rule.
 - Rationale: structural audit revealed 46% canonical-action coverage gap in the 6-mini set; plan replaces with 10 focused minis (MP-1..MP-10) assembled from a canonical-action map (57 counted OVCAR8 actions). Clearing the tree unblocks M2 to land minis one at a time.
 
 ### Decisions and Failures

@@ -1,0 +1,39 @@
+scene_name: incubator_workspace
+extends: bench_basic
+
+add_placements:
+  # Incubator for temperature-controlled incubation
+  - placement_name: main_incubator
+    object_name: incubator
+    zone: center
+    depth_tier: 1
+
+  # MTT solution bottle (freshly prepared 12 mM)
+  - placement_name: mtt_solution
+    object_name: mtt_solution_bottle
+    zone: rear_left
+    depth_tier: 1
+
+  # Treatment plate (96-well from previous drug treatment step)
+  - placement_name: treatment_plate_main
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 2
+
+  # Multichannel pipette for distributing MTT across 12-well columns
+  - placement_name: pipette_multichannel
+    object_name: multichannel_pipette
+    zone: right_tool_area
+    depth_tier: 1
+
+  # Biohazard waste container for MTT/media decant
+  - placement_name: hazard_waste_bin
+    object_name: biohazard_decant_bin
+    zone: rear_right
+    depth_tier: 1
+
+  # Paper towel dispenser/pad for drying plate after decant
+  - placement_name: drying_surface
+    object_name: paper_towel_pad
+    zone: rear_center
+    depth_tier: 1

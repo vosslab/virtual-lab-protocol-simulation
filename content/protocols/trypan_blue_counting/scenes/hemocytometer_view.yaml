@@ -1,0 +1,15 @@
+scene_name: hemocytometer_view
+extends: microscope_basic
+
+add_placements:
+  - placement_name: prepared_hemocytometer
+    object_name: hemocytometer_slide
+    zone: instrument_area
+    depth_tier: 2
+
+  - placement_name: staining_bottles
+    object_name: trypan_blue_bottle
+    zone: instrument_area
+    depth_tier: 0
+
+scene_notes: "Microscope workspace showing the hemocytometer slide under magnification for manual cell counting and viability assessment using trypan blue exclusion. The hemocytometer_slide displays quadrant-based counts and user can enter manual counts before switching to automated cell counter."

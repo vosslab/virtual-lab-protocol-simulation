@@ -1,0 +1,20 @@
+protocol_type: sequence_runner
+protocol_name: cell_culture_full
+entry_step: inspect_confluence
+
+learning:
+  objectives: "Students completing this protocol will have achieved comprehensive mastery of the OVCAR8 carboplatin and metformin dose-response experimental workflow, from cell preparation through MTT viability readout."
+  outcomes: "Students completing this protocol will be able to execute a complete dose-response assay: detach and prepare cells, perform cell counting with viability confirmation, seed a multi-well plate, prepare multi-concentration drug stocks, treat cells with controlled drug doses, perform an MTT conversion assay, and quantify cell viability by absorbance reading."
+  goals: "Overall, this protocol aims to accomplish a full OVCAR8 carboplatin plus metformin dose-response experiment on OVCAR8 ovarian cancer cells. The sequence stitches 10 focused mini-protocols covering cell passage, quantification, plating, drug preparation, treatment, and readout into a coherent experimental pathway aligned with the canonical OVCAR8 procedure."
+
+mini_protocols:
+  - passage_hood_detachment
+  - passage_pellet_reseed
+  - trypan_blue_counting
+  - cell_seeding_plate_setup
+  - drug_dilution_setup
+  - plate_drug_treatment_media_adjustment
+  - plate_drug_treatment_drug_addition
+  - mtt_reagent_prep
+  - mtt_plate_reaction
+  - mtt_solubilization_readout

@@ -3,14 +3,6 @@ materials:
     label: "Carboplatin solution"
     display_color: "#a719db"
 
-  carboplatin_10mmol:
-    label: "10 mM carboplatin master stock"
-    display_color: "#a719db"
-
-  carboplatin_400umol:
-    label: "400 &micro;M carboplatin"
-    display_color: "#a719db"
-
   carboplatin_4umol:
     label: "4 &micro;M carboplatin"
     display_color: "#a719db"
@@ -35,14 +27,18 @@ materials:
     label: "200 &micro;M carboplatin"
     display_color: "#a719db"
 
+  carboplatin_400umol:
+    label: "400 &micro;M carboplatin"
+    display_color: "#a719db"
+
   metformin:
     label: "Metformin solution"
-    display_color: "#00775f"
-
-  metformin_1mol:
-    label: "1 M metformin master stock"
     display_color: "#00775f"
 
   metformin_200mmol:
     label: "200 mM metformin"
     display_color: "#00775f"
+
+  media:
+    label: "Growth media"
+    display_color: "#6c6c00"

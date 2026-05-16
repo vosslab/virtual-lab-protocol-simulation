@@ -12,7 +12,7 @@ structure:
 state_fields:
   - field_name: material_name
     type: enum
-    allowed: [empty, media, cells, carboplatin, metformin, drug_combo, mtt, dmso]
+    allowed: [empty, media, cells, carboplatin, metformin, drug_combo, mtt, formazan, dmso, formazan_dmso_solution]
     default: empty
     applies_to: subpart
     description: Contents currently in this well.
@@ -54,7 +54,11 @@ visual_states:
         output: { asset_name: well_filled }
       - when: mtt
         output: { asset_name: well_filled }
+      - when: formazan
+        output: { asset_name: well_filled }
       - when: dmso
+        output: { asset_name: well_filled }
+      - when: formazan_dmso_solution
         output: { asset_name: well_filled }
   material_volume:
     kind: composite

@@ -1,0 +1,51 @@
+scene_name: cell_counter_basic
+workspace: cell_counter
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: cell_counter_workspace_bg
+
+zones:
+  - id: instrument_area
+    bounds:
+      left: 15
+      right: 85
+      top: 20
+      bottom: 70
+    align: center
+    label: Cell counter display and controls
+  - id: right_accessory_area
+    bounds:
+      left: 80
+      right: 95
+      top: 50
+      bottom: 80
+    align: center
+    label: Accessory area
+
+placements:
+  - placement_name: main_cell_counter
+    object_name: cell_counter
+    zone: instrument_area
+    depth_tier: 1
+  - placement_name: counter_slide_cartridge
+    object_name: counter_slide_cartridge
+    zone: right_accessory_area
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Check the cell counter display and controls."
+  toast_duration_ms: 2000

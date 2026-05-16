@@ -131,5 +131,5 @@ Authored TypeScript source for the shared scene runtime lives under `src/scene_r
 
 Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher and the full-protocol sequence. Smoke fixtures declare `protocol_type: dev_smoke`.
 
-Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `hood_flask_prep.html`, `plate_drug_treatment.html`, `cell_culture_full.html`.
+Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `passage_hood_detachment.html`, `trypan_blue_counting.html`, `cell_culture_full.html`.
 

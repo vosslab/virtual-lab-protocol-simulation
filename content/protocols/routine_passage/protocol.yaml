@@ -1,0 +1,12 @@
+protocol_type: sequence_runner
+protocol_name: routine_passage
+entry_step: inspect_confluence
+
+mini_protocols:
+  - passage_hood_detachment
+  - passage_pellet_reseed
+
+learning:
+  objectives: "Students completing this protocol will have achieved fluency with routine maintenance-passage culture technique, including both the enzymatic detachment phase and the pellet resuspension and replating phase."
+  outcomes: "Students completing this protocol will be able to perform a complete routine cell passage on a T75 flask, detaching and neutralizing cells, transferring to a conical tube, pelleting by centrifugation, and resuspending for replating at a 1:7 dilution."
+  goals: "Overall, this protocol aims to accomplish a complete maintenance-passage workflow: taking a confluent culture from a T75 flask through detachment, centrifugation, and resuspension to replating. This is the core recurring operation for maintaining a healthy cell line over passages. Counting is not part of routine maintenance; this pathway covers detach-through-reseed only."

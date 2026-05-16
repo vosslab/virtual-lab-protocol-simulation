@@ -1,0 +1,37 @@
+object_name: conical_tube_for_dilution
+kind: bottle
+label: Conical 15 ml tube (for dilution)
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty, cell_suspension, fresh_media]
+    default: empty
+    description: Contents of the tube during seeding suspension preparation.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 15
+    default: 0
+    description: Volume of contents in the tube, in milliliters.
+
+visual_states:
+  material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: conical_15ml_empty }
+      - when: cell_suspension
+        output: { asset_name: conical_15ml_filled }
+      - when: fresh_media
+        output: { asset_name: conical_15ml_filled }
+  material_volume:
+    kind: composite
+    formula: fill_height(state(material_volume), capacity_ml=15)
+
+capabilities: [clickable, material_container]
+
+layout:
+  default_width: 3
+  label_width: 7

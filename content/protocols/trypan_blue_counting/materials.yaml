@@ -1,0 +1,12 @@
+materials:
+  trypan_blue:
+    label: Trypan Blue
+    display_color: "#0067cc"
+
+  cell_suspension:
+    label: Cell suspension
+    display_color: "#cc0066"
+
+  trypan_blue_mixture:
+    label: Trypan Blue + cell suspension (mixed)
+    display_color: "#cc0066"

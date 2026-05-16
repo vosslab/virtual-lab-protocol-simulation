@@ -1,5 +1,7 @@
 # Curriculum decomposition map
 
+> **SUPERSEDED 2026-05-15.** This decomposition plan was superseded by the OVCAR8 pedagogy reauthor closed 2026-05-15. The 6-to-10 step-count gate cited in this document was deleted from `docs/PRIMARY_SPEC.md` (pedagogy is now the sole gate). The retired protocol names (`hood_flask_prep`, `cell_counting_and_seeding`, `mtt_assay_readout`, `plate_drug_treatment`, original `cell_culture_full`) no longer exist in `content/protocols/`. See `docs/CHANGELOG.md` entry for 2026-05-15 for the close-out summary and pre-delete SHA. Out-of-repo plan: `~/.claude/plans/dazzling-juggling-tide.md`.
+
 This document is the WP-DECOMP-0 deliverable for the scene-runtime refactor
 plan. It maps the two existing monolithic protocols and the eight legacy
 tutorials onto the proposed mini-protocol set so that WP-DECOMP-1 through

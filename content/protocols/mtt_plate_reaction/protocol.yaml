@@ -1,0 +1,1111 @@
+protocol_type: mini_protocol
+protocol_name: mtt_plate_reaction
+entry_step: gather_mtt_materials
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with volumetric pipetting of small reagent volumes per well, timed incubation scheduling, biohazard waste handling, and critical plate-preparation steps (drying) before downstream solubilization."
+  outcomes: "Students completing this mini-protocol will be able to add MTT reagent uniformly across a 96-well plate at a fixed concentration, manage an incubation timer for metabolic conversion, safely decant cytotoxic waste into a biohazard container, and dry a plate without introducing contamination or cell loss."
+  goals: "Overall, this mini-protocol aims to accomplish the MTT colorimetric assay readiness phase: loading MTT dye across treated wells, allowing formazan crystal formation under aerobic incubation, removing excess MTT/media, and preparing the dry plate for DMSO solubilization and absorbance measurement. This step bridges post-treatment cell samples (from Day 2 drug incubation) to the quantitative viability readout (Day 4 absorbance)."
+
+steps:
+  # Step 1: Gather MTT materials and obtain the treatment plate
+  - step_name: gather_mtt_materials
+    prompt: "Obtain the treated 96-well plate from the previous step and the prepared 12 mM MTT solution. Ensure the MTT has been freshly prepared and stored at room temperature. Place both on the incubator workspace."
+    sequence:
+      - target: mtt_solution_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: prepare_pipette_for_mtt
+
+  # Step 2: Prepare pipette and set volume to 25 microL
+  - step_name: prepare_pipette_for_mtt
+    prompt: "Obtain a multichannel pipette and set the volume to 25 microL. Each well will receive exactly 25 microL of 12 mM MTT, which gives a final concentration of 1.5 mM in the 100 microL well volume."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: multichannel_pipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 25 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 25
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_mtt_to_wells
+
+  # Step 3: Add 25 microL MTT to all wells in the plate
+  - step_name: add_mtt_to_wells
+    prompt: "Using the multichannel pipette set to 25 microL, aspirate MTT from the solution bottle and add 25 microL to each well. Start with the first row (column A) and proceed systematically through all 8 rows (A through H) to ensure uniform coverage. Each well receives exactly 25 microL."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: mtt_solution_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                held_material_name: mtt
+                held_material_volume: 25
+      - target: well_plate_96.A1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.A12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.A12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.B12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.B12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.C12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.C12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.D12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.D12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.E12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.E12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.F12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.F12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.G12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.G12
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H1
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H1
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H2
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H2
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H3
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H3
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H4
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H4
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H5
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H6
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H6
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H7
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H7
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H8
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H8
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H9
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H9
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H10
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H10
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H11
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H11
+              state:
+                material_name: formazan
+                material_volume: 125
+      - target: well_plate_96.H12
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.H12
+              state:
+                material_name: formazan
+                material_volume: 125
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: incubate_formazan_conversion
+
+  # Step 4: Incubate for 1.5 hours to allow formazan conversion
+  - step_name: incubate_formazan_conversion
+    prompt: "Place the MTT-loaded plate into the incubator and set it for 1.5 hours at 37 degrees Celsius. Aerobic incubation allows viable cells to convert the yellow MTT dye into purple formazan crystals. After the timer completes, proceed to decant the spent MTT."
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: incubator
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: incubator
+              duration_min: 90
+              display: "formazan conversion (1.5 hours)"
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: decant_mtt_to_waste
+
+  # Step 5: Decant MTT/media into biohazard waste bin
+  - step_name: decant_mtt_to_waste
+    prompt: "Remove the plate from the incubator. Hold the plate over the biohazard waste container and carefully pour the MTT/media mixture (containing formazan dye and cells) into the waste bin. Do not lose any wells or spill on the work surface. The plate wells should be emptied but retain the formazan crystals at the bottom."
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: biohazard_decant_bin
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                material_name: empty
+            - type: ObjectStateChange
+              target: biohazard_decant_bin
+              state:
+                material_name: waste_mtt
+                material_volume: 1200
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pat_plate_dry
+
+  # Step 6: Pat plate dry on paper towels
+  - step_name: pat_plate_dry
+    prompt: "Place the plate on a stack of paper towels. Using a gentle pressing motion, pat the bottom and top surfaces of the plate to absorb residual liquid without dislodging the formazan crystals. The plate should be completely dry and ready for DMSO solubilization. Ensure no liquid remains on the exterior of the plate that could obscure the absorbance measurement."
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: paper_towel_pad
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

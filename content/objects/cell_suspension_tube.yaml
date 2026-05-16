@@ -1,0 +1,35 @@
+object_name: cell_suspension_tube
+kind: bottle
+label: Cell suspension (counted)
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty, cell_suspension]
+    default: cell_suspension
+    description: Contents of the tube; pre-filled with the counted cell suspension from the hemocytometer count step.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 20
+    default: 15
+    description: Volume of cell suspension in the tube, in milliliters.
+
+visual_states:
+  material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: microtube_empty }
+      - when: cell_suspension
+        output: { asset_name: microtube_filled }
+  material_volume:
+    kind: composite
+    formula: fill_height(state(material_volume), capacity_ml=20)
+
+capabilities: [clickable, material_container]
+
+layout:
+  default_width: 3
+  label_width: 8

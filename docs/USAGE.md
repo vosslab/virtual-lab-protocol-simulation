@@ -27,27 +27,24 @@ This rebuilds `dist/` and serves it on a local port. The root URL
 one of the short tutorials. Direct links use the protocol query parameter:
 
 ```text
-/?protocol=cell_culture
-/?protocol=tutorial_pbs
-/?protocol=tutorial_plate_reader
+/?protocol=cell_culture_full
+/?protocol=passage_hood_detachment
+/?protocol=trypan_blue_counting
 ```
 
 Invalid protocol links return to the launcher with a recoverable error banner.
 
 ## Playing the game
 
-The game guides players through a 25-step cell culture protocol modeling the
-OVCAR8 carboplatin + metformin MTT workflow across three lab days. Major
-phases:
+The curriculum guides players through the OVCAR8 carboplatin + metformin MTT
+workflow via 10 mini-protocols, each teaching one focused lab skill. The
+`cell_culture_full` sequence runner assembles them in order. Major phases:
 
-- Day 1: split, count cells, seed the 96-well plate, overnight incubation.
-- Day 2: prepare carboplatin and metformin dilutions, dose the plate,
-  48-hour incubation.
-- Day 4: MTT readout (add MTT, decant, dissolve formazan with DMSO, read
-  absorbance, view results).
+- Passage and cell counting (splitting, counting cells, seeding).
+- Drug dilution and treatment (preparing dilutions, dosing the plate).
+- MTT readout (adding MTT, dissolving formazan, reading absorbance, viewing results).
 
-The full ordered step list is generated from
-`src/content/cell_culture/protocol.yaml`;
+Protocol specifications are authored in YAML under `content/<protocol_name>/`;
 see [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) for the
 authoring contract and
 [protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)

@@ -14,8 +14,6 @@ Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4P
 
 ## **Required materials provided by the students**
 
-**Assigned student**: Gary   
-**Reviewing student**: Meet ✔️
 
 * Safety 	Glasses  
 * Lab Coat - no paper lab coats  
@@ -28,8 +26,6 @@ Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4P
 
 ## **Provided Materials**
 
-**Assigned student**: Ulises✅  
-**Reviewing student**: Bansari ✅
 
 * Freeze-dried miracle berries (Synsepalum dulcificum).  
 * Coffee grinder or blender.  
@@ -55,41 +51,7 @@ Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4P
 * Micropipettes (P10, P20, P100, P1000) and tips.  
 * Homogenizer for uniform mixing of powder and buffers.
 
-
-Ulises Suggestions:
-
-* Freeze-dried miracle berries (Synsepalum dulcificum).  
-* Coffee grinder or blender.  
-* Pestle and mortar.  
-* Deionized water.  
-* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).  
-* 1 M NaOH and 1 M HCl  
-* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.  
-* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.  
-* Ammonium sulfate (solid) for protein precipitation (salting out).  
-* Parafilm to seal test tubes during mechanical shaking.  
-* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.  
-* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.  
-* SDS-PAGE:
-
-  \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
-
-  \-1X Tris/Glycine/SDS (TGS) running buffer.
-
-  \-2X Laemmli sample buffer and beta-mercaptoethanol (BME) or DTT.
-
-  \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
-
-  \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
-
-* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).  
-* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.  
-* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.  
-* Micropipettes (P10, P20, P100, P1000) and tips.  
-* Homogenizer for uniform mixing of powder and buffers.
-
-Specific Steps:  
-IMAC Column Setup and Nickel Charging
+Specific Steps: IMAC Column Setup and Nickel Charging
 
 * Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.  
 * Chromatography Column: 6 mL capacity, 15 cm in length  
@@ -100,7 +62,7 @@ IMAC Column Setup and Nickel Charging
 * Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding  
 * Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).  
 * Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.  
-* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-α-D-glucoside for elution.  
+* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.  
 * Size-Exclusion/Desalting: Sephadex G-75 (for dimer/monomer separation) and Sephadex G-25 (for removing salts or imidazole).
 
 **Additional Equipment**
@@ -128,8 +90,6 @@ IMAC Column Setup and Nickel Charging
 
 ## **Laboratory Learning Objectives**
 
-**Assigned student**: Ulises✅  
-**Reviewing student**: Olivia✅  
 Students completing this lab protocol will have achieved:  
 **1\.** Students completing this lab protocol will:
 
@@ -144,8 +104,6 @@ Students completing this lab protocol will have achieved:
 
 ## **Laboratory Learning Outcomes**
 
-**Assigned student**: Meet  
-**Reviewing student**: Bansari ✅  
 Students completing this lab protocol will be able to:
 
 * Perform protein extraction from freeze-dried miracle berries using homogenization and centrifugation techniques.  
@@ -158,16 +116,55 @@ Students completing this lab protocol will be able to:
 
 ## **Potential Hazards and Waste Disposal**
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Gary✅  
-where to dispose of waste
+### Personal Protective Equipment
 
-- All students must dispose of biological waste in the biohazard bin and non-biological waste in the regular bin.
+All students must wear the following throughout the experiment:
+- Safety glasses
+- Lab coat
+- Nitrile gloves
+- Closed-toe shoes
+
+### Chemical Hazards by Reagent
+
+- **Nickel(II) acetate tetrahydrate**: Carcinogenicity Category 1B (H350); respiratory sensitizer (H334); harmful if ingested (H302) or inhaled. Requires dedicated heavy-metal waste stream and careful handling in designated areas.
+- **AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane**: Flammable Liquid Category 2 (isooctane, H225); causes skin irritation (H315) and serious eye damage (H318). Use only in fume hood with adequate ventilation; avoid skin contact and eye contact.
+- **Ammonium sulfate**: Mild irritant to eyes and respiratory system. Dust mask recommended when handling powder. Avoid inhalation of powder.
+- **1 M NaOH and 1 M HCl**: Corrosive; severe eye and skin burns possible. Always wear gloves and use in areas with eyewash and safety shower access.
+- **Beta-mercaptoethanol (BME)**: Toxic by all routes; volatile and pungent odor indicates airborne exposure. Mandatory fume-hood use; do not inhale fumes.
+- **Methanol (in Coomassie destain solution)**: Flammable Liquid Category 2 (H225); Acute Toxicity Category 3 if ingested (H301), inhaled (H331), or absorbed through skin (H311). Adequate ventilation required; wear gloves to prevent skin contact.
+- **Acetic acid (in Coomassie destain solution)**: Corrosive; vapors irritate eyes, nose, and throat. Ensure good ventilation.
+- **Coomassie Brilliant Blue stain**: Contains methanol and acetic acid; flammable and corrosive (see methanol and acetic acid hazards above).
+- **Silver stain**: Contains methanol and organic solvents; flammable and potentially toxic. Use in well-ventilated areas or fume hood. Avoid skin contact and inhalation of fumes.
+- **Phosphate buffer at pH 11**: Mild irritant; can cause skin irritation with prolonged contact.
+- **Sodium chloride (NaCl)**: Non-hazardous at typical concentrations used in this protocol. Dust inhalation precautions apply when handling dry powder.
+- **Tris-HCl buffer**: Non-hazardous at typical concentrations and pH values (7.0-7.2) used in this protocol.
+- **Bradford dye reagent**: Non-hazardous in dilute aqueous solution; handle according to kit instructions.
+- **Laemmli sample buffer (4x)**: Contains methanol and SDS; handle according to kit instructions and SDS.
+- **Imidazole**: Irritant to eyes and respiratory system; use in well-ventilated areas. Avoid direct contact and inhalation.
+- **Freeze-dried Synsepalum dulcificum (miracle berry powder)**: Low hazard; dust inhalation precautions only.
+
+### Biological Hazards
+
+Freeze-dried Synsepalum dulcificum powder is a plant-derived material with low biological risk. Standard precautions apply: avoid inhaling dust and use a dust mask when handling the powder. The material does not represent a biohazard unless it contacts samples from oral/saliva sources during taste-testing.
+
+### Waste Streams
+
+- **Biohazard bin**: Reserve for any samples that contacted students' mouths during taste-testing (if performed).
+- **Aqueous chemical waste**: Bradford dye solutions, phosphate buffers, NaCl solutions, and other aqueous buffer waste. Collect in designated 4 L containers.
+- **Organic non-halogenated waste**: AOT in isooctane, Coomassie methanol/acetic acid destain solutions. Collect in designated solvent waste containers; do NOT mix with aqueous waste.
+- **Heavy-metal waste**: All nickel-containing waste, including IMAC column wash and elution fractions. Collect in a dedicated, clearly labeled container separate from other waste streams.
+- **Sharps**: Broken glassware, Pasteur pipettes, and contaminated glass items go in the sharps container.
+
+### Spill and Emergency Response
+
+- **Eyewash station**: Located at [location]; flush eyes for at least 15 minutes if any chemical contacts eyes.
+- **Safety shower**: Located at [location]; use for large skin contact or spills on clothing.
+- **Fire extinguisher**: Located at [location]; CO2 or dry-powder type suitable for organic solvent fires.
+- **Instructor contact**: Report all spills, injuries, and chemical exposures to the laboratory instructor immediately. For off-hours emergencies, call Campus Safety at [phone number].
+- **Spill cleanup**: Small spills of organic solvents or salts can be absorbed with sand or paper towels and disposed in appropriate waste containers. Large spills or unknown hazards require instructor intervention before cleanup.
 
 ## **Pre-Laboratory Questions**
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Olivia ✅
 
 1. What is miraculin, and what plant is it extracted from?  
 2. Why are freeze-dried miracle berries ground before extraction?  
@@ -184,19 +181,15 @@ where to dispose of waste
 
 ### Synsepalum dulcificum, The Miracle Fruit Plant (½ page)
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Olivia ✅**except for font**  
-Origin, history, characteristics, Cultivation, could you grow in Chicago?
-
-## **Origin:**
+### Origin
 
 The Miracle Fruit Plant originated in West Africa, mainly in countries like Ghana and Nigeria. It naturally grows in tropical forest regions with warm and humid climates.
 
-## **History:**
+### History
 
 People in West Africa have used this fruit for many years. They ate the berries before consuming sour foods because the fruit changes sour taste into sweet taste. Later, scientists studied the plant because of its special protein called miraculin.
 
-## **Characteristics:**
+### Characteristics
 
 * It is a small evergreen shrub.  
 * The plant grows around 5-10 feet tall.  
@@ -204,7 +197,7 @@ People in West Africa have used this fruit for many years. They ate the berries 
 * It produces small red berries called miracle fruits.  
 * The berries can make sour foods taste sweet for a short time.
 
-## **Cultivation:**
+### Cultivation
 
 * The plant grows best in warm and humid conditions.  
 * It needs acidic and well-drained soil.  
@@ -212,14 +205,12 @@ People in West Africa have used this fruit for many years. They ate the berries 
 * It can be grown from seeds or cuttings.  
 * The plant usually starts producing fruits after 2-3 years.
 
-## **Can It Grow in Chicago?**
+### Can It Grow in Chicago?
 
 Yes, but it is difficult to grow outdoors in Chicago because winters are very cold. The plant is tropical and cannot survive freezing temperatures. However, it can grow indoors in pots or greenhouses if proper warmth, sunlight, and humidity are provided.
 
 ### The Miraculin Protein (½ page)
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Ulises ✅
 
 Sequence, structure, molecular weight, Sweetness properties
 
@@ -233,8 +224,6 @@ The structure of miraculin is important for its function because it helps the pr
 
 ### Theory of Protein Purification (½ page)
 
-**Assigned student**: Meet  
-**Reviewing student**: Bansari ✅  
 How are we going to use biochemical techniques to purify this protein?
 
 Theory of Protein Purification:
@@ -247,9 +236,6 @@ Protein concentration is measured using the Bradford assay, and different purifi
 
 ### Stages Used in Purification Scheme (1 page)
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Olivia✅  
-~~Define and give a short background of all the steps in the Experimental Procedure. We need something for all 7 parts.~~
 
 **Part 1: Breaking the Cells**
 
@@ -281,8 +267,6 @@ SDS-PAGE is the final analysis step used to check the size and purity of the mir
 
 ## **Pre-Laboratory Procedure**
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Gary✅  
 ~~Things to do one week or one day before the lab.~~ 
 
 One week prior to beginning the experiment, be sure to locate the materials you'll be using as a whole, such as buffers, solutions, and equipment. If anything is missing or insufficient, it will waste time during the experiment, and we want to be efficient. 
@@ -293,10 +277,23 @@ Ask questions if anything is unclear.
 
 ## **Experimental Procedure**
 
+### Reagent reference table
+
+Use this table as the canonical reference for buffer concentrations and pH throughout Parts 1-7. When a procedure step mentions a buffer, confirm the pH and concentration here.
+
+| Reagent | Concentration | pH | Used in parts |
+| --- | --- | --- | --- |
+| Deionized water | - | ~5.5-6.5 | Part 1 (initial wash) |
+| NaCl (extraction buffer) | 0.5 M | 4.0-6.8 (variable) | Part 2 |
+| Ammonium sulfate | 50-80% saturation | - | Part 3 |
+| Phosphate buffer | 0.02 M | 11.0 | Parts 2, 4 (backward stripping) |
+| Tris-HCl binding buffer | 20 mM Tris-HCl, 300-500 mM NaCl | 7.0-7.2 | Parts 5-7 (ion exchange, IMAC) |
+| Size exclusion buffer | Per column specs (typically Tris or phosphate) | 7.0-7.2 | Part 5 (SEC) |
+| IMAC charging solution | 1 M NiCl2 or Ni(CH3COO)2 | - | IMAC setup |
+
+
 ### Overview
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Olivia❌  
 Brief outline of steps in the procedure
 
 **Preparing Miraculin Berry Extract**
@@ -311,8 +308,6 @@ Brief outline of steps in the procedure
 
 ### Part 1: Breaking the Cells
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Gary✅  
 Motor pestle, coffee grinder
 
 * Obtain freeze-dried miracle berries.  
@@ -327,8 +322,6 @@ Motor pestle, coffee grinder
 
 ### Part 2: First Centrifugation
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Bansari ✅
 
 1. Dissolve the miraculin powder in deionized (DI) water and prepare a homogenized solution by mixing 1 g of berry powder with 10 mL of DI water.  
 2. Centrifuge the homogenized berry solution at 12,000 rpm for 30 minutes.  
@@ -337,8 +330,6 @@ Motor pestle, coffee grinder
 
 ### Part 3: Salting Out
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Meet ✔️
 
 1. Transfer the NaCl protein extract into a clean centrifuge tube.  
 2. Slowly add solid ammonium sulfate to the protein extract until the sample reaches 50% saturation.  
@@ -347,7 +338,9 @@ Motor pestle, coffee grinder
 5. Centrifuge the sample at 13,000 rpm for 40 minutes.  
 6. After centrifugation, carefully remove the supernatant without disturbing the pellet.  
 7. Keep the protein pellet, because it may contain the miraculin protein.  
-8. Resuspend the pellet in 0.01 M phosphate buffer at pH 6.8.  
+8. Resuspend the pellet in 0.01 M phosphate buffer at pH 6.8.
+
+> TODO: instructor decision -- Part 3 uses 0.01 M phosphate buffer at pH 6.8 for resuspension, but Part 4 Backward Stripping produces a pH 11.0 solution, and Part 5 uses pH 7.0 buffer. Clarify which pH buffer should be used after salting out to maintain workflow continuity. Consult the reference protocol version to resolve.  
 9. Label the resuspended sample and keep it cold for the next step.  
 10. Since some ammonium sulfate may still remain in the sample, dilute the resuspended sample back to the original volume using buffer or deionized water.  
 11. Centrifuge the sample again to continue reducing the remaining salt concentration.  
@@ -360,8 +353,6 @@ Motor pestle, coffee grinder
 
 ### Part 4: Reverse Micelle Extraction
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Ulises✅
 
 #### Forward Extraction Protocol:
 
@@ -405,6 +396,8 @@ Motor pestle, coffee grinder
 
 #### Backward Stripping Protocol:
 
+Refer to the Reagent reference table for the exact pH and concentration of the phosphate buffer and NaCl to use in this step.
+
 * Create or obtain aqueous solutions of 1.) 0.02M phosphate buffer with a pH of 11 and 2.) 0.5M concentration of NaCl (these will unbind AOT from proteins)  
 * Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.  
   * Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl  
@@ -417,8 +410,9 @@ Motor pestle, coffee grinder
 
 ### Part 5: Size Exclusion Chromatography
 
-**Assigned student**: Bansari ✅  
-**Reviewing student**: Raj ✅
+> TODO: instructor decision -- Part 5 uses phosphate buffer at pH 7.00, but samples from Part 4 Backward Stripping arrive at pH 11.0. Clarify whether pH should be adjusted before loading on the SEC column, or whether SEC buffer pH 7.0 will internally adjust the sample pH. The reagent reference table shows conflicting pH values for phosphate buffers (pH 11.0 vs. pH 7.0). Confirm the intended buffer pH and composition for each purification stage.
+
+Refer to the Reagent reference table for the exact buffer specifications.
 
 * Prepare the size exclusion chromatography column using Sephadex G-75 resin.  
 * Add phosphate buffer at pH 7.00 to the column and allow the resin to settle evenly.  
@@ -439,8 +433,9 @@ Motor pestle, coffee grinder
 
 ### Part 6: Ion Exchange Chromatography
 
-**Assigned student**: Olivia **\*DONE\***  
-**Reviewing student**: Meet ✔️
+Refer to the Reagent reference table.
+
+> TODO: instructor decision -- Part 6 uses pH 6.0 or pH 5.5 phosphate buffer (100 mM) for CM-Cellulose, but samples from Part 5 SEC are at pH 7.0 and Part 7 IMAC expects pH 7.0-7.2. Confirm the intended pH for the ion-exchange stage and whether pH adjustment is needed before or after this step.
 
 * While the MWCO tube centrifuging, set up a chromatography column containing CM-Cellulose (this is preferred over CM-Sephadex C-50 because C-50 is recommended for much larger proteins):  
   * Rinse column using ddH2O to ensure flowthrough occurs  
@@ -466,14 +461,13 @@ Motor pestle, coffee grinder
 
 ### Part 7: Immobilized-metal affinity chromatography (IMAC)
 
-**Assigned student**: Gary✔️  
-**Reviewing student**: Ulises✔️
+Refer to the Reagent reference table.
 
 **Phase 1: Reagent and Material Preparation**
 
 * \*\*Binding Buffer:\*\* Prepare a 20 mM Tris-HCl solution containing 0.5 M NaCl, adjusted to pH 7.2.    
 * \*\*Elution Buffer:\*\* Prepare a solution consisting of 300 mM imidazole, 20 mM disodium phosphate, and 300 mM NaCl, with a pH of 8.0.    
-* \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni²⁺ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.    
+* \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni2+ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.    
   * Weigh 1.24 g of  Nickel (II) acetate tetrahydrate and measure 100 mL of Deionized water, and add them to a 150 mL beaker  
   * In a standard laboratory setting, you would typically stir the solution until the salt is completely dissolved and the liquid is clear and uniform.  
 * \*\*Chromatography Resin:\*\* Utilize Iminodiacetic Acid (IDA) Sepharose from your laboratory inventory.
@@ -510,8 +504,6 @@ Motor pestle, coffee grinder
 
 ## **Timing Estimates**
 
-**Assigned student**: Gary  
-**Reviewing student**: Ulises✔️  
 Total time of fixed timed steps
 
 * Phase 1: 30-40min  
@@ -523,8 +515,6 @@ Estimated time of all steps: 90min
 
 ## **Post-Experiment Analysis**
 
-**Assigned student**: Ulises ✔️  
-**Reviewing student**: Gary✅
 
  Electrophoretic Profile (SDS-PAGE Analysis)
 
@@ -535,16 +525,12 @@ Estimated time of all steps: 90min
 
 ## **Expected Results**
 
-**Assigned student**: Gary✔️  
-**Reviewing student**: Ulises✔️
 
 * Upon completing the optimized Nickel-IMAC purification process for miraculin, you can anticipate a high-efficiency yield. The final purified product should resemble a colorless solution. If the sample was not applied immediately after adjusting the pH to 7.0, or if the column was not thoroughly washed, you may observe darkening of the resin. This darkening results from polyphenol dehydrogenation, which can contaminate the results and impede column performance.   
   * In the SDS-PAGE results under reducing conditions (using B-mercaptoethanol), you should expect to see a single sharp band at 24-28 kDa, indicating the presence of the miraculin monomer.
 
 ## **TA Material Preparation**
 
-**Assigned student**: Raj ✅  
-**Reviewing student**: Bansari ✅
 
 Miraculine berries, All solutions related experiment, safety glass, pipettes, coffee grinder, Centrifuge, Spectrophotometer, Deionized (DI) water
 
@@ -556,11 +542,8 @@ chromatography tubes
 
 sepharose
 
-## 
-
 ## **References**
 
-Assigned student: All students: Bansari, Gary, Meet, Olivia, Raj, Ulises
 
 **Duhita, N., Hiwasa-Tanase, K., Yoshida, S., & Ezura, H. (2009).** Single-Step Purification of Native Miraculin Using Immobilized Metal-Affinity Chromatography. **Journal of Agricultural and Food Chemistry**, *57*(12), 5148-5151.
 
