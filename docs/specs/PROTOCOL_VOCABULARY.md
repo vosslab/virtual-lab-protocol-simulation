@@ -28,16 +28,19 @@ authored kinds, and the structural terms that surround them, are:
   `protocol_type` value.
 - **Mini-protocol** (`protocol_type: mini_protocol`) -- one
   authored student-facing workflow with normal steps, a `learning`
-  block, scenes, materials, and referenced objects. Usually 6 to 10
-  meaningful steps. Scope is set by its `learning` block.
+  block, scenes, materials, and referenced objects. Scope is set by
+  its `learning` block. Step count is determined by pedagogy. Each
+  step is one pedagogical unit per learning block. Over-atomization
+  (UI-shortcut steps) and under-atomization (multi-skill steps) are
+  review-gated, not count-gated.
 - **Sequence runner** (`protocol_type: sequence_runner`) -- an
   ordered pathway that connects mini-protocols into a larger
   student-facing sequence. Declares its sequence in place of
-  authored steps; exempt from the 6-to-10 step guideline. May be
-  rendered in student-facing content as "full protocol".
+  authored steps. May be rendered in student-facing content as
+  "full protocol".
 - **Developer smoke** (`protocol_type: dev_smoke`) -- diagnostic
   protocol used to verify a scene or object works. Excluded from
-  the student launcher and the curriculum step-count guideline.
+  the student launcher.
 
 The bare word "protocol" is not a formal kind or enum value.
 Precise terms (`protocol.yaml`, protocol package, protocol-level
@@ -976,9 +979,9 @@ Reading the chain:
 | --- | --- | --- |
 | **Protocol package** | The folder under `content/protocols/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<name>/` |
 | **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
-| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Usually 6 to 10 meaningful steps. | `protocol_type: mini_protocol` |
+| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Step count is determined by pedagogy. | `protocol_type: mini_protocol` |
 | **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |
-| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher and the curriculum step-count guideline. | `protocol_type: dev_smoke` |
+| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher. | `protocol_type: dev_smoke` |
 | **Protocol** | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value. | `protocol` block in `protocol.yaml` |
 | **Step** | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture. | one entry in `protocol.steps` |
 | **Sequence** | The ordered list of interactions inside a step; order always matters. | `step.sequence` |

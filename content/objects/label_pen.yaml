@@ -1,0 +1,24 @@
+object_name: label_pen
+kind: pipette
+label: Label pen
+
+state_fields:
+  - field_name: in_hand
+    type: bool
+    default: false
+    description: Whether the label pen is being held.
+
+visual_states:
+  in_hand:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: label_pen_idle }
+      - when: true
+        output: { asset_name: label_pen_in_hand }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 2
+  label_width: 5

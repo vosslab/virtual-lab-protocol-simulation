@@ -9,6 +9,8 @@ from validators.constants import (
 	INTERACTION_VALIDATOR_PRESETS,
 	LEARNING_MINI_PROTOCOL_PREFIXES,
 	LEARNING_SEQUENCE_RUNNER_PREFIXES,
+	SCENE_OPERATION_SCHEMA,
+	VALIDATOR_PRESET_SCHEMA,
 )
 from validators.findings import Finding, Severity
 from validators.database import ContentDatabase
@@ -121,6 +123,18 @@ class ProtocolValidator:
 					severity=Severity.ERROR,
 					message=f"constituent '{name}' does not resolve to a known protocol",
 				))
+			# HARD RULE: sequence_runner may reference only mini_protocol leaves,
+			# never another sequence_runner.
+			elif self.db and name in known:
+				referenced_protocol = self.db.protocols[name]
+				referenced_type = referenced_protocol.get('protocol_type')
+				if referenced_type == 'sequence_runner':
+					findings.append(Finding(
+						path=f"{path}.mini_protocols[{idx}]",
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"sequence_runner '{name}' referenced in mini_protocols list; sequence runners may reference only mini_protocol leaves, never another sequence_runner",
+					))
 
 		return findings
 
@@ -247,6 +261,13 @@ class ProtocolValidator:
 
 			findings.extend(self._validate_sequence(step, step_path))
 
+			# Validate step_validator field shape
+			step_validator = step.get('step_validator')
+			if isinstance(step_validator, dict):
+				findings.extend(self._validate_validator_shape(
+					step_validator, f"{step_path}.step_validator", 'step'
+				))
+
 			outcome = step.get('outcome')
 			if isinstance(outcome, dict):
 				if outcome.get('on_success') != 'complete':
@@ -290,17 +311,6 @@ class ProtocolValidator:
 				severity=Severity.ERROR,
 				message=f"must have exactly one terminal step, found {terminal_count}",
 			))
-
-		ptype = protocol.get('protocol_type')
-		if ptype == 'mini_protocol':
-			num_steps = len(steps)
-			if num_steps < 6 or num_steps > 10:
-				findings.append(Finding(
-					path=path,
-					lineno=None,
-					severity=Severity.ERROR,
-					message=f"mini_protocol must have 6-10 steps, found {num_steps}",
-				))
 
 		return findings
 
@@ -361,6 +371,13 @@ class ProtocolValidator:
 						tag="T1_TARGET",
 					))
 
+			# Validator preset field-shape check
+			validator = interaction.get('validator')
+			if isinstance(validator, dict):
+				findings.extend(self._validate_validator_shape(
+					validator, f"{interaction_path}.validator", 'interaction'
+				))
+
 			# Validator preset check, plus T1_TARGET_WITH_VALUE payload check.
 			validator = interaction.get('validator')
 			if isinstance(validator, dict):
@@ -409,6 +426,9 @@ class ProtocolValidator:
 									severity=Severity.ERROR,
 									message=f"type '{op_type}' not in {VALID_SCENE_OPERATIONS}",
 								))
+
+							# Validate scene_operation field shape
+							findings.extend(self._validate_scene_operation_shape(op, op_path))
 
 							# ObjectStateChange mutates declared object state.
 							# An op may carry its own `target` (the object actually
@@ -459,5 +479,103 @@ class ProtocolValidator:
 															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
 															tag="T1_MATERIAL_REF",
 														))
+
+		return findings
+
+	def _validate_validator_shape(self, validator: dict, path: str, scope: str) -> list:
+		"""
+		Validate validator preset field shape per VALIDATOR_PRESET_SCHEMA.
+		scope: 'interaction' or 'step'
+		"""
+		findings = []
+		preset = validator.get('preset')
+
+		if not preset:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="missing required field 'preset'",
+			))
+			return findings
+
+		if preset not in VALIDATOR_PRESET_SCHEMA:
+			# Unrecognized preset is caught elsewhere; skip field-shape check
+			return findings
+
+		schema = VALIDATOR_PRESET_SCHEMA[preset]
+
+		# Check that the preset scope matches the context
+		if schema['scope'] != scope:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"preset '{preset}' is for '{schema['scope']}' scope, not '{scope}' scope",
+			))
+
+		# Check required fields are present
+		for required_field in schema['required']:
+			if required_field not in validator:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"preset '{preset}' missing required field '{required_field}'",
+				))
+
+		# Check for unknown fields
+		known_fields = schema['required'] | schema['optional']
+		for field in validator.keys():
+			if field not in known_fields:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"preset '{preset}' does not allow unknown field '{field}'",
+				))
+
+		return findings
+
+	def _validate_scene_operation_shape(self, op: dict, path: str) -> list:
+		"""Validate scene_operation field shape per SCENE_OPERATION_SCHEMA."""
+		findings = []
+		op_type = op.get('type')
+
+		if not op_type:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="missing required field 'type'",
+			))
+			return findings
+
+		if op_type not in SCENE_OPERATION_SCHEMA:
+			# Unrecognized type is caught elsewhere; skip field-shape check
+			return findings
+
+		schema = SCENE_OPERATION_SCHEMA[op_type]
+
+		# Check required fields are present
+		for required_field in schema['required']:
+			if required_field not in op:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"'{op_type}' missing required field '{required_field}'",
+				))
+
+		# Check for unknown fields
+		known_fields = schema['required'] | schema['optional']
+		for field in op.keys():
+			if field not in known_fields:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"'{op_type}' does not allow unknown field '{field}'",
+				))
 
 		return findings

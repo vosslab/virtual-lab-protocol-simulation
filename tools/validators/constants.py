@@ -96,10 +96,10 @@ VALID_GESTURES = {'click', 'drag', 'adjust', 'select', 'type'}
 # spec: docs/PRIMARY_SPEC.md "Scene operations"
 VALID_SCENE_OPERATIONS = {'ObjectStateChange', 'CursorAttach', 'SceneChange', 'LayoutMove', 'TimedWait'}
 
-# spec: docs/specs/PROTOCOL_YAML_FORMAT.md "Validator presets"
+# spec: docs/specs/PROTOCOL_VOCABULARY.md "Validator preset library"
 INTERACTION_VALIDATOR_PRESETS = {'correct_target', 'correct_choice', 'target_with_value'}
 
-# spec: docs/specs/PROTOCOL_YAML_FORMAT.md "Step validator presets"
+# spec: docs/specs/PROTOCOL_VOCABULARY.md "Validator preset library"
 STEP_VALIDATOR_PRESETS = {'sequence_complete', 'final_state_matches'}
 
 # spec: docs/PRIMARY_SPEC.md "Validators and outcome"
@@ -147,36 +147,75 @@ MATERIAL_ALL_KEYS = MATERIAL_REQUIRED_KEYS | MATERIAL_OPTIONAL_KEYS
 # SCENE OPERATION SCHEMAS (TIER 2)
 # ============================================
 
-# spec: docs/PRIMARY_SPEC.md "Scene operations"
+# spec: docs/specs/PROTOCOL_VOCABULARY.md "Scene operation primitives"
+# Each scene_operation primitive is named with its typed fields. The five
+# ratified primitives are ObjectStateChange, CursorAttach, SceneChange,
+# LayoutMove, and TimedWait.
 SCENE_OPERATION_SCHEMA = {
 	'ObjectStateChange': {
-		'required': {'type', 'state'},
-		'optional': set(),
-		'description': 'Mutate declared object state fields',
+		'required': {'type', 'target', 'state'},
+		'optional': {'transition'},
+		'description': 'Mutate declared object state_fields (flat mapping). state: {field: value}. transition: instant|animated.',
 	},
 	'CursorAttach': {
-		'required': {'type', 'target'},
+		'required': {'type', 'target', 'operation'},
 		'optional': set(),
-		'description': 'Attach cursor to a target object',
+		'description': 'Set runtime held-material state. operation: attach|detach.',
 	},
 	'SceneChange': {
 		'required': {'type', 'to_scene'},
 		'optional': set(),
-		'description': 'Transition to a new scene context',
+		'description': 'Transition runtime active scene id.',
 	},
 	'LayoutMove': {
-		'required': {'type', 'target', 'zone'},
-		'optional': {'position', 'depth', 'anchor'},
-		'description': 'Move object in scene layout',
+		'required': {'type', 'target', 'to_slot'},
+		'optional': {'to_scene'},
+		'description': 'Move object placement. to_slot: layout slot name. to_scene: optional for cross-scene moves.',
 	},
 	'TimedWait': {
-		'required': {'type'},
-		'optional': {'display_message'},
-		'description': 'Pause protocol execution (duration derived from game state)',
+		'required': {'type', 'target', 'duration_min', 'display'},
+		'optional': set(),
+		'description': 'Advance equipment timed phase. duration_min: milliseconds. display: authoring hint for render layer (not SVG id).',
 	},
 }
 
-# spec: docs/PRIMARY_SPEC.md "Gesture/validator coupling"
+# spec: docs/specs/PROTOCOL_VOCABULARY.md "Validator preset library"
+# Each validator preset has required and optional fields.
+VALIDATOR_PRESET_SCHEMA = {
+	'correct_target': {
+		'required': {'preset'},
+		'optional': set(),
+		'scope': 'interaction',
+		'description': 'The student performed the gesture on the target.',
+	},
+	'correct_choice': {
+		'required': {'preset'},
+		'optional': set(),
+		'scope': 'interaction',
+		'description': 'The student selected the correct answer-choice from a presented set.',
+	},
+	'target_with_value': {
+		'required': {'preset', 'value'},
+		'optional': set(),
+		'scope': 'interaction',
+		'description': 'The student performed the gesture on the target and target reached the named value.',
+	},
+	'sequence_complete': {
+		'required': {'preset'},
+		'optional': set(),
+		'scope': 'step',
+		'description': 'Every interaction in the sequence validated, in order.',
+	},
+	'final_state_matches': {
+		'required': {'preset', 'target', 'contains'},
+		'optional': set(),
+		'scope': 'step',
+		'description': 'After sequence runs, named target is in state described by contains.',
+	},
+}
+
+# spec: docs/specs/PROTOCOL_VOCABULARY.md "Gesture/validator coupling"
+# Each gesture pairs with valid interaction-validator presets.
 GESTURE_VALIDATOR_MAP = {
 	'click': {'correct_target'},
 	'drag': {'correct_target'},

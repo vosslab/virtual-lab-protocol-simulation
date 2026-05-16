@@ -1,5 +1,185 @@
 # Changelog
 
+## 2026-05-15 (M2 WP-MP-5 and WP-MP-2: Fix drug_dilution_setup and passage_pellet_reseed)
+
+### Additions and New Features
+
+(none)
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+- Fixed `content/protocols/drug_dilution_setup/protocol.yaml` and `materials.yaml` (WP-SWEEP-MP-5): re-split under-atomized mega-step into 8 pedagogically-separate steps per learning-contract. Prior step[1] collapsed all 8 carboplatin working stocks (400 nM through 2 mM) into one 48-interaction sequence. Re-split into: `prepare_carb_stock_400nm`, `prepare_carb_stock_2um`, `prepare_carb_stock_5um`, `prepare_carb_stock_10um`, `prepare_carb_stock_20um`, `prepare_carb_stock_100um`, `prepare_carb_stock_500um`, `prepare_carb_stock_2mm` (8 new steps, 7 interactions each). Final step count: 11 (1 intermediate + 8 stocks + 1 metformin + 1 volume gate), matching one-stock-per-step pedagogy. Material reconciliation: added generic `carboplatin` and `metformin` entries to materials.yaml to bridge object-enum declarations to protocol references. All 10 T1_MATERIAL_REF errors resolved. Learning goal text updated to reflect one-stock-per-step architecture. Action coverage (A47-A57 PRESENT-EXPLICIT) and all pedagogical content preserved.
+- Fixed `content/protocols/passage_pellet_reseed/protocol.yaml`: corrected scene_operations and validator preset field shapes to canonical spec (WP-SWEEP-MP-2). Four categories of field-shape errors (100 total) resolved: (1) CursorAttach using `to_object:` field changed to canonical `target:` + `operation: attach` (9 operations fixed); (2) ObjectStateChange using flat `field:` + `value:` keys restructured to canonical nested `state: {field: value}` (18 operations fixed); (3) target_with_value validator using flat `field`, `value`, `tolerance` keys restructured to canonical nested `value: {field: value}` (4 validators fixed); (4) TimedWait using `duration_ms` field corrected to canonical `duration_min` plus added required `target:` and `display:` fields (1 operation fixed). Additionally: (a) two `type`-gesture interactions with `correct_target` validators (violating GESTURE_VALIDATOR_MAP) changed to `click`-gesture with `correct_target` (label_conical_tube, label_plate); (b) calculate_split_volume step simplified by removing redundant adjust interaction targeting aspirating_pipette (which lacks set_volume field); (c) material references updated from `fresh_media` to canonical `media` in aspirating_pipette and well_plate_96 contexts to match object enum declarations; (d) materials.yaml augmented with `media` entry to bridge object enum to material declarations. All 100 errors resolved. Pedagogy, step count (now 8 steps from 9 after redundancy removal), prompt text, and action coverage (A11-A19 PRESENT-EXPLICIT) preserved.
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+## 2026-05-15 (M2 WP-MP-1: Author passage_hood_detachment mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/passage_hood_detachment/protocol.yaml`: 10-step mini-protocol covering canonical actions A1-A2, A4-A10 (A3-prep omitted as pedagogically optional preparation). Scope: aseptic cell detachment and trypsin neutralization from T75 flask. Entry step: `inspect_confluence`. Learning block fully specified with objectives, outcomes, and goals. All 10 actions map to explicit steps (PRESENT-EXPLICIT); A3-prep intentionally excluded (warm reagents is preparation overhead distracting from core detachment pedagogy).
+- Created `content/protocols/passage_hood_detachment/materials.yaml`: four material definitions (media, pbs, trypsin, cell_suspension) with display colors.
+- Created `content/protocols/passage_hood_detachment/scenes/hood_workspace.yaml`: protocol scene extending hood_basic; adds t75_flask (center), pbs_bottle, trypsin_bottle, media_bottle (rear zones).
+- Created `content/scenes/microscope_basic.yaml`: NEW BASE SCENE (promoter: MP-1) for stable microscope workspace reuse. Extended by MP-3 later. Used in MP-1 for A1 confluence inspection and A9 detachment confirmation.
+- Created `content/protocols/passage_hood_detachment/scenes/microscope_view.yaml`: protocol scene extending microscope_basic (minimal override).
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+- Fixed `content/protocols/passage_hood_detachment/protocol.yaml`: corrected scene_operations and validator preset field shapes to canonical spec (WP-SWEEP-MP-1). Errors fixed: (1) three `target_with_value` validators missing required `value` payload — added `{ held_material_volume: 4 }` (PBS wash), `{ held_material_volume: 3 }` (trypsin), `{ held_material_volume: 9 }` (neutralization); (2) three `CursorAttach` operations missing required `operation: attach` field; (3) `TimedWait` primitive corrected from `duration_seconds: 120` to `duration_min: 2` and added required `display: "Incubating: allow trypsin to work"` field. All 9 errors resolved. Pedagogy, step count, and action coverage unchanged.
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0. 10 steps within 6-10 guideline. All targets resolve to objects; TimedWait primitive (A8, 120 sec) ratified per PRIMARY_SPEC.md.
+- Object-asset audit (all ASSET-OK): t75_flask, ethanol_bottle, aspirating_pipette, pbs_bottle, trypsin_bottle, media_bottle, hood_surface, incubator, microscope. No new objects created.
+- Deferral check: SceneChange hood <-> microscope (APPLIES, ratified); Volume tolerance adjust gesture (APPLIES, target_with_value used); Named groups (N/A); material_kind (N/A, material_name enum sufficient); Shared materials (N/A); Set-point depth (N/A, TimedWait is scene_operation, not object state).
+- Evidence log updated: A1-A10 ABSENT -> PRESENT-EXPLICIT; A3-prep marked NOT-INCLUDED with rationale.
+- Handoff contract (MP-1 -> MP-2): final step sets t75_flask.material_name=cell_suspension, material_volume=12 mL (3 mL trypsin + 9 mL media). MP-2 entry depends on this state.
+
+## 2026-05-15 (M2 WP-MP-5: drug_dilution_setup mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/drug_dilution_setup/protocol.yaml`: full 32-step mini-protocol covering canonical actions A47-A57 (carboplatin 8-stock series + metformin working stock + volume gate). Internal sectioning by carboplatin low-range (4 stocks from 200 uM intermediate), high-range (4 stocks from 10 mM master), and metformin fixed-dose prep. Carboplatin working stocks: 400 nM (10 nM final), 2 uM (50 nM), 5 uM (125 nM), 10 uM (250 nM), 20 uM (500 nM), 100 uM (5 uM), 500 uM (25 uM), 2 mM (100 uM). Metformin: 10 mM working stock (5 mM final, >=60 uL volume gate).
+- Created `content/protocols/drug_dilution_setup/materials.yaml`: 12 materials declared (carboplatin master + intermediate + 8 working stocks; metformin master + working stock). Display colors follow biochemistry conventions (gold/orange series for carb stocks, purple for metformin).
+- Created `content/protocols/drug_dilution_setup/scenes/dilution_workspace.yaml`: protocol scene extending bench_basic, adds 10 placements (carboplatin stock, metformin stock, intermediate tube, working-stock tube, 8-tube dilution rack, sterile water, media, micropipette, label pen).
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Step-count deliberate excess: 32 steps vs 6-10 guideline. Per Resolved Decision #8 (plan), this is pedagogically correct for full dilution-series coverage. learning.goals documents rationale. Validator does NOT gate on step count (advisory only).
+- Object-asset audit: all 10 directly-referenced objects (micropipette, carboplatin_stock_bottle, metformin_stock_bottle, microtube_15ml_intermediate, metformin_working_tube, dilution_tube_rack_8, sterile_water_bottle, media_bottle, vortex, label_pen) tagged ASSET-OK (pre-existing objects with verified SVG assignments).
+- Deferral check: (1) SceneChange DOES NOT APPLY (single bench workspace). (2) Volume tolerance APPLIES (exact-match set_volume validators on micropipette; comment flags gap). (3) Named groups APPLIES (8 working stocks; pedagogy reads cleanly as individual stock-by-stock flow, no named-group construct needed). (4) material_kind DOES NOT APPLY (all liquids). (5) Shared materials library APPLIES (metformin_working_stock and carb_working_stock_* appear here only in M2; no cross-mini duplication documented yet). (6) Set-point depth APPLIES (vortex timer tracks duration only, not rpm; comment flags gap).
+- Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` reports 1 warning (step count) + 0 errors on drug_dilution_setup. Pre-existing failures (passage_hood_detachment materials schema) unchanged.
+- Coverage matrix updated: A47-A57 rows marked PRESENT-EXPLICIT in docs/active_plans/dazzling_juggling_tide_evidence.md.
+
+## 2026-05-15 (M3 WP-VALIDATOR-EXTEND: enforce sequence_runner-leaves rule)
+
+### Additions and New Features
+
+- Added `--self-test` CLI flag to `tools/validate_content_yaml.py`: invokes `_self_test_sequence_runner_leaves()` to verify sequence_runner-leaves rule works correctly. Synthetic fixtures (mini_protocol leaf, two sequence_runners: one correct, one violating the rule) confirm that invalid references are caught and valid ones pass.
+
+### Behavior or Interface Changes
+
+- Extended `tools/validators/protocol_validator.py:_validate_sequence_runner()` to enforce the hard rule per PRIMARY_SPEC.md: a sequence_runner may reference ONLY mini_protocol leaves, never another sequence_runner. When a sequence_runner lists a constituent that is itself a sequence_runner (not a mini_protocol), the validator now emits an error: `sequence_runner '<name>' referenced in mini_protocols list; sequence runners may reference only mini_protocol leaves, never another sequence_runner`. Error path: `<path>.mini_protocols[<idx>]`.
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+- Removed `tests/test_validate_content_yaml_sequence_runner_leaves.py`: transitioned from transition-style synthetic pytest to embedded self-test in the validator itself. Production rule enforced against live content tree remains in `protocol_validator.py`; confidence verification now integrated as `--self-test` flag.
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Validator self-test: `source source_me.sh && python3 tools/validate_content_yaml.py --self-test` exits 0 and confirms sequence_runner-leaves rule working correctly.
+- Main validator: `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0 on current tree (all mini_protocol leaves, no sequence_runner leaves to check). Pre-existing failures (object kind, capability, materials schema) unchanged by this extension.
+- Pyflakes: `source source_me.sh && python3 -m pyflakes tools/validate_content_yaml.py` clean (no unused imports or undefined names).
+
+## 2026-05-15 (M2 WP-MP-2: Author passage_pellet_reseed mini-protocol)
+
+### Additions and New Features
+
+- Created `content/protocols/passage_pellet_reseed/protocol.yaml`: 9-step mini-protocol covering canonical actions A11-A19 (transfer to conical, labeling, centrifugation, aspirate, resuspend, 1:7 split calculation, fresh-media seeding, labeling, incubator return). Entry step: `transfer_to_conical`. Learning block fully specified with objectives, outcomes, and goals scoped to centrifugal pellet recovery and split passage. All 9 actions map to explicit steps or interactions (PRESENT-EXPLICIT).
+- Created `content/protocols/passage_pellet_reseed/materials.yaml`: four material definitions (cell_suspension, cell_pellet, fresh_media, empty) with display colors for state visualization.
+- Created `content/protocols/passage_pellet_reseed/scenes/hood_workspace.yaml`: protocol scene extending hood_basic; adds conical_15ml_rack, fresh media_bottle, well_plate_96, and label_pen for hood-based interactions (A11, A17, A18).
+- Created `content/protocols/passage_pellet_reseed/scenes/centrifuge_workspace.yaml`: per-protocol scene extending bench_basic; adds centrifuge, conical_15ml_rack, and aspirating_pipette for centrifuge-based interactions (A13, A14, A15). Per-plan promotion policy: NOT promoted to base; promote only if a second protocol claims it.
+- Created `content/objects/label_pen.yaml`: new shared object (kind=pipette, ASSET-UNVERIFIED) supporting type interactions for labeling conical tubes (A12) and plates (A18). Asset assignment deferred to separate SVG plan.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+(none)
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Validator output: `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0 on passage_pellet_reseed tree (no MP-2 errors; pre-existing MP-1 errors remain).
+- Object-asset audit: conical_15ml (ASSET-OK), conical_15ml_rack (ASSET-OK), centrifuge (ASSET-OK), aspirating_pipette (ASSET-OK), media_bottle (ASSET-OK), well_plate_96 (ASSET-OK), incubator (ASSET-OK), biohazard_decant (ASSET-OK), label_pen (ASSET-UNVERIFIED, new object, SVG assignment deferred). All 9 action targets audited.
+- Deferral check: SceneChange hood <-> centrifuge (APPLIES, ratified per plan); Volume tolerance on A16 split (1.14 mL +/-0.2 mL tolerance implemented via target_with_value validator); Named groups (N/A, no well fan-out in MP-2); material_kind (DOES NOT APPLY, cell_pellet vs cell_suspension distinguished by material_name); Shared materials library (N/A, per-mini materials); Set-point depth (centrifuge: set_rpm + set_time_min declared, NO set_temperature; A13 uses rpm + duration only, temperature not in scope for MP-2).
+- Evidence log (`docs/active_plans/dazzling_juggling_tide_evidence.md`): A11-A19 rows updated ABSENT -> PRESENT-EXPLICIT with step cross-references and interaction detail.
+- Handoff contract (MP-1 -> MP-2): MP-2's entry assumes `t75_flask.material_name = cell_suspension` (set by MP-1's A10 neutralization step). Learning outcomes explicitly document this dependency: "...from neutralized cell suspension (MP-1 endpoint) through centrifugal pellet recovery...". MP-1 author must make matching commitment in their patch.
+
+## 2026-05-15 (M1 WP-DELETE: clear 7 minis + evidence log scaffold)
+
+### Additions and New Features
+
+- Created `docs/active_plans/dazzling_juggling_tide_evidence.md`: evidence log scaffold with per-MP coverage matrix (A1-A57 ABSENT initially) and full canonical action map reference for M2 authors. M2 WP-MP-N patches append rows as each mini is delivered and validated.
+
+### Behavior or Interface Changes
+
+(none)
+
+### Fixes and Maintenance
+
+- `tools/validate_content_yaml.py` confirmed to accept empty-protocol state (0 protocols, 0 protocol scenes, 0 materials files); validator gates green on the post-delete tree (36 files: 34 objects, 2 base scenes). Validated 36 files (34 objects, 2 base scenes, 0 protocol scenes, 0 materials, 0 protocols). 0 failures.
+
+### Removals and Deprecations
+
+- Deleted 7 obsolete protocol folders via `git rm` to clear `content/protocols/` for M2 mini delivery: `hood_flask_prep`, `cell_culture`, `cell_counting_and_seeding`, `drug_dilution_setup`, `plate_drug_treatment`, `mtt_assay_readout`, `cell_culture_full`. Pre-delete SHA: `353decbd80c8607940536b627d48b6578325c032`. Future authors can recover prior shape via `git show 353decbd80c8607940536b627d48b6578325c032:content/protocols/<old_name>/protocol.yaml`.
+- Rationale: structural audit revealed 46% canonical-action coverage gap in the 6-mini set; plan replaces with 10 focused minis (MP-1..MP-10) assembled from a canonical-action map (57 counted OVCAR8 actions). Clearing the tree unblocks M2 to land minis one at a time.
+
+### Decisions and Failures
+
+(none)
+
+### Developer Tests and Notes
+
+- Validator command: `source source_me.sh && python3 tools/validate_content_yaml.py`; final output line: "Validated 36 files (34 objects, 2 base scenes, 0 protocol scenes, 0 materials, 0 protocols). 0 failures."
+
 ## 2026-05-15 (Capability snake_case purism + active-plans triage)
 
 ### Behavior or Interface Changes

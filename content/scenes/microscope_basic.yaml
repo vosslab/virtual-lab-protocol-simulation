@@ -1,0 +1,39 @@
+scene_name: microscope_basic
+workspace: microscope
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: microscope_view_bg
+
+zones:
+  - id: instrument_area
+    bounds:
+      left: 15
+      right: 85
+      top: 20
+      bottom: 70
+    align: center
+    label: Microscope viewing area
+
+placements:
+  - placement_name: main_microscope
+    object_name: microscope
+    zone: instrument_area
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Observe the specimen carefully before proceeding."
+  toast_duration_ms: 2000

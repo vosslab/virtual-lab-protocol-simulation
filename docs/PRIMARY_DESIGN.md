@@ -77,7 +77,7 @@ This repository treats primitives as durable vocabulary infrastructure, not shor
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated protocol, scene, inventory, and registry data emits under `generated/` at the repo root. Generated files do not live under `src/`.
 
-Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. Smoke protocols use the same YAML schema, builder, and walker path as curriculum mini-protocols, but they are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum guideline.
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. Smoke protocols use the same YAML schema, builder, and walker path as curriculum mini-protocols, but they are excluded from the student launcher and the full-protocol sequence.
 
 ## Vocabulary closure and anti-drift
 

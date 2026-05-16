@@ -1,0 +1,32 @@
+scene_name: hood_workspace
+extends: hood_basic
+scene_notes: |
+  Hood workspace for pellet reseed mini-protocol. Adds conical tube rack
+  (for A11 transfer target), fresh media bottle (for A17 source), fresh
+  plate (for A17 seeding target), and label pen (for A12, A18 labeling).
+
+add_placements:
+  - placement_name: center_t75_flask
+    object_name: t75_flask
+    zone: center
+    depth_tier: 3
+
+  - placement_name: center_conical_rack
+    object_name: conical_15ml_rack
+    zone: center
+    depth_tier: 2
+
+  - placement_name: rear_left_fresh_media
+    object_name: media_bottle
+    zone: rear_left
+    depth_tier: 1
+
+  - placement_name: center_fresh_plate
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 1
+
+  - placement_name: right_label_pen
+    object_name: label_pen
+    zone: right_tool_area
+    depth_tier: 1

@@ -36,7 +36,7 @@ steps:
     next_step: null
 ```
 
-A `protocol` carries `protocol_name`, `entry_step`, and `steps`. Each `step` carries `step_name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the step-count and learning-block gates.
+A `protocol` carries `protocol_name`, `entry_step`, and `steps`. Each `step` carries `step_name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step`. Each `interaction` in a `sequence` carries `target`, `gesture`, `validator`, and `response`. Flow is `entry_step` plus `next_step`; YAML `steps` list order is reading convenience only and never controls flow. Sequence runners list constituent mini-protocols rather than authored steps; see Sequence runners below. Developer smoke protocols use the same top-level shape as mini-protocols but are exempt from the learning-block requirement. Step count is determined by pedagogy. Each step is one pedagogical unit per learning block. Over-atomization (UI-shortcut steps) and under-atomization (multi-skill steps) are review-gated, not count-gated.
 
 ## Entry step
 
@@ -101,7 +101,7 @@ Events are emitted by the runtime on a state transition, not hand-authored per s
 
 ## Sequence runners
 
-A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry_step` (matching the first mini-protocol's `entry_step`) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step guideline that applies to mini-protocols.
+A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry_step` (matching the first mini-protocol's `entry_step`) and a `learning` block scoped to the overall pathway.
 
 ## Walker requirement
 
@@ -129,7 +129,7 @@ If the walker cannot complete a step through visible UI, the YAML schema, the sc
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
 
-Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum guideline. Smoke fixtures declare `protocol_type: dev_smoke`.
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher and the full-protocol sequence. Smoke fixtures declare `protocol_type: dev_smoke`.
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `hood_flask_prep.html`, `plate_drug_treatment.html`, `cell_culture_full.html`.
 

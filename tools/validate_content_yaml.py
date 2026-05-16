@@ -13,6 +13,8 @@ Standalone tool. Not a pytest. Not imported by build pipeline or src/.
 
 import argparse
 import sys
+import tempfile
+import yaml
 from pathlib import Path
 from validators.yaml_io import load_yaml
 from validators.database import ContentDatabase
@@ -327,6 +329,116 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 	return success, errors
 
 
+def _self_test_sequence_runner_leaves() -> None:
+	"""
+	Self-test for sequence_runner-leaves rule.
+	Verifies that sequence runners referencing another sequence_runner are caught
+	and that valid references pass. Exits non-zero on failure.
+	"""
+	with tempfile.TemporaryDirectory() as tmp_dir:
+		tmp_path = Path(tmp_dir)
+		content_dir = tmp_path / 'content'
+		protocols_dir = content_dir / 'protocols'
+		protocols_dir.mkdir(parents=True)
+
+		# Mini protocol leaf
+		mini_1_dir = protocols_dir / 'mini_leaf_1'
+		mini_1_dir.mkdir()
+		mini_1_yaml = {
+			'protocol_type': 'mini_protocol',
+			'protocol_name': 'mini_leaf_1',
+			'entry_step': 'step_one',
+			'learning': {
+				'objectives': 'Students completing this mini-protocol will have achieved fluency.',
+				'outcomes': 'Students completing this mini-protocol will be able to act.',
+				'goals': 'Overall, this mini-protocol aims to accomplish something.',
+			},
+			'steps': [
+				{
+					'step_name': 'step_one',
+					'prompt': 'Do something.',
+					'sequence': [
+						{
+							'target': 'generic_object',
+							'gesture': 'click',
+							'validator': {'preset': 'correct_target'},
+							'response': {'scene_operations': []},
+						}
+					],
+					'step_validator': {'preset': 'sequence_complete'},
+					'outcome': {'on_success': 'complete', 'on_failure': 'retry'},
+					'next_step': None,
+				}
+			],
+		}
+		mini_1_path = mini_1_dir / 'protocol.yaml'
+		with open(mini_1_path, 'w') as f:
+			yaml.dump(mini_1_yaml, f, default_flow_style=False)
+
+		# Sequence runner 1 (correct: references mini)
+		sr_1_dir = protocols_dir / 'seq_runner_1'
+		sr_1_dir.mkdir()
+		sr_1_yaml = {
+			'protocol_type': 'sequence_runner',
+			'protocol_name': 'seq_runner_1',
+			'entry_step': 'step_one',
+			'learning': {
+				'objectives': 'Students completing this protocol will have achieved fluency.',
+				'outcomes': 'Students completing this protocol will be able to act.',
+				'goals': 'Overall, this protocol aims to accomplish something.',
+			},
+			'mini_protocols': ['mini_leaf_1'],
+		}
+		sr_1_path = sr_1_dir / 'protocol.yaml'
+		with open(sr_1_path, 'w') as f:
+			yaml.dump(sr_1_yaml, f, default_flow_style=False)
+
+		# Sequence runner 2 (incorrect: references another sequence_runner)
+		sr_2_dir = protocols_dir / 'seq_runner_2'
+		sr_2_dir.mkdir()
+		sr_2_yaml = {
+			'protocol_type': 'sequence_runner',
+			'protocol_name': 'seq_runner_2',
+			'entry_step': 'step_one',
+			'learning': {
+				'objectives': 'Students completing this protocol will have achieved fluency.',
+				'outcomes': 'Students completing this protocol will be able to act.',
+				'goals': 'Overall, this protocol aims to accomplish something.',
+			},
+			'mini_protocols': ['seq_runner_1'],
+		}
+		sr_2_path = sr_2_dir / 'protocol.yaml'
+		with open(sr_2_path, 'w') as f:
+			yaml.dump(sr_2_yaml, f, default_flow_style=False)
+
+		# Load database and validate
+		db = ContentDatabase()
+		db.load_from_tree(tmp_path)
+
+		validator = ProtocolValidator(db=db)
+
+		# Test 1: bad reference should fail
+		findings = validator.validate(sr_2_yaml, 'content/protocols/seq_runner_2/protocol.yaml')
+		error_found = False
+		for finding in findings:
+			if 'sequence_runner' in finding.message.lower() and 'mini_protocol' in finding.message.lower():
+				error_found = True
+				break
+		if not error_found:
+			raise RuntimeError("Self-test failed: sequence_runner referencing sequence_runner should be caught")
+
+		# Test 2: valid reference should pass (filter for the specific rule error)
+		findings = validator.validate(sr_1_yaml, 'content/protocols/seq_runner_1/protocol.yaml')
+		leaf_rule_errors = [
+			f for f in findings
+			if 'sequence_runner' in f.message.lower() and 'mini_protocol' in f.message.lower()
+		]
+		if leaf_rule_errors:
+			raise RuntimeError(f"Self-test failed: valid sequence_runner reference should pass. Errors: {[f.message for f in leaf_rule_errors]}")
+
+		print("Self-test passed: sequence_runner-leaves rule working correctly.")
+
+
 def parse_args():
 	"""Parse command-line arguments."""
 	parser = argparse.ArgumentParser(
@@ -390,6 +502,12 @@ def parse_args():
 		dest='material_file',
 		help='Validate a single materials.yaml. (Prefer --protocol for author workflow.)'
 	)
+	dev_group.add_argument(
+		'-t', '--self-test',
+		dest='self_test',
+		action='store_true',
+		help='Run internal self-test for sequence_runner-leaves rule.'
+	)
 
 	return parser.parse_args()
 
@@ -400,6 +518,11 @@ def main():
 	args = parse_args()
 
 	repo_root = Path(__file__).resolve().parent.parent
+
+	# Self-test mode
+	if args.self_test:
+		_self_test_sequence_runner_leaves()
+		sys.exit(0)
 
 	# List protocols
 	if args.list_protocols_flag:

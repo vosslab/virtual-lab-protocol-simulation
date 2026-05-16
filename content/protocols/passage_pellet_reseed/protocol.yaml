@@ -1,0 +1,319 @@
+protocol_type: mini_protocol
+protocol_name: passage_pellet_reseed
+entry_step: transfer_to_conical
+
+learning:
+  objectives: |
+    Students completing this mini-protocol will have achieved fluency with
+    centrifugation as a cell-recovery technique, the mechanics of
+    cell-suspension transfer and resuspension, and the mathematical
+    calculation of a 1:7 split for cell passage.
+  outcomes: |
+    Students completing this mini-protocol will be able to transfer a
+    trypsin-neutralized cell suspension to a conical tube, centrifuge
+    to pellet cells, aspirate supernatant, resuspend the pellet,
+    calculate and measure a 1:7 split, seed fresh culture, and
+    return plates to the incubator unsupervised.
+  goals: |
+    Overall, this mini-protocol aims to accomplish the second half of
+    the maintenance-passage workflow: from neutralized cell suspension
+    (MP-1 endpoint) through centrifugal pellet recovery, split calculation,
+    fresh-media seeding, and return to incubation (routine_passage runner
+    endpoint).
+
+steps:
+  - step_name: transfer_to_conical
+    prompt: Transfer the neutralized cell suspension to a 15 mL conical tube.
+    sequence:
+      - target: t75_flask
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: t75_flask
+              operation: attach
+      - target: conical_15ml_rack
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: conical_15ml
+              state:
+                material_name: cell_suspension
+                material_volume: 8
+            - type: CursorAttach
+              target: conical_15ml
+              operation: attach
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: label_conical_tube
+
+  - step_name: label_conical_tube
+    prompt: Label the conical tube with cell line, date, passage number, and initials.
+    sequence:
+      - target: label_pen
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: label_pen
+              operation: attach
+      - target: conical_15ml
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: centrifuge_spin
+
+  - step_name: centrifuge_spin
+    prompt: Centrifuge the conical tube at 200g for 5 minutes to pellet the cells.
+    sequence:
+      - target: conical_15ml
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: centrifuge_workspace
+      - target: centrifuge
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: centrifuge
+              operation: attach
+      - target: centrifuge
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_rpm: 200 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: centrifuge
+              state:
+                set_rpm: 200
+      - target: centrifuge
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_time_min: 5 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: centrifuge
+              state:
+                set_time_min: 5
+      - target: centrifuge
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: centrifuge
+              state:
+                running: true
+            - type: TimedWait
+              target: centrifuge
+              duration_min: 5
+              display: spinner
+            - type: ObjectStateChange
+              target: centrifuge
+              state:
+                running: false
+            - type: ObjectStateChange
+              target: conical_15ml
+              state:
+                material_name: cell_pellet
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: aspirate_supernatant
+
+  - step_name: aspirate_supernatant
+    prompt: Carefully aspirate and discard the supernatant, leaving the cell pellet undisturbed.
+    sequence:
+      - target: aspirating_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: aspirating_pipette
+              operation: attach
+      - target: conical_15ml
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: conical_15ml
+              state:
+                material_name: cell_pellet
+                material_volume: 0.1
+      - target: biohazard_decant
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: resuspend_pellet
+
+  - step_name: resuspend_pellet
+    prompt: Resuspend the cell pellet in fresh media (approximately 8 mL).
+    sequence:
+      - target: aspirating_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: aspirating_pipette
+              operation: attach
+      - target: media_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: aspirating_pipette
+              state:
+                held_material_name: media
+                held_material_volume: 8
+      - target: conical_15ml
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: conical_15ml
+              state:
+                material_name: media
+                material_volume: 8
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: calculate_split_volume
+
+  - step_name: calculate_split_volume
+    prompt: |
+      Calculate the 1:7 split volume. You have ~8 mL of cell suspension.
+      For a 1:7 split: 8 mL / 7 = 1.14 mL to new culture;
+      6.86 mL to return to original flask.
+      Measure out 1.14 mL (±0.2 mL tolerance) into a fresh plate well.
+    sequence:
+      - target: aspirating_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: aspirating_pipette
+              operation: attach
+      - target: conical_15ml
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: aspirating_pipette
+              state:
+                held_material_name: media
+                held_material_volume: 1.14
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_fresh_media_to_plate
+
+  - step_name: add_fresh_media_to_plate
+    prompt: Add fresh media (approximately 7-8 mL) to a fresh 96-well plate to prepare for cell seeding.
+    sequence:
+      - target: media_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: hood_workspace
+            - type: CursorAttach
+              target: media_bottle
+              operation: attach
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                material_name: media
+                material_volume: 7
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: label_plate
+
+  - step_name: label_plate
+    prompt: Label the plate with cell line, date, passage number, and initials.
+    sequence:
+      - target: label_pen
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: label_pen
+              operation: attach
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: return_to_incubator
+
+  - step_name: return_to_incubator
+    prompt: Return the seeded plate to the incubator for growth at 37°C with 5% CO2.
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: well_plate_96
+              operation: attach
+      - target: incubator
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: incubator
+              state:
+                door_open: false
+            - type: ObjectStateChange
+              target: well_plate_96
+              state:
+                material_name: media
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

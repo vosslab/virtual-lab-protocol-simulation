@@ -1,0 +1,4 @@
+scene_name: passage_hood_detachment_microscope_view
+extends: microscope_basic
+
+scene_notes: "Microscope workspace for confluence inspection (A1) and detachment confirmation (A9) in passage_hood_detachment mini-protocol."

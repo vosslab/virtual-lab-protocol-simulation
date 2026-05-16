@@ -1,0 +1,34 @@
+scene_name: passage_hood_detachment_hood_workspace
+extends: hood_basic
+
+add_placements:
+  - placement_name: center_flask
+    object_name: t75_flask
+    zone: center
+    depth_tier: 1
+
+  - placement_name: rear_left_pbs
+    object_name: pbs_bottle
+    zone: rear_left
+    depth_tier: 0
+
+  - placement_name: rear_center_trypsin
+    object_name: trypsin_bottle
+    zone: rear_center
+    depth_tier: 0
+
+  - placement_name: rear_right_media
+    object_name: media_bottle
+    zone: rear_right
+    depth_tier: 0
+
+reposition_placements:
+  - placement_name: rear_left_ethanol
+    zone: rear_left
+    depth_tier: 1
+
+  - placement_name: center_hood_surface
+    zone: center
+    depth_tier: 2
+
+scene_notes: "Hood workspace for passage_hood_detachment mini-protocol. T75 flask in center work area, reagent bottles (PBS, trypsin, media) positioned in rear zones, ethanol spray bottle for sterilization, and aspirating pipette in right tool area."

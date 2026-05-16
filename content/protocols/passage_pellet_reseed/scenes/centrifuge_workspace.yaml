@@ -1,0 +1,24 @@
+scene_name: centrifuge_workspace
+extends: bench_basic
+scene_notes: |
+  Centrifuge workspace for pellet reseed mini-protocol. Adds centrifuge
+  (A13 target) and conical tube rack (for pellet operations A14, A15).
+  Per-protocol scene; NOT promoted to base. If a second protocol uses
+  centrifuge, this scene becomes a candidate for promotion to
+  content/scenes/centrifuge_basic.yaml.
+
+add_placements:
+  - placement_name: center_centrifuge
+    object_name: centrifuge
+    zone: center
+    depth_tier: 2
+
+  - placement_name: rear_center_conical_rack
+    object_name: conical_15ml_rack
+    zone: rear_center
+    depth_tier: 1
+
+  - placement_name: right_aspirating_pipette
+    object_name: aspirating_pipette
+    zone: right_tool_area
+    depth_tier: 1

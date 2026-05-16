@@ -1,4 +1,8 @@
 materials:
+  carboplatin:
+    label: "Carboplatin solution"
+    display_color: "#c8a2c8"
+
   carboplatin_10mmol:
     label: "10 mM carboplatin stock"
     display_color: "#c8a2c8"
@@ -6,6 +10,10 @@ materials:
   carboplatin_400umol:
     label: "400 &micro;M carboplatin intermediate"
     display_color: "#d4b5d4"
+
+  metformin:
+    label: "Metformin solution"
+    display_color: "#e8d4a0"
 
   metformin_1mol:
     label: "1 M metformin stock"

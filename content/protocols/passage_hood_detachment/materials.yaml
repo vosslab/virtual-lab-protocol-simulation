@@ -1,0 +1,16 @@
+materials:
+  media:
+    label: Culture media
+    display_color: "#FFF8DC"
+
+  pbs:
+    label: Phosphate-buffered saline
+    display_color: "#E6F2FF"
+
+  trypsin:
+    label: Trypsin-EDTA
+    display_color: "#FFE6E6"
+
+  cell_suspension:
+    label: Cell suspension
+    display_color: "#E8F5E9"
