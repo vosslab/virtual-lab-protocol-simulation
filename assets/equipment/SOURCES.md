@@ -67,17 +67,17 @@ The following SVG files have been adopted directly from the Servier Medical Art 
 
 The following objects have no suitable Servier candidate and use standard placeholder SVGs:
 
-- `power_supply_off.svg` — Power Supply (off state)
-- `power_supply_on.svg` — Power Supply (on state)
-- `heat_block_closed.svg` — Heat Block (closed)
-- `heat_block_open.svg` — Heat Block (open)
-- `microwave_closed.svg` — Microwave (closed)
-- `microwave_open.svg` — Microwave (open)
-- `lightbox_off.svg` — Lightbox (off)
-- `gel_opening_tool.svg` — Gel Opening Tool
-- `microtube_rack_24_placeholder.svg` — Microtube Rack (24-slot)
-- `kimwipe_pad.svg` — Kimwipe Pad
-- `electrode_module.svg` — Electrode Module
+- `power_supply_off.svg` - Power Supply (off state)
+- `power_supply_on.svg` - Power Supply (on state)
+- `heat_block_closed.svg` - Heat Block (closed)
+- `heat_block_open.svg` - Heat Block (open)
+- `microwave_closed.svg` - Microwave (closed)
+- `microwave_open.svg` - Microwave (open)
+- `lightbox_off.svg` - Lightbox (off)
+- `gel_opening_tool.svg` - Gel Opening Tool
+- `microtube_rack_24_placeholder.svg` - Microtube Rack (24-slot)
+- `kimwipe_pad.svg` - Kimwipe Pad
+- `electrode_module.svg` - Electrode Module
 
 See `MISSING_SVG_PLACEHOLDERS.md` for details and replacement status.
 

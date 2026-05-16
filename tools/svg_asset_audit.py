@@ -663,9 +663,10 @@ def print_full_report(
 ) -> None:
 	"""Print the full audit report with enriched metadata.
 
-	New default (no -v, no -q): summary-only mode prints counts + findings.
-	-v (verbose): full per-asset detail walk (legacy behavior).
-	-q (quiet): suppress headers, print findings + summary only.
+	Three-tier verbosity:
+	-q (quiet): ONLY the final summary line.
+	default: section headers + count tables + actionable findings totals + summary line.
+	-v (verbose): full per-asset detail INCLUDING raw item lists.
 	"""
 
 	# Count breakdown by source
@@ -706,51 +707,73 @@ def print_full_report(
 			elif classification == 'unknown':
 				unknown_assets += 1
 
-	# Print header (unless quiet)
-	if not quiet:
-		print(f"SVG asset audit  ( {len(objects)} objects / {len(disk_svgs)} SVGs )")
-		print("=========================================")
-		print()
+	# Compute counts for actionable findings (computed early, needed by all modes)
+	normalization_failures = sum(
+		1 for m in per_asset_metadata.values()
+		if m.get('normalization') != 'OK'
+	)
+	forbidden_construct_count = sum(
+		1 for m in per_asset_metadata.values()
+		if m.get('forbidden_constructs')
+	)
+	unattributed_servier = sum(
+		1 for m in per_asset_metadata.values()
+		if m.get('servier_source_path') and not m.get('attribution')
+	)
 
-		# Per-object source breakdown
-		print("Per-object source breakdown:")
-		print(f"  servier:     {servier_objs} objects, {servier_assets} svgs")
-		print(f"  placeholder: {placeholder_objs} objects, {placeholder_assets} svgs")
-		print(f"  mixed:       {mixed_objs} objects (uses both servier and placeholder)")
-		print(f"  missing:     {missing_objs} objects (one or more asset_name has no .svg)")
-		print(f"  unknown:     {unknown_objs} objects (one or more .svg in neither manifest)")
-		print()
+	# Compute unknown SVGs: on disk but in neither manifest
+	referenced_in_objects = set()
+	for obj_data in objects.values():
+		referenced_in_objects.update(obj_data['assets'].keys())
+	unknown_svgs = disk_svgs - referenced_in_objects
+	for asset_name in list(unknown_svgs):
+		if asset_name in per_asset_metadata:
+			unknown_svgs.discard(asset_name)
 
-		# Per-object table (only in verbose mode)
-		if verbose:
-			print("Per-object table:")
-			print("  object_name                      | label                           | source(s)        | svg count")
-			print("  --------------------------------- | ------------------------------- | ---------------- | ---------")
+	# Deduplicate: orphan takes precedence over unknown
+	truly_unknown = unknown_svgs - orphan_svgs
 
-			for obj_name in sorted(objects.keys()):
-				obj_data = objects[obj_name]
-				label = obj_data['label'][:31] if obj_data['label'] else 'UNKNOWN'
-				sources = ', '.join(sorted(obj_data['sources']))
-				svg_count = len(obj_data['assets'])
+	# Quiet mode: ONLY print the final summary line
+	if quiet:
+		total_checked = len(objects)
+		failure_count = len(orphan_svgs) + len(truly_unknown) + normalization_failures + forbidden_construct_count + unattributed_servier
+		reporter.print_summary_line(total_checked, failure_count, item_label="objects")
+		return
 
-				obj_name_padded = (obj_name[:33]).ljust(33)
-				label_padded = label.ljust(31)
-				sources_padded = sources[:16].ljust(16)
+	# Default mode: section headers + count tables + actionable findings + summary
+	# Verbose mode: everything from default, plus raw item lists in sections
 
-				print(f"  {obj_name_padded} | {label_padded} | {sources_padded} | {svg_count}")
+	# Print section header
+	print(f"=== SVG asset audit ({len(objects)} objects / {len(disk_svgs)} SVGs) ===")
+	print()
 
-			print()
+	# Per-object source breakdown table
+	print("Per-object source breakdown:")
+	print(f"  servier:     {servier_objs} objects, {servier_assets} svgs")
+	print(f"  placeholder: {placeholder_objs} objects, {placeholder_assets} svgs")
+	print(f"  mixed:       {mixed_objs} objects (uses both servier and placeholder)")
+	print(f"  missing:     {missing_objs} objects (one or more asset_name has no .svg)")
+	print(f"  unknown:     {unknown_objs} objects (one or more .svg in neither manifest)")
+	print()
 
-	# Missing assets section (always printed)
-	if missing_items:
-		if not quiet:
-			print("Missing assets (object_name -> asset_name):")
-		for item in missing_items:
-			print(f"  {item}")
-		if not quiet:
-			print()
+	# Per-object table (only in verbose mode)
+	if verbose:
+		print("Per-object table:")
+		print("  object_name                      | label                           | source(s)        | svg count")
+		print("  --------------------------------- | ------------------------------- | ---------------- | ---------")
 
-	if not quiet:
+		for obj_name in sorted(objects.keys()):
+			obj_data = objects[obj_name]
+			label = obj_data['label'][:31] if obj_data['label'] else 'UNKNOWN'
+			sources = ', '.join(sorted(obj_data['sources']))
+			svg_count = len(obj_data['assets'])
+
+			obj_name_padded = (obj_name[:33]).ljust(33)
+			label_padded = label.ljust(31)
+			sources_padded = sources[:16].ljust(16)
+
+			print(f"  {obj_name_padded} | {label_padded} | {sources_padded} | {svg_count}")
+
 		print()
 
 	# Five main sections (only in verbose mode)
@@ -767,103 +790,86 @@ def print_full_report(
 		print_subpart_alignment_section(objects, per_asset_metadata)
 		print()
 
-	# Compute unknown SVGs: on disk but in neither manifest
-	referenced_in_objects = set()
-	for obj_data in objects.values():
-		referenced_in_objects.update(obj_data['assets'].keys())
-	unknown_svgs = disk_svgs - referenced_in_objects
-	for asset_name in list(unknown_svgs):
-		if asset_name in per_asset_metadata:
-			unknown_svgs.discard(asset_name)
+	# Cleanup surface section (with different behavior in verbose mode)
+	print_cleanup_surface_section(orphan_svgs, unknown_svgs, verbose=verbose)
+	print()
 
-	# Deduplicate: orphan takes precedence over unknown
-	truly_unknown = unknown_svgs - orphan_svgs
+	# Actionable findings (default and verbose modes)
+	print("Actionable findings:")
+	print(f"  Orphan SVG files: {len(orphan_svgs)}")
+	print(f"  Unknown SVG files: {len(truly_unknown)}")
+	print(f"  Normalization failures: {normalization_failures}")
+	print(f"  Forbidden constructs: {forbidden_construct_count}")
+	print(f"  Unattributed Servier adoptions: {unattributed_servier}")
+	print()
 
-	print_cleanup_surface_section(orphan_svgs, unknown_svgs, quiet=quiet)
-
-	# Default-mode and summary counts
-	normalization_failures = sum(
-		1 for m in per_asset_metadata.values()
-		if m.get('normalization') != 'OK'
-	)
-	forbidden_construct_count = sum(
-		1 for m in per_asset_metadata.values()
-		if m.get('forbidden_constructs')
-	)
-	unattributed_servier = sum(
-		1 for m in per_asset_metadata.values()
-		if m.get('servier_source_path') and not m.get('attribution')
-	)
-
-	# Print actionable counts in default mode (not quiet, not verbose)
-	if not verbose and not quiet:
-		print()
-		print("Actionable findings:")
-		print(f"  Orphan SVG files: {len(orphan_svgs)}")
-		print(f"  Unknown SVG files: {len(truly_unknown)}")
-		print(f"  Normalization failures: {normalization_failures}")
-		print(f"  Forbidden constructs: {forbidden_construct_count}")
-		print(f"  Unattributed Servier adoptions: {unattributed_servier}")
-		print()
-
-	# Final summary line (in all modes)
+	# Final summary line (in all non-quiet modes)
 	total_checked = len(objects)
 	failure_count = len(orphan_svgs) + len(truly_unknown) + normalization_failures + forbidden_construct_count + unattributed_servier
 	reporter.print_summary_line(total_checked, failure_count, item_label="objects")
 
 def print_provenance_section(per_asset_metadata: Dict[str, Any], asset_filter: Optional[Set[str]] = None) -> None:
-	"""Print provenance section: source, license, attribution, modification status."""
-	print("Provenance:")
+	"""Print provenance section: source, license, attribution, modification status.
+
+	Verbose-only: per-asset detail walk. Default mode has no output from this section.
+	"""
+	print("=== Provenance ===")
 	if not per_asset_metadata:
-		print("  (no assets)")
+		print("(no assets)")
 		return
 
 	for asset_name in sorted(per_asset_metadata.keys()):
 		if asset_filter and asset_name not in asset_filter:
 			continue
 		meta = per_asset_metadata[asset_name]
-		print(f"  {asset_name}:")
+		print(f"{asset_name}:")
 		if meta.get('servier_source_path'):
-			print(f"    Source: {meta['servier_source_path']}")
-			print("    License: CC BY 3.0")
+			print(f"  Source: {meta['servier_source_path']}")
+			print("  License: CC BY 3.0")
 		else:
-			print("    Source: (not a Servier asset)")
+			print("  Source: (not a Servier asset)")
 		attr = meta.get('attribution') or 'unknown'
-		print(f"    Attribution: {attr}")
+		print(f"  Attribution: {attr}")
 		mod = meta.get('modification_status') or 'unknown'
-		print(f"    Modification: {mod}")
+		print(f"  Modification: {mod}")
 
 def print_svg_health_section(per_asset_metadata: Dict[str, Any], asset_filter: Optional[Set[str]] = None) -> None:
-	"""Print SVG health section: pipeline, viewBox, size, forbidden constructs, base64."""
-	print("SVG health:")
+	"""Print SVG health section: pipeline, viewBox, size, forbidden constructs, base64.
+
+	Verbose-only: per-asset detail walk. Default mode has no output from this section.
+	"""
+	print("=== SVG health ===")
 	if not per_asset_metadata:
-		print("  (no assets)")
+		print("(no assets)")
 		return
 
 	for asset_name in sorted(per_asset_metadata.keys()):
 		if asset_filter and asset_name not in asset_filter:
 			continue
 		meta = per_asset_metadata[asset_name]
-		print(f"  {asset_name}:")
+		print(f"{asset_name}:")
 		norm = meta.get('normalization', 'unknown')
 		reason = meta.get('normalization_reason')
 		if reason:
-			print(f"    Normalization: {norm} ({reason})")
+			print(f"  Normalization: {norm} ({reason})")
 		else:
-			print(f"    Normalization: {norm}")
+			print(f"  Normalization: {norm}")
 		size = meta.get('file_size_kb')
 		if size:
 			flag_str = " [LARGE]" if size > 50 else ""
-			print(f"    File size: {size:.1f} KB{flag_str}")
+			print(f"  File size: {size:.1f} KB{flag_str}")
 		forbidden = meta.get('forbidden_constructs', [])
 		if forbidden:
-			print(f"    Forbidden constructs: {', '.join(forbidden)}")
+			print(f"  Forbidden constructs: {', '.join(forbidden)}")
 
 def print_object_alignment_section(objects: Dict[str, Dict[str, Any]], asset_reuse: Dict[str, int], object_filter: Optional[str] = None) -> None:
-	"""Print object alignment section: refs, coverage."""
-	print("Object alignment:")
+	"""Print object alignment section: refs, coverage.
+
+	Verbose-only: per-asset detail walk. Default mode has no output from this section.
+	"""
+	print("=== Object alignment ===")
 	if not objects:
-		print("  (no objects)")
+		print("(no objects)")
 		return
 
 	for obj_name in sorted(objects.keys()):
@@ -875,25 +881,28 @@ def print_object_alignment_section(objects: Dict[str, Dict[str, Any]], asset_reu
 		if not assets:
 			continue
 
-		print(f"  {obj_name}:")
+		print(f"{obj_name}:")
 		for asset_name in sorted(assets.keys()):
 			classification = assets[asset_name]
 			reuse = asset_reuse.get(asset_name, 0)
-			print(f"    {asset_name}: {classification} (used {reuse}x)")
+			print(f"  {asset_name}: {classification} (used {reuse}x)")
 
 		# Enum coverage
 		coverage = check_enum_coverage(obj_name, obj_data.get('yaml_data', {}))
 		if coverage:
-			print("    Enum coverage:")
+			print("  Enum coverage:")
 			for field, (covered, total, missing) in sorted(coverage.items()):
 				if missing:
-					print(f"      {field}: {covered}/{total} [missing: {', '.join(missing)}]")
+					print(f"    {field}: {covered}/{total} [missing: {', '.join(missing)}]")
 				else:
-					print(f"      {field}: {covered}/{total}")
+					print(f"    {field}: {covered}/{total}")
 
 def print_subpart_alignment_section(objects: Dict[str, Dict[str, Any]], per_asset_metadata: Dict[str, Any], object_filter: Optional[str] = None) -> None:
-	"""Print subpart alignment section."""
-	print("Subpart alignment:")
+	"""Print subpart alignment section.
+
+	Verbose-only: per-asset detail walk. Default mode has no output from this section.
+	"""
+	print("=== Subpart alignment ===")
 	any_printed = False
 
 	for obj_name in sorted(objects.keys()):
@@ -908,8 +917,8 @@ def print_subpart_alignment_section(objects: Dict[str, Dict[str, Any]], per_asse
 			continue
 
 		any_printed = True
-		print(f"  {obj_name}:")
-		print(f"    Expected subparts: {len(expected_subparts)}")
+		print(f"{obj_name}:")
+		print(f"  Expected subparts: {len(expected_subparts)}")
 
 		for asset_name in sorted(obj_data['assets'].keys()):
 			if asset_name not in per_asset_metadata:
@@ -921,48 +930,45 @@ def print_subpart_alignment_section(objects: Dict[str, Dict[str, Any]], per_asse
 			extra = svg_subparts - expected_subparts
 
 			if missing or extra:
-				print(f"    {asset_name}:")
+				print(f"  {asset_name}:")
 				if missing:
-					print(f"      Missing in SVG: {', '.join(sorted(missing))}")
+					print(f"    Missing in SVG: {', '.join(sorted(missing))}")
 				if extra:
-					print(f"      Extra in SVG: {', '.join(sorted(extra))}")
+					print(f"    Extra in SVG: {', '.join(sorted(extra))}")
 
 	if not any_printed:
-		print("  (no structured objects)")
+		print("(no structured objects)")
 
-def print_cleanup_surface_section(orphan_svgs: Set[str], unknown_svgs: Set[str], quiet: bool = False) -> None:
+def print_cleanup_surface_section(orphan_svgs: Set[str], unknown_svgs: Set[str], quiet: bool = False, verbose: bool = False) -> None:
 	"""Print cleanup surface section: orphans, unknowns, superseded.
 
-	In quiet mode: suppress section header, keep per-finding labels and counts,
-	but suppress the listing itself.
+	quiet mode: return early (handled by caller).
+	default mode: print section header and counts only, no item listings.
+	verbose mode: print section header, counts, AND raw item listings.
 	"""
 	# Orphan and unknown may overlap: a file can have no object reference AND not be
 	# in a manifest. Deduplicate so each appears only once, with orphan taking precedence.
 	truly_unknown = unknown_svgs - orphan_svgs
 
-	if not quiet:
-		print("Cleanup surface:")
+	print("=== Cleanup surface ===")
 
 	if orphan_svgs:
-		print(f"  Orphan SVGs ({len(orphan_svgs)}):")
-		if not quiet:
+		print(f"Orphan SVGs ({len(orphan_svgs)}):")
+		if verbose:
 			for svg in sorted(orphan_svgs):
-				print(f"    {svg}")
-
-	elif not quiet:
-		print("  Orphan SVGs: (none)")
+				print(f"  {svg}")
+	else:
+		print("Orphan SVGs: (none)")
 
 	if truly_unknown:
-		print(f"  Unknown SVGs ({len(truly_unknown)}):")
-		if not quiet:
+		print(f"Unknown SVGs ({len(truly_unknown)}):")
+		if verbose:
 			for svg in sorted(truly_unknown):
-				print(f"    {svg}")
+				print(f"  {svg}")
+	else:
+		print("Unknown SVGs: (none)")
 
-	elif not quiet:
-		print("  Unknown SVGs: (none)")
-
-	if not quiet:
-		print("  Superseded files: (none)")
+	print("Superseded files: (none)")
 
 #============================================
 # cli
@@ -1081,7 +1087,10 @@ def print_object_detail_table(
 	servier: Set[str],
 	placeholders: Set[str]
 ) -> None:
-	"""Print detailed table report for one object."""
+	"""Print detailed table report for one object.
+
+	Per-object mode always prints per-asset detail regardless of -q/-v flag.
+	"""
 	print(f"Object: {object_name}")
 	obj_data = objects[object_name]
 	print(f"Label: {obj_data['label']}")
@@ -1102,7 +1111,7 @@ def print_object_detail_table(
 	print_subpart_alignment_section(objects, per_asset_metadata, object_name)
 	print()
 
-	print_cleanup_surface_section(orphan_svgs, set())
+	print_cleanup_surface_section(orphan_svgs, set(), verbose=True)
 
 def print_json_report(
 	object_name: Optional[str],

@@ -1,5 +1,69 @@
 # Changelog
 
+## 2026-05-16 (SVG asset audit tool)
+
+### Additions and New Features
+
+- `tools/svg_asset_audit.py` (1220 lines): repo-wide SVG asset audit tool. Walks
+  every object YAML's `visual_states` for `asset_name` references; classifies each
+  as Servier-adopted (per `assets/equipment/SOURCES.md`), placeholder (per
+  `assets/equipment/MISSING_SVG_PLACEHOLDERS.md`), unknown, or missing. Five
+  always-on report sections: Provenance (Servier source path + bioicons category,
+  license, attribution presence inline-or-manifest, modification status
+  pristine/adapted/source_missing via SHA-256 byte-compare against Servier source),
+  SVG health (normalization pass/fail, viewBox + dimensions, file size with >50 KB
+  flag, forbidden constructs scan for `<script>` / `<foreignObject>` / inline event
+  handlers / embedded base64), Object alignment (missing refs, placeholder refs,
+  unknown refs, visual-state enum coverage), Subpart alignment (SVG
+  `data-subpart-id` set vs object-declared subparts from `structure` block),
+  Cleanup surface (orphan SVGs, truly-unknown SVGs).
+- CLI matches sibling tool family (`validate_content_yaml.py`, `protocol_stepper.py`,
+  `protocol_manual.py`): `-o/--object NAME` for focused per-object detail,
+  `--list-objects`, `--interactive` numbered menu, `-q/--quiet` and `-v/--verbose`
+  mutually-exclusive verbosity, `--format {table,json}`.
+- Three-tier verbosity: `-q` prints one summary line (`Checked N objects. F failures.`);
+  default prints section count tables + actionable findings totals + summary (22 lines
+  on current repo); `-v` prints full per-asset detail across all five sections (700+
+  lines).
+- `--format json` always emits the full structured dict regardless of verbosity, with
+  top-level keys `summary` / `provenance` / `svg_health` / `object_alignment` /
+  `subpart_alignment` / `cleanup_surface`. `--object NAME --format json` filters each
+  list to rows touching that object.
+- `tools/shared_toolkit/objects.py` (new, 22 lines): mirrors
+  `tools/shared_toolkit/protocols.py` shape; provides `list_objects()` for any future
+  object-walking tool.
+
+### Behavior or Interface Changes
+
+- `tools/shared_toolkit/interactive.py`: `pick_protocol_interactively` gains optional
+  `intro=` keyword (default `"Available protocols:"` preserves existing behavior). Audit
+  tool calls with `intro="Available objects:"` so its menu correctly labels object
+  selections. Sibling tools (validate_content_yaml, protocol_stepper, protocol_manual)
+  unaffected; no regression in their `--interactive` mode.
+
+### Decisions and Failures
+
+- First-run findings on existing repo (baseline state surfaced by the new tool; not
+  introduced by it): 64 orphan SVGs in `assets/equipment/` (file on disk, no object
+  reference), 44 SVGs failing the tool's inline normalization check, 33 objects with
+  one or more missing asset references, 3 objects with unknown-source SVGs. These are
+  pre-existing repo state from before SDS-PAGE and the SVG-polish pass; the tool's job
+  is to make them visible for a follow-up cleanup plan.
+- The 44 normalization failures may include false positives where the tool's inline
+  check is stricter than `tools/check_svg_pipeline.py`. Spot-check during the cleanup
+  follow-up.
+- Provenance modification-status check uses SHA-256 byte-compare against the Servier
+  source under `OTHER_REPOS/bioicons/static/icons/cc-by-3.0/<category>/Servier/`. When
+  the source is unavailable in a particular environment, status reports as
+  `source_missing` rather than guessing.
+
+### Developer Tests and Notes
+
+- `pytest tests/test_pyflakes_code_lint.py tests/test_ascii_compliance.py tests/test_shebangs.py tests/test_import_requirements.py`:
+  PASS for both new files and the modified `interactive.py`.
+- Default invocation (`source source_me.sh && python3 tools/svg_asset_audit.py`)
+  executes in well under a second on the current 56-object / 108-SVG repo.
+
 ## 2026-05-16 (SDS-PAGE pathway full ship)
 
 ### Additions and New Features
