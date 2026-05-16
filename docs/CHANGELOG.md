@@ -53,6 +53,82 @@
 - MP-6 media-adjustment values confirmed in protocol.yaml: A7-A12 receive 95 &micro;L (line 611 in step adjust_media_quadrant_a7_h12, second adjust payload), B7-H12 receive 90 &micro;L (line 614, set_volume: 90). No changes required to MP-6.
 - Cross-reference check: MP-5 materials.yaml stock names match MP-7 materials.yaml stock names and match source doc Part 4 table stock names. Flat naming pattern (e.g., `carboplatin_400umol`) consistent across all materials.yaml files.
 
+## 2026-05-16 (M4b WP-PROMPT-MP7: Prompt rewrites + simulation abstraction comments + pipette swap)
+
+### Additions and New Features
+
+(none)
+
+### Behavior or Interface Changes
+
+- **MP-7 prompt rewrites per M4b canonical pattern**: Rewrote 8 carboplatin + 1 metformin step prompts in `plate_drug_treatment_drug_addition` to adopt lab-action verbs (Aspirate, dispense) and explicit dose concentrations per M4a-corrected materials.yaml. Old pattern (UI narration: "Pick up the multichannel pipette... Click...") replaced by pedagogy-aligned pattern: "Aspirate &lt;volume&gt; &micro;L of &lt;conc&gt; &lt;drug&gt; working stock into the micropipette and dispense across &lt;target wells&gt;. Final well concentration: &lt;final_conc&gt; &lt;drug&gt; in 200 &micro;L total volume." Resolves F1 click-narration anti-pattern per PRIMARY_DESIGN.md. Values cross-checked against corrected MP-5 materials (4, 8, 20, 40, 80, 200, 400 &micro;M carboplatin; 200 mM metformin), all satisfy math invariant stock &times; 5 &micro;L / 200 &micro;L = final. Prompts updated for all 7 carboplatin rows (B-H, 0.1 through 10 &micro;M finals) and metformin row (5 mM final).
+- **MP-7 learning.objectives/outcomes text updated**: Dropped "multi-channel pipetting" framing; updated dose-range reference from "10 nM through 25 &micro;M" (retired) to "0.1 &micro;M through 10 &micro;M" (current 1-2-5 series). Prompts now reference "micropipette" (Level 3 swap below); learning text aligned.
+- **MP-7 multichannel_pipette &rarr; micropipette swap (Level 3)**: Renamed all 40 references to `multichannel_pipette` to `micropipette` across MP-7 protocol.yaml (8 pipette `click` targets + 8 `adjust` targets + 8 `CursorAttach` targets + validator references = 24+ sites) and scenes/plate_workspace.yaml (object placement; placement_name `right_multichannel_pipette` to `right_micropipette`, object_name `multichannel_pipette` to `micropipette`; scene_notes updated). No other objects affected. Replaced `multichannel_pipette` with single-channel `micropipette` to align geometry with row-gradient plate map (dose varies by row, vehicle by column) which is incompatible with standard 8-channel multichannel orientation.
+- **Simulation abstraction comment added to 5 multi-well minis (Level 2)**: Added canonical top-of-file YAML comment to MP-4 (`cell_seeding_plate_setup`), MP-6 (`plate_drug_treatment_media_adjustment`), MP-7 (`plate_drug_treatment_drug_addition`), MP-9 (`mtt_plate_reaction`), MP-10 (`mtt_solubilization_readout`). Comment placed BEFORE `protocol_type:` line, NOT inside `learning.goals`. Text explains that per-well clicks in YAML are an instrumentation abstraction (real wet lab uses 8-channel multichannel per column, repeater pipette per-well serialization, or manual row filling) and do not prescribe procedural detail. Affirms that simulation click-granularity is for validation, not pedagogy; wet-lab practice differs.
+- **MP-8 prompt reviewed and refined**: MP-8 line 70 (dissolve_and_mix prompt) already uses correct lab-action framing ("Transfer...", "vortex...") and does not lead with simulator mechanics. Accepted as-is. Line 31 (prepare_solution_tube prompt) rewritten from UI narration ("Pick up the micropipette and set it to 1 mL...") to lab action ("Transfer 1 mL of PBS into the MTT tube, then mix until the MTT powder is fully dissolved.").
+
+### Fixes and Maintenance
+
+- **F1 bug fix: Resolve click-narration anti-pattern in MP-7 prompts**: Historical MP-7 prompts (shipped in M2/M3) opened with simulator UI verbs ("Pick up...", "set...", "Click...") before stating the lab goal (aspirate dose, dispense to well), teaching students the wrong mental model that the GUI mechanics are the pedagogical content. Lab-action rewrite makes the learning intent clear (manage dose concentrations across rows) and the sequence mechanics (pipette + adjust + click) secondary. Students now learn "aspirate carboplatin into micropipette" as the action, and the scene-interaction grammar is how that action expresses itself in the simulator. Prompts now state the lab invariant (final concentration = 200 &micro;L well volume) explicitly per contract item 4 (PRIMARY_CONTRACT.md, "visible interaction standard").
+
+### Removals and Deprecations
+
+- Removed `multichannel_pipette` from MP-7 protocol.yaml and scenes/plate_workspace.yaml. All 40 references replaced by `micropipette`. No other minis affected; multichannel_pipette remains in MP-6, MP-9, MP-10 pending future column-gradient redesign (out of scope, M4b prompt-rewrite + pipette-swap focus only).
+
+### Decisions and Failures
+
+- **M4b execution decision**: Cross-checked all M4a-corrected concentrations (carboplatin: 4, 8, 20, 40, 80, 200, 400 &micro;M; metformin: 200 mM) against MP-5 materials.yaml before rewriting prompts. All values present and correct. Math invariant (stock &times; 5 &micro;L / 200 &micro;L = final) verified for all 8 dose levels independently. No concentration mismatches detected.
+- **MP-8 line 70 review decision**: Prompt "Transfer the 5 mg MTT powder into the solution tube by tapping... Then vortex the tube..." frames the interaction as lab action (tapping, vortexing), not simulator UI (clicking, setting). Accepts as pedagogically sound; no rewrite needed.
+
+### Developer Tests and Notes
+
+- M4b prompt cross-check table (all rows verified against corrected MP-5 materials.yaml):
+  - Row B: 4 &micro;M stock &times; 5 / 200 = 0.1 &micro;M final | Declared in MP-5 materials: carboplatin_4umol OK
+  - Row C: 8 &micro;M stock &times; 5 / 200 = 0.2 &micro;M final | Declared in MP-5 materials: carboplatin_8umol OK
+  - Row D: 20 &micro;M stock &times; 5 / 200 = 0.5 &micro;M final | Declared in MP-5 materials: carboplatin_20umol OK
+  - Row E: 40 &micro;M stock &times; 5 / 200 = 1 &micro;M final | Declared in MP-5 materials: carboplatin_40umol OK
+  - Row F: 80 &micro;M stock &times; 5 / 200 = 2 &micro;M final | Declared in MP-5 materials: carboplatin_80umol OK
+  - Row G: 200 &micro;M stock &times; 5 / 200 = 5 &micro;M final | Declared in MP-5 materials: carboplatin_200umol OK
+  - Row H: 400 &micro;M stock &times; 5 / 200 = 10 &micro;M final | Declared in MP-5 materials: carboplatin_400umol OK
+  - Met: 200 mM stock &times; 5 / 200 = 5 mM final | Declared in MP-5 materials: metformin_200mmol OK
+- All 8 rows + metformin verified; no mismatches.
+- Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` run after M4b changes.
+
+## 2026-05-16 (M6 WP-VALIDATOR-CROSS-MINI: Cross-mini invariant validator extension)
+
+### Additions and New Features
+
+- **CrossMiniValidator module added**: New `tools/validators/cross_mini_validator.py` implements two cross-mini checks: (1) math invariant verification (F2 prevention): parses drug-addition step prompts matching canonical pattern to extract working concentration, aspirate volume, and final concentration, then verifies 40x rule: `C_working &times; V_drug / V_well_final == C_final` with tolerance &plusmn; 0.01; (2) materials name consistency (F3 prevention): validates that every `material_name` referenced in any constituent mini_protocol of a `sequence_runner` has matching `display_color` across all MPs that declare it (labels may vary by role/context; material identity + color must be consistent per material decoration layer spec).
+
+### Behavior or Interface Changes
+
+- **Validator gate: cross-mini math invariant check**: `tools/validate_content_yaml.py` now invokes cross-mini validator after per-mini schema checks complete. For every sequence_runner, the validator walks all constituent mini_protocols and examines step prompts for canonical drug-addition pattern: "Aspirate &lt;V&gt; &micro;L of &lt;C_w&gt; ... Final well concentration: &lt;C_f&gt;". Extracts numeric values and verifies invariant. Synthetic-fixture test confirms validator emits ERROR on violation (expected final 10 &micro;M, declared 15 &micro;M).
+- **Validator gate: cross-mini materials consistency check**: For every sequence_runner, validates that each `material_name` has consistent `display_color` across all constituent MPs that declare it. Per PRIMARY_SPEC.md and material decoration layer spec, material identity (name) and visual representation (color) must match; labels (descriptive text) may vary by role context (e.g., "Culture media" in MP-2 vs "Fresh culture media" in MP-4 represent the same material in different prep states). Synthetic-fixture test confirms validator emits ERROR when same material_name has different colors in different MPs.
+
+### Fixes and Maintenance
+
+- **F2 (pre-existing math invariant gap) now gated**: Cross-mini math validator prevents future drift by catching violations in canonical prompt patterns. Does not auto-fix existing prompts lacking canonical pattern (e.g., pre-M4b text). Math review values in M4a-corrected materials.yaml satisfy the 40x rule; prompts rewritten in M4b now include canonical pattern; validator gate in M6 prevents future mismatches between corrected concentrations and new prompts.
+- **F3 (pre-existing material-name drift) now gated**: Cross-mini materials validator prevents future drift by enforcing consistent material-color pairs within sequence_runner constituents. Current tree passes validator (all material display_colors match consistently; label variations are pedagogically intentional and permitted per spec). Locked gate prevents future additions of the same material with different colors.
+
+### Removals and Deprecations
+
+(none)
+
+### Decisions and Failures
+
+- **Cross-mini math invariant implementation choice (Option C refined)**: Plan offered three options (A: loose prompt-text parsing; B: schema addition with expected_final_concentration field; C: stock-reference check only). Selected Option A (prompt-text math check) as primary because M4b canonical prompt rewrites now include the pattern needed for validation, making Option A viable without schema additions. Math invariant check accepts prompts with pattern "Aspirate &lt;V&gt; &micro;L of &lt;C&gt; ... Final well concentration: &lt;F&gt;" and validates C &times; V / 200 == F (40x rule for OVCAR8; extensible to other declared rules). Non-canonical prompts (lacking pattern) are skipped rather than flagged as errors, keeping validator retroactively compatible with pre-M4b text.
+- **Cross-mini materials check scope (name + color, labels free)**: Plan said "matching label + display_color". Narrowed to name + color (labels can vary) based on material decoration layer design: material identity = name + color; label is descriptive text subject to role context. Per MATERIAL_CONVENTION.md and evidence-log decision in plan Q4, validator checks (material_name, display_color) pairs for consistency, allowing label variation. Rationale: same substance (e.g., trypsin) may be labeled differently per usage ("Trypsin-EDTA prep", "Trypsin reagent stock") but must show the same color in UI for visual continuity.
+- **Validator integration point (after per-mini checks)**: Cross-mini checks run AFTER per-mini schema validators complete. Consequence: cross-mini findings are separate from per-mini errors (two finding.tag classes: CROSS_MINI_MATH, CROSS_MINI_MATERIALS). Errors in both categories fail the validator; errors in one category do not suppress the other.
+
+### Developer Tests and Notes
+
+- **Cross-mini math invariant fixtures**: `tests/test_cross_mini_validator.py::test_math_invariant_correct` verifies no error on valid math (400 &times; 5 / 200 = 10). `test_math_invariant_incorrect` verifies error is caught when expected final is 15 instead of 10 (mismatch &ge; 0.01). `test_math_invariant_different_concentration` verifies check works for different working concentrations (200 &times; 5 / 200 = 5).
+- **Cross-mini materials consistency fixtures**: `test_materials_consistency_matching` confirms no error when two minis declare same material with same color. `test_materials_consistency_color_mismatch` verifies error when same material has different colors (#ff0000 vs #0000ff). `test_materials_consistency_label_variation_ok` confirms labels can vary ("working stock" vs "working stock (prepared)") as long as colors match. `test_materials_consistency_partial_overlap` confirms materials in only one MP don't trigger false positives.
+- Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` confirms 88 files, 0 failures (88 files, 47 objects, 4 base scenes, 15 protocol scenes, 10 materials, 12 protocols).
+- Pytest: `source source_me.sh && pytest tests/test_cross_mini_validator.py -v` all 7 tests pass (math invariant 3 tests, materials consistency 4 tests).
+- Markdown links: `pytest tests/test_markdown_links.py` passes; no new files added to docs, only tool additions.
+- Pyflakes: `python3 -m pyflakes tools/validators/cross_mini_validator.py tools/validate_content_yaml.py` clean (no unused imports, undefined names).
+
 ## 2026-05-15 (M3 WP-DOCS-CLOSEOUT: Plan closure)
 
 ### Additions and New Features

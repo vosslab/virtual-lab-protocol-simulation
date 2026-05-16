@@ -1,29 +1,37 @@
+# Simulation note: this mini represents multi-well dispensing as
+# individual well interactions for validation granularity. In
+# wet-lab practice, the named pipette deposits multiple wells in
+# fewer strokes (an 8-channel multichannel covers one column per
+# aspirate; a repeater pipette serializes wells without
+# re-aspirating). The per-well clicks here are an instrumentation
+# abstraction, not a procedural prescription.
+
 protocol_type: mini_protocol
 protocol_name: plate_drug_treatment_drug_addition
 entry_step: add_carb_row_b
 
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with multi-channel pipetting techniques, well-by-row targeted addition of variable-concentration drugs, coordinated dual-drug treatment administration, and incubation timing for cellular drug response."
+  objectives: "Students completing this mini-protocol will have achieved fluency with pipetting techniques, well-by-row targeted addition of variable-concentration drugs, coordinated dual-drug treatment administration, and incubation timing for cellular drug response."
   outcomes: "Students completing this mini-protocol will be able to pipette carboplatin across 8 different dose concentrations into designated well rows, add metformin to appropriate columns, manage simultaneous drug treatments, and set up a timed incubation for dose-response assessment."
-  goals: "Overall, this mini-protocol aims to accomplish the drug treatment administration phase for a dose-response experiment. Working with pre-prepared carboplatin and metformin working stocks from drug_dilution_setup, this mini-protocol applies variable carboplatin concentrations (10 nM through 25 microM) across rows B-H and applies a fixed metformin concentration (5 mM) to columns 7-12, establishing the experimental conditions for 48-hour incubation and subsequent MTT readout."
+  goals: "Overall, this mini-protocol aims to accomplish the drug treatment administration phase for a dose-response experiment. Working with pre-prepared carboplatin and metformin working stocks from drug_dilution_setup, this mini-protocol applies variable carboplatin concentrations (0.1 &micro;M through 10 &micro;M) across rows B-H and applies a fixed metformin concentration (5 mM) to columns 7-12, establishing the experimental conditions for 48-hour incubation and subsequent MTT readout."
 
 steps:
-  # Row B: 10 nM carboplatin (A34.1)
+  # Row B: 0.1 microM carboplatin final (A34.1)
   - step_name: add_carb_row_b
-    prompt: "Add 5 microL of 400 nM carboplatin working stock (final: 10 nM) to all wells in row B, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 400 nM stock tube to draw the drug. Then click each well in row B to dispense."
+    prompt: "Aspirate 5 &micro;L of 4 &micro;M carboplatin working stock into the micropipette and dispense across row B, cols 1-12. Final well concentration: 0.1 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_A
@@ -32,7 +40,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.B1
         gesture: click
@@ -45,7 +53,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.B2
         gesture: click
@@ -163,22 +171,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_c
 
-  # Row C: 50 nM carboplatin (A34.2)
+  # Row C: 0.2 microM carboplatin final (A34.2)
   - step_name: add_carb_row_c
-    prompt: "Add 5 microL of 2 microM carboplatin working stock (final: 50 nM) to all wells in row C, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 2 microM stock tube to draw the drug. Then click each well in row C to dispense."
+    prompt: "Aspirate 5 &micro;L of 8 &micro;M carboplatin working stock into the micropipette and dispense across row C, cols 1-12. Final well concentration: 0.2 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_B
@@ -187,7 +195,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.C1
         gesture: click
@@ -200,7 +208,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.C2
         gesture: click
@@ -318,22 +326,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_d
 
-  # Row D: 125 nM carboplatin (A34.3)
+  # Row D: 0.5 microM carboplatin final (A34.3)
   - step_name: add_carb_row_d
-    prompt: "Add 5 microL of 5 microM carboplatin working stock (final: 125 nM) to all wells in row D, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 5 microM stock tube to draw the drug. Then click each well in row D to dispense."
+    prompt: "Aspirate 5 &micro;L of 20 &micro;M carboplatin working stock into the micropipette and dispense across row D, cols 1-12. Final well concentration: 0.5 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_C
@@ -342,7 +350,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.D1
         gesture: click
@@ -355,7 +363,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.D2
         gesture: click
@@ -473,22 +481,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_e
 
-  # Row E: 250 nM carboplatin (A34.4)
+  # Row E: 1 microM carboplatin final (A34.4)
   - step_name: add_carb_row_e
-    prompt: "Add 5 microL of 10 microM carboplatin working stock (final: 250 nM) to all wells in row E, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 10 microM stock tube to draw the drug. Then click each well in row E to dispense."
+    prompt: "Aspirate 5 &micro;L of 40 &micro;M carboplatin working stock into the micropipette and dispense across row E, cols 1-12. Final well concentration: 1 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_D
@@ -497,7 +505,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.E1
         gesture: click
@@ -510,7 +518,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.E2
         gesture: click
@@ -628,22 +636,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_f
 
-  # Row F: 500 nM carboplatin (A34.5)
+  # Row F: 2 microM carboplatin final (A34.5)
   - step_name: add_carb_row_f
-    prompt: "Add 5 microL of 20 microM carboplatin working stock (final: 500 nM) to all wells in row F, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 20 microM stock tube to draw the drug. Then click each well in row F to dispense."
+    prompt: "Aspirate 5 &micro;L of 80 &micro;M carboplatin working stock into the micropipette and dispense across row F, cols 1-12. Final well concentration: 2 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_E
@@ -652,7 +660,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.F1
         gesture: click
@@ -665,7 +673,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.F2
         gesture: click
@@ -783,22 +791,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_g
 
-  # Row G: 5 microM carboplatin (A34.6)
+  # Row G: 5 microM carboplatin final (A34.6)
   - step_name: add_carb_row_g
-    prompt: "Add 5 microL of 100 microM carboplatin working stock (final: 5 microM) to all wells in row G, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 100 microM stock tube to draw the drug. Then click each well in row G to dispense."
+    prompt: "Aspirate 5 &micro;L of 200 &micro;M carboplatin working stock into the micropipette and dispense across row G, cols 1-12. Final well concentration: 5 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_F
@@ -807,7 +815,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.G1
         gesture: click
@@ -820,7 +828,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.G2
         gesture: click
@@ -938,22 +946,22 @@ steps:
       on_failure: retry
     next_step: add_carb_row_h
 
-  # Row H: 25 microM carboplatin (A34.7)
+  # Row H: 10 microM carboplatin final (A34.7)
   - step_name: add_carb_row_h
-    prompt: "Add 5 microL of 500 microM carboplatin working stock (final: 25 microM) to all wells in row H, columns 1-12. Pick up the multichannel pipette and set the volume to 5 microL. Click the carboplatin 500 microM stock tube to draw the drug. Then click each well in row H to dispense."
+    prompt: "Aspirate 5 &micro;L of 400 &micro;M carboplatin working stock into the micropipette and dispense across row H, cols 1-12. Final well concentration: 10 &micro;M carboplatin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: dilution_tube_rack_8.tube_G
@@ -962,7 +970,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.H1
         gesture: click
@@ -975,7 +983,7 @@ steps:
                 material_name: carboplatin
                 material_volume: 105
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.H2
         gesture: click
@@ -1095,20 +1103,20 @@ steps:
 
   # Metformin addition to columns 7-12, rows B-H (A37)
   - step_name: add_metformin_cols_7_12
-    prompt: "Add 5 microL of 10 mM metformin working stock (final: 5 mM) to columns 7-12 in rows B-H. Pick up the multichannel pipette and set the volume to 5 microL. Click the metformin 10 mM stock tube to draw the solution. Then click each well in columns 7-12, rows B-H to dispense."
+    prompt: "Aspirate 5 &micro;L of 200 mM metformin working stock into the micropipette and dispense across cols 7-12, rows B-H. Final well concentration: 5 mM metformin in 200 &micro;L total volume."
     sequence:
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: multichannel_pipette
+      - target: micropipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 5 } }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: multichannel_pipette
+              target: micropipette
               state:
                 set_volume: 5
       - target: metformin_working_tube
@@ -1117,7 +1125,7 @@ steps:
         response:
           scene_operations:
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: attach
       - target: well_plate_96.B7
         gesture: click
@@ -1130,7 +1138,7 @@ steps:
                 material_name: drug_combo
                 material_volume: 110
             - type: CursorAttach
-              target: multichannel_pipette
+              target: micropipette
               operation: detach
       - target: well_plate_96.B8
         gesture: click

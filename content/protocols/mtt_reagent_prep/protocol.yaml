@@ -28,7 +28,7 @@ steps:
 
   # Step 2: Prepare solution tube with PBS
   - step_name: prepare_solution_tube
-    prompt: "Pick up the micropipette and set it to 1 mL. Aspirate 1 mL of PBS from the PBS bottle and dispense it into the MTT solution tube."
+    prompt: "Transfer 1 mL of PBS into the MTT tube, then mix until the MTT powder is fully dissolved."
     sequence:
       - target: micropipette
         gesture: click

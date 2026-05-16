@@ -1,3 +1,11 @@
+# Simulation note: this mini represents multi-well dispensing as
+# individual well interactions for validation granularity. In
+# wet-lab practice, the named pipette deposits multiple wells in
+# fewer strokes (an 8-channel multichannel covers one column per
+# aspirate; a repeater pipette serializes wells without
+# re-aspirating). The per-well clicks here are an instrumentation
+# abstraction, not a procedural prescription.
+
 protocol_type: mini_protocol
 protocol_name: cell_seeding_plate_setup
 entry_step: calculate_dilution_volume
