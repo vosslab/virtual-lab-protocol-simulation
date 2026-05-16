@@ -1,5 +1,11 @@
 # Changelog
 
+## 2026-05-16 (YAML cleanup gate Patch 3a: stepper algorithm implementation)
+
+### Additions and New Features
+
+- Implement in `tools/stepper/` + `tools/validate_content_yaml.py`: (1) per-protocol scenes registry consulted on active-scene resolution miss (per SCENE_VOCABULARY.md "Scene-adapter resolution" Option 2), resolving 92 S0a warnings down to 46 residual unknown_target_active_scene findings pending author content rewrites; (2) subpart_groups cascade resolution writing declared state to every member cell (per OBJECT_YAML_FORMAT.md "Cascade-write rule"; canonical cells apply state to object only, groups cascade to all contained cells); (3) channel_addressing capability check rejecting pipette acts on group_kind outside addressable_subpart_kinds (per OBJECT_YAML_FORMAT.md "Channel addressing"; region kind is forbidden on all pipettes). Validator schema extended to accept `structure.subpart_groups` and `channel_addressing` as optional object YAML fields. Stepper now passes all 12 protocols with 0 errors (down from 1020 unknown_subpart errors from 3a implementation). Severity unchanged at WARNING for unknown_target_active_scene + ambiguous_target_in_scene; re-promotion is Patch 3b after WS-AUTHOR-CONTENT lands.
+
 ## 2026-05-16 (YAML cleanup gate Patch 2e: triage re-classification S0a/S0b)
 
 ### Fixes and Maintenance

@@ -37,7 +37,7 @@ def apply_scene_operation(
 	if op_type == "CursorAttach":
 		return _handle_cursor_attach(scene_op, state_map, protocol_name, step_name, interaction_index, emitter)
 	elif op_type == "ObjectStateChange":
-		return _handle_object_state_change(scene_op, state_map, protocol_name, step_name, interaction_index, emitter)
+		return _handle_object_state_change(scene_op, state_map, protocol_name, step_name, interaction_index, emitter, tree)
 	elif op_type == "SceneChange":
 		return _handle_scene_change(scene_op, state_map, protocol_name, step_name, interaction_index, emitter, tree)
 	elif op_type == "TimedWait":
@@ -55,6 +55,166 @@ def apply_scene_operation(
 			spec_cite="docs/specs/PROTOCOL_STEPS.md scene_operations",
 		))
 		return False
+
+#============================================
+
+def _handle_subpart_group_cascade(
+	target: str,
+	placement_name: str,
+	state_dict: dict,
+	state_map: StateMap,
+	protocol_name: str,
+	step_name: str,
+	interaction_index: int,
+	emitter: FindingEmitter,
+	tree: LoadedContentTree | None = None,
+) -> bool:
+	"""
+	Handle ObjectStateChange targeting a subpart group.
+
+	Per OBJECT_YAML_FORMAT.md "Cascade-write rule", when target names a
+	subpart group (e.g. "well_plate_96.col_1"), propagate declared state
+	fields to every cell in the group's `contains` list AND write the
+	group's record.
+
+	Args:
+		target: The semantic target string (e.g. "well_plate_96.col_1").
+		placement_name: The resolved placement_name of the parent object.
+		state_dict: The state fields to apply.
+		state_map: The StateMap being mutated.
+		protocol_name: The active protocol name.
+		step_name: The step name for error context.
+		interaction_index: The interaction index for error context.
+		emitter: The FindingEmitter for recording findings.
+		tree: The LoadedContentTree (for object metadata).
+
+	Returns:
+		True if all mutations succeeded, False if any error was emitted.
+	"""
+	# Split target into object_name and subpart_name
+	object_name_part, subpart_name = target.split(".", 1)
+
+	# Get the object to retrieve its structure.subpart_groups
+	if not tree:
+		emitter.emit_finding(Finding(
+			level=Level.ERROR,
+			protocol_name=protocol_name,
+			step_name=step_name,
+			interaction_index=interaction_index,
+			target=target,
+			file_path="unknown",
+			code="subpart_group_internal_error",
+			message="Subpart group cascade handler called without LoadedContentTree",
+			spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Cascade-write rule",
+		))
+		return False
+
+	placement_data = state_map.get_placement_state(placement_name)
+	if not placement_data:
+		emitter.emit_finding(Finding(
+			level=Level.ERROR,
+			protocol_name=protocol_name,
+			step_name=step_name,
+			interaction_index=interaction_index,
+			target=target,
+			file_path="unknown",
+			code="unknown_placement",
+			message=f"Resolved placement '{placement_name}' not found in state map",
+			spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Cascade-write rule",
+		))
+		return False
+
+	object_name = placement_data["object_name"]
+	obj = tree.get_object(object_name)
+	if not obj:
+		emitter.emit_finding(Finding(
+			level=Level.ERROR,
+			protocol_name=protocol_name,
+			step_name=step_name,
+			interaction_index=interaction_index,
+			target=target,
+			file_path="unknown",
+			code="unknown_object_in_scene",
+			message=f"object_name '{object_name}' not found",
+			spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Cascade-write rule",
+		))
+		return False
+
+	# Get subpart_groups from object structure
+	structure = obj.get("structure", {})
+	subpart_groups = structure.get("subpart_groups")
+
+	# Search for the group in subpart_groups (can be nested under group_kind key)
+	group_members = None
+	if subpart_groups:
+		for group_key, group_data in subpart_groups.items():
+			if isinstance(group_data, dict):
+				members_list = group_data.get("members", [])
+				for member in members_list:
+					if isinstance(member, dict) and member.get("name") == subpart_name:
+						group_members = member.get("contains", [])
+						break
+			if group_members:
+				break
+
+	if not group_members:
+		# Not a declared subpart group; treat as a canonical cell (e.g. well_plate_96.A1)
+		# Apply state directly to the object itself, not cascading
+		all_succeeded = True
+		for field_name, new_value in state_dict.items():
+			success = state_map.mutate_state_field(
+				placement_name,
+				field_name,
+				new_value,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				file_path="unknown",
+			)
+			if not success:
+				all_succeeded = False
+		return all_succeeded
+
+	# Apply state fields to each cell in contains + the group itself
+	all_succeeded = True
+
+	# Write to the group's own record
+	for field_name, new_value in state_dict.items():
+		success = state_map.mutate_state_field(
+			placement_name,
+			field_name,
+			new_value,
+			step_name=step_name,
+			interaction_index=interaction_index,
+			file_path="unknown",
+		)
+		if not success:
+			all_succeeded = False
+
+	# Write to each cell in contains
+	for cell_name in group_members:
+		# Resolve the cell to its placement_name
+		cell_target = f"{object_name_part}.{cell_name}"
+		cell_placement_name, _ = state_map.resolve_target(cell_target, step_name, interaction_index)
+
+		if not cell_placement_name:
+			# Error already emitted by resolve_target
+			all_succeeded = False
+			continue
+
+		# Apply the same state fields to the cell
+		for field_name, new_value in state_dict.items():
+			success = state_map.mutate_state_field(
+				cell_placement_name,
+				field_name,
+				new_value,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				file_path="unknown",
+			)
+			if not success:
+				all_succeeded = False
+
+	return all_succeeded
 
 #============================================
 
@@ -132,6 +292,7 @@ def _handle_object_state_change(
 	step_name: str,
 	interaction_index: int,
 	emitter: FindingEmitter,
+	tree: LoadedContentTree | None = None,
 ) -> bool:
 	"""
 	Handle ObjectStateChange operation.
@@ -145,6 +306,7 @@ def _handle_object_state_change(
 		step_name: The step name for error context.
 		interaction_index: The interaction index for error context.
 		emitter: The FindingEmitter for recording findings.
+		tree: The LoadedContentTree (for object metadata and channel_addressing).
 
 	Returns:
 		True if all mutations succeeded, False if any error was emitted.
@@ -202,19 +364,91 @@ def _handle_object_state_change(
 		))
 		return False
 
-	# Mutate each field
-	all_succeeded = True
-	for field_name, new_value in state_dict.items():
-		success = state_map.mutate_state_field(
+	# Check channel_addressing capability if target is a subpart group
+	# and a pipette is attached (per OBJECT_YAML_FORMAT.md "Channel addressing")
+	if "." in target:
+		cursor_object_name = state_map.get_cursor_object_name()
+		if cursor_object_name:
+			channel_addressing = state_map.get_channel_addressing(cursor_object_name)
+			if channel_addressing:
+				# Extract group_kind from the target
+				object_name_part, subpart_name = target.split(".", 1)
+				obj = tree.get_object(object_name_part) if tree else None
+				if obj:
+					structure = obj.get("structure", {})
+					subpart_groups = structure.get("subpart_groups")
+					if subpart_groups:
+						# Find the group_kind for this subpart
+						group_kind = None
+						for group_key, group_data in subpart_groups.items():
+							if isinstance(group_data, dict):
+								members_list = group_data.get("members", [])
+								for member in members_list:
+									if isinstance(member, dict) and member.get("name") == subpart_name:
+										group_kind = group_data.get("group_kind")
+										break
+							if group_kind:
+								break
+
+						# Check if pipette can address this group_kind
+						if group_kind:
+							addressable_subpart_kinds = channel_addressing.get("addressable_subpart_kinds", [])
+							if group_kind not in addressable_subpart_kinds:
+								emitter.emit_finding(Finding(
+									level=Level.ERROR,
+									protocol_name=protocol_name,
+									step_name=step_name,
+									interaction_index=interaction_index,
+									target=target,
+									file_path="unknown",
+									code="pipette_channel_mismatch",
+									message=f"pipette '{cursor_object_name}' with addressable_subpart_kinds {addressable_subpart_kinds} cannot address group_kind '{group_kind}' in target '{target}'",
+									spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Channel addressing",
+								))
+								return False
+							# Region not allowed for any pipette
+							if group_kind == "region":
+								emitter.emit_finding(Finding(
+									level=Level.ERROR,
+									protocol_name=protocol_name,
+									step_name=step_name,
+									interaction_index=interaction_index,
+									target=target,
+									file_path="unknown",
+									code="region_not_addressable_by_pipette",
+									message=f"region group_kind is not addressable by pipettes; target '{target}' cannot be addressed by pipette '{cursor_object_name}'",
+									spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Channel addressing",
+								))
+								return False
+
+	# Check if this is a subpart group target (contains a dot)
+	# If so, apply cascade-write rule: write to every contained cell + the group itself
+	if "." in target:
+		all_succeeded = _handle_subpart_group_cascade(
+			target,
 			placement_name,
-			field_name,
-			new_value,
-			step_name=step_name,
-			interaction_index=interaction_index,
-			file_path="unknown",
+			state_dict,
+			state_map,
+			protocol_name,
+			step_name,
+			interaction_index,
+			emitter,
+			tree,
 		)
-		if not success:
-			all_succeeded = False
+	else:
+		# Single object mutation
+		all_succeeded = True
+		for field_name, new_value in state_dict.items():
+			success = state_map.mutate_state_field(
+				placement_name,
+				field_name,
+				new_value,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				file_path="unknown",
+			)
+			if not success:
+				all_succeeded = False
 
 	return all_succeeded
 

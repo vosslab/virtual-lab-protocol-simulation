@@ -12,7 +12,7 @@ This document triages the 478 `unknown_target_active_scene` warnings emitted by
   but the subpart-addressing schema does not yet allow the subpart to resolve implicitly.
   Resolved by extending `docs/specs/OBJECT_YAML_FORMAT.md` per the ratified subpart-addressing amendment.
 - **S1 (authoring bug)**: The protocol genuinely targets an object that no scene-adapter
-  rule and no subpart-addressing rule could resolve—missing SceneChange-back, typo'd target, missing placement in scene YAML.
+  rule and no subpart-addressing rule could resolve-missing SceneChange-back, typo'd target, missing placement in scene YAML.
 - **S2 (stepper-gap/false positive)**: Stepper code bug (e.g., sequence-runner
   double-counting, active-scene tracker mis-read).
 
@@ -368,7 +368,7 @@ Representative raw warning lines spanning the bucket distribution:
 
 ## 7. Fix-Shape Recommendations for S1 Signatures
 
-For Tier S1 signatures, fix shapes are suggested (not definitive—WS-AUTHOR-SCENE owns final decisions):
+For Tier S1 signatures, fix shapes are suggested (not definitive-WS-AUTHOR-SCENE owns final decisions):
 
 | Target Class | Recommended Fix Shape | Examples |
 |--------------|----------------------|----------|
@@ -380,6 +380,6 @@ Note: Well references (e.g., `well_plate_96.A1`) are now classified under S0b an
 ## Related Documents
 
 - [docs/active_plans/scene_adapter_resolution_design.md](scene_adapter_resolution_design.md)
-  — Architect plan for richer scene-adapter algorithm (owns S0 fixes).
+  - Architect plan for richer scene-adapter algorithm (owns S0 fixes).
 - [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md)
-  — Technical specification for protocol YAML and scene-target resolution.
+  - Technical specification for protocol YAML and scene-target resolution.

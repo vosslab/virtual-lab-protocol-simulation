@@ -8,6 +8,8 @@ from validators.constants import (
 	STATE_FIELD_TYPES,
 	STRUCTURE_SUBPART_KINDS,
 	STRUCTURE_LAYOUT_TYPES,
+	SUBPART_GROUP_KINDS,
+	CHANNEL_ADDRESSABLE_KINDS,
 )
 from validators.findings import Finding, Severity
 
@@ -56,6 +58,10 @@ class ObjectValidator:
 		# Structure validation (if present)
 		if 'structure' in obj:
 			findings.extend(self._validate_structure(obj, path))
+
+		# Channel addressing validation (if present)
+		if 'channel_addressing' in obj:
+			findings.extend(self._validate_channel_addressing(obj, path))
 
 		return findings
 
@@ -269,6 +275,189 @@ class ObjectValidator:
 				severity=Severity.ERROR,
 				message="structure requires 'name_pattern'",
 			))
+
+		# Validate subpart_groups if present per OBJECT_YAML_FORMAT.md
+		if 'subpart_groups' in structure:
+			findings.extend(self._validate_subpart_groups(structure, path))
+
+		return findings
+
+	def _validate_subpart_groups(self, structure: dict, path: str) -> list:
+		"""Validate subpart_groups block if present per OBJECT_YAML_FORMAT.md."""
+		findings = []
+
+		subpart_groups = structure.get('subpart_groups')
+		if not isinstance(subpart_groups, dict):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="structure.subpart_groups must be a mapping",
+			))
+			return findings
+
+		# subpart_groups is a mapping where each key is a label (author-chosen)
+		# and each value is a group-kind mapping with group_kind and members
+		for group_label, group_data in subpart_groups.items():
+			if not isinstance(group_data, dict):
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"subpart_groups[{group_label}] must be a mapping",
+				))
+				continue
+
+			# Check group_kind
+			group_kind = group_data.get('group_kind')
+			if not group_kind:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"subpart_groups[{group_label}] requires 'group_kind'",
+				))
+			elif group_kind not in SUBPART_GROUP_KINDS:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"subpart_groups[{group_label}].group_kind '{group_kind}' not in {SUBPART_GROUP_KINDS}",
+				))
+
+			# Check members
+			members = group_data.get('members')
+			if not isinstance(members, list):
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"subpart_groups[{group_label}].members must be a list",
+				))
+				continue
+
+			if not members:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"subpart_groups[{group_label}].members must be non-empty",
+				))
+
+			seen_member_names = set()
+			for member in members:
+				if not isinstance(member, dict):
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"subpart_groups[{group_label}].members entry must be a mapping",
+					))
+					continue
+
+				# Check member name
+				member_name = member.get('name')
+				if not member_name:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"subpart_groups[{group_label}].members entry requires 'name'",
+					))
+				else:
+					if member_name in seen_member_names:
+						findings.append(Finding(
+							path=path,
+							lineno=None,
+							severity=Severity.ERROR,
+							message=f"subpart_groups[{group_label}] duplicate member name '{member_name}'",
+						))
+					else:
+						seen_member_names.add(member_name)
+
+				# Check contains
+				contains = member.get('contains')
+				if not isinstance(contains, list):
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"subpart_groups[{group_label}].members.contains must be a list",
+					))
+				elif not contains:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"subpart_groups[{group_label}].members.contains must be non-empty",
+					))
+
+		return findings
+
+	def _validate_channel_addressing(self, obj: dict, path: str) -> list:
+		"""Validate channel_addressing block if present per OBJECT_YAML_FORMAT.md."""
+		findings = []
+
+		channel_addressing = obj.get('channel_addressing')
+		if not isinstance(channel_addressing, dict):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="channel_addressing must be a mapping",
+			))
+			return findings
+
+		# Check channels
+		channels = channel_addressing.get('channels')
+		if channels is None:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="channel_addressing requires 'channels'",
+			))
+		elif not isinstance(channels, int) or channels <= 0:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"channel_addressing.channels must be a positive integer, got {channels}",
+			))
+
+		# Check addressable_subpart_kinds
+		addressable_subpart_kinds = channel_addressing.get('addressable_subpart_kinds')
+		if addressable_subpart_kinds is None:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="channel_addressing requires 'addressable_subpart_kinds'",
+			))
+		elif not isinstance(addressable_subpart_kinds, list):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="channel_addressing.addressable_subpart_kinds must be a list",
+			))
+		else:
+			if not addressable_subpart_kinds:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="channel_addressing.addressable_subpart_kinds must be non-empty",
+				))
+
+			for kind in addressable_subpart_kinds:
+				if kind not in CHANNEL_ADDRESSABLE_KINDS:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"channel_addressing.addressable_subpart_kinds contains '{kind}' not in {CHANNEL_ADDRESSABLE_KINDS}",
+					))
 
 		return findings
 

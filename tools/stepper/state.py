@@ -46,11 +46,16 @@ class StateMap:
 		self._state: dict = {}
 		self._cursor_placement = None
 		self._active_scene = None
+		self._cursor_object_name = None  # For channel_addressing checks
 		self.declared_materials_union = declared_materials_union or set()
 		self.produced_materials_set = produced_materials_set or set()
 
+		# Build per-protocol scenes registry (maps object_name -> [(placement_name, scene_name), ...])
+		self._scenes_registry: dict = {}
+
 		# Load and validate placements from all scenes
 		self._load_placements()
+		self._build_scenes_registry()
 
 	#============================================
 
@@ -171,6 +176,48 @@ class StateMap:
 
 			placement_registry[placement_name] = (object_name, file_path)
 
+	def _build_scenes_registry(self) -> None:
+		"""
+		Build a per-protocol registry of all resolvable placements across all scenes.
+
+		The registry maps object_name -> [(placement_name, scene_name), ...]
+		This allows target resolution to fall back to cross-scene lookup when
+		active-scene lookup fails, per SCENE_VOCABULARY.md "Scene-adapter resolution".
+
+		Deactivated placements are excluded per spec.
+		"""
+		# Collect all scene data (base + protocol-local) with their names
+		all_scenes = {}
+
+		# Add base scenes
+		for scene_name, scene_data in self.tree.base_scenes.items():
+			all_scenes[scene_name] = (scene_data, 'base')
+
+		# Add protocol-local scenes
+		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
+		for scene_name, scene_data in protocol_local_scenes.items():
+			all_scenes[scene_name] = (scene_data, 'protocol')
+
+		# For each scene, extract effective placements and register them
+		for scene_name, (scene_data, scene_type) in all_scenes.items():
+			effective_placements = self._get_effective_placements(scene_data)
+
+			for placement in effective_placements:
+				if not isinstance(placement, dict):
+					continue
+
+				placement_name = placement.get('placement_name')
+				object_name = placement.get('object_name')
+
+				if not placement_name or not object_name:
+					continue
+
+				# Register this placement under its object_name
+				if object_name not in self._scenes_registry:
+					self._scenes_registry[object_name] = []
+
+				self._scenes_registry[object_name].append((placement_name, scene_name))
+
 	#============================================
 
 	def resolve_target(
@@ -243,7 +290,7 @@ class StateMap:
 		# Get effective placements (base + inherited + add_placements - remove_placements)
 		effective_placements = self._get_effective_placements(active_scene_data)
 
-		# Find placements with matching object_name
+		# Find placements with matching object_name in active scene
 		matching_placements = []
 		for placement in effective_placements:
 			if isinstance(placement, dict):
@@ -252,8 +299,31 @@ class StateMap:
 					if placement_name:
 						matching_placements.append((placement_name, placement))
 
-		# Handle resolution results
+		# If no match in active scene, consult per-protocol registry
 		if len(matching_placements) == 0:
+			registry_hits = self._scenes_registry.get(object_name_part, [])
+
+			if len(registry_hits) == 0:
+				# No match in active scene or registry
+				self.emitter.emit_finding(Finding(
+					level=Level.WARNING,
+					protocol_name=self.protocol_name,
+					step_name=step_name,
+					interaction_index=interaction_index,
+					target=target_str,
+					file_path="unknown",
+					code="unknown_target_active_scene",
+					message=f"target '{target_str}' (object_name '{object_name_part}') not found in active scene '{self._active_scene}' or per-protocol registry",
+					spec_cite="docs/specs/SCENE_VOCABULARY.md Scene-adapter resolution",
+				))
+				return None, subpart_name
+
+			if len(registry_hits) == 1:
+				# Exactly one match in registry (different scene)
+				placement_name, hit_scene_name = registry_hits[0]
+				return placement_name, subpart_name
+
+			# Multiple matches in registry (ambiguous across sibling scenes)
 			self.emitter.emit_finding(Finding(
 				level=Level.WARNING,
 				protocol_name=self.protocol_name,
@@ -261,11 +331,12 @@ class StateMap:
 				interaction_index=interaction_index,
 				target=target_str,
 				file_path="unknown",
-				code="unknown_target_active_scene",
-				message=f"target '{target_str}' (object_name '{object_name_part}') not found in active scene '{self._active_scene}'",
-				spec_cite="docs/specs/SCENE_VOCABULARY.md The scene side of the boundary",
+				code="ambiguous_target_in_scene",
+				message=f"target '{target_str}' (object_name '{object_name_part}') matches multiple placements across protocol scenes: {', '.join(p[0] for p in registry_hits)}",
+				spec_cite="docs/specs/SCENE_VOCABULARY.md Scene-adapter resolution",
 			))
-			return None, subpart_name
+			# Continue gracefully with first match
+			return registry_hits[0][0], subpart_name
 
 		if len(matching_placements) > 1:
 			self.emitter.emit_finding(Finding(
@@ -282,7 +353,7 @@ class StateMap:
 			# Continue gracefully with first match
 			return matching_placements[0][0], subpart_name
 
-		# Exactly one match
+		# Exactly one match in active scene
 		placement_name = matching_placements[0][0]
 
 		# If subpart_name is present, validate it (soft check)
@@ -359,10 +430,34 @@ class StateMap:
 	def set_cursor(self, placement_name: str) -> None:
 		"""Update the cursor to a new placement."""
 		self._cursor_placement = placement_name
+		# Track the object_name for channel_addressing checks
+		if placement_name in self._state:
+			self._cursor_object_name = self._state[placement_name].get("object_name")
+		else:
+			self._cursor_object_name = None
 
 	def get_cursor(self) -> str | None:
 		"""Retrieve the current cursor placement."""
 		return self._cursor_placement
+
+	def get_cursor_object_name(self) -> str | None:
+		"""Retrieve the object_name of the current cursor."""
+		return self._cursor_object_name
+
+	def get_channel_addressing(self, object_name: str) -> dict | None:
+		"""
+		Retrieve channel_addressing info for an object.
+
+		Args:
+			object_name: The object name.
+
+		Returns:
+			channel_addressing dict if declared, else None.
+		"""
+		obj = self.tree.get_object(object_name)
+		if obj:
+			return obj.get("channel_addressing")
+		return None
 
 	def set_active_scene(self, scene_name: str, active_scene_file_path: str) -> None:
 		"""Set the active scene."""

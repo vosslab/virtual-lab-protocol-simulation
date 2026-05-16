@@ -285,7 +285,7 @@ class LintCollector:
 
 	#--------------------------------------------
 	def emit(self, stderr_stream):
-		"""Print all collected warnings to stderr, sorted deterministically."""
+		"""Print all collected warnings to stderr, sorted by (step_name, check_class, message)."""
 		if not self.warnings:
 			return
 		sorted_warnings = sorted(self.warnings)
@@ -345,14 +345,14 @@ def _volume_match(vol1, vol2, tolerance=0.01):
 	try:
 		v1 = float(vol1)
 		v2 = float(vol2)
-		if v1 == v2:
-			return True
-		if v1 > 0 and v2 > 0:
-			max_val = max(v1, v2)
-			pct_diff = abs(v1 - v2) / max_val
-			return pct_diff <= tolerance
 	except (TypeError, ValueError):
-		pass
+		return False
+	if v1 == v2:
+		return True
+	if v1 > 0 and v2 > 0:
+		max_val = max(v1, v2)
+		pct_diff = abs(v1 - v2) / max_val
+		return pct_diff <= tolerance
 	return False
 
 
@@ -381,7 +381,8 @@ def render_step(step, catalog, material_labels, sim, touched_objects, lint=None)
 		if tokens:
 			first_token = tokens[0]
 			if first_token in ("Click", "Tap", "Press"):
-				lint.record(step_name, "L-PROMPT", f"prompt starts with click-centric verb: {first_token!r}")
+				msg = f"prompt starts with click-centric verb: {first_token!r}"
+				lint.record(step_name, "L-PROMPT", msg)
 
 	if not sequence:
 		lines.append("*(no interactions)*")
@@ -421,7 +422,7 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 	# Multi-well dispense pattern: pipette aspirate then N consecutive
 	# dispenses into related plate wells.
 	if gesture == "click" and is_pipette(catalog, target):
-		multi = match_multi_well_dispense(sequence, index, catalog, lint, step_name)
+		multi = match_multi_well_dispense(sequence, index, catalog)
 		if multi is not None:
 			consumed, sentence = multi
 			for offset in range(consumed):
@@ -445,103 +446,55 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 					target, adjust_i, source_i, dest_i,
 					catalog, material_labels, sim, step_name, lint,
 				)
-				for sub in (interaction, adjust_i, source_i, dest_i):
-					_mark_touched(sub, touched_objects, step_touched)
-					apply_state_changes(sub, sim)
 
-				# F10: Peek forward for consecutive plate-subpart dispenses with
-				# matching material and volume deltas; absorb them into one sentence.
-				dest_target = dest_i.get("target", "")
-				if is_plate_subpart(dest_target):
-					dest_parent = dest_target.split(".", 1)[0]
-					dest_change = find_first_op_of_type(
-						(dest_i.get("response", {}) or {}).get("scene_operations"),
-						"ObjectStateChange",
-					)
-					if dest_change is not None:
-						dest_state = dest_change.get("state", {}) or {}
-						dest_material = dest_state.get("material_name")
-						dest_volume_delta = dest_state.get("material_volume")
+				# F10: Try to absorb consecutive well dispenses into a distribute sentence.
+				extra_count = 0
+				final_sentence = sentence
+				absorb_result = _absorb_consecutive_well_dispenses(
+					sequence, index + 4, dest_i, catalog, sim
+				)
+				if absorb_result is not None:
+					extra_count, wells_range, plate_label = absorb_result
 
-						# Peek ahead for consecutive well clicks with same parent, material, volume.
-						extra_wells = []
-						cursor = index + 4
-						while cursor < len(sequence):
-							cont_i = sequence[cursor]
-							if cont_i.get("gesture") != "click":
-								break
-							cont_target = cont_i.get("target", "")
-							if not is_plate_subpart(cont_target):
-								break
-							cont_parent = cont_target.split(".", 1)[0]
-							if cont_parent != dest_parent:
-								break
-							cont_change = find_first_op_of_type(
-								(cont_i.get("response", {}) or {}).get("scene_operations"),
-								"ObjectStateChange",
-							)
-							if cont_change is None:
-								break
-							cont_state = cont_change.get("state", {}) or {}
-							cont_material = cont_state.get("material_name")
-							cont_volume = cont_state.get("material_volume")
+					# Compute volume from adjust if available.
+					adjust_volume = None
+					adjust_unit = ""
+					validator = adjust_i.get("validator", {}) or {}
+					value = validator.get("value", {}) or {}
+					for vol_key in ("held_material_volume", "set_volume"):
+						if vol_key in value:
+							adjust_volume = value[vol_key]
+							adjust_unit = catalog.unit_for_field(target, vol_key)
+							break
 
-							# Check material match and volume match
-							if cont_material != dest_material:
-								break
-							if not _volume_match(dest_volume_delta, cont_volume):
-								break
+					if adjust_volume is not None:
+						vol_str = format_volume(adjust_volume, adjust_unit)
+						final_sentence = (
+							f"- Using the {_lower_first(catalog.label(target))}, "
+							f"distribute {vol_str} to each of {wells_range} of the "
+							f"{plate_label} ({1 + extra_count} wells)."
+						)
+					else:
+						final_sentence = (
+							f"- Using the {_lower_first(catalog.label(target))}, "
+							f"distribute to each of {wells_range} of the {plate_label} "
+							f"({1 + extra_count} wells)."
+						)
 
-							extra_wells.append(cont_target.split(".", 1)[1])
-							cursor += 1
+				# Mark touched and apply state changes for all interactions (base 4 + any extra).
+				_mark_touched(interaction, touched_objects, step_touched)
+				apply_state_changes(interaction, sim)
+				_mark_touched(adjust_i, touched_objects, step_touched)
+				apply_state_changes(adjust_i, sim)
+				_mark_touched(source_i, touched_objects, step_touched)
+				apply_state_changes(source_i, sim)
+				_mark_touched(dest_i, touched_objects, step_touched)
+				apply_state_changes(dest_i, sim)
+				for offset in range(extra_count):
+					_mark_touched(sequence[index + 4 + offset], touched_objects, step_touched)
+					apply_state_changes(sequence[index + 4 + offset], sim)
 
-						# If we found extra wells, emit a distribute sentence instead.
-						if extra_wells:
-							all_wells = [dest_target.split(".", 1)[1]] + extra_wells
-							wells_range = _summarize_well_list(all_wells)
-							plate_label = catalog.label(dest_parent)
-
-							# Compute volume from adjust if available.
-							adjust_volume = None
-							adjust_unit = ""
-							validator = adjust_i.get("validator", {}) or {}
-							value = validator.get("value", {}) or {}
-							for vol_key in ("held_material_volume", "set_volume"):
-								if vol_key in value:
-									adjust_volume = value[vol_key]
-									adjust_unit = catalog.unit_for_field(target, vol_key)
-									break
-
-							if adjust_volume is not None:
-								vol_str = format_volume(adjust_volume, adjust_unit)
-								distribute_sentence = (
-									f"- Using the {_lower_first(catalog.label(target))}, "
-									f"distribute {vol_str} to each of {wells_range} of the "
-									f"{plate_label} ({len(all_wells)} wells)."
-								)
-							else:
-								distribute_sentence = (
-									f"- Using the {_lower_first(catalog.label(target))}, "
-									f"distribute to each of {wells_range} of the {plate_label} "
-									f"({len(all_wells)} wells)."
-								)
-
-							# Mark touched and apply state changes for all absorbed interactions.
-							_mark_touched(interaction, touched_objects, step_touched)
-							apply_state_changes(interaction, sim)
-							_mark_touched(adjust_i, touched_objects, step_touched)
-							apply_state_changes(adjust_i, sim)
-							_mark_touched(source_i, touched_objects, step_touched)
-							apply_state_changes(source_i, sim)
-							_mark_touched(dest_i, touched_objects, step_touched)
-							apply_state_changes(dest_i, sim)
-							for offset in range(len(extra_wells)):
-								_mark_touched(sequence[index + 4 + offset], touched_objects, step_touched)
-								apply_state_changes(sequence[index + 4 + offset], sim)
-
-							return 4 + len(extra_wells), [distribute_sentence]
-
-				return 4, [sentence]
+				return 4 + extra_count, [final_sentence]
 
 	# 3-interaction pipette transfer (no adjust)
 	if gesture == "click" and is_pipette(catalog, target):
@@ -622,7 +575,7 @@ def _first_char_upper(text):
 
 
 #============================================
-def match_multi_well_dispense(sequence, index, catalog, lint=None, step_name=""):
+def match_multi_well_dispense(sequence, index, catalog):
 	"""
 	Detect: pipette click + N consecutive clicks on plate wells whose
 	material_name and (constant) addition volume match across the run.
@@ -671,7 +624,8 @@ def match_multi_well_dispense(sequence, index, catalog, lint=None, step_name="")
 		return None
 	add_vol = None
 	add_unit = ""
-	# Walk backward up to 4 prior interactions to find the most recent pipette adjust.
+	# Backward iteration with first-match break: earliest matching adjust in the
+	# 4-interaction window wins.
 	for check_index in range(max(0, index - 4), index):
 		prior = sequence[check_index]
 		if prior.get("gesture") == "adjust" and prior.get("target") == pipette:
@@ -727,6 +681,77 @@ def _summarize_well_list(wells):
 		else:
 			row_strs.append(", ".join(f"{row}{c}" for c in cols_sorted))
 	return " + ".join(row_strs)
+
+
+#============================================
+def _absorb_consecutive_well_dispenses(sequence, index_after_transfer, dest_i,
+		catalog, sim):
+	"""
+	Detect and absorb consecutive plate-subpart dispenses with matching
+	material and volume deltas into a multi-well distribute sentence.
+	Returns (extra_count, distribute_sentence) or None if no absorption.
+
+	Called from the 4-interaction pipette transfer branch to check whether
+	the destination is a plate subpart and whether subsequent interactions
+	are consecutive well dispenses with matching material and volume.
+	Intent: collapse "dispense to well A1, A2, A3..." into one sentence
+	covering all wells when the volume and material are constant.
+	"""
+	dest_target = dest_i.get("target", "")
+	if not is_plate_subpart(dest_target):
+		return None
+
+	dest_parent = dest_target.split(".", 1)[0]
+	dest_change = find_first_op_of_type(
+		(dest_i.get("response", {}) or {}).get("scene_operations"),
+		"ObjectStateChange",
+	)
+	if dest_change is None:
+		return None
+
+	dest_state = dest_change.get("state", {}) or {}
+	dest_material = dest_state.get("material_name")
+	dest_volume_delta = dest_state.get("material_volume")
+
+	# Peek ahead for consecutive well clicks with same parent, material, volume.
+	extra_wells = []
+	cursor = index_after_transfer
+	while cursor < len(sequence):
+		cont_i = sequence[cursor]
+		if cont_i.get("gesture") != "click":
+			break
+		cont_target = cont_i.get("target", "")
+		if not is_plate_subpart(cont_target):
+			break
+		cont_parent = cont_target.split(".", 1)[0]
+		if cont_parent != dest_parent:
+			break
+		cont_change = find_first_op_of_type(
+			(cont_i.get("response", {}) or {}).get("scene_operations"),
+			"ObjectStateChange",
+		)
+		if cont_change is None:
+			break
+		cont_state = cont_change.get("state", {}) or {}
+		cont_material = cont_state.get("material_name")
+		cont_volume = cont_state.get("material_volume")
+
+		# Check material match and volume match
+		if cont_material != dest_material:
+			break
+		if not _volume_match(dest_volume_delta, cont_volume):
+			break
+
+		extra_wells.append(cont_target.split(".", 1)[1])
+		cursor += 1
+
+	if not extra_wells:
+		return None
+
+	all_wells = [dest_target.split(".", 1)[1]] + extra_wells
+	wells_range = _summarize_well_list(all_wells)
+	plate_label = catalog.label(dest_parent)
+	return len(extra_wells), wells_range, plate_label
 
 
 #============================================
@@ -794,6 +819,9 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 			try:
 				old_val = float(old) if old is not None else 0.0
 				delta = float(new_state["material_volume"]) - old_val
+			except (TypeError, ValueError):
+				pass
+			else:
 				if delta > 0:
 					volume = delta
 					dest_delta = delta
@@ -801,22 +829,24 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 						dest_change.get("target"), "material_volume"
 					)
 					unit = dest_delta_unit
-			except (TypeError, ValueError):
-				pass
 	elif dest_change is not None:
+		# Compute dest_delta even when volume is already known, for use in
+		# L-VOLMISMATCH lint check below to verify adjust matches the destination
+		# volume change.
 		new_state = dest_change.get("state", {}) or {}
 		if "material_volume" in new_state:
 			old = sim.get(dest_change.get("target"), "material_volume")
 			try:
 				old_val = float(old) if old is not None else 0.0
 				delta = float(new_state["material_volume"]) - old_val
+			except (TypeError, ValueError):
+				pass
+			else:
 				if delta > 0:
 					dest_delta = delta
 					dest_delta_unit = catalog.unit_for_field(
 						dest_change.get("target"), "material_volume"
 					)
-			except (TypeError, ValueError):
-				pass
 
 	# L-VOLMISMATCH: check if adjust value and dest delta mismatch by > 1%.
 	# When units differ (e.g., uL vs mL), convert both to uL for comparison.
@@ -827,6 +857,9 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 			try:
 				adjust_val = float(adjust_volume)
 				dest_val = float(dest_delta)
+			except (TypeError, ValueError):
+				pass
+			else:
 				if adjust_val > 0 and dest_val > 0:
 					# Normalize both to uL for unit-agnostic comparison.
 					adjust_ul = adjust_val * (1000 if adjust_unit == "ml" else 1)
@@ -838,8 +871,6 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 							step_name, "L-VOLMISMATCH",
 							f"pipette set to {adjust_val} {adjust_unit}, dest delta is {dest_val} {dest_delta_unit}"
 						)
-			except (TypeError, ValueError):
-				pass
 
 	material_name = sim.get(source_name, "material_name")
 	if not material_name or material_name == "empty":
@@ -1060,8 +1091,8 @@ def render_learning_block(learning):
 def prewalk_touched_objects(protocol, catalog):
 	"""
 	Walk the protocol step chain (entry_step + next_step) and collect all
-	interaction targets that are purchasable objects (pipette, bottle, tube, etc).
-	Returns a set of object names (parent only, no subparts).
+	interaction targets. Returns a set of object names (parent only, no subparts).
+	Kind filtering to purchasable objects happens in render_equipment_section.
 	"""
 	touched = set()
 	steps_by_name = {}
@@ -1108,6 +1139,10 @@ def render_equipment_section(touched_objects, catalog):
 	Filters to only objects with kinds in the purchasable set.
 	Returns list of markdown lines.
 	"""
+	# Kinds that a student would shop for on a bench setup list. Object schema
+	# kinds outside this set (scene-change targets, abstract slots, UI helpers)
+	# are excluded from the equipment header. Update when content/objects/ adds a
+	# new shoppable kind.
 	purchasable_kinds = {"pipette", "bottle", "tube", "plate", "rack", "flask", "instrument", "container", "vial"}
 	filtered = []
 	for obj_name in sorted(touched_objects):
@@ -1158,7 +1193,7 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 
 	material_labels = load_material_labels(protocol_name)
 	sim = StateSimulator(catalog)
-	touched_objects = prewalk_touched_objects(protocol, catalog)
+	equipment_set = prewalk_touched_objects(protocol, catalog)
 
 	steps_by_name = {}
 	for step in protocol.get("steps", []) or []:
@@ -1166,7 +1201,7 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 
 	# Render materials and equipment sections between learning and procedure.
 	lines.extend(render_materials_section(material_labels))
-	lines.extend(render_equipment_section(touched_objects, catalog))
+	lines.extend(render_equipment_section(equipment_set, catalog))
 
 	lines.append("## Procedure")
 	lines.append("")
@@ -1174,6 +1209,7 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 	step_number = 1
 	current_name = protocol.get("entry_step")
 	visited = set()
+	touched_objects = set()
 	while current_name is not None:
 		if current_name in visited:
 			lines.append(f"*(cycle detected at {current_name}; halting render)*")
@@ -1263,10 +1299,6 @@ def parse_args():
 	verbosity_group.add_argument(
 		"-q", "--quiet", dest="quiet", action="store_true",
 		help="Suppress section headers and PASS lines.",
-	)
-	verbosity_group.add_argument(
-		"-v", "--verbose", dest="verbose", action="store_true",
-		help="Print extra detail (no extra detail currently; reserved).",
 	)
 
 	lint_group = parser.add_argument_group("Lint")

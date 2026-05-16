@@ -44,7 +44,7 @@ OBJECT_CAPABILITIES = {
 # spec: docs/specs/OBJECT_YAML_FORMAT.md "Top-level fields"
 # Closure: unknown top-level keys are flagged automatically. No retired-key list needed.
 OBJECT_REQUIRED_KEYS = {'object_name', 'kind', 'label', 'state_fields', 'visual_states', 'capabilities', 'layout'}
-OBJECT_OPTIONAL_KEYS = {'structure'}
+OBJECT_OPTIONAL_KEYS = {'structure', 'channel_addressing'}
 OBJECT_ALL_KEYS = OBJECT_REQUIRED_KEYS | OBJECT_OPTIONAL_KEYS
 
 # spec: docs/specs/OBJECT_YAML_FORMAT.md "state_fields"
@@ -55,6 +55,13 @@ STRUCTURE_SUBPART_KINDS = {'well', 'tube', 'lane', 'slot', 'channel'}
 
 # spec: docs/specs/OBJECT_YAML_FORMAT.md "Structure.layout"
 STRUCTURE_LAYOUT_TYPES = {'grid', 'list', 'custom'}
+
+# spec: docs/specs/OBJECT_YAML_FORMAT.md "Subpart groups"
+SUBPART_GROUP_KINDS = {'row', 'column', 'region'}
+
+# spec: docs/specs/OBJECT_YAML_FORMAT.md "Channel addressing"
+# Note: region is NOT allowed in addressable_subpart_kinds per spec
+CHANNEL_ADDRESSABLE_KINDS = {'well', 'row', 'column'}
 
 
 # ============================================
