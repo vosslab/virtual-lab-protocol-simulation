@@ -81,9 +81,9 @@ Curriculum content lives under `content/<protocol_name>/`. Developer smoke proto
 
 ## Vocabulary closure and anti-drift
 
-Authoring vocabularies (protocol, object, scene, and the supporting
+Authoring vocabularies (protocol, object, scene, material, and the supporting
 subsystem vocabularies in [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md),
-[specs/LIQUID_CONVENTION.md](specs/LIQUID_CONVENTION.md), and
+[specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md), and
 [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md)) are closed surfaces. Authors compose
 existing terms; they do not invent new ones by editing YAML alone.
 

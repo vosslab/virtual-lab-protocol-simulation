@@ -124,9 +124,9 @@ Column meaning:
 - `workstream`: one of WS-PILOT-OBJ (M1 pilot subset for `hood_flask_prep`),
   WS-OBJ-LIQUID, WS-OBJ-STRUCT, WS-OBJ-EQUIP, WS-OBJ-WASTE (M2 lanes).
 - `state_fields_needed`: flat-primitive `state_fields` the object must
-  declare, with spec citation. References to `contents_name` and
-  `contents_volume` follow the registry rule in
-  [../specs/LIQUID_CONVENTION.md](../specs/LIQUID_CONVENTION.md).
+  declare, with spec citation. References to `material_name` and
+  `material_volume` follow the registry rule in
+  [../specs/MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md).
 - `spec_cite`: anchor in the canonical object spec the row implements.
 - `notes`: pedagogy or schema notes; which mini-protocols touch the
   object; legacy parity callouts.

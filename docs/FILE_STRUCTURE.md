@@ -139,7 +139,7 @@ single-file parity snapshot lives under
 | [CLAUDE_HOOK_USAGE_GUIDE.md](CLAUDE_HOOK_USAGE_GUIDE.md) | Claude Code permissions hook |
 | [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) | Layout-engine placement reference |
 | [specs/SCALING_MODEL.md](specs/SCALING_MODEL.md) | Scaling model notes |
-| [specs/LIQUID_CONVENTION.md](specs/LIQUID_CONVENTION.md) | Liquid rendering convention |
+| [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md) | Material vocabulary and liquid rendering convention |
 | [THIRD_PARTY_ASSETS.md](THIRD_PARTY_ASSETS.md) | Third-party asset attribution |
 | [active_plans/](active_plans/) | In-flight plan documents |
 | [archive/](archive/) | Archived plans, status snapshots, and design notes |

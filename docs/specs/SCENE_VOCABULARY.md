@@ -28,8 +28,8 @@ Related docs:
   protocol-side vocabulary; the boundary section below cross-references
   it.
 - [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the shared placement system.
-- [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) -- the shared liquid
-  convention referenced from object render rules.
+- [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) -- the shared material
+  vocabulary and liquid rendering convention referenced from object render rules.
 
 ## What a scene is
 

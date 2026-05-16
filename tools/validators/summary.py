@@ -1,20 +1,20 @@
 """Per-protocol summary block printer."""
 
 
-def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: bool = False) -> None:
+def _protocol_counts(protocol_data: dict) -> dict:
 	"""
-	Print a summary line for a protocol validation result (--verbose mode).
-	Format: <protocol_name>: <S> steps, <I> interactions, <T> unique targets, <M> materials used.
+	Extract counts from a protocol_data dict.
+	Returns dict with keys: steps, interactions, targets, gestures, materials, scene_ops.
 	"""
-	if not verbose:
-		return
-
 	steps = protocol_data.get('steps', [])
 	step_count = len(steps)
 
 	# Count interactions and targets
 	interaction_count = 0
 	targets = set()
+	gestures = set()
+	materials_used = set()
+	scene_op_types = set()
 
 	for step in steps:
 		if isinstance(step, dict):
@@ -25,29 +25,48 @@ def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: boo
 					target = interaction.get('target')
 					if target:
 						targets.add(target)
-
-	unique_target_count = len(targets)
-
-	# Count materials used (via ObjectStateChange in responses)
-	materials_used = set()
-	for step in steps:
-		if isinstance(step, dict):
-			sequence = step.get('sequence', [])
-			for interaction in sequence:
-				if isinstance(interaction, dict):
+					gesture = interaction.get('gesture')
+					if gesture:
+						gestures.add(gesture)
 					response = interaction.get('response', {})
 					if isinstance(response, dict):
 						scene_ops = response.get('scene_operations', [])
 						for op in scene_ops:
-							if isinstance(op, dict) and op.get('type') == 'ObjectStateChange':
-								state = op.get('state', {})
-								if isinstance(state, dict):
-									# Check for material_name or held_material_name
-									for key, value in state.items():
-										if key in ('material_name', 'held_material_name') and value:
-											materials_used.add(value)
+							if isinstance(op, dict):
+								op_type = op.get('type')
+								if op_type:
+									scene_op_types.add(op_type)
+								# Count materials from ObjectStateChange
+								if op_type == 'ObjectStateChange':
+									state = op.get('state', {})
+									if isinstance(state, dict):
+										for key, value in state.items():
+											if key in ('material_name', 'held_material_name') and value:
+												materials_used.add(value)
 
-	materials_count = len(materials_used)
+	return {
+		'steps': step_count,
+		'interactions': interaction_count,
+		'targets': sorted(targets),
+		'gestures': sorted(gestures),
+		'materials': sorted(materials_used),
+		'scene_ops': sorted(scene_op_types),
+	}
+
+
+def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: bool = False) -> None:
+	"""
+	Print a summary line for a protocol validation result (--verbose mode).
+	Format: <protocol_name>: <S> steps, <I> interactions, <T> unique targets, <M> materials used.
+	"""
+	if not verbose:
+		return
+
+	counts = _protocol_counts(protocol_data)
+	step_count = counts['steps']
+	interaction_count = counts['interactions']
+	unique_target_count = len(counts['targets'])
+	materials_count = len(counts['materials'])
 
 	print(f"{protocol_name}: {step_count} steps, {interaction_count} interactions, {unique_target_count} unique targets, {materials_count} materials used")
 

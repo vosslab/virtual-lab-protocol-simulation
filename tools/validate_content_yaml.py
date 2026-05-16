@@ -23,6 +23,7 @@ from validators.protocol_validator import ProtocolValidator
 from validators.material_validator import MaterialValidator
 from validators.cross_protocol import CrossProtocolValidator
 import validators.summary as summary_printer
+import validators.compiled_summary as compiled_summary
 
 
 class ValidationError(Exception):
@@ -100,10 +101,15 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	"""
 	Validate entire content tree.
 	Returns (success, list_of_error_messages, counts_dict).
-	counts_dict: {'objects': N, 'base_scenes': N, 'protocol_scenes': N, 'protocols': N}
+	counts_dict: {'objects': N, 'base_scenes': N, 'protocol_scenes': N, 'protocols': N, 'materials': N}
 	"""
 	errors = []
 	counts = {'objects': 0, 'base_scenes': 0, 'protocol_scenes': 0, 'protocols': 0, 'materials': 0}
+
+	# Collect protocol, protocol_scene, and material rows for compiled summary
+	protocol_rows = []
+	protocol_scene_rows = []
+	material_rows = []
 
 	# Load content database for Tier 1 cross-file checks
 	db = ContentDatabase()
@@ -142,8 +148,23 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 			findings, data = _load_and_collect(f, rel_path, validator, cross_validator, errors)
 			if data is not None and not findings:
 				_print_pass(rel_path, data, file_type, verbose)
+			# Collect rows for compiled summary (collect even if there are findings)
+			if data is not None:
+				if file_type == 'protocol':
+					protocol_rows.append((str(rel_path), data))
+				elif file_type == 'protocol_scene':
+					protocol_scene_rows.append((str(rel_path), data))
+				elif file_type == 'material':
+					material_rows.append((str(rel_path), data))
 
 	success = len(errors) == 0
+
+	# Render compiled summary (gated by quiet)
+	# Dashboard only renders when not quiet (regardless of success/failure)
+	if not quiet:
+		counts_agg = compiled_summary.aggregate(db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts)
+		compiled_summary.render(counts_agg)
+
 	return success, errors, counts
 
 
@@ -506,8 +527,13 @@ def main():
 	success, errors, counts = validate_whole_tree(str(repo_root), quiet=args.quiet, verbose=args.verbose)
 	total_files = counts['objects'] + counts['base_scenes'] + counts['protocol_scenes'] + counts['materials'] + counts['protocols']
 	failure_count = len(errors)
-	if not args.quiet or not success:
-		print(f"\nValidated {total_files} files ({counts['objects']} objects, {counts['base_scenes']} base scenes, {counts['protocol_scenes']} protocol scenes, {counts['materials']} materials, {counts['protocols']} protocols). {failure_count} failures.")
+
+	terse_line = f"Validated {total_files} files ({counts['objects']} objects, {counts['base_scenes']} base scenes, {counts['protocol_scenes']} protocol scenes, {counts['materials']} materials, {counts['protocols']} protocols). {failure_count} failures."
+	if args.quiet:
+		print(terse_line)
+	else:
+		print(f"\n{terse_line}")
+
 	sys.exit(0 if success else 1)
 
 

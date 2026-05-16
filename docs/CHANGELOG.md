@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-05-15 (validator: colored compiled summary tail)
+
+### Additions and New Features
+
+- Added `tools/validators/compiled_summary.py`: aggregates tree-level counts
+  across the four authoring vocabularies (objects, scenes, materials, protocols)
+  from the already-built `ContentDatabase` plus the protocol / protocol-scene /
+  material rows loaded during the existing whole-tree walk. No second YAML pass.
+- Wired into `tools/validate_content_yaml.py::validate_whole_tree`: renders
+  four `rich.panel.Panel` blocks above the existing terse `Validated N files ...`
+  summary line. Color is forced via
+  `Console(force_terminal=True, color_system="truecolor")`. No new argparse
+  flags. `-q` still silent on success.
+- Extracted shared `_protocol_counts` helper in `tools/validators/summary.py`;
+  used by both `print_protocol_summary` (per-file `-v` printer) and the new
+  compiled summary aggregator.
+
+### Developer Tests and Notes
+
+- `source source_me.sh && python3 tools/validate_content_yaml.py` exits clean.
+  Four colored panels render above terse summary line. `pytest
+  tests/test_pyflakes_code_lint.py` and `pytest
+  tests/test_import_requirements.py` green. `rich` is supplied by
+  `pip_requirements-dev.txt` (devel tools).
+
 ## 2026-05-15 (Vocabulary rename: contents -> materials; fourth small authoring vocabulary)
 
 ### Behavior or Interface Changes
