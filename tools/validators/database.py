@@ -141,7 +141,11 @@ class ContentDatabase:
 		return None
 
 	def subpart_matches(self, obj: dict, subpart_name: str) -> bool:
-		"""Check if subpart_name is valid for this object."""
+		"""
+		Check if subpart_name is valid for this object.
+		Matches canonical subparts (from name_pattern), declared subparts,
+		and subpart_groups (rows, columns, regions introduced in Patch 4).
+		"""
 		structure = obj.get('structure', {})
 		if not structure:
 			return False
@@ -157,7 +161,27 @@ class ContentDatabase:
 		name_pattern = structure.get('name_pattern')
 		if name_pattern:
 			regex = self._pattern_to_regex(name_pattern)
-			return bool(regex.fullmatch(subpart_name))
+			if regex.fullmatch(subpart_name):
+				return True
+
+		# Check subpart_groups (rows, columns, regions).
+		# subpart_groups is a mapping like:
+		#   subpart_groups:
+		#     rows:
+		#       members: [{ name: row_A, ... }, { name: row_B, ... }, ...]
+		#     columns:
+		#       members: [{ name: col_1, ... }, { name: col_2, ... }, ...]
+		#     plate_region:
+		#       members: [{ name: all_wells, ... }]
+		subpart_groups = structure.get('subpart_groups', {})
+		if isinstance(subpart_groups, dict):
+			for group_name, group_data in subpart_groups.items():
+				if isinstance(group_data, dict):
+					members = group_data.get('members', [])
+					if isinstance(members, list):
+						for member in members:
+							if isinstance(member, dict) and member.get('name') == subpart_name:
+								return True
 
 		return False
 

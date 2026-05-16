@@ -172,6 +172,8 @@ consults the registry to resolve the target across all the protocol's scenes.
 No author-facing YAML keys are required to build the registry; it is derived
 runtime metadata. Authors declare scenes normally in `content/protocols/<protocol_name>/scenes/`
 and the registry builds automatically from those scenes and their base scenes.
+Deactivated placements are excluded per the scene-inheritance deactivation rule;
+see [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
 See [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) "## Scene-adapter resolution"
 for the complete resolution algorithm and rules for ambiguous or unknown targets.
 

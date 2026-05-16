@@ -22,6 +22,10 @@ add_placements:
     object_name: metformin_working_tube
     zone: center
     depth_tier: 2
+  - placement_name: center_dilution_tube_rack
+    object_name: dilution_tube_rack_8
+    zone: center
+    depth_tier: 3
   - placement_name: right_tool_micropipette
     object_name: micropipette
     zone: right_tool_area

@@ -20,7 +20,7 @@ may renegotiate when evidence supports a change.
 
 ## 1. Problem statement
 
-Stepper triage ([../active_plans/yaml_cleanup_triage.md](../active_plans/yaml_cleanup_triage.md))
+Stepper triage ([yaml_cleanup_triage.md](yaml_cleanup_triage.md))
 reports 478 raw `unknown_target_active_scene` warnings across 8 dirty
 protocols, deduped to 219 unique signatures. Within that population,
 `mtt_solubilization_readout.read_absorbance` alone emits **193 raw /
@@ -269,7 +269,7 @@ declared-in-scene cases, etc.) stay S1 -- those are true
 authoring bugs the schema change does not silence.
 
 Final triage truth table updates in Patch 2c (the
-[../active_plans/yaml_cleanup_gate.md](../active_plans/yaml_cleanup_gate.md) revision that
+[yaml_cleanup_gate.md](yaml_cleanup_gate.md) revision that
 folds WS-SPEC-SUBPART into M1). Approximate buckets after
 reclassification:
 
@@ -354,12 +354,12 @@ exit criteria, and patch numbering.
 
 ## 9. References
 
-- [../active_plans/yaml_cleanup_gate.md](../active_plans/yaml_cleanup_gate.md) -- parent plan;
+- [yaml_cleanup_gate.md](yaml_cleanup_gate.md) -- parent plan;
   WS-SPEC-SUBPART workstream.
-- [../active_plans/yaml_cleanup_triage.md](../active_plans/yaml_cleanup_triage.md) -- triage
+- [yaml_cleanup_triage.md](yaml_cleanup_triage.md) -- triage
   evidence, current S1 bucket classification of the 193
   well-reference signatures.
-- [../active_plans/scene_adapter_recommendation.md](../active_plans/scene_adapter_recommendation.md)
+- [scene_adapter_recommendation.md](scene_adapter_recommendation.md)
   -- sibling architect memo (scene-adapter algorithm; orthogonal
   concern, same plan).
 - [../specs/OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md)

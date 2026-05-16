@@ -18,6 +18,21 @@ add_placements:
     zone: rear_center
     depth_tier: 1
 
+  - placement_name: rear_left_conical_tube
+    object_name: conical_15ml
+    zone: rear_left
+    depth_tier: 1
+
+  - placement_name: center_t75_flask
+    object_name: t75_flask
+    zone: center
+    depth_tier: 1
+
+  - placement_name: right_label_pen
+    object_name: label_pen
+    zone: right_tool_area
+    depth_tier: 2
+
   - placement_name: right_aspirating_pipette
     object_name: aspirating_pipette
     zone: right_tool_area

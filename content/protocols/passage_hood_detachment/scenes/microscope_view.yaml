@@ -2,3 +2,9 @@ scene_name: passage_hood_detachment_microscope_view
 extends: microscope_basic
 
 scene_notes: "Microscope workspace for confluence inspection (A1) and detachment confirmation (A9) in passage_hood_detachment mini-protocol."
+
+add_placements:
+  - placement_name: instrument_t75_flask
+    object_name: t75_flask
+    zone: instrument_area
+    depth_tier: 2

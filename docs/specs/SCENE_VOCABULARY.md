@@ -287,7 +287,7 @@ reference an object placed in a sibling scene of the same protocol
 without requiring a `SceneChange` back to that scene. No new
 author-facing YAML keys are introduced; the registry is derived
 runtime metadata. See
-[../active_plans/scene_adapter_recommendation.md](../active_plans/scene_adapter_recommendation.md)
+[docs/archive/scene_adapter_recommendation.md](../archive/scene_adapter_recommendation.md)
 for the design rationale (Option 2 analysis).
 
 ## Terms

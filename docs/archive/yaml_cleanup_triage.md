@@ -379,7 +379,7 @@ Note: Well references (e.g., `well_plate_96.A1`) are now classified under S0b an
 
 ## Related Documents
 
-- [docs/active_plans/scene_adapter_resolution_design.md](scene_adapter_resolution_design.md)
+- [scene_adapter_resolution_design.md](scene_adapter_resolution_design.md)
   - Architect plan for richer scene-adapter algorithm (owns S0 fixes).
-- [docs/PRIMARY_SPEC.md](PRIMARY_SPEC.md)
+- [docs/PRIMARY_SPEC.md](../PRIMARY_SPEC.md)
   - Technical specification for protocol YAML and scene-target resolution.

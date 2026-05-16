@@ -1,6 +1,6 @@
 """ObjectValidator: validates object YAML per OBJECT_YAML_FORMAT.md."""
 
-from validators.constants import (
+from tools.validators.constants import (
 	OBJECT_KINDS,
 	OBJECT_CAPABILITIES,
 	OBJECT_REQUIRED_KEYS,
@@ -11,7 +11,7 @@ from validators.constants import (
 	SUBPART_GROUP_KINDS,
 	CHANNEL_ADDRESSABLE_KINDS,
 )
-from validators.findings import Finding, Severity
+from tools.validators.findings import Finding, Severity
 
 
 class ObjectValidator:

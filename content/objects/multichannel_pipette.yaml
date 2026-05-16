@@ -45,6 +45,10 @@ visual_states:
 
 capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
+channel_addressing:
+  channels: 8
+  addressable_subpart_kinds: [well, column]
+
 layout:
   default_width: 6
   label_width: 8

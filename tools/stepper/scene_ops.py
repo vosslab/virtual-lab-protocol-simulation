@@ -365,7 +365,10 @@ def _handle_object_state_change(
 		return False
 
 	# Check channel_addressing capability if target is a subpart group
-	# and a pipette is attached (per OBJECT_YAML_FORMAT.md "Channel addressing")
+	# and a pipette is attached (per OBJECT_YAML_FORMAT.md "Channel addressing").
+	# This validation must precede the cascade-write operation below so that capability
+	# rejection gates state mutation; otherwise an invalid pipette could mutate cells
+	# before the error fires and prevents further progress.
 	if "." in target:
 		cursor_object_name = state_map.get_cursor_object_name()
 		if cursor_object_name:
@@ -403,20 +406,6 @@ def _handle_object_state_change(
 									file_path="unknown",
 									code="pipette_channel_mismatch",
 									message=f"pipette '{cursor_object_name}' with addressable_subpart_kinds {addressable_subpart_kinds} cannot address group_kind '{group_kind}' in target '{target}'",
-									spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Channel addressing",
-								))
-								return False
-							# Region not allowed for any pipette
-							if group_kind == "region":
-								emitter.emit_finding(Finding(
-									level=Level.ERROR,
-									protocol_name=protocol_name,
-									step_name=step_name,
-									interaction_index=interaction_index,
-									target=target,
-									file_path="unknown",
-									code="region_not_addressable_by_pipette",
-									message=f"region group_kind is not addressable by pipettes; target '{target}' cannot be addressed by pipette '{cursor_object_name}'",
 									spec_cite="docs/specs/OBJECT_YAML_FORMAT.md Channel addressing",
 								))
 								return False

@@ -104,10 +104,9 @@ class StateMap:
 			for field_decl in state_fields:
 				if not isinstance(field_decl, dict):
 					continue
-				field_name = field_decl.get("field_name")
-				if field_name:
-					default = field_decl.get("default")
-					self._state[placement_name]["state"][field_name] = default
+				field_name = field_decl["field_name"]
+				default = field_decl.get("default")
+				self._state[placement_name]["state"][field_name] = default
 
 	def _register_placements(
 		self,
@@ -185,6 +184,11 @@ class StateMap:
 		active-scene lookup fails, per SCENE_VOCABULARY.md "Scene-adapter resolution".
 
 		Deactivated placements are excluded per spec.
+
+		Needed because a target may be named in a step whose active scene differs from
+		the scene where the target's placement was declared; registry lets resolution succeed
+		across sibling scenes in the same protocol without forcing authors to insert SceneChange
+		ops back to the prior scene.
 		"""
 		# Collect all scene data (base + protocol-local) with their names
 		all_scenes = {}
@@ -197,6 +201,10 @@ class StateMap:
 		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
 		for scene_name, scene_data in protocol_local_scenes.items():
 			all_scenes[scene_name] = (scene_data, 'protocol')
+
+		# Track unique registrations by (placement_name, object_name) to avoid duplicates
+		# from base scenes appearing both in their own iteration and in extended scene inheritance
+		seen = set()
 
 		# For each scene, extract effective placements and register them
 		for scene_name, (scene_data, scene_type) in all_scenes.items():
@@ -211,6 +219,13 @@ class StateMap:
 
 				if not placement_name or not object_name:
 					continue
+
+				# Deduplicate by (placement_name, object_name) pair to prevent registering
+				# the same placement twice when it appears in both base and extended scenes
+				entry_key = (placement_name, object_name)
+				if entry_key in seen:
+					continue
+				seen.add(entry_key)
 
 				# Register this placement under its object_name
 				if object_name not in self._scenes_registry:
@@ -306,7 +321,7 @@ class StateMap:
 			if len(registry_hits) == 0:
 				# No match in active scene or registry
 				self.emitter.emit_finding(Finding(
-					level=Level.WARNING,
+					level=Level.ERROR,
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,
@@ -325,7 +340,7 @@ class StateMap:
 
 			# Multiple matches in registry (ambiguous across sibling scenes)
 			self.emitter.emit_finding(Finding(
-				level=Level.WARNING,
+				level=Level.ERROR,
 				protocol_name=self.protocol_name,
 				step_name=step_name,
 				interaction_index=interaction_index,
@@ -340,7 +355,7 @@ class StateMap:
 
 		if len(matching_placements) > 1:
 			self.emitter.emit_finding(Finding(
-				level=Level.WARNING,
+				level=Level.ERROR,
 				protocol_name=self.protocol_name,
 				step_name=step_name,
 				interaction_index=interaction_index,
@@ -355,14 +370,6 @@ class StateMap:
 
 		# Exactly one match in active scene
 		placement_name = matching_placements[0][0]
-
-		# If subpart_name is present, validate it (soft check)
-		if subpart_name:
-			obj = self.tree.get_object(object_name_part)
-			if obj:
-				# Use a simple check: if object defines id_pattern or subparts, validate
-				# For now, we skip hard validation since not all objects have subpart definitions
-				pass
 
 		return placement_name, subpart_name
 
@@ -636,22 +643,19 @@ class StateMap:
 				if not material:
 					in_upstream = new_value in self.declared_materials_union or new_value in self.produced_materials_set
 					if not in_upstream:
-						# Only emit error if NOT in a sequence-runner context
-						# (if in_upstream is checked, we're in sequence-runner context and
-						# the cross-mini check will handle missing materials)
-						if not (self.declared_materials_union or self.produced_materials_set):
-							self.emitter.emit_finding(Finding(
-								level=Level.ERROR,
-								protocol_name=self.protocol_name,
-								step_name=step_name,
-								interaction_index=interaction_index,
-								target=placement_name,
-								file_path=file_path,
-								code="unknown_material",
-								message=f"material_name '{new_value}' not declared in materials.yaml for protocol '{self.protocol_name}'",
-								spec_cite="docs/specs/MATERIAL_CONVENTION.md material identity",
-							))
-							return False
+						# Emit error: material not in local protocol and not in upstream (if sequence runner context)
+						self.emitter.emit_finding(Finding(
+							level=Level.ERROR,
+							protocol_name=self.protocol_name,
+							step_name=step_name,
+							interaction_index=interaction_index,
+							target=placement_name,
+							file_path=file_path,
+							code="unknown_material",
+							message=f"material_name '{new_value}' not declared in materials.yaml for protocol '{self.protocol_name}'",
+							spec_cite="docs/specs/MATERIAL_CONVENTION.md material identity",
+						))
+						return False
 
 		# Apply the mutation
 		placement_data["state"][field_name] = new_value

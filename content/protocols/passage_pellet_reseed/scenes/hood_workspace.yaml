@@ -26,6 +26,11 @@ add_placements:
     zone: center
     depth_tier: 1
 
+  - placement_name: rear_right_incubator
+    object_name: incubator
+    zone: rear_right
+    depth_tier: 1
+
   - placement_name: right_label_pen
     object_name: label_pen
     zone: right_tool_area
