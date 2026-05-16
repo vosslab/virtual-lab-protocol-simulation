@@ -42,7 +42,7 @@ Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4P
 * SDS-PAGE:
 * \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
 * \-1X Tris/Glycine/SDS (TGS) running buffer.
-* \-2X Laemmli sample buffer and beta-mercaptoethanol (BME) or DTT.
+* 4x Laemmli sample buffer (BioRad #1610747) and beta-mercaptoethanol (BME) or DTT.
 * \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
 * \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
 * Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).
@@ -90,17 +90,16 @@ Specific Steps: IMAC Column Setup and Nickel Charging
 
 ## **Laboratory Learning Objectives**
 
-Students completing this lab protocol will have achieved:
-**1\.** Students completing this lab protocol will:
+Students completing this lab protocol will be able to:
 
-* Understand the principles of protein extraction and purification from biological materials using physical and chemical separation techniques.
-* Explore the use of homogenization, centrifugation, and phase separation methods to isolate target proteins from freeze-dried miracle berry samples.
-* Examine the theory and application of chromatographic techniques, including ion-exchange chromatography, size-exclusion chromatography, and immobilized metal affinity chromatography (IMAC), for protein purification.
-* Understand how reverse micelle extraction can be used to selectively partition proteins based on pH and ionic interactions.
-* Learn how spectrophotometric analysis and the Bradford assay are used to determine protein concentration.
-* Understand the purpose of SDS-PAGE in assessing protein purity and estimating molecular weight.
-* Investigate how factors such as pH, ionic strength, molecular size, and protein charge influence protein behavior during purification and analysis.
-* Be familiar with biochemical laboratory equipment, experimental workflows, and safe laboratory practices used in protein analysis.
+1. Understand the principles of protein extraction and purification from biological materials using physical and chemical separation techniques.
+2. Explore the use of homogenization, centrifugation, and phase separation methods to isolate target proteins from freeze-dried miracle berry samples.
+3. Examine the theory and application of chromatographic techniques, including ion-exchange chromatography, size-exclusion chromatography, and immobilized metal affinity chromatography (IMAC), for protein purification.
+4. Understand how reverse micelle extraction can be used to selectively partition proteins based on pH and ionic interactions.
+5. Learn how spectrophotometric analysis and the Bradford assay are used to determine protein concentration.
+6. Understand the purpose of SDS-PAGE in assessing protein purity and estimating molecular weight.
+7. Investigate how factors such as pH, ionic strength, molecular size, and protein charge influence protein behavior during purification and analysis.
+8. Be familiar with biochemical laboratory equipment, experimental workflows, and safe laboratory practices used in protein analysis.
 
 ## **Laboratory Learning Outcomes**
 
@@ -116,7 +115,7 @@ Students completing this lab protocol will be able to:
 
 ## **Potential Hazards and Waste Disposal**
 
-### Personal Protective Equipment
+### Personal protective equipment
 
 All students must wear the following throughout the experiment:
 - Safety glasses
@@ -124,7 +123,7 @@ All students must wear the following throughout the experiment:
 - Nitrile gloves
 - Closed-toe shoes
 
-### Chemical Hazards by Reagent
+### Chemical hazards by reagent
 
 - **Nickel(II) acetate tetrahydrate**: Carcinogenicity Category 1B (H350); respiratory sensitizer (H334); harmful if ingested (H302) or inhaled. Requires dedicated heavy-metal waste stream and careful handling in designated areas.
 - **AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane**: Flammable Liquid Category 2 (isooctane, H225); causes skin irritation (H315) and serious eye damage (H318). Use only in fume hood with adequate ventilation; avoid skin contact and eye contact.
@@ -143,11 +142,11 @@ All students must wear the following throughout the experiment:
 - **Imidazole**: Irritant to eyes and respiratory system; use in well-ventilated areas. Avoid direct contact and inhalation.
 - **Freeze-dried Synsepalum dulcificum (miracle berry powder)**: Low hazard; dust inhalation precautions only.
 
-### Biological Hazards
+### Biological hazards
 
 Freeze-dried Synsepalum dulcificum powder is a plant-derived material with low biological risk. Standard precautions apply: avoid inhaling dust and use a dust mask when handling the powder. The material does not represent a biohazard unless it contacts samples from oral/saliva sources during taste-testing.
 
-### Waste Streams
+### Waste streams
 
 - **Biohazard bin**: Reserve for any samples that contacted students' mouths during taste-testing (if performed).
 - **Aqueous chemical waste**: Bradford dye solutions, phosphate buffers, NaCl solutions, and other aqueous buffer waste. Collect in designated 4 L containers.
@@ -155,13 +154,11 @@ Freeze-dried Synsepalum dulcificum powder is a plant-derived material with low b
 - **Heavy-metal waste**: All nickel-containing waste, including IMAC column wash and elution fractions. Collect in a dedicated, clearly labeled container separate from other waste streams.
 - **Sharps**: Broken glassware, Pasteur pipettes, and contaminated glass items go in the sharps container.
 
-### Spill and Emergency Response
+### Spill and emergency response
 
-- **Eyewash station**: Located at [location]; flush eyes for at least 15 minutes if any chemical contacts eyes.
-- **Safety shower**: Located at [location]; use for large skin contact or spills on clothing.
-- **Fire extinguisher**: Located at [location]; CO2 or dry-powder type suitable for organic solvent fires.
-- **Instructor contact**: Report all spills, injuries, and chemical exposures to the laboratory instructor immediately. For off-hours emergencies, call Campus Safety at [phone number].
-- **Spill cleanup**: Small spills of organic solvents or salts can be absorbed with sand or paper towels and disposed in appropriate waste containers. Large spills or unknown hazards require instructor intervention before cleanup.
+> TODO: instructor decision -- fill in the room-specific locations for eyewash station, safety shower, and fire extinguisher, and the Campus Safety phone number for off-hours emergencies.
+
+- **Spill cleanup**: Small spills of organic solvents or salts can be absorbed with sand or paper towels and disposed in the appropriate waste containers. Large spills or unknown hazards require instructor intervention before cleanup.
 
 ## **Pre-Laboratory Questions**
 
@@ -179,7 +176,7 @@ Freeze-dried Synsepalum dulcificum powder is a plant-derived material with low b
 
 ## **Introduction**
 
-### Synsepalum dulcificum, The Miracle Fruit Plant (½ page)
+### Synsepalum dulcificum, the miracle fruit plant
 
 ### Origin
 
@@ -209,12 +206,7 @@ People in West Africa have used this fruit for many years. They ate the berries 
 
 Yes, but it is difficult to grow outdoors in Chicago because winters are very cold. The plant is tropical and cannot survive freezing temperatures. However, it can grow indoors in pots or greenhouses if proper warmth, sunlight, and humidity are provided.
 
-### The Miraculin Protein (½ page)
-
-
-Sequence, structure, molecular weight, Sweetness properties
-
-The Miraculin Protein
+### The miraculin protein
 
 Miraculin is a protein found in miracle berries, also called Synsepalum dulcificum. It is known for its special taste-changing property. Miraculin itself does not taste very sweet, but after it coats the tongue, sour foods like lemon can taste sweet. This happens because miraculin interacts with the sweet taste receptor in a pH-dependent way. At neutral pH, it has little sweet effect, but under acidic conditions it can activate the sweet taste receptor and change sour taste into sweet taste.
 
@@ -222,19 +214,15 @@ Miraculin is a glycoprotein, which means it is a protein with sugar groups attac
 
 The structure of miraculin is important for its function because it helps the protein bind to taste receptors on the tongue. When the mouth becomes acidic, the protein changes how it behaves with the receptor, and this makes sour foods taste sweet. This is why miracle berries are called "miracle" berries, because they can temporarily change taste perception after eating them.
 
-### Theory of Protein Purification (½ page)
+### Theory of protein purification
 
-How are we going to use biochemical techniques to purify this protein?
-
-Theory of Protein Purification:
-
-Protein purification used differences in protein properties such as solubility, charge, size, and binding, affinity to isolate a target protein from a complex mixture. In this experiment, Miraculin is extracted from freeze-dried miracle berries using homogenization, centrifugation, and NaCl extraction.
+Protein purification uses differences in protein properties such as solubility, charge, size, and binding affinity to isolate a target protein from a complex mixture. In this experiment, miraculin is extracted from freeze-dried miracle berries using homogenization, centrifugation, and NaCl extraction.
 
 Ammonium sulfate precipitation (salting out) is used to concentrate the protein, followed by desalting to remove  any excess salt. Additional purification techniques include size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography separate proteins based on molecular size, charge, and affinity interactions.
 
 Protein concentration is measured using the Bradford assay, and different purified fractions are analyzed using SDS-PAGE to evaluate protein purity and estimate molecular weight Miraculin is expected to appear near 24-28 kDa under the reducing conditions.
 
-### Stages Used in Purification Scheme (1 page)
+### Stages used in purification scheme
 
 
 **Part 1: Breaking the Cells**
@@ -267,13 +255,7 @@ SDS-PAGE is the final analysis step used to check the size and purity of the mir
 
 ## **Pre-Laboratory Procedure**
 
-~~Things to do one week or one day before the lab.~~
-
-One week prior to beginning the experiment, be sure to locate the materials you'll be using as a whole, such as buffers, solutions, and equipment. If anything is missing or insufficient, it will waste time during the experiment, and we want to be efficient.
-
-Before arriving, students should have thoroughly read the procedure. Please note key moments when the pH might change, and which layers will contain your substance during centrifugation.
-
-Ask questions if anything is unclear.
+One week before the lab, confirm that all reagents and equipment listed in Provided Materials are available. Identify and report any missing items to the instructor so substitutions or orders can be arranged before lab day.
 
 ## **Experimental Procedure**
 
@@ -286,7 +268,7 @@ Use this table as the canonical reference for buffer concentrations and pH throu
 | Deionized water | - | ~5.5-6.5 | Part 1 (initial wash) |
 | NaCl (extraction buffer) | 0.5 M | 4.0-6.8 (variable) | Part 2 |
 | Ammonium sulfate | 50-80% saturation | - | Part 3 |
-| Phosphate buffer | 0.02 M | 11.0 | Parts 2, 4 (backward stripping) |
+| Phosphate buffer | 0.02 M | 11.0 | Part 4 (backward stripping) |
 | Tris-HCl binding buffer | 20 mM Tris-HCl, 300-500 mM NaCl | 7.0-7.2 | Parts 5-7 (ion exchange, IMAC) |
 | Size exclusion buffer | Per column specs (typically Tris or phosphate) | 7.0-7.2 | Part 5 (SEC) |
 | IMAC charging solution | 1 M NiCl2 or Ni(CH3COO)2 | - | IMAC setup |
@@ -294,21 +276,17 @@ Use this table as the canonical reference for buffer concentrations and pH throu
 
 ### Overview
 
-Brief outline of steps in the procedure
-
 **Preparing Miraculin Berry Extract**
 
 1. Obtain freeze dried miraculin berries
 2. Remove skin and seed
 3. Use coffee grinder to grind prepared miraculin berries into a powder
-4. Dissolve miraculin powder in DI water and homogenize 1 g of berry powder to 10 mL of DI water
+4. Homogenize 1 g of berry powder in 10 mL of DI water.
 5. Centrifuge homogenized berries at 12,000 rpm for 30 min
 6. After centrifuging, pink supernatant is discarded ( should contain no sweet inducing activity)
-7. Sediment was homogenized with 0.5 M NaCl solution at pH 6.8 (1g of powder to 6mL of the NaCl solution.
+7. Homogenize the sediment with 0.5 M NaCl solution at pH 6.8 (1 g of powder to 6 mL of NaCl solution).
 
 ### Part 1: Breaking the Cells
-
-Motor pestle, coffee grinder
 
 * Obtain freeze-dried miracle berries.
 * Remove the seeds and skin if possible.
@@ -356,19 +334,19 @@ Motor pestle, coffee grinder
 
 #### Forward Extraction Protocol:
 
-* Discard of supernatant (this can go in regular trash or the sink because it is just berries and water)
+* Discard the supernatant into the aqueous chemical waste container (berry and water mixture, no organic solvents).
 * Resuspend pellet using 0.5M NaCl solution that has a pH of 6.8
   * For every 1g of powder add 6mL of NaCl
-* Depending on time, tube can be closed, labelled, and refrigerated here until use next session
+* If the lab session ends here, close and label the tube and refrigerate until the next session.
 
 * If sample was refrigerated: vortex for 3-5 seconds to mix proteins that have settled
 * In a cuvette add 20&micro;L of sample to 2mL of Bradford dye
   * Be sure to have a blank containing purely 2mL of Bradford Dye
 * Measure and record absorbance at 595nm and place 100&micro;L of sample into a separate, labeled microcentrifuge tube
   * Label should define when in the procedure the sample was collected
-* Filter the mixture to remove any large particles they may not have blended fully using 1 of 2 methods
+* Filter the mixture to remove any large particles using 1 of 2 methods
   * 1- Glass Wool
-    * Set up a beaker with a funnel containing glass wool (a little goes a long way here)
+    * Set up a beaker with a funnel containing glass wool.
     * Pour NaCl-protein mixture into the funnel and add 0.5M NaCl as needed to collect flowthrough
     * \*This method risks having liquid absorbed into the wool resulting in a loss of proteins\*
   * 2- Buchner Funnel
@@ -378,7 +356,9 @@ Motor pestle, coffee grinder
     * Pour in your liquid sample and allow the setup to run until there appears to be no liquid remaining in the funnel and large particles are left behind
 * After filtration is complete record the absorbance of the filtered liquid as done before and collect 100&micro;L into a new separate, labeled microcentrifuge tube
 * Transfer the liquid to an appropriately sized beaker according to the available volume of your sample
-* Adjust pH level of crude mixture to **8** using 2.5M NaOH and 0.1M HCl (miraculin becomes positively charged at pH 8\)
+* Adjust pH level of crude mixture to **8** using NaOH and HCl (miraculin becomes positively charged at pH 8\).
+
+> TODO: instructor decision -- the procedure as written uses 2.5 M NaOH and 0.1 M HCl, but Provided Materials lists 1 M NaOH and 1 M HCl. Confirm which concentrations to stock and use.
 * Create 0.1M AOT solution in isooctane
   * molecular weight of AOT ~ 444.56 g/mol so:
     * Measure out 4.45g of AOT
@@ -402,7 +382,7 @@ Refer to the Reagent reference table for the exact pH and concentration of the p
 * Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.
   * Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl
 * Centrifuge in a balanced centrifuge at 4,000 x g for 5 min
-* Proteins will now be in the bottom layer so extract and discard of top layer (at this point the proteins are in a pH 11 solution with a high salt concentration)
+* Proteins will now be in the bottom layer so extract and transfer the top layer (AOT in isooctane organic phase) to the organic non-halogenated waste container.
   * Save 100&micro;L of top phase into a new separate labelled microcentrifuge tube
 * Record the absorbance level of the bottom phase liquid before labelling the centrifuge tube for storage to use next session.
 
@@ -504,14 +484,14 @@ Refer to the Reagent reference table.
 
 ## **Timing Estimates**
 
-Total time of fixed timed steps
+> TODO: instructor decision -- provide per-part timing estimates for Parts 1-6 in addition to the IMAC Phase 1-4 estimates below.
 
 * Phase 1: 30-40min
 * Phase 2: 20min
 * Phase 3: 10min
 * Phase 4: 20min
 
-Estimated time of all steps: 90min
+Estimated time of IMAC steps: 90min
 
 ## **Post-Experiment Analysis**
 
@@ -531,16 +511,11 @@ Estimated time of all steps: 90min
 
 ## **TA Material Preparation**
 
-
-Miraculine berries, All solutions related experiment, safety glass, pipettes, coffee grinder, Centrifuge, Spectrophotometer, Deionized (DI) water
+> TODO: instructor decision -- specify which Provided Materials items the TA preps in advance versus what students bring on lab day.
 
 ### Equipment
 
-chromatography tubes
-
 ### Materials
-
-sepharose
 
 ## **References**
 

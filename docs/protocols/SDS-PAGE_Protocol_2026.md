@@ -38,40 +38,25 @@ Students check to make sure all of these items are available
 * Deionized water
 * Protein ladder
 * 4x Laemmli Sample Buffer  (BioRad \#1610747)
-* &Beta;-mercaptoethanol (liquid)
+* &beta;-mercaptoethanol (liquid)
 * Micropipettes and tips
 * Coomassie stain solution
 * Destain solution
 * Kimwipes
 
-### **Required but missing**
-
-* **Centrifuge** (critical for Amicon 10 kDa MWCO concentration step)
-* **Spectrophotometer**
-* **Light box**
-* **Fume hood access**
-
-#### **Sample preparation / tubes**
-
-* **Microcentrifuge tubes (1.5 mL or 2 mL Eppendorf tubes)**
-
-#### **Bradford assay (this is a big one)**
-
-* **Bradford reagent (Coomassie Brilliant Blue G-250 solution)**
-* **Cuvettes**
-
-#### **Protein concentration step (very important)**
-
-* **Amicon® Ultra 10 kDa MWCO centrifugal filters**
-
-#### **Protein samples**
-
-* **Miraculin protein sample / unknown protein extract** (you don't explicitly list the actual sample being analyzed)
-
-**Biohazard waste container**
-**Chemical waste container (for Coomassie, destain, BME waste)**
-**Organic non-halogenated waste container**
-**Nitrile gloves**
+* Centrifuge
+* Spectrophotometer
+* Light box
+* Fume hood access
+* Microcentrifuge tubes (1.5 mL or 2 mL Eppendorf tubes)
+* Bradford reagent (Coomassie Brilliant Blue G-250 solution)
+* Cuvettes
+* Amicon&reg; Ultra 10 kDa MWCO centrifugal filters
+* Miraculin protein sample
+* Biohazard waste container
+* Chemical waste container (for Coomassie, destain, BME waste)
+* Organic non-halogenated waste container
+* Nitrile gloves
 
 ## **Laboratory Learning Objectives**
 
@@ -109,26 +94,17 @@ BME is highly toxic, volatile, and emits a strong, unpleasant odor reminiscent o
 
 ## **Pre-Laboratory Questions**
 
-~~Homework questions to complete before lab~~
-
 1. How does SDS-PAGE separate proteins?
-   *
 2. Why do proteins need to be denatured for electrophoresis?
-   *
 3. What are the ratios for combining the protein sample with Loading Dye and BME?
-   *
 4. What strategies should be used when assigning samples to wells to minimize interpretation errors?
-   *
 5. What experimental conditions can cause smiling, streaking, or smeared bands?
-   *
 6. What is the purpose of staining and destaining after electrophoresis?
-   *
 7. If two proteins produce bands at the same position on the gel, what conclusions can and cannot be made?
-   *
 
 ## **Introduction**
 
-### Theory of SDS-PAGE (1 page)
+### Theory of SDS-PAGE
 
 
 1. **How does gel electrophoresis work?**
@@ -146,11 +122,10 @@ B-mercaptoethanol (BME) is a potent reducing agent utilized in protein sample pr
 
 	Conducting a gel run is crucial as it provides a visual representation of each component within the sample. This process allows assessment of the relative abundance of the target protein compared with other constituents in the mixture. A single, well-defined band at the expected molecular weight indicates a pure sample. In contrast, the presence of multiple bands may indicate that other proteins or impurities were not fully removed during purification. Faint bands may represent degradation products, while vertical smears often indicate the presence of insoluble aggregates or a high sample concentration.
 
-### Equipment (1 page)
+### Equipment
 
 ![][image1]
 ![][image2]
-Explain the parts of a biorad electrophoresis apparatus box
 
 The Bio-RAD PROTEAN electrophoresis apparatus is used to separate the proteins by molecular weight during SDS-PAGE. The system consists of many components that work together to create an electric field across the polyacrylamide gel.
 
@@ -225,35 +200,36 @@ Example calculation for an absorbance value of 0.089:
 
 ### Part 4: Preparation of Coomassie Stain and/or Destain Solution
 
+**Preparation of Coomassie Stain (1 L)**
 
-**Preparation of Coomassie Stain (1 L) Coomassie**
-stain will be prepared as a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol.
+Prepare a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol.
 
 Reagents:
- - 1 g Coomassie R250
+- 1 g Coomassie R250
 - 100 mL glacial acetic acid
 - 400 mL methanol
 - 500 mL ddH2O
 
 Procedure:
-1\. 100 mL of glacial acetic acid will be added to 500 mL of ddH2O.
- 2\. 400 mL of methanol will be added and mixed.
-3\. 1 g of Coomassie R250 will be added and mixed.
- 4\. The solution will be filtered to remove particulates.
-5\. The stain will be stored at room temperature in a sealed container.
+1. Add 100 mL of glacial acetic acid to 500 mL of ddH2O.
+2. Add 400 mL of methanol and mix.
+3. Add 1 g of Coomassie R250 and mix.
+4. Filter the solution to remove particulates.
+5. Store the stain at room temperature in a sealed container.
 
 **Preparation of Destain Solution (1 L)**
- Destain solution will be prepared as a 1 L solution containing 20% methanol and 10% acetic acid.
+
+Prepare a 1 L solution containing 20% methanol and 10% acetic acid.
 
 Reagents:
- - 200 mL methanol
- - 100 mL glacial acetic acid
+- 200 mL methanol
+- 100 mL glacial acetic acid
 - 700 mL ddH2O
 
- Procedure:
- 1\. 100 mL of glacial acetic acid will be added to 700 mL of ddH2O.
- 2\. 200 mL of methanol will be added and mixed.
- 3\. The solution will be stored at room temperature in a sealed container.
+Procedure:
+1. Add 100 mL of glacial acetic acid to 700 mL of ddH2O.
+2. Add 200 mL of methanol and mix.
+3. Store the solution at room temperature in a sealed container.
 
 ## **Experimental Procedure**
 
@@ -298,17 +274,10 @@ Brief outline of steps in the procedure
 
 ### Part 2: Prepare Tris/Glycine/SDS electrophoresis buffer
 
-
-SDS buffer (volume):
-**Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O).
+1. **Prepare 1x Tris/Glycine/SDS running buffer**: dilute 100 mL of 10x stock buffer with 900 mL of deionized water (diH2O) to a final volume of 1 L. The final 1x composition is 25 mM Tris, 192 mM glycine, 0.1% SDS.
 
 
 ### Part 3: Prepare the BioRad Gel cassette
-
-Remove the strip
-
-
-### Preparation of the BioRad Gel Cassette
 
 1. Obtain a Mini-PROTEAN TGX Precast Gel and open it from its plastic bag. Carefully remove the protective tape from the bottom before placing it in the chamber.
 
@@ -326,14 +295,12 @@ Remove the strip
 
 ### Part 4: Assemble the BioRad electrophoresis apparatus
 
-Spacers, SDS buffer (volume), check for leaks
-
-* Open the wing clamps on the electrode assembly module.
-* Next, load the TGX gels with the short plate facing inward into the module. Firmly grasp each wing clamp and close it securely.
-* Take the electrode assembly module and place it into the tank, ensuring that the banana plugs align with the corresponding tabs on the tank.
-* Remove the comb from the top of the gel, and pull it straight up. Then, take off the tape at the bottom of the cassette to expose the gel.
-* Fill the inner chamber with 1x running buffer by diluting 100 mL of 10x buffer with 900 mL of deionized water. Pour a small amount into the center to check for leaks. Ensure both the upper and lower reservoirs of the tank are filled with the appropriate conductive running buffer (such as Tris-Glycine-SDS), and that the buffer level in the upper chamber covers the tops of the gel wells to allow proper current flow.
-* Once this is done, securely place the lid on the tank, verifying that the electrodes are correctly oriented-the negative cathode (black) at the top and the positive anode (red) at the bottom. Finally, connect the leads to the power supply.
+1. Open the wing clamps on the electrode assembly module.
+2. Next, load the TGX gels with the short plate facing inward into the module. Firmly grasp each wing clamp and close it securely.
+3. Take the electrode assembly module and place it into the tank, ensuring that the banana plugs align with the corresponding tabs on the tank.
+4. Remove the comb from the top of the gel, and pull it straight up. Then, take off the tape at the bottom of the cassette to expose the gel.
+5. Fill the inner chamber with 1x running buffer by diluting 100 mL of 10x buffer with 900 mL of deionized water. Pour a small amount into the center to check for leaks. Ensure both the upper and lower reservoirs of the tank are filled with the appropriate conductive running buffer (such as Tris-Glycine-SDS), and that the buffer level in the upper chamber covers the tops of the gel wells to allow proper current flow.
+6. Once this is done, securely place the lid on the tank, verifying that the electrodes are correctly oriented-the negative cathode (black) at the top and the positive anode (red) at the bottom. Finally, connect the leads to the power supply.
 
 
 ### Part 5: Sample Loading in the Well
@@ -370,8 +337,6 @@ Spacers, SDS buffer (volume), check for leaks
 
 ### Part 6: Connect Power Supply and Run the Gel
 
-Voltage, amps, how long to run, visual cue and time
-
 | Voltage | Run time |
 | :---- | :---- |
 | 150 V | 25-30 min |
@@ -397,8 +362,6 @@ Note : If bands have reached the bottom of the gel, turn off the power supply an
 
 ### Part 8: Separate the Gel from its Cassette
 
-Use the tool
-
 * Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
 
 * Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.
@@ -412,8 +375,6 @@ Use the tool
 
 
 ### Part 9: Staining the Gel
-
-~~Stain and destain, microwave, shake~~
 
 * Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually
 * Dispose of ddH2O into the sink being careful to keep gel inside the container
@@ -443,8 +404,6 @@ Use the tool
 
 ### Part 10: Imaging the Gel
 
-Light box, smartphone camera
-
 * After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.
 * Place the tray with gel flat onto a light box with bright white light.
 * Ensure the ladder and all sample lanes are clearly visible.
@@ -453,8 +412,6 @@ Light box, smartphone camera
 
 ## **Timing Estimates**
 
-
-Provide an estimate for each of the parts above and total time of the run.
 **Estimated time of all steps**: 4 hours 30 minutes
 
 ### Part 1: Assess Protein Concentration Using Bradford Dye
