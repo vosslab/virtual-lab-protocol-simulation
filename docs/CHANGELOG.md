@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-16 (purge inline base64 images from protocol docs)
+
+### Additions and New Features
+
+- Add `tools/purge_inline_images.py`: strips reference-style markdown image defs of the form `[id]: <data:image/...;base64,...>` and their matching `![alt][id]` use sites. Generic, in-place, leaves all other refs/links untouched. CLI: `python3 tools/purge_inline_images.py FILE [FILE ...]`.
+
+### Removals and Deprecations
+
+- Purge inline base64 PNG payloads from `docs/protocols/SDS-PAGE_Protocol_2026.md` (10 defs/uses, -334 KB; 365 KB -> 31 KB) and `docs/protocols/Miraculin_Protocol_2026.md` (5 defs/uses, -452 KB; 491 KB -> 39 KB). Files were unreasonably expensive to text-edit due to multi-line ~100 KB base64 blobs. Images themselves were not load-bearing for the protocol prose.
+
 ## 2026-05-16 (audit fixes)
 
 ### Fixes and Maintenance
