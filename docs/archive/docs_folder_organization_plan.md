@@ -1,7 +1,15 @@
 # Plan stub: docs/ folder organization
 
-Status: stub. Owner: TBD. Independent of the YAML and TypeScript
-migration plans (separate light reorganization).
+Status: archived 2026-05-15. `docs/specs/` and `docs/protocols/` moves
+shipped: 17 spec files under `docs/specs/`, 5 lab procedure docs under
+`docs/protocols/`. The proposed `docs/architecture/` subfolder was
+**decided against**: most candidates (`CODE_ARCHITECTURE.md`,
+`FILE_STRUCTURE.md`, `SCENE_ARCHITECTURE.md`, `LAYOUT_ENGINE.md`,
+`MATERIAL_CONVENTION.md`, `SVG_PIPELINE.md`, `SCALING_MODEL.md`)
+landed under `docs/specs/`, and the remaining root-level layout is
+acceptable as-is. `QTI_v3_SPEC.md` staying at root was also accepted.
+This plan is closed; reopen only if a future reorg becomes worth the
+link-update churn.
 
 ## Purpose
 
@@ -126,8 +134,8 @@ plan picks the destination (likely `docs/specs/` or `docs/archive/`).
 
 ## References
 
-- Parent plan: [scene_object_split_plan.md](../archive/scene_object_split_plan.md)
+- Parent plan: [scene_object_split_plan.md](scene_object_split_plan.md)
   (the "Follow-on plans" subsection is the source of the target
   structure copied above).
-- Related: [content_yaml_migration_plan.md](content_yaml_migration_plan.md),
-  [typescript_migration_plan.md](typescript_migration_plan.md).
+- Related: [content_yaml_migration_plan.md](content_yaml_migration_plan.md) (archived after M3 close-out),
+  [../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md).

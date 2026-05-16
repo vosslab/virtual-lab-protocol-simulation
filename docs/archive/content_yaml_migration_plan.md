@@ -33,7 +33,7 @@ Supporting evidence:
 ## Targets
 
 - Every file under `src/scenes/*/`. Note: `src/scenes/` is frozen per
-  [SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md), so migrated output lands
+  [../active_plans/SRC_SCENES_FREEZE.md](../active_plans/SRC_SCENES_FREEZE.md), so migrated output lands
   in the new `content/` layout (see first decision below), not in place.
 - `content/plate_drug_treatment/scene.yaml` (the active content-side
   scene that stalled the runtime work).
@@ -72,7 +72,7 @@ Open sub-decisions for the plan to settle up front:
 
 - Editing `src/asset_specs.ts`, `src/layout_engine.ts`, `src/scene_runtime/`,
   or `tools/build_scene_data.py`. That work belongs to
-  [typescript_migration_plan.md](typescript_migration_plan.md).
+  [../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md).
 - Editing `src/scenes/` (frozen).
 - Adding new object capabilities or new state-field types.
 - The docs/ folder reorganization (separate plan,
@@ -96,8 +96,8 @@ out to the remaining scenes plus the 96-well plate.
 
 ## References
 
-- Parent plan (close-out): [scene_object_split_plan.md](../archive/scene_object_split_plan.md).
-- Following plan: [typescript_migration_plan.md](typescript_migration_plan.md).
+- Parent plan (close-out): [scene_object_split_plan.md](scene_object_split_plan.md).
+- Following plan: [../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md).
 - Related: [docs_folder_organization_plan.md](docs_folder_organization_plan.md).
 
 ## Object inventory table (WP-INVENT-1)

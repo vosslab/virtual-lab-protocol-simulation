@@ -354,17 +354,12 @@ object YAML. This is the closed six-capability set.
 
 | Capability id | Purpose | Status |
 | --- | --- | --- |
-| `itemWorkspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | Consumes `placements` and `zones`. |
-| `modalWorkspace` | Modal-screen scenes (microscope, plate, plate_reader). | Validates `scene_name` only. |
-| `instrumentWorkspace` | Instrument workspace (microscope automated counter). | Validates `scene_name` only. |
-| `gridCountingWorkspace` | Grid-quadrant counting (manual hemocytometer). | Validates `scene_name` and an optional `quadrants` array; dispatches click routing. |
-| `incubatorWorkspace` | Incubator overlay flow. | Validates `scene_name` only. |
-| `plateReaderWorkspace` | Plate-reader modal (results table). | Validates `scene_name` only. |
-
-Note on naming: the camelCase ids above match the registered capability
-strings the runtime reads today. The cleaned scene-side schema otherwise
-prefers snake_case keys; the capability-id strings stay camelCase because
-they are runtime registry keys.
+| `item_workspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | Consumes `placements` and `zones`. |
+| `modal_workspace` | Modal-screen scenes (microscope, plate, plate_reader). | Validates `scene_name` only. |
+| `instrument_workspace` | Instrument workspace (microscope automated counter). | Validates `scene_name` only. |
+| `grid_counting_workspace` | Grid-quadrant counting (manual hemocytometer). | Validates `scene_name` and an optional `quadrants` array; dispatches click routing. |
+| `incubator_workspace` | Incubator overlay flow. | Validates `scene_name` only. |
+| `plate_reader_workspace` | Plate-reader modal (results table). | Validates `scene_name` only. |
 
 ## Validation rules
 
@@ -379,23 +374,18 @@ enforces these rules against the fused format:
 - Capability ids within one scene must be unique.
 - `zones`, if present, must be a list of mappings each with a non-empty
   string `id`. Zone ids must be unique within the scene.
-- `items`, if present, must be a list of mappings each with a non-empty
-  string `id`. Item ids must be unique within the scene.
-- Each item's `zone` reference, if present, must match a declared zone id.
+- `placements`, if present, must be a list of mappings. Every
+  `placement.object_name` must resolve against the object library, every
+  `placement.zone` must match a declared `zones[].id`, and per-placement
+  override fields must be in the override surface.
 
 Gaps not validated today:
 
 - Capability-specific config blocks are not enforced.
-- Item field shapes beyond `id` and `zone` are not validated.
+- Placement field shapes beyond `object_name` and `zone` are not validated.
 - Zone field shapes beyond `id` are not validated.
 - `wrong_order_message` is not validated.
 - Cross-references against `materials.yaml` and the object library are not validated.
-
-The validator will replace the
-`items[]` rules with `placements[]` rules: every `placement.object_name`
-must resolve against the object library, every `placement.zone` must match
-a declared `zones[].id`, and per-placement override fields must be in the
-override surface.
 
 ## Sub-fields and primitives that never appear in scene YAML
 
@@ -439,7 +429,7 @@ Minimal scene (modal overlay, no placements):
 scene_name: incubator
 workspace: modal_overlay
 capabilities:
-  - incubatorWorkspace
+  - incubator_workspace
 
 scene_bounds:
   left: 0
@@ -461,7 +451,7 @@ Scene with placements and a background:
 scene_name: bench
 workspace: equipment_bench
 capabilities:
-  - itemWorkspace
+  - item_workspace
 
 background:
   asset: bench_backdrop

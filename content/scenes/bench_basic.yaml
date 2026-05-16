@@ -1,7 +1,7 @@
 scene_name: bench_basic
 workspace: bench
 capabilities:
-  - itemWorkspace
+  - item_workspace
 scene_bounds:
   left: 1
   right: 99
@@ -70,5 +70,5 @@ layout_rules:
   zone_gap: 2
 
 wrong_order_message:
-  template: "Try using the {expectedLabel}."
+  template: "Try using the {expected_label}."
   toast_duration_ms: 2000

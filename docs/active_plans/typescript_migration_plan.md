@@ -1,7 +1,7 @@
 # Plan stub: TypeScript migration to the three-vocabulary model
 
 Status: stub. Owner: TBD. Depends on:
-[content_yaml_migration_plan.md](content_yaml_migration_plan.md).
+[../archive/content_yaml_migration_plan.md](../archive/content_yaml_migration_plan.md).
 
 ## Purpose
 
@@ -20,7 +20,7 @@ those files.
   - [SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md)
   - [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md)
 - The migrated content/ tree produced by
-  [content_yaml_migration_plan.md](content_yaml_migration_plan.md).
+  [../archive/content_yaml_migration_plan.md](../archive/content_yaml_migration_plan.md).
 
 ## Targets
 
@@ -73,6 +73,6 @@ larger scenes and to the dispatch / walker rewrite.
 
 ## References
 
-- Preceding plan: [content_yaml_migration_plan.md](content_yaml_migration_plan.md).
+- Preceding plan: [../archive/content_yaml_migration_plan.md](../archive/content_yaml_migration_plan.md).
 - Parent plan (close-out): [scene_object_split_plan.md](../archive/scene_object_split_plan.md).
-- Related: [docs_folder_organization_plan.md](docs_folder_organization_plan.md).
+- Related: [../archive/docs_folder_organization_plan.md](../archive/docs_folder_organization_plan.md).

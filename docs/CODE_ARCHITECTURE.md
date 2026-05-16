@@ -450,12 +450,12 @@ Each conforms to a `SceneCapability` contract (`mount`, `onStepChange`,
 
 | Capability id | Module | Responsibility |
 | --- | --- | --- |
-| `itemWorkspace` | `item_workspace.ts` | Item-grid click dispatch, accent styling, wrong-order detection |
-| `modalWorkspace` | `modal_workspace.ts` | Modal screen flow tracking |
-| `plateReaderWorkspace` | `plate_reader_workspace.ts` | Plate-reader insert/read state |
-| `instrumentWorkspace` | `instrument_workspace.ts` | Mounted-instrument surface state (microscope, cell counter) |
-| `incubatorWorkspace` | `incubator_workspace.ts` | Incubation overlay lifecycle state |
-| `gridCountingWorkspace` | `grid_counting_workspace.ts` | Hemocytometer quadrant click tracking and total-count aggregation |
+| `item_workspace` | `item_workspace.ts` | Item-grid click dispatch, accent styling, wrong-order detection |
+| `modal_workspace` | `modal_workspace.ts` | Modal screen flow tracking |
+| `plate_reader_workspace` | `plate_reader_workspace.ts` | Plate-reader insert/read state |
+| `instrument_workspace` | `instrument_workspace.ts` | Mounted-instrument surface state (microscope, cell counter) |
+| `incubator_workspace` | `incubator_workspace.ts` | Incubation overlay lifecycle state |
+| `grid_counting_workspace` | `grid_counting_workspace.ts` | Hemocytometer quadrant click tracking and total-count aggregation |
 
 ### Scene adapters
 

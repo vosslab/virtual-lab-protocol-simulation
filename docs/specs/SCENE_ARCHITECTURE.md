@@ -183,12 +183,12 @@ small slice of their declared config. This matches the status recorded in
 
 | Capability id | Module | Status |
 | --- | --- | --- |
-| `itemWorkspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | Validates `items` and `zones`; dispatches `data-item-id` clicks to the scene adapter. |
-| `modalWorkspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | Validates `sceneId` only. |
-| `instrumentWorkspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | Validates `sceneId` only. |
-| `gridCountingWorkspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | Mounts and routes quadrant clicks; validates `sceneId` and `quadrants`. |
-| `incubatorWorkspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | Validates `sceneId` only. |
-| `plateReaderWorkspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | Validates `sceneId` only. |
+| `item_workspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | Validates `placements` and `zones`; dispatches `data-item-id` clicks to the scene adapter. |
+| `modal_workspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | Validates `scene_name` only. |
+| `instrument_workspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | Validates `scene_name` only. |
+| `grid_counting_workspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | Mounts and routes quadrant clicks; validates `scene_name` and `quadrants`. |
+| `incubator_workspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | Validates `scene_name` only. |
+| `plate_reader_workspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | Validates `scene_name` only. |
 
 ## Module-load side effects
 

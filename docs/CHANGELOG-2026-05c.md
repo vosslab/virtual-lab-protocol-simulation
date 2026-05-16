@@ -80,7 +80,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Additions and New Features
 - WP-DECOMP-8: new pytest gate `tests/test_items_scene_no_hood_default.py` enforces that items.yaml scene declarations match scenes actually used in protocol steps (no-hood-default rule).
-- WP-ENTRY-1: new audit document [docs/active_plans/protocol_entry_audit.md](active_plans/protocol_entry_audit.md) lists the intended `entry.scene` and `entry.step` for every protocol.
+- WP-ENTRY-1: new audit document [docs/archive/protocol_entry_audit.md](archive/protocol_entry_audit.md) lists the intended `entry.scene` and `entry.step` for every protocol.
 - WP-ENTRY-2: formal `entry:` block (`scene` + `step`) inserted into every `protocol.yaml` under `content/` and `tests/content/dev_smoke/`.
 
 ### Behavior or Interface Changes

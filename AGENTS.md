@@ -33,7 +33,7 @@ Read task-specific docs as needed:
 - Clickable lab objects are SVG-backed scene objects.
 - Scene object layout is handled by the layout engine.
 - Custom geometry is only for subparts inside structured scientific objects.
-- Liquids follow `docs/specs/LIQUID_CONVENTION.md`.
+- Materials (liquids, mixtures, suspensions, waste) follow `docs/specs/MATERIAL_CONVENTION.md`.
 
 These rules come from the primary contract and primary spec. See those files for the full authority and rationale.
 

@@ -1,5 +1,79 @@
 # Changelog
 
+## 2026-05-15 (Capability snake_case purism + active-plans triage)
+
+### Behavior or Interface Changes
+
+- Retired the last camelCase capability ids and template variables.
+  Scene capability values renamed in `content/scenes/bench_basic.yaml`
+  and `content/scenes/hood_basic.yaml`: `itemWorkspace` ->
+  `item_workspace`. `wrong_order_message.template` placeholder
+  `{expectedLabel}` -> `{expected_label}`. Spec docs touched:
+  `SCENE_YAML_FORMAT.md`, `SCENE_ARCHITECTURE.md`, `CODE_ARCHITECTURE.md`.
+  The legacy camelCase capability id family (`modalWorkspace`,
+  `instrumentWorkspace`, `gridCountingWorkspace`, `incubatorWorkspace`,
+  `plateReaderWorkspace`, `liquidTransfer`) is renamed in lockstep
+  across the same docs.
+- `tests/test_spec_vocabulary.py` G9 `CAPABILITY_ID_ALLOWLIST` retired
+  to an empty `frozenset()`. G9 scanner now flags every camelCase
+  capability id. 9/9 spec vocabulary gates green.
+- Three additional active plans archived after the YAML / scene-inheritance /
+  docs-org work landed:
+  - `docs/active_plans/protocol_entry_audit.md` ->
+    `docs/archive/protocol_entry_audit.md` (explicitly superseded by
+    the Class I `entry_step` sweep).
+  - `docs/active_plans/scene_inheritance_migration.md` ->
+    `docs/archive/scene_inheritance_migration.md` (content-side shipped;
+    runtime alignment moves to `typescript_migration_plan.md`).
+  - `docs/active_plans/docs_folder_organization_plan.md` ->
+    `docs/archive/docs_folder_organization_plan.md` (specs +
+    protocols moves shipped; `docs/architecture/` subfolder and
+    `QTI_v3_SPEC.md` relocation **decided against**).
+
+### Fixes and Maintenance
+
+- Markdown link gate (`pytest tests/test_markdown_links.py`) green
+  after every cross-link rewrite implied by the archive moves.
+
+## 2026-05-15 (M3 close-out: content YAML reauthoring plan archived)
+
+### Behavior or Interface Changes
+
+- Archived `docs/active_plans/content_yaml_migration_plan.md` to
+  `docs/archive/content_yaml_migration_plan.md` via `git mv`. The plan's
+  structural milestones (M1 pilot, M2 full object library + scene
+  inheritance, M3 sequence runner + validator sweep) are closed.
+  Validator gates green: 55 files across four vocabularies (34 objects,
+  2 base scenes, 6 protocol scenes, 6 materials, 7 protocols).
+- `AGENTS.md` "Core rules" pointer updated:
+  `docs/specs/LIQUID_CONVENTION.md` -> `docs/specs/MATERIAL_CONVENTION.md`;
+  rule expanded from "Liquids follow..." to "Materials (liquids,
+  mixtures, suspensions, waste) follow...". Reflects the four-vocabulary
+  authoring model (protocol, object, scene, material) ratified earlier
+  today.
+
+### Decisions and Failures
+
+- Closed scope of `sorted-snacking-kettle` plan:
+  - M1 / M2 / M3 structural milestones shipped (object library, scene
+    inheritance, sequence runner, four-class validator).
+  - **Deferred to follow-on plan(s):**
+    1. Pedagogy reauthoring pass per WP-MP-* (T-1..T-23 reauthoring
+       rules in the archived plan). Structural conformance shipped;
+       deep step rewrites from `docs/protocols/OVCAR8_*.md` are not yet
+       done.
+    2. Cross-workspace `SceneChange` wiring (hood / bench / microscope /
+       centrifuge / plate_reader transitions). Needs `src/scene_runtime/`
+       alignment, expected to live in a separate runtime-alignment plan.
+
+### Fixes and Maintenance
+
+- Stale `LIQUID_CONVENTION.md` links repaired across 6 docs
+  (`CHANGELOG-2026-05c.md`, `FILE_STRUCTURE.md`, `PRIMARY_CONTRACT.md`,
+  `PRIMARY_DESIGN.md`, `SCENE_VOCABULARY.md`, archived
+  `content_yaml_migration_plan.md`). `pytest tests/test_markdown_links.py`
+  passes.
+
 ## 2026-05-15 (validator: colored compiled summary tail)
 
 ### Additions and New Features
@@ -474,9 +548,9 @@
   the protocol-side `ObjectStateChange` plus `SvgSwap` reclassification.
 - **Three follow-on plan stubs in `docs/active_plans/`**: New stubs
   for the next stages of work --
-  [content_yaml_migration_plan.md](active_plans/content_yaml_migration_plan.md),
+  [content_yaml_migration_plan.md](archive/content_yaml_migration_plan.md),
   [typescript_migration_plan.md](active_plans/typescript_migration_plan.md),
-  and [docs_folder_organization_plan.md](active_plans/docs_folder_organization_plan.md).
+  and [docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md).
   Each names inputs, targets, first decision or risk, and out-of-scope
   boundaries; full plans land when an owner picks one up.
 
@@ -689,7 +763,7 @@
   pass); the previous PROTOCOL_*, SCENE_*, OBJECT_*, and style/test
   `@`-imports were dropped from the manifest. `pytest tests/test_markdown_links.py` and
   `pytest tests/test_ascii_compliance.py` both pass. Plan source:
-  [active_plans/docs_folder_organization_plan.md](active_plans/docs_folder_organization_plan.md).
+  [archive/docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md).
 - **`docs/SCENE_VOCABULARY.md` rewritten**: Now defines only scene-side
   terms (placement, zones, object reference, background per RD-1).
   Object-identity terms moved out and pointed at OBJECT_VOCABULARY.md.
@@ -754,7 +828,7 @@
   sibling location in `docs/archive/`; pre-existing failure flagged in
   the same report). `pytest tests/test_markdown_links.py` and
   `pytest tests/test_ascii_compliance.py` both pass. See the docs
-  reorganization plan [docs/active_plans/docs_folder_organization_plan.md](active_plans/docs_folder_organization_plan.md)
+  reorganization plan [docs/archive/docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md)
   for context; Patch 2 of that plan will create `docs/specs/`.
 - **Unified interaction vocabulary plan marked closed**: Added a
   `Plan status: closed` section to

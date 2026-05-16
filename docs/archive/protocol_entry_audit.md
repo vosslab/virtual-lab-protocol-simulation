@@ -19,7 +19,7 @@ belong inside step interactions via `SceneChange` `scene_operations`.
 ## Purpose (historical)
 
 This document is the WP-ENTRY-1 deliverable for the scene-runtime spine plan
-(see [scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md)). It records
+(see [scene_runtime_spine_plan.md](scene_runtime_spine_plan.md)). It records
 the intended `entry_step` (and, historically, scene) values for every protocol currently
 tracked under `content/` and `tests/content/dev_smoke/`.
 
@@ -31,7 +31,7 @@ Evidence for each row comes from one or more of:
 - the `scene:` field on the first authored step (historically used to
   derive the scene; now informational),
 - the curriculum map in
-  [curriculum_decomposition.md](curriculum_decomposition.md).
+  [../active_plans/curriculum_decomposition.md](../active_plans/curriculum_decomposition.md).
 
 No `protocol.yaml` is modified by this audit. The audit is read-only.
 

@@ -1,6 +1,10 @@
 # Plan stub: scene inheritance migration
 
-Status: deferred. Owner: TBD. Depends on: validator landing.
+Status: archived 2026-05-15. Content-side work shipped via the archived [content_yaml_migration_plan.md](content_yaml_migration_plan.md) M2 milestone:
+2 base scenes (`hood_basic`, `bench_basic`) plus 6 inherited protocol
+scenes authored under the ratified policy, validator green. Runtime
+(`src/scene_runtime/`) and pipeline alignment now belongs to
+[../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md).
 
 ## Context
 
@@ -61,5 +65,5 @@ Migration is DEFERRED, gated on the static scene-graph validator landing. The ra
 ## Cross-references
 
 - [../specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md) -- the ratified scene-inheritance policy.
-- [content_yaml_migration_plan.md](content_yaml_migration_plan.md) -- sibling plan for migrating all YAML content to the three-vocabulary model.
-- [typescript_migration_plan.md](typescript_migration_plan.md) -- follow-on plan for updating TypeScript runtime and tooling.
+- [content_yaml_migration_plan.md](content_yaml_migration_plan.md) -- archived M3-closed plan that migrated all YAML content to the four-vocabulary model (protocol, object, scene, material).
+- [../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md) -- follow-on plan for updating TypeScript runtime and tooling.

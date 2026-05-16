@@ -112,7 +112,7 @@ Deactivation is a render-time placement flag, not an object mutation. When a pla
 
 ## Promotion rule
 
-A base scene may be promoted into `content/scenes/` when it is expected to serve multiple protocols OR when it represents a stable workspace contract (hood, bench, plate reader, microscope, centrifuge). Until either condition holds, the scene stays under `content/protocols/<name>/scenes/`. This rule prevents inverse drift (many one-use base scenes, each its own canonical fork) without blocking the first protocol that needs a new workspace from establishing the base. Seed workspace bases named in the migration plan count as stable workspace contracts. See [scene_inheritance_migration.md](../active_plans/scene_inheritance_migration.md) for the migration details.
+A base scene may be promoted into `content/scenes/` when it is expected to serve multiple protocols OR when it represents a stable workspace contract (hood, bench, plate reader, microscope, centrifuge). Until either condition holds, the scene stays under `content/protocols/<name>/scenes/`. This rule prevents inverse drift (many one-use base scenes, each its own canonical fork) without blocking the first protocol that needs a new workspace from establishing the base. Seed workspace bases named in the migration plan count as stable workspace contracts. See [scene_inheritance_migration.md](../archive/scene_inheritance_migration.md) for the migration details.
 
 ## Asymmetry rationale
 
