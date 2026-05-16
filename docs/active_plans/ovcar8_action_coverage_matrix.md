@@ -25,33 +25,33 @@ This file accumulates per-MP coverage-matrix entries as M2 lands minis and subse
 | A17 | Add fresh media to new plate | PRESENT-EXPLICIT | passage_pellet_reseed.add_fresh_media_to_plate | Interactions 1-2: click media_bottle (SceneChange->hood_workspace), click well_plate_96 (material->fresh_media, volume->7) |
 | A18 | Label plate (cell line, date, passage #, initials) | PRESENT-EXPLICIT | passage_pellet_reseed.label_plate | Interactions 1-2: click label_pen, then type on well_plate_96 |
 | A19 | Return new plate to incubator | PRESENT-EXPLICIT | passage_pellet_reseed.return_to_incubator | Interactions 1-2: click well_plate_96, click incubator (door_open->false) |
-| A20 | Add 10 microL Trypan Blue to diamond chamber | ABSENT | | MP-3 pending |
-| A21 | Add 10 microL cell suspension | ABSENT | | MP-3 pending |
-| A22 | Mix by pipetting | ABSENT | | MP-3 pending |
-| A23 | Load 10 microL mixture into semicircle chamber | ABSENT | | MP-3 pending |
-| A24 | Wipe off excess | ABSENT | | MP-3 pending |
-| A25 | Insert slide into cell counter | ABSENT | | MP-3 pending |
-| A26 | Wait for focus | ABSENT | | MP-3 pending |
-| A27 | Press Capture (record count + viability) | ABSENT | | MP-3 pending |
-| A28 | Viability gate >90% | ABSENT | | MP-3 pending |
-| A29 | Prepare 12 mL of 2x10^5 cells/mL suspension (dilution math) | ABSENT | | MP-4 pending |
-| A30 | Seed 100 microL per well into 96-well plate | ABSENT | | MP-4 pending |
-| A31 | Incubate 24 h for attachment | ABSENT | | MP-4 pending |
-| A32 | Per-quadrant media adjustment (100/90/95/85 microL) | ABSENT | | MP-6 pending |
-| A33 | Prepare working stocks (Part 4) | ABSENT | | MP-5 prep pending |
-| A34 | Add 5 microL Carboplatin to cols 1-12, rows B-H | ABSENT | | MP-7 pending |
-| A35 | Row A cols 1-6 untreated control | ABSENT | | MP-6 pending |
-| A36 | Row A cols 7-12 Metformin-only control (gets 5 microL met) | ABSENT | | MP-6 pending |
-| A37 | Add 5 microL Metformin to cols 7-12, rows B-H | ABSENT | | MP-7 pending |
-| A38 | Incubate 48 h for drug effect | ABSENT | | MP-7 pending |
-| A39 | Prepare 12 mM MTT (dissolve 5 mg + 1 mL PBS) | ABSENT | | MP-8 pending |
-| A40 | Add 25 microL of 12 mM MTT per well | ABSENT | | MP-9 pending |
-| A41 | Incubate 1.5 h for formazan conversion | ABSENT | | MP-9 pending |
-| A42 | Decant MTT into biohazard bin | ABSENT | | MP-9 pending |
-| A43 | Pat plate dry on paper towels | ABSENT | | MP-9 pending |
-| A44 | Add 200 microL DMSO per well | ABSENT | | MP-10 pending |
-| A45 | Pipette up/down ~10x (trituration) | ABSENT | | MP-10 pending |
-| A46 | Read absorbance at 560 nm | ABSENT | | MP-10 pending |
+| A20 | Add 10 microL Trypan Blue to diamond chamber | PRESENT-EXPLICIT | trypan_blue_counting.add_trypan_blue_to_chamber | Micropipette adjust to 10 uL, click trypan_blue_bottle (draws trypan_blue), click hemocytometer_slide (dispenses); hemocytometer_slide.material_name->trypan_blue, material_volume->0.01 mL |
+| A21 | Add 10 microL cell suspension | PRESENT-EXPLICIT | trypan_blue_counting.add_cell_suspension_to_chamber | Micropipette adjust to 10 uL, click cell_suspension_tube (draws cell_suspension), click hemocytometer_slide (dispenses into same chamber); hemocytometer_slide.material_name->trypan_blue_mixture, material_volume->0.02 mL |
+| A22 | Mix by pipetting | PRESENT-EXPLICIT | trypan_blue_counting.mix_by_pipetting | Micropipette click, then click hemocytometer_slide (3-4 pipetting passes); verifies trypan_blue_mixture state ready for loading |
+| A23 | Load 10 microL mixture into semicircle chamber | PRESENT-EXPLICIT | trypan_blue_counting.load_semicircle_chamber | Micropipette adjust to 10 uL, click hemocytometer_slide for loading chamber fill; hemocytometer_slide.material_volume->0.03 mL (accumulation of A20, A21, A23 dispenses) |
+| A24 | Wipe off excess | PRESENT-EXPLICIT | trypan_blue_counting.wipe_off_excess | Click lens_tissue, then click hemocytometer_slide; hemocytometer_slide.excess_wiped->true, maintaining chamber saturation |
+| A25 | Insert slide into cell counter | PRESENT-EXPLICIT | trypan_blue_counting.insert_slide_into_counter | SceneChange from hemocytometer_view to cell_counter_workspace; click cell_counter (slide_loaded->true). Cross-workspace transition is pedagogically necessary boundary: manual (A20-A24) vs. automated (A25-A28). |
+| A26 | Wait for focus | PRESENT-EXPLICIT | trypan_blue_counting.wait_for_focus | Click cell_counter; TimedWait primitive 0.05 min (3 seconds, display='spinner'); cell_counter.focused->true |
+| A27 | Press Capture (record count + viability) | PRESENT-EXPLICIT | trypan_blue_counting.press_capture | Click cell_counter (Capture button interaction); cell_counter.capture_pressed->true, cell_count and viability_percent outputs populated by analyzer |
+| A28 | Viability gate >90% | PRESENT-EXPLICIT | trypan_blue_counting.verify_viability_gate | Select gesture on cell_counter; validator target_with_value checks viability_percent >= 90; cell_counter.viability_verified->true or -> false (gates downstream progression to MP-4 cell seeding) |
+| A29 | Prepare 12 mL of 2x10^5 cells/mL suspension (dilution math) | PRESENT-EXPLICIT | cell_seeding_plate_setup.calculate_dilution_volume, prepare_diluted_suspension | Dilution calculation and suspension prep across two steps; uses micropipette adjust + material transfers |
+| A30 | Seed 100 microL per well into 96-well plate | PRESENT-EXPLICIT | cell_seeding_plate_setup.seed_96_well_plate | Micropipette adjust to 100 microL, draws from dilution tube, seeds all wells via click gesture |
+| A31 | Incubate 24 h for attachment | PRESENT-EXPLICIT | cell_seeding_plate_setup.incubate_for_attachment | TimedWait 1440 minutes (24 hours) in incubator after plate placement |
+| A32 | Per-quadrant media adjustment (100/90/95/85 microL) | PRESENT-EXPLICIT | plate_drug_treatment_media_adjustment.adjust_media_quadrant_a1_h6, adjust_media_quadrant_a7_h12 | MP-6 delivered |
+| A33 | Prepare working stocks (Part 4) | PRESENT-MERGED | drug_dilution_setup (MP-5 actions A47-A57) | Covered by MP-5 actions A47-A57 (drug_dilution_setup) per plan mapping; A33 is the Part 4 working-stock prep umbrella satisfied by the detailed stock-prep actions. |
+| A34 | Add 5 microL Carboplatin to cols 1-12, rows B-H | PRESENT-EXPLICIT | plate_drug_treatment_drug_addition.add_carb_row_b through add_carb_row_h | MP-7 delivered |
+| A35 | Row A cols 1-6 untreated control | PRESENT-EXPLICIT | plate_drug_treatment_media_adjustment.adjust_media_quadrant_a1_h6 | MP-6 delivered |
+| A36 | Row A cols 7-12 Metformin-only control (gets 5 microL met) | PRESENT-EXPLICIT | plate_drug_treatment_media_adjustment.adjust_media_quadrant_a7_h12 | MP-6 delivered |
+| A37 | Add 5 microL Metformin to cols 7-12, rows B-H | PRESENT-EXPLICIT | plate_drug_treatment_drug_addition.add_metformin_cols_7_12 | MP-7 delivered |
+| A38 | Incubate 48 h for drug effect | PRESENT-EXPLICIT | plate_drug_treatment_drug_addition.incubate_48h | MP-7 delivered |
+| A39 | Prepare 12 mM MTT (dissolve 5 mg + 1 mL PBS) | PRESENT-EXPLICIT | mtt_reagent_prep.prepare_solution_tube, dissolve_and_mix | MP-8 delivered |
+| A40 | Add 25 microL of 12 mM MTT per well | PRESENT-EXPLICIT | mtt_plate_reaction.add_mtt_to_wells | MP-9 delivered |
+| A41 | Incubate 1.5 h for formazan conversion | PRESENT-EXPLICIT | mtt_plate_reaction.incubate_formazan_conversion | MP-9 delivered |
+| A42 | Decant MTT into biohazard bin | PRESENT-EXPLICIT | mtt_plate_reaction.decant_mtt_to_waste | MP-9 delivered |
+| A43 | Pat plate dry on paper towels | PRESENT-EXPLICIT | mtt_plate_reaction.pat_plate_dry | MP-9 delivered |
+| A44 | Add 200 microL DMSO per well | PRESENT-EXPLICIT | mtt_solubilization_readout.add_dmso_to_wells | MP-10 delivered |
+| A45 | Pipette up/down ~10x (trituration) | PRESENT-EXPLICIT | mtt_solubilization_readout.trituration_to_dissolve | MP-10 delivered |
+| A46 | Read absorbance at 560 nm | PRESENT-EXPLICIT | mtt_solubilization_readout.read_absorbance | MP-10 delivered |
 | A47 | Carboplatin 200 microM intermediate (20 microL + 980) | PRESENT-EXPLICIT | drug_dilution_setup.prepare_carb_intermediate, add_diluent_to_intermediate, vortex_intermediate | MP-5 delivered |
 | A48-A55 | 8 carboplatin working stocks (full series) | PRESENT-EXPLICIT | drug_dilution_setup.prepare_carb_400nm through label_carb_2mm (8 stocks x 3 steps each) | MP-5 delivered |
 | A56 | 10 mM metformin working stock (10 microL 1 M + 990) | PRESENT-EXPLICIT | drug_dilution_setup.prepare_metformin_10mm, fill_metformin_media, vortex_metformin, label_metformin | MP-5 delivered |
