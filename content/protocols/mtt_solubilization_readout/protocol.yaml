@@ -1,9 +1,12 @@
-# Simulation note: this mini represents multi-well dispensing as
-# column-based and plate-level interactions matching pedagogical granularity.
-# An 8-channel multichannel dispenses one column per action (8 wells per
-# click). Plate reader reads the whole plate in one optical measurement.
-# This rewrite uses subpart_groups (col_1..col_12 and all_wells region)
-# introduced in Patch 4 to align protocol pedagogy with real-lab practice.
+# Simulation note: this mini represents multi-well dispensing at the
+# pedagogical granularity of the action, not the technique. The two
+# uniform DMSO-related steps (add and trituration) target the
+# well_plate_96.all_wells geometric subpart group with one interaction
+# each; the prompts describe the multichannel column-by-column walk.
+# The plate-reader read targets all_wells in one optical measurement.
+# Previous form enumerated 12 per-column interactions per uniform step;
+# see docs/active_plans/96_well_authoring_shape_finding.md for the
+# spike evidence behind the collapse.
 
 protocol_type: mini_protocol
 protocol_name: mtt_solubilization_readout
@@ -15,7 +18,7 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish the final quantification step in an MTT viability assay: converting the precipitated, insoluble formazan product into a colored solution amenable to spectrophotometric measurement. This step bridges the incubated, MTT-treated plate to absorbance readout values that indicate cell viability across the dose-response series."
 
 steps:
-  # A44: Add 200 uL DMSO to each well using multichannel (one column at a time)
+  # A44: Add 200 uL DMSO to every well via multichannel walk across columns 1-12.
   - step_name: add_dmso_to_wells
     prompt: "Add 200 microL of DMSO to each column of the treated plate using the multichannel pipette. Adjust your pipette to 200 microL, aspirate DMSO, then dispense into columns 1 through 12 sequentially. This organic solvent will begin to dissolve the precipitated formazan."
     sequence:
@@ -38,123 +41,13 @@ steps:
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: well_plate_96.col_1
+      - target: well_plate_96.all_wells
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: well_plate_96.col_1
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_2
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_3
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_4
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_5
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_6
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_7
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_8
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_9
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_10
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_11
-              state:
-                material_name: formazan_dmso_solution
-                material_volume: 0.2
-      - target: well_plate_96.col_12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_12
+              target: well_plate_96.all_wells
               state:
                 material_name: formazan_dmso_solution
                 material_volume: 0.2
@@ -164,7 +57,7 @@ steps:
       on_failure: retry
     next_step: trituration_to_dissolve
 
-  # A45: Pipette up and down ~10x per column to dissolve formazan
+  # A45: Triturate every well via multichannel walk across columns 1-12.
   - step_name: trituration_to_dissolve
     prompt: "Perform trituration to fully dissolve the formazan precipitate. Using the multichannel pipette, pipette up and down approximately 10 times in each column, working through columns 1 to 12 sequentially. This mechanical mixing ensures complete dissolution of the yellow formazan product."
     sequence:
@@ -173,123 +66,13 @@ steps:
         validator: { preset: correct_target }
         response:
           scene_operations: []
-      - target: well_plate_96.col_1
+      - target: well_plate_96.all_wells
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations:
             - type: ObjectStateChange
-              target: well_plate_96.col_1
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_2
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_3
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_4
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_5
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_6
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_7
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_8
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_9
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_10
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_11
-              state:
-                material_volume: 0.2
-              transition: animated
-      - target: well_plate_96.col_12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.col_12
+              target: well_plate_96.all_wells
               state:
                 material_volume: 0.2
               transition: animated

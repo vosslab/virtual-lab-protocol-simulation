@@ -4,6 +4,67 @@ Triage backlog for issues surfaced but not fixed during recent work. See the
 active plans under `~/.claude/plans/` or [ROADMAP.md](ROADMAP.md) for queued
 work.
 
+## Stepper and validator follow-ups from 96-well spike
+
+Surfaced by the 96-well authoring shape semantics spike. See
+[docs/active_plans/96_well_authoring_shape_finding.md](active_plans/96_well_authoring_shape_finding.md)
+for measured evidence.
+
+### Add per-cell state tracking to protocol_stepper
+
+`tools/stepper/state.py` (`StateMap`) does not currently track per-cell
+state for `well_plate_96` subparts. The current subpart-cascade path
+in `tools/stepper/scene_ops.py` writes every cell mutation to the
+placement's flat state dict (last-write-wins). This is invisible for
+uniform actions but breaks the dose-variation case completely: only
+the final column's value is observable.
+
+The spike's per-well comparison method sidesteps this by deriving
+final state from YAML directly. Any production validation of region
+semantics or dose-response correctness needs real per-cell tracking
+inside the stepper.
+
+Acceptance criteria:
+
+- `StateMap` tracks per-cell `material_name` and `material_volume`
+  for `well_plate_96` placements.
+- `tools/protocol_stepper.py` can emit a per-cell snapshot for any
+  placement with subparts, suitable for byte-for-byte snapshot
+  comparison.
+- The dose-response explicit-per-column fixture
+  (`tests/content/dev_smoke/dose_response_explicit_check/`) reports
+  12 distinct `material_volume` values from the stepper's observed
+  state, not from YAML derivation.
+- The 12 currently shipped protocols continue to step cleanly.
+
+Estimated scope: 50-150 lines, contained within `tools/stepper/`.
+
+### Optional named-region syntax with members: all shorthand
+
+Deferred from the 96-well spike. Only worth implementing if and when
+a real subset use case appears (e.g., a control row, a 2x2 block, a
+dose-response group of 4 wells that must carry an experimental name).
+For whole-plate cases, `well_plate_96.all_wells` is sufficient and
+ships today on `main` without any spec change.
+
+If a real subset use case surfaces:
+
+- Draft a spec amendment for protocol-level `regions:` + region-aware
+  `ObjectStateChange` (the shape tested in
+  `tests/content/dev_smoke/mtt_uniform_region_check/`).
+- Include a `members: all` (or equivalent inferred-all) shorthand so
+  the region shape is not line-count-penalized when the region
+  happens to span the whole plate. The spike found the explicit
+  96-member list made the named-region inline form *longer* than
+  the expanded enumeration; this shorthand removes the penalty.
+- Reference the spike-only branch `spike/region-stepper` (unmerged)
+  for a working validator + stepper implementation of the region
+  shape; the branch can be cherry-picked onto a fresh implementation
+  branch rather than rewritten from scratch.
+
+Do NOT introduce protocol-level `regions:` as a generic feature.
+Reserve for meaningful subsets, not aliases for the whole plate.
+
 ## Rendering and content display
 
 ### Fix unit rendering for browser-displayed YAML labels

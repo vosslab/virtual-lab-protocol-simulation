@@ -1,5 +1,56 @@
 # Changelog
 
+## 2026-05-16 (mtt_solubilization_readout uniform-step rewrite to all_wells)
+
+### Behavior or Interface Changes
+
+- Rewrite the two uniform DMSO-related steps (`add_dmso_to_wells`,
+  `trituration_to_dissolve`) of
+  `content/protocols/mtt_solubilization_readout/protocol.yaml` to
+  target `well_plate_96.all_wells` with one interaction each, down
+  from 12 column interactions per step. `read_absorbance` unchanged
+  (already used `all_wells`). protocol.yaml shrinks from 344 to 127
+  lines (-63%); interaction count drops from 32 to 10. Per-cell
+  final state (`material_name` + `material_volume`) preserved
+  identically across all 96 wells of `well_plate_96` against
+  `tests/baselines/mtt_solubilization_readout_baseline.yaml`. Prompts
+  retained verbatim; the multichannel-column-by-column technique
+  description stays in prose. No spec amendment required; uses the
+  existing `well_plate_96.all_wells` geometric subpart group and the
+  existing `_handle_subpart_group_cascade` path in
+  `tools/stepper/scene_ops.py`.
+
+### Developer Tests and Notes
+
+- Validator (`tools/validate_content_yaml.py`) PASS on the rewritten
+  protocol. Stepper (`tools/protocol_stepper.py`) PASS with 0 errors
+  and 0 warnings (was 193 warnings, all `unknown_target_active_scene`
+  on the per-column targets that no longer exist). Manual
+  (`tools/protocol_manual.py mtt_solubilization_readout`) renders
+  cleanly.
+- Per-cell snapshot comparison against
+  `tests/baselines/mtt_solubilization_readout_baseline.yaml`: 96/96
+  cells match on `material_name` + `material_volume`. Derivation via
+  YAML walk (per `tools/stepper/state.py` `StateMap` does not track
+  per-cell state today; tracked as a follow-up in
+  [docs/TODO.md](TODO.md)).
+
+### Decisions and Failures
+
+- Adopts the recommendation in
+  [docs/active_plans/96_well_authoring_shape_finding.md](active_plans/96_well_authoring_shape_finding.md)
+  (96-well authoring shape semantics spike): case 1 (uniform plate
+  action with no experimental meaning to name) ships today on `main`
+  using `well_plate_96.all_wells`. Protocol-level `regions:` blocks
+  and region-aware `ObjectStateChange` are explicitly NOT introduced
+  by this patch; reserved for case 2 (meaningful subset) and only if
+  a real subset use case appears. See plan at
+  [docs/active_plans/mtt_uniform_all_wells_rewrite.md](active_plans/mtt_uniform_all_wells_rewrite.md).
+- Branched from `main`, not from the spike branch
+  `spike/region-stepper`. Spike branch retained but unmerged; carries
+  experimental validator + stepper extensions that this rewrite does
+  not depend on.
+
 ## 2026-05-16 (purge inline base64 images from protocol docs)
 
 ### Additions and New Features
