@@ -1,7 +1,5 @@
 """ProtocolSceneValidator: validates protocol-scene (inherited) YAML per SCENE_INHERITANCE.md."""
 
-from typing import Any, Dict, List, Set
-
 from validators.constants import (
 	PROTOCOL_SCENE_ALLOWED_KEYS,
 	PLACEMENT_LOCKED_FIELDS,
@@ -15,13 +13,13 @@ class ProtocolSceneValidator:
 
 	def __init__(self):
 		"""Initialize validator."""
-		self.base_scenes: Dict[str, Dict[str, Any]] = {}
+		self.base_scenes: dict = {}
 
-	def set_base_scenes(self, scenes: Dict[str, Dict[str, Any]]) -> None:
+	def set_base_scenes(self, scenes: dict) -> None:
 		"""Set known base scenes for inheritance validation."""
 		self.base_scenes = scenes
 
-	def validate(self, scene: Dict[str, Any], path: str) -> List[Finding]:
+	def validate(self, scene: dict, path: str) -> list:
 		"""Validate a protocol-scene definition."""
 		findings = []
 
@@ -57,7 +55,7 @@ class ProtocolSceneValidator:
 
 		return findings
 
-	def _validate_operations(self, scene: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_operations(self, scene: dict, path: str) -> list:
 		"""Validate add/remove/reposition/deactivate operations."""
 		findings = []
 

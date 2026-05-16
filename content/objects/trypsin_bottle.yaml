@@ -3,7 +3,7 @@ kind: bottle
 label: Trypsin
 
 state_fields:
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

@@ -1,0 +1,47 @@
+scene_name: mtt_assay_readout_bench_setup
+extends: bench_basic
+
+add_placements:
+  - placement_name: center_well_plate
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 1
+    align_stop: center
+  - placement_name: rear_left_mtt_vial
+    object_name: mtt_vial
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_center_dmso_bottle
+    object_name: dmso_bottle
+    zone: rear_center
+    depth_tier: 2
+  - placement_name: rear_right_plate_reader
+    object_name: plate_reader
+    zone: rear_right
+    depth_tier: 1
+  - placement_name: rear_right_incubator
+    object_name: incubator
+    zone: rear_right
+    depth_tier: 2
+  - placement_name: rear_left_biohazard_decant
+    object_name: biohazard_decant
+    zone: rear_left
+    depth_tier: 1
+  - placement_name: right_tool_multichannel
+    object_name: multichannel_pipette
+    zone: right_tool_area
+    depth_tier: 1
+  - placement_name: right_tool_tip_box
+    object_name: micropipette_tip_box
+    zone: right_tool_area
+    depth_tier: 2
+  - placement_name: center_aspirating_pipette
+    object_name: aspirating_pipette
+    zone: center
+    depth_tier: 2
+
+scene_notes: |
+  Bench-side scene for mtt_assay_readout. Plate sits center; MTT vial,
+  DMSO bottle, biohazard decant, plate reader, incubator surround.
+  Multichannel pipette and tip box on the right. Single-scene readout
+  workflow; no SceneChange.

@@ -1,9 +1,7 @@
 """Per-protocol summary block printer."""
 
-from typing import Any, Dict
 
-
-def print_protocol_summary(protocol_name: str, protocol_data: Dict[str, Any], verbose: bool = False) -> None:
+def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: bool = False) -> None:
 	"""
 	Print a summary line for a protocol validation result (--verbose mode).
 	Format: <protocol_name>: <S> steps, <I> interactions, <T> unique targets, <C> contents used.
@@ -54,7 +52,7 @@ def print_protocol_summary(protocol_name: str, protocol_data: Dict[str, Any], ve
 	print(f"{protocol_name}: {step_count} steps, {interaction_count} interactions, {unique_target_count} unique targets, {contents_count} contents used")
 
 
-def print_object_details(obj_data: Dict[str, Any]) -> None:
+def print_object_details(obj_data: dict) -> None:
 	"""Print verbose details for an object (2-4 indented lines)."""
 	indent = "  "
 	kind = obj_data.get('kind', 'unknown')
@@ -66,7 +64,7 @@ def print_object_details(obj_data: Dict[str, Any]) -> None:
 	print(f"{indent}state_fields: {state_count}")
 
 
-def print_scene_details(scene_data: Dict[str, Any]) -> None:
+def print_scene_details(scene_data: dict) -> None:
 	"""Print verbose details for a scene."""
 	indent = "  "
 	workspace = scene_data.get('workspace', 'unknown')
@@ -78,7 +76,7 @@ def print_scene_details(scene_data: Dict[str, Any]) -> None:
 	print(f"{indent}all placement object_name values resolve")
 
 
-def print_protocol_scene_details(scene_data: Dict[str, Any]) -> None:
+def print_protocol_scene_details(scene_data: dict) -> None:
 	"""Print verbose details for a protocol scene."""
 	indent = "  "
 	extends = scene_data.get('extends', 'unknown')
@@ -97,7 +95,7 @@ def print_protocol_scene_details(scene_data: Dict[str, Any]) -> None:
 		print(f"{indent}remove_placements: {remove_count}")
 
 
-def print_contents_details(contents_data: Dict[str, Any]) -> None:
+def print_contents_details(contents_data: dict) -> None:
 	"""Print verbose details for contents."""
 	indent = "  "
 	contents_list = contents_data.get('contents', {})

@@ -3,7 +3,7 @@ kind: equipment
 label: Water bath
 
 state_fields:
-  - name: set_temperature_c
+  - field_name: set_temperature_c
     type: float
     unit: C
     min: 20
@@ -11,10 +11,15 @@ state_fields:
     step: 1
     default: 37
     description: Temperature setting in degrees Celsius.
-  - name: running
+  - field_name: running
     type: bool
     default: false
     description: Whether the water bath is currently running.
+  - field_name: stage
+    type: enum
+    allowed: [idle, warming, warmed]
+    default: idle
+    description: Warming progress stage.
 
 visual_states:
   set_temperature_c:

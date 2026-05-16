@@ -1,15 +1,12 @@
 """ProtocolValidator: validates protocol YAML per PRIMARY_SPEC.md with Tier 1 cross-file checks."""
 
-from typing import Any, Dict, List, Optional
-
 from validators.constants import (
 	PROTOCOL_TYPES,
 	PROTOCOL_REQUIRED_KEYS,
-	RETIRED_PROTOCOL_KEYS,
+	PROTOCOL_ALL_KEYS,
 	VALID_GESTURES,
 	VALID_SCENE_OPERATIONS,
 	INTERACTION_VALIDATOR_PRESETS,
-	STEP_VALIDATOR_PRESETS,
 	LEARNING_MINI_PROTOCOL_PREFIXES,
 	LEARNING_SEQUENCE_RUNNER_PREFIXES,
 )
@@ -20,11 +17,11 @@ from validators.database import ContentDatabase
 class ProtocolValidator:
 	"""Validates protocol YAML files per PRIMARY_SPEC.md with Tier 1 cross-file checks."""
 
-	def __init__(self, db: Optional[ContentDatabase] = None):
+	def __init__(self, db: ContentDatabase | None = None):
 		"""Initialize with optional ContentDatabase for Tier 1 checks."""
 		self.db = db
 
-	def _extract_protocol_name(self, path: str) -> Optional[str]:
+	def _extract_protocol_name(self, path: str) -> str | None:
 		"""
 		Extract protocol name from a path like 'content/protocols/hood_flask_prep/protocol.yaml.steps[0]...'.
 		Returns the protocol directory name or None.
@@ -39,17 +36,19 @@ class ProtocolValidator:
 				pass
 		return None
 
-	def validate(self, protocol: Dict[str, Any], path: str) -> List[Finding]:
+	def validate(self, protocol: dict, path: str) -> list:
 		"""Validate a protocol definition."""
 		findings = []
 
-		for retired in RETIRED_PROTOCOL_KEYS:
-			if retired in protocol:
+		# Closure: any top-level key not in the documented whitelist is unknown.
+		# Subsumes the retired-key check; no allow-list maintained.
+		for key in protocol.keys():
+			if key not in PROTOCOL_ALL_KEYS:
 				findings.append(Finding(
 					path=path,
 					lineno=None,
 					severity=Severity.ERROR,
-					message=f"retired key '{retired}' found",
+					message=f"[CLOSURE] unknown top-level key '{key}' (allowed: {sorted(PROTOCOL_ALL_KEYS)})",
 				))
 
 		for key in PROTOCOL_REQUIRED_KEYS:
@@ -61,14 +60,71 @@ class ProtocolValidator:
 					message=f"missing required key '{key}'",
 				))
 
+		# Per-type required slot: sequence_runner declares `mini_protocols`;
+		# every other type declares `steps`.
+		ptype = protocol.get('protocol_type')
+		if ptype == 'sequence_runner':
+			if 'mini_protocols' not in protocol:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="sequence_runner requires 'mini_protocols' (ordered constituent list)",
+				))
+		else:
+			if 'steps' not in protocol:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"protocol_type '{ptype}' requires 'steps'",
+				))
+
 		if not findings:
 			findings.extend(self._validate_protocol_type(protocol, path))
 			findings.extend(self._validate_learning(protocol, path))
-			findings.extend(self._validate_steps(protocol, path))
+			if ptype == 'sequence_runner':
+				findings.extend(self._validate_sequence_runner(protocol, path))
+			else:
+				findings.extend(self._validate_steps(protocol, path))
 
 		return findings
 
-	def _validate_protocol_type(self, protocol: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_sequence_runner(self, protocol: dict, path: str) -> list:
+		"""Validate sequence_runner constituent list per PRIMARY_SPEC.md."""
+		findings = []
+		mp_list = protocol.get('mini_protocols')
+
+		if not isinstance(mp_list, list) or not mp_list:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="mini_protocols must be a non-empty list of constituent names",
+			))
+			return findings
+
+		known = set(self.db.protocols.keys()) if self.db else set()
+		for idx, name in enumerate(mp_list):
+			if not isinstance(name, str):
+				findings.append(Finding(
+					path=f"{path}.mini_protocols[{idx}]",
+					lineno=None,
+					severity=Severity.ERROR,
+					message="constituent entry must be a string (mini-protocol name)",
+				))
+				continue
+			if self.db and name not in known:
+				findings.append(Finding(
+					path=f"{path}.mini_protocols[{idx}]",
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"constituent '{name}' does not resolve to a known protocol",
+				))
+
+		return findings
+
+	def _validate_protocol_type(self, protocol: dict, path: str) -> list:
 		"""Validate protocol_type per PRIMARY_SPEC.md."""
 		findings = []
 		ptype = protocol.get('protocol_type')
@@ -81,7 +137,7 @@ class ProtocolValidator:
 			))
 		return findings
 
-	def _validate_learning(self, protocol: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_learning(self, protocol: dict, path: str) -> list:
 		"""Validate learning block per PRIMARY_SPEC.md."""
 		findings = []
 		ptype = protocol.get('protocol_type')
@@ -130,7 +186,7 @@ class ProtocolValidator:
 
 		return findings
 
-	def _validate_steps(self, protocol: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_steps(self, protocol: dict, path: str) -> list:
 		"""Validate steps per PRIMARY_SPEC.md."""
 		findings = []
 		steps = protocol.get('steps')
@@ -167,7 +223,7 @@ class ProtocolValidator:
 				))
 				continue
 
-			required = ['name', 'prompt', 'sequence', 'step_validator', 'outcome', 'next_step']
+			required = ['step_name', 'prompt', 'sequence', 'step_validator', 'outcome', 'next_step']
 			for key in required:
 				if key not in step:
 					findings.append(Finding(
@@ -177,7 +233,7 @@ class ProtocolValidator:
 						message=f"missing required key '{key}'",
 					))
 
-			step_name = step.get('name')
+			step_name = step.get('step_name')
 			if step_name:
 				if step_name in step_names:
 					findings.append(Finding(
@@ -248,7 +304,7 @@ class ProtocolValidator:
 
 		return findings
 
-	def _validate_sequence(self, step: Dict[str, Any], step_path: str) -> List[Finding]:
+	def _validate_sequence(self, step: dict, step_path: str) -> list:
 		"""Validate sequence (list of interactions) with Tier 1 cross-file checks."""
 		findings = []
 		sequence = step.get('sequence')
@@ -292,7 +348,7 @@ class ProtocolValidator:
 					message=f"gesture '{gesture}' not in {VALID_GESTURES}",
 				))
 
-			# TIER 1: Target resolution (T1.1)
+			# T1_TARGET: interaction target must resolve to an object or subpart.
 			target = interaction.get('target')
 			if target and self.db:
 				resolved = self.db.resolve_target(target)
@@ -305,6 +361,7 @@ class ProtocolValidator:
 						tag="T1_TARGET",
 					))
 
+			# Validator preset check, plus T1_TARGET_WITH_VALUE payload check.
 			validator = interaction.get('validator')
 			if isinstance(validator, dict):
 				preset = validator.get('preset')
@@ -315,7 +372,6 @@ class ProtocolValidator:
 						severity=Severity.ERROR,
 						message=f"preset '{preset}' not recognized",
 					))
-				# T1.5: target_with_value payload check
 				elif preset == 'target_with_value' and self.db and target:
 					value_payload = validator.get('value', {})
 					if isinstance(value_payload, dict):
@@ -330,6 +386,7 @@ class ProtocolValidator:
 									tag="T1_TARGET_WITH_VALUE",
 								))
 
+			# scene_operations schema + Tier 1 state mutation checks.
 			response = interaction.get('response')
 			if isinstance(response, dict):
 				scene_ops = response.get('scene_operations', [])
@@ -353,47 +410,54 @@ class ProtocolValidator:
 									message=f"type '{op_type}' not in {VALID_SCENE_OPERATIONS}",
 								))
 
-							# TIER 1: State mutations in ObjectStateChange
-							if op_type == 'ObjectStateChange' and self.db and target:
-								obj_data = self.db.resolve_object(target)
+							# ObjectStateChange mutates declared object state.
+							# An op may carry its own `target` (the object actually
+							# mutated), distinct from the interaction's `target`
+							# (where the student clicked). Resolve against the op
+							# target when present; fall back to interaction target.
+							if op_type == 'ObjectStateChange' and self.db:
+								op_target = op.get('target') or target
+								obj_data = self.db.resolve_object(op_target) if op_target else None
 								if obj_data:
 									state_dict = op.get('state', {})
 									if isinstance(state_dict, dict):
 										for field_name, field_value in state_dict.items():
-											# T1.2: State field resolution
-											field = self.db.resolve_state_field(target, field_name)
+											field = self.db.resolve_state_field(op_target, field_name)
 											if not field:
 												findings.append(Finding(
 													path=f"{op_path}.state",
 													lineno=None,
 													severity=Severity.ERROR,
-													message=f"state field '{field_name}' not found on object '{target}'",
+													message=f"state field '{field_name}' not found on object '{op_target}'",
 													tag="T1_STATE_FIELD",
 												))
-											elif field:
-												# T1.3: Enum value check
-												if field.get('type') == 'enum':
-													allowed = field.get('allowed', [])
-													if field_value not in allowed:
+												continue
+											# T1_ENUM: enum field value must be in declared allowed list.
+											if field.get('type') == 'enum':
+												allowed = field.get('allowed', [])
+												if field_value not in allowed:
+													findings.append(Finding(
+														path=f"{op_path}.state",
+														lineno=None,
+														severity=Severity.ERROR,
+														message=f"state field '{field_name}' value '{field_value}' not in allowed {allowed}",
+														tag="T1_ENUM",
+													))
+											# T1_CONTENTS_REF: contents_name / held_contents_name must exist in protocol contents.
+											# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
+											# (empty container, generic blended liquid) and do not need
+											# contents.yaml entries.
+											if field_name in ('contents_name', 'held_contents_name') and field_value not in ('empty', 'mixed'):
+												protocol_name = self._extract_protocol_name(op_path)
+												if protocol_name and field_value is not None:
+													contents = self.db.resolve_contents(protocol_name, field_value)
+													if not contents:
 														findings.append(Finding(
 															path=f"{op_path}.state",
 															lineno=None,
 															severity=Severity.ERROR,
-															message=f"state field '{field_name}' value '{field_value}' not in allowed {allowed}",
-															tag="T1_ENUM",
+															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known contents entry",
+															tag="T1_CONTENTS_REF",
 														))
-												# T1.4: Contents-name cross-ref
-												if field_name in ('contents_name', 'held_contents_name'):
-													protocol_name = self._extract_protocol_name(op_path)
-													if protocol_name and field_value is not None:
-														contents = self.db.resolve_contents(protocol_name, field_value)
-														if not contents:
-															findings.append(Finding(
-																path=f"{op_path}.state",
-																lineno=None,
-																severity=Severity.ERROR,
-																message=f"state field '{field_name}' value '{field_value}' does not resolve to a known contents entry",
-																tag="T1_CONTENTS_REF",
-															))
 
 		return findings

@@ -3,12 +3,12 @@ kind: bottle
 label: Metformin 200 mM working stock
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
-    allowed: [empty, metformin, media]
+    allowed: [empty, metformin, media, metformin_10mmol]
     default: empty
     description: Contents currently in the tube.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ul
     min: 0

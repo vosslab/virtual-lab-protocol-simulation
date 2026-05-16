@@ -1,12 +1,8 @@
 """BaseSceneValidator: validates base scene YAML per SCENE_YAML_FORMAT.md."""
 
-from typing import Any, Dict, List, Set, Tuple
-
 from validators.constants import (
 	BASE_SCENE_REQUIRED_KEYS,
-	BASE_SCENE_OPTIONAL_KEYS,
 	BASE_SCENE_ALL_KEYS,
-	RETIRED_BASE_SCENE_KEYS,
 )
 from validators.findings import Finding, Severity
 
@@ -16,13 +12,13 @@ class BaseSceneValidator:
 
 	def __init__(self):
 		"""Initialize validator."""
-		self.all_objects: Set[str] = set()
+		self.all_objects: set = set()
 
-	def set_object_names(self, names: Set[str]) -> None:
+	def set_object_names(self, names: set) -> None:
 		"""Set known object names for cross-reference validation."""
 		self.all_objects = names
 
-	def validate(self, scene: Dict[str, Any], path: str) -> List[Finding]:
+	def validate(self, scene: dict, path: str) -> list:
 		"""Validate a base scene definition."""
 		findings = []
 
@@ -34,15 +30,6 @@ class BaseSceneValidator:
 				message="base scenes must not have 'extends' field",
 			))
 
-		for retired in RETIRED_BASE_SCENE_KEYS:
-			if retired in scene:
-				findings.append(Finding(
-					path=path,
-					lineno=None,
-					severity=Severity.ERROR,
-					message=f"retired key '{retired}' found",
-				))
-
 		for key in BASE_SCENE_REQUIRED_KEYS:
 			if key not in scene:
 				findings.append(Finding(
@@ -52,13 +39,14 @@ class BaseSceneValidator:
 					message=f"missing required key '{key}'",
 				))
 
+		# Closure: unknown top-level keys are flagged (subsumes retired-key check).
 		for key in scene:
 			if key not in BASE_SCENE_ALL_KEYS:
 				findings.append(Finding(
 					path=path,
 					lineno=None,
 					severity=Severity.ERROR,
-					message=f"unknown top-level key '{key}'",
+					message=f"[CLOSURE] unknown top-level key '{key}' (allowed: {sorted(BASE_SCENE_ALL_KEYS)})",
 				))
 
 		if not findings:
@@ -68,7 +56,7 @@ class BaseSceneValidator:
 
 		return findings
 
-	def _validate_zones(self, scene: Dict[str, Any], path: str) -> Tuple[List[Finding], Set[str]]:
+	def _validate_zones(self, scene: dict, path: str) -> tuple:
 		"""Validate zones per SCENE_YAML_FORMAT.md."""
 		findings = []
 		zones = scene.get('zones', [])
@@ -115,7 +103,7 @@ class BaseSceneValidator:
 
 		return findings, zone_ids
 
-	def _validate_placements(self, scene: Dict[str, Any], path: str, zone_ids: Set[str]) -> List[Finding]:
+	def _validate_placements(self, scene: dict, path: str, zone_ids: set) -> list:
 		"""Validate placements per SCENE_YAML_FORMAT.md."""
 		findings = []
 		placements = scene.get('placements', [])

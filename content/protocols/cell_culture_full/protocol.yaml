@@ -1,0 +1,16 @@
+protocol_type: sequence_runner
+protocol_name: cell_culture_full
+entry_step: inspect_cells
+
+learning:
+  objectives: "Students completing this protocol will have achieved fluency with the full OVCAR8 carboplatin / metformin MTT pathway: aseptic subculture, trypsin detachment, hemocytometer counting, plate seeding, working-stock dilutions, plate dosing, and absorbance readout."
+  outcomes: "Students completing this protocol will be able to run an end-to-end drug-treatment experiment in a tissue culture lab, from a confluent flask to a quantitative MTT result."
+  goals: "Overall, this protocol aims to accomplish stitching the six constituent mini-protocols into one continuous workflow so students can rehearse the entire OVCAR8 carboplatin / metformin pathway as a single coherent procedure."
+
+mini_protocols:
+  - cell_culture
+  - hood_flask_prep
+  - cell_counting_and_seeding
+  - drug_dilution_setup
+  - plate_drug_treatment
+  - mtt_assay_readout

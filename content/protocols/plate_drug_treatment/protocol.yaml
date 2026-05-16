@@ -1,5 +1,5 @@
 protocol_type: mini_protocol
-name: plate_drug_treatment
+protocol_name: plate_drug_treatment
 entry_step: inspect_seeded_plate
 
 learning:
@@ -10,19 +10,19 @@ learning:
 parts:
   - id: plate_inspection
     label: "Plate inspection"
-    dayId: day2_morning
+    day_name: day2_morning
 
   - id: media_adjustment
     label: "Media adjustment"
-    dayId: day2
+    day_name: day2
 
   - id: drug_application
     label: "Drug application"
-    dayId: day2
+    day_name: day2
 
   - id: incubation
     label: "Incubation"
-    dayId: day2_to_day4
+    day_name: day2_to_day4
 
 days:
   - id: day2_morning
@@ -33,7 +33,7 @@ days:
     label: "Day 2 to Day 4"
 
 steps:
-  - name: inspect_seeded_plate
+  - step_name: inspect_seeded_plate
     prompt: "Inspect the pre-seeded 96-well plate and confirm that all wells contain healthy cells."
     why: "Confirming cell seeding density and health before drug addition ensures that the dose-response results are valid."
     scene: well_plate_workspace
@@ -58,7 +58,7 @@ steps:
       on_failure: retry
     next_step: gather_drug_solutions
 
-  - name: gather_drug_solutions
+  - step_name: gather_drug_solutions
     prompt: "Gather the prepared carboplatin and metformin working-stock solutions, plus fresh media for dose-row adjustments."
     why: "Collecting all reagents before starting dosing prevents interruptions and ensures each row receives doses in the correct sequence."
     scene: well_plate_workspace
@@ -93,7 +93,7 @@ steps:
       on_failure: retry
     next_step: add_media_adjustments
 
-  - name: add_media_adjustments
+  - step_name: add_media_adjustments
     prompt: "Add media adjustments row by row to bring all wells to their target working volume before adding any drug."
     why: "Adding media adjustments first ensures that each well reaches its target final volume when the drugs are added; this order prevents overdosing."
     scene: well_plate_workspace
@@ -320,7 +320,7 @@ steps:
       on_failure: retry
     next_step: add_carboplatin
 
-  - name: add_carboplatin
+  - step_name: add_carboplatin
     prompt: "Add carboplatin working-stock solution to rows B through H, all 12 columns, 5 microliters per well."
     why: "Carboplatin is the primary dose-response drug across all seven dose levels; metformin-only control wells (row A, cols 7-12) receive no carboplatin."
     scene: well_plate_workspace
@@ -516,7 +516,7 @@ steps:
       on_failure: retry
     next_step: add_metformin_combo
 
-  - name: add_metformin_combo
+  - step_name: add_metformin_combo
     prompt: "Add metformin working-stock solution to rows B through H, columns 7-12 only, 5 microliters per well."
     why: "Metformin is combined with carboplatin in columns 7-12 to test the synergistic or antagonistic effects; columns 1-6 receive carboplatin only."
     scene: well_plate_workspace
@@ -712,7 +712,7 @@ steps:
       on_failure: retry
     next_step: verify_plate_dosing
 
-  - name: verify_plate_dosing
+  - step_name: verify_plate_dosing
     prompt: "Verify that the plate has been correctly dosed and is ready for incubation."
     why: "Checking the well contents and volumes visually before incubation confirms that all wells received the correct drugs at the correct doses."
     scene: well_plate_workspace
@@ -737,7 +737,7 @@ steps:
       on_failure: retry
     next_step: incubate_for_treatment
 
-  - name: incubate_for_treatment
+  - step_name: incubate_for_treatment
     prompt: "Place the plate in the incubator and incubate at 37 degrees Celsius and 5 percent CO2 for 48 hours."
     why: "The 48-hour incubation allows the carboplatin and metformin to take effect, permitting dose-response phenotypes to develop across the seven dose levels."
     scene: well_plate_workspace

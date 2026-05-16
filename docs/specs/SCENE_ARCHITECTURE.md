@@ -159,7 +159,7 @@ itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 
 | Scene | Adapter file | Notes |
 | --- | --- | --- |
-| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam: `bench.ts` holds module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and completionPath routing; `effects.ts` is the reserved seam for future state-transition handlers. |
+| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam: `bench.ts` holds module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and completionPath routing. |
 | Cell-culture hood | [../../src/scenes/cell_culture_hood/cell_culture_hood.ts](../../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only: compatibility-token handling folded into completionPath dispatch. |
 | Incubator | [../../src/scenes/incubator/incubator.ts](../../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
 | Microscope | [../../src/scenes/microscope/microscope.ts](../../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted into sibling [manual_hemocytometer.ts](../../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
@@ -183,17 +183,12 @@ small slice of their declared config. This matches the status recorded in
 
 | Capability id | Module | Status |
 | --- | --- | --- |
-| `itemWorkspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | ACTIVE. Validates `items` and `zones` and dispatches `data-item-id` clicks to the scene adapter. |
-| `modalWorkspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | RESERVED. Validates only `sceneId`; per-capability behavior not yet implemented. |
-| `instrumentWorkspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | RESERVED. Validates only `sceneId`. |
-| `gridCountingWorkspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | PARTIAL. Mounts and routes quadrant clicks; the per-scene `quadrants` config block is RESERVED. |
-| `incubatorWorkspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | RESERVED. Validates only `sceneId`. |
-| `plateReaderWorkspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | RESERVED. Validates only `sceneId`. |
-
-A seventh capability id, `liquidTransfer`, is whitelisted in the YAML
-validator but no capability module is registered for it and no scene
-declares it. Treat it as RESERVED for a future shared liquid-transfer
-capability.
+| `itemWorkspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | Validates `items` and `zones`; dispatches `data-item-id` clicks to the scene adapter. |
+| `modalWorkspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | Validates `sceneId` only. |
+| `instrumentWorkspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | Validates `sceneId` only. |
+| `gridCountingWorkspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | Mounts and routes quadrant clicks; validates `sceneId` and `quadrants`. |
+| `incubatorWorkspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | Validates `sceneId` only. |
+| `plateReaderWorkspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | Validates `sceneId` only. |
 
 ## Module-load side effects
 
@@ -271,9 +266,8 @@ its concern.
   `LIQUID_BY_ASSET_ID` map. Consolidated in the B1 patch; do not duplicate
   these helpers in adapters.
 - [wrong_order_feedback.ts](../../src/scenes/shared/wrong_order_feedback.ts) -
-  `showWrongOrderToast(message)` for the transient warning toast. Today
-  the toast styling and 2 s lifetime are hardcoded; the per-scene
-  `wrongOrderMessage` YAML field is RESERVED for future wiring.
+  `showWrongOrderToast(message)` for the transient warning toast. The
+  toast styling and 2 s lifetime are hardcoded.
 - [scene_item_lookup.ts](../../src/scenes/shared/scene_item_lookup.ts) -
   Item-id lookup helpers introduced during the bench/hood YAML layout
   migration so adapters can resolve scene items without duplicating the

@@ -1,20 +1,20 @@
 contents:
   ethanol:
     label: "70% ethanol"
-    displayColor: "#e8d5c4"
+    display_color: "#e8d5c4"
 
   pbs:
     label: "1x PBS"
-    displayColor: "#b8e5ff"
+    display_color: "#b8e5ff"
 
   trypsin:
     label: "Trypsin-EDTA 0.25%"
-    displayColor: "#ffe8b6"
+    display_color: "#ffe8b6"
 
   media:
     label: "Complete RPMI media"
-    displayColor: "#f7a6b8"
+    display_color: "#f7a6b8"
 
   cell_suspension:
     label: "Cell suspension"
-    displayColor: "#d89bb8"
+    display_color: "#d89bb8"

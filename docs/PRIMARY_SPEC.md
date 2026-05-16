@@ -93,7 +93,7 @@ The walker, validator, and runtime dispatch from the step and interaction struct
 
 ## Targets and the scene boundary
 
-A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object; targets that fan out to several scene objects are named groups declared in the scene YAML `target_groups` block. See [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) for the scene side of this boundary.
+A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object. Targets that fan out to several scene objects are listed explicitly by subpart (for example `treatment_plate.A1`, `treatment_plate.A2`); the vocabulary has no named-group construct. See [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) for the scene side of this boundary.
 
 ## Events
 
@@ -101,7 +101,7 @@ Events are emitted by the runtime on a state transition, not hand-authored per s
 
 ## Sequence runners
 
-A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry_step` (matching the first mini-protocol's `entry_step`) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step gate that applies to mini-protocols.
+A sequence runner is a protocol with `protocol_type: sequence_runner`. It declares the ordered list of constituent mini-protocols in place of authored steps. A sequence runner has its own `entry_step` (matching the first mini-protocol's `entry_step`) and a `learning` block scoped to the overall pathway. Sequence runners are exempt from the 6-to-10 step guideline that applies to mini-protocols.
 
 ## Walker requirement
 
@@ -110,7 +110,7 @@ The walker is a runtime verifier generated from the protocol and scene YAML.
 The walker:
 
 - loads the page normally, including the welcome screen;
-- starts in the protocol's declared entry scene;
+- starts in the scene reached by the protocol's `entry_step` (resolved through that step's target adapter or a `SceneChange` operation);
 - clicks visible objects, buttons, modal controls, and answer choices;
 - saves screenshots before and after each meaningful interaction;
 - may read game state for verification.
@@ -129,7 +129,7 @@ If the walker cannot complete a step through visible UI, the YAML schema, the sc
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
 
-Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum gate. Smoke fixtures declare `protocol_type: dev_smoke`.
+Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher, the full-protocol sequence, and the 6-to-10 step curriculum guideline. Smoke fixtures declare `protocol_type: dev_smoke`.
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `hood_flask_prep.html`, `plate_drug_treatment.html`, `cell_culture_full.html`.
 

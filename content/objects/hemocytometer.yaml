@@ -3,25 +3,37 @@ kind: equipment
 label: Hemocytometer
 
 state_fields:
-  - name: count_quadrant_a
+  - field_name: contents_name
+    type: enum
+    allowed: [empty, cell_suspension]
+    default: empty
+    description: Liquid loaded onto the counting chamber.
+  - field_name: contents_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 0.1
+    default: 0
+    description: Volume loaded on the counting chamber, in milliliters.
+  - field_name: count_quadrant_a
     type: int
     min: 0
     max: 999
     default: 0
     description: Cell count in quadrant A.
-  - name: count_quadrant_b
+  - field_name: count_quadrant_b
     type: int
     min: 0
     max: 999
     default: 0
     description: Cell count in quadrant B.
-  - name: count_quadrant_c
+  - field_name: count_quadrant_c
     type: int
     min: 0
     max: 999
     default: 0
     description: Cell count in quadrant C.
-  - name: count_quadrant_d
+  - field_name: count_quadrant_d
     type: int
     min: 0
     max: 999

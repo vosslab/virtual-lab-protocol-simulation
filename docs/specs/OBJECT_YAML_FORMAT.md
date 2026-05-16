@@ -96,9 +96,8 @@ the object's namespace.
 | `structure.name_pattern` | string | yes (if `structure` present) | a string with one or more bracketed tokens drawn from the closed token set below | none |
 | `structure.subpart_state_fields` | list of mapping | no | same shape as [state_fields](#state_fields) entries; applied per subpart | unset |
 
-`structure.layout: custom` is reserved for future use; this format does not
-specify `custom` schema fields. An object with `layout: custom` is invalid
-under this schema and is rejected by the build pipeline.
+`structure.layout` accepts only `grid` or `list`; any other value is
+rejected by the build pipeline.
 
 ### name_pattern token set
 
@@ -126,14 +125,12 @@ Examples:
 - `name_pattern: "lane_{row}"` on a 6x1 grid yields `lane_1`, `lane_2`, ...,
   `lane_6` (a single-column gel convention).
 
-### Named groups deferred
+### Grouped targets are listed explicitly
 
-Named groups (`target_groups`) are deferred. Protocols list explicit
-subparts (for example `treatment_plate.A1`, `treatment_plate.A2`, ...,
-`treatment_plate.A12`). A future addition is gated on real authoring
-pain in shipped protocols. The "subparts belong to the object, not
-the scene" rule still holds; only the named-groups expression is
-deferred.
+Protocols list explicit subparts (for example `treatment_plate.A1`,
+`treatment_plate.A2`, ..., `treatment_plate.A12`). The "subparts
+belong to the object, not the scene" rule holds; the vocabulary has
+no named-group construct.
 
 ## state_fields
 
@@ -422,8 +419,8 @@ layout:
 
 Reading: the plate has no plate-level state, 96 wells (`A1..H12`) each
 carrying two flat `state_fields` (`contents_name`, `contents_volume`).
-Named groups are deferred; a protocol that needs to act on row A lists
-each subpart explicitly (`treatment_plate.A1`, ..., `treatment_plate.A12`).
+A protocol that needs to act on row A lists each subpart explicitly
+(`treatment_plate.A1`, ..., `treatment_plate.A12`).
 Each well's `visual_states` resolves the two flat fields independently: an
 SVG case table for the contents and a `fill_height(...)` formula for the
 volume. No SVG asset name appears in any `state_field`.
@@ -519,12 +516,12 @@ does not specify defensive defaults that hide a missing required field.
 ### Structure
 
 - `structure.layout: grid` requires `rows` and `cols`; `layout: list`
-  requires `count`; `layout: custom` is rejected (reserved).
+  requires `count`; any other value is rejected.
 - Every token in `structure.name_pattern` is in the closed token set; arity
   matches the layout (`{row_letter}` and `{row}` only valid for grid;
   `{index}` only valid for list).
-- Named groups (`structure.target_groups`) are not part of this schema;
-  an object that declares them is rejected.
+- `structure` accepts only the fields declared above; unknown keys are
+  rejected. The vocabulary has no named-group construct.
 
 ### state_fields
 

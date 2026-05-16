@@ -1,12 +1,12 @@
 contents:
   mtt:
     label: "12 mM MTT"
-    displayColor: "#e8b8d4"
+    display_color: "#e8b8d4"
 
   dmso:
     label: "Dimethyl sulfoxide (DMSO)"
-    displayColor: "#fff8e8"
+    display_color: "#fff8e8"
 
   empty:
     label: "Empty"
-    displayColor: "#ffffff"
+    display_color: "#ffffff"

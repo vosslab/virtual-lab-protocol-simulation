@@ -312,8 +312,8 @@ no row, and no coordinate. Subparts of a structured object (wells, lanes,
 slots) are declared by the object via `structure.subparts`; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). A protocol addresses one
 subpart as `<object_name>.<subpart_name>` (for example `treatment_plate.A1`).
-Named groups are deferred from this vocabulary pass; a step that acts on
-several subparts emits one interaction per subpart. Plate and tube
+A step that acts on several subparts emits one interaction per subpart.
+Plate and tube
 geometry lives on the object side; the protocol addresses subparts by
 name only.
 
@@ -422,8 +422,8 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 - Every `target` value resolves to a scene object or to a declared subpart
   of a structured object (`<object_name>.<subpart_name>`) through the scene's
   adapter registry; see [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) and
-  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Named groups are deferred;
-  explicit subparts only.
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). Explicit subparts only;
+  the vocabulary has no named-group construct.
 - `gesture` is one of `click`, `drag`, `adjust`, `select`, `type`.
 - `validator` and `step_validator` each name a preset from the documented
   preset library, with that preset's required typed parameters.

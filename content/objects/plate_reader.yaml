@@ -3,7 +3,7 @@ kind: equipment
 label: Plate reader
 
 state_fields:
-  - name: wavelength_nm
+  - field_name: wavelength_nm
     type: int
     unit: nm
     min: 400
@@ -11,7 +11,7 @@ state_fields:
     step: 10
     default: 570
     description: Wavelength setting in nanometers.
-  - name: reading
+  - field_name: reading
     type: bool
     default: false
     description: Whether the plate reader is currently taking a reading.

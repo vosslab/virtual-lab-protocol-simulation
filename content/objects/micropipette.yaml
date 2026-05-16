@@ -3,7 +3,7 @@ kind: pipette
 label: Micropipette
 
 state_fields:
-  - name: set_volume
+  - field_name: set_volume
     type: float
     unit: ul
     min: 0.5
@@ -11,12 +11,12 @@ state_fields:
     step: 0.5
     default: 100
     description: Volume the pipette is set to dispense.
-  - name: held_contents_name
+  - field_name: held_contents_name
     type: enum
-    allowed: [empty, water, carboplatin, metformin, media]
+    allowed: [empty, water, carboplatin, metformin, media, carboplatin_10mmol, metformin_1mol, cell_suspension]
     default: empty
     description: Contents currently aspirated in the pipette tip.
-  - name: held_contents_volume
+  - field_name: held_contents_volume
     type: float
     unit: ul
     min: 0

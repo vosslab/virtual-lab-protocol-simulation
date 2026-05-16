@@ -3,12 +3,12 @@ kind: bottle
 label: Conical 15 ml tube
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
-    allowed: [empty, cells, media, trypsin]
+    allowed: [empty, cells, media, trypsin, cell_suspension, cell_pellet]
     default: empty
     description: Contents currently in the tube.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

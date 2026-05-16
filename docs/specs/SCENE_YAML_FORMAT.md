@@ -16,7 +16,7 @@ state-mutating operations live in protocol YAML
 ([PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md)).
 
 Object identity, state_fields, visual_states, and capabilities are declared
-object-side and do not appear on the scene side. Named groups are deferred.
+object-side and do not appear on the scene side.
 Each scene `items[]` entry is replaced by a `placements[]` entry that
 references an object by id and carries only placement and instance-override
 surface.
@@ -218,7 +218,7 @@ object-side field list and which fields may be overridden.
 Notes:
 
 - A placement may not declare or modify subparts; those are
-  object structure; the scene never authors `subpart_name`. Named groups are deferred.
+  object structure; the scene never authors `subpart_name`.
 - A placement may not declare state or visual_states; the object owns state
   and rendering, and the protocol mutates state semantically through
   `ObjectStateChange` (see
@@ -354,16 +354,12 @@ object YAML. This is the closed six-capability set.
 
 | Capability id | Purpose | Status |
 | --- | --- | --- |
-| `itemWorkspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | ACTIVE; consumes `placements` and `zones`. |
-| `modalWorkspace` | Modal-screen scenes (microscope, plate, plate_reader). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-| `instrumentWorkspace` | Instrument workspace (microscope automated counter). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-| `gridCountingWorkspace` | Grid-quadrant counting (manual hemocytometer). Validates an optional `quadrants` array. | ACTIVE for declaration and click routing; per-scene `quadrants` block is RESERVED. |
-| `incubatorWorkspace` | Incubator overlay flow. Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-| `plateReaderWorkspace` | Plate-reader modal (results table). Validates only `scene_name`. | ACTIVE for declaration; capability-specific config block is RESERVED. |
-
-A seventh capability id, `liquidTransfer`, is whitelisted in the validator
-but is not yet implemented as a capability module and is not declared by any
-current scene YAML. Treat it as RESERVED.
+| `itemWorkspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | Consumes `placements` and `zones`. |
+| `modalWorkspace` | Modal-screen scenes (microscope, plate, plate_reader). | Validates `scene_name` only. |
+| `instrumentWorkspace` | Instrument workspace (microscope automated counter). | Validates `scene_name` only. |
+| `gridCountingWorkspace` | Grid-quadrant counting (manual hemocytometer). | Validates `scene_name` and an optional `quadrants` array; dispatches click routing. |
+| `incubatorWorkspace` | Incubator overlay flow. | Validates `scene_name` only. |
+| `plateReaderWorkspace` | Plate-reader modal (results table). | Validates `scene_name` only. |
 
 Note on naming: the camelCase ids above match the registered capability
 strings the runtime reads today. The cleaned scene-side schema otherwise
@@ -413,15 +409,10 @@ cleaned vocabulary and must not be authored in scene YAML:
   `TimedWait` -- protocol primitives; see
   [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 - `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange` --
-  object/render-layer mechanisms invoked by the object's `visual_states`; these never appear as
-  authored slots in either scene YAML or protocol YAML.
-  `SvgSwap` and `ColorChange` are render-layer mechanisms; `LiquidDisplayChange` and `SetPointDisplayChange` are likewise render-layer concerns.
-  The protocol-side primitive for contents and set-point mutation is
-  `ObjectStateChange`, which writes the flat declared contents fields
-  (`contents_name`, `contents_volume`, and the corresponding
-  `held_contents_name` / `held_contents_volume` on tools) and the flat
-  declared set-point fields (`set_volume`, `set_temperature`,
-  `set_rpm`, etc.).
+  object/render-layer mechanisms; never authored in scene YAML or
+  protocol YAML. See
+  [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md#visual-states) for the
+  canonical statement and the `ObjectStateChange` boundary.
 
 ## What scene YAML must not contain
 
@@ -432,7 +423,7 @@ cleaned vocabulary and must not be authored in scene YAML:
   required field must fail the build loudly, not silently fall back.
 - No object identity (`object_name`, `kind`, `label`), `state_fields`,
   `visual_states`, or object affordance capabilities. These are
-  object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md). No `target_groups` either; named groups are deferred.
+  object-side per [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md).
 - No SVG asset ids and no color values. The object's `visual_states` is the
   only authoring surface that resolves a state value to an asset or color.
 - No protocol primitives or step content. Steps and `ObjectStateChange`

@@ -10,13 +10,13 @@ structure:
   name_pattern: "tube_{row_letter}"
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, carboplatin, media]
     default: empty
     applies_to: subpart
     description: Contents currently in this tube.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ul
     min: 0

@@ -14,17 +14,14 @@ Standalone tool. Not a pytest. Not imported by build pipeline or src/.
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
-
-# Import validators module
 from validators.yaml_io import load_yaml
-from validators.findings import Finding, Severity
-from validators.constants import OBJECT_KINDS, RETIRED_OBJECT_KEYS
 from validators.database import ContentDatabase
 from validators.object_validator import ObjectValidator
 from validators.scene_base_validator import BaseSceneValidator
 from validators.scene_protocol_validator import ProtocolSceneValidator
 from validators.protocol_validator import ProtocolValidator
+from validators.cross_protocol import CrossProtocolValidator
+import validators.summary as summary_printer
 
 
 class ValidationError(Exception):
@@ -32,86 +29,54 @@ class ValidationError(Exception):
 	pass
 
 
-def print_verbose_details(file_path: str, data: Dict[str, Any], file_type: str) -> None:
+# Verbose detail printers live in validators/summary.py. Dispatch by file_type.
+VERBOSE_PRINTERS = {
+	'object': summary_printer.print_object_details,
+	'base_scene': summary_printer.print_scene_details,
+	'protocol_scene': summary_printer.print_protocol_scene_details,
+	'protocol': summary_printer.print_protocol_summary,
+	'contents': summary_printer.print_contents_details,
+}
+
+
+def _load_and_collect(path: Path, rel_path: Path, validator, cross_validator: CrossProtocolValidator, errors: list):
 	"""
-	Print 2-4 indented detail lines for a PASS result (--verbose mode only).
-	file_type: 'object', 'base_scene', 'protocol_scene', or 'protocol'
+	Load one YAML file, run validator + camelCase sweep, print and collect any
+	findings. Returns (findings, data) where data is None if load failed.
 	"""
-	indent = "  "
-
-	if file_type == 'object':
-		kind = data.get('kind', 'unknown')
-		caps = data.get('capabilities', [])
-		caps_str = ', '.join(caps) if caps else 'none'
-		state_count = len(data.get('state_fields', []))
-		print(f"{indent}kind: {kind}")
-		print(f"{indent}capabilities: {caps_str}")
-		print(f"{indent}state_fields: {state_count}")
-
-	elif file_type == 'base_scene':
-		workspace = data.get('workspace', 'unknown')
-		zone_count = len(data.get('zones', []))
-		placement_count = len(data.get('placements', []))
-		print(f"{indent}workspace: {workspace}")
-		print(f"{indent}zones: {zone_count}")
-		print(f"{indent}placements: {placement_count}")
-		print(f"{indent}all placement object_name values resolve")
-
-	elif file_type == 'protocol_scene':
-		extends = data.get('extends', 'unknown')
-		print(f"{indent}extends: {extends}")
-		# Count operations with non-zero values
-		add_count = len(data.get('add_placements', []))
-		reposition_count = len(data.get('reposition_placements', []))
-		deactivate_count = len(data.get('deactivate_placements', []))
-		remove_count = len(data.get('remove_placements', []))
-		if add_count > 0:
-			print(f"{indent}add_placements: {add_count}")
-		if reposition_count > 0:
-			print(f"{indent}reposition_placements: {reposition_count}")
-		if deactivate_count > 0:
-			print(f"{indent}deactivate_placements: {deactivate_count}")
-		if remove_count > 0:
-			print(f"{indent}remove_placements: {remove_count}")
-
-	elif file_type == 'protocol':
-		proto_type = data.get('protocol_type', 'unknown')
-		steps = data.get('steps', [])
-		step_count = len(steps)
-		entry_step = data.get('entry_step', 'unknown')
-		# Count terminal steps
-		terminal_count = sum(1 for s in steps if isinstance(s, dict) and s.get('next_step') is None)
-		# Count unique scene references in steps (via SceneChange scene_operations)
-		scenes_ref = set()
-		for step in steps:
-			if isinstance(step, dict):
-				sequence = step.get('sequence', [])
-				for interaction in sequence:
-					if isinstance(interaction, dict):
-						response = interaction.get('response', {})
-						if isinstance(response, dict):
-							scene_ops = response.get('scene_operations', [])
-							for op in scene_ops:
-								if isinstance(op, dict) and op.get('type') == 'SceneChange':
-									to_scene = op.get('to_scene')
-									if to_scene:
-										scenes_ref.add(to_scene)
-		print(f"{indent}protocol_type: {proto_type}")
-		print(f"{indent}steps: {step_count}")
-		print(f"{indent}entry_step: {entry_step}")
-		print(f"{indent}terminal_steps: {terminal_count}")
-		print(f"{indent}scenes_referenced: {len(scenes_ref)}")
-
-	elif file_type == 'contents':
-		contents_list = data.get('contents', [])
-		contents_count = len(contents_list)
-		# Count how many are referenced (have a 'name' field)
-		referenced_count = sum(1 for c in contents_list if isinstance(c, dict) and 'name' in c)
-		print(f"{indent}contents: {contents_count}")
-		print(f"{indent}referenced: {referenced_count}")
+	# YAML parse failure is the one case we catch and continue: one bad file
+	# should not stop the whole-tree walk.
+	try:
+		data = load_yaml(path)
+	except RuntimeError as e:
+		msg = str(e)
+		errors.append(msg)
+		print(msg)
+		return None, None
+	findings = validator.validate(data, str(rel_path))
+	findings.extend(cross_validator.check_camelcase_keys(data, str(rel_path)))
+	for fnd in findings:
+		msg = fnd.format()
+		errors.append(msg)
+		print(msg)
+	return findings, data
 
 
-def find_yaml_files(root: str, file_type: str) -> List[Path]:
+def _print_pass(rel_path: Path, data: dict, file_type: str, verbose: bool) -> None:
+	"""Print PASS + verbose details for one file when verbose mode is on."""
+	if not verbose:
+		return
+	print(f"PASS: {rel_path}")
+	printer = VERBOSE_PRINTERS.get(file_type)
+	if printer is None:
+		return
+	if file_type == 'protocol':
+		printer(str(rel_path), data, verbose=True)
+	else:
+		printer(data)
+
+
+def find_yaml_files(root: str, file_type: str) -> list:
 	"""Find YAML files by type under content/."""
 	root_path = Path(root)
 	files = []
@@ -128,7 +93,7 @@ def find_yaml_files(root: str, file_type: str) -> List[Path]:
 	return sorted(files)
 
 
-def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False) -> Tuple[bool, List[str], Dict[str, int]]:
+def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False) -> tuple:
 	"""
 	Validate entire content tree.
 	Returns (success, list_of_error_messages, counts_dict).
@@ -146,112 +111,38 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 		errors.append(finding.format())
 		print(finding.format())
 
-	# Validate objects
-	if verbose:
-		print("=== Objects ===")
-	object_files = find_yaml_files(repo_root, 'object')
+	# Cross-cutting camelCase regex sweep (general, no allow-list)
+	cross_validator = CrossProtocolValidator()
+
 	object_validator = ObjectValidator()
-
-	for obj_file in object_files:
-		rel_path = obj_file.relative_to(repo_root)
-		counts['objects'] += 1
-		try:
-			obj_data = load_yaml(obj_file)
-			obj_findings = object_validator.validate(obj_data, str(rel_path))
-			if obj_findings:
-				for finding in obj_findings:
-					errors.append(finding.format())
-					print(finding.format())
-			else:
-				if verbose:
-					print(f"PASS: {rel_path}")
-					print_verbose_details(str(rel_path), obj_data, 'object')
-		except RuntimeError as e:
-			error_msg = str(e)
-			errors.append(error_msg)
-			print(error_msg)
-
-	# Validate base scenes
-	if verbose:
-		print("=== Base scenes ===")
-	base_scene_files = find_yaml_files(repo_root, 'base_scene')
 	base_scene_validator = BaseSceneValidator()
-
-	for scene_file in base_scene_files:
-		rel_path = scene_file.relative_to(repo_root)
-		counts['base_scenes'] += 1
-		try:
-			scene_data = load_yaml(scene_file)
-			scene_findings = base_scene_validator.validate(scene_data, str(rel_path))
-			if scene_findings:
-				for finding in scene_findings:
-					errors.append(finding.format())
-					print(finding.format())
-			else:
-				if verbose:
-					print(f"PASS: {rel_path}")
-					print_verbose_details(str(rel_path), scene_data, 'base_scene')
-		except RuntimeError as e:
-			error_msg = str(e)
-			errors.append(error_msg)
-			print(error_msg)
-
-	# Validate protocol scenes
-	if verbose:
-		print("=== Protocol scenes ===")
-	protocol_scene_files = find_yaml_files(repo_root, 'protocol_scene')
+	base_scene_validator.set_object_names(set(db.objects.keys()))
 	protocol_scene_validator = ProtocolSceneValidator()
 	protocol_scene_validator.set_base_scenes(db.base_scenes)
-
-	for scene_file in protocol_scene_files:
-		rel_path = scene_file.relative_to(repo_root)
-		counts['protocol_scenes'] += 1
-		try:
-			scene_data = load_yaml(scene_file)
-			scene_findings = protocol_scene_validator.validate(scene_data, str(rel_path))
-			if scene_findings:
-				for finding in scene_findings:
-					errors.append(finding.format())
-					print(finding.format())
-			else:
-				if verbose:
-					print(f"PASS: {rel_path}")
-					print_verbose_details(str(rel_path), scene_data, 'protocol_scene')
-		except RuntimeError as e:
-			error_msg = str(e)
-			errors.append(error_msg)
-			print(error_msg)
-
-	# Validate protocols with Tier 1 checks enabled
-	if verbose:
-		print("=== Protocols ===")
-	protocol_files = find_yaml_files(repo_root, 'protocol')
 	protocol_validator = ProtocolValidator(db=db)
 
-	for protocol_file in protocol_files:
-		rel_path = protocol_file.relative_to(repo_root)
-		counts['protocols'] += 1
-		try:
-			protocol_data = load_yaml(protocol_file)
-			protocol_findings = protocol_validator.validate(protocol_data, str(rel_path))
-			if protocol_findings:
-				for finding in protocol_findings:
-					errors.append(finding.format())
-					print(finding.format())
-			else:
-				if verbose:
-					print(f"PASS: {rel_path}")
-					print_verbose_details(str(rel_path), protocol_data, 'protocol')
-		except RuntimeError as e:
-			error_msg = str(e)
-			errors.append(error_msg)
-			print(error_msg)
+	sections = [
+		('Objects', 'object', 'objects', object_validator),
+		('Base scenes', 'base_scene', 'base_scenes', base_scene_validator),
+		('Protocol scenes', 'protocol_scene', 'protocol_scenes', protocol_scene_validator),
+		('Protocols', 'protocol', 'protocols', protocol_validator),
+	]
+
+	for header, file_type, count_key, validator in sections:
+		if verbose:
+			print(f"=== {header} ===")
+		for f in find_yaml_files(repo_root, file_type):
+			rel_path = f.relative_to(repo_root)
+			counts[count_key] += 1
+			findings, data = _load_and_collect(f, rel_path, validator, cross_validator, errors)
+			if data is not None and not findings:
+				_print_pass(rel_path, data, file_type, verbose)
 
 	success = len(errors) == 0
 	return success, errors, counts
 
 
-def list_protocols(repo_root: str) -> List[str]:
+def list_protocols(repo_root: str) -> list:
 	"""
 	List all protocol names (directories under content/protocols/).
 	Returns sorted list of names.
@@ -268,7 +159,7 @@ def list_protocols(repo_root: str) -> List[str]:
 	return names
 
 
-def resolve_protocol_path(name_or_path: str, repo_root: str) -> Optional[Path]:
+def resolve_protocol_path(name_or_path: str, repo_root: str) -> Path | None:
 	"""
 	Resolve a protocol identifier to a protocol.yaml path.
 	If name_or_path contains '/' or ends in '.yaml', treat as file path.
@@ -289,7 +180,7 @@ def resolve_protocol_path(name_or_path: str, repo_root: str) -> Optional[Path]:
 	return None
 
 
-def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = False, verbose: bool = False) -> Tuple[bool, List[str]]:
+def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = False, verbose: bool = False) -> tuple:
 	"""
 	Validate a full protocol package: protocol.yaml, contents.yaml, scenes, and referenced objects.
 	Returns (success, list_of_error_messages).
@@ -394,70 +285,12 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 			print(f"  PASS: {file_path}")
 			if verbose and file_path in files_data:
 				file_type, file_data = files_data[file_path]
-				# Print verbose details with 4-space indent (2 for PASS indent, 2 more for details)
-				indent = "    "
-				if file_type == 'object':
-					kind = file_data.get('kind', 'unknown')
-					caps = file_data.get('capabilities', [])
-					caps_str = ', '.join(caps) if caps else 'none'
-					state_count = len(file_data.get('state_fields', []))
-					print(f"{indent}kind: {kind}")
-					print(f"{indent}capabilities: {caps_str}")
-					print(f"{indent}state_fields: {state_count}")
-				elif file_type == 'base_scene':
-					workspace = file_data.get('workspace', 'unknown')
-					zone_count = len(file_data.get('zones', []))
-					placement_count = len(file_data.get('placements', []))
-					print(f"{indent}workspace: {workspace}")
-					print(f"{indent}zones: {zone_count}")
-					print(f"{indent}placements: {placement_count}")
-					print(f"{indent}all placement object_name values resolve")
-				elif file_type == 'protocol_scene':
-					extends = file_data.get('extends', 'unknown')
-					print(f"{indent}extends: {extends}")
-					add_count = len(file_data.get('add_placements', []))
-					reposition_count = len(file_data.get('reposition_placements', []))
-					deactivate_count = len(file_data.get('deactivate_placements', []))
-					remove_count = len(file_data.get('remove_placements', []))
-					if add_count > 0:
-						print(f"{indent}add_placements: {add_count}")
-					if reposition_count > 0:
-						print(f"{indent}reposition_placements: {reposition_count}")
-					if deactivate_count > 0:
-						print(f"{indent}deactivate_placements: {deactivate_count}")
-					if remove_count > 0:
-						print(f"{indent}remove_placements: {remove_count}")
-				elif file_type == 'protocol':
-					proto_type = file_data.get('protocol_type', 'unknown')
-					steps = file_data.get('steps', [])
-					step_count = len(steps)
-					entry_step = file_data.get('entry_step', 'unknown')
-					terminal_count = sum(1 for s in steps if isinstance(s, dict) and s.get('next_step') is None)
-					scenes_ref = set()
-					for step in steps:
-						if isinstance(step, dict):
-							sequence = step.get('sequence', [])
-							for interaction in sequence:
-								if isinstance(interaction, dict):
-									response = interaction.get('response', {})
-									if isinstance(response, dict):
-										scene_ops = response.get('scene_operations', [])
-										for op in scene_ops:
-											if isinstance(op, dict) and op.get('type') == 'SceneChange':
-												to_scene = op.get('to_scene')
-												if to_scene:
-													scenes_ref.add(to_scene)
-					print(f"{indent}protocol_type: {proto_type}")
-					print(f"{indent}steps: {step_count}")
-					print(f"{indent}entry_step: {entry_step}")
-					print(f"{indent}terminal_steps: {terminal_count}")
-					print(f"{indent}scenes_referenced: {len(scenes_ref)}")
-				elif file_type == 'contents':
-					contents_list = file_data.get('contents', [])
-					contents_count = len(contents_list)
-					referenced_count = sum(1 for c in contents_list if isinstance(c, dict) and 'name' in c)
-					print(f"{indent}contents: {contents_count}")
-					print(f"{indent}referenced: {referenced_count}")
+				printer = VERBOSE_PRINTERS.get(file_type)
+				if printer is not None:
+					if file_type == 'protocol':
+						printer(file_path, file_data, verbose=True)
+					else:
+						printer(file_data)
 		if errors:
 			for error in errors:
 				print(f"  ERROR: {error}")
@@ -528,13 +361,11 @@ def parse_args():
 
 
 def main():
-	"""Main entry point."""
+	"""Dispatch to the correct validation mode: list, interactive, per-protocol,
+	per-file, or whole-tree. Repo root is derived from this file's location."""
 	args = parse_args()
 
-	try:
-		repo_root = Path(__file__).resolve().parent.parent
-	except Exception:
-		repo_root = Path.cwd()
+	repo_root = Path(__file__).resolve().parent.parent
 
 	# List protocols
 	if args.list_protocols_flag:
@@ -545,8 +376,7 @@ def main():
 
 	# Interactive mode
 	if args.interactive:
-		import sys as sys_module
-		if not sys_module.stdin.isatty():
+		if not sys.stdin.isatty():
 			print("Interactive mode requires a terminal. Aborting.")
 			sys.exit(1)
 		protocols = list_protocols(str(repo_root))

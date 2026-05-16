@@ -3,7 +3,7 @@ kind: equipment
 label: Incubator
 
 state_fields:
-  - name: set_temperature_c
+  - field_name: set_temperature_c
     type: float
     unit: C
     min: 4
@@ -11,7 +11,7 @@ state_fields:
     step: 1
     default: 37
     description: Temperature setting in degrees Celsius.
-  - name: set_co2_pct
+  - field_name: set_co2_pct
     type: float
     unit: pct
     min: 0
@@ -19,7 +19,7 @@ state_fields:
     step: 0.5
     default: 5
     description: Carbon dioxide concentration setting as a percentage.
-  - name: door_open
+  - field_name: door_open
     type: bool
     default: false
     description: Whether the incubator door is open.

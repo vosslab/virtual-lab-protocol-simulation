@@ -1,5 +1,5 @@
 protocol_type: mini_protocol
-name: cell_culture
+protocol_name: cell_culture
 entry_step: inspect_cells
 
 learning:
@@ -8,7 +8,7 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish teaching the complete one-flask-to-new-flask passage cycle, emphasizing inspection and reseed as the bookend skills of routine cell culture maintenance."
 
 steps:
-  - name: inspect_cells
+  - step_name: inspect_cells
     prompt: "Inspect the cells under the microscope to confirm they are at confluence."
     why: "Confluence assessment determines whether cells are ready for passage."
     sequence:
@@ -38,7 +38,7 @@ steps:
       on_failure: retry
     next_step: prepare_hood
 
-  - name: prepare_hood
+  - step_name: prepare_hood
     prompt: "Decontaminate the hood and warm the required reagents."
     why: "Aseptic technique and proper reagent temperature are essential for healthy cell recovery."
     sequence:
@@ -80,7 +80,7 @@ steps:
       on_failure: retry
     next_step: aspirate_and_wash
 
-  - name: aspirate_spent_media
+  - step_name: aspirate_spent_media
     prompt: "Aspirate spent media from the flask into the waste container."
     why: "Removing old media clears dead cells and serum residue before rinsing."
     sequence:
@@ -131,7 +131,7 @@ steps:
       on_failure: retry
     next_step: pbs_wash
 
-  - name: pbs_wash
+  - step_name: pbs_wash
     prompt: "Rinse the flask with PBS and aspirate the wash."
     why: "Rinsing removes residual serum before enzymatic detachment."
     sequence:
@@ -207,7 +207,7 @@ steps:
       on_failure: retry
     next_step: trypsinize_and_incubate
 
-  - name: trypsinize_and_incubate
+  - step_name: trypsinize_and_incubate
     prompt: "Add trypsin and incubate until cells detach."
     why: "Trypsin enzymatically digests the extracellular matrix, allowing cell suspension."
     sequence:
@@ -254,7 +254,7 @@ steps:
       on_failure: retry
     next_step: neutralize_and_transfer
 
-  - name: neutralize_and_transfer
+  - step_name: neutralize_and_transfer
     prompt: "Add fresh media to neutralize trypsin and transfer the cell suspension to a conical tube."
     why: "Serum in fresh media stops the trypsin reaction, and transfer to a conical enables efficient centrifugation."
     sequence:
@@ -333,7 +333,7 @@ steps:
       on_failure: retry
     next_step: centrifuge_and_aspirate
 
-  - name: centrifuge_and_aspirate
+  - step_name: centrifuge_and_aspirate
     prompt: "Centrifuge the conical tube and aspirate the supernatant."
     why: "Centrifugation pellets cells for resuspension; aspirating supernatant concentrates the cell population."
     sequence:
@@ -409,7 +409,7 @@ steps:
       on_failure: retry
     next_step: resuspend_and_reseed
 
-  - name: resuspend_and_reseed
+  - step_name: resuspend_and_reseed
     prompt: "Resuspend the cell pellet in fresh media and seed a new flask."
     why: "Resuspension creates a homogeneous cell suspension; reseeding in fresh media at the correct density ensures healthy proliferation."
     sequence:
@@ -488,7 +488,7 @@ steps:
       on_failure: retry
     next_step: return_to_incubator
 
-  - name: return_to_incubator
+  - step_name: return_to_incubator
     prompt: "Return the new flask to the incubator for recovery and growth."
     why: "Incubation at body temperature allows cells to recover from mechanical stress and resume active proliferation."
     sequence:

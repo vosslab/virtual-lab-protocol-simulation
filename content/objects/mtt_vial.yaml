@@ -3,12 +3,12 @@ kind: bottle
 label: MTT reagent
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [mtt]
     default: mtt
     description: Contents currently in this vial.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

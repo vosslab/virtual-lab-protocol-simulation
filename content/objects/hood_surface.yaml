@@ -3,7 +3,7 @@ kind: equipment
 label: BSC workspace
 
 state_fields:
-  - name: surface_cleanliness
+  - field_name: surface_cleanliness
     type: enum
     allowed: [dirty, ethanol_sprayed]
     default: dirty

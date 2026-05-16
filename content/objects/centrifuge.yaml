@@ -3,7 +3,7 @@ kind: equipment
 label: Centrifuge
 
 state_fields:
-  - name: set_rpm
+  - field_name: set_rpm
     type: float
     unit: rpm
     min: 0
@@ -11,7 +11,7 @@ state_fields:
     step: 100
     default: 1200
     description: Rotational speed setting in revolutions per minute.
-  - name: set_time_min
+  - field_name: set_time_min
     type: float
     unit: min
     min: 0
@@ -19,7 +19,7 @@ state_fields:
     step: 0.5
     default: 5
     description: Time duration setting in minutes.
-  - name: running
+  - field_name: running
     type: bool
     default: false
     description: Whether the centrifuge is currently running.

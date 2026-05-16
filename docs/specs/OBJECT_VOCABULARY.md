@@ -22,8 +22,8 @@ This doc names the vocabulary; the format doc encodes the schema.
 ## What an object is
 
 An **object** is the unit of authoring for "what a thing is". One object
-definition declares one identity, one structure (subparts; named groups
-are deferred), one schema of flat-primitive state variables,
+definition declares one identity, one structure (subparts only), one
+schema of flat-primitive state variables,
 one map from state values to visual assets, one closed capability set,
 and one set of layout hints. The object definition does not say where
 the thing goes (that is scene-side; see
@@ -75,10 +75,9 @@ multichannel pipette has channels. The object declares this structure
 once; a protocol addresses individual subparts by reference into the
 object's own declared structure.
 
-Named groups of subparts are not declared in the initial design. Protocols
-list explicit subparts (for example `treatment_plate.A1`,
-`treatment_plate.A2`). Named groups are deferred until real authoring
-pain appears, then revisited as a separate vocabulary addition.
+Protocols address subparts explicitly (for example
+`treatment_plate.A1`, `treatment_plate.A2`). The vocabulary has no
+named-group construct.
 
 The structure block is optional. An object with no structure block is a
 **flat object** (a bottle, a flask, a single-tube vial). An object with
@@ -88,7 +87,7 @@ first-class addressable units inside that object's namespace.
 | Field | Required | Purpose |
 | --- | --- | --- |
 | `structure.subpart_kind` | yes (if structure present) | What each subpart is (`well`, `tube`, `lane`, `slot`, `channel`). |
-| `structure.layout` | yes (if structure present) | One of `grid`, `list`, or `custom`. A grid declares rows and cols; a list declares an ordered count; custom is reserved for future use. |
+| `structure.layout` | yes (if structure present) | One of `grid` or `list`. A grid declares rows and cols; a list declares an ordered count. |
 | `structure.rows` | grid only | Row count. |
 | `structure.cols` | grid only | Column count. |
 | `structure.count` | list only | Subpart count. |
@@ -101,16 +100,13 @@ A 96-well plate has zero or few plate-level state fields and several
 flat per-well fields (`contents_name`, `contents_volume`);
 a multichannel pipette has the same flat contents fields per channel.
 
-### Named groups deferred
+### Grouped targets are listed explicitly
 
-Named groups (`target_groups`) are not declared on the object in the
-initial vocabulary. A protocol that needs to act on a row of wells, a
-tube column, or a set of gel lanes lists each subpart by reference
-(for example `treatment_plate.A1`, `treatment_plate.A2`, ...,
+A protocol that needs to act on a row of wells, a tube column, or a
+set of gel lanes lists each subpart by reference (for example
+`treatment_plate.A1`, `treatment_plate.A2`, ...,
 `treatment_plate.A12`). The object's `name_pattern` is the only naming
-contract; the scene never sees grouping. Named groups become a
-separate vocabulary addition once real authoring pain appears in
-shipped protocols.
+contract; the scene never sees grouping.
 
 ## Contents
 
@@ -201,6 +197,17 @@ Rules:
   SVG asset names or overlay names. An identity field, a `state_field`, a
   capability, or a layout hint never names an asset name.
 
+`SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
+`SetPointDisplayChange` are object/render-layer mechanisms invoked by
+`visual_states` when state changes. They are not protocol-side scene
+operations and never appear as authored slots in protocol YAML or scene
+YAML. The protocol-side primitive that drives them is
+`ObjectStateChange`, which writes the flat declared state fields
+(`contents_name`, `contents_volume`, `held_contents_name`,
+`held_contents_volume`, `set_volume`, `set_temperature`, `set_rpm`,
+etc.); `visual_states` then resolves the new state to the appropriate
+render output.
+
 The full set of allowed `formula` tokens (the formula mini-language) is
 intentionally narrow; the canonical enumeration belongs in
 `docs/OBJECT_YAML_FORMAT.md` alongside the schema for `cases`.
@@ -290,8 +297,8 @@ The three-way boundary names what each vocabulary owns:
   object resolves the visual. Canonical doc:
   [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 - **Object** names what a thing is and how its state appears. An
-  object declares identity, structure (subparts; named groups are
-  deferred), the typed flat-primitive `state_fields` schema, the
+  object declares identity, structure (subparts only), the typed
+  flat-primitive `state_fields` schema, the
   `visual_states` from state value to visual asset, the closed
   `capabilities` set, and object-default layout hints. The object
   owns the state-to-visual map and SVG manipulation. The object never
@@ -308,7 +315,7 @@ A scene placement may carry exactly one bounded set of instance
 overrides: the object's layout hints (`default_width`, `label_width`,
 `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may not
 override identity (`object_name`, `kind`, `label`), `state_fields`,
-`visual_states`, `target_groups`, or `capabilities`.
+`visual_states`, or `capabilities`.
 
 ## Worked example: 96-well plate
 

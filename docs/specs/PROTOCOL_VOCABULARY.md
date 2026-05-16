@@ -33,11 +33,11 @@ authored kinds, and the structural terms that surround them, are:
 - **Sequence runner** (`protocol_type: sequence_runner`) -- an
   ordered pathway that connects mini-protocols into a larger
   student-facing sequence. Declares its sequence in place of
-  authored steps; exempt from the 6-to-10 step gate. May be
+  authored steps; exempt from the 6-to-10 step guideline. May be
   rendered in student-facing content as "full protocol".
 - **Developer smoke** (`protocol_type: dev_smoke`) -- diagnostic
   protocol used to verify a scene or object works. Excluded from
-  the student launcher and the curriculum step-count gate.
+  the student launcher and the curriculum step-count guideline.
 
 The bare word "protocol" is not a formal kind or enum value.
 Precise terms (`protocol.yaml`, protocol package, protocol-level
@@ -95,11 +95,10 @@ the individual gestures live inside it in an ordered `sequence`.
 - A `scene_operation` requires `type` plus that type's documented
   typed fields.
 
-The `interaction` has exactly four slots. The initial tight spec
-uses four interaction slots: `target`, `gesture`, `validator`, and
-`response`. Referenced interaction names are deferred until a later
-plan shows the need. There is no separate interaction task-type
-slot -- the target's `kind` carries the task semantics.
+The `interaction` has exactly four slots: `target`, `gesture`,
+`validator`, and `response`. There is no separate interaction
+task-type slot -- the target's `kind` carries the task semantics.
+Interactions are not addressable by name.
 
 ### The `protocol` level
 
@@ -412,7 +411,7 @@ declared set-point fields (`set_volume`, `set_temperature`,
 
 | Primitive | Typed fields | One-line meaning |
 | --- | --- | --- |
-| `ObjectStateChange` | `type`, `target`, `state` (a flat mapping of `state_field` name to primitive value), optional `transition` (`instant` or `animated`) | Semantic state change: sets one or more declared `state_fields` on a target object or subpart. The object's `visual_states` resolves the new state to a visual; the protocol does not name the visual. Named groups are deferred; emit one `ObjectStateChange` per subpart. This is the sole protocol primitive for liquid state mutation; write the flat declared liquid fields and let the object's `visual_states` resolve the visual. This primitive changes what the simulation IS (declared state), not how it LOOKS. |
+| `ObjectStateChange` | `type`, `target`, `state` (a flat mapping of `state_field` name to primitive value), optional `transition` (`instant` or `animated`) | Semantic state change: sets one or more declared `state_fields` on a target object or subpart. The object's `visual_states` resolves the new state to a visual; the protocol does not name the visual. A protocol that acts on several subparts emits one `ObjectStateChange` per subpart. This is the sole protocol primitive for liquid state mutation; write the flat declared liquid fields and let the object's `visual_states` resolve the visual. This primitive changes what the simulation IS (declared state), not how it LOOKS. |
 | `CursorAttach` | `type`, `target`, `operation` (`attach` or `detach`) | Semantic state change: sets the runtime's held-material state -- "the learner is now holding this object instance" (`attach`) or "the learner is no longer holding it" (`detach`). It must not be read as "draw the object under the cursor"; the cursor-follow visual is rendered by the scene / object-render layer in response to the held-material state change. This primitive changes what the simulation IS (held material), not how it LOOKS. |
 | `SceneChange` | `type`, `to_scene` | Semantic state change: transitions the runtime's active scene id to another scene. The protocol names which scene; the scene-runtime renders the transition. This primitive changes what the simulation IS (the active scene), not how it LOOKS. |
 | `LayoutMove` | `type`, `target`, `to_slot` (and optional `to_scene` for cross-scene transitions) | Semantic placement change: moves an existing placement only. Two valid uses: (a) reposition within the current scene (the layout engine handles row-to-row moves); (b) cross-scene transition (remove the placement from one scene and add it to another, e.g., a pipette moving from hood to bench, or a protocol with two bench areas). The protocol names what moves and where; it must not encode animation timing, pixel coordinates, layout rules, or visual motion. The layout engine owns the visible motion. |
@@ -427,9 +426,8 @@ protocol level.
 `ObjectStateChange` is the only protocol primitive that writes into
 declared object `state_fields`. The protocol names a `target` (an
 object name, or a subpart reference such as `treatment_plate.A1`) and
-a `state` mapping of `state_field` name to value. Named groups are
-deferred; a protocol that acts on several subparts emits one
-`ObjectStateChange` per subpart. The object's `visual_states` resolves
+a `state` mapping of `state_field` name to value. A protocol that
+acts on several subparts emits one `ObjectStateChange` per subpart. The object's `visual_states` resolves
 the new state value to a visual asset; the protocol never names an
 SVG asset id and never names a color value.
 
@@ -479,10 +477,8 @@ Each liquid state change maps to a flat-field write:
 The five primitives are a closed but extensible set, governed by
 the cost guardrail below. Instrument-produced data (a cell count, an
 absorbance value, a gel band pattern) has no `scene_operation` that
-records it as runtime state. In this vocabulary, instrument-produced
-data stays `feedback`-only. A candidate future primitive (working names
-`DataReadout` or `InstrumentReadDisplayChange`) is reserved for
-instrument-data recording and deferred for future design.
+records it as runtime state. Instrument-produced data stays
+`feedback`-only.
 
 ## Domain verbs
 
@@ -658,11 +654,9 @@ outcome:
 | `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`. |
 | `on_failure` | What happens when the `step_validator` does not pass, or an interaction `validator` returned false. `retry` restarts the whole step -- the entire `sequence` resets and the student redoes the step from its first interaction. |
 
-`outcome` is a mapping so a later plan can grow it without changing
-shape. The bare-scalar form `outcome: complete` is rejected: it
-cannot say what happens on failure. Complex branching is deferred;
-there is no `on_hint_requested`, no `branches` mapping, and no
-adaptive review in the tight spec.
+`outcome` is a mapping. The bare-scalar form `outcome: complete` is
+rejected: it cannot say what happens on failure. The vocabulary has
+no `on_hint_requested`, no `branches` mapping, and no adaptive review.
 
 `outcome` does not advance the protocol. Advancing is `next_step`'s
 job.
@@ -791,12 +785,12 @@ adapter-registry plus explicit-subpart mechanism:
   `target` name the protocol uses to a concrete scene object. The
   protocol writes `target: flask`; the adapter's registry resolves
   `flask` to the scene's flask object.
-- **Grouped targets are listed explicitly.** Named groups (`target_groups`)
-  are deferred from the initial vocabulary. A protocol that needs to
-  act on several subparts -- a row of wells, a tube column, a set
-  of gel lanes -- emits one interaction per subpart, addressing
-  each as `<object_name>.<subpart_name>` (for example
-  `treatment_plate.A1`). The object's `id_pattern` (defined in
+- **Grouped targets are listed explicitly.** The vocabulary has no
+  named-group construct. A protocol that needs to act on several
+  subparts -- a row of wells, a tube column, a set of gel lanes --
+  emits one interaction per subpart, addressing each as
+  `<object_name>.<subpart_name>` (for example `treatment_plate.A1`).
+  The object's `id_pattern` (defined in
   [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) is the only naming
   contract.
 - **The protocol vocabulary stays geometry-free.** No ranges, no
@@ -984,7 +978,7 @@ Reading the chain:
 | **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
 | **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, contents, and referenced objects. Usually 6 to 10 meaningful steps. | `protocol_type: mini_protocol` |
 | **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |
-| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher and the curriculum step-count gate. | `protocol_type: dev_smoke` |
+| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher and the curriculum step-count guideline. | `protocol_type: dev_smoke` |
 | **Protocol** | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value. | `protocol` block in `protocol.yaml` |
 | **Step** | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture. | one entry in `protocol.steps` |
 | **Sequence** | The ordered list of interactions inside a step; order always matters. | `step.sequence` |

@@ -186,10 +186,8 @@ reposition_placements:
 
 Build error: `reposition_placements` may only change `zone`, `position`, `depth`, and `anchor`. The `capabilities` field is object-owned and locked. Capabilities are declared on the object, not the placement.
 
-## Future work
+## Inheritance depth
 
-Template-to-template inheritance (scene extends scene, each of which may themselves extend other scenes) is intentionally deferred. The one-level rule may be relaxed in the future when a documented pedagogical or author-ergonomics case demonstrates that shallow inheritance is insufficient. At that time, a separate ratified spec edit will define the extended rules, validators, and rejection patterns.
-
-## Out of scope
-
-Validator implementation, content migration, and TypeScript changes are deferred. See [../active_plans/scene_inheritance_migration.md](../active_plans/scene_inheritance_migration.md) for the migration stub that names target work and declares that deferred work gated on the validator landing.
+Scene inheritance is one level: a protocol-scene extends a base scene
+and a base scene does not extend another scene. Multi-level
+inheritance is not part of the vocabulary.

@@ -1,5 +1,5 @@
 protocol_type: mini_protocol
-name: drug_dilution_setup
+protocol_name: drug_dilution_setup
 entry_step: prep_workspace
 
 learning:
@@ -8,7 +8,7 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish teaching the critical skill of preparing drug working stocks that feed the plate treatment protocol."
 
 steps:
-  - name: prep_workspace
+  - step_name: prep_workspace
     prompt: "Gather supplies and prepare your workspace for drug preparation."
     why: "Organization and asepsis prevent contamination and lost materials during precise dilution work."
     sequence:
@@ -39,7 +39,7 @@ steps:
       on_failure: retry
     next_step: set_micropipette_volume_intermediate
 
-  - name: set_micropipette_volume_intermediate
+  - step_name: set_micropipette_volume_intermediate
     prompt: "Set the micropipette to 40 microliters to prepare the carboplatin intermediate dilution."
     why: "Precise volume adjustment teaches the skill of reading and setting micropipette scales, a core lab competency."
     sequence:
@@ -57,7 +57,7 @@ steps:
       on_failure: retry
     next_step: draw_carboplatin_stock
 
-  - name: draw_carboplatin_stock
+  - step_name: draw_carboplatin_stock
     prompt: "Draw 40 microliters of 10 mM carboplatin stock solution into the micropipette."
     why: "Drawing the correct volume from the parent stock is the first move in serial dilution."
     sequence:
@@ -73,7 +73,7 @@ steps:
             - type: ObjectStateChange
               target: micropipette
               state:
-                held_contents_name: carboplatin_10mM
+                held_contents_name: carboplatin_10mmol
                 held_contents_volume: 40
           feedback:
             correct: "Carboplatin stock drawn."
@@ -84,7 +84,7 @@ steps:
       on_failure: retry
     next_step: dispense_into_intermediate
 
-  - name: dispense_into_intermediate
+  - step_name: dispense_into_intermediate
     prompt: "Dispense the carboplatin into the 15 mL tube to start the 400 micromolar intermediate dilution."
     why: "This intermediate allows safe handling of a diluted reagent for the series that follows."
     sequence:
@@ -101,7 +101,7 @@ steps:
             - type: ObjectStateChange
               target: microtube_15ml_intermediate
               state:
-                contents_name: carboplatin_400uM
+                contents_name: carboplatin_400umol
                 contents_volume: 40
           feedback:
             correct: "Carboplatin dispensed into intermediate tube."
@@ -112,7 +112,7 @@ steps:
       on_failure: retry
     next_step: top_up_intermediate_water
 
-  - name: top_up_intermediate_water
+  - step_name: top_up_intermediate_water
     prompt: "Top up the intermediate tube with sterile water to reach 10 mL total, creating the 400 micromolar dilution."
     why: "The math of dilution connects concentration to volume: 40 &micro;L of 10 mM into 10 mL total yields 400 &micro;M."
     sequence:
@@ -138,7 +138,7 @@ steps:
       on_failure: retry
     next_step: vortex_intermediate
 
-  - name: vortex_intermediate
+  - step_name: vortex_intermediate
     prompt: "Vortex the intermediate tube to mix the dilution thoroughly."
     why: "Mixing ensures even distribution of the diluted reagent before it is used as a source for the working series."
     sequence:
@@ -168,7 +168,7 @@ steps:
       on_failure: retry
     next_step: prepare_metformin_working_stock
 
-  - name: prepare_metformin_working_stock
+  - step_name: prepare_metformin_working_stock
     prompt: "Prepare a 10 mM metformin working stock by drawing 10 microliters of 1 M metformin stock and adding to a tube with 990 microliters of media."
     why: "Metformin requires a single dilution step (1 M to 10 mM) to reach its working concentration for the plate assay."
     sequence:
@@ -192,7 +192,7 @@ steps:
             - type: ObjectStateChange
               target: micropipette
               state:
-                held_contents_name: metformin_1M
+                held_contents_name: metformin_1mol
                 held_contents_volume: 10
           feedback:
             correct: "Metformin stock drawn."
@@ -210,7 +210,7 @@ steps:
             - type: ObjectStateChange
               target: metformin_working_tube
               state:
-                contents_name: metformin_10mM
+                contents_name: metformin_10mmol
                 contents_volume: 1000
           feedback:
             correct: "Metformin working stock prepared."
@@ -221,7 +221,7 @@ steps:
       on_failure: retry
     next_step: vortex_metformin
 
-  - name: vortex_metformin
+  - step_name: vortex_metformin
     prompt: "Vortex the metformin working stock to ensure uniform mixing."
     why: "Complete mixing guarantees consistent dosing in the plate treatment step."
     sequence:

@@ -1,12 +1,10 @@
 """ObjectValidator: validates object YAML per OBJECT_YAML_FORMAT.md."""
 
-from typing import Any, Dict, List
-
 from validators.constants import (
 	OBJECT_KINDS,
 	OBJECT_CAPABILITIES,
 	OBJECT_REQUIRED_KEYS,
-	RETIRED_OBJECT_KEYS,
+	OBJECT_ALL_KEYS,
 	STATE_FIELD_TYPES,
 	STRUCTURE_SUBPART_KINDS,
 	STRUCTURE_LAYOUT_TYPES,
@@ -17,21 +15,22 @@ from validators.findings import Finding, Severity
 class ObjectValidator:
 	"""Validates object YAML files per OBJECT_YAML_FORMAT.md."""
 
-	def validate(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+	def validate(self, obj: dict, path: str) -> list:
 		"""
 		Validate an object definition.
 		Returns list of Finding objects (empty if valid).
 		"""
 		findings = []
 
-		# Check for retired keys
-		for retired in RETIRED_OBJECT_KEYS:
-			if retired in obj:
+		# Closure: any top-level key not in the documented whitelist is unknown.
+		# This subsumes the retired-key check; no allow-list maintained.
+		for key in obj.keys():
+			if key not in OBJECT_ALL_KEYS:
 				findings.append(Finding(
 					path=path,
 					lineno=None,
 					severity=Severity.ERROR,
-					message=f"retired key '{retired}' found (no longer supported)",
+					message=f"[CLOSURE] unknown top-level key '{key}' (allowed: {sorted(OBJECT_ALL_KEYS)})",
 				))
 
 		# Check required keys
@@ -60,7 +59,7 @@ class ObjectValidator:
 
 		return findings
 
-	def _validate_identity(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_identity(self, obj: dict, path: str) -> list:
 		"""Validate object_name, kind, label per OBJECT_YAML_FORMAT.md."""
 		findings = []
 
@@ -93,7 +92,7 @@ class ObjectValidator:
 
 		return findings
 
-	def _validate_state_fields(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_state_fields(self, obj: dict, path: str) -> list:
 		"""Validate state_fields per OBJECT_YAML_FORMAT.md."""
 		findings = []
 
@@ -121,7 +120,7 @@ class ObjectValidator:
 				continue
 
 			# Check required keys
-			for required_key in ('name', 'type', 'default'):
+			for required_key in ('field_name', 'type', 'default'):
 				if required_key not in field:
 					findings.append(Finding(
 						path=field_path,
@@ -130,7 +129,7 @@ class ObjectValidator:
 						message=f"missing required key '{required_key}'",
 					))
 
-			field_name = field.get('name')
+			field_name = field.get('field_name')
 			if field_name:
 				if field_name in seen_names:
 					findings.append(Finding(
@@ -161,7 +160,7 @@ class ObjectValidator:
 
 		return findings
 
-	def _validate_capabilities(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_capabilities(self, obj: dict, path: str) -> list:
 		"""Validate capabilities per OBJECT_VOCABULARY.md."""
 		findings = []
 
@@ -197,7 +196,7 @@ class ObjectValidator:
 
 		return findings
 
-	def _validate_structure(self, obj: Dict[str, Any], path: str) -> List[Finding]:
+	def _validate_structure(self, obj: dict, path: str) -> list:
 		"""Validate structure block if present."""
 		findings = []
 

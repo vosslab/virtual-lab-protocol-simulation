@@ -45,8 +45,11 @@ Shared objects live in `content/objects/`. Protocol scenes place them under
 `content/protocols/<protocol_name>/scenes/`. Every `protocol.yaml` declares
 a `protocol_type` (one of `mini_protocol`, `sequence_runner`, `dev_smoke`).
 A mini-protocol must define a `learning` block with required fields
-`objectives`, `outcomes`, and `goals`, and an `entry` block that declares
-the initial scene and first step.
+`objectives`, `outcomes`, and `goals`, and a top-level `entry_step`
+field naming the first step's `step_name`. The protocol has no `entry`
+block and declares no opening scene; scene context comes from the
+first step's interactions and any `SceneChange` operation in their
+responses.
 
 A Python builder reads these files, validates them, and emits TypeScript
 modules that the browser bundle imports. No YAML is parsed at runtime.
@@ -219,9 +222,8 @@ by the object via `structure.subparts` (see
 single subpart as `<object_name>.<subpart_name>` (for example
 `treatment_plate.A1`).
 
-Named groups are deferred from this vocabulary pass: a step that acts on
-several subparts emits one interaction per subpart. Worked example for two
-wells in row B:
+A step that acts on several subparts emits one interaction per subpart.
+Worked example for two wells in row B:
 
 ```yaml
 - step_name: add_media_row_b
@@ -348,8 +350,8 @@ Run through this checklist for every step you write.
   skill into a rote `click`.
 - **Targets are semantic and geometry-free.** Write a semantic `target`
   name; never write a well coordinate, a row range, or an x/y. A subpart
-  of a structured object is written as `<object_name>.<subpart_name>` (named
-  groups are deferred; emit one interaction per subpart).
+  of a structured object is written as `<object_name>.<subpart_name>`;
+  a step that acts on several subparts emits one interaction per subpart.
 - **Validators are named presets.** Every `validator` and `step_validator`
   is a preset from the documented library, with that preset's typed
   parameters. Never write free-form validation logic.

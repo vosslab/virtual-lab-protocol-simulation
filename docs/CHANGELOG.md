@@ -1,5 +1,182 @@
 # Changelog
 
+## 2026-05-15 (M2 scenes: bench_basic base + 5 inherited protocol scenes)
+
+### Additions and New Features
+
+- Promoted `content/scenes/bench_basic.yaml` as a shared base scene. Used
+  by five mini-protocols (cell_counting_and_seeding, drug_dilution_setup,
+  mtt_assay_readout, plate_drug_treatment, and the bench-side steps of
+  cell_culture), satisfying the promotion rule in
+  `docs/specs/SCENE_INHERITANCE.md`. Placement set is intentionally
+  minimal: waste container rear-left, vortex rear-right; per-protocol
+  scenes layer the working inventory on top via `add_placements`.
+- Authored five inherited protocol scenes per the pilot pattern:
+  - `content/protocols/cell_culture/scenes/hood_setup.yaml` (extends
+    `hood_basic`)
+  - `content/protocols/cell_counting_and_seeding/scenes/bench_setup.yaml`
+    (extends `bench_basic`)
+  - `content/protocols/drug_dilution_setup/scenes/bench_setup.yaml`
+    (extends `bench_basic`)
+  - `content/protocols/mtt_assay_readout/scenes/bench_setup.yaml`
+    (extends `bench_basic`)
+  - `content/protocols/plate_drug_treatment/scenes/bench_setup.yaml`
+    (extends `bench_basic`)
+  Each scene uses only the four allowed protocol-scene operations
+  (currently just `add_placements`), one inheritance level, and stable
+  `placement_name` values per `SCENE_INHERITANCE.md`. Cross-workspace
+  transitions (e.g. centrifuge inside cell_culture) are deferred to a
+  future expansion that wires `SceneChange` per `PRIMARY_SPEC.md`.
+
+### Developer Tests and Notes
+
+- `source source_me.sh && python3 tools/validate_content_yaml.py` exits
+  clean. 49 files validated (34 objects, 2 base scenes, 6 protocol
+  scenes, 7 protocols). 0 failures.
+
+## 2026-05-15 (sequence runner: cell_culture_full authored, validator passes 7 protocols)
+
+### Additions and New Features
+
+- Authored `content/protocols/cell_culture_full/protocol.yaml` as the
+  pathway-level sequence runner. Declares `protocol_type: sequence_runner`,
+  carries a pathway-scoped `learning` block (using the sequence-runner
+  leading phrases per `LEARNING_SEQUENCE_RUNNER_PREFIXES`), and lists the
+  six constituent mini-protocols in pedagogical order
+  (cell_culture, hood_flask_prep, cell_counting_and_seeding,
+  drug_dilution_setup, plate_drug_treatment, mtt_assay_readout).
+- Added `mini_protocols` to `PROTOCOL_OPTIONAL_KEYS` in
+  `tools/validators/constants.py`. Sequence runners declare this ordered
+  constituent list instead of authored `steps`, per the
+  `## Sequence runners` section of `docs/PRIMARY_SPEC.md`.
+
+### Behavior or Interface Changes
+
+- `ProtocolValidator` now enforces required slots per protocol type:
+  `sequence_runner` requires `mini_protocols` (non-empty list of known
+  protocol names); every other protocol type requires `steps`. Step-shape
+  and step-count gates apply to `mini_protocol`/`protocol`/`dev_smoke`
+  only. A new `_validate_sequence_runner` method walks the constituent
+  list and emits an error per unresolved name (cross-checked against
+  `ContentDatabase.protocols`).
+- `PROTOCOL_REQUIRED_KEYS` shrank to the universal set
+  (`protocol_type`, `protocol_name`, `entry_step`, `learning`). Per-type
+  branches enforce the additional required slot.
+
+### Developer Tests and Notes
+
+- `source source_me.sh && python3 tools/validate_content_yaml.py` exits
+  clean. 43 files validated (34 objects, 1 base scene, 1 protocol scene,
+  7 protocols including the new sequence runner). 0 failures.
+
+## 2026-05-15 (content YAML drift cleanup: validator green on full content/ tree)
+
+### Behavior or Interface Changes
+
+- Renamed `state_fields[*].name` -> `state_fields[*].field_name` across every
+  `content/objects/*.yaml` (63 renames in 31 files) to match the ratified
+  `OBJECT_YAML_FORMAT.md` schema. Validator now passes T1_STATE_FIELD on every
+  declared field.
+- Renamed protocol top-level `name:` -> `protocol_name:` across all six
+  mini-protocols. Renamed every step's `name:` -> `step_name:` (46 step
+  renames). Renamed `plate_drug_treatment.parts[*].dayId` -> `day_name`
+  (4 renames, T-10 camelCase rule in plan
+  `sorted-snacking-kettle.md`).
+
+### Additions and New Features
+
+- Added new declared `state_fields` to objects authored as required by
+  protocol writes: `hemocytometer.{contents_name, contents_volume}`,
+  `t75_flask.inspection_status`, `t75_flask_new.incubation_status`,
+  `media_bottle.temperature_status`, `water_bath.stage`,
+  `well_plate_96.{inspection_status, dosing_status}`.
+- Expanded enum `allowed` lists on liquid-bearing objects so the values
+  protocols write are declared: `conical_15ml.contents_name`
+  (cell_suspension, cell_pellet); `serological_pipette.held_contents_name`
+  (cell_suspension); `micropipette.held_contents_name`
+  (cell_suspension, carboplatin_10mM, metformin_1M);
+  `microscope.objective` (high_power);
+  `microtube_15ml_intermediate.contents_name` (carboplatin_400uM);
+  `metformin_working_tube.contents_name` (metformin_10mM);
+  `aspirating_pipette.held_contents_name` (mtt);
+  `biohazard_decant.contents_name` (mtt);
+  `multichannel_pipette.held_contents_name` (carboplatin, metformin).
+- Added missing per-protocol contents entries: `cells` in
+  `cell_culture/contents.yaml`; `drug_combo` in
+  `plate_drug_treatment/contents.yaml`.
+
+### Fixes and Maintenance
+
+- Fixed validator bug: `ObjectStateChange` now resolves against the op-level
+  `target` when present, falling back to the interaction-level `target`.
+  Previously the validator conflated where the student clicked with which
+  object the op mutated, producing spurious T1_STATE_FIELD failures.
+  Single-fix delta: 123 -> 47 findings.
+- `T1_CONTENTS_REF` now treats `'empty'` and `'mixed'` as universal sentinel
+  values (per `OBJECT_VOCABULARY.md`) and skips the contents-registry lookup
+  for those. Bulk-write a sentinel without polluting `contents.yaml`.
+
+### Developer Tests and Notes
+
+- `source source_me.sh && python3 tools/validate_content_yaml.py` exits clean.
+  42 files validated (34 objects, 1 base scene, 1 protocol scene, 6 protocols).
+  0 failures.
+
+## 2026-05-15 (content YAML snake_case sweep: zero camelCase across content tree)
+
+### Behavior or Interface Changes
+
+- Renamed `displayColor:` -> `display_color:` across every per-protocol
+  `contents.yaml` (32 sites in 6 files).
+- Dropped retired `colorKey:` field from every contents entry (15 sites in
+  2 files). Color is derived from `contents_name` + the object's
+  `visual_states`, per T-3 in plan `sorted-snacking-kettle.md`.
+- Renamed scientific-unit contents identifiers to pure snake_case to drop
+  the embedded uppercase molar suffixes (mM, uM, M):
+  `carboplatin_10mM` -> `carboplatin_10mmol`,
+  `carboplatin_400uM` -> `carboplatin_400umol`,
+  `metformin_10mM` -> `metformin_10mmol`,
+  `metformin_1M` -> `metformin_1mol`. Applied across
+  `drug_dilution_setup/contents.yaml`, `drug_dilution_setup/protocol.yaml`
+  state writes, and the matching object enum `allowed:` lists on
+  `micropipette`, `microtube_15ml_intermediate`, `metformin_working_tube`.
+
+### Developer Tests and Notes
+
+- A walk of every `content/**/*.yaml` confirms no key contains any ASCII
+  uppercase character. Validator still passes 42 files, 0 failures.
+
+## 2026-05-15 (spec consistency pass: PRIMARY*.md and docs/specs/ contradictions reconciled)
+
+### Behavior or Interface Changes
+- **`docs/specs/PROTOCOL_AUTHORING_GUIDE.md`** (F1): replaced stale "`entry` block that declares the initial scene and first step" wording with the canonical "top-level `entry_step` field" statement. Protocol has no `entry` block and declares no opening scene; scene context comes from the first step's interactions and any `SceneChange` operation in their responses.
+- **`target_groups` term retired across all canonical specs** (F2 expanded): per user direction, the term is not part of the vocabulary at all -- not deferred, not retired-with-successor, just absent. Purged from `docs/PRIMARY_SPEC.md`, `docs/specs/OBJECT_VOCABULARY.md`, `docs/specs/OBJECT_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/SCENE_VOCABULARY.md`, `docs/specs/SCENE_YAML_FORMAT.md`, `docs/specs/SPEC_DESIGN_CHECKLIST.md`. Deleted the "Named groups deferred" subsections (OBJECT_VOCABULARY, OBJECT_YAML_FORMAT) and the SCENE_VOCABULARY "retired" paragraph. Replaced with "the vocabulary has no named-group construct"; the explicit-subpart pattern (`treatment_plate.A1`, ...) remains the only mechanism. Removed `target_groups` from every placement-may-not-override list. Validator gate in OBJECT_YAML_FORMAT now reads "unknown structure keys rejected" rather than a `target_groups`-specific rejection.
+- **`docs/PRIMARY_SPEC.md` walker bullet** (F1 follow-on): "starts in the protocol's declared entry scene" replaced with "starts in the scene reached by the protocol's `entry_step` (resolved through that step's target adapter or a `SceneChange` operation)". Removes self-contradiction with the no-scene-at-protocol-level rule.
+- **6-to-10 step "gate" softened to "guideline"** (F5): `docs/PRIMARY_SPEC.md` (two occurrences), `docs/PRIMARY_DESIGN.md`, and `docs/specs/PROTOCOL_VOCABULARY.md` updated. Sequence runners and `dev_smoke` remain exempt; wording now matches descriptive (not enforcement) language in PROTOCOL_VOCABULARY.
+- **Render-layer primitive home moved to `docs/specs/OBJECT_VOCABULARY.md`** (F7): `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange` are now canonically described in the `visual_states` section of `OBJECT_VOCABULARY.md`, including the `ObjectStateChange` boundary and the flat state fields it writes. `docs/specs/SCENE_YAML_FORMAT.md` shrunk to a one-line pointer.
+
+### Decisions and Failures
+- **F3 (asset SVG path scope)**: user chose to keep `assets/` as the parent scope in `PRIMARY_CONTRACT.md`. `assets/equipment/` in `SVG_PIPELINE.md` is a valid subdir, no edit required.
+- **F4 (learning-block leading phrases)**: false positive on initial audit. `docs/specs/PROTOCOL_YAML_FORMAT.md` already quotes the three exact required phrases verbatim in its schema table.
+- **F6 (`background` locked-field)**: false positive on initial audit. `docs/specs/SPEC_DESIGN_CHECKLIST.md` rule 20 already lists `background` among locked fields.
+- **F8 (canonical `contents.yaml` path)**: not addressed this pass. `OBJECT_VOCABULARY.md` and `PRIMARY_DESIGN.md` reference a `contents.yaml` registry without a canonical path; resolve in a follow-up doc edit.
+
+### Removals and Deprecations
+- **All "deferred" / "reserved" / "not yet implemented" markers purged from canonical specs.** Per user direction, vocabulary docs state present tense only; no future-work hatches in spec surface. Changes:
+  - `structure.layout: custom` enum value removed. `structure.layout` accepts only `grid` or `list`. Updated in `docs/specs/OBJECT_VOCABULARY.md` and `docs/specs/OBJECT_YAML_FORMAT.md`.
+  - `liquidTransfer` capability id retired entirely (not declared by any scene, no module registered). Removed from `docs/specs/SCENE_YAML_FORMAT.md` and `docs/specs/SCENE_ARCHITECTURE.md` capability tables, from `tools/build_scene_data.py` `VALID_CAPABILITY_IDS`, and from `tests/test_spec_vocabulary.py` G9 allowlist.
+  - "RESERVED" status column entries on five capability rows (`modalWorkspace`, `instrumentWorkspace`, `gridCountingWorkspace`, `incubatorWorkspace`, `plateReaderWorkspace`) replaced with present-tense "Validates `scene_name` only" or equivalent.
+  - `wrongOrderMessage` RESERVED-for-future-wiring note dropped from `SCENE_ARCHITECTURE.md` (the field's authoring surface remains documented).
+  - `workspace` field "reserved for future runtime use" dropped from `SCENE_VOCABULARY.md`; now describes present-tense behavior.
+  - "Future work" and "Out of scope" sections deleted from `SCENE_INHERITANCE.md`; replaced with present-tense "Inheritance depth" statement (one level, no multi-level).
+  - "Referenced interaction names are deferred" removed from `PROTOCOL_VOCABULARY.md`; replaced with "Interactions are not addressable by name."
+  - "Candidate future primitive `DataReadout`/`InstrumentReadDisplayChange`" paragraph deleted from `PROTOCOL_VOCABULARY.md`; instrument-produced data stays `feedback`-only.
+  - "Complex branching is deferred" softened to present-tense statement: `outcome` mapping carries no `on_hint_requested`, no `branches`, no adaptive review.
+  - "or marked deferred and excluded from current authoring" exit hatch removed from `docs/PRIMARY_DESIGN.md` closure-over-openness principle. Every container must have a closed schema, no exceptions.
+  - `docs/specs/SPEC_DESIGN_CHECKLIST.md` rule 2 and smell-class table row dropped the "OR be explicitly marked future/deferred" clause.
+  - "Named groups are deferred" purged everywhere it lingered (12+ residual mentions across all canonical specs). Replaced with "the vocabulary has no named-group construct".
+  - `effects.ts` reference deleted from `SCENE_ARCHITECTURE.md` Bench scene row (file does not exist).
+
 ## 2026-05-15 (spec doc sweep: key normalization, camelCase removal, retired-language cleanup - giggly-mixing-minsky)
 
 ### Additions and New Features
@@ -46,6 +223,46 @@
 ### Developer Tests and Notes
 - `source source_me.sh && pytest tests/test_spec_vocabulary.py -q`: **9 passed in 0.11s** (G1-G9).
 - `tests/test_markdown_links.py` failures are pre-existing (unrelated CHANGELOG and FILE_STRUCTURE links); not introduced by this sweep.
+
+## 2026-05-15 (Validator hardening: relational DB, Tier 1 cross-file checks, closure model)
+
+### Additions and New Features
+- **`tools/validators/` package**: validator split into modules - `constants.py` (closed sets + finding-tag registry), `findings.py` (Finding + Severity), `database.py` (ContentDatabase relational registry: objects, base_scenes, protocols, contents_by_protocol), `object_validator.py`, `scene_base_validator.py`, `scene_protocol_validator.py`, `protocol_validator.py`, `cross_protocol.py`, `summary.py`, `yaml_io.py`.
+- **ContentDatabase lookup methods**: `resolve_object`, `resolve_target` (bare + dotted subpart forms), `resolve_state_field`, `resolve_contents`.
+- **Tier 1 cross-file checks** with structured tags emitted by `ProtocolValidator`:
+  - `T1_TARGET` - interaction target does not resolve to a declared object or subpart.
+  - `T1_STATE_FIELD` - `ObjectStateChange` writes a field not declared on target's `state_fields`.
+  - `T1_ENUM` - enum state field receives a value outside the declared `allowed` list.
+  - `T1_CONTENTS_REF` - `contents_name` / `held_contents_name` does not resolve to a protocol contents entry.
+  - `T1_TARGET_WITH_VALUE` - `target_with_value` payload key not a declared state field on the target.
+- **`SCENE_EXTENDS` tag**: protocol scene `extends` lookup against base-scene registry.
+- **`CLOSURE` tag**: closed top-level whitelists per container (`OBJECT_ALL_KEYS`, `PROTOCOL_ALL_KEYS`, `BASE_SCENE_ALL_KEYS`, `PROTOCOL_SCENE_ALLOWED_KEYS`). Unknown top-level keys flagged automatically.
+- **`T3_CAMELCASE` tag**: general regex `[a-z][A-Z]` flags any camelCase key recursively across loaded YAML; no allow-list.
+
+### Behavior or Interface Changes
+- Validator now requires `protocol_name`, `step_name`, `field_name` per `docs/specs/SPEC_DESIGN_CHECKLIST.md` bare-`name:` ban; old bare `name:` keys are flagged via `CLOSURE`.
+- `CONTENTS_REQUIRED_KEYS = {label, display_color}`; `colorKey` dropped.
+- File-category counts now reflect every file walked, not only files that passed.
+- Whole-tree scan walks `content/` only; `tests/content/` fixtures are out of scope.
+
+### Fixes and Maintenance
+- Pyflakes clean across `tools/validate_content_yaml.py` and `tools/validators/*.py`.
+- All `from typing import ...` purged in favor of bare `dict`, `list`, `tuple`, `set`, `X | None` per `docs/PYTHON_STYLE.md`.
+- Replaced repeated `try/except RuntimeError` per file with a single `_load_and_collect` helper.
+- `yaml_io.py` catches only `yaml.YAMLError`; other I/O errors propagate.
+- `database.subpart_matches` lets `re.error` surface instead of silently swallowing regex errors.
+- Removed broad `except Exception` fallback around `Path(__file__).resolve()` in `main()`.
+- Removed redundant `import sys as sys_module` and inner `import re as re_module`.
+- Wired `BaseSceneValidator.set_object_names(db.objects.keys())` so placement cross-reference check is active.
+- Verbose detail printers consolidated in `tools/validators/summary.py`; inline duplicates in `validate_content_yaml.py` removed.
+
+### Removals and Deprecations
+- Deleted `RETIRED_OBJECT_KEYS`, `RETIRED_BASE_SCENE_KEYS`, `RETIRED_PROTOCOL_KEYS`, and `BANNED_TOKENS` allow-lists. Replaced by `CLOSURE` + `T3_CAMELCASE`.
+- Deleted unused `ContentDatabase.is_enum_value_valid` and `get_all_contents_names` (`ProtocolValidator` performs enum checks inline).
+- Deferred `check_contents_drift`; not wired in this pass.
+
+### Developer Tests and Notes
+- `source source_me.sh && python3 tools/validate_content_yaml.py`: **Validated 42 files (34 objects, 1 base scenes, 1 protocol scenes, 6 protocols). 79 failures** - failures are real YAML drift now correctly surfaced for follow-up content cleanup.
 
 ## 2026-05-15 (protocol_type vocabulary consolidation)
 

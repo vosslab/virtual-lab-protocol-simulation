@@ -1,7 +1,6 @@
 """ContentDatabase: relational registry of all content across content tree."""
 
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple
 import re
 
 from validators.yaml_io import load_yaml
@@ -13,10 +12,10 @@ class ContentDatabase:
 
 	def __init__(self):
 		"""Initialize empty registry."""
-		self.objects: Dict[str, Dict[str, Any]] = {}
-		self.base_scenes: Dict[str, Dict[str, Any]] = {}
-		self.protocols: Dict[str, Dict[str, Any]] = {}
-		self.contents_by_protocol: Dict[str, Dict[str, Dict[str, Any]]] = {}
+		self.objects: dict = {}
+		self.base_scenes: dict = {}
+		self.protocols: dict = {}
+		self.contents_by_protocol: dict = {}
 		self.findings: list[Finding] = []
 
 	def load_from_tree(self, root: Path) -> None:
@@ -75,7 +74,7 @@ class ContentDatabase:
 				if protocol_file.exists():
 					try:
 						protocol_data = load_yaml(protocol_file)
-						protocol_name = protocol_data.get('name')
+						protocol_name = protocol_data.get('protocol_name')
 						if protocol_name:
 							self.protocols[protocol_name] = protocol_data
 					except RuntimeError as e:
@@ -109,11 +108,11 @@ class ContentDatabase:
 	# LOOKUP METHODS
 	# ============================================
 
-	def resolve_object(self, name: str) -> Optional[Dict[str, Any]]:
+	def resolve_object(self, name: str) -> dict | None:
 		"""Resolve object by name. Returns dict or None."""
 		return self.objects.get(name)
 
-	def resolve_target(self, target: str) -> Optional[Tuple[Dict[str, Any], Optional[str]]]:
+	def resolve_target(self, target: str) -> tuple | None:
 		"""
 		Resolve a target (bare or dotted form).
 		Returns (object_data, subpart_name) or None.
@@ -141,7 +140,7 @@ class ContentDatabase:
 
 		return None
 
-	def subpart_matches(self, obj: Dict[str, Any], subpart_name: str) -> bool:
+	def subpart_matches(self, obj: dict, subpart_name: str) -> bool:
 		"""Check if subpart_name is valid for this object."""
 		structure = obj.get('structure', {})
 		if not structure:
@@ -153,14 +152,12 @@ class ContentDatabase:
 			if isinstance(sp, dict) and sp.get('name') == subpart_name:
 				return True
 
-		# Check name_pattern regex
+		# Check name_pattern regex; let re.error surface as a real failure
+		# (a malformed name_pattern is an object-spec bug, not a hidden case).
 		name_pattern = structure.get('name_pattern')
 		if name_pattern:
-			try:
-				regex = self._pattern_to_regex(name_pattern)
-				return bool(regex.fullmatch(subpart_name))
-			except Exception:
-				return False
+			regex = self._pattern_to_regex(name_pattern)
+			return bool(regex.fullmatch(subpart_name))
 
 		return False
 
@@ -186,25 +183,18 @@ class ContentDatabase:
 		for token, regex_piece in token_map.items():
 			regex_pattern = regex_pattern.replace(f'{{{token}}}', regex_piece)
 
-		# Escape any remaining literal characters but keep the regex parts
-		# First, we need to escape literal underscores and other chars, but not our regex syntax
-		# The safest approach: the token_map should have covered all tokens
-		# Any remaining { } should be escaped
-
-		# Replace remaining {token} patterns (unknown tokens) with escaped versions
-		import re as re_module
-		unknown_tokens = re_module.findall(r'\{([^}]+)\}', regex_pattern)
+		# Escape any remaining {token} literals not covered by token_map so
+		# they match as plain text rather than as regex syntax.
+		unknown_tokens = re.findall(r'\{([^}]+)\}', regex_pattern)
 		for token in unknown_tokens:
-			regex_pattern = regex_pattern.replace(f'{{{token}}}', re_module.escape(f'{{{token}}}'))
+			regex_pattern = regex_pattern.replace(f'{{{token}}}', re.escape(f'{{{token}}}'))
 
-		# Now escape literal characters outside of [...] patterns
-		# For simplicity, just compile what we have
 		return re.compile(f'^{regex_pattern}$')
 
-	def resolve_state_field(self, object_name: str, field_name: str) -> Optional[Dict[str, Any]]:
+	def resolve_state_field(self, object_name: str, field_name: str) -> dict | None:
 		"""
 		Resolve state field declaration for an object.
-		Returns field dict (with 'name', 'type', 'default', etc.) or None.
+		Returns field dict (with 'field_name', 'type', 'default', etc.) or None.
 		"""
 		obj = self.resolve_object(object_name)
 		if not obj:
@@ -212,32 +202,12 @@ class ContentDatabase:
 
 		state_fields = obj.get('state_fields', [])
 		for field in state_fields:
-			if isinstance(field, dict) and field.get('name') == field_name:
+			if isinstance(field, dict) and field.get('field_name') == field_name:
 				return field
 
 		return None
 
-	def is_enum_value_valid(self, object_name: str, field_name: str, value: Any) -> bool:
-		"""
-		Check if value is valid for an enum state field.
-		Returns True if field is not enum, value is in allowed set, or cannot resolve field.
-		"""
-		field = self.resolve_state_field(object_name, field_name)
-		if not field:
-			return False  # Field doesn't exist
-
-		if field.get('type') != 'enum':
-			return True  # Not an enum field
-
-		allowed = field.get('allowed', [])
-		return value in allowed
-
-	def resolve_contents(self, protocol_name: str, contents_name: str) -> Optional[Dict[str, Any]]:
+	def resolve_contents(self, protocol_name: str, contents_name: str) -> dict | None:
 		"""Resolve contents entry by protocol and contents name."""
 		protocol_contents = self.contents_by_protocol.get(protocol_name, {})
 		return protocol_contents.get(contents_name)
-
-	def get_all_contents_names(self, protocol_name: str) -> set:
-		"""Get set of all contents names for a protocol."""
-		protocol_contents = self.contents_by_protocol.get(protocol_name, {})
-		return set(protocol_contents.keys())

@@ -25,7 +25,6 @@ VALID_CAPABILITY_IDS = {
 	'gridCountingWorkspace',
 	'incubatorWorkspace',
 	'plateReaderWorkspace',
-	'liquidTransfer',
 }
 
 

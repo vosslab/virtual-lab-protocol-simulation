@@ -3,7 +3,7 @@ kind: equipment
 label: Vortex
 
 state_fields:
-  - name: running
+  - field_name: running
     type: bool
     default: false
     description: Whether the vortex is currently running.

@@ -43,7 +43,7 @@ Identity is the locked tuple `object_name`, `kind`, `label`.
 
 ### Scene placement override surface
 
-Scene placement may set layout hints only: `default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`. Scene placement may not override identity (`object_name`, `kind`, `label`), `state_fields`, `visual_states`, `target_groups`, or `capabilities`.
+Scene placement may set layout hints only: `default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`. Scene placement may not override identity (`object_name`, `kind`, `label`), `state_fields`, `visual_states`, or `capabilities`.
 
 ### YAML naming
 
@@ -175,8 +175,7 @@ Flag vague containers: `capabilities`, `constraints`, `settings`,
 
 Rule:
 
-- Every container must either have a closed schema, OR be explicitly
-  marked future/deferred and excluded from current authoring.
+- Every container must have a closed schema.
 
 ### 3. Arbitrary nesting
 
@@ -590,7 +589,7 @@ Rule:
 | --- | --- | --- |
 | Schema escape hatch | open-key objects, pass-through, plugin payloads | vocabulary edit required for new meaning |
 | Open type | `string`, `any`, free-form | enum or explicit fields |
-| Junk noun | `metadata`, `extras`, `custom`, `params` | closed schema or deferred |
+| Junk noun | `metadata`, `extras`, `custom`, `params` | closed schema |
 | Nesting | nested writes, recursion | flat primitives |
 | Layer leak | render in protocol, layout in object | strict three-layer ownership |
 | Future-proofing | `arbitrary`, `extensible`, `etc.` | explicit RFC instead |

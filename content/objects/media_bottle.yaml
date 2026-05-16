@@ -3,13 +3,18 @@ kind: bottle
 label: Media
 
 state_fields:
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0
     max: 500
     default: 500
     description: Volume of media remaining, in milliliters.
+  - field_name: temperature_status
+    type: enum
+    allowed: [cold, warmed]
+    default: cold
+    description: Whether the media has been warmed in the water bath.
 
 visual_states:
   contents_volume:

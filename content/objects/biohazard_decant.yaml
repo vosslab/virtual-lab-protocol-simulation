@@ -3,12 +3,12 @@ kind: waste
 label: Biohazard decant
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
-    allowed: [empty, mixed]
+    allowed: [empty, mixed, mtt]
     default: empty
     description: Waste type (empty or mixed biohazard).
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

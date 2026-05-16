@@ -3,7 +3,7 @@ kind: pipette
 label: Serological pipette
 
 state_fields:
-  - name: set_volume
+  - field_name: set_volume
     type: float
     unit: ml
     min: 0.1
@@ -11,12 +11,12 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - name: held_contents_name
+  - field_name: held_contents_name
     type: enum
-    allowed: [empty, media, pbs, trypsin, cells]
+    allowed: [empty, media, pbs, trypsin, cells, cell_suspension]
     default: empty
     description: Contents currently aspirated in the pipette barrel.
-  - name: held_contents_volume
+  - field_name: held_contents_volume
     type: float
     unit: ml
     min: 0

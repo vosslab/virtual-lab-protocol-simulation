@@ -1,4 +1,28 @@
-"""Spec-derived closed sets and schema constants with citations."""
+"""Spec-derived closed sets and schema constants with citations.
+
+Finding tag registry (used by validators that reference these constants):
+
+	T1_TARGET             interaction target does not resolve to a declared
+	                      object or subpart.
+	T1_STATE_FIELD        ObjectStateChange names a state field not declared
+	                      on the target object.
+	T1_ENUM               enum state field receives a value outside the
+	                      declared `allowed` list.
+	T1_CONTENTS_REF       contents_name / held_contents_name does not resolve
+	                      to an entry in the protocol's contents.yaml.
+	T1_TARGET_WITH_VALUE  target_with_value validator names a key that is
+	                      not a declared state field on the target.
+	SCENE_EXTENDS         protocol scene extends an unknown base scene name.
+	CLOSURE               unknown top-level key in a closed-schema container.
+	T3_CAMELCASE          authored YAML key contains a camelCase boundary.
+	RETIRED               (reserved) retired-token error class.
+	BANNED                (reserved) banned-token error class.
+
+T1_* checks live in tools/validators/protocol_validator.py.
+SCENE_EXTENDS lives in tools/validators/scene_protocol_validator.py.
+CLOSURE lives in each per-container validator.
+T3_CAMELCASE lives in tools/validators/cross_protocol.py.
+"""
 
 # ============================================
 # OBJECT SCHEMA CONSTANTS
@@ -17,32 +41,11 @@ OBJECT_CAPABILITIES = {
 	'decoration_only',
 }
 
-# spec: docs/specs/OBJECT_VOCABULARY.md "Retired fields"
-RETIRED_OBJECT_KEYS = {
-	'short_label',
-	'id',
-	'role',
-	'colorKey',
-	'render_map',
-	'liquid_container',
-	'liquid_color',
-	'liquid_id',
-	'liquid_volume',
-	'asset_name',
-	'inventory_ref',
-	'inventoryRef',
-	'shortLabel',
-	'sceneId',
-	'elementId',
-	'metadata',
-	'extras',
-	'params',
-	'options',
-	'additionalProperties',
-}
-
 # spec: docs/specs/OBJECT_YAML_FORMAT.md "Top-level fields"
+# Closure: unknown top-level keys are flagged automatically. No retired-key list needed.
 OBJECT_REQUIRED_KEYS = {'object_name', 'kind', 'label', 'state_fields', 'visual_states', 'capabilities', 'layout'}
+OBJECT_OPTIONAL_KEYS = {'structure'}
+OBJECT_ALL_KEYS = OBJECT_REQUIRED_KEYS | OBJECT_OPTIONAL_KEYS
 
 # spec: docs/specs/OBJECT_YAML_FORMAT.md "state_fields"
 STATE_FIELD_TYPES = {'enum', 'int', 'float', 'bool'}
@@ -63,17 +66,7 @@ BASE_SCENE_REQUIRED_KEYS = {'scene_name', 'workspace', 'capabilities', 'scene_bo
 BASE_SCENE_OPTIONAL_KEYS = {'background', 'layout_rules', 'accent_rules', 'wrong_order_message'}
 BASE_SCENE_ALL_KEYS = BASE_SCENE_REQUIRED_KEYS | BASE_SCENE_OPTIONAL_KEYS
 
-# spec: docs/specs/SCENE_VOCABULARY.md "Retired keys"
-RETIRED_BASE_SCENE_KEYS = {
-	'element_id',
-	'sceneId',
-	'elementId',
-	'short_label',
-	'metadata',
-	'extras',
-	'options',
-	'additionalProperties',
-}
+# Closure handles unknown keys; BASE_SCENE_ALL_KEYS is the canonical whitelist.
 
 # spec: docs/specs/SCENE_INHERITANCE.md "Protocol-scene schema (closed)"
 PROTOCOL_SCENE_ALLOWED_KEYS = {
@@ -110,25 +103,18 @@ INTERACTION_VALIDATOR_PRESETS = {'correct_target', 'correct_choice', 'target_wit
 STEP_VALIDATOR_PRESETS = {'sequence_complete', 'final_state_matches'}
 
 # spec: docs/PRIMARY_SPEC.md "Validators and outcome"
-PROTOCOL_REQUIRED_KEYS = {'protocol_type', 'name', 'entry_step', 'learning', 'steps'}
-
-# spec: docs/PRIMARY_SPEC.md "Retired keys"
-RETIRED_PROTOCOL_KEYS = {
-	'action',
-	'nextId',
-	'stepIndex',
-	'requiredItems',
-	'usedItems',
-	'completionPath',
-	'completionTrigger',
-	'colorKey',
-	'shortLabel',
-	'metadata',
-	'extras',
-	'params',
-	'options',
-	'additionalProperties',
-}
+# spec: docs/specs/SPEC_DESIGN_CHECKLIST.md "Bare name banned"
+# Closure: unknown top-level keys are flagged automatically. CamelCase keys are
+# caught by the general T3_CAMELCASE regex in cross_protocol.py. No retired
+# allow-list maintained.
+#
+# Required-key set is universal across protocol types; `steps` vs
+# `mini_protocols` is enforced per type by ProtocolValidator (sequence_runner
+# carries an ordered constituent list instead of authored steps, per
+# docs/PRIMARY_SPEC.md "Sequence runners").
+PROTOCOL_REQUIRED_KEYS = {'protocol_type', 'protocol_name', 'entry_step', 'learning'}
+PROTOCOL_OPTIONAL_KEYS = {'parts', 'days', 'steps', 'mini_protocols'}
+PROTOCOL_ALL_KEYS = PROTOCOL_REQUIRED_KEYS | PROTOCOL_OPTIONAL_KEYS
 
 # spec: docs/PRIMARY_SPEC.md "Learning block"
 # Learning prefix requirements per PRIMARY_SPEC.md for mini_protocol
@@ -152,7 +138,7 @@ LEARNING_SEQUENCE_RUNNER_PREFIXES = {
 # ============================================
 
 # spec: docs/specs/PROTOCOL_YAML_FORMAT.md "Contents block"
-CONTENTS_REQUIRED_KEYS = {'label', 'colorKey', 'displayColor'}
+CONTENTS_REQUIRED_KEYS = {'label', 'display_color'}
 
 
 # ============================================
@@ -198,34 +184,7 @@ GESTURE_VALIDATOR_MAP = {
 }
 
 
-# ============================================
-# BANNED TOKENS (TIER 3 - vocabulary closure)
-# ============================================
-
-# spec: docs/PRIMARY_DESIGN.md "Vocabulary closure and anti-drift"
-BANNED_TOKENS = {
-	'colorKey': 'spec: use displayColor in contents; colorKey is retired',
-	'nextId': 'spec: protocol flow uses next_step; nextId is retired',
-	'stepIndex': 'spec: protocol flow uses next_step; stepIndex is retired',
-	'requiredItems': 'spec: no legacy required-items field',
-	'completionPath': 'spec: protocol defines complete flow via next_step',
-	'usedItems': 'spec: protocol does not track inventory snapshots',
-	'completionTrigger': 'spec: response defines outcomes',
-	'metadata': 'spec: vocabulary closure forbids open metadata fields',
-	'extras': 'spec: vocabulary closure forbids open extras fields',
-	'params': 'spec: vocabulary closure forbids open params fields',
-	'options': 'spec: vocabulary closure forbids open options fields',
-	'additionalProperties': 'spec: vocabulary closure forbids additionalProperties',
-	'render_map': 'spec: use visual_states instead',
-	'liquid_color': 'spec: use displayColor in visual_states',
-	'liquid_container': 'spec: use contents_name state field',
-	'inventory_ref': 'spec: contents referenced by name in state fields',
-	'inventoryRef': 'spec: contents referenced by name in state fields',
-	'element_id': 'spec: objects identified by object_name',
-	'elementId': 'spec: objects identified by object_name',
-	'scene_kind': 'spec: scenes are identified by scene_name',
-	'short_label': 'spec: label is canonical; shortLabel is retired',
-	'shortLabel': 'spec: label is canonical',
-	'action': 'spec: interactions define actions via gesture',
-	'sceneId': 'spec: scenes identified by scene_name',
-}
+# Vocabulary closure is enforced by closed key whitelists per container
+# (OBJECT_ALL_KEYS, BASE_SCENE_ALL_KEYS, PROTOCOL_SCENE_ALLOWED_KEYS,
+# PROTOCOL_ALL_KEYS, etc.). camelCase keys are caught by the general
+# T3_CAMELCASE regex in cross_protocol.py. No retired-token allow-list.

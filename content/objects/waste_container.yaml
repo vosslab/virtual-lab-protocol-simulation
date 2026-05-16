@@ -3,12 +3,12 @@ kind: waste
 label: Waste container
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, media, pbs, mixed]
     default: empty
     description: Waste type (empty, single liquid, or mixed).
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

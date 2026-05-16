@@ -64,7 +64,7 @@ by id, places them inside named [zones](#zones), declares the outer
 [layout_rules](#layout-rules) the layout engine consumes, and declares
 the static [background](#background-as-a-static-backdrop) backdrop.
 A scene never declares object identity, `state_fields`, `visual_states`,
-`target_groups`, or `capabilities`.
+or `capabilities`.
 
 Scene placement overrides layout hints only. A placement may carry instance
 overrides for the object's layout hints (`default_width`, `label_width`,
@@ -74,10 +74,10 @@ override object identity (`object_name`, `kind`, `label`),
 rule lives on the object side; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 
-`target_groups` is retired from the scene vocabulary with no successor in this vocabulary pass; named groups are deferred. A
-protocol that needs to act on several subparts lists each subpart
-explicitly (for example `treatment_plate.A1`, `treatment_plate.A2`).
-Subparts belong to the object, not the scene.
+The scene vocabulary has no named-group construct. A protocol that
+needs to act on several subparts lists each subpart explicitly (for
+example `treatment_plate.A1`, `treatment_plate.A2`). Subparts belong
+to the object, not the scene.
 
 The boundary exists because of a documented failure: PRIMARY_CONTRACT
 item 1 records that earlier TypeScript was built around the hood scene
@@ -126,8 +126,7 @@ Scene placement overrides layout hints only. A placement may carry instance
 overrides for the layout hints `default_width`,
 `label_width`, `anchor_y_offset`, `width_scale`, and `anchor_y`. A
 placement may not override object identity (`object_name`, `kind`,
-`label`), `state_fields`, `visual_states`, `target_groups`, or
-`capabilities`. The full override surface is in
+`label`), `state_fields`, `visual_states`, or `capabilities`. The full override surface is in
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## The object side of
 the boundary".
 
@@ -144,7 +143,7 @@ the boundary".
 Notes:
 
 - A placement may not declare or modify subparts; subparts
-  are object-side, not scene-side. Named groups are deferred.
+  are object-side, not scene-side.
 - A placement may not declare state or a render map; the object owns
   state and rendering, and the protocol mutates state semantically
   through `ObjectStateChange` (see
@@ -270,7 +269,7 @@ nothing else.
 | layout engine | Shared placement system that positions object placements in zones. |
 | structured surface | An object with meaningful internal coordinates or subparts; the structure schema is object-side (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). |
 | subpart | A visual or clickable element inside a structured surface; declared on the object, addressable via the object's `id_pattern`. |
-| workspace | A YAML-declared advisory family label naming a scene's surface kind; reserved for future runtime use. |
+| workspace | A YAML-declared family label naming a scene's surface kind. Required by the scene YAML validator; advisory at runtime. |
 | item | The runtime name for a clickable DOM element rendered by the adapter and dispatched by `data-item-id`; in cleaned authoring, every item is the rendering of one [placement](#object-by-id-placement). |
 | wrong_order_message | A scene-side UI string shown when a learner clicks placements in an order the protocol rejects. |
 | instrument-overlay | The shared modal-slot DOM element used by instrument-style scenes; only one scene is visible in the slot at a time. |
@@ -384,8 +383,8 @@ An object with meaningful internal coordinates or subparts, such as
 wells, lanes, slots, or readout marks. The structured-surface schema
 is object-side; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Structured
-surfaces and subparts". Named groups are deferred. The scene
-side only knows that a placement references such an object by id.
+surfaces and subparts". The scene side only knows that a placement
+references such an object by id.
 
 ### subpart
 
@@ -393,19 +392,17 @@ A visual or clickable element inside a structured surface. Subparts
 are declared on the object via the structure block; the scene
 neither declares subparts nor names them. A protocol addresses a
 subpart as `<object_name>.<subpart_name>` (for example
-`treatment_plate.A1`); named groups are deferred, so a
-protocol acting on several subparts lists each one explicitly. See
+`treatment_plate.A1`); a protocol acting on several subparts lists
+each one explicitly. See
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 
 ### workspace
 
-A YAML field naming the workspace family for a scene; values seen
-today are stable strings used to classify scene surface kinds.
-Required by the scene YAML validator
-([../../tools/build_scene_data.py](../../tools/build_scene_data.py)) but not
-yet read by any TypeScript code -- advisory at runtime today.
-Reserved for future selectors, telemetry, or scene-profile
-dispatch. Example:
+A YAML field naming the workspace family for a scene; values are
+stable strings used to classify scene surface kinds. Required by the
+scene YAML validator
+([../../tools/build_scene_data.py](../../tools/build_scene_data.py));
+advisory at runtime. Example:
 
 ```yaml
 scene_name: <scene_name>

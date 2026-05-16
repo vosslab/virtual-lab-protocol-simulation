@@ -1,5 +1,5 @@
 protocol_type: mini_protocol
-name: cell_counting_and_seeding
+protocol_name: cell_counting_and_seeding
 entry_step: transfer_suspension_to_conical
 
 learning:
@@ -8,7 +8,7 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish teaching the critical post-detachment workflow: centrifugation to pellet cells, resuspension in fresh media, accurate cell counting via hemocytometer, and precision seeding at a specified density."
 
 steps:
-  - name: transfer_suspension_to_conical
+  - step_name: transfer_suspension_to_conical
     prompt: "Transfer the neutralized cell suspension from the flask to a 15 mL conical tube."
     why: "Transferring to a conical tube prepares the cell suspension for centrifugation."
     sequence:
@@ -57,7 +57,7 @@ steps:
       on_failure: retry
     next_step: adjust_centrifuge
 
-  - name: adjust_centrifuge
+  - step_name: adjust_centrifuge
     prompt: "Set the centrifuge to 300g for 5 minutes (approximately 1200 rpm)."
     why: "A brief centrifugation at 300g pellets cells without damaging them."
     sequence:
@@ -91,7 +91,7 @@ steps:
       on_failure: retry
     next_step: start_centrifuge
 
-  - name: start_centrifuge
+  - step_name: start_centrifuge
     prompt: "Place the conical in the centrifuge and start the run."
     why: "Starting the centrifuge begins the cell pelleting process."
     sequence:
@@ -125,7 +125,7 @@ steps:
       on_failure: retry
     next_step: retrieve_conical
 
-  - name: retrieve_conical
+  - step_name: retrieve_conical
     prompt: "Open the centrifuge and retrieve the conical tube containing the pelleted cells."
     why: "After centrifugation, the cells settle as a pellet at the bottom of the tube."
     sequence:
@@ -155,7 +155,7 @@ steps:
       on_failure: retry
     next_step: aspirate_supernatant
 
-  - name: aspirate_supernatant
+  - step_name: aspirate_supernatant
     prompt: "Aspirate the supernatant (media layer above the cell pellet) into the waste container."
     why: "Removing the supernatant leaves only the concentrated cell pellet for resuspension."
     sequence:
@@ -206,7 +206,7 @@ steps:
       on_failure: retry
     next_step: resuspend_pellet
 
-  - name: resuspend_pellet
+  - step_name: resuspend_pellet
     prompt: "Resuspend the cell pellet in 1 mL of fresh complete media."
     why: "Gentle resuspension in fresh media lifts the cells off the tube bottom and redistributes them evenly for counting and seeding."
     sequence:
@@ -241,7 +241,7 @@ steps:
       on_failure: retry
     next_step: prepare_hemocytometer
 
-  - name: prepare_hemocytometer
+  - step_name: prepare_hemocytometer
     prompt: "Place a small aliquot of cell suspension on the hemocytometer slide and position it under the microscope."
     why: "The hemocytometer chamber allows direct visual counting of cells in a known volume."
     sequence:
@@ -300,7 +300,7 @@ steps:
       on_failure: retry
     next_step: count_cells
 
-  - name: count_cells
+  - step_name: count_cells
     prompt: "Count the cells in all four quadrants of the hemocytometer and enter the count for each quadrant."
     why: "Counting multiple quadrants provides an accurate average cell concentration and detects uneven distribution."
     sequence:
@@ -358,7 +358,7 @@ steps:
       on_failure: retry
     next_step: seed_plate
 
-  - name: seed_plate
+  - step_name: seed_plate
     prompt: "Seed the first three wells in row A to verify your dispensing technique."
     why: "Accurate seeding ensures consistent cell density across the plate and reproducible assay results."
     sequence:

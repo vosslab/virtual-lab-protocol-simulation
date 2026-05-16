@@ -10,13 +10,13 @@ structure:
   name_pattern: "{row_letter}{col}"
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, media, cells, carboplatin, metformin, drug_combo, mtt, dmso]
     default: empty
     applies_to: subpart
     description: Contents currently in this well.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ul
     min: 0
@@ -24,6 +24,16 @@ state_fields:
     default: 0
     applies_to: subpart
     description: Volume of contents in this well, in microliters.
+  - field_name: inspection_status
+    type: enum
+    allowed: [not_inspected, cells_healthy]
+    default: not_inspected
+    description: Plate-level inspection status from microscopy.
+  - field_name: dosing_status
+    type: enum
+    allowed: [pending, complete]
+    default: pending
+    description: Plate-level dosing completion status.
 
 visual_states:
   contents_name:

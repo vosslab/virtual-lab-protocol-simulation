@@ -1,30 +1,28 @@
 contents:
   media:
     label: "Complete RPMI media"
-    colorKey: media
-    displayColor: "#f7a6b8"
+    display_color: "#f7a6b8"
 
   pbs:
     label: "1x PBS"
-    colorKey: pbs
-    displayColor: "#b8e5ff"
+    display_color: "#b8e5ff"
 
   trypsin:
     label: "Trypsin-EDTA 0.25%"
-    colorKey: trypsin
-    displayColor: "#fff4e6"
+    display_color: "#fff4e6"
 
   cell_suspension:
     label: "Cell suspension"
-    colorKey: cell_suspension
-    displayColor: "#d89bb8"
+    display_color: "#d89bb8"
 
   mixed:
     label: "Mixed waste"
-    colorKey: waste
-    displayColor: "#f3e5f5"
+    display_color: "#f3e5f5"
 
   cell_pellet:
     label: "Cell pellet"
-    colorKey: cell_pellet
-    displayColor: "#fff9c4"
+    display_color: "#fff9c4"
+
+  cells:
+    label: "Cells"
+    display_color: "#d89bb8"

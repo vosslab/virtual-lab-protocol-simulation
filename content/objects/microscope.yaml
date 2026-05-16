@@ -3,12 +3,12 @@ kind: equipment
 label: Microscope
 
 state_fields:
-  - name: objective
+  - field_name: objective
     type: enum
-    allowed: [4x, 10x, 20x, 40x]
+    allowed: [4x, 10x, 20x, 40x, high_power]
     default: 10x
     description: Selected objective magnification.
-  - name: light_on
+  - field_name: light_on
     type: bool
     default: false
     description: Whether the microscope illumination is on.

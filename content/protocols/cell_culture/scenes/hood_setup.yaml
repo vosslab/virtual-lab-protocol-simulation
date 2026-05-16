@@ -1,0 +1,40 @@
+scene_name: cell_culture_hood_setup
+extends: hood_basic
+
+add_placements:
+  - placement_name: center_t75_flask
+    object_name: t75_flask
+    zone: center
+    depth_tier: 1
+    align_stop: center
+  - placement_name: rear_left_pbs_bottle
+    object_name: pbs_bottle
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_center_trypsin_bottle
+    object_name: trypsin_bottle
+    zone: rear_center
+    depth_tier: 2
+  - placement_name: rear_right_media_bottle
+    object_name: media_bottle
+    zone: rear_right
+    depth_tier: 1
+  - placement_name: center_serological_pipette
+    object_name: serological_pipette
+    zone: center
+    depth_tier: 2
+  - placement_name: rear_right_conical_15ml
+    object_name: conical_15ml
+    zone: rear_right
+    depth_tier: 2
+  - placement_name: rear_center_t75_flask_new
+    object_name: t75_flask_new
+    zone: rear_center
+    depth_tier: 1
+
+scene_notes: |
+  Hood-side scene for cell_culture. Carries the full subculture inventory
+  in the hood: flask, PBS, trypsin, media, conical, serological pipette,
+  fresh flask. Bench-side steps (centrifuge, microscope) transition via
+  SceneChange to bench_basic; that destination scene is deferred to a
+  future M2 expansion when cross-scene navigation lands.

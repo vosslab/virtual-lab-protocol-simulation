@@ -3,12 +3,12 @@ kind: bottle
 label: Carboplatin 10 mM
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [carboplatin]
     default: carboplatin
     description: Contents currently in this bottle.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0

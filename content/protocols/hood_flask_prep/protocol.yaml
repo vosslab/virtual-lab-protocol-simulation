@@ -1,5 +1,5 @@
 protocol_type: mini_protocol
-name: hood_flask_prep
+protocol_name: hood_flask_prep
 entry_step: spray_hood
 
 learning:
@@ -8,7 +8,7 @@ learning:
   goals: "Overall, this mini-protocol aims to accomplish teaching the initial 6-step aseptic cell detachment workflow before cell transfer and centrifugation."
 
 steps:
-  - name: spray_hood
+  - step_name: spray_hood
     prompt: "Decontaminate the hood with 70% ethanol."
     why: "Aseptic technique begins with a sterile work surface."
     sequence:
@@ -42,7 +42,7 @@ steps:
       on_failure: retry
     next_step: aspirate_spent_media
 
-  - name: aspirate_spent_media
+  - step_name: aspirate_spent_media
     prompt: "Aspirate spent media from the flask into the waste container."
     why: "Remove old media before rinsing to clear dead cells and promote clean detachment."
     sequence:
@@ -93,7 +93,7 @@ steps:
       on_failure: retry
     next_step: add_pbs_wash
 
-  - name: add_pbs_wash
+  - step_name: add_pbs_wash
     prompt: "Add 4 mL of PBS to rinse the flask."
     why: "Rinsing removes residual serum that would inactivate trypsin in the next step."
     sequence:
@@ -128,7 +128,7 @@ steps:
       on_failure: retry
     next_step: aspirate_pbs
 
-  - name: aspirate_pbs
+  - step_name: aspirate_pbs
     prompt: "Aspirate the PBS wash from the flask."
     why: "Clearing residual PBS prepares the flask for trypsin."
     sequence:
@@ -179,7 +179,7 @@ steps:
       on_failure: retry
     next_step: add_trypsin
 
-  - name: add_trypsin
+  - step_name: add_trypsin
     prompt: "Add 1 mL of trypsin to the flask."
     why: "Trypsin digests the extracellular matrix proteins, allowing cells to detach."
     sequence:
@@ -214,7 +214,7 @@ steps:
       on_failure: retry
     next_step: neutralize_trypsin
 
-  - name: neutralize_trypsin
+  - step_name: neutralize_trypsin
     prompt: "Add 3 mL of fresh media to neutralize the trypsin."
     why: "Serum-containing media stops the trypsin reaction, halting cell detachment."
     sequence:

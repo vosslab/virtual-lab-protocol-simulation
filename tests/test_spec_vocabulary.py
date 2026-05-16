@@ -191,7 +191,6 @@ CAPABILITY_ID_ALLOWLIST = frozenset({
 	"gridCountingWorkspace",
 	"incubatorWorkspace",
 	"plateReaderWorkspace",
-	"liquidTransfer",
 })
 
 # YAML-bearing fence languages: empty tag and explicit yaml/yml.

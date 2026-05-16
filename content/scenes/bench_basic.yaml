@@ -1,0 +1,74 @@
+scene_name: bench_basic
+workspace: bench
+capabilities:
+  - itemWorkspace
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: bench_workspace_bg
+
+zones:
+  - id: rear_left
+    bounds:
+      left: 5
+      right: 30
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear left zone
+  - id: rear_center
+    bounds:
+      left: 35
+      right: 65
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear center zone
+  - id: rear_right
+    bounds:
+      left: 70
+      right: 95
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear right zone
+  - id: center
+    bounds:
+      left: 20
+      right: 80
+      top: 45
+      bottom: 75
+    align: center
+    label: Bench work surface
+  - id: right_tool_area
+    bounds:
+      left: 80
+      right: 95
+      top: 55
+      bottom: 80
+    align: center
+    label: Right tool rack
+
+placements:
+  - placement_name: rear_left_waste
+    object_name: waste_container
+    zone: rear_left
+    depth_tier: 1
+  - placement_name: rear_right_vortex
+    object_name: vortex
+    zone: rear_right
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Try using the {expectedLabel}."
+  toast_duration_ms: 2000

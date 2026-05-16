@@ -9,13 +9,13 @@ structure:
   name_pattern: "slot_{index}"
 
 state_fields:
-  - name: contents_name
+  - field_name: contents_name
     type: enum
     allowed: [empty, cells, media]
     default: empty
     applies_to: subpart
     description: Contents currently in this slot.
-  - name: contents_volume
+  - field_name: contents_volume
     type: float
     unit: ml
     min: 0
