@@ -1,0 +1,85 @@
+protocol_type: mini_protocol
+protocol_name: sdspage_prepare_running_buffer
+entry_step: dilute_10x_concentrate
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with buffer dilution using serological pipettes, volume scaling for bulk reagent preparation, and verification of final volume in a 1 L vessel."
+  outcomes: "Students completing this mini-protocol will be able to prepare 1 L of 1x running buffer by diluting 10x concentrate, using aseptic technique with a serological pipette to accurately transfer 100 mL of concentrate and 900 mL of ddH2O into a sterile carboy."
+  goals: "Overall, this mini-protocol aims to accomplish preparing a large-volume working stock of running buffer (1 L of 1x Tris/Glycine/SDS) from a concentrated stock -- the fundamental task that precedes all gel-running protocols and teaches proper use of large-volume transfer tools and bulk vessel handling."
+
+steps:
+  - step_name: dilute_10x_concentrate
+    prompt: "Prepare the 1x running buffer by first diluting the 10x concentrate. Set the serological pipette to 100 mL, aspirate 100 mL of 10x buffer from the concentrate bottle, and dispense it into the 1 L carboy."
+    sequence:
+      - target: serological_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: serological_pipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 100 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: serological_pipette
+              state:
+                set_volume: 100
+      - target: running_buffer_10x_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: running_buffer_1x_carboy
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: running_buffer_1x_carboy
+              state:
+                held_material_name: running_buffer_1x
+                held_material_volume: 100
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_diluent_water
+
+  - step_name: add_diluent_water
+    prompt: "Complete the buffer preparation by adding ddH2O. Set the serological pipette to 900 mL, aspirate 900 mL of deionized water from the ddH2O carboy, and dispense it into the running buffer carboy to reach a final volume of 1 L total."
+    sequence:
+      - target: serological_pipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: serological_pipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 900 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: serological_pipette
+              state:
+                set_volume: 900
+      - target: ddh2o_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: running_buffer_1x_carboy
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: running_buffer_1x_carboy
+              state:
+                held_material_name: running_buffer_1x
+                held_material_volume: 1000
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

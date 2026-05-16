@@ -1,0 +1,4 @@
+materials:
+  protein_ladder:
+    label: "Protein ladder (molecular weight reference)"
+    display_color: "#1f77b4"

@@ -13,7 +13,7 @@ state_fields:
     description: Volume the pipette is set to dispense.
   - field_name: held_material_name
     type: enum
-    allowed: [empty, water, carboplatin, metformin, media, carboplatin_10mmol, metformin_1mol, cell_suspension, trypan_blue, trypan_blue_mixture]
+    allowed: [empty, water, carboplatin, metformin, media, carboplatin_10mmol, metformin_1mol, cell_suspension, trypan_blue, trypan_blue_mixture, protein_sample_raw, laemmli_4x, bme, running_buffer_1x, ddh2o, coomassie_stain, destain, protein_sample_mixed, protein_sample_denatured, protein_ladder]
     default: empty
     description: Contents currently aspirated in the pipette tip.
   - field_name: held_material_volume
@@ -40,6 +40,26 @@ visual_states:
       - when: metformin
         output: { asset_name: micropipette_filled }
       - when: media
+        output: { asset_name: micropipette_filled }
+      - when: protein_sample_raw
+        output: { asset_name: micropipette_filled }
+      - when: laemmli_4x
+        output: { asset_name: micropipette_filled }
+      - when: bme
+        output: { asset_name: micropipette_filled }
+      - when: running_buffer_1x
+        output: { asset_name: micropipette_filled }
+      - when: ddh2o
+        output: { asset_name: micropipette_filled }
+      - when: coomassie_stain
+        output: { asset_name: micropipette_filled }
+      - when: destain
+        output: { asset_name: micropipette_filled }
+      - when: protein_sample_mixed
+        output: { asset_name: micropipette_filled }
+      - when: protein_sample_denatured
+        output: { asset_name: micropipette_filled }
+      - when: protein_ladder
         output: { asset_name: micropipette_filled }
   held_material_volume:
     kind: composite

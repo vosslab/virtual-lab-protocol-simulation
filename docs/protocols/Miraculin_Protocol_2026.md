@@ -80,11 +80,11 @@ Specific Steps: IMAC Column Setup and Nickel Charging
 * Kimwipe
 
   Pictures of equipment used:
-  
-  
-  
-  
-  
+
+
+
+
+
 
 ## **Laboratory Learning Objectives**
 

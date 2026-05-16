@@ -1,0 +1,59 @@
+scene_name: imaging_bench
+workspace: bench
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: bench_workspace_bg
+
+zones:
+  - id: rear_left
+    bounds:
+      left: 5
+      right: 30
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear left zone
+  - id: rear_center
+    bounds:
+      left: 35
+      right: 65
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear center zone
+  - id: center
+    bounds:
+      left: 20
+      right: 80
+      top: 45
+      bottom: 75
+    align: center
+    label: Bench work surface
+
+placements:
+  - placement_name: center_staining_tray
+    object_name: staining_tray
+    zone: center
+    depth_tier: 1
+  - placement_name: rear_center_lightbox
+    object_name: lightbox
+    zone: rear_center
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Try using the {expected_label}."
+  toast_duration_ms: 2000

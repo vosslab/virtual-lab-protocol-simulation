@@ -1,0 +1,18 @@
+object_name: gel_comb
+kind: equipment
+label: Gel comb
+
+state_fields:
+  - field_name: position
+    type: enum
+    allowed: [not_in_cassette]
+    default: not_in_cassette
+    description: Position state of the comb after removal.
+
+visual_states: {}
+
+capabilities: [clickable]
+
+layout:
+  default_width: 8
+  label_width: 6

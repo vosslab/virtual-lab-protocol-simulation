@@ -1,0 +1,8 @@
+scene_name: sdspage_prepare_sample_mix_single_lane_workspace
+extends: sample_prep_bench
+
+add_placements:
+  - placement_name: eppendorf_tube
+    object_name: microtube
+    zone: center
+    depth_tier: 3

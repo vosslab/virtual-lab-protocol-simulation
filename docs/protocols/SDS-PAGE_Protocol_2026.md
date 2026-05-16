@@ -291,11 +291,11 @@ Brief outline of steps in the procedure
 
    Example: If your protein concentration is C = 0.40 &micro;g/&micro;L and your target loading is 2 &micro;g per well, you need 5 &micro;L of the concentration solution to be added.
 
-   Use the standard concentration equation: 
+   Use the standard concentration equation:
 
-   Substitute your values: 
+   Substitute your values:
 
-   
+
 
 2. Verify that your miraculin samples have been properly prepared by mixing them with 4x Laemmli sample buffer (containing beta-mercaptoethanol or DTT) and heating them at 90-95°C for 5 minutes to ensure full denaturation.
 

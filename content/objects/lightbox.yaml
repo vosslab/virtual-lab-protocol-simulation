@@ -1,0 +1,32 @@
+object_name: lightbox
+kind: equipment
+label: Lightbox
+
+state_fields:
+  - field_name: powered_on
+    type: bool
+    default: false
+    description: Whether the lightbox is powered on.
+  - field_name: tray_present
+    type: bool
+    default: false
+    description: Whether a gel tray is present on the lightbox surface.
+  - field_name: image_captured
+    type: bool
+    default: false
+    description: Whether an image has been captured.
+
+visual_states:
+  powered_on:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: lightbox_off }
+      - when: true
+        output: { asset_name: lightbox_on }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 18
+  label_width: 8

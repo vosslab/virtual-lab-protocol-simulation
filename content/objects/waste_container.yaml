@@ -5,7 +5,7 @@ label: Waste container
 state_fields:
   - field_name: material_name
     type: enum
-    allowed: [empty, media, pbs, mixed]
+    allowed: [empty, media, pbs, mixed, coomassie_stain_used, destain_used, running_buffer_1x_used]
     default: empty
     description: Waste type (empty, single liquid, or mixed).
   - field_name: material_volume
@@ -27,6 +27,12 @@ visual_states:
       - when: pbs
         output: { asset_name: waste_container_filled }
       - when: mixed
+        output: { asset_name: waste_container_filled }
+      - when: coomassie_stain_used
+        output: { asset_name: waste_container_filled }
+      - when: destain_used
+        output: { asset_name: waste_container_filled }
+      - when: running_buffer_1x_used
         output: { asset_name: waste_container_filled }
   material_volume:
     kind: composite

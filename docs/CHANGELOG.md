@@ -1,5 +1,148 @@
 # Changelog
 
+## 2026-05-16 (SDS-PAGE pathway full ship)
+
+### Additions and New Features
+
+- 19 SDS-PAGE mini-protocols under `content/protocols/`: `sdspage_sample_prep_setup`,
+  `sdspage_buffer_prep`, `sdspage_protein_quantification_setup`,
+  `sdspage_protein_quantification_finish`, `sdspage_gel_casting_prep`,
+  `sdspage_gel_casting_fill`, `sdspage_gel_polymerization`, `sdspage_sample_loading`,
+  `sdspage_electrophoresis_run`, `sdspage_electrophoresis_disassembly`,
+  `sdspage_gel_fixation`, `sdspage_gel_staining`, `sdspage_gel_destain_rinse`,
+  `sdspage_destain_gel_setup`, `sdspage_destain_gel_rock`, `sdspage_gel_imaging_setup`,
+  `sdspage_gel_imaging_analysis`, `sdspage_recycle_buffer`, and `sdspage_full`
+  (sequence_runner composing mini-protocols MP-1 through MP-17). Note: MP-16 split
+  into MP-16a (`sdspage_destain_gel_setup`) and MP-16b (`sdspage_destain_gel_rock`).
+- 30 new objects under `content/objects/`: 7 single-piece equipment (heat_block,
+  power_supply, microwave, gel_cassette_kit, staining_box, rocker, lightbox);
+  3 structured-subpart items (gel_cassette, electrophoresis_tank, electrode_module);
+  20 consumables (microtube, microtube_rack_24, buffer_bottle, protein_sample_tube,
+  loading_dye_tube, comassie_powder_container, destain_powder_container,
+  coomassie_recycle_bottle, destain_waste_bottle, gel_cassette_backing_plate,
+  electrode_assembly, power_supply_lead_red, power_supply_lead_black,
+  cooling_block, ice_pack, lens_tissue, marker_pen_f, marker_pen_m, weight_1kg,
+  weight_2kg).
+- 14 new materials across per-protocol materials.yaml files: sample_buffer,
+  coomassie_brilliant_blue, destain_solution, tris_glycine_buffer,
+  running_buffer, acrylamide_solution, bis_acrylamide, ammonium_persulfate,
+  temed, stacking_buffer, loading_dye, sds_solution, beta_mercaptoethanol,
+  ethanol_wash.
+- 5 new scenes under `content/scenes/`: sample_prep_bench, heat_block_bench,
+  electrophoresis_bench, staining_bench, imaging_bench.
+- 52 SVG assets under `assets/equipment/`: 41 Servier-adopted items (CC BY 3.0
+  attribution recorded in `assets/equipment/SOURCES.md`), 11 placeholder SVGs
+  (tracked in `assets/equipment/MISSING_SVG_PLACEHOLDERS.md` for opportunistic
+  replacement when matching CC-licensed art lands).
+- M0 lock artifacts at `docs/active_plans/`: `sdspage_action_map.md` (143 atomic
+  interactions reconciled to 19 mini-protocols), `sdspage_decision_lock.md`
+  (SG1-SG20 specification gaps decided), `sdspage_inventory_lock.md` (binding
+  object, material, scene, and subpart contract), `sdspage_physical_scale.md`
+  (text-only visual/layout metadata companion).
+
+### Behavior or Interface Changes
+
+- 3 existing object enums extended (no schema schema changes): `serological_pipette.held_material_name`,
+  `waste_container.material_name`, `micropipette.held_material_name` each gain new
+  enum values for SDS-PAGE consumables.
+- Scene placements for `electrophoresis_bench.yaml` and `sample_prep_bench.yaml`
+  updated to accommodate cassette family + microtube geometry.
+
+### Removals and Deprecations
+
+- `eppendorf_tube` object renamed to `microtube` (brand-neutral terminology).
+  Prose usage may retain "Eppendorf-style microtube" for clarity.
+- `eppendorf_rack_24` object renamed to `microtube_rack_24`.
+- `aspirating_pipette` removed from inventory lock's Reused-existing set (action
+  map never uses tank-drain-by-aspirate; recycle path uses pour-through-funnel,
+  dispose path cut by stepper limitation).
+
+### Decisions and Failures
+
+- **Browser walker / PRIMARY_CONTRACT item 4 visible-interaction gate: deferred**
+  to a future plan after the TypeScript scene runtime is complete. YAML authored here
+  is forward-compatible declaration; semantic verification via stepper stood in for
+  runtime evidence. Walker requirement: visible UI path, screenshot evidence,
+  no internal API calls, no state mutation.
+- **`select` gesture + branching: not supported by current `tools/protocol_stepper.py`.**
+  Forced cuts: (1) MP-14 `sdspage_recycle_buffer` is linear; dispose-as-hazardous path
+  captured in prompt prose only. (2) SG7 voltage choice fixed at 150 V / 30 min; 200 V
+  alternative in prose only. (3) SG15 label-typing cut (also blocked by missing `type`
+  gesture stepper support).
+- **`physical_scale` object-YAML field: schema rejected** (object schema is closed per
+  PRIMARY_CONTRACT closure rule). Convention captured in text-only companion
+  `docs/active_plans/sdspage_physical_scale.md`. Promote to object schema when an
+  extension hook is available.
+- **Subpart targets without formal `structure` block do not resolve in stepper.**
+  Examples: `gel_cassette.lane_N` works (structure declared); `gel_cassette.bottom_tape`,
+  `electrophoresis_tank.inner_chamber`, `power_supply.lead_red`, `lightbox.power_switch`,
+  etc. fall back to parent-target with state mutation on parent fields. Workaround
+  captured in inventory-lock decision notes.
+- **6 mentioned-but-deferred objects** (per inventory lock): `hazardous_waste_carboy`,
+  plus equipment-list-only items (centrifuge, spectrophotometer, separate light box,
+  fume hood, cuvettes). Bradford assay materials also deferred. Scope frozen per M6
+  contract.
+- 11 SVG placeholders remain (per `assets/equipment/MISSING_SVG_PLACEHOLDERS.md`).
+  Art sourcing deferred; replacement opportunistic when matching CC-licensed SVG
+  lands.
+
+### Developer Tests and Notes
+
+- Full-repo validator (`tools/validate_content_yaml.py`): PASS (0 failures) post-cleanup.
+- Full-pathway stepper (`tools/protocol_stepper.py -p sdspage_full`): 20 steps,
+  155 interactions, end-to-end PASS (was 143 interactions in lock, +12 added during
+  M1-M6 refinement per action-map reconciliation).
+- Manual docs (`tools/protocol_manual.py --all`): 31/31 protocols render cleanly;
+  `sdspage_full.md` combined manual 1020 lines at `output_manuals/`.
+
+## 2026-05-16 (SDS-PAGE M0 lock artifacts)
+
+### Additions and New Features
+
+- Add `docs/active_plans/sdspage_action_map.md`: reconciliation of the SDS-PAGE
+  protocol (Parts 1-10) into 143 atomic interactions (27 parts x 3-10 interactions),
+  mapped to objects and mini-protocols per the plan. Single-pass action map listing.
+- Add `docs/active_plans/sdspage_decision_lock.md`: resolution of 20 spec gaps
+  (SG1-SG20) raised during plan scoping. Each gap addresses ambiguities in the
+  source-doc prose. Locked defaults are the authoring contract for M1-M5.
+- Add `docs/active_plans/sdspage_inventory_lock.md`: reconciliation of the action
+  map (143 interactions) against plan Tables 2 and 4. Records every object, material,
+  mini-protocol, subpart, and interaction count delta. Binding contract for M1-M5
+  doers.
+- Add `docs/active_plans/sdspage_physical_scale.md`: companion file for object
+  size hints (visual/layout metadata only). Schema extension rejected; convention
+  deferred to text-only document. Cited in object author notes as reference, not
+  YAML source.
+
+### Decisions and Failures
+
+- Physical-scale schema-acceptance check FAILED. Validator rejects `physical_scale`
+  as an unknown top-level key. Per PRIMARY_CONTRACT closure rule ("no escape hatches"),
+  field deferred to text-only companion and not authored in any WP-1.x object YAML.
+- MP-16 (`sdspage_destain_gel`) exceeds 15-interaction cap at 21 interactions after
+  action-map reconciliation. Decompose into MP-16a (15 interactions: rinses + destain
+  + microwave) and MP-16b (6 interactions: kimwipes + rocker + pour-off). Total minis
+  increase from 18 to 19.
+- Part 7 `select` gesture (buffer contamination Y/N choice) rewritten as `click` on
+  `electrophoresis_tank.clean_buffer_affordance` subpart per stepper limitation (R4).
+  Gesture matches stepper support; affordance is a passive click target.
+- `aspirating_pipette` removed from Reused existing inventory. Action map never uses
+  tank-drain-by-aspirate; recycle path uses pour-through-funnel; dispose path cut by
+  stepper. No interaction needs this object.
+
+### Developer Tests and Notes
+
+- All three M0 lock artifacts reviewed and accepted. Plan body updated in place:
+  Table 2 (28 -> 30 objects; consumables 18 -> 20; reused 3 minis added/removed),
+  Table 4 (18 -> 19 minis; MP-16 split into MP-16a/MP-16b; interaction counts per
+  lock), References (18 -> 19 minis, 28 -> 30 objects, 124 -> 143 interactions in
+  all summary prose).
+- Inventory delta reconciliation: `coomassie_recycle_bottle` and `destain_waste_bottle`
+  added (WP-1.4, consumables). `micropipette` added to Reused existing (WP-1.5, enum
+  extension). `aspirating_pipette` removed from Reused existing. Subpart enumerations
+  added to `gel_cassette`, `electrode_module`, `electrophoresis_tank`, `power_supply`,
+  `microwave`, `heat_block`, `rocking_shaker`, `waste_container`, `lightbox`.
+
 ## 2026-05-16 (mtt_solubilization_readout uniform-step rewrite to all_wells)
 
 ### Behavior or Interface Changes

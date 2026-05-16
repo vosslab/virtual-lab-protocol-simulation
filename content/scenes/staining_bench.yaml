@@ -1,0 +1,107 @@
+scene_name: staining_bench
+workspace: bench
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: bench_workspace_bg
+
+zones:
+  - id: rear_left
+    bounds:
+      left: 5
+      right: 30
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear left zone
+  - id: rear_center
+    bounds:
+      left: 35
+      right: 65
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear center zone
+  - id: rear_right
+    bounds:
+      left: 70
+      right: 95
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear right zone
+  - id: center
+    bounds:
+      left: 20
+      right: 80
+      top: 45
+      bottom: 75
+    align: center
+    label: Bench work surface
+  - id: right_tool_area
+    bounds:
+      left: 80
+      right: 95
+      top: 55
+      bottom: 80
+    align: center
+    label: Right tool rack
+
+placements:
+  - placement_name: center_staining_tray
+    object_name: staining_tray
+    zone: center
+    depth_tier: 1
+  - placement_name: rear_left_coomassie_stain
+    object_name: coomassie_stain_bottle
+    zone: rear_left
+    depth_tier: 1
+  - placement_name: rear_center_destain
+    object_name: destain_bottle
+    zone: rear_center
+    depth_tier: 1
+  - placement_name: rear_right_ddh2o
+    object_name: ddh2o_bottle
+    zone: rear_right
+    depth_tier: 1
+  - placement_name: rear_left_coomassie_recycle
+    object_name: coomassie_recycle_bottle
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_center_destain_waste
+    object_name: destain_waste_bottle
+    zone: rear_center
+    depth_tier: 2
+  - placement_name: right_tool_area_microwave
+    object_name: microwave
+    zone: right_tool_area
+    depth_tier: 1
+  - placement_name: right_tool_area_rocking_shaker
+    object_name: rocking_shaker
+    zone: right_tool_area
+    depth_tier: 2
+  - placement_name: center_kimwipe_pad
+    object_name: kimwipe_pad
+    zone: center
+    depth_tier: 2
+  - placement_name: center_waste_container
+    object_name: waste_container
+    zone: center
+    depth_tier: 3
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Try using the {expected_label}."
+  toast_duration_ms: 2000

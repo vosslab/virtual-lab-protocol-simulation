@@ -1,0 +1,147 @@
+scene_name: electrophoresis_bench
+workspace: bench
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  asset: bench_workspace_bg
+
+zones:
+  - id: rear_left
+    bounds:
+      left: 5
+      right: 30
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear left zone
+  - id: rear_center
+    bounds:
+      left: 35
+      right: 65
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear center zone
+  - id: rear_right
+    bounds:
+      left: 70
+      right: 95
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear right zone
+  - id: center
+    bounds:
+      left: 20
+      right: 80
+      top: 45
+      bottom: 75
+    align: center
+    label: Bench work surface
+  - id: right_tool_area
+    bounds:
+      left: 80
+      right: 95
+      top: 55
+      bottom: 80
+    align: center
+    label: Right tool rack
+  - id: front_left
+    bounds:
+      left: 5
+      right: 30
+      top: 80
+      bottom: 95
+    align: center
+    label: Front left zone
+  - id: front_right
+    bounds:
+      left: 70
+      right: 95
+      top: 80
+      bottom: 95
+    align: center
+    label: Front right zone
+
+placements:
+  - placement_name: rear_left_running_buffer_10x
+    object_name: running_buffer_10x_bottle
+    zone: rear_left
+    depth_tier: 1
+  - placement_name: rear_center_electrophoresis_tank
+    object_name: electrophoresis_tank
+    zone: rear_center
+    depth_tier: 1
+  - placement_name: rear_right_power_supply
+    object_name: power_supply
+    zone: rear_right
+    depth_tier: 1
+  - placement_name: center_running_buffer_1x_carboy
+    object_name: running_buffer_1x_carboy
+    zone: center
+    depth_tier: 2
+  - placement_name: center_ddh2o_bottle
+    object_name: ddh2o_bottle
+    zone: center
+    depth_tier: 2
+  - placement_name: center_serological_pipette
+    object_name: serological_pipette
+    zone: center
+    depth_tier: 1
+  - placement_name: right_tool_area_p10_micropipette
+    object_name: p10_micropipette
+    zone: right_tool_area
+    depth_tier: 1
+  - placement_name: right_tool_area_p10_gel_loading_tip_box
+    object_name: p10_gel_loading_tip_box
+    zone: right_tool_area
+    depth_tier: 1
+  - placement_name: rear_left_protein_ladder_tube
+    object_name: protein_ladder_tube
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_left_recycle_buffer_bottle
+    object_name: recycle_buffer_bottle
+    zone: rear_left
+    depth_tier: 2
+  - placement_name: rear_right_gel_opening_tool
+    object_name: gel_opening_tool
+    zone: rear_right
+    depth_tier: 2
+  - placement_name: center_waste_container
+    object_name: waste_container
+    zone: center
+    depth_tier: 3
+  - placement_name: center_electrode_module
+    object_name: electrode_module
+    zone: center
+    depth_tier: 2
+  - placement_name: front_left_mini_protean_gel
+    object_name: mini_protean_gel
+    zone: front_left
+    depth_tier: 1
+  - placement_name: center_gel_cassette
+    object_name: gel_cassette
+    zone: center
+    depth_tier: 1
+  - placement_name: front_right_gel_comb
+    object_name: gel_comb
+    zone: front_right
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Try using the {expected_label}."
+  toast_duration_ms: 2000

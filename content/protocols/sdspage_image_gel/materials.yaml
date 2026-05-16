@@ -1,0 +1,4 @@
+materials:
+  ddh2o:
+    label: "Distilled deionized water (ddH2O)"
+    display_color: "#e3f2fd"

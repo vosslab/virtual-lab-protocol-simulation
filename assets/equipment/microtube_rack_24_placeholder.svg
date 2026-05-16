@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <style>
+      .placeholder-border { fill: none; stroke: #999; stroke-width: 2; stroke-dasharray: 4,2; }
+      .placeholder-text { font-family: Arial, sans-serif; font-size: 10; fill: #666; text-anchor: middle; }
+    </style>
+  </defs>
+  <rect class="placeholder-border" x="5" y="5" width="90" height="90" rx="4" />
+  <text class="placeholder-text" x="50" y="45" dominant-baseline="middle">Microtube Rack</text>
+  <text class="placeholder-text" x="50" y="60" dominant-baseline="middle">(24-slot)</text>
+</svg>

@@ -1,0 +1,43 @@
+object_name: power_supply
+kind: equipment
+label: Power Supply
+
+state_fields:
+  - field_name: set_voltage
+    type: int
+    unit: V
+    min: 0
+    max: 300
+    step: 1
+    default: 0
+    description: Voltage setting for electrophoresis in volts.
+  - field_name: running
+    type: bool
+    default: false
+    description: Whether the power supply is currently running.
+  - field_name: cathode_lead_attached
+    type: bool
+    default: false
+    description: Whether the red (positive) lead is attached to the electrode.
+  - field_name: anode_lead_attached
+    type: bool
+    default: false
+    description: Whether the black (negative) lead is attached to the electrode.
+
+visual_states:
+  set_voltage:
+    kind: overlay
+    formula: label(state(set_voltage), format="{value} V")
+  running:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: power_supply_off }
+      - when: true
+        output: { asset_name: power_supply_on }
+
+capabilities: [clickable, instrument_with_setpoint]
+
+layout:
+  default_width: 18
+  label_width: 12

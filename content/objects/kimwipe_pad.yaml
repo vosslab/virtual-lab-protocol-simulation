@@ -1,0 +1,13 @@
+object_name: kimwipe_pad
+kind: decoration
+label: Kimwipe pad
+
+state_fields: []
+
+visual_states: {}
+
+capabilities: [clickable]
+
+layout:
+  default_width: 3
+  label_width: 5

@@ -1,0 +1,124 @@
+protocol_type: mini_protocol
+protocol_name: sdspage_load_protein_ladder
+entry_step: open_gel_workspace
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with micropipette handling, precise volume adjustment, and loading protein samples into gel lanes during SDS-PAGE sample preparation."
+  outcomes: "Students completing this mini-protocol will be able to draw protein ladder from its source tube, dispense exactly 20 &micro;L into lane 5 of the gel cassette, and verify correct lane targeting for molecular weight reference standards."
+  goals: "Overall, this mini-protocol aims to accomplish the protein ladder loading step for SDS-PAGE gel preparation. The ladder serves as a molecular weight reference standard and must be loaded into a designated lane (lane 5) to enable post-run analysis and band identification."
+
+steps:
+  - step_name: open_gel_workspace
+    prompt: "Open the gel workspace to prepare for loading the protein ladder into the gel cassette."
+    sequence:
+      - target: gel_cassette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: electrophoresis_bench
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pick_up_micropipette
+
+  - step_name: pick_up_micropipette
+    prompt: "Pick up the p10 micropipette to prepare for sample aspiration."
+    sequence:
+      - target: p10_micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: mount_gel_loading_tip
+
+  - step_name: mount_gel_loading_tip
+    prompt: "Mount a gel loading tip onto the p10 micropipette from the gel loading tip box."
+    sequence:
+      - target: p10_gel_loading_tip_box
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: p10_micropipette
+              operation: attach
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: set_micropipette_volume
+
+  - step_name: set_micropipette_volume
+    prompt: "Set the p10 micropipette to 20 &micro;L to draw the protein ladder."
+    sequence:
+      - target: p10_micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 20 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: p10_micropipette
+              state:
+                set_volume: 20
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: aspirate_protein_ladder
+
+  - step_name: aspirate_protein_ladder
+    prompt: "Draw 20 &micro;L of protein ladder from the protein ladder tube."
+    sequence:
+      - target: protein_ladder_tube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: p10_micropipette
+              state:
+                held_material_name: protein_ladder
+                held_material_volume: 20
+            - type: ObjectStateChange
+              target: protein_ladder_tube
+              state:
+                held_material_volume: 480
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: dispense_into_lane_5
+
+  - step_name: dispense_into_lane_5
+    prompt: "Slowly dispense the 20 &micro;L of protein ladder into lane 5 of the gel cassette."
+    sequence:
+      - target: gel_cassette.lane_5
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: gel_cassette.lane_5
+              state:
+                material_name: protein_ladder
+                material_volume: 20
+            - type: ObjectStateChange
+              target: p10_micropipette
+              state:
+                held_material_name: empty
+                held_material_volume: 0
+            - type: CursorAttach
+              target: p10_micropipette
+              operation: detach
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

@@ -1,0 +1,39 @@
+object_name: heat_block
+kind: equipment
+label: Heat Block
+
+state_fields:
+  - field_name: set_temperature
+    type: int
+    unit: C
+    min: 37
+    max: 100
+    step: 1
+    default: 95
+    description: Temperature setting for the heat block in degrees Celsius.
+  - field_name: lid_open
+    type: bool
+    default: false
+    description: Whether the heat block lid is open.
+  - field_name: rack_present
+    type: bool
+    default: false
+    description: Whether a sample rack is present on the heat block.
+
+visual_states:
+  set_temperature:
+    kind: overlay
+    formula: label(state(set_temperature), format="{value} C")
+  lid_open:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: heat_block_closed }
+      - when: true
+        output: { asset_name: heat_block_open }
+
+capabilities: [clickable, instrument_with_setpoint]
+
+layout:
+  default_width: 20
+  label_width: 11

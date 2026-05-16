@@ -13,7 +13,7 @@ state_fields:
     description: Volume the pipette is set to dispense.
   - field_name: held_material_name
     type: enum
-    allowed: [empty, media, pbs, trypsin, cells, cell_suspension]
+    allowed: [empty, media, pbs, trypsin, cells, cell_suspension, running_buffer_10x, running_buffer_1x, ddh2o]
     default: empty
     description: Contents currently aspirated in the pipette barrel.
   - field_name: held_material_volume
@@ -40,6 +40,12 @@ visual_states:
       - when: trypsin
         output: { asset_name: serological_pipette_filled }
       - when: cells
+        output: { asset_name: serological_pipette_filled }
+      - when: running_buffer_10x
+        output: { asset_name: serological_pipette_filled }
+      - when: running_buffer_1x
+        output: { asset_name: serological_pipette_filled }
+      - when: ddh2o
         output: { asset_name: serological_pipette_filled }
   held_material_volume:
     kind: composite

@@ -1,0 +1,46 @@
+object_name: electrode_module
+kind: equipment
+label: Electrode module
+
+state_fields:
+  - field_name: mounted
+    type: bool
+    default: false
+    description: Whether the module is mounted in the electrophoresis tank.
+  - field_name: cassette_mounted
+    type: bool
+    default: false
+    description: Whether a gel cassette is mounted on the module.
+  - field_name: wing_clamps_open
+    type: bool
+    default: true
+    description: Whether the wing clamps are open.
+
+visual_states:
+  mounted:
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: electrode_module_mounted }
+      - when: false
+        output: { asset_name: electrode_module_unmounted }
+  cassette_mounted:
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: electrode_module_with_cassette }
+      - when: false
+        output: { asset_name: electrode_module_without_cassette }
+  wing_clamps_open:
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: electrode_module_clamps_open }
+      - when: false
+        output: { asset_name: electrode_module_clamps_closed }
+
+capabilities: [clickable]
+
+layout:
+  default_width: 16
+  label_width: 10

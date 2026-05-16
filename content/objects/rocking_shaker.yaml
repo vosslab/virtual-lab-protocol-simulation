@@ -1,0 +1,50 @@
+object_name: rocking_shaker
+kind: equipment
+label: Rocking Shaker
+
+state_fields:
+  - field_name: set_time_min
+    type: int
+    unit: min
+    min: 0
+    max: 60
+    step: 1
+    default: 7
+    description: Duration setting for rocking in minutes.
+  - field_name: set_rpm
+    type: int
+    unit: rpm
+    min: 0
+    max: 200
+    step: 5
+    default: 50
+    description: Rotations per minute setting for the shaker.
+  - field_name: running
+    type: bool
+    default: false
+    description: Whether the rocking shaker is currently running.
+  - field_name: tray_present
+    type: bool
+    default: false
+    description: Whether a tray is present on the shaker.
+
+visual_states:
+  set_time_min:
+    kind: overlay
+    formula: label(state(set_time_min), format="{value} min")
+  set_rpm:
+    kind: overlay
+    formula: label(state(set_rpm), format="{value} rpm")
+  running:
+    kind: svg
+    cases:
+      - when: false
+        output: { asset_name: rocking_shaker_idle }
+      - when: true
+        output: { asset_name: rocking_shaker_running }
+
+capabilities: [clickable, instrument_with_setpoint]
+
+layout:
+  default_width: 20
+  label_width: 14

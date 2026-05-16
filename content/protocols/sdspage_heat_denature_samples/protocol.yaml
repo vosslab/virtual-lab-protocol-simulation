@@ -1,0 +1,94 @@
+protocol_type: mini_protocol
+protocol_name: sdspage_heat_denature_samples
+entry_step: open_heat_block_lid
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with using a heat block for thermal protein denaturation at a fixed temperature and managing incubation timing."
+  outcomes: "Students completing this mini-protocol will be able to load sample tubes into a pre-set heat block, incubate at 95 degrees Celsius for 5 minutes, and retrieve denatured samples for downstream analysis."
+  goals: "Overall, this mini-protocol aims to accomplish thermal denaturation of protein samples mixed with reducing agent (BME) and buffer, preparing them for SDS-PAGE electrophoresis."
+
+steps:
+  - step_name: open_heat_block_lid
+    prompt: "Open the heat block lid to access the heating surface."
+    sequence:
+      - target: heat_block
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: heat_block
+              state:
+                lid_open: true
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: place_rack_in_heat_block
+
+  - step_name: place_rack_in_heat_block
+    prompt: "Place the microtube rack containing the prepared protein samples (3 student samples plus 1 MW ladder tube) into the heat block."
+    sequence:
+      - target: microtube_rack_24
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: heat_block
+              state:
+                rack_present: true
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: close_lid_and_start_timer
+
+  - step_name: close_lid_and_start_timer
+    prompt: "Close the heat block lid and start the 5-minute denaturation incubation."
+    sequence:
+      - target: heat_block
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: heat_block
+              state:
+                lid_open: false
+            - type: TimedWait
+              target: heat_block
+              duration_min: 5
+              display: "Denaturing samples at 95 C"
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: retrieve_denatured_samples
+
+  - step_name: retrieve_denatured_samples
+    prompt: "After the 5-minute incubation is complete, open the heat block lid and remove the sample rack."
+    sequence:
+      - target: heat_block
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: heat_block
+              state:
+                lid_open: true
+      - target: microtube_rack_24
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: heat_block
+              state:
+                rack_present: false
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

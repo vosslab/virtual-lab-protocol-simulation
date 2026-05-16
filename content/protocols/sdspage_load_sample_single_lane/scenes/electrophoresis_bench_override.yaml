@@ -1,0 +1,8 @@
+scene_name: electrophoresis_bench
+extends: electrophoresis_bench
+
+add_placements:
+  - placement_name: center_microtube
+    object_name: microtube
+    zone: center
+    depth_tier: 2

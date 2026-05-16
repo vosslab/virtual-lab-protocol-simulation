@@ -1,0 +1,8 @@
+scene_name: extraction_workspace
+extends: electrophoresis_bench
+
+add_placements:
+  - placement_name: front_center_staining_tray
+    object_name: staining_tray
+    zone: front_left
+    depth_tier: 1

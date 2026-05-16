@@ -3,7 +3,7 @@
 import sys
 
 
-def pick_protocol_interactively(protocols, prompt="Select a protocol (number): "):
+def pick_protocol_interactively(protocols, prompt="Select a protocol (number): ", intro="Available protocols:"):
 	"""
 	Render a numbered menu of protocol names and return the chosen name.
 
@@ -17,7 +17,7 @@ def pick_protocol_interactively(protocols, prompt="Select a protocol (number): "
 	if not sys.stdin.isatty():
 		print("Interactive mode requires a terminal.", file=sys.stderr)
 		return None
-	print("Available protocols:")
+	print(intro)
 	for idx, name in enumerate(protocols, 1):
 		print(f"  {idx}. {name}")
 	raw = input(prompt).strip()

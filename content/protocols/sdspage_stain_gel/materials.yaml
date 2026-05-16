@@ -1,0 +1,12 @@
+materials:
+  coomassie_stain:
+    label: "Coomassie stain solution"
+    display_color: "#0066cc"
+
+  coomassie_stain_used:
+    label: "Used Coomassie stain (for recycling)"
+    display_color: "#005299"
+
+  ddh2o:
+    label: "Deionized water"
+    display_color: "#f0f9ff"

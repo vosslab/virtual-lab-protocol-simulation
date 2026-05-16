@@ -1,0 +1,8 @@
+materials:
+  protein_sample_mixed:
+    label: "Protein sample (mixed with Laemmli buffer and BME)"
+    display_color: "#e8f0ff"
+
+  protein_sample_denatured:
+    label: "Protein sample (denatured)"
+    display_color: "#c8d9ff"

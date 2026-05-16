@@ -1,0 +1,4 @@
+materials:
+  destain_used:
+    label: "Used destain solution"
+    display_color: "#e8d4c4"

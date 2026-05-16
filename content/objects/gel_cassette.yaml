@@ -1,0 +1,70 @@
+object_name: gel_cassette
+kind: equipment
+label: Gel cassette
+
+structure:
+  subpart_kind: lane
+  layout: grid
+  rows: 10
+  cols: 1
+  name_pattern: "lane_{row}"
+  subpart_groups:
+    all_lanes:
+      group_kind: region
+      members:
+        - name: all_lanes
+          contains: [lane_1, lane_2, lane_3, lane_4, lane_5, lane_6, lane_7, lane_8, lane_9, lane_10]
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty, protein_ladder, protein_sample_denatured]
+    default: empty
+    applies_to: subpart
+    description: Contents currently in this lane.
+  - field_name: material_volume
+    type: float
+    unit: ul
+    min: 0
+    max: 30
+    default: 0
+    applies_to: subpart
+    description: Volume of sample loaded in this lane, in microliters.
+  - field_name: tape_present
+    type: bool
+    default: true
+    description: Whether the bottom tape is attached to the cassette.
+  - field_name: comb_present
+    type: bool
+    default: true
+    description: Whether the comb is inserted in the cassette.
+  - field_name: top_plate_inserted
+    type: bool
+    default: true
+    description: Whether the top glass plate is inserted in the cassette.
+  - field_name: side_clamps_locked
+    type: bool
+    default: false
+    description: Whether the side clamps are locked.
+  - field_name: wing_clamps_locked
+    type: bool
+    default: false
+    description: Whether the wing clamps are locked.
+
+visual_states:
+  material_name:
+    kind: svg
+    applies_to: subpart
+    cases:
+      - when: empty
+        output: { asset_name: gel_lane_empty }
+      - when: protein_ladder
+        output: { asset_name: gel_lane_ladder }
+      - when: protein_sample_denatured
+        output: { asset_name: gel_lane_sample }
+
+capabilities: [clickable, structured_surface, material_container]
+
+layout:
+  default_width: 16
+  label_width: 10

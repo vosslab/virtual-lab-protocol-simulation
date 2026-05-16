@@ -1,0 +1,4 @@
+materials:
+  protein_sample_denatured:
+    label: "Denatured protein sample (heat-treated)"
+    display_color: "#4c1d95"

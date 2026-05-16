@@ -1,0 +1,137 @@
+protocol_type: mini_protocol
+protocol_name: sdspage_prepare_sample_mix_single_lane
+entry_step: add_protein_sample
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved fluency with precise liquid transfer using a micropipette, sequential reagent mixing for protein sample preparation, and hazard awareness when working with volatile reducing agents."
+  outcomes: "Students completing this mini-protocol will be able to accurately measure and transfer three distinct volumes (21 &micro;L protein, 7.5 &micro;L Laemmli buffer, 1.5 &micro;L beta-mercaptoethanol) into a single tube, combine them in the correct sequence to create a denaturation cocktail, and safely handle volatile reducing agents in a fume hood."
+  goals: "Overall, this mini-protocol aims to accomplish the protein sample denaturation mix preparation for one lane of an SDS-PAGE gel (Part 1, action map P1.1-P1.9 single-lane slice). The three-component mix (protein sample, 4x Laemmli buffer, and beta-mercaptoethanol) is the foundational preparation step that enables the protein denaturation heating phase (MP-4). This mini-protocol establishes the core micropipette-transfer and sequential-mixing workflow that repeats three times in the full batch preparation (MP-3)."
+
+steps:
+  # Step 1: Add protein sample
+  - step_name: add_protein_sample
+    prompt: "Prepare the micropipette to transfer 21 &micro;L of protein sample. Aspirate the protein sample from the protein sample tube, then dispense it into the microtube."
+    sequence:
+      - target: micropipette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_prepare_sample_mix_single_lane_workspace
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 21 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 21
+      - target: protein_sample_tube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: microtube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: microtube
+              state:
+                held_material_name: protein_sample_raw
+                held_material_volume: 0.021
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_laemmli_buffer
+
+  # Step 2: Add Laemmli buffer
+  - step_name: add_laemmli_buffer
+    prompt: "Prepare the micropipette to transfer 7.5 &micro;L of 4x Laemmli buffer. Aspirate the Laemmli buffer from the Laemmli buffer bottle, then dispense it into the microtube."
+    sequence:
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 7.5 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 7.5
+      - target: laemmli_4x_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: microtube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: microtube
+              state:
+                held_material_volume: 0.0285
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_bme
+
+  # Step 3: Add beta-mercaptoethanol
+  - step_name: add_bme
+    prompt: "Caution: beta-mercaptoethanol is volatile and toxic. Work in a fume hood; minimize headspace exposure. Prepare the micropipette to transfer 1.5 &micro;L of beta-mercaptoethanol. Aspirate the beta-mercaptoethanol from the BME bottle, then dispense it into the microtube."
+    sequence:
+      - target: micropipette
+        gesture: adjust
+        validator: { preset: target_with_value, value: { set_volume: 1.5 } }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: micropipette
+              state:
+                set_volume: 1.5
+      - target: bme_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: microtube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: microtube
+              state:
+                held_material_name: protein_sample_mixed
+                held_material_volume: 0.03
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: cap_and_rack
+
+  # Step 4: Cap and place in rack
+  - step_name: cap_and_rack
+    prompt: "Cap the microtube and place it in the microtube rack for the next heating step."
+    sequence:
+      - target: microtube
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+      - target: microtube_rack_24
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations: []
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

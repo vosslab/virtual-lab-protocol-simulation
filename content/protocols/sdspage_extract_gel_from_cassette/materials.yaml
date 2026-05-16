@@ -1,0 +1,4 @@
+materials:
+  running_buffer_1x_used:
+    label: "Used running buffer"
+    display_color: "#e0e0e0"

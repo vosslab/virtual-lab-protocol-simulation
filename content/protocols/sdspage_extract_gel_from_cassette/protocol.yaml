@@ -1,0 +1,162 @@
+protocol_type: mini_protocol
+protocol_name: sdspage_extract_gel_from_cassette
+entry_step: disconnect_power_and_remove_lid
+
+learning:
+  objectives: "Students completing this mini-protocol will have achieved hands-on competency in de-energizing an electrophoresis system, safely removing the sealed chamber, recovering the electrode assembly, and extracting a polyacrylamide gel from its protective cassette."
+  outcomes: "Students completing this mini-protocol will be able to disconnect the power supply leads from the electrode module, open and remove the electrophoresis tank lid, lift the electrode module out of the tank, pour the used running buffer into a recycle container, pry open the gel cassette plates using a specialized gel-opening tool, and transfer the intact gel to a staining tray for post-electrophoresis processing."
+  goals: "Overall, this mini-protocol aims to accomplish the gel extraction phase of SDS-PAGE: transitioning from the closed electrophoresis chamber (powered down) to a gel ready for staining. This step comes immediately after the run is complete and power is off; it bridges the completed electrophoresis chamber to the staining workflow by safely recovering the gel and recycling the buffer."
+
+steps:
+  - step_name: disconnect_power_and_remove_lid
+    prompt: "Disconnect the power supply leads and open the electrophoresis tank. Turn off the power supply, remove the leads from the electrode module, then lift and remove the tank lid."
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: extraction_workspace
+      - target: power_supply
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: power_supply
+              state:
+                running: false
+      - target: power_supply
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: power_supply
+              state:
+                cathode_lead_attached: false
+                anode_lead_attached: false
+      - target: electrophoresis_tank
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                lid_present: false
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: remove_electrode_module
+
+  - step_name: remove_electrode_module
+    prompt: "Lift the electrode module out of the electrophoresis tank and set it aside on the work surface."
+    sequence:
+      - target: electrode_module
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrode_module
+              state:
+                mounted: false
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                module_present: false
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: empty_tank_buffer
+
+  - step_name: empty_tank_buffer
+    prompt: "Pour the used running buffer from the electrophoresis tank into the recycle buffer bottle. Collect buffer from both the inner and outer chambers."
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                inner_chamber_material_name: empty
+                inner_chamber_material_volume: 0
+      - target: recycle_buffer_bottle
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: recycle_buffer_bottle
+              state:
+                held_material_name: running_buffer_1x_used
+      - target: electrophoresis_tank
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                outer_chamber_material_name: empty
+                outer_chamber_material_volume: 0
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pry_cassette_open
+
+  - step_name: pry_cassette_open
+    prompt: "Use the gel-opening tool to carefully pry apart the gel cassette plates. This separates the top and bottom plates of the cassette."
+    sequence:
+      - target: gel_opening_tool
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: CursorAttach
+              target: gel_opening_tool
+              operation: attach
+      - target: gel_cassette
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: gel_cassette
+              state:
+                top_plate_inserted: false
+            - type: CursorAttach
+              target: gel_opening_tool
+              operation: detach
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: transfer_gel_to_staining_tray
+
+  - step_name: transfer_gel_to_staining_tray
+    prompt: "Transfer the gel to the staining tray."
+    sequence:
+      - target: staining_tray
+        gesture: click
+        validator: { preset: correct_target }
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: staining_bench
+            - type: ObjectStateChange
+              target: staining_tray
+              state:
+                gel_present: true
+    step_validator: { preset: sequence_complete }
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null
