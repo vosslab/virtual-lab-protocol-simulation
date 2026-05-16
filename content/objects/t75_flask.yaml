@@ -3,12 +3,12 @@ kind: flask
 label: T75 flask
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, media, pbs, trypsin, cell_suspension]
     default: empty
     description: Contents currently in the flask.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -22,7 +22,7 @@ state_fields:
     description: Whether the flask has been inspected for confluence under the microscope.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
@@ -35,11 +35,11 @@ visual_states:
         output: { asset_name: t75_flask_with_trypsin }
       - when: cell_suspension
         output: { asset_name: t75_flask_with_cell_suspension }
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ml=25)
+    formula: fill_height(state(material_volume), capacity_ml=25)
 
-capabilities: [clickable, contents_container]
+capabilities: [clickable, material_container]
 
 layout:
   default_width: 12

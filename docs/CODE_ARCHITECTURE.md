@@ -141,7 +141,7 @@ The modules below describe the interaction-dispatch runtime.
 #### Content and generated data facades
 
 - `content/protocols/<protocol_name>/` - Authored protocols (each
-  carrying `protocol.yaml`, `contents.yaml`, and optional protocol-scoped
+  carrying `protocol.yaml`, `materials.yaml`, and optional protocol-scoped
   scene overrides under `scenes/`).
 - `content/objects/<object_name>.yaml` - Object library (shared across
   protocols).

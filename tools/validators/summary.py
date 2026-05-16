@@ -4,7 +4,7 @@
 def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: bool = False) -> None:
 	"""
 	Print a summary line for a protocol validation result (--verbose mode).
-	Format: <protocol_name>: <S> steps, <I> interactions, <T> unique targets, <C> contents used.
+	Format: <protocol_name>: <S> steps, <I> interactions, <T> unique targets, <M> materials used.
 	"""
 	if not verbose:
 		return
@@ -28,8 +28,8 @@ def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: boo
 
 	unique_target_count = len(targets)
 
-	# Count contents used (via ObjectStateChange in responses)
-	contents_used = set()
+	# Count materials used (via ObjectStateChange in responses)
+	materials_used = set()
 	for step in steps:
 		if isinstance(step, dict):
 			sequence = step.get('sequence', [])
@@ -42,14 +42,14 @@ def print_protocol_summary(protocol_name: str, protocol_data: dict, verbose: boo
 							if isinstance(op, dict) and op.get('type') == 'ObjectStateChange':
 								state = op.get('state', {})
 								if isinstance(state, dict):
-									# Check for contents_name or held_contents_name
+									# Check for material_name or held_material_name
 									for key, value in state.items():
-										if key in ('contents_name', 'held_contents_name') and value:
-											contents_used.add(value)
+										if key in ('material_name', 'held_material_name') and value:
+											materials_used.add(value)
 
-	contents_count = len(contents_used)
+	materials_count = len(materials_used)
 
-	print(f"{protocol_name}: {step_count} steps, {interaction_count} interactions, {unique_target_count} unique targets, {contents_count} contents used")
+	print(f"{protocol_name}: {step_count} steps, {interaction_count} interactions, {unique_target_count} unique targets, {materials_count} materials used")
 
 
 def print_object_details(obj_data: dict) -> None:
@@ -95,12 +95,12 @@ def print_protocol_scene_details(scene_data: dict) -> None:
 		print(f"{indent}remove_placements: {remove_count}")
 
 
-def print_contents_details(contents_data: dict) -> None:
-	"""Print verbose details for contents."""
+def print_material_details(material_data: dict) -> None:
+	"""Print verbose details for materials."""
 	indent = "  "
-	contents_list = contents_data.get('contents', {})
-	if isinstance(contents_list, dict):
-		contents_count = len(contents_list)
+	material_list = material_data.get('materials', {})
+	if isinstance(material_list, dict):
+		material_count = len(material_list)
 	else:
-		contents_count = 0
-	print(f"{indent}contents: {contents_count}")
+		material_count = 0
+	print(f"{indent}materials: {material_count}")

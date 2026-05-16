@@ -3,12 +3,12 @@ kind: pipette
 label: Aspirating pipette
 
 state_fields:
-  - field_name: held_contents_name
+  - field_name: held_material_name
     type: enum
     allowed: [empty, media, pbs, mtt]
     default: empty
     description: Contents currently aspirated (waste stream).
-  - field_name: held_contents_volume
+  - field_name: held_material_volume
     type: float
     unit: ml
     min: 0
@@ -17,7 +17,7 @@ state_fields:
     description: Volume of aspirated waste, in milliliters.
 
 visual_states:
-  held_contents_name:
+  held_material_name:
     kind: svg
     cases:
       - when: empty
@@ -26,11 +26,11 @@ visual_states:
         output: { asset_name: aspirating_pipette_filled }
       - when: pbs
         output: { asset_name: aspirating_pipette_filled }
-  held_contents_volume:
+  held_material_volume:
     kind: composite
-    formula: fill_height(state(held_contents_volume), capacity_ml=10.0)
+    formula: fill_height(state(held_material_volume), capacity_ml=10.0)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 3

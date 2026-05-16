@@ -20,6 +20,7 @@ from validators.object_validator import ObjectValidator
 from validators.scene_base_validator import BaseSceneValidator
 from validators.scene_protocol_validator import ProtocolSceneValidator
 from validators.protocol_validator import ProtocolValidator
+from validators.material_validator import MaterialValidator
 from validators.cross_protocol import CrossProtocolValidator
 import validators.summary as summary_printer
 
@@ -35,7 +36,7 @@ VERBOSE_PRINTERS = {
 	'base_scene': summary_printer.print_scene_details,
 	'protocol_scene': summary_printer.print_protocol_scene_details,
 	'protocol': summary_printer.print_protocol_summary,
-	'contents': summary_printer.print_contents_details,
+	'material': summary_printer.print_material_details,
 }
 
 
@@ -89,6 +90,8 @@ def find_yaml_files(root: str, file_type: str) -> list:
 		files = list(root_path.glob('content/protocols/*/scenes/*.yaml'))
 	elif file_type == 'protocol':
 		files = list(root_path.glob('content/protocols/*/protocol.yaml'))
+	elif file_type == 'material':
+		files = list(root_path.glob('content/protocols/*/materials.yaml'))
 
 	return sorted(files)
 
@@ -100,7 +103,7 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	counts_dict: {'objects': N, 'base_scenes': N, 'protocol_scenes': N, 'protocols': N}
 	"""
 	errors = []
-	counts = {'objects': 0, 'base_scenes': 0, 'protocol_scenes': 0, 'protocols': 0}
+	counts = {'objects': 0, 'base_scenes': 0, 'protocol_scenes': 0, 'protocols': 0, 'materials': 0}
 
 	# Load content database for Tier 1 cross-file checks
 	db = ContentDatabase()
@@ -120,11 +123,13 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	protocol_scene_validator = ProtocolSceneValidator()
 	protocol_scene_validator.set_base_scenes(db.base_scenes)
 	protocol_validator = ProtocolValidator(db=db)
+	material_validator = MaterialValidator()
 
 	sections = [
 		('Objects', 'object', 'objects', object_validator),
 		('Base scenes', 'base_scene', 'base_scenes', base_scene_validator),
 		('Protocol scenes', 'protocol_scene', 'protocol_scenes', protocol_scene_validator),
+		('Materials', 'material', 'materials', material_validator),
 		('Protocols', 'protocol', 'protocols', protocol_validator),
 	]
 
@@ -266,15 +271,18 @@ def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = 
 			except RuntimeError as e:
 				errors.append(str(e))
 
-	# Load contents.yaml if present
-	contents_yaml = protocol_path / 'contents.yaml'
-	if contents_yaml.exists():
+	# Load materials.yaml if present (closed-schema validated)
+	materials_yaml = protocol_path / 'materials.yaml'
+	if materials_yaml.exists():
 		try:
-			contents_data = load_yaml(contents_yaml)
-			# Just verify it loads; no schema validation yet
-			rel_path = str(contents_yaml.relative_to(repo_root))
+			materials_data = load_yaml(materials_yaml)
+			material_validator = MaterialValidator()
+			mat_findings = material_validator.validate(materials_data, str(materials_yaml.relative_to(repo_root)))
+			for finding in mat_findings:
+				errors.append(finding.format())
+			rel_path = str(materials_yaml.relative_to(repo_root))
 			files_checked.append(rel_path)
-			files_data[rel_path] = ('contents', contents_data)
+			files_data[rel_path] = ('material', materials_data)
 		except RuntimeError as e:
 			errors.append(str(e))
 
@@ -355,6 +363,11 @@ def parse_args():
 		'--protocol-scene',
 		dest='protocol_scene_file',
 		help='Validate a single protocol-scene (inherited) YAML. (Prefer --protocol for author workflow.)'
+	)
+	dev_group.add_argument(
+		'-m', '--material',
+		dest='material_file',
+		help='Validate a single materials.yaml. (Prefer --protocol for author workflow.)'
 	)
 
 	return parser.parse_args()
@@ -442,6 +455,22 @@ def main():
 			print(str(e))
 			sys.exit(1)
 
+	if args.material_file:
+		try:
+			material_data = load_yaml(Path(args.material_file))
+			validator = MaterialValidator()
+			findings = validator.validate(material_data, args.material_file)
+			if findings:
+				for finding in findings:
+					print(finding.format())
+				print(f"{len(findings)} error(s) in {args.material_file}")
+			else:
+				print(f"PASS: {args.material_file}")
+			sys.exit(0 if not findings else 1)
+		except RuntimeError as e:
+			print(str(e))
+			sys.exit(1)
+
 	if args.protocol_scene_file:
 		try:
 			# Load all base scenes for context
@@ -475,10 +504,10 @@ def main():
 	if not args.quiet:
 		print(f"Validating content tree under {repo_root}/content/")
 	success, errors, counts = validate_whole_tree(str(repo_root), quiet=args.quiet, verbose=args.verbose)
-	total_files = counts['objects'] + counts['base_scenes'] + counts['protocol_scenes'] + counts['protocols']
+	total_files = counts['objects'] + counts['base_scenes'] + counts['protocol_scenes'] + counts['materials'] + counts['protocols']
 	failure_count = len(errors)
 	if not args.quiet or not success:
-		print(f"\nValidated {total_files} files ({counts['objects']} objects, {counts['base_scenes']} base scenes, {counts['protocol_scenes']} protocol scenes, {counts['protocols']} protocols). {failure_count} failures.")
+		print(f"\nValidated {total_files} files ({counts['objects']} objects, {counts['base_scenes']} base scenes, {counts['protocol_scenes']} protocol scenes, {counts['materials']} materials, {counts['protocols']} protocols). {failure_count} failures.")
 	sys.exit(0 if success else 1)
 
 

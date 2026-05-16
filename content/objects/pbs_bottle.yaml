@@ -3,7 +3,7 @@ kind: bottle
 label: PBS
 
 state_fields:
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -12,11 +12,11 @@ state_fields:
     description: Volume of PBS remaining, in milliliters.
 
 visual_states:
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ml=500)
+    formula: fill_height(state(material_volume), capacity_ml=500)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 3

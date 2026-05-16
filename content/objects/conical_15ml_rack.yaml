@@ -9,13 +9,13 @@ structure:
   name_pattern: "slot_{index}"
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, cells, media]
     default: empty
     applies_to: subpart
     description: Contents currently in this slot.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -25,7 +25,7 @@ state_fields:
     description: Volume of contents in this slot, in milliliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     applies_to: subpart
     cases:
@@ -35,12 +35,12 @@ visual_states:
         output: { asset_name: conical_15ml_filled }
       - when: media
         output: { asset_name: conical_15ml_filled }
-  contents_volume:
+  material_volume:
     kind: composite
     applies_to: subpart
-    formula: fill_height(state(contents_volume), capacity_ml=15)
+    formula: fill_height(state(material_volume), capacity_ml=15)
 
-capabilities: [clickable, structured_surface, contents_container]
+capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 10

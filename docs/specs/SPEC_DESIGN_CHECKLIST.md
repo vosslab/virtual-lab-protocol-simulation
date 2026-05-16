@@ -22,8 +22,8 @@ sweeps and spec edits obey these rules.
 1. `short_label` retired everywhere. No identity row, no override surface, no fallback prose, no example.
 2. Scene placement may not override `label`. `label` is object-owned and required. If a scene needs a different name, declare a new object with a different `object_name`.
 3. `element_id` retired from authored YAML completely. Scene YAML does not declare `element_id`. Runtime derives the mount element from `scene_name`. Any current-code exceptions are adapter/runtime migration issues, not authoring schema fields.
-4. `liquid_color` retired as an authored state field. Color derives from `contents_name` via the object's `visual_states`, sourced from `contents.yaml`.
-5. `liquid_container` capability renamed to `contents_container` everywhere.
+4. `liquid_color` retired as an authored state field. Color derives from `material_name` via the object's `visual_states`, sourced from `materials.yaml`.
+5. `liquid_container` capability renamed to `material_container` everywhere.
 6. `render_map` retired. Closed-enum `visual_states` is the only state-to-visual surface.
 7. Retired-term tables and retired-term mentions do not live inside any spec doc. Retired terms appear only in `docs/CHANGELOG.md`, archived plans, and git history.
 8. Authored YAML identity handles are scope-specific. Bare `name:` is not allowed as an authored YAML field or as a schema-table field name. Use the scope-specific handle in every authored YAML schema, example, and field-row label:
@@ -75,7 +75,7 @@ Sweep tier 1 (highest priority -- canonical vocabulary and schema):
 Sweep tier 2 (supporting subsystems with their own vocabulary):
 
 - `LAYOUT_ENGINE.md`
-- `LIQUID_CONVENTION.md`
+- `MATERIAL_CONVENTION.md`
 - `SVG_PIPELINE.md`
 - `SCALING_MODEL.md`
 - `WALKTHROUGH_GUIDE.md`
@@ -474,7 +474,7 @@ author vocabulary.
 Rule:
 
 - Authors name semantic things in YAML: scene names, object names, placement
-  names, target names, step names, interaction sequences, contents names.
+  names, target names, step names, interaction sequences, material names.
 - The runtime derives implementation details from author-named semantic values.
   Examples: `${scene_name}-scene` mount elements (not authored), palette
   colors computed from `visual_states` (not authored).
@@ -491,8 +491,8 @@ Rule:
 
 - Author-facing YAML uses `_name` suffixes to name semantic entities:
   `object_name`, `scene_name`, `placement_name`, `target_name`, `step_name`,
-  `part_name`, `day_name`, `asset_name`, `overlay_name`, `contents_name`,
-  `held_contents_name`.
+  `part_name`, `day_name`, `asset_name`, `overlay_name`, `material_name`,
+  `held_material_name`.
 - `_id` does not appear in author-facing YAML vocabulary. The runtime may
   use `_id` internally for deduplication, indexing, or DOM binding; that is
   a runtime implementation detail.
@@ -548,7 +548,7 @@ Allowed authoring files:
 - `content/objects/<object_name>.yaml`
 - `content/scenes/<scene_name>.yaml`
 - `content/protocols/<protocol_name>/protocol.yaml`
-- `content/protocols/<protocol_name>/contents.yaml`
+- `content/protocols/<protocol_name>/materials.yaml`
 - `content/protocols/<protocol_name>/scenes/<scene_name>.yaml`
 
 Rule:
@@ -615,7 +615,7 @@ Rule:
 | Author YAML uses `_name` not `_id` | `_id` suffix in author-facing fields | rename all `_id` to `_name`; `_id` is runtime internal only |
 | Objects declare closed `visual_states`; no generic rendering map | `render_map`, `render_config`, expressions, templating | closed enumeration only; no template or expression evaluator; no metadata/extras escape hatches |
 | Layer ownership: object names assets in `visual_states`, scene names objects/placements, protocol stays semantic | asset names at object top-level or in behavior; visual config in scene; implementation details in protocol | strict three-layer: object YAML -> assets in visual_states only; scene YAML -> objects/placements; protocol YAML -> targets/steps/parts/scenes semantic only |
-| Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/scenes/`, `content/protocols/<name>/{protocol,contents}.yaml`, or `content/protocols/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
+| Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/scenes/`, `content/protocols/<name>/{protocol,materials}.yaml`, or `content/protocols/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
 | Bare `name:` banned in authored YAML | `name:` field in YAML examples or schema tables for protocol, step, object, or state-field | use scope-specific handle: `protocol_name`, `step_name`, `object_name`, `field_name` |
 
 ## Sweep agent deliverable

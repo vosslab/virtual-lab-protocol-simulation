@@ -58,7 +58,7 @@ steps:
             - type: ObjectStateChange
               target: ethanol_bottle
               state:
-                contents_volume: 490
+                material_volume: 490
             - type: ObjectStateChange
               target: hood_surface
               state:
@@ -100,13 +100,13 @@ steps:
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: empty
-                contents_volume: 0
+                material_name: empty
+                material_volume: 0
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 10
+                held_material_name: media
+                held_material_volume: 10
           feedback:
             correct: "Media aspirated."
             incorrect: "Aspirate from the flask."
@@ -118,13 +118,13 @@ steps:
             - type: ObjectStateChange
               target: waste_container
               state:
-                contents_name: media
-                contents_volume: 10
+                material_name: media
+                material_volume: 10
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -151,12 +151,12 @@ steps:
             - type: ObjectStateChange
               target: pbs_bottle
               state:
-                contents_volume: 496
+                material_volume: 496
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: pbs
-                contents_volume: 4
+                material_name: pbs
+                material_volume: 4
           feedback:
             correct: "PBS added."
             incorrect: "Add PBS from the bottle."
@@ -176,13 +176,13 @@ steps:
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: empty
-                contents_volume: 0
+                material_name: empty
+                material_volume: 0
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: pbs
-                held_contents_volume: 4
+                held_material_name: pbs
+                held_material_volume: 4
           feedback:
             correct: "PBS aspirated."
             incorrect: "Aspirate from the flask."
@@ -194,13 +194,13 @@ steps:
             - type: ObjectStateChange
               target: waste_container
               state:
-                contents_name: mixed
-                contents_volume: 14
+                material_name: mixed
+                material_volume: 14
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -227,12 +227,12 @@ steps:
             - type: ObjectStateChange
               target: trypsin_bottle
               state:
-                contents_volume: 499
+                material_volume: 499
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: trypsin
-                contents_volume: 1
+                material_name: trypsin
+                material_volume: 1
           feedback:
             correct: "Trypsin added."
             incorrect: "Add trypsin from the bottle."
@@ -274,12 +274,12 @@ steps:
             - type: ObjectStateChange
               target: media_bottle
               state:
-                contents_volume: 497
+                material_volume: 497
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: cell_suspension
-                contents_volume: 4
+                material_name: cell_suspension
+                material_volume: 4
           feedback:
             correct: "Media added and trypsin neutralized."
             incorrect: "Add media from the bottle to neutralize trypsin."
@@ -299,13 +299,13 @@ steps:
             - type: ObjectStateChange
               target: t75_flask
               state:
-                contents_name: empty
-                contents_volume: 0
+                material_name: empty
+                material_volume: 0
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: cell_suspension
-                held_contents_volume: 4
+                held_material_name: cell_suspension
+                held_material_volume: 4
           feedback:
             correct: "Cell suspension drawn into pipette."
             incorrect: "Draw the cell suspension from the flask."
@@ -317,13 +317,13 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cell_suspension
-                contents_volume: 4
+                material_name: cell_suspension
+                material_volume: 4
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
           feedback:
             correct: "Cell suspension transferred to conical tube."
             incorrect: "Transfer the suspension to a conical tube."
@@ -357,8 +357,8 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cells
-                contents_volume: 0.5
+                material_name: cells
+                material_volume: 0.5
           feedback:
             correct: "Cells centrifuged and pelleted."
             incorrect: "Place the conical tube in the centrifuge."
@@ -378,13 +378,13 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: empty
-                contents_volume: 0.5
+                material_name: empty
+                material_volume: 0.5
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 3.5
+                held_material_name: media
+                held_material_volume: 3.5
           feedback:
             correct: "Supernatant aspirated."
             incorrect: "Aspirate the supernatant carefully without disturbing the pellet."
@@ -396,13 +396,13 @@ steps:
             - type: ObjectStateChange
               target: waste_container
               state:
-                contents_name: mixed
-                contents_volume: 17.5
+                material_name: mixed
+                material_volume: 17.5
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -429,12 +429,12 @@ steps:
             - type: ObjectStateChange
               target: media_bottle
               state:
-                contents_volume: 488
+                material_volume: 488
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cells
-                contents_volume: 10
+                material_name: cells
+                material_volume: 10
           feedback:
             correct: "Cells resuspended in fresh media."
             incorrect: "Add fresh media and resuspend the cell pellet gently."
@@ -454,13 +454,13 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: empty
-                contents_volume: 0
+                material_name: empty
+                material_volume: 0
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: cell_suspension
-                held_contents_volume: 10
+                held_material_name: cell_suspension
+                held_material_volume: 10
           feedback:
             correct: "Cell suspension drawn from conical tube."
             incorrect: "Draw the resuspended cells from the conical tube."
@@ -472,13 +472,13 @@ steps:
             - type: ObjectStateChange
               target: t75_flask_new
               state:
-                contents_name: cell_suspension
-                contents_volume: 10
+                material_name: cell_suspension
+                material_volume: 10
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
           feedback:
             correct: "Cells seeded into new flask."
             incorrect: "Seed the cell suspension into a fresh t75 flask."

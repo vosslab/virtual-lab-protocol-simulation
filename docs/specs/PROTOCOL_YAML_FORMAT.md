@@ -34,7 +34,7 @@ content/
   protocols/
     <protocol_name>/
       protocol.yaml     # protocol steps, parts, and days
-      contents.yaml     # contents (reagents, liquids, cells, waste)
+      materials.yaml     # materials (reagents, liquids, cells, waste)
       scenes/
         <scene_name>.yaml
   objects/
@@ -46,7 +46,7 @@ content/
 Each mini-protocol is self-contained under `content/protocols/<protocol_name>/`:
 
 - `content/protocols/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
-- `content/protocols/<protocol_name>/contents.yaml`: contents definitions (reagents, liquids, cells, waste)
+- `content/protocols/<protocol_name>/materials.yaml`: material definitions (reagents, liquids, cells, waste)
 - `content/protocols/<protocol_name>/scenes/`: protocol-specific scene overrides
 
 A Python generator at `tools/build_protocol_data.py` reads these files and emits two
@@ -69,24 +69,24 @@ The `--protocol` flag defaults to `cell_culture` if omitted. To add a new protoc
 copy `content/protocols/cell_culture/` to `content/protocols/<new_protocol_name>/`, edit the YAML files,
 and rebuild.
 
-## content/protocols/&lt;protocol_name&gt;/contents.yaml
+## content/protocols/&lt;protocol_name&gt;/materials.yaml
 
-The `contents.yaml` file defines the materials used in the protocol: reagents, liquids, cells, waste, mixtures, suspensions, and diluted drugs. Contents are materials currently inside or held by an object. A contents id is what an `ObjectStateChange` `scene_operation` writes into an object's flat declared `contents_name` (or `held_contents_name`) `state_field`.
+The `materials.yaml` file defines the materials used in the protocol: reagents, liquids, cells, waste, mixtures, suspensions, and diluted drugs. Materials are the things currently inside or held by an object. A material id is what an `ObjectStateChange` `scene_operation` writes into an object's flat declared `material_name` (or `held_material_name`) `state_field`.
 
-### Contents block
+### Materials block
 
-Each contents entry is a mapping keyed by snake_case name. All fields required.
+Each material entry is a mapping keyed by snake_case name. All fields required.
 
 | Field | Type | Description |
 | --- | --- | --- |
 | `label` | string | Display name (shown in UI and step text) |
 | `display_color` | string | CSS hex color code (lowercase, ASCII-only) |
 
-### Contents example
+### Materials example
 
-content/protocols/cell_culture/contents.yaml:
+content/protocols/cell_culture/materials.yaml:
 ```yaml
-contents:
+materials:
   pbs:
     label: "1x PBS"
     display_color: "#b8e5ff"
@@ -347,8 +347,8 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_contents_name: pbs
-                  held_contents_volume: 4
+                  held_material_name: pbs
+                  held_material_volume: 4
             feedback:
               correct: PBS loaded.
               incorrect: Use the PBS bottle.
@@ -360,19 +360,19 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_contents_name: null
-                  held_contents_volume: 0
+                  held_material_name: null
+                  held_material_volume: 0
               - type: ObjectStateChange
                 target: flask
                 state:
-                  contents_name: pbs
-                  contents_volume: 4
+                  material_name: pbs
+                  material_volume: 4
       step_validator:
         preset: final_state_matches
         target: flask
         contains:
-          contents_name: pbs
-          contents_volume: 4
+          material_name: pbs
+          material_volume: 4
       outcome:
         on_success: complete
         on_failure: retry
@@ -446,10 +446,10 @@ The build process (`tools/build_protocol_data.py`) enforces these rules:
 
 - ASCII-only across all YAML. UTF-8 glyphs escaped per [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md)
   (e.g. `&alpha;`, `&micro;`).
-- Every contents entry in contents.yaml must be referenced by at least one
-  `scene_operation` (an `ObjectStateChange` writing the contents name into
-  an object's flat `contents_name` or `held_contents_name` `state_field`; the
-  field's declared `enum` `allowed` list is the binding reference). Catches dead contents.
+- Every material entry in materials.yaml must be referenced by at least one
+  `scene_operation` (an `ObjectStateChange` writing the material name into
+  an object's flat `material_name` or `held_material_name` `state_field`; the
+  field's declared `enum` `allowed` list is the binding reference). Catches dead materials.
 
 ## Generated TypeScript surface
 
@@ -512,23 +512,23 @@ Every cross-reference uses the snake_case `_name` handles (`protocol_name`,
 `placement_name`), never display labels. Labels are free to change without
 breaking the build; the `_name` handles are durable.
 
-## Contents reference model
+## Material reference model
 
-Contents entries are referenced in protocol steps through `ObjectStateChange`
+Material entries are referenced in protocol steps through `ObjectStateChange`
 `scene_operations`. An `ObjectStateChange` targeting an object or subpart
-writes contents names into the object's flat liquid `state_fields`
-(`contents_name`, `held_contents_name`):
+writes material names into the object's flat material `state_fields`
+(`material_name`, `held_material_name`):
 
 ```yaml
 - type: ObjectStateChange
   target: serological_pipette
   state:
-    held_contents_name: pbs
-    held_contents_volume: 4
+    held_material_name: pbs
+    held_material_volume: 4
 ```
 
-The builder verifies that every contents name written by an `ObjectStateChange`
-is declared in the protocol's `contents.yaml` file.
+The builder verifies that every material name written by an `ObjectStateChange`
+is declared in the protocol's `materials.yaml` file.
 
 ## See also
 

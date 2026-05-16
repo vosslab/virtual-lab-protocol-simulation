@@ -137,7 +137,7 @@ no named-group construct.
 `state_fields` is the typed schema of declared state variables on this
 object. Every field is a flat primitive: `enum`, `int`, `float`, or
 `bool`. There is no `string` type (use `enum` with a closed `allowed`
-list) and no composite `liquid` or `set_point` type. Liquid contents
+list) and no composite `liquid` or `set_point` type. Liquid materials
 and instrument set-points are modeled as multiple flat fields per
 object.
 
@@ -177,16 +177,16 @@ Unit strings for numeric fields are ASCII-only per
 micro) are written ASCII-only; a future plan may introduce a unit
 table doc.
 
-### Modeling contents and set-point state with flat fields
+### Modeling material and set-point state with flat fields
 
-Contents are modeled as several flat fields per object or per
-subpart. The canonical pattern is `contents_name` (an `enum` of allowed
-contents ids) and `contents_volume` (a `float` with a `unit` and a range)
-for a vessel; or `held_contents_name` plus `held_contents_volume` for a tool
-that carries contents. Contents ids in the `enum`'s `allowed` list must
-resolve to declared entries in a `contents.yaml` registry (see
-[LIQUID_CONVENTION.md](LIQUID_CONVENTION.md)). The shared contents
-model is in [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md); render-rule
+Materials are modeled as several flat fields per object or per
+subpart. The canonical pattern is `material_name` (an `enum` of allowed
+material ids) and `material_volume` (a `float` with a `unit` and a range)
+for a vessel; or `held_material_name` plus `held_material_volume` for a tool
+that carries material. Material ids in the `enum`'s `allowed` list must
+resolve to declared entries in a `materials.yaml` registry (see
+[MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md)). The shared material
+model is in [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md); render-rule
 helpers (`fill_height`) are defined in the [formula
 mini-language](#formula-mini-language) below.
 
@@ -270,7 +270,7 @@ The closed token set is:
 | `+` `-` `*` `/` | numeric operands | basic arithmetic, left-associative |
 | `min(a, b)` `max(a, b)` | numeric operands | bounded arithmetic |
 | `clamp(value, lo, hi)` | numeric operands | clamp `value` to `[lo, hi]` |
-| `fill_height(state(<volume_field>), capacity_ml=<number>)` | a numeric volume `state_field` (typically a `float` named `contents_volume`, `held_contents_volume`, etc.) | resolve the field to a fill height proportional to the volume divided by `capacity_ml` (or `capacity_ul` when units match); the runtime applies it to the rendered SVG container |
+| `fill_height(state(<volume_field>), capacity_ml=<number>)` | a numeric volume `state_field` (typically a `float` named `material_volume`, `held_material_volume`, etc.) | resolve the field to a fill height proportional to the volume divided by `capacity_ml` (or `capacity_ul` when units match); the runtime applies it to the rendered SVG container |
 | `label(state(<numeric_field>), format=<string>)` | a numeric `state_field` (typically a set-point `float`) | render the value as an overlay text label, using the format string with `{value}` placeholder; the format string supplies the unit text |
 | `compose(<token>, <token>, ...)` | any of the above | compose multiple effects (for example a fill plus a label) into one render output; ordered top to bottom |
 
@@ -297,7 +297,7 @@ authority):
 | Capability | Summary |
 | --- | --- |
 | `clickable` | accepts a `click` gesture |
-| `contents_container` | holds tracked contents; expects flat contents `state_fields` such as `contents_name` and `contents_volume` and matching `visual_states` entries |
+| `material_container` | holds tracked material; expects flat material `state_fields` such as `material_name` and `material_volume` and matching `visual_states` entries |
 | `instrument_with_setpoint` | exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture |
 | `structured_surface` | has a `structure` block with subparts |
 | `cursor_attachable` | may be attached to the cursor by a `CursorAttach` `scene_operation` |
@@ -306,15 +306,15 @@ authority):
 ### Mutual-exclusion rule
 
 `decoration_only` is mutually exclusive with `clickable`,
-`contents_container`, `instrument_with_setpoint`, `structured_surface`,
+`material_container`, `instrument_with_setpoint`, `structured_surface`,
 and `cursor_attachable`. An object that declares `decoration_only` may
 not declare any of the other five; an object that declares any of the
 other five may not declare `decoration_only`. The build pipeline
 enforces this rule and rejects a violating capability list.
 
 The five non-decoration capabilities are otherwise freely combinable. A
-96-well plate is `[clickable, structured_surface, contents_container]`; a
-serological pipette is `[clickable, contents_container,
+96-well plate is `[clickable, structured_surface, material_container]`; a
+serological pipette is `[clickable, material_container,
 instrument_with_setpoint, cursor_attachable]`; a benchtop label is
 `[decoration_only]`.
 
@@ -325,7 +325,7 @@ it. The dependencies are:
 
 | Capability | Required schema |
 | --- | --- |
-| `contents_container` | at least one contents `state_field` (typically a `contents_name` `enum` and a `contents_volume` `float`) and matching `visual_states` entries |
+| `material_container` | at least one material `state_field` (typically a `material_name` `enum` and a `material_volume` `float`) and matching `visual_states` entries |
 | `instrument_with_setpoint` | at least one numeric set-point `state_field` (a `float` with `unit`, `min`, `max`) and a matching `visual_states` entry |
 | `structured_surface` | a `structure` block with `subpart_kind`, `layout`, and `name_pattern` |
 | `cursor_attachable` | no schema dependency (an object that is cursor-attachable simply declares it; the protocol-level `CursorAttach` `scene_operation` consumes the capability) |
@@ -371,23 +371,23 @@ structure:
   name_pattern: "{row_letter}{col}"
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso, drug_a, drug_b]
     default: empty
     applies_to: subpart
-    description: Contents currently in this well.
-  - field_name: contents_volume
+    description: Material currently in this well.
+  - field_name: material_volume
     type: float
     unit: ul
     min: 0
     max: 300
     default: 0
     applies_to: subpart
-    description: Volume of contents in this well, in microliters.
+    description: Volume of material in this well, in microliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     applies_to: subpart
     cases:
@@ -405,12 +405,12 @@ visual_states:
         output: { asset_name: well_filled }
       - when: drug_b
         output: { asset_name: well_filled }
-  contents_volume:
+  material_volume:
     kind: composite
     applies_to: subpart
-    formula: fill_height(state(contents_volume), capacity_ul=300)
+    formula: fill_height(state(material_volume), capacity_ul=300)
 
-capabilities: [clickable, structured_surface, contents_container]
+capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 14
@@ -418,11 +418,11 @@ layout:
 ```
 
 Reading: the plate has no plate-level state, 96 wells (`A1..H12`) each
-carrying two flat `state_fields` (`contents_name`, `contents_volume`).
+carrying two flat `state_fields` (`material_name`, `material_volume`).
 A protocol that needs to act on row A lists each subpart explicitly
 (`treatment_plate.A1`, ..., `treatment_plate.A12`).
 Each well's `visual_states` resolves the two flat fields independently: an
-SVG case table for the contents and a `fill_height(...)` formula for the
+SVG case table for the material and a `fill_height(...)` formula for the
 volume. No SVG asset name appears in any `state_field`.
 
 ## Worked example: serological pipette
@@ -446,24 +446,24 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - field_name: held_contents_name
+  - field_name: held_material_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso]
     default: empty
-    description: Contents currently aspirated in the pipette barrel.
-  - field_name: held_contents_volume
+    description: Material currently aspirated in the pipette barrel.
+  - field_name: held_material_volume
     type: float
     unit: ml
     min: 0
     max: 25.0
     default: 0
-    description: Volume of contents currently held, in milliliters.
+    description: Volume of material currently held, in milliliters.
 
 visual_states:
   set_volume:
     kind: overlay
     formula: label(state(set_volume), format="{value} ml")
-  held_contents_name:
+  held_material_name:
     kind: svg
     cases:
       - when: empty
@@ -476,11 +476,11 @@ visual_states:
         output: { asset_name: pipette_filled }
       - when: dmso
         output: { asset_name: pipette_filled }
-  held_contents_volume:
+  held_material_volume:
     kind: composite
-    formula: fill_height(state(held_contents_volume), capacity_ml=25.0)
+    formula: fill_height(state(held_material_volume), capacity_ml=25.0)
 
-capabilities: [clickable, contents_container, instrument_with_setpoint, cursor_attachable]
+capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3
@@ -491,10 +491,10 @@ layout:
 
 Reading: the pipette is a flat object (no `structure` block, no
 subparts). It declares three flat `state_fields`: `set_volume` (a
-`float` with `unit`, `min`, `max`, and `step`), `held_contents_name` (an
-`enum` of which contents is loaded), and `held_contents_volume` (a `float`
+`float` with `unit`, `min`, `max`, and `step`), `held_material_name` (an
+`enum` of which material is loaded), and `held_material_volume` (a `float`
 for the amount held). The `visual_states` resolves each independently:
-the set-point becomes an overlay label, the contents becomes a base SVG,
+the set-point becomes an overlay label, the material becomes a base SVG,
 and the volume becomes a fill height. No SVG asset name appears in any
 `state_field`. The layout hints (`default_width: 3`, `label_width: 6`,
 `anchor_y_offset: 0`, `anchor_y: tip`) are object-owned; the tip anchor
@@ -533,8 +533,8 @@ does not specify defensive defaults that hide a missing required field.
 - `default` is present and satisfies the type and metadata.
 - `applies_to: subpart` is only valid when the object has a `structure`
   block.
-- For contents `enum` fields (typically `contents_name`), contents ids in
-  `allowed` must resolve to declared entries in a contents registry.
+- For material `enum` fields (typically `material_name`), material ids in
+  `allowed` must resolve to declared entries in a material registry.
 
 ### visual_states
 
@@ -552,7 +552,7 @@ does not specify defensive defaults that hide a missing required field.
 ### capabilities
 
 - Every entry is in the closed six-value capability list: `clickable`,
-  `contents_container`, `instrument_with_setpoint`, `structured_surface`,
+  `material_container`, `instrument_with_setpoint`, `structured_surface`,
   `cursor_attachable`, `decoration_only`.
 - `decoration_only` is mutually exclusive with the other five.
 - Every declared capability's
@@ -592,12 +592,12 @@ generated module the build emits.
   vocabulary, including the `ObjectStateChange` primitive that mutates
   declared object state.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) -- the protocol
-  YAML schema; contents ids referenced by `contents_name` `state_fields`
-  are declared in a contents registry.
+  YAML schema; material ids referenced by `material_name` `state_fields`
+  are declared in a material registry.
 - [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the layout engine that
   consumes object-side layout hints.
-- [LIQUID_CONVENTION.md](LIQUID_CONVENTION.md) -- the shared contents
-  model that the contents `state_field` type and the `fill_height` formula
+- [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) -- the shared material
+  model that the material `state_field` type and the `fill_height` formula
   token build on.
 - [SVG_PIPELINE.md](SVG_PIPELINE.md) -- the SVG asset pipeline; the
   `visual_states` resolves to asset names the pipeline owns.

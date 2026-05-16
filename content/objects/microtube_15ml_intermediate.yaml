@@ -3,12 +3,12 @@ kind: bottle
 label: Carboplatin 400 uM intermediate
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, carboplatin, carboplatin_400umol]
     default: empty
     description: Contents currently in the tube.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -17,18 +17,18 @@ state_fields:
     description: Volume of contents in the tube, in milliliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
         output: { asset_name: microtube_15ml_empty }
       - when: carboplatin
         output: { asset_name: microtube_15ml_filled }
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ml=15)
+    formula: fill_height(state(material_volume), capacity_ml=15)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 2

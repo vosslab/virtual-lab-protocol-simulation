@@ -28,8 +28,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -65,12 +65,12 @@ steps:
             - type: ObjectStateChange
               target: mtt_vial
               state:
-                contents_volume: 4000
+                material_volume: 4000
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: mtt
-                contents_volume: 125
+                material_name: mtt
+                material_volume: 125
           feedback:
             correct: "MTT added to all wells for a 1.5 mM final concentration."
             incorrect: "Add 25 &micro;L of 12 mM MTT from the vial to the plate."
@@ -147,13 +147,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: empty
-                contents_volume: 0
+                material_name: empty
+                material_volume: 0
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: mtt
-                held_contents_volume: 200
+                held_material_name: mtt
+                held_material_volume: 200
           feedback:
             correct: "Spent MTT aspirated from the wells."
             incorrect: "Aspirate the MTT-containing media from the plate into the pipette."
@@ -165,13 +165,13 @@ steps:
             - type: ObjectStateChange
               target: biohazard_decant
               state:
-                contents_name: mtt
-                contents_volume: 200
+                material_name: mtt
+                material_volume: 200
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
           feedback:
             correct: "Spent MTT safely disposed into the biohazard container."
             incorrect: "Dispense the aspirated MTT into the biohazard waste container."
@@ -210,12 +210,12 @@ steps:
             - type: ObjectStateChange
               target: dmso_bottle
               state:
-                contents_volume: 800
+                material_volume: 800
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: dmso
-                contents_volume: 200
+                material_name: dmso
+                material_volume: 200
           feedback:
             correct: "DMSO added to dissolve formazan crystals."
             incorrect: "Add 200 &micro;L of DMSO per well from the bottle."

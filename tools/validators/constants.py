@@ -8,8 +8,8 @@ Finding tag registry (used by validators that reference these constants):
 	                      on the target object.
 	T1_ENUM               enum state field receives a value outside the
 	                      declared `allowed` list.
-	T1_CONTENTS_REF       contents_name / held_contents_name does not resolve
-	                      to an entry in the protocol's contents.yaml.
+	T1_MATERIAL_REF       material_name / held_material_name does not resolve
+	                      to an entry in the protocol's materials.yaml.
 	T1_TARGET_WITH_VALUE  target_with_value validator names a key that is
 	                      not a declared state field on the target.
 	SCENE_EXTENDS         protocol scene extends an unknown base scene name.
@@ -34,7 +34,7 @@ OBJECT_KINDS = {'plate', 'bottle', 'flask', 'pipette', 'rack', 'waste', 'equipme
 # spec: docs/specs/OBJECT_VOCABULARY.md "Capabilities"
 OBJECT_CAPABILITIES = {
 	'clickable',
-	'contents_container',
+	'material_container',
 	'instrument_with_setpoint',
 	'structured_surface',
 	'cursor_attachable',
@@ -134,11 +134,13 @@ LEARNING_SEQUENCE_RUNNER_PREFIXES = {
 
 
 # ============================================
-# CONTENTS SCHEMA CONSTANTS
+# MATERIAL SCHEMA CONSTANTS
 # ============================================
 
-# spec: docs/specs/PROTOCOL_YAML_FORMAT.md "Contents block"
-CONTENTS_REQUIRED_KEYS = {'label', 'display_color'}
+# spec: docs/specs/MATERIAL_CONVENTION.md "Materials YAML schema"
+MATERIAL_REQUIRED_KEYS = {'label', 'display_color'}
+MATERIAL_OPTIONAL_KEYS = set()
+MATERIAL_ALL_KEYS = MATERIAL_REQUIRED_KEYS | MATERIAL_OPTIONAL_KEYS
 
 
 # ============================================

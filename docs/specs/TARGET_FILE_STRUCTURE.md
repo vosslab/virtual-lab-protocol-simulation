@@ -22,7 +22,7 @@ content/              authored protocol, scene, and object YAML
   protocols/          protocol-specific content (each protocol a folder)
     hood_flask_prep/
       protocol.yaml
-      contents.yaml
+      materials.yaml
       scenes/
         <scene_name>.yaml
     cell_counting_and_seeding/

@@ -97,8 +97,8 @@ first-class addressable units inside that object's namespace.
 Subpart state is not a separate vocabulary. It is the same
 [`state_fields`](#state_fields) schema applied at subpart granularity.
 A 96-well plate has zero or few plate-level state fields and several
-flat per-well fields (`contents_name`, `contents_volume`);
-a multichannel pipette has the same flat contents fields per channel.
+flat per-well fields (`material_name`, `material_volume`);
+a multichannel pipette has the same flat material fields per channel.
 
 ### Grouped targets are listed explicitly
 
@@ -108,13 +108,13 @@ set of gel lanes lists each subpart by reference (for example
 `treatment_plate.A12`). The object's `name_pattern` is the only naming
 contract; the scene never sees grouping.
 
-## Contents
+## Materials
 
-**Contents** is the material currently inside or held by an object. This may
+**Material** is the material currently inside or held by an object. This may
 be a reagent, waste, old media, cells, a mixture, suspension, or diluted
-drug. The `contents_name` field (on objects holding contents) or
-`held_contents_name` field (on tools carrying contents) reference entries in
-a `contents.yaml` registry.
+drug. The `material_name` field (on objects holding material) or
+`held_material_name` field (on tools carrying material) reference entries in
+a `materials.yaml` registry.
 
 ## state_fields
 
@@ -127,11 +127,11 @@ surface.
 
 Every `state_field` is a flat primitive. Allowed types are `enum`,
 `int`, `float`, and `bool`. There is no `string` type (use `enum`
-with a closed `allowed` list) and no composite `contents` or `set_point`
-type. Contents and instrument set-points are modeled as multiple
-flat fields per object (for example `contents_name` plus `contents_volume`
+with a closed `allowed` list) and no composite `material` or `set_point`
+type. Materials and instrument set-points are modeled as multiple
+flat fields per object (for example `material_name` plus `material_volume`
 for a well; `set_volume` for a pipette set-point).
-The runtime contents-state model decomposes across these flat fields.
+The runtime material-state model decomposes across these flat fields.
 
 | Field | Required | Purpose |
 | --- | --- | --- |
@@ -162,7 +162,7 @@ formula mini-language defined in
 
 The `applies_to: subpart` form is the bridge between object-level
 `state_fields` and `structure.subpart_state_fields`. An author may
-declare "every well has a `contents_volume` field" once at the object
+declare "every well has a `material_volume` field" once at the object
 level with `applies_to: subpart`, instead of restating it under
 structure. Both forms are equivalent.
 
@@ -183,7 +183,7 @@ The `visual_states` is keyed by `state_field` name. For each named
 | --- | --- | --- |
 | `visual_states.<field>.kind` | yes | One of `svg`, `overlay`, `composite`. `svg` names a base SVG asset name. `overlay` names an SVG fragment composited over the base. `composite` is a list of any of the above. |
 | `visual_states.<field>.cases` | yes for `enum` / `bool` | One case per allowed value of the `state_field`. Each case has a `when` (the state value) and an output (asset_name, overlay_name, or composite list). |
-| `visual_states.<field>.formula` | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `contents_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
+| `visual_states.<field>.formula` | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `material_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
 | `visual_states.<field>.applies_to` | no | `object` or `subpart`. When `subpart`, the `visual_states` applies per subpart (for example one fill per well). Default: `object`. |
 
 Rules:
@@ -203,8 +203,8 @@ Rules:
 operations and never appear as authored slots in protocol YAML or scene
 YAML. The protocol-side primitive that drives them is
 `ObjectStateChange`, which writes the flat declared state fields
-(`contents_name`, `contents_volume`, `held_contents_name`,
-`held_contents_volume`, `set_volume`, `set_temperature`, `set_rpm`,
+(`material_name`, `material_volume`, `held_material_name`,
+`held_material_volume`, `set_volume`, `set_temperature`, `set_rpm`,
 etc.); `visual_states` then resolves the new state to the appropriate
 render output.
 
@@ -233,18 +233,18 @@ vocabulary. The closed list is:
 | Capability | Meaning |
 | --- | --- |
 | `clickable` | The object accepts a `click` gesture (per the `gesture` set in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). An object that is not `clickable` is never clickable, regardless of placement. |
-| `contents_container` | The object holds tracked contents; expects flat `state_fields` such as `contents_name` and `contents_volume` and a visual rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
+| `material_container` | The object holds tracked material; expects flat `state_fields` such as `material_name` and `material_volume` and a visual rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
 | `instrument_with_setpoint` | The object exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture from the protocol side. |
 | `structured_surface` | The object has a `structure` block with subparts. Every plate, gel, rack, and multichannel pipette carries this capability. |
 | `cursor_attachable` | The object may be attached to the cursor by a `CursorAttach` `scene_operation`. Tools that the learner picks up and carries (a serological pipette, a transfer pipette) carry this capability. |
 | `decoration_only` | The object is rendered as a static visual and accepts no gestures and no state mutation. Mutually exclusive with every other capability above. |
 
 `decoration_only` is mutually exclusive with `clickable`,
-`contents_container`, `instrument_with_setpoint`, `structured_surface`,
+`material_container`, `instrument_with_setpoint`, `structured_surface`,
 and `cursor_attachable`. The other five are freely combinable.
 
 A scene placement may not override `capabilities`. An object that
-declares `[clickable, contents_container]` carries those affordances in
+declares `[clickable, material_container]` carries those affordances in
 every scene that places it.
 
 ## Layout hints
@@ -284,7 +284,7 @@ This rule is binding on:
   `int`, `float`, or `bool`). Nested writes are not allowed. The
   validator rejects unknown field names and type-mismatched values.
   Example payload (well at A1 receives 100 ul of PBS): `state: {
-  contents_name: pbs, contents_volume: 100 }`. The
+  material_name: pbs, material_volume: 100 }`. The
   earlier nested form `state: { held_liquid: { reagent: pbs, volume:
   100 } }` is not valid.
 
@@ -336,23 +336,23 @@ structure:
   name_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso, drug_a, drug_b]
     default: empty
     applies_to: subpart
-    description: Contents currently in this well.
-  - field_name: contents_volume
+    description: Material currently in this well.
+  - field_name: material_volume
     type: float
     unit: ul
     min: 0
     max: 300
     default: 0
     applies_to: subpart
-    description: Volume of contents in this well, in microliters.
+    description: Volume of material in this well, in microliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     applies_to: subpart
     cases:
@@ -370,12 +370,12 @@ visual_states:
         output: { asset_name: well_filled }
       - when: drug_b
         output: { asset_name: well_filled }
-  contents_volume:
+  material_volume:
     kind: composite
     applies_to: subpart
-    formula: fill_height(state(contents_volume), capacity_ul=300)
+    formula: fill_height(state(material_volume), capacity_ul=300)
 
-capabilities: [clickable, structured_surface, contents_container]
+capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 14
@@ -383,7 +383,7 @@ layout:
 ```
 
 Reading: the plate has no plate-level state, 96 wells (A1..H12) each
-carrying two flat `state_fields` (`contents_name`, `contents_volume`).
+carrying two flat `state_fields` (`material_name`, `material_volume`).
 A protocol that needs to act on row A lists each subpart explicitly:
 `treatment_plate.A1`, `treatment_plate.A2`, ..., `treatment_plate.A12`.
 Each well's `visual_states` resolves the two flat fields to a base SVG
@@ -414,24 +414,24 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - field_name: held_contents_name
+  - field_name: held_material_name
     type: enum
     allowed: [empty, pbs, media, trypsin, dmso]
     default: empty
-    description: Contents currently aspirated in the pipette barrel.
-  - field_name: held_contents_volume
+    description: Material currently aspirated in the pipette barrel.
+  - field_name: held_material_volume
     type: float
     unit: ml
     min: 0
     max: 25.0
     default: 0
-    description: Volume of contents currently held, in milliliters.
+    description: Volume of material currently held, in milliliters.
 
 visual_states:
   set_volume:
     kind: overlay
     formula: label(state(set_volume), format="{value} ml")
-  held_contents_name:
+  held_material_name:
     kind: svg
     cases:
       - when: empty
@@ -444,11 +444,11 @@ visual_states:
         output: { asset_name: pipette_filled }
       - when: dmso
         output: { asset_name: pipette_filled }
-  held_contents_volume:
+  held_material_volume:
     kind: composite
-    formula: fill_height(state(held_contents_volume), capacity_ml=25.0)
+    formula: fill_height(state(held_material_volume), capacity_ml=25.0)
 
-capabilities: [clickable, contents_container, instrument_with_setpoint, cursor_attachable]
+capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3
@@ -459,10 +459,10 @@ layout:
 
 Reading: the pipette is a flat object (no `structure` block, no
 subparts). It declares three flat `state_fields`: `set_volume` (a
-`float` set-point), `held_contents_name` (an `enum` of which contents is
-loaded), and `held_contents_volume` (a `float` for the amount held).
+`float` set-point), `held_material_name` (an `enum` of which material is
+loaded), and `held_material_volume` (a `float` for the amount held).
 The `visual_states` resolves each independently: the set-point becomes an
-overlay label, the contents becomes a base SVG, and the volume becomes
+overlay label, the material becomes a base SVG, and the volume becomes
 a fill height. No SVG asset name appears in any `state_field`. The
 layout hints (`default_width: 3`, `label_width: 6`, `anchor_y_offset: 0`,
 `anchor_y: tip`) are object-owned; the tip anchor reflects that a
@@ -475,13 +475,13 @@ serological pipette is tip-anchored wherever it is placed.
 | object | The unit of authoring for "what a thing is"; one identity, one structure, one schema of state, one visual_states map, one capability set, one set of layout hints. |
 | object library | The collection of object definitions a scene references by `object_name`; the home of every object-identity slot. |
 | object_name | The stable string name for an object; the only handle the scene side names. |
-| contents | Material currently inside or held by an object (reagent, waste, old media, cells, mixture, suspension, diluted drug). |
+| material | Anything physically present in, on, produced by, removed from, or transferred between objects (reagent, waste, old media, cells, mixture, suspension, diluted drug). Authored in `materials.yaml`. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md). |
 | flat object | An object with no `structure` block; no subparts. |
 | structured surface | An object with a `structure` block declaring addressable subparts. |
 | subpart | An addressable internal unit of a structured surface (a `well`, `tube`, `lane`, `slot`, `channel`). |
 | `state_field` | One declared, typed flat-primitive state variable on an object or per subpart; the contract between the protocol and the object. |
 | `visual_states` | The object's state-to-visual function; resolves a `state_field` value to an SVG asset name, overlay name, or composite. |
-| capability | A closed-vocabulary affordance tag declared on the object: `clickable`, `contents_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`. |
+| capability | A closed-vocabulary affordance tag declared on the object: `clickable`, `material_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`. |
 | layout hint | An object-default visual metric the layout engine consumes (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). |
 | `ObjectStateChange` | The protocol-level primitive that mutates declared `state_fields` on an object; defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). |
 

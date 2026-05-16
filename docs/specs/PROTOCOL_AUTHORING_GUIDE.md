@@ -10,7 +10,7 @@ Related references:
 
 - [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md): canonical terms.
 - [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md): full schema for
-  `contents.yaml` and `protocol.yaml`.
+  `materials.yaml` and `protocol.yaml`.
 - [PROTOCOL_STEPS.md](PROTOCOL_STEPS.md): the step model and runtime
   resolution.
 - [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md): the scene placement schema.
@@ -36,7 +36,7 @@ A protocol package is a self-contained folder under
 ```
 content/protocols/<protocol_name>/
   protocol.yaml     # protocol_type, parts, days, and the ordered list of steps
-  contents.yaml     # liquids, reagents, cells, waste, and other materials
+  materials.yaml     # liquids, reagents, cells, waste, and other materials
   scenes/
     <scene_name>.yaml     # protocol-specific scene overrides (optional)
 ```
@@ -85,16 +85,16 @@ individual gestures live inside it in the ordered `sequence`. Each
 (`click`, `drag`, `adjust`, `select`, `type`) are in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
 
-## Writing contents.yaml
+## Writing materials.yaml
 
-`contents.yaml` declares every material the protocol references: reagents,
+`materials.yaml` declares every material the protocol references: reagents,
 liquids, cells, waste, mixtures, suspensions, diluted drugs, or other
-contents. Each contents entry has a unique snake_case name, a `label`,
-and a `display_color`. A contents name is what an `ObjectStateChange`
-`scene_operation` writes into an object's flat declared `contents_name`
-(or `held_contents_name`) `state_field`.
+materials. Each material entry has a unique snake_case name, a `label`,
+and a `display_color`. A material name is what an `ObjectStateChange`
+`scene_operation` writes into an object's flat declared `material_name`
+(or `held_material_name`) `state_field`.
 
-The full `contents.yaml` field tables and cross-file validation rules are in
+The full `materials.yaml` field tables and cross-file validation rules are in
 [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md).
 
 ## Writing protocol.yaml
@@ -129,8 +129,8 @@ multi-gesture case:
           - type: ObjectStateChange
             target: serological_pipette
             state:
-              held_contents_name: pbs
-              held_contents_volume: 4
+              held_material_name: pbs
+              held_material_volume: 4
         feedback:
           correct: PBS loaded.
           incorrect: Use the PBS bottle.
@@ -142,19 +142,19 @@ multi-gesture case:
           - type: ObjectStateChange
             target: serological_pipette
             state:
-              held_contents_name: null
-              held_contents_volume: 0
+              held_material_name: null
+              held_material_volume: 0
           - type: ObjectStateChange
             target: flask
             state:
-              contents_name: pbs
-              contents_volume: 4
+              material_name: pbs
+              material_volume: 4
   step_validator:
     preset: final_state_matches
     target: flask
     contains:
-      contents_name: pbs
-      contents_volume: 4
+      material_name: pbs
+      material_volume: 4
   outcome:
     on_success: complete
     on_failure: retry
@@ -245,8 +245,8 @@ Worked example for two wells in row B:
           - type: ObjectStateChange
             target: treatment_plate.B1
             state:
-              contents_name: media
-              contents_volume: 100
+              material_name: media
+              material_volume: 100
     - target: treatment_plate.B2
       gesture: click
       validator: { preset: correct_target }
@@ -255,12 +255,12 @@ Worked example for two wells in row B:
           - type: ObjectStateChange
             target: treatment_plate.B2
             state:
-              contents_name: media
-              contents_volume: 100
+              material_name: media
+              material_volume: 100
   step_validator:
     preset: final_state_matches
     target: treatment_plate.B2
-    contains: { contents_name: media }
+    contains: { material_name: media }
   outcome:
     on_success: complete
     on_failure: retry
@@ -303,8 +303,8 @@ an `ObjectStateChange` writing the pipette's flat declared liquid fields:
       - type: ObjectStateChange
         target: serological_pipette
         state:
-          held_contents_name: pbs
-          held_contents_volume: 4
+          held_material_name: pbs
+          held_material_volume: 4
 ```
 
 ### Step-level domain verb: `wash`
@@ -312,10 +312,10 @@ an `ObjectStateChange` writing the pipette's flat declared liquid fields:
 `wash` is shorthand for a whole `sequence` plus its `step_validator`. "Wash
 the flask with 4 mL PBS" expands to the three-interaction `pbs_wash` step
 shown in "A worked step" above: pick up the pipette (`CursorAttach`), draw
-the PBS (`ObjectStateChange` writing `held_contents_name` and
-`held_contents_volume`), dispense into the flask (`ObjectStateChange`
-clearing the pipette's `held_contents_*` fields and writing the flask's
-`contents_name` and `contents_volume`), checked by a `final_state_matches`
+the PBS (`ObjectStateChange` writing `held_material_name` and
+`held_material_volume`), dispense into the flask (`ObjectStateChange`
+clearing the pipette's `held_material_*` fields and writing the flask's
+`material_name` and `material_volume`), checked by a `final_state_matches`
 `step_validator`.
 
 When you write a protocol, think in domain verbs, then write the expanded
@@ -363,9 +363,9 @@ Run through this checklist for every step you write.
 - **Flow is named.** `next_step` names the next step by its `step_name`, or
   is `null` for a terminal step. `entry_step` names the first step by its
   `step_name`.
-- **Referenced contents exist.** Every contents name written by an
-  `ObjectStateChange` into a flat liquid `state_field` (`contents_name`,
-  `held_contents_name`) exists in `contents.yaml`.
+- **Referenced materials exist.** Every material name written by an
+  `ObjectStateChange` into a flat material `state_field` (`material_name`,
+  `held_material_name`) exists in `materials.yaml`.
 ## Build and walk loop
 
 Iterate on a protocol with a short loop: audit, validate, build, walk. Stop

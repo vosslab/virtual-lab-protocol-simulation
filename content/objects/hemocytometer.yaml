@@ -3,12 +3,12 @@ kind: equipment
 label: Hemocytometer
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, cell_suspension]
     default: empty
     description: Liquid loaded onto the counting chamber.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0

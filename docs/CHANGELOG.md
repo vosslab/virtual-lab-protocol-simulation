@@ -1,5 +1,68 @@
 # Changelog
 
+## 2026-05-15 (Vocabulary rename: contents -> materials; fourth small authoring vocabulary)
+
+### Behavior or Interface Changes
+
+- **Authoring vocabulary expanded from three to four**: protocol, object,
+  scene, **material**. A material is anything physically present in, on,
+  produced by, removed from, or transferred between objects (reagents,
+  media, cells, mixtures, suspensions, waste). Objects remain interactable
+  rendered things; materials are what objects hold or carry. Decision
+  rationale: previous `contents` name overlapped with the `content/` folder
+  and read as a subset of "object", obscuring that materials are their own
+  small vocabulary surface.
+- **File rename, 6x**: `content/protocols/<name>/contents.yaml` ->
+  `content/protocols/<name>/materials.yaml` via `git mv`. Top-level YAML
+  key `contents:` -> `materials:` in every file.
+- **State field rename**: `contents_name` -> `material_name`,
+  `contents_volume` -> `material_volume`, `held_contents_name` ->
+  `held_material_name`, `held_contents_volume` -> `held_material_volume`.
+  Applied across 24 object YAMLs and 6 protocol YAMLs.
+- **Capability rename**: `contents_container` -> `material_container`
+  (object closed-set capability).
+- **Spec doc rename**: `docs/specs/LIQUID_CONVENTION.md` ->
+  `docs/specs/MATERIAL_CONVENTION.md` via `git mv`. The doc now opens with
+  a `## Material vs object` section defining materials as a first-class
+  fourth authoring vocabulary, plus a `## Materials YAML schema` section
+  hosting the canonical closed schema (label + display_color required, no
+  optional keys, no `material_kind` enum until a non-liquid material needs
+  it). The pipette-fill rendering content is preserved as a subsection
+  because liquid remains the most common material state.
+- **Validator updates**: `T1_CONTENTS_REF` finding tag renamed to
+  `T1_MATERIAL_REF`. New `MaterialValidator` class enforces the closed
+  schema (top-level `materials:` only; per-entry only `label` +
+  `display_color`; snake_case material names; hex color format).
+  `validate_content_yaml.py` gains `-m` / `--material` CLI flag and
+  validates materials in the whole-tree sweep. `ContentDatabase.resolve_contents`
+  -> `resolve_material`; `contents_by_protocol` -> `materials_by_protocol`.
+
+### Fixes and Maintenance
+
+- Updated 12 spec / design docs to the new vocabulary
+  (`MATERIAL_CONVENTION.md`, `OBJECT_VOCABULARY.md`, `OBJECT_YAML_FORMAT.md`,
+  `PROTOCOL_AUTHORING_GUIDE.md`, `PROTOCOL_VOCABULARY.md`,
+  `PROTOCOL_YAML_FORMAT.md`, `SCENE_YAML_FORMAT.md`,
+  `SPEC_DESIGN_CHECKLIST.md`, `TARGET_FILE_STRUCTURE.md`,
+  `PRIMARY_SPEC.md`, `CODE_ARCHITECTURE.md`).
+- Validator green at 55 files, 0 failures: 34 objects, 2 base scenes,
+  6 protocol scenes, 6 materials, 7 protocols.
+
+### Decisions and Failures
+
+- Decided: stay minimal on the material schema. `material_kind` enum
+  (liquid, solid, gel, powder) deliberately not authored until a real
+  non-liquid material needs distinct behavior. Two fields only:
+  `label`, `display_color`.
+- Decided: rename `LIQUID_CONVENTION.md` to `MATERIAL_CONVENTION.md`.
+  "Liquid" lives on as a material state in prose, not as the doc
+  boundary. The pipette-fill rendering convention remains in this doc
+  because liquid is the only currently-rendered material state.
+- Decided: keep volume field as `material_volume`, not `liquid_volume`.
+  When a future solid or powder material needs a different physical
+  field, it adds a new flat field (e.g. `material_mass`) rather than
+  renaming `material_volume`.
+
 ## 2026-05-15 (M2 scenes: bench_basic base + 5 inherited protocol scenes)
 
 ### Additions and New Features

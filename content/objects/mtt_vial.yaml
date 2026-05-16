@@ -3,12 +3,12 @@ kind: bottle
 label: MTT reagent
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [mtt]
     default: mtt
     description: Contents currently in this vial.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -17,16 +17,16 @@ state_fields:
     description: Volume of MTT reagent remaining, in milliliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     cases:
       - when: mtt
         output: { asset_name: mtt_vial }
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ml=10)
+    formula: fill_height(state(material_volume), capacity_ml=10)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 2

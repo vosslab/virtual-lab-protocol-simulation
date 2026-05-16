@@ -10,13 +10,13 @@ structure:
   name_pattern: "{row_letter}{col}"
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, media, cells, carboplatin, metformin, drug_combo, mtt, dmso]
     default: empty
     applies_to: subpart
     description: Contents currently in this well.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ul
     min: 0
@@ -36,7 +36,7 @@ state_fields:
     description: Plate-level dosing completion status.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     applies_to: subpart
     cases:
@@ -56,12 +56,12 @@ visual_states:
         output: { asset_name: well_filled }
       - when: dmso
         output: { asset_name: well_filled }
-  contents_volume:
+  material_volume:
     kind: composite
     applies_to: subpart
-    formula: fill_height(state(contents_volume), capacity_ul=300)
+    formula: fill_height(state(material_volume), capacity_ul=300)
 
-capabilities: [clickable, structured_surface, contents_container]
+capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 14

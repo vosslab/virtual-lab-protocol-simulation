@@ -24,11 +24,11 @@ authored kinds, and the structural terms that surround them, are:
 
 - **Protocol package** -- the folder under
   `content/protocols/<name>/` that holds `protocol.yaml`,
-  `contents.yaml`, and `scenes/`. A structural unit, not a
+  `materials.yaml`, and `scenes/`. A structural unit, not a
   `protocol_type` value.
 - **Mini-protocol** (`protocol_type: mini_protocol`) -- one
   authored student-facing workflow with normal steps, a `learning`
-  block, scenes, contents, and referenced objects. Usually 6 to 10
+  block, scenes, materials, and referenced objects. Usually 6 to 10
   meaningful steps. Scope is set by its `learning` block.
 - **Sequence runner** (`protocol_type: sequence_runner`) -- an
   ordered pathway that connects mini-protocols into a larger
@@ -338,8 +338,8 @@ response:
     - type: ObjectStateChange
       target: serological_pipette
       state:
-        held_contents_name: pbs
-        held_contents_volume: 4
+        held_material_name: pbs
+        held_material_volume: 4
   feedback:
     correct: PBS loaded.
     incorrect: Use the PBS bottle.
@@ -403,9 +403,9 @@ and the object's `visual_states` resolves how they appear. The protocol stays
 semantic and never names an SVG asset id, a color value, a liquid display
 update, or a set-point display update. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
 The semantic primitive that supersedes all four at the protocol level is
-`ObjectStateChange`, which writes the flat declared liquid fields (`contents_name` and
-`contents_volume` for vessels and wells; corresponding
-`held_contents_name` / `held_contents_volume` for tools) and the flat
+`ObjectStateChange`, which writes the flat declared liquid fields (`material_name` and
+`material_volume` for vessels and wells; corresponding
+`held_material_name` / `held_material_volume` for tools) and the flat
 declared set-point fields (`set_volume`, `set_temperature`,
 `set_rpm`, etc.).
 
@@ -442,8 +442,8 @@ of PBS):
 - type: ObjectStateChange
   target: treatment_plate.A1
   state:
-    contents_name: pbs
-    contents_volume: 100
+    material_name: pbs
+    material_volume: 100
 ```
 
 The earlier nested form `state: { held_liquid: { reagent: pbs,
@@ -455,20 +455,20 @@ schema and the `visual_states` resolution rule.
 
 Liquid state mutation is expressed through `ObjectStateChange` against
 the object's flat declared liquid fields. Tools and vessels declare those
-fields directly (typically `contents_name` and `contents_volume`
-for vessels and wells; `held_contents_name` and `held_contents_volume` for tools).
+fields directly (typically `material_name` and `material_volume`
+for vessels and wells; `held_material_name` and `held_material_volume` for tools).
 The `visual_states` resolves the new field values to a fill height, tint, and asset.
 
 Each liquid state change maps to a flat-field write:
 
 - `hold` (a tool drawing liquid) -- write the tool's
-  `held_contents_name` and `held_contents_volume` to the new values.
-- `set` (assigning a target's contents directly, including emptying
-  with `volume_ml: 0`) -- write the target's `contents_name` to the new
-  reagent (or `null` / the empty enum value) and `contents_volume` to
+  `held_material_name` and `held_material_volume` to the new values.
+- `set` (assigning a target's material directly, including emptying
+  with `volume_ml: 0`) -- write the target's `material_name` to the new
+  reagent (or `null` / the empty enum value) and `material_volume` to
   the new value.
 - `add` (a destination receiving a transfer on top of existing
-  contents) -- emit one `ObjectStateChange` for the new total. The
+  material) -- emit one `ObjectStateChange` for the new total. The
   protocol computes the resulting volume; the object owns no
   add-versus-set distinction at the render layer.
 
@@ -631,7 +631,7 @@ step_validator: { preset: sequence_complete }
 step_validator:
   preset: final_state_matches
   target: flask
-  contains: { contents_name: pbs, volume_ml: 4 }
+  contains: { material_name: pbs, volume_ml: 4 }
 ```
 
 New presets are added under the cost guardrail. Content creators
@@ -676,7 +676,7 @@ state; every state change is written by a `response`.
 | State | What it tracks |
 | --- | --- |
 | held material | Which tool, if any, is attached to the cursor, and what liquid it carries. |
-| target contents | The tracked liquid identity and volume on each vessel and tool. |
+| target material | The tracked liquid identity and volume on each vessel and tool. |
 | set-point values | The current value of a continuous control (a pipette volume, a power-supply voltage, a titration pH). |
 | equipment state | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. |
 | phase state | A multi-phase result the student must resolve (a centrifuged tube holding an aqueous and an organic phase). |
@@ -825,8 +825,8 @@ Worked example -- which file owns which:
           - type: ObjectStateChange
             target: serological_pipette
             state:
-              held_contents_name: media
-              held_contents_volume: 1.2
+              held_material_name: media
+              held_material_volume: 1.2
     # The protocol lists each well in row B explicitly.
     # The pattern below repeats once per well B1..B12, dispensing
     # 0.1 mL into each. Twelve interactions are abbreviated for brevity.
@@ -838,12 +838,12 @@ Worked example -- which file owns which:
           - type: ObjectStateChange
             target: treatment_plate.B1
             state:
-              contents_name: media
-              contents_volume: 100
+              material_name: media
+              material_volume: 100
   step_validator:
     preset: final_state_matches
     target: treatment_plate.B1
-    contains: { contents_name: media, contents_volume: 100 }
+    contains: { material_name: media, material_volume: 100 }
   outcome:
     on_success: complete
     on_failure: retry
@@ -916,8 +916,8 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_contents_name: pbs
-                  held_contents_volume: 4
+                  held_material_name: pbs
+                  held_material_volume: 4
             feedback:
               correct: PBS loaded.
               incorrect: Use the PBS bottle.
@@ -931,19 +931,19 @@ protocol:
               - type: ObjectStateChange
                 target: serological_pipette
                 state:
-                  held_contents_name: null
-                  held_contents_volume: 0
+                  held_material_name: null
+                  held_material_volume: 0
               - type: ObjectStateChange
                 target: flask
                 state:
-                  contents_name: pbs
-                  contents_volume: 4
+                  material_name: pbs
+                  material_volume: 4
       step_validator:
         preset: final_state_matches
         target: flask
         contains:
-          contents_name: pbs
-          contents_volume: 4
+          material_name: pbs
+          material_volume: 4
       outcome:
         on_success: complete
         on_failure: retry
@@ -974,9 +974,9 @@ Reading the chain:
 
 | Term | Definition | Where it surfaces |
 | --- | --- | --- |
-| **Protocol package** | The folder under `content/protocols/<name>/` that holds `protocol.yaml`, `contents.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<name>/` |
+| **Protocol package** | The folder under `content/protocols/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<name>/` |
 | **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
-| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, contents, and referenced objects. Usually 6 to 10 meaningful steps. | `protocol_type: mini_protocol` |
+| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Usually 6 to 10 meaningful steps. | `protocol_type: mini_protocol` |
 | **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |
 | **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher and the curriculum step-count guideline. | `protocol_type: dev_smoke` |
 | **Protocol** | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value. | `protocol` block in `protocol.yaml` |
@@ -1000,7 +1000,7 @@ model structure.
 | Term | Definition |
 | --- | --- |
 | **Reagent** | A substance defined in the protocol's reagent data. |
-| **Liquid** | A reagent currently being moved, held, or tracked. Named in an `ObjectStateChange` writing the object's flat declared liquid fields (for example `contents_name` / `held_contents_name`). |
+| **Liquid** | A reagent currently being moved, held, or tracked. Named in an `ObjectStateChange` writing the object's flat declared liquid fields (for example `material_name` / `held_material_name`). |
 | **Stock solution** | The highest-concentration reagent supplied in a bottle or vial at the start of the protocol. Never used directly on cells; diluted first. |
 | **Intermediate dilution** | A temporary tube of solution prepared by diluting a stock solution down toward a usable working concentration. |
 | **Working solution** | The final, ready-to-dose dilution delivered into a vessel at the protocol-specified volume. |

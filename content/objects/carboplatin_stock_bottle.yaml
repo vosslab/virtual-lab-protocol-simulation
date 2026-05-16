@@ -3,12 +3,12 @@ kind: bottle
 label: Carboplatin 10 mM
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [carboplatin]
     default: carboplatin
     description: Contents currently in this bottle.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -17,16 +17,16 @@ state_fields:
     description: Volume of carboplatin stock remaining, in milliliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     cases:
       - when: carboplatin
         output: { asset_name: carboplatin_bottle }
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ml=50)
+    formula: fill_height(state(material_volume), capacity_ml=50)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 3

@@ -3,12 +3,12 @@ kind: bottle
 label: Metformin 200 mM working stock
 
 state_fields:
-  - field_name: contents_name
+  - field_name: material_name
     type: enum
     allowed: [empty, metformin, media, metformin_10mmol]
     default: empty
     description: Contents currently in the tube.
-  - field_name: contents_volume
+  - field_name: material_volume
     type: float
     unit: ul
     min: 0
@@ -17,7 +17,7 @@ state_fields:
     description: Volume of contents in the tube, in microliters.
 
 visual_states:
-  contents_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
@@ -26,11 +26,11 @@ visual_states:
         output: { asset_name: microtube_1ml_filled }
       - when: media
         output: { asset_name: microtube_1ml_filled }
-  contents_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(contents_volume), capacity_ul=1000)
+    formula: fill_height(state(material_volume), capacity_ul=1000)
 
-capabilities: [clickable, contents_container, cursor_attachable]
+capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 2

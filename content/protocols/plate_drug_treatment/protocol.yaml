@@ -116,8 +116,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
           feedback:
             correct: "Pipette loaded with media adjustment volume."
             incorrect: "Load the multichannel pipette with media adjustment volume."
@@ -129,13 +129,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
           feedback:
             correct: "Media adjustment added to row A (multichannel dispenses across all 12 wells)."
             incorrect: "Add media adjustment to row A using the multichannel pipette."
@@ -147,8 +147,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.B1
         gesture: click
         validator: { preset: correct_target }
@@ -157,13 +157,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -172,8 +172,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.C1
         gesture: click
         validator: { preset: correct_target }
@@ -182,13 +182,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -197,8 +197,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.D1
         gesture: click
         validator: { preset: correct_target }
@@ -207,13 +207,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -222,8 +222,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.E1
         gesture: click
         validator: { preset: correct_target }
@@ -232,13 +232,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -247,8 +247,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.F1
         gesture: click
         validator: { preset: correct_target }
@@ -257,13 +257,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -272,8 +272,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.G1
         gesture: click
         validator: { preset: correct_target }
@@ -282,13 +282,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: media_bottle
         gesture: click
         validator: { preset: correct_target }
@@ -297,8 +297,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 95
+                held_material_name: media
+                held_material_volume: 95
       - target: well_plate_96.H1
         gesture: click
         validator: { preset: correct_target }
@@ -307,13 +307,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: media
-                contents_volume: 100
+                material_name: media
+                material_volume: 100
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -343,8 +343,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.B1
         gesture: click
         validator: { preset: correct_target }
@@ -353,13 +353,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -368,8 +368,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.C1
         gesture: click
         validator: { preset: correct_target }
@@ -378,13 +378,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -393,8 +393,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.D1
         gesture: click
         validator: { preset: correct_target }
@@ -403,13 +403,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -418,8 +418,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.E1
         gesture: click
         validator: { preset: correct_target }
@@ -428,13 +428,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -443,8 +443,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.F1
         gesture: click
         validator: { preset: correct_target }
@@ -453,13 +453,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -468,8 +468,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.G1
         gesture: click
         validator: { preset: correct_target }
@@ -478,13 +478,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -493,8 +493,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: carboplatin
-                held_contents_volume: 5
+                held_material_name: carboplatin
+                held_material_volume: 5
       - target: well_plate_96.H1
         gesture: click
         validator: { preset: correct_target }
@@ -503,13 +503,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: carboplatin
-                contents_volume: 105
+                material_name: carboplatin
+                material_volume: 105
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -539,8 +539,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.B7
         gesture: click
         validator: { preset: correct_target }
@@ -549,13 +549,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -564,8 +564,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.C7
         gesture: click
         validator: { preset: correct_target }
@@ -574,13 +574,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -589,8 +589,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.D7
         gesture: click
         validator: { preset: correct_target }
@@ -599,13 +599,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -614,8 +614,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.E7
         gesture: click
         validator: { preset: correct_target }
@@ -624,13 +624,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -639,8 +639,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.F7
         gesture: click
         validator: { preset: correct_target }
@@ -649,13 +649,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -664,8 +664,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.G7
         gesture: click
         validator: { preset: correct_target }
@@ -674,13 +674,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: dilution_tube_rack_8
         gesture: click
         validator: { preset: correct_target }
@@ -689,8 +689,8 @@ steps:
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: metformin
-                held_contents_volume: 5
+                held_material_name: metformin
+                held_material_volume: 5
       - target: well_plate_96.H7
         gesture: click
         validator: { preset: correct_target }
@@ -699,13 +699,13 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96
               state:
-                contents_name: drug_combo
-                contents_volume: 110
+                material_name: drug_combo
+                material_volume: 110
             - type: ObjectStateChange
               target: multichannel_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete

@@ -1,4 +1,4 @@
-contents:
+materials:
   cell_suspension:
     label: "Cell suspension (OVCAR8)"
     display_color: "#d89bb8"

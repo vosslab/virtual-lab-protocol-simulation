@@ -443,21 +443,21 @@ class ProtocolValidator:
 														message=f"state field '{field_name}' value '{field_value}' not in allowed {allowed}",
 														tag="T1_ENUM",
 													))
-											# T1_CONTENTS_REF: contents_name / held_contents_name must exist in protocol contents.
+											# T1_MATERIAL_REF: material_name / held_material_name must exist in protocol materials.
 											# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
-											# (empty container, generic blended liquid) and do not need
-											# contents.yaml entries.
-											if field_name in ('contents_name', 'held_contents_name') and field_value not in ('empty', 'mixed'):
+											# (empty container, generic blended material) and do not need
+											# materials.yaml entries.
+											if field_name in ('material_name', 'held_material_name') and field_value not in ('empty', 'mixed'):
 												protocol_name = self._extract_protocol_name(op_path)
 												if protocol_name and field_value is not None:
-													contents = self.db.resolve_contents(protocol_name, field_value)
-													if not contents:
+													material = self.db.resolve_material(protocol_name, field_value)
+													if not material:
 														findings.append(Finding(
 															path=f"{op_path}.state",
 															lineno=None,
 															severity=Severity.ERROR,
-															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known contents entry",
-															tag="T1_CONTENTS_REF",
+															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
+															tag="T1_MATERIAL_REF",
 														))
 
 		return findings

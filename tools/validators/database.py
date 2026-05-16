@@ -15,13 +15,13 @@ class ContentDatabase:
 		self.objects: dict = {}
 		self.base_scenes: dict = {}
 		self.protocols: dict = {}
-		self.contents_by_protocol: dict = {}
+		self.materials_by_protocol: dict = {}
 		self.findings: list[Finding] = []
 
 	def load_from_tree(self, root: Path) -> None:
 		"""
 		Walk content tree and load all YAML files into registry.
-		Populates objects, base_scenes, protocols, contents_by_protocol.
+		Populates objects, base_scenes, protocols, materials_by_protocol.
 		Errors are collected in self.findings.
 		"""
 		root_path = Path(root)
@@ -86,17 +86,17 @@ class ContentDatabase:
 							message=str(e),
 						))
 
-				# Load contents.yaml
-				contents_file = protocol_dir / 'contents.yaml'
-				if contents_file.exists():
+				# Load materials.yaml
+				materials_file = protocol_dir / 'materials.yaml'
+				if materials_file.exists():
 					try:
-						contents_data = load_yaml(contents_file)
+						materials_data = load_yaml(materials_file)
 						protocol_name = protocol_dir.name
-						contents_dict = contents_data.get('contents', {})
-						if isinstance(contents_dict, dict):
-							self.contents_by_protocol[protocol_name] = contents_dict
+						materials_dict = materials_data.get('materials', {})
+						if isinstance(materials_dict, dict):
+							self.materials_by_protocol[protocol_name] = materials_dict
 					except RuntimeError as e:
-						rel_path = str(contents_file.relative_to(root_path))
+						rel_path = str(materials_file.relative_to(root_path))
 						self.findings.append(Finding(
 							path=rel_path,
 							lineno=None,
@@ -207,7 +207,7 @@ class ContentDatabase:
 
 		return None
 
-	def resolve_contents(self, protocol_name: str, contents_name: str) -> dict | None:
-		"""Resolve contents entry by protocol and contents name."""
-		protocol_contents = self.contents_by_protocol.get(protocol_name, {})
-		return protocol_contents.get(contents_name)
+	def resolve_material(self, protocol_name: str, material_name: str) -> dict | None:
+		"""Resolve material entry by protocol and material name."""
+		protocol_materials = self.materials_by_protocol.get(protocol_name, {})
+		return protocol_materials.get(material_name)

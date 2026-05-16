@@ -348,7 +348,7 @@ Six capability ids are registered in
 [../../src/scenes/capabilities/](../../src/scenes/capabilities/) and mounted at
 module load via `src/init.ts`. The cleaned scene YAML declares the
 capabilities a scene mounts; object capabilities (`clickable`,
-`contents_container`, `instrument_with_setpoint`, `structured_surface`,
+`material_container`, `instrument_with_setpoint`, `structured_surface`,
 `cursor_attachable`, `decoration_only`) are object-side and live in
 object YAML. This is the closed six-capability set.
 
@@ -389,7 +389,7 @@ Gaps not validated today:
 - Item field shapes beyond `id` and `zone` are not validated.
 - Zone field shapes beyond `id` are not validated.
 - `wrong_order_message` is not validated.
-- Cross-references against `contents.yaml` and the object library are not validated.
+- Cross-references against `materials.yaml` and the object library are not validated.
 
 The validator will replace the
 `items[]` rules with `placements[]` rules: every `placement.object_name`

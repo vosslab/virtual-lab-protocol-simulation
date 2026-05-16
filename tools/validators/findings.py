@@ -26,7 +26,7 @@ class Finding:
 			structured `tag` field landed.
 		tag: Optional structured tag matching the registry in
 			tools/validators/constants.py (T1_TARGET, T1_STATE_FIELD,
-			T1_ENUM, T1_CONTENTS_REF, T1_TARGET_WITH_VALUE, SCENE_EXTENDS,
+			T1_ENUM, T1_MATERIAL_REF, T1_TARGET_WITH_VALUE, SCENE_EXTENDS,
 			CLOSURE, T3_CAMELCASE, RETIRED, BANNED). Used for structured
 			filtering and triage.
 	"""

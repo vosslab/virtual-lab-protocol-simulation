@@ -11,12 +11,12 @@ state_fields:
     step: 0.1
     default: 1.0
     description: Volume the pipette is set to dispense.
-  - field_name: held_contents_name
+  - field_name: held_material_name
     type: enum
     allowed: [empty, media, pbs, trypsin, cells, cell_suspension]
     default: empty
     description: Contents currently aspirated in the pipette barrel.
-  - field_name: held_contents_volume
+  - field_name: held_material_volume
     type: float
     unit: ml
     min: 0
@@ -28,7 +28,7 @@ visual_states:
   set_volume:
     kind: overlay
     formula: label(state(set_volume), format="{value} ml")
-  held_contents_name:
+  held_material_name:
     kind: svg
     cases:
       - when: empty
@@ -41,11 +41,11 @@ visual_states:
         output: { asset_name: serological_pipette_filled }
       - when: cells
         output: { asset_name: serological_pipette_filled }
-  held_contents_volume:
+  held_material_volume:
     kind: composite
-    formula: fill_height(state(held_contents_volume), capacity_ml=25.0)
+    formula: fill_height(state(held_material_volume), capacity_ml=25.0)
 
-capabilities: [clickable, contents_container, instrument_with_setpoint, cursor_attachable]
+capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3

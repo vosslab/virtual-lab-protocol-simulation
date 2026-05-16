@@ -28,8 +28,8 @@ steps:
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: cell_suspension
-                held_contents_volume: 4
+                held_material_name: cell_suspension
+                held_material_volume: 4
           feedback:
             correct: "Cell suspension drawn."
             incorrect: "Draw the cell suspension from the flask."
@@ -41,13 +41,13 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cell_suspension
-                contents_volume: 4
+                material_name: cell_suspension
+                material_volume: 4
             - type: ObjectStateChange
               target: serological_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
           feedback:
             correct: "Cell suspension transferred to conical."
             incorrect: "Dispense into the conical tube."
@@ -175,13 +175,13 @@ steps:
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cell_pellet
-                contents_volume: 0.1
+                material_name: cell_pellet
+                material_volume: 0.1
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: media
-                held_contents_volume: 3.9
+                held_material_name: media
+                held_material_volume: 3.9
           feedback:
             correct: "Supernatant aspirated."
             incorrect: "Aspirate the media from above the cell pellet."
@@ -193,13 +193,13 @@ steps:
             - type: ObjectStateChange
               target: waste_container
               state:
-                contents_name: mixed
-                contents_volume: 3.9
+                material_name: mixed
+                material_volume: 3.9
             - type: ObjectStateChange
               target: aspirating_pipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -226,12 +226,12 @@ steps:
             - type: ObjectStateChange
               target: media_bottle
               state:
-                contents_volume: 499
+                material_volume: 499
             - type: ObjectStateChange
               target: conical_15ml
               state:
-                contents_name: cell_suspension
-                contents_volume: 1
+                material_name: cell_suspension
+                material_volume: 1
           feedback:
             correct: "Media added and cells resuspended."
             incorrect: "Add fresh media to resuspend the cell pellet."
@@ -261,8 +261,8 @@ steps:
             - type: ObjectStateChange
               target: micropipette
               state:
-                held_contents_name: cell_suspension
-                held_contents_volume: 0.01
+                held_material_name: cell_suspension
+                held_material_volume: 0.01
           feedback:
             correct: "Aliquot drawn."
             incorrect: "Draw a small aliquot of cell suspension."
@@ -274,13 +274,13 @@ steps:
             - type: ObjectStateChange
               target: hemocytometer
               state:
-                contents_name: cell_suspension
-                contents_volume: 0.01
+                material_name: cell_suspension
+                material_volume: 0.01
             - type: ObjectStateChange
               target: micropipette
               state:
-                held_contents_name: empty
-                held_contents_volume: 0
+                held_material_name: empty
+                held_material_volume: 0
       - target: microscope
         gesture: click
         validator: { preset: correct_target }
@@ -378,8 +378,8 @@ steps:
             - type: ObjectStateChange
               target: micropipette
               state:
-                held_contents_name: cell_suspension
-                held_contents_volume: 0.05
+                held_material_name: cell_suspension
+                held_material_volume: 0.05
           feedback:
             correct: "Seeding volume drawn."
             incorrect: "Draw the calculated seeding volume."
@@ -391,8 +391,8 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.A1
               state:
-                contents_name: cell_suspension
-                contents_volume: 50
+                material_name: cell_suspension
+                material_volume: 50
       - target: well_plate_96.A2
         gesture: click
         validator: { preset: correct_target }
@@ -401,8 +401,8 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.A2
               state:
-                contents_name: cell_suspension
-                contents_volume: 50
+                material_name: cell_suspension
+                material_volume: 50
       - target: well_plate_96.A3
         gesture: click
         validator: { preset: correct_target }
@@ -411,9 +411,9 @@ steps:
             - type: ObjectStateChange
               target: well_plate_96.A3
               state:
-                contents_name: cell_suspension
-                contents_volume: 50
-    step_validator: { preset: final_state_matches, target: well_plate_96.A3, contains: { contents_name: cell_suspension, contents_volume: 50 } }
+                material_name: cell_suspension
+                material_volume: 50
+    step_validator: { preset: final_state_matches, target: well_plate_96.A3, contains: { material_name: cell_suspension, material_volume: 50 } }
     outcome:
       on_success: complete
       on_failure: retry
