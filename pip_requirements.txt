@@ -1,1 +1,0 @@
-pyyaml  # YAML parser for tools/build_protocol_data.py

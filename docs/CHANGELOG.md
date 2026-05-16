@@ -1,5 +1,45 @@
 # Changelog
 
+## 2026-05-16 (Shared toolkit extraction + protocol_manual CLI parity)
+
+### Additions and New Features
+
+- **New `tools/shared_toolkit/` package**: cross-tool helpers extracted from `validate_content_yaml.py` and inlined locals in `protocol_manual.py`. Modules: `paths` (REPO_ROOT, CONTENT_ROOT, PROTOCOLS_DIR, OBJECTS_DIR derived from this file's location; `paths_from_root()` builder for tests with a temporary content tree), `protocols` (`list_protocols`, `resolve_protocol_path` accepting name-or-path, `classify_protocol`, `protocol_name_from_path`), `interactive` (`pick_protocol_interactively` numbered menu), `reporter` (`print_section_header`, `print_pass`, `print_fail`, `print_warning`, `print_error`, `print_summary_line`). Package name chosen by user as `shared_toolkit` after considering `toolkit`, `content_io`, `labkit`, `common_lib`.
+- **`tools/protocol_manual.py` gains CLI parity with the validator and stepper**: `--list-protocols`, `--interactive`, `-p / --protocol NAME [NAME ...]` (multi), positional still supported, name-or-path resolution on all selection inputs, `-q / --quiet`, `-v / --verbose` (reserved), `--stdout` for piping, `-o / --out DIR` to override write directory. Each rendered protocol is now wrapped in a `=== Rendering NAME ===` section header and a `PASS: <path>` line; a closing `Checked N manuals. F failures.` summary mirrors `validate_content_yaml.py`.
+- **`tools/protocol_stepper.py` gains selection-input parity**: `--list-protocols`, `--interactive`, `-q / --quiet`, name-or-path resolution on `-p`. Whole-tree run now closes with the same `Checked N protocols. F failures. W warnings.` summary frame.
+- **New `tools/stepper/dashboard.py` + rich-rendered stepper output**: parallels `tools/validators/compiled_summary.py`. Default whole-tree run now prints a colored dashboard (Totals: protocols, by type, steps walked, interactions walked, pass/fail split, errors/warnings; Findings by code: top 10 codes with count + one sample message; Per-protocol breakdown: each noisy protocol named with its E= and W= counts plus the rule codes that fired, sorted errors-first then by warning count; Failed protocols: list). The 478-line per-finding spew that dominated the previous default output is now grouped into one line per code with a sample. Three output tiers: default = headers on FAIL + dashboard + summary; `-v / --verbose` = headers always + runner's full PASS/FAIL + per-finding inline dump + dashboard; `-q / --quiet` = summary line only. The runner's `walk_protocol` and `walk_sequence_runner` gained a `quiet` kwarg (default False) so the CLI can suppress the chatty per-protocol output without breaking existing call sites.
+
+### Behavior or Interface Changes
+
+- **`protocol_manual.py` single-protocol default changed from stdout to file write**: single mode now writes `./<protocol_name>.md` to the current working directory. Bulk mode (`--all`) writes to `./output_manuals/` (was `/tmp/manuals/`). Both defaults are CWD-anchored per `docs/REPO_STYLE.md` reusable-output-folder convention (`output_*`) and per user request that artifacts not live under `/tmp`. Use `--stdout` to restore stdout printing for piping; `--out DIR` overrides the destination.
+- **`validate_content_yaml.py` `list_protocols` and `resolve_protocol_path` are now thin wrappers** over `tools.shared_toolkit.protocols`. Public function signatures and behavior unchanged; one in-tree call site (the `--interactive` block) was reduced from ~15 lines to 4 by delegating to `pick_protocol_interactively`.
+- **Three CLIs now share one output frame**: section header, per-item PASS / FAIL / WARN line, closing summary line. Authors learn one output style across all three gates.
+
+### Fixes and Maintenance
+
+- **Code duplication retired**: ~50 lines of identical-or-near-identical protocol-discovery, path-resolution, and interactive-picker code that lived inline in `validate_content_yaml.py` and was missing entirely from `protocol_stepper.py` and `protocol_manual.py` is now in one place. New tool authors should reach for `tools.shared_toolkit.*` before writing fresh discovery code.
+- **All three tool CLIs add `sys.path.insert(0, <repo_root>)` near the top of the script** so `tools.shared_toolkit.*` and `tools.stepper.*` imports resolve under the standard `source source_me.sh && python3 tools/<cli>.py` invocation. Existing sibling-style `from validators.<x> import ...` imports continue to work because Python adds the script's directory (tools/) to `sys.path[0]` on launch.
+- **`rich` declared in `pip_requirements.txt`**: the validator's compiled summary has always imported `rich.console.Console` but the dep was undeclared. Surfaced when adding `tools/stepper/dashboard.py`; both consumers now share a declared dep. Per `docs/REPO_STYLE.md`: "we want to require all dependencies, rather than provide work-arounds if they are missing."
+
+### Removals and Deprecations
+
+- Removed inline `list_protocols` and `resolve_protocol_path` implementations from `validate_content_yaml.py` (replaced with shared_toolkit wrappers).
+- Removed the inline `try / except (ValueError, EOFError)` block around the interactive picker in `validate_content_yaml.py`; the shared picker validates input without `try/except`, per `docs/PYTHON_STYLE.md`.
+- Removed `/tmp/manuals` as the bulk default for `protocol_manual.py`.
+
+### Decisions and Failures
+
+- **Package name chosen as `shared_toolkit/`**: user picked this over the three candidates (`toolkit`, `content_io`, `labkit`, `common_lib`) and explicitly rejected the unqualified name `shared` ("too vague for an import name"). The `_toolkit` suffix names the role, the `shared_` prefix names the audience.
+- **Extraction scope held to "medium" not "large"**: did not pull `validators/yaml_io.py` or the HTML entity normalizer into `shared_toolkit/`. `yaml_io` stays in `tools/validators/` because that is where the cross-validation helpers cluster. Entity normalization stays in `protocol_manual.py` because no other tool needs it today.
+- **Single-protocol default became file-write, not stdout, after the user clarified mid-build** ("write to CWD not /tmp" -> "use output_manuals/ for bulk, but CWD/protocol.md for single"). `--stdout` preserves the original piping path for any script that depended on stdout.
+
+### Developer Tests and Notes
+
+- `source source_me.sh && pytest tests/ -q` -> 525 passed in ~1.0 s. No tests added or removed in this change; the refactor preserved every existing test.
+- Lint gates green: `test_pyflakes_code_lint`, `test_ascii_compliance`, `test_markdown_links`, `test_import_dot`, `test_import_requirements`, `test_shebangs` all pass (113 total in ~0.6 s).
+- Validator self-test green: `source source_me.sh && python3 tools/validate_content_yaml.py --self-test`.
+- All three CLIs smoke-tested end-to-end: `--list-protocols`, `--interactive` (skipped where non-tty), `-p NAME`, `-p NAME NAME` (multi), positional, `--all`, `--stdout`, `-q`. Stepper whole-tree run: 12 protocols / 0 failures / 478 warnings. Validator whole-tree run: 88 files / 0 failures. Manual whole-tree run: 12 manuals / 0 failures.
+
 ## 2026-05-16 (Protocol stepper M1+M2+M3: second content gate ships)
 
 ### Additions and New Features

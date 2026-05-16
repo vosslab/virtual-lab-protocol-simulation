@@ -16,6 +16,12 @@ import sys
 import tempfile
 import yaml
 from pathlib import Path
+
+# Insert repo root so `tools.shared_toolkit.*` imports resolve. The
+# sibling `validators.*` imports continue to work because Python also
+# adds this script's directory (tools/) to sys.path on launch.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
 from validators.yaml_io import load_yaml
 from validators.database import ContentDatabase
 from validators.object_validator import ObjectValidator
@@ -26,6 +32,9 @@ from validators.material_validator import MaterialValidator
 from validators.cross_protocol import CrossProtocolValidator
 import validators.summary as summary_printer
 import validators.compiled_summary as compiled_summary
+
+import tools.shared_toolkit.protocols as toolkit_protocols
+import tools.shared_toolkit.interactive as toolkit_interactive
 
 
 class ValidationError(Exception):
@@ -172,40 +181,16 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 
 def list_protocols(repo_root: str) -> list:
 	"""
-	List all protocol names (directories under content/protocols/).
-	Returns sorted list of names.
+	List protocol names. Thin wrapper over shared_toolkit so existing
+	call sites and tests keep working.
 	"""
 	protocols_dir = Path(repo_root) / 'content' / 'protocols'
-	if not protocols_dir.exists():
-		return []
-	names = []
-	for item in sorted(protocols_dir.iterdir()):
-		if item.is_dir():
-			protocol_yaml = item / 'protocol.yaml'
-			if protocol_yaml.exists():
-				names.append(item.name)
-	return names
+	return toolkit_protocols.list_protocols(protocols_dir=protocols_dir)
 
 
 def resolve_protocol_path(name_or_path: str, repo_root: str) -> Path | None:
-	"""
-	Resolve a protocol identifier to a protocol.yaml path.
-	If name_or_path contains '/' or ends in '.yaml', treat as file path.
-	Otherwise treat as a folder name and resolve to content/protocols/<name>/protocol.yaml.
-	Returns Path if found, None otherwise.
-	"""
-	test_path = Path(name_or_path)
-	# Treat as file path if contains '/' or ends in '.yaml'
-	if '/' in name_or_path or name_or_path.endswith('.yaml'):
-		full_path = Path(repo_root) / name_or_path if not test_path.is_absolute() else test_path
-		if full_path.exists() and full_path.is_file():
-			return full_path
-		return None
-	# Treat as protocol name
-	protocol_yaml = Path(repo_root) / 'content' / 'protocols' / name_or_path / 'protocol.yaml'
-	if protocol_yaml.exists():
-		return protocol_yaml
-	return None
+	"""Resolve a protocol identifier. Thin wrapper over shared_toolkit."""
+	return toolkit_protocols.resolve_protocol_path(name_or_path, repo_root=repo_root)
 
 
 def validate_protocol_package(protocol_name: str, repo_root: str, quiet: bool = False, verbose: bool = False) -> tuple:
@@ -533,25 +518,9 @@ def main():
 
 	# Interactive mode
 	if args.interactive:
-		if not sys.stdin.isatty():
-			print("Interactive mode requires a terminal. Aborting.")
-			sys.exit(1)
 		protocols = list_protocols(str(repo_root))
-		if not protocols:
-			print("No protocols found.")
-			sys.exit(1)
-		print("Available protocols:")
-		for idx, name in enumerate(protocols, 1):
-			print(f"  {idx}. {name}")
-		try:
-			choice = input("Select a protocol (number): ").strip()
-			choice_idx = int(choice) - 1
-			if choice_idx < 0 or choice_idx >= len(protocols):
-				print("Invalid selection.")
-				sys.exit(1)
-			selected = protocols[choice_idx]
-		except (ValueError, EOFError):
-			print("Invalid input.")
+		selected = toolkit_interactive.pick_protocol_interactively(protocols)
+		if selected is None:
 			sys.exit(1)
 		success, errors = validate_protocol_package(selected, str(repo_root), quiet=args.quiet, verbose=args.verbose)
 		sys.exit(0 if success else 1)

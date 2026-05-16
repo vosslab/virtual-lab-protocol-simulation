@@ -12,6 +12,7 @@ def walk_protocol(
 	tree: tools.stepper.loader.LoadedContentTree,
 	protocol_name: str,
 	verbose: bool = False,
+	quiet: bool = False,
 ) -> tuple[int, int, tools.stepper.findings.FindingEmitter]:
 	"""
 	Walk a single protocol through the entire flow.
@@ -24,6 +25,9 @@ def walk_protocol(
 		tree: LoadedContentTree instance.
 		protocol_name: Name of the protocol to walk.
 		verbose: If True, emit per-step state deltas.
+		quiet: If True, suppress the per-protocol summary line and the
+			inline finding dump. The CLI uses this when it intends to
+			render findings via the grouped dashboard instead.
 
 	Returns:
 		(step_count, interaction_count, emitter) tuple.
@@ -79,8 +83,9 @@ def walk_protocol(
 	error_count = len(error_findings)
 	warning_count = len(warning_findings)
 
-	emitter.emit_protocol_summary(protocol_name, protocol_path, step_count, interaction_count, error_count, warning_count)
-	emitter.print_findings()
+	if not quiet:
+		emitter.emit_protocol_summary(protocol_name, protocol_path, step_count, interaction_count, error_count, warning_count)
+		emitter.print_findings()
 
 	return step_count, interaction_count, emitter
 
@@ -255,6 +260,7 @@ def walk_sequence_runner(
 	tree: tools.stepper.loader.LoadedContentTree,
 	protocol_name: str,
 	verbose: bool = False,
+	quiet: bool = False,
 ) -> tuple[int, int, tools.stepper.findings.FindingEmitter]:
 	"""
 	Walk a sequence runner by executing its constituent minis in order.
@@ -428,7 +434,8 @@ def walk_sequence_runner(
 		error_count = len(error_findings)
 		warning_count = len(warning_findings)
 
-		emitter.emit_leaf_summary(mini_name, step_count, interaction_count, error_count, warning_count)
+		if not quiet:
+			emitter.emit_leaf_summary(mini_name, step_count, interaction_count, error_count, warning_count)
 
 	# Final summary for the sequence runner
 	error_findings = [f for f in emitter.findings if f.level == tools.stepper.findings.Level.ERROR]
@@ -436,7 +443,8 @@ def walk_sequence_runner(
 	error_count = len(error_findings)
 	warning_count = len(warning_findings)
 
-	emitter.emit_sequence_runner_summary(protocol_name, protocol_path, total_leaf_count, total_step_count, total_interaction_count, error_count, warning_count)
-	emitter.print_findings()
+	if not quiet:
+		emitter.emit_sequence_runner_summary(protocol_name, protocol_path, total_leaf_count, total_step_count, total_interaction_count, error_count, warning_count)
+		emitter.print_findings()
 
 	return total_leaf_count, total_interaction_count, emitter
