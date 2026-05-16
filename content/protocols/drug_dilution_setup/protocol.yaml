@@ -84,7 +84,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_200um
 
-  # Carboplatin working stock: 200 uM (A48) — row G (final 5 uM)
+  # Carboplatin working stock: 200 uM (A48) - row G (final 5 uM)
   - step_name: prepare_carb_working_200um
     prompt: "Prepare the 200 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 200 &micro;M x 1000 &micro;L, so V1 = 500 &micro;L. Aspirate 500 &micro;L from the parent stock and dispense into a dilution rack tube, then add 500 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -146,7 +146,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_80um
 
-  # Carboplatin working stock: 80 uM (A50) — row F (final 2 uM)
+  # Carboplatin working stock: 80 uM (A50) - row F (final 2 uM)
   - step_name: prepare_carb_working_80um
     prompt: "Prepare the 80 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 80 &micro;M x 1000 &micro;L, so V1 = 200 &micro;L. Aspirate 200 &micro;L from the parent stock and dispense into a dilution rack tube, then add 800 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -208,7 +208,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_40um
 
-  # Carboplatin working stock: 40 uM (A51) — row E (final 1 uM)
+  # Carboplatin working stock: 40 uM (A51) - row E (final 1 uM)
   - step_name: prepare_carb_working_40um
     prompt: "Prepare the 40 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 40 &micro;M x 1000 &micro;L, so V1 = 100 &micro;L. Aspirate 100 &micro;L from the parent stock and dispense into a dilution rack tube, then add 900 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -270,7 +270,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_20um
 
-  # Carboplatin working stock: 20 uM (A52) — row D (final 0.5 uM)
+  # Carboplatin working stock: 20 uM (A52) - row D (final 0.5 uM)
   - step_name: prepare_carb_working_20um
     prompt: "Prepare the 20 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 20 &micro;M x 1000 &micro;L, so V1 = 50 &micro;L. Aspirate 50 &micro;L from the parent stock and dispense into a dilution rack tube, then add 950 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -332,7 +332,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_8um
 
-  # Carboplatin working stock: 8 uM (A53) — row C (final 0.2 uM)
+  # Carboplatin working stock: 8 uM (A53) - row C (final 0.2 uM)
   - step_name: prepare_carb_working_8um
     prompt: "Prepare the 8 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 8 &micro;M x 1000 &micro;L, so V1 = 20 &micro;L. Aspirate 20 &micro;L from the parent stock and dispense into a dilution rack tube, then add 980 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -394,7 +394,7 @@ steps:
       on_failure: retry
     next_step: prepare_carb_working_4um
 
-  # Carboplatin working stock: 4 uM (A54) — row B (final 0.1 uM)
+  # Carboplatin working stock: 4 uM (A54) - row B (final 0.1 uM)
   - step_name: prepare_carb_working_4um
     prompt: "Prepare the 4 &micro;M carboplatin working stock from the 400 &micro;M parent stock. Calculate using C1V1 = C2V2: 400 &micro;M x V1 = 4 &micro;M x 1000 &micro;L, so V1 = 10 &micro;L. Aspirate 10 &micro;L from the parent stock and dispense into a dilution rack tube, then add 990 &micro;L of media to reach 1000 &micro;L total."
     sequence:
@@ -458,7 +458,7 @@ steps:
 
   # Metformin working stock (A55)
   - step_name: prepare_metformin_200mm
-    prompt: "Prepare the 200 mM metformin working stock from the 1 M master stock. Calculate using C1V1 = C2V2: 1 M x V1 = 200 mM x 300 &micro;L, so V1 = 60 &micro;L. Aspirate 60 &micro;L from master stock, dispense into the working tube, add 240 &micro;L media to reach 300 &micro;L total, and vortex to ensure complete mixing. This working stock is used directly for dosing (5 &micro;L into 200 &micro;L well = 5 mM final). Prepare 300 &micro;L to cover 48 wells × 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume / measurement slack."
+    prompt: "Prepare the 200 mM metformin working stock from the 1 M master stock. Calculate using C1V1 = C2V2: 1 M x V1 = 200 mM x 300 &micro;L, so V1 = 60 &micro;L. Aspirate 60 &micro;L from master stock, dispense into the working tube, add 240 &micro;L media to reach 300 &micro;L total, and vortex to ensure complete mixing. This working stock is used directly for dosing (5 &micro;L into 200 &micro;L well = 5 mM final). Prepare 300 &micro;L to cover 48 wells x 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume / measurement slack."
     sequence:
       - target: micropipette
         gesture: click
@@ -534,7 +534,7 @@ steps:
 
   # Metformin volume gate (A56)
   - step_name: verify_metformin_volume
-    prompt: "Verify that you have prepared sufficient metformin working stock. You need at least 300 &micro;L total — 240 &micro;L for dosing 48 wells (48 × 5 &micro;L), plus dead volume. Confirm the current volume in the metformin tube is adequate."
+    prompt: "Verify that you have prepared sufficient metformin working stock. You need at least 300 &micro;L total - 240 &micro;L for dosing 48 wells (48 x 5 &micro;L), plus dead volume. Confirm the current volume in the metformin tube is adequate."
     sequence:
       - target: metformin_working_tube
         gesture: click

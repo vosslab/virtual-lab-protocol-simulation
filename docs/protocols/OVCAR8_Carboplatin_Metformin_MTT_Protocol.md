@@ -117,7 +117,7 @@ All working stocks are made directly from the single 400 &micro;M parent stock v
 | E | 1 &micro;M    | 40 &micro;M           | 100 | 900 |
 | F | 2 &micro;M    | 80 &micro;M           | 200 | 800 |
 | G | 5 &micro;M    | 200 &micro;M          | 500 | 500 |
-| H | 10 &micro;M   | 400 &micro;M          | (use as-is) | — |
+| H | 10 &micro;M   | 400 &micro;M          | (use as-is) | - |
 
 The 1-2-5 pattern gives three dose points per order of magnitude with familiar, graph-friendly labels. The dilution
 factors alternate (2&times;, 2.5&times;) so each working stock requires its own C1V1 = C2V2 calculation. See
@@ -134,7 +134,7 @@ Prepare fresh on day of treatment. 200 mM working stock, 5 &micro;L per well int
 | 5 mM | 200 mM | 1 M stock | 60 | 240 | 300 &micro;L |
 
 Note: prepare at least 300 &micro;L of Metformin working stock per experiment
-(48 wells × 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume).
+(48 wells x 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume).
 
 ## Part 5 - 96-well plate map
 

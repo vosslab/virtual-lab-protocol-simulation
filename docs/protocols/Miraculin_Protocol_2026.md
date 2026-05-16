@@ -2,116 +2,116 @@
 
 ### BCHM 356/456 - Spring 2026
 
-Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4PJaQj6\_\_g4cedUBIMdIOTaB09DU8lsD1s/edit](https://docs.google.com/document/d/1gvpdl-2Sd4PJaQj6__g4cedUBIMdIOTaB09DU8lsD1s/edit) 
+Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4PJaQj6\_\_g4cedUBIMdIOTaB09DU8lsD1s/edit](https://docs.google.com/document/d/1gvpdl-2Sd4PJaQj6__g4cedUBIMdIOTaB09DU8lsD1s/edit)
 
 ## **Previous Versions of the Protocol**
 
-* Sarah/Irena 2019: [https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit](https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit)   
-* Greg 2021: [https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit](https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit)   
-* Extraction 2023: [https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O\_ZcBd3k9PFYmWh9ACCeCM9kHf\_U/edit](https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O_ZcBd3k9PFYmWh9ACCeCM9kHf_U/edit)   
-* Tania 2023: [https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit](https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit)   
-* Manan 2025: [https://docs.google.com/document/d/1mMz19yBT\_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit](https://docs.google.com/document/d/1mMz19yBT_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit) 
+* Sarah/Irena 2019: [https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit](https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit)
+* Greg 2021: [https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit](https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit)
+* Extraction 2023: [https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O\_ZcBd3k9PFYmWh9ACCeCM9kHf\_U/edit](https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O_ZcBd3k9PFYmWh9ACCeCM9kHf_U/edit)
+* Tania 2023: [https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit](https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit)
+* Manan 2025: [https://docs.google.com/document/d/1mMz19yBT\_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit](https://docs.google.com/document/d/1mMz19yBT_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit)
 
 ## **Required materials provided by the students**
 
 
-* Safety 	Glasses  
-* Lab Coat - no paper lab coats  
-* Safety gloves  
-* Lab Notebook and a Sharpie marker  
-* Long pants and closed shoes  
-* Written out procedures in a lab notebook  
-* Device timer  
+* Safety 	Glasses
+* Lab Coat - no paper lab coats
+* Safety gloves
+* Lab Notebook and a Sharpie marker
+* Long pants and closed shoes
+* Written out procedures in a lab notebook
+* Device timer
 * Copy of this lab manual (at least one per group)
 
 ## **Provided Materials**
 
 
-* Freeze-dried miracle berries (Synsepalum dulcificum).  
-* Coffee grinder or blender.  
-* Pestle and mortar.  
-* Deionized water.  
-* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).  
-* 1 M NaOH and 1 M HCl  
-* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.  
-* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.  
-* Ammonium sulfate (solid) for protein precipitation (salting out).  
-* Parafilm to seal test tubes during mechanical shaking.  
-* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.  
-* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.  
-* SDS-PAGE:  
-* \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.  
-* \-1X Tris/Glycine/SDS (TGS) running buffer.  
-* \-2X Laemmli sample buffer and beta-mercaptoethanol (BME) or DTT.  
-* \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).  
-* \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).  
-* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).  
-* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.  
-* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.  
-* Micropipettes (P10, P20, P100, P1000) and tips.  
+* Freeze-dried miracle berries (Synsepalum dulcificum).
+* Coffee grinder or blender.
+* Pestle and mortar.
+* Deionized water.
+* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).
+* 1 M NaOH and 1 M HCl
+* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.
+* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.
+* Ammonium sulfate (solid) for protein precipitation (salting out).
+* Parafilm to seal test tubes during mechanical shaking.
+* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.
+* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.
+* SDS-PAGE:
+* \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
+* \-1X Tris/Glycine/SDS (TGS) running buffer.
+* \-2X Laemmli sample buffer and beta-mercaptoethanol (BME) or DTT.
+* \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
+* \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
+* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).
+* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.
+* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.
+* Micropipettes (P10, P20, P100, P1000) and tips.
 * Homogenizer for uniform mixing of powder and buffers.
 
 Specific Steps: IMAC Column Setup and Nickel Charging
 
-* Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.  
-* Chromatography Column: 6 mL capacity, 15 cm in length  
-* Ring stand and two clamps to secure the column vertically  
-* One stopcock valve and a waste container.  
-* Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.  
-* Glassware: 250 mL beaker for mixing the nickel solution and a pipette for rinsing the beaker walls.  
-* Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding  
-* Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).  
-* Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.  
-* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.  
+* Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.
+* Chromatography Column: 6 mL capacity, 15 cm in length
+* Ring stand and two clamps to secure the column vertically
+* One stopcock valve and a waste container.
+* Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.
+* Glassware: 250 mL beaker for mixing the nickel solution and a pipette for rinsing the beaker walls.
+* Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding
+* Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).
+* Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.
+* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.
 * Size-Exclusion/Desalting: Sephadex G-75 (for dimer/monomer separation) and Sephadex G-25 (for removing salts or imidazole).
 
 **Additional Equipment**
 
-* Bio-Rad Laboratories electrophoresis apparatus  
-* DC power supply  
-* Heating block set to 95°C  
-* Gel opening tool  
-* Microwave  
-* Staining tray  
+* Bio-Rad Laboratories electrophoresis apparatus
+* DC power supply
+* Heating block set to 95°C
+* Gel opening tool
+* Microwave
+* Staining tray
 * Shaker
 
 **Additional Materials**
 
-* SDS buffer  
-* 10X running buffer  
-* Kimwipe  
-    
-  Pictures of equipment used:  
-  ![][image1]  
-  ![][image2]  
-  ![][image3]  
-  ![][image4]  
+* SDS buffer
+* 10X running buffer
+* Kimwipe
+
+  Pictures of equipment used:
+  ![][image1]
+  ![][image2]
+  ![][image3]
+  ![][image4]
   ![][image5]
 
 ## **Laboratory Learning Objectives**
 
-Students completing this lab protocol will have achieved:  
+Students completing this lab protocol will have achieved:
 **1\.** Students completing this lab protocol will:
 
-* Understand the principles of protein extraction and purification from biological materials using physical and chemical separation techniques.  
-* Explore the use of homogenization, centrifugation, and phase separation methods to isolate target proteins from freeze-dried miracle berry samples.  
-* Examine the theory and application of chromatographic techniques, including ion-exchange chromatography, size-exclusion chromatography, and immobilized metal affinity chromatography (IMAC), for protein purification.  
-* Understand how reverse micelle extraction can be used to selectively partition proteins based on pH and ionic interactions.  
-* Learn how spectrophotometric analysis and the Bradford assay are used to determine protein concentration.  
-* Understand the purpose of SDS-PAGE in assessing protein purity and estimating molecular weight.  
-* Investigate how factors such as pH, ionic strength, molecular size, and protein charge influence protein behavior during purification and analysis.  
+* Understand the principles of protein extraction and purification from biological materials using physical and chemical separation techniques.
+* Explore the use of homogenization, centrifugation, and phase separation methods to isolate target proteins from freeze-dried miracle berry samples.
+* Examine the theory and application of chromatographic techniques, including ion-exchange chromatography, size-exclusion chromatography, and immobilized metal affinity chromatography (IMAC), for protein purification.
+* Understand how reverse micelle extraction can be used to selectively partition proteins based on pH and ionic interactions.
+* Learn how spectrophotometric analysis and the Bradford assay are used to determine protein concentration.
+* Understand the purpose of SDS-PAGE in assessing protein purity and estimating molecular weight.
+* Investigate how factors such as pH, ionic strength, molecular size, and protein charge influence protein behavior during purification and analysis.
 * Be familiar with biochemical laboratory equipment, experimental workflows, and safe laboratory practices used in protein analysis.
 
 ## **Laboratory Learning Outcomes**
 
 Students completing this lab protocol will be able to:
 
-* Perform protein extraction from freeze-dried miracle berries using homogenization and centrifugation techniques.  
-* Apply protein purification methods including salting out, desalting, reverse micelle extraction, size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography.  
-* Prepare and operate chromatography columns for protein separation and purification.   
-* Measure protein concentration using the Bradford assay and spectrophotometry at 595 nm.   
-* Analyze protein purity and approximate molecular weight using SDS-PAGE.   
-* Explain how pH, salt concentration, charge, and molecular size will influence protein purification and separation techniques.  
+* Perform protein extraction from freeze-dried miracle berries using homogenization and centrifugation techniques.
+* Apply protein purification methods including salting out, desalting, reverse micelle extraction, size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography.
+* Prepare and operate chromatography columns for protein separation and purification.
+* Measure protein concentration using the Bradford assay and spectrophotometry at 595 nm.
+* Analyze protein purity and approximate molecular weight using SDS-PAGE.
+* Explain how pH, salt concentration, charge, and molecular size will influence protein purification and separation techniques.
 * Properly handle laboratory equipments, biological samples, and chemical reagents while following laboratory safety procedures.
 
 ## **Potential Hazards and Waste Disposal**
@@ -166,15 +166,15 @@ Freeze-dried Synsepalum dulcificum powder is a plant-derived material with low b
 ## **Pre-Laboratory Questions**
 
 
-1. What is miraculin, and what plant is it extracted from?  
-2. Why are freeze-dried miracle berries ground before extraction?  
-3. Why is deionized water used during the first extraction step?  
-4. After the first centrifugation, why is the pink supernatant discarded and the pellet kept?  
-5. Why is 0.5 M NaCl used to extract protein from the berry pellet?  
-6. What is salting out, and why is ammonium sulfate used?  
-7. Why may the sample need to be diluted and centrifuged multiple times after ammonium sulfate precipitation?  
-8. What is size exclusion chromatography, and why is Sephadex G-75 used?  
-9. Why is the Bradford assay used before SDS-PAGE?  
+1. What is miraculin, and what plant is it extracted from?
+2. Why are freeze-dried miracle berries ground before extraction?
+3. Why is deionized water used during the first extraction step?
+4. After the first centrifugation, why is the pink supernatant discarded and the pellet kept?
+5. Why is 0.5 M NaCl used to extract protein from the berry pellet?
+6. What is salting out, and why is ammonium sulfate used?
+7. Why may the sample need to be diluted and centrifuged multiple times after ammonium sulfate precipitation?
+8. What is size exclusion chromatography, and why is Sephadex G-75 used?
+9. Why is the Bradford assay used before SDS-PAGE?
 10. What molecular weight band is expected for miraculin on SDS-PAGE?
 
 ## **Introduction**
@@ -191,18 +191,18 @@ People in West Africa have used this fruit for many years. They ate the berries 
 
 ### Characteristics
 
-* It is a small evergreen shrub.  
-* The plant grows around 5-10 feet tall.  
-* The leaves are dark green and smooth.  
-* It produces small red berries called miracle fruits.  
+* It is a small evergreen shrub.
+* The plant grows around 5-10 feet tall.
+* The leaves are dark green and smooth.
+* It produces small red berries called miracle fruits.
 * The berries can make sour foods taste sweet for a short time.
 
 ### Cultivation
 
-* The plant grows best in warm and humid conditions.  
-* It needs acidic and well-drained soil.  
-* Regular watering and indirect sunlight are important.  
-* It can be grown from seeds or cuttings.  
+* The plant grows best in warm and humid conditions.
+* It needs acidic and well-drained soil.
+* Regular watering and indirect sunlight are important.
+* It can be grown from seeds or cuttings.
 * The plant usually starts producing fruits after 2-3 years.
 
 ### Can It Grow in Chicago?
@@ -228,9 +228,9 @@ How are we going to use biochemical techniques to purify this protein?
 
 Theory of Protein Purification:
 
-Protein purification used differences in protein properties such as solubility, charge, size, and binding, affinity to isolate a target protein from a complex mixture. In this experiment, Miraculin is extracted from freeze-dried miracle berries using homogenization, centrifugation, and NaCl extraction. 
+Protein purification used differences in protein properties such as solubility, charge, size, and binding, affinity to isolate a target protein from a complex mixture. In this experiment, Miraculin is extracted from freeze-dried miracle berries using homogenization, centrifugation, and NaCl extraction.
 
-Ammonium sulfate precipitation (salting out) is used to concentrate the protein, followed by desalting to remove  any excess salt. Additional purification techniques include size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography separate proteins based on molecular size, charge, and affinity interactions. 
+Ammonium sulfate precipitation (salting out) is used to concentrate the protein, followed by desalting to remove  any excess salt. Additional purification techniques include size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography separate proteins based on molecular size, charge, and affinity interactions.
 
 Protein concentration is measured using the Bradford assay, and different purified fractions are analyzed using SDS-PAGE to evaluate protein purity and estimate molecular weight Miraculin is expected to appear near 24-28 kDa under the reducing conditions.
 
@@ -267,13 +267,13 @@ SDS-PAGE is the final analysis step used to check the size and purity of the mir
 
 ## **Pre-Laboratory Procedure**
 
-~~Things to do one week or one day before the lab.~~ 
+~~Things to do one week or one day before the lab.~~
 
-One week prior to beginning the experiment, be sure to locate the materials you'll be using as a whole, such as buffers, solutions, and equipment. If anything is missing or insufficient, it will waste time during the experiment, and we want to be efficient. 
+One week prior to beginning the experiment, be sure to locate the materials you'll be using as a whole, such as buffers, solutions, and equipment. If anything is missing or insufficient, it will waste time during the experiment, and we want to be efficient.
 
-Before arriving, students should have thoroughly read the procedure. Please note key moments when the pH might change, and which layers will contain your substance during centrifugation. 
+Before arriving, students should have thoroughly read the procedure. Please note key moments when the pH might change, and which layers will contain your substance during centrifugation.
 
-Ask questions if anything is unclear. 
+Ask questions if anything is unclear.
 
 ## **Experimental Procedure**
 
@@ -298,114 +298,114 @@ Brief outline of steps in the procedure
 
 **Preparing Miraculin Berry Extract**
 
-1. Obtain freeze dried miraculin berries  
-2. Remove skin and seed  
-3. Use coffee grinder to grind prepared miraculin berries into a powder  
-4. Dissolve miraculin powder in DI water and homogenize 1 g of berry powder to 10 mL of DI water  
-5. Centrifuge homogenized berries at 12,000 rpm for 30 min  
-6. After centrifuging, pink supernatant is discarded ( should contain no sweet inducing activity)  
+1. Obtain freeze dried miraculin berries
+2. Remove skin and seed
+3. Use coffee grinder to grind prepared miraculin berries into a powder
+4. Dissolve miraculin powder in DI water and homogenize 1 g of berry powder to 10 mL of DI water
+5. Centrifuge homogenized berries at 12,000 rpm for 30 min
+6. After centrifuging, pink supernatant is discarded ( should contain no sweet inducing activity)
 7. Sediment was homogenized with 0.5 M NaCl solution at pH 6.8 (1g of powder to 6mL of the NaCl solution.
 
 ### Part 1: Breaking the Cells
 
 Motor pestle, coffee grinder
 
-* Obtain freeze-dried miracle berries.  
-* Remove the seeds and skin if possible.  
-* Grind the berry pulp into a fine powder using a coffee grinder.  
-* If needed, use a mortar and pestle to crush any large pieces.  
-* Mix the berry powder with deionized water.  
-* Homogenize the mixture until the powder is evenly suspended.  
-* Centrifuge the sample to separate the liquid from the solid material.  
-* Discard the pink supernatant.  
+* Obtain freeze-dried miracle berries.
+* Remove the seeds and skin if possible.
+* Grind the berry pulp into a fine powder using a coffee grinder.
+* If needed, use a mortar and pestle to crush any large pieces.
+* Mix the berry powder with deionized water.
+* Homogenize the mixture until the powder is evenly suspended.
+* Centrifuge the sample to separate the liquid from the solid material.
+* Discard the pink supernatant.
 * Keep the sediment/pellet for the next extraction step.
 
 ### Part 2: First Centrifugation
 
 
-1. Dissolve the miraculin powder in deionized (DI) water and prepare a homogenized solution by mixing 1 g of berry powder with 10 mL of DI water.  
-2. Centrifuge the homogenized berry solution at 12,000 rpm for 30 minutes.  
- 
+1. Dissolve the miraculin powder in deionized (DI) water and prepare a homogenized solution by mixing 1 g of berry powder with 10 mL of DI water.
+2. Centrifuge the homogenized berry solution at 12,000 rpm for 30 minutes.
+
 
 
 ### Part 3: Salting Out
 
 
-1. Transfer the NaCl protein extract into a clean centrifuge tube.  
-2. Slowly add solid ammonium sulfate to the protein extract until the sample reaches 50% saturation.  
-3. Mix the sample gently while adding the ammonium sulfate so the salt dissolves evenly.  
-4. Keep the sample cold at 4°C and stir for 30 minutes. This will allow the protein to precipitate out of the solution.  
-5. Centrifuge the sample at 13,000 rpm for 40 minutes.  
-6. After centrifugation, carefully remove the supernatant without disturbing the pellet.  
-7. Keep the protein pellet, because it may contain the miraculin protein.  
+1. Transfer the NaCl protein extract into a clean centrifuge tube.
+2. Slowly add solid ammonium sulfate to the protein extract until the sample reaches 50% saturation.
+3. Mix the sample gently while adding the ammonium sulfate so the salt dissolves evenly.
+4. Keep the sample cold at 4°C and stir for 30 minutes. This will allow the protein to precipitate out of the solution.
+5. Centrifuge the sample at 13,000 rpm for 40 minutes.
+6. After centrifugation, carefully remove the supernatant without disturbing the pellet.
+7. Keep the protein pellet, because it may contain the miraculin protein.
 8. Resuspend the pellet in 0.01 M phosphate buffer at pH 6.8.
 
-> TODO: instructor decision -- Part 3 uses 0.01 M phosphate buffer at pH 6.8 for resuspension, but Part 4 Backward Stripping produces a pH 11.0 solution, and Part 5 uses pH 7.0 buffer. Clarify which pH buffer should be used after salting out to maintain workflow continuity. Consult the reference protocol version to resolve.  
-9. Label the resuspended sample and keep it cold for the next step.  
-10. Since some ammonium sulfate may still remain in the sample, dilute the resuspended sample back to the original volume using buffer or deionized water.  
-11. Centrifuge the sample again to continue reducing the remaining salt concentration.  
-12. Record the remaining sample volume after centrifugation.  
-13. Use the dilution equation C1V1 \= C2V2 to estimate the new salt concentration.  
-14. In this equation, C1 is the salt concentration before dilution, V1 is the remaining volume after centrifugation, C2 is the salt concentration after dilution, and V2 is the final volume after dilution.  
-15. Repeat the dilution and centrifugation process three times to lower the salt concentration step by step.  
-16. After the final round, keep the protein-containing sample cold and use it for the next purification step or SDS-PAGE analysis.  
-    
+> TODO: instructor decision -- Part 3 uses 0.01 M phosphate buffer at pH 6.8 for resuspension, but Part 4 Backward Stripping produces a pH 11.0 solution, and Part 5 uses pH 7.0 buffer. Clarify which pH buffer should be used after salting out to maintain workflow continuity. Consult the reference protocol version to resolve.
+9. Label the resuspended sample and keep it cold for the next step.
+10. Since some ammonium sulfate may still remain in the sample, dilute the resuspended sample back to the original volume using buffer or deionized water.
+11. Centrifuge the sample again to continue reducing the remaining salt concentration.
+12. Record the remaining sample volume after centrifugation.
+13. Use the dilution equation C1V1 \= C2V2 to estimate the new salt concentration.
+14. In this equation, C1 is the salt concentration before dilution, V1 is the remaining volume after centrifugation, C2 is the salt concentration after dilution, and V2 is the final volume after dilution.
+15. Repeat the dilution and centrifugation process three times to lower the salt concentration step by step.
+16. After the final round, keep the protein-containing sample cold and use it for the next purification step or SDS-PAGE analysis.
+
 
 ### Part 4: Reverse Micelle Extraction
 
 
 #### Forward Extraction Protocol:
 
-* Discard of supernatant (this can go in regular trash or the sink because it is just berries and water)  
-* Resuspend pellet using 0.5M NaCl solution that has a pH of 6.8  
-  * For every 1g of powder add 6mL of NaCl  
+* Discard of supernatant (this can go in regular trash or the sink because it is just berries and water)
+* Resuspend pellet using 0.5M NaCl solution that has a pH of 6.8
+  * For every 1g of powder add 6mL of NaCl
 * Depending on time, tube can be closed, labelled, and refrigerated here until use next session
 
-* If sample was refrigerated: vortex for 3-5 seconds to mix proteins that have settled  
-* In a cuvette add 20&micro;L of sample to 2mL of Bradford dye   
-  * Be sure to have a blank containing purely 2mL of Bradford Dye  
-* Measure and record absorbance at 595nm and place 100&micro;L of sample into a separate, labeled microcentrifuge tube  
-  * Label should define when in the procedure the sample was collected  
-* Filter the mixture to remove any large particles they may not have blended fully using 1 of 2 methods  
-  * 1- Glass Wool  
-    * Set up a beaker with a funnel containing glass wool (a little goes a long way here)  
-    * Pour NaCl-protein mixture into the funnel and add 0.5M NaCl as needed to collect flowthrough  
-    * \*This method risks having liquid absorbed into the wool resulting in a loss of proteins\*  
-  * 2- Buchner Funnel   
-    * Set up a ceramic buchner funnel along with a rubber adaptor and place into a 125mL filtering flask  
-    * Cut a 90mm Whatman 2 Qualitative circle filter paper to size and place it inside the funnel  
-    * Create a vacuum using a vacuum tube connected to the flask and sink  
-    * Pour in your liquid sample and allow the setup to run until there appears to be no liquid remaining in the funnel and large particles are left behind  
-* After filtration is complete record the absorbance of the filtered liquid as done before and collect 100&micro;L into a new separate, labeled microcentrifuge tube  
-* Transfer the liquid to an appropriately sized beaker according to the available volume of your sample   
-* Adjust pH level of crude mixture to **8** using 2.5M NaOH and 0.1M HCl (miraculin becomes positively charged at pH 8\)  
-* Create 0.1M AOT solution in isooctane  
-  * molecular weight of AOT ~ 444.56 g/mol so:   
-    * Measure out 4.45g of AOT   
-    * Add to a 100mL volumetric flask  
-    * Pour in roughly 70mL of isooctane (eyeball it) and gently swirl until AOT dissolves  
-    * Add in isooctane to achieve final volume of 100mL  
-    * Cap and invert several times to ensure thorough mixing  
-  * If creating a 50mL solution, reduce amounts by half   
-* Mix equal volumes of your protein mixture with 0.1M AOT solution gently in a centrifuge tube then shake mechanically for 10 min  
-  * Remainder of protein solution can be stored in 50mL centrifuge tube for refrigeration  
-* Centrifuge mixture in a balanced centrifuge at 4,000 x g for 5 min  
-  * (AOT is (-) so AOT and miraculin bind) proteins are now in top organic phase with AOT  
-* Extract the top phase and place into a separate tube  
+* If sample was refrigerated: vortex for 3-5 seconds to mix proteins that have settled
+* In a cuvette add 20&micro;L of sample to 2mL of Bradford dye
+  * Be sure to have a blank containing purely 2mL of Bradford Dye
+* Measure and record absorbance at 595nm and place 100&micro;L of sample into a separate, labeled microcentrifuge tube
+  * Label should define when in the procedure the sample was collected
+* Filter the mixture to remove any large particles they may not have blended fully using 1 of 2 methods
+  * 1- Glass Wool
+    * Set up a beaker with a funnel containing glass wool (a little goes a long way here)
+    * Pour NaCl-protein mixture into the funnel and add 0.5M NaCl as needed to collect flowthrough
+    * \*This method risks having liquid absorbed into the wool resulting in a loss of proteins\*
+  * 2- Buchner Funnel
+    * Set up a ceramic buchner funnel along with a rubber adaptor and place into a 125mL filtering flask
+    * Cut a 90mm Whatman 2 Qualitative circle filter paper to size and place it inside the funnel
+    * Create a vacuum using a vacuum tube connected to the flask and sink
+    * Pour in your liquid sample and allow the setup to run until there appears to be no liquid remaining in the funnel and large particles are left behind
+* After filtration is complete record the absorbance of the filtered liquid as done before and collect 100&micro;L into a new separate, labeled microcentrifuge tube
+* Transfer the liquid to an appropriately sized beaker according to the available volume of your sample
+* Adjust pH level of crude mixture to **8** using 2.5M NaOH and 0.1M HCl (miraculin becomes positively charged at pH 8\)
+* Create 0.1M AOT solution in isooctane
+  * molecular weight of AOT ~ 444.56 g/mol so:
+    * Measure out 4.45g of AOT
+    * Add to a 100mL volumetric flask
+    * Pour in roughly 70mL of isooctane (eyeball it) and gently swirl until AOT dissolves
+    * Add in isooctane to achieve final volume of 100mL
+    * Cap and invert several times to ensure thorough mixing
+  * If creating a 50mL solution, reduce amounts by half
+* Mix equal volumes of your protein mixture with 0.1M AOT solution gently in a centrifuge tube then shake mechanically for 10 min
+  * Remainder of protein solution can be stored in 50mL centrifuge tube for refrigeration
+* Centrifuge mixture in a balanced centrifuge at 4,000 x g for 5 min
+  * (AOT is (-) so AOT and miraculin bind) proteins are now in top organic phase with AOT
+* Extract the top phase and place into a separate tube
   * Save 100&micro;L of bottom phase into a new separate labelled microcentrifuge tube
 
 #### Backward Stripping Protocol:
 
 Refer to the Reagent reference table for the exact pH and concentration of the phosphate buffer and NaCl to use in this step.
 
-* Create or obtain aqueous solutions of 1.) 0.02M phosphate buffer with a pH of 11 and 2.) 0.5M concentration of NaCl (these will unbind AOT from proteins)  
-* Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.  
-  * Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl  
-* Centrifuge in a balanced centrifuge at 4,000 x g for 5 min  
-* Proteins will now be in the bottom layer so extract and discard of top layer (at this point the proteins are in a pH 11 solution with a high salt concentration)  
-  * Save 100&micro;L of top phase into a new separate labelled microcentrifuge tube  
-* Record the absorbance level of the bottom phase liquid before labelling the centrifuge tube for storage to use next session.  
-    
+* Create or obtain aqueous solutions of 1.) 0.02M phosphate buffer with a pH of 11 and 2.) 0.5M concentration of NaCl (these will unbind AOT from proteins)
+* Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.
+  * Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl
+* Centrifuge in a balanced centrifuge at 4,000 x g for 5 min
+* Proteins will now be in the bottom layer so extract and discard of top layer (at this point the proteins are in a pH 11 solution with a high salt concentration)
+  * Save 100&micro;L of top phase into a new separate labelled microcentrifuge tube
+* Record the absorbance level of the bottom phase liquid before labelling the centrifuge tube for storage to use next session.
+
 * Concentrate the proteins using a 10,000 MWCO tube and centrifuge at 4000 x g for 30 min adding ddH2O as needed to balance the samples
 
 ### Part 5: Size Exclusion Chromatography
@@ -414,20 +414,20 @@ Refer to the Reagent reference table for the exact pH and concentration of the p
 
 Refer to the Reagent reference table for the exact buffer specifications.
 
-* Prepare the size exclusion chromatography column using Sephadex G-75 resin.  
-* Add phosphate buffer at pH 7.00 to the column and allow the resin to settle evenly.  
-* Make sure the resin bed stays wet during the entire procedure. Do not let the column dry.  
-* Equilibrate the column by running a phosphate buffer at pH 7.00 through the Sephadex G-75 resin before loading the sample.  
-* Place clean, labeled collection tubes under the column to collect the fractions.  
-* Take the resuspended miraculin-containing protein sample from the salting out step.  
-* Carefully load the protein sample onto the top of the resin bed without disturbing the column.  
-* Allow the sample to fully enter the resin before adding more buffers.  
-* Slowly add phosphate buffer at pH 7.00 to the column to move the protein sample through the resin.  
-* Begin collecting fractions as the liquid starts coming out of the column.  
-* Collect each fraction in a separate labeled tube.  
-* Keep the collected fractions cold until they are tested.  
-* Test the fractions using Bradford assay or SDS-PAGE to identify which fractions contain the most protein.  
-* Compare the SDS-PAGE bands with the protein ladder to check whether the expected miraculin band is present.  
+* Prepare the size exclusion chromatography column using Sephadex G-75 resin.
+* Add phosphate buffer at pH 7.00 to the column and allow the resin to settle evenly.
+* Make sure the resin bed stays wet during the entire procedure. Do not let the column dry.
+* Equilibrate the column by running a phosphate buffer at pH 7.00 through the Sephadex G-75 resin before loading the sample.
+* Place clean, labeled collection tubes under the column to collect the fractions.
+* Take the resuspended miraculin-containing protein sample from the salting out step.
+* Carefully load the protein sample onto the top of the resin bed without disturbing the column.
+* Allow the sample to fully enter the resin before adding more buffers.
+* Slowly add phosphate buffer at pH 7.00 to the column to move the protein sample through the resin.
+* Begin collecting fractions as the liquid starts coming out of the column.
+* Collect each fraction in a separate labeled tube.
+* Keep the collected fractions cold until they are tested.
+* Test the fractions using Bradford assay or SDS-PAGE to identify which fractions contain the most protein.
+* Compare the SDS-PAGE bands with the protein ladder to check whether the expected miraculin band is present.
 * Save the fractions that show the strongest protein signal or bands near the expected miraculin size.
 
 
@@ -437,26 +437,26 @@ Refer to the Reagent reference table.
 
 > TODO: instructor decision -- Part 6 uses pH 6.0 or pH 5.5 phosphate buffer (100 mM) for CM-Cellulose, but samples from Part 5 SEC are at pH 7.0 and Part 7 IMAC expects pH 7.0-7.2. Confirm the intended pH for the ion-exchange stage and whether pH adjustment is needed before or after this step.
 
-* While the MWCO tube centrifuging, set up a chromatography column containing CM-Cellulose (this is preferred over CM-Sephadex C-50 because C-50 is recommended for much larger proteins):  
-  * Rinse column using ddH2O to ensure flowthrough occurs  
-  * Prepare beads by mixing 10g of CM-Cellulose with 200mL of pH6.0 or 5.5 100mM Phosphate Buffer  
-  * Close the stopcock and use a serological pipette to add beads to the column until the column is 80% full of seemingly cloudy beads  
-    * Beads WILL condense and that is okay, DO NOT add more  
-* After concentration via centrifugation is complete, measure the absorbance once more and save 100&micro;L into a new separate labelled microcentrifuge tube  
-* Run the concentrated proteins through the column using the pH6.0 or pH5.5 Phosphate Buffer used to prepare the beads  
-  * When liquid level starts to reach the beads, add more buffer, DO NOT let the column dry out  
-  * CM-Cellulose is (-) at pH levels above 5.0, so the (+)miraculin will bind to the beads and flowthrough can be collected in a beaker for discarding  
-* After 5 minutes, allow buffer volume to lower until near bead level and close the stopcock valve  
-  * During this, set up 20-30 2mL microcentrifuge tubes with caps in a tube rack to collect proteins that will be pushed out by salt ions  
-    * Label the tubes according to a pattern for collection 1 \-\> 2 \-\> 3 \-\> etc.  
-* Remove proteins from the column by adding buffers with increasing salt concentrations starting with the lowest concentration solution  
+* While the MWCO tube centrifuging, set up a chromatography column containing CM-Cellulose (this is preferred over CM-Sephadex C-50 because C-50 is recommended for much larger proteins):
+  * Rinse column using ddH2O to ensure flowthrough occurs
+  * Prepare beads by mixing 10g of CM-Cellulose with 200mL of pH6.0 or 5.5 100mM Phosphate Buffer
+  * Close the stopcock and use a serological pipette to add beads to the column until the column is 80% full of seemingly cloudy beads
+    * Beads WILL condense and that is okay, DO NOT add more
+* After concentration via centrifugation is complete, measure the absorbance once more and save 100&micro;L into a new separate labelled microcentrifuge tube
+* Run the concentrated proteins through the column using the pH6.0 or pH5.5 Phosphate Buffer used to prepare the beads
+  * When liquid level starts to reach the beads, add more buffer, DO NOT let the column dry out
+  * CM-Cellulose is (-) at pH levels above 5.0, so the (+)miraculin will bind to the beads and flowthrough can be collected in a beaker for discarding
+* After 5 minutes, allow buffer volume to lower until near bead level and close the stopcock valve
+  * During this, set up 20-30 2mL microcentrifuge tubes with caps in a tube rack to collect proteins that will be pushed out by salt ions
+    * Label the tubes according to a pattern for collection 1 \-\> 2 \-\> 3 \-\> etc.
+* Remove proteins from the column by adding buffers with increasing salt concentrations starting with the lowest concentration solution
   * As proteins drip, be careful to pay attention and move on to the next chronological tube before the previous is full (being full could cause flowing over into nearby tubes)
 
-  * First, add 10mL of a low salt concentration that is 10-50mM to the column   
-    * Allow liquid volume to lower until near bead level before adding next concentration  
-  * Secondly, add 10mL of a medium salt concentration that is 100-500mM to the column   
-    * Allow liquid volume to lower until near bead level before adding next concentration  
-  * Lastly, add 10mL of a high salt concentration that is around 1M to the column   
+  * First, add 10mL of a low salt concentration that is 10-50mM to the column
+    * Allow liquid volume to lower until near bead level before adding next concentration
+  * Secondly, add 10mL of a medium salt concentration that is 100-500mM to the column
+    * Allow liquid volume to lower until near bead level before adding next concentration
+  * Lastly, add 10mL of a high salt concentration that is around 1M to the column
 * Depending on time at this point, close the caps and place tube rack into the refrigerator to obtain absorbance values and combine samples during the next session
 
 ### Part 7: Immobilized-metal affinity chromatography (IMAC)
@@ -465,50 +465,50 @@ Refer to the Reagent reference table.
 
 **Phase 1: Reagent and Material Preparation**
 
-* \*\*Binding Buffer:\*\* Prepare a 20 mM Tris-HCl solution containing 0.5 M NaCl, adjusted to pH 7.2.    
-* \*\*Elution Buffer:\*\* Prepare a solution consisting of 300 mM imidazole, 20 mM disodium phosphate, and 300 mM NaCl, with a pH of 8.0.    
-* \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni2+ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.    
-  * Weigh 1.24 g of  Nickel (II) acetate tetrahydrate and measure 100 mL of Deionized water, and add them to a 150 mL beaker  
-  * In a standard laboratory setting, you would typically stir the solution until the salt is completely dissolved and the liquid is clear and uniform.  
+* \*\*Binding Buffer:\*\* Prepare a 20 mM Tris-HCl solution containing 0.5 M NaCl, adjusted to pH 7.2.
+* \*\*Elution Buffer:\*\* Prepare a solution consisting of 300 mM imidazole, 20 mM disodium phosphate, and 300 mM NaCl, with a pH of 8.0.
+* \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni2+ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.
+  * Weigh 1.24 g of  Nickel (II) acetate tetrahydrate and measure 100 mL of Deionized water, and add them to a 150 mL beaker
+  * In a standard laboratory setting, you would typically stir the solution until the salt is completely dissolved and the liquid is clear and uniform.
 * \*\*Chromatography Resin:\*\* Utilize Iminodiacetic Acid (IDA) Sepharose from your laboratory inventory.
 
 **Phase 2: Column Setup and Charging**
 
-* \*\*Mounting:\*\* Securely attach the chromatography column vertically and carefully add approximately 500 µL to 1 mL of IDA Sepharose resin to the column.  
-  * Gather a stand, 2 clamps, 1 column, 1 stop cock valve, and a waste container.  
-* \*\*Charging:\*\* Introduce the nickel(II) acetate tetrahydrate solution into the resin bed to effectively saturate the chelating sites with nickel ions.  
-* \*\*Rinsing:\*\* Rinse the column thoroughly with deionized water to eliminate any unbound nickel ions that may interfere with your sample.  
-  * Wash the column down with the 100 mM PO4 buffer at pH 7, and wash the sides as well  
-  * Mark 2 cm from the bottom for the resin to settle at  
+* \*\*Mounting:\*\* Securely attach the chromatography column vertically and carefully add approximately 500 µL to 1 mL of IDA Sepharose resin to the column.
+  * Gather a stand, 2 clamps, 1 column, 1 stop cock valve, and a waste container.
+* \*\*Charging:\*\* Introduce the nickel(II) acetate tetrahydrate solution into the resin bed to effectively saturate the chelating sites with nickel ions.
+* \*\*Rinsing:\*\* Rinse the column thoroughly with deionized water to eliminate any unbound nickel ions that may interfere with your sample.
+  * Wash the column down with the 100 mM PO4 buffer at pH 7, and wash the sides as well
+  * Mark 2 cm from the bottom for the resin to settle at
 * \*\*Equilibration:\*\* Pass 5 to 10 column volumes of the Tris-HCl binding buffer through the column to prepare the environment for optimal protein binding.
 
 
 **Phase 3: Critical Sample Preparation**
 
-* \*\*pH Adjustment:\*\* Miraculin will only interact with the nickel sites when the pH is neutral.    
-- Before loading your reverse micelle product, which starts at pH 11.0, adjust the pH to 7.0-7.2 using 1 M NaOH or HCl.    
+* \*\*pH Adjustment:\*\* Miraculin will only interact with the nickel sites when the pH is neutral.
+- Before loading your reverse micelle product, which starts at pH 11.0, adjust the pH to 7.0-7.2 using 1 M NaOH or HCl.
 * \*\*Urgency:\*\* It is crucial to apply the sample to the column immediately after this adjustment. If the neutralized extract is allowed to sit for too long, polyphenols will undergo dehydrogenation, resulting in a darkened sample that can bind irreversibly to the resin and compromise the column's usability for future applications.
 
 **Phase 4: Loading and Binding**
 
-* Application: Load the pH-adjusted sample onto the equilibrated column.    
-* Maximizing Yield: Collect the flow-through.    
+* Application: Load the pH-adjusted sample onto the equilibrated column.
+* Maximizing Yield: Collect the flow-through.
 - It is important not to let the resin dry; the buffer must be added continually.
 
 
 **Phase 5: Washing and Elution**
 
-* \*\*Washing:\*\* Rinse the column with several volumes of the binding buffer to eliminate weakly bound impurities and contaminating proteins.  
-* \*\*Elution:\*\* Apply the elution buffer containing 300 mM imidazole. Imidazole functions as a competitive ligand, displacing miraculin from the nickel sites.  
+* \*\*Washing:\*\* Rinse the column with several volumes of the binding buffer to eliminate weakly bound impurities and contaminating proteins.
+* \*\*Elution:\*\* Apply the elution buffer containing 300 mM imidazole. Imidazole functions as a competitive ligand, displacing miraculin from the nickel sites.
 * \*\*Collection:\*\* Collect the fractions that are eluted.
 
 ## **Timing Estimates**
 
 Total time of fixed timed steps
 
-* Phase 1: 30-40min  
-* Phase 2: 20min  
-* Phase 3: 10min  
+* Phase 1: 30-40min
+* Phase 2: 20min
+* Phase 3: 10min
 * Phase 4: 20min
 
 Estimated time of all steps: 90min
@@ -518,15 +518,15 @@ Estimated time of all steps: 90min
 
  Electrophoretic Profile (SDS-PAGE Analysis)
 
-* Monomer Band: A distinct band should appear between 24 and 28 kDa.  
-* Dimer Band: Under non-reducing conditions, the experimenter should look for a band at approximately 50 kDa, which represents the active homodimer.  
-* Glycosylation Signature: The bands may appear slightly broad rather than sharp lines. This is a normal result caused by the various N-linked oligosaccharides attached to the protein.  
+* Monomer Band: A distinct band should appear between 24 and 28 kDa.
+* Dimer Band: Under non-reducing conditions, the experimenter should look for a band at approximately 50 kDa, which represents the active homodimer.
+* Glycosylation Signature: The bands may appear slightly broad rather than sharp lines. This is a normal result caused by the various N-linked oligosaccharides attached to the protein.
 * Failed Results: If the lanes appear empty or the marks are faded, the protein was likely too dilute or lost during staining/destaining.
 
 ## **Expected Results**
 
 
-* Upon completing the optimized Nickel-IMAC purification process for miraculin, you can anticipate a high-efficiency yield. The final purified product should resemble a colorless solution. If the sample was not applied immediately after adjusting the pH to 7.0, or if the column was not thoroughly washed, you may observe darkening of the resin. This darkening results from polyphenol dehydrogenation, which can contaminate the results and impede column performance.   
+* Upon completing the optimized Nickel-IMAC purification process for miraculin, you can anticipate a high-efficiency yield. The final purified product should resemble a colorless solution. If the sample was not applied immediately after adjusting the pH to 7.0, or if the column was not thoroughly washed, you may observe darkening of the resin. This darkening results from polyphenol dehydrogenation, which can contaminate the results and impede column performance.
   * In the SDS-PAGE results under reducing conditions (using B-mercaptoethanol), you should expect to see a single sharp band at 24-28 kDa, indicating the presence of the miraculin monomer.
 
 ## **TA Material Preparation**
@@ -549,7 +549,7 @@ sepharose
 
 **He, Z., Tan, J. S., Lai, O. M., & Ariff, A. B. (2015).** Optimization of conditions for the single step IMAC purification of miraculin from *Synsepalum dulcificum*. **Food Chemistry**, *181*, 19-24.
 
-**He, Z., Tan, J. S., Abbasiliasi, S., Lai, O. M., Tam, Y. J., Halim, M., & Ariff, A. B. (2015).** Primary recovery of miraculin from miracle fruit, *Synsepalum dulcificum* by AOT reverse micellar system. **LWT \- Food**   
+**He, Z., Tan, J. S., Abbasiliasi, S., Lai, O. M., Tam, Y. J., Halim, M., & Ariff, A. B. (2015).** Primary recovery of miraculin from miracle fruit, *Synsepalum dulcificum* by AOT reverse micellar system. **LWT \- Food**
 **Science and Technology**, *64*(2), 1243-1250.
 
 **Kajiura, H., Hiwasa-Tanase, K., Ezura, H., & Fujiyama, K. (2018).** Comparison of the N-glycosylation on recombinant miraculin expressed in tomato plants with native miraculin. **Plant Biotechnology**, *35*(4), 337-342.
@@ -558,7 +558,7 @@ sepharose
 
 **Theerasilp, S., & Kurihara, Y. (1988).** Complete Purification and Characterization of the Taste-modifying Protein, Miraculin, from Miracle Fruit. **The Journal of Biological Chemistry**, *263*(23), 11536-11539.
 
-**Guarneros Martinez, Tania. (Summer 2023).** **Miraculin Research**. \[Student Research Project Report and Laboratory Documentation\].   
+**Guarneros Martinez, Tania. (Summer 2023).** **Miraculin Research**. \[Student Research Project Report and Laboratory Documentation\].
 
 
 [image1]: <data:image/png;base64,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>

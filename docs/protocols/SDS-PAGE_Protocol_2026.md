@@ -7,14 +7,14 @@ Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0
 ## **Required materials provided by the students**
 
 
-1. Safety 	Glasses  
-2. Lab Coat - no paper lab coats  
-3. Lab Notebook and sharpie marker  
-4. Long pants and closed shoes  
-5. Written out procedures in lab notebook  
-6. Sharpie marker  
-7. Copy of this lab manual (at least one per group)  
-8. A timer or a phone with a timer 
+1. Safety 	Glasses
+2. Lab Coat - no paper lab coats
+3. Lab Notebook and sharpie marker
+4. Long pants and closed shoes
+5. Written out procedures in lab notebook
+6. Sharpie marker
+7. Copy of this lab manual (at least one per group)
+8. A timer or a phone with a timer
 
 ## **Provided Materials**
 
@@ -22,34 +22,34 @@ Students check to make sure all of these items are available
 
 ### Equipment
 
-* BioRad electrophoresis apparatus  
-* DC Power supply  
-* Heating block set to 95°C  
-* Gel opening tool  
-* Microwave  
-* Staining tray  
+* BioRad electrophoresis apparatus
+* DC Power supply
+* Heating block set to 95°C
+* Gel opening tool
+* Microwave
+* Staining tray
 * Shaker
 
 ### Materials
 
-* SDS buffer  
-* Mini-PROTEAN precast gel  
-* 10X running buffer  
-* Deionized water  
-* Protein ladder  
-* 4x Laemmli Sample Buffer  (BioRad \#1610747)  
-* &Beta;-mercaptoethanol (liquid)  
-* Micropipettes and tips  
-* Coomassie stain solution  
-* Destain solution  
+* SDS buffer
+* Mini-PROTEAN precast gel
+* 10X running buffer
+* Deionized water
+* Protein ladder
+* 4x Laemmli Sample Buffer  (BioRad \#1610747)
+* &Beta;-mercaptoethanol (liquid)
+* Micropipettes and tips
+* Coomassie stain solution
+* Destain solution
 * Kimwipes
 
 ### **Required but missing**
 
-* **Centrifuge** (critical for Amicon 10 kDa MWCO concentration step)  
-* **Spectrophotometer**   
-* **Light box**  
-* **Fume hood access** 
+* **Centrifuge** (critical for Amicon 10 kDa MWCO concentration step)
+* **Spectrophotometer**
+* **Light box**
+* **Fume hood access**
 
 #### **Sample preparation / tubes**
 
@@ -57,7 +57,7 @@ Students check to make sure all of these items are available
 
 #### **Bradford assay (this is a big one)**
 
-* **Bradford reagent (Coomassie Brilliant Blue G-250 solution)**  
+* **Bradford reagent (Coomassie Brilliant Blue G-250 solution)**
 * **Cuvettes**
 
 #### **Protein concentration step (very important)**
@@ -68,37 +68,37 @@ Students check to make sure all of these items are available
 
 * **Miraculin protein sample / unknown protein extract** (you don't explicitly list the actual sample being analyzed)
 
-**Biohazard waste container**  
-**Chemical waste container (for Coomassie, destain, BME waste)**  
-**Organic non-halogenated waste container**  
+**Biohazard waste container**
+**Chemical waste container (for Coomassie, destain, BME waste)**
+**Organic non-halogenated waste container**
 **Nitrile gloves**
 
 ## **Laboratory Learning Objectives**
 
 Students completing this lab protocol will have achieved:
 
-The purpose of this lab is to learn how to prepare, run, stain, and analyze the results on an SDS-PAGE gel for protein separation. Protein samples are prepared using Laemmli sample buffer and beta-mercapthenol (BME) prior to electrophoresis. The experiment includes assembly of the of the Bio-RAD electrophoresis apparatus, preparation of running buffer, loading of protein samples and molecular weight ladder into gel wells, and with the use of power supply to achieve protein separation through the polyacrylamide gel matrix. Following electrophoresis, the gel is stained and detained to visualize protein bands and evaluate protein size, sample quality, and relative purity. Protein concentration may also be estimated using the Bradford assay before sample loading. 
+The purpose of this lab is to learn how to prepare, run, stain, and analyze the results on an SDS-PAGE gel for protein separation. Protein samples are prepared using Laemmli sample buffer and beta-mercapthenol (BME) prior to electrophoresis. The experiment includes assembly of the of the Bio-RAD electrophoresis apparatus, preparation of running buffer, loading of protein samples and molecular weight ladder into gel wells, and with the use of power supply to achieve protein separation through the polyacrylamide gel matrix. Following electrophoresis, the gel is stained and detained to visualize protein bands and evaluate protein size, sample quality, and relative purity. Protein concentration may also be estimated using the Bradford assay before sample loading.
 
 
 ## **Laboratory Learning Outcomes**
 
 Students completing this lab protocol will be able to:
 
-1. Explain the principles of what SDS-PAGE does and describe how proteins are separated based on molecular weight.  
-2. Properly prepare protein samples for electrophoresis by calculating loading volumes, combining samples with Laemmli buffer and BME, and heat-denaturing proteins before loading.  
-3. Assemble and operate the Bio-Rad Mini-PROTEAN electrophoresis apparatus, including preparation of running buffer, gel cassette setup, and connection of the power supply.  
-4. Demonstrate correct micropipetting and gel-loading techniques to accurately load protein samples and molecular weight ladders into gel wells without cross-contamination.  
-5. Perform SDS-PAGE electrophoresis under appropriate voltage and timing conditions to achieve effective protein separation.  
-6. Stain and destain polyacrylamide gels using Coomassie Stain to visualize separated protein bands.  
-7. Analyze SDS-PAGE results by comparing sample bands to a molecular weight ladder in order to estimate protein size and evaluate relative protein purity.  
-* A strong band at approximately 24-28 kDa indicating the miraculin monomer  
-* A possible band near 50 kDa indicating miraculin dimerization  
-* Sharp, distinct bands indicating successful protein separation  
-* Multiple bands indicating impurities or incomplete purification  
-* Smeared or streaked lanes indicating protein overloading, degraded samples, incomplete reduction, or poor loading technique  
-* Faint bands indicating insufficient protein concentration or underloading.  
-    
-8. If the experiment was unsuccessful, know common experimental errors such as smeared bands, streaking, smiling effects, or sample leakage, and explain how these issues may affect gel processes.  
+1. Explain the principles of what SDS-PAGE does and describe how proteins are separated based on molecular weight.
+2. Properly prepare protein samples for electrophoresis by calculating loading volumes, combining samples with Laemmli buffer and BME, and heat-denaturing proteins before loading.
+3. Assemble and operate the Bio-Rad Mini-PROTEAN electrophoresis apparatus, including preparation of running buffer, gel cassette setup, and connection of the power supply.
+4. Demonstrate correct micropipetting and gel-loading techniques to accurately load protein samples and molecular weight ladders into gel wells without cross-contamination.
+5. Perform SDS-PAGE electrophoresis under appropriate voltage and timing conditions to achieve effective protein separation.
+6. Stain and destain polyacrylamide gels using Coomassie Stain to visualize separated protein bands.
+7. Analyze SDS-PAGE results by comparing sample bands to a molecular weight ladder in order to estimate protein size and evaluate relative protein purity.
+* A strong band at approximately 24-28 kDa indicating the miraculin monomer
+* A possible band near 50 kDa indicating miraculin dimerization
+* Sharp, distinct bands indicating successful protein separation
+* Multiple bands indicating impurities or incomplete purification
+* Smeared or streaked lanes indicating protein overloading, degraded samples, incomplete reduction, or poor loading technique
+* Faint bands indicating insufficient protein concentration or underloading.
+
+8. If the experiment was unsuccessful, know common experimental errors such as smeared bands, streaking, smiling effects, or sample leakage, and explain how these issues may affect gel processes.
 9. Apply proper laboratory safety practices and hazardous waste disposal procedures when handling electrophoresis equipment, Coomassie stain, methanol, acetic acid, and &beta;-mercaptoethanol.
 
 ## **Potential Hazards and Waste Disposal**
@@ -111,56 +111,56 @@ BME is highly toxic, volatile, and emits a strong, unpleasant odor reminiscent o
 
 ~~Homework questions to complete before lab~~
 
-1. How does SDS-PAGE separate proteins?  
-   *   
-2. Why do proteins need to be denatured for electrophoresis?  
-   *   
-3. What are the ratios for combining the protein sample with Loading Dye and BME?  
-   *   
-4. What strategies should be used when assigning samples to wells to minimize interpretation errors?  
-   *   
-5. What experimental conditions can cause smiling, streaking, or smeared bands?  
-   *   
-6. What is the purpose of staining and destaining after electrophoresis?  
-   *   
-7. If two proteins produce bands at the same position on the gel, what conclusions can and cannot be made?  
-   * 
+1. How does SDS-PAGE separate proteins?
+   *
+2. Why do proteins need to be denatured for electrophoresis?
+   *
+3. What are the ratios for combining the protein sample with Loading Dye and BME?
+   *
+4. What strategies should be used when assigning samples to wells to minimize interpretation errors?
+   *
+5. What experimental conditions can cause smiling, streaking, or smeared bands?
+   *
+6. What is the purpose of staining and destaining after electrophoresis?
+   *
+7. If two proteins produce bands at the same position on the gel, what conclusions can and cannot be made?
+   *
 
 ## **Introduction**
 
 ### Theory of SDS-PAGE (1 page)
 
 
-1. **How does gel electrophoresis work?** 
+1. **How does gel electrophoresis work?**
 
-	  
+
 	Electrophoresis is a laboratory technique employed to separate and analyze biological macromolecules, including DNA, RNA, and proteins. This method works by applying an electric field that induces molecular movement through a semisolid medium. Samples are loaded into wells of a gel matrix situated within a chamber containing a conductive buffer. Once the current is applied, molecules with a net charge migrate toward the electrode of opposite polarity; negatively charged molecules move toward the positive anode. The gel acts as a molecular sieve, allowing smaller molecules to navigate the pores more easily and travel more quickly, while larger molecules encounter greater resistance and move more slowly. As a result, the mixture is sorted into distinct bands.
 
 2. **What do SDS and BME do?**
 
-SDS-PAGE is the most commonly used technique for the electrophoretic separation of proteins. This method employs the detergent Sodium Dodecyl Sulfate (SDS) to denature proteins and impart a consistent negative charge. By masking the proteins' intrinsic charge and conformation, this technique facilitates separation based solely on molecular weight. SDS is a powerful denaturant that disrupts noncovalent interactions, including hydrogen bonds and hydrophobic interactions. This process unfolds complex structures into linearized polypeptide chains, ensuring that the proteins are fully straightened. Coating each protein in the sample with a uniform negative charge guarantees that all proteins migrate in the same direction towards the positive anode.  
+SDS-PAGE is the most commonly used technique for the electrophoretic separation of proteins. This method employs the detergent Sodium Dodecyl Sulfate (SDS) to denature proteins and impart a consistent negative charge. By masking the proteins' intrinsic charge and conformation, this technique facilitates separation based solely on molecular weight. SDS is a powerful denaturant that disrupts noncovalent interactions, including hydrogen bonds and hydrophobic interactions. This process unfolds complex structures into linearized polypeptide chains, ensuring that the proteins are fully straightened. Coating each protein in the sample with a uniform negative charge guarantees that all proteins migrate in the same direction towards the positive anode.
 B-mercaptoethanol (BME) is a potent reducing agent utilized in protein sample preparation to ensure a completely unfolded state prior to electrophoresis. While SDS effectively disrupts most noncovalent interactions, it cannot break disulfide bonds (S-S) formed between cysteine residues. BME specifically targets these disulfide bonds, reducing them to free \-SH groups. Additionally, BME plays a crucial role in ensuring that proteins lose their complex structures and adopt a more linear conformation. Overall, BME facilitates the dissociation of multimeric protein complexes into individual polypeptide subunits. Although it is known for its strong, unpleasant sulfur odor, BME remains an essential tool in electrophoresis preparation.
 
 3. **Why run a gel to assess purity?**
 
-	  
+
 	Conducting a gel run is crucial as it provides a visual representation of each component within the sample. This process allows assessment of the relative abundance of the target protein compared with other constituents in the mixture. A single, well-defined band at the expected molecular weight indicates a pure sample. In contrast, the presence of multiple bands may indicate that other proteins or impurities were not fully removed during purification. Faint bands may represent degradation products, while vertical smears often indicate the presence of insoluble aggregates or a high sample concentration.
 
 ### Equipment (1 page)
 
-![][image1]  
-![][image2]  
+![][image1]
+![][image2]
 Explain the parts of a biorad electrophoresis apparatus box
 
-The Bio-RAD PROTEAN electrophoresis apparatus is used to separate the proteins by molecular weight during SDS-PAGE. The system consists of many components that work together to create an electric field across the polyacrylamide gel. 
+The Bio-RAD PROTEAN electrophoresis apparatus is used to separate the proteins by molecular weight during SDS-PAGE. The system consists of many components that work together to create an electric field across the polyacrylamide gel.
 
-* Lid and Electrodes: The lid contains a red (anode, positive) and black (cathode, negative) electrical leads that connect with the electrophoresis tank to the power supply. These electrodes help to generate the electric current required for protein migration through the gel.   
-* Electrode Assembly/ Running Module: Helps in holding the gel cassettes securely in place and forms the inner buffer chamber where electrophoresis occurs.   
-* Gel Cassettes: Contains the precast polyacrylamide gel used used for protein separation. The wells located on the top of the gel are used for loading protein samples and molecular weight ladder.   
-* Buffer chambers: The inner and outer chambers are filled with Tris/Glycine/SDS running buffer to complete the electrical circuit and helps to maintain proper conductivity during electrophoresis.   
-* Power Supply: Provides constant voltage and current to the electrophoresis apparatus, allowing negatively charged protein samples to migrate through the gel toward the positive electrode.   
-* Polyacrylamide Gel Matrix: Functions as a molecular sieve that separates proteins based on molecular weight, where smaller proteins travels faster than large proteins.  
-* Molecular Weight Ladder: A standard protein marker loaded into one of the wells is used to estimate the molecular weights of experimental protein bands. 
+* Lid and Electrodes: The lid contains a red (anode, positive) and black (cathode, negative) electrical leads that connect with the electrophoresis tank to the power supply. These electrodes help to generate the electric current required for protein migration through the gel.
+* Electrode Assembly/ Running Module: Helps in holding the gel cassettes securely in place and forms the inner buffer chamber where electrophoresis occurs.
+* Gel Cassettes: Contains the precast polyacrylamide gel used used for protein separation. The wells located on the top of the gel are used for loading protein samples and molecular weight ladder.
+* Buffer chambers: The inner and outer chambers are filled with Tris/Glycine/SDS running buffer to complete the electrical circuit and helps to maintain proper conductivity during electrophoresis.
+* Power Supply: Provides constant voltage and current to the electrophoresis apparatus, allowing negatively charged protein samples to migrate through the gel toward the positive electrode.
+* Polyacrylamide Gel Matrix: Functions as a molecular sieve that separates proteins based on molecular weight, where smaller proteins travels faster than large proteins.
+* Molecular Weight Ladder: A standard protein marker loaded into one of the wells is used to estimate the molecular weights of experimental protein bands.
 
 The complete electrophoresis setup allows visualization based analysis of separated protein bands after staining and imaging the gel.
 
@@ -170,19 +170,19 @@ Things to do one week or one day before day of lab
 
 ### Part 1: Assess Protein Concentration Using Bradford Dye
 
-Assuming a 20uL sample in 2mL dye solution.  
+Assuming a 20uL sample in 2mL dye solution.
 Concentration (ug/mL) \= 2633 x A595 - 52
 
-Protein concentration is determined using the bradford protein assay, which measures absorbance at 595 nm after the binding of Coomassie Brilliant Blue dye to the proteins. The intensity of the blue color produced is proportional to protein concentration. 
+Protein concentration is determined using the bradford protein assay, which measures absorbance at 595 nm after the binding of Coomassie Brilliant Blue dye to the proteins. The intensity of the blue color produced is proportional to protein concentration.
 
-* Label a clean cuvette for the blank, and an additional cuvette for each protein sample.  
-* Add 2 mL of Bradford dye reagent into each cuvette.   
-* Add 20 uL of protein sample into the corresponding cuvette and mixed gently using resuspending technique with the same micropipette to ensure the sample and Bradford dye are thoroughly combined without introducing bubbles.   
-* Prepare the blank cuvette using only Bradford dye reagent without protein sample.   
-* Incubate the samples at room temperature for approximately 5 minutes.   
-* Blank the spectrophotometer at 595 nm using the blank cuvette.   
-* Measure and record the absorbance (A595) values for each protein sample.  
-* Calculate the protein sample concentration using the following equation: 
+* Label a clean cuvette for the blank, and an additional cuvette for each protein sample.
+* Add 2 mL of Bradford dye reagent into each cuvette.
+* Add 20 uL of protein sample into the corresponding cuvette and mixed gently using resuspending technique with the same micropipette to ensure the sample and Bradford dye are thoroughly combined without introducing bubbles.
+* Prepare the blank cuvette using only Bradford dye reagent without protein sample.
+* Incubate the samples at room temperature for approximately 5 minutes.
+* Blank the spectrophotometer at 595 nm using the blank cuvette.
+* Measure and record the absorbance (A595) values for each protein sample.
+* Calculate the protein sample concentration using the following equation:
 
 	Concentration (ug/ml) \= 2633A \- 52 \= 182.3 ug/mL
 
@@ -190,22 +190,22 @@ Example calculation for an absorbance value of 0.089:
 
 	Concentration \= 2633(0.089) \- 52 \= 182.3 ug/ml
 
-* Use the calculated protein concentration to determine the appropriate loading volume for SDS-PAGE sample preparation. 
+* Use the calculated protein concentration to determine the appropriate loading volume for SDS-PAGE sample preparation.
 
 
 ### Part 2: Sample Concentration Range
 
 
-* Use your protein concentration to determine the amount of proteins (by volume) that can be loaded into your sample  
-  * Loading too many proteins will cause your sample to smear, but loading too little will cause bands to be invisible.   
-* For practical SDS-PAGE loading, aim for a range of **0.5-2.0&micro;g** of proteins  
-* Assuming your wells can hold 30&micro;L:  
-  * 1.5 &micro;L of BME and 7.5&micro;L of Laemmli buffer would leave 21&micro;L for your sample  
-  * If your sample has a concentration of 47.62&micro;g/mL, then you'll have exactly 1&micro;g in 21&micro;L of sample  
-    * But it's highly unlikely that you'll have this exact concentration, so you'll have to figure out how much protein can fit into the well  
-  * If 21&micro;L would result in more than 2.0&micro;g of proteins being loaded, determine the maximum volume of sample that can produce a proper amount of proteins using the following equation:  
-    * 2&micro;g  x your concentration(1mL / w &micro;g) x 1000&micro;L/1mL \= v &micro;L  
-  * Round down your calculated volume to the nearest whole value to determine the amount of Laemmli and BME that will added based on the decided ratio  
+* Use your protein concentration to determine the amount of proteins (by volume) that can be loaded into your sample
+  * Loading too many proteins will cause your sample to smear, but loading too little will cause bands to be invisible.
+* For practical SDS-PAGE loading, aim for a range of **0.5-2.0&micro;g** of proteins
+* Assuming your wells can hold 30&micro;L:
+  * 1.5 &micro;L of BME and 7.5&micro;L of Laemmli buffer would leave 21&micro;L for your sample
+  * If your sample has a concentration of 47.62&micro;g/mL, then you'll have exactly 1&micro;g in 21&micro;L of sample
+    * But it's highly unlikely that you'll have this exact concentration, so you'll have to figure out how much protein can fit into the well
+  * If 21&micro;L would result in more than 2.0&micro;g of proteins being loaded, determine the maximum volume of sample that can produce a proper amount of proteins using the following equation:
+    * 2&micro;g  x your concentration(1mL / w &micro;g) x 1000&micro;L/1mL \= v &micro;L
+  * Round down your calculated volume to the nearest whole value to determine the amount of Laemmli and BME that will added based on the decided ratio
     * You will need to determine the amount of proteins present in this rounded volume for recording purposes
 
 ### Part 3: Increasing Protein Concentration using 10k MWCO Filter
@@ -226,34 +226,34 @@ Example calculation for an absorbance value of 0.089:
 ### Part 4: Preparation of Coomassie Stain and/or Destain Solution
 
 
-**Preparation of Coomassie Stain (1 L) Coomassie**   
-stain will be prepared as a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol. 
+**Preparation of Coomassie Stain (1 L) Coomassie**
+stain will be prepared as a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol.
 
-Reagents:  
- - 1 g Coomassie R250   
-- 100 mL glacial acetic acid   
-- 400 mL methanol   
-- 500 mL ddH2O 
+Reagents:
+ - 1 g Coomassie R250
+- 100 mL glacial acetic acid
+- 400 mL methanol
+- 500 mL ddH2O
 
-Procedure:   
-1\. 100 mL of glacial acetic acid will be added to 500 mL of ddH2O.  
- 2\. 400 mL of methanol will be added and mixed.   
-3\. 1 g of Coomassie R250 will be added and mixed.  
- 4\. The solution will be filtered to remove particulates.   
-5\. The stain will be stored at room temperature in a sealed container. 
+Procedure:
+1\. 100 mL of glacial acetic acid will be added to 500 mL of ddH2O.
+ 2\. 400 mL of methanol will be added and mixed.
+3\. 1 g of Coomassie R250 will be added and mixed.
+ 4\. The solution will be filtered to remove particulates.
+5\. The stain will be stored at room temperature in a sealed container.
 
-**Preparation of Destain Solution (1 L)**  
- Destain solution will be prepared as a 1 L solution containing 20% methanol and 10% acetic acid. 
+**Preparation of Destain Solution (1 L)**
+ Destain solution will be prepared as a 1 L solution containing 20% methanol and 10% acetic acid.
 
-Reagents:  
- - 200 mL methanol  
- - 100 mL glacial acetic acid   
+Reagents:
+ - 200 mL methanol
+ - 100 mL glacial acetic acid
 - 700 mL ddH2O
 
- Procedure:  
- 1\. 100 mL of glacial acetic acid will be added to 700 mL of ddH2O.  
- 2\. 200 mL of methanol will be added and mixed.  
- 3\. The solution will be stored at room temperature in a sealed container. 
+ Procedure:
+ 1\. 100 mL of glacial acetic acid will be added to 700 mL of ddH2O.
+ 2\. 200 mL of methanol will be added and mixed.
+ 3\. The solution will be stored at room temperature in a sealed container.
 
 ## **Experimental Procedure**
 
@@ -261,19 +261,19 @@ Reagents:
 
 Brief outline of steps in the procedure
 
-1. Prepare the 1X SDS-PAGE running buffer by diluting the 10X running buffer with deionized water.  
-2. Prepare the miraculin-containing protein sample by mixing it with Laemmli sample buffer and &beta;-mercaptoethanol.  
-3. Heat the prepared sample at 95°C to denature the proteins before loading.  
-4. Remove the Mini-PROTEAN precast gel from its package and take off the comb and bottom tape.  
-5. Place the gel cassette into the Bio-Rad electrophoresis tank and secure it properly.  
-6. Add 1X running buffer to the inner and outer chambers of the tank.  
-7. Load the protein ladder into one well as the molecular weight reference.  
-8. Carefully load the prepared miraculin protein sample into the assigned gel wells.  
-9. Connect the electrophoresis tank to the power supply and run the gel until the tracking dye moves close to the bottom.  
-10. Turn off the power supply and carefully remove the gel cassette from the tank.  
-11. Open the cassette using the gel opening tool and transfer the gel into a staining container.  
-12. Stain the gel with Coomassie stain to visualize the protein bands.  
-13. Destain the gel until the background becomes clear and bands are visible.  
+1. Prepare the 1X SDS-PAGE running buffer by diluting the 10X running buffer with deionized water.
+2. Prepare the miraculin-containing protein sample by mixing it with Laemmli sample buffer and &beta;-mercaptoethanol.
+3. Heat the prepared sample at 95°C to denature the proteins before loading.
+4. Remove the Mini-PROTEAN precast gel from its package and take off the comb and bottom tape.
+5. Place the gel cassette into the Bio-Rad electrophoresis tank and secure it properly.
+6. Add 1X running buffer to the inner and outer chambers of the tank.
+7. Load the protein ladder into one well as the molecular weight reference.
+8. Carefully load the prepared miraculin protein sample into the assigned gel wells.
+9. Connect the electrophoresis tank to the power supply and run the gel until the tracking dye moves close to the bottom.
+10. Turn off the power supply and carefully remove the gel cassette from the tank.
+11. Open the cassette using the gel opening tool and transfer the gel into a staining container.
+12. Stain the gel with Coomassie stain to visualize the protein bands.
+13. Destain the gel until the background becomes clear and bands are visible.
 14. Image the gel and compare the sample bands with the molecular weight ladder to estimate protein size.
 
 ### Part 1: Prepare Protein Sample and MW Ladder
@@ -283,7 +283,7 @@ Brief outline of steps in the procedure
    - 7.5 &micro;L of 4x Laemmli sample buffer (BioRad #1610747)
    - 1.5 &micro;L of &beta;-mercaptoethanol
    - Total volume: 30 &micro;L
-   
+
    The 4x Laemmli at 7.5 &micro;L in a 30 &micro;L total volume yields a final 1x Laemmli concentration in the loaded sample.
 
 2. **Worked example**: For a protein stock at 0.40 &micro;g/&micro;L targeting 2 &micro;g per well:
@@ -299,8 +299,8 @@ Brief outline of steps in the procedure
 ### Part 2: Prepare Tris/Glycine/SDS electrophoresis buffer
 
 
-SDS buffer (volume):  
-**Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O). 
+SDS buffer (volume):
+**Running Buffer 1x :** Take 25 mM Tris, 192 mM glycine, 0.1% SDS Dilute 100 ml 10x stock with 900 ml deionized water (diH2O).
 
 
 ### Part 3: Prepare the BioRad Gel cassette
@@ -320,7 +320,7 @@ Remove the strip
 
 5. Raise the entire tank to ensure there is no leakage of the tank before proceeding. Once there is no leakage, the green comb can be removed from the cassette.
 
-6. Fill the inner chamber and the outer tank with 1X Tris/Glycine/SDS running buffer until it reaches the same level where the wells are filled. 
+6. Fill the inner chamber and the outer tank with 1X Tris/Glycine/SDS running buffer until it reaches the same level where the wells are filled.
 
 
 
@@ -328,17 +328,17 @@ Remove the strip
 
 Spacers, SDS buffer (volume), check for leaks
 
-* Open the wing clamps on the electrode assembly module.   
-* Next, load the TGX gels with the short plate facing inward into the module. Firmly grasp each wing clamp and close it securely.   
-* Take the electrode assembly module and place it into the tank, ensuring that the banana plugs align with the corresponding tabs on the tank.   
-* Remove the comb from the top of the gel, and pull it straight up. Then, take off the tape at the bottom of the cassette to expose the gel.   
-* Fill the inner chamber with 1x running buffer by diluting 100 mL of 10x buffer with 900 mL of deionized water. Pour a small amount into the center to check for leaks. Ensure both the upper and lower reservoirs of the tank are filled with the appropriate conductive running buffer (such as Tris-Glycine-SDS), and that the buffer level in the upper chamber covers the tops of the gel wells to allow proper current flow.   
+* Open the wing clamps on the electrode assembly module.
+* Next, load the TGX gels with the short plate facing inward into the module. Firmly grasp each wing clamp and close it securely.
+* Take the electrode assembly module and place it into the tank, ensuring that the banana plugs align with the corresponding tabs on the tank.
+* Remove the comb from the top of the gel, and pull it straight up. Then, take off the tape at the bottom of the cassette to expose the gel.
+* Fill the inner chamber with 1x running buffer by diluting 100 mL of 10x buffer with 900 mL of deionized water. Pour a small amount into the center to check for leaks. Ensure both the upper and lower reservoirs of the tank are filled with the appropriate conductive running buffer (such as Tris-Glycine-SDS), and that the buffer level in the upper chamber covers the tops of the gel wells to allow proper current flow.
 * Once this is done, securely place the lid on the tank, verifying that the electrodes are correctly oriented-the negative cathode (black) at the top and the positive anode (red) at the bottom. Finally, connect the leads to the power supply.
 
 
 ### Part 5: Sample Loading in the Well
 
-1. Determine the loading volumes calculated from your Bradford assay absorbance, and determine the exact volume of your protein concentration needed to reach 2 &micro;g of protein per well. 
+1. Determine the loading volumes calculated from your Bradford assay absorbance, and determine the exact volume of your protein concentration needed to reach 2 &micro;g of protein per well.
 
    Example: If your protein concentration is C = 0.40 &micro;g/&micro;L and your target loading is 2 &micro;g per well, you need 5 &micro;L of the concentration solution to be added.
 
@@ -383,16 +383,16 @@ Note : If bands have reached the bottom of the gel, turn off the power supply an
 ### Part 7: Recycle the SDS buffer and store
 
 
-* After the running of the gel has finished, and the gel has been removed, you can recycle the buffer for storage to be used for a later SDS-PAGE  
-* Observe the buffer prior to recycling to check for visible contamination or discoloration  
-  * If it is, DO NOT recycle this buffer. This should be disposed of as hazardous waste because it may contain Laemmli Buffer or BME, which are both hazardous materials  
-  * If no contamination or discoloration is observed within the chamber, proceed.  
-* Carefully pour the buffer from the chamber in a clean glass bottle with a screwable lid (use a funnel)  
-* Appropriately label the bottle:  
-  * SDS Buffer with concentration  
-  * Date of creation  
-  * Course number  
-  * Number of uses (buffer can lose effectiveness after repeated recycling so this is important)  
+* After the running of the gel has finished, and the gel has been removed, you can recycle the buffer for storage to be used for a later SDS-PAGE
+* Observe the buffer prior to recycling to check for visible contamination or discoloration
+  * If it is, DO NOT recycle this buffer. This should be disposed of as hazardous waste because it may contain Laemmli Buffer or BME, which are both hazardous materials
+  * If no contamination or discoloration is observed within the chamber, proceed.
+* Carefully pour the buffer from the chamber in a clean glass bottle with a screwable lid (use a funnel)
+* Appropriately label the bottle:
+  * SDS Buffer with concentration
+  * Date of creation
+  * Course number
+  * Number of uses (buffer can lose effectiveness after repeated recycling so this is important)
 * Store the bottle at room temperature in a designated location
 
 ### Part 8: Separate the Gel from its Cassette
@@ -401,13 +401,13 @@ Use the tool
 
 * Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
 
-* Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.  
-* Pour off and properly dispose of the running buffer solution.   
-* Locate the arrows marked on the side of the gel cassette.   
-* Align the gel opening tool with the arrows on the cassette and carefully insert the tool between the cassette plates.  
-* apply gentle downward pressure to break the seals holding the cassette together. Do not twist the opening tool, as this may crack the gel.   
-* Once both sides of the cassette are opened, carefully pull the two plastic plates apart from the top of the cassette.  
-* Gently remove the gel from the cassette using gloved hands or forceps, taking care not to tear or fold the gel. If needed, a deionized water wash bottle may be used to gently loosen the gel from the cassette edges by carefully squirting small amounts of DI water along the sides of the gel.  
+* Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.
+* Pour off and properly dispose of the running buffer solution.
+* Locate the arrows marked on the side of the gel cassette.
+* Align the gel opening tool with the arrows on the cassette and carefully insert the tool between the cassette plates.
+* apply gentle downward pressure to break the seals holding the cassette together. Do not twist the opening tool, as this may crack the gel.
+* Once both sides of the cassette are opened, carefully pull the two plastic plates apart from the top of the cassette.
+* Gently remove the gel from the cassette using gloved hands or forceps, taking care not to tear or fold the gel. If needed, a deionized water wash bottle may be used to gently loosen the gel from the cassette edges by carefully squirting small amounts of DI water along the sides of the gel.
 * Immediately transfer the gel into a staining tray containing deionized water or coomassie stain solution for the next step of the procedure.
 
 
@@ -415,46 +415,46 @@ Use the tool
 
 ~~Stain and destain, microwave, shake~~
 
-* Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually  
-* Dispose of ddH2O into the sink being careful to keep gel inside the container  
-  * You can use a plastic plate from the deconstructed cassette at an angle to pour water out from a corner of the tray while keeping the gel from sliding out  
-* Add enough Coomassie stain to the tray to cover the gel by 1/2 inch (\~ 1.5 cm)  
-* Microwave the tray on high power for 40 seconds to 1 minute (stop if Coomassie Stain starts to boil)  
-  * When removing from the microwave, be careful to not breath deeply as the emitted odor will be very strong  
-* Incubate the gel in the Coomassie stain for 5 to 10 minutes on a mechanical rocking table  
-  * Do not set the speed too high or the stain will slosh and spill over  
-* Pour out the Coomassie stain (using the same method as was used to dispose of ddH2O) into a bottle and label the bottle for storage:  
-  * Coomassie stain  
-  * Date  
-  * Course number  
-* Rinse the gel twice in ddH2O as done previously before adding Destain solution  
-* Add enough fresh Destain solution to cover the gel by 3/4 inch (\~ 2 cm)  
-* Tie 4 Kimwipes in a simple loose knot and place them into the Destain solution around the gel  
-  * Try to avoid laying the Kimwipes on the gel as this will cause uneven destaining  
-* Microwave the tray on high power for 40 seconds to 1 minute (stop if Destain begins to boil)  
-  * Again, be careful to not breath deeply when removing from the microwave  
-* Remove and discard the Kimwipes   
-* Incubate the gel in the Destain solution for 10 minutes on a mechanical rocking table  
-* If level of destaining is not to your satisfaction:  
-  * Remove Destain solution into stain waste in the fume hood   
-  * Re-add Destain solution and microwave with Kimwipes  
-  * Incubate a second time for 10 min-overnight on a mechanical rocking table. Stop when the level of destaining is sufficient  
+* Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually
+* Dispose of ddH2O into the sink being careful to keep gel inside the container
+  * You can use a plastic plate from the deconstructed cassette at an angle to pour water out from a corner of the tray while keeping the gel from sliding out
+* Add enough Coomassie stain to the tray to cover the gel by 1/2 inch (\~ 1.5 cm)
+* Microwave the tray on high power for 40 seconds to 1 minute (stop if Coomassie Stain starts to boil)
+  * When removing from the microwave, be careful to not breath deeply as the emitted odor will be very strong
+* Incubate the gel in the Coomassie stain for 5 to 10 minutes on a mechanical rocking table
+  * Do not set the speed too high or the stain will slosh and spill over
+* Pour out the Coomassie stain (using the same method as was used to dispose of ddH2O) into a bottle and label the bottle for storage:
+  * Coomassie stain
+  * Date
+  * Course number
+* Rinse the gel twice in ddH2O as done previously before adding Destain solution
+* Add enough fresh Destain solution to cover the gel by 3/4 inch (\~ 2 cm)
+* Tie 4 Kimwipes in a simple loose knot and place them into the Destain solution around the gel
+  * Try to avoid laying the Kimwipes on the gel as this will cause uneven destaining
+* Microwave the tray on high power for 40 seconds to 1 minute (stop if Destain begins to boil)
+  * Again, be careful to not breath deeply when removing from the microwave
+* Remove and discard the Kimwipes
+* Incubate the gel in the Destain solution for 10 minutes on a mechanical rocking table
+* If level of destaining is not to your satisfaction:
+  * Remove Destain solution into stain waste in the fume hood
+  * Re-add Destain solution and microwave with Kimwipes
+  * Incubate a second time for 10 min-overnight on a mechanical rocking table. Stop when the level of destaining is sufficient
 * The used Destain solution will contain Coomassie stain and should be disposed of in designated stain waste within the fume hood
 
 ### Part 10: Imaging the Gel
 
 Light box, smartphone camera
 
-* After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.  
-* Place the tray with gel flat onto a light box with bright white light.  
-* Ensure the ladder and all sample lanes are clearly visible.  
-* Using a smartphone camera, capture a clear image directly from above the gel while avoiding shadows and reflections.   
-* Save and label the gel with the sample name, lane assignment, date, and group information for future analysis.  
+* After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.
+* Place the tray with gel flat onto a light box with bright white light.
+* Ensure the ladder and all sample lanes are clearly visible.
+* Using a smartphone camera, capture a clear image directly from above the gel while avoiding shadows and reflections.
+* Save and label the gel with the sample name, lane assignment, date, and group information for future analysis.
 
 ## **Timing Estimates**
 
 
-Provide an estimate for each of the parts above and total time of the run.  
+Provide an estimate for each of the parts above and total time of the run.
 **Estimated time of all steps**: 4 hours 30 minutes
 
 ### Part 1: Assess Protein Concentration Using Bradford Dye
@@ -463,7 +463,7 @@ Provide an estimate for each of the parts above and total time of the run.
 
 ### Part 2,3, and 4: Assembling the BioRad electrophoresis apparatus, Preparing the BioRad Gel cassette, and Preparing Tris/Glycine/SDS electrophoresis buffer.
 
-**Estimated time if the buffer was not prepared beforehand: around 10 min**   
+**Estimated time if the buffer was not prepared beforehand: around 10 min**
 **Estimated time if the buffer was prepared beforehand. 3 min**
 
 ### Part 5: Sample Loading in the Well
@@ -485,12 +485,12 @@ This will depend on how many samples are loaded in
 
 ### **Time breakdown**
 
-* Initial rinse and adding stain: 1-3 min  
-* Microwave stain step: 1-2 min or until it boils  
-* Staining on rocker: 5-10 min  
-* Pouring/rinsing before destain: 3-5 min  
-* Adding destain \+ Kimwipes: 1-3 min  
-* Microwave destain step: 1-2 minor until it boils  
+* Initial rinse and adding stain: 1-3 min
+* Microwave stain step: 1-2 min or until it boils
+* Staining on rocker: 5-10 min
+* Pouring/rinsing before destain: 3-5 min
+* Adding destain \+ Kimwipes: 1-3 min
+* Microwave destain step: 1-2 minor until it boils
 * Destaining on rocker: 10 min
 
 ## **Post-Experiment Analysis**
@@ -522,38 +522,38 @@ Items that the TA might need to prepare before class to make sure the lab goes s
 
 ### Equipment
 
-* Bio-Rad Mini-PROTEAN electrophoresis apparatus  
-* Power supply  
-* Heating block set to 95°C   
-* Micropipettes and gel loading tips  
-* Gel opening tool  
-* Microwave  
-* Shaker  
+* Bio-Rad Mini-PROTEAN electrophoresis apparatus
+* Power supply
+* Heating block set to 95°C
+* Micropipettes and gel loading tips
+* Gel opening tool
+* Microwave
+* Shaker
 * Lightbox
 
 ### Materials
 
-* Mini-PROTEAN precast gels  
-* 10x Tris/Glycine/SDS running buffer  
-* Deionized water  
-* protein ladder  
-* 4x Laemmli sample buffer  
-* Beta-Mercaptoethanol (BME)  
-* Bradford dye reagent   
-* Coomassie stain and destaining solution  
-* Microcentrifuge tubes  
-* Cuvettes  
-* Kimwipes  
+* Mini-PROTEAN precast gels
+* 10x Tris/Glycine/SDS running buffer
+* Deionized water
+* protein ladder
+* 4x Laemmli sample buffer
+* Beta-Mercaptoethanol (BME)
+* Bradford dye reagent
+* Coomassie stain and destaining solution
+* Microcentrifuge tubes
+* Cuvettes
+* Kimwipes
 * Gloves and safety glasses
 
-All buffers, stain solution, and electrophoresis equipment should be prepared and checked before the start of the lab to ensure efficient workflow and minimize delays. 
+All buffers, stain solution, and electrophoresis equipment should be prepared and checked before the start of the lab to ensure efficient workflow and minimize delays.
 
 
 ## **References**
 
 **Bio-Rad Laboratories**. **Mini-PROTEAN® Precast Gels Instruction Manual and Application Guide**. Bio-Rad Laboratories, Inc., **10016085 Rev A**. This comprehensive manual provides instructions for using **Mini-PROTEAN precast gels** with various electrophoresis cells, including the **Mini-PROTEAN Tetra** and **Mini-PROTEAN 3 Dodeca** systems. It covers applications such as **SDS-PAGE**, **Native PAGE**, **peptide analysis**, and **nucleic acid separation**.
 
-**Bio-Rad Laboratories**. **Instructions for Staining Polyacrylamide Gels Quick Start Guide**. Bio-Rad Laboratories, Inc.. This guide outlines the protocol for using **Bio-Safe&trade; Coomassie Stain** (catalog \#161-0786) to visualize protein bands in polyacrylamide gels. It includes specific procedures for **SDS-PAGE mini gels**, large format gels, and **peptide gels**.  
+**Bio-Rad Laboratories**. **Instructions for Staining Polyacrylamide Gels Quick Start Guide**. Bio-Rad Laboratories, Inc.. This guide outlines the protocol for using **Bio-Safe&trade; Coomassie Stain** (catalog \#161-0786) to visualize protein bands in polyacrylamide gels. It includes specific procedures for **SDS-PAGE mini gels**, large format gels, and **peptide gels**.
 
 
 [image1]: <data:image/png;base64,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>
