@@ -47,7 +47,7 @@ steps:
     next_step: secure_side_clamps
 
   - step_name: secure_side_clamps
-    prompt: "Close and lock the side clamps to create a fluid-tight seal. Ensure both the left and right clamps are fully closed."
+    prompt: "Close and lock the side clamps to create a fluid-tight seal. Ensure both the left and right clamps are fully closed. Before removing the comb, raise the assembled module briefly and inspect for buffer leakage at the seals. If any drips appear, re-tighten clamps and retest."
     sequence:
       - target: gel_cassette
         gesture: click

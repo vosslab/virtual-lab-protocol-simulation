@@ -69,7 +69,7 @@ steps:
     next_step: microwave_stain
 
   - step_name: microwave_stain
-    prompt: "Place the staining tray in the microwave. Set the timer for 50 seconds and start the heating to accelerate stain binding to the protein."
+    prompt: "Place the staining tray in the microwave. Set the timer for 50 seconds and start the heating to accelerate stain binding to the protein. When removing the tray from the microwave, avoid breathing deeply - heated Coomassie emits strong fumes."
     sequence:
       - target: microwave
         gesture: click

@@ -108,23 +108,8 @@ steps:
     next_step: place_kimwipes
 
   - step_name: place_kimwipes
-    prompt: "Knot the kimwipes and place them in the staining tray."
+    prompt: "Tie 4 kimwipes loosely in a simple knot and place them in the staining tray. Avoid laying them directly on the gel to ensure even destaining."
     sequence:
-      - target: kimwipe_pad
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: kimwipe_pad
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: kimwipe_pad
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
       - target: kimwipe_pad
         gesture: click
         validator: { preset: correct_target }
@@ -141,7 +126,7 @@ steps:
     next_step: microwave_heat
 
   - step_name: microwave_heat
-    prompt: "Place the staining tray in the microwave, set the timer for 50 seconds, and start the heating."
+    prompt: "Place the staining tray in the microwave, set the timer for 50 seconds, and start the heating. When removing the tray from the microwave, avoid breathing deeply - heated destain emits strong fumes."
     sequence:
       - target: microwave
         gesture: adjust

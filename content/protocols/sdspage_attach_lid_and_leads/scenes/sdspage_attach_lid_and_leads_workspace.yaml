@@ -1,0 +1,6 @@
+scene_name: sdspage_attach_lid_and_leads_workspace
+extends: electrophoresis_bench
+
+scene_notes: |
+  Electrophoresis bench workspace for securing apparatus with lid and leads.
+  Extends electrophoresis_bench which provides electrophoresis_tank and power_supply.

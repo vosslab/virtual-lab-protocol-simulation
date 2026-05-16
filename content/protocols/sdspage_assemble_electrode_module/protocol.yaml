@@ -29,7 +29,7 @@ steps:
     next_step: insert_cassette
 
   - step_name: insert_cassette
-    prompt: "Insert the prepared gel cassette into the module slot. The cassette slides into the open clamps with the sample wells facing outward."
+    prompt: "Insert the prepared gel cassette into the module slot. The cassette's short glass plate faces inward toward the module."
     sequence:
       - target: electrode_module
         gesture: click

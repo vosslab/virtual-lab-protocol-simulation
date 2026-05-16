@@ -1,5 +1,47 @@
 # Changelog
 
+## 2026-05-16 (SDS-PAGE pedagogy + renderer fixes)
+
+### Additions and New Features
+
+- `tools/protocol_manual.py` grew 1080 -> 1500 lines with four renderer improvements that benefit every protocol manual repo-wide:
+  - State-change `scene_operations` now translate field-name + value pairs into human-readable imperative prose via a field-to-phrase mapping table (16 field types: `material_name`, `held_material_name`, `material_volume`, `held_material_volume`, `tape_present`, `running`, `lid_open`, `powered_on`, `image_captured`, etc.). Raw YAML syntax no longer leaks into student-facing bullets.
+  - Batch `sequence_runner` output now prepends an iteration header (`### Iteration N of M: <constituent_label>`) before each constituent's render, so students reading combined manuals can identify their position in repeated workflows.
+  - Materials sections per-mini are now filtered to materials actually referenced in that mini's interactions, instead of dumping the full per-protocol `materials.yaml`.
+  - Consecutive identical state-change bullets within a single step are deduped (prevents the prior "Pick up the Waste container" double-render artifact).
+
+### Behavior or Interface Changes
+
+- All 31 repo protocol manuals regenerate with the improved prose. Manual rendering is unchanged in CLI surface; only output format changes.
+
+### Fixes and Maintenance
+
+- 14 surgical SDS-PAGE prompt prose edits across 11 mini-protocols:
+  - MP-10 `sdspage_load_sample_single_lane`: fixed volume contradiction (prose said ~30 uL but bullet said 10 uL - now 30 uL consistently).
+  - MP-13 `sdspage_extract_gel_from_cassette`: removed Step 3 buffer-pour-to-recycle that conflicted with MP-14's recycle path; buffer now correctly stays in tank for MP-14.
+  - MP-16a `sdspage_destain_gel_setup`: collapsed 3 separate kimwipe pickup interactions into one clear "Tie 4 kimwipes" step matching source-doc Part 9.
+  - MP-12 `sdspage_run_electrophoresis`: added SG7-locked 200 V alternative prose + hands-dry / lid-on / no-open-during-run safety warning.
+  - MP-16b `sdspage_destain_gel_rock`: added SG8-locked re-do option prose + destain methanol/acetic acid disposal note.
+  - MP-14 `sdspage_recycle_buffer`: added SG-required contamination check + hazardous-waste dispose-path prose (covers BME-contamination case).
+  - MP-15 `sdspage_stain_gel`: added microwave fume caution.
+  - MP-16a: added microwave fume caution.
+  - MP-8 `sdspage_attach_lid_and_leads`: added power-supply-off warning before lead connection.
+  - MP-4 `sdspage_heat_denature_samples`: added 95C biochemistry context (disulfide irreversibility under heat + BME reduction).
+  - MP-5 `sdspage_prepare_gel_cassette`: added explicit leak-check action between clamp seal and comb removal per source-doc Part 3 step 5.
+  - MP-6 `sdspage_assemble_electrode_module`: replaced "sample wells facing outward" with "short glass plate faces inward toward the module" per source-doc Part 4 step 2.
+
+### Decisions and Failures
+
+- First pedagogy review of generated manuals returned NOT_READY with 3 systemic blockers (volume contradiction, raw-YAML leakage, batch non-parameterization). Both fix passes target these directly. Re-review pending after manuals regenerate.
+- The renderer field-to-phrase mapping covers 16 field types; unknown fields fall back to a generic template (`{field}: {value}`). New object schema fields added in future will need mapping entries.
+
+### Developer Tests and Notes
+
+- `tools/validate_content_yaml.py`: 0 failures across 168 files.
+- `tools/protocol_stepper.py`: 31/31 protocols PASS, 0 errors, 160 steps walked, 1424 interactions walked.
+- `tools/protocol_manual.py --all`: 31/31 manuals render.
+- pyflakes, ASCII, shebang, import_requirements gates: PASS.
+
 ## 2026-05-16 (SVG asset audit tool)
 
 ### Additions and New Features

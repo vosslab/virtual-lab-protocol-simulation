@@ -15,7 +15,9 @@ steps:
         gesture: click
         validator: { preset: correct_target }
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_fill_tank_buffer_workspace
       - target: serological_pipette
         gesture: adjust
         validator: { preset: target_with_value, value: { set_volume: 25 } }

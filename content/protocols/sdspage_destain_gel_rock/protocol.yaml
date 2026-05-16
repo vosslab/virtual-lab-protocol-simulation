@@ -15,7 +15,9 @@ steps:
         gesture: click
         validator: { preset: correct_target }
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_destain_gel_rock_workspace
       - target: rocking_shaker
         gesture: adjust
         validator: { preset: target_with_value, value: { set_time_min: 10 } }
@@ -68,7 +70,7 @@ steps:
     next_step: dispose_destain
 
   - step_name: dispose_destain
-    prompt: "Carefully dispose of the used destain solution into the destain waste bottle, and mark the waste bottle as containing spent destain."
+    prompt: "Carefully dispose of the used destain solution into the destain waste bottle, and mark the waste bottle as containing spent destain. If background is not sufficiently clear after this cycle, repeat MP-16a (destain setup) and MP-16b (rock) once more - additional 10 min on the rocker until the gel matrix is transparent. Destain contains 20% methanol and 10% acetic acid. Dispose in the designated stain-waste container in the fume hood."
     sequence:
       - target: staining_tray
         gesture: click

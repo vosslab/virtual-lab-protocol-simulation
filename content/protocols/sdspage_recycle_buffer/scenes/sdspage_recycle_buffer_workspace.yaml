@@ -1,0 +1,6 @@
+scene_name: sdspage_recycle_buffer_workspace
+extends: electrophoresis_bench
+
+scene_notes: |
+  Electrophoresis bench workspace for buffer recycling. Extends electrophoresis_bench
+  which provides electrophoresis_tank, recycle_buffer_bottle, and ddh2o_bottle.

@@ -1,0 +1,6 @@
+scene_name: sdspage_run_electrophoresis_workspace
+extends: electrophoresis_bench
+
+scene_notes: |
+  Electrophoresis bench workspace for running the gel. Extends electrophoresis_bench
+  which provides power_supply and other electrophoresis apparatus.

@@ -1,0 +1,6 @@
+scene_name: sdspage_heat_denature_samples_workspace
+extends: heat_block_bench
+
+scene_notes: |
+  Heat block workspace for SDS-PAGE sample denaturation. Extends heat_block_bench
+  which provides heat_block in center and microtube_rack_24 in rear_left.

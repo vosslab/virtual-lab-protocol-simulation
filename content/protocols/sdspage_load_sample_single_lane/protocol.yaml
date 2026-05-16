@@ -46,13 +46,13 @@ steps:
     sequence:
       - target: p10_micropipette
         gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 10 } }
+        validator: { preset: target_with_value, value: { set_volume: 30 } }
         response:
           scene_operations:
             - type: ObjectStateChange
               target: p10_micropipette
               state:
-                set_volume: 10
+                set_volume: 30
       - target: microtube
         gesture: click
         validator: { preset: correct_target }
@@ -62,7 +62,7 @@ steps:
               target: p10_micropipette
               state:
                 held_material_name: protein_sample_denatured
-                held_material_volume: 10
+                held_material_volume: 30
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
@@ -82,7 +82,7 @@ steps:
               target: gel_cassette
               state:
                 material_name: protein_sample_denatured
-                material_volume: 10
+                material_volume: 30
       - target: p10_micropipette
         gesture: click
         validator: { preset: correct_target }

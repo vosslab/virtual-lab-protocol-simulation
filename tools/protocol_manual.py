@@ -395,13 +395,16 @@ def render_step(step, catalog, material_labels, sim, touched_objects, lint=None)
 	step_touched = set()
 
 	index = 0
+	seen_sentences = set()
 	while index < len(sequence):
 		consumed, sentences = render_group_at(
 			sequence, index, catalog, material_labels, sim,
 			touched_objects, step_touched, prompt_says_verify, step_name, lint,
 		)
 		for sentence in sentences:
-			lines.append(sentence)
+			if sentence not in seen_sentences:
+				lines.append(sentence)
+				seen_sentences.add(sentence)
 		index += consumed
 
 	lines.append("")
@@ -909,6 +912,85 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 
 
 #============================================
+#============================================
+def _field_to_human_phrase(field_name, new_value, catalog=None, target=None):
+	"""
+	Translate field-name-and-value pairs to imperative student-facing prose.
+	Returns a phrase fragment like "is now empty" or "is now powered on".
+	For unknown fields, returns None (fallback to generic template).
+
+	When catalog and target are provided, uses format_volume for volume fields
+	and resolves units from object state_fields.
+	"""
+	value_str = str(new_value).replace("_", " ").lower()
+	if field_name == "material_name":
+		if new_value == "empty":
+			return "is now empty"
+		return f"now contains {value_str}"
+	if field_name == "held_material_name":
+		if new_value == "empty":
+			return "is now empty"
+		return f"now holds {value_str}"
+	if field_name == "material_volume":
+		if catalog and target:
+			unit = catalog.unit_for_field(target, field_name)
+			return f"contains {format_volume(new_value, unit)}"
+		return f"contains {value_str}"
+	if field_name == "held_material_volume":
+		if catalog and target:
+			unit = catalog.unit_for_field(target, field_name)
+			return f"holds {format_volume(new_value, unit)}"
+		return f"holds {value_str}"
+	if field_name == "tape_present":
+		return "tape removed" if new_value is False else "tape applied"
+	if field_name == "running":
+		return "is now started" if new_value is True else "is now stopped"
+	if field_name == "lid_open":
+		return "is now open" if new_value is True else "is now closed"
+	if field_name == "powered_on":
+		return "is now powered on" if new_value is True else "is now powered off"
+	if field_name == "image_captured":
+		return "has captured an image" if new_value is True else "has not captured an image"
+	if field_name == "cathode_lead_attached":
+		return "cathode lead attached" if new_value is True else "cathode lead detached"
+	if field_name == "anode_lead_attached":
+		return "anode lead attached" if new_value is True else "anode lead detached"
+	if field_name == "side_clamps_locked":
+		return "side clamps locked" if new_value is True else "side clamps unlocked"
+	if field_name == "wing_clamps_locked":
+		return "wing clamps locked" if new_value is True else "wing clamps unlocked"
+	if field_name == "wing_clamps_open":
+		return "wing clamps open" if new_value is True else "wing clamps closed"
+	if field_name == "comb_present":
+		return "comb in place" if new_value is True else "comb removed"
+	if field_name == "top_plate_inserted":
+		return "top plate inserted" if new_value is True else "top plate removed"
+	if field_name == "glass_plate_inserted":
+		return "glass plate inserted" if new_value is True else "glass plate removed"
+	if field_name == "mounted":
+		return "mounted" if new_value is True else "unmounted"
+	if field_name == "cassette_mounted":
+		return "cassette mounted" if new_value is True else "cassette removed"
+	if field_name == "module_present":
+		return "module installed" if new_value is True else "module removed"
+	if field_name == "kimwipes_present":
+		return "kimwipes added" if new_value is True else "kimwipes removed"
+	if field_name == "gel_present":
+		return "gel placed" if new_value is True else "gel removed"
+	if field_name == "sealed":
+		return "sealed" if new_value is True else "opened"
+	if field_name == "tray_present":
+		return "tray placed" if new_value is True else "tray removed"
+	if field_name == "rack_present":
+		return "rack placed" if new_value is True else "rack removed"
+	if field_name == "door_open":
+		return "door open" if new_value is True else "door closed"
+	if field_name == "lid_present":
+		return "lid placed" if new_value is True else "lid removed"
+	return None
+
+
+#============================================
 def render_single_interaction(interaction, catalog, material_labels, sim,
 		touched_objects, step_touched, prompt_says_verify):
 	"""Render one ungrouped interaction."""
@@ -981,17 +1063,24 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 		if change_target and change_target != target:
 			new_state = change.get("state", {}) or {}
 			field, value = next(iter(new_state.items()))
-			pretty_field = field.replace("_", " ")
-			pretty_value = str(value).replace("_", " ")
 			change_label = catalog.label(change_target)
 			if "cleanliness" in field and "ethanol" in str(value):
 				return (
 					f"- Use the {_lower_first(target_label)} to spray and "
 					f"sterilize the {change_label}."
 				)
+			# Use humanized field names for better readability.
+			human_phrase = _field_to_human_phrase(field, value, catalog, change_target)
+			if human_phrase:
+				return (
+					f"- Use the {_lower_first(target_label)} to update the "
+					f"{change_label} ({human_phrase})."
+				)
+			pretty_field = field.replace("_", " ")
+			pretty_value = str(value).replace("_", " ")
 			return (
 				f"- Use the {_lower_first(target_label)} to update the "
-				f"{change_label} ({pretty_field} -> {pretty_value})."
+				f"{change_label} ({pretty_field}: {pretty_value})."
 			)
 
 	# State change on the click target.
@@ -1048,9 +1137,19 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 
 		# Other state field (status, cleanliness, boolean flags).
 		field, value = next(iter(new_state.items()))
+		human_phrase = _field_to_human_phrase(field, value, catalog, target)
+		if human_phrase:
+			return f"- The {target_label} {human_phrase}."
+		# Fallback for unmapped fields: humanize without asterisks.
 		pretty_field = field.replace("_", " ")
-		pretty_value = str(value).replace("_", " ")
-		return f"- The {target_label} is now {pretty_field}: *{pretty_value}*."
+		if isinstance(value, bool):
+			if value:
+				return f"- The {target_label} is now {pretty_field}."
+			else:
+				return f"- The {target_label} is no longer {pretty_field}."
+		else:
+			pretty_value = str(value).replace("_", " ")
+			return f"- The {target_label} {pretty_field} is now {pretty_value}."
 
 	# Bare CursorAttach only -> pickup.
 	for op in scene_ops:
@@ -1118,15 +1217,58 @@ def prewalk_touched_objects(protocol, catalog):
 
 
 #============================================
-def render_materials_section(material_labels):
+def collect_referenced_materials(protocol):
+	"""
+	Walk the protocol's interactions and scene_operations to collect all
+	material_name and held_material_name values actually referenced.
+	Returns a set of material names.
+	"""
+	referenced = set()
+	steps_by_name = {}
+	for step in protocol.get("steps", []) or []:
+		steps_by_name[step["step_name"]] = step
+	current_name = protocol.get("entry_step")
+	visited = set()
+	while current_name is not None:
+		if current_name in visited:
+			break
+		visited.add(current_name)
+		step = steps_by_name.get(current_name)
+		if step is None:
+			break
+		for interaction in step.get("sequence", []) or []:
+			response = interaction.get("response", {}) or {}
+			for op in response.get("scene_operations", []) or []:
+				if op.get("type") == "ObjectStateChange":
+					state = op.get("state", {}) or {}
+					for material_field in ("material_name", "held_material_name"):
+						if material_field in state:
+							mat = state[material_field]
+							if mat:
+								referenced.add(mat)
+		current_name = step.get("next_step")
+	return referenced
+
+
+#============================================
+def render_materials_section(material_labels, protocol=None):
 	"""
 	Render the ## Materials section. Emits nothing if material_labels is empty.
-	Returns list of markdown lines.
+	When protocol is provided, filter material_labels to only those referenced
+	in the protocol's interactions. Returns list of markdown lines.
 	"""
 	if not material_labels:
 		return []
+	labels_to_render = material_labels
+	if protocol is not None:
+		referenced = collect_referenced_materials(protocol)
+		labels_to_render = {
+			k: v for k, v in material_labels.items() if k in referenced
+		}
+	if not labels_to_render:
+		return []
 	lines = ["## Materials", ""]
-	for label in sorted(material_labels.values()):
+	for label in sorted(labels_to_render.values()):
 		lines.append(f"- {label}")
 	lines.append("")
 	return lines
@@ -1182,8 +1324,11 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 		for name in constituents:
 			lines.append(f"- {name.replace('_', ' ')}")
 		lines.append("")
-		for name in constituents:
+		for iteration_num, name in enumerate(constituents, start=1):
 			lines.append("---")
+			lines.append("")
+			iteration_header = f"### Iteration {iteration_num} of {len(constituents)}: {name.replace('_', ' ')}"
+			lines.append(iteration_header)
 			lines.append("")
 			child_md = render_protocol_manual(name, catalog, lint)
 			if child_md.startswith("# "):
@@ -1200,7 +1345,7 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 		steps_by_name[step["step_name"]] = step
 
 	# Render materials and equipment sections between learning and procedure.
-	lines.extend(render_materials_section(material_labels))
+	lines.extend(render_materials_section(material_labels, protocol))
 	lines.extend(render_equipment_section(equipment_set, catalog))
 
 	lines.append("## Procedure")

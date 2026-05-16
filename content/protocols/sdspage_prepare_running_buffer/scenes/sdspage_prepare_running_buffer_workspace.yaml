@@ -1,0 +1,6 @@
+scene_name: sdspage_prepare_running_buffer_workspace
+extends: electrophoresis_bench
+
+scene_notes: |
+  Electrophoresis bench workspace for preparing running buffer. Extends electrophoresis_bench
+  which provides serological_pipette, running_buffer_10x_bottle, running_buffer_1x_carboy, and ddh2o_bottle.

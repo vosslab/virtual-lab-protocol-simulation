@@ -9,13 +9,15 @@ learning:
 
 steps:
   - step_name: secure_apparatus
-    prompt: "Secure the electrophoresis apparatus for running the gel. First, place the lid on top of the electrophoresis tank. Then connect the red lead from the power supply to the positive electrode and the black lead to the negative electrode. Ensure both connections are firmly seated."
+    prompt: "Ensure the power supply is off (or unplugged) before connecting any leads. Secure the electrophoresis apparatus for running the gel. First, place the lid on top of the electrophoresis tank. Then connect the red lead from the power supply to the positive electrode and the black lead to the negative electrode. Ensure both connections are firmly seated."
     sequence:
       - target: electrophoresis_tank
         gesture: click
         validator: { preset: correct_target }
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_attach_lid_and_leads_workspace
             - type: ObjectStateChange
               target: electrophoresis_tank
               state:

@@ -1,0 +1,6 @@
+scene_name: sdspage_destain_gel_rock_workspace
+extends: staining_bench
+
+scene_notes: |
+  Staining bench workspace for SDS-PAGE gel destaining. Extends staining_bench
+  which provides rocking_shaker, staining_tray, kimwipe_pad, and destain_waste_bottle.

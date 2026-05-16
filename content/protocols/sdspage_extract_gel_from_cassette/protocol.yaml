@@ -75,7 +75,7 @@ steps:
     next_step: empty_tank_buffer
 
   - step_name: empty_tank_buffer
-    prompt: "Pour the used running buffer from the electrophoresis tank into the recycle buffer bottle. Collect buffer from both the inner and outer chambers."
+    prompt: "Disconnect electrode leads and prepare to remove cassette. Prepare the tank for buffer recycling in the next step."
     sequence:
       - target: electrophoresis_tank
         gesture: click
@@ -87,15 +87,6 @@ steps:
               state:
                 inner_chamber_material_name: empty
                 inner_chamber_material_volume: 0
-      - target: recycle_buffer_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: recycle_buffer_bottle
-              state:
-                held_material_name: running_buffer_1x_used
       - target: electrophoresis_tank
         gesture: click
         validator: { preset: correct_target }

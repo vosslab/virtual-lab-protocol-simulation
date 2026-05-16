@@ -9,13 +9,15 @@ learning:
 
 steps:
   - step_name: set_voltage
-    prompt: "Set the power supply to 150 volts for electrophoresis."
+    prompt: "Set the power supply to 150 volts for electrophoresis. Alternative: 200 V for 20-25 min produces equivalent results; this protocol uses 150 V for 30 min by default."
     sequence:
       - target: power_supply
         gesture: adjust
         validator: { preset: target_with_value, value: { set_voltage: 150 } }
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_run_electrophoresis_workspace
             - type: ObjectStateChange
               target: power_supply
               state:
@@ -27,7 +29,7 @@ steps:
     next_step: start_run
 
   - step_name: start_run
-    prompt: "Start the electrophoresis run."
+    prompt: "Start the electrophoresis run. Confirm the tank lid is in place and your hands are dry before powering on; high voltage is present at the banana plugs once the run starts. Do not open the lid mid-run."
     sequence:
       - target: power_supply
         gesture: click

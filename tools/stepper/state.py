@@ -175,6 +175,48 @@ class StateMap:
 
 			placement_registry[placement_name] = (object_name, file_path)
 
+	def _reachable_base_scenes(self) -> set:
+		"""
+		Compute base scenes actually reachable by this protocol.
+
+		Reachable = referenced via `extends` from a protocol-local scene, OR named by a
+		SceneChange.to_scene op anywhere in the protocol's steps. Without this filter,
+		every base scene under content/scenes/ (including unrelated SDS-PAGE benches)
+		leaks into the registry and creates spurious ambiguous_target_in_scene errors
+		when two unrelated protocols both place the same object kind.
+		"""
+		reachable: set = set()
+
+		# Base scenes extended by any protocol-local scene
+		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
+		for scene_data in protocol_local_scenes.values():
+			extends = scene_data.get("extends") if isinstance(scene_data, dict) else None
+			if extends and extends in self.tree.base_scenes:
+				reachable.add(extends)
+
+		# Base scenes named by SceneChange ops in this protocol's steps
+		try:
+			protocol = self.tree.get_protocol(self.protocol_name)
+		except Exception:
+			protocol = None
+		if isinstance(protocol, dict):
+			for step in protocol.get("steps", []) or []:
+				if not isinstance(step, dict):
+					continue
+				for interaction in step.get("sequence", []) or []:
+					if not isinstance(interaction, dict):
+						continue
+					response = interaction.get("response", {}) or {}
+					for op in response.get("scene_operations", []) or []:
+						if not isinstance(op, dict):
+							continue
+						if op.get("type") == "SceneChange":
+							to_scene = op.get("to_scene")
+							if to_scene and to_scene in self.tree.base_scenes:
+								reachable.add(to_scene)
+
+		return reachable
+
 	def _build_scenes_registry(self) -> None:
 		"""
 		Build a per-protocol registry of all resolvable placements across all scenes.
@@ -189,13 +231,20 @@ class StateMap:
 		the scene where the target's placement was declared; registry lets resolution succeed
 		across sibling scenes in the same protocol without forcing authors to insert SceneChange
 		ops back to the prior scene.
+
+		Scope is restricted to scenes reachable by this protocol (protocol-local scenes plus
+		base scenes referenced via `extends` or SceneChange). Unrelated base scenes from
+		other protocols must not pollute this registry.
 		"""
-		# Collect all scene data (base + protocol-local) with their names
+		# Collect reachable scene data (protocol-local + referenced base) with their names
 		all_scenes = {}
 
-		# Add base scenes
-		for scene_name, scene_data in self.tree.base_scenes.items():
-			all_scenes[scene_name] = (scene_data, 'base')
+		# Add only base scenes actually referenced by this protocol
+		reachable_base = self._reachable_base_scenes()
+		for scene_name in reachable_base:
+			scene_data = self.tree.base_scenes.get(scene_name)
+			if scene_data is not None:
+				all_scenes[scene_name] = (scene_data, 'base')
 
 		# Add protocol-local scenes
 		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})

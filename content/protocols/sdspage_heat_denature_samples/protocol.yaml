@@ -16,6 +16,8 @@ steps:
         validator: { preset: correct_target }
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_heat_denature_samples_workspace
             - type: ObjectStateChange
               target: heat_block
               state:
@@ -45,7 +47,7 @@ steps:
     next_step: close_lid_and_start_timer
 
   - step_name: close_lid_and_start_timer
-    prompt: "Close the heat block lid and start the 5-minute denaturation incubation."
+    prompt: "Close the heat block lid and start the 5-minute denaturation incubation. Heating to 95C drives the protein into its fully unfolded SDS-bound state; the BME-cleaved disulfides cannot re-form at this temperature, which is essential for size-based migration."
     sequence:
       - target: heat_block
         gesture: click

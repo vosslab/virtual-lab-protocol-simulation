@@ -1,0 +1,6 @@
+scene_name: sdspage_fill_tank_buffer_workspace
+extends: electrophoresis_bench
+
+scene_notes: |
+  Electrophoresis bench workspace for filling tank buffer chambers. Extends electrophoresis_bench
+  which provides serological_pipette, running_buffer_1x_carboy, and electrophoresis_tank.

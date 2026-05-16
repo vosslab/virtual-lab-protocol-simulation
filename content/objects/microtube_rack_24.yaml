@@ -1,5 +1,5 @@
 object_name: microtube_rack_24
-kind: decoration
+kind: rack
 label: Microtube rack (24-slot)
 
 state_fields: []

@@ -9,13 +9,15 @@ learning:
 
 steps:
   - step_name: inspect_buffer
-    prompt: "Inspect the electrophoresis tank to confirm the buffer is clean and ready for recycling. Review the buffer state in the tank."
+    prompt: "Inspect the electrophoresis tank to confirm the buffer is clean and ready for recycling. Review the buffer state in the tank. If the buffer appears colored, cloudy, or contaminated, do NOT recycle. Dispose as hazardous chemical waste - it may contain Laemmli buffer or beta-mercaptoethanol."
     sequence:
       - target: electrophoresis_tank
         gesture: click
         validator: { preset: correct_target }
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_recycle_buffer_workspace
     step_validator: { preset: sequence_complete }
     outcome:
       on_success: complete
