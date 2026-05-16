@@ -1,5 +1,87 @@
 # Changelog
 
+## 2026-05-16 (YAML cleanup gate Patch 2e: triage re-classification S0a/S0b)
+
+### Fixes and Maintenance
+
+- Re-classify docs/active_plans/yaml_cleanup_triage.md per ratified subpart memo: split S0 into S0a (scene; 25 unique / 92 raw) + S0b (subpart; 97 unique / 193 raw). Move 193 well-reference signatures from S1 to S0b. Final residual S1 (true authoring bugs): 97 unique / 193 raw. Add reclassification log and update per-protocol breakdown table to show four tiers: S0a, S0b, S1, S2. Totals remain reconciled: 478 raw, 219 unique signatures.
+
+## 2026-05-16 (YAML cleanup gate Patch 2d: subpart-addressing spec amendment)
+
+### Behavior or Interface Changes
+
+- Amend docs/specs/OBJECT_YAML_FORMAT.md per ratified subpart-addressing memo: add subpart_groups schema (group_kind enum row|column|region; explicit members.contains; build-time validation of cell membership and no-overlap rules). Add channel_addressing optional capability on pipette objects (channels int + addressable_subpart_kinds list of {well, row, column}). Extend 96-well plate and add 8-channel multichannel pipette worked examples. Add cascade-write rule to Cross-file validation rules section. Author rewrites to row/column targets follow in WS-AUTHOR-CONTENT.
+
+## 2026-05-16 (YAML cleanup gate Patch 2c: plan revision -- fold WS-SPEC-SUBPART into M1)
+
+### Behavior or Interface Changes
+
+- Revise docs/active_plans/yaml_cleanup_gate.md: split WS-SPEC into WS-SPEC-SCENE + WS-SPEC-SUBPART; fold subpart-addressing spec into M1; reclassify 193 well-reference warnings from S1 (authoring) to S0b (subpart spec gap); update milestone exit criteria and patch numbering accordingly.
+
+## 2026-05-16 (YAML cleanup gate Patch 2b: subpart addressing recommendation)
+
+### Additions and New Features
+
+- Add docs/active_plans/subpart_addressing_recommendation.md: architect memo proposing overlapping subpart addressing (wells + rows + columns) for structured grids (plates/racks/gels) for user ratification. Reclassifies 193 well-reference signatures from S1 (authoring) to S0b (subpart-modeling spec gap).
+
+## 2026-05-16 (YAML cleanup gate Patch 2a: scene-adapter spec amendments)
+
+### Behavior or Interface Changes
+
+- Amend docs/specs/SCENE_VOCABULARY.md + docs/specs/PROTOCOL_YAML_FORMAT.md per user-ratified Option 2 (full-protocol-scenes registry). Archive docs/active_plans/scene_adapter_resolution_design.md to docs/archive/. Stepper re-promotion to ERROR follows in Patch 3 after subpart spec lands.
+
+## 2026-05-16 (YAML cleanup gate Patch 2: scene-adapter recommendation)
+
+### Additions and New Features
+
+- Add docs/active_plans/scene_adapter_recommendation.md: architect memo proposing one of four scene-adapter algorithms (active-only / full-protocol-scenes registry / explicit YAML adapter / hybrid) for user ratification. Evidence base: 25 S0 unique signatures (92 raw / 478 total stepper warnings) per yaml_cleanup_triage.md.
+
+## 2026-05-16 (YAML cleanup gate Patch 1 fix pass: triage corrections)
+
+### Fixes and Maintenance
+
+- Fix `docs/active_plans/yaml_cleanup_triage.md`: untruncate all signature names (protocol, step, target, scene) across 219 unique-signature table; populate `cell_culture_full` and `routine_passage` rows in per-protocol breakdown with actual S0/S1 classification; reconcile `routine_passage` count (stepper confirms 10 warnings, not prior estimate of 0); resolve unprocessed `{len(unique_sigs)}` template literal to final value of 219. Totals reconciled: 478 raw warnings, 92 S0 raw, 386 S1 raw, 25 S0 unique signatures, 194 S1 unique signatures = 219 total.
+
+## 2026-05-16 (protocol_manual.py quick wins Patch 1)
+
+### Additions and New Features
+
+- **New `--lint` flag on `tools/protocol_manual.py`**: opt-in authoring lint mode that emits warnings to stderr without altering rendered markdown. Three checks land in this pass. **L-PROMPT**: step prompts whose first non-whitespace token is `Click`, `Tap`, or `Press` (Press fires once on `press_capture` in `trypan_blue_counting`). **L-MATDRIFT**: a pipette transfer or single-interaction state change whose source material is undefined or `empty`, with the destination's assumed material name surfaced (36 findings across the shipped tree -- the PBS-bottle, trypsin-bottle, media-bottle pattern propagates widely and is the canonical motivating case for a future `materials.yaml` `initial_in:` field). **L-VOLMISMATCH**: 4-interaction transfer groups where the pipette adjust value and the computed dest delta disagree by more than 1% after unit normalization (uL/mL). Plate-subpart destinations are skipped because multi-well aggregations cause unavoidable false positives at the protocol layer.
+- **`## Materials` and `## Equipment` headers** rendered above `## Procedure` in every mini-protocol manual. Materials list pulls every label from the protocol's `materials.yaml`. Equipment list pulls every interaction target whose object `kind` is in the bench-shopping whitelist (`pipette, bottle, tube, plate, rack, flask, instrument, container, vial`). Sequence runners skip the headers entirely and delegate to their constituent mini-protocols.
+- **New `LintCollector` class** in `tools/protocol_manual.py`: dedups `(step_name, check_class, message)` triples per protocol, emits sorted to stderr at end of render.
+
+### Behavior or Interface Changes
+
+- **Sub-mL `material_volume` deltas auto-promote to `uL` for readability**: when `format_volume()` receives unit `ml` and value strictly less than 1.0, it multiplies by 1000 and renders `uL`. `0.04 mL` -> `40 uL` (clean integer; integer short-circuit applies after promotion). Promotion is one-way; `uL >= 1000` does not collapse to `mL` because pipette set-volume convention is `uL` at the rail.
+- **Step titles preserve embedded case**: `render_step()` switched from `str.capitalize()` (which lowercases every char after the first) to a `_first_char_upper()` helper that uppercases only `text[0]`. Step names that already encode case correctly (e.g., a future `prepare_pH7_buffer`) survive instead of being flattened to `Prepare ph7 buffer`. Concentration-token expansion (`200mm` -> `200 mM`) is NOT performed in this pass.
+- **`render_pipette_transfer` no longer infers source material from the destination**: when the source's tracked `material_name` is unknown or `empty`, the rendered sentence omits the `of <material>` clause entirely (`Using the X, aspirate 1 mL from the PBS bottle and dispense into the MTT solution tube.`) instead of falsely asserting the dest's new material. The matching authoring problem surfaces in lint as L-MATDRIFT. Single-interaction state-change branch gets the same conservative rule for plate subparts whose previous state was empty.
+- **Generalized `adjust` branch in `render_single_interaction`**: any single-key value payload with a recognized `set_*` or `held_material_*` field renders as `- Set the X <field> to <value> <unit>.` using `catalog.unit_for_field()`. The six previously-known keys (`held_material_volume`, `set_volume`, `set_temperature`, `set_rpm`, `set_time_s`, `set_time_min`) keep their existing label strings. The bare `- Adjust the X.` fallback fires only when value is empty or has more than one key.
+- **Multi-well-dispense pattern broadened**: `match_multi_well_dispense` now walks backward up to 4 prior interactions to find the most recent `pipette adjust` on the same pipette, so the volume token surfaces even when the author places an unrelated interaction between the adjust and the dispense run.
+- **4-interaction pipette transfer absorbs follow-up well dispenses**: when a transfer's dest is a plate subpart, `render_group_at` peeks forward for consecutive `click` interactions on the same parent plate whose material-name and per-well volume delta match the first dispense; matching wells are absorbed into a single `Using the <pipette>, distribute **<vol>** to each of <wells_range> of the <plate> (<N> wells).` sentence. The `mtt_solubilization_readout` `add_dmso_to_wells` step collapses from 96 bullets to 1.
+
+### Fixes and Maintenance
+
+- **`HTML_ENTITY_MAP` and `normalize_entities()` deleted** from `tools/protocol_manual.py`. HTML entities (`&micro;`, `&alpha;`, `&beta;`, `&sim;`, etc.) are the canonical ASCII-compliant escape per `docs/MARKDOWN_STYLE.md` and render as the intended glyph in every standard markdown viewer (`&micro;` -> u). The previous map was degrading manuals by stripping entities to their first ASCII letter (`&micro;` -> `u`, `&alpha;` -> `a`, `400 µM` -> `400 uM`). Removed all six call sites; renderer passes prose strings through unchanged. ASCII compliance is unaffected because entities are themselves pure ASCII byte sequences.
+
+### Decisions and Failures
+
+- **Conservative source-material rule preferred over heuristic inference (F5)**: an earlier draft proposed a token-overlap heuristic to detect "plausible mix names" in the dest and fall through to a wording compromise. Rejected after review feedback: token matching against labels misfires too easily. The safer rule is "when source material is unknown, do not name a material at all". The lint L-MATDRIFT warning carries the diagnostic.
+- **`step_title:` field and concentration-token rewriting deferred**: an earlier draft of WP-R1 proposed an optional `step_title:` override on steps to fix titles like `prepare_metformin_200mm` -> `Prepare metformin 200 mM`. Deferred because the protocol validator's behavior on unknown step keys was not verified in this pass. Lossy concentration-token expansion (`200mm` -> `200 mM`, `400um` -> `400 uM`, `ph7` -> `pH 7`) deferred for the same reason -- it belongs in its own pass with explicit author opt-in.
+- **Object-schema and materials-data follow-up surfaced, not landed in this pass**: (a) `content/objects/dilution_tube_rack_8.yaml` declares `material_name` enum as `[empty, carboplatin, media]` so the seven concentration-tagged carboplatin materials in `drug_dilution_setup/materials.yaml` cannot be carried into rack tubes by name; every rack tube renders as undifferentiated "Carboplatin solution" in manuals. Schema fix lives in the object YAML, not the renderer. (b) `materials.yaml` lacks an `initial_in:` (or equivalent) declaration so the renderer cannot know the PBS bottle starts holding PBS, the trypsin bottle starts holding trypsin, etc. The 36 L-MATDRIFT lint findings are the visible cost of this gap. Both are authoring-layer fixes scheduled separately.
+- **L-VOLMISMATCH suppression on plate subparts is deliberate**: the lint check sees the aggregated `material_volume` across an entire plate when wells are filled one at a time, so a 100 uL per-well dispense across 96 wells reads as `pipette set to 100 ul, dest delta is 9600 ul`. Suppressing on dotted subpart targets removes the false positive but also masks any genuine per-well mismatch in a multi-well run. The trade was made in favor of signal-to-noise; future work could check per-well deltas instead of the aggregate.
+
+## 2026-05-16 (YAML cleanup gate Patch 1: triage)
+
+### Additions and New Features
+
+- Add docs/active_plans/yaml_cleanup_triage.md: classify 478 stepper warnings into S0 (spec gap: 62 raw, 18 sigs) / S1 (authoring bug: 416 raw, 201 sigs) / S2 (stepper-gap: 0 raw, 0 sigs) buckets across 8 dirty protocols. Unique-signature deduplication, per-protocol breakdown, heaviest-protocol step analysis (mtt_solubilization_readout 193W, cell_culture_full 234W), cell_culture_full runner dedupe finding (findings attributed to leaves, no double-count), sampled raw warnings, and fix-shape recommendations for S1 tiers.
+
+## 2026-05-16 (YAML cleanup gate Patch 0: promote draft plan)
+
+### Additions and New Features
+
+- Add docs/active_plans/yaml_cleanup_gate.md: cleanup gate for 478 stepper warnings before SDS-PAGE expansion or TypeScript runtime pilot. Triage S0 (spec gap) / S1 (authoring bug) / S2 (stepper-gap) classes.
+
 ## 2026-05-16 (Shared toolkit extraction + protocol_manual CLI parity)
 
 ### Additions and New Features
@@ -68,7 +150,7 @@
 
 - **Scope honest math: shipped 8 of 10 planned ERROR rules.** Plan accepted (and dispatched) 10 hard-gate rule classes. 8 shipped at ERROR (`unknown_material`, `state_value_type_mismatch`, `state_value_not_allowed`, `undeclared_state_field`, `capability_mismatch`, `placement_name_collision`, flow-shape group: `broken_next_step` + `flow_cycle` + `flow_unreachable_step` + `flow_multi_terminal`, `scene_change_unresolved`, `timed_wait_missing_duration`/`timed_wait_invalid_duration`, `unknown_scene_operation_type`, `runner_of_runner`, `cross_mini_unknown_material`, `unknown_mini_protocol`). 2 deferred behind follow-on plans: WP-C3 material volume conservation and active-scene target resolution. Both deferrals lower the safety floor against real bug classes. Track follow-ons below.
 - **WP-C3 material volume conservation DEFERRED (scope cut, not finish-the-obvious).** Plan rated WP-C3 the highest-value structural F2-class catcher and said "do not ship without it." Pre-M1 dry-run found within-response balance incompatible with the universal split-response transfer pattern in shipped YAML (source decrement in response A, sink increment in response B). The balance window itself needs redesign (within-response vs whole-step vs cross-step). Until WP-C3 ships, the F2 bug class is only partially gated: name drift catches via `unknown_material` (proved on MP-7 today), but volume-math drift with names resolved still slips. Follow-on: [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md) -- must include balance-window redesign as explicit objective, not just spec ratification. Retire-rule trigger: WP-C3 ships before any new dilution-heavy mini lands (next candidate: any future drug-prep protocol beyond MP-5).
-- **Active-scene target resolution ERROR -> WARNING (rule relaxation, not content fix).** Plan said "do not relax the stepper rule; fix the YAML." Live-tree run surfaced 234 such findings on intended-good content -- evidence the stepper's narrow active-scene model is wrong, not that the YAML is wrong 234 ways. Demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING so the gate could ship; 234 advisory findings now sit in CI output every run. Drift risk: WARNINGs that authors learn to ignore become permanent noise. Follow-on: [active_plans/scene_adapter_resolution_design.md](active_plans/scene_adapter_resolution_design.md) -- plan owner must commit to retiring the WARNING rule when scene-adapter design ratifies; without explicit retire-cross-link the WARNING lives forever.
+- **Active-scene target resolution ERROR -> WARNING (rule relaxation, not content fix).** Plan said "do not relax the stepper rule; fix the YAML." Live-tree run surfaced 234 such findings on intended-good content -- evidence the stepper's narrow active-scene model is wrong, not that the YAML is wrong 234 ways. Demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING so the gate could ship; 234 advisory findings now sit in CI output every run. Drift risk: WARNINGs that authors learn to ignore become permanent noise. Follow-on: [archive/scene_adapter_resolution_design.md](archive/scene_adapter_resolution_design.md) -- plan owner must commit to retiring the WARNING rule when scene-adapter design ratifies; without explicit retire-cross-link the WARNING lives forever.
 - **`step_kind` semantic check (TimedWait and related) deferred**: design captured in [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md). Retire-rule trigger: step-kind RFC ratifies the enum.
 - **`display_color` cross-file divergence check split off**: spawned as a separate validator plan at [active_plans/validator_display_color_check.md](active_plans/validator_display_color_check.md) rather than folded into the stepper, keeping the stepper focused on flow + state + scene-op simulation.
 - **CHANGELOG cadence collapsed to single rollup (deviation from plan).** Stepper plan specified per-milestone entries (M1, M2, M3 separate). All three landed within one day during single execution window; consolidated to one entry. Per-milestone cadence rule still stands for future work.

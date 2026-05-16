@@ -23,6 +23,10 @@ directory. `--all` writes every protocol to `./output_manuals/`.
 Override the directory with `--out <dir>`, or use `--stdout` to print
 the rendered markdown to stdout instead of writing files.
 
+Use `--lint` to emit authoring warnings to stderr (does not alter rendered
+output). Checks for click-centric prompts, material-identity drift, and
+set-volume vs computed-delta mismatches.
+
 Reuses no validator or stepper code; reads YAML directly via pyyaml.
 Translation templates are heuristic and live in this file. A future
 plan can move per-object verbs into the object YAML schema so the
@@ -58,24 +62,6 @@ OBJECTS_DIR = toolkit_paths.OBJECTS_DIR
 # to the repo and survive across runs.
 DEFAULT_BULK_OUT_DIR = "output_manuals"
 
-# HTML entity normalization for entities seen in shipped YAML.
-# Markdown renders bare entities like &micro; literally on many platforms,
-# so normalize to ASCII per docs/MARKDOWN_STYLE.md.
-HTML_ENTITY_MAP = {
-	"&micro;": "u",
-	"&alpha;": "a",
-	"&beta;": "b",
-	"&gamma;": "g",
-	"&delta;": "d",
-	"&mu;": "u",
-	"&deg;": "deg",
-	"&plusmn;": "+/-",
-	"&times;": "x",
-	"&rarr;": "->",
-	"&larr;": "<-",
-	"&lrarr;": "<->",
-}
-
 # Prompt keywords that indicate a verification step. When a step prompt
 # begins with one of these, a bare-click interaction on a tracked object
 # renders as "Verify the X" instead of "Pick up the X".
@@ -88,16 +74,6 @@ def load_yaml(path):
 	with open(path, encoding="utf-8") as handle:
 		data = yaml.safe_load(handle)
 	return data
-
-
-#============================================
-def normalize_entities(text):
-	"""Replace HTML entities with ASCII per HTML_ENTITY_MAP."""
-	if not isinstance(text, str):
-		return text
-	for entity, replacement in HTML_ENTITY_MAP.items():
-		text = text.replace(entity, replacement)
-	return text
 
 
 #============================================
@@ -245,13 +221,19 @@ def format_volume(value, unit):
 		return "?"
 	try:
 		numeric = float(value)
-		if numeric == int(numeric):
-			value_str = str(int(numeric))
-		else:
-			value_str = f"{numeric:g}"
 	except (TypeError, ValueError):
-		value_str = str(value)
+		return f"**{value}**"
 	unit_str = unit if unit else ""
+	# Promote sub-1mL volumes to microliters for readability.
+	if unit_str == "ml" and 0 < numeric < 1.0:
+		numeric = numeric * 1000
+		unit_str = "ul"
+	# Format as integer if it's a whole number.
+	if numeric == int(numeric):
+		value_str = str(int(numeric))
+	else:
+		value_str = f"{numeric:g}"
+	# Convert lowercase ul/ml to Title case.
 	if unit_str in ("ul", "ml"):
 		unit_str = unit_str[0] + "L"
 	if unit_str:
@@ -282,6 +264,33 @@ class StateSimulator:
 		if target not in self.state:
 			self.state[target] = {}
 		self.state[target][field_name] = value
+
+
+#============================================
+class LintCollector:
+	"""
+	Collects authoring lint warnings during protocol render. Stores unique
+	(step_name, check_class, message) triples and emits them deduplicated
+	and sorted to stderr.
+	"""
+
+	def __init__(self):
+		"""Initialize empty warning set."""
+		self.warnings = set()
+
+	#--------------------------------------------
+	def record(self, step_name, check_class, message):
+		"""Record a lint warning, deduplicating by (step_name, check_class, message)."""
+		self.warnings.add((step_name, check_class, message))
+
+	#--------------------------------------------
+	def emit(self, stderr_stream):
+		"""Print all collected warnings to stderr, sorted deterministically."""
+		if not self.warnings:
+			return
+		sorted_warnings = sorted(self.warnings)
+		for step_name, check_class, message in sorted_warnings:
+			stderr_stream.write(f"{step_name}: {check_class}: {message}\n")
 
 
 #============================================
@@ -328,22 +337,51 @@ def is_plate_subpart(target):
 
 
 #============================================
-def render_step(step, catalog, material_labels, sim, touched_objects):
+def _volume_match(vol1, vol2, tolerance=0.01):
+	"""
+	Check if two volume values match within a tolerance (default 1%).
+	Returns True if exact match or if both are within 1% of the larger value.
+	"""
+	try:
+		v1 = float(vol1)
+		v2 = float(vol2)
+		if v1 == v2:
+			return True
+		if v1 > 0 and v2 > 0:
+			max_val = max(v1, v2)
+			pct_diff = abs(v1 - v2) / max_val
+			return pct_diff <= tolerance
+	except (TypeError, ValueError):
+		pass
+	return False
+
+
+#============================================
+def render_step(step, catalog, material_labels, sim, touched_objects, lint=None):
 	"""
 	Render one step. Walks the sequence applying multi-interaction
 	grouping where patterns match, with per-step touched-object tracking
-	for the verify-vs-pickup fallback heuristic.
+	for the verify-vs-pickup fallback heuristic. When lint is not None,
+	collects authoring warnings.
 	"""
 	lines = []
 	step_name = step["step_name"]
-	prompt = normalize_entities(step.get("prompt", "") or "")
+	prompt = step.get("prompt", "") or ""
 	sequence = step.get("sequence", []) or []
 
-	pretty = step_name.replace("_", " ").capitalize()
+	pretty = _first_char_upper(step_name.replace("_", " "))
 	lines.append(f"### {pretty}")
 	lines.append("")
 	lines.append(prompt)
 	lines.append("")
+
+	# L-PROMPT: check for click-centric verbs at prompt start.
+	if lint is not None:
+		tokens = prompt.split()
+		if tokens:
+			first_token = tokens[0]
+			if first_token in ("Click", "Tap", "Press"):
+				lint.record(step_name, "L-PROMPT", f"prompt starts with click-centric verb: {first_token!r}")
 
 	if not sequence:
 		lines.append("*(no interactions)*")
@@ -359,7 +397,7 @@ def render_step(step, catalog, material_labels, sim, touched_objects):
 	while index < len(sequence):
 		consumed, sentences = render_group_at(
 			sequence, index, catalog, material_labels, sim,
-			touched_objects, step_touched, prompt_says_verify,
+			touched_objects, step_touched, prompt_says_verify, step_name, lint,
 		)
 		for sentence in sentences:
 			lines.append(sentence)
@@ -371,7 +409,7 @@ def render_step(step, catalog, material_labels, sim, touched_objects):
 
 #============================================
 def render_group_at(sequence, index, catalog, material_labels, sim,
-		touched_objects, step_touched, prompt_says_verify):
+		touched_objects, step_touched, prompt_says_verify, step_name="", lint=None):
 	"""
 	Try to match a multi-interaction pattern starting at sequence[index].
 	Returns (consumed_count, sentences_list).
@@ -383,7 +421,7 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 	# Multi-well dispense pattern: pipette aspirate then N consecutive
 	# dispenses into related plate wells.
 	if gesture == "click" and is_pipette(catalog, target):
-		multi = match_multi_well_dispense(sequence, index, catalog)
+		multi = match_multi_well_dispense(sequence, index, catalog, lint, step_name)
 		if multi is not None:
 			consumed, sentence = multi
 			for offset in range(consumed):
@@ -405,11 +443,104 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 			):
 				sentence = render_pipette_transfer(
 					target, adjust_i, source_i, dest_i,
-					catalog, material_labels, sim,
+					catalog, material_labels, sim, step_name, lint,
 				)
 				for sub in (interaction, adjust_i, source_i, dest_i):
 					_mark_touched(sub, touched_objects, step_touched)
 					apply_state_changes(sub, sim)
+
+				# F10: Peek forward for consecutive plate-subpart dispenses with
+				# matching material and volume deltas; absorb them into one sentence.
+				dest_target = dest_i.get("target", "")
+				if is_plate_subpart(dest_target):
+					dest_parent = dest_target.split(".", 1)[0]
+					dest_change = find_first_op_of_type(
+						(dest_i.get("response", {}) or {}).get("scene_operations"),
+						"ObjectStateChange",
+					)
+					if dest_change is not None:
+						dest_state = dest_change.get("state", {}) or {}
+						dest_material = dest_state.get("material_name")
+						dest_volume_delta = dest_state.get("material_volume")
+
+						# Peek ahead for consecutive well clicks with same parent, material, volume.
+						extra_wells = []
+						cursor = index + 4
+						while cursor < len(sequence):
+							cont_i = sequence[cursor]
+							if cont_i.get("gesture") != "click":
+								break
+							cont_target = cont_i.get("target", "")
+							if not is_plate_subpart(cont_target):
+								break
+							cont_parent = cont_target.split(".", 1)[0]
+							if cont_parent != dest_parent:
+								break
+							cont_change = find_first_op_of_type(
+								(cont_i.get("response", {}) or {}).get("scene_operations"),
+								"ObjectStateChange",
+							)
+							if cont_change is None:
+								break
+							cont_state = cont_change.get("state", {}) or {}
+							cont_material = cont_state.get("material_name")
+							cont_volume = cont_state.get("material_volume")
+
+							# Check material match and volume match
+							if cont_material != dest_material:
+								break
+							if not _volume_match(dest_volume_delta, cont_volume):
+								break
+
+							extra_wells.append(cont_target.split(".", 1)[1])
+							cursor += 1
+
+						# If we found extra wells, emit a distribute sentence instead.
+						if extra_wells:
+							all_wells = [dest_target.split(".", 1)[1]] + extra_wells
+							wells_range = _summarize_well_list(all_wells)
+							plate_label = catalog.label(dest_parent)
+
+							# Compute volume from adjust if available.
+							adjust_volume = None
+							adjust_unit = ""
+							validator = adjust_i.get("validator", {}) or {}
+							value = validator.get("value", {}) or {}
+							for vol_key in ("held_material_volume", "set_volume"):
+								if vol_key in value:
+									adjust_volume = value[vol_key]
+									adjust_unit = catalog.unit_for_field(target, vol_key)
+									break
+
+							if adjust_volume is not None:
+								vol_str = format_volume(adjust_volume, adjust_unit)
+								distribute_sentence = (
+									f"- Using the {_lower_first(catalog.label(target))}, "
+									f"distribute {vol_str} to each of {wells_range} of the "
+									f"{plate_label} ({len(all_wells)} wells)."
+								)
+							else:
+								distribute_sentence = (
+									f"- Using the {_lower_first(catalog.label(target))}, "
+									f"distribute to each of {wells_range} of the {plate_label} "
+									f"({len(all_wells)} wells)."
+								)
+
+							# Mark touched and apply state changes for all absorbed interactions.
+							_mark_touched(interaction, touched_objects, step_touched)
+							apply_state_changes(interaction, sim)
+							_mark_touched(adjust_i, touched_objects, step_touched)
+							apply_state_changes(adjust_i, sim)
+							_mark_touched(source_i, touched_objects, step_touched)
+							apply_state_changes(source_i, sim)
+							_mark_touched(dest_i, touched_objects, step_touched)
+							apply_state_changes(dest_i, sim)
+							for offset in range(len(extra_wells)):
+								_mark_touched(sequence[index + 4 + offset], touched_objects, step_touched)
+								apply_state_changes(sequence[index + 4 + offset], sim)
+
+							return 4 + len(extra_wells), [distribute_sentence]
+
 				return 4, [sentence]
 
 	# 3-interaction pipette transfer (no adjust)
@@ -427,7 +558,7 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 			):
 				sentence = render_pipette_transfer(
 					target, None, source_i, dest_i,
-					catalog, material_labels, sim,
+					catalog, material_labels, sim, step_name, lint,
 				)
 				for sub in (interaction, source_i, dest_i):
 					_mark_touched(sub, touched_objects, step_touched)
@@ -483,7 +614,15 @@ def _lower_first(text):
 
 
 #============================================
-def match_multi_well_dispense(sequence, index, catalog):
+def _first_char_upper(text):
+	"""Uppercase only the first character, leaving the rest untouched."""
+	if not text:
+		return text
+	return text[0].upper() + text[1:]
+
+
+#============================================
+def match_multi_well_dispense(sequence, index, catalog, lint=None, step_name=""):
 	"""
 	Detect: pipette click + N consecutive clicks on plate wells whose
 	material_name and (constant) addition volume match across the run.
@@ -532,8 +671,9 @@ def match_multi_well_dispense(sequence, index, catalog):
 		return None
 	add_vol = None
 	add_unit = ""
-	if index >= 1:
-		prior = sequence[index - 1]
+	# Walk backward up to 4 prior interactions to find the most recent pipette adjust.
+	for check_index in range(max(0, index - 4), index):
+		prior = sequence[check_index]
 		if prior.get("gesture") == "adjust" and prior.get("target") == pipette:
 			value = (prior.get("validator", {}) or {}).get("value", {}) or {}
 			for key in ("held_material_volume", "set_volume"):
@@ -541,6 +681,8 @@ def match_multi_well_dispense(sequence, index, catalog):
 					add_vol = value[key]
 					add_unit = catalog.unit_for_field(pipette, key)
 					break
+			if add_vol is not None:
+				break
 	wells_range = _summarize_well_list(dispenses)
 	plate_label = catalog.label(parent_plate)
 	if add_vol is not None:
@@ -589,13 +731,14 @@ def _summarize_well_list(wells):
 
 #============================================
 def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
-		catalog, material_labels, sim):
+		catalog, material_labels, sim, step_name="", lint=None):
 	"""
 	Render one combined sentence for a pipette transfer. Resolves volume
 	in priority: adjust value -> source delta -> dest delta. Resolves
 	material in priority: source's tracked material_name -> dest's new
 	material_name. Suppresses redundant material phrase when source label
-	already overlaps with material label.
+	already overlaps with material label. When lint is not None, collects
+	authoring warnings about material drift and volume mismatches.
 	"""
 	pipette_label = catalog.label(pipette_name)
 	source_name = source_i.get("target", "")
@@ -605,6 +748,8 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 
 	volume = None
 	unit = ""
+	adjust_volume = None
+	adjust_unit = ""
 
 	if adjust_i is not None:
 		validator = adjust_i.get("validator", {}) or {}
@@ -612,7 +757,9 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 		for vol_key in ("held_material_volume", "set_volume"):
 			if vol_key in value:
 				volume = value[vol_key]
+				adjust_volume = volume
 				unit = catalog.unit_for_field(pipette_name, vol_key)
+				adjust_unit = unit
 				break
 
 	source_change = find_first_op_of_type(
@@ -638,6 +785,8 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 			except (TypeError, ValueError):
 				pass
 
+	dest_delta = None
+	dest_delta_unit = ""
 	if volume is None and dest_change is not None:
 		new_state = dest_change.get("state", {}) or {}
 		if "material_volume" in new_state:
@@ -647,20 +796,67 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 				delta = float(new_state["material_volume"]) - old_val
 				if delta > 0:
 					volume = delta
-					unit = catalog.unit_for_field(
+					dest_delta = delta
+					dest_delta_unit = catalog.unit_for_field(
+						dest_change.get("target"), "material_volume"
+					)
+					unit = dest_delta_unit
+			except (TypeError, ValueError):
+				pass
+	elif dest_change is not None:
+		new_state = dest_change.get("state", {}) or {}
+		if "material_volume" in new_state:
+			old = sim.get(dest_change.get("target"), "material_volume")
+			try:
+				old_val = float(old) if old is not None else 0.0
+				delta = float(new_state["material_volume"]) - old_val
+				if delta > 0:
+					dest_delta = delta
+					dest_delta_unit = catalog.unit_for_field(
 						dest_change.get("target"), "material_volume"
 					)
 			except (TypeError, ValueError):
 				pass
 
+	# L-VOLMISMATCH: check if adjust value and dest delta mismatch by > 1%.
+	# When units differ (e.g., uL vs mL), convert both to uL for comparison.
+	# Suppress this check for plate subparts (dotted notation) where multi-well
+	# aggregation can cause false positives (e.g., 100 uL per well x 96 wells = 9600 uL).
+	if lint is not None and adjust_volume is not None and dest_delta is not None:
+		if "." not in dest_name:
+			try:
+				adjust_val = float(adjust_volume)
+				dest_val = float(dest_delta)
+				if adjust_val > 0 and dest_val > 0:
+					# Normalize both to uL for unit-agnostic comparison.
+					adjust_ul = adjust_val * (1000 if adjust_unit == "ml" else 1)
+					dest_ul = dest_val * (1000 if dest_delta_unit == "ml" else 1)
+					max_val = max(adjust_ul, dest_ul)
+					pct_diff = abs(adjust_ul - dest_ul) / max_val
+					if pct_diff > 0.01:
+						lint.record(
+							step_name, "L-VOLMISMATCH",
+							f"pipette set to {adjust_val} {adjust_unit}, dest delta is {dest_val} {dest_delta_unit}"
+						)
+			except (TypeError, ValueError):
+				pass
+
 	material_name = sim.get(source_name, "material_name")
 	if not material_name or material_name == "empty":
-		if dest_change is not None:
-			new_state = dest_change.get("state", {}) or {}
-			if "material_name" in new_state:
-				material_name = new_state["material_name"]
+		material_name = None
 
-	material_label = label_for_material(material_name or "", material_labels)
+	# L-MATDRIFT: check if source material is undefined/empty.
+	if lint is not None and not material_name:
+		if dest_change is not None:
+			dest_state = dest_change.get("state", {}) or {}
+			dest_material = dest_state.get("material_name")
+			if dest_material:
+				lint.record(
+					step_name, "L-MATDRIFT",
+					f"source material undefined; dest material {dest_material!r} assumed by author"
+				)
+
+	material_label = label_for_material(material_name or "", material_labels) if material_name else ""
 
 	parts = [f"- Using the {_lower_first(pipette_label)},"]
 	if volume is not None:
@@ -695,7 +891,7 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 	for op in scene_ops:
 		if op.get("type") == "TimedWait":
 			minutes = op.get("duration_min", "?")
-			display = normalize_entities(op.get("display", "") or "")
+			display = op.get("display", "") or ""
 			seconds = None
 			try:
 				numeric = float(minutes)
@@ -718,20 +914,32 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 	if gesture == "adjust":
 		validator = interaction.get("validator", {}) or {}
 		value = validator.get("value", {}) or {}
-		for vol_key, field_label in (
-			("held_material_volume", "volume"),
-			("set_volume", "volume"),
-			("set_temperature", "temperature"),
-			("set_rpm", "speed"),
-			("set_time_s", "timer"),
-			("set_time_min", "timer"),
-		):
-			if vol_key in value:
-				unit = catalog.unit_for_field(target, vol_key)
-				return (
-					f"- Set the {_lower_first(target_label)} {field_label} "
-					f"to {format_volume(value[vol_key], unit)}."
-				)
+		# Map known keys to display labels.
+		field_map = {
+			"held_material_volume": "volume",
+			"set_volume": "volume",
+			"set_temperature": "temperature",
+			"set_rpm": "speed",
+			"set_time_s": "timer",
+			"set_time_min": "timer",
+		}
+		# Check if value is a dict with exactly one key.
+		if isinstance(value, dict) and len(value) == 1:
+			key = list(value.keys())[0]
+			# Use hardcoded map if key is in it, else derive from key name.
+			if key in field_map:
+				field_label = field_map[key]
+			elif key.startswith("set_") or key == "held_material_volume":
+				# Derive label from key: set_temperature -> temperature.
+				prefix_to_strip = "set_" if key.startswith("set_") else "held_material_"
+				field_label = key[len(prefix_to_strip):].replace("_", " ")
+			else:
+				field_label = key.replace("_", " ")
+			unit = catalog.unit_for_field(target, key)
+			return (
+				f"- Set the {_lower_first(target_label)} {field_label} "
+				f"to {format_volume(value[key], unit)}."
+			)
 		return f"- Adjust the {_lower_first(target_label)}."
 
 	state_changes = find_state_changes(scene_ops)
@@ -773,6 +981,12 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 					delta = float(volume) - old_val
 					if delta > 0:
 						unit = catalog.unit_for_field(target, "material_volume")
+						# F5 extension: suppress material name when dest is a plate subpart,
+						# old state is empty, and source cannot be inferred from this interaction.
+						if is_plate_subpart(target) and old_val == 0.0:
+							return (
+								f"- Add {format_volume(delta, unit)} to the {target_label}."
+							)
 						return (
 							f"- Add {format_volume(delta, unit)} of "
 							f"{material_label} to the {target_label}."
@@ -825,11 +1039,11 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 
 #============================================
 def render_learning_block(learning):
-	"""Render the learning block; normalize HTML entities in body text."""
+	"""Render the learning block."""
 	lines = ["## Learning", ""]
-	objectives = normalize_entities(learning.get("objectives", "") or "")
-	outcomes = normalize_entities(learning.get("outcomes", "") or "")
-	goals = normalize_entities(learning.get("goals", "") or "")
+	objectives = learning.get("objectives", "") or ""
+	outcomes = learning.get("outcomes", "") or ""
+	goals = learning.get("goals", "") or ""
 	if objectives:
 		lines.append(f"**Objectives.** {objectives}")
 		lines.append("")
@@ -843,8 +1057,79 @@ def render_learning_block(learning):
 
 
 #============================================
-def render_protocol_manual(protocol_name, catalog):
-	"""Render a mini-protocol or sequence runner; return markdown string."""
+def prewalk_touched_objects(protocol, catalog):
+	"""
+	Walk the protocol step chain (entry_step + next_step) and collect all
+	interaction targets that are purchasable objects (pipette, bottle, tube, etc).
+	Returns a set of object names (parent only, no subparts).
+	"""
+	touched = set()
+	steps_by_name = {}
+	for step in protocol.get("steps", []) or []:
+		steps_by_name[step["step_name"]] = step
+	current_name = protocol.get("entry_step")
+	visited = set()
+	while current_name is not None:
+		if current_name in visited:
+			break
+		visited.add(current_name)
+		step = steps_by_name.get(current_name)
+		if step is None:
+			break
+		for interaction in step.get("sequence", []) or []:
+			target = interaction.get("target", "")
+			if target:
+				# Extract parent name (before the dot if it's a subpart).
+				parent = target.split(".", 1)[0]
+				touched.add(parent)
+		current_name = step.get("next_step")
+	return touched
+
+
+#============================================
+def render_materials_section(material_labels):
+	"""
+	Render the ## Materials section. Emits nothing if material_labels is empty.
+	Returns list of markdown lines.
+	"""
+	if not material_labels:
+		return []
+	lines = ["## Materials", ""]
+	for label in sorted(material_labels.values()):
+		lines.append(f"- {label}")
+	lines.append("")
+	return lines
+
+
+#============================================
+def render_equipment_section(touched_objects, catalog):
+	"""
+	Render the ## Equipment section. Emits nothing if touched_objects is empty.
+	Filters to only objects with kinds in the purchasable set.
+	Returns list of markdown lines.
+	"""
+	purchasable_kinds = {"pipette", "bottle", "tube", "plate", "rack", "flask", "instrument", "container", "vial"}
+	filtered = []
+	for obj_name in sorted(touched_objects):
+		kind = catalog.kind(obj_name)
+		if kind in purchasable_kinds:
+			label = catalog.label(obj_name)
+			filtered.append(label)
+	if not filtered:
+		return []
+	lines = ["## Equipment", ""]
+	for label in sorted(set(filtered)):
+		lines.append(f"- {label}")
+	lines.append("")
+	return lines
+
+
+#============================================
+def render_protocol_manual(protocol_name, catalog, lint=None):
+	"""
+	Render a mini-protocol or sequence runner; return markdown string.
+	When lint is not None, collects authoring warnings in the collector.
+	"""
 	protocol_path = os.path.join(PROTOCOLS_DIR, protocol_name, "protocol.yaml")
 	protocol = load_yaml(protocol_path)
 	protocol_type = protocol.get("protocol_type", "mini_protocol")
@@ -865,7 +1150,7 @@ def render_protocol_manual(protocol_name, catalog):
 		for name in constituents:
 			lines.append("---")
 			lines.append("")
-			child_md = render_protocol_manual(name, catalog)
+			child_md = render_protocol_manual(name, catalog, lint)
 			if child_md.startswith("# "):
 				child_md = "## " + child_md[2:]
 			lines.append(child_md)
@@ -873,11 +1158,15 @@ def render_protocol_manual(protocol_name, catalog):
 
 	material_labels = load_material_labels(protocol_name)
 	sim = StateSimulator(catalog)
-	touched_objects = set()
+	touched_objects = prewalk_touched_objects(protocol, catalog)
 
 	steps_by_name = {}
 	for step in protocol.get("steps", []) or []:
 		steps_by_name[step["step_name"]] = step
+
+	# Render materials and equipment sections between learning and procedure.
+	lines.extend(render_materials_section(material_labels))
+	lines.extend(render_equipment_section(touched_objects, catalog))
 
 	lines.append("## Procedure")
 	lines.append("")
@@ -895,7 +1184,7 @@ def render_protocol_manual(protocol_name, catalog):
 			lines.append(f"*(broken next_step reference: {current_name})*")
 			break
 		step_lines = render_step(
-			step, catalog, material_labels, sim, touched_objects,
+			step, catalog, material_labels, sim, touched_objects, lint,
 		)
 		step_lines[0] = step_lines[0].replace("### ", f"### Step {step_number}. ")
 		lines.extend(step_lines)
@@ -980,6 +1269,12 @@ def parse_args():
 		help="Print extra detail (no extra detail currently; reserved).",
 	)
 
+	lint_group = parser.add_argument_group("Lint")
+	lint_group.add_argument(
+		"--lint", dest="lint", action="store_true",
+		help="Emit authoring lint warnings to stderr (does not alter rendered output).",
+	)
+
 	args = parser.parse_args()
 	return args
 
@@ -1049,7 +1344,11 @@ def main():
 		for name in names:
 			if not args.quiet:
 				reporter.print_section_header(name)
-			print(render_protocol_manual(name, catalog))
+			lint = LintCollector() if args.lint else None
+			md = render_protocol_manual(name, catalog, lint)
+			print(md)
+			if lint is not None:
+				lint.emit(sys.stderr)
 		sys.exit(0)
 
 	if args.out_dir is not None:
@@ -1063,10 +1362,13 @@ def main():
 	for name in names:
 		if not args.quiet:
 			reporter.print_section_header(f"Rendering {name}")
-		md = render_protocol_manual(name, catalog)
+		lint = LintCollector() if args.lint else None
+		md = render_protocol_manual(name, catalog, lint)
 		out_path = write_manual(name, md, out_dir)
 		if not args.quiet:
 			reporter.print_pass(out_path)
+		if lint is not None:
+			lint.emit(sys.stderr)
 
 	if not args.quiet:
 		reporter.print_summary_line(

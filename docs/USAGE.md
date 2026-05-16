@@ -155,7 +155,7 @@ The stepper also enforces flow-shape invariants:
 - every reachable step terminates (no orphan branches);
 - every `target` in an interaction resolves through the scene adapter to
   a placed object (currently a WARNING; see the scene-adapter design
-  follow-on in [active_plans/scene_adapter_resolution_design.md](active_plans/scene_adapter_resolution_design.md)).
+  follow-on in [archive/scene_adapter_resolution_design.md](archive/scene_adapter_resolution_design.md)).
 
 ### Deferred checks
 

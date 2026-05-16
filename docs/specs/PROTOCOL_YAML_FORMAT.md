@@ -162,6 +162,19 @@ Validation rules: `entry_step` must name a `step_name` present in the `steps`
 list. A mini-protocol must not open in the hood unless its first step takes
 place in the hood; the hood is not a default starting scene.
 
+### Target resolution and the per-protocol registry
+
+A protocol implicitly contributes every scene declared under its `scenes/`
+directory plus every transitively-extended base scene to a per-protocol registry
+consulted by the stepper at runtime. When a step's interaction names a `target`,
+the stepper first checks the currently-active scene's placements; on miss, it
+consults the registry to resolve the target across all the protocol's scenes.
+No author-facing YAML keys are required to build the registry; it is derived
+runtime metadata. Authors declare scenes normally in `content/protocols/<protocol_name>/scenes/`
+and the registry builds automatically from those scenes and their base scenes.
+See [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) "## Scene-adapter resolution"
+for the complete resolution algorithm and rules for ambiguous or unknown targets.
+
 ### Learning block example
 
 Example (from `content/protocols/tutorial_plate_drug_additions/protocol.yaml`):

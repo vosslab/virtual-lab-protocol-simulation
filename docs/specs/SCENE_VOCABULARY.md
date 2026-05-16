@@ -252,6 +252,44 @@ runtime definition. Wherever `ClickTarget` appears in scene code, a
 comment, or an error message, it means the driver payload and
 nothing else.
 
+## Scene-adapter resolution
+
+A protocol may declare multiple scenes in its `scenes/` directory,
+and each scene may inherit from a base scene (see
+[SCENE_INHERITANCE.md](SCENE_INHERITANCE.md)). At runtime, the
+stepper resolves protocol targets against a per-protocol registry
+built by union over all scenes the protocol declares, plus the base
+scenes they transitively extend.
+
+The target-resolution algorithm is:
+
+1. Consult the currently-active scene's placements. If a match exists,
+   resolve and stop.
+2. On miss, consult the per-protocol registry of all resolvable
+   placements from all scenes the protocol declares (the protocol's
+   `scenes/` directory files plus each base scene they extend). If
+   exactly one match exists in the registry, resolve and stop.
+3. On zero matches, the stepper emits `unknown_target_active_scene`
+   (existing error class).
+4. On multiple matches in the registry (different scenes place objects
+   with the same `object_name`), the stepper emits `ambiguous_target_in_scene`
+   (existing error class) and does not resolve.
+
+The registry is built from the resolved placement set that the
+scene-inheritance validator already produces (after `remove_placements`,
+`deactivate_placements`, `reposition_placements`, and `add_placements`
+apply per [SCENE_INHERITANCE.md](SCENE_INHERITANCE.md)). Deactivated
+placements are excluded from the registry; placement availability
+follows the deactivation rule (placement runtime availability).
+
+This scheme resolves all cases where a protocol author intends to
+reference an object placed in a sibling scene of the same protocol
+without requiring a `SceneChange` back to that scene. No new
+author-facing YAML keys are introduced; the registry is derived
+runtime metadata. See
+[../active_plans/scene_adapter_recommendation.md](../active_plans/scene_adapter_recommendation.md)
+for the design rationale (Option 2 analysis).
+
 ## Terms
 
 | term | one-line definition |
