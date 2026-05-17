@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-17
+
+### Additions and New Features
+
+- `docs/PRIMARY_SPEC.md`: new "No schema version" section. Bans `schema_version` fields in YAML, per-surface version constants (`OBJECT_SCHEMA_VERSION`, etc.), and version tokens in test/validator/generator filenames (`_v3_`, `_v5_`, `_v7_`). Unified version anchor is the repo `VERSION` file. Documents the trigger (first persistent downstream consumer) for revisiting the rule and introducing a single repo-wide `SCHEMA_VERSION` constant. Rule may be promoted to `docs/PRIMARY_CONTRACT.md` in the future.
+
+### Behavior or Interface Changes
+
+- `VERSION` bumped from `26.02` to `26.05.17` (CalVer `0Y.0M.PATCH`). Now serves dual role as repo version and unified schema-version anchor per the new PRIMARY_SPEC rule.
+
 ## 2026-05-16 (M4 Patch 18 -- WS-CLOSE)
 
 ### Removals and Deprecations

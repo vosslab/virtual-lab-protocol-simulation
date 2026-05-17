@@ -133,3 +133,19 @@ Curriculum content lives under `content/<protocol_name>/`. Developer smoke proto
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `passage_hood_detachment.html`, `trypan_blue_counting.html`, `cell_culture_full.html`.
 
+## No schema version
+
+This repo has exactly one schema surface (the closed YAML vocabularies for protocol, scene, object, and material). It does not carry, and must not introduce, a separate schema-version number.
+
+Rules:
+
+- No `schema_version`, `spec_version`, or equivalent field in any authored YAML file.
+- No per-surface version constants in code (no `OBJECT_SCHEMA_VERSION`, `PROTOCOL_SCHEMA_VERSION`, `SCENE_SCHEMA_VERSION`).
+- No version tokens in test, validator, or generator filenames (no `_v3_`, `_v5_`, `_v7_`). Tests are named for the behavior under test, not for the spec revision that introduced it.
+- The unified version anchor is the repo `VERSION` file (CalVer `0Y.0M.PATCH`, currently `26.05.17`). A schema change ships as a normal repo version bump plus a `docs/CHANGELOG.md` entry; consumers track the repo version, not a per-surface counter.
+- `generated/` is rebuilt from current source on every run. There is no persisted artifact whose schema can drift from the source, so no cache-invalidation handle is needed.
+
+Trigger for revisiting this rule: the first time a downstream consumer persists built artifacts across runs (TS runtime snapshot, student-progress store keyed by protocol shape, CDN-served bundle). At that point, introduce exactly one repo-wide `SCHEMA_VERSION` constant; never per-surface counters. Until that trigger fires, the repo `VERSION` is the schema version.
+
+This rule may be promoted to `docs/PRIMARY_CONTRACT.md` once a persistent consumer exists. While it lives here, it is still binding: a patch that adds per-surface schema versioning or version tokens to filenames is rejected at review.
+
