@@ -1,0 +1,265 @@
+#!/usr/bin/env python3
+"""Aggregate validation entry: runs every validation stage.
+
+Coordinates yaml, svg, and stepper validators in a unified CLI with
+consistent flags and output formatting. Supports whole-suite or focused runs,
+stage filtering, and multiple output formats (text, json, ndjson).
+
+Existing per-stage validators remain untouched and runnable independently.
+This aggregate dispatches to them via subprocess and aggregates results.
+"""
+
+import os
+import sys
+import subprocess
+from pathlib import Path
+
+import validation.shared_toolkit.cli
+import validation.shared_toolkit.console
+import validation.shared_toolkit.emit
+import validation.shared_toolkit.discovery
+import validation.shared_toolkit.repo_root
+
+
+REPO_ROOT = validation.shared_toolkit.repo_root.REPO_ROOT
+
+
+def build_parser():
+	"""Build argparse parser with unified flags for aggregate validation."""
+	parser = validation.shared_toolkit.cli.build_parser(
+		prog='validate',
+		description='Aggregate validation suite: runs yaml, svg, and stepper validators.',
+	)
+	return parser
+
+
+def _stage_scripts(stage_name: str) -> list[str]:
+	"""
+	Return the list of validator scripts that compose a stage.
+
+	The svg stage is composite: check.py answers "is codegen
+	reproducible + complete?" (CI gate); audit.py answers "are SVG
+	files well-formed?" (author review). Both belong under --only svg.
+	"""
+	stage_map = {
+		'yaml': ['validation/yaml/content_lint.py'],
+		'svg': ['validation/svg/pipeline_check.py', 'validation/svg/asset_audit.py'],
+		'stepper': ['validation/stepper/step_check.py'],
+	}
+	return stage_map.get(stage_name, [])
+
+
+def run_stage(stage_name: str, args, repo_root: Path) -> tuple[int, str]:
+	"""
+	Run one validation stage and return (exit_code, captured_stdout).
+
+	Args:
+		stage_name: one of 'yaml', 'svg', 'stepper'
+		args: argparse.Namespace from build_parser().parse_args()
+		repo_root: repo root path
+
+	Returns:
+		(exit_code, stdout_str) tuple. For composite stages (e.g. svg), exit
+		code is the max across sub-scripts; stdout concatenates each sub-script
+		output with a one-line header naming the sub-script.
+	"""
+	scripts = _stage_scripts(stage_name)
+	if not scripts:
+		return 1, f"Unknown stage: {stage_name}"
+
+	all_outputs = []
+	all_exit_codes = []
+	for script_rel in scripts:
+		script_path = repo_root / script_rel
+		if not script_path.exists():
+			all_exit_codes.append(1)
+			all_outputs.append(f"Stage script not found: {script_path}")
+			continue
+		sub_exit, sub_stdout = _run_one_script(script_path, args, repo_root)
+		all_exit_codes.append(sub_exit)
+		# Prefix multi-script stages with sub-script name for readability
+		if len(scripts) > 1:
+			sub_name = Path(script_rel).stem
+			all_outputs.append(f"[{sub_name}]\n{sub_stdout}")
+		else:
+			all_outputs.append(sub_stdout)
+
+	combined_exit = max(all_exit_codes) if all_exit_codes else 0
+	combined_stdout = "\n".join(all_outputs)
+	return combined_exit, combined_stdout
+
+
+def _run_one_script(script_path: Path, args, repo_root: Path) -> tuple[int, str]:
+	"""Invoke a single validator script as subprocess; return (exit_code, stdout)."""
+	# Build command for the stage
+	cmd = [
+		'python3',
+		str(script_path),
+	]
+
+	# Pass through compatible flags
+	if args.quiet:
+		cmd.append('-q')
+	if args.verbose:
+		cmd.append('-v')
+	if args.errors_only:
+		cmd.append('-e')
+	if args.strict:
+		cmd.append('-s')
+	if args.no_color:
+		cmd.append('--no-color')
+	if args.list_only:
+		cmd.append('-l')
+	if args.interactive:
+		cmd.append('-i')
+	if args.focus:
+		cmd.append('--focus')
+
+	# Pass protocol/object/scene selectors if present and not in focus mode
+	if not args.focus:
+		if args.protocols:
+			cmd.extend(['-p'] + args.protocols)
+		if args.objects:
+			cmd.extend(['-o'] + args.objects)
+		if args.scenes:
+			cmd.extend(['-S'] + args.scenes)
+
+	# Pass output format flags if JSON/NDJSON
+	if args.output_format == 'json':
+		cmd.append('--json')
+	elif args.output_format == 'ndjson':
+		cmd.append('--ndjson')
+
+	# Stage-specific flag adaptations (if needed; for now just dispatch stdout)
+
+	# Build environment with PYTHONPATH set for subprocess access to validation/ + pipeline/
+	env = dict(os.environ)
+	pythonpath_entries = [str(repo_root)]
+	if 'PYTHONPATH' in env:
+		pythonpath_entries.append(env['PYTHONPATH'])
+	env['PYTHONPATH'] = os.pathsep.join(pythonpath_entries)
+
+	try:
+		result = subprocess.run(
+			cmd,
+			cwd=str(repo_root),
+			capture_output=True,
+			text=True,
+			timeout=300,
+			env=env,
+		)
+		return result.returncode, result.stdout
+	except subprocess.TimeoutExpired:
+		return 1, f"Script {script_path.name} timed out"
+
+
+def main() -> None:
+	"""Run aggregate validation across selected stages.
+
+	Verbosity contract (text output line targets):
+	  -q / --quiet   : 1 line per stage (final pass/fail with key numbers)
+	  default        : 5-40 lines per stage (stage summary, totals, top categories)
+	  -v / --verbose : 40-<200 lines per stage (per-content-file breakdown, grouped, summarized)
+	  -j / --json    : full machine-readable detail (no bound)
+	  -J / --ndjson  : streamed full detail (no bound)
+	Aggregate output ~3x per-stage bound in text mode (one stage per section).
+	Raw per-step / per-asset internals go to JSON only, NOT text.
+	"""
+	parser = build_parser()
+	args = parser.parse_args()
+
+	# Determine which stages to run
+	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper']
+
+	# Determine scope
+	# --focus is forwarded to each per-stage subprocess. Per-stage
+	# scripts that consume it filter their own scope; per-stage scripts
+	# that do not yet implement focus filtering accept the flag as a
+	# no-op. iter_focus() in shared_toolkit/discovery.py is available
+	# for aggregate-level scope narrowing if a future patch wants it.
+
+	console = validation.shared_toolkit.console.make_console(no_color=args.no_color)
+
+	# Run each stage
+	all_stage_outputs = []
+	all_exit_codes = []
+
+	for stage_name in stages:
+		exit_code, stdout = run_stage(stage_name, args, REPO_ROOT)
+		all_exit_codes.append(exit_code)
+		all_stage_outputs.append((stage_name, exit_code, stdout))
+
+	# Compute max exit code now (used in both text and JSON output)
+	max_exit = max(all_exit_codes) if all_exit_codes else 0
+
+	# Render output based on format
+	if args.output_format == 'text':
+		# Group by stage with rich rule separators
+		for stage_name, exit_code, stdout in all_stage_outputs:
+			console.print(f"\n[bold cyan]--- {stage_name.upper()} ---[/bold cyan]")
+			if stdout.strip():
+				console.print(stdout.rstrip())
+			if exit_code != 0:
+				console.print(f"[bold red][{stage_name}] failed with exit code {exit_code}[/bold red]")
+
+	elif args.output_format in ('json', 'ndjson'):
+		# For JSON output: merge findings from all stages
+		import json
+		all_findings = []
+		all_tools = set()
+
+		for stage_name, exit_code, stdout in all_stage_outputs:
+			if stdout.strip():
+				try:
+					# Each stage emits JSON; try to parse it
+					stage_data = json.loads(stdout)
+
+					# If it's a top-level findings array or findings key, extract findings
+					findings_list = []
+					if isinstance(stage_data, list):
+						findings_list = stage_data
+					elif isinstance(stage_data, dict):
+						if 'findings' in stage_data:
+							findings_list = stage_data['findings']
+						elif 'finding' in stage_data:
+							findings_list = [stage_data['finding']]
+
+					# Tag each finding with tool source if not already present
+					for finding in findings_list:
+						if isinstance(finding, dict):
+							if 'tool' not in finding:
+								finding['tool'] = f'validation.{stage_name}'
+							all_findings.append(finding)
+							all_tools.add(f'validation.{stage_name}')
+				except (json.JSONDecodeError, ValueError):
+					# If the stage output is not JSON, wrap it as a plain string
+					all_findings.append({
+						'tool': f'validation.{stage_name}',
+						'type': 'output',
+						'message': stdout.strip()[:200],
+					})
+					all_tools.add(f'validation.{stage_name}')
+
+		aggregate_result = {
+			'stages': list(all_tools),
+			'findings': all_findings,
+			'exit_code': max_exit if all_exit_codes else 0,
+		}
+
+		if args.output_format == 'json':
+			print(json.dumps(aggregate_result, indent=2))
+		else:  # ndjson
+			# Emit aggregate summary first, then each finding on its own line
+			print(json.dumps({
+				'stages': list(all_tools),
+				'total_findings': len(all_findings),
+				'exit_code': max_exit if all_exit_codes else 0,
+			}))
+			for finding in all_findings:
+				print(json.dumps(finding))
+
+	sys.exit(max_exit)
+
+
+if __name__ == '__main__':
+	main()

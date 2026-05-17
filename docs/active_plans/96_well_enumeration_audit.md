@@ -68,7 +68,7 @@ appear in the same row-A-first order.
 
 ## Manual smoke check
 
-Rendered `tools/protocol_manual.py mtt_solubilization_readout` on
+Rendered `python3 -m validation.manual mtt_solubilization_readout` on
 `main`. Step 1 ("Add dmso to wells") renders ONE bullet for the
 single `well_plate_96.all_wells` `ObjectStateChange`. Step 2
 ("Trituration to dissolve") renders one bullet for the

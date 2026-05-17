@@ -13,7 +13,7 @@ This separation achieves:
 - **Editability**: a non-coder can edit YAML in a text editor without touching code.
 - **Separation of concerns**: protocol logic (branching, validation) lives in TypeScript;
   protocol content (steps, wiring, reagent properties) lives in YAML.
-- **Build-time compilation**: a Python 3.12 script `tools/build_protocol_data.py` reads
+- **Build-time compilation**: a Python 3.12 script `pipeline/build_protocol_data.py` reads
   the YAML files and emits typed TypeScript exports. No YAML parser ships in the browser.
   The browser consumes only the generated TS constants.
 - **Single source of truth**: every step, every item, every interaction is declared once
@@ -49,7 +49,7 @@ Each mini-protocol is self-contained under `content/protocols/<protocol_name>/`:
 - `content/protocols/<protocol_name>/materials.yaml`: material definitions (reagents, liquids, cells, waste)
 - `content/protocols/<protocol_name>/scenes/`: protocol-specific scene overrides
 
-A Python generator at `tools/build_protocol_data.py` reads these files and emits two
+A Python generator at `pipeline/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
 
 - `generated/protocol_data.ts`: exports `PROTOCOL_STEPS`, `PROTOCOL_PARTS`, `PROTOCOL_DAYS` (gitignored; re-exported by the `src/protocol.ts` facade)
@@ -61,8 +61,8 @@ To support future protocols (e.g. western blot, flow cytometry), each protocol i
 self-contained subfolder under `content/protocols/`. At build time, specify the protocol:
 
 ```bash
-python3 tools/build_protocol_data.py --protocol cell_culture
-python3 tools/build_protocol_data.py --protocol western_blot  # future
+python3 pipeline/build_protocol_data.py --protocol cell_culture
+python3 pipeline/build_protocol_data.py --protocol western_blot  # future
 ```
 
 The `--protocol` flag defaults to `cell_culture` if omitted. To add a new protocol,
@@ -418,7 +418,7 @@ protocol:
 
 ## Cross-file validation rules
 
-The build process (`tools/build_protocol_data.py`) enforces these rules:
+The build process (`pipeline/build_protocol_data.py`) enforces these rules:
 
 ### Protocol structure
 
@@ -473,7 +473,7 @@ generated identifiers below are runtime output keys, not protocol YAML
 keys; the canonical YAML schema authors write is the two-level model
 documented above.
 
-The Python builder (`tools/build_protocol_data.py`) compiles YAML into two
+The Python builder (`pipeline/build_protocol_data.py`) compiles YAML into two
 TypeScript modules at `generated/` (gitignored; consumed via the authored
 facades `src/protocol.ts` and `src/inventory.ts`):
 

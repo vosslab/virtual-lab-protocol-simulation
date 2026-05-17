@@ -112,7 +112,7 @@ def test_facade_imports_only():
 	if missing_any:
 		pytest.skip(
 			"generated/ files missing after conftest bootstrap; "
-			"run: bash tools/bootstrap_generated.sh"
+			"run: bash pipeline/bootstrap_generated.sh"
 		)
 
 	# Walk src/ and collect all TS files

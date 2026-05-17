@@ -56,7 +56,7 @@ content/scenes/<base_scene_name>.yaml                       (shared base scenes)
 content/protocols/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
         |
         v
-tools/build_scene_data.py  (validate + emit)
+pipeline/build_scene_data.py  (validate + emit)
         |
         v
 generated/scene_data.ts     (AUTO-GENERATED, gitignored; do not hand-edit)
@@ -73,7 +73,7 @@ its YAML sources under `content/scenes/` and `content/protocols/`.
 The build is invoked by [build_github_pages.sh](../../build_github_pages.sh)
 and [export_single_file.sh](../../export_single_file.sh). `check_codebase.sh`
 does not regenerate `scene_data.ts`; if YAML edits are pending,
-run `source source_me.sh && python3 tools/build_scene_data.py` before the
+run `source source_me.sh && python3 pipeline/build_scene_data.py` before the
 type-check pass.
 
 ## Top-level fields
@@ -363,7 +363,7 @@ object YAML. This is the closed six-capability set.
 
 ## Validation rules
 
-The validator in [../../tools/build_scene_data.py](../../tools/build_scene_data.py)
+The validator in [../../pipeline/build_scene_data.py](../../pipeline/build_scene_data.py)
 enforces these rules against the fused format:
 
 - The YAML root must be a mapping.

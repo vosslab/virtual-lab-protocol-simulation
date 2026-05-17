@@ -174,7 +174,7 @@ export function expandGroupPatch(groupPatch: SvgGroupPatch): SvgColorPatch[] {
 		// Route the role to fill (default) or stroke based on the sidecar's
 		// optional attr field. Cast is contained: SvgGroupEntry is a JSON
 		// shape from generated code, attr is an optional generator-emitted
-		// field documented in tools/generate_svg_globals.py.
+		// field documented in pipeline/generate_svg_globals.py.
 		const entryAttr = (entry as { attr?: "fill" | "stroke" }).attr;
 		if (groupPatch.fillRole !== undefined) {
 			if (entryAttr === "stroke") {

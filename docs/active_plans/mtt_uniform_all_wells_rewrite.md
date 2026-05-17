@@ -10,7 +10,7 @@ action and surfaced a finding the original design note did not predict:
 shortest YAML by a wide margin (42 lines for the worked example fixture
 vs. 160 for the existing 12-column-per-step form), and requires no spec
 amendment because the geometric subpart-group cascade path in
-`tools/stepper/scene_ops.py` (`_handle_subpart_group_cascade`) already
+`validation/stepper/scene_ops.py` (`_handle_subpart_group_cascade`) already
 walks it cleanly.
 
 This plan executes the narrow consequence: rewrite the three uniform
@@ -25,7 +25,7 @@ whole plate.
 Two follow-ups surfaced by the spike are tracked separately in
 [docs/TODO.md](../TODO.md) and are NOT part of this plan:
 
-- per-cell state tracking in `tools/stepper/state.py`
+- per-cell state tracking in `validation/stepper/state.py`
 - optional named-region syntax with `members: all` shorthand,
   pending a real subset use case
 
@@ -75,7 +75,7 @@ on a whole-plate action.
   meaningful subsets per spike recommendation.
 - Not amending `docs/specs/*` or `docs/PRIMARY_SPEC.md` -- this
   rewrite uses existing vocabulary only.
-- Not landing any code in `tools/stepper/` or `tools/validators/` --
+- Not landing any code in `validation/stepper/` or `tools/validators/` --
   the spike-only branch carries those, this plan does not touch them.
 - Not migrating any other mini protocol -- mtt is the worked example;
   other minis will be assessed individually if and when their uniform
@@ -121,8 +121,8 @@ on a whole-plate action.
 5. Update the top-of-file simulation comment: drop the "column at a
    time" wording for the two collapsed steps; preserve the
    technique-faithful description in the step `prompt:` fields.
-6. Run `source source_me.sh && python3 tools/validate_content_yaml.py -p mtt_solubilization_readout`.
-7. Run `source source_me.sh && python3 tools/protocol_stepper.py -p mtt_solubilization_readout -v`.
+6. Run `source source_me.sh && python3 validation/yaml/validate.py -p mtt_solubilization_readout`.
+7. Run `source source_me.sh && python3 validation/stepper/validate.py -p mtt_solubilization_readout -v`.
 8. Capture per-well final state via the same YAML-derivation method
    the spike used (`StateMap` does not track per-cell state today; the
    spike's TODO.md follow-up will fix this in the stepper, but this
@@ -131,7 +131,7 @@ on a whole-plate action.
    `tests/baselines/mtt_solubilization_readout_baseline.yaml`. Every
    cell must match on `material_name` and `material_volume`.
 10. Regenerate the protocol manual via
-    `source source_me.sh && python3 tools/protocol_manual.py mtt_solubilization_readout`
+    `source source_me.sh && python3 -m validation.manual mtt_solubilization_readout`
     and compare section structure against the pre-rewrite manual.
 11. Append the dated entry to `docs/CHANGELOG.md`.
 
@@ -143,23 +143,23 @@ on a whole-plate action.
 
 ## Verification
 
-1. `source source_me.sh && python3 tools/validate_content_yaml.py -p mtt_solubilization_readout`
+1. `source source_me.sh && python3 validation/yaml/validate.py -p mtt_solubilization_readout`
    exits 0.
-2. `source source_me.sh && python3 tools/protocol_stepper.py -p mtt_solubilization_readout`
+2. `source source_me.sh && python3 validation/stepper/validate.py -p mtt_solubilization_readout`
    exits 0; dashboard shows zero ERROR findings.
 3. Per-well final state derived from the rewritten protocol equals
    `tests/baselines/mtt_solubilization_readout_baseline.yaml` cell-for-
    cell on `material_name` + `material_volume`. The derivation script
    used by the spike is the reference comparison method until per-cell
    `StateMap` tracking lands.
-4. `source source_me.sh && python3 tools/protocol_stepper.py`
+4. `source source_me.sh && python3 validation/stepper/validate.py`
    (full-tree run) shows the `mtt_solubilization_readout` per-protocol
    warning row drops proportional to the collapsed interactions
    (~193 to roughly 16; the residual warnings are
    `unknown_target_active_scene` from steps untouched by this plan).
 5. `cell_culture_full` sequence runner walks cleanly (it references
    `mtt_solubilization_readout` as a leaf).
-6. `tools/protocol_manual.py mtt_solubilization_readout` produces a
+6. `python3 -m validation.manual mtt_solubilization_readout` produces a
    manual whose section structure matches the pre-rewrite manual
    (smoke-level pedagogy preservation check).
 7. `pytest tests/` passes locally on the rewrite branch.

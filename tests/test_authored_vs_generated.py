@@ -108,7 +108,7 @@ def test_generated_ts_all_have_markers():
 	if not os.path.isdir(generated_dir):
 		pytest.skip(
 			"generated/ not found after conftest bootstrap; "
-			"run: bash tools/bootstrap_generated.sh"
+			"run: bash pipeline/bootstrap_generated.sh"
 		)
 
 	# Now check all .ts files in generated/
@@ -119,7 +119,7 @@ def test_generated_ts_all_have_markers():
 		# Just skip with a message.
 		pytest.skip(
 			"No .ts files found in generated/; "
-			"run: bash tools/bootstrap_generated.sh"
+			"run: bash pipeline/bootstrap_generated.sh"
 		)
 
 	# Check that each .ts file has a generated marker

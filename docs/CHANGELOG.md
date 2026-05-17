@@ -1,5 +1,134 @@
 # Changelog
 
+## 2026-05-16 (M4 Patch 18 -- WS-CLOSE)
+
+### Removals and Deprecations
+
+- **Plan archived**: `docs/active_plans/tools_split_and_consolidate.md` archived to `docs/archive/tools_split_and_consolidate.md` (final milestone closure; M1-M4 spans full refactor).
+
+### Fixes and Maintenance
+
+- `docs/FILE_STRUCTURE.md` updated to reflect final M4 state: added top-level `validation/validate.py` aggregate entry point and three new shared_toolkit utilities (cli.py, console.py, emit.py).
+- All M1-M4 milestones complete: WS-TOOLKIT-LIFT, WS-TOOLKIT-HELPERS, WS-TOOLKIT-NEST, WS-CALLERS-MIGRATION, WS-NAMING-TEST, WS-PIPELINE-LIFT, WS-SALVAGE, WS-VALIDATORS-MOVE, WS-STEPPER-MOVE, WS-SVG-LIFT, WS-MANUAL-MOVE, WS-PYTHONPATH-FIX, WS-FINDINGS, WS-FILE-STRUCTURE, WS-CLI-ADOPT, WS-USAGE-DOCS, WS-CLEANUP (13 patches).
+
+### Decisions and Failures
+
+- **M1-M4 milestone closure**: tools/ split into pipeline/ (build logic) and validation/ (audit/test logic). Shared CLI and reporting unified across all validators. Schema-aware YAML linting and protocol stepping fully consolidated. Legacy validator paths (tools/validators/, tools/stepper/) deprecated and removed. Plan moves to archive; feature work and governance tasks go to docs/ROADMAP.md.
+
+## 2026-05-16 (M4 Patch 17 -- WS-CLEANUP)
+
+### Removals and Deprecations
+
+- **Deprecated CLI flag aliases removed**: `--list-protocols` (from `validation/yaml/validate.py`, `validation/stepper/validate.py`, `validation/yaml/protocol_audit.py`) and `--format {table,json}` (from `validation/svg/asset_audit.py`) are no longer accepted. These were backward-compat shims introduced in M3. Users must use the canonical unified flags: `--list` for listing, `--json` for JSON output.
+- **Legacy exit codes removed**: `validation/svg/pipeline_check.py` exit code 2 (coverage failures) changed to exit code 1, aligning with M4 exit-code schema (0=success, 1=failure). Removed deprecated "exit code 2 for determinism, 3 for coverage" help text references.
+
+### Fixes and Maintenance
+
+- All four affected scripts tested baseline-verified: output byte-identical to pre-cleanup runs.
+- Removed aliases now trigger argparse errors as expected (flags not recognized).
+- pyflakes clean on all modified validation scripts. Full pytest suite: 720 tests passing (1 pre-existing indentation issue in unrelated file).
+- No lingering code references to old `tools/validators/` or `tools/stepper/` shim paths remain. `validation/yaml/findings.py` and `validation/stepper/findings.py` confirmed as active modules (not shims).
+
+## 2026-05-16 (M3 Patch 16 -- WS-USAGE-DOCS)
+
+### Additions and New Features
+
+- `docs/USAGE.md` validation section restructured with unified CLI
+  reference: canonical invocation `source source_me.sh && python3 validation/validate.py`;
+  comprehensive unified flag table covering all validation entry points (aggregate
+  `validation/validate.py` and per-stage modules); overview-mode examples (whole suite,
+  git-scoped `--focus`, protocol/object/scene selection, stage filters); agent-mode
+  examples (`--json`, `--ndjson` with `jq` parsing); per-stage direct invocation
+  patterns; and complete protocol stepper documentation section with error classes,
+  flow-shape checks, and deferred checks from active plans.
+
+### Behavior or Interface Changes
+
+- `docs/USAGE.md` validation documentation: all existing scattered validation
+  references consolidated into single "Validation" section. Stepper documentation
+  moved from secondary headings into subsection of stepper details. Archive links
+  updated to relative paths (e.g., `[archive/scene_adapter_resolution_design.md](../archive/...)`).
+
+### Fixes and Maintenance
+
+- Markdown link test baseline: all local links verified with `test_markdown_links.py`
+  (0 errors). Relative path links from `docs/USAGE.md` to sibling docs (`VALIDATION_JSON_SCHEMA.md`),
+  archive files, and active plans all correct.
+- All validation CLI examples verified as canonical per unified argparse
+  table (Final argparse table, tools_split_and_consolidate.md M3 spec).
+
+## 2026-05-16 (M3 Patch 14 -- SVG + Manual CLI adoption)
+
+### Behavior or Interface Changes
+
+- **validation/svg/pipeline_check.py**: Exit codes changed from 0/2/3 to 0/1/2 (success/determinism-fail/coverage-fail). Aligns with M3 exit-code schema per plan. Replaced inline git subprocess with `toolkit_paths.REPO_ROOT`.
+- **validation/svg/asset_audit.py**: Adopted unified argparse via `toolkit_cli.build_parser()`. New flags: `--json`, `--ndjson`, `--quiet`, `--verbose`. Legacy `--format table/json` still accepted with deprecation warning (removal in M4). Shared CLI mapping: `-p`/`--protocol` -> single `object_name`.
+- **validation/manual/protocol_manual.py**: Adopted unified argparse via `toolkit_cli.build_parser()`. New flags: `--quiet`, `--verbose` from shared CLI. Renderer rejects `--json`/`--ndjson` (exit 2). Interface change: `-o`/`--out` -> `--out-dir` to avoid collision with shared CLI `-o`/`--object`.
+
+### Fixes and Maintenance
+
+- Patch 14 (M3 WS-CLI-ADOPT, SVG + manual side) closing: all three scripts tested and baseline-verified.
+- `validation/svg/pipeline_check.py`: output byte-identical to baseline.
+- `validation/svg/asset_audit.py`: output byte-identical to baseline; legacy compat flag works.
+- `validation/manual/protocol_manual.py`: markdown rendering unchanged; interface update documented.
+- pyflakes clean on all modified scripts. check_codebase.sh SVG gate passing.
+
+### Decisions and Failures
+
+- Protocol_manual renderer incompatible with JSON output (markdown is only output format). Explicit rejection with exit code 2 and clear error message.
+- Asset_audit `--format` legacy flag causes deprecation warning to stderr on use (visible to human, does not break JSON output).
+
+## 2026-05-16 (M2 Milestone 2 closeout -- WS-FILE-STRUCTURE final)
+
+### Behavior or Interface Changes
+
+- `tools/` reorganized: validation scripts moved to `validation/`, build
+  scripts to `pipeline/`, asset cleanup to salvage/ (not checked in). Canonical
+  entries are now: `source source_me.sh && python3 validation/yaml/validate.py`,
+  `source source_me.sh && python3 validation/stepper/validate.py`,
+  `source source_me.sh && python3 validation/svg/pipeline_check.py`,
+  `source source_me.sh && python3 validation/svg/asset_audit.py`,
+  `source source_me.sh && python3 validation/manual/validate.py`.
+  [FILE_STRUCTURE.md](FILE_STRUCTURE.md) updated to reflect final
+  M2 state: top-level `pipeline/`, `validation/` (with subpackages yaml, svg,
+  stepper, manual, shared_toolkit), and slimmed `tools/`.
+
+### Fixes and Maintenance
+
+- M1 + M2 patches all passing: WS-TOOLKIT-LIFT, WS-TOOLKIT-HELPERS,
+  WS-TOOLKIT-NEST, WS-CALLERS-MIGRATION, WS-NAMING-TEST, WS-PIPELINE-LIFT,
+  WS-SALVAGE, WS-VALIDATORS-MOVE, WS-STEPPER-MOVE, WS-SVG-LIFT,
+  WS-MANUAL-MOVE, WS-PYTHONPATH-FIX, WS-FINDINGS, WS-FILE-STRUCTURE.
+- Validation suite baseline: 168 files, 0 failures (yaml validate).
+  31/31 protocols passing stepper (1042 interactions). SVG pipeline
+  determinism + coverage gates OK.
+- Markdown link baseline reduced from 11 to 3 (all in
+  `docs/COLOR_CONTRAST_ACCESSIBILITY.md`, outside M2 scope).
+- `docs/ROADMAP.md` stale path updated: `tools/protocol_manual.py` ->
+  `validation/manual/protocol_manual.py`.
+
+### Decisions and Failures
+
+- `__main__.py` entry pattern replaced with `validate.py` per PYTHON_STYLE.md
+  library-module rule: `validation/yaml/validate.py`, `validation/stepper/validate.py`,
+  `validation/manual/validate.py` are canonical entries (all importable as modules,
+  all callable as `python3 validation/<pkg>/validate.py`).
+- Validators classified: protocol_manual + stepper are semantic/pedagogical
+  (human judgement, interactive); check_svg is pipeline gate (determinism);
+  yaml/protocol_audit are content audit (cross-protocol orphan detection).
+  Each lives in its own package under validation/.
+- normalize_svg_v2.py retained in tools/ (asset-time editing, not pipeline);
+  earlier retired normalize_svg.py + purge_inline_images.py kept in
+  salvage/ (not checked in) for reference only.
+- PYTHONPATH exports REPO_ROOT in source_me.sh so all imports are absolute
+  (no relative imports, no sys.path mutation in code).
+
+### Developer Tests and Notes
+
+- M2 closes the "tools split and consolidate" milestone. M3 (fresh feature
+  pipeline, deferred vocabulary work) and M4 (post-launch governance) remain.
+  Plan stays in docs/active_plans/tools_split_and_consolidate.md.
+
 ## 2026-05-16 (96-well over-enumeration cleanup -- WP-MTT-FIX-1 + WP-WELLPLATE-OBJVOCAB-1 + WP-PDTMA-COLLAPSE-1)
 
 ### Additions and New Features

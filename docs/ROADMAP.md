@@ -81,9 +81,9 @@ Acceptance criteria:
 
 Surfaced cleanups that would land alongside:
 
-- `tools/protocol_manual.py` already enforces "draw" for pipette
-  loading + "aspirate and remove" for vacuum-to-waste; glossary
-  ratifies the convention.
+- [validation/manual/protocol_manual.py](../validation/manual/protocol_manual.py) already enforces
+  "draw" for pipette loading + "aspirate and remove" for vacuum-to-waste;
+  glossary ratifies the convention.
 - Repo-wide pass replacing remaining authored "aspirate" prose in
   pipette-loading contexts (8 protocols flagged in
   [TODO.md](TODO.md)).

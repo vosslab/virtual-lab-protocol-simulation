@@ -26,7 +26,7 @@ mkdir -p "${OUTDIR}"
 # Bootstrap all YAML-emitted generated TS families: protocol_data.ts,
 # inventory_data.ts, scene_data.ts, and SVG manifest. The script is idempotent
 # and handles validation ordering (protocol first as a fast gate).
-bash tools/bootstrap_generated.sh
+bash pipeline/bootstrap_generated.sh
 
 npx tsc --noEmit -p src/tsconfig.json
 

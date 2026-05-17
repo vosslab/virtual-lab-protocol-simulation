@@ -81,55 +81,133 @@ A 1-3 star rating is shown on the results screen.
 Build the protocol catalog's TypeScript data files:
 
 ```bash
-source source_me.sh && python3 tools/build_protocol_data.py
+source source_me.sh && python3 pipeline/build_protocol_data.py
 ```
 
 Validate a specific protocol (for example, a tutorial) while keeping generated
 output catalog-backed:
 
 ```bash
-source source_me.sh && python3 tools/build_protocol_data.py --protocol tutorial_split
+source source_me.sh && python3 pipeline/build_protocol_data.py --protocol tutorial_split
 ```
 
 Validate only (no output files):
 
 ```bash
-source source_me.sh && python3 tools/build_protocol_data.py --validate-only
+source source_me.sh && python3 pipeline/build_protocol_data.py --validate-only
 ```
 
-## Protocol stepper
+## Validation
 
-The protocol stepper is the second of two content gates. Run the schema
-validator first, then the stepper:
+All validation tools accept a unified command-line interface. The canonical
+invocation pattern uses `source_me.sh` to set `PYTHONPATH`:
 
 ```bash
-source source_me.sh && python3 tools/validate_content_yaml.py
-source source_me.sh && python3 tools/protocol_stepper.py
+source source_me.sh && python3 validation/validate.py
 ```
 
-The validator catches schema and per-mini authoring errors. The stepper
-loads the validated content and performs whole-protocol simulation: it
-walks every mini-protocol's flow graph, tracks material and set-point
-state on declared objects, runs scene operations against the scene
-adapter, and chains constituent mini-protocols inside every sequence
-runner.
+### Canonical entry point
 
-Default invocation walks every mini-protocol plus every sequence runner
-in the content tree. Walk a single protocol:
+`validation/validate.py` is the aggregate entry point for the full
+validation suite. It runs three stages (YAML schema, SVG assets, protocol
+stepper) with a unified command-line interface and overview-mode rich
+summary output.
+
+### Unified flag table
+
+All validation CLIs (aggregate `validation/validate.py`, plus per-stage
+`python3 -m validation.yaml`, `python3 -m validation.svg`,
+`python3 -m validation.stepper`) accept this flag set:
+
+| Long | Short | Type | Default | Notes |
+| --- | --- | --- | --- | --- |
+| `--focus` | `-f` | flag | off | Run on protocols/objects/scenes touched by `git diff HEAD --cached` plus transitive dependents. Mutually exclusive with `--protocol`, `--object`, `--scene`. |
+| `--protocol` | `-p` | name(s) | (all) | One or more protocol names to validate. |
+| `--object` | `-o` | name(s) | (all) | One or more object names. Alias: `--asset` / `-A`. |
+| `--scene` | `-S` | name(s) | (all) | One or more scene names. |
+| `--list` | `-l` | flag | off | List selectable entities for the tool and exit. |
+| `--interactive` | `-i` | flag | off | Numbered picker menu (no effect if stdin not a tty). |
+| `--quiet` | `-q` | flag | off | Suppress stage rows; findings + summary only. Mutually exclusive with `--verbose`. |
+| `--verbose` | `-v` | flag | off | Per-item state + inline warnings. Mutually exclusive with `--quiet`. |
+| `--errors-only` | `-e` | flag | off | Suppress warnings from output (exit code unchanged). |
+| `--strict` | `-s` | flag | off | Exit non-zero on warning in addition to error. |
+| `--no-color` | -- | flag | off | Suppress color output. Also honors `NO_COLOR` env var. |
+| `--json` | `-j` | flag | off | Emit unified JSON document. |
+| `--ndjson` | `-J` | flag | off | Stream one finding per line + final summary record. |
+| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. |
+
+Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` for `--asset`.
+
+### Verbosity contract
+
+All validation tools enforce a consistent verbosity model:
+
+| Mode | Output | Use case |
+| --- | --- | --- |
+| `-q` / `--quiet` | Final pass/fail only (one line) | CI, automated reporting |
+| (default) | Overview dashboard with counts and top offenders | Human feedback, local development |
+| `-v` / `--verbose` | Diagnostic summary (grouped findings, top codes, per-item counts) | Investigation and debugging |
+| `--json` / `-j` | Full structured JSON document | Agent parsing, programmatic analysis |
+| `--ndjson` / `-J` | Newline-delimited JSON (one finding per line) | Stream processing, large datasets |
+
+Key principle: raw per-step, per-file, or per-asset detail is available only via `--json` or `--ndjson`. The text modes (`-q`, default, `-v`) stay bounded and human-readable. All modes preserve the same exit code semantics (0 = clean, 1 = errors).
+
+### Overview-mode examples
+
+Default mode shows a one-screen rich summary (suitable for CI, local feedback, and humans):
 
 ```bash
-source source_me.sh && python3 tools/protocol_stepper.py --protocol passage_hood_detachment
+validation/validate.py                          # whole suite
+validation/validate.py --focus                  # git-scoped
+validation/validate.py -p passage_hood_detachment
+validation/validate.py -o cell_culture_dish
+validation/validate.py -O yaml                  # YAML stage only
+validation/validate.py -O stepper -v            # stepper with per-step state
 ```
 
-Verbose mode prints per-step state deltas (which object fields changed,
-which materials moved, which scene operations fired) as the walk
-progresses:
+### Agent-mode examples
+
+Use `--json` or `--ndjson` for tool consumption and parsing:
 
 ```bash
-source source_me.sh && python3 tools/protocol_stepper.py --protocol passage_hood_detachment --verbose
+validation/validate.py --json | jq '.findings[]'
+validation/validate.py --ndjson | jq -c 'select(.severity=="ERROR")'
+validation/validate.py --protocol cell_culture_full --json > findings.json
 ```
 
-### Error classes
+### Per-stage direct invocation
+
+Run individual validation stages directly (per-stage entry points ignore `--only`):
+
+```bash
+python3 -m validation.yaml
+python3 -m validation.svg
+python3 -m validation.stepper
+```
+
+Equivalent to:
+
+```bash
+validation/validate.py --only yaml
+validation/validate.py --only svg
+validation/validate.py --only stepper
+```
+
+### Protocol stepper details
+
+The protocol stepper is the second of two content gates. It loads validated
+YAML content and performs whole-protocol simulation: walks every mini-protocol's
+flow graph, tracks material and set-point state on declared objects, runs scene
+operations against the scene adapter, and chains constituent mini-protocols
+inside every sequence runner.
+
+Example with verbose state-delta output:
+
+```bash
+source source_me.sh && python3 validation/stepper/step_check.py --protocol passage_hood_detachment --verbose
+```
+
+#### Stepper error classes
 
 The stepper surfaces these primary error classes:
 
@@ -147,7 +225,7 @@ The stepper surfaces these primary error classes:
 - `capability_mismatch`: a step targets an object that does not declare
   the capability the gesture requires.
 
-### Flow-shape checks
+#### Flow-shape checks
 
 The stepper also enforces flow-shape invariants:
 
@@ -157,7 +235,7 @@ The stepper also enforces flow-shape invariants:
   a placed object (currently a WARNING; see the scene-adapter design
   follow-on in [archive/scene_adapter_resolution_design.md](archive/scene_adapter_resolution_design.md)).
 
-### Deferred checks
+#### Deferred checks
 
 Two related checks are deferred to follow-on RFCs and are not enforced
 by the stepper today:
@@ -166,6 +244,28 @@ by the stepper today:
   [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md).
 - `step_kind` semantic gating for `TimedWait` and related primitives.
   See [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md).
+
+### JSON schema reference
+
+Validation output formats (`--json` and `--ndjson`) follow a closed
+schema. See [VALIDATION_JSON_SCHEMA.md](VALIDATION_JSON_SCHEMA.md) for
+the complete output schema, field definitions, and parsing examples.
+
+### Deprecated flag aliases
+
+The following flag aliases are accepted for backward compatibility and
+will be removed in a future release:
+
+- `--list-protocols` -> use `--list`
+- `--list-objects` -> use `--list`
+- `--format json` (svg_asset_audit) -> use `--json`
+- `--format table` (svg_asset_audit) -> default text output
+
+### Exit codes
+
+- `0` clean (no errors; warnings permitted unless `--strict`)
+- `1` error findings present, or warning findings with `--strict`
+- `2` command-line usage error
 
 ## Testing
 
@@ -259,7 +359,7 @@ source source_me.sh && python3 tools/build_servier_recolor.py bottle \
 Then refresh the runtime manifest:
 
 ```bash
-source source_me.sh && python3 tools/generate_svg_globals.py
+source source_me.sh && python3 pipeline/generate_svg_globals.py
 ```
 
 The diff classifies any path whose fill or stroke is not shared across all

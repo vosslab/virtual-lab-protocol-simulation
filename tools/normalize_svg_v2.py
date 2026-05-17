@@ -2,8 +2,7 @@
 """
 Self-contained SVG normalizer v2 plus smoke tests.
 
-This replaces the earlier wrapper test that expected a separate normalize_svg.py
-argument. The intended CLI is now:
+This replaces the earlier (salvaged) normalize_svg.py wrapper. The intended CLI is now:
 
   python3 test_normalize_svg_v2.py -i microtube_open_translucent.svg
   python3 test_normalize_svg_v2.py -i microtube_open_translucent.svg -o normalized/

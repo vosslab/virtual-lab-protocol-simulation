@@ -10,12 +10,12 @@ Tests the _validate_path_kind_consistency method:
 import sys
 from pathlib import Path
 
-# Setup import path for tools.validators
+# Setup import path
 repo_root = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(repo_root))
 
-from tools.validators.object_validator import ObjectValidator
-from tools.validators.findings import Severity
+from validation.yaml.object_validator import ObjectValidator
+from validation.yaml.findings import Severity
 
 
 def test_path_kind_consistency_depth_1_error():

@@ -12,9 +12,9 @@ for measured evidence.
 
 ### Add per-cell state tracking to protocol_stepper
 
-`tools/stepper/state.py` (`StateMap`) does not currently track per-cell
+`validation/stepper/state.py` (`StateMap`) does not currently track per-cell
 state for `well_plate_96` subparts. The current subpart-cascade path
-in `tools/stepper/scene_ops.py` writes every cell mutation to the
+in `validation/stepper/scene_ops.py` writes every cell mutation to the
 placement's flat state dict (last-write-wins). This is invisible for
 uniform actions but breaks the dose-variation case completely: only
 the final column's value is observable.
@@ -28,7 +28,7 @@ Acceptance criteria:
 
 - `StateMap` tracks per-cell `material_name` and `material_volume`
   for `well_plate_96` placements.
-- `tools/protocol_stepper.py` can emit a per-cell snapshot for any
+- `validation/stepper/step_check.py` can emit a per-cell snapshot for any
   placement with subparts, suitable for byte-for-byte snapshot
   comparison.
 - The dose-response explicit-per-column fixture
@@ -37,7 +37,7 @@ Acceptance criteria:
   state, not from YAML derivation.
 - The 12 currently shipped protocols continue to step cleanly.
 
-Estimated scope: 50-150 lines, contained within `tools/stepper/`.
+Estimated scope: 50-150 lines, contained within `validation/stepper/`.
 
 ### Optional named-region syntax with members: all shorthand
 
@@ -113,7 +113,7 @@ sweep).
 Lab convention: "aspirate" means vacuum-line removal to waste (e.g.,
 "aspirate spent media from the plate"). Pipette loading from a
 source uses "draw" or "pipette up", not "aspirate". The renderer
-(`tools/protocol_manual.py` line 910) now emits "draw N uL from
+(`validation.manual` line 910) now emits "draw N uL from
 {source}" in dispense bullets, but authored prompts in 8 of the 11
 protocols that mention "aspirate" still use it loosely in pipette-
 loading contexts. MTT trio + PDTMA fixed; remaining:
@@ -154,13 +154,13 @@ the bottle drawdown rate. Possible fix: when source target is a
 multichannel pipette, append "(per channel; 8 x N = M uL per
 stroke)" to the dispense bullet.
 
-### Cosmetic: protocol_manual.py phrasing for group targets
+### Cosmetic: validation.manual phrasing for group targets
 
 Rendered manual for an `all_wells` target reads "the well
 all_wells of the 96-well plate". Awkward but not wrong. The
 renderer should special-case region / block groups to read
 "every well of the 96-well plate" or similar natural phrasing.
-Scope: `tools/protocol_manual.py`.
+Scope: `validation/manual/protocol_manual.py`.
 
 ### Content: mtt_solubilization_readout prompts still describe per-column walk
 

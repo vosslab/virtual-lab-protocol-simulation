@@ -4,11 +4,11 @@
 
 `docs/specs/MATERIAL_CONVENTION.md` declares `display_color` as a property of a material name. Same `material_name` declared in multiple protocols' `materials.yaml` files must carry the same `display_color`. Divergence is drift, not pedagogy: PBS rendered blue in one mini and yellow in another is an authoring bug, not intent.
 
-`tools/validate_content_yaml.py` does not currently enforce this. The check was scoped out of the `tools/protocol_stepper.py` plan (`docs/active_plans/protocol_stepper_tool.md`) on the grounds that it is a static cross-file consistency check - flow-independent - and therefore belongs to the validator, not the stepper. This plan files that work so it does not rot in conversation.
+`validation/yaml/validate.py` does not currently enforce this. The check was scoped out of the `validation/stepper/validate.py` plan (`docs/active_plans/protocol_stepper_tool.md`) on the grounds that it is a static cross-file consistency check - flow-independent - and therefore belongs to the validator, not the stepper. This plan files that work so it does not rot in conversation.
 
 ## Objectives
 
-- Extend `tools/validate_content_yaml.py` with a cross-protocol consistency check that fails ERROR when the same `material_name` carries different `display_color` values across any two `materials.yaml` files in `content/protocols/*/materials.yaml`.
+- Extend `validation/yaml/validate.py` with a cross-protocol consistency check that fails ERROR when the same `material_name` carries different `display_color` values across any two `materials.yaml` files in `content/protocols/*/materials.yaml`.
 - Add fixture coverage proving the check fires on a divergence and stays silent on a consistent multi-protocol declaration.
 
 ## Design philosophy
@@ -27,12 +27,12 @@ Static cross-file consistency is the validator's domain, not the stepper's. The 
 
 - Do not introduce a per-protocol `display_color` override field.
 - Do not move `display_color` to a shared material library (separate spec amendment, out of scope here).
-- Do not alter stepper behavior (`tools/protocol_stepper.py` remains unaware).
+- Do not alter stepper behavior (`validation/stepper/validate.py` remains unaware).
 - Do not extend the check to other fields (`label`, `category`, etc.) in this patch - file as follow-on if drift surfaces.
 
 ## Current state summary
 
-- `tools/validate_content_yaml.py` already loads every `materials.yaml` via `ContentDatabase` (`resolve_material(protocol_name, material_name)` per validated API on line 210 of `tools/validators/database.py`).
+- `validation/yaml/validate.py` already loads every `materials.yaml` via `ContentDatabase` (`resolve_material(protocol_name, material_name)` per validated API on line 210 of `tools/validators/database.py`).
 - Validator currently runs per-file and cross-file checks; this addition fits the cross-file lane.
 - No prior check enforces `display_color` consistency.
 
@@ -50,7 +50,7 @@ Static cross-file consistency is the validator's domain, not the stepper's. The 
   - Live tree exits 0 after merge (run validator post-patch; if existing content has real divergence, file each as a bug fix in the same patch or a follow-on patch - do not soften the check).
   - Test runs under 1 s.
 - Verification commands:
-  - `source source_me.sh && python3 tools/validate_content_yaml.py`
+  - `source source_me.sh && python3 validation/yaml/validate.py`
   - `source source_me.sh && pytest tests/test_validate_content_yaml_display_color.py`
 - Obvious follow-ons:
   - Update `docs/CHANGELOG.md` under today's date.

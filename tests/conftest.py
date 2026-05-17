@@ -7,9 +7,9 @@ collect_ignore = ["e2e", "playwright"]
 # Fresh-clone bootstrap for the gitignored generated/ tree.
 #
 # generated/ holds derived TS modules emitted by:
-#   - tools/generate_svg_globals.py from assets/equipment/*.svg
-#   - tools/build_protocol_data.py from YAML protocol definitions
-#   - tools/build_scene_data.py from YAML scene definitions
+#   - pipeline/generate_svg_globals.py from assets/equipment/*.svg
+#   - pipeline/build_protocol_data.py from YAML protocol definitions
+#   - pipeline/build_scene_data.py from YAML scene definitions
 #
 # The tree is gitignored, so a fresh clone has no generated/ files. Any pytest
 # that (directly or transitively) imports from generated/ would fail without a
@@ -44,7 +44,7 @@ def pytest_sessionstart(session) -> None:
 
 	# If any required file is missing, bootstrap the entire generated tree.
 	if any(not os.path.isfile(p) for p in required_files):
-		bootstrap_path = os.path.join(repo_root, "tools", "bootstrap_generated.sh")
+		bootstrap_path = os.path.join(repo_root, "pipeline", "bootstrap_generated.sh")
 		subprocess.run(
 			["bash", bootstrap_path],
 			cwd=repo_root,

@@ -17,7 +17,7 @@ fi
 # generated/ artifacts; build scripts (build_github_pages.sh,
 # export_single_file.sh) own that, and tests/conftest.py bootstraps
 # generated/ on demand for pytest. If any generated file is missing,
-# run tools/bootstrap_generated.sh or a build script first.
+# run pipeline/bootstrap_generated.sh or a build script first.
 MISSING_FILES=()
 for FILE in generated/protocol_data.ts generated/inventory_data.ts generated/scene_data.ts generated/svg_manifest.ts; do
 	if [ ! -f "$FILE" ]; then
@@ -27,7 +27,7 @@ done
 
 if [ ${#MISSING_FILES[@]} -gt 0 ]; then
 	echo "ERROR: Missing generated files: ${MISSING_FILES[*]}" >&2
-	echo "Run 'bash tools/bootstrap_generated.sh' to regenerate." >&2
+	echo "Run 'bash pipeline/bootstrap_generated.sh' to regenerate." >&2
 	exit 1
 fi
 
@@ -37,9 +37,9 @@ npx tsc --noEmit -p src/tsconfig.json
 # SVG pipeline health gate (M6): determinism + coverage of the SVG generator.
 # Read-only by design -- runs the generator into two tempdirs and diffs them,
 # never writes to the production generated/ tree. See
-# tools/check_svg_pipeline.py for details.
+# validation/svg/pipeline_check.py for details.
 echo "Checking SVG pipeline (determinism + coverage) ..."
-python3 tools/check_svg_pipeline.py
+python3 validation/svg/pipeline_check.py
 
 echo "All checks passed."
 echo "(Run 'node tests/playwright/test_game_ui.mjs' separately for the browser smoke.)"

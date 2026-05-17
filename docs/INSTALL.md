@@ -38,7 +38,7 @@ The HTML file is a generated artifact and is not committed to git.
 ## SVG asset pipeline (fresh clone)
 
 The `generated/` tree at the repo root holds SVG asset modules emitted by
-[tools/generate_svg_globals.py](../tools/generate_svg_globals.py) from
+[pipeline/generate_svg_globals.py](../pipeline/generate_svg_globals.py) from
 `assets/equipment/*.svg`. The whole tree is gitignored, so a fresh clone has
 no `generated/` directory. Most workflows regenerate it transparently, but it
 must exist before `tsc`, the bundler, or any test that imports from
@@ -62,7 +62,7 @@ Three ways to make `generated/` exist on a fresh clone:
    ```
 3. Run the generator directly:
    ```bash
-   source source_me.sh && python3 tools/generate_svg_globals.py
+   source source_me.sh && python3 pipeline/generate_svg_globals.py
    ```
 
 By design, `bash check_codebase.sh` is read-only and does NOT regenerate

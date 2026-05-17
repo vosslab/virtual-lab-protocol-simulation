@@ -43,7 +43,7 @@ writes it and is free to remove it.
 assets/equipment/*.svg          source art (authored)
         |
         v
-tools/generate_svg_globals.py   generator and id namespacer
+pipeline/generate_svg_globals.py   generator and id namespacer
         |
         v
 generated/svg_assets/*.ts       per-asset SVG string constants (generated)
@@ -65,7 +65,7 @@ Each layer has one job:
 - `assets/equipment/*.svg` is the authored source art. An optional
   `<asset>.colormap.json` sidecar sits next to a `<asset>.svg` to declare
   named groups of element ids that should be recolored together.
-- `tools/generate_svg_globals.py` reads every SVG, namespaces internal ids,
+- `pipeline/generate_svg_globals.py` reads every SVG, namespaces internal ids,
   emits one `generated/svg_assets/<asset>.ts` per source SVG, and emits
   `generated/svg_manifest.ts` carrying `SVG_IDS` and `SVG_GROUPS`. Output
   is deterministic so reruns produce byte-identical files.
@@ -115,7 +115,7 @@ new code must not add direct `generated/` imports outside these two boundary mod
    `bottle.svg` and `bottle.colormap.json`.
 3. Rerun the generator:
    ```
-   source source_me.sh && python3 tools/generate_svg_globals.py
+   source source_me.sh && python3 pipeline/generate_svg_globals.py
    ```
    The generator emits `generated/svg_assets/<asset>.ts` (a single
    `SVG_<ASSET>` string constant) and updates
@@ -169,7 +169,7 @@ To add a new Bioicons-sourced asset:
 2. Rerun the generator so the new SVG flows through into
    `generated/svg_assets/<name>.ts` and `generated/svg_manifest.ts`:
    ```
-   source source_me.sh && python3 tools/generate_svg_globals.py
+   source source_me.sh && python3 pipeline/generate_svg_globals.py
    ```
 3. Add an identity entry to `EQUIPMENT_ASSETS` in
    [../../src/svg_assets.ts](../../src/svg_assets.ts):
@@ -218,7 +218,7 @@ then write the recipe. Recipes do not invent ids.
 
 ## Generator behavior summary
 
-[../../tools/generate_svg_globals.py](../../tools/generate_svg_globals.py) is the
+[../../pipeline/generate_svg_globals.py](../../pipeline/generate_svg_globals.py) is the
 source of truth; this section is a high-level summary.
 
 - Deterministic output. Source SVGs are sorted before iteration; emitted
@@ -235,7 +235,7 @@ source of truth; this section is a high-level summary.
   ```
   // Generated file. Do not edit by hand.
   // Source: assets/equipment/*.svg
-  // Generator: tools/generate_svg_globals.py
+  // Generator: pipeline/generate_svg_globals.py
   ```
 - Sidecar contents fold into `SVG_GROUPS["<asset>"]` exactly as today;
   the per-asset split must not change the group shape.

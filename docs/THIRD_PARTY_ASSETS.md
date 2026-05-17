@@ -46,7 +46,7 @@ Source: https://bioicons.com/
 
 | Source File | Destination File | Author / Contributor | Modifications |
 |---|---|---|---|
-| 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen | None (registered as SVG_96WELL_PCR_PLATE via tools/generate_svg_globals.py) |
+| 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen | None (registered as SVG_96WELL_PCR_PLATE via pipeline/generate_svg_globals.py) |
 
 ## Anchor System
 
