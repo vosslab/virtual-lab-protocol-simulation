@@ -39,6 +39,61 @@ field is intentionally absent rather than missing by oversight.
 
 ## Future enhancements
 
+## Glossary doc (planned)
+
+A single repo-wide `docs/GLOSSARY.md` defining the wet-lab +
+simulation vocabulary used across EVERY lab protocol in this
+repo, not just the MTT/OVCAR8 work that triggered it. Scope spans
+cell culture (passage, seeding, trypan blue counting), drug
+dilutions (carboplatin / metformin / serial dilution math),
+colorimetric assays (MTT, formazan), electrophoresis (SDS-PAGE,
+ladder, lanes, running buffer, destain), pipetting mechanics
+(draw / dispense / aspirate / trituration), instrumentation
+(multichannel pipette, plate reader, centrifuge, vortex,
+microscope, incubator), and the simulation-side vocabulary
+(material_volume well-total semantics, subpart groups, scene_op
+primitives, learning block, mini-protocol vs sequence runner).
+
+Triggering incident: the MTT cleanup work (2026-05-16) where
+multiple terms drifted within a single protocol family (MTT
+etymology, aspirate vs draw vs dispense, formazan identity, well-
+total volume semantics, trituration). Same drift class is likely
+in every other lab area; the glossary prevents repeat work.
+
+Acceptance criteria:
+
+- Single file at `docs/GLOSSARY.md` indexed from `README.md`.
+- Covers terms used by EVERY lab protocol family in
+  `content/protocols/`, not a one-lab subset. Group by domain
+  (Cell culture, Drug dilution, Colorimetric assay,
+  Electrophoresis, Pipetting mechanics, Instrumentation,
+  Simulation-side authoring) for scannability.
+- Each term: one-line definition, a "do" usage, a "do not
+  confuse with" cross-reference where relevant.
+- Cross-linked from `docs/MARKDOWN_STYLE.md` and `AGENTS.md` so
+  authors hit it before introducing new vocabulary.
+- Cross-linked from existing authoring vocabularies
+  (`docs/specs/PROTOCOL_VOCABULARY.md`,
+  `docs/specs/SCENE_VOCABULARY.md`,
+  `docs/specs/OBJECT_VOCABULARY.md`) so spec layers reference
+  glossary instead of restating definitions.
+- Glossary tested by a markdown link check; no orphan terms.
+
+Surfaced cleanups that would land alongside:
+
+- `tools/protocol_manual.py` already enforces "draw" for pipette
+  loading + "aspirate and remove" for vacuum-to-waste; glossary
+  ratifies the convention.
+- Repo-wide pass replacing remaining authored "aspirate" prose in
+  pipette-loading contexts (8 protocols flagged in
+  [TODO.md](TODO.md)).
+- Authoring vocabularies (PROTOCOL_VOCABULARY, SCENE_VOCABULARY,
+  OBJECT_VOCABULARY) shrink as they cite the glossary.
+
+Defer until the next vocabulary drift incident in a different
+lab family (the MTT incident alone is insufficient justification
+for a one-lab glossary; the cross-lab pattern is the value).
+
 ## Next deferred item: split `src/layout_engine.ts` (promoted 2026-05-09)
 
 Promoted to the top of the deferred queue by the scene migration closeout

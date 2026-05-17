@@ -1,11 +1,35 @@
 # Cell culture standard operating protocol
 
-> Editor's note: this protocol document predates the simulation work in this repo.
-> Three quantitative discrepancies have been identified and are tracked in
-> [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md): (1) the well-volume sum
-> in Part 5, (2) the metformin working-stock concentration in Part 4, and
-> (3) the cols 7-12 media-adjustment volume in Part 5. The simulation uses the
-> reconciled values; this document is pending a corresponding revision.
+> **!!! WARNING -- READ BEFORE TRUSTING ANY NUMBER IN THIS DOC !!!**
+>
+> **CAUTION: THIS PROTOCOL'S MATH HAS CAUSED AT LEAST THREE
+> REBUILD-TIME CONFUSIONS.** Defer to
+> [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) for the
+> reconciled, simulation-authoritative values whenever any number
+> in this doc looks wrong.
+>
+> **HEADLINE TRAP ZONES:**
+>
+> 1. **WARNING: FINAL WELL VOLUME IS 200 uL, NOT 100 uL.** All
+>    working stocks are 40x (5 uL added into 200 uL well). Any
+>    "100 uL well total" phrasing is a residual typo.
+>    See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md)
+>    Ambiguity 1 + Summary decision table.
+> 2. **WARNING: METFORMIN WORKING STOCK IS 200 mM, NOT 10 mM.**
+>    5 uL of 200 mM into a 200 uL well gives the stated 5 mM final.
+>    The 10 mM figure off-by-an-order-of-magnitude every metformin
+>    calc.
+>    See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 2.
+> 3. **CAUTION: COLS 7-12 MEDIA ADJUSTMENT IS 90 uL, NOT 85 uL.**
+>    Every well must land at exactly 200 uL after all additions
+>    or absorbance readings at 560 nm reflect path-length
+>    differences, not drug effect.
+>    See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 3.
+>
+> This document body has been updated to the reconciled values.
+> Inline `**CAUTION**` / `**WARNING**` flags appear at each former
+> trap zone in Parts 3-5. When in doubt, defer to
+> [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md).
 
 OVCAR8 | Carboplatin IC50 +/- Metformin (5 mM) | 72h MTT assay
 
@@ -71,18 +95,43 @@ Plate layout:
 ### Day 2 - Drug treatment
 
 - Add media adjustment to each well BEFORE adding any drug (see plate map, Part 5).
+  Volumes: 100 / 95 / 95 / 90 uL by quadrant so every well lands at 200 uL after
+  all additions.
+  **CAUTION: cols 7-12 media adjustment is 90 uL, NOT 85 uL.** Earlier versions
+  said 85 uL; that left cols 7-12 wells at 195 uL while cols 1-6 reached 200 uL.
+  See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 3 + Summary
+  decision table.
 - Prepare Carboplatin and Metformin working stocks (see Part 4).
 - Add 5 &micro;L of Carboplatin working stock per well (columns 1-12, rows B-H).
   - Row A, columns 1-6: untreated control (media only)
   - Row A, columns 7-12: Metformin-only control (5 mM)
-- Add 5 &micro;L of Metformin working stock (200 mM) to columns 7-12 (5 mM final).
+- **WARNING: METFORMIN WORKING STOCK IS 200 mM, NOT 10 mM.** Add 5 &micro;L of
+  Metformin working stock (200 mM) to columns 7-12 for 5 mM final
+  (5 uL of 200 mM into 200 uL well = 5 mM). The 10 mM figure that appeared in
+  earlier versions of Part 4 gives 0.5 mM final, off by an order of magnitude.
+  See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 2.
 - Incubate for 48 hours.
 
 ### Day 4 - MTT readout
 
+> **What is MTT?** MTT stands for **M**ethyl(**T**)hiazolyldiphenyl-(**T**)etrazolium,
+> the chemical-name shorthand for 3-(4,5-dimethylthiazol-2-yl)-2,5-diphenyltetrazolium
+> bromide. A yellow tetrazole used in a colorimetric assay to assess cell metabolic
+> activity. The MTT assay measures the reduction of MTT to purple formazan crystals
+> by viable cells, indicating their metabolic activity. The depth of purple after
+> DMSO solubilization (read at 560 nm) is proportional to the number of viable
+> cells in each well.
+
 - Prepare 12 mM MTT: dissolve 5 mg MTT (MW = 414.32 g/mol) per mL 1x PBS.
   Need &ge;4 mL per plate.
-- Add 25 &micro;L of 12 mM MTT per well &rarr; 1.5 mM final concentration.
+- **CAUTION: MTT FINAL CONCENTRATION DEPENDS ON PRE-MTT WELL TOTAL.**
+  Add 25 &micro;L of 12 mM MTT per well. With the corrected 200 uL pre-MTT
+  well total (Part 5), the final-in-well MTT is 12 mM x 25 / 225 = ~1.33 mM,
+  NOT the 1.5 mM figure quoted in earlier versions. The 1.5 mM figure assumed
+  a 200 uL well total post-addition (which would require a 175 uL pre-MTT well,
+  contradicting Part 5).
+  See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) for the 200 uL pre-MTT
+  well-total derivation.
 - Incubate 1.5 hours (OVCAR8) to allow formazan conversion.
 - Decant MTT/media into biohazard bin.
 - Pat plate dry gently on paper towels.
@@ -99,8 +148,15 @@ Stocks on hand (both in sterile water):
 | Carboplatin | 10 mM |
 | Metformin   | 1 M   |
 
-All working stocks dispense 5 &micro;L per well (into a 200 &micro;L final well volume, giving a 40&times; dilution
-multiplier). Prep steps: (1) make the **Carboplatin 400 &micro;M parent stock** from the 10 mM master stock
+**WARNING: WORKING STOCKS ARE 40x FINAL, BUILT FOR A 200 uL WELL, NOT A 100 uL WELL.**
+All working stocks dispense 5 &micro;L per well into a **200 &micro;L final well volume** (NOT 100 uL --
+that was the past trap). 5 uL into 200 uL = **40&times; dilution multiplier**, so every working stock
+is 40&times; its target final concentration. If you assume a 100 uL well, every final concentration
+will be 2x what is stated. See
+[OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) "Volume model and working-stock multiplier" section
+for the derivation.
+
+Prep steps: (1) make the **Carboplatin 400 &micro;M parent stock** from the 10 mM master stock
 (40 &micro;L of 10 mM into 960 &micro;L media); (2) use this single parent stock as the source for all
 seven carboplatin working stocks (1-2-5 graph-friendly series).
 
@@ -126,6 +182,11 @@ mathematical justification and pedagogical rationale.
 
 ### Metformin working stock
 
+**WARNING: WORKING STOCK IS 200 mM, NOT 10 mM.** Earlier versions of this section
+said "10 mM working stock"; that gives 0.5 mM final-in-well, off by an order of
+magnitude from the stated 5 mM. See
+[OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 2.
+
 Prepare fresh on day of treatment. 200 mM working stock, 5 &micro;L per well into a 200 &micro;L well
 &rarr; 5 mM final. Calculate using C1V1 = C2V2: 1 M x V1 = 200 mM x 300 &micro;L, so V1 = 60 &micro;L.
 
@@ -138,7 +199,19 @@ Note: prepare at least 300 &micro;L of Metformin working stock per experiment
 
 ## Part 5 - 96-well plate map
 
-All wells end at 200 &micro;L total = 100 &micro;L cells seeded on Day 1 +
+> **!!! WARNING: FINAL WELL VOLUME IS 200 uL, NOT 100 uL !!!**
+>
+> Earlier versions of this doc said "ends at 100 uL total." That figure is
+> WRONG. The correct figure is **200 uL TOTAL PER WELL** after all Day-2
+> additions. The 100 / 200 ambiguity changed every Carboplatin final
+> concentration by 2x and every Metformin calc by an order of magnitude. Every
+> working stock in Part 4 is sized for the 200 uL well; trusting "100 uL"
+> doubles every dose.
+>
+> See [OVCAR8_MATH_REVIEW.md](OVCAR8_MATH_REVIEW.md) Ambiguity 1 + Summary
+> decision table for the full derivation and resolution.
+
+All wells end at **200 &micro;L total** = 100 &micro;L cells seeded on Day 1 +
 media adjustment + drug(s). Row A is the control row; rows B-H are the
 Carboplatin dose series. The 200 &micro;L final volume ensures every working stock is 40&times; the target
 final concentration when 5 &micro;L is added per well.

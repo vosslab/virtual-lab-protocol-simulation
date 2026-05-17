@@ -65,6 +65,114 @@ If a real subset use case surfaces:
 Do NOT introduce protocol-level `regions:` as a generic feature.
 Reserve for meaningful subsets, not aliases for the whole plate.
 
+## Follow-ups from 96-well enumeration audit
+
+Surfaced by WP-AUDIT-1 of the active 96-well cleanup plan. See
+[active_plans/96_well_enumeration_audit.md](active_plans/96_well_enumeration_audit.md)
+for full evidence.
+
+### Third 96-well over-enumeration site: plate_drug_treatment_drug_addition
+
+`content/protocols/plate_drug_treatment_drug_addition/protocol.yaml`
+carries 252 enumerated `well_plate_96.*` hits (more than either
+of the two protocols handled by `serene-stargazing-moore.md`) and
+zero `all_wells` hits. Likely case 3 (dose / drug variation IS the
+skill) but not classified site-by-site yet.
+
+Acceptance criteria:
+
+- Audit the protocol step by step using the same
+  `## Audit site definition` rule.
+- Decide per-site whether collapse uses existing row / column
+  groups, the block groups added by WP-WELLPLATE-OBJVOCAB-1 (if
+  they land), or stays per-well by design.
+- Open a new plan if the cleanup is non-trivial.
+
+### Author docs/GLOSSARY.md (REPO-WIDE, all labs)
+
+Single repo-wide file ratifying wet-lab + simulation vocabulary
+used across EVERY lab family in `content/protocols/` -- cell
+culture, drug dilution, colorimetric assay (MTT), SDS-PAGE
+electrophoresis, plus the simulation-side authoring vocabulary.
+NOT a one-lab glossary; the cross-lab coverage IS the value.
+
+Triggered by the MTT cleanup (2026-05-16) where MTT etymology,
+aspirate vs draw vs dispense, formazan identity, well-total
+volume semantics, and trituration all needed clarification. The
+same drift class is likely in every other lab area in the repo.
+
+Full acceptance criteria in [ROADMAP.md](ROADMAP.md) "Glossary
+doc (planned)" section.
+
+Defer until vocabulary drift surfaces in a second lab family
+(MTT alone is insufficient justification for the repo-wide
+sweep).
+
+### Vocabulary: "aspirate" reserved for vacuum removal to waste
+
+Lab convention: "aspirate" means vacuum-line removal to waste (e.g.,
+"aspirate spent media from the plate"). Pipette loading from a
+source uses "draw" or "pipette up", not "aspirate". The renderer
+(`tools/protocol_manual.py` line 910) now emits "draw N uL from
+{source}" in dispense bullets, but authored prompts in 8 of the 11
+protocols that mention "aspirate" still use it loosely in pipette-
+loading contexts. MTT trio + PDTMA fixed; remaining:
+
+- `cell_seeding_plate_setup/protocol.yaml`
+- `drug_dilution_setup/protocol.yaml`
+- `passage_hood_detachment/protocol.yaml`
+- `passage_pellet_reseed/protocol.yaml`
+- `plate_drug_treatment_drug_addition/protocol.yaml`
+- `sdspage_load_protein_ladder/protocol.yaml`
+- `sdspage_load_sample_single_lane/protocol.yaml`
+- `sdspage_prepare_running_buffer/protocol.yaml`
+
+Action: per-protocol review; replace "aspirate" with "draw" or
+"pipette up" in pipette-loading contexts; keep "aspirate" only in
+vacuum-removal-to-waste contexts.
+
+### Pipette accuracy: MTT 25 uL near low edge of P200 multichannel
+
+`mtt_plate_reaction.add_mtt_to_wells` dispenses 25 microL per
+channel. That sits in the lower-precision zone of a standard P200
+multichannel (range 20-200 microL; accuracy degrades from ~3% mid-
+range to ~5-10% at 20-25 microL). For dose-response assay rigor,
+consider redesigning MTT prep: e.g., 100 microL of 3 mM MTT (instead
+of 25 microL of 12 mM) gives same 300 nmol per well at a more
+accurate pipette volume. Cascades back through Q6: post-MTT well
+total changes from 225 to 300, decant + incubation volumes shift.
+Defer until next wet-lab protocol revision; current YAML carries a
+note in the prompt about freshly-calibrated tips.
+
+### Renderer: multichannel aggregate-volume display
+
+Renderer currently emits per-channel volume in dispense bullets
+(e.g., "draw 25 uL from the 12 mM MTT solution") without noting
+the multichannel aggregation (8 channels x 25 uL = 200 uL per
+stroke drawn from the bottle). Wet-lab students may mis-interpret
+the bottle drawdown rate. Possible fix: when source target is a
+multichannel pipette, append "(per channel; 8 x N = M uL per
+stroke)" to the dispense bullet.
+
+### Cosmetic: protocol_manual.py phrasing for group targets
+
+Rendered manual for an `all_wells` target reads "the well
+all_wells of the 96-well plate". Awkward but not wrong. The
+renderer should special-case region / block groups to read
+"every well of the 96-well plate" or similar natural phrasing.
+Scope: `tools/protocol_manual.py`.
+
+### Content: mtt_solubilization_readout prompts still describe per-column walk
+
+Step 1 and Step 2 prompts in
+`content/protocols/mtt_solubilization_readout/protocol.yaml`
+still say "columns 1 through 12 sequentially" even though the
+YAML now targets `well_plate_96.all_wells`. Violates the
+prompt-teaches-action rule from
+`docs/active_plans/96_well_enumeration_audit.md`. Small content
+cleanup: rewrite both prompts to describe the uniform whole-plate
+dispense in pedagogy terms.
+
 ## Rendering and content display
 
 ### Fix unit rendering for browser-displayed YAML labels

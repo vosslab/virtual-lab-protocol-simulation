@@ -803,7 +803,18 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 
 	if volume is None and source_change is not None:
 		new_state = source_change.get("state", {}) or {}
-		if "material_volume" in new_state:
+		# When the source-click writes held_material_volume to the pipette
+		# itself, that IS the per-aspirate loaded volume; use it directly
+		# instead of computing a delta. This matches the case where the
+		# pipette's loaded state is the authored signal for the dispense
+		# size, and avoids falling through to dest_delta (which would
+		# return the well-total under Q5 well-total state-field semantics).
+		if "held_material_volume" in new_state:
+			volume = new_state["held_material_volume"]
+			unit = catalog.unit_for_field(
+				source_change.get("target"), "held_material_volume"
+			)
+		elif "material_volume" in new_state:
 			old = sim.get(source_change.get("target"), "material_volume")
 			try:
 				delta = float(old) - float(new_state["material_volume"])
@@ -894,9 +905,13 @@ def render_pipette_transfer(pipette_name, adjust_i, source_i, dest_i,
 
 	material_label = label_for_material(material_name or "", material_labels) if material_name else ""
 
+	# Verb choice: "draw" for pipette loading FROM a source; "aspirate" is
+	# reserved for vacuum-removal-to-waste (handled in the aspirate-to-waste
+	# pattern elsewhere). Lab convention: "aspirate" implies a vacuum line
+	# pulling content to waste, not a pipette drawing reagent for transfer.
 	parts = [f"- Using the {_lower_first(pipette_label)},"]
 	if volume is not None:
-		parts.append("aspirate")
+		parts.append("draw")
 		parts.append(format_volume(volume, unit))
 		if material_name and material_name != "empty":
 			if not labels_overlap(source_label, material_label):

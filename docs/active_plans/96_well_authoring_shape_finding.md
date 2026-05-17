@@ -1,11 +1,26 @@
 # Finding: 96-well authoring shape semantics spike
 
-> **Status:** finding doc from the diagnostic spike defined in
-> `/Users/vosslab/.claude/plans/serene-stargazing-moore.md`. Captures
+> **Status:** finding doc from the diagnostic spike. Captures
 > empirical evidence and a recommendation. Hand-off destination:
-> follow-up execution plan (not yet drafted) that ratifies the
-> recommended shape into the spec and rewrites
+> follow-up execution plan (user-side, not committed) that
+> ratifies the recommended shape into the spec and rewrites
 > `content/protocols/mtt_solubilization_readout/`.
+>
+> **Follow-on audit doc:**
+> [96_well_enumeration_audit.md](96_well_enumeration_audit.md)
+> (WP-AUDIT-1, 2026-05-16) -- site-level classification of the
+> two remaining 96-well over-enumeration protocols plus a state-
+> field semantics finding that gates the MTT fix.
+>
+> **Implementation status (2026-05-16):** case 1 (uniform plate
+> action, `well_plate_96.all_wells`) has shipped on
+> `mtt_solubilization_readout` (commit 4e20dff) and
+> `mtt_plate_reaction` (WP-MTT-FIX-1). Case 3 (variation IS the
+> skill) has shipped on `plate_drug_treatment_media_adjustment`
+> (WP-PDTMA-COLLAPSE-1) using new geometric block subpart-groups
+> on `content/objects/plate/well_plate_96.yaml`. Case 2
+> (protocol-level `regions:` block) remains deferred per
+> `docs/TODO.md`.
 
 ## Hypotheses recap
 

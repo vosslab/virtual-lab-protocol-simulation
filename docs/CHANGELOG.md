@@ -1,5 +1,198 @@
 # Changelog
 
+## 2026-05-16 (96-well over-enumeration cleanup -- WP-MTT-FIX-1 + WP-WELLPLATE-OBJVOCAB-1 + WP-PDTMA-COLLAPSE-1)
+
+### Additions and New Features
+
+- `content/objects/plate/well_plate_96.yaml`: new `blocks`
+  geometric subpart-group family adding `block_A_1_6`,
+  `block_A_7_12`, `block_B_H_1_6`, `block_B_H_7_12` (member
+  counts 6, 6, 42, 42 -- total 96, no overlap). Names are purely
+  geometric, no protocol-specific meaning baked into the object.
+  Enables PDTMA quadrant steps to address half-plate row blocks
+  without per-well writes. Existing `rows`, `columns`, and
+  `plate_region` (`all_wells`) families unchanged.
+- `content/protocols/plate_drug_treatment_media_adjustment/materials.yaml`:
+  added `cells` material so PDTMA's post-state block writes can
+  declare the well's biological content. Existing `media`
+  material unchanged.
+
+### Behavior or Interface Changes
+
+- `content/protocols/mtt_plate_reaction/protocol.yaml`
+  (WP-MTT-FIX-1, one coherent biology + content fix): rewrote the
+  file from 1119 lines to ~165. Six-step protocol preserved.
+  Changes:
+  - Step 2 (`prepare_pipette_for_mtt`) prompt corrected: cited
+    1.5 mM final-in-well MTT was wrong (assumed 100 microL pre-MTT
+    well); correct value is ~1.33 mM (12 mM x 25 / 225) for the
+    200 microL pre-MTT well per
+    [OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md).
+  - Step 3 (`add_mtt_to_wells`) collapsed from 96 per-well
+    interactions to one `well_plate_96.all_wells`
+    `ObjectStateChange` writing `{material_name: mtt,
+    material_volume: 225}` (Q5 resolution: material_volume is
+    well total, not dispensed; Q6 resolution: 225 = 200 pre-MTT
+    + 25 dispensed). Prompt rewritten to drop confused
+    "first row (column A)" wording and state the 200 -> 225
+    microL well-total transition explicitly.
+  - Step 4 (`incubate_formazan_conversion`) adds explicit
+    `ObjectStateChange` writing `{material_name: formazan,
+    material_volume: 225}` to `well_plate_96.all_wells` during
+    the TimedWait response. Closes the Q2 gap (incubation step
+    previously had zero state writes; biology transition was
+    invisible). Hard MTT semantics gate honored: dispense step
+    writes `mtt`, NOT `formazan`.
+  - Step 5 (`decant_mtt_to_waste`) prompt + state corrected:
+    well prose now reads "cells + media + Day 2 drug residue
+    + reduced MTT" (was "MTT/media mixture", hiding the drug
+    contents). Plate post-decant state writes `material_volume:
+    0` (was missing; left wells at 225 forever). Biohazard bin
+    receives `material_volume: 21600` (96 wells x 225 microL),
+    not the stale 1200 figure. These three step-5 edits are co-
+    bundled into WP-MTT-FIX-1 under the plan's "fix the design,
+    not the symptom" gate: each is downstream fallout of the
+    same 100 / 200 well-volume bug the rest of WP-MTT-FIX-1
+    resolves, and splitting them into separate commits would
+    land knowingly-wrong intermediate states.
+  - Top-of-file simulation comment rewritten to describe the
+    all_wells collapse + cite the math-review derivation.
+- `content/protocols/plate_drug_treatment_media_adjustment/protocol.yaml`
+  (WP-PDTMA-COLLAPSE-1): rewrote the file from 1053 lines to
+  ~135. Both quadrant steps collapsed from 96 per-well
+  interactions to 2 block-group `ObjectStateChange` writes each
+  (4 block-group writes total). State writes record resulting
+  well-total volumes per Q5: A1-A6 = 200 microL, A7-A12 = 195,
+  B-H 1-6 = 195, B-H 7-12 = 190 (each = 100 cells pre-state +
+  dispensed media). `material_name: cells` preserved across
+  blocks (Q7: lowest-friction option; media adjustment is
+  volumetric, not a state change of the cell identity). Prompts
+  describe the dispensed media volumes (100 / 95 / 95 / 90 uL)
+  and explain how Day 2 drug additions bring every well to
+  200 microL.
+
+### Fixes and Maintenance
+
+- `tools/validate_content_yaml.py`: 0 failures, 168 files.
+- `tools/protocol_stepper.py`: 31/31 PASS, 0 errors, 0 warnings,
+  1042 interactions walked (down from 1226 pre-collapse).
+- `tools/protocol_manual.py --all`: 31/31 render, 0 failures.
+- Rendered manuals confirm one bullet per group-target
+  interaction: `mtt_plate_reaction` Step 3 = 1 dispense bullet
+  (was 96); `plate_drug_treatment_media_adjustment` Step 1 =
+  3 bullets (set-volume + 2 block dispenses; was 49); Step 2 =
+  3 bullets (was 49).
+
+### Decisions and Failures
+
+- User-resolved audit decisions Q1 (`mtt` material_name), Q2
+  (incubation step needs explicit `mtt -> formazan` write), Q3
+  (PDTMA media dispenses 100 / 95 / 95 / 90), Q5
+  (`material_volume` = well total).
+- Q6 resolved by math-review cascade: pre-MTT well total = 200
+  microL (cells + media + drug additions from Day 2), so MTT
+  addition writes 225 microL (200 + 25), incubation preserves
+  225 microL for formazan, decant zeroes to 0.
+- Q7 resolved (lowest friction): PDTMA post-state keeps
+  `material_name: cells`; added `cells` to PDTMA materials.yaml
+  registry.
+- Q4 resolved (planner): block group names are purely geometric
+  (`block_A_1_6` etc.) under a new `blocks` family on
+  `well_plate_96.yaml`. Names readable as
+  `block_<rows>_<cols>`.
+
+### Removals and Deprecations
+
+- Removed 384 enumerated `well_plate_96.<well>` references from
+  the two in-scope protocols (192 from `mtt_plate_reaction`
+  Step 3; 192 from `plate_drug_treatment_media_adjustment`
+  across both quadrant steps). In-scope grep count drops from
+  384 to 0. Out-of-scope `plate_drug_treatment_drug_addition`
+  retains its 252 enumerated refs (TODO follow-up).
+
+### Developer Tests and Notes
+
+- Carry-over rules now operationalized in shipped protocols:
+  "author the lab skill unit, not the renderer atom";
+  "material_volume records resulting well-total volume";
+  "prompts teach the lab action, not the old YAML mechanics".
+- Manual-renderer cosmetic quirks logged in `docs/TODO.md`
+  (e.g. "the well block_A_1_6 of the 96-well plate" reads
+  awkwardly; renderer should special-case region / block group
+  phrasing). Cosmetic, not behavior.
+- Pre-MTT well-total cascade documented in
+  `docs/active_plans/96_well_enumeration_audit.md` Q6 +
+  [OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md) Ambiguity 1.
+
+## 2026-05-16 (96-well enumeration audit -- WP-AUDIT-1)
+
+### Additions and New Features
+
+- `docs/active_plans/96_well_enumeration_audit.md`: site-level
+  classification of every remaining 96-well-plate over-enumeration
+  site under `content/protocols/`. Three sites in two in-scope
+  protocols (`mtt_plate_reaction.add_mtt_to_wells`,
+  `plate_drug_treatment_media_adjustment.adjust_media_quadrant_a1_h6`,
+  `plate_drug_treatment_media_adjustment.adjust_media_quadrant_a7_h12`)
+  plus one out-of-scope third protocol surfaced
+  (`plate_drug_treatment_drug_addition`, 252 hits) deferred to
+  `docs/TODO.md`. After user review, Q1/Q2/Q3/Q5 resolved; Q4
+  (block group naming) + Q6 (MTT post-state 225 uL cascade) + Q7
+  (PDTMA post-state material_name) remain open.
+
+### Behavior or Interface Changes
+
+(none -- this pass is documentation only)
+
+### Fixes and Maintenance
+
+- `docs/protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md`:
+  added top-of-doc WARNING / CAUTION banner naming the three
+  headline trap zones (200 uL well, 200 mM Metformin stock, 90 uL
+  cols-7-12 media adjustment) with inline `**WARNING**` and
+  `**CAUTION**` flags at each former trap in Parts 3-5, all
+  cross-referencing
+  [protocols/OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md). Past trap caused
+  at least three rebuild-time confusions.
+- `docs/active_plans/96_well_authoring_shape_finding.md`: added
+  back-pointer to the new audit doc so readers of the spike
+  finding can discover the follow-on audit.
+
+### Decisions and Failures
+
+- WP-MTT-FIX-1 gated on a state-field semantics decision (Q5):
+  audit finds `material_volume` is declared as "Volume of contents
+  in this well" (well total), so the recommended MTT-addition
+  state is `{material_name: mtt, material_volume: 125}`
+  (preserving the existing well total; only the name changes from
+  the buggy `formazan` to `mtt`). The plan's earlier
+  `material_volume: 25` figure described the dispensed reagent,
+  not the well total. User decision required before the fix lands.
+- WP-PDTMA-COLLAPSE-1 gated on a volume-map decision (Q3): plan
+  expected 100/90/95/85 uL across the four blocks; YAML carries
+  100/95/95/90 uL. Two discrepancies. Audit cannot decide which
+  side is right without scientific input.
+- Manual smoke check confirmed the renderer does NOT expand
+  `well_plate_96.all_wells` into 96 per-cell bullets. The case-1
+  collapse rule is safe to apply.
+
+### Developer Tests and Notes
+
+- Audit grep pattern (stronger than the previous one):
+  `well_plate_96\.([A-H](1[0-2]|[1-9])|row_[A-H]|col_(1[0-2]|[1-9]))`.
+  636 enumerated hits across 3 files; 6 `all_wells` hits in 1 file.
+- PDTMA volume derivation method (ephemeral helper, not committed):
+  YAML walk over both quadrant steps' per-well `ObjectStateChange`
+  ops, summing `material_volume` writes by (row, col) block; final
+  map carries only three distinct values (100, 95, 90 uL) across
+  the four geometric blocks, with the 95 uL value shared between
+  `block_A_7_12` and `block_B_H_1_6`.
+- Math-review cross-reference link:
+  [protocols/OVCAR8_MATH_REVIEW.md](protocols/OVCAR8_MATH_REVIEW.md).
+- Tools passing on `main`: `tools/validate_content_yaml.py` (0
+  failures, 168 files); `tools/protocol_stepper.py` (31/31 PASS);
+  `pytest tests/test_markdown_links.py` (1 passed).
+
 ## 2026-05-16 (SDS-PAGE pedagogy + renderer fixes -- pass 2/3)
 
 ### Additions and New Features
