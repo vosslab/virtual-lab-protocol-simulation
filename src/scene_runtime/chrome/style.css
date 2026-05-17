@@ -1,0 +1,248 @@
+/**
+ * chrome/style.css
+ *
+ * Minimal styling for scene chrome: viewport + prompt panel.
+ * Scene viewport flex-grows; prompt panel is pinned at bottom.
+ */
+
+.scene-chrome {
+	display: flex;
+	flex-direction: column;
+	height: 100vh;
+	width: 100%;
+	background-color: #fafafa;
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+	color: #333;
+}
+
+.scene-viewport {
+	flex: 1;
+	overflow: auto;
+	background-color: #fff;
+	border-bottom: 1px solid #e0e0e0;
+	min-height: 300px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	pointer-events: none;
+}
+
+.prompt-panel {
+	padding: 16px;
+	background-color: #f5f5f5;
+	border-top: 1px solid #e0e0e0;
+	max-height: 120px;
+	overflow-y: auto;
+	min-height: 60px;
+}
+
+.prompt-text {
+	font-size: 14px;
+	line-height: 1.5;
+	color: #333;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.feedback-area {
+	padding: 12px 16px;
+	background-color: #fff3e0;
+	border-top: 1px solid #ffe0b2;
+	border-bottom: 1px solid #ffe0b2;
+	display: none;
+	min-height: auto;
+	max-height: 100px;
+	overflow-y: auto;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+}
+
+.feedback-text {
+	font-size: 13px;
+	line-height: 1.4;
+	color: #e65100;
+	flex: 1;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+.feedback-dismiss-button {
+	padding: 6px 12px;
+	background-color: #fff9c4;
+	border: 1px solid #fdd835;
+	border-radius: 4px;
+	font-size: 12px;
+	color: #e65100;
+	cursor: pointer;
+	white-space: nowrap;
+	flex-shrink: 0;
+	transition: background-color 0.2s ease;
+}
+
+.feedback-dismiss-button:hover {
+	background-color: #fdd835;
+}
+
+.next-button-container {
+	padding: 12px 16px;
+	background-color: #f9f9f9;
+	border-top: 1px solid #e0e0e0;
+	display: flex;
+	justify-content: flex-end;
+	min-height: 48px;
+	align-items: center;
+}
+
+.next-button {
+	padding: 8px 20px;
+	background-color: #4caf50;
+	border: none;
+	border-radius: 4px;
+	font-size: 14px;
+	color: white;
+	cursor: pointer;
+	font-weight: 500;
+	transition: background-color 0.2s ease;
+	display: none;
+}
+
+.next-button:hover {
+	background-color: #45a049;
+}
+
+.next-button:active {
+	background-color: #3d8b40;
+}
+
+.adjust-panel {
+	padding: 12px 16px;
+	background-color: #f5f5f5;
+	border-top: 1px solid #e0e0e0;
+	border-bottom: 1px solid #e0e0e0;
+	pointer-events: none;
+}
+
+.adjust-panel:not(:empty) {
+	pointer-events: auto;
+}
+
+.adjust-panel-label {
+	display: block;
+	font-size: 13px;
+	font-weight: 500;
+	color: #333;
+	margin-bottom: 8px;
+}
+
+.adjust-panel-input-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.adjust-panel-input {
+	flex: 1;
+	max-width: 120px;
+	padding: 6px 8px;
+	font-size: 13px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+}
+
+.adjust-panel-input:focus {
+	outline: none;
+	border-color: #4caf50;
+	box-shadow: 0 0 4px rgba(76, 175, 80, 0.3);
+}
+
+.adjust-panel-unit {
+	font-size: 12px;
+	color: #666;
+	white-space: nowrap;
+}
+
+.adjust-panel-slider-row {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.adjust-panel-slider {
+	flex: 1;
+	min-width: 150px;
+	height: 4px;
+	border-radius: 2px;
+	background: linear-gradient(to right, #e0e0e0 0%, #4caf50 0%, #4caf50 100%, #e0e0e0 100%);
+	outline: none;
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+.adjust-panel-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #4caf50;
+	cursor: pointer;
+	border: 1px solid #45a049;
+}
+
+.adjust-panel-slider::-moz-range-thumb {
+	width: 16px;
+	height: 16px;
+	border-radius: 50%;
+	background: #4caf50;
+	cursor: pointer;
+	border: 1px solid #45a049;
+}
+
+/* Mobile breakpoint (deferred per plan) */
+@media (max-width: 768px) {
+	.scene-chrome {
+		height: 100%;
+	}
+
+	.prompt-panel {
+		max-height: 100px;
+	}
+
+	.feedback-area {
+		max-height: 80px;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.feedback-dismiss-button {
+		align-self: flex-start;
+	}
+
+	.next-button-container {
+		min-height: 44px;
+	}
+
+	.next-button {
+		padding: 6px 16px;
+		font-size: 13px;
+	}
+
+	.adjust-panel-input-row {
+		flex-wrap: wrap;
+	}
+
+	.adjust-panel-input {
+		max-width: 100%;
+	}
+
+	.adjust-panel-slider-row {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.adjust-panel-slider {
+		min-width: 100%;
+	}
+}

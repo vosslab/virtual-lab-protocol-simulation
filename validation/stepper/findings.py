@@ -52,6 +52,8 @@ class FindingEmitter:
 		"""
 		self.verbose = verbose
 		self.findings: list[Finding] = []
+		self.referenced_materials: set[str] = set()  # Track materials referenced in execution
+		self._unregistered_dedup: set[str] = set()  # Track (protocol, material_name) pairs already reported for S-UNREGISTERED
 
 	def emit_finding(self, finding: Finding) -> None:
 		"""Record a finding for later output."""
@@ -177,6 +179,11 @@ class FindingEmitter:
 	def clear(self) -> None:
 		"""Clear accumulated findings."""
 		self.findings = []
+
+	def track_referenced_material(self, material_name: str) -> None:
+		"""Record a material name that was referenced during execution."""
+		if material_name:
+			self.referenced_materials.add(material_name)
 
 
 Level = validation.shared_toolkit.findings.Severity

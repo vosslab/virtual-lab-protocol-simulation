@@ -18,14 +18,16 @@ Usage:
 	source source_me.sh && python3 validation/manual/protocol_manual.py --list-protocols
 	source source_me.sh && python3 validation/manual/protocol_manual.py --all
 
-Single mode writes `./<protocol_name>.md` to the current working
-directory. `--all` writes every protocol to `./output_manuals/`.
-Override the directory with `--out <dir>`, or use `--stdout` to print
+Single mode writes `./manual_<protocol_name>.md` to the current working
+directory. `--all` writes every protocol to `./output_manuals/manual_*.md`.
+Override the directory with `--out-dir <dir>`, or use `--stdout` to print
 the rendered markdown to stdout instead of writing files.
 
 Use `--lint` to emit authoring warnings to stderr (does not alter rendered
-output). Checks for click-centric prompts, material-identity drift, and
-set-volume vs computed-delta mismatches.
+output). Use `--validate` to run the lint pass and emit findings in
+structured format (JSON or NDJSON). Checks for click-centric prompts,
+material-identity drift, set-volume vs computed-delta mismatches, and
+aspirate-vs-draw terminology.
 
 Reuses no validator or stepper code; reads YAML directly via pyyaml.
 Translation templates are heuristic and live in this file. A future
@@ -43,6 +45,8 @@ import validation.shared_toolkit.protocols as toolkit_protocols
 import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.reporter as toolkit_reporter
 import validation.shared_toolkit.cli as toolkit_cli
+import validation.shared_toolkit.findings as toolkit_findings
+import validation.shared_toolkit.emit as toolkit_emit
 
 REPO_ROOT = toolkit_paths.REPO_ROOT
 CONTENT_ROOT = toolkit_paths.CONTENT_ROOT
@@ -257,11 +261,21 @@ class StateSimulator:
 
 
 #============================================
+# Lint severity mapping: check_class -> Severity
+LINT_SEVERITY = {
+	"L-ASPIRATE": toolkit_findings.Severity.WARNING,
+	"L-MATDRIFT": toolkit_findings.Severity.WARNING,
+	"L-VOLMISMATCH": toolkit_findings.Severity.WARNING,
+	"L-PROMPT": toolkit_findings.Severity.INFO,
+}
+
+
+#============================================
 class LintCollector:
 	"""
 	Collects authoring lint warnings during protocol render. Stores unique
 	(step_name, check_class, message) triples and emits them deduplicated
-	and sorted to stderr.
+	and sorted to stderr or as structured findings.
 	"""
 
 	def __init__(self):
@@ -274,13 +288,49 @@ class LintCollector:
 		self.warnings.add((step_name, check_class, message))
 
 	#--------------------------------------------
-	def emit(self, stderr_stream):
+	def emit_text(self, stderr_stream):
 		"""Print all collected warnings to stderr, sorted by (step_name, check_class, message)."""
 		if not self.warnings:
 			return
 		sorted_warnings = sorted(self.warnings)
 		for step_name, check_class, message in sorted_warnings:
 			stderr_stream.write(f"{step_name}: {check_class}: {message}\n")
+
+	#--------------------------------------------
+	def emit_findings(self, protocol_name, path):
+		"""
+		Convert collected warnings to a list of Finding objects.
+
+		Args:
+			protocol_name: Name of the protocol being linted.
+			path: Repo-relative file path to the protocol.yaml.
+
+		Returns:
+			List of toolkit_findings.Finding objects.
+		"""
+		if not self.warnings:
+			return []
+
+		findings = []
+		sorted_warnings = sorted(self.warnings)
+		for step_name, check_class, message in sorted_warnings:
+			severity = LINT_SEVERITY.get(check_class, toolkit_findings.Severity.INFO)
+			code = check_class.lower()  # "L-ASPIRATE" -> "l-aspirate"
+			finding = toolkit_findings.Finding(
+				severity=severity,
+				tool="manual",
+				code=code,
+				message=message,
+				path=path,
+				line=None,
+				protocol=protocol_name,
+				scene=None,
+				step=step_name,
+				target=None,
+				extras=None,
+			)
+			findings.append(finding)
+		return findings
 
 
 #============================================
@@ -347,6 +397,75 @@ def _volume_match(vol1, vol2, tolerance=0.01):
 
 
 #============================================
+def _has_nonwaste_pipette_draw(sequence, catalog, sim):
+	"""
+	Check if the sequence contains a pipette loading (draw) to a non-waste destination.
+	This handles common patterns:
+	  1. 4-interaction: pipette click -> adjust -> source click -> dest click
+	  2. 3-interaction: pipette click -> source click -> dest click (no adjust)
+	  3. adjust -> source click pattern (pipette loading into source, no separate dest)
+	Returns True if the sequence has a pipette draw where material is loaded into
+	the pipette or a non-waste destination (held_material_name or material_name
+	is not "empty"). This is used to detect when "aspirate" in the prompt refers
+	to pipette loading (should use "draw") rather than vacuum-removal to waste.
+	"""
+	for i, interaction in enumerate(sequence):
+		target = interaction.get("target", "")
+		gesture = interaction.get("gesture", "click")
+		if gesture == "click" and is_pipette(catalog, target):
+			dest_material = None
+			if i + 3 < len(sequence):
+				adjust_i = sequence[i + 1]
+				source_i = sequence[i + 2]
+				dest_i = sequence[i + 3]
+				if (
+					adjust_i.get("target") == target
+					and adjust_i.get("gesture") == "adjust"
+					and source_i.get("gesture") == "click"
+					and dest_i.get("gesture") == "click"
+				):
+					dest_change = find_first_op_of_type(
+						(dest_i.get("response", {}) or {}).get("scene_operations"),
+						"ObjectStateChange",
+					)
+					if dest_change is not None:
+						dest_state = dest_change.get("state", {}) or {}
+						dest_material = dest_state.get("material_name")
+			elif i + 2 < len(sequence):
+				source_i = sequence[i + 1]
+				dest_i = sequence[i + 2]
+				if (
+					source_i.get("gesture") == "click"
+					and dest_i.get("gesture") == "click"
+					and source_i.get("target") != target
+					and dest_i.get("target") != target
+				):
+					dest_change = find_first_op_of_type(
+						(dest_i.get("response", {}) or {}).get("scene_operations"),
+						"ObjectStateChange",
+					)
+					if dest_change is not None:
+						dest_state = dest_change.get("state", {}) or {}
+						dest_material = dest_state.get("material_name")
+			if dest_material and dest_material != "empty":
+				return True
+		elif gesture == "adjust" and is_pipette(catalog, target):
+			if i + 1 < len(sequence):
+				next_i = sequence[i + 1]
+				if next_i.get("gesture") == "click":
+					next_change = find_first_op_of_type(
+						(next_i.get("response", {}) or {}).get("scene_operations"),
+						"ObjectStateChange",
+					)
+					if next_change is not None:
+						next_state = next_change.get("state", {}) or {}
+						held_material = next_state.get("held_material_name")
+						if held_material and held_material != "empty":
+							return True
+	return False
+
+
+#============================================
 def render_step(step, catalog, material_labels, sim, touched_objects, lint=None):
 	"""
 	Render one step. Walks the sequence applying multi-interaction
@@ -373,6 +492,19 @@ def render_step(step, catalog, material_labels, sim, touched_objects, lint=None)
 			if first_token in ("Click", "Tap", "Press"):
 				msg = f"prompt starts with click-centric verb: {first_token!r}"
 				lint.record(step_name, "L-PROMPT", msg)
+
+	# L-ASPIRATE: check for "aspirate" in prompt when pipette draws to non-waste dest.
+	if lint is not None:
+		# Regex matches "aspirate", "aspirates", "aspirated", "aspirating".
+		# Word boundaries prevent substring matches: "reaspirate", "aspirator", "aspirational" are excluded.
+		aspirate_found = re.search(r"\baspirate(s|d|ing)?\b", prompt, re.IGNORECASE)
+		if aspirate_found:
+			has_nonwaste_pipette_draw = _has_nonwaste_pipette_draw(sequence, catalog, sim)
+			# Suppress L-ASPIRATE when step only performs vacuum-removal to waste; "aspirate" is correct in that context.
+			if has_nonwaste_pipette_draw:
+				aspirate_token = aspirate_found.group()
+				msg = f"prompt uses {aspirate_token!r} for pipette loading (reserved for vacuum-removal to waste); use 'draw' or 'pipette up' instead"
+				lint.record(step_name, "L-ASPIRATE", msg)
 
 	if not sequence:
 		lines.append("*(no interactions)*")
@@ -1360,8 +1492,10 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 	Render a mini-protocol or sequence runner; return markdown string.
 	When lint is not None, collects authoring warnings in the collector.
 	"""
-	protocol_path = os.path.join(toolkit_paths.PROTOCOLS_DIR, protocol_name, "protocol.yaml")
-	protocol = load_yaml(protocol_path)
+	resolved_path = toolkit_protocols.resolve_protocol_path(protocol_name)
+	if resolved_path is None:
+		raise FileNotFoundError(f"Protocol '{protocol_name}' not found")
+	protocol = load_yaml(str(resolved_path))
 	protocol_type = protocol.get("protocol_type", "mini_protocol")
 
 	lines = [f"# {protocol_type.replace('_', '-')}: {protocol_name.replace('_', ' ')}", ""]
@@ -1431,14 +1565,15 @@ def render_protocol_manual(protocol_name, catalog, lint=None):
 #============================================
 def write_manual(name, markdown, out_dir):
 	"""
-	Write one rendered manual to <out_dir>/<name>.md and return the path.
+	Write one rendered manual to <out_dir>/manual_<name>.md and return the path.
 
-	Creates out_dir if missing. The output filename always uses the
-	canonical protocol name so a bulk run and a single run produce the
-	same filename for the same protocol.
+	Creates out_dir if missing. The output filename uses the manual_ prefix
+	so a single .gitignore line (`manual_*.md`) catches all generated manuals
+	regardless of output directory. Both single-mode (CWD) and bulk mode
+	(output_manuals/) apply this prefix.
 	"""
 	os.makedirs(out_dir, exist_ok=True)
-	out_path = os.path.join(out_dir, f"{name}.md")
+	out_path = os.path.join(out_dir, f"manual_{name}.md")
 	with open(out_path, "w", encoding="utf-8") as handle:
 		handle.write(markdown)
 		handle.write("\n")
@@ -1483,10 +1618,14 @@ def parse_args():
 			help="Print rendered markdown to stdout instead of writing a file.",
 		)
 
-		lint_group = parser.add_argument_group("Lint")
+		lint_group = parser.add_argument_group("Lint and Validation")
 		lint_group.add_argument(
 			"--lint", dest="lint", action="store_true",
 			help="Emit authoring lint warnings to stderr (does not alter rendered output).",
+		)
+		lint_group.add_argument(
+			"--validate", dest="validate", action="store_true",
+			help="Run lint pass and emit findings; do NOT render markdown. Allows --json/--ndjson output format.",
 		)
 
 	parser = toolkit_cli.build_parser(
@@ -1502,13 +1641,15 @@ def parse_args():
 	args = parser.parse_args()
 
 	#============================================
-	# Protocol manual does not support JSON output (renderer emits markdown).
-	# Reject if user passes --json or --ndjson.
+	# Protocol manual does not support JSON output when rendering markdown.
+	# When --validate is set, JSON/NDJSON is allowed (for findings).
+	# Otherwise, reject if user passes --json or --ndjson.
 	#============================================
-	if args.output_format != 'text':
+	if args.output_format != 'text' and not args.validate:
 		toolkit_reporter.print_error(
 			'Format not supported: render renders markdown only. '
-			'(--json and --ndjson do not apply to rendered manuals.)'
+			'(--json and --ndjson do not apply to rendered manuals. '
+			'Use --validate to emit findings in JSON/NDJSON format.)'
 		)
 		sys.exit(2)
 
@@ -1592,6 +1733,56 @@ def main():
 
 	catalog = ObjectCatalog()
 
+	#============================================
+	# --validate mode: collect findings and emit in requested format.
+	#============================================
+	if args.validate:
+		all_findings = []
+		for name in names:
+			lint = LintCollector()
+			_ = render_protocol_manual(name, catalog, lint)
+			# Get the protocol path for the Finding.path field (repo-relative).
+			resolved_path = toolkit_protocols.resolve_protocol_path(name)
+			if resolved_path:
+				# Convert to repo-relative path.
+				try:
+					protocol_path = os.path.relpath(resolved_path, REPO_ROOT)
+				except (ValueError, TypeError):
+					protocol_path = str(resolved_path)
+			else:
+				protocol_path = f"content/protocols/{name}/protocol.yaml"
+			findings = lint.emit_findings(name, protocol_path)
+			all_findings.extend(findings)
+
+		# Count by severity (used for both summary line and exit code).
+		error_count = sum(1 for f in all_findings if f.severity == toolkit_findings.Severity.ERROR)
+		warning_count = sum(1 for f in all_findings if f.severity == toolkit_findings.Severity.WARNING)
+		has_error = error_count > 0
+		has_warning = warning_count > 0
+
+		# Emit findings in the requested format. In quiet text mode, suppress
+		# per-finding output and emit only the one-line summary so the
+		# aggregate validate.py picks up a well-formed sibling-style summary.
+		if args.output_format == 'text' and args.quiet:
+			toolkit_reporter.print_summary_line(
+				len(names), error_count,
+				item_label="manuals", warnings=warning_count,
+			)
+		else:
+			toolkit_emit.emit_findings(all_findings, args.output_format)
+			if args.output_format == 'text':
+				toolkit_reporter.print_summary_line(
+					len(names), error_count,
+					item_label="manuals", warnings=warning_count,
+				)
+
+		exit_code = 0
+		if has_error:
+			exit_code = 1
+		elif has_warning and args.strict:
+			exit_code = 1
+		sys.exit(exit_code)
+
 	# Choose output sink. --stdout overrides everything; otherwise pick a
 	# directory. Bulk defaults to output_manuals/; single defaults to CWD.
 	if args.to_stdout:
@@ -1602,7 +1793,7 @@ def main():
 			md = render_protocol_manual(name, catalog, lint)
 			print(md)
 			if lint is not None:
-				lint.emit(sys.stderr)
+				lint.emit_text(sys.stderr)
 		sys.exit(0)
 
 	if args.out_dir is not None:
@@ -1622,7 +1813,7 @@ def main():
 		if not args.quiet:
 			toolkit_reporter.print_pass(out_path)
 		if lint is not None:
-			lint.emit(sys.stderr)
+			lint.emit_text(sys.stderr)
 
 	if not args.quiet:
 		toolkit_reporter.print_summary_line(

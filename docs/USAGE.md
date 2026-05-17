@@ -97,6 +97,24 @@ Validate only (no output files):
 source source_me.sh && python3 pipeline/build_protocol_data.py --validate-only
 ```
 
+## HTML builder
+
+Generate one HTML file per mini-protocol under `dist/`:
+
+```bash
+source source_me.sh && python3 pipeline/build_protocol_html.py --all
+```
+
+Generate HTML for a single protocol:
+
+```bash
+source source_me.sh && python3 pipeline/build_protocol_html.py --protocol mtt_reagent_prep
+```
+
+Each generated shell is a minimal ~1.5 KB HTML file that references the shared
+`dist/runtime.bundle.js` and loads per-protocol runtime data. The `dist/`
+directory is gitignored (build artifact only).
+
 ## Validation
 
 All validation tools accept a unified command-line interface. The canonical
@@ -109,15 +127,16 @@ source source_me.sh && python3 validation/validate.py
 ### Canonical entry point
 
 `validation/validate.py` is the aggregate entry point for the full
-validation suite. It runs four stages (YAML schema, SVG assets, protocol
-stepper, folder layout) with a unified command-line interface and overview-mode rich
-summary output.
+validation suite. It runs five stages (YAML schema, SVG assets, protocol
+stepper, folder layout, manual lint) with a unified command-line interface and
+overview-mode rich summary output.
 
 ### Unified flag table
 
 All validation CLIs (aggregate `validation/validate.py`, plus per-stage
 `python3 -m validation.yaml`, `python3 -m validation.svg`,
-`python3 -m validation.stepper`) accept this flag set:
+`python3 -m validation.stepper`, and `python3 validation/manual/protocol_manual.py --validate`)
+accept this flag set:
 
 | Long | Short | Type | Default | Notes |
 | --- | --- | --- | --- | --- |
@@ -134,7 +153,7 @@ All validation CLIs (aggregate `validation/validate.py`, plus per-stage
 | `--no-color` | -- | flag | off | Suppress color output. Also honors `NO_COLOR` env var. |
 | `--json` | `-j` | flag | off | Emit unified JSON document. |
 | `--ndjson` | `-J` | flag | off | Stream one finding per line + final summary record. |
-| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper`, `structure` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. |
+| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper`, `structure`, `manual` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. `manual` runs `validation/manual/protocol_manual.py --validate` (lint pass over rendered protocol manuals). |
 
 Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` for `--asset`.
 
@@ -185,6 +204,7 @@ python3 validation/structure/layout_check.py
 python3 -m validation.yaml
 python3 -m validation.svg
 python3 -m validation.stepper
+python3 validation/manual/protocol_manual.py --validate --all
 ```
 
 Equivalent to:
@@ -194,6 +214,7 @@ validation/validate.py --only structure
 validation/validate.py --only yaml
 validation/validate.py --only svg
 validation/validate.py --only stepper
+validation/validate.py --only manual
 ```
 
 ### Protocol stepper details
@@ -227,6 +248,32 @@ The stepper surfaces these primary error classes:
   `placement_name`.
 - `capability_mismatch`: a step targets an object that does not declare
   the capability the gesture requires.
+- `s-state-jump`: a state field increased on an object with no matching
+  decrement elsewhere in the same interaction (suspected un-sourced
+  material gain; WARNING).
+- `s-cycle`: a `next_step` chain re-enters a previously visited step
+  (loop detected by graph walk).
+- `s-unreachable`: an authored `step_name` is never reached from
+  `entry_step`.
+- `s-unregistered`: a step writes a `material_name` (or
+  `held_material_name`) that is neither declared in `materials.yaml` nor
+  in the sentinel allowlist (WARNING).
+- `s-unused`: a material declared in `materials.yaml` is never
+  referenced by any step (WARNING).
+
+#### Manual lint codes
+
+The manual-renderer lint pass (`validation/manual/protocol_manual.py
+--validate`) emits these codes:
+
+- `l-aspirate`: a prompt or response uses "aspirate" outside its
+  reserved meaning (vacuum-removal-to-waste); WARNING.
+- `l-matdrift`: rendered material identity drifts from the authored
+  state at a step boundary; WARNING.
+- `l-volmismatch`: an authored set-volume value disagrees with the
+  computed transfer delta for the same interaction; WARNING.
+- `l-prompt`: a prompt phrasing diverges from the action the step
+  performs (advisory only); INFO.
 
 #### Flow-shape checks
 

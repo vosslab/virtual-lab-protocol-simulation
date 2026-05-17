@@ -1,6 +1,9 @@
-// ============================================
-// scene_configs.ts - Facade for scene configuration
-// ============================================
+/**
+ * LEGACY FACADE: scheduled for deletion post-M6.
+ *
+ * This is a re-export facade for generated/scene_data.
+ * It exists only to avoid breaking imports during the transition to the new runtime.
+ * Future WPs will eliminate this facade and import directly from generated/scene_data.
+ */
 
-export type { SceneConfig, SceneItem } from '../generated/scene_data';
-export { SCENE_CONFIGS } from '../generated/scene_data';
+export {};

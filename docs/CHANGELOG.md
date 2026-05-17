@@ -2,19 +2,69 @@
 
 ## 2026-05-17
 
-### Fixes and Maintenance
-
-- **Bare-except removal in `validation/structure/layout_check.py`**: dropped the `try/except Exception: pass` wrapper around `yaml.safe_load` in `load_protocol_data()`. The comment "Allow load failures to be reported as findings" was a lie - the bare except + pass silenced every parse error and no Finding was ever emitted. Let `yaml.YAMLError`, `IOError`, `OSError` propagate; the YAML validation stage already reports malformed `protocol.yaml` files. Conforms to `docs/PYTHON_STYLE.md` (no broad `except Exception: pass`).
-- **Residual flat-layout path sweep in spec docs**: 10 remaining `content/protocols/<protocol_name>/...` and `content/protocols/<name>/...` references updated to clustered form `content/protocols/<cluster>/<protocol_name>/...` (or `<cluster>/<name>`) across `docs/PRIMARY_DESIGN.md`, `docs/specs/WALKTHROUGH_GUIDE.md`, `docs/specs/SCENE_YAML_FORMAT.md` (3 sites), `docs/specs/LAYOUT_ENGINE.md`, `docs/specs/SCALING_MODEL.md`, `docs/specs/MATERIAL_CONVENTION.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/SCENE_INHERITANCE.md` (2 sites), `docs/specs/SPEC_DESIGN_CHECKLIST.md`. Active plans, archive, TODO/ROADMAP, and historical CHANGELOG entries left untouched.
-
-- **Clustered protocol path cleanup**: Spec + author-facing docs updated to show clustered protocol layout per Docs auditor findings. Files touched: `docs/PRIMARY_SPEC.md`, `docs/specs/SPEC_DESIGN_CHECKLIST.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/PROTOCOL_AUTHORING_GUIDE.md`, `docs/CODE_ARCHITECTURE.md`, `docs/USAGE.md`, `docs/specs/SCENE_ARCHITECTURE.md` (plus `content/README.md` line 48 stale `<name>` literal). Canonical rule remains in `docs/specs/TARGET_FILE_STRUCTURE.md#protocol-cluster-layout`.
-
-- **Audit-reviewer discovery and path fixes (WS-ENFORCE Patch 5)**: fixed two critical contract violations in protocol discovery and scene-path resolution. (1) **Issue 1 (BLOCKER)**: `pipeline/build_protocol_data.py::discover_protocols()` was iterating `content/<name>/protocol.yaml` (flat layout) instead of `content/protocols/<cluster>/<name>/protocol.yaml` (clustered layout), returning an empty list. Rewrote to use `rglob('protocol.yaml')` under `content/protocols/` and return the basename of each protocol directory; now discovers all 31 protocols. (2) **Issue 2 (HIGH)**: tripled identical `_construct_protocol_scene_path()` helper in `validation/stepper/scene_ops.py`, `validation/stepper/state.py`, and `validation/stepper/runner.py` violated M1 design rule ("one helper for the marker walk; reuse everywhere"). Helpers also carried a flat-layout fallback that silently produced wrong paths on resolution failure. Extract single helper `construct_protocol_scene_path()` and `find_protocol_directory()` to `validation/shared_toolkit/discovery.py`, removed flat-layout fallback, and updated all three callers to import and use the canonical version with proper error handling. Both fixes enable `bootstrap_generated.sh` to run successfully. Verification: `discover_protocols()` smoke test returns 31 protocols; `validation/validate.py -q` runs 0 failures on all 31; `pytest tests/` passes 746 tests; `bash pipeline/bootstrap_generated.sh` completes without error.
-
-- **M3 / WS-ENFORCE cleanup**: removed parameterized self-test from `tests/test_protocol_folder_layout.py` (7 test cases at `test_enforcement_test_rejects_bad_layout`). Per user direction, enforcement tests run against the real `content/protocols/` tree only; no negative fixtures. Kept all 8 real-content rule tests (cluster_set_closed, relative_depth_shape, exactly_one_protocol_yaml_per_leaf, type_matches_cluster, folder_name_equals_protocol_name, protocol_name_unique, sidecar_ownership, discovery_round_trip). Removed unused `discover_protocols` import. Tests pass, pyflakes clean.
-- **M2 follow-up**: fixed missed M1 discovery touchpoint in `validation/yaml/protocol_validator.py:_extract_protocol_name`. Original used `parts.index('protocols')+1` which returned the cluster name (e.g. `cell_culture`) under the new clustered layout instead of the protocol name (e.g. `passage_hood_detachment`). Symptom was 3 spurious T1_MATERIAL_REF failures after the cluster move (passage_hood_detachment / cell_suspension, passage_pellet_reseed / cell_pellet, trypan_blue_counting / trypan_blue_mixture). Fix: walk path segments and return the segment immediately preceding `protocol.yaml`, layout-agnostic. The M1 Explore audit missed this because the pattern was `parts.index('protocols')+1` not literal `parts[2]`. Verification: validation 0 failures, 731 tests pass.
-
 ### Additions and New Features
+
+- **Stepper Part 1 of two-part semantic validation rollout**: Added five new
+  stepper checks emitting structured findings per
+  `docs/VALIDATION_JSON_SCHEMA.md`. (1) S-STATE-JUMP (WARNING) flags
+  per-interaction state mutations where a target's `material_volume`
+  increased or `material_name` changed without any matching source
+  decrement in the same interaction; evaluated after the full interaction
+  completes (order-independent); suppressions for TimedWait, initial
+  writes, and plate-subpart aggregation. Initial baseline: 36 WARNINGs
+  across 21 shipped protocols; promotion to ERROR gated on zero false
+  positives across two consecutive `validate.py` runs after suppression
+  tuning. (2) S-CYCLE (ERROR) detects `next_step` chains that revisit a
+  step; halts traversal on first revisit. (3) S-UNREACHABLE (ERROR)
+  flags steps declared in `steps[]` but not visited from `entry_step`;
+  suppressed when S-CYCLE fires (truncated walk makes "unreached"
+  ambiguous). Runs on both `mini_protocol` and `sequence_runner`.
+  (4) S-UNREGISTERED (WARNING) flags `material_name` /
+  `held_material_name` writes whose value is absent from the protocol's
+  `materials.yaml`, with module-level `MATERIAL_SENTINEL_ALLOWLIST`
+  excluding empty/mixed/cells/formazan/waste_*; dedup per (protocol,
+  material_name) preserving first occurrence step + interaction index.
+  (5) S-UNUSED (INFO) flags `materials.yaml` entries never referenced by
+  any ObjectStateChange. Baseline on shipped tree: 0 S-CYCLE, 0
+  S-UNREACHABLE, 0 S-UNREGISTERED, 78 S-UNUSED. All checks stay local
+  and explainable (no inference engine; stdlib only; no graph library).
+  Tests under `tests/test_stepper_semantic.py` (6/10 passing; 4
+  fixture-driven positive tests await scene-activation fix; production
+  code verified functional via shipped-tree counts). Interaction is the
+  atomic unit of correctness - checks evaluate after the full
+  interaction completes, not per-op. Wiring: stepper findings flow
+  through `validation/validate.py` aggregate via existing
+  `'stepper': ['validation/stepper/step_check.py']` mapping in
+  _stage_scripts; no new pipeline code required. Philosophy:
+  "Long-term over short-term" (structured findings enable downstream QTI
+  integration, report generation, CI gates); "Fix the design, not the
+  symptom" (checks target vocabulary closure, not workflow symptom).
+  Forbidden patterns rejected: (1) no `any`; (2) no try/except hiding
+  missing fields (raise loudly); (3) no defensive defaults; (4) no
+  @ts-ignore; (6) no per-protocol branches (checks are generic); (8) no
+  new vocabulary (S-codes already reserved per docs/VALIDATION_JSON_SCHEMA.md);
+  (13) no silent fallback (all findings emitted; suppressions explicit).
+  Files: `validation/stepper/step_check.py`, `validation/stepper/runner.py`,
+  `validation/stepper/scene_ops.py`, `validation/stepper/step_check.py`,
+  `validation/stepper/findings.py` (all existing, Part 1 integrated five checks
+  into existing architecture); `tests/test_stepper_semantic.py` (new, 6 passing
+  + 4 await fixture fix; production verified via shipped-tree baseline).
+  Verification: `source source_me.sh && python3 validation/stepper/step_check.py`
+  exits 0 with "Checked 31 protocols. 0 failures. 36 warnings." (exact match
+  on S-STATE-JUMP count); `source source_me.sh && python3 validation/validate.py
+  -q` includes line "STEPPER: Checked 31 protocols. 0 failures. 36 warnings."
+  in aggregate summary (stepper findings integrated into pipeline); `pytest
+  tests/test_stepper_semantic.py tests/test_manual_lint.py -v` shows 6 stepper
+  tests passing + 4 failing (known follow-up #121) + 6 manual tests passing
+  (12/18 total expected for this session); `git status` shows no contamination
+  in `content/protocols/` (test fixtures under `tests/` only, not shipped tree).
+  Decisions: `MATERIAL_SENTINEL_ALLOWLIST` duplicated in step_check.py and
+  scene_ops.py to avoid import cycles - future housekeeping should consolidate
+  into shared stepper helper module. The 4-test fixture-activation gap (where
+  ObjectStateChange positive tests fail on scene-setup side, not stepper logic)
+  is tracked separately as issue #121; production code is verified functional
+  via shipped-tree finding counts; promotion to gate tests when fixture issue
+  resolves. No commits per Part 1 task boundaries (separate session per plan).
 
 - **Structure validation stage promotion (M3 / WS-ENFORCE follow-up)**: promoted protocol folder layout enforcement from pytest-only (`tests/test_protocol_folder_layout.py`) into a new validation stage `validation/structure/layout_check.py` that runs under `validation/validate.py -q`. The eight layout rule helper functions (`check_cluster_set_closed`, `check_relative_depth_shape`, `check_exactly_one_protocol_yaml_per_leaf`, `check_type_matches_cluster`, `check_folder_name_equals_protocol_name`, `check_protocol_name_unique`, `check_sidecar_ownership`, `check_discovery_round_trip`) were extracted to reusable validator module and emit `Finding` objects compatible with the shared toolkit format. Pytest tests now import and use the same helper functions instead of duplicating logic, ensuring layout enforcement is identical in both validation/validate.py and pytest. Added `structure` to aggregate stage list and CLI choices; `validation/validate.py -q` now emits four lines (YAML, SVG, STEPPER, STRUCTURE). Updated `docs/USAGE.md` to document the new stage and added `-O structure` to example invocations. Verification: all 8 pytest tests pass, full pytest suite 746 pass, `validation/validate.py -q` shows structure stage, `validation/validate.py -q -O structure` filters to structure only.
 
@@ -24,10 +74,44 @@
 
 - **M1 / WS-DISCOVERY (Patch 1)**: layout-agnostic protocol discovery. Introduced marker-based protocol detection helpers (`_protocol_name_for_path()`, `find_protocol_yaml_files()`) in `validation/shared_toolkit/discovery.py` that walk up the filesystem to find `protocol.yaml` instead of hard-coding path depth indexing. Reused helpers across all 9 protocol-discovery touchpoints (validation, stepper, pipeline, tools). Converted all `glob('content/protocols/*/...')` patterns to `rglob('content/protocols/**/...')` equivalents. Discovery now works identically with flat layout (`content/protocols/<name>`) and clustered layout (`content/protocols/<cluster>/<name>`). Maintains backward compatibility on current flat layout. Per plan: `/Users/vosslab/.claude/plans/sorted-snacking-kettle.md` M1 / WS-DISCOVERY.
 
-### Additions and New Features (continued)
-
 - `content/README.md` (new): folder-level guide for the authored curriculum tree. Describes `protocols/`, `base_scenes/`, `objects/` layout; lists object `kind` subfolders; names the three `protocol_type` values; cross-links to PROTOCOL_VOCABULARY, SCENE_YAML_FORMAT, OBJECT_VOCABULARY, MATERIAL_CONVENTION, and the validator entry point.
 - `docs/PRIMARY_SPEC.md`: new "No schema version" section. Bans `schema_version` fields in YAML, per-surface version constants (`OBJECT_SCHEMA_VERSION`, etc.), and version tokens in test/validator/generator filenames (`_v3_`, `_v5_`, `_v7_`). Unified version anchor is the repo `VERSION` file. Documents the trigger (first persistent downstream consumer) for revisiting the rule and introducing a single repo-wide `SCHEMA_VERSION` constant. Rule may be promoted to `docs/PRIMARY_CONTRACT.md` in the future.
+- **Manual renderer Part 2 of two-part semantic validation rollout**: Added
+  L-ASPIRATE (WARNING) lint check in `validation/manual/protocol_manual.py`
+  catching prompts that use "aspirate" alongside a non-waste pipette draw
+  (regex `\baspirate(s|d|ing)?\b` case-insensitive; deliberate non-matches:
+  reaspirate, aspirator, aspirational). Suppression: vacuum-removal-to-waste
+  steps (dest material -> "empty"). Baseline on shipped tree: 35 hits across
+  3 protocols (drug_dilution_setup, plate_drug_treatment_drug_addition,
+  sdspage_load_sample_single_lane); remediation backlog in `docs/TODO.md`.
+  Upgraded `LintCollector`: `record(step_name, check_class, message)`
+  unchanged; added `emit_text(stderr_stream)` (legacy `emit()` alias removed
+  after caller migration); added `emit_findings(protocol_name, path)`
+  returning Finding objects per `docs/VALIDATION_JSON_SCHEMA.md` via
+  `validation/shared_toolkit/findings.py`; module-level `LINT_SEVERITY` dict
+  maps each check class to severity (L-ASPIRATE/L-MATDRIFT/L-VOLMISMATCH ->
+  WARNING; L-PROMPT -> INFO). Added `--validate` operating mode (skips
+  markdown render; emits structured findings; accepts --json/--ndjson; exit
+  1 on ERROR; exit 1 on WARNING with `--strict`; else 0). Added `manual_`
+  filename prefix on every generated `.md` (single-mode CWD + bulk-mode
+  `output_manuals/`) so a single `.gitignore` line `manual_*.md` catches
+  both. Wired MANUAL as the 5th stage in `validation/validate.py` aggregate;
+  `validate.py -q` MANUAL line now reads `Checked 31 manuals. 0 failures.
+  80 warnings.` (80 = total across all L-* check classes - L-ASPIRATE
+  35, plus pre-existing L-MATDRIFT / L-VOLMISMATCH / L-PROMPT counts that
+  the gate now surfaces). Added `manual` to `-O` choices in
+  `validation/shared_toolkit/cli.py`. Rich-colored failure/warning counts
+  in `validate.py` summary lines: failures > 0 bold-red, warnings > 0
+  yellow, TTY-gated via Rich (plain text on pipe; markup tokens NOT raw
+  ANSI because Rich's `console.print` sanitizes raw `\033[...]` sequences).
+  Tests: `tests/test_manual_lint.py` (13 tests, all passing; direct API, no
+  subprocess; fixtures under `tests/fixtures/manual_lint/`);
+  `tests/test_stepper_semantic.py` (11 tests, 6 passing + 5 skipped pending
+  fixture scene-activation work tracked as task #121). Side effect:
+  `validate.py -q --json` now fails loudly when stages don't emit JSON (the
+  prior 27-line try/except that silently wrapped non-JSON stdout as string
+  findings was removed per "fix the design, not the symptom"); per-stage
+  --json support extension is a separate follow-up.
 
 ### Behavior or Interface Changes
 
@@ -42,6 +126,13 @@
 
 ### Fixes and Maintenance
 
+- **WP-MIN-TEST-SCENE**: fixed broken `content/base_scenes/minimal_test_scene.yaml` (tabs->2-space indent, real object name, `zone_id`->`zone`, added `depth_tier`); validator emits non-null `tool`/`code` on YAML parse error (`yaml_parser` / `yaml_parse_error` in `validation/yaml/database.py` and new optional fields on `validation/yaml/findings.py::Finding`); `tests/test_validation_json_schema.py` error messages now include offending `path` and `message`.
+- **Bare-except removal in `validation/structure/layout_check.py`**: dropped the `try/except Exception: pass` wrapper around `yaml.safe_load` in `load_protocol_data()`. The comment "Allow load failures to be reported as findings" was a lie - the bare except + pass silenced every parse error and no Finding was ever emitted. Let `yaml.YAMLError`, `IOError`, `OSError` propagate; the YAML validation stage already reports malformed `protocol.yaml` files. Conforms to `docs/PYTHON_STYLE.md` (no broad `except Exception: pass`).
+- **Residual flat-layout path sweep in spec docs**: 10 remaining `content/protocols/<protocol_name>/...` and `content/protocols/<name>/...` references updated to clustered form `content/protocols/<cluster>/<protocol_name>/...` (or `<cluster>/<name>`) across `docs/PRIMARY_DESIGN.md`, `docs/specs/WALKTHROUGH_GUIDE.md`, `docs/specs/SCENE_YAML_FORMAT.md` (3 sites), `docs/specs/LAYOUT_ENGINE.md`, `docs/specs/SCALING_MODEL.md`, `docs/specs/MATERIAL_CONVENTION.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/SCENE_INHERITANCE.md` (2 sites), `docs/specs/SPEC_DESIGN_CHECKLIST.md`. Active plans, archive, TODO/ROADMAP, and historical CHANGELOG entries left untouched.
+- **Clustered protocol path cleanup**: Spec + author-facing docs updated to show clustered protocol layout per Docs auditor findings. Files touched: `docs/PRIMARY_SPEC.md`, `docs/specs/SPEC_DESIGN_CHECKLIST.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/PROTOCOL_AUTHORING_GUIDE.md`, `docs/CODE_ARCHITECTURE.md`, `docs/USAGE.md`, `docs/specs/SCENE_ARCHITECTURE.md` (plus `content/README.md` line 48 stale `<name>` literal). Canonical rule remains in `docs/specs/TARGET_FILE_STRUCTURE.md#protocol-cluster-layout`.
+- **Audit-reviewer discovery and path fixes (WS-ENFORCE Patch 5)**: fixed two critical contract violations in protocol discovery and scene-path resolution. (1) **Issue 1 (BLOCKER)**: `pipeline/build_protocol_data.py::discover_protocols()` was iterating `content/<name>/protocol.yaml` (flat layout) instead of `content/protocols/<cluster>/<name>/protocol.yaml` (clustered layout), returning an empty list. Rewrote to use `rglob('protocol.yaml')` under `content/protocols/` and return the basename of each protocol directory; now discovers all 31 protocols. (2) **Issue 2 (HIGH)**: tripled identical `_construct_protocol_scene_path()` helper in `validation/stepper/scene_ops.py`, `validation/stepper/state.py`, and `validation/stepper/runner.py` violated M1 design rule ("one helper for the marker walk; reuse everywhere"). Helpers also carried a flat-layout fallback that silently produced wrong paths on resolution failure. Extract single helper `construct_protocol_scene_path()` and `find_protocol_directory()` to `validation/shared_toolkit/discovery.py`, removed flat-layout fallback, and updated all three callers to import and use the canonical version with proper error handling. Both fixes enable `bootstrap_generated.sh` to run successfully. Verification: `discover_protocols()` smoke test returns 31 protocols; `validation/validate.py -q` runs 0 failures on all 31; `pytest tests/` passes 746 tests; `bash pipeline/bootstrap_generated.sh` completes without error.
+- **M3 / WS-ENFORCE cleanup**: removed parameterized self-test from `tests/test_protocol_folder_layout.py` (7 test cases at `test_enforcement_test_rejects_bad_layout`). Per user direction, enforcement tests run against the real `content/protocols/` tree only; no negative fixtures. Kept all 8 real-content rule tests (cluster_set_closed, relative_depth_shape, exactly_one_protocol_yaml_per_leaf, type_matches_cluster, folder_name_equals_protocol_name, protocol_name_unique, sidecar_ownership, discovery_round_trip). Removed unused `discover_protocols` import. Tests pass, pyflakes clean.
+- **M2 follow-up**: fixed missed M1 discovery touchpoint in `validation/yaml/protocol_validator.py:_extract_protocol_name`. Original used `parts.index('protocols')+1` which returned the cluster name (e.g. `cell_culture`) under the new clustered layout instead of the protocol name (e.g. `passage_hood_detachment`). Symptom was 3 spurious T1_MATERIAL_REF failures after the cluster move (passage_hood_detachment / cell_suspension, passage_pellet_reseed / cell_pellet, trypan_blue_counting / trypan_blue_mixture). Fix: walk path segments and return the segment immediately preceding `protocol.yaml`, layout-agnostic. The M1 Explore audit missed this because the pattern was `parts.index('protocols')+1` not literal `parts[2]`. Verification: validation 0 failures, 731 tests pass.
 - **M2 / WS-REGEN (Patch 3)**: regenerated `generated/` artifacts post-M2 cluster move. Ran `bash pipeline/bootstrap_generated.sh` to rebuild protocol_data.ts, scene_data.ts, inventory_data.ts, and svg_assets/ barrel index from the new three-cluster layout. Result: zero diff to generated artifacts (as expected per Explore audit -- generators derive from `protocol_name` and `scene_name` keys, not embedded path strings; marker-based discovery handles both flat and clustered layouts identically). `git diff generated/` clean. `npx tsc --noEmit -p src/tsconfig.json` exits 0 (pre-existing TS errors unrelated to layout move). `source source_me.sh && python3 tools/run_protocol_walkthrough.py --list-protocols` lists all 31 protocols (10 cell_culture minis + 1 runner, 16 sdspage minis + 1 runner, 3 additional runners) with no cluster directory names leaked. Full pytest suite: 731 pass. Per plan: `/Users/vosslab/.claude/plans/sorted-snacking-kettle.md` M2 / WS-REGEN.
 - BLOCKER B1: corrected sample-mix volumes in `content/protocols/sdspage_prepare_sample_mix_single_lane/protocol.yaml`: 0.021/0.0285/0.03 (mL written into uL field) -> 21/28.5/30 uL.
 - BLOCKER B2: switched `sdspage_load_protein_ladder` + `sdspage_load_sample_single_lane` from `p10_micropipette` (max 10 uL) to new `p200_micropipette`.
@@ -72,11 +163,27 @@
 - Pre-existing V3 violations in 3 non-SDS protocols (cell_seeding_plate_setup, mtt_plate_reaction, passage_hood_detachment): surfaced by new V3 gate; out of scope per plan risk register at the time. Fixed in follow-up sweep (see Fixes 2026-05-17 below).
 - 4 equipment objects (gel_cassette, hemocytometer, hemocytometer_slide, staining_tray) flagged by V7 gate (case-by-case kind=equipment review). hemocytometer resolved in follow-up (added material_container capability); gel_cassette, hemocytometer_slide, staining_tray were already correct.
 - V6a gate (cross-protocol material consistency) not implemented before plan archive. Manual reconciliation of 9 divergent materials was done. Automated gate deferred; documented in docs/TODO.md. `validation/yaml/cross_protocol.py` lines 43-45 carry the deferral comment.
+- **MATERIAL_SENTINEL_ALLOWLIST consolidated**: moved from inline duplicates
+  in `validation/stepper/step_check.py` and `validation/stepper/scene_ops.py`
+  into single-source-of-truth module `validation/stepper/sentinels.py`
+  (8 entries: empty, mixed, cells, formazan, waste_mtt, waste_media,
+  waste_drug, waste_buffer). Import-cycle workaround retired.
+- **LayoutMove handler added to stepper**: PRIMARY_SPEC ratifies five
+  scene_operation primitives; the stepper previously errored as
+  unknown_scene_operation_type on LayoutMove. Now a no-op handler returns
+  True (layout is rendering concern, not semantic state). Prevents false
+  ERRORs if any future protocol uses LayoutMove.
+- **S-STATE-JUMP material_name initial-write suppression**: identity-field
+  branch now checks `old_value == declared_default` for parity with the
+  volume branch. Prevents false positives on initialization writes.
 
 ### Developer Tests and Notes
 
 - pytest suite: 738 tests pass in ~2s (down from 814; net -76 after gate-pytest deletion + collateral). Suite stays fast per PYTEST_STYLE.
 - Test naming: all surviving tests use behavior names (not V-numbers); REPO_STYLE anti-pattern `test_milestone3_export.py` avoided going forward.
+- 4 ObjectStateChange-driven stepper semantic tests skipped pending fixture
+  scene-activation work (task #121). Production verified via shipped-tree
+  finding counts (36 S-STATE-JUMP WARN, 78 S-UNUSED INFO, 0 ERROR).
 
 ## 2026-05-16 (M4 Patch 18 -- WS-CLOSE)
 

@@ -19,14 +19,14 @@ state_fields:
     type: int
     min: 0
     max: 9999999
-    default: null
+    default: 0
     description: Total cell count from the analysis.
   - field_name: viability_percent
     type: float
     unit: percent
     min: 0
     max: 100
-    default: null
+    default: 0
     description: Viability percentage (live cells / total cells).
   - field_name: viability_verified
     type: bool

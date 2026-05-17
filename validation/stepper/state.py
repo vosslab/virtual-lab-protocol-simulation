@@ -727,3 +727,21 @@ class StateMap:
 		# Apply the mutation
 		placement_data["state"][field_name] = new_value
 		return True
+
+	#============================================
+
+	def snapshot_state(self) -> dict:
+		"""
+		Create a snapshot of all placement state.
+
+		Returns:
+			Dict mapping placement_name -> {object_name, state fields}.
+			Used for state-jump detection before/after interaction.
+		"""
+		snapshot = {}
+		for placement_name, placement_data in self._state.items():
+			snapshot[placement_name] = {
+				"object_name": placement_data["object_name"],
+				"state": dict(placement_data["state"]),
+			}
+		return snapshot

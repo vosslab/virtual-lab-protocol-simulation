@@ -13,8 +13,7 @@ import argparse
 import json
 import pathlib
 
-from validation.shared_toolkit.repo_root import REPO_ROOT
-from validation.shared_toolkit.yaml_io import load_yaml
+from pipeline._pipeline_utils import REPO_ROOT, load_yaml
 
 
 # Hardcoded list of valid capability IDs (from plan, locked-decision section)

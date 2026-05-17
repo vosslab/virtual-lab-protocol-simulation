@@ -116,7 +116,16 @@ source uses "draw" or "pipette up", not "aspirate". The renderer
 (`validation.manual` line 910) now emits "draw N uL from
 {source}" in dispense bullets, but authored prompts in 8 of the 11
 protocols that mention "aspirate" still use it loosely in pipette-
-loading contexts. MTT trio + PDTMA fixed; remaining:
+loading contexts.
+
+This is now an active validation gate: the manual-lint pass emits
+the `l-aspirate` code (WARNING severity) for every misuse, so the
+protocols listed below surface automatically in
+`source source_me.sh && python3 validation/validate.py -q` (and in
+the per-stage `python3 validation/manual/protocol_manual.py --validate
+--all`) output until each protocol is cleaned up. Hunt-and-find by
+hand is no longer required; the list below is the remediation
+backlog. MTT trio + PDTMA fixed; remaining:
 
 - `cell_seeding_plate_setup/protocol.yaml`
 - `drug_dilution_setup/protocol.yaml`

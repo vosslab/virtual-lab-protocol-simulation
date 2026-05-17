@@ -30,6 +30,8 @@ class Finding:
 	severity: validation.shared_toolkit.findings.Severity
 	message: str
 	tag: str | None = None
+	tool: str | None = None
+	code: str | None = None
 
 	def format(self) -> str:
 		"""Render the finding as one line: `path[:lineno]: SEVERITY [tag]: message`."""

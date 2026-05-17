@@ -9,19 +9,53 @@ Existing per-stage validators remain untouched and runnable independently.
 This aggregate dispatches to them via subprocess and aggregates results.
 """
 
+import json
 import os
+import re
 import sys
 import subprocess
 from pathlib import Path
 
 import validation.shared_toolkit.cli
 import validation.shared_toolkit.console
-import validation.shared_toolkit.emit
-import validation.shared_toolkit.discovery
 import validation.shared_toolkit.repo_root
 
 
 REPO_ROOT = validation.shared_toolkit.repo_root.REPO_ROOT
+
+
+# Match "N failures" / "N warnings" tokens inside any stage summary line.
+# Used to wrap non-zero counts in Rich markup. Rich's Console strips markup
+# automatically when stdout is not a TTY (or when NO_COLOR is set), so piped
+# output stays plain text.
+_FAILURES_RE = re.compile(r"(\d+)\s+failures\b")
+_WARNINGS_RE = re.compile(r"(\d+)\s+warnings\b")
+
+
+def _colorize_summary(text: str) -> str:
+	"""
+	Wrap non-zero "N failures" in bold red Rich markup and non-zero
+	"N warnings" in yellow Rich markup. Zero counts stay unstyled. Use Rich
+	markup tokens ([bold red]...[/bold red]) not raw ANSI escape codes -
+	Rich's console.print sanitizes raw \\033[...] sequences and emits them
+	as literal text on TTY. Rich handles TTY-gating: markup is stripped
+	automatically on non-tty output.
+	"""
+	def fail_sub(match: re.Match) -> str:
+		count = int(match.group(1))
+		if count == 0:
+			return match.group(0)
+		return f"[bold red]{match.group(0)}[/bold red]"
+
+	def warn_sub(match: re.Match) -> str:
+		count = int(match.group(1))
+		if count == 0:
+			return match.group(0)
+		return f"[yellow]{match.group(0)}[/yellow]"
+
+	colored = _FAILURES_RE.sub(fail_sub, text)
+	colored = _WARNINGS_RE.sub(warn_sub, colored)
+	return colored
 
 
 def build_parser():
@@ -46,6 +80,7 @@ def _stage_scripts(stage_name: str) -> list[str]:
 		'svg': ['validation/svg/pipeline_check.py', 'validation/svg/asset_audit.py'],
 		'stepper': ['validation/stepper/step_check.py'],
 		'structure': ['validation/structure/layout_check.py'],
+		'manual': ['validation/manual/protocol_manual.py'],
 	}
 	return stage_map.get(stage_name, [])
 
@@ -55,7 +90,7 @@ def run_stage(stage_name: str, args, repo_root: Path) -> tuple[int, str]:
 	Run one validation stage and return (exit_code, captured_stdout).
 
 	Args:
-		stage_name: one of 'yaml', 'svg', 'stepper'
+		stage_name: one of 'yaml', 'svg', 'stepper', 'structure', 'manual'
 		args: argparse.Namespace from build_parser().parse_args()
 		repo_root: repo root path
 
@@ -125,6 +160,12 @@ def _run_one_script(script_path: Path, args, repo_root: Path) -> tuple[int, str]
 		if args.scenes:
 			cmd.extend(['-S'] + args.scenes)
 
+	# Special case for manual stage: run in validate mode, add --all if no protocols selected and no focus
+	if str(script_path).endswith('protocol_manual.py'):
+		cmd.append('--validate')
+		if not args.protocols and not args.focus:
+			cmd.append('--all')
+
 	# Pass output format flags if JSON/NDJSON
 	if args.output_format == 'json':
 		cmd.append('--json')
@@ -170,7 +211,7 @@ def main() -> None:
 	args = parser.parse_args()
 
 	# Determine which stages to run
-	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper', 'structure']
+	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper', 'structure', 'manual']
 
 	# Determine scope
 	# --focus is forwarded to each per-stage subprocess. Per-stage
@@ -202,51 +243,42 @@ def main() -> None:
 				# No banner, no blanks, no per-stage failure line; aggregate exit code is the machine signal.
 				non_empty_lines = [line for line in stdout.strip().splitlines() if line.strip()]
 				if non_empty_lines:
-					console.print(f"[bold cyan]{stage_name.upper()}[/bold cyan]: {non_empty_lines[-1]}")
+					summary_line = _colorize_summary(non_empty_lines[-1])
+					console.print(f"[bold cyan]{stage_name.upper()}[/bold cyan]: {summary_line}")
 				continue
 			console.print(f"\n[bold cyan]--- {stage_name.upper()} ---[/bold cyan]")
 			if stdout.strip():
-				console.print(stdout.rstrip())
+				console.print(_colorize_summary(stdout.rstrip()))
 			if exit_code != 0:
 				console.print(f"[bold red][{stage_name}] failed with exit code {exit_code}[/bold red]")
 
 	elif args.output_format in ('json', 'ndjson'):
 		# For JSON output: merge findings from all stages
-		import json
 		all_findings = []
 		all_tools = set()
 
 		for stage_name, exit_code, stdout in all_stage_outputs:
 			if stdout.strip():
-				try:
-					# Each stage emits JSON; try to parse it
-					stage_data = json.loads(stdout)
+				# Each stage emits JSON; parse it and extract findings
+				stage_data = json.loads(stdout)
 
-					# If it's a top-level findings array or findings key, extract findings
-					findings_list = []
-					if isinstance(stage_data, list):
-						findings_list = stage_data
-					elif isinstance(stage_data, dict):
-						if 'findings' in stage_data:
-							findings_list = stage_data['findings']
-						elif 'finding' in stage_data:
-							findings_list = [stage_data['finding']]
+				# If it's a top-level findings array or findings key, extract findings
+				findings_list = []
+				if isinstance(stage_data, list):
+					findings_list = stage_data
+				elif isinstance(stage_data, dict):
+					if 'findings' in stage_data:
+						findings_list = stage_data['findings']
+					elif 'finding' in stage_data:
+						findings_list = [stage_data['finding']]
 
-					# Tag each finding with tool source if not already present
-					for finding in findings_list:
-						if isinstance(finding, dict):
-							if 'tool' not in finding:
-								finding['tool'] = f'validation.{stage_name}'
-							all_findings.append(finding)
-							all_tools.add(f'validation.{stage_name}')
-				except (json.JSONDecodeError, ValueError):
-					# If the stage output is not JSON, wrap it as a plain string
-					all_findings.append({
-						'tool': f'validation.{stage_name}',
-						'type': 'output',
-						'message': stdout.strip()[:200],
-					})
-					all_tools.add(f'validation.{stage_name}')
+				# Tag each finding with tool source if not already present
+				for finding in findings_list:
+					if isinstance(finding, dict):
+						if 'tool' not in finding:
+							finding['tool'] = f'validation.{stage_name}'
+						all_findings.append(finding)
+						all_tools.add(f'validation.{stage_name}')
 
 		aggregate_result = {
 			'stages': list(all_tools),

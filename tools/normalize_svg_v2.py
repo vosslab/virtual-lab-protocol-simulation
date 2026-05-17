@@ -38,6 +38,16 @@ from xml.etree import ElementTree as ET
 
 SVG_NS = "http://www.w3.org/2000/svg"
 ET.register_namespace("", SVG_NS)
+# Preserve canonical prefixes for embedded attribution metadata (Dublin Core,
+# Creative Commons RDF). Without these, ElementTree renames foreign-namespace
+# prefixes to ns0:/ns1:/... on write, breaking downstream attribution parsers
+# and human readability. See `_temp_normalize_meta_probe.py` history.
+ET.register_namespace("dc", "http://purl.org/dc/elements/1.1/")
+ET.register_namespace("cc", "http://creativecommons.org/ns#")
+ET.register_namespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#")
+ET.register_namespace("xlink", "http://www.w3.org/1999/xlink")
+ET.register_namespace("sodipodi", "http://sodipodi.sourceforge.net/DTD/sodipodi-0.0.dtd")
+ET.register_namespace("inkscape", "http://www.inkscape.org/namespaces/inkscape")
 
 COMMAND_RE = re.compile(r"([AaCcHhLlMmQqSsTtVvZz])|([-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?)")
 COMMAND_ARITY = {
@@ -440,8 +450,44 @@ def shift_element(elem: ET.Element, dx: float, dy: float) -> None:
             elem.set(attr, fmt(parse_float(elem.attrib[attr]) + dy))
 
 
+def extract_pre_root_comments(source_text: str) -> list[str]:
+    """Return XML comments that appear before the <svg> root element.
+
+    ElementTree's TreeBuilder(insert_comments=True) preserves comments inside
+    the root only; comments between <?xml ...?> and <svg ...> are otherwise
+    dropped on round-trip, stripping attribution credit lines.
+
+    Args:
+        source_text: Full raw text of an SVG file.
+
+    Returns:
+        Each captured comment as its full <!-- ... --> form, in source order.
+    """
+    pre_root_match = re.search(r"^(.*?)<svg\b", source_text, re.DOTALL)
+    if not pre_root_match:
+        return []
+    return re.findall(r"<!--.*?-->", pre_root_match.group(1), re.DOTALL)
+
+
 def normalize_svg_file(input_path: Path, output_path: Path, padding: float = 2.0) -> tuple[BBox, str]:
-    tree = ET.parse(input_path)
+    """Normalize an SVG: crop to drawn bbox, shift to origin, repad.
+
+    Preserves attribution metadata: pre-root XML comments are re-injected on
+    write; in-root comments survive via TreeBuilder(insert_comments=True);
+    dc:/cc:/rdf: namespace prefixes survive via module-level registrations.
+
+    Args:
+        input_path: Path to source SVG.
+        output_path: Path to write the normalized SVG.
+        padding: Padding around drawn content, in user units. Default 2.
+
+    Returns:
+        Tuple of the original drawn BBox and the new viewBox string.
+    """
+    source_text = input_path.read_text(encoding="utf-8")
+    pre_root_comments = extract_pre_root_comments(source_text)
+    parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
+    tree = ET.parse(input_path, parser=parser)
     root = tree.getroot()
     bbox = compute_bbox(root)
     dx = -bbox.min_x + padding
@@ -459,6 +505,16 @@ def normalize_svg_file(input_path: Path, output_path: Path, padding: float = 2.0
         root.set("height", fmt(new_height))
     output_path.parent.mkdir(parents=True, exist_ok=True)
     tree.write(output_path, encoding="unicode", xml_declaration=False)
+    # Re-inject any pre-root comments stripped by the parser so attribution
+    # lines like `<!-- Created by Author, CC-BY-3.0 -->` survive normalization.
+    if pre_root_comments:
+        written = output_path.read_text(encoding="utf-8")
+        svg_index = written.find("<svg")
+        if svg_index >= 0:
+            preamble = written[:svg_index]
+            rest = written[svg_index:]
+            comment_block = "\n".join(pre_root_comments) + "\n"
+            output_path.write_text(preamble + comment_block + rest, encoding="utf-8")
     return bbox, root.attrib["viewBox"]
 
 
@@ -493,6 +549,30 @@ def write_svg(path: Path, body: str, view_box: str = "0 0 100 100") -> None:
     path.write_text(f'<svg xmlns="{SVG_NS}" viewBox="{view_box}">\n{body}\n</svg>\n', encoding="utf-8")
 
 
+METADATA_FIXTURE = '''<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created by Test Author, CC-BY-3.0 -->
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:dc="http://purl.org/dc/elements/1.1/"
+     xmlns:cc="http://creativecommons.org/ns#"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     viewBox="0 0 100 100">
+  <metadata>
+    <rdf:RDF>
+      <cc:Work rdf:about="">
+        <dc:title>Test Asset</dc:title>
+        <dc:creator><cc:Agent><dc:title>Test Author</dc:title></cc:Agent></dc:creator>
+        <cc:license rdf:resource="https://creativecommons.org/licenses/by/3.0/"/>
+        <dc:source>https://bioicons.com/</dc:source>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <title>Test Asset</title>
+  <desc>Centrifuge icon by Test Author</desc>
+  <rect x="10" y="10" width="80" height="80" fill="#333"/>
+</svg>
+'''
+
+
 def run_self_test() -> int:
     temp_dir = Path(tempfile.mkdtemp(prefix="normalize-svg-v2-self-test-"))
     failures: list[str] = []
@@ -516,6 +596,37 @@ def run_self_test() -> int:
                     raise AssertionError(f"expected viewBox {expected_viewbox}, got {viewbox}")
             except Exception as exc:  # noqa: BLE001 - test runner should collect failures
                 failures.append(f"{name}: {exc}")
+
+        # Attribution metadata preservation: dc:/cc:/rdf: prefixes must survive
+        # round-trip (not be renamed to ns0:/ns1:/...). Top-of-file XML comments
+        # and <title>/<desc> must also survive. Without this fixture, a future
+        # refactor could silently strip credit information from third-party SVGs.
+        meta_in = temp_dir / "attribution_metadata.svg"
+        meta_out = temp_dir / "attribution_metadata.normalized.svg"
+        meta_in.write_text(METADATA_FIXTURE, encoding="utf-8")
+        try:
+            normalize_svg_file(meta_in, meta_out, padding=2.0)
+            content = meta_out.read_text(encoding="utf-8")
+            required = [
+                ("dc:creator", "<dc:creator"),
+                ("dc:title", "<dc:title"),
+                ("cc:license", "<cc:license"),
+                ("cc:Work", "<cc:Work"),
+                ("rdf:RDF", "<rdf:RDF"),
+                ("top XML comment", "Test Author, CC-BY-3.0"),
+                ("<title>", "<title>"),
+                ("<desc>", "<desc>"),
+            ]
+            for label, needle in required:
+                if needle not in content:
+                    raise AssertionError(f"attribution metadata lost: {label} not in normalized output")
+            forbidden_prefixes = ("ns0:", "ns1:", "ns2:", "ns3:")
+            for prefix in forbidden_prefixes:
+                if prefix in content:
+                    raise AssertionError(f"namespace prefix renamed to {prefix} (lost canonical dc:/cc:/rdf:)")
+        except Exception as exc:  # noqa: BLE001
+            failures.append(f"attribution_metadata.svg: {exc}")
+
         if failures:
             print("SELF-TEST FAILED")
             for failure in failures:

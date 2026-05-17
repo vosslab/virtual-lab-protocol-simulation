@@ -39,7 +39,6 @@ def pytest_sessionstart(session) -> None:
 		os.path.join(repo_root, "generated", "svg_manifest.ts"),
 		os.path.join(repo_root, "generated", "scene_data.ts"),
 		os.path.join(repo_root, "generated", "protocol_data.ts"),
-		os.path.join(repo_root, "generated", "inventory_data.ts"),
 	]
 
 	# If any required file is missing, bootstrap the entire generated tree.

@@ -3,6 +3,7 @@
 from validation.stepper.state import StateMap
 from validation.stepper.findings import Finding, Level, FindingEmitter
 from validation.stepper.loader import LoadedContentTree
+from validation.stepper.sentinels import MATERIAL_SENTINEL_ALLOWLIST
 from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
@@ -43,6 +44,9 @@ def apply_scene_operation(
 		return _handle_scene_change(scene_op, state_map, protocol_name, step_name, interaction_index, emitter, tree)
 	elif op_type == "TimedWait":
 		return _handle_timed_wait(scene_op, state_map, protocol_name, step_name, interaction_index, emitter, tree)
+	elif op_type == "LayoutMove":
+		# Stepper treats LayoutMove as a no-op; layout position is a rendering concern, not semantic state.
+		return True
 	else:
 		emitter.emit_finding(Finding(
 			level=Level.ERROR,
@@ -219,6 +223,69 @@ def _handle_subpart_group_cascade(
 
 #============================================
 
+def _check_material_registration(
+	material_names: list[str],
+	protocol_name: str,
+	step_name: str,
+	interaction_index: int,
+	tree: LoadedContentTree | None,
+	emitter: FindingEmitter,
+) -> None:
+	"""
+	Check if material names are registered in the protocol's materials.yaml.
+
+	Emits S-UNREGISTERED findings for unregistered materials (excluding sentinels).
+	Uses dedup logic: one finding per (protocol, material_name) pair, recording
+	the first occurrence location.
+
+	Args:
+		material_names: List of material name values to check.
+		protocol_name: Name of the active protocol.
+		step_name: Name of the current step.
+		interaction_index: Index of the current interaction.
+		tree: LoadedContentTree for material lookups.
+		emitter: FindingEmitter for recording findings.
+	"""
+	if not tree:
+		return
+
+	declared_materials = tree.get_protocol_materials(protocol_name)
+
+	for material_name in material_names:
+		if not material_name:
+			continue
+
+		# Skip sentinels
+		if material_name in MATERIAL_SENTINEL_ALLOWLIST:
+			continue
+
+		# Dedup key: (protocol, material_name)
+		dedup_key = (protocol_name, material_name)
+
+		# Check if already reported; first-occurrence-preservation: skip if we've seen this before
+		if dedup_key in emitter._unregistered_dedup:
+			continue
+
+		# Check if registered; emit one finding per (protocol, material_name)
+		if material_name not in declared_materials:
+			# Mark as reported to prevent duplicate findings
+			emitter._unregistered_dedup.add(dedup_key)
+
+			emitter.emit_finding(Finding(
+				level=Level.WARNING,
+				protocol_name=protocol_name,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				target=None,
+				file_path=f"content/protocols/{protocol_name}/protocol.yaml",
+				code="s-unregistered",
+				message=f"material '{material_name}' written to object state but not declared in materials.yaml",
+				spec_cite="docs/specs/MATERIAL_CONVENTION.md",
+			))
+
+
+#============================================
+
 def _handle_cursor_attach(
 	scene_op: dict,
 	state_map: StateMap,
@@ -364,6 +431,28 @@ def _handle_object_state_change(
 			spec_cite="docs/specs/PROTOCOL_STEPS.md ObjectStateChange",
 		))
 		return False
+
+	# Check material registration and track referenced materials
+	# S-UNREGISTERED: material_name and held_material_name must be registered or in allowlist
+	material_names_to_check = []
+	if "material_name" in state_dict:
+		material_names_to_check.append(state_dict["material_name"])
+	if "held_material_name" in state_dict:
+		material_names_to_check.append(state_dict["held_material_name"])
+
+	_check_material_registration(
+		material_names_to_check,
+		protocol_name,
+		step_name,
+		interaction_index,
+		tree,
+		emitter,
+	)
+
+	# Track all materials encountered (including sentinels) for S-UNUSED detection
+	for material_name in material_names_to_check:
+		if material_name:
+			emitter.track_referenced_material(material_name)
 
 	# Check channel_addressing capability if target is a subpart group
 	# and a pipette is attached (per OBJECT_YAML_FORMAT.md "Channel addressing").
@@ -625,3 +714,136 @@ def _handle_timed_wait(
 		return False
 
 	return True
+
+
+#============================================
+
+def detect_state_jumps(
+	before_state: dict,
+	after_state: dict,
+	scene_ops: list,
+	state_map: StateMap,
+	protocol_name: str,
+	step_name: str,
+	interaction_index: int,
+	emitter: FindingEmitter,
+) -> None:
+	"""
+	Detect S-STATE-JUMP violations: field increases with no matching decrease.
+
+	Compares before_state and after_state snapshots. For each field that
+	increased, checks whether any scene_op in the same interaction decremented
+	that field on ANY placement. Emits WARNING if increase found with no
+	corresponding decrease.
+
+	Suppressions:
+	  - TimedWait ops (skip S-STATE-JUMP if ANY op in the interaction is TimedWait)
+	  - Initial state writes (old == declared default, skip the check)
+	  - Plate-subpart dotted targets (well_plate_96.A1) when parent is conserved
+
+	Args:
+		before_state: Snapshot before interaction (placement -> {state fields}).
+		after_state: Snapshot after interaction (placement -> {state fields}).
+		scene_ops: List of scene operations in the interaction.
+		state_map: StateMap (for field defaults and object metadata).
+		protocol_name: Protocol name for finding.
+		step_name: Step name for finding.
+		interaction_index: Interaction index for finding.
+		emitter: FindingEmitter for recording findings.
+	"""
+	# Suppression 1: skip if ANY op is TimedWait
+	# Incubator-driven state change (e.g., formazan conversion) is intentional, not a transfer bug
+	has_timed_wait = any(op.get("type") == "TimedWait" for op in scene_ops)
+	if has_timed_wait:
+		return
+
+	# Iterate through all placements to detect increases
+	for placement_name in after_state.keys():
+		old_state = before_state.get(placement_name, {}).get("state", {})
+		new_state = after_state.get(placement_name, {}).get("state", {})
+
+		for field_name, new_value in new_state.items():
+			old_value = old_state.get(field_name)
+
+			# Suppression 2: skip initial state writes (old == default)
+			# Initialization is not a transfer; the field starts uninitialized in the simulator's eyes
+			object_name = after_state[placement_name]["object_name"]
+			field_decl = state_map.tree.get_state_field(object_name, field_name)
+			if field_decl and old_value == field_decl.get("default"):
+				continue
+
+			# Check for volume increase
+			if field_name in ("material_volume", "held_material_volume"):
+				if isinstance(old_value, (int, float)) and isinstance(new_value, (int, float)):
+					if new_value > old_value:
+						# Volume increased. Check if any placement had a decrement
+						has_decrement = False
+						for other_placement in after_state.keys():
+							other_old = before_state.get(other_placement, {}).get("state", {}).get(field_name)
+							other_new = after_state.get(other_placement, {}).get("state", {}).get(field_name)
+							if isinstance(other_old, (int, float)) and isinstance(other_new, (int, float)):
+								if other_new < other_old:
+									has_decrement = True
+									break
+
+						if not has_decrement:
+							# Suppression 3: check if this is a plate subpart
+							# Subpart writes partition a parent total across wells; suppressing when the parent total stays conserved
+							is_plate_subpart = "." in placement_name
+							if is_plate_subpart:
+								# Extract parent object name
+								parent_name = placement_name.split(".")[0]
+								# Check if parent was conserved (no volume change)
+								parent_conserved = True
+								for p in after_state.keys():
+									if p == parent_name or p.startswith(parent_name + "."):
+										p_old = before_state.get(p, {}).get("state", {}).get(field_name)
+										p_new = after_state.get(p, {}).get("state", {}).get(field_name)
+										if isinstance(p_old, (int, float)) and isinstance(p_new, (int, float)):
+											if p_old != p_new and p != placement_name:
+												parent_conserved = False
+												break
+								if parent_conserved:
+									continue
+
+							# Emit S-STATE-JUMP finding
+							# WARNING (not ERROR) pending zero false positives across two consecutive validate.py runs; see plan promotion condition
+							emitter.emit_finding(Finding(
+								level=Level.WARNING,
+								protocol_name=protocol_name,
+								step_name=step_name,
+								interaction_index=interaction_index,
+								target=placement_name,
+								file_path="unknown",
+								code="s-state-jump",
+								message=f"placement '{placement_name}' field '{field_name}' increased from {old_value} to {new_value} with no matching decrement in same interaction",
+								spec_cite="docs/specs/MATERIAL_CONVENTION.md material conservation",
+							))
+
+			# Check for material identity change (material_name or held_material_name)
+			elif field_name in ("material_name", "held_material_name"):
+				if old_value != new_value and old_value is not None:
+					# Suppression: initialization is not a transfer; the field starts uninitialized in the simulator's eyes
+					field_decl = state_map.tree.get_state_field(object_name, field_name)
+					if field_decl and old_value == field_decl.get("default"):
+						continue
+
+					# Material changed. Check if there's a transfer op targeting this placement
+					has_transfer_op = any(
+						op.get("type") == "ObjectStateChange" and op.get("target") == placement_name
+						for op in scene_ops
+					)
+
+					if not has_transfer_op:
+						# Emit S-STATE-JUMP finding
+						emitter.emit_finding(Finding(
+							level=Level.WARNING,
+							protocol_name=protocol_name,
+							step_name=step_name,
+							interaction_index=interaction_index,
+							target=placement_name,
+							file_path="unknown",
+							code="s-state-jump",
+							message=f"placement '{placement_name}' field '{field_name}' changed from '{old_value}' to '{new_value}' without transfer op",
+							spec_cite="docs/specs/MATERIAL_CONVENTION.md material identity",
+						))

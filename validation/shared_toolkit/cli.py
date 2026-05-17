@@ -173,9 +173,9 @@ def build_parser(prog: str, description: str, extras=None) -> argparse.ArgumentP
 		'-O', '--only',
 		dest='stages',
 		nargs='+',
-		choices=['yaml', 'svg', 'stepper', 'structure'],
+		choices=['yaml', 'svg', 'stepper', 'structure', 'manual'],
 		default=None,
-		help='Filter to specific stages: yaml (content validation), svg (asset validation), stepper (walker), structure (folder layout).'
+		help='Filter to specific stages: yaml (content validation), svg (asset validation), stepper (walker), structure (folder layout), manual (protocol manuals).'
 	)
 
 	# Call extras callback if provided

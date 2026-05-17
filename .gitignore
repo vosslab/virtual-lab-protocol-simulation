@@ -1,4 +1,6 @@
 # Build artifacts
+tools/svg_picker/*.json
+manual*.md
 output_manuals/
 .claude
 .agents

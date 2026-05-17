@@ -9,6 +9,112 @@ import validation.stepper.cross_mini
 from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
+def _try_construct_scene_path(
+	tree: validation.stepper.loader.LoadedContentTree,
+	protocol_name: str,
+	scene_name: str,
+) -> str | None:
+	"""
+	Attempt to construct a scene path, returning None if resolution fails.
+
+	Helper to reduce try/except duplication in _seed_initial_active_scene.
+	"""
+	try:
+		return construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+	except RuntimeError:
+		return None
+
+
+def _check_flow_integrity_mini(
+	protocol: dict,
+	protocol_path: str,
+	emitter: validation.stepper.findings.FindingEmitter,
+) -> bool:
+	"""
+	Check for S-UNREACHABLE and S-CYCLE in a mini-protocol.
+
+	Performs a linear walk from entry_step through next_step chain,
+	tracking visited steps. Emits S-CYCLE on revisit (and halts further
+	checks for this protocol). Emits S-UNREACHABLE post-walk for any
+	declared steps not visited (only if S-CYCLE did not fire).
+
+	Args:
+		protocol: Protocol dict with entry_step and steps list.
+		protocol_path: Path to the protocol YAML file.
+		emitter: FindingEmitter for recording findings.
+
+	Returns:
+		True if S-CYCLE was detected, False otherwise.
+	"""
+	protocol_name = protocol["protocol_name"]
+	entry_step_name = protocol.get("entry_step")
+	steps_list = protocol.get("steps", [])
+
+	# Build name -> step dict for fast lookup
+	steps_by_name = {}
+	for step in steps_list:
+		step_name = step.get("step_name")
+		if step_name:
+			steps_by_name[step_name] = step
+
+	# Exit early if entry_step is invalid (flow.py will emit entry_step errors)
+	if not entry_step_name or entry_step_name not in steps_by_name:
+		return False
+
+	# Walk the chain tracking visited steps
+	visited = set()
+	current_step_name = entry_step_name
+	cycle_detected = False
+
+	while current_step_name is not None:
+		# Check for cycle
+		if current_step_name in visited:
+			finding = validation.stepper.findings.Finding(
+				level=validation.stepper.findings.Level.ERROR,
+				protocol_name=protocol_name,
+				step_name=current_step_name,
+				interaction_index=None,
+				target=None,
+				file_path=protocol_path,
+				code="s-cycle",
+				message=f"step '{current_step_name}' forms a cycle in next_step chain",
+				spec_cite="docs/PRIMARY_SPEC.md Protocol step structure"
+			)
+			emitter.emit_finding(finding)
+			cycle_detected = True
+			break
+
+		visited.add(current_step_name)
+
+		# Get next step
+		if current_step_name not in steps_by_name:
+			# Should not happen if entry_step validation passed, but be safe
+			break
+		current_step = steps_by_name[current_step_name]
+		current_step_name = current_step.get("next_step")
+
+	# Emit S-UNREACHABLE for steps not visited (only if no cycle)
+	if not cycle_detected:
+		unreachable = set(steps_by_name.keys()) - visited
+		for unreachable_step_name in sorted(unreachable):
+			finding = validation.stepper.findings.Finding(
+				level=validation.stepper.findings.Level.ERROR,
+				protocol_name=protocol_name,
+				step_name=unreachable_step_name,
+				interaction_index=None,
+				target=None,
+				file_path=protocol_path,
+				code="s-unreachable",
+				message=f"step '{unreachable_step_name}' is declared but unreachable from entry_step",
+				spec_cite="docs/PRIMARY_SPEC.md Entry step"
+			)
+			emitter.emit_finding(finding)
+
+	return cycle_detected
+
+
+#============================================
+
 def walk_protocol(
 	tree: validation.stepper.loader.LoadedContentTree,
 	protocol_name: str,
@@ -45,6 +151,9 @@ def walk_protocol(
 
 	emitter.emit_protocol_start(protocol_name, protocol_path)
 
+	# Check flow integrity (S-UNREACHABLE, S-CYCLE) early
+	_check_flow_integrity_mini(protocol, protocol_path, emitter)
+
 	step_count = 0
 	interaction_count = 0
 	visited_steps = set()
@@ -64,6 +173,9 @@ def walk_protocol(
 		response = interaction.get("response", {})
 		scene_ops = response.get("scene_operations", [])
 
+		# Snapshot state before applying ops (for S-STATE-JUMP detection)
+		state_before = state_map.snapshot_state()
+
 		for scene_op in scene_ops:
 			op_type = scene_op.get("type")
 			emitter.emit_scene_operation(op_type)
@@ -77,6 +189,19 @@ def walk_protocol(
 				emitter,
 				tree,
 			)
+
+		# Snapshot state after applying ops and detect state jumps
+		state_after = state_map.snapshot_state()
+		validation.stepper.scene_ops.detect_state_jumps(
+			state_before,
+			state_after,
+			scene_ops,
+			state_map,
+			protocol_name,
+			step_name,
+			interaction_index,
+			emitter,
+		)
 
 	# Count errors and warnings from emitter
 	error_findings = [f for f in emitter.findings if f.level == validation.stepper.findings.Level.ERROR]
@@ -151,13 +276,10 @@ def _seed_initial_active_scene(
 						else:
 							protocol_local_scenes = tree.protocol_local_scenes.get(protocol_name, {})
 							if to_scene in protocol_local_scenes:
-								try:
-									scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, to_scene)
+								scene_path = _try_construct_scene_path(tree, protocol_name, to_scene)
+								if scene_path:
 									state_map.set_active_scene(to_scene, scene_path)
 									return
-								except RuntimeError:
-									# Scene path resolution failed; skip to next strategy
-									pass
 
 	# Strategy 2: Check protocol-local scenes
 	protocol_local_scenes = tree.protocol_local_scenes.get(protocol_name, {})
@@ -165,13 +287,10 @@ def _seed_initial_active_scene(
 		# If exactly one local scene, use it
 		if len(protocol_local_scenes) == 1:
 			scene_name = list(protocol_local_scenes.keys())[0]
-			try:
-				scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+			scene_path = _try_construct_scene_path(tree, protocol_name, scene_name)
+			if scene_path:
 				state_map.set_active_scene(scene_name, scene_path)
 				return
-			except RuntimeError:
-				# Scene path resolution failed; try next strategy
-				pass
 
 		# If multiple local scenes, try to find one with targets from the first step
 		if len(protocol_local_scenes) > 1:
@@ -204,23 +323,17 @@ def _seed_initial_active_scene(
 				# Check for matching object_names
 				scene_objects = {p.get("object_name") for p in placements if isinstance(p, dict)}
 				if first_targets & scene_objects:  # Intersection found
-					try:
-						scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+					scene_path = _try_construct_scene_path(tree, protocol_name, scene_name)
+					if scene_path:
 						state_map.set_active_scene(scene_name, scene_path)
 						return
-					except RuntimeError:
-						# Scene path resolution failed; try next scene
-						continue
 
 			# No matching scene found; use the first local scene
 			scene_name = sorted(protocol_local_scenes.keys())[0]
-			try:
-				scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+			scene_path = _try_construct_scene_path(tree, protocol_name, scene_name)
+			if scene_path:
 				state_map.set_active_scene(scene_name, scene_path)
 				return
-			except RuntimeError:
-				# Scene path resolution failed; try next strategy
-				pass
 
 	# Strategy 3: Use the first base scene
 	if tree.base_scenes:
@@ -325,6 +438,10 @@ def walk_sequence_runner(
 	if not isinstance(mini_protocols, list):
 		mini_protocols = []
 
+	# Check flow integrity for sequence runner (S-UNREACHABLE on constituent list)
+	mini_protocols_set = set(mini_protocols)
+	declared_minis = mini_protocols_set.copy()
+
 	# Validate: no sequence runner should reference another sequence runner
 	for mini_name in mini_protocols:
 		mini_proto = tree.get_protocol(mini_name)
@@ -340,6 +457,8 @@ def walk_sequence_runner(
 				message=f"mini_protocols list references unknown protocol '{mini_name}'",
 				spec_cite="docs/PRIMARY_SPEC.md Sequence runners",
 			))
+			# Remove from declared set so we don't emit S-UNREACHABLE for missing protos
+			declared_minis.discard(mini_name)
 			continue
 
 		mini_type = mini_proto.get("protocol_type")
@@ -355,6 +474,26 @@ def walk_sequence_runner(
 				message=f"sequence runner '{protocol_name}' references another sequence_runner '{mini_name}' in mini_protocols list",
 				spec_cite="docs/PRIMARY_SPEC.md Sequence runners",
 			))
+
+	# For sequence runners, each constituent mini in the list is "visited" by definition
+	# (they are all executed in order). S-UNREACHABLE would apply to declared minis
+	# that don't exist or are unreachable due to a cycle in the list traversal.
+	# Since sequence runners have a flat list (no next_* chain), cycles don't apply.
+	# S-UNREACHABLE only applies if a mini is declared but doesn't exist.
+	unreachable_minis = set(mini_protocols) - declared_minis
+	for unreachable_mini in sorted(unreachable_minis):
+		finding = validation.stepper.findings.Finding(
+			level=validation.stepper.findings.Level.ERROR,
+			protocol_name=protocol_name,
+			step_name=None,
+			interaction_index=None,
+			target=unreachable_mini,
+			file_path=protocol_path,
+			code="s-unreachable",
+			message=f"constituent mini-protocol '{unreachable_mini}' in mini_protocols list is unreachable or unknown",
+			spec_cite="docs/PRIMARY_SPEC.md Sequence runners"
+		)
+		emitter.emit_finding(finding)
 
 	emitter.emit_protocol_start(protocol_name, protocol_path, is_sequence_runner=True, leaf_count=len(mini_protocols))
 

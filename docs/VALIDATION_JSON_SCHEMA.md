@@ -87,6 +87,18 @@ integration. Examples from the YAML validator:
 - `broken_next_step`: A `next_step` names a `step_name` that does not exist.
 - `runner_of_runner`: A `sequence_runner` lists another `sequence_runner` (only mini-protocols allowed).
 
+Examples from the protocol stepper (`tool: "stepper"`):
+
+- `s-state-jump`: A state field increased with no matching decrement in the same interaction.
+- `s-cycle`: A `next_step` chain re-enters a previously visited step.
+- `s-unreachable`: An authored `step_name` is never reached from `entry_step`.
+- `s-unregistered`: A `material_name` or `held_material_name` is neither declared in `materials.yaml` nor in the sentinel allowlist.
+- `s-unused`: A material declared in `materials.yaml` is never referenced by any step.
+
+Examples from the manual-renderer lint pass (`tool: "manual"`):
+
+- `l-aspirate`: "Aspirate" is used outside its reserved vacuum-removal-to-waste meaning.
+
 Refer to individual tool documentation for the complete list of codes.
 
 ## Composite SVG stage

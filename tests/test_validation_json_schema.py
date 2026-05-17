@@ -92,13 +92,13 @@ def test_validation_yaml_json_schema():
 		assert 'message' in finding, f"Finding {i} missing 'message'"
 
 		# Required field types and values
-		assert isinstance(finding['severity'], str), f"Finding {i} severity must be string"
+		assert isinstance(finding['severity'], str), f"Finding {i} severity must be string (path={finding.get('path')}, message={str(finding.get('message', ''))[:200]})"
 		assert finding['severity'] in valid_severities, \
-			f"Finding {i} severity '{finding['severity']}' not in {valid_severities}"
-		assert isinstance(finding['tool'], str), f"Finding {i} tool must be string"
-		assert isinstance(finding['code'], str), f"Finding {i} code must be string"
-		assert len(finding['code']) > 0, f"Finding {i} code must not be empty"
-		assert isinstance(finding['message'], str), f"Finding {i} message must be string"
+			f"Finding {i} severity '{finding['severity']}' not in {valid_severities} (path={finding.get('path')}, message={str(finding.get('message', ''))[:200]})"
+		assert isinstance(finding['tool'], str), f"Finding {i} tool must be string (path={finding.get('path')}, message={str(finding.get('message', ''))[:200]})"
+		assert isinstance(finding['code'], str), f"Finding {i} code must be string (path={finding.get('path')}, message={str(finding.get('message', ''))[:200]})"
+		assert len(finding['code']) > 0, f"Finding {i} code must not be empty (path={finding.get('path')}, message={str(finding.get('message', ''))[:200]})"
+		assert isinstance(finding['message'], str), f"Finding {i} message must be string (path={finding.get('path')})"
 
 		# Optional fields (if present, check type)
 		if 'path' in finding:

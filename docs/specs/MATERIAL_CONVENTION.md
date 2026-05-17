@@ -122,7 +122,33 @@ materials:
 
 **Action required:** All per-protocol `materials.yaml` files using scalar `display_color` must migrate to the nested mapping form. M4 content migration sweeps all existing materials and applies automated migration using `tools/contrast_calculator.py` to derive safe shades for each theme. After M4 completes, V6a validation will enforce nested form and reject any remaining scalars.
 
-Sentinel values `empty` and `mixed` (per [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) do not appear in `materials.yaml`. They are reserved state values meaning "empty container" and "generic blended material", respectively.
+## Sentinel material allowlist
+
+A small closed set of material-name values is exempt from per-protocol
+`materials.yaml` registration. These sentinels are recognized directly by
+the stepper and skipped by the `s-unregistered` gate. The full set is
+eight values, grouped by purpose:
+
+| Sentinel | Class | Meaning |
+| --- | --- | --- |
+| `empty` | state sentinel | empty container; no material present |
+| `mixed` | state sentinel | generic blended material whose identity is not tracked |
+| `cells` | biological identity | cell biomass; identity is intrinsic to the protocol and is not authored as a chemical reagent |
+| `formazan` | biological identity | MTT assay product synthesized in-well from MTT plus living cells; identity is tracked structurally rather than registered |
+| `waste_mtt` | disposal sink | MTT-contaminated waste stream |
+| `waste_media` | disposal sink | spent-media waste stream |
+| `waste_drug` | disposal sink | drug-contaminated waste stream |
+| `waste_buffer` | disposal sink | buffer (PBS, wash) waste stream |
+
+The state sentinels are defined by [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md);
+the biological-identity and disposal-sink sentinels are recognized by the
+material-registration check because they describe outputs of the protocol
+or category-named destinations rather than authored input reagents.
+
+The enforcement point is the stepper's `s-unregistered` gate (see
+[../USAGE.md](../USAGE.md) "Stepper error classes"); any other
+`material_name` or `held_material_name` value must appear in the
+protocol's `materials.yaml`.
 
 ## Pipette liquid fill (rendering convention)
 

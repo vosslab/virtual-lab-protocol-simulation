@@ -42,6 +42,8 @@ class ContentDatabase:
 						lineno=None,
 						severity=Severity.ERROR,
 						message=str(e),
+						tool="yaml_parser",
+						code="yaml_parse_error",
 					))
 
 		# Load base scenes
@@ -60,6 +62,8 @@ class ContentDatabase:
 						lineno=None,
 						severity=Severity.ERROR,
 						message=str(e),
+						tool="yaml_parser",
+						code="yaml_parse_error",
 					))
 
 		# Load protocols and their contents
@@ -80,6 +84,8 @@ class ContentDatabase:
 						lineno=None,
 						severity=Severity.ERROR,
 						message=str(e),
+						tool="yaml_parser",
+						code="yaml_parse_error",
 					))
 
 				# Load materials.yaml
@@ -98,6 +104,8 @@ class ContentDatabase:
 							lineno=None,
 							severity=Severity.ERROR,
 							message=str(e),
+							tool="yaml_parser",
+							code="yaml_parse_error",
 						))
 
 	# ============================================

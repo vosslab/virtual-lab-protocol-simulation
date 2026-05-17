@@ -24,10 +24,58 @@ import validation.stepper.loader
 import validation.stepper.runner
 import validation.stepper.dashboard as dashboard
 import validation.stepper.findings
+import validation.stepper.sentinels
 import validation.shared_toolkit.cli as toolkit_cli
 import validation.shared_toolkit.protocols as toolkit_protocols
 import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.reporter as reporter
+import validation.shared_toolkit.findings as shared_findings
+
+
+
+
+def _post_walk_material_checks(
+	tree,
+	protocol_name,
+	emitter,
+	referenced_materials,
+) -> None:
+	"""
+	Perform post-walk material consistency checks:
+	- S-UNUSED: materials declared but never referenced.
+
+	S-UNREGISTERED is checked during op time in scene_ops.py.
+
+	Args:
+		tree: LoadedContentTree.
+		protocol_name: Name of the protocol.
+		emitter: FindingEmitter with collected findings from the walk.
+		referenced_materials: Set of material names found during execution.
+	"""
+	protocol = tree.get_protocol(protocol_name)
+	if not protocol:
+		return
+
+	declared_materials = tree.get_protocol_materials(protocol_name)
+	if declared_materials is None:
+		return
+
+	# S-UNUSED: materials declared but never referenced
+	declared_keys = set(declared_materials.keys())
+	unused_materials = declared_keys - referenced_materials
+
+	for material_name in sorted(unused_materials):
+		emitter.emit_finding(validation.stepper.findings.Finding(
+			level=shared_findings.Severity.INFO,
+			protocol_name=protocol_name,
+			step_name=None,
+			interaction_index=None,
+			target=None,
+			file_path=f"content/protocols/{protocol_name}/materials.yaml",
+			code="s-unused",
+			message=f"material '{material_name}' declared but never referenced in execution",
+			spec_cite="docs/specs/MATERIAL_CONVENTION.md",
+		))
 
 
 def parse_args():
@@ -217,6 +265,14 @@ def main():
 			step_count, interaction_count, emitter = validation.stepper.runner.walk_protocol(
 				tree, protocol_name, verbose=False, quiet=runner_quiet,
 			)
+
+		# Post-walk material consistency checks
+		_post_walk_material_checks(
+			tree,
+			protocol_name,
+			emitter,
+			emitter.referenced_materials,
+		)
 
 		walks.append(
 			(protocol_name, protocol_type, step_count, interaction_count, emitter)

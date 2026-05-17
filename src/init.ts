@@ -11,7 +11,6 @@
 // - window flag: sets __protocolValidation for walkthrough to read
 // - Throws to halt execution
 // ============================================
-import { PROTOCOL_ID, PROTOCOL_STEPS } from "./protocol";
 import {
 	PROTOCOL_CATALOG,
 	PROTOCOL_IDS,

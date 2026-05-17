@@ -1,0 +1,126 @@
+# WP-AUDIT-1: YAML-to-browser src/ salvage inventory
+
+Produced by WP-AUDIT-1 (M0 / WS-AUDIT). Read-only; no src/ edits.
+
+Date: 2026-05-17. Gates: M0.5 (WP-GENERATED-DATA-1), M1 (WP-CONTRACT-1).
+
+---
+
+## Table 1: Legacy src/*.ts files
+
+Scope: all .ts files directly under src/ (not src/scenes/, not src/scene_runtime/).
+Verdict key:
+- mine -- behavior worth re-implementing under src/scene_runtime/ against the realigned contract.
+- replace -- same purpose exists or will exist under src/scene_runtime/; no unique behavior to mine.
+- archive -- legacy-only; not useful for the new runtime; retire in a future plan.
+
+| File | Lines | Verdict | Reason | Runtime capability informed |
+| --- | --- | --- | --- | --- |
+| src/asset_specs.ts | 45 | mine | Maps semantic asset ids to default width-%, label-width-%, anchorYOffset, and widthScale constants. New layout module needs these width baselines for every object kind. | Layout row engine -- per-asset width/scale hint table |
+| src/brands.ts | 13 | archive | Empty export placeholder. Comment says branded id wrappers are deferred to M7. No behavior to mine. | None |
+| src/cell_model.ts | 122 | archive | Sigmoid IC50 cell-viability model (OVCAR-8 carboplatin/metformin). Protocol-specific biology; not a runtime primitive. | None |
+| src/constants.ts | 252 | archive | Legacy monolithic game constants (plate dimensions, volume limits, cell parameters, scoring weights, legacy ProtocolStep and TriggerSpec types). Closed vocabulary replaces every type here. No mineable runtime behavior. | None |
+| src/game_state.ts | 606 | mine | Owns the mutable GameState singleton, scene-change tracking (activeScene), held-liquid tracking, step-completion list, and renderGame injection point. The setRenderGame/renderGame pattern is the working evidence for a render-request queue. The HeldLiquid shape informs CursorAttach world state. | Render request queue pattern; CursorAttach world-state shape |
+| src/init.ts | 539 | mine | Sole entry point; wires DOM DOMContentLoaded, imports all scene adapters as side-effects, dispatches runSceneRender. Provides canonical showValidationError loud-error surface (DOM banner + window.__protocolValidation flag + throw). Error boundary pattern is the approved exception for bundle/entry.ts. | Top-level UI error boundary pattern; launcher HTML shell wiring |
+| src/interaction_resolver.ts | 388 | archive | Pure dispatcher for old interactionSequence / completionPath schema (K2 vocabulary). Closed vocabulary replaces this entirely with sequence-of-interaction + validator preset dispatch. No useful primitive; K2 match logic does not translate to the new model. | None |
+| src/inventory.ts | 14 | archive | Re-export facade for generated/inventory_data. Inventory is out of scope for the scene runtime activation plan. | None |
+| src/layout_engine.ts | 778 | mine | Full working layout engine: alignment-preservation invariant, depth-tier scale/baseline offsets (back/mid/front), zone padding, EPSILON tolerance, MAX_GAP, MIN_SCALE, ZONE_PADDING, MAX_FOOTPRINT_RATIO, AVG_CHAR_WIDTH_PCT, label-availability estimation, clusterAnchorOk invariant check. Primary source for src/scene_runtime/layout/. | Layout row engine -- zone alignment, depth tiers, label-collision avoidance, overflow handling |
+| src/legacy_tc_tools.ts | 31 | archive | Legacy TC_TOOLS array for an older tissue-culture protocol version. Not wired into any active runtime path. | None |
+| src/legacy_tc_validate.ts | 153 | archive | Legacy structural validator for an older Protocol / Step type surface. No relation to the closed vocabulary. | None |
+| src/plate_config.ts | 72 | mine | Declares the three-zone layout for the plate scene (zone_plate_center, zone_pipettes_right, zone_liquids_top) with % bounds and priority hints. Zone-declaration pattern and PLATE_BOUNDS shape inform how scene YAML placements become layout zones in the new runtime. | Layout row engine -- zone-declaration pattern for multi-zone scenes |
+| src/professor_overlay.ts | 132 | archive | Fixed-position professor SVG overlay with mood indicator and step why chip. Purely cosmetic; not a runtime primitive. Deferred chrome concern. | None |
+| src/protocol.ts | 30 | archive | Re-export facade for generated/protocol_data. New runtime reads protocol data directly via the loader; this facade is not needed. | None |
+| src/protocol_ui.ts | 314 | mine | Renders the day ribbon, step-card prompt text, and breadcrumb chrome. escapeHtml utility and renderDayRibbon/renderStepCard patterns inform the minimal chrome surface. Prompt verbatim display pattern is directly required by M3 acceptance criteria. | Chrome surface -- prompt panel, step-card render, HTML escape utility |
+| src/scene_configs.ts | 6 | archive | Re-export facade for generated/scene_data. Replaced by the new loader. | None |
+| src/scene_types.ts | 116 | mine | Defines SceneItem, AssetSpec, ZoneDef, SceneLayoutRules, SceneBounds, SceneItemGroup, ComputedItemLayout for the legacy layout engine. The ZoneDef shape (align mode, tab-stops, x0/x1/baseline) and SceneItem (depth, zone, anchorY, widthScale) directly inform src/scene_runtime/types.ts Zone / Placement realignment. | Layout row engine -- zone + placement shape |
+| src/scoring.ts | 101 | archive | OVCAR-8 protocol-specific scoring by category (dilution accuracy, plate map, timing, MTT technique). Protocol-specific, not a runtime primitive. | None |
+| src/step_dispatch.ts | 80 | archive | Derives scene-dispatch metadata from PROTOCOL_STEPS (filter by modal, incubation, scene, trigger). All use completionPath / modal / isIncubation fields retired by the new vocabulary. | None |
+| src/style_constants.ts | 76 | mine | Defines the semantic ColorRole type union and COLOR_MAP mapping roles to hex values. Color-system source of truth for liquid overlays and SVG patch fills. New liquid/material render module must adopt or re-derive the same role-to-hex map. | SVG color patch / liquid render -- color role map |
+| src/svg_assets.ts | 582 | mine | Public SVG facade: EQUIPMENT_ASSETS curated map, getAssetAspectRatio(), getStaticSvg(), renderEquipmentSvg(). Prevents asset-string leakage from generated/svg_assets to scene callers. Aspect-ratio extraction from SVG viewBox is the working implementation of layout engine dependency on getAssetAspectRatio. renderEquipmentSvg pattern (SVG string + color patches + liquid overlays) is the working SVG composition pipeline the new adapter layer must reproduce. | SVG color patch; SVG composition pipeline; aspect-ratio extraction for layout |
+| src/svg_color_patch.ts | 216 | mine | Core SVG recolor primitive: findElementStart() string-scan, applyPatches() rewrites fill/stroke/opacity on named sub-elements by walking the SVG string. expandGroupPatch() expands a group alias from SVG_GROUPS/SVG_IDS to per-element patches. This is the attribute_patch render mechanism (visual_states formula token per the visual-state no-approximation rule). | SVG color patch -- attribute-level fill/stroke/opacity rewrite on authored element ids |
+| src/svg_overlays.ts | 313 | mine | Anchor-based liquid overlay engine: parseAnchorBounds() reads named anchor rects from SVG string; createLiquidOverlay()/createLiquidOverlayWithColor() inject a bottom-anchored fill clipped to an anchor region; createPipetteLiquidOverlay() builds level-proportional fills for pipettes; createDynamicLabel() builds label text overlays. | SVG overlay / liquid display -- anchor-based overlay injection |
+| src/svg_recipes.ts | 105 | mine | Maps semantic visual states (T75LiquidVisual, BottleLiquid) to SvgColorPatch lists via flaskResiduePatches() and bottleLiquidPatches(). Semantic-state-to-patch recipe layer; the pattern directly informs visual_states formula token resolution in the new adapter/render layer. | SVG color patch / visual_states resolution -- state-to-patch recipe layer |
+| src/types.ts | 46 | archive | Legacy Protocol / Step / ToolDefinition type surface for legacy_tc_validate.ts. Not wired into any active path; exists solely so tsc --noEmit passes on the legacy files. | None |
+| src/ui_rendering.ts | 520 | mine | renderProtocolPanel() (windowed step list with completed/current CSS classes), renderMeters(), renderResultsScreen(), renderScoreDisplay(). Windowed-step-list render pattern and CSS class toggle approach inform the prompt-panel and next/feedback chrome. setRenderGame singleton injection pattern supports the render-request queue design. | Chrome surface -- protocol panel render, windowed step display, completed/current CSS class pattern |
+
+---
+
+## Table 2: src/scene_runtime/ files
+
+Scope: all files directly under src/scene_runtime/ and its subdirectories.
+src/scenes/ is excluded (frozen).
+
+| File | Lines | Vocabulary alignment | Specific realignment work needed |
+| --- | --- | --- | --- |
+| src/scene_runtime/contract.ts | 173 | realignment needed | Remove all of: CompletionPathBase, InteractionSequencePath, DirectToolPath, ModalPath, MultipleChoicePath, CompletionPath union, plateTargets, tubeTargets, requiredItems, errorHints, ProtocolEntry {scene, step}, ProtocolStep.completionPath. Add: Interaction {target, gesture, validator, response}, closed Gesture union (click/drag/adjust/select/type), Response {scene_operations, feedback?}, discriminated SceneOperation union (ObjectStateChange / CursorAttach / SceneChange / LayoutMove / TimedWait), Step {step_name, prompt, sequence, step_validator, outcome, next_step}, ProtocolConfig {protocol_name, entry_step, steps}. Replace SceneItem.liquidCapable/capacityMl/containsAny with state_fields, visual_states, capabilities. Add brand types for StepName, ProtocolName, SceneId, ObjectId. |
+| src/scene_runtime/types.ts | 81 | realignment needed | Zone, LayoutItem, LayoutResult shapes are reusable (keep). DispatchOutcome/DispatchResult reference wrongOrder and expectedNext which are old-vocabulary concepts; replace with InteractionEvent {targetId, gesture} and DispatchOutcome {matched, advancesStep}. Remove LiquidEntry, ContainerLiquid, LiquidState, LiquidTransfer (encode old liquid-state model; new model uses material_name + material_volume state fields per MATERIAL_CONVENTION.md). Add RuntimeWorld {protocol, activeStepIndex, scenes, objectStates, cursorState}. |
+| src/scene_runtime/dispatch/index.ts | 282 | realignment needed | Dispatches on completionPath.kind (interactionSequence/directTool/modal/multipleChoice) -- all four are retired vocabulary. Rebuild as capture-phase addEventListener(click) listener that reads data-target-id and data-gesture from the click target and its ancestors via closest([data-target-id]). Output is an InteractionEvent; no path.kind switch; no plateTargets expansion. |
+| src/scene_runtime/highlight/index.ts | 246 | realignment needed | deriveHighlights() dispatches on completionPath.kind (retired). Rebuild: derive the set of expected target ids from the current Step.sequence[nextIndex].target only. No expansion of plateTargets; the new vocabulary addresses subparts explicitly (e.g. treatment_plate.A1). |
+| src/scene_runtime/layout/index.ts | 150 | realignment needed | layoutScene() reads scene.items from old SceneConfig (retired). Rebuild to consume SceneConfig {placements: Placement[]} from the realigned types. Current implementation re-derives zone grouping from item.scene field (a heuristic); new version reads declared zone_id from each placement. Zone-level alignment mode (left/right/center/justify/tab-stops) not yet implemented; mine from src/layout_engine.ts. |
+| src/scene_runtime/liquid/index.ts | 297 | realignment needed | Implements liquid transfer/discharge/mix operations over a LiquidState model keyed on container ids with volumeMl entries. New runtime tracks liquid identity as material_name + material_volume state fields on objects (per MATERIAL_CONVENTION.md). Replace with ObjectStateChange applier that mutates material_name/material_volume on the RuntimeWorld object state. The applyLiquidTransfer pure-function pattern (no mutation of input) is the correct shape to carry forward. |
+| src/scene_runtime/adapters/well_plate/index.ts | 288 | realignment needed | Wires deriveHighlights + dispatchClick from old contract. Rebuild as a render adapter that calls the new dispatch resolver and receives InteractionEvent. Remove getInteractionSequenceLength helper (counted interactions by tool/source/destination -- retired). |
+| src/scene_runtime/adapters/well_plate/render.ts | 346 | realignment needed | Reads SceneConfig.items from old contract. Well rendering uses hardcoded WELL_PLATE_ROWS=8, WELL_PLATE_COLS=12 constants and data-item-id attribute. Realign to use data-target-id for wells (subpart syntax: object_id.well_id, e.g. treatment_plate.A1). Equipment layout via layoutScene (new) is the right call; the row/zone pattern is reusable. |
+
+---
+
+## Frozen files confirmed untouched
+
+All files under src/scenes/ are frozen by tests/test_scenes_freeze_baseline.py.
+Do not edit, rename, or move any of these. The freeze test is the authoritative list.
+
+Top-level files and adapter directory names under src/scenes/:
+
+- src/scenes/scene_driver.ts
+- src/scenes/scene_registry.ts
+- src/scenes/bench/ (bench.ts, dispatch.ts, render.ts)
+- src/scenes/capabilities/ (grid_counting_workspace.ts, incubator_workspace.ts, instrument_workspace.ts, item_workspace.ts, modal_workspace.ts, plate_reader_workspace.ts)
+- src/scenes/cell_culture_hood/ (cell_culture_hood.ts, hood_shared.ts, render.ts)
+- src/scenes/incubator/ (incubator.ts)
+- src/scenes/microscope/ (manual_hemocytometer.ts, microscope.ts)
+- src/scenes/plate_reader/ (plate_reader.ts)
+- src/scenes/shared/ (liquid_transfer.ts, multiple_choice_prompt.ts, scene_item_lookup.ts, wrong_order_feedback.ts)
+- src/scenes/well_plate_workspace/ (dispatch.ts, plate_liquid_state.ts, render.ts, tube_layout.ts, tube_state.ts, well_plate_workspace.ts)
+
+---
+
+## Verification
+
+Gate commands run on 2026-05-17 against main:
+
+Command: pytest tests/test_scenes_freeze_baseline.py -q
+Result: 2 passed in 0.02s
+
+Note: tests/test_scenes_legacy_banner.py referenced in the plan does not yet exist.
+The freeze baseline covers the authoritative file-hash + count check.
+The legacy banner test is a separate deliverable (WS-NO-LEGACY-IMPORTS, M1 gate).
+
+Command: pytest tests/test_markdown_links.py -q
+Result: 1 passed in 0.10s
+
+---
+
+## Key behavioral evidence summary for WP-CONTRACT-1
+
+The mine verdicts above surface four runtime capability clusters that WP-CONTRACT-1 must carry:
+
+1. SVG color patch (src/svg_color_patch.ts): applyPatches(svg, patches) rewrites fill/stroke/opacity
+   on named sub-elements by string-scan on id=. This is the attribute_patch visual_states mechanism.
+   The new render/ module needs an equivalent pure function that applies patches to a DOM SVG element
+   (not a string, unlike the legacy string-rewrite path).
+
+2. SVG overlay / liquid (src/svg_overlays.ts): parseAnchorBounds() extracts anchor geometry from
+   SVG strings; overlay creation generates a bottom-anchored fill. The new liquid module under
+   src/scene_runtime/liquid/ should adopt the anchor-based approach for liquid-level display
+   rather than the string-scan approach; DOM-side getBoundingClientRect on the anchor element is
+   the browser equivalent.
+
+3. Layout row engine (src/layout_engine.ts): alignment-preservation invariant, depth-tier offsets,
+   MAX_GAP, MIN_SCALE, ZONE_PADDING constants, AVG_CHAR_WIDTH_PCT for label estimation.
+   The new src/scene_runtime/layout/ module should re-implement the zone-row-item algorithm from
+   src/layout_engine.ts against the realigned Placement / Zone types, not import the legacy file.
+
+4. Capture-phase click dispatch (src/init.ts inferred from scene adapter pattern): legacy scenes
+   register click handlers on the scene container element using capture phase
+   addEventListener(click, handler, true) and walk up the DOM with closest([data-item-id])
+   to resolve the semantic item. The new dispatch module (src/scene_runtime/dispatch/index.ts)
+   must use the same capture-phase pattern with data-target-id as the selector key.

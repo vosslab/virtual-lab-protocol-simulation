@@ -2,12 +2,17 @@ scene_name: mtt_solubilization_readout_plate_reader_workspace
 extends: bench_basic
 
 add_placements:
+  - placement_name: rear_center_treated_plate
+    object_name: well_plate_96
+    zone: rear_center
+    depth_tier: 1
   - placement_name: center_plate_reader
     object_name: plate_reader
     zone: center
     depth_tier: 1
 
 scene_notes: |
-  Plate reader workspace for MTT solubilization readout. Single placement:
-  the plate reader instrument in the center zone. Student inserts treated plate,
-  sets wavelength to 560 nm, and measures absorbance across the 96-well plate.
+  Plate reader workspace for MTT solubilization readout. Placements: the plate reader
+  instrument (center zone) and the treated 96-well plate (rear center zone, prepared
+  for insertion). Student inserts the plate, sets wavelength to 560 nm, and measures
+  absorbance across the 96-well plate.

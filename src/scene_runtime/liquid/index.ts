@@ -1,297 +1,130 @@
 /**
  * liquid/index.ts
  *
- * Pure liquid state management. Applies transfers, discharges, and mixes to
- * a liquid state model that tracks container contents by volume and reagent key.
+ * Liquid material rendering for the scene runtime.
+ * Renders liquid fill on containers (bottles, wells, tubes) based on material color.
  *
- * Honors docs/LIQUID_CONVENTION.md:
- * - transfer: subtract from source, add to destination
- * - discharge: subtract from source only
- * - mix: combine liquids within one container
+ * Implements MATERIAL_CONVENTION.md color rules: resolves material_name to display_color
+ * from the materials registry, applies light/dark theme, and paints the liquid fill.
  *
- * No side effects, no module state, pure functions only.
+ * Loud failure on unsupported material render fields (no silent fallback).
  */
 
-import type {
-	ContainerLiquid,
-	LiquidEntry,
-	LiquidState,
-	LiquidTransfer,
-} from '../types';
+import type { MaterialConfig } from '../types';
+
+// Color role map derived from legacy src/style_constants.ts (re-implemented, not imported).
+// These are the canonical color values used in legacy rendering for reference.
+// Current liquid render uses only display_color from materials registry.
+const COLOR_ROLES = {
+	primary: '#1976d2',
+	success: '#388e3c',
+	warning: '#f57c00',
+	error: '#d32f2f',
+	info: '#0288d1',
+	neutral: '#757575',
+};
 
 /**
- * Apply a single liquid transfer to the state and return a new state.
- * Pure function: does not mutate input.
+ * Renders liquid fill on an SVG container.
  *
- * Transfer: subtract from `from`, add to `to` with merged entry.
- * Discharge: subtract from `from` only.
- * Mix: combine entries in `from` with same `liquid` key.
+ * @param container - SVG element or containing element
+ * @param material - MaterialConfig with display_color.light and display_color.dark
+ * @param opts - Rendering options with position, size, and optional fillLevel (0-1)
  *
- * Edge cases:
- * - Transfer from empty container or insufficient volume: no-op, return state unchanged.
- * - Discharge from empty container: no-op, return state unchanged.
- * - Mix from single-entry container: no-op, return state unchanged.
+ * Throws loud Error if material lacks required display_color fields.
  */
-export function applyLiquidTransfer(
-	state: LiquidState,
-	transfer: LiquidTransfer,
-): LiquidState {
-	const newContainers = JSON.parse(JSON.stringify(state.containers)) as Record<
-		string,
-		ContainerLiquid
-	>;
-
-	if (transfer.kind === 'transfer') {
-		return applyTransfer(newContainers, transfer);
-	}
-
-	if (transfer.kind === 'discharge') {
-		return applyDischarge(newContainers, transfer);
-	}
-
-	if (transfer.kind === 'mix') {
-		return applyMix(newContainers, transfer);
-	}
-
-	return state;
-}
-
-//============================================
-
-/**
- * Apply a transfer: subtract from source, add to destination.
- * Returns new state with both containers updated.
- * No-op if source is empty or does not exist.
- */
-function applyTransfer(
-	containers: Record<string, ContainerLiquid>,
-	transfer: LiquidTransfer,
-): LiquidState {
-	const fromId = transfer.from;
-	const toId = transfer.to;
-
-	// Validate required fields
-	if (!fromId || !toId) {
-		return { containers };
-	}
-
-	// Ensure both containers exist
-	ensureContainer(containers, fromId);
-	ensureContainer(containers, toId);
-
-	const fromContainer = containers[fromId];
-	const toContainer = containers[toId];
-
-	if (!fromContainer || !toContainer) {
-		return { containers };
-	}
-
-	// Find the liquid entry in source
-	const sourceIndex = fromContainer.liquids.findIndex(
-		(entry) => entry.key === transfer.liquid,
-	);
-
-	// No-op if liquid not found in source
-	if (sourceIndex === -1) {
-		return { containers };
-	}
-
-	const sourceEntry = fromContainer.liquids[sourceIndex];
-
-	if (!sourceEntry) {
-		return { containers };
-	}
-
-	// No-op if source does not have enough volume
-	if (sourceEntry.volumeMl < transfer.volumeMl) {
-		return { containers };
-	}
-
-	// Subtract from source
-	sourceEntry.volumeMl -= transfer.volumeMl;
-	fromContainer.totalVolumeMl -= transfer.volumeMl;
-
-	// Remove entry if volume is zero
-	if (sourceEntry.volumeMl === 0) {
-		fromContainer.liquids.splice(sourceIndex, 1);
-	}
-
-	// Add to destination
-	const destIndex = toContainer.liquids.findIndex(
-		(entry) => entry.key === transfer.liquid,
-	);
-
-	if (destIndex !== -1) {
-		// Merge with existing entry
-		const destEntry = toContainer.liquids[destIndex];
-		if (destEntry) {
-			destEntry.volumeMl += transfer.volumeMl;
-		}
-	} else {
-		// Add new entry
-		const destEntry: LiquidEntry = {
-			key: transfer.liquid,
-			volumeMl: transfer.volumeMl,
-		};
-		if (transfer.colorKey) {
-			destEntry.colorKey = transfer.colorKey;
-		}
-		toContainer.liquids.push(destEntry);
-	}
-
-	toContainer.totalVolumeMl += transfer.volumeMl;
-
-	return { containers };
-}
-
-//============================================
-
-/**
- * Apply a discharge: subtract from source only.
- * Returns new state with source container updated.
- * No-op if source is empty or does not exist.
- */
-function applyDischarge(
-	containers: Record<string, ContainerLiquid>,
-	transfer: LiquidTransfer,
-): LiquidState {
-	const fromId = transfer.from;
-
-	// Validate required field
-	if (!fromId) {
-		return { containers };
-	}
-
-	// Ensure container exists
-	ensureContainer(containers, fromId);
-
-	const fromContainer = containers[fromId];
-
-	if (!fromContainer) {
-		return { containers };
-	}
-
-	// Find the liquid entry in source
-	const sourceIndex = fromContainer.liquids.findIndex(
-		(entry) => entry.key === transfer.liquid,
-	);
-
-	// No-op if liquid not found in source
-	if (sourceIndex === -1) {
-		return { containers };
-	}
-
-	const sourceEntry = fromContainer.liquids[sourceIndex];
-
-	if (!sourceEntry) {
-		return { containers };
-	}
-
-	// No-op if source does not have enough volume
-	if (sourceEntry.volumeMl < transfer.volumeMl) {
-		return { containers };
-	}
-
-	// Subtract from source
-	sourceEntry.volumeMl -= transfer.volumeMl;
-	fromContainer.totalVolumeMl -= transfer.volumeMl;
-
-	// Remove entry if volume is zero
-	if (sourceEntry.volumeMl === 0) {
-		fromContainer.liquids.splice(sourceIndex, 1);
-	}
-
-	return { containers };
-}
-
-//============================================
-
-/**
- * Apply a mix: combine liquids with the same key within one container.
- * Returns new state with combined entries.
- * No-op if container is empty or does not exist.
- */
-function applyMix(
-	containers: Record<string, ContainerLiquid>,
-	transfer: LiquidTransfer,
-): LiquidState {
-	const fromId = transfer.from;
-
-	// Validate required field
-	if (!fromId) {
-		return { containers };
-	}
-
-	// Ensure container exists
-	ensureContainer(containers, fromId);
-
-	const fromContainer = containers[fromId];
-
-	if (!fromContainer) {
-		return { containers };
-	}
-
-	// Find all entries with the target liquid key
-	const indices = fromContainer.liquids
-		.map((entry, idx) => (entry.key === transfer.liquid ? idx : -1))
-		.filter((idx) => idx !== -1);
-
-	// No-op if fewer than 2 entries to merge
-	if (indices.length < 2) {
-		return { containers };
-	}
-
-	// Sum volumes
-	let totalVolume = 0;
-	let firstColorKey: string | undefined;
-
-	for (const idx of indices) {
-		const entry = fromContainer.liquids[idx];
-		if (entry) {
-			totalVolume += entry.volumeMl;
-			if (!firstColorKey && entry.colorKey) {
-				firstColorKey = entry.colorKey;
-			}
-		}
-	}
-
-	// Replace all with a single merged entry
-	const merged: LiquidEntry = {
-		key: transfer.liquid,
-		volumeMl: totalVolume,
-	};
-	if (firstColorKey) {
-		merged.colorKey = firstColorKey;
-	}
-
-	// Remove old entries (in reverse order to avoid index shift)
-	for (let i = indices.length - 1; i >= 0; i--) {
-		const idx = indices[i];
-		if (idx !== undefined) {
-			fromContainer.liquids.splice(idx, 1);
-		}
-	}
-
-	// Add merged entry
-	fromContainer.liquids.push(merged);
-
-	return { containers };
-}
-
-//============================================
-
-/**
- * Ensure a container exists in the state.
- * Modifies containers in place.
- */
-function ensureContainer(
-	containers: Record<string, ContainerLiquid>,
-	id: string,
+export function renderLiquid(
+	container: SVGElement | HTMLElement,
+	material: MaterialConfig,
+	opts: {
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+		fillLevel?: number;
+		theme?: 'light' | 'dark';
+	},
 ): void {
-	if (!containers[id]) {
-		containers[id] = {
-			liquids: [],
-			totalVolumeMl: 0,
-		};
+	// Validate required fields per MATERIAL_CONVENTION.md
+	if (!material || typeof material !== 'object') {
+		throw new Error('Invalid material config: must be an object');
 	}
+
+	if (!material.display_color) {
+		throw new Error(
+			`Unsupported material render field: missing display_color on material`,
+		);
+	}
+
+	if (
+		typeof material.display_color !== 'object' ||
+		!material.display_color.light ||
+		!material.display_color.dark
+	) {
+		throw new Error(
+			`Unsupported material render field: display_color must have light and dark keys`,
+		);
+	}
+
+	// Select theme color (default light)
+	const theme = opts.theme || 'light';
+	const color =
+		theme === 'light' ? material.display_color.light : material.display_color.dark;
+
+	// Validate color is a hex string
+	if (!color || typeof color !== 'string' || !color.match(/^#[0-9a-fA-F]{6}$/)) {
+		throw new Error(
+			`Unsupported material render field: display_color.${theme} must be a valid hex color`,
+		);
+	}
+
+	// Fill level defaults to 1.0 (full)
+	const fillLevel = opts.fillLevel !== undefined ? opts.fillLevel : 1.0;
+
+	// Compute filled height: proportional to fillLevel
+	const filledHeight = opts.height * fillLevel;
+	const fillY = opts.y + (opts.height - filledHeight);
+
+	// Create or update fill rect on the container
+	// Find or create an SVG inside the container
+	let svg: SVGElement;
+	if (container instanceof SVGElement) {
+		svg = container;
+	} else {
+		// If container is HTMLElement, find SVG child or create one
+		const svgChild = container.querySelector('svg');
+		if (svgChild instanceof SVGElement) {
+			svg = svgChild;
+		} else {
+			// Create new SVG
+			svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+			svg.setAttribute('width', String(opts.width));
+			svg.setAttribute('height', String(opts.height));
+			container.appendChild(svg);
+		}
+	}
+
+	// Find or create fill rect
+	let fillRect = svg.querySelector('[data-liquid-fill]');
+	if (!fillRect) {
+		fillRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+		fillRect.setAttribute('data-liquid-fill', 'true');
+		svg.appendChild(fillRect);
+	}
+
+	// Update rect attributes
+	fillRect.setAttribute('x', String(opts.x));
+	fillRect.setAttribute('y', String(fillY));
+	fillRect.setAttribute('width', String(opts.width));
+	fillRect.setAttribute('height', String(filledHeight));
+	fillRect.setAttribute('fill', color);
+	fillRect.setAttribute('opacity', '0.9');
 }
+
+/**
+ * Re-export for testing and internal use.
+ * Color validation and theme selection are tested separately.
+ */
+export const _internal = {
+	COLOR_ROLES,
+};

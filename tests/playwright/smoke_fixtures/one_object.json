@@ -1,0 +1,169 @@
+{
+  "world": {
+    "protocol": {
+      "protocol_type": "dev_smoke",
+      "protocol_name": "smoke_one_object",
+      "entry_step": "click_bottle",
+      "learning": {
+        "objectives": "Smoke test (not a student-facing protocol)",
+        "outcomes": "Smoke test (not a student-facing protocol)",
+        "goals": "Smoke test (not a student-facing protocol)"
+      },
+      "steps": [
+        {
+          "step_name": "click_bottle",
+          "prompt": "Click the media bottle to toggle its contents.",
+          "sequence": [
+            {
+              "target": "media_bottle",
+              "gesture": "click",
+              "validator": { "preset": "correct_target" },
+              "response": {
+                "scene_operations": [
+                  {
+                    "type": "ObjectStateChange",
+                    "target": "media_bottle",
+                    "state": { "material_name": "media" }
+                  }
+                ],
+                "feedback": "Good! You clicked the bottle."
+              }
+            }
+          ],
+          "step_validator": { "preset": "sequence_complete" },
+          "outcome": {
+            "on_success": "complete",
+            "on_failure": "retry"
+          },
+          "next_step": null
+        }
+      ],
+      "materials": {
+        "empty": {
+          "label": "Empty",
+          "display_color": { "light": "#ffffff", "dark": "#f5f5f5" }
+        },
+        "media": {
+          "label": "Cell culture media",
+          "display_color": { "light": "#ffccaa", "dark": "#dd8866" }
+        }
+      }
+    },
+    "activeStepIndex": 0,
+    "activeSceneId": "smoke_scene",
+    "scenes": {
+      "smoke_scene": {
+        "scene_name": "smoke_scene",
+        "workspace": "bench",
+        "capabilities": ["item_workspace"],
+        "scene_bounds": { "left": 0, "right": 100, "top": 0, "bottom": 100 },
+        "background": { "asset": "bench_workspace_bg" },
+        "zones": [
+          {
+            "id": "center",
+            "bounds": { "left": 10, "right": 90, "top": 20, "bottom": 80 },
+            "align": "center",
+            "label": "Center workspace"
+          }
+        ],
+        "placements": [
+          {
+            "placement_name": "center_media_bottle",
+            "object_name": "media_bottle",
+            "zone": "center",
+            "depth_tier": 1
+          }
+        ]
+      }
+    },
+    "objects": {
+      "media_bottle": {
+        "object_name": "media_bottle",
+        "kind": "bottle",
+        "label": "Media",
+        "state_fields": [
+          {
+            "field_name": "material_name",
+            "type": "enum",
+            "allowed": ["empty", "media"],
+            "default": "empty",
+            "description": "Contents currently in the bottle."
+          },
+          {
+            "field_name": "material_volume",
+            "type": "float",
+            "min": 0,
+            "max": 500,
+            "default": 500,
+            "unit": "ml",
+            "description": "Volume of media remaining, in milliliters."
+          },
+          {
+            "field_name": "temperature_status",
+            "type": "enum",
+            "allowed": ["cold", "warmed"],
+            "default": "cold",
+            "description": "Whether the media has been warmed in the water bath."
+          }
+        ],
+        "visual_states": {
+          "material_name": {
+            "kind": "svg_swap",
+            "pilot_0_eligible": true,
+            "cases": [
+              {
+                "when": "empty",
+                "output": { "asset_name": "media_bottle_empty" }
+              },
+              {
+                "when": "media",
+                "output": { "asset_name": "media_bottle_filled" }
+              }
+            ]
+          },
+          "material_volume": {
+            "kind": "composite",
+            "pilot_0_eligible": false,
+            "deferred_milestone": "M2",
+            "reason": "Per-volume fill height deferred to layout integration."
+          },
+          "temperature_status": {
+            "kind": "composite",
+            "pilot_0_eligible": false,
+            "deferred_milestone": "M2",
+            "reason": "Temperature visual state deferred to material rendering."
+          }
+        },
+        "capabilities": ["clickable", "material_container", "cursor_attachable"],
+        "layout": {
+          "default_width": 3,
+          "label_width": 4
+        }
+      }
+    },
+    "objectStates": {
+      "media_bottle": {
+        "material_name": "empty",
+        "material_volume": 500,
+        "temperature_status": "cold"
+      }
+    },
+    "cursorState": {
+      "attachedTo": null,
+      "operation": null
+    },
+    "layoutState": {},
+    "materials": {
+      "empty": {
+        "label": "Empty",
+        "display_color": { "light": "#ffffff", "dark": "#f5f5f5" }
+      },
+      "media": {
+        "label": "Cell culture media",
+        "display_color": { "light": "#ffccaa", "dark": "#dd8866" }
+      }
+    },
+    "pendingEvents": []
+  },
+  "sceneId": "smoke_scene"
+}
