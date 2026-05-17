@@ -112,7 +112,11 @@ def aggregate(db, protocol_rows, protocol_scene_rows, material_rows, counts_dict
 				if isinstance(mat_info, dict):
 					color = mat_info.get('display_color')
 					if color:
-						counts['materials']['distinct_colors'].add(color)
+						# Nested display_color: extract light and dark values
+						if isinstance(color, dict):
+							light = color.get('light')
+							if light:
+								counts['materials']['distinct_colors'].add(light)
 
 	# Protocols aggregation
 	for path, protocol_data in protocol_rows:

@@ -41,6 +41,17 @@ class ProtocolSceneValidator:
 			))
 		else:
 			extends = scene['extends']
+			# Scene self-extension: scene_name must not equal extends
+			if 'scene_name' in scene:
+				scene_name = scene['scene_name']
+				if scene_name == extends:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"scene '{scene_name}' extends itself (self-extension not allowed)",
+						tag="scene_self_extends",
+					))
 			if extends not in self.base_scenes:
 				findings.append(Finding(
 					path=path,

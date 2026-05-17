@@ -3,12 +3,12 @@ kind: bottle
 label: 1x buffer carboy
 
 state_fields:
-  - field_name: held_material_name
+  - field_name: material_name
     type: enum
     allowed: [empty, running_buffer_1x, ddh2o]
     default: empty
     description: Contents currently in the carboy.
-  - field_name: held_material_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -17,7 +17,7 @@ state_fields:
     description: Volume of contents remaining, in milliliters.
 
 visual_states:
-  held_material_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
@@ -26,9 +26,9 @@ visual_states:
         output: { asset_name: running_buffer_1x_carboy_filled }
       - when: ddh2o
         output: { asset_name: running_buffer_1x_carboy_filled }
-  held_material_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(held_material_volume), capacity_ml=1000)
+    formula: fill_height(state(material_volume), capacity_ml=1000)
 
 capabilities: [clickable, material_container, cursor_attachable]
 

@@ -3,12 +3,12 @@ kind: bottle
 label: Destain
 
 state_fields:
-  - field_name: held_material_name
+  - field_name: material_name
     type: enum
     allowed: [empty, destain]
     default: empty
     description: Contents currently in the bottle.
-  - field_name: held_material_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
@@ -17,16 +17,16 @@ state_fields:
     description: Volume of destain remaining, in milliliters.
 
 visual_states:
-  held_material_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
         output: { asset_name: destain_bottle_empty }
       - when: destain
         output: { asset_name: destain_bottle_filled }
-  held_material_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(held_material_volume), capacity_ml=250)
+    formula: fill_height(state(material_volume), capacity_ml=250)
 
 capabilities: [clickable, material_container, cursor_attachable]
 

@@ -162,6 +162,13 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 				elif file_type == 'material':
 					material_rows.append((str(rel_path), data))
 
+	# V6a cross-protocol material validation (after all materials are loaded)
+	cross_material_findings = material_validator.validate_cross_protocol(material_rows)
+	for fnd in cross_material_findings:
+		msg = fnd.format() if hasattr(fnd, 'format') else str(fnd)
+		errors.append(msg)
+		print(msg)
+
 	success = len(errors) == 0
 
 	# Render compiled summary (gated by quiet)

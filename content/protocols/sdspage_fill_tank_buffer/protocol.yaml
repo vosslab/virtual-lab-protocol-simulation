@@ -1,87 +1,112 @@
 protocol_type: mini_protocol
 protocol_name: sdspage_fill_tank_buffer
 entry_step: fill_inner_chamber
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with serological pipettes for multi-volume transfers, accurate volume measurement and transfer into structured lab equipment with multiple compartments, and verification of chamber fill levels."
-  outcomes: "Students completing this mini-protocol will be able to fill both the inner and outer chambers of an electrophoresis tank with 1x running buffer using a serological pipette, transferring 600 mL into the inner chamber and 400 mL into the outer chamber with proper aseptic technique."
-  goals: "Overall, this mini-protocol aims to accomplish preparing the electrophoresis tank for gel separation by filling both buffer chambers to their required volumes -- a critical setup task that precedes sample loading and running the gel."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    serological pipettes for multi-volume transfers, accurate volume measurement and
+    transfer into structured lab equipment with multiple compartments, and verification
+    of chamber fill levels.
+  outcomes: Students completing this mini-protocol will be able to fill both the inner
+    and outer chambers of an electrophoresis tank with 1x running buffer using a serological
+    pipette, transferring 600 mL into the inner chamber and 400 mL into the outer
+    chamber with proper aseptic technique.
+  goals: Overall, this mini-protocol aims to accomplish preparing the electrophoresis
+    tank for gel separation by filling both buffer chambers to their required volumes
+    -- a critical setup task that precedes sample loading and running the gel.
 steps:
-  - step_name: fill_inner_chamber
-    prompt: "Fill the inner chamber of the electrophoresis tank with 1x running buffer. Set the serological pipette to 25 mL, and make multiple aspirations and dispersals from the running buffer carboy into the tank's inner chamber until it contains approximately 600 mL of buffer."
-    sequence:
-      - target: serological_pipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: SceneChange
-              to_scene: sdspage_fill_tank_buffer_workspace
-      - target: serological_pipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 25 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: serological_pipette
-              state:
-                set_volume: 25
-      - target: running_buffer_1x_carboy
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: electrophoresis_tank
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: electrophoresis_tank
-              state:
-                inner_chamber_material_name: running_buffer_1x
-                inner_chamber_material_volume: 600
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: fill_outer_chamber
-
-  - step_name: fill_outer_chamber
-    prompt: "Fill the outer chamber of the electrophoresis tank with 1x running buffer. Set the serological pipette to 25 mL, and make multiple aspirations and dispersals from the running buffer carboy into the tank's outer chamber until it contains approximately 400 mL of buffer."
-    sequence:
-      - target: serological_pipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: serological_pipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 25 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: serological_pipette
-              state:
-                set_volume: 25
-      - target: running_buffer_1x_carboy
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: electrophoresis_tank
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: electrophoresis_tank
-              state:
-                outer_chamber_material_name: running_buffer_1x
-                outer_chamber_material_volume: 400
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: fill_inner_chamber
+  prompt: Fill the inner chamber of the electrophoresis tank with 1x running buffer.
+    Set the serological pipette to 25 mL, and make multiple aspirations and dispersals
+    from the running buffer carboy into the tank's inner chamber until it contains
+    approximately 600 mL of buffer.
+  sequence:
+  - target: serological_pipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: SceneChange
+        to_scene: sdspage_fill_tank_buffer_workspace
+  - target: serological_pipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 25
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: serological_pipette
+        state:
+          set_volume: 25
+  - target: running_buffer_1x_carboy
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: electrophoresis_tank
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: electrophoresis_tank
+        state:
+          inner_chamber_material_name: running_buffer_1x
+          inner_chamber_material_volume: 600
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: fill_outer_chamber
+- step_name: fill_outer_chamber
+  prompt: Fill the outer chamber of the electrophoresis tank with 1x running buffer.
+    Set the serological pipette to 25 mL, and make multiple aspirations and dispersals
+    from the running buffer carboy into the tank's outer chamber until it contains
+    approximately 400 mL of buffer.
+  sequence:
+  - target: serological_pipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: serological_pipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 25
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: serological_pipette
+        state:
+          set_volume: 25
+  - target: running_buffer_1x_carboy
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: electrophoresis_tank
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: electrophoresis_tank
+        state:
+          outer_chamber_material_name: running_buffer_1x
+          outer_chamber_material_volume: 400
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

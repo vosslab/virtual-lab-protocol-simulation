@@ -1,110 +1,133 @@
 protocol_type: mini_protocol
 protocol_name: sdspage_image_gel
 entry_step: final_rinse
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with gel post-staining handling, destain removal, final rinse cycles, lightbox power control, sample transfer to imaging instruments, and digital image capture for gel documentation."
-  outcomes: "Students completing this mini-protocol will be able to perform a final destain rinse on a stained gel, power on the imaging lightbox, transfer the staining tray containing the rinsed gel to the lightbox surface, and capture a digital image of the gel for analysis and archival."
-  goals: "Overall, this mini-protocol aims to accomplish the imaging phase of an SDS-PAGE gel electrophoresis workflow. After staining and destaining are complete, the gel must be rinsed of residual destain solution, transferred to the lightbox, and photographed. This step bridges gel preparation and image analysis, establishing a persistent digital record of the protein separation results for downstream quantitation and documentation."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    gel post-staining handling, destain removal, final rinse cycles, lightbox power
+    control, sample transfer to imaging instruments, and digital image capture for
+    gel documentation.
+  outcomes: Students completing this mini-protocol will be able to perform a final
+    destain rinse on a stained gel, power on the imaging lightbox, transfer the staining
+    tray containing the rinsed gel to the lightbox surface, and capture a digital
+    image of the gel for analysis and archival.
+  goals: Overall, this mini-protocol aims to accomplish the imaging phase of an SDS-PAGE
+    gel electrophoresis workflow. After staining and destaining are complete, the
+    gel must be rinsed of residual destain solution, transferred to the lightbox,
+    and photographed. This step bridges gel preparation and image analysis, establishing
+    a persistent digital record of the protein separation results for downstream quantitation
+    and documentation.
 steps:
-  - step_name: final_rinse
-    prompt: "Transfer the destained gel and staining tray to the imaging bench. Perform a final rinse: pour any residual destain from the staining tray into the waste container, add a small volume of ddH2O for a brief rinse, and pour the rinse solution into the waste container."
-    sequence:
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: SceneChange
-              to_scene: imaging_bench
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-      - target: waste_container
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: ddh2o
-                held_material_volume: 100
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-      - target: waste_container
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: place_on_lightbox
-
-  - step_name: place_on_lightbox
-    prompt: "Power on the lightbox by clicking its power switch. Then transfer the staining tray containing the rinsed gel to the lightbox imaging surface."
-    sequence:
-      - target: lightbox
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: lightbox
-              state:
-                powered_on: true
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: lightbox
-              state:
-                tray_present: true
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: capture
-
-  - step_name: capture
-    prompt: "Capture a digital image of the gel by clicking the lightbox capture button."
-    sequence:
-      - target: lightbox
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: lightbox
-              state:
-                image_captured: true
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: final_rinse
+  prompt: 'Transfer the destained gel and staining tray to the imaging bench. Perform
+    a final rinse: pour any residual destain from the staining tray into the waste
+    container, add a small volume of ddH2O for a brief rinse, and pour the rinse solution
+    into the waste container.'
+  sequence:
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: SceneChange
+        to_scene: imaging_bench
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: empty
+          material_volume: 0
+  - target: waste_container
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: ddh2o
+          material_volume: 100
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: empty
+          material_volume: 0
+  - target: waste_container
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: place_on_lightbox
+- step_name: place_on_lightbox
+  prompt: Power on the lightbox by clicking its power switch. Then transfer the staining
+    tray containing the rinsed gel to the lightbox imaging surface.
+  sequence:
+  - target: lightbox
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: lightbox
+        state:
+          powered_on: true
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: lightbox
+        state:
+          tray_present: true
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: capture
+- step_name: capture
+  prompt: Capture a digital image of the gel by clicking the lightbox capture button.
+  sequence:
+  - target: lightbox
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: lightbox
+        state:
+          image_captured: true
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

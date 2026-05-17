@@ -250,6 +250,30 @@ Instrument set-points are modeled as a single `float` field with
 `unit`, `min`, `max`, and `step` metadata (for example `set_volume`
 on a serological pipette).
 
+### Kind-to-material-field convention
+
+The choice between `material_name` (vessel semantics) and `held_material_name`
+(tool semantics) is closed per `kind`. The table below pins the convention for
+each kind enum value. Authors must select one of these field-name pairs for
+each kind; no kind permits both in the same file.
+
+| `kind` | Material field | Semantics |
+| --- | --- | --- |
+| `pipette` | `held_material_name`, `held_material_volume` | Tool that carries material between containers; held by cursor or in hand |
+| `bottle` | `material_name`, `material_volume` | Stationary container; sits in scene and holds material |
+| `flask` | `material_name`, `material_volume` | Stationary container; sits in scene and holds material |
+| `waste` | `material_name`, `material_volume` | Stationary container; collects discarded material |
+| `rack` | `material_name`, `material_volume` (per subpart) | Structured container; subparts hold material in `structure.subpart_state_fields` |
+| `plate` | `material_name`, `material_volume` (per subpart) | Structured container; subparts (wells) hold material in `structure.subpart_state_fields` |
+| `equipment` | `material_name`, `material_volume` or `held_material_name`, `held_material_volume` | Equipment with internal chambers or containers. Case-by-case per equipment function: vessel-like equipment (staining tray, tank) uses `material_name` and MUST also declare `material_container` capability to affirm vessel semantics; tool-like equipment (aspirating head) uses `held_material_name` |
+| `decoration` | N/A | Static visual; no material state; `state_fields` must be empty |
+
+Material field naming is closed: these are the only two allowed field names across
+all objects. An object declares material through either pair, never both together,
+and always paired (never `material_name` without `material_volume` or vice versa).
+A `state_field` with an unknown material-related name (for example
+`container_material` or `liquid_type`) is a build-time error.
+
 ## Visual states
 
 The `visual_states` is the object's state-to-visual function. It is a mapping

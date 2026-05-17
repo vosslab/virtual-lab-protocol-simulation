@@ -53,6 +53,3 @@ def test_no_file_folder_name_collision():
 			error_lines.append(f"  {c['file']} and {c['folder']}/")
 		error_message = "\n".join(error_lines)
 		assert False, error_message
-
-	# If no collisions, test passes
-	assert not collisions

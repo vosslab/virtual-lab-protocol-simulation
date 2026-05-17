@@ -7,6 +7,18 @@ state_fields:
     type: bool
     default: false
     description: Whether the label pen is being held.
+  - field_name: held_material_name
+    type: enum
+    allowed: [empty]
+    default: empty
+    description: Label pen never holds material (decoration-like tool).
+  - field_name: held_material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 0
+    default: 0
+    description: Label pen never holds material.
 
 visual_states:
   in_hand:
@@ -16,6 +28,12 @@ visual_states:
         output: { asset_name: label_pen_idle }
       - when: true
         output: { asset_name: label_pen_in_hand }
+  held_material_name:
+    kind: composite
+    composite: []
+  held_material_volume:
+    kind: composite
+    composite: []
 
 capabilities: [clickable]
 

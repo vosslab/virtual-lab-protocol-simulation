@@ -1,4 +1,6 @@
 materials:
   cells:
     label: "Seeded cells (in plate wells)"
-    display_color: "#cc0066"
+    display_color:
+      light: "#cc0066"
+      dark: "#cc0066"

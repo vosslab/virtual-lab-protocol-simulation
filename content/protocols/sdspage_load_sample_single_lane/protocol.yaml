@@ -1,100 +1,121 @@
 protocol_type: mini_protocol
 protocol_name: sdspage_load_sample_single_lane
 entry_step: swap_tip
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with precise p10 micropipette handling for gel loading, including tip eject and replacement, volume setting, sample aspiration, and slow, controlled dispensing into gel lanes."
-  outcomes: "Students completing this mini-protocol will be able to eject a used pipette tip into waste, mount a fresh gel-loading tip, set the pipette to the correct volume (~30 &micro;L), draw denatured protein sample from a microtube, and carefully dispense the sample into a single gel cassette lane at controlled speed to avoid bubble formation or sample splashing."
-  goals: "Overall, this mini-protocol aims to accomplish the sample loading step for one lane of an SDS-PAGE gel (Part 2, action map P5.1-P5.7 per-lane sample load per SG10). Each student sample lane requires explicit tip swap (eject prior tip to waste, mount new gel-loading tip) followed by aspiration from the denatured sample microtube and slow dispensing into the target lane. This mini-protocol establishes the per-lane primitive that MP-11 (batch runner) iterates over lanes 1-3."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    precise p200 micropipette handling for gel loading, including tip eject and replacement,
+    volume setting, sample aspiration, and slow, controlled dispensing into gel lanes.
+  outcomes: Students completing this mini-protocol will be able to eject a used pipette
+    tip into waste, mount a fresh gel-loading tip, set the pipette to the correct
+    volume (~30 &micro;L), draw denatured protein sample from a microtube, and carefully
+    dispense the sample into a single gel cassette lane at controlled speed to avoid
+    bubble formation or sample splashing.
+  goals: Overall, this mini-protocol aims to accomplish the sample loading step for
+    one lane of an SDS-PAGE gel (Part 2, action map P5.1-P5.7 per-lane sample load
+    per SG10). Each student sample lane requires explicit tip swap (eject prior tip
+    to waste, mount new gel-loading tip) followed by aspiration from the denatured
+    sample microtube and slow dispensing into the target lane. This mini-protocol
+    establishes the per-lane primitive that MP-11 (batch runner) iterates over lanes
+    1-3.
 steps:
-  # Step 1: Swap tip
-  - step_name: swap_tip
-    prompt: "Prepare the pipette for gel loading. First, move to the electrophoresis bench. Then eject the current tip into the waste container. Finally, mount a fresh gel-loading tip from the tip box."
-    sequence:
-      - target: p10_micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: SceneChange
-              to_scene: electrophoresis_bench
-      - target: waste_container
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: p10_micropipette
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-      - target: p10_gel_loading_tip_box
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: draw_sample
-
-  # Step 2: Draw sample
-  - step_name: draw_sample
-    prompt: "Set the pipette volume to approximately 30 &micro;L, then aspirate denatured protein sample from the microtube."
-    sequence:
-      - target: p10_micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 30 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: p10_micropipette
-              state:
-                set_volume: 30
-      - target: microtube
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: p10_micropipette
-              state:
-                held_material_name: protein_sample_denatured
-                held_material_volume: 30
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: dispense_lane
-
-  # Step 3: Dispense lane
-  - step_name: dispense_lane
-    prompt: "Carefully dispense the sample into gel cassette lane 1. Dispense slowly to avoid bubble formation and sample splashing."
-    sequence:
-      - target: gel_cassette.lane_1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: gel_cassette
-              state:
-                material_name: protein_sample_denatured
-                material_volume: 30
-      - target: p10_micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: p10_micropipette
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: swap_tip
+  prompt: Prepare the pipette for gel loading. First, move to the electrophoresis
+    bench. Then eject the current tip into the waste container. Finally, mount a fresh
+    gel-loading tip from the tip box.
+  sequence:
+  - target: p200_micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: SceneChange
+        to_scene: sdspage_load_sample_single_lane_workspace
+  - target: waste_container
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: p200_micropipette
+        state:
+          held_material_name: empty
+          held_material_volume: 0
+  - target: p10_gel_loading_tip_box
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: draw_sample
+- step_name: draw_sample
+  prompt: Set the pipette volume to approximately 30 &micro;L, then aspirate denatured
+    protein sample from the microtube.
+  sequence:
+  - target: p200_micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 30
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: p200_micropipette
+        state:
+          set_volume: 30
+  - target: microtube
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: p200_micropipette
+        state:
+          held_material_name: protein_sample_denatured
+          held_material_volume: 30
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: dispense_lane
+- step_name: dispense_lane
+  prompt: Carefully dispense the sample into gel cassette lane 1. Dispense slowly
+    to avoid bubble formation and sample splashing.
+  sequence:
+  - target: gel_cassette.lane_1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: gel_cassette.lane_1
+        state:
+          material_name: protein_sample_denatured
+          material_volume: 30
+  - target: p200_micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: p200_micropipette
+        state:
+          held_material_name: empty
+          held_material_volume: 0
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

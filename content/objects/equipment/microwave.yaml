@@ -31,6 +31,8 @@ visual_states:
         output: { asset_name: microwave_closed }
       - when: true
         output: { asset_name: microwave_open }
+  running:
+    kind: composite
 
 capabilities: [clickable, instrument_with_setpoint]
 

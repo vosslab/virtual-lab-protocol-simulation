@@ -1,0 +1,58 @@
+object_name: p200_micropipette
+kind: pipette
+label: p200 micropipette
+
+state_fields:
+  - field_name: set_volume
+    type: float
+    unit: ul
+    min: 20
+    max: 200
+    step: 1
+    default: 100
+    description: Volume the pipette is set to dispense.
+  - field_name: held_material_name
+    type: enum
+    allowed: [empty, protein_sample_denatured, protein_ladder, laemmli_4x, bme, running_buffer_1x, ddh2o]
+    default: empty
+    description: Contents currently aspirated in the pipette tip.
+  - field_name: held_material_volume
+    type: float
+    unit: ul
+    min: 0
+    max: 200
+    default: 0
+    description: Volume of contents currently held, in microliters.
+
+visual_states:
+  set_volume:
+    kind: overlay
+    formula: label(state(set_volume), format="{value} ul")
+  held_material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: p200_micropipette_empty }
+      - when: protein_sample_denatured
+        output: { asset_name: p200_micropipette_filled }
+      - when: protein_ladder
+        output: { asset_name: p200_micropipette_filled }
+      - when: laemmli_4x
+        output: { asset_name: p200_micropipette_filled }
+      - when: bme
+        output: { asset_name: p200_micropipette_filled }
+      - when: running_buffer_1x
+        output: { asset_name: p200_micropipette_filled }
+      - when: ddh2o
+        output: { asset_name: p200_micropipette_filled }
+  held_material_volume:
+    kind: composite
+    formula: fill_height(state(held_material_volume), capacity_ul=200)
+
+capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+
+layout:
+  default_width: 2
+  label_width: 5
+  anchor_y: tip
+  anchor_y_offset: 0

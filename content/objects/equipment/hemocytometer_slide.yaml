@@ -24,6 +24,9 @@ visual_states:
   material_name:
     kind: overlay
     formula: 'label(state(material_name), format="Loaded: {value}")'
+  material_volume:
+    kind: composite
+    composite: []
   excess_wiped:
     kind: overlay
     formula: 'conditional(state(excess_wiped), "Wiped clean", "Excess present")'

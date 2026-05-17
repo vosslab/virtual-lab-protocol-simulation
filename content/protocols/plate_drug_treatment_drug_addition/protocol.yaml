@@ -1,1576 +1,1754 @@
-# Simulation note: this mini represents multi-well dispensing as
-# individual well interactions for validation granularity. In
-# wet-lab practice, the named pipette deposits multiple wells in
-# fewer strokes (an 8-channel multichannel covers one column per
-# aspirate; a repeater pipette serializes wells without
-# re-aspirating). The per-well clicks here are an instrumentation
-# abstraction, not a procedural prescription.
-
 protocol_type: mini_protocol
 protocol_name: plate_drug_treatment_drug_addition
 entry_step: add_carb_row_b
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with pipetting techniques, well-by-row targeted addition of variable-concentration drugs, coordinated dual-drug treatment administration, and incubation timing for cellular drug response."
-  outcomes: "Students completing this mini-protocol will be able to pipette carboplatin across 8 different dose concentrations into designated well rows, add metformin to appropriate columns, manage simultaneous drug treatments, and set up a timed incubation for dose-response assessment."
-  goals: "Overall, this mini-protocol aims to accomplish the drug treatment administration phase for a dose-response experiment. Working with pre-prepared carboplatin and metformin working stocks from drug_dilution_setup, this mini-protocol applies variable carboplatin concentrations (0.1 &micro;M through 10 &micro;M) across rows B-H and applies a fixed metformin concentration (5 mM) to columns 7-12, establishing the experimental conditions for 48-hour incubation and subsequent MTT readout."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    pipetting techniques, well-by-row targeted addition of variable-concentration
+    drugs, coordinated dual-drug treatment administration, and incubation timing for
+    cellular drug response.
+  outcomes: Students completing this mini-protocol will be able to pipette carboplatin
+    across 8 different dose concentrations into designated well rows, add metformin
+    to appropriate columns, manage simultaneous drug treatments, and set up a timed
+    incubation for dose-response assessment.
+  goals: Overall, this mini-protocol aims to accomplish the drug treatment administration
+    phase for a dose-response experiment. Working with pre-prepared carboplatin and
+    metformin working stocks from drug_dilution_setup, this mini-protocol applies
+    variable carboplatin concentrations (0.1 &micro;M through 10 &micro;M) across
+    rows B-H and applies a fixed metformin concentration (5 mM) to columns 7-12, establishing
+    the experimental conditions for 48-hour incubation and subsequent MTT readout.
 steps:
-  # Row B: 0.1 microM carboplatin final (A34.1)
-  - step_name: add_carb_row_b
-    prompt: "Aspirate 5 &micro;L of 4 &micro;M carboplatin working stock into the micropipette and dispense across row B, cols 1-12. Final well concentration: 0.1 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_A
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.B1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.B2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.B12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_c
-
-  # Row C: 0.2 microM carboplatin final (A34.2)
-  - step_name: add_carb_row_c
-    prompt: "Aspirate 5 &micro;L of 8 &micro;M carboplatin working stock into the micropipette and dispense across row C, cols 1-12. Final well concentration: 0.2 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_B
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.C1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.C2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.C12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_d
-
-  # Row D: 0.5 microM carboplatin final (A34.3)
-  - step_name: add_carb_row_d
-    prompt: "Aspirate 5 &micro;L of 20 &micro;M carboplatin working stock into the micropipette and dispense across row D, cols 1-12. Final well concentration: 0.5 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_C
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.D1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.D2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.D12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_e
-
-  # Row E: 1 microM carboplatin final (A34.4)
-  - step_name: add_carb_row_e
-    prompt: "Aspirate 5 &micro;L of 40 &micro;M carboplatin working stock into the micropipette and dispense across row E, cols 1-12. Final well concentration: 1 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_D
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.E1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.E2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.E12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_f
-
-  # Row F: 2 microM carboplatin final (A34.5)
-  - step_name: add_carb_row_f
-    prompt: "Aspirate 5 &micro;L of 80 &micro;M carboplatin working stock into the micropipette and dispense across row F, cols 1-12. Final well concentration: 2 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_E
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.F1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.F2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.F12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_g
-
-  # Row G: 5 microM carboplatin final (A34.6)
-  - step_name: add_carb_row_g
-    prompt: "Aspirate 5 &micro;L of 200 &micro;M carboplatin working stock into the micropipette and dispense across row G, cols 1-12. Final well concentration: 5 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_F
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.G1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.G2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.G12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_carb_row_h
-
-  # Row H: 10 microM carboplatin final (A34.7)
-  - step_name: add_carb_row_h
-    prompt: "Aspirate 5 &micro;L of 400 &micro;M carboplatin working stock into the micropipette and dispense across row H, cols 1-12. Final well concentration: 10 &micro;M carboplatin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: dilution_tube_rack_8.tube_G
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.H1
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H1
-              state:
-                material_name: carboplatin
-                material_volume: 105
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.H2
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H2
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H3
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H3
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H4
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H4
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H5
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H5
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H6
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H6
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H7
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H8
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H9
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H10
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H11
-              state:
-                material_name: carboplatin
-                material_volume: 105
-      - target: well_plate_96.H12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H12
-              state:
-                material_name: carboplatin
-                material_volume: 105
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_metformin_cols_7_12
-
-  # Metformin addition to columns 7-12, rows B-H (A37)
-  - step_name: add_metformin_cols_7_12
-    prompt: "Aspirate 5 &micro;L of 200 mM metformin working stock into the micropipette and dispense across cols 7-12, rows B-H. Final well concentration: 5 mM metformin in 200 &micro;L total volume."
-    sequence:
-      - target: micropipette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations: []
-      - target: micropipette
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_volume: 5 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: micropipette
-              state:
-                set_volume: 5
-      - target: metformin_working_tube
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: CursorAttach
-              target: micropipette
-              operation: attach
-      - target: well_plate_96.B7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-            - type: CursorAttach
-              target: micropipette
-              operation: detach
-      - target: well_plate_96.B8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.B9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.B10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.B11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.B12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.B12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.C12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.C12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.D12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.D12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.E12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.E12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.F12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.F12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.G12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.G12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H7
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H7
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H8
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H8
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H9
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H9
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H10
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H10
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H11
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H11
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-      - target: well_plate_96.H12
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: well_plate_96.H12
-              state:
-                material_name: carboplatin_metformin_combo
-                material_volume: 110
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: incubate_48h
-
-  # 48h incubation (A38)
-  - step_name: incubate_48h
-    prompt: "Place the treated plate into the incubator for 48 hours. This incubation period allows the cells to respond to the drug treatments. After 48 hours, the plate will be ready for MTT assay readout."
-    sequence:
-      - target: well_plate_96
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: TimedWait
-              target: incubator
-              duration_min: 2880
-              display: "48-hour drug response incubation"
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: add_carb_row_b
+  prompt: 'Aspirate 5 &micro;L of 4 &micro;M carboplatin working stock into the micropipette
+    and dispense across row B, cols 1-12. Final well concentration: 0.1 &micro;M carboplatin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_A
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.B1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.B2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.B12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_c
+- step_name: add_carb_row_c
+  prompt: 'Aspirate 5 &micro;L of 8 &micro;M carboplatin working stock into the micropipette
+    and dispense across row C, cols 1-12. Final well concentration: 0.2 &micro;M carboplatin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_B
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.C1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.C2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.C12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_d
+- step_name: add_carb_row_d
+  prompt: 'Aspirate 5 &micro;L of 20 &micro;M carboplatin working stock into the micropipette
+    and dispense across row D, cols 1-12. Final well concentration: 0.5 &micro;M carboplatin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_C
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.D1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.D2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.D12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_e
+- step_name: add_carb_row_e
+  prompt: 'Aspirate 5 &micro;L of 40 &micro;M carboplatin working stock into the micropipette
+    and dispense across row E, cols 1-12. Final well concentration: 1 &micro;M carboplatin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_D
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.E1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.E2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.E12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_f
+- step_name: add_carb_row_f
+  prompt: 'Aspirate 5 &micro;L of 80 &micro;M carboplatin working stock into the micropipette
+    and dispense across row F, cols 1-12. Final well concentration: 2 &micro;M carboplatin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_E
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.F1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.F2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.F12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_g
+- step_name: add_carb_row_g
+  prompt: 'Aspirate 5 &micro;L of 200 &micro;M carboplatin working stock into the
+    micropipette and dispense across row G, cols 1-12. Final well concentration: 5
+    &micro;M carboplatin in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_F
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.G1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.G2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.G12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_carb_row_h
+- step_name: add_carb_row_h
+  prompt: 'Aspirate 5 &micro;L of 400 &micro;M carboplatin working stock into the
+    micropipette and dispense across row H, cols 1-12. Final well concentration: 10
+    &micro;M carboplatin in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: dilution_tube_rack_8.tube_G
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.H1
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H1
+        state:
+          material_name: carboplatin
+          material_volume: 105
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.H2
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H2
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H3
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H3
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H4
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H4
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H5
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H5
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H6
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H6
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H7
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H8
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H9
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H10
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H11
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  - target: well_plate_96.H12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H12
+        state:
+          material_name: carboplatin
+          material_volume: 105
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_metformin_cols_7_12
+- step_name: add_metformin_cols_7_12
+  prompt: 'Aspirate 5 &micro;L of 200 mM metformin working stock into the micropipette
+    and dispense across cols 7-12, rows B-H. Final well concentration: 5 mM metformin
+    in 200 &micro;L total volume.'
+  sequence:
+  - target: micropipette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations: []
+  - target: micropipette
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_volume: 5
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: micropipette
+        state:
+          set_volume: 5
+  - target: metformin_working_tube
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: CursorAttach
+        target: micropipette
+        operation: attach
+  - target: well_plate_96.B7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+      - type: CursorAttach
+        target: micropipette
+        operation: detach
+  - target: well_plate_96.B8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.B9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.B10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.B11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.B12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.B12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.C12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.C12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.D12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.D12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.E12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.E12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.F12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.F12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.G12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.G12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H7
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H7
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H8
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H8
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H9
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H9
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H10
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H10
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H11
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H11
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  - target: well_plate_96.H12
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: well_plate_96.H12
+        state:
+          material_name: carboplatin_metformin_combo
+          material_volume: 110
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: incubate_48h
+- step_name: incubate_48h
+  prompt: Place the treated plate into the incubator for 48 hours. This incubation
+    period allows the cells to respond to the drug treatments. After 48 hours, the
+    plate will be ready for MTT assay readout.
+  sequence:
+  - target: well_plate_96
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: TimedWait
+        target: incubator
+        duration_min: 2880
+        display: 48-hour drug response incubation
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

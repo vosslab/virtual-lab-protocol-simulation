@@ -19,27 +19,108 @@ Closed schema, two required keys, no optional keys:
 | Field | Required | Type | Meaning |
 | --- | --- | --- | --- |
 | `label` | yes | string | Human display label (`"1x PBS"`, `"Cell suspension"`) |
-| `display_color` | yes | string | Hex color used by the object's `visual_states` to render this material (`"#b8e5ff"`) |
+| `display_color` | yes | mapping with `light` and `dark` keys | Nested mapping with theme-specific hex colors (see Palette mapping section below). **DEPRECATED scalar form** (`display_color: "#..."`) will be rejected by V6a validator; migration required. |
 
 Unknown keys are rejected by the validator. A material kind enum (liquid, solid, gel, powder) is intentionally not authored until a non-liquid material needs distinct behavior.
 
-Example:
+Example (nested palette form, currently valid):
 
 ```yaml
 materials:
   pbs:
     label: "1x PBS"
-    display_color: "#b8e5ff"
+    display_color:
+      light: "#076dad"
+      dark: "#b8e5ff"
   spent_media:
     label: "Spent media"
-    display_color: "#d8c08a"
+    display_color:
+      light: "#6c6c00"
+      dark: "#d8c08a"
   cell_suspension:
     label: "Cell suspension"
-    display_color: "#f0d0a0"
+    display_color:
+      light: "#935d00"
+      dark: "#f0d0a0"
   waste:
     label: "Liquid waste"
-    display_color: "#8a7f73"
+    display_color:
+      light: "#4a4641"
+      dark: "#8a7f73"
 ```
+
+## Palette mapping (nested display_color)
+
+The `display_color` field contains theme-specific colors for light and dark rendering contexts.
+
+### Structure
+
+```yaml
+display_color:
+  light: "<hex_color>"    # rendered on light background (#ffffff)
+  dark: "<hex_color>"     # rendered on dark background (#1a1a1a)
+```
+
+Both `light` and `dark` keys are required and contain hex color codes (for example, `"#076dad"`).
+
+### Canonical backgrounds
+
+Material colors are always rendered against one of two fixed backgrounds. These backgrounds are **non-overridable authored constants**:
+
+- **Light mode background:** `#ffffff` (white)
+- **Dark mode background:** `#1a1a1a` (very dark gray)
+
+Scenes or UI themes may use either background; material rendering adapts via the corresponding `display_color` entry.
+
+### WCAG contrast requirement
+
+Every `display_color` pair must meet WCAG v2 AA accessibility standards:
+
+- `light` hex color must have a **contrast ratio &ge; 5.5:1** against light background `#ffffff`
+- `dark` hex color must have a **contrast ratio &ge; 5.5:1** against dark background `#1a1a1a`
+
+This exceeds WCAG AA's 4.5:1 minimum (see [docs/COLOR_CONTRAST_ACCESSIBILITY.md](../COLOR_CONTRAST_ACCESSIBILITY.md) for details and formula).
+
+### Finding accessible shades
+
+Use `tools/contrast_calculator.py` to verify and derive accessible colors:
+
+```bash
+# Check if a color meets 5.5:1 ratio vs white
+source source_me.sh && python3 tools/contrast_calculator.py --check '#e60000'
+
+# Audit a set of colors and find replacements
+source source_me.sh && python3 tools/contrast_calculator.py --audit
+```
+
+The tool exposes pure functions (`contrast_ratio()`, `find_accessible_shade()`) that can be imported for programmatic use during M4 content migration and V6a/V6b validation.
+
+For programmatic access:
+
+```python
+from tools.contrast_calculator import contrast_ratio, find_accessible_shade
+
+# Check a color
+ratio = contrast_ratio('#e60000', '#ffffff')
+if ratio < 5.5:
+    # Find a darker shade that meets 5.5:1
+    accessible = find_accessible_shade('#e60000', 5.5, bg_hex='#ffffff')
+```
+
+## Deprecated scalar display_color
+
+**DEPRECATED.** The scalar form is no longer valid as of material_validator.py V6a.
+
+Old form (invalid):
+
+```yaml
+materials:
+  pbs:
+    label: "1x PBS"
+    display_color: "#b8e5ff"    # INVALID: scalar instead of nested mapping
+```
+
+**Action required:** All per-protocol `materials.yaml` files using scalar `display_color` must migrate to the nested mapping form. M4 content migration sweeps all existing materials and applies automated migration using `tools/contrast_calculator.py` to derive safe shades for each theme. After M4 completes, V6a validation will enforce nested form and reject any remaining scalars.
 
 Sentinel values `empty` and `mixed` (per [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)) do not appear in `materials.yaml`. They are reserved state values meaning "empty container" and "generic blended material", respectively.
 
@@ -82,20 +163,10 @@ its `display_color` through the object's `visual_states`. The canonical
 `materials.yaml` schema lives in this doc (see "Materials YAML schema"
 above); [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) cites it.
 
-Reference palette in current curriculum content:
-
-| Material name | Hex code | Notes |
-| --- | --- | --- |
-| media | #f7a6b8 | Pink |
-| pbs | #b8e5ff | Light blue |
-| trypsin | #ffe082 | Yellow |
-| cells | #f3d6a2 | Cloudy tan |
-| drug | #d8b4ff | Violet |
-| mtt | #fff59d | Pale yellow |
-| dmso | #e0e0e0 | Gray |
-
-These hex codes are the values authors write into `materials.yaml`; the
-runtime never overrides them.
+For the canonical palette of material hex codes currently used in curriculum
+content, see [../archive/sds_palette_table.md](../archive/sds_palette_table.md).
+The palette values are the primary source of truth; authors write these hex
+codes into `materials.yaml` and the runtime never overrides them.
 
 ## Runtime implementation note (not authoring vocabulary)
 
@@ -129,6 +200,10 @@ The internal runtime state shape (the in-memory representation, whatever
 its keys) is not the authored surface; runtime keys are derivable and may
 differ from `held_material_name`. Do not surface runtime field names as
 authoring vocabulary.
+
+The choice between `material_name` (vessel) and `held_material_name` (tool) is
+closed per `kind` enum value. See [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)
+for the complete kind-to-field convention table and authoring rules.
 
 ## Convention scope: pipettes, microtubes, and wells
 

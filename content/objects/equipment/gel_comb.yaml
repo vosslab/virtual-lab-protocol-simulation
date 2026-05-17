@@ -9,7 +9,9 @@ state_fields:
     default: not_in_cassette
     description: Position state of the comb after removal.
 
-visual_states: {}
+visual_states:
+  position:
+    kind: composite
 
 capabilities: [clickable]
 

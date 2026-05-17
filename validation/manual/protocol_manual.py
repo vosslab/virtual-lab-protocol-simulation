@@ -218,10 +218,6 @@ def format_volume(value, unit):
 	except (TypeError, ValueError):
 		return f"**{value}**"
 	unit_str = unit if unit else ""
-	# Promote sub-1mL volumes to microliters for readability.
-	if unit_str == "ml" and 0 < numeric < 1.0:
-		numeric = numeric * 1000
-		unit_str = "ul"
 	# Format as integer if it's a whole number.
 	if numeric == int(numeric):
 		value_str = str(int(numeric))
@@ -943,29 +939,11 @@ def _field_to_human_phrase(field_name, new_value, catalog=None, target=None):
 	if field_name == "material_volume":
 		if catalog and target:
 			unit = catalog.unit_for_field(target, field_name)
-			# Detect and fix unit-conversion mismatch: if value is suspiciously small
-			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
-			try:
-				numeric = float(new_value)
-				if unit == "ul" and 0 < numeric < 1.0:
-					# Assume this is actually in mL; convert to uL for display.
-					unit = "ml"
-			except (TypeError, ValueError):
-				pass
 			return f"contains {format_volume(new_value, unit)}"
 		return f"contains {value_str}"
 	if field_name == "held_material_volume":
 		if catalog and target:
 			unit = catalog.unit_for_field(target, field_name)
-			# Detect and fix unit-conversion mismatch: if value is suspiciously small
-			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
-			try:
-				numeric = float(new_value)
-				if unit == "ul" and 0 < numeric < 1.0:
-					# Assume this is actually in mL; convert to uL for display.
-					unit = "ml"
-			except (TypeError, ValueError):
-				pass
 			return f"holds {format_volume(new_value, unit)}"
 		return f"holds {value_str}"
 	if field_name == "tape_present":
@@ -1032,15 +1010,6 @@ def _field_to_human_phrase(field_name, new_value, catalog=None, target=None):
 		subpart_label = subpart.replace("_", " ")
 		if catalog and target:
 			unit = catalog.unit_for_field(target, field_name)
-			# Detect and fix unit-conversion mismatch: if value is suspiciously small
-			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
-			try:
-				numeric = float(new_value)
-				if unit == "ul" and 0 < numeric < 1.0:
-					# Assume this is actually in mL; convert to uL for display.
-					unit = "ml"
-			except (TypeError, ValueError):
-				pass
 			return f"{subpart_label} holds {format_volume(new_value, unit)}"
 		return f"{subpart_label} holds {value_str}"
 

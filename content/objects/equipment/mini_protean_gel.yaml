@@ -8,7 +8,10 @@ state_fields:
     default: true
     description: Whether the gel package is sealed.
 
-visual_states: {}
+visual_states:
+  sealed:
+    kind: composite
+    composite: []
 
 capabilities: [clickable]
 

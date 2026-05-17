@@ -38,6 +38,9 @@ visual_states:
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=25)
+  incubation_status:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, material_container]
 

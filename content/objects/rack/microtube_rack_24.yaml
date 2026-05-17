@@ -2,11 +2,28 @@ object_name: microtube_rack_24
 kind: rack
 label: Microtube rack (24-slot)
 
-state_fields: []
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty]
+    default: empty
+    description: Rack contents placeholder.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 100
+    step: 0.1
+    default: 0
+    description: Rack contents volume placeholder.
 
-visual_states: {}
+visual_states:
+  material_name:
+    kind: composite
+  material_volume:
+    kind: composite
 
-capabilities: [decoration_only]
+capabilities: [clickable]
 
 layout:
   default_width: 10

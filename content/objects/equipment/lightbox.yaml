@@ -24,6 +24,12 @@ visual_states:
         output: { asset_name: lightbox_off }
       - when: true
         output: { asset_name: lightbox_on }
+  tray_present:
+    kind: composite
+    composite: []
+  image_captured:
+    kind: composite
+    composite: []
 
 capabilities: [clickable]
 

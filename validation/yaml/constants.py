@@ -63,6 +63,24 @@ SUBPART_GROUP_KINDS = {'row', 'column', 'region'}
 # Note: region is NOT allowed in addressable_subpart_kinds per spec
 CHANNEL_ADDRESSABLE_KINDS = {'well', 'row', 'column'}
 
+# spec: docs/specs/OBJECT_YAML_FORMAT.md "Kind-to-material-field convention" (lines 253-275)
+# Maps kind to the required material field name(s).
+# - pipette: held_material_name (tool semantics)
+# - bottle, flask, waste: material_name (vessel semantics)
+# - rack, plate: material_name (per subpart)
+# - equipment: case-by-case (review required)
+# - decoration: no material fields allowed
+KIND_MATERIAL_FIELD_CONVENTION = {
+	'pipette': 'held_material_name',
+	'bottle': 'material_name',
+	'flask': 'material_name',
+	'waste': 'material_name',
+	'rack': 'material_name',
+	'plate': 'material_name',
+	'equipment': None,  # case-by-case (triggers WARNING)
+	'decoration': None,  # no material fields allowed (triggers ERROR if any found)
+}
+
 
 # ============================================
 # SCENE SCHEMA CONSTANTS

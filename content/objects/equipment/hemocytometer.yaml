@@ -41,6 +41,13 @@ state_fields:
     description: Cell count in quadrant D.
 
 visual_states:
+  # material_name and material_volume have no visual rendering; declared explicit for V2 gate
+  material_name:
+    kind: composite
+    composite: []
+  material_volume:
+    kind: composite
+    composite: []
   count_quadrant_a:
     kind: overlay
     formula: 'label(state(count_quadrant_a), format="A: {value}")'
@@ -54,7 +61,7 @@ visual_states:
     kind: overlay
     formula: 'label(state(count_quadrant_d), format="D: {value}")'
 
-capabilities: [clickable]
+capabilities: [clickable, material_container]
 
 layout:
   default_width: 12

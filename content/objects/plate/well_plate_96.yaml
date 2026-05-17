@@ -148,6 +148,12 @@ visual_states:
     kind: composite
     applies_to: subpart
     formula: fill_height(state(material_volume), capacity_ul=300)
+  inspection_status:
+    kind: composite
+    composite: []
+  dosing_status:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, structured_surface, material_container]
 

@@ -32,6 +32,8 @@ visual_states:
         output: { asset_name: water_bath_idle }
       - when: true
         output: { asset_name: water_bath_heating }
+  stage:
+    kind: composite
 
 capabilities: [clickable, instrument_with_setpoint]
 

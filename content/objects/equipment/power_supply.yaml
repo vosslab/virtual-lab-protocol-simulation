@@ -35,6 +35,12 @@ visual_states:
         output: { asset_name: power_supply_off }
       - when: true
         output: { asset_name: power_supply_on }
+  cathode_lead_attached:
+    kind: composite
+    composite: []
+  anode_lead_attached:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, instrument_with_setpoint]
 

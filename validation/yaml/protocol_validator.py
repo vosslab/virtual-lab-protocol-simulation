@@ -34,7 +34,7 @@ class ProtocolValidator:
 				protocols_idx = parts.index('protocols')
 				if protocols_idx + 1 < len(parts):
 					return parts[protocols_idx + 1]
-			except (ValueError, IndexError):
+			except ValueError:
 				pass
 		return None
 
@@ -72,6 +72,16 @@ class ProtocolValidator:
 					lineno=None,
 					severity=Severity.ERROR,
 					message="sequence_runner requires 'mini_protocols' (ordered constituent list)",
+					tag="mini_protocols_required",
+				))
+			# Reject `steps:` on sequence_runner (must be omitted per spec)
+			if 'steps' in protocol:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message="sequence_runner must omit 'steps' key (use 'mini_protocols' instead)",
+					tag="steps_forbidden",
 				))
 		else:
 			if 'steps' not in protocol:
@@ -80,6 +90,15 @@ class ProtocolValidator:
 					lineno=None,
 					severity=Severity.ERROR,
 					message=f"protocol_type '{ptype}' requires 'steps'",
+				))
+			# V1: Reject `mini_protocols:` on mini_protocol/dev_smoke (must be omitted per spec)
+			if 'mini_protocols' in protocol:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"protocol_type '{ptype}' must omit 'mini_protocols' key (use 'steps' instead)",
+					tag="mini_protocols_forbidden",
 				))
 
 		if not findings:
@@ -93,7 +112,10 @@ class ProtocolValidator:
 		return findings
 
 	def _validate_sequence_runner(self, protocol: dict, path: str) -> list:
-		"""Validate sequence_runner constituent list per PRIMARY_SPEC.md."""
+		"""
+		Validate sequence_runner constituent list and shape per PRIMARY_SPEC.md.
+		Includes V1 gate: entry_step matching and file resolution.
+		"""
 		findings = []
 		mp_list = protocol.get('mini_protocols')
 
@@ -103,6 +125,7 @@ class ProtocolValidator:
 				lineno=None,
 				severity=Severity.ERROR,
 				message="mini_protocols must be a non-empty list of constituent names",
+				tag="mini_protocols_required",
 			))
 			return findings
 
@@ -114,14 +137,17 @@ class ProtocolValidator:
 					lineno=None,
 					severity=Severity.ERROR,
 					message="constituent entry must be a string (mini-protocol name)",
+					tag="mini_protocol_not_found",
 				))
 				continue
+			# V1: Each name must resolve to a known protocol (file exists).
 			if self.db and name not in known:
 				findings.append(Finding(
 					path=f"{path}.mini_protocols[{idx}]",
 					lineno=None,
 					severity=Severity.ERROR,
 					message=f"constituent '{name}' does not resolve to a known protocol",
+					tag="mini_protocol_not_found",
 				))
 			# HARD RULE: sequence_runner may reference only mini_protocol leaves,
 			# never another sequence_runner.
@@ -134,6 +160,23 @@ class ProtocolValidator:
 						lineno=None,
 						severity=Severity.ERROR,
 						message=f"sequence_runner '{name}' referenced in mini_protocols list; sequence runners may reference only mini_protocol leaves, never another sequence_runner",
+						tag="runner_of_runner",
+					))
+
+		# V1: entry_step must match the first listed mini-protocol's entry_step
+		if mp_list and isinstance(mp_list[0], str) and self.db:
+			first_mini_name = mp_list[0]
+			first_mini = self.db.protocols.get(first_mini_name)
+			if first_mini:
+				first_mini_entry = first_mini.get('entry_step')
+				runner_entry = protocol.get('entry_step')
+				if runner_entry != first_mini_entry:
+					findings.append(Finding(
+						path=path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"sequence_runner entry_step '{runner_entry}' does not match first mini-protocol '{first_mini_name}' entry_step '{first_mini_entry}'",
+						tag="entry_step_mismatch",
 					))
 
 		return findings
@@ -463,22 +506,32 @@ class ProtocolValidator:
 														message=f"state field '{field_name}' value '{field_value}' not in allowed {allowed}",
 														tag="T1_ENUM",
 													))
-											# T1_MATERIAL_REF: material_name / held_material_name must exist in protocol materials.
-											# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
-											# (empty container, generic blended material) and do not need
-											# materials.yaml entries.
-											if field_name in ('material_name', 'held_material_name') and field_value not in ('empty', 'mixed'):
-												protocol_name = self._extract_protocol_name(op_path)
-												if protocol_name and field_value is not None:
-													material = self.db.resolve_material(protocol_name, field_value)
-													if not material:
-														findings.append(Finding(
-															path=f"{op_path}.state",
-															lineno=None,
-															severity=Severity.ERROR,
-															message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
-															tag="T1_MATERIAL_REF",
-														))
+											# Numeric min/max/step constraint check
+											if field.get('type') in ('int', 'float') and field_value is not None:
+												findings.extend(self._validate_numeric_constraints(
+													field, field_name, field_value, op_target, op_path
+												))
+										# Subpart-target consistency check
+										if field.get('applies_to') == 'subpart':
+											findings.extend(self._validate_subpart_target(
+												op_target, op_path, field_name
+											))
+										# T1_MATERIAL_REF: material_name / held_material_name must exist in protocol materials.
+										# 'empty' and 'mixed' are sentinel values per OBJECT_VOCABULARY.md
+										# (empty container, generic blended material) and do not need
+										# materials.yaml entries.
+										if field_name in ('material_name', 'held_material_name') and field_value not in ('empty', 'mixed'):
+											protocol_name = self._extract_protocol_name(op_path)
+											if protocol_name and field_value is not None:
+												material = self.db.resolve_material(protocol_name, field_value)
+												if not material:
+													findings.append(Finding(
+														path=f"{op_path}.state",
+														lineno=None,
+														severity=Severity.ERROR,
+														message=f"state field '{field_name}' value '{field_value}' does not resolve to a known material entry",
+														tag="T1_MATERIAL_REF",
+													))
 
 		return findings
 
@@ -577,5 +630,84 @@ class ProtocolValidator:
 					severity=Severity.ERROR,
 					message=f"'{op_type}' does not allow unknown field '{field}'",
 				))
+
+		return findings
+
+	def _validate_numeric_constraints(self, field: dict, field_name: str, field_value, op_target: str, op_path: str) -> list:
+		"""
+		V3 gate: Check numeric field (int or float) value against declared min/max/step constraints.
+		Emits ERROR with code: state_value_out_of_range.
+		"""
+		findings = []
+		field_type = field.get('type')
+		if field_type not in ('int', 'float'):
+			return findings
+
+		# Extract constraints
+		min_val = field.get('min')
+		max_val = field.get('max')
+		step_val = field.get('step')
+		unit = field.get('unit', '')
+
+		# Check min constraint
+		if min_val is not None and field_value < min_val:
+			unit_str = f" {unit}" if unit else ""
+			findings.append(Finding(
+				path=op_path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"state field '{field_name}' on '{op_target}' value {field_value}{unit_str} below declared minimum {min_val}{unit_str}",
+				tag="state_value_out_of_range",
+			))
+
+		# Check max constraint
+		if max_val is not None and field_value > max_val:
+			unit_str = f" {unit}" if unit else ""
+			findings.append(Finding(
+				path=op_path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"state field '{field_name}' on '{op_target}' value {field_value}{unit_str} exceeds declared maximum {max_val}{unit_str}",
+				tag="state_value_out_of_range",
+			))
+
+		# Check step constraint (value must be min + k*step for integer k)
+		if step_val is not None and min_val is not None:
+			offset = field_value - min_val
+			remainder = offset % step_val
+			# Use small epsilon for float comparison
+			if abs(remainder) > 1e-9 and abs(remainder - step_val) > 1e-9:
+				unit_str = f" {unit}" if unit else ""
+				findings.append(Finding(
+					path=op_path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"state field '{field_name}' on '{op_target}' value {field_value}{unit_str} does not align to step {step_val}{unit_str} from minimum {min_val}{unit_str}",
+					tag="state_value_out_of_range",
+				))
+
+		return findings
+
+	def _validate_subpart_target(self, op_target: str, op_path: str, field_name: str) -> list:
+		"""
+		V5 gate: Check that if a field is declared applies_to: subpart,
+		the ObjectStateChange target must use dotted form (object.subpart),
+		not bare object name.
+		Emits ERROR with code: subpart_target_required.
+		"""
+		findings = []
+
+		# If target contains a dot, it is already in subpart form
+		if '.' in op_target:
+			return findings
+
+		# Target is bare object name, but field requires subpart form
+		findings.append(Finding(
+			path=op_path,
+			lineno=None,
+			severity=Severity.ERROR,
+			message=f"state field '{field_name}' is declared applies_to: subpart but ObjectStateChange target '{op_target}' is bare object (should be 'object.subpart' form)",
+			tag="subpart_target_required",
+		))
 
 		return findings

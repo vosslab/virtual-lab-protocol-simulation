@@ -2,6 +2,12 @@ object_name: counter_slide_cartridge
 kind: rack
 label: Cell counter slide cartridge
 
+structure:
+  subpart_kind: slot
+  layout: list
+  count: 10
+  name_pattern: "slide_{index}"
+
 state_fields:
   - field_name: slide_count
     type: int
@@ -9,13 +15,35 @@ state_fields:
     max: 10
     default: 5
     description: Number of hemocytometer slides available in the cartridge.
+  - field_name: material_name
+    type: enum
+    allowed: [empty]
+    default: empty
+    applies_to: subpart
+    description: Slide slot always empty (holder only).
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 0
+    default: 0
+    applies_to: subpart
+    description: Slide slot never holds material.
 
 visual_states:
   slide_count:
     kind: overlay
     formula: 'label(state(slide_count), format="Slides: {value}")'
+  material_name:
+    kind: composite
+    applies_to: subpart
+    composite: []
+  material_volume:
+    kind: composite
+    applies_to: subpart
+    composite: []
 
-capabilities: [clickable]
+capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 8

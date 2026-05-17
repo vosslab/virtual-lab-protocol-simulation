@@ -4,11 +4,52 @@
 
 ### Additions and New Features
 
+- `content/README.md` (new): folder-level guide for the authored curriculum tree. Describes `protocols/`, `scenes/`, `objects/` layout; lists object `kind` subfolders; names the three `protocol_type` values; cross-links to PROTOCOL_VOCABULARY, SCENE_YAML_FORMAT, OBJECT_VOCABULARY, MATERIAL_CONVENTION, and the validator entry point.
 - `docs/PRIMARY_SPEC.md`: new "No schema version" section. Bans `schema_version` fields in YAML, per-surface version constants (`OBJECT_SCHEMA_VERSION`, etc.), and version tokens in test/validator/generator filenames (`_v3_`, `_v5_`, `_v7_`). Unified version anchor is the repo `VERSION` file. Documents the trigger (first persistent downstream consumer) for revisiting the rule and introducing a single repo-wide `SCHEMA_VERSION` constant. Rule may be promoted to `docs/PRIMARY_CONTRACT.md` in the future.
 
 ### Behavior or Interface Changes
 
 - `VERSION` bumped from `26.02` to `26.05.17` (CalVer `0Y.0M.PATCH`). Now serves dual role as repo version and unified schema-version anchor per the new PRIMARY_SPEC rule.
+- `docs/specs/PROTOCOL_YAML_FORMAT.md`: ratified `sequence_runner` top-level shape - requires `mini_protocols:` list, no `steps:`; `entry_step` matches first listed mini's `entry_step`. Closes drift BLOCKER B4.
+- `docs/specs/OBJECT_YAML_FORMAT.md`: added kind-to-material-field convention table (kind=bottle/flask/waste/rack/plate -> material_name; kind=pipette -> held_material_name; kind=decoration -> no material; kind=equipment -> case-by-case).
+- `docs/specs/MATERIAL_CONVENTION.md`: ratified nested `display_color: {light, dark}` palette mapping; deprecated scalar `display_color: "#hex"` form (now rejected by V6a).
+- 13 `kind: bottle` object YAMLs renamed `held_material_name`/`held_material_volume` -> `material_name`/`material_volume` plus cascade updates to 8 protocol YAMLs that wrote those fields.
+- `staining_tray` (kind=equipment, vessel-like) renamed `held_material_name` -> `material_name` plus cascade to 5 SDS-PAGE protocols.
+- Renderer revert in `validation/manual/protocol_manual.py`: removed sub-mL auto-promotion hack from prior session that was masking BLOCKER B1.
+
+### Fixes and Maintenance
+
+- BLOCKER B1: corrected sample-mix volumes in `content/protocols/sdspage_prepare_sample_mix_single_lane/protocol.yaml`: 0.021/0.0285/0.03 (mL written into uL field) -> 21/28.5/30 uL.
+- BLOCKER B2: switched `sdspage_load_protein_ladder` + `sdspage_load_sample_single_lane` from `p10_micropipette` (max 10 uL) to new `p200_micropipette`.
+- BLOCKER B3: renamed `sdspage_load_sample_single_lane/scenes/electrophoresis_bench_override.yaml` scene_name from `electrophoresis_bench` to `sdspage_load_sample_single_lane_workspace` (was self-extending). Cleaned up duplicate scene file authored by parallel doer.
+- BLOCKER B5: switched 8 `ObjectStateChange` targets from bare `gel_cassette` / `dilution_tube_rack_8` / `well_plate_96` to dotted subpart references (e.g. `gel_cassette.lane_1`) across 3 protocols.
+- visual_states completeness: filled 25+ missing entries across 14 object YAMLs (gel_cassette, gel_comb, heat_block, microwave, water_bath, lightbox, power_supply, rocking_shaker, staining_tray, cell_counter, hemocytometer, hemocytometer_slide, mini_protean_gel, well_plate_96, t75_flask, t75_flask_new, media_bottle) - empty `kind: composite` default for fields without established render patterns.
+- Palette migration: 26 `materials.yaml` files migrated from scalar to nested `{light, dark}` shape; 9 cross-protocol divergent materials reconciled via majority rule (ddh2o, coomassie_stain, coomassie_stain_used, destain_used, protein_ladder, protein_sample_denatured, protein_sample_mixed, running_buffer_1x, running_buffer_1x_used).
+- electrophoresis_tank: raised inner_chamber_material_volume max from 300 ml to 800 ml (real BioRad Mini-PROTEAN range).
+- recycle_buffer_bottle: raised material_volume max from 500 ml to 1000 ml (standard 1L bottle).
+- sdspage_prepare_running_buffer: refactored to multi-aspiration 25 mL serological pipette workflow.
+- V3 follow-up sweep (3 non-SDS protocols): cell_seeding_plate_setup switched micropipette -> serological_pipette for mL-range transfers (2400 uL -> 2.4 mL; 9600 uL -> 9.6 mL); bonus fix: well_plate_96.all_wells material_volume 9600 -> 100 uL per well. mtt_plate_reaction biohazard_decant_bin material_volume 21600 -> 21.6 mL (mL/uL unit confusion). passage_hood_detachment trypsin_bottle max/default 100 -> 500 mL (matches actual stock size); protocol value 197 -> 497.
+- hemocytometer: added `material_container` capability (was missing; caused spurious V7 WARNING). V7 gate refined to warn only when `material_container` capability absent.
+- trypsin_bottle: added `material_name` state_field + visual_states to match bottle kind convention; max raised to 500 mL.
+- test_walker_no_step_branches.py: restored (was deleted without CHANGELOG entry; walker dir exists and test is valid).
+- Simulation design notes restored as YAML comments in mtt_plate_reaction/protocol.yaml and cell_seeding_plate_setup/protocol.yaml (explain all_wells abstraction and numerical model).
+
+### Removals and Deprecations
+
+- Deleted 6 gate-pytests (test_sequence_runner_shape, test_scene_self_extends, test_state_value_range, test_subpart_target_required, test_kind_material_field_convention, test_object_validator_visual_states, test_material_palette_consistency): each duplicated validator runtime behavior with heavy fixtures (~0.24s setup each); validators land in `validation/yaml/` and exercise on every full-repo run. Removed orphaned `tests/fixtures/validator/` directory.
+
+### Decisions and Failures
+
+- V6b WCAG contrast gate on YAML material palette: dropped from plan during execution. No current consumer renders palette as color swatch (renderer outputs material names as text). Deferred to follow-up "SVG asset accessibility audit" plan where WCAG matters more (SVG fills DO render). TODO entry exists.
+- Unit policy ratified: YAML values stay in natural unit per field; no universalization to mL / uL / nL. Schema enforces via per-field declared unit + min/max/step; V3 catches violations. B1 root cause was missing validator coverage + renderer symptom mask, not unit choice.
+- Pre-existing V3 violations in 3 non-SDS protocols (cell_seeding_plate_setup, mtt_plate_reaction, passage_hood_detachment): surfaced by new V3 gate; out of scope per plan risk register at the time. Fixed in follow-up sweep (see Fixes 2026-05-17 below).
+- 4 equipment objects (gel_cassette, hemocytometer, hemocytometer_slide, staining_tray) flagged by V7 gate (case-by-case kind=equipment review). hemocytometer resolved in follow-up (added material_container capability); gel_cassette, hemocytometer_slide, staining_tray were already correct.
+- V6a gate (cross-protocol material consistency) not implemented before plan archive. Manual reconciliation of 9 divergent materials was done. Automated gate deferred; documented in docs/TODO.md. `validation/yaml/cross_protocol.py` lines 43-45 carry the deferral comment.
+
+### Developer Tests and Notes
+
+- pytest suite: 738 tests pass in ~2s (down from 814; net -76 after gate-pytest deletion + collateral). Suite stays fast per PYTEST_STYLE.
+- Test naming: all surviving tests use behavior names (not V-numbers); REPO_STYLE anti-pattern `test_milestone3_export.py` avoided going forward.
 
 ## 2026-05-16 (M4 Patch 18 -- WS-CLOSE)
 
@@ -879,7 +920,7 @@
 - **WP-C3 material volume conservation DEFERRED (scope cut, not finish-the-obvious).** Plan rated WP-C3 the highest-value structural F2-class catcher and said "do not ship without it." Pre-M1 dry-run found within-response balance incompatible with the universal split-response transfer pattern in shipped YAML (source decrement in response A, sink increment in response B). The balance window itself needs redesign (within-response vs whole-step vs cross-step). Until WP-C3 ships, the F2 bug class is only partially gated: name drift catches via `unknown_material` (proved on MP-7 today), but volume-math drift with names resolved still slips. Follow-on: [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md) -- must include balance-window redesign as explicit objective, not just spec ratification. Retire-rule trigger: WP-C3 ships before any new dilution-heavy mini lands (next candidate: any future drug-prep protocol beyond MP-5).
 - **Active-scene target resolution ERROR -> WARNING (rule relaxation, not content fix).** Plan said "do not relax the stepper rule; fix the YAML." Live-tree run surfaced 234 such findings on intended-good content -- evidence the stepper's narrow active-scene model is wrong, not that the YAML is wrong 234 ways. Demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING so the gate could ship; 234 advisory findings now sit in CI output every run. Drift risk: WARNINGs that authors learn to ignore become permanent noise. Follow-on: [archive/scene_adapter_resolution_design.md](archive/scene_adapter_resolution_design.md) -- plan owner must commit to retiring the WARNING rule when scene-adapter design ratifies; without explicit retire-cross-link the WARNING lives forever.
 - **`step_kind` semantic check (TimedWait and related) deferred**: design captured in [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md). Retire-rule trigger: step-kind RFC ratifies the enum.
-- **`display_color` cross-file divergence check split off**: spawned as a separate validator plan at [active_plans/validator_display_color_check.md](active_plans/validator_display_color_check.md) rather than folded into the stepper, keeping the stepper focused on flow + state + scene-op simulation.
+- **`display_color` cross-file divergence check split off**: spawned as a separate validator plan at [archive/validator_display_color_check.md](archive/validator_display_color_check.md) rather than folded into the stepper, keeping the stepper focused on flow + state + scene-op simulation.
 - **CHANGELOG cadence collapsed to single rollup (deviation from plan).** Stepper plan specified per-milestone entries (M1, M2, M3 separate). All three landed within one day during single execution window; consolidated to one entry. Per-milestone cadence rule still stands for future work.
 
 ### Developer Tests and Notes

@@ -40,12 +40,18 @@ visual_states:
   focused:
     kind: overlay
     formula: conditional(state(focused), "Focused", "Focusing...")
+  capture_pressed:
+    kind: composite
+    composite: []
   cell_count:
     kind: overlay
     formula: 'conditional(state(cell_count), label(state(cell_count), format="Count: {value}"), "Ready")'
   viability_percent:
     kind: overlay
     formula: 'conditional(state(viability_percent), label(state(viability_percent), format="Viability: {value}%"), "Analyzing")'
+  viability_verified:
+    kind: composite
+    composite: []
 
 capabilities: [clickable]
 

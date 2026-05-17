@@ -95,8 +95,8 @@ placements:
     object_name: serological_pipette
     zone: center
     depth_tier: 1
-  - placement_name: right_tool_area_p10_micropipette
-    object_name: p10_micropipette
+  - placement_name: right_tool_area_p200_micropipette
+    object_name: p200_micropipette
     zone: right_tool_area
     depth_tier: 1
   - placement_name: right_tool_area_p10_gel_loading_tip_box

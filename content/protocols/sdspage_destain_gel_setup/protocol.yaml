@@ -1,175 +1,199 @@
 protocol_type: mini_protocol
 protocol_name: sdspage_destain_gel_setup
 entry_step: rinse_first
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with handling staining equipment, rinsing gel trays, pouring destain solution, knotting and placing kimwipes, microwave heating, and transferring equipment to a rocking shaker."
-  outcomes: "Students completing this mini-protocol will be able to set up destaining by rinsing a staining tray twice with distilled water, pouring destain into the tray, preparing and placing knotted kimwipes, heating in a microwave for 50 seconds, and transferring the tray to a rocking shaker."
-  goals: "Overall, this mini-protocol aims to accomplish the initial destaining setup phase: preparing the gel in destain solution with physical agitation to remove coomassie stain."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    handling staining equipment, rinsing gel trays, pouring destain solution, knotting
+    and placing kimwipes, microwave heating, and transferring equipment to a rocking
+    shaker.
+  outcomes: Students completing this mini-protocol will be able to set up destaining
+    by rinsing a staining tray twice with distilled water, pouring destain into the
+    tray, preparing and placing knotted kimwipes, heating in a microwave for 50 seconds,
+    and transferring the tray to a rocking shaker.
+  goals: 'Overall, this mini-protocol aims to accomplish the initial destaining setup
+    phase: preparing the gel in destain solution with physical agitation to remove
+    coomassie stain.'
 steps:
-  - step_name: rinse_first
-    prompt: "First rinse: pour distilled water into the staining tray to rinse away residual stain."
-    sequence:
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: SceneChange
-              to_scene: staining_bench
-      - target: ddh2o_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: ddh2o
-                held_material_volume: 200
-      - target: waste_container
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-            - type: ObjectStateChange
-              target: waste_container
-              state:
-                material_name: mixed
-                material_volume: 200
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: rinse_second
-
-  - step_name: rinse_second
-    prompt: "Second rinse: pour another volume of distilled water and discard to the waste container."
-    sequence:
-      - target: ddh2o_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: ddh2o
-                held_material_volume: 200
-      - target: waste_container
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-            - type: ObjectStateChange
-              target: waste_container
-              state:
-                material_name: mixed
-                material_volume: 400
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: add_destain
-
-  - step_name: add_destain
-    prompt: "Pour destain solution into the staining tray."
-    sequence:
-      - target: destain_bottle
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                held_material_name: destain
-                held_material_volume: 250
-            - type: ObjectStateChange
-              target: destain_bottle
-              state:
-                held_material_name: empty
-                held_material_volume: 0
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: place_kimwipes
-
-  - step_name: place_kimwipes
-    prompt: "Tie 4 kimwipes loosely in a simple knot and place them in the staining tray. Avoid laying them directly on the gel to ensure even destaining."
-    sequence:
-      - target: kimwipe_pad
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: staining_tray
-              state:
-                kimwipes_present: true
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: microwave_heat
-
-  - step_name: microwave_heat
-    prompt: "Place the staining tray in the microwave, set the timer for 50 seconds, and start the heating. When removing the tray from the microwave, avoid breathing deeply - heated destain emits strong fumes."
-    sequence:
-      - target: microwave
-        gesture: adjust
-        validator: { preset: target_with_value, value: { set_time_s: 50 } }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: microwave
-              state:
-                set_time_s: 50
-      - target: microwave
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: microwave
-              state:
-                running: true
-            - type: TimedWait
-              target: microwave
-              duration_min: 0.833
-              display: "Heating gel in destain"
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: transfer_to_rocker
-
-  - step_name: transfer_to_rocker
-    prompt: "Transfer the staining tray to the rocking shaker for continued destaining."
-    sequence:
-      - target: staining_tray
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: rocking_shaker
-              state:
-                tray_present: true
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: rinse_first
+  prompt: 'First rinse: pour distilled water into the staining tray to rinse away
+    residual stain.'
+  sequence:
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: SceneChange
+        to_scene: staining_bench
+  - target: ddh2o_bottle
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: ddh2o
+          material_volume: 200
+  - target: waste_container
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: empty
+          material_volume: 0
+      - type: ObjectStateChange
+        target: waste_container
+        state:
+          material_name: mixed
+          material_volume: 200
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: rinse_second
+- step_name: rinse_second
+  prompt: 'Second rinse: pour another volume of distilled water and discard to the
+    waste container.'
+  sequence:
+  - target: ddh2o_bottle
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: ddh2o
+          material_volume: 200
+  - target: waste_container
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: empty
+          material_volume: 0
+      - type: ObjectStateChange
+        target: waste_container
+        state:
+          material_name: mixed
+          material_volume: 400
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: add_destain
+- step_name: add_destain
+  prompt: Pour destain solution into the staining tray.
+  sequence:
+  - target: destain_bottle
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          material_name: destain
+          material_volume: 250
+      - type: ObjectStateChange
+        target: destain_bottle
+        state:
+          material_name: empty
+          material_volume: 0
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: place_kimwipes
+- step_name: place_kimwipes
+  prompt: Tie 4 kimwipes loosely in a simple knot and place them in the staining tray.
+    Avoid laying them directly on the gel to ensure even destaining.
+  sequence:
+  - target: kimwipe_pad
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: staining_tray
+        state:
+          kimwipes_present: true
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: microwave_heat
+- step_name: microwave_heat
+  prompt: Place the staining tray in the microwave, set the timer for 50 seconds,
+    and start the heating. When removing the tray from the microwave, avoid breathing
+    deeply - heated destain emits strong fumes.
+  sequence:
+  - target: microwave
+    gesture: adjust
+    validator:
+      preset: target_with_value
+      value:
+        set_time_s: 50
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: microwave
+        state:
+          set_time_s: 50
+  - target: microwave
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: microwave
+        state:
+          running: true
+      - type: TimedWait
+        target: microwave
+        duration_min: 0.833
+        display: Heating gel in destain
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: transfer_to_rocker
+- step_name: transfer_to_rocker
+  prompt: Transfer the staining tray to the rocking shaker for continued destaining.
+  sequence:
+  - target: staining_tray
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: rocking_shaker
+        state:
+          tray_present: true
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

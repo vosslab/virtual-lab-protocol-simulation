@@ -3,12 +3,12 @@ kind: bottle
 label: Microtube
 
 state_fields:
-  - field_name: held_material_name
+  - field_name: material_name
     type: enum
     allowed: [empty, protein_sample_raw, protein_sample_mixed, protein_sample_denatured]
     default: empty
     description: Contents currently in the tube.
-  - field_name: held_material_volume
+  - field_name: material_volume
     type: float
     unit: ul
     min: 0
@@ -17,7 +17,7 @@ state_fields:
     description: Volume of contents in the tube, in microliters.
 
 visual_states:
-  held_material_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
@@ -28,9 +28,9 @@ visual_states:
         output: { asset_name: microtube_filled }
       - when: protein_sample_denatured
         output: { asset_name: microtube_filled }
-  held_material_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(held_material_volume), capacity_ul=1500)
+    formula: fill_height(state(material_volume), capacity_ul=1500)
 
 capabilities: [clickable, material_container]
 

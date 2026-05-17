@@ -33,6 +33,11 @@ add_placements:
     zone: right_tool_area
     depth_tier: 1
 
+  - placement_name: right_serological_pipette
+    object_name: serological_pipette
+    zone: right_tool_area
+    depth_tier: 1
+
   - placement_name: center_vortex
     object_name: vortex
     zone: center

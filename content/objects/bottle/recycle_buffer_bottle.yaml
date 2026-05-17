@@ -3,30 +3,30 @@ kind: bottle
 label: Buffer recycle bottle
 
 state_fields:
-  - field_name: held_material_name
+  - field_name: material_name
     type: enum
     allowed: [empty, running_buffer_1x_used]
     default: empty
     description: Contents currently in the bottle.
-  - field_name: held_material_volume
+  - field_name: material_volume
     type: float
     unit: ml
     min: 0
-    max: 500
+    max: 1000
     default: 0
     description: Volume of used running buffer collected, in milliliters.
 
 visual_states:
-  held_material_name:
+  material_name:
     kind: svg
     cases:
       - when: empty
         output: { asset_name: recycle_buffer_bottle_empty }
       - when: running_buffer_1x_used
         output: { asset_name: recycle_buffer_bottle_filled }
-  held_material_volume:
+  material_volume:
     kind: composite
-    formula: fill_height(state(held_material_volume), capacity_ml=500)
+    formula: fill_height(state(material_volume), capacity_ml=1000)
 
 capabilities: [clickable, material_container, cursor_attachable]
 

@@ -231,3 +231,41 @@ triage; M1c does NOT fix either. See the M1b CHANGELOG entry under
   and the new [tests/test_svg_pipeline.mjs](../tests/test_svg_pipeline.mjs)
   use the helper to exercise production `.ts` modules directly. See the
   M6 CHANGELOG entry under `## 2026-05-09` for full evidence.
+
+## V3 numeric-range violations follow-up
+
+**Resolved 2026-05-17.** All three sites fixed pedagogically:
+
+- [x] `content/protocols/cell_seeding_plate_setup/protocol.yaml`: wrong instrument
+  class (micropipette max 1000 uL used for mL-range transfers). Fixed: switched to
+  serological_pipette; values converted uL->mL (2400->2.4, 9600->9.6). Also fixed
+  bonus bug: `well_plate_96.all_wells material_volume` 9600->100 uL per well.
+- [x] `content/protocols/mtt_plate_reaction/protocol.yaml`: biohazard_decant_bin
+  `material_volume` 21600 mL was mL/uL unit confusion (21600 uL total = 21.6 mL).
+  Fixed: 21600->21.6.
+- [x] `content/protocols/passage_hood_detachment/protocol.yaml`: trypsin_bottle
+  max:100 was too small; protocol assumes 500 mL stock (consistent with pbs_bottle
+  and media_bottle). Fixed: trypsin_bottle max/default 100->500; protocol value
+  197->497.
+
+Equipment V7 WARNINGs also resolved (same run):
+- hemocytometer added `material_container` capability (was missing; caused WARNING).
+- V7 gate refined: now warns only when equipment has material fields but lacks
+  `material_container` capability (previously warned on any equipment with material fields).
+
+## Deferred / future work
+
+### V6b: WCAG contrast gate on material YAML palette (deferred)
+
+Dropped from the spec-content-drift-remediation plan (see
+[docs/archive/spec_content_drift_remediation.md](archive/spec_content_drift_remediation.md)
+Objective #3). Reason: no current consumer renders material `display_color`
+as a color swatch; the gate is forward-looking until a theme-aware visual
+consumer ships. The gate should be included in the future "SVG asset
+accessibility audit" follow-up plan as part of a WCAG audit on hard-coded
+SVG fills. Note: V6a (cross-protocol material consistency) is deferred - `validation/yaml/cross_protocol.py`
+lines 43-45 carry a "Deferred" comment. The gate was planned in
+`docs/archive/spec_content_drift_remediation.md` WP-V6 but not implemented before plan
+archive. Manual reconciliation of 9 divergent materials was done (CHANGELOG 2026-05-17),
+but the automated enforcement gate does not yet exist. A future protocol addition could
+re-introduce the same divergence silently.

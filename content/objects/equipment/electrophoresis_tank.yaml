@@ -16,7 +16,7 @@ state_fields:
     type: float
     unit: ml
     min: 0
-    max: 300
+    max: 800
     default: 0
     description: Volume of contents in the inner chamber, in milliliters.
   - field_name: outer_chamber_material_name
@@ -48,7 +48,7 @@ visual_states:
         output: { asset_name: electrophoresis_tank_inner_chamber_filled }
   inner_chamber_material_volume:
     kind: composite
-    formula: fill_height(state(inner_chamber_material_volume), capacity_ml=300)
+    formula: fill_height(state(inner_chamber_material_volume), capacity_ml=800)
   outer_chamber_material_name:
     kind: svg
     cases:

@@ -10,6 +10,7 @@ from validation.yaml.constants import (
 	STRUCTURE_LAYOUT_TYPES,
 	SUBPART_GROUP_KINDS,
 	CHANNEL_ADDRESSABLE_KINDS,
+	KIND_MATERIAL_FIELD_CONVENTION,
 )
 from validation.yaml.findings import Finding, Severity
 
@@ -54,6 +55,12 @@ class ObjectValidator:
 
 		# State fields validation
 		findings.extend(self._validate_state_fields(obj, path))
+
+		# Visual states completeness validation
+		findings.extend(self._validate_visual_states_completeness(obj, path))
+
+		# Kind-to-material-field convention validation
+		findings.extend(self._validate_kind_material_field_convention(obj, path))
 
 		# Capabilities validation
 		findings.extend(self._validate_capabilities(obj, path))
@@ -165,6 +172,183 @@ class ObjectValidator:
 					lineno=None,
 					severity=Severity.ERROR,
 					message="enum field missing required 'allowed' list",
+				))
+
+		return findings
+
+	def _validate_visual_states_completeness(self, obj: dict, path: str) -> list:
+		"""
+		Validate that every state_field has a matching visual_states entry (V2 gate).
+
+		Per OBJECT_YAML_FORMAT.md line 299-302:
+		"Every key in visual_states must name a declared state_field on this object.
+		A visual_states key with no matching state_field is a build-time error. The
+		reverse is also enforced: every state_field must have a matching visual_states
+		entry. A field whose value never affects the visual is declared with an explicit
+		visual_states.<field>.kind: composite and an empty composite list so absence
+		stays loud."
+		"""
+		findings = []
+
+		state_fields = obj.get('state_fields')
+		visual_states = obj.get('visual_states')
+
+		# Handle missing visual_states
+		if visual_states is None:
+			visual_states = {}
+
+		if not isinstance(state_fields, list):
+			return findings
+
+		if not isinstance(visual_states, dict):
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="visual_states must be a mapping",
+			))
+			return findings
+
+		# Collect all state field names
+		state_field_names = set()
+		for field in state_fields:
+			if isinstance(field, dict) and 'field_name' in field:
+				state_field_names.add(field['field_name'])
+
+		# Check that every state_field has a visual_states entry
+		for field_name in state_field_names:
+			if field_name not in visual_states:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"state_field '{field_name}' missing visual_states entry (see docs/specs/OBJECT_YAML_FORMAT.md:297-302)",
+				))
+
+		# Check that every visual_states key names a declared state_field
+		for vs_key in visual_states.keys():
+			if vs_key not in state_field_names:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"visual_states key '{vs_key}' does not match any declared state_field",
+				))
+
+		return findings
+
+	def _validate_kind_material_field_convention(self, obj: dict, path: str) -> list:
+		"""
+		Validate kind-to-material-field convention (V7 gate).
+
+		Per docs/specs/OBJECT_YAML_FORMAT.md lines 253-275:
+		- pipette: held_material_name (tool semantics)
+		- bottle, flask, waste, rack, plate: material_name (vessel semantics)
+		- equipment: case-by-case (emits WARNING for manual review at M4)
+		- decoration: no material fields allowed (ERROR if any found)
+		"""
+		findings = []
+
+		kind = obj.get('kind')
+		if not kind or kind not in KIND_MATERIAL_FIELD_CONVENTION:
+			# Kind validation already happened; skip here
+			return findings
+
+		state_fields = obj.get('state_fields', [])
+		if not isinstance(state_fields, list):
+			return findings
+
+		# Collect all declared state field names
+		declared_field_names = set()
+		for field in state_fields:
+			if isinstance(field, dict) and 'field_name' in field:
+				declared_field_names.add(field['field_name'])
+
+		expected_field = KIND_MATERIAL_FIELD_CONVENTION[kind]
+
+		# Case 1: decoration
+		# Decoration objects must not have any material-related fields
+		if kind == 'decoration':
+			material_fields = {'material_name', 'material_volume', 'held_material_name', 'held_material_volume'}
+			found_material_fields = declared_field_names & material_fields
+			if found_material_fields:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"kind '{kind}' (decoration) must not declare material fields, but found: {sorted(found_material_fields)} (see docs/specs/OBJECT_YAML_FORMAT.md:269)",
+				))
+			return findings
+
+		# Case 2: equipment
+		# Equipment is case-by-case. The explicit declaration is the
+		# `material_container` capability: if the equipment lists it, the
+		# author has affirmed the object is a vessel and `material_name`
+		# is the correct field. Without that capability, emit a WARNING so
+		# the author either adds the capability or removes the field.
+		if kind == 'equipment':
+			material_fields = {'material_name', 'material_volume', 'held_material_name', 'held_material_volume'}
+			found_material_fields = declared_field_names & material_fields
+			capabilities = obj.get('capabilities', [])
+			has_material_container = isinstance(capabilities, list) and 'material_container' in capabilities
+			if found_material_fields and not has_material_container:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.WARNING,
+					message=f"kind '{kind}' declares {sorted(found_material_fields)} but lacks 'material_container' capability; add the capability to affirm vessel semantics or remove the material fields (see docs/specs/OBJECT_YAML_FORMAT.md 'Kind-to-material-field convention')",
+				))
+			return findings
+
+		# Case 3: pipette, bottle, flask, waste, rack, plate (single-field kinds)
+		# These have a required material field. Check for presence and correctness.
+		if expected_field is None:
+			# Should not happen for these kinds, but be safe
+			return findings
+
+		# Determine the expected volume field based on the expected material field
+		# material_name -> material_volume; held_material_name -> held_material_volume
+		if expected_field == 'material_name':
+			expected_volume_field = 'material_volume'
+		elif expected_field == 'held_material_name':
+			expected_volume_field = 'held_material_volume'
+		else:
+			expected_volume_field = f"{expected_field}_volume"
+
+		# Determine the "wrong" field name(s) based on what this kind should not have
+		wrong_field = 'held_material_name' if expected_field == 'material_name' else 'material_name'
+		wrong_volume_field = 'held_material_volume' if expected_field == 'material_name' else 'material_volume'
+
+		# Priority: if wrong field is declared, report that (more specific)
+		has_wrong_field = wrong_field in declared_field_names or wrong_volume_field in declared_field_names
+		has_correct_field = expected_field in declared_field_names
+		has_correct_volume_field = expected_volume_field in declared_field_names
+
+		if has_wrong_field:
+			# Wrong field declared; this is the primary issue
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=f"kind '{kind}' must use '{expected_field}' field pair, not '{wrong_field}' (see docs/specs/OBJECT_YAML_FORMAT.md 'Kind-to-material-field convention')",
+			))
+		else:
+			# No wrong field, check if correct field is present
+			if not has_correct_field:
+				# Field is missing entirely
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"kind '{kind}' must declare state_field '{expected_field}', not found (see docs/specs/OBJECT_YAML_FORMAT.md 'Kind-to-material-field convention')",
+				))
+			elif not has_correct_volume_field:
+				# Field name is correct but volume field is missing
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"kind '{kind}' must declare both '{expected_field}' and '{expected_volume_field}', but missing '{expected_volume_field}'",
 				))
 
 		return findings

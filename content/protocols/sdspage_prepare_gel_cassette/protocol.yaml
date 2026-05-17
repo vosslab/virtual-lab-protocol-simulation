@@ -1,83 +1,99 @@
 protocol_type: mini_protocol
 protocol_name: sdspage_prepare_gel_cassette
 entry_step: open_package
-
 learning:
-  objectives: "Students completing this mini-protocol will have achieved fluency with handling sealed gel cassette packages, peeling protective barriers, orienting glass plates, securing mechanical clamps, and extracting the sample-application comb."
-  outcomes: "Students completing this mini-protocol will be able to prepare a Mini-PROTEAN gel cassette for use by opening the sealed package, removing the bottom protective tape, verifying proper plate orientation, closing the side clamps, performing a leak check, and removing the comb."
-  goals: "Overall, this mini-protocol aims to accomplish preparing the gel cassette assembly for sample loading -- a critical prerequisite step that ensures proper fluid containment and lane accessibility."
-
+  objectives: Students completing this mini-protocol will have achieved fluency with
+    handling sealed gel cassette packages, peeling protective barriers, orienting
+    glass plates, securing mechanical clamps, and extracting the sample-application
+    comb.
+  outcomes: Students completing this mini-protocol will be able to prepare a Mini-PROTEAN
+    gel cassette for use by opening the sealed package, removing the bottom protective
+    tape, verifying proper plate orientation, closing the side clamps, performing
+    a leak check, and removing the comb.
+  goals: Overall, this mini-protocol aims to accomplish preparing the gel cassette
+    assembly for sample loading -- a critical prerequisite step that ensures proper
+    fluid containment and lane accessibility.
 steps:
-  - step_name: open_package
-    prompt: "Open the sealed gel package to access the cassette."
-    sequence:
-      - target: mini_protean_gel
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: SceneChange
-              to_scene: electrophoresis_bench
-            - type: ObjectStateChange
-              target: mini_protean_gel
-              state:
-                sealed: false
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: remove_tape_and_orient
-
-  - step_name: remove_tape_and_orient
-    prompt: "Remove the bottom protective tape from the cassette and verify that the top glass plate is properly inserted (facing inward toward the gel)."
-    sequence:
-      - target: gel_cassette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: gel_cassette
-              state:
-                tape_present: false
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: secure_side_clamps
-
-  - step_name: secure_side_clamps
-    prompt: "Close and lock the side clamps to create a fluid-tight seal. Ensure both the left and right clamps are fully closed. Before removing the comb, raise the assembled module briefly and inspect for buffer leakage at the seals. If any drips appear, re-tighten clamps and retest."
-    sequence:
-      - target: gel_cassette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: gel_cassette
-              state:
-                side_clamps_locked: true
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: remove_comb
-
-  - step_name: remove_comb
-    prompt: "Carefully remove the comb from the cassette. The comb defines the sample wells; removing it allows access for sample loading."
-    sequence:
-      - target: gel_cassette
-        gesture: click
-        validator: { preset: correct_target }
-        response:
-          scene_operations:
-            - type: ObjectStateChange
-              target: gel_cassette
-              state:
-                comb_present: false
-    step_validator: { preset: sequence_complete }
-    outcome:
-      on_success: complete
-      on_failure: retry
-    next_step: null
+- step_name: open_package
+  prompt: Open the sealed gel package to access the cassette.
+  sequence:
+  - target: mini_protean_gel
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: SceneChange
+        to_scene: electrophoresis_bench
+      - type: ObjectStateChange
+        target: mini_protean_gel
+        state:
+          sealed: false
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: remove_tape_and_orient
+- step_name: remove_tape_and_orient
+  prompt: Remove the bottom protective tape from the cassette and verify that the
+    top glass plate is properly inserted (facing inward toward the gel).
+  sequence:
+  - target: gel_cassette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: gel_cassette
+        state:
+          tape_present: false
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: secure_side_clamps
+- step_name: secure_side_clamps
+  prompt: Close and lock the side clamps to create a fluid-tight seal. Ensure both
+    the left and right clamps are fully closed. Before removing the comb, raise the
+    assembled module briefly and inspect for buffer leakage at the seals. If any drips
+    appear, re-tighten clamps and retest.
+  sequence:
+  - target: gel_cassette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: gel_cassette
+        state:
+          side_clamps_locked: true
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: remove_comb
+- step_name: remove_comb
+  prompt: Carefully remove the comb from the cassette. The comb defines the sample
+    wells; removing it allows access for sample loading.
+  sequence:
+  - target: gel_cassette
+    gesture: click
+    validator:
+      preset: correct_target
+    response:
+      scene_operations:
+      - type: ObjectStateChange
+        target: gel_cassette
+        state:
+          comb_present: false
+  step_validator:
+    preset: sequence_complete
+  outcome:
+    on_success: complete
+    on_failure: retry
+  next_step: null

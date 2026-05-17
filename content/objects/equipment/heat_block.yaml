@@ -31,6 +31,9 @@ visual_states:
         output: { asset_name: heat_block_closed }
       - when: true
         output: { asset_name: heat_block_open }
+  rack_present:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, instrument_with_setpoint]
 

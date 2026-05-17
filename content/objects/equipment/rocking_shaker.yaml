@@ -42,6 +42,9 @@ visual_states:
         output: { asset_name: rocking_shaker_idle }
       - when: true
         output: { asset_name: rocking_shaker_running }
+  tray_present:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, instrument_with_setpoint]
 

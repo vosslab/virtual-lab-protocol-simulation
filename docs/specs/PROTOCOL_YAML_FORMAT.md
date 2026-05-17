@@ -80,7 +80,7 @@ Each material entry is a mapping keyed by snake_case name. All fields required.
 | Field | Type | Description |
 | --- | --- | --- |
 | `label` | string | Display name (shown in UI and step text) |
-| `display_color` | string | CSS hex color code (lowercase, ASCII-only) |
+| `display_color` | mapping | Mapping with `light` and `dark` hex keys for light/dark theme support. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) for the canonical palette. |
 
 ### Materials example
 
@@ -89,11 +89,15 @@ content/protocols/cell_culture/materials.yaml:
 materials:
   pbs:
     label: "1x PBS"
-    display_color: "#b8e5ff"
+    display_color:
+      light: "#b8e5ff"
+      dark: "#b8e5ff"
 
   media:
     label: "Complete media"
-    display_color: "#f7a6b8"
+    display_color:
+      light: "#f7a6b8"
+      dark: "#f7a6b8"
 ```
 
 ## content/protocols/&lt;protocol_name&gt;/protocol.yaml
@@ -110,7 +114,7 @@ A required top-level `learning` block carries pedagogy metadata for every mini-p
 | `protocol_type` | enum | yes | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
 | `protocol_name` | string | yes | Stable snake_case identifier for the protocol. |
 | `entry_step` | string | yes | `step_name` of the first step the runtime runs. |
-| `steps` | list | yes | List of authored step entries (omitted for `sequence_runner`). |
+| `steps` | list | conditional (mini_protocol + dev_smoke only) | List of authored step entries. Absent for `sequence_runner`. |
 
 Example top of a mini-protocol `protocol.yaml`:
 
@@ -161,6 +165,39 @@ rule.
 Validation rules: `entry_step` must name a `step_name` present in the `steps`
 list. A mini-protocol must not open in the hood unless its first step takes
 place in the hood; the hood is not a default starting scene.
+
+### Sequence runner top-level shape
+
+A sequence runner is a protocol that chains together a list of mini-protocols
+rather than authoring steps directly. A sequence runner declares:
+
+| Field | Type | Required | Description |
+| --- | --- | --- | --- |
+| `protocol_type` | enum | yes | Must be `sequence_runner`. |
+| `protocol_name` | string | yes | Stable snake_case identifier for the sequence. |
+| `entry_step` | string | yes | Must match the first mini-protocol's `entry_step`. |
+| `mini_protocols` | list of strings | yes | Ordered list of mini-protocol names; each name resolves to `content/protocols/<name>/protocol.yaml`. |
+| `steps` | list | no | Must be absent. Sequence runners do not author steps; they list constituent mini-protocols. |
+| `learning` | mapping | yes | Pedagogy block scoped to the overall pathway. Uses "Students completing this protocol..." phrasing. |
+
+Example:
+
+```yaml
+protocol_type: sequence_runner
+protocol_name: cell_culture_full
+entry_step: spray_hood
+mini_protocols:
+  - cell_culture_split
+  - cell_culture_count_seed
+  - cell_culture_drug_treatment
+  - cell_culture_mtt_assay
+learning:
+  objectives: Students completing this protocol will have achieved competency in the full OVCAR8 cell culture and assay workflow.
+  outcomes: Students completing this protocol will be able to execute a complete cell-culture-to-endpoint workflow unsupervised.
+  goals: Overall, this protocol aims to accomplish integration across all mini-protocol building blocks into a single cohesive full-protocol experience.
+```
+
+Validation: The builder validates that `mini_protocols` list non-empty, each name resolves to an existing protocol YAML file, and `entry_step` matches the first mini-protocol's `entry_step`. See `validation/yaml/content_lint.py` orchestrator for the complete validation gate.
 
 ### Target resolution and the per-protocol registry
 
@@ -511,14 +548,15 @@ export const EQUIPMENT: readonly Record<string, InventoryItem> = {
 
 export const REAGENTS: readonly Record<string, InventoryReagent> = {
   // keyed by reagent id
-  pbs: { label: '1x PBS', display_color: '#b8e5ff' },
+  pbs: { label: '1x PBS', display_color: { light: '#b8e5ff', dark: '#b8e5ff' } },
   // ...
 };
 ```
 
 Scene code imports and consumes these exports directly; no YAML parsing happens
 at runtime. The generated types are read-only arrays and records, enforcing
-immutability at compile time.
+immutability at compile time. The `display_color` field is a mapping with
+`light` and `dark` hex keys, as authored in `materials.yaml`.
 
 ## Stable-name discipline
 

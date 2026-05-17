@@ -62,6 +62,25 @@ visual_states:
         output: { asset_name: gel_lane_ladder }
       - when: protein_sample_denatured
         output: { asset_name: gel_lane_sample }
+  material_volume:
+    kind: composite
+    applies_to: subpart
+    composite: []
+  tape_present:
+    kind: composite
+    composite: []
+  comb_present:
+    kind: composite
+    composite: []
+  top_plate_inserted:
+    kind: composite
+    composite: []
+  side_clamps_locked:
+    kind: composite
+    composite: []
+  wing_clamps_locked:
+    kind: composite
+    composite: []
 
 capabilities: [clickable, structured_surface, material_container]
 
