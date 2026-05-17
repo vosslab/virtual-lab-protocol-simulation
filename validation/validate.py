@@ -45,6 +45,7 @@ def _stage_scripts(stage_name: str) -> list[str]:
 		'yaml': ['validation/yaml/content_lint.py'],
 		'svg': ['validation/svg/pipeline_check.py', 'validation/svg/asset_audit.py'],
 		'stepper': ['validation/stepper/step_check.py'],
+		'structure': ['validation/structure/layout_check.py'],
 	}
 	return stage_map.get(stage_name, [])
 
@@ -169,7 +170,7 @@ def main() -> None:
 	args = parser.parse_args()
 
 	# Determine which stages to run
-	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper']
+	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper', 'structure']
 
 	# Determine scope
 	# --focus is forwarded to each per-stage subprocess. Per-stage
@@ -196,6 +197,13 @@ def main() -> None:
 	if args.output_format == 'text':
 		# Group by stage with rich rule separators
 		for stage_name, exit_code, stdout in all_stage_outputs:
+			if args.quiet:
+				# Quiet mode: one line per stage (last non-empty line of stdout).
+				# No banner, no blanks, no per-stage failure line; aggregate exit code is the machine signal.
+				non_empty_lines = [line for line in stdout.strip().splitlines() if line.strip()]
+				if non_empty_lines:
+					console.print(f"[bold cyan]{stage_name.upper()}[/bold cyan]: {non_empty_lines[-1]}")
+				continue
 			console.print(f"\n[bold cyan]--- {stage_name.upper()} ---[/bold cyan]")
 			if stdout.strip():
 				console.print(stdout.rstrip())

@@ -63,9 +63,11 @@ class LoadedContentTree:
 
 	def _load_protocol_local_scenes(self) -> None:
 		"""
-		Load protocol-local scenes from content/protocols/<protocol_name>/scenes/.
+		Load protocol-local scenes from content/protocols/<...>/scenes/ at any depth.
 
-		Populates self.protocol_local_scenes dict keyed by protocol_name.
+		Walks the entire protocols tree recursively and finds every scenes/
+		directory that is a sibling of a protocol.yaml file. Populates
+		self.protocol_local_scenes dict keyed by protocol_name.
 		"""
 		if not self.root_path:
 			return
@@ -74,10 +76,10 @@ class LoadedContentTree:
 		if not protocols_dir.exists():
 			return
 
-		for protocol_dir in sorted(protocols_dir.iterdir()):
-			if not protocol_dir.is_dir():
-				continue
-
+		# Recursively find all protocol directories by locating protocol.yaml
+		# at any depth
+		for protocol_yaml in sorted(protocols_dir.rglob("protocol.yaml")):
+			protocol_dir = protocol_yaml.parent
 			protocol_name = protocol_dir.name
 			scenes_dir = protocol_dir / "scenes"
 			if not scenes_dir.exists():

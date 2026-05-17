@@ -24,6 +24,17 @@
 
 ## Key subtrees
 
+### [content/](../content/) - Authored YAML
+
+Protocols, scenes, and objects. All authored YAML; nothing under `content/` is generated.
+The canonical layout rule lives in [specs/TARGET_FILE_STRUCTURE.md](specs/TARGET_FILE_STRUCTURE.md#protocol-cluster-layout).
+
+| Folder | Purpose |
+| --- | --- |
+| [content/protocols/](../content/protocols/) | Mini-protocols and sequence runners, organized by topic cluster (`cell_culture/`, `sdspage/`, `runners/`) |
+| [content/base_scenes/](../content/base_scenes/) | Reusable base scenes shared across protocols |
+| [content/objects/](../content/objects/) | Reusable lab object definitions, grouped by kind (bottle, equipment, decoration, etc.) |
+
 ### [pipeline/](../pipeline/) - Protocol and scene builder
 
 Regenerates gitignored `generated/` artifacts from authored YAML and SVG sources.

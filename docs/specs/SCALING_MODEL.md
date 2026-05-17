@@ -37,7 +37,7 @@ These values are tuned so that:
 2. The value is compiled into object metadata in `generated/object_data.ts`
    (gitignored; consumed via the runtime object registry).
 
-3. Scene YAML under `content/scenes/<base_scene_name>.yaml` (bench and hood)
+3. Scene YAML under `content/base_scenes/<base_scene_name>.yaml` (bench and hood)
    together with the layout engine compute `width_scale` from `display_width_cm`:
    ```typescript
    width_scale = compute_width_scale_from_display(display_width_cm, scene, default_width)
@@ -63,7 +63,7 @@ These values are tuned so that:
 
 2. Rebuild with `bash build_game.sh` (generates object metadata)
 
-3. Add to scene placement in the relevant `content/scenes/` or `content/protocols/<protocol_name>/scenes/`:
+3. Add to scene placement in the relevant `content/base_scenes/` or `content/protocols/<cluster>/<protocol_name>/scenes/`:
    ```yaml
    items:
      - object_name: my_instrument

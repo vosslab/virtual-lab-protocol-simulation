@@ -385,7 +385,7 @@ sign that the schema or scene affordance is missing a concept.
 
 To make a new mini-protocol walkthrough-ready:
 
-1. Add the mini-protocol under `content/protocols/<protocol_name>/`.
+1. Add the mini-protocol under `content/protocols/<cluster>/<protocol_name>/`.
 2. Make sure `protocol.yaml` has a complete step chain.
 3. Give every step a stable `step_name`.
 4. Give every step a `sequence` of one or more interactions.

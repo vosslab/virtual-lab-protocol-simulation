@@ -23,7 +23,7 @@ Every authored protocol YAML file declares a top-level
 authored kinds, and the structural terms that surround them, are:
 
 - **Protocol package** -- the folder under
-  `content/protocols/<name>/` that holds `protocol.yaml`,
+  `content/protocols/<cluster>/<name>/` that holds `protocol.yaml`,
   `materials.yaml`, and `scenes/`. A structural unit, not a
   `protocol_type` value.
 - **Mini-protocol** (`protocol_type: mini_protocol`) -- one
@@ -977,7 +977,7 @@ Reading the chain:
 
 | Term | Definition | Where it surfaces |
 | --- | --- | --- |
-| **Protocol package** | The folder under `content/protocols/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<name>/` |
+| **Protocol package** | The folder under `content/protocols/<cluster>/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<cluster>/<name>/` |
 | **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
 | **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Step count is determined by pedagogy. | `protocol_type: mini_protocol` |
 | **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |

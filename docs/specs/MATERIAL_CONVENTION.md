@@ -12,7 +12,7 @@ Authoring vocabulary: protocol, object, scene, material.
 
 ## Materials YAML schema
 
-Materials are authored per protocol in `content/protocols/<protocol_name>/materials.yaml`. Top-level key is `materials:`. Each entry is keyed by a snake_case identifier.
+Materials are authored per protocol in `content/protocols/<cluster>/<protocol_name>/materials.yaml`. Top-level key is `materials:`. Each entry is keyed by a snake_case identifier.
 
 Closed schema, two required keys, no optional keys:
 

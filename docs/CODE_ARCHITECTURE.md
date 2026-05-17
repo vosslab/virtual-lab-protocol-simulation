@@ -17,7 +17,7 @@ are produced from the same sources:
 Protocol content lives as YAML in `content/protocols/` and is
 compiled into TypeScript modules by [pipeline/build_protocol_data.py](../pipeline/build_protocol_data.py)
 before each build. Object library YAML lives under `content/objects/`;
-shared base scenes under `content/scenes/`. A pytest test suite plus Playwright browser tests support
+shared base scenes under `content/base_scenes/`. A pytest test suite plus Playwright browser tests support
 local development.
 
 ## Major components
@@ -140,12 +140,12 @@ The modules below describe the interaction-dispatch runtime.
 
 #### Content and generated data facades
 
-- `content/protocols/<protocol_name>/` - Authored protocols (each
+- `content/protocols/<cluster>/<protocol_name>/` - Authored protocols (each
   carrying `protocol.yaml`, `materials.yaml`, and optional protocol-scoped
   scene overrides under `scenes/`).
 - `content/objects/<object_name>.yaml` - Object library (shared across
   protocols).
-- `content/scenes/<base_scene_name>.yaml` - Shared base scenes.
+- `content/base_scenes/<base_scene_name>.yaml` - Shared base scenes.
 - Build-side helpers that mirror generated data live in `src/` next to
   the facade modules listed below.
 - **Authored content facades:**
@@ -179,7 +179,7 @@ The modules below describe the interaction-dispatch runtime.
 Two build entry points share a common pre-step:
 
 1. [pipeline/build_protocol_data.py](../pipeline/build_protocol_data.py) parses
-   `content/protocols/<protocol_name>/*.yaml`, applies the cross-file schema
+   `content/protocols/<cluster>/<protocol_name>/*.yaml`, applies the cross-file schema
    rules (see [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md)),
    and writes `generated/protocol_data.ts` + `generated/inventory_data.ts`
    (gitignored; consumed via the `src/protocol.ts` and `src/inventory.ts`
@@ -278,11 +278,12 @@ Results scene -> calculateScore() -> star rating
 ## Game protocol
 
 For authoring a new protocol from scratch, see
-[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md). The
-curriculum comprises 10 mini-protocols covering the OVCAR8 carboplatin
-+ metformin MTT workflow, assembled into two sequence runners (`cell_culture_full`
-for the complete pathway and `routine_passage` for cell passaging). Each mini-protocol
-teaches one focused workflow and is independently walkable and testable.
+[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md).
+Mini-protocols span the OVCAR8 cell-culture / MTT workflow (under
+`cell_culture/`) and the SDS-PAGE electrophoresis workflow (under
+`sdspage/`), composed by sequence runners under `runners/`. Each
+mini-protocol teaches one focused workflow and is independently walkable
+and testable.
 
 Each step wraps an ordered `sequence` of `interaction` blocks, checked by
 a `step_validator`, resolved by an `outcome`, and linked by `next_step`; see
@@ -366,7 +367,7 @@ emitters populated by `triggerStep()` calls.
 ## Extension points
 
 - **New protocol steps:** edit
-  `content/protocols/<protocol_name>/protocol.yaml`, add a `step` with its
+  `content/protocols/<cluster>/<protocol_name>/protocol.yaml`, add a `step` with its
   `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
   re-run [pipeline/build_protocol_data.py](../pipeline/build_protocol_data.py).
   See [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) and

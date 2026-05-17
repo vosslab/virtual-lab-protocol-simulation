@@ -380,8 +380,8 @@ Flag: scenes where the inheritance graph is not strictly one level.
 
 Rule:
 
-- Base scenes (`content/scenes/*.yaml`) must extend nothing.
-- Protocol scenes (`content/protocols/<name>/scenes/*.yaml`) must extend
+- Base scenes (`content/base_scenes/*.yaml`) must extend nothing.
+- Protocol scenes (`content/protocols/<cluster>/<name>/scenes/*.yaml`) must extend
   exactly one base scene.
 - No scene may extend a protocol scene.
 - No scene may extend a scene that already extends another scene.
@@ -546,10 +546,10 @@ approved layout.
 Allowed authoring files:
 
 - `content/objects/<object_name>.yaml`
-- `content/scenes/<scene_name>.yaml`
-- `content/protocols/<protocol_name>/protocol.yaml`
-- `content/protocols/<protocol_name>/materials.yaml`
-- `content/protocols/<protocol_name>/scenes/<scene_name>.yaml`
+- `content/base_scenes/<scene_name>.yaml`
+- `content/protocols/<cluster>/<protocol_name>/protocol.yaml`
+- `content/protocols/<cluster>/<protocol_name>/materials.yaml`
+- `content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml`
 
 Rule:
 
@@ -615,7 +615,7 @@ Rule:
 | Author YAML uses `_name` not `_id` | `_id` suffix in author-facing fields | rename all `_id` to `_name`; `_id` is runtime internal only |
 | Objects declare closed `visual_states`; no generic rendering map | `render_map`, `render_config`, expressions, templating | closed enumeration only; no template or expression evaluator; no metadata/extras escape hatches |
 | Layer ownership: object names assets in `visual_states`, scene names objects/placements, protocol stays semantic | asset names at object top-level or in behavior; visual config in scene; implementation details in protocol | strict three-layer: object YAML -> assets in visual_states only; scene YAML -> objects/placements; protocol YAML -> targets/steps/parts/scenes semantic only |
-| Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/scenes/`, `content/protocols/<name>/{protocol,materials}.yaml`, or `content/protocols/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
+| Authoring surfaces are closed | new authoring file outside `content/objects/`, `content/base_scenes/`, `content/protocols/<cluster>/<name>/{protocol,materials}.yaml`, or `content/protocols/<cluster>/<name>/scenes/` | only the five approved authoring files are valid; new file kinds require a ratified spec edit |
 | Bare `name:` banned in authored YAML | `name:` field in YAML examples or schema tables for protocol, step, object, or state-field | use scope-specific handle: `protocol_name`, `step_name`, `object_name`, `field_name` |
 
 ## Sweep agent deliverable

@@ -37,13 +37,13 @@ It is distinct from protocol YAML and from object YAML.
 
 ## File location
 
-Shared base scenes are authored under `content/scenes/<base_scene_name>.yaml`.
+Shared base scenes are authored under `content/base_scenes/<base_scene_name>.yaml`.
 Protocol-scoped scene overrides (when needed) live under
-`content/protocols/<protocol_name>/scenes/<scene_name>.yaml`. The scene
+`content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml`. The scene
 driver at build time consumes these YAML files; no scene YAML lives under
 `src/`.
 
-Author-facing protocol content lives under `content/protocols/<protocol_name>/`.
+Author-facing protocol content lives under `content/protocols/<cluster>/<protocol_name>/`.
 Object library files live under `content/objects/` (see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)).
 
@@ -52,8 +52,8 @@ Object library files live under `content/objects/` (see
 Scene YAMLs are compiled at build time. The chain is:
 
 ```
-content/scenes/<base_scene_name>.yaml                       (shared base scenes)
-content/protocols/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
+content/base_scenes/<base_scene_name>.yaml                       (shared base scenes)
+content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
         |
         v
 pipeline/build_scene_data.py  (validate + emit)
@@ -68,7 +68,7 @@ src/scenes/capabilities/*   (each capability validates its slice of config)
 ```
 
 The generated `scene_data.ts` file carries an auto-generated header naming
-its YAML sources under `content/scenes/` and `content/protocols/`.
+its YAML sources under `content/base_scenes/` and `content/protocols/`.
 
 The build is invoked by [build_github_pages.sh](../../build_github_pages.sh)
 and [export_single_file.sh](../../export_single_file.sh). `check_codebase.sh`

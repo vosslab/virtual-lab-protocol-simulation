@@ -6,6 +6,7 @@ import validation.stepper.flow
 import validation.stepper.state
 import validation.stepper.scene_ops
 import validation.stepper.cross_mini
+from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
 def walk_protocol(
@@ -145,13 +146,18 @@ def _seed_initial_active_scene(
 					if to_scene:
 						# Found an explicit scene
 						if to_scene in tree.base_scenes:
-							state_map.set_active_scene(to_scene, f"content/scenes/{to_scene}.yaml")
+							state_map.set_active_scene(to_scene, f"content/base_scenes/{to_scene}.yaml")
 							return
 						else:
 							protocol_local_scenes = tree.protocol_local_scenes.get(protocol_name, {})
 							if to_scene in protocol_local_scenes:
-								state_map.set_active_scene(to_scene, f"content/protocols/{protocol_name}/scenes/{to_scene}.yaml")
-								return
+								try:
+									scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, to_scene)
+									state_map.set_active_scene(to_scene, scene_path)
+									return
+								except RuntimeError:
+									# Scene path resolution failed; skip to next strategy
+									pass
 
 	# Strategy 2: Check protocol-local scenes
 	protocol_local_scenes = tree.protocol_local_scenes.get(protocol_name, {})
@@ -159,8 +165,13 @@ def _seed_initial_active_scene(
 		# If exactly one local scene, use it
 		if len(protocol_local_scenes) == 1:
 			scene_name = list(protocol_local_scenes.keys())[0]
-			state_map.set_active_scene(scene_name, f"content/protocols/{protocol_name}/scenes/{scene_name}.yaml")
-			return
+			try:
+				scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+				state_map.set_active_scene(scene_name, scene_path)
+				return
+			except RuntimeError:
+				# Scene path resolution failed; try next strategy
+				pass
 
 		# If multiple local scenes, try to find one with targets from the first step
 		if len(protocol_local_scenes) > 1:
@@ -193,18 +204,28 @@ def _seed_initial_active_scene(
 				# Check for matching object_names
 				scene_objects = {p.get("object_name") for p in placements if isinstance(p, dict)}
 				if first_targets & scene_objects:  # Intersection found
-					state_map.set_active_scene(scene_name, f"content/protocols/{protocol_name}/scenes/{scene_name}.yaml")
-					return
+					try:
+						scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+						state_map.set_active_scene(scene_name, scene_path)
+						return
+					except RuntimeError:
+						# Scene path resolution failed; try next scene
+						continue
 
 			# No matching scene found; use the first local scene
 			scene_name = sorted(protocol_local_scenes.keys())[0]
-			state_map.set_active_scene(scene_name, f"content/protocols/{protocol_name}/scenes/{scene_name}.yaml")
-			return
+			try:
+				scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, scene_name)
+				state_map.set_active_scene(scene_name, scene_path)
+				return
+			except RuntimeError:
+				# Scene path resolution failed; try next strategy
+				pass
 
 	# Strategy 3: Use the first base scene
 	if tree.base_scenes:
 		first_scene_name = sorted(tree.base_scenes.keys())[0]
-		state_map.set_active_scene(first_scene_name, f"content/scenes/{first_scene_name}.yaml")
+		state_map.set_active_scene(first_scene_name, f"content/base_scenes/{first_scene_name}.yaml")
 		return
 
 	# No default scene found

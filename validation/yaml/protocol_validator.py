@@ -25,17 +25,19 @@ class ProtocolValidator:
 
 	def _extract_protocol_name(self, path: str) -> str | None:
 		"""
-		Extract protocol name from a path like 'content/protocols/hood_flask_prep/protocol.yaml.steps[0]...'.
-		Returns the protocol directory name or None.
+		Extract protocol name from a path like
+		'content/protocols/<cluster>/<name>/protocol.yaml.steps[0]...' (clustered)
+		or 'content/protocols/<name>/protocol.yaml...' (flat).
+
+		Layout-agnostic: walk segments left to right and return the segment
+		immediately preceding the one whose basename starts with 'protocol.yaml'
+		(the protocol leaf directory). This handles any depth under
+		content/protocols/.
 		"""
 		parts = path.split('/')
-		if 'protocols' in parts:
-			try:
-				protocols_idx = parts.index('protocols')
-				if protocols_idx + 1 < len(parts):
-					return parts[protocols_idx + 1]
-			except ValueError:
-				pass
+		for i, segment in enumerate(parts):
+			if segment.startswith('protocol.yaml') and i > 0:
+				return parts[i - 1]
 		return None
 
 	def validate(self, protocol: dict, path: str) -> list:

@@ -44,7 +44,7 @@ workflow via 10 mini-protocols, each teaching one focused lab skill. The
 - Drug dilution and treatment (preparing dilutions, dosing the plate).
 - MTT readout (adding MTT, dissolving formazan, reading absorbance, viewing results).
 
-Protocol specifications are authored in YAML under `content/<protocol_name>/`;
+Protocol specifications are authored in YAML under `content/protocols/<cluster>/<protocol_name>/`;
 see [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md) for the
 authoring contract and
 [protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md](protocols/OVCAR8_Carboplatin_Metformin_MTT_Protocol.md)
@@ -109,8 +109,8 @@ source source_me.sh && python3 validation/validate.py
 ### Canonical entry point
 
 `validation/validate.py` is the aggregate entry point for the full
-validation suite. It runs three stages (YAML schema, SVG assets, protocol
-stepper) with a unified command-line interface and overview-mode rich
+validation suite. It runs four stages (YAML schema, SVG assets, protocol
+stepper, folder layout) with a unified command-line interface and overview-mode rich
 summary output.
 
 ### Unified flag table
@@ -134,7 +134,7 @@ All validation CLIs (aggregate `validation/validate.py`, plus per-stage
 | `--no-color` | -- | flag | off | Suppress color output. Also honors `NO_COLOR` env var. |
 | `--json` | `-j` | flag | off | Emit unified JSON document. |
 | `--ndjson` | `-J` | flag | off | Stream one finding per line + final summary record. |
-| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. |
+| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper`, `structure` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. |
 
 Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` for `--asset`.
 
@@ -162,6 +162,7 @@ validation/validate.py --focus                  # git-scoped
 validation/validate.py -p passage_hood_detachment
 validation/validate.py -o cell_culture_dish
 validation/validate.py -O yaml                  # YAML stage only
+validation/validate.py -O structure             # folder layout stage only
 validation/validate.py -O stepper -v            # stepper with per-step state
 ```
 
@@ -180,6 +181,7 @@ validation/validate.py --protocol cell_culture_full --json > findings.json
 Run individual validation stages directly (per-stage entry points ignore `--only`):
 
 ```bash
+python3 validation/structure/layout_check.py
 python3 -m validation.yaml
 python3 -m validation.svg
 python3 -m validation.stepper
@@ -188,6 +190,7 @@ python3 -m validation.stepper
 Equivalent to:
 
 ```bash
+validation/validate.py --only structure
 validation/validate.py --only yaml
 validation/validate.py --only svg
 validation/validate.py --only stepper

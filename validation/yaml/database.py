@@ -45,7 +45,7 @@ class ContentDatabase:
 					))
 
 		# Load base scenes
-		scenes_dir = root_path / 'content' / 'scenes'
+		scenes_dir = root_path / 'content' / 'base_scenes'
 		if scenes_dir.exists():
 			for scene_file in sorted(scenes_dir.glob('*.yaml')):
 				try:
@@ -65,26 +65,22 @@ class ContentDatabase:
 		# Load protocols and their contents
 		protocols_dir = root_path / 'content' / 'protocols'
 		if protocols_dir.exists():
-			for protocol_dir in sorted(protocols_dir.iterdir()):
-				if not protocol_dir.is_dir():
-					continue
-
-				# Load protocol.yaml
-				protocol_file = protocol_dir / 'protocol.yaml'
-				if protocol_file.exists():
-					try:
-						protocol_data = load_yaml(protocol_file)
-						protocol_name = protocol_data.get('protocol_name')
-						if protocol_name:
-							self.protocols[protocol_name] = protocol_data
-					except RuntimeError as e:
-						rel_path = str(protocol_file.relative_to(root_path))
-						self.findings.append(Finding(
-							path=rel_path,
-							lineno=None,
-							severity=Severity.ERROR,
-							message=str(e),
-						))
+			# Use rglob to find protocol.yaml at any depth (handles both flat and clustered layouts)
+			for protocol_file in sorted(protocols_dir.rglob('protocol.yaml')):
+				protocol_dir = protocol_file.parent
+				try:
+					protocol_data = load_yaml(protocol_file)
+					protocol_name = protocol_data.get('protocol_name')
+					if protocol_name:
+						self.protocols[protocol_name] = protocol_data
+				except RuntimeError as e:
+					rel_path = str(protocol_file.relative_to(root_path))
+					self.findings.append(Finding(
+						path=rel_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=str(e),
+					))
 
 				# Load materials.yaml
 				materials_file = protocol_dir / 'materials.yaml'

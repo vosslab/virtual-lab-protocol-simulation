@@ -49,8 +49,8 @@ The engine remains responsible for:
 The current layout-driven scenes follow this data path:
 
 ```
-content/scenes/<base_scene_name>.yaml                       (shared base scenes)
-content/protocols/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
+content/base_scenes/<base_scene_name>.yaml                       (shared base scenes)
+content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
         |
         v
 tools/build_scene_data.py
@@ -522,7 +522,7 @@ Use this workflow when laying out a new row-and-zone scene:
 To make a new scene use the layout engine:
 
 1. Create the scene YAML file under
-   `content/scenes/<base_scene_name>.yaml`.
+   `content/base_scenes/<base_scene_name>.yaml`.
 2. Define scene `items` with stable ids, `asset_name`, `zone`, `depth_tier`,
    `width_scale`, `label`, and `anchor_y`.
 3. Define scene `zones` with `id`, `x0`, `x1`, `baseline`, `gap`, and

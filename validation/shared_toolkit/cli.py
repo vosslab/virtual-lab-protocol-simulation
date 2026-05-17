@@ -35,7 +35,7 @@ def build_parser(prog: str, description: str, extras=None) -> argparse.ArgumentP
 		--no-color: suppress color output.
 		--json / -j: emit JSON format.
 		--ndjson / -J: emit newline-delimited JSON.
-		--only / -O: filter to specific stages (nargs='+', choices=['yaml','svg','stepper']).
+		--only / -O: filter to specific stages (nargs='+', choices=['yaml','svg','stepper','structure']).
 
 	Selection rules (not enforced here; document in epilog):
 		- --focus and per-domain selectors (--protocol, --object, --scene) are
@@ -173,9 +173,9 @@ def build_parser(prog: str, description: str, extras=None) -> argparse.ArgumentP
 		'-O', '--only',
 		dest='stages',
 		nargs='+',
-		choices=['yaml', 'svg', 'stepper'],
+		choices=['yaml', 'svg', 'stepper', 'structure'],
 		default=None,
-		help='Filter to specific stages: yaml (content validation), svg (asset validation), stepper (walker).'
+		help='Filter to specific stages: yaml (content validation), svg (asset validation), stepper (walker), structure (folder layout).'
 	)
 
 	# Call extras callback if provided

@@ -2,6 +2,7 @@
 
 from validation.stepper.loader import LoadedContentTree, ProtocolNotFoundError
 from validation.stepper.findings import Finding, Level, FindingEmitter
+from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
 class StateMap:
@@ -68,13 +69,26 @@ class StateMap:
 
 		# Load from base scenes
 		for scene_name, scene_data in self.tree.base_scenes.items():
-			self._register_placements(scene_data, placement_registry, f"content/scenes/{scene_name}.yaml")
+			self._register_placements(scene_data, placement_registry, f"content/base_scenes/{scene_name}.yaml")
 
 		# Load from protocol-local scenes
 		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
 		for scene_name, scene_data in protocol_local_scenes.items():
-			rel_path = f"content/protocols/{self.protocol_name}/scenes/{scene_name}.yaml"
-			self._register_placements(scene_data, placement_registry, rel_path)
+			try:
+				rel_path = construct_protocol_scene_path(self.tree.root_path / "content" / "protocols", self.protocol_name, scene_name)
+				self._register_placements(scene_data, placement_registry, rel_path)
+			except RuntimeError as e:
+				self.emitter.emit_finding(Finding(
+					level=Level.ERROR,
+					protocol_name=self.protocol_name,
+					step_name=None,
+					interaction_index=None,
+					target=scene_name,
+					file_path="unknown",
+					code="scene_path_resolution_failed",
+					message=str(e),
+					spec_cite="docs/specs/SCENE_YAML_FORMAT.md scene_name",
+				))
 
 		# Initialize state for each placement
 		for placement_name, (object_name, file_path) in placement_registry.items():
@@ -181,7 +195,7 @@ class StateMap:
 
 		Reachable = referenced via `extends` from a protocol-local scene, OR named by a
 		SceneChange.to_scene op anywhere in the protocol's steps. Without this filter,
-		every base scene under content/scenes/ (including unrelated SDS-PAGE benches)
+		every base scene under content/base_scenes/ (including unrelated SDS-PAGE benches)
 		leaks into the registry and creates spurious ambiguous_target_in_scene errors
 		when two unrelated protocols both place the same object kind.
 		"""

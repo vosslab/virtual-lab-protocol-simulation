@@ -30,17 +30,21 @@ def get_repo_root():
 
 
 def discover_protocols(repo_root):
-	"""Discover available protocols by globbing content/*/protocol.yaml."""
-	content_dir = repo_root / 'content'
-	if not content_dir.is_dir():
+	"""
+	Discover available protocols by recursively searching for protocol.yaml.
+
+	Works with both flat layout (content/protocols/<name>) and clustered
+	layout (content/protocols/<cluster>/<name>) by using rglob.
+	"""
+	protocols_dir = repo_root / 'content' / 'protocols'
+	if not protocols_dir.is_dir():
 		return []
 
 	protocols = []
-	for subdir in content_dir.iterdir():
-		if subdir.is_dir():
-			protocol_yaml = subdir / 'protocol.yaml'
-			if protocol_yaml.exists():
-				protocols.append(subdir.name)
+	for protocol_yaml in sorted(protocols_dir.rglob('protocol.yaml')):
+		# Protocol directory is the parent of protocol.yaml
+		protocol_dir = protocol_yaml.parent
+		protocols.append(protocol_dir.name)
 
 	return sorted(protocols)
 

@@ -3,6 +3,7 @@
 from validation.stepper.state import StateMap
 from validation.stepper.findings import Finding, Level, FindingEmitter
 from validation.stepper.loader import LoadedContentTree
+from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
 def apply_scene_operation(
@@ -501,20 +502,50 @@ def _handle_scene_change(
 
 	# Check base scenes
 	if to_scene in tree.base_scenes:
-		state_map.set_active_scene(to_scene, f"content/scenes/{to_scene}.yaml")
+		state_map.set_active_scene(to_scene, f"content/base_scenes/{to_scene}.yaml")
 		return True
 
 	# Check protocol-local scenes
 	protocol_local_scenes = tree.protocol_local_scenes.get(protocol_name, {})
 	if to_scene in protocol_local_scenes:
-		state_map.set_active_scene(to_scene, f"content/protocols/{protocol_name}/scenes/{to_scene}.yaml")
-		return True
+		try:
+			scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, to_scene)
+			state_map.set_active_scene(to_scene, scene_path)
+			return True
+		except RuntimeError as e:
+			emitter.emit_finding(Finding(
+				level=Level.ERROR,
+				protocol_name=protocol_name,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				target=to_scene,
+				file_path="unknown",
+				code="scene_path_resolution_failed",
+				message=str(e),
+				spec_cite="docs/specs/SCENE_YAML_FORMAT.md scene_name",
+			))
+			return False
 
 	# Check for protocol-prefixed variant in protocol-local scenes
 	prefixed_scene_name = f"{protocol_name}_{to_scene}"
 	if prefixed_scene_name in protocol_local_scenes:
-		state_map.set_active_scene(prefixed_scene_name, f"content/protocols/{protocol_name}/scenes/{to_scene}.yaml")
-		return True
+		try:
+			scene_path = construct_protocol_scene_path(tree.root_path / "content" / "protocols", protocol_name, prefixed_scene_name)
+			state_map.set_active_scene(prefixed_scene_name, scene_path)
+			return True
+		except RuntimeError as e:
+			emitter.emit_finding(Finding(
+				level=Level.ERROR,
+				protocol_name=protocol_name,
+				step_name=step_name,
+				interaction_index=interaction_index,
+				target=prefixed_scene_name,
+				file_path="unknown",
+				code="scene_path_resolution_failed",
+				message=str(e),
+				spec_cite="docs/specs/SCENE_YAML_FORMAT.md scene_name",
+			))
+			return False
 
 	# Scene not found
 	emitter.emit_finding(Finding(

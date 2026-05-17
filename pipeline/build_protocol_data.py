@@ -13,6 +13,7 @@ import re
 
 from validation.shared_toolkit.repo_root import REPO_ROOT
 from validation.shared_toolkit.yaml_io import load_yaml
+from validation.shared_toolkit.discovery import find_protocol_directory
 
 
 def validate_items(items, repo_root, reagents):
@@ -1063,21 +1064,41 @@ def validate_protocol_contract(protocol, protocol_name):
 	"""
 	Validate protocol contract requirements (WP-SPINE-3).
 
-	NOTE: M1 content gap: existing protocols do not have 'protocol_type' field.
-	Validation gracefully handles this by inferring type from protocol structure:
-	- If 'sequence' field exists: sequence_runner
-	- Otherwise: mini_protocol (default legacy format)
-
-	Core validations (WP-SPINE-3):
-	1. entry.scene and entry.step must exist
-	2. For inferred mini_protocol: entry.step must match first step id
-	3. For inferred mini_protocol: entry.scene must match first step's scene
-	4. For sequence_runner: sequence field must exist and be non-empty
+	Handles both legacy (entry-based) and new (protocol_type-based) schema:
+	- New schema (M2): protocol_type, entry_step, learning block required
+	- Legacy schema (M1): entry object with scene/step fields
 
 	Raises ValueError on contract violation.
 	"""
+	# Detect protocol schema version by presence of protocol_type field
+	protocol_type = protocol.get('protocol_type')
+
+	if protocol_type:
+		# New M2 schema: protocol_type, entry_step, learning required
+		if protocol_type == 'sequence_runner':
+			# Sequence runners must have mini_protocols
+			if 'mini_protocols' not in protocol:
+				raise ValueError(f"Protocol '{protocol_name}': sequence_runner missing 'mini_protocols'")
+			if not isinstance(protocol['mini_protocols'], list) or len(protocol['mini_protocols']) == 0:
+				raise ValueError(
+					f"Protocol '{protocol_name}': mini_protocols must be a non-empty list"
+				)
+			# entry_step is optional for sequence_runners (loaded at runtime)
+			return
+		elif protocol_type in ('mini_protocol', 'dev_smoke'):
+			# Mini-protocols require entry_step and steps
+			if 'entry_step' not in protocol:
+				raise ValueError(f"Protocol '{protocol_name}': mini_protocol missing 'entry_step'")
+			if 'steps' not in protocol:
+				raise ValueError(f"Protocol '{protocol_name}': mini_protocol missing 'steps'")
+			# learning block validation delegated to validation layer
+			return
+		else:
+			raise ValueError(f"Protocol '{protocol_name}': unknown protocol_type '{protocol_type}'")
+
+	# Legacy M1 schema: entry-based (for backwards compatibility)
 	if 'entry' not in protocol:
-		raise ValueError(f"Protocol '{protocol_name}': missing 'entry'")
+		raise ValueError(f"Protocol '{protocol_name}': missing 'entry' (M1 schema) or 'protocol_type' (M2 schema)")
 	entry = protocol['entry']
 	if not isinstance(entry, dict):
 		raise ValueError(f"Protocol '{protocol_name}': entry must be a dict")
@@ -1442,17 +1463,24 @@ def object_to_ts_literal(obj):
 
 
 def discover_protocols(repo_root):
-	"""Discover available protocols by globbing content/*/protocol.yaml."""
-	content_dir = repo_root / 'content'
-	if not content_dir.is_dir():
+	"""Discover available protocols by globbing content/protocols/*/protocol.yaml at any depth.
+
+	Works with both flat layout (content/protocols/<name>) and clustered layout
+	(content/protocols/<cluster>/<name>).
+
+	Returns:
+		Sorted list of protocol names (directory basenames of each protocol.yaml parent).
+	"""
+	protocols_dir = repo_root / 'content' / 'protocols'
+	if not protocols_dir.is_dir():
 		return []
 
 	protocols = []
-	for subdir in content_dir.iterdir():
-		if subdir.is_dir():
-			protocol_yaml = subdir / 'protocol.yaml'
-			if protocol_yaml.exists():
-				protocols.append(subdir.name)
+	for protocol_yaml in protocols_dir.rglob('protocol.yaml'):
+		# Each protocol.yaml parent directory is a protocol
+		protocol_name = protocol_yaml.parent.name
+		if protocol_name not in protocols:
+			protocols.append(protocol_name)
 
 	return sorted(protocols)
 
@@ -1545,23 +1573,45 @@ def get_protocol_metadata(protocol_name, step_count):
 
 
 def load_protocol_bundle(repo_root, protocol_name):
-	"""Load, validate, and normalize one protocol's YAML bundle."""
-	protocol_dir = repo_root / 'content' / protocol_name
-	if not protocol_dir.is_dir():
-		raise FileNotFoundError(f"Protocol directory not found: {protocol_dir}")
+	"""Load, validate, and normalize one protocol's YAML bundle.
+
+	Searches for the protocol directory under content/protocols, supporting both
+	flat (content/protocols/<name>) and clustered (content/protocols/<cluster>/<name>)
+	layouts.
+
+	NOTE: This script is designed for the legacy M1 protocol format with items.yaml
+	and reagents.yaml. New M2 protocols (with protocol_type and entry_step) are
+	detected and skipped gracefully, returning None to indicate they cannot be
+	compiled by this legacy builder.
+	"""
+	protocols_dir = repo_root / 'content' / 'protocols'
+	try:
+		protocol_dir = find_protocol_directory(protocols_dir, protocol_name)
+	except RuntimeError as e:
+		raise FileNotFoundError(f"Protocol '{protocol_name}' not found: {e}")
 
 	items_path = protocol_dir / 'items.yaml'
 	reagents_path = protocol_dir / 'reagents.yaml'
 	protocol_path = protocol_dir / 'protocol.yaml'
 
-	for path in [items_path, reagents_path, protocol_path]:
+	# protocol.yaml is always required
+	if not protocol_path.exists():
+		raise FileNotFoundError(f"Missing file: {protocol_path}")
+
+	protocol = load_yaml(protocol_path)
+
+	# Detect M2 schema (protocol_type field present) and skip
+	# M2 protocols are compiled by a different builder (not this legacy script)
+	if 'protocol_type' in protocol:
+		return None  # Signal that this protocol cannot be handled by this builder
+
+	# Legacy M1 format: items.yaml and reagents.yaml required
+	for path in [items_path, reagents_path]:
 		if not path.exists():
 			raise FileNotFoundError(f"Missing file: {path}")
 
 	items_data = load_yaml(items_path)
 	reagents_data = load_yaml(reagents_path)
-	protocol = load_yaml(protocol_path)
-
 	items = items_data.get('items', {})
 	reagents = reagents_data.get('reagents', {})
 	parts = protocol.get('parts', [])
@@ -1580,10 +1630,9 @@ def load_protocol_bundle(repo_root, protocol_name):
 	validate_items(items, repo_root, reagents)
 
 	# Only validate steps for mini_protocol (default) mode
-	# sequence_runner protocols are allowed to have empty steps
-	is_sequence_runner = 'sequence' in protocol
-	if not is_sequence_runner:
-		validate_steps(steps, items, reagents, parts, days)
+	# M2 sequence_runner protocols are skipped above (detected by protocol_type field)
+	# M1 protocols may have empty steps, so we validate conservatively
+	validate_steps(steps, items, reagents, parts, days)
 
 	for step in steps:
 		cp = parse_completion_path(step, items, reagents)
@@ -1632,10 +1681,16 @@ def load_protocol_bundle(repo_root, protocol_name):
 
 
 def build_protocol_catalog(repo_root, protocol_names):
-	"""Load all requested protocol bundles keyed by protocol id."""
+	"""Load all requested protocol bundles keyed by protocol id.
+
+	Skips M2 protocols (those with protocol_type field), as they are compiled
+	by a different builder. Only legacy M1 protocols are included.
+	"""
 	catalog = {}
 	for protocol_name in protocol_names:
-		catalog[protocol_name] = load_protocol_bundle(repo_root, protocol_name)
+		bundle = load_protocol_bundle(repo_root, protocol_name)
+		if bundle is not None:  # Skip M2 protocols
+			catalog[protocol_name] = bundle
 	return catalog
 
 

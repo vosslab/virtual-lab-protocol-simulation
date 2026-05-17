@@ -18,7 +18,7 @@ REPO_ROOT_STR = str(REPO_ROOT)
 CONTENT_ROOT = os.path.join(REPO_ROOT_STR, "content")
 PROTOCOLS_DIR = os.path.join(CONTENT_ROOT, "protocols")
 OBJECTS_DIR = os.path.join(CONTENT_ROOT, "objects")
-BASE_SCENES_DIR = os.path.join(CONTENT_ROOT, "scenes")
+BASE_SCENES_DIR = os.path.join(CONTENT_ROOT, "base_scenes")
 
 
 def paths_from_root(root):
@@ -36,6 +36,6 @@ def paths_from_root(root):
 		"content_root": content_root,
 		"protocols_dir": os.path.join(content_root, "protocols"),
 		"objects_dir": os.path.join(content_root, "objects"),
-		"base_scenes_dir": os.path.join(content_root, "scenes"),
+		"base_scenes_dir": os.path.join(content_root, "base_scenes"),
 	}
 	return paths

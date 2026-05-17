@@ -14,8 +14,8 @@ This asymmetry exists because each layer has different semantics: objects are st
 
 Scene inheritance is strictly one level with no chains:
 
-- **Base scenes** (`content/scenes/*.yaml`) extend nothing.
-- **Protocol scenes** (`content/protocols/<name>/scenes/*.yaml`) extend exactly one base scene.
+- **Base scenes** (`content/base_scenes/*.yaml`) extend nothing.
+- **Protocol scenes** (`content/protocols/<cluster>/<name>/scenes/*.yaml`) extend exactly one base scene.
 - No scene may extend a protocol scene.
 - No scene may extend a scene that already extends another scene.
 
@@ -23,7 +23,7 @@ Cycles, multi-level chains, and unknown bases are build errors. The scene graph 
 
 ## File location
 
-Base scenes live in `content/scenes/*.yaml`. Protocol scenes live in `content/protocols/<name>/scenes/*.yaml`. A single protocol may declare multiple protocol scene files (one per scene id); each extends its own base independently.
+Base scenes live in `content/base_scenes/*.yaml`. Protocol scenes live in `content/protocols/<cluster>/<name>/scenes/*.yaml`. A single protocol may declare multiple protocol scene files (one per scene id); each extends its own base independently.
 
 Cross-scene transitions between different workspaces (hood to bench, plate zoom to microscope) use the `SceneChange` `scene_operation` in a step response, not inheritance.
 
@@ -32,7 +32,7 @@ Cross-scene transitions between different workspaces (hood to bench, plate zoom 
 A protocol scene file carries these top-level fields:
 
 - `scene_name` (required) -- unique identifier for this scene.
-- `extends` (required) -- the base scene name (resolved against `content/scenes/`). Bare name only; no paths.
+- `extends` (required) -- the base scene name (resolved against `content/base_scenes/`). Bare name only; no paths.
 - `add_placements` (optional) -- list of new placements declared by this protocol.
 - `reposition_placements` (optional) -- list of inherited placements to reposition.
 - `deactivate_placements` (optional) -- list of inherited placements to deactivate.
@@ -112,7 +112,7 @@ Deactivation is a render-time placement flag, not an object mutation. When a pla
 
 ## Promotion rule
 
-A base scene may be promoted into `content/scenes/` when it is expected to serve multiple protocols OR when it represents a stable workspace contract (hood, bench, plate reader, microscope, centrifuge). Until either condition holds, the scene stays under `content/protocols/<name>/scenes/`. This rule prevents inverse drift (many one-use base scenes, each its own canonical fork) without blocking the first protocol that needs a new workspace from establishing the base. Seed workspace bases named in the migration plan count as stable workspace contracts. See [scene_inheritance_migration.md](../archive/scene_inheritance_migration.md) for the migration details.
+A base scene may be promoted into `content/base_scenes/` when it is expected to serve multiple protocols OR when it represents a stable workspace contract (hood, bench, plate reader, microscope, centrifuge). Until either condition holds, the scene stays under `content/protocols/<name>/scenes/`. This rule prevents inverse drift (many one-use base scenes, each its own canonical fork) without blocking the first protocol that needs a new workspace from establishing the base. Seed workspace bases named in the migration plan count as stable workspace contracts. See [scene_inheritance_migration.md](../archive/scene_inheritance_migration.md) for the migration details.
 
 ## Asymmetry rationale
 
@@ -128,7 +128,7 @@ This asymmetry is justified by layer semantics, not consistency for its own sake
 
 ### Example 1: Correct inheritance with all four operations
 
-Base scene: `content/scenes/hood_basic.yaml`
+Base scene: `content/base_scenes/hood_basic.yaml`
 
 ```yaml
 # Base scene provides stable hood workspace context

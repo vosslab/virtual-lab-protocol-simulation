@@ -31,10 +31,10 @@ guide uses those terms.
 ## What a protocol package is
 
 A protocol package is a self-contained folder under
-`content/protocols/<protocol_name>/` with files:
+`content/protocols/<cluster>/<protocol_name>/` with files:
 
 ```
-content/protocols/<protocol_name>/
+content/protocols/<cluster>/<protocol_name>/
   protocol.yaml     # protocol_type, parts, days, and the ordered list of steps
   materials.yaml     # liquids, reagents, cells, waste, and other materials
   scenes/
@@ -42,7 +42,7 @@ content/protocols/<protocol_name>/
 ```
 
 Shared objects live in `content/objects/`. Protocol scenes place them under
-`content/protocols/<protocol_name>/scenes/`. Every `protocol.yaml` declares
+`content/protocols/<cluster>/<protocol_name>/scenes/`. Every `protocol.yaml` declares
 a `protocol_type` (one of `mini_protocol`, `sequence_runner`, `dev_smoke`).
 A mini-protocol must define a `learning` block with required fields
 `objectives`, `outcomes`, and `goals`, and a top-level `entry_step`

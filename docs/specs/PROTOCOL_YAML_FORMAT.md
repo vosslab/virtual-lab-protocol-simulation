@@ -22,7 +22,7 @@ This separation achieves:
 
 ## Where YAML lives
 
-Protocol YAML files are human-authored source content. They live under `content/<protocol_name>/` and are compiled at build time into generated TypeScript modules. Do not edit generated output files by hand; edit the YAML source files and rebuild.
+Protocol YAML files are human-authored source content. They live under `content/protocols/<cluster>/<protocol_name>/` and are compiled at build time into generated TypeScript modules. Do not edit generated output files by hand; edit the YAML source files and rebuild.
 
 ## File locations
 
@@ -32,22 +32,23 @@ protocol is self-contained:
 ```
 content/
   protocols/
-    <protocol_name>/
-      protocol.yaml     # protocol steps, parts, and days
-      materials.yaml     # materials (reagents, liquids, cells, waste)
-      scenes/
-        <scene_name>.yaml
+    <cluster>/
+      <protocol_name>/
+        protocol.yaml     # protocol steps, parts, and days
+        materials.yaml     # materials (reagents, liquids, cells, waste)
+        scenes/
+          <scene_name>.yaml
   objects/
     <object_name>.yaml
   scenes/
     <base_scene_name>.yaml
 ```
 
-Each mini-protocol is self-contained under `content/protocols/<protocol_name>/`:
+Each mini-protocol is self-contained under `content/protocols/<cluster>/<protocol_name>/`:
 
-- `content/protocols/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
-- `content/protocols/<protocol_name>/materials.yaml`: material definitions (reagents, liquids, cells, waste)
-- `content/protocols/<protocol_name>/scenes/`: protocol-specific scene overrides
+- `content/protocols/<cluster>/<protocol_name>/protocol.yaml`: protocol steps, parts, and days
+- `content/protocols/<cluster>/<protocol_name>/materials.yaml`: material definitions (reagents, liquids, cells, waste)
+- `content/protocols/<cluster>/<protocol_name>/scenes/`: protocol-specific scene overrides
 
 A Python generator at `pipeline/build_protocol_data.py` reads these files and emits two
 TypeScript modules:
@@ -58,16 +59,16 @@ TypeScript modules:
 ### Multiple protocols
 
 To support future protocols (e.g. western blot, flow cytometry), each protocol is a
-self-contained subfolder under `content/protocols/`. At build time, specify the protocol:
+self-contained subfolder under `content/protocols/<cluster>/`. At build time, specify the protocol:
 
 ```bash
-python3 pipeline/build_protocol_data.py --protocol cell_culture
+python3 pipeline/build_protocol_data.py --protocol passage_hood_detachment
 python3 pipeline/build_protocol_data.py --protocol western_blot  # future
 ```
 
-The `--protocol` flag defaults to `cell_culture` if omitted. To add a new protocol,
-copy `content/protocols/cell_culture/` to `content/protocols/<new_protocol_name>/`, edit the YAML files,
-and rebuild.
+To add a new protocol, copy an existing leaf such as
+`content/protocols/cell_culture/passage_hood_detachment/` to
+`content/protocols/<cluster>/<new_protocol_name>/`, edit the YAML files, and rebuild.
 
 ## content/protocols/&lt;protocol_name&gt;/materials.yaml
 
@@ -176,7 +177,7 @@ rather than authoring steps directly. A sequence runner declares:
 | `protocol_type` | enum | yes | Must be `sequence_runner`. |
 | `protocol_name` | string | yes | Stable snake_case identifier for the sequence. |
 | `entry_step` | string | yes | Must match the first mini-protocol's `entry_step`. |
-| `mini_protocols` | list of strings | yes | Ordered list of mini-protocol names; each name resolves to `content/protocols/<name>/protocol.yaml`. |
+| `mini_protocols` | list of strings | yes | Ordered list of mini-protocol names; each name resolves to `content/protocols/<cluster>/<name>/protocol.yaml`. |
 | `steps` | list | no | Must be absent. Sequence runners do not author steps; they list constituent mini-protocols. |
 | `learning` | mapping | yes | Pedagogy block scoped to the overall pathway. Uses "Students completing this protocol..." phrasing. |
 
@@ -207,7 +208,7 @@ consulted by the stepper at runtime. When a step's interaction names a `target`,
 the stepper first checks the currently-active scene's placements; on miss, it
 consults the registry to resolve the target across all the protocol's scenes.
 No author-facing YAML keys are required to build the registry; it is derived
-runtime metadata. Authors declare scenes normally in `content/protocols/<protocol_name>/scenes/`
+runtime metadata. Authors declare scenes normally in `content/protocols/<cluster>/<protocol_name>/scenes/`
 and the registry builds automatically from those scenes and their base scenes.
 Deactivated placements are excluded per the scene-inheritance deactivation rule;
 see [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md).
@@ -518,7 +519,7 @@ facades `src/protocol.ts` and `src/inventory.ts`):
 
 ```typescript
 export const PROTOCOL_STEPS: readonly ProtocolStep[] = [
-  // auto-generated from content/protocols/cell_culture/protocol.yaml
+  // auto-generated from content/protocols/runners/cell_culture_full/protocol.yaml
   { id: 'spray_hood', label: '...', ... },
   { id: 'gather_supplies', label: '...', ... },
   // ... remaining steps ...

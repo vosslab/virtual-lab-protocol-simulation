@@ -283,10 +283,7 @@ directly.
 Scene YAML declares static configuration; this doc covers the runtime that
 interprets it. See [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for the
 schema, the validator rules, and the build pipeline that emits
-`generated/scene_data.ts` (consumed via `src/scene_configs.ts`). Scene YAML is engine-facing configuration
-today, not author-facing content; if scene YAML becomes author-facing
-later, the file location moves under `content/scenes/` in a separate
-migration.
+`generated/scene_data.ts` (consumed via `src/scene_configs.ts`). Scene YAML lives in `content/base_scenes/` (shared base scenes) or `content/protocols/<cluster>/<name>/scenes/` (protocol-local scenes).
 
 ## Related docs
 

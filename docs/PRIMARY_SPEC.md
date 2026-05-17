@@ -8,7 +8,7 @@ Every protocol declares a `protocol_type` field. The active enum values are `min
 
 ## Protocol YAML top-level fields
 
-Each protocol lives in `content/<protocol_name>/protocol.yaml` and declares the following top-level fields:
+Each protocol lives in `content/protocols/<cluster>/<protocol_name>/protocol.yaml` and declares the following top-level fields:
 
 ```yaml
 protocol_type: mini_protocol
@@ -129,7 +129,7 @@ If the walker cannot complete a step through visible UI, the YAML schema, the sc
 
 Authored TypeScript source for the shared scene runtime lives under `src/scene_runtime/`. Generated runtime data (protocols, scenes, inventory, registry) emits under `generated/` at the repo root. Do not place generated files under `src/`.
 
-Curriculum content lives under `content/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher and the full-protocol sequence. Smoke fixtures declare `protocol_type: dev_smoke`.
+Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`. Developer smoke protocols live under `tests/content/dev_smoke/<name>_check/`. The builder and walker support `tests/content/` as an explicit dev/test content root for smoke fixtures. Smoke fixtures use the same schema as curriculum content and remain validatable and runnable in dev/test mode, but are excluded from the student launcher and the full-protocol sequence. Smoke fixtures declare `protocol_type: dev_smoke`.
 
 Mini-protocol HTML output uses the `<protocol_name>.html` convention. Example: `passage_hood_detachment.html`, `trypan_blue_counting.html`, `cell_culture_full.html`.
 

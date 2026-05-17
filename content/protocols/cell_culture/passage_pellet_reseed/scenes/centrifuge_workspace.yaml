@@ -5,7 +5,7 @@ scene_notes: |
   (A13 target) and conical tube rack (for pellet operations A14, A15).
   Per-protocol scene; NOT promoted to base. If a second protocol uses
   centrifuge, this scene becomes a candidate for promotion to
-  content/scenes/centrifuge_basic.yaml.
+  content/base_scenes/centrifuge_basic.yaml.
 
 add_placements:
   - placement_name: center_centrifuge

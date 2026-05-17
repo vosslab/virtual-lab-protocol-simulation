@@ -91,13 +91,13 @@ def find_yaml_files(root: str, file_type: str) -> list:
 	if file_type == 'object':
 		files = list(root_path.glob('content/objects/**/*.yaml'))
 	elif file_type == 'base_scene':
-		files = list(root_path.glob('content/scenes/*.yaml'))
+		files = list(root_path.glob('content/base_scenes/*.yaml'))
 	elif file_type == 'protocol_scene':
-		files = list(root_path.glob('content/protocols/*/scenes/*.yaml'))
+		files = list(root_path.glob('content/protocols/**/scenes/*.yaml'))
 	elif file_type == 'protocol':
-		files = list(root_path.glob('content/protocols/*/protocol.yaml'))
+		files = list(root_path.glob('content/protocols/**/protocol.yaml'))
 	elif file_type == 'material':
-		files = list(root_path.glob('content/protocols/*/materials.yaml'))
+		files = list(root_path.glob('content/protocols/**/materials.yaml'))
 
 	return sorted(files)
 

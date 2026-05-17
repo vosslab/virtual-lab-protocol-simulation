@@ -4,6 +4,7 @@ import os
 from pathlib import Path
 
 import validation.shared_toolkit.paths as paths
+from validation.shared_toolkit.discovery import find_protocol_yaml_files
 
 
 def list_protocols(protocols_dir=None):
@@ -11,19 +12,24 @@ def list_protocols(protocols_dir=None):
 	List protocol package names under content/protocols/.
 
 	A protocol package is a directory containing protocol.yaml. Returns a
-	sorted list of names.
+	sorted list of names. Works with both flat layout (content/protocols/<name>)
+	and clustered layout (content/protocols/<cluster>/<name>) by using
+	marker-based discovery.
 	"""
 	root = protocols_dir if protocols_dir is not None else paths.PROTOCOLS_DIR
 	root_path = Path(root)
 	if not root_path.exists():
 		return []
+
+	# Use marker-based discovery to find all protocol.yaml files at any depth
+	protocol_yamls = find_protocol_yaml_files(root_path)
 	names = []
-	for item in sorted(root_path.iterdir()):
-		if not item.is_dir():
-			continue
-		if (item / "protocol.yaml").exists():
-			names.append(item.name)
-	return names
+	for protocol_yaml in protocol_yamls:
+		# Protocol directory is the parent of protocol.yaml
+		protocol_dir = protocol_yaml.parent
+		names.append(protocol_dir.name)
+
+	return sorted(names)
 
 
 def resolve_protocol_path(name_or_path, repo_root=None):
@@ -32,7 +38,8 @@ def resolve_protocol_path(name_or_path, repo_root=None):
 
 	If name_or_path contains '/' or ends in '.yaml', treat as a file
 	path (absolute or repo-relative). Otherwise treat as a protocol
-	directory name under content/protocols/.
+	directory name (protocol_name) and search for it under content/protocols/
+	at any depth via marker-based discovery.
 
 	Returns Path on success, None if no protocol file was found.
 	"""
@@ -46,9 +53,14 @@ def resolve_protocol_path(name_or_path, repo_root=None):
 		if full_path.exists() and full_path.is_file():
 			return full_path
 		return None
-	protocol_yaml = Path(root) / "content" / "protocols" / name_or_path / "protocol.yaml"
-	if protocol_yaml.exists():
-		return protocol_yaml
+
+	# Search for protocol by name at any depth using marker-based discovery
+	protocols_dir = Path(root) / "content" / "protocols"
+	protocol_yamls = find_protocol_yaml_files(protocols_dir)
+	for protocol_yaml in protocol_yamls:
+		if protocol_yaml.parent.name == name_or_path:
+			return protocol_yaml
+
 	return None
 
 
