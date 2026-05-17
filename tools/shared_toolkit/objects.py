@@ -16,7 +16,7 @@ def list_objects(objects_dir=None):
 	if not root_path.exists():
 		return []
 	names = []
-	for item in sorted(root_path.glob("*.yaml")):
+	for item in sorted(root_path.glob("**/*.yaml")):
 		if item.is_file():
 			names.append(item.stem)
 	return names

@@ -25,10 +25,10 @@ one object name and a code-search for an object name always lands in exactly one
 file. Grouped library files (one file per `kind`, or one file per scene)
 are explicitly out of scope for this doc.
 
-Files live under `content/objects/`. Subdirectory grouping by `kind`
-(`content/objects/plate/`, `content/objects/bottle/`, etc.) is allowed.
-Every object file lives directly under `content/objects/` or in a
-subdirectory named after its `kind`.
+Files live under `content/objects/<kind>/`. Subdirectory grouping by `kind`
+(`content/objects/plate/`, `content/objects/bottle/`, etc.) is required.
+Every object file lives in a subdirectory named exactly after its declared
+`kind` value.
 
 The object library is the authoring surface. The build pipeline compiles
 the object library into a generated TypeScript module the scene driver and

@@ -46,6 +46,9 @@ class ObjectValidator:
 				))
 				return findings  # Can't continue validation without required keys
 
+		# Path-kind consistency check
+		findings.extend(self._validate_path_kind_consistency(obj, path))
+
 		# Identity validation
 		findings.extend(self._validate_identity(obj, path))
 
@@ -458,6 +461,52 @@ class ObjectValidator:
 						severity=Severity.ERROR,
 						message=f"channel_addressing.addressable_subpart_kinds contains '{kind}' not in {CHANNEL_ADDRESSABLE_KINDS}",
 					))
+
+		return findings
+
+	def _validate_path_kind_consistency(self, obj: dict, path: str) -> list:
+		"""
+		Validate that file path matches the declared kind field.
+
+		Rule (per docs/specs/OBJECT_YAML_FORMAT.md:28-31):
+		- A file at content/objects/<kind>/<name>.yaml must declare kind: <kind>.
+
+		Returns list of Finding objects (empty if valid).
+		"""
+		findings = []
+
+		# Split the path to check depth and extract parent folder name
+		path_parts = path.replace('\\', '/').split('/')
+		# Normalize: find content/objects/ index and work from there
+		if 'objects' not in path_parts:
+			# Not an objects file (or malformed path); skip silently
+			return findings
+		objects_idx = path_parts.index('objects')
+
+		# Count parts after 'objects/'
+		remaining_parts = path_parts[objects_idx + 1:]
+		if len(remaining_parts) == 1:
+			# Depth 1: content/objects/<name>.yaml
+			# Error: files must live in a kind subfolder
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message="object file lives directly under content/objects/ but must live in content/objects/<kind>/ (see docs/specs/OBJECT_YAML_FORMAT.md:28-31)",
+			))
+		elif len(remaining_parts) == 2:
+			# Depth 2: content/objects/<kind>/<name>.yaml
+			parent_folder = remaining_parts[0]
+
+			# Extract declared kind from object
+			declared_kind = obj.get('kind')
+			if declared_kind != parent_folder:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"path-kind mismatch: file at {path} declares kind '{declared_kind}' but parent folder is '{parent_folder}' (see docs/specs/OBJECT_YAML_FORMAT.md:28-31)",
+				))
 
 		return findings
 

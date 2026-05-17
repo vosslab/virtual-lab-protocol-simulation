@@ -544,14 +544,10 @@ def audit_repo(
 		orphan_svgs = disk_svgs - referenced_svgs
 		return objects, missing_items, orphan_svgs, asset_reuse, per_asset_metadata
 
-	# Walk every .yaml file in content/objects/
-	for fname in sorted(os.listdir(OBJECTS_DIR)):
-		if not fname.endswith('.yaml'):
-			continue
-
-		path = os.path.join(OBJECTS_DIR, fname)
+	# Walk every .yaml file in content/objects/ recursively
+	for path in sorted(Path(OBJECTS_DIR).rglob('*.yaml')):
 		try:
-			object_name, label, asset_names, yaml_data = load_object_yaml(path)
+			object_name, label, asset_names, yaml_data = load_object_yaml(str(path))
 		except Exception as e:
 			print(f"WARN: failed to parse {path}: {e}", file=sys.stderr)
 			continue

@@ -4,8 +4,8 @@
 
 All Servier-adopted SVGs in this directory are licensed under **CC BY 3.0 (Servier)**.
 
-Attribution: Servier Medical Art (https://smart.servier.com)  
-License: CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)  
+Attribution: Servier Medical Art (https://smart.servier.com)
+License: CC BY 3.0 (https://creativecommons.org/licenses/by/3.0/)
 Commercial use permitted.
 
 ## Servier Adoptions

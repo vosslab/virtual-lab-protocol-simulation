@@ -87,13 +87,15 @@ class ObjectCatalog:
 	def __init__(self):
 		"""Read every object YAML and index by object_name."""
 		self.objects = {}
-		for filename in sorted(os.listdir(OBJECTS_DIR)):
-			if not filename.endswith(".yaml"):
-				continue
-			path = os.path.join(OBJECTS_DIR, filename)
-			obj = load_yaml(path)
-			name = obj["object_name"]
-			self.objects[name] = obj
+		# Recursively scan OBJECTS_DIR and subdirectories for YAML files.
+		for root, dirs, files in os.walk(OBJECTS_DIR):
+			for filename in sorted(files):
+				if not filename.endswith(".yaml"):
+					continue
+				path = os.path.join(root, filename)
+				obj = load_yaml(path)
+				name = obj["object_name"]
+				self.objects[name] = obj
 
 	#--------------------------------------------
 	def label(self, target):
@@ -543,13 +545,13 @@ def render_group_at(sequence, index, catalog, material_labels, sim,
 					return 2, [sentence]
 
 	# No group: single interaction
-	sentence = render_single_interaction(
+	sentences = render_single_interaction(
 		interaction, catalog, material_labels, sim,
 		touched_objects, step_touched, prompt_says_verify,
 	)
 	_mark_touched(interaction, touched_objects, step_touched)
 	apply_state_changes(interaction, sim)
-	return 1, [sentence]
+	return 1, sentences
 
 
 #============================================
@@ -934,11 +936,29 @@ def _field_to_human_phrase(field_name, new_value, catalog=None, target=None):
 	if field_name == "material_volume":
 		if catalog and target:
 			unit = catalog.unit_for_field(target, field_name)
+			# Detect and fix unit-conversion mismatch: if value is suspiciously small
+			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
+			try:
+				numeric = float(new_value)
+				if unit == "ul" and 0 < numeric < 1.0:
+					# Assume this is actually in mL; convert to uL for display.
+					unit = "ml"
+			except (TypeError, ValueError):
+				pass
 			return f"contains {format_volume(new_value, unit)}"
 		return f"contains {value_str}"
 	if field_name == "held_material_volume":
 		if catalog and target:
 			unit = catalog.unit_for_field(target, field_name)
+			# Detect and fix unit-conversion mismatch: if value is suspiciously small
+			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
+			try:
+				numeric = float(new_value)
+				if unit == "ul" and 0 < numeric < 1.0:
+					# Assume this is actually in mL; convert to uL for display.
+					unit = "ml"
+			except (TypeError, ValueError):
+				pass
 			return f"holds {format_volume(new_value, unit)}"
 		return f"holds {value_str}"
 	if field_name == "tape_present":
@@ -987,18 +1007,50 @@ def _field_to_human_phrase(field_name, new_value, catalog=None, target=None):
 		return "door open" if new_value is True else "door closed"
 	if field_name == "lid_present":
 		return "lid placed" if new_value is True else "lid removed"
+
+	# Handle subpart-prefixed material fields (e.g., inner_chamber_material_name,
+	# outer_chamber_material_volume). Extract subpart name and produce natural prose.
+	# Note: subpart label gets capitalized because the caller wraps it as
+	# "The {target_label} {phrase}." so we need to lowercase the subpart part.
+	if field_name.endswith("_material_name"):
+		subpart = field_name[:-len("_material_name")]
+		subpart_label = subpart.replace("_", " ")
+		if new_value == "empty":
+			return f"{subpart_label} is now empty"
+		material_label = str(new_value).replace("_", " ").lower()
+		return f"{subpart_label} now contains {material_label}"
+
+	if field_name.endswith("_material_volume"):
+		subpart = field_name[:-len("_material_volume")]
+		subpart_label = subpart.replace("_", " ")
+		if catalog and target:
+			unit = catalog.unit_for_field(target, field_name)
+			# Detect and fix unit-conversion mismatch: if value is suspiciously small
+			# (< 1.0) and unit is "ul", assume it was stored in mL and promote it.
+			try:
+				numeric = float(new_value)
+				if unit == "ul" and 0 < numeric < 1.0:
+					# Assume this is actually in mL; convert to uL for display.
+					unit = "ml"
+			except (TypeError, ValueError):
+				pass
+			return f"{subpart_label} holds {format_volume(new_value, unit)}"
+		return f"{subpart_label} holds {value_str}"
+
 	return None
 
 
 #============================================
 def render_single_interaction(interaction, catalog, material_labels, sim,
 		touched_objects, step_touched, prompt_says_verify):
-	"""Render one ungrouped interaction."""
+	"""Render one ungrouped interaction. Returns a list of sentences."""
 	gesture = interaction.get("gesture", "click")
 	target = interaction.get("target", "")
 	target_label = catalog.label(target)
 	response = interaction.get("response", {}) or {}
 	scene_ops = response.get("scene_operations", []) or []
+
+	bullets = []
 
 	# TimedWait
 	for op in scene_ops:
@@ -1014,14 +1066,15 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 				pass
 			wait = f"**{seconds} sec**" if seconds is not None else f"**{minutes} min**"
 			if display:
-				return f"- Wait {wait} ({display})."
-			return f"- Wait {wait}."
+				bullets.append(f"- Wait {wait} ({display}).")
+			else:
+				bullets.append(f"- Wait {wait}.")
 
 	# SceneChange
 	for op in scene_ops:
 		if op.get("type") == "SceneChange":
 			to_scene = op.get("to_scene", "").replace("_", " ")
-			return f"- Move to the **{to_scene}**."
+			bullets.append(f"- Move to the **{to_scene}**.")
 
 	# adjust gesture
 	if gesture == "adjust":
@@ -1049,11 +1102,13 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 			else:
 				field_label = key.replace("_", " ")
 			unit = catalog.unit_for_field(target, key)
-			return (
+			bullets.append(
 				f"- Set the {_lower_first(target_label)} {field_label} "
 				f"to {format_volume(value[key], unit)}."
 			)
-		return f"- Adjust the {_lower_first(target_label)}."
+			return bullets
+		bullets.append(f"- Adjust the {_lower_first(target_label)}.")
+		return bullets
 
 	state_changes = find_state_changes(scene_ops)
 
@@ -1065,33 +1120,39 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 			field, value = next(iter(new_state.items()))
 			change_label = catalog.label(change_target)
 			if "cleanliness" in field and "ethanol" in str(value):
-				return (
+				bullets.append(
 					f"- Use the {_lower_first(target_label)} to spray and "
 					f"sterilize the {change_label}."
 				)
+				return bullets
 			# Use humanized field names for better readability.
 			human_phrase = _field_to_human_phrase(field, value, catalog, change_target)
 			if human_phrase:
-				return (
+				bullets.append(
 					f"- Use the {_lower_first(target_label)} to update the "
 					f"{change_label} ({human_phrase})."
 				)
+				return bullets
 			pretty_field = field.replace("_", " ")
 			pretty_value = str(value).replace("_", " ")
-			return (
+			bullets.append(
 				f"- Use the {_lower_first(target_label)} to update the "
 				f"{change_label} ({pretty_field}: {pretty_value})."
 			)
+			return bullets
 
-	# State change on the click target.
+	# State changes on the click target. Render each state change as a bullet.
+	found_target_change = False
 	for change in state_changes:
 		if change.get("target") != target:
 			continue
+		found_target_change = True
 		new_state = change.get("state", {}) or {}
 		if "material_name" in new_state:
 			new_material = new_state["material_name"]
 			if new_material == "empty":
-				return f"- Aspirate and remove the contents of the {target_label}."
+				bullets.append(f"- Aspirate and remove the contents of the {target_label}.")
+				continue
 			material_label = label_for_material(new_material, material_labels)
 			volume = new_state.get("material_volume")
 			if volume is not None:
@@ -1104,21 +1165,25 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 						# F5 extension: suppress material name when dest is a plate subpart,
 						# old state is empty, and source cannot be inferred from this interaction.
 						if is_plate_subpart(target) and old_val == 0.0:
-							return (
+							bullets.append(
 								f"- Add {format_volume(delta, unit)} to the {target_label}."
 							)
-						return (
+							continue
+						bullets.append(
 							f"- Add {format_volume(delta, unit)} of "
 							f"{material_label} to the {target_label}."
 						)
+						continue
 				except (TypeError, ValueError):
 					pass
 				unit = catalog.unit_for_field(target, "material_volume")
-				return (
+				bullets.append(
 					f"- The {target_label} now contains "
 					f"{format_volume(volume, unit)} of {material_label}."
 				)
-			return f"- The {target_label} now contains {material_label}."
+				continue
+			bullets.append(f"- The {target_label} now contains {material_label}.")
+			continue
 
 		if "material_volume" in new_state and "material_name" not in new_state:
 			old_vol = sim.get(target, "material_volume")
@@ -1128,43 +1193,55 @@ def render_single_interaction(interaction, catalog, material_labels, sim,
 				delta = old_val - float(new_vol)
 				if delta > 0:
 					unit = catalog.unit_for_field(target, "material_volume")
-					return (
+					bullets.append(
 						f"- Draw {format_volume(delta, unit)} from the {target_label}."
 					)
+					continue
 			except (TypeError, ValueError):
 				pass
-			return f"- Draw from the {target_label}."
+			bullets.append(f"- Draw from the {target_label}.")
+			continue
 
 		# Other state field (status, cleanliness, boolean flags).
 		field, value = next(iter(new_state.items()))
 		human_phrase = _field_to_human_phrase(field, value, catalog, target)
 		if human_phrase:
-			return f"- The {target_label} {human_phrase}."
+			bullets.append(f"- The {target_label} {human_phrase}.")
+			continue
 		# Fallback for unmapped fields: humanize without asterisks.
 		pretty_field = field.replace("_", " ")
 		if isinstance(value, bool):
 			if value:
-				return f"- The {target_label} is now {pretty_field}."
+				bullets.append(f"- The {target_label} is now {pretty_field}.")
 			else:
-				return f"- The {target_label} is no longer {pretty_field}."
+				bullets.append(f"- The {target_label} is no longer {pretty_field}.")
 		else:
 			pretty_value = str(value).replace("_", " ")
-			return f"- The {target_label} {pretty_field} is now {pretty_value}."
+			bullets.append(f"- The {target_label} {pretty_field} is now {pretty_value}.")
+
+	if found_target_change and bullets:
+		return bullets
 
 	# Bare CursorAttach only -> pickup.
 	for op in scene_ops:
 		if op.get("type") == "CursorAttach":
-			return f"- Pick up the {target_label}."
+			bullets.append(f"- Pick up the {target_label}.")
+			return bullets
 
 	# Bare click with no scene_ops: verify or pickup.
 	if gesture == "click" and not scene_ops:
 		if prompt_says_verify:
-			return f"- Verify the {target_label}."
-		if target in touched_objects and target not in step_touched:
-			return f"- Verify the {target_label}."
-		return f"- Pick up the {target_label}."
+			bullets.append(f"- Verify the {target_label}.")
+		elif target in touched_objects and target not in step_touched:
+			bullets.append(f"- Verify the {target_label}.")
+		else:
+			bullets.append(f"- Pick up the {target_label}.")
+		return bullets
 
-	return f"- Interact with the {target_label}."
+	if bullets:
+		return bullets
+
+	return [f"- Interact with the {target_label}."]
 
 
 #============================================

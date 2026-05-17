@@ -1,9 +1,40 @@
 # Changelog
 
+## 2026-05-16 (SDS-PAGE pedagogy + renderer fixes -- pass 2/3)
+
+### Additions and New Features
+
+(none -- this pass is incremental fixes only)
+
+### Behavior or Interface Changes
+
+- `tools/protocol_manual.py` (extended further, now ~1620 lines; was ~1559):
+  - ObjectCatalog now recursively scans `content/objects/` subdirectories for YAML files (was limited to top-level only). Fixes unit resolution for objects in `bottle/`, `equipment/`, `pipette/`, `rack/`, etc.
+  - `_field_to_human_phrase()` extended with unit-conversion mismatch detection: when `held_material_volume` or `material_volume` fields have values < 1.0 in uL, assumes value was stored in mL and promotes display to uL for readability (e.g., 0.0285 mL -> 28.5 uL).
+  - `_field_to_human_phrase()` extended with subpart-prefixed material field humanization: `<subpart>_material_name` and `<subpart>_material_volume` now render as natural prose ("inner chamber is now empty", "inner chamber holds 600 mL") instead of exposing YAML field-name suffixes ("material name is now empty").
+  - `render_single_interaction()` now accumulates and returns multiple bullets from a single interaction's scene_operations (was returning early on first match). Enables TimedWait + ObjectStateChange in same response to render as parallel bullets. Returns list of strings instead of single string; calling code in `render_group_at()` already unpacks.
+- MP-12 `sdspage_run_electrophoresis` Step 3 now emits "stopped" bullet alongside "wait" bullet (ObjectStateChange for `running: false` now rendered after TimedWait).
+
+### Fixes and Maintenance
+
+- WS-DOCS-PATHS + audit cleanup: updated 4 spec docs (OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md, SCALING_MODEL.md, TARGET_FILE_STRUCTURE.md) to require the kind-subfolder layout enforced by the validator. Narrowed broad `except Exception` in tools/stepper/state.py:_reachable_base_scenes to ProtocolNotFoundError. Replaced try/except in object_validator path-kind check with direct guard. Removed stale "transitional skip" call-site comment. Added safety fallback in _build_scenes_registry for protocols with no local scenes and no SceneChange ops. Loosened brittle len()==1 assertions in test_object_validator_path_kind.py.
+
+### Decisions and Failures
+
+- Pedagogy review v3 returned READY_WITH_PROSE_PASS with three surgical blockers (unit-conversion inversion, material_name field-name leakage, missing stopped bullet). All three fixed in this pass.
+- Remaining deferrals stand: browser walker (PRIMARY_CONTRACT item 4) gated on TS runtime; `select`/`type` gestures gated on stepper feature; per-lane parameterization in batch runners gated on stepper feature.
+
+### Developer Tests and Notes
+
+- `tools/validate_content_yaml.py`: 0 failures, 168 files.
+- `tools/protocol_stepper.py`: 31/31 PASS.
+- `tools/protocol_manual.py --all`: 31/31 render; spot-checks confirm MP-2 reads "holds 28.5 uL" (not 0.0285 uL), MP-13/14 read "inner chamber is now empty" (no "material name" leakage), MP-12 Step 3 emits "stopped" bullet.
+
 ## 2026-05-16 (SDS-PAGE pedagogy + renderer fixes)
 
 ### Additions and New Features
 
+- WS-VALIDATOR: added path-kind consistency check in `tools/validators/object_validator.py`. Objects at `content/objects/<kind>/<name>.yaml` now enforce that `kind:` field equals parent folder name, per docs/specs/OBJECT_YAML_FORMAT.md:28-31. Files at depth 1 (`content/objects/<name>.yaml`) skip transitionally during M1 migration; skip removed when WS-MOVE completes.
 - `tools/protocol_manual.py` grew 1080 -> 1500 lines with four renderer improvements that benefit every protocol manual repo-wide:
   - State-change `scene_operations` now translate field-name + value pairs into human-readable imperative prose via a field-to-phrase mapping table (16 field types: `material_name`, `held_material_name`, `material_volume`, `held_material_volume`, `tape_present`, `running`, `lid_open`, `powered_on`, `image_captured`, etc.). Raw YAML syntax no longer leaks into student-facing bullets.
   - Batch `sequence_runner` output now prepends an iteration header (`### Iteration N of M: <constituent_label>`) before each constituent's render, so students reading combined manuals can identify their position in repeated workflows.
@@ -13,9 +44,15 @@
 ### Behavior or Interface Changes
 
 - All 31 repo protocol manuals regenerate with the improved prose. Manual rendering is unchanged in CLI surface; only output format changes.
+- WS-MOVE: relocated all 77 content/objects/<name>.yaml into kind-mirrored subfolders (bottle/, equipment/, decoration/, pipette/, rack/, waste/, flask/, plate/); removed transitional depth-1 skip in object_validator path-kind check.
 
 ### Fixes and Maintenance
 
+- WS-CLOSE: objects-subfolder-grouping plan archived to docs/archive/objects_subfolder_grouping.md. Final state: validator 0 failures, stepper 31/31 pass, pytest 665/666 (one pre-existing pyflakes failure in tools/purge_inline_images.py untouched by this work). Eight kind subfolders populated: bottle/31, equipment/22, decoration/7, pipette/6, rack/4, waste/4, flask/2, plate/1.
+- Fixed content/objects/microtube_rack_24.yaml `kind: decoration` -> `kind: rack` (content authoring bug surfaced during kind tally; 24-slot microtube rack is structurally a rack, not decoration).
+- Stepper fix: `tools/stepper/state.py` `_build_scenes_registry` now restricts to base scenes reachable by this protocol (via `extends` or `SceneChange`), no longer pulling every base scene under content/scenes/. Was causing spurious `ambiguous_target_in_scene` errors on micropipette references in cell_culture_full and mtt_solubilization_readout when sample_prep_bench (SDS) leaked into their registries.
+- Removed unused `fname` variable in tools/svg_asset_audit.py and converted constant-string f-string in tools/validators/object_validator.py path-kind error message (pyflakes cleanup).
+- WS-TOOLS: promoted content/objects/ listings in shared_toolkit/objects.py and svg_asset_audit.py to recursive walks ahead of kind-subfolder migration.
 - 14 surgical SDS-PAGE prompt prose edits across 11 mini-protocols:
   - MP-10 `sdspage_load_sample_single_lane`: fixed volume contradiction (prose said ~30 uL but bullet said 10 uL - now 30 uL consistently).
   - MP-13 `sdspage_extract_gel_from_cassette`: removed Step 3 buffer-pour-to-recycle that conflicted with MP-14's recycle path; buffer now correctly stays in tank for MP-14.

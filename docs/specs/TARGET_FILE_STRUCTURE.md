@@ -15,8 +15,9 @@ src/                  authored TypeScript and bundled web shell source
   inventory.ts        inventory data facade
 
 content/              authored protocol, scene, and object YAML
-  objects/            reusable object definitions
-    <object_name>.yaml
+  objects/            reusable object definitions (grouped by `kind`)
+    <kind>/           one folder per declared kind: bottle, equipment, decoration, pipette, rack, waste, flask, plate
+      <object_name>.yaml
   scenes/             reusable base scene YAML
     <base_scene_name>.yaml
   protocols/          protocol-specific content (each protocol a folder)

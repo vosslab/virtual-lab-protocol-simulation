@@ -27,7 +27,7 @@ These values are tuned so that:
 
 ## How sizing works
 
-1. Object definition includes display sizing in `content/objects/<object_name>.yaml`:
+1. Object definition includes display sizing in `content/objects/<kind>/<object_name>.yaml`:
    ```yaml
    centrifuge:
      layout:
@@ -53,7 +53,7 @@ These values are tuned so that:
 
 ## Adding a new object
 
-1. Create or update `content/objects/<object_name>.yaml` with layout fields:
+1. Create or update `content/objects/<kind>/<object_name>.yaml` with layout fields:
    ```yaml
    object_name: my_instrument
    label: "My Instrument"
@@ -84,7 +84,7 @@ const legacy_scales: Record<string, number> = {
 ```
 
 To migrate an object to `layout.display_width_cm`:
-1. Add `layout.display_width_cm` to `content/objects/<object_name>.yaml`
+1. Add `layout.display_width_cm` to `content/objects/<kind>/<object_name>.yaml`
 2. Remove the object from `legacy_scales`
 3. Verify layout with tests
 

@@ -40,7 +40,8 @@ of the schema below enforces this separation.
 ## Canonical object identity, no extends
 
 Objects are canonical-by-object_name. Each object definition lives in
-`content/objects/<object_name>.yaml` and is the single authoritative source for that
+`content/objects/<kind>/<object_name>.yaml` where `<kind>` matches the object's declared `kind` field,
+and is the single authoritative source for that
 object's identity, state schema, visual_states, and capabilities. Objects have
 no `extends` and no template-object layer.
 

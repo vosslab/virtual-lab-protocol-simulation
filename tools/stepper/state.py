@@ -1,6 +1,6 @@
 """StateMap: per-protocol object-state tracker keyed by placement_name."""
 
-from tools.stepper.loader import LoadedContentTree
+from tools.stepper.loader import LoadedContentTree, ProtocolNotFoundError
 from tools.stepper.findings import Finding, Level, FindingEmitter
 
 
@@ -197,7 +197,7 @@ class StateMap:
 		# Base scenes named by SceneChange ops in this protocol's steps
 		try:
 			protocol = self.tree.get_protocol(self.protocol_name)
-		except Exception:
+		except ProtocolNotFoundError:
 			protocol = None
 		if isinstance(protocol, dict):
 			for step in protocol.get("steps", []) or []:
@@ -241,13 +241,17 @@ class StateMap:
 
 		# Add only base scenes actually referenced by this protocol
 		reachable_base = self._reachable_base_scenes()
+		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
+		if not reachable_base and not protocol_local_scenes:
+			# No protocol-local scenes and no SceneChange ops to constrain the set; fall back to
+			# every base scene so target resolution still works for trivial single-base-scene protocols.
+			reachable_base = set(self.tree.base_scenes.keys())
 		for scene_name in reachable_base:
 			scene_data = self.tree.base_scenes.get(scene_name)
 			if scene_data is not None:
 				all_scenes[scene_name] = (scene_data, 'base')
 
 		# Add protocol-local scenes
-		protocol_local_scenes = self.tree.protocol_local_scenes.get(self.protocol_name, {})
 		for scene_name, scene_data in protocol_local_scenes.items():
 			all_scenes[scene_name] = (scene_data, 'protocol')
 
@@ -256,7 +260,7 @@ class StateMap:
 		seen = set()
 
 		# For each scene, extract effective placements and register them
-		for scene_name, (scene_data, scene_type) in all_scenes.items():
+		for scene_name, (scene_data, _) in all_scenes.items():
 			effective_placements = self._get_effective_placements(scene_data)
 
 			for placement in effective_placements:
