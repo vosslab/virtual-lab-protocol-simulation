@@ -4,6 +4,13 @@ Triage backlog for issues surfaced but not fixed during recent work. See the
 active plans under `~/.claude/plans/` or [ROADMAP.md](ROADMAP.md) for queued
 work.
 
+## On hold: scene runtime activation
+
+Big scene-runtime activation plan paused as of 2026-05-17. Gated on the focused
+row-based base_scene layout plan. See
+[active_plans/scene_runtime_activation_on_hold.md](active_plans/scene_runtime_activation_on_hold.md)
+for state at hold and resumption criteria.
+
 ## Stepper and validator follow-ups from 96-well spike
 
 Surfaced by the 96-well authoring shape semantics spike. See

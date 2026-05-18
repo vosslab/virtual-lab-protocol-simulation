@@ -2,6 +2,27 @@
 
 ## 2026-05-17
 
+### Decisions and Failures
+
+- **Scene runtime activation plan put ON HOLD**. Big M0-M6 runtime activation plan
+  paused after the base-scene gallery render exposed a closed-vocabulary violation:
+  every base scene authors its own coordinate grid via `zones[].bounds` rects, plus
+  per-scene `scene_bounds` and `depth_tier`, in direct conflict with
+  `docs/PRIMARY_DESIGN.md` `## Vocabulary closure and anti-drift`. State at hold
+  archived to
+  [docs/active_plans/scene_runtime_activation_on_hold.md](active_plans/scene_runtime_activation_on_hold.md)
+  with what landed (pipeline self-containment, runtime spine M0-M5 partials, 9/26
+  walker-green protocols, validator parse-error path, base-scene gallery generator),
+  what is paused (16 renderer-gap protocols, 1 orchestrator-gap, mass content fixes,
+  gesture expansion), and resumption criteria (row+slot author surface locked +
+  every scene rewritten + gallery passes precheck + pytest green under hard validator
+  gate). A focused row-based base_scene layout plan at
+  `~/.claude/plans/serene-stargazing-moore.md` supersedes the layout-engine and
+  scene-yaml workstreams; remaining runtime workstreams resume after the focused
+  plan lands. Philosophy: "Fix the design, not the symptom" (delete the coordinate
+  surface from authoring rather than tighten the rects scene-by-scene).
+  `docs/TODO.md` carries the on-hold pointer.
+
 ### Additions and New Features
 
 - **Stepper Part 1 of two-part semantic validation rollout**: Added five new
