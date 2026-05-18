@@ -16,7 +16,7 @@ from typing import Any
 
 import yaml
 
-from pipeline._pipeline_utils import REPO_ROOT, find_protocol_yaml_files
+from pipeline.pipeline_utils import REPO_ROOT, find_protocol_yaml_files
 
 
 #============================================

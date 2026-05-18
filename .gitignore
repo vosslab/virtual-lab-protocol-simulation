@@ -15,7 +15,7 @@ skills-lock.json
 /liquid/
 artifacts/ui-review/
 generated/
-_*.?*
+_[a-z]*.?*
 dist/
 dist-single/
 OTHER_REPOS/*/

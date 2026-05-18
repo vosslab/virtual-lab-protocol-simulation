@@ -28,7 +28,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-from pipeline._pipeline_utils import REPO_ROOT, iter_objects, load_yaml
+from pipeline.pipeline_utils import REPO_ROOT, iter_objects, load_yaml
 
 
 #============================================

@@ -50,6 +50,20 @@
   COMPATIBLE with exact placement-name matching (45 placements preserved, 0 drift).
   See `docs/active_plans/2026-05-18_rollout_status.md` errata section.
 
+- **Pipeline gitignore trap: renamed `_pipeline_utils.py` -> `pipeline_utils.py`**:
+  `.gitignore` line 18 pattern `_*.?*` (scratch-file convention) silently caught
+  the load-bearing module `pipeline/_pipeline_utils.py` (imported by 5 pipeline
+  scripts). File never reached GitHub; second machine failed bootstrap with
+  `ModuleNotFoundError: No module named 'pipeline._pipeline_utils'`. Renamed to
+  drop the underscore prefix (per Python convention: `_name` = private/temp);
+  updated 5 importers (`build_new_protocol_data.py`, `build_new_scene_data.py`,
+  `build_object_data.py`, `build_protocol_data.py`, `build_scene_data.py`).
+  Added `pipeline/__init__.py` (force-added; also caught by same gitignore
+  pattern). Bootstrap green: `Found 18 base scenes, Resolved 43 total scenes`.
+  Pytest: 848 passed, 1 skipped. Note: `.gitignore` pattern `_*.?*` is too
+  broad; catches Python `__init__.py` and any load-bearing dunder file.
+  Refinement deferred to a separate WP.
+
 ---
 
 ## 2026-05-18 (Earlier entries)

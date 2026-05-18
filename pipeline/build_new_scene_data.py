@@ -26,7 +26,7 @@ from typing import Any, Dict, List
 
 import yaml
 
-from pipeline._pipeline_utils import REPO_ROOT
+from pipeline.pipeline_utils import REPO_ROOT
 
 #============================================
 

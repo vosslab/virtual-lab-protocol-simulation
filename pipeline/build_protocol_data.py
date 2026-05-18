@@ -11,7 +11,7 @@ import sys
 import argparse
 import re
 
-from pipeline._pipeline_utils import REPO_ROOT, load_yaml, find_protocol_directory
+from pipeline.pipeline_utils import REPO_ROOT, load_yaml, find_protocol_directory
 
 
 def validate_items(items, repo_root, reagents):
