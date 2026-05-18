@@ -41,11 +41,11 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: electrophoresis_tank_inner_chamber_empty }
+        output: { asset_name: electrophoresis_tank_inner_chamber }
       - when: running_buffer_1x
-        output: { asset_name: electrophoresis_tank_inner_chamber_filled }
+        output: { asset_name: electrophoresis_tank_inner_chamber }
       - when: running_buffer_1x_used
-        output: { asset_name: electrophoresis_tank_inner_chamber_filled }
+        output: { asset_name: electrophoresis_tank_inner_chamber }
   inner_chamber_material_volume:
     kind: composite
     formula: fill_height(state(inner_chamber_material_volume), capacity_ml=800)
@@ -53,11 +53,11 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: electrophoresis_tank_outer_chamber_empty }
+        output: { asset_name: electrophoresis_tank_outer_chamber }
       - when: running_buffer_1x
-        output: { asset_name: electrophoresis_tank_outer_chamber_filled }
+        output: { asset_name: electrophoresis_tank_outer_chamber }
       - when: running_buffer_1x_used
-        output: { asset_name: electrophoresis_tank_outer_chamber_filled }
+        output: { asset_name: electrophoresis_tank_outer_chamber }
   outer_chamber_material_volume:
     kind: composite
     formula: fill_height(state(outer_chamber_material_volume), capacity_ml=500)

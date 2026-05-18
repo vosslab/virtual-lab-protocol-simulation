@@ -29,15 +29,15 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: staining_tray_empty }
+        output: { asset_name: staining_tray }
       - when: running_buffer_1x
-        output: { asset_name: staining_tray_buffer }
+        output: { asset_name: staining_tray }
       - when: coomassie_stain
-        output: { asset_name: staining_tray_stain }
+        output: { asset_name: staining_tray }
       - when: destain
-        output: { asset_name: staining_tray_destain }
+        output: { asset_name: staining_tray }
       - when: ddh2o
-        output: { asset_name: staining_tray_water }
+        output: { asset_name: staining_tray }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=500)

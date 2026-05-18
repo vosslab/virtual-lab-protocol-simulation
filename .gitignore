@@ -1,4 +1,8 @@
 # Build artifacts
+experiments/
+!experiments/css_native_layout/
+!experiments/css_native_layout/**
+experiments/css_native_layout/styles/*_*.css
 tools/svg_picker/*.json
 manual*.md
 output_manuals/

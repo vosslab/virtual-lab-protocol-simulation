@@ -21,11 +21,11 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: conical_15ml_empty }
+        output: { asset_name: conical_15ml }
       - when: cell_suspension
-        output: { asset_name: conical_15ml_filled }
+        output: { asset_name: conical_15ml }
       - when: fresh_media
-        output: { asset_name: conical_15ml_filled }
+        output: { asset_name: conical_15ml }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=15)

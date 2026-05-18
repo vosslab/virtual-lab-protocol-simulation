@@ -231,10 +231,44 @@ The choice between `material_name` (vessel) and `held_material_name` (tool) is
 closed per `kind` enum value. See [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)
 for the complete kind-to-field convention table and authoring rules.
 
-## Convention scope: pipettes, microtubes, and wells
+## Canonical rule: single base SVG + runtime overlay
 
-The same convention extends to microtubes and to wells in the
-`well_plate_workspace` scene:
+Each container or pipette is rendered from a single base SVG; the runtime
+overlays liquid fill from `material_name` + `material_volume` (or
+`held_material_name` + `held_material_volume`) via `anchor_liquid_clip` and
+`anchor_liquid_bounds`. There is no per-material variant SVG (no
+`<object>_empty.svg` / `<object>_filled.svg` / `<object>_with_<material>.svg`
+pair). Every `material_name` (or `held_material_name`) case in an object's
+`visual_states` resolves to the same `asset_name`; the visible difference
+between an empty PBS bottle and a full PBS bottle is the runtime overlay
+height and color, not a second base SVG.
+
+This rule is enforced by `validation/yaml/object_validator.py` as a hard
+vocabulary error: an object whose `visual_states` declares a paired
+`<prefix>material_volume` `fill_height(...)` composite while its paired
+`<prefix>material_name` (or `<prefix>held_material_name`) cases resolve to
+more than one distinct `asset_name` is rejected at validation time.
+
+## Convention scope
+
+The canonical rule binds every kind that holds, contains, or carries a
+tracked liquid material:
+
+- `bottle` (every reagent bottle, including waste-feeder bottles)
+- `flask` (T75 and other cell-culture flasks)
+- conical tube (the `conical_tube` and `conical_tube_in_rack` objects under
+  `content/objects/microtube/` and `content/objects/rack/`)
+- microtube (the dilution microtube subpart inside the well-plate
+  workspace)
+- waste container (every `content/objects/waste/*.yaml` object)
+- electrophoresis chamber (the inner and outer chambers inside
+  `content/objects/equipment/electrophoresis_tank.yaml`, each pairing its
+  own per-chamber `<prefix>material_name` / `<prefix>material_volume`)
+- well subpart (each well inside `content/objects/plate/well_plate_96.yaml`)
+- pipette (every `content/objects/pipette/*.yaml`; uses the
+  `held_material_*` field pair instead of `material_*`)
+
+For every kind above:
 
 - **Fill = material identity.** The fill color is driven by the
   `display_color` declared for the value of `material_name` (or
@@ -252,6 +286,69 @@ the object's `visual_states` and composites a fill rectangle clipped to the
 microtube interior; the resolved `display_color` provides the visible
 color, and the state class on the host element provides the outline
 treatment. For wells, the plate renderer does the same per-well lookup.
+
+## Anchor id boundary: bare ids authored, prefix added by generator
+
+The authored SVG carries bare `id="anchor_liquid_clip"` and
+`id="anchor_liquid_bounds"`. The pipeline generator
+(`pipeline/generate_svg_globals.py`) and the runtime composite handler
+together namespace these ids to `<asset_name>__anchor_liquid_clip` and
+`<asset_name>__anchor_liquid_bounds` at composition time, so multiple
+assets sharing the same scene SVG never collide on ids.
+
+Authors never type the `<asset_name>__` prefix. The asset-readiness check
+in the object validator opens each collapsed base SVG and confirms both
+bare ids are present; a missing bare id is reported against the SVG path,
+not the YAML.
+
+Example minimal authored SVG fragment:
+
+```svg
+<defs>
+	<clipPath id="anchor_liquid_clip">
+		<rect x="5.5" y="15" width="5" height="101" rx="0.5"/>
+	</clipPath>
+</defs>
+<rect id="anchor_liquid_bounds" x="5.5" y="15" width="5" height="101"
+      fill="none" stroke="none" display="none"/>
+```
+
+The same two bare ids appear in every kind listed under "Convention
+scope"; the generator prefixes them per-asset at namespacing time.
+
+## `empty` semantics: single base SVG, runtime skips the overlay
+
+The sentinel material `empty` resolves to the same base `asset_name` as
+every non-empty material value declared on the object. The runtime is
+expected to skip the liquid overlay entirely when either
+`material_name == empty` or `material_volume == 0` (the equivalent rule
+for tools is `held_material_name == empty` or
+`held_material_volume == 0`). The validator does not require a separate
+base SVG for the `empty` case; on the contrary, declaring one is the
+variant-fan-out smell the canonical rule forbids.
+
+Worked single-asset example (every case points at the same base):
+
+```yaml
+visual_states:
+  material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output: { asset_name: bme_bottle }
+      - when: bme
+        output: { asset_name: bme_bottle }
+  material_volume:
+    kind: composite
+    formula: fill_height(state(material_volume), capacity_ml=500)
+```
+
+At render time: when `material_name == empty` (default initial state) or
+`material_volume == 0`, the runtime renders only `bme_bottle.svg`. When
+`material_name == bme` and `material_volume > 0`, the runtime renders
+`bme_bottle.svg` plus a fill rect colored by the `bme` material's
+`display_color` and clipped to that asset's prefixed
+`<asset_name>__anchor_liquid_clip`.
 
 ## Future Extensions
 

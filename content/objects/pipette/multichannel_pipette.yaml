@@ -32,13 +32,17 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: multichannel_pipette_empty }
+        output: { asset_name: multichannel_pipette }
       - when: media
-        output: { asset_name: multichannel_pipette_filled }
+        output: { asset_name: multichannel_pipette }
       - when: dmso
-        output: { asset_name: multichannel_pipette_filled }
+        output: { asset_name: multichannel_pipette }
       - when: mtt
-        output: { asset_name: multichannel_pipette_filled }
+        output: { asset_name: multichannel_pipette }
+      - when: carboplatin
+        output: { asset_name: multichannel_pipette }
+      - when: metformin
+        output: { asset_name: multichannel_pipette }
   held_material_volume:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=300)

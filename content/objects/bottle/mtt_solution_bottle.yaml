@@ -1,35 +1,37 @@
 object_name: mtt_solution_bottle
 kind: bottle
 label: 12 mM MTT solution
-
 state_fields:
-  - field_name: material_name
-    type: enum
-    allowed: [empty, mtt]
-    default: mtt
-    description: Contents of this bottle (12 mM MTT in PBS).
-  - field_name: material_volume
-    type: float
-    unit: ml
-    min: 0
-    max: 50
-    default: 10
-    description: Volume of MTT solution remaining in milliliters.
-
+- field_name: material_name
+  type: enum
+  allowed:
+  - empty
+  - mtt
+  default: mtt
+  description: Contents of this bottle (12 mM MTT in PBS).
+- field_name: material_volume
+  type: float
+  unit: ml
+  min: 0
+  max: 50
+  default: 10
+  description: Volume of MTT solution remaining in milliliters.
 visual_states:
   material_name:
     kind: svg
     cases:
-      - when: empty
-        output: { asset_name: bottle_empty }
-      - when: mtt
-        output: { asset_name: bottle_filled }
+    - when: empty
+      output:
+        asset_name: bottle
+    - when: mtt
+      output:
+        asset_name: bottle
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=50)
-
-capabilities: [clickable, material_container]
-
+capabilities:
+- clickable
+- material_container
 layout:
   default_width: 4
   label_width: 8

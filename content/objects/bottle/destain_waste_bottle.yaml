@@ -1,35 +1,38 @@
 object_name: destain_waste_bottle
 kind: bottle
 label: Destain waste bottle
-
 state_fields:
-  - field_name: material_name
-    type: enum
-    allowed: [empty, destain_used]
-    default: empty
-    description: Contents currently in the bottle.
-  - field_name: material_volume
-    type: float
-    unit: ml
-    min: 0
-    max: 500
-    default: 0
-    description: Volume of used destain disposed, in milliliters.
-
+- field_name: material_name
+  type: enum
+  allowed:
+  - empty
+  - destain_used
+  default: empty
+  description: Contents currently in the bottle.
+- field_name: material_volume
+  type: float
+  unit: ml
+  min: 0
+  max: 500
+  default: 0
+  description: Volume of used destain disposed, in milliliters.
 visual_states:
   material_name:
     kind: svg
     cases:
-      - when: empty
-        output: { asset_name: destain_waste_bottle_empty }
-      - when: destain_used
-        output: { asset_name: destain_waste_bottle_filled }
+    - when: empty
+      output:
+        asset_name: destain_waste_bottle
+    - when: destain_used
+      output:
+        asset_name: destain_waste_bottle
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=500)
-
-capabilities: [clickable, material_container, cursor_attachable]
-
+capabilities:
+- clickable
+- material_container
+- cursor_attachable
 layout:
   default_width: 3
   label_width: 8

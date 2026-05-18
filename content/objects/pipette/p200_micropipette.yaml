@@ -32,19 +32,19 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: p200_micropipette_empty }
+        output: { asset_name: p200_micropipette }
       - when: protein_sample_denatured
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
       - when: protein_ladder
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
       - when: laemmli_4x
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
       - when: bme
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
       - when: running_buffer_1x
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
       - when: ddh2o
-        output: { asset_name: p200_micropipette_filled }
+        output: { asset_name: p200_micropipette }
   held_material_volume:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=200)

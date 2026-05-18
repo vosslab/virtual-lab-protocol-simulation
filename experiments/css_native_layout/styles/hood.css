@@ -1,0 +1,311 @@
+/*
+NEW0 CSS Layout: Hood Workspace — Direction C: Hybrid Lab Diorama
+Focus: physical surface + faint region labels + subtle dividers.
+Combines Direction A physical feel with Direction B region cues.
+
+Design references:
+- FUN_VIBES_DESIGN_STYLE.md: momentum-state visual transitions
+- PLAYFUL_TRAINING_GAME_STYLE.md: lab-clean aesthetic with light cuing
+
+Color palette:
+- Stainless steel base: #e0e0e0 to #c0c0c0 (hood interior)
+- Region dividers: faint hairlines, no hard borders
+- Text: #2c3e50 (dark charcoal)
+- Safe: #1b7c3f, Hazard: #c41e3a, Warning: #ffa500
+
+Semantic footprint categories:
+- footprint--small-tool: min-width:48px min-height:48px
+- footprint--handheld: min-width:80px min-height:90px
+- footprint--container: min-width:100px min-height:110px
+- footprint--rack: min-width:110px min-height:100px
+- footprint--instrument: min-width:120px min-height:100px; flex-shrink:0
+- footprint--large-equipment: min-width:160px min-height:140px; flex-shrink:0; flex-grow:0
+*/
+
+:root {
+	--color-bg: #ffffff;
+	--color-text: #2c3e50;
+	--color-text-light: #5a6c7d;
+	--color-safe: #1b7c3f;
+	--color-hazard: #c41e3a;
+	--color-warning: #ffa500;
+	--color-border: #d0d0d0;
+	--color-region-bg: transparent;
+
+	--font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', sans-serif;
+	--font-size-base: 14px;
+	--font-size-lg: 18px;
+	--line-height: 1.5;
+
+	--gap-region: 12px;
+	--gap-object: 8px;
+	--border-radius: 0px;
+	--border-width: 1px;
+}
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	font-family: var(--font-family);
+	font-size: var(--font-size-base);
+	line-height: var(--line-height);
+	color: var(--color-text);
+	background: var(--color-bg);
+	margin: 0;
+	padding: 0;
+}
+
+/* Main scene container: fixed nominal dimensions, auto-collapse regions */
+.scene-container {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: 100px 1fr 100px 150px 0px;
+	gap: var(--gap-region);
+	width: 1920px;
+	height: 1080px;
+	margin: 0 auto;
+	padding: 16px;
+	background: var(--color-bg);
+	overflow: auto;
+	box-sizing: border-box;
+}
+
+/* Hood workspace background: stainless steel with subtle diorama effect */
+.scene-container.scene--hood {
+	background: linear-gradient(180deg, #e8e8e8 0%, #d0d0d0 100%),
+		url("data:image/svg+xml,%3Csvg width='100' height='100' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3ClinearGradient id='steel' x1='0%25' y1='0%25' x2='100%25' y2='0%25'%3E%3Cstop offset='0%25' style='stop-color:%234a4a4a;stop-opacity:0.04'/%3E%3Cstop offset='50%25' style='stop-color:%23ffffff;stop-opacity:0.02'/%3E%3Cstop offset='100%25' style='stop-color:%234a4a4a;stop-opacity:0.04'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' fill='url(%23steel)'/%3E%3C/svg%3E");
+	background-attachment: fixed;
+	box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.08);
+}
+
+/* Region wrappers: subtle dividers, no fill */
+.region {
+	display: flex;
+	flex-direction: row;
+	gap: var(--gap-object);
+	padding: 12px;
+	background: transparent;
+	border: none;
+	border-radius: var(--border-radius);
+	min-height: 80px;
+	align-items: flex-start;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+/* Rear shelf: wrap allowed for small tools */
+.region--rear_shelf {
+	flex-wrap: wrap;
+	min-height: 100px;
+}
+
+/* Work surface: single row, no wrap (vertical stack via order) */
+.region--work_surface {
+	flex-wrap: nowrap;
+	flex-direction: column;
+	min-height: 120px;
+	max-height: 100%;
+	overflow: hidden;
+	justify-content: flex-end;
+}
+
+/* Front tools: wrap allowed for small tools */
+.region--front_tools {
+	flex-wrap: wrap;
+	min-height: 100px;
+}
+
+/* Instrument station: single row, large equipment pinned */
+.region--instrument_station {
+	flex-wrap: nowrap;
+	min-height: 150px;
+	justify-content: flex-start;
+}
+
+/* Popup layer: centered overlay (positioned last in DOM for natural stacking) */
+.region--popup_layer {
+	display: grid;
+	place-items: center;
+	grid-area: 1 / 1 / -1 / -1;
+	min-height: 0;
+	background: transparent;
+	border: none;
+	padding: 0;
+}
+
+/* Region labels (optional, faint) */
+.region-label {
+	font-size: 11px;
+	font-weight: 500;
+	color: rgba(92, 108, 125, 0.5);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+	display: none;
+	width: 100%;
+}
+
+/* Placement (individual object) */
+.placement {
+	flex-shrink: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-height: 100%;
+	overflow: hidden;
+	align-items: center;
+}
+
+/* Zoom detail scene: placement fills available space */
+.scene-mode--detail .placement {
+	width: 100%;
+	height: 100%;
+	gap: 12px;
+	justify-content: center;
+}
+
+.placement-label {
+	font-size: 12px;
+	color: var(--color-text-light);
+	text-align: center;
+	max-width: 100px;
+}
+
+/* Zoom detail scene: larger label below object */
+.scene-mode--detail .placement-label {
+	font-size: 14px;
+	max-width: 300px;
+	margin-top: 8px;
+}
+
+/* Semantic footprint categories */
+
+/* Small tools: pipette, comb, brush, slide (minimum-touch-target sized) */
+.footprint--small-tool {
+	min-width: 48px;
+	min-height: 48px;
+	flex-shrink: 1;
+	flex-grow: 0;
+}
+
+/* Handheld: bottle, microtube rack, small reagent */
+.footprint--handheld {
+	min-width: 80px;
+	min-height: 90px;
+	flex-shrink: 1;
+	flex-grow: 0;
+}
+
+/* Container: flask, well plate, gel cassette */
+.footprint--container {
+	min-width: 100px;
+	min-height: 110px;
+	flex-shrink: 1;
+	flex-grow: 0;
+}
+
+/* Rack: tube rack 15ml, tube rack 24, multichannel rack */
+.footprint--rack {
+	min-width: 110px;
+	min-height: 100px;
+	flex-shrink: 1;
+	flex-grow: 0;
+}
+
+/* Small instrument: vortex, heat block, hemocytometer, water bath, etc. */
+.footprint--instrument {
+	min-width: 120px;
+	min-height: 100px;
+	flex-shrink: 0;
+	flex-grow: 0;
+}
+
+/* Large equipment: centrifuge, microscope, plate reader, incubator, etc. */
+.footprint--large-equipment {
+	min-width: 160px;
+	min-height: 140px;
+	flex-shrink: 0;
+	flex-grow: 0;
+}
+
+/* Zoom view (new footprint for zoomed scenes) */
+.footprint--zoom-view {
+	min-width: 600px;
+	min-height: 600px;
+	flex-shrink: 0;
+	flex-grow: 1;
+	max-width: 1200px;
+	max-height: 800px;
+}
+
+/* Zoom scene mode: maximize work_surface region for detail view */
+.scene-container.scene-mode--detail {
+	grid-template-rows: 1fr;
+}
+
+.scene-container.scene-mode--detail .region--rear_shelf,
+.scene-container.scene-mode--detail .region--front_tools,
+.scene-container.scene-mode--detail .region--instrument_station,
+.scene-container.scene-mode--detail .region--popup_layer {
+	display: none;
+}
+
+.scene-container.scene-mode--detail .region--work_surface {
+	min-height: 1000px;
+	flex-grow: 1;
+}
+
+/* SVG/content placeholders and images */
+.object-graphic {
+	width: 100%;
+	height: 100%;
+	background: transparent;
+	border: none;
+	border-radius: var(--border-radius);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	color: var(--color-text-light);
+	text-align: center;
+	padding: 4px;
+}
+
+.object-graphic img {
+	object-fit: contain;
+	object-position: center;
+	width: auto;
+	height: auto;
+	max-width: 100%;
+	max-height: 100%;
+	display: block;
+	filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+/* Zoom detail scene: graphic expands to fill placement */
+.scene-mode--detail .object-graphic {
+	flex: 1 1 auto;
+	padding: 20px;
+}
+
+/* Responsive: below nominal width, allow scroll */
+@media (max-width: 1920px) {
+	.scene-container {
+		width: auto;
+		max-width: 100vw;
+	}
+}
+
+/* Below 800px, regions stack; no reflow of large equipment */
+@media (max-width: 800px) {
+	.scene-container {
+		width: 100%;
+		padding: 8px;
+	}
+
+	.region {
+		padding: 8px;
+		gap: var(--gap-object);
+	}
+}

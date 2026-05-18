@@ -32,21 +32,23 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: serological_pipette_empty }
+        output: { asset_name: serological_pipette }
       - when: media
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: pbs
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: trypsin
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: cells
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
+      - when: cell_suspension
+        output: { asset_name: serological_pipette }
       - when: running_buffer_10x
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: running_buffer_1x
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: ddh2o
-        output: { asset_name: serological_pipette_filled }
+        output: { asset_name: serological_pipette }
   held_material_volume:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ml=25.0)

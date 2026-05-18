@@ -1,45 +1,57 @@
 object_name: waste_container
 kind: waste
 label: Waste container
-
 state_fields:
-  - field_name: material_name
-    type: enum
-    allowed: [empty, media, pbs, mixed, coomassie_stain_used, destain_used, running_buffer_1x_used]
-    default: empty
-    description: Waste type (empty, single liquid, or mixed).
-  - field_name: material_volume
-    type: float
-    unit: ml
-    min: 0
-    max: 1000
-    default: 0
-    description: Volume of accumulated liquid waste, in milliliters.
-
+- field_name: material_name
+  type: enum
+  allowed:
+  - empty
+  - media
+  - pbs
+  - mixed
+  - coomassie_stain_used
+  - destain_used
+  - running_buffer_1x_used
+  default: empty
+  description: Waste type (empty, single liquid, or mixed).
+- field_name: material_volume
+  type: float
+  unit: ml
+  min: 0
+  max: 1000
+  default: 0
+  description: Volume of accumulated liquid waste, in milliliters.
 visual_states:
   material_name:
     kind: svg
     cases:
-      - when: empty
-        output: { asset_name: waste_container_empty }
-      - when: media
-        output: { asset_name: waste_container_filled }
-      - when: pbs
-        output: { asset_name: waste_container_filled }
-      - when: mixed
-        output: { asset_name: waste_container_filled }
-      - when: coomassie_stain_used
-        output: { asset_name: waste_container_filled }
-      - when: destain_used
-        output: { asset_name: waste_container_filled }
-      - when: running_buffer_1x_used
-        output: { asset_name: waste_container_filled }
+    - when: empty
+      output:
+        asset_name: waste_container
+    - when: media
+      output:
+        asset_name: waste_container
+    - when: pbs
+      output:
+        asset_name: waste_container
+    - when: mixed
+      output:
+        asset_name: waste_container
+    - when: coomassie_stain_used
+      output:
+        asset_name: waste_container
+    - when: destain_used
+      output:
+        asset_name: waste_container
+    - when: running_buffer_1x_used
+      output:
+        asset_name: waste_container
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=1000)
-
-capabilities: [clickable, material_container]
-
+capabilities:
+- clickable
+- material_container
 layout:
   default_width: 4
   label_width: 5

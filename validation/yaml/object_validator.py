@@ -1,5 +1,8 @@
 """ObjectValidator: validates object YAML per OBJECT_YAML_FORMAT.md."""
 
+import os
+import pathlib
+
 from validation.yaml.constants import (
 	OBJECT_KINDS,
 	OBJECT_CAPABILITIES,
@@ -61,6 +64,9 @@ class ObjectValidator:
 
 		# Kind-to-material-field convention validation
 		findings.extend(self._validate_kind_material_field_convention(obj, path))
+
+		# Variant-collapse gate (material_volume fill_height composite paired with material_name)
+		findings.extend(self._validate_variant_collapse(obj, path))
 
 		# Capabilities validation
 		findings.extend(self._validate_capabilities(obj, path))
@@ -693,6 +699,250 @@ class ObjectValidator:
 				))
 
 		return findings
+
+	def _validate_variant_collapse(self, obj: dict, path: str) -> list:
+		"""
+		Validate the variant-collapse gate per WP-VALIDATOR-1.
+
+		Vocabulary rule (hard fail): every visual_state that declares a
+		<prefix>material_volume (or <prefix>held_material_volume) with
+		fill_height(...) composite must be paired with a same-prefix
+		<prefix>material_name (or <prefix>held_material_name) visual_state
+		whose cases all resolve to a single asset_name. If multiple distinct
+		asset_name values are found, this is a vocabulary error.
+
+		Pairing by prefix allows per-chamber validation in multi-chamber
+		objects (e.g., inner_chamber_material_name/volume separate from
+		outer_chamber_material_name/volume).
+
+		The empty sentinel may share the base asset with non-empty materials;
+		the runtime skips overlay when material_name == empty or volume == 0.
+
+		Asset-readiness check (soft report initially): for objects passing
+		the vocabulary rule, confirm the base SVG carries both
+		id="anchor_liquid_clip" and id="anchor_liquid_bounds". Soft-report
+		on miss so WS-YAML can land before WS-ANCHORS completes.
+		"""
+		findings = []
+
+		visual_states = obj.get('visual_states')
+		if not isinstance(visual_states, dict):
+			return findings
+
+		# Find all volume composites with fill_height(...)
+		volume_composites = {}
+		for state_name, state_def in visual_states.items():
+			if not isinstance(state_def, dict):
+				continue
+
+			# Check if this is a fill_height composite
+			if state_def.get('kind') == 'composite':
+				formula = state_def.get('formula', '')
+				if formula and formula.startswith('fill_height('):
+					# Extract prefix: material_volume -> '' ; inner_chamber_material_volume -> 'inner_chamber_'
+					prefix = self._extract_material_prefix(state_name)
+					volume_composites[prefix] = {
+						'state_name': state_name,
+						'formula': formula,
+					}
+
+		# For each volume composite, check paired material_name
+		for prefix, vol_info in volume_composites.items():
+			pairing_result = self._check_material_name_pairing(
+				visual_states,
+				prefix,
+				vol_info['state_name'],
+				path,
+			)
+			findings.extend(pairing_result)
+
+		return findings
+
+	@staticmethod
+	def _extract_material_prefix(state_name: str) -> str:
+		"""
+		Extract the prefix from a material-related state name.
+
+		Examples:
+		  'material_volume' -> ''
+		  'material_name' -> ''
+		  'inner_chamber_material_volume' -> 'inner_chamber_'
+		  'outer_chamber_material_volume' -> 'outer_chamber_'
+		  'held_material_volume' -> ''
+		  'held_material_name' -> ''
+
+		Return empty string if this is not a material-related field.
+		"""
+		if state_name.endswith('_material_volume') or state_name.endswith('_material_name'):
+			# Strip the suffix
+			if state_name.endswith('_material_volume'):
+				base = state_name[:-len('_material_volume')]
+			else:
+				base = state_name[:-len('_material_name')]
+
+			# If base is empty or matches 'held', return empty prefix
+			if not base or base == 'held':
+				return ''
+
+			# Otherwise return the base as the prefix (with trailing _)
+			return base + '_'
+
+		if state_name.endswith('_held_material_volume') or state_name.endswith('_held_material_name'):
+			# Strip the suffix
+			if state_name.endswith('_held_material_volume'):
+				base = state_name[:-len('_held_material_volume')]
+			else:
+				base = state_name[:-len('_held_material_name')]
+
+			# Return the base as the prefix (with trailing _)
+			if base:
+				return base + '_'
+			return ''
+
+		return ''
+
+	def _check_material_name_pairing(self, visual_states: dict, prefix: str, volume_state_name: str, path: str) -> list:
+		"""
+		Check that the material_name (or held_material_name) for a given prefix
+		is paired with the volume composite and that all cases resolve to a
+		single asset_name.
+
+		prefix: '' for material_* / held_material_*, or 'chamber_' for chamber_material_*
+		volume_state_name: the name of the volume composite state (e.g. 'material_volume')
+		path: the object file path for error reporting
+		"""
+		findings = []
+
+		# Derive the paired material_name field name
+		if prefix:
+			# e.g. prefix='inner_chamber_' -> field='inner_chamber_material_name'
+			material_name_field = prefix + 'material_name'
+			held_material_name_field = prefix + 'held_material_name'
+		else:
+			# Empty prefix case: could be 'material_name' or 'held_material_name'
+			material_name_field = 'material_name'
+			held_material_name_field = 'held_material_name'
+
+		# Check which field is present in visual_states
+		paired_field = None
+		if material_name_field in visual_states:
+			paired_field = material_name_field
+		elif held_material_name_field in visual_states:
+			paired_field = held_material_name_field
+		else:
+			# No paired material_name field found; object is exempt (intentional non-liquid)
+			return findings
+
+		# Get the material_name visual state
+		material_state = visual_states[paired_field]
+		if not isinstance(material_state, dict):
+			return findings
+
+		# Collect all asset_name values from the material_name cases
+		asset_names = set()
+		cases = material_state.get('cases')
+		if not isinstance(cases, list):
+			return findings
+
+		for case in cases:
+			if not isinstance(case, dict):
+				continue
+			output = case.get('output')
+			if isinstance(output, dict):
+				asset_name = output.get('asset_name')
+				if asset_name:
+					asset_names.add(asset_name)
+
+		# Check for variant fan-out (multiple distinct asset_name values)
+		if len(asset_names) > 1:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=(
+					f"[VARIANT-COLLAPSE] {paired_field} cases for volume composite "
+					f"{volume_state_name} resolve to {len(asset_names)} distinct asset_name values: "
+					f"{sorted(asset_names)}. All cases must resolve to a single base asset "
+					f"(the 'empty' sentinel may share the same base asset as non-empty materials; "
+					f"see docs/specs/MATERIAL_CONVENTION.md for the overlay convention)."
+				),
+			))
+			return findings  # Don't check asset readiness if variant rule fails
+
+		# Asset-readiness check (soft report): if vocabulary rule passed and we have a single
+		# asset_name, check that the base SVG exists and carries both anchor ids
+		if len(asset_names) == 1:
+			base_asset_name = asset_names.pop()
+			self._check_asset_anchors(base_asset_name, path, findings)
+
+		return findings
+
+	def _check_asset_anchors(self, asset_name: str, path: str, findings: list) -> None:
+		"""
+		Asset-readiness soft-report: check if the base SVG exists and carries
+		both anchor_liquid_clip and anchor_liquid_bounds.
+
+		Soft-report on miss (add to findings list with WARNING severity).
+		Do NOT raise an error yet (that's a future gate after WS-ANCHORS completes).
+
+		This method modifies the findings list in-place.
+		"""
+		# Locate repo root and assets directory
+		try:
+			repo_root = pathlib.Path(os.getcwd()).parent
+			while repo_root != repo_root.parent:
+				if (repo_root / '.git').exists():
+					break
+				repo_root = repo_root.parent
+		except Exception:
+			# If we can't find repo root, skip the check
+			return
+
+		svg_path = repo_root / 'assets' / 'equipment' / f'{asset_name}.svg'
+
+		# Check if file exists
+		if not svg_path.exists():
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.WARNING,
+				message=(
+					f"[ASSET-READINESS] base SVG not yet on disk for asset_name '{asset_name}': "
+					f"expected {svg_path.relative_to(repo_root)}. "
+					f"WS-ANCHORS will author the base SVG once WP-YAML-1/2 lands."
+				),
+			))
+			return
+
+		# Check if file contains both anchor ids
+		try:
+			with open(svg_path, 'r', encoding='utf-8') as f:
+				svg_content = f.read()
+		except Exception:
+			# If we can't read the file, skip the check
+			return
+
+		has_clip = 'id="anchor_liquid_clip"' in svg_content
+		has_bounds = 'id="anchor_liquid_bounds"' in svg_content
+
+		if not has_clip or not has_bounds:
+			missing = []
+			if not has_clip:
+				missing.append('anchor_liquid_clip')
+			if not has_bounds:
+				missing.append('anchor_liquid_bounds')
+
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.WARNING,
+				message=(
+					f"[ASSET-READINESS] base SVG for asset_name '{asset_name}' "
+					f"({svg_path.relative_to(repo_root)}) lacks bare-id anchor elements: "
+					f"missing {', '.join(missing)}. "
+					f"WS-ANCHORS will add these anchor rects (authored as bare ids, not pre-prefixed)."
+				),
+			))
 
 	@staticmethod
 	def _is_snake_case(s: str) -> bool:

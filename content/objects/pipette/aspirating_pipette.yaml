@@ -21,11 +21,13 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: aspirating_pipette_empty }
+        output: { asset_name: aspirating_pipette }
       - when: media
-        output: { asset_name: aspirating_pipette_filled }
+        output: { asset_name: aspirating_pipette }
       - when: pbs
-        output: { asset_name: aspirating_pipette_filled }
+        output: { asset_name: aspirating_pipette }
+      - when: mtt
+        output: { asset_name: aspirating_pipette }
   held_material_volume:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ml=10.0)

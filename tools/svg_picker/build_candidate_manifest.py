@@ -16,6 +16,28 @@ import hashlib
 from pathlib import Path
 
 
+# License-folder names sit directly above the author folder in bioicons:
+# OTHER_REPOS/bioicons/static/icons/<license>/<Author>/<file>.svg
+LICENSE_FOLDERS = {
+	"cc-0", "cc-by-3.0", "cc-by-4.0", "cc-by-sa-3.0", "cc-by-sa-4.0", "mit", "bsd",
+}
+
+
+def extract_bioicons_category(rel_path: str) -> str:
+	"""Pull the category folder from a bioicons rel_path, or empty string.
+
+	bioicons convention: .../static/icons/<license>/<Category>/<file>.svg
+	(e.g. Human_physiology, Lab_apparatus, Chemistry). Returns the category
+	segment when the parent of the file's folder matches a known license
+	token; otherwise empty.
+	"""
+	parts = Path(rel_path).parts
+	for i, part in enumerate(parts):
+		if part in LICENSE_FOLDERS and i + 1 < len(parts) - 1:
+			return parts[i + 1]
+	return ""
+
+
 def get_repo_root():
 	"""Get repository root via git."""
 	result = subprocess.run(
@@ -152,11 +174,14 @@ def walk_svg_directory(repo_root, source_path, source_repo, source_repo_short, v
 			license_confidence = "unknown"
 			attribution_required = False
 
+		category = extract_bioicons_category(rel_path) if source_repo_short == "bio" else ""
+
 		record = {
 			"id": build_id(source_repo_short, rel_path),
 			"source_repo": source_repo,
 			"rel_path": rel_path,
 			"filename": filename,
+			"category": category,
 			"search_tokens": extract_search_tokens(filename, parent_folder),
 			"license_tag": license_tag,
 			"license_url": license_url,

@@ -25,10 +25,10 @@ visual_states:
     cases:
     - when: empty
       output:
-        asset_name: trypan_blue_bottle_empty
+        asset_name: trypan_blue_bottle
     - when: trypan_blue
       output:
-        asset_name: trypan_blue_bottle_filled
+        asset_name: trypan_blue_bottle
 capabilities:
 - clickable
 - material_container

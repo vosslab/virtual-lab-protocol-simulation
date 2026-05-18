@@ -285,3 +285,14 @@ lines 43-45 carry a "Deferred" comment. The gate was planned in
 archive. Manual reconciliation of 9 divergent materials was done (CHANGELOG 2026-05-17),
 but the automated enforcement gate does not yet exist. A future protocol addition could
 re-introduce the same divergence silently.
+
+### Harden tests/test_object_asset_refs.py from soft-reporter to hard assert
+
+After the material overlay variant-collapse plan closed (see
+[archive/material_overlay_vocabulary.md](archive/material_overlay_vocabulary.md)),
+the picker gate test stays at `BASELINE_MISSING_COUNT = 48` as a soft reporter.
+Once the non-liquid hardware-state variant slots also close
+(`_idle`/`_spinning`/`_open`/`_closed`/`_with_lid` family) and the remaining
+bare-bottle base SVGs land, flip `tests/test_object_asset_refs.py` from the
+baseline-counter pattern to a hard `assert missing == 0` so new gaps fail CI
+on introduction rather than drift the floor.

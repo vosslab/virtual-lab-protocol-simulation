@@ -72,10 +72,18 @@ Each layer has one job:
 - [../../src/svg_color_patch.ts](../../src/svg_color_patch.ts) provides the recolor
   primitives (`applyPatches`, `expandGroupPatch`, `validatePatchIds`,
   `SvgColorPatch`, `SvgGroupPatch`).
-- [../../src/svg_recipes.ts](../../src/svg_recipes.ts) maps semantic state enums
-  (`T75LiquidVisual`, `BottleLiquid`) to concrete patch lists
-  (`flaskResiduePatches`, `bottleLiquidPatches`, `bottleLiquidLabel`,
-  `deriveT75Visual`).
+- [../../src/svg_recipes.ts](../../src/svg_recipes.ts) (legacy reference)
+  maps semantic state enums (`T75LiquidVisual`, `BottleLiquid`) to
+  concrete patch lists (`flaskResiduePatches`, `bottleLiquidPatches`,
+  `bottleLiquidLabel`, `deriveT75Visual`). The per-state enum + patch
+  list shape is the **legacy variant pattern**; new container, pipette,
+  microtube, well, and waste assets follow the single-base-SVG plus
+  runtime liquid overlay rule defined in
+  [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) "Canonical rule:
+  single base SVG + runtime overlay" instead. The runtime composite
+  handler that consumes that rule is still in flight; once it ships, the
+  recipe layer retires for liquid fill and is kept only for recoloring
+  that does not encode material identity.
 - [../../src/svg_assets.ts](../../src/svg_assets.ts) composes manifest, patches,
   and recipes into rendered SVG strings and exposes the public API to
   scenes.
@@ -193,6 +201,14 @@ scene asks the facade for the colored variant rather than recoloring
 inline.
 
 ## How to add or update a recipe
+
+This section describes the **legacy** recipe layer. For liquid fill on
+containers, pipettes, microtubes, wells, and waste, do not add a new
+recipe; follow the single-base-SVG plus runtime liquid overlay rule in
+[MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) "Canonical rule: single
+base SVG + runtime overlay" instead. The validator
+(`validation/yaml/object_validator.py`) rejects YAML drift back to the
+per-state variant pattern.
 
 A recipe maps a semantic state (a TypeScript enum like `T75LiquidVisual`
 or `BottleLiquid`) to a concrete list of recolor patches. Recipes live in

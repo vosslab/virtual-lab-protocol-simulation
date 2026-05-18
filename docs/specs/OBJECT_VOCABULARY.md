@@ -197,6 +197,24 @@ Rules:
 - The `visual_states` is the only object-side authoring surface that names
   SVG asset names or overlay names. An identity field, a `state_field`, a
   capability, or a layout hint never names an asset name.
+- **One base asset per paired material enum (variant-collapse rule).**
+  When an object's `visual_states` declares a
+  `<prefix>material_volume` (or `<prefix>held_material_volume`)
+  `composite` formula using `fill_height(...)`, every case in the paired
+  `<prefix>material_name` (or `<prefix>held_material_name`)
+  `visual_states.cases[]` must resolve to the same `asset_name`. The
+  sentinel `empty` resolves to the same base asset as every non-empty
+  value; the runtime skips the liquid overlay when the material name is
+  `empty` or the volume is `0`. Per-state variant SVGs
+  (`<object>_empty.svg`, `<object>_filled.svg`,
+  `<object>_with_<material>.svg`) are forbidden by this rule. Pairing is
+  by shared field-name prefix, so an electrophoresis chamber that
+  declares both `inner_chamber_material_*` and `outer_chamber_material_*`
+  validates each pair independently. See
+  [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) "Canonical rule:
+  single base SVG + runtime overlay" for the rendering contract; the
+  worked container example below (`bme_bottle`) shows the single-asset
+  shape.
 
 `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, and
 `SetPointDisplayChange` are object/render-layer mechanisms invoked by
@@ -358,19 +376,19 @@ visual_states:
     applies_to: subpart
     cases:
       - when: empty
-        output: { asset_name: well_empty }
+        output: { asset_name: well }
       - when: pbs
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
       - when: media
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
       - when: trypsin
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
       - when: dmso
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
       - when: drug_a
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
       - when: drug_b
-        output: { asset_name: well_filled }
+        output: { asset_name: well }
   material_volume:
     kind: composite
     applies_to: subpart
@@ -436,15 +454,15 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: pipette_empty }
+        output: { asset_name: serological_pipette }
       - when: pbs
-        output: { asset_name: pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: media
-        output: { asset_name: pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: trypsin
-        output: { asset_name: pipette_filled }
+        output: { asset_name: serological_pipette }
       - when: dmso
-        output: { asset_name: pipette_filled }
+        output: { asset_name: serological_pipette }
   held_material_volume:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ml=25.0)

@@ -30,11 +30,11 @@ visual_states:
     applies_to: subpart
     cases:
       - when: empty
-        output: { asset_name: conical_15ml_empty }
+        output: { asset_name: conical_15ml }
       - when: cells
-        output: { asset_name: conical_15ml_filled }
+        output: { asset_name: conical_15ml }
       - when: media
-        output: { asset_name: conical_15ml_filled }
+        output: { asset_name: conical_15ml }
   material_volume:
     kind: composite
     applies_to: subpart

@@ -26,15 +26,15 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: t75_flask_empty }
+        output: { asset_name: t75_flask }
       - when: media
-        output: { asset_name: t75_flask_with_media }
+        output: { asset_name: t75_flask }
       - when: pbs
-        output: { asset_name: t75_flask_with_pbs }
+        output: { asset_name: t75_flask }
       - when: trypsin
-        output: { asset_name: t75_flask_with_trypsin }
+        output: { asset_name: t75_flask }
       - when: cell_suspension
-        output: { asset_name: t75_flask_with_cell_suspension }
+        output: { asset_name: t75_flask }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=25)

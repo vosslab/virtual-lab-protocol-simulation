@@ -399,7 +399,7 @@ function renderMiddlePane() {
 		if (candData && candData.rel_path) {
 			const img = document.createElement('img');
 			img.className = 'preview-img';
-			img.src = `file://${candData.rel_path}`;
+			img.src = `../../${candData.rel_path}`;
 			img.onerror = () => {
 				previewDiv.innerHTML = '<div style="color: var(--color-gray); font-size: 12px;">Preview not available</div>';
 			};
@@ -486,7 +486,8 @@ function renderRightPane() {
 		return;
 	}
 
-	// Search box
+	// Search box (built once per pane render so input focus survives keystrokes;
+	// keystrokes only rebuild the grid via renderCandidateGrid).
 	const searchDiv = document.createElement('div');
 	const searchBox = document.createElement('input');
 	searchBox.id = 'search-box';
@@ -498,16 +499,26 @@ function renderRightPane() {
 	searchBox.addEventListener('input', (ev) => {
 		state.search = ev.target.value;
 		state.selectedCandidateIndex = 0;
-		renderRightPane();
+		renderCandidateGrid(target);
 	});
 
 	searchDiv.appendChild(searchBox);
 	pane.appendChild(searchDiv);
 
-	// Candidate grid
-	const candidates = getVisibleCandidates(target);
 	const gridDiv = document.createElement('div');
+	gridDiv.id = 'candidate-grid';
 	gridDiv.className = 'candidate-grid';
+	pane.appendChild(gridDiv);
+
+	renderCandidateGrid(target);
+}
+
+function renderCandidateGrid(target) {
+	const gridDiv = document.getElementById('candidate-grid');
+	if (!gridDiv) return;
+	gridDiv.innerHTML = '';
+
+	const candidates = getVisibleCandidates(target);
 
 	candidates.forEach((cand, idx) => {
 		const candData = state.candidatesById[cand.candidate_id];
@@ -538,7 +549,8 @@ function renderRightPane() {
 
 		const img = document.createElement('img');
 		img.className = 'tile-image';
-		img.src = candData.rel_path;
+		img.src = `../../${candData.rel_path}`;
+		img.alt = candData.filename;
 		img.onerror = () => {
 			imgContainer.style.background = 'var(--color-gray)';
 			imgContainer.innerHTML = '<span style="color: white; font-size: 10px;">Not found</span>';
@@ -546,14 +558,27 @@ function renderRightPane() {
 
 		imgContainer.appendChild(img);
 
-		// Filename
+		// Filename: prominent, single line ellipsis, full path tooltip.
 		const filenameDiv = document.createElement('div');
 		filenameDiv.className = 'tile-filename';
 		filenameDiv.textContent = candData.filename;
+		filenameDiv.title = candData.rel_path;
 
 		tile.appendChild(labelDiv);
-		tile.appendChild(imgContainer);
 		tile.appendChild(filenameDiv);
+		tile.appendChild(imgContainer);
+
+		// Optional subtitle: bioicons category (or scienceicons / repo source).
+		const subtitleText = candData.category
+			|| (candData.source_repo === 'OTHER_REPOS/scienceicons' ? 'scienceicons' : '')
+			|| (candData.source_repo === 'assets/equipment' ? 'repo' : '');
+		if (subtitleText) {
+			const subtitleDiv = document.createElement('div');
+			subtitleDiv.className = 'tile-subtitle';
+			subtitleDiv.textContent = subtitleText;
+			subtitleDiv.title = `${candData.source_repo} - ${candData.license_tag}`;
+			tile.appendChild(subtitleDiv);
+		}
 
 		tile.addEventListener('click', () => {
 			state.selectedCandidateIndex = idx;
@@ -563,8 +588,6 @@ function renderRightPane() {
 
 		gridDiv.appendChild(tile);
 	});
-
-	pane.appendChild(gridDiv);
 }
 
 // ============================================
@@ -627,7 +650,9 @@ function selectTarget(index) {
 
 	state.selectedTargetIndex = state.targets.indexOf(filtered[index]);
 	state.selectedCandidateIndex = 0;
-	state.search = '';
+	// Preserve state.search across target changes: the user assigns many
+	// similar targets in a row (e.g. "pipette" filter through 8 variants), and
+	// clearing on every advance forces a re-type. Escape or empty input clears.
 	renderAll();
 }
 
@@ -665,33 +690,74 @@ function getSelectedTarget() {
 }
 
 function getVisibleCandidates(target) {
+	// Pre-ranking proved unreliable (token overlap missed obvious matches and
+	// drowned the user in 50 same-badge tiles). Default view now shows the full
+	// candidate pool sorted alphabetically by filename; search filters live.
+	// Ranker output is kept only as a tooltip hint (badge color), not as the
+	// gate on what is visible.
 	const sugg = state.suggestionsByTarget[target.asset_name];
-	if (!sugg || !sugg.ranked) {
-		return [];
+	const ranked = (sugg && sugg.ranked) ? sugg.ranked : [];
+	const rankedById = {};
+	for (const r of ranked) rankedById[r.candidate_id] = r;
+
+	const query = state.search.trim().toLowerCase();
+	const matches = [];
+	for (const id in state.candidatesById) {
+		const candData = state.candidatesById[id];
+		if (query) {
+			const filename = candData.filename.toLowerCase();
+			const tokens = (candData.search_tokens || []).map(t => t.toLowerCase());
+			if (!filename.includes(query) && !tokens.some(t => t.includes(query))) {
+				continue;
+			}
+		}
+		matches.push(candData);
 	}
 
-	let candidates = sugg.ranked.slice();
+	// Wrap into the tile shape; preserve ranker badge when present.
+	let candidates = matches.map(candData => rankedById[candData.id] || {
+		candidate_id: candData.id,
+		score: 0,
+		signals: {
+			filename_token_overlap: 0,
+			parent_folder_overlap: 0,
+			source_trust_boost: 0,
+		},
+	});
 
-	// Filter out hidden candidates
+	// Sort priority (highest first):
+	//   1. Servier icons (bioicons subfamily, consistent visual style -- preferred theme)
+	//   2. Repo assets (already in assets/equipment/, stylistically settled)
+	//   3. Other bioicons
+	//   4. scienceicons + anything else
+	// Within a tier: ranker score desc, then alphabetic on filename.
+	function sourceTier(candData) {
+		if (candData.rel_path.includes('/Servier/')) return 0;
+		if (candData.source_repo === 'assets/equipment') return 1;
+		if (candData.source_repo === 'OTHER_REPOS/bioicons') return 2;
+		return 3;
+	}
+	candidates.sort((a, b) => {
+		const ca = state.candidatesById[a.candidate_id];
+		const cb = state.candidatesById[b.candidate_id];
+		const ta = sourceTier(ca);
+		const tb = sourceTier(cb);
+		if (ta !== tb) return ta - tb;
+		if (b.score !== a.score) return b.score - a.score;
+		return ca.filename.localeCompare(cb.filename);
+	});
+
+	// Filter out hidden candidates.
 	const decision = state.decisions.get(target.asset_name);
 	if (decision && decision.hidden_candidates) {
 		const hidden = new Set(decision.hidden_candidates);
 		candidates = candidates.filter(c => !hidden.has(c.candidate_id));
 	}
 
-	// Apply search filter
-	if (state.search.trim()) {
-		const query = state.search.toLowerCase();
-		candidates = candidates.filter(c => {
-			const candData = state.candidatesById[c.candidate_id];
-			if (!candData) return false;
-			const filename = candData.filename.toLowerCase();
-			const tokens = (candData.search_tokens || []).map(t => t.toLowerCase());
-			return filename.includes(query) || tokens.some(t => t.includes(query));
-		});
-	}
-
-	return candidates.slice(0, 100);
+	// Cap default view; search results return all matches up to a higher cap so
+	// the user is never blocked from finding a known file.
+	const cap = query ? 500 : 200;
+	return candidates.slice(0, cap);
 }
 
 function navigateCandidate(delta) {
@@ -845,19 +911,25 @@ function computeMatchLabel(cand) {
 	const parentOverlap = sig.parent_folder_overlap || 0;
 	const trustBoost = sig.source_trust_boost || 0;
 
+	// Servier badge wins over score-derived labels: theme consistency trumps
+	// token overlap because Servier icons render uniformly across scenes.
+	const candData = cand.candidate_id ? state.candidatesById[cand.candidate_id] : null;
+	if (candData && candData.rel_path.includes('/Servier/')) {
+		return { text: 'Servier', class: 'strong' };
+	}
 	if (overlap >= 0.7) {
-		return { text: 'Strong name match', class: 'strong' };
+		return { text: 'Strong', class: 'strong' };
 	}
 	if (overlap >= 0.3) {
-		return { text: 'Partial name match', class: 'partial' };
+		return { text: 'Partial', class: 'partial' };
 	}
 	if (parentOverlap > 0) {
-		return { text: 'Same parent folder', class: 'parent' };
+		return { text: 'Folder', class: 'parent' };
 	}
 	if (trustBoost === 0.2) {
-		return { text: 'Trusted existing asset', class: 'trusted' };
+		return { text: 'Repo', class: 'trusted' };
 	}
-	return { text: 'Weak match', class: 'weak' };
+	return { text: 'Weak', class: 'weak' };
 }
 
 // ============================================
