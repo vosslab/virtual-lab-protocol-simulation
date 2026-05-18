@@ -1,0 +1,1 @@
+"""Protocol structure validation package."""

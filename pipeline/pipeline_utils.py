@@ -5,7 +5,7 @@ Intentional duplication: pipeline/ must be self-contained (no cross-tree imports
 This module contains ~80 LOC of shared discovery and YAML loading surface.
 
 Update both copies if behavior changes:
-- pipeline/_pipeline_utils.py (this file)
+- pipeline/pipeline_utils.py (this file)
 - validation/shared_toolkit/{repo_root, yaml_io, discovery}.py
 
 Functions and constants:
@@ -22,7 +22,7 @@ import yaml
 
 
 # Canonical repo root path, resolved once at import time.
-# This file lives at <repo>/pipeline/_pipeline_utils.py. Go up one level to reach the repo root.
+# This file lives at <repo>/pipeline/pipeline_utils.py. Go up one level to reach the repo root.
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
