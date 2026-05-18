@@ -429,10 +429,10 @@ solve M+1's problem. Scope creep is rejected as hard as missed acceptance.
 
 The decision rule:
 
-- Acceptance criteria met + obvious follow-on inside WP touch points → finish it.
-- Acceptance criteria met + obvious follow-on outside WP touch points → STOP +
+- Acceptance criteria met + obvious follow-on inside WP touch points -> finish it.
+- Acceptance criteria met + obvious follow-on outside WP touch points -> STOP +
   log a new TODO entry naming the follow-on and the suggested next WP.
-- Acceptance criteria met + no obvious follow-on → STOP + ship.
+- Acceptance criteria met + no obvious follow-on -> STOP + ship.
 
 ### Decision log per WP (one entry, optional)
 
@@ -494,7 +494,7 @@ for the coder.
 | Walker scale lane (after stabilization) | 1-2 hours each |
 | Content / renderer fix | 1-3 hours each |
 
-A WP that runs 2x its advisory budget is a signal — coder reports BLOCKED for
+A WP that runs 2x its advisory budget is a signal - coder reports BLOCKED for
 re-scoping, manager splits the WP. Not a punitive deadline; an early-warning
 trigger.
 
@@ -1062,7 +1062,7 @@ message.
   now build on a known-good base.
 - Workstreams: WS-LAYOUT-AUDIT, WS-LAYOUT-INTEGRATE, WS-WELLPLATE-ADAPTER, WS-LIQUID.
 - **Mandatory internal dispatch order** (manager enforces, resolves
-  WP-WELLPLATE-ADAPTER-1C ↔ WP-LIQUID-1 dependency in the WP list):
+  WP-WELLPLATE-ADAPTER-1C <-> WP-LIQUID-1 dependency in the WP list):
   1. WP-LAYOUT-AUDIT-1.
   2. WP-LAYOUT-INTEGRATE-1.
   3. WP-WELLPLATE-ADAPTER-1A.
@@ -1924,7 +1924,7 @@ forward.
 If **WP-WELLPLATE-ADAPTER-1C** (per-cell material visual state) misses its
 acceptance criteria after **one fix pass**, `<PILOT1>` immediately switches from
 `mtt_solubilization_readout` to `mtt_reagent_prep` (no well-plate dependency).
-1A (static cells) or 1B (group targets) stalls do NOT trigger downgrade — those are
+1A (static cells) or 1B (group targets) stalls do NOT trigger downgrade - those are
 mechanical render work; 1C is the semantic gate. The plate-runtime pilot becomes
 Pilot 2, scheduled after M5 closes on the simpler pilot. The downgrade is mechanical:
 no debate, no indefinite debugging, no scope expansion of WP-WELLPLATE-ADAPTER-1C.
@@ -2039,7 +2039,7 @@ diffs whose handoff report does not cite a philosophy when the WP makes a judgme
 | Philosophy | How it applies in this plan |
 | --- | --- |
 | **Long-term over short-term** | No "temporary" types, no `// TODO: revisit` shortcuts in `contract.ts`, no quick `any` to silence tsc. If the durable fix takes one more patch, take the patch. |
-| **Fix the design, not the symptom** | Walker fails to advance → triage (renderer-gap / content-gap / spec-gap) → fix the right layer. Never patch the walker to skip. Never widen the contract to swallow YAML inconsistency. |
+| **Fix the design, not the symptom** | Walker fails to advance -> triage (renderer-gap / content-gap / spec-gap) -> fix the right layer. Never patch the walker to skip. Never widen the contract to swallow YAML inconsistency. |
 | **Fresh subagent per task** | Every WP dispatches a new subagent. No SendMessage chains across WPs. Each subagent reads `docs/REPO_STYLE.md` + relevant specs from a clean context. |
 | **Atomic task decomposition** | One WP = one owner = one verification step = one patch (or a tight 2-patch pair for contract / types). WPs that look bigger get split before dispatch. |
 | **Finish the obvious** | A WP whose tsc passes but whose `docs/CHANGELOG.md` entry is missing is NOT done. A WP that fixes a bug but leaves the same bug in the next listed file is NOT done. |
@@ -2471,7 +2471,7 @@ Reviewer accepted suggested answers to Q1-Q9:
   read-only behavioral evidence; no in-place rehab.
 - **Q5 resolved**: Pilot 0 = bottle smoke; Pilot 1 = `mtt_solubilization_readout`;
   downgrade to `mtt_reagent_prep` is mechanical after one failed fix pass on
-  WP-WELLPLATE-ADAPTER-1C (per-cell visual state — the semantic gate).
+  WP-WELLPLATE-ADAPTER-1C (per-cell visual state - the semantic gate).
 - **Q6 resolved**: `test-results/` stays gitignored; no `tests/baselines/` screenshot
   baselines in this plan; browser runtime churns too much early to commit baselines.
 - **Q7 resolved**: `ui-ux-engineer` reviews once at M3 exit, NOT per chrome patch.

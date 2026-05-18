@@ -2,28 +2,58 @@
 
 ## 2026-05-17
 
-### Decisions and Failures
-
-- **Scene runtime activation plan put ON HOLD**. Big M0-M6 runtime activation plan
-  paused after the base-scene gallery render exposed a closed-vocabulary violation:
-  every base scene authors its own coordinate grid via `zones[].bounds` rects, plus
-  per-scene `scene_bounds` and `depth_tier`, in direct conflict with
-  `docs/PRIMARY_DESIGN.md` `## Vocabulary closure and anti-drift`. State at hold
-  archived to
-  [docs/active_plans/scene_runtime_activation_on_hold.md](active_plans/scene_runtime_activation_on_hold.md)
-  with what landed (pipeline self-containment, runtime spine M0-M5 partials, 9/26
-  walker-green protocols, validator parse-error path, base-scene gallery generator),
-  what is paused (16 renderer-gap protocols, 1 orchestrator-gap, mass content fixes,
-  gesture expansion), and resumption criteria (row+slot author surface locked +
-  every scene rewritten + gallery passes precheck + pytest green under hard validator
-  gate). A focused row-based base_scene layout plan at
-  `~/.claude/plans/serene-stargazing-moore.md` supersedes the layout-engine and
-  scene-yaml workstreams; remaining runtime workstreams resume after the focused
-  plan lands. Philosophy: "Fix the design, not the symptom" (delete the coordinate
-  surface from authoring rather than tighten the rects scene-by-scene).
-  `docs/TODO.md` carries the on-hold pointer.
-
 ### Additions and New Features
+
+- **Experiment 1 per-scene sketches (WP-EXP1-SKETCH-1)**: appended
+  Section 4 (per-scene comparison) to
+  `docs/active_plans/scene_authoring_shape_experiment_1.md`. Section 4
+  contains one subsection per corpus scene (34 total) carrying a
+  Model A summary (current placement count, current geometry-field
+  count, inheritance keys), a Model B sketch (row+slot), a Model C
+  sketch (region+slot), and a per-metric table for both candidates.
+  Sketch order is randomized per scene by the deterministic rule
+  documented in Section 4's intro: even-indexed corpus rows sketch B
+  before C; odd-indexed rows sketch C before B. Sketches respect the
+  Section 6 structured-object boundary (structured objects appear as
+  one slot, never expanded), preserve every Model A `placement_name`
+  verbatim, and carry zero authored geometry. The locked sketch
+  surface in pre-registered Section 2.3 omits the `extends`
+  inheritance handle; this is recorded honestly per scene as
+  `needs_extra_author_hint = true` for every override file (24 of 34
+  scenes) rather than silently extending the surface, and surfaces as
+  the dominant gap signal for WP-EXP1-SCORE-1 to interpret. Seven
+  zero-placement sdspage scenes are flagged
+  `failure_mode = scene_content_incomplete` per Section 2.5 with
+  best-effort empty sketches. Pre-registration Sections 1, 2, 3, 6, 10
+  untouched. Sketching date: 2026-05-17. Verdict and aggregation
+  remain WP-EXP1-SCORE-1.
+- **Experiment 1 pre-registration (WP-EXP1-PRE-1)**: created
+  `docs/active_plans/scene_authoring_shape_experiment_1.md` carrying the
+  locked Sections 1 (pre-registration: hypothesis, candidates Model A /
+  Model B / Model C, metrics table, acceptance threshold, row-name and
+  region-name guardrails copied verbatim from the approved plan
+  `~/.claude/plans/serene-stargazing-moore.md`), Section 2 (method for
+  sketcher / reviewer subagents, per-scene sketch-order randomization,
+  sketch surface limits, structured-object boundary handling,
+  scene-content incompleteness flagging), Section 3 (34-row corpus
+  matching `git ls-files content/base_scenes/*.yaml
+  content/protocols/*/scenes/*.yaml`), Section 6 (structured-object
+  inventory: 13 objects classified `structured` out of 69 referenced
+  object_names, classification rule documented, uncertain cases listed as
+  `workspace` per the conservative rule), and Section 10 (roadmap for
+  Experiments 2-5 with "not pre-registered" disclaimer). Sections 4, 5,
+  7, 8, 9 deliberately reserved for WP-EXP1-SKETCH-1 and
+  WP-EXP1-SCORE-1; sketching is gated on this pre-registration being
+  reviewed. Pre-registration date: 2026-05-17. Rationale: six prior
+  layout / scene plans stalled because the authoring shape was chosen on
+  intuition; pre-registration freezes candidates, metrics, and
+  acceptance threshold before any sketch lands, so goalpost-shifting
+  after sketching automatically invalidates the experiment and restarts
+  the plan. Philosophy: "Fix the design, not the symptom" (the
+  experiment is allowed to return `no_coordinate_free_model_supported`
+  as a successful result that triggers redesign, instead of forcing a
+  shape to fit). No spec, engine, content, validator, or test files
+  modified; only the new deliverable and this changelog entry changed.
 
 - **Stepper Part 1 of two-part semantic validation rollout**: Added five new
   stepper checks emitting structured findings per
