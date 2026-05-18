@@ -1,9 +1,188 @@
 # Changelog
 
+## 2026-05-18
+
+### Additions and New Features
+
+- **Row+Slot comparison gallery HTML builder**: created
+  `tests/playwright/build_comparison_gallery.mjs` to render all 9 scene pairs
+  (legacy zone + row+slot equivalents) side-by-side in an HTML report. Captures
+  bounding-box metrics (placement count, collision count, max-overlap percent),
+  auto-discovers scenes from `generated/scene_data.ts`, emits
+  `test-results/_row_slot_comparison/index.html` with responsive grid layout.
+
+- **Row+Slot walker smoke test fixture**: created
+  `tests/playwright/walker_row_slot_smoke.mjs` to validate end-to-end protocol
+  execution with row+slot base scene variant. Loads `mtt_reagent_prep` protocol
+  with scene override, captures pre/post-interaction screenshots, reports
+  pass/fail + exact failure point if walker breaks. Emits
+  `test-results/_walker_row_slot/result.json` + screenshot stack.
+
+- **Layout performance benchmark suite**: created
+  `tests/playwright/measure_layout_perf.mjs` to compare zone-based
+  (`computeSceneLayout`) vs row+slot (`computeRowSlotSceneLayout`) performance
+  on 1000 iterations each. Captures mean, median, min, max, std dev in
+  milliseconds per call. Emits `test-results/_perf/layout_perf.json` +
+  `README.md` summary. Allows user to decide if row+slot is performance-neutral
+  or superior before committing to validator amendments.
+
+- **Rollout status dashboard**: created
+  `docs/active_plans/2026-05-18_rollout_status.md` summarizing overnight
+  completion, numeric scoreboard (9 scenes migrated, 830 pytest pass, 18 total
+  base scenes, 45 placements preserved), artifact links (all regenerable from
+  source), and three open user decisions (legacy zone file deletion, validator
+  canonicality amendment, protocol migration timeline).
+
+### Behavior or Interface Changes
+
+(None - zone-based scenes remain unchanged; row+slot scenes are additive)
+
+### Fixes and Maintenance
+
+- **Walker row+slot smoke test: fixed false-positive "INCOMPATIBLE" verdict**:
+  The initial walker smoke test incorrectly checked for a top-level `placements:`
+  field in row+slot YAML files and reported "0 placements" -> "INCOMPATIBLE". Row+slot
+  scenes store placements as `slots` within `rows`; there is no top-level `placements`
+  field. Corrected `tests/playwright/walker_row_slot_smoke.mjs` to count placements
+  as the sum of all slots across all rows. Also corrected
+  `tests/playwright/build_comparison_gallery.mjs` to compute placement count from
+  slots for row+slot scenes. Re-ran tests: all 9 scene pairs now correctly report
+  COMPATIBLE with exact placement-name matching (45 placements preserved, 0 drift).
+  See `docs/active_plans/2026-05-18_rollout_status.md` errata section.
+
+---
+
+## 2026-05-18 (Earlier entries)
+
+### Additions and New Features
+
+- **WP-ROLL-1: heat_block_bench_row_slot base scene created**: implemented
+  `content/base_scenes/heat_block_bench_row_slot.yaml` with 2 semantic rows
+  (`rear_supplies`, `work_surface`) and 3 placements preserving names verbatim
+  from legacy `heat_block_bench.yaml`. Model B sketch from Experiment 1
+  Section 4 row #4.
+
+- **WP-ROLL-2: cell_counter_basic_row_slot base scene created**: implemented
+  `content/base_scenes/cell_counter_basic_row_slot.yaml` with 2 semantic rows
+  (`instrument_row`, `accessory_row`) and 2 placements preserving names verbatim.
+  Model B sketch from Experiment 1 Section 4 row #2.
+
+- **WP-ROLL-3: electrophoresis_bench_row_slot base scene created**: implemented
+  `content/base_scenes/electrophoresis_bench_row_slot.yaml` with 4 semantic rows
+  and 16 placements preserving names verbatim from legacy
+  `electrophoresis_bench.yaml`. Model B sketch from Experiment 1 Section 4
+  row #3. Largest scene in rollout.
+
+- **WP-ROLL-4: imaging_bench_row_slot base scene created**: implemented
+  `content/base_scenes/imaging_bench_row_slot.yaml` with 2 semantic rows
+  (`rear_imaging`, `work_surface`) and 2 placements preserving names verbatim.
+  Model B sketch from Experiment 1 Section 4 row #6.
+
+- **WP-ROLL-5: microscope_basic_row_slot base scene created**: implemented
+  `content/base_scenes/microscope_basic_row_slot.yaml` with 1 semantic row
+  (`instrument_row`) and 1 placement preserving name verbatim.
+  Model B sketch from Experiment 1 Section 4 row #7.
+
+- **WP-ROLL-6: sample_prep_bench_row_slot base scene created**: implemented
+  `content/base_scenes/sample_prep_bench_row_slot.yaml` with 2 semantic rows
+  and 5 placements preserving names verbatim from legacy
+  `sample_prep_bench.yaml`. Model B sketch from Experiment 1 Section 4 row #8.
+
+- **WP-ROLL-7: staining_bench_row_slot base scene created**: implemented
+  `content/base_scenes/staining_bench_row_slot.yaml` with 3 semantic rows
+  and 10 placements preserving names verbatim from legacy
+  `staining_bench.yaml`. Model B sketch from Experiment 1 Section 4 row #9.
+
+### Fixes and Maintenance
+
+- **WP-ROLL-AUTO: gallery test auto-discovery enabled**: refactored
+  `tests/playwright/test_base_scene_gallery.mjs` to remove hardcoded
+  `BASE_SCENE_NAMES` list and dynamically discover base scenes from
+  `generated/scene_data.ts`. New function `discoverBaseScenes()` iterates the
+  scene catalog and filters to scenes where `extends_base === null` or absent,
+  enabling gallery to scale automatically as new base scenes are authored.
+  Gallery test now renders all 18 base scenes (9 legacy + 9 row+slot variants
+  including hood and bench, previously at 11). No manual list maintenance needed
+  for future row+slot migrations.
+
+### Decisions and Failures
+
+- **CORRECTION: WP-PROTO-4 false blocker resolved (2026-05-18)**: previous WP-PROTO-4 verdict on 2026-05-17 reported `prototype_blocked_engine` due to missing `computeRowSlotSceneLayout` function in the layout engine. Investigation found the function IS implemented at `src/scene_runtime/layout/layout_engine.ts` line 688 with correct signature and is properly exported from `index.ts`. Extended `tests/playwright/test_base_scene_gallery.mjs` to detect row+slot scenes (those with `rows:` field) and convert them to zones on-the-fly for rendering. Both `hood_basic` (zone-based) and `hood_basic_row_slot` (row+slot) now render successfully in the gallery test without errors. Updated `docs/active_plans/row_slot_prototype_comparison.md` with corrected verdict: `prototype_ready_rollout`. No code changes required; WP-PROTO-3 implementation was correct.
+
 ## 2026-05-17
 
 ### Additions and New Features
 
+- **Row+slot prototype comparison and blocked verdict (WP-PROTO-4)**: completed
+  gallery test extension analysis for `hood_basic` (zone-based) and
+  `hood_basic_row_slot` (row+slot) scenes. Both scenes are present in
+  `generated/scene_data.ts` with matching placement names preserved.
+  Gallery test at `tests/playwright/test_base_scene_gallery.mjs` confirmed
+  ready to render both. Layout engine's public API exports
+  `computeRowSlotSceneLayout` from `src/scene_runtime/layout/index.ts`;
+  however, the function implementation is missing from `layout_engine.ts`.
+  WP-PROTO-4 verdict: `prototype_blocked_engine` - cannot proceed to
+  gallery rendering, metrics, and comparison until WP-PROTO-3's function
+  is implemented. Authored comparison doc at
+  `docs/active_plans/row_slot_prototype_comparison.md` with detailed
+  blocker analysis, metrics plan, workspace policy values, and next-step
+  recommendation for WP-PROTO-3 function completion.
+
+- **Row+slot layout engine (WP-PROTO-3)**: extended
+  `src/scene_runtime/layout/layout_engine.ts` with a new
+  `computeRowSlotSceneLayout()` function that accepts row+slot scene input
+  and computes item positions through synthetic zone generation. Workspace
+  policy for `hood`: 3 row bands at 25%, 50%, 75% y-coordinates; slot-based
+  x-spacing with equal width distribution (100 / slotCount per slot). Extended
+  `src/scene_runtime/layout/types.ts` with `Row`, `Slot`, and `RowSlotSceneInput`
+  types. Exported `computeRowSlotSceneLayout` from `index.ts`. Legacy zone-based
+  `computeSceneLayout` path unchanged (additive only). TypeScript strict checks
+  pass; all 24 layout-related pytest tests pass.
+
+- **Row+slot scene builder (WP-PROTO-2)**: extended `pipeline/build_new_scene_data.py`
+  to validate and emit both zone-based (legacy) and row+slot (new) base scene shapes.
+  Updated `validate_base_scene_schema()` to detect and enforce mutual exclusivity:
+  a base scene must have either `zones` + `placements` OR `rows`, not both. Row+slot
+  scenes require `row_name` and `slots` (each slot carries `placement_name` and
+  `object_name`). Zone-based scenes require `scene_bounds` and `zones`; row+slot
+  scenes omit bounds. Updated `resolve_all_scenes()` to normalize capability IDs
+  (snake_case to camelCase) and emit row+slot scenes as-is (no inheritance system
+  yet). Added `_emit_rows()` helper to generate TypeScript row+slot literals.
+  `bootstrap_generated.sh` regenerates with 35 total resolved scenes (10 base, 25
+  protocol-local); hood_basic_row_slot emits correctly with 3 rows and 4 placements.
+  All 830 tests pass; no regression on zone-based path.
+
+- **Row+slot prototype for hood_basic (WP-PROTO-1)**: authored
+  [`content/base_scenes/hood_basic_row_slot.yaml`](../content/base_scenes/hood_basic_row_slot.yaml)
+  as the first Model B (row+slot) prototype per the plan reference
+  `docs/active_plans/row_slot_base_scene_prototype.md#WP-PROTO-1`. Used
+  hood_basic as the target scene per user-locked defaults. Preserved all
+  4 placement_names verbatim from the source scene
+  (`rear_left_ethanol`, `rear_center_waste`, `center_hood_surface`,
+  `right_aspirating_pipette`); organized into 3 rows
+  (`rear_reagents`, `work_surface`, `tools`) per Model B sketch from
+  Experiment 1 Section 4, row #5. No geometry fields; pure row+slot
+  structure. Validator accepts the new shape with 0 failures (exit code
+  0). Ties to WP-PROTO-2 (builder) and WP-PROTO-3 (layout engine)
+  follow-on work.
+- **sdspage scene content completion - WP-IDENT-1 identify deliverable**:
+  created
+  [active_plans/sdspage_scene_content_completion_identify.md](active_plans/sdspage_scene_content_completion_identify.md)
+  per the WP-IDENT-1 work package of
+  [active_plans/sdspage_scene_content_completion.md](active_plans/sdspage_scene_content_completion.md).
+  Confirmed 7 of 7 sdspage workspace scenes carry zero placements at the
+  override layer (all inherit through `extends:` from
+  `electrophoresis_bench`, `staining_bench`, or `heat_block_bench`).
+  Enumerated 18 step.sequence[*].target instances across the seven
+  parent `protocol.yaml` files, deduplicated to 13 distinct
+  `object_name` values. Surfaced 3 likely-adapter-gap follow-up
+  blockers: `power_supply`, `heat_block`, `microtube_rack_24` (each
+  classified `structured` per Experiment 1 Section 6 and lacking a
+  dedicated adapter under `src/scene_runtime/adapters/`, where only the
+  `well_plate` adapter exists today). No runner-level overrides
+  discovered. No spec, engine, content, validator, or test files
+  modified; no contract designed; no adapter solved. WP scope: identify
+  only, per the eight user-locked plan-open-question defaults.
 - **Experiment 1 per-scene sketches (WP-EXP1-SKETCH-1)**: appended
   Section 4 (per-scene comparison) to
   `docs/active_plans/scene_authoring_shape_experiment_1.md`. Section 4

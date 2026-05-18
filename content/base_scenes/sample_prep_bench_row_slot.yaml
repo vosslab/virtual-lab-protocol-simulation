@@ -1,0 +1,21 @@
+scene_name: sample_prep_bench_row_slot
+workspace: bench
+capabilities:
+  - item_workspace
+background:
+  asset: bench_workspace_bg
+rows:
+  - row_name: rear_reagents
+    slots:
+      - placement_name: rear_left_protein_sample
+        object_name: protein_sample_tube
+      - placement_name: rear_center_laemmli
+        object_name: laemmli_4x_bottle
+      - placement_name: rear_right_bme
+        object_name: bme_bottle
+  - row_name: work_surface
+    slots:
+      - placement_name: center_eppendorf_rack
+        object_name: microtube_rack_24
+      - placement_name: center_micropipette
+        object_name: micropipette

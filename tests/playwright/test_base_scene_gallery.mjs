@@ -22,18 +22,29 @@ import { REPO_ROOT } from './repo_root.mjs';
 // CONSTANTS
 //============================================
 
-// The 9 base scenes (no extends_base field in generated/scene_data.ts).
-const BASE_SCENE_NAMES = [
-	'bench_basic',
-	'cell_counter_basic',
-	'electrophoresis_bench',
-	'heat_block_bench',
-	'hood_basic',
-	'imaging_bench',
-	'microscope_basic',
-	'sample_prep_bench',
-	'staining_bench',
-];
+// Auto-discover base scenes from generated catalog.
+// A base scene has extends_base === null or absent.
+let BASE_SCENE_NAMES = [];
+
+// Lazy load: will populate on first test run.
+async function discoverBaseScenes() {
+	if (BASE_SCENE_NAMES.length > 0) {
+		return BASE_SCENE_NAMES;
+	}
+
+	const mod = await import(path.join(REPO_ROOT, 'generated', 'scene_data.ts'));
+	const { SCENE_CATALOG } = mod;
+
+	for (const sceneName in SCENE_CATALOG) {
+		const sceneData = SCENE_CATALOG[sceneName];
+		if (!sceneData.extends_base || sceneData.extends_base === null) {
+			BASE_SCENE_NAMES.push(sceneName);
+		}
+	}
+
+	BASE_SCENE_NAMES.sort();
+	return BASE_SCENE_NAMES;
+}
 
 const GALLERY_DIR = path.join(REPO_ROOT, 'test-results', '_base_scenes_gallery');
 
@@ -53,7 +64,7 @@ async function loadSceneData(sceneName) {
 	const sceneData = SCENE_CATALOG[sceneName];
 
 	// Verify it's a base scene (no extends_base).
-	if ('extends_base' in sceneData && sceneData.extends_base !== null) {
+	if (sceneData.extends_base && sceneData.extends_base !== null) {
 		throw new Error(`Scene '${sceneName}' extends base; not a base scene`);
 	}
 
@@ -169,17 +180,78 @@ async function renderSingleScene(sceneName, browser) {
 
 	// Render the scene into the container.
 	console.log(`[${sceneName}] Rendering scene...`);
-	const renderResult = await page.evaluate(async (scene) => {
+
+	// Detect if this is a row+slot scene (has 'rows' instead of 'zones').
+	const isRowSlotScene = sceneData.rows && !sceneData.zones;
+	let zones = sceneData.zones || [];
+	let placements = sceneData.placements || [];
+
+	// If row+slot, convert rows+slots to zones and build placements on-the-fly.
+	if (isRowSlotScene && sceneData.rows) {
+		console.log(`[${sceneName}] Converting row+slot layout to zones...`);
+		const numRows = sceneData.rows.length;
+		zones = [];
+		placements = [];
+
+		for (let ri = 0; ri < sceneData.rows.length; ri++) {
+			const row = sceneData.rows[ri];
+			// Row band y-positions: 25%, 50%, 75% for 3 rows.
+			let bandY;
+			if (numRows === 1) {
+				bandY = 50;
+			} else {
+				const minY = 25;
+				const maxY = 75;
+				bandY = minY + (ri / (numRows - 1)) * (maxY - minY);
+			}
+
+			const numSlots = row.slots.length;
+			const slotWidth = numSlots > 0 ? 100 / numSlots : 100;
+
+			for (let si = 0; si < row.slots.length; si++) {
+				const slot = row.slots[si];
+				const x0 = si * slotWidth;
+				const x1 = (si + 1) * slotWidth;
+
+				zones.push({
+					id: slot.placement_name,
+					bounds: {
+						left: x0,
+						right: x1,
+						top: bandY - 12,
+						bottom: bandY + 12,
+					},
+					align: 'center',
+					label: slot.placement_name,
+				});
+
+				// Build placement entry
+				placements.push({
+					placement_name: slot.placement_name,
+					object_name: slot.object_name,
+					zone: slot.placement_name,
+					depth_tier: 1,
+				});
+			}
+		}
+	}
+
+	// Ensure scene has bounds
+	if (!sceneData.scene_bounds) {
+		sceneData.scene_bounds = { left: 0, top: 0, right: 100, bottom: 100 };
+	}
+
+	const renderResult = await page.evaluate(async ({ scene, zonesData, placementData, isRowSlot }) => {
 		// Update the metadata display.
-		document.getElementById('workspace-label').textContent = scene.workspace;
-		document.getElementById('placement-count').textContent = scene.placements.length;
+		document.getElementById('workspace-label').textContent = scene.workspace + (isRowSlot ? ' (row+slot)' : '');
+		document.getElementById('placement-count').textContent = placementData.length;
 
 		const container = document.getElementById('scene-container');
 		if (!container) throw new Error('Container not found');
 
 		// Create SVG with resolved scene geometry.
 		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-		const bounds = scene.scene_bounds;
+		const bounds = scene.scene_bounds || { left: 0, top: 0, right: 100, bottom: 100 };
 		svg.setAttribute('viewBox', `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`);
 		svg.setAttribute('width', '100%');
 		svg.setAttribute('height', '100%');
@@ -198,9 +270,9 @@ async function renderSingleScene(sceneName, browser) {
 
 		// Render each placement.
 		const placementIds = [];
-		for (const placement of scene.placements) {
+		for (const placement of placementData) {
 			// Find the zone.
-			const zone = scene.zones.find(z => z.id === placement.zone);
+			const zone = zonesData.find(z => z.id === placement.zone);
 			if (!zone) continue;
 
 			// Position at zone center.
@@ -254,7 +326,7 @@ async function renderSingleScene(sceneName, browser) {
 			rendered: true,
 			placementIds,
 		};
-	}, sceneData);
+	}, { scene: sceneData, zonesData: zones, placementData: placements, isRowSlot: isRowSlotScene });
 
 	console.log(`[${sceneName}] Rendered ${renderResult.placementIds.length} placements`);
 
@@ -423,8 +495,11 @@ function generateGalleryIndex(results) {
 //============================================
 
 async function runTest() {
+	// Discover base scenes from generated catalog.
+	await discoverBaseScenes();
+
 	console.log('='.repeat(60));
-	console.log('WP-BASE-SCENE-GALLERY: Render all 9 base scenes');
+	console.log(`WP-BASE-SCENE-GALLERY: Render all ${BASE_SCENE_NAMES.length} base scenes`);
 	console.log('='.repeat(60));
 
 	// Create gallery directory.
@@ -457,7 +532,7 @@ async function runTest() {
 	console.log('\n' + '='.repeat(60));
 	console.log('RENDER SUMMARY');
 	console.log('='.repeat(60));
-	console.log(`Total base scenes: ${BASE_SCENE_NAMES.length}`);
+	console.log(`Discovered base scenes: ${BASE_SCENE_NAMES.length}`);
 	console.log(`Successfully rendered: ${results.length}`);
 	console.log(`Failed: ${failedScenes.length}`);
 
@@ -490,7 +565,7 @@ async function runTest() {
 		return 1;
 	}
 
-	console.log('\nSUCCESS: All 9 base scenes rendered and gallery created');
+	console.log(`\nSUCCESS: All ${BASE_SCENE_NAMES.length} base scenes rendered and gallery created`);
 	return 0;
 }
 

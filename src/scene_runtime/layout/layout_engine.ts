@@ -19,7 +19,7 @@
  * in all runtime contexts; implements inline via viewBox parsing.
  */
 
-import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef } from './types';
+import type { AssetSpec, ComputedItemLayout, SceneItem, SceneLayoutRules, ZoneDef, RowSlotSceneInput, Row, Slot } from './types';
 
 //============================================
 // Local aspect ratio cache and helper (avoids svg_assets import)
@@ -673,6 +673,110 @@ export function layoutLabels(
 			}
 		}
 	}
+}
+
+// ============================================
+// Row+slot layout engine (new model)
+//
+// Workspace policy for 'hood':
+// - Row band y-positions: 3 bands distributed as 25%, 50%, 75% down the workspace
+//   (from top). Bands are anchored at their midpoint; items are centered in each band.
+// - Slot x-positions: equal spacing within workspace width (100% wide, 0-100 x-coord).
+//   Each slot receives (100 / slotCount) width; items are centered in their slots.
+// - All items use a default depth tier (mid) and anchor_y='center'.
+//
+export function computeRowSlotSceneLayout(
+	items: SceneItem[],
+	specs: Record<string, AssetSpec>,
+	input: RowSlotSceneInput,
+	viewportW: number,
+	viewportH: number
+): ComputedItemLayout[] {
+	// Extract label styling from input or use defaults
+	const labelFontSize = input.labelFontSize || 14;
+	const labelLineHeight = input.labelLineHeight || 1.2;
+	const labelOffsetY = input.labelOffsetY || 10;
+
+	// Workspace-specific row band y-positions.
+	// For 'hood': 3-row bands at 25%, 50%, 75% (scene y-coordinates 0-100 top-to-bottom).
+	// Each row's baseline is set to its band position.
+	const rowBandPositions: Record<string, number> = {};
+	for (let ri = 0; ri < input.rows.length; ri++) {
+		const row = input.rows[ri]!;
+		// Position: 25, 50, 75 for rows 0, 1, 2 respectively.
+		// Generalizes for more rows: even spacing between 25 and 75.
+		const numRows = input.rows.length;
+		let bandY: number;
+		if (numRows === 1) {
+			bandY = 50; // single row at middle
+		} else {
+			// Distribute rows across 25-75 range
+			const minY = 25;
+			const maxY = 75;
+			bandY = minY + (ri / (numRows - 1)) * (maxY - minY);
+		}
+		rowBandPositions[row.row_name] = bandY;
+	}
+
+	// Build ZoneDef map from rows+slots: one zone per slot.
+	// Workspace width is 100 (0-100 x-coords); distribute slots evenly.
+	const zonesMap: Record<string, ZoneDef> = {};
+	let slotIndex = 0;
+	for (const row of input.rows) {
+		const numSlots = row.slots.length;
+		const slotWidth = numSlots > 0 ? 100 / numSlots : 100;
+
+		for (let si = 0; si < row.slots.length; si++) {
+			const slot = row.slots[si]!;
+			// Zone x-extent for this slot: [x0, x1)
+			const x0 = si * slotWidth;
+			const x1 = (si + 1) * slotWidth;
+			const baseline = rowBandPositions[row.row_name]!;
+
+			zonesMap[slot.placement_name] = {
+				x0,
+				x1,
+				baseline,
+				gap: 2, // default gap; tunable via input later
+				align: 'center',
+			};
+		}
+	}
+
+	// Build SceneLayoutRules using generated zones
+	const layoutRules: SceneLayoutRules = {
+		zones: zonesMap,
+		labelFontSize,
+		labelLineHeight,
+		labelOffsetY,
+	};
+	if (input.sceneBounds) {
+		layoutRules.sceneBounds = input.sceneBounds;
+	}
+
+	// Build item-to-zone map: look up item.id in the input rows to find its slot placement_name.
+	const itemToZone: Record<string, string> = {};
+	for (const row of input.rows) {
+		for (const slot of row.slots) {
+			// Match items by their id (placement_name in the slot).
+			for (const item of items) {
+				if (item.id === slot.placement_name) {
+					itemToZone[item.id] = slot.placement_name;
+				}
+			}
+		}
+	}
+
+	// Update item.zone for each item based on row+slot mapping.
+	// This is a destructive update; the caller's items array is modified.
+	for (const item of items) {
+		if (itemToZone[item.id]) {
+			item.zone = itemToZone[item.id]!;
+		}
+	}
+
+	// Call the existing zone-based layout engine with the generated zones.
+	return computeSceneLayout(items, specs, layoutRules, viewportW, viewportH);
 }
 
 // ============================================

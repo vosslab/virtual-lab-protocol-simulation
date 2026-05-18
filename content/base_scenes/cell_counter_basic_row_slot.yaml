@@ -1,0 +1,15 @@
+scene_name: cell_counter_basic_row_slot
+workspace: cell_counter
+capabilities:
+  - item_workspace
+background:
+  asset: cell_counter_workspace_bg
+rows:
+  - row_name: instrument_row
+    slots:
+      - placement_name: main_cell_counter
+        object_name: cell_counter
+  - row_name: accessory_row
+    slots:
+      - placement_name: counter_slide_cartridge
+        object_name: counter_slide_cartridge

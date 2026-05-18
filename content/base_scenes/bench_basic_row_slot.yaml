@@ -1,0 +1,13 @@
+scene_name: bench_basic_row_slot
+workspace: bench
+capabilities:
+  - item_workspace
+background:
+  asset: bench_workspace_bg
+rows:
+  - row_name: rear_bench
+    slots:
+      - placement_name: rear_left_waste
+        object_name: waste_container
+      - placement_name: rear_right_vortex
+        object_name: vortex

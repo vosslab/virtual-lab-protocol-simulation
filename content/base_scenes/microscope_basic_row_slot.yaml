@@ -1,0 +1,11 @@
+scene_name: microscope_basic_row_slot
+workspace: microscope
+capabilities:
+  - item_workspace
+background:
+  asset: microscope_view_bg
+rows:
+  - row_name: instrument_row
+    slots:
+      - placement_name: main_microscope
+        object_name: microscope

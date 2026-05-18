@@ -82,6 +82,28 @@ export type SceneLayoutRules = {
 };
 
 //============================================
+// Row+slot scene input (new model; parallel to zone-based input)
+
+export type Slot = {
+	placement_name: string;
+	object_name: string;
+};
+
+export type Row = {
+	row_name: string;
+	slots: Slot[];
+};
+
+export type RowSlotSceneInput = {
+	rows: Row[];
+	workspace: 'hood'; // extensible to other workspaces later
+	labelFontSize?: number;
+	labelLineHeight?: number;
+	labelOffsetY?: number;
+	sceneBounds?: SceneBounds;
+};
+
+//============================================
 // Computed layout result
 
 export type ComputedItemLayout = {

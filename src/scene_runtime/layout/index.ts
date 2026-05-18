@@ -9,7 +9,7 @@
 export { computeSceneLayout } from './adapter';
 
 // Mined layout engine (internal; exported for testing/documentation).
-export { computeSceneLayout as computeSceneLayoutLegacy, preCacheAspectRatios } from './layout_engine';
+export { computeSceneLayout as computeSceneLayoutLegacy, computeRowSlotSceneLayout, preCacheAspectRatios } from './layout_engine';
 
 // Types
-export type { SceneItem, SceneLayoutRules, ZoneDef, ComputedItemLayout, AssetSpec, SceneBounds, SceneItemGroup } from './types';
+export type { SceneItem, SceneLayoutRules, ZoneDef, ComputedItemLayout, AssetSpec, SceneBounds, SceneItemGroup, RowSlotSceneInput, Row, Slot } from './types';

@@ -125,6 +125,7 @@ def validate_base_scene_schema(scene_name: str, data: Dict[str, Any]) -> None:
 	"""
 	Validate that a base scene YAML has required fields and no forbidden keys.
 
+	Supports both zone-based (legacy with zones/placements) and row+slot shapes.
 	Base scenes must not have extends, add_placements, remove_placements,
 	deactivate_placements, or reposition_placements.
 
@@ -135,28 +136,82 @@ def validate_base_scene_schema(scene_name: str, data: Dict[str, Any]) -> None:
 	Raises:
 		RuntimeError: If validation fails.
 	"""
-	required_fields = ["scene_name", "workspace", "scene_bounds", "background", "zones", "placements"]
+	# Common required fields
+	common_required = ["scene_name", "workspace", "background"]
 
-	for field in required_fields:
+	# Check common required fields
+	for field in common_required:
 		if field not in data:
 			raise RuntimeError(f"Base scene '{scene_name}' missing required field: {field}")
+
+	# Detect shape: zone-based vs row+slot
+	has_zones = "zones" in data
+	has_rows = "rows" in data
+
+	# Exactly one shape must be present
+	if has_zones and has_rows:
+		raise RuntimeError(f"Base scene '{scene_name}' may not have both 'zones' and 'rows'")
+
+	if not has_zones and not has_rows:
+		raise RuntimeError(f"Base scene '{scene_name}' must have either 'zones' or 'rows'")
+
+	# Zone-based shape requires zones and placements
+	if has_zones:
+		if "placements" not in data:
+			raise RuntimeError(f"Base scene '{scene_name}' (zone-based) missing required field: placements")
+
+		if "scene_bounds" not in data:
+			raise RuntimeError(f"Base scene '{scene_name}' (zone-based) missing required field: scene_bounds")
+
+		# Validate placements have placement_name
+		placements = data.get("placements", [])
+		if not isinstance(placements, list):
+			raise RuntimeError(f"Base scene '{scene_name}' placements must be a list")
+
+		for i, placement in enumerate(placements):
+			if not isinstance(placement, dict):
+				raise RuntimeError(f"Base scene '{scene_name}' placement {i} is not a dict")
+
+			if "placement_name" not in placement:
+				raise RuntimeError(f"Base scene '{scene_name}' placement {i} missing placement_name")
+
+	# Row+slot shape requires rows (no placements)
+	if has_rows:
+		if "placements" in data:
+			raise RuntimeError(f"Base scene '{scene_name}' (row+slot) must not have 'placements' field")
+
+		rows = data.get("rows", [])
+		if not isinstance(rows, list):
+			raise RuntimeError(f"Base scene '{scene_name}' rows must be a list")
+
+		for i, row in enumerate(rows):
+			if not isinstance(row, dict):
+				raise RuntimeError(f"Base scene '{scene_name}' row {i} is not a dict")
+
+			if "row_name" not in row:
+				raise RuntimeError(f"Base scene '{scene_name}' row {i} missing row_name")
+
+			if "slots" not in row:
+				raise RuntimeError(f"Base scene '{scene_name}' row {i} missing slots")
+
+			slots = row.get("slots", [])
+			if not isinstance(slots, list):
+				raise RuntimeError(f"Base scene '{scene_name}' row {i} slots must be a list")
+
+			for j, slot in enumerate(slots):
+				if not isinstance(slot, dict):
+					raise RuntimeError(f"Base scene '{scene_name}' row {i} slot {j} is not a dict")
+
+				if "placement_name" not in slot:
+					raise RuntimeError(f"Base scene '{scene_name}' row {i} slot {j} missing placement_name")
+
+				if "object_name" not in slot:
+					raise RuntimeError(f"Base scene '{scene_name}' row {i} slot {j} missing object_name")
 
 	forbidden_keys = ["extends", "add_placements", "remove_placements", "deactivate_placements", "reposition_placements"]
 	for key in forbidden_keys:
 		if key in data:
 			raise RuntimeError(f"Base scene '{scene_name}' may not have key '{key}'")
-
-	# Validate placements have placement_name
-	placements = data.get("placements", [])
-	if not isinstance(placements, list):
-		raise RuntimeError(f"Base scene '{scene_name}' placements must be a list")
-
-	for i, placement in enumerate(placements):
-		if not isinstance(placement, dict):
-			raise RuntimeError(f"Base scene '{scene_name}' placement {i} is not a dict")
-
-		if "placement_name" not in placement:
-			raise RuntimeError(f"Base scene '{scene_name}' placement {i} missing placement_name")
 
 #============================================
 
@@ -459,6 +514,9 @@ def resolve_all_scenes(
 	"""
 	Resolve all scenes (base scenes as-is, protocol scenes via inheritance).
 
+	Supports both zone-based and row+slot base scenes. Zone-based scenes use
+	the inheritance system; row+slot scenes are emitted as-is.
+
 	Args:
 		base_scenes: Dict mapping scene_name -> parsed base YAML.
 		protocol_scenes: Dict mapping scene_name -> parsed protocol YAML.
@@ -475,24 +533,48 @@ def resolve_all_scenes(
 	for scene_name, data in base_scenes.items():
 		validate_base_scene_schema(scene_name, data)
 
+		# Detect which shape this scene uses
+		is_zone_based = "zones" in data
+		is_row_slot = "rows" in data
+
 		# Base scenes don't have extends_base field
-		result[scene_name] = {
+		resolved = {
 			"scene_name": scene_name,
 			"workspace": data["workspace"],
-			"capabilities": data["capabilities"],
-			"scene_bounds": data["scene_bounds"],
 			"background": data["background"],
-			"zones": data["zones"],
-			"placements": data["placements"],
 		}
 
+		# Normalize capabilities: convert snake_case to camelCase if needed
+		capabilities = data.get("capabilities", [])
+		normalized_capabilities = []
+		for cap_id in capabilities:
+			parts = cap_id.split('_')
+			if len(parts) > 1:
+				normalized = parts[0] + ''.join(word.capitalize() for word in parts[1:])
+			else:
+				normalized = cap_id
+			normalized_capabilities.append(normalized)
+		resolved["capabilities"] = normalized_capabilities
+
+		if is_zone_based:
+			# Zone-based shape
+			resolved["scene_bounds"] = data["scene_bounds"]
+			resolved["zones"] = data["zones"]
+			resolved["placements"] = data["placements"]
+
+		elif is_row_slot:
+			# Row+slot shape
+			resolved["rows"] = data["rows"]
+
 		if "layout_rules" in data:
-			result[scene_name]["layout_rules"] = data["layout_rules"]
+			resolved["layout_rules"] = data["layout_rules"]
 
 		if "wrong_order_message" in data:
-			result[scene_name]["wrong_order_message"] = data["wrong_order_message"]
+			resolved["wrong_order_message"] = data["wrong_order_message"]
 
-	# Resolve protocol scenes
+		result[scene_name] = resolved
+
+	# Resolve protocol scenes (only zone-based for now)
 	for scene_name, data in protocol_scenes.items():
 		result[scene_name] = resolve_scene_inheritance(scene_name, data, base_scenes)
 
@@ -503,6 +585,8 @@ def resolve_all_scenes(
 def emit_scene_data_ts(resolved_scenes: Dict[str, Dict[str, Any]], output_path: Path) -> None:
 	"""
 	Emit resolved scenes as a TypeScript ESM literal module.
+
+	Supports both zone-based and row+slot scene shapes.
 
 	Args:
 		resolved_scenes: Dict mapping scene_name -> ResolvedSceneConfig.
@@ -529,19 +613,30 @@ def emit_scene_data_ts(resolved_scenes: Dict[str, Dict[str, Any]], output_path: 
 		lines.append(f"\t\tworkspace: {scene_data['workspace']!r},")
 		lines.append(f"\t\tcapabilities: {scene_data['capabilities']!r},")
 
-		bounds = scene_data["scene_bounds"]
-		lines.append(f"\t\tscene_bounds: {{ left: {bounds['left']}, right: {bounds['right']}, top: {bounds['top']}, bottom: {bounds['bottom']} }},")
-
 		bg = scene_data["background"]
 		lines.append(f"\t\tbackground: {{ asset: {bg['asset']!r} }},")
 
-		# Zones
-		zones_str = _emit_zones(scene_data["zones"])
-		lines.append(f"\t\tzones: {zones_str},")
+		# Detect shape: zone-based or row+slot
+		is_zone_based = "zones" in scene_data
+		is_row_slot = "rows" in scene_data
 
-		# Placements
-		placements_str = _emit_placements(scene_data["placements"])
-		lines.append(f"\t\tplacements: {placements_str},")
+		if is_zone_based:
+			# Zone-based shape
+			bounds = scene_data["scene_bounds"]
+			lines.append(f"\t\tscene_bounds: {{ left: {bounds['left']}, right: {bounds['right']}, top: {bounds['top']}, bottom: {bounds['bottom']} }},")
+
+			# Zones
+			zones_str = _emit_zones(scene_data["zones"])
+			lines.append(f"\t\tzones: {zones_str},")
+
+			# Placements
+			placements_str = _emit_placements(scene_data["placements"])
+			lines.append(f"\t\tplacements: {placements_str},")
+
+		elif is_row_slot:
+			# Row+slot shape
+			rows_str = _emit_rows(scene_data["rows"])
+			lines.append(f"\t\trows: {rows_str},")
 
 		if "layout_rules" in scene_data:
 			rules = scene_data["layout_rules"]
@@ -561,6 +656,43 @@ def emit_scene_data_ts(resolved_scenes: Dict[str, Dict[str, Any]], output_path: 
 	output_path.parent.mkdir(parents=True, exist_ok=True)
 	with open(output_path, "w", encoding="utf-8") as f:
 		f.write("\n".join(lines))
+
+#============================================
+
+def _emit_rows(rows: List[Dict[str, Any]]) -> str:
+	"""
+	Emit rows list (row+slot layout) as TypeScript array literal.
+
+	Args:
+		rows: List of row dicts with row_name and slots.
+
+	Returns:
+		TypeScript array literal string.
+	"""
+	if not rows:
+		return "[]"
+
+	lines = ["["]
+	for row in rows:
+		lines.append("\t\t\t{")
+		lines.append(f"\t\t\t\trow_name: {row['row_name']!r},")
+
+		slots = row.get("slots", [])
+		if slots:
+			lines.append("\t\t\t\tslots: [")
+			for slot in slots:
+				lines.append("\t\t\t\t\t{")
+				lines.append(f"\t\t\t\t\t\tplacement_name: {slot['placement_name']!r},")
+				lines.append(f"\t\t\t\t\t\tobject_name: {slot['object_name']!r},")
+				lines.append("\t\t\t\t\t},")
+			lines.append("\t\t\t\t],")
+		else:
+			lines.append("\t\t\t\tslots: [],")
+
+		lines.append("\t\t\t},")
+
+	lines.append("\t\t]")
+	return "\n".join(lines)
 
 #============================================
 

@@ -31,10 +31,14 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 	"""
 	Validate a scene YAML file against the schema.
 
+	Supports both legacy zone-based and new row+slot scene shapes.
+	Normalizes row+slot YAML to internal representation before validation.
+
 	Loud failures (raises ValueError) for:
-	- Missing sceneId, workspace, capabilities
+	- Missing scene_name/workspace/capabilities (or normalized equivalents)
+	- Mutually-exclusive zones and rows in same file
 	- Unknown capability id
-	- Item references unknown zone
+	- Item references unknown zone (zone-based) or orphaned placements (row+slot)
 	- Duplicate ids
 	- elementId, tabStops, layoutRules, accentRules present but wrong type
 	- wrongOrderMessage missing required template/toastDurationMs
@@ -47,20 +51,30 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 		ValueError: If validation fails.
 
 	Returns:
-		The parsed scene config.
+		The parsed scene config (normalized to internal representation).
 	"""
 	scene_config = load_yaml(path)
 
 	if not isinstance(scene_config, dict):
 		raise ValueError(f"Scene YAML {path}: must be a dict, got {type(scene_config)}")
 
-	# Check required sceneId
+	# Normalize scene_name to sceneId if scene_name is present (row+slot shape uses scene_name)
+	if 'scene_name' in scene_config and 'sceneId' not in scene_config:
+		scene_config['sceneId'] = scene_config['scene_name']
+
+	# Check required sceneId (either from sceneId field or normalized from scene_name)
 	if 'sceneId' not in scene_config:
-		raise ValueError(f"Scene YAML {path}: missing required 'sceneId' field")
+		raise ValueError(f"Scene YAML {path}: missing required 'sceneId' (or 'scene_name') field")
 
 	scene_id = scene_config['sceneId']
 	if not isinstance(scene_id, str) or not scene_id.strip():
 		raise ValueError(f"Scene YAML {path}: sceneId must be a non-empty string, got {scene_id!r}")
+
+	# Check for mutually-exclusive zones vs rows top-level keys
+	has_zones = 'zones' in scene_config
+	has_rows = 'rows' in scene_config
+	if has_zones and has_rows:
+		raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): scene must use either 'zones' or 'rows', not both")
 
 	# Check required workspace field (advisory label; declared as official schema field)
 	if 'workspace' not in scene_config:
@@ -83,12 +97,26 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 	if not isinstance(capabilities, list):
 		raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): capabilities must be a list, got {type(capabilities)}")
 
-	# Validate each capability id and check for required config blocks
-	seen_capabilities = set()
-	for i, cap_id in enumerate(capabilities):
+	# Normalize capability ids: convert snake_case to camelCase if needed
+	# E.g., item_workspace -> itemWorkspace
+	normalized_capabilities = []
+	for cap_id in capabilities:
 		if not isinstance(cap_id, str):
-			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): capabilities[{i}] must be a string, got {type(cap_id)}")
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): capabilities must contain strings, got {type(cap_id)}")
+		# Convert snake_case to camelCase
+		# Split by underscore, capitalize first letter of each part after the first
+		parts = cap_id.split('_')
+		if len(parts) > 1:
+			normalized = parts[0] + ''.join(word.capitalize() for word in parts[1:])
+		else:
+			normalized = cap_id
+		normalized_capabilities.append(normalized)
 
+	scene_config['capabilities'] = normalized_capabilities
+
+	# Validate each normalized capability id and check for required config blocks
+	seen_capabilities = set()
+	for i, cap_id in enumerate(normalized_capabilities):
 		if cap_id not in VALID_CAPABILITY_IDS:
 			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): unknown capability id '{cap_id}' not in {sorted(VALID_CAPABILITY_IDS)}")
 
@@ -122,6 +150,56 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 			zone_ids.add(zone_id)
 	else:
 		zone_ids = set()
+
+	# Check rows field if present (row+slot shape)
+	if 'rows' in scene_config:
+		rows = scene_config['rows']
+		if not isinstance(rows, list):
+			raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows must be a list, got {type(rows)}")
+
+		# Collect all placement_name -> object_name pairs from rows for placement validation
+		row_placements = {}  # placement_name -> object_name
+
+		for i, row in enumerate(rows):
+			if not isinstance(row, dict):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}] must be a dict, got {type(row)}")
+
+			if 'row_name' not in row:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}] missing 'row_name' field")
+
+			row_name = row['row_name']
+			if not isinstance(row_name, str) or not row_name.strip():
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].row_name must be a non-empty string, got {row_name!r}")
+
+			if 'slots' not in row:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}] (row_name='{row_name}') missing 'slots' field")
+
+			slots = row['slots']
+			if not isinstance(slots, list):
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots must be a list, got {type(slots)}")
+
+			for j, slot in enumerate(slots):
+				if not isinstance(slot, dict):
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots[{j}] must be a dict, got {type(slot)}")
+
+				if 'placement_name' not in slot:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots[{j}] missing 'placement_name' field")
+
+				if 'object_name' not in slot:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots[{j}] missing 'object_name' field")
+
+				placement_name = slot['placement_name']
+				if not isinstance(placement_name, str) or not placement_name.strip():
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots[{j}].placement_name must be a non-empty string, got {placement_name!r}")
+
+				object_name = slot['object_name']
+				if not isinstance(object_name, str) or not object_name.strip():
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): rows[{i}].slots[{j}].object_name must be a non-empty string, got {object_name!r}")
+
+				if placement_name in row_placements:
+					raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): duplicate placement_name '{placement_name}'")
+
+				row_placements[placement_name] = object_name
 
 	# Check items field if present
 	if 'items' in scene_config:
@@ -231,7 +309,8 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 	# Check for unknown top-level keys on the scene config
 	allowed_top_level_keys = {
 		'sceneId', 'workspace', 'capabilities', 'elementId', 'items', 'zones',
-		'sceneBounds', 'layoutRules', 'accentRules', 'wrongOrderMessage', 'tabStops'
+		'sceneBounds', 'layoutRules', 'accentRules', 'wrongOrderMessage', 'tabStops',
+		'scene_name', 'background', 'rows', 'placements'
 	}
 	for key in scene_config.keys():
 		if key not in allowed_top_level_keys:
@@ -314,7 +393,13 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 
 def discover_scene_yamls(repo_root: pathlib.Path) -> list:
 	"""
-	Discover scene YAML files by globbing src/scenes/*/*yaml.
+	Discover scene YAML files from src/scenes/*/*.yaml (legacy zone path) and
+	content/base_scenes/*.yaml (row+slot path).
+
+	Returns list of (scene_id, path) tuples, sorted by scene_id.
+	A scene_id is derived from:
+	- For src/scenes/<name>/<name>.yaml: the directory name <name>
+	- For content/base_scenes/<name>.yaml: the filename basename <name>
 
 	Args:
 		repo_root: Root path of the repository.
@@ -322,17 +407,25 @@ def discover_scene_yamls(repo_root: pathlib.Path) -> list:
 	Returns:
 		List of (scene_id, path) tuples, sorted by scene_id.
 	"""
-	scenes_dir = repo_root / 'src' / 'scenes'
-	if not scenes_dir.is_dir():
-		return []
-
 	scenes = []
-	for subdir in scenes_dir.iterdir():
-		if subdir.is_dir():
-			scene_yaml = subdir / f'{subdir.name}.yaml'
-			if scene_yaml.exists():
-				scene_id = subdir.name
-				scenes.append((scene_id, scene_yaml))
+
+	# Legacy path: src/scenes/<dir>/<dir>.yaml
+	scenes_dir = repo_root / 'src' / 'scenes'
+	if scenes_dir.is_dir():
+		for subdir in scenes_dir.iterdir():
+			if subdir.is_dir():
+				scene_yaml = subdir / f'{subdir.name}.yaml'
+				if scene_yaml.exists():
+					scene_id = subdir.name
+					scenes.append((scene_id, scene_yaml))
+
+	# Row+slot path: content/base_scenes/*.yaml
+	base_scenes_dir = repo_root / 'content' / 'base_scenes'
+	if base_scenes_dir.is_dir():
+		for scene_yaml in base_scenes_dir.glob('*.yaml'):
+			# Derive scene_id from filename (e.g., hood_basic_row_slot.yaml -> hood_basic_row_slot)
+			scene_id = scene_yaml.stem
+			scenes.append((scene_id, scene_yaml))
 
 	return sorted(scenes, key=lambda x: x[0])
 
@@ -341,6 +434,8 @@ def generate_scene_data(scene_configs: dict) -> str:
 	"""
 	Generate TypeScript code for scene_data.ts.
 
+	Generates interfaces for both zone-based (legacy) and row+slot scenes.
+
 	Args:
 		scene_configs: Dict of sceneId -> config object.
 
@@ -348,11 +443,11 @@ def generate_scene_data(scene_configs: dict) -> str:
 		TypeScript source code.
 	"""
 	lines = [
-		'// AUTO-GENERATED by tools/build_scene_data.py from src/scenes/*/*.yaml. DO NOT EDIT BY HAND.',
+		'// AUTO-GENERATED by pipeline/build_scene_data.py from src/scenes/*/*.yaml and content/base_scenes/*.yaml. DO NOT EDIT BY HAND.',
 		'',
 		'/**',
 		' * Scene configuration registry.',
-		' * Will be populated as scenes are migrated to the driver architecture.',
+		' * Supports both zone-based layout (legacy) and row+slot layout (current).',
 		' */',
 		'',
 		'// LayoutSceneItem: full layout-engine item with all placement and visual fields',
@@ -382,7 +477,7 @@ def generate_scene_data(scene_configs: dict) -> str:
 		'// SceneItem: discriminated union of layout or dispatch-only variant',
 		'export type SceneItem = LayoutSceneItem | DispatchOnlySceneItem;',
 		'',
-		'// SceneZone: zone definitions for layout positioning',
+		'// SceneZone: zone definitions for layout positioning (legacy zone-based scenes)',
 		'export interface SceneZone {',
 		'\tid: string;',
 		'\tx0: number;',
@@ -392,6 +487,18 @@ def generate_scene_data(scene_configs: dict) -> str:
 		'\talign: string;',
 		'\ttier?: number;',
 		'\tlabel?: string;',
+		'}',
+		'',
+		'// SceneSlot: placement within a row (row+slot layout)',
+		'export interface SceneSlot {',
+		'\tplacement_name: string;',
+		'\tobject_name: string;',
+		'}',
+		'',
+		'// SceneRow: row containing slots (row+slot layout)',
+		'export interface SceneRow {',
+		'\trow_name: string;',
+		'\tslots: SceneSlot[];',
 		'}',
 		'',
 		'// SceneLayoutRules: optional layout tweaks',
@@ -422,6 +529,7 @@ def generate_scene_data(scene_configs: dict) -> str:
 		'\telementId?: string;',
 		'\titems?: SceneItem[];',
 		'\tzones?: SceneZone[];',
+		'\trows?: SceneRow[];',
 		'\tsceneBounds?: { left: number; right: number; top: number; bottom: number };',
 		'\tlayoutRules?: SceneLayoutRules;',
 		'\taccentRules?: SceneAccentRules;',
