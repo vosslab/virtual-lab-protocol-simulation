@@ -165,7 +165,7 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	# V6a cross-protocol material validation (after all materials are loaded)
 	cross_material_findings = material_validator.validate_cross_protocol(material_rows)
 	for fnd in cross_material_findings:
-		msg = fnd.format() if hasattr(fnd, 'format') else str(fnd)
+		msg = fnd.format()
 		errors.append(msg)
 		print(msg)
 
@@ -345,7 +345,7 @@ def _render_verbose_diagnostics(db):
 	if db.findings:
 		tag_counts = {}
 		for finding in db.findings:
-			tag = finding.code if hasattr(finding, 'code') else 'unknown'
+			tag = finding.code
 			tag_counts[tag] = tag_counts.get(tag, 0) + 1
 
 		output_lines.append("Top finding tags (by occurrence):")
@@ -362,7 +362,7 @@ def _render_verbose_diagnostics(db):
 		output_lines.append("Object kinds (first 10 with counts):")
 		kind_counts = {}
 		for obj_name, obj_data in db.objects.items():
-			kind = obj_data.get('kind', 'unknown')
+			kind = obj_data['kind']
 			if kind not in kind_counts:
 				kind_counts[kind] = 0
 			kind_counts[kind] += 1
@@ -644,13 +644,10 @@ def main():
 			base_scene_files = find_yaml_files(str(repo_root), 'base_scene')
 			base_scenes = {}
 			for scene_file in base_scene_files:
-				try:
-					scene_data = load_yaml(scene_file)
-					scene_name = scene_data.get('scene_name')
-					if scene_name:
-						base_scenes[scene_name] = scene_data
-				except RuntimeError:
-					pass
+				scene_data = load_yaml(scene_file)
+				scene_name = scene_data.get('scene_name')
+				if scene_name:
+					base_scenes[scene_name] = scene_data
 
 			scene_data = load_yaml(Path(args.protocol_scene_file))
 			validator = ProtocolSceneValidator()

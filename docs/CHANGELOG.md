@@ -126,6 +126,39 @@
 
 ### Fixes and Maintenance
 
+- **Python style trim wave (manager-dispatched)**: net -142 lines across seven
+  files. (1) `pipeline/build_protocol_html.py` (-68): removed four
+  `try/except Exception: pass` swallowers (`scan_mini_protocols`,
+  `load_protocol_from_generated`, `os.makedirs`, per-protocol generation
+  loop), deleted dead 30-line `load_protocol_from_generated()` (unconditional
+  `return None` with TODO), dropped unused `protocol_data` parameter,
+  converted defensive `.get('protocol_type'/'protocol_name')` to direct key
+  access, replaced five mid-flow `sys.exit(1)` with `raise RuntimeError(...)`,
+  replaced `os.popen('git ...')` with `subprocess.run([...], check=True)`,
+  removed unused `import re`. (2) `validation/yaml/content_lint.py` (-10):
+  removed two defensive `hasattr(finding, 'code')` / `hasattr(fnd, 'format')`
+  checks (Finding fields/methods are required), removed
+  `obj_data.get('kind', 'unknown')` defensive default (kind is required),
+  removed swallowing nested `try/except RuntimeError: pass` around base scene
+  load in `--validate-protocol-scene` mode (let load failures surface).
+  (3) `validation/shared_toolkit/discovery.py` (-4): moved function-local
+  `import yaml` to module top, removed swallowing
+  `except yaml.YAMLError: continue` in `iter_focus()` transitive-dependent
+  scan, narrowed try/except scope so `open()` is outside.
+  (4) `validation/shared_toolkit/yaml_io.py` (-1): narrowed try/except so
+  only `yaml.safe_load()` is wrapped; I/O errors no longer mislabeled as
+  YAML parse errors. (5) `validation/svg/asset_audit.py` (-1): removed
+  `from typing import Dict, Set, Tuple, List, Any, Optional` and modernized
+  54 signatures to Python 3.12 builtins (`dict[K,V]`, `set[T]`, `tuple[...]`,
+  `list[T]`, `T | None`, `object` for catch-all dict values).
+  (6) `tests/test_shebangs.py` (-2): removed `from typing import Optional`,
+  replaced `Optional[int]` with `int | None`. Conforms to
+  `docs/PYTHON_STYLE.md` (CODE STRUCTURE, DO NOT HIDE BUGS WITH DEFAULTS,
+  IMPORTING, TYPE HINTING). Verification: `pyflakes` clean,
+  `validate.py -q` unchanged (YAML 0 / SVG 110 pre-existing / STEPPER 0+36W /
+  STRUCTURE 0 / MANUAL 0+80W), `build_protocol_html.py --all` generates
+  26 HTML files, `pytest tests/` 824 passed + 1 skipped (down from 829 due
+  to test deletion below, see Removals).
 - **WP-MIN-TEST-SCENE**: fixed broken `content/base_scenes/minimal_test_scene.yaml` (tabs->2-space indent, real object name, `zone_id`->`zone`, added `depth_tier`); validator emits non-null `tool`/`code` on YAML parse error (`yaml_parser` / `yaml_parse_error` in `validation/yaml/database.py` and new optional fields on `validation/yaml/findings.py::Finding`); `tests/test_validation_json_schema.py` error messages now include offending `path` and `message`.
 - **Bare-except removal in `validation/structure/layout_check.py`**: dropped the `try/except Exception: pass` wrapper around `yaml.safe_load` in `load_protocol_data()`. The comment "Allow load failures to be reported as findings" was a lie - the bare except + pass silenced every parse error and no Finding was ever emitted. Let `yaml.YAMLError`, `IOError`, `OSError` propagate; the YAML validation stage already reports malformed `protocol.yaml` files. Conforms to `docs/PYTHON_STYLE.md` (no broad `except Exception: pass`).
 - **Residual flat-layout path sweep in spec docs**: 10 remaining `content/protocols/<protocol_name>/...` and `content/protocols/<name>/...` references updated to clustered form `content/protocols/<cluster>/<protocol_name>/...` (or `<cluster>/<name>`) across `docs/PRIMARY_DESIGN.md`, `docs/specs/WALKTHROUGH_GUIDE.md`, `docs/specs/SCENE_YAML_FORMAT.md` (3 sites), `docs/specs/LAYOUT_ENGINE.md`, `docs/specs/SCALING_MODEL.md`, `docs/specs/MATERIAL_CONVENTION.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/SCENE_INHERITANCE.md` (2 sites), `docs/specs/SPEC_DESIGN_CHECKLIST.md`. Active plans, archive, TODO/ROADMAP, and historical CHANGELOG entries left untouched.
@@ -153,6 +186,13 @@
 
 ### Removals and Deprecations
 
+- Deleted `tests/test_object_validator_path_kind.py` (-76 lines, 5 tests).
+  Per `docs/PYTEST_STYLE.md` "prefer deleting a slow or fragile pytest over
+  rewriting it": tests were thin wrappers around `ObjectValidator` internals
+  with brittle `assert len(findings) == 0` collection-size assertions and
+  unsafe indexed access. Validator behavior is already exercised on every
+  full-repo `validate.py -q` run via `validation/yaml/`. Net suite: 829 -> 824
+  passing.
 - Deleted 6 gate-pytests (test_sequence_runner_shape, test_scene_self_extends, test_state_value_range, test_subpart_target_required, test_kind_material_field_convention, test_object_validator_visual_states, test_material_palette_consistency): each duplicated validator runtime behavior with heavy fixtures (~0.24s setup each); validators land in `validation/yaml/` and exercise on every full-repo run. Removed orphaned `tests/fixtures/validator/` directory.
 
 ### Decisions and Failures

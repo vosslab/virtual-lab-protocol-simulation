@@ -21,7 +21,6 @@ import hashlib
 import xml.etree.ElementTree as ET
 import re
 from pathlib import Path
-from typing import Dict, Set, Tuple, List, Any, Optional
 
 import validation.shared_toolkit.paths as toolkit_paths
 import validation.shared_toolkit.interactive as toolkit_interactive
@@ -43,7 +42,7 @@ OTHER_REPOS_ROOT = os.path.join(REPO_ROOT, "..", "OTHER_REPOS")
 # servier source and category parsing
 #============================================
 
-def parse_servier_sources() -> Dict[str, Tuple[str, str]]:
+def parse_servier_sources() -> dict[str, tuple[str, str]]:
 	"""Extract Servier-adopted SVG info from SOURCES.md.
 
 	Returns dict mapping asset_basename -> (source_path, category)
@@ -88,7 +87,7 @@ def parse_servier_sources() -> Dict[str, Tuple[str, str]]:
 
 	return sources_map
 
-def parse_servier_assets() -> Set[str]:
+def parse_servier_assets() -> set[str]:
 	"""Extract Servier-adopted SVG filenames from SOURCES.md.
 
 	Scans markdown table rows for backtick-wrapped filenames in the first column.
@@ -122,7 +121,7 @@ def parse_servier_assets() -> Set[str]:
 
 	return servier
 
-def parse_placeholder_assets() -> Set[str]:
+def parse_placeholder_assets() -> set[str]:
 	"""Extract placeholder SVG filenames from MISSING_SVG_PLACEHOLDERS.md.
 
 	Scans markdown table rows for backtick-wrapped filenames in the first column.
@@ -170,7 +169,7 @@ def compute_file_hash(path: str) -> str:
 
 def check_modification_status(
 	asset_name: str,
-	servier_sources: Dict[str, Tuple[str, str]]
+	servier_sources: dict[str, tuple[str, str]]
 ) -> str:
 	"""Check if a Servier-adopted SVG has been modified.
 
@@ -193,8 +192,8 @@ def check_modification_status(
 
 def check_attribution(
 	asset_name: str,
-	servier: Set[str],
-	servier_sources: Dict[str, Tuple[str, str]]
+	servier: set[str],
+	servier_sources: dict[str, tuple[str, str]]
 ) -> str:
 	"""Check attribution for a Servier-adopted SVG.
 
@@ -227,7 +226,7 @@ def check_attribution(
 	else:
 		return 'unattributed'
 
-def check_normalization(asset_name: str) -> Tuple[str, Optional[str]]:
+def check_normalization(asset_name: str) -> tuple[str, str | None]:
 	"""Check SVG normalization.
 
 	Returns: (status, reason) where status is 'normalized' or 'failed'.
@@ -272,7 +271,7 @@ def check_normalization(asset_name: str) -> Tuple[str, Optional[str]]:
 	except (IOError, OSError):
 		return 'failed', 'parse_exception'
 
-def check_forbidden_constructs(asset_name: str) -> List[str]:
+def check_forbidden_constructs(asset_name: str) -> list[str]:
 	"""Check for forbidden SVG constructs.
 
 	Returns list of findings (empty if none).
@@ -308,7 +307,7 @@ def check_forbidden_constructs(asset_name: str) -> List[str]:
 
 	return findings
 
-def get_file_size_kb(asset_name: str) -> Optional[float]:
+def get_file_size_kb(asset_name: str) -> float | None:
 	"""Get file size in KB."""
 	svg_path = os.path.join(ASSETS_DIR, f"{asset_name}.svg")
 	if os.path.isfile(svg_path):
@@ -316,7 +315,7 @@ def get_file_size_kb(asset_name: str) -> Optional[float]:
 		return size_bytes / 1024.0
 	return None
 
-def extract_subpart_ids(asset_name: str) -> Set[str]:
+def extract_subpart_ids(asset_name: str) -> set[str]:
 	"""Extract all data-subpart-id attribute values from SVG."""
 	subpart_ids = set()
 	svg_path = os.path.join(ASSETS_DIR, f"{asset_name}.svg")
@@ -338,7 +337,7 @@ def extract_subpart_ids(asset_name: str) -> Set[str]:
 
 	return subpart_ids
 
-def get_expected_subparts(object_name: str, object_data: Dict[str, Any]) -> Optional[Set[str]]:
+def get_expected_subparts(object_name: str, object_data: dict[str, object]) -> set[str] | None:
 	"""Extract expected subpart names from object YAML structure block."""
 	if 'structure' not in object_data:
 		return None
@@ -378,8 +377,8 @@ def get_expected_subparts(object_name: str, object_data: Dict[str, Any]) -> Opti
 
 def check_enum_coverage(
 	object_name: str,
-	object_data: Dict[str, Any]
-) -> Dict[str, Tuple[int, int, List[str]]]:
+	object_data: dict[str, object]
+) -> dict[str, tuple[int, int, list[str]]]:
 	"""Check enum case coverage in visual_states.
 
 	Returns dict: field_name -> (covered_count, total_count, missing_values)
@@ -426,7 +425,7 @@ def check_enum_coverage(
 # asset discovery
 #============================================
 
-def list_disk_svgs() -> Set[str]:
+def list_disk_svgs() -> set[str]:
 	"""List all .svg files in assets/equipment (basenames without extension)."""
 	svgs = set()
 	if not os.path.isdir(ASSETS_DIR):
@@ -438,7 +437,7 @@ def list_disk_svgs() -> Set[str]:
 
 	return svgs
 
-def extract_asset_names_recursive(obj: Any) -> Set[str]:
+def extract_asset_names_recursive(obj: object) -> set[str]:
 	"""Recursively extract all asset_name values from a YAML object.
 
 	Handles nested dicts and lists. Looks for dict keys named 'asset_name'.
@@ -457,7 +456,7 @@ def extract_asset_names_recursive(obj: Any) -> Set[str]:
 
 	return assets
 
-def load_object_yaml(path: str) -> Tuple[str, str, Set[str], Dict[str, Any]]:
+def load_object_yaml(path: str) -> tuple[str, str, set[str], dict[str, object]]:
 	"""Load an object YAML file and extract object_name, label, asset_names, and full data.
 
 	Returns: (object_name, label, asset_names_set, data)
@@ -483,9 +482,9 @@ def load_object_yaml(path: str) -> Tuple[str, str, Set[str], Dict[str, Any]]:
 
 def classify_asset(
 	asset_name: str,
-	disk_svgs: Set[str],
-	servier: Set[str],
-	placeholders: Set[str]
+	disk_svgs: set[str],
+	servier: set[str],
+	placeholders: set[str]
 ) -> str:
 	"""Classify the source of an asset_name.
 
@@ -507,11 +506,11 @@ def classify_asset(
 #============================================
 
 def audit_repo(
-	disk_svgs: Set[str],
-	servier: Set[str],
-	placeholders: Set[str],
-	servier_sources: Dict[str, Tuple[str, str]]
-) -> Tuple[Dict[str, Dict[str, Any]], List[str], Set[str], Dict[str, int], Dict[str, Any]]:
+	disk_svgs: set[str],
+	servier: set[str],
+	placeholders: set[str],
+	servier_sources: dict[str, tuple[str, str]]
+) -> tuple[dict[str, dict[str, object]], list[str], set[str], dict[str, int], dict[str, object]]:
 	"""Audit all objects and return per-object data, missing items, orphans, and metadata.
 
 	Returns: (objects_dict, missing_items, orphan_svgs, asset_reuse_count, per_asset_metadata)
@@ -589,9 +588,9 @@ def audit_repo(
 
 def build_asset_metadata(
 	asset_name: str,
-	servier: Set[str],
-	servier_sources: Dict[str, Tuple[str, str]]
-) -> Dict[str, Any]:
+	servier: set[str],
+	servier_sources: dict[str, tuple[str, str]]
+) -> dict[str, object]:
 	"""Build rich metadata for one asset."""
 	meta = {
 		'asset_name': asset_name,
@@ -644,14 +643,14 @@ def build_asset_metadata(
 #============================================
 
 def print_full_report(
-	objects: Dict[str, Dict[str, Any]],
-	missing_items: List[str],
-	orphan_svgs: Set[str],
-	disk_svgs: Set[str],
-	servier: Set[str],
-	placeholders: Set[str],
-	asset_reuse: Dict[str, int],
-	per_asset_metadata: Dict[str, Any],
+	objects: dict[str, dict[str, object]],
+	missing_items: list[str],
+	orphan_svgs: set[str],
+	disk_svgs: set[str],
+	servier: set[str],
+	placeholders: set[str],
+	asset_reuse: dict[str, int],
+	per_asset_metadata: dict[str, object],
 	quiet: bool = False,
 	verbose: bool = False
 ) -> None:
@@ -835,7 +834,7 @@ def print_full_report(
 	failure_count = len(orphan_svgs) + len(truly_unknown) + normalization_failures + forbidden_construct_count + unattributed_servier
 	reporter.print_summary_line(total_checked, failure_count, item_label="objects")
 
-def print_provenance_section(per_asset_metadata: Dict[str, Any], asset_filter: Optional[Set[str]] = None) -> None:
+def print_provenance_section(per_asset_metadata: dict[str, object], asset_filter: set[str] | None = None) -> None:
 	"""Print provenance section: source, license, attribution, modification status.
 
 	Verbose-only: per-asset detail walk. Default mode has no output from this section.
@@ -860,7 +859,7 @@ def print_provenance_section(per_asset_metadata: Dict[str, Any], asset_filter: O
 		mod = meta.get('modification_status') or 'unknown'
 		print(f"  Modification: {mod}")
 
-def print_svg_health_section(per_asset_metadata: Dict[str, Any], asset_filter: Optional[Set[str]] = None) -> None:
+def print_svg_health_section(per_asset_metadata: dict[str, object], asset_filter: set[str] | None = None) -> None:
 	"""Print SVG health section: pipeline, viewBox, size, forbidden constructs, base64.
 
 	Verbose-only: per-asset detail walk. Default mode has no output from this section.
@@ -889,7 +888,7 @@ def print_svg_health_section(per_asset_metadata: Dict[str, Any], asset_filter: O
 		if forbidden:
 			print(f"  Forbidden constructs: {', '.join(forbidden)}")
 
-def print_object_alignment_section(objects: Dict[str, Dict[str, Any]], asset_reuse: Dict[str, int], object_filter: Optional[str] = None) -> None:
+def print_object_alignment_section(objects: dict[str, dict[str, object]], asset_reuse: dict[str, int], object_filter: str | None = None) -> None:
 	"""Print object alignment section: refs, coverage.
 
 	Verbose-only: per-asset detail walk. Default mode has no output from this section.
@@ -924,7 +923,7 @@ def print_object_alignment_section(objects: Dict[str, Dict[str, Any]], asset_reu
 				else:
 					print(f"    {field}: {covered}/{total}")
 
-def print_subpart_alignment_section(objects: Dict[str, Dict[str, Any]], per_asset_metadata: Dict[str, Any], object_filter: Optional[str] = None) -> None:
+def print_subpart_alignment_section(objects: dict[str, dict[str, object]], per_asset_metadata: dict[str, object], object_filter: str | None = None) -> None:
 	"""Print subpart alignment section.
 
 	Verbose-only: per-asset detail walk. Default mode has no output from this section.
@@ -966,7 +965,7 @@ def print_subpart_alignment_section(objects: Dict[str, Dict[str, Any]], per_asse
 	if not any_printed:
 		print("(no structured objects)")
 
-def print_cleanup_surface_section(orphan_svgs: Set[str], unknown_svgs: Set[str], quiet: bool = False, verbose: bool = False) -> None:
+def print_cleanup_surface_section(orphan_svgs: set[str], unknown_svgs: set[str], quiet: bool = False, verbose: bool = False) -> None:
 	"""Print cleanup surface section: orphans, unknowns, superseded.
 
 	quiet mode: return early (handled by caller).
@@ -1100,12 +1099,12 @@ def main():
 
 def print_object_detail_table(
 	object_name: str,
-	objects: Dict[str, Dict[str, Any]],
-	asset_reuse: Dict[str, int],
-	per_asset_metadata: Dict[str, Any],
-	orphan_svgs: Set[str],
-	servier: Set[str],
-	placeholders: Set[str]
+	objects: dict[str, dict[str, object]],
+	asset_reuse: dict[str, int],
+	per_asset_metadata: dict[str, object],
+	orphan_svgs: set[str],
+	servier: set[str],
+	placeholders: set[str]
 ) -> None:
 	"""Print detailed table report for one object.
 
@@ -1134,14 +1133,14 @@ def print_object_detail_table(
 	print_cleanup_surface_section(orphan_svgs, set(), verbose=True)
 
 def print_json_report(
-	object_name: Optional[str],
-	objects: Dict[str, Dict[str, Any]],
-	disk_svgs: Set[str],
-	servier: Set[str],
-	placeholders: Set[str],
-	asset_reuse: Dict[str, int],
-	per_asset_metadata: Dict[str, Any],
-	orphan_svgs: Set[str]
+	object_name: str | None,
+	objects: dict[str, dict[str, object]],
+	disk_svgs: set[str],
+	servier: set[str],
+	placeholders: set[str],
+	asset_reuse: dict[str, int],
+	per_asset_metadata: dict[str, object],
+	orphan_svgs: set[str]
 ) -> None:
 	"""Print JSON report."""
 	import json

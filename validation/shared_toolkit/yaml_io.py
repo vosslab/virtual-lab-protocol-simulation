@@ -10,9 +10,9 @@ def load_yaml(path: Path) -> dict:
 	empty. Raises RuntimeError on YAML parse error; other I/O errors propagate
 	naturally.
 	"""
-	try:
-		with open(path, 'r') as f:
+	with open(path, 'r') as f:
+		try:
 			data = yaml.safe_load(f)
-		return data if isinstance(data, dict) else {}
-	except yaml.YAMLError as e:
-		raise RuntimeError(f"Failed to parse {path}: {e}")
+		except yaml.YAMLError as e:
+			raise RuntimeError(f"Failed to parse {path}: {e}")
+	return data if isinstance(data, dict) else {}

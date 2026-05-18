@@ -4,6 +4,8 @@ import subprocess
 from pathlib import Path
 from typing import Iterator
 
+import yaml
+
 from validation.shared_toolkit.repo_root import REPO_ROOT
 
 
@@ -274,36 +276,31 @@ def iter_focus() -> dict:
 	transitive_protocols = set()
 
 	for protocol_path in iter_protocols():
-		try:
-			import yaml
-			with open(protocol_path, 'r', encoding='utf-8') as f:
-				protocol_data = yaml.safe_load(f)
-			if not protocol_data:
-				continue
+		with open(protocol_path, 'r', encoding='utf-8') as f:
+			protocol_data = yaml.safe_load(f)
+		if not protocol_data:
+			continue
 
-			# Get protocol name from directory name
-			protocol_name = protocol_path.parent.name
+		# Get protocol name from directory name
+		protocol_name = protocol_path.parent.name
 
-			# Check if protocol references any changed object or scene
-			protocol_yaml_str = str(protocol_data)
-			references_changed = False
+		# Check if protocol references any changed object or scene
+		protocol_yaml_str = str(protocol_data)
+		references_changed = False
 
-			for obj_name in objects_direct:
-				if obj_name in protocol_yaml_str:
+		for obj_name in objects_direct:
+			if obj_name in protocol_yaml_str:
+				references_changed = True
+				break
+
+		if not references_changed:
+			for scene_name in scenes_direct:
+				if scene_name in protocol_yaml_str:
 					references_changed = True
 					break
 
-			if not references_changed:
-				for scene_name in scenes_direct:
-					if scene_name in protocol_yaml_str:
-						references_changed = True
-						break
-
-			if references_changed:
-				transitive_protocols.add(protocol_name)
-		except yaml.YAMLError:
-			# Skip protocols with YAML parse errors
-			continue
+		if references_changed:
+			transitive_protocols.add(protocol_name)
 
 	return {
 		'protocols': protocols_direct,
