@@ -38,6 +38,33 @@
     [archive/material_overlay_vocabulary.md](archive/material_overlay_vocabulary.md)
     via `git mv`.
 
+- **NEW0 evidence package complete: 3 directions x 10 scenes, contact sheets, diagnostics doc, provisional recommendation**
+  Produced a reproducible decision-ready evidence package for the NEW0 CSS-native layout experiment.
+  All work confined to `experiments/css_native_layout/` and `test-results/new0_css_native/`;
+  no production files modified.
+
+  - Direction A (baseline 3-band horizontal) produced 1 PASS, 4 PASS_TEMPLATE, 5 WARN, 0 FAIL.
+    Primary-object ratios on composition scenes: 0.6-2.7% (well_plate_96_zoom 92% PASS).
+  - Direction B (stage/composition, primary gets flex-grow:1) produced 0 PASS, 4 PASS_TEMPLATE,
+    6 WARN, 0 FAIL. Primary ratios improved to 13-31%; scene whitespace 62-83%.
+    Regression: well_plate_96_zoom fell from 92% to 31.9% (below 70% zoom threshold).
+  - Direction C (2-column instrument-first) produced 0 PASS, 4 PASS_TEMPLATE, 6 WARN, 0 FAIL.
+    Best electrophoresis primary ratio (21.9%); empty left column in bench/hood scenes.
+
+  Artifacts added:
+  - 9 CSS files (6 new direction B/C files, tracked under .gitignore allow-list).
+  - 20 new HTML templates (10 dir_b, 10 dir_c), including 2 stress scenes per direction.
+  - 2 NEW0-format YAML scene manifests in `experiments/css_native_layout/scenes/`.
+  - `experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md`: 12 diagnostic metrics, hard-fail vs advisory classification.
+  - `docs/active_plans/new0_reproducible_evidence_package.md`: 10-section decision report.
+  - `test-results/new0_css_native/contact_sheets/`: 16 contact sheet PNGs (10 base, 6 annotated).
+  - `test-results/new0_css_native/gallery.html`: HTML gallery.
+  - `_temp_contact_sheets.py`: Pillow-based contact sheet generator (scratch; safe to delete).
+
+  Provisional recommendation: Direction B as primary candidate for general bench scenes;
+  Direction C as the instrument-context variant. Direction A retired for composition use.
+  Zoom threshold regression (B/C) is a CSS footprint gap, fixable before promotion.
+
 - **NEW0-M0: Clean-room layout experiment initialized**
   Created `/experiments/css_native_layout/` as a fresh-start rebuild of the scene layout
   system from first principles. NEW0 is self-contained; it imports nothing from `src/`.

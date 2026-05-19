@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Well Plate 96 Zoom View — NEW0 Reference HTML</title>
+	<link rel="stylesheet" href="../styles/bench.css">
+	<style>
+		/* Zoom view CSS is now handled by bench_c.css and bench_d.css via scene-mode--detail class */
+	</style>
+</head>
+<body>
+	<div class="scene-container scene--bench scene-mode--detail" data-scene-mode="composition">
+		<!-- Region 1: Rear Shelf (empty in zoom view) -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Rear Shelf</span>
+		</div>
+
+		<!-- Region 2: Work Surface (zoomed well plate filling the region) -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Well Plate Detail View</span>
+
+			<!-- Well Plate 96 Zoomed (large zoom-view footprint) -->
+			<div class="placement" data-placement="zoom_well_plate_96" data-placement-name="zoom_well_plate_96" data-object-name="well_plate_96" data-primary="true">
+				<div class="object-graphic footprint--zoom-view">
+					<img src="../../../assets/equipment/96well_pcr_plate.svg" alt="Well Plate 96 Detailed View">
+				</div>
+				<span class="placement-label">96-Well Plate (Zoomed)</span>
+			</div>
+		</div>
+
+		<!-- Region 3: Front Tools (empty in zoom view) -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Front Tools</span>
+		</div>
+
+		<!-- Region 4: Instrument Station (empty in zoom view) -->
+		<div class="region region--instrument_station" data-region="instrument_station">
+			<span class="region-label">Instrument Station</span>
+		</div>
+
+		<!-- Region 5: Popup Layer (not used in zoom view) -->
+		<div class="region region--popup_layer" data-region="popup_layer">
+			<!-- Not used in zoom view -->
+		</div>
+	</div>
+
+	<script>
+		// Data export for testing/verification
+		window.sceneData = {
+			sceneName: 'well_plate_96_zoom',
+			workspace: 'bench',
+			totalPlacements: 1,
+			regions: {
+				rear_shelf: 0,
+				work_surface: 1,
+				front_tools: 0,
+				instrument_station: 0,
+				popup_layer: 0
+			},
+			placements: [
+				{ placement: 'zoom_well_plate_96', object: 'well_plate_96', region: 'work_surface', footprint: 'footprint--zoom-view' }
+			]
+		};
+
+		// Verify zoom view sizing
+		function checkZoomSizing() {
+			const workSurface = document.querySelector('[data-region="work_surface"]');
+			const placement = document.querySelector('[data-placement="zoom_well_plate_96"]');
+			const objectGraphic = placement ? placement.querySelector('.object-graphic') : null;
+
+			if (!workSurface || !placement || !objectGraphic) {
+				console.log('Zoom view elements not found');
+				return;
+			}
+
+			const regionRect = workSurface.getBoundingClientRect();
+			const placementRect = placement.getBoundingClientRect();
+			const graphicRect = objectGraphic.getBoundingClientRect();
+
+			const fillPercentageWidth = (graphicRect.width / regionRect.width * 100).toFixed(1);
+			const fillPercentageHeight = (graphicRect.height / regionRect.height * 100).toFixed(1);
+
+			console.log(`Zoom view sizing:`);
+			console.log(`  Region: ${regionRect.width.toFixed(0)}x${regionRect.height.toFixed(0)}`);
+			console.log(`  Object graphic: ${graphicRect.width.toFixed(0)}x${graphicRect.height.toFixed(0)}`);
+			console.log(`  Fill: ${fillPercentageWidth}% width, ${fillPercentageHeight}% height`);
+			console.log(`  Aspect maintained: ${(graphicRect.width / graphicRect.height).toFixed(2)}`);
+		}
+
+		window.addEventListener('load', checkZoomSizing);
+		window.addEventListener('resize', checkZoomSizing);
+	</script>
+</body>
+</html>

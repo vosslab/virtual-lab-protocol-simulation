@@ -1,8 +1,46 @@
 # Build artifacts
-experiments/
+# NEW0 deliverable: track reproducibility surface, ignore scratch.
+# See docs/active_plans/new0_outside_review_handoff.md.
+# Note on rule shape: a directory ignored with `experiments/` cannot have its
+# children re-included via negation. The form below ignores contents of each
+# subdir with `dir/*`, then negates the specific files we keep, so git still
+# recurses into the path.
+experiments/*
 !experiments/css_native_layout/
-!experiments/css_native_layout/**
-experiments/css_native_layout/styles/*_*.css
+experiments/css_native_layout/*
+!experiments/css_native_layout/README.md
+!experiments/css_native_layout/PRECHECK_SUMMARY.md
+!experiments/css_native_layout/DECISION_MEMO.md
+!experiments/css_native_layout/precheck.mjs
+!experiments/css_native_layout/emitter.py
+!experiments/css_native_layout/regions/
+!experiments/css_native_layout/styles/
+!experiments/css_native_layout/templates/
+experiments/css_native_layout/regions/*
+!experiments/css_native_layout/regions/bench.yaml
+!experiments/css_native_layout/regions/hood.yaml
+!experiments/css_native_layout/regions/instrument.yaml
+experiments/css_native_layout/styles/*
+!experiments/css_native_layout/styles/bench.css
+!experiments/css_native_layout/styles/hood.css
+!experiments/css_native_layout/styles/instrument.css
+!experiments/css_native_layout/styles/dir_b_bench.css
+!experiments/css_native_layout/styles/dir_b_hood.css
+!experiments/css_native_layout/styles/dir_b_instrument.css
+!experiments/css_native_layout/styles/dir_c_bench.css
+!experiments/css_native_layout/styles/dir_c_hood.css
+!experiments/css_native_layout/styles/dir_c_instrument.css
+experiments/css_native_layout/templates/*
+!experiments/css_native_layout/templates/*.html
+!experiments/css_native_layout/templates/dir_b/
+experiments/css_native_layout/templates/dir_b/*
+!experiments/css_native_layout/templates/dir_b/*.html
+!experiments/css_native_layout/templates/dir_c/
+experiments/css_native_layout/templates/dir_c/*
+!experiments/css_native_layout/templates/dir_c/*.html
+!experiments/css_native_layout/scenes/
+experiments/css_native_layout/scenes/*
+!experiments/css_native_layout/scenes/*.yaml
 tools/svg_picker/*.json
 manual*.md
 output_manuals/

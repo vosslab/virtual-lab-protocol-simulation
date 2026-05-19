@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Drug Dilution Plate Workspace — NEW0 Direction B (Stage/Composition)</title>
+	<link rel="stylesheet" href="../../styles/dir_b_bench.css">
+</head>
+<body>
+	<!-- Direction B: well plate is the primary; reagents on rear shelf; tools on front strip -->
+	<div class="scene-container scene--bench" data-scene-mode="composition" data-scene-density="crowded">
+		<!-- Rear shelf: reagent bottles in compact row -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Reagents</span>
+
+			<div class="placement" data-placement="rear_dmso_bottle" data-placement-name="rear_dmso_bottle" data-object-name="stock_bottle">
+				<div class="object-graphic footprint--handheld">
+					<img src="../../../../assets/equipment/destain_bottle_filled.svg" alt="DMSO Stock">
+				</div>
+				<span class="placement-label">DMSO</span>
+			</div>
+
+			<div class="placement" data-placement="rear_pbs_bottle" data-placement-name="rear_pbs_bottle" data-object-name="stock_bottle">
+				<div class="object-graphic footprint--handheld">
+					<img src="../../../../assets/equipment/ddh2o_bottle_filled.svg" alt="PBS Buffer">
+				</div>
+				<span class="placement-label">PBS</span>
+			</div>
+
+			<div class="placement" data-placement="rear_drug_bottle" data-placement-name="rear_drug_bottle" data-object-name="stock_bottle">
+				<div class="object-graphic footprint--handheld">
+					<img src="../../../../assets/equipment/bme_bottle_filled.svg" alt="Drug Stock">
+				</div>
+				<span class="placement-label">Drug</span>
+			</div>
+		</div>
+
+		<!-- Center stage: well plate dominates; rack and waste as supporting -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Work Surface</span>
+
+			<div class="placement" data-placement="center_well_plate" data-placement-name="center_well_plate" data-object-name="well_plate_96" data-primary="true">
+				<div class="object-graphic footprint--container">
+					<img src="../../../../assets/equipment/96well_pcr_plate.svg" alt="Well Plate 96">
+				</div>
+				<span class="placement-label">Plate</span>
+			</div>
+
+			<div class="placement" data-placement="work_sample_rack" data-placement-name="work_sample_rack" data-object-name="tube_rack_24">
+				<div class="object-graphic footprint--rack">
+					<img src="../../../../assets/equipment/dilution_tube_rack.svg" alt="Sample Rack">
+				</div>
+				<span class="placement-label">Rack</span>
+			</div>
+
+			<div class="placement" data-placement="waste_container" data-placement-name="waste_container" data-object-name="waste_container">
+				<div class="object-graphic footprint--handheld">
+					<img src="../../../../assets/equipment/waste_container.svg" alt="Waste">
+				</div>
+				<span class="placement-label">Waste</span>
+			</div>
+		</div>
+
+		<!-- Front tools: pipette and tip box at bottom -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Tools</span>
+
+			<div class="placement" data-placement="tool_p200" data-placement-name="tool_p200" data-object-name="p200_micropipette">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../../assets/equipment/p200_micropipette_filled.svg" alt="p200">
+				</div>
+				<span class="placement-label">p200</span>
+			</div>
+
+			<div class="placement" data-placement="tool_tips" data-placement-name="tool_tips" data-object-name="tip_box">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../../assets/equipment/tip_box_new.svg" alt="Tip Box">
+				</div>
+				<span class="placement-label">Tips</span>
+			</div>
+		</div>
+
+		<!-- Popup layer: unused -->
+		<div class="region region--popup_layer" data-region="popup_layer"></div>
+	</div>
+	<script>
+		window.sceneData = { sceneName: 'drug_dilution_plate_workspace', direction: 'B', workspace: 'bench', totalPlacements: 8 };
+	</script>
+</body>
+</html>

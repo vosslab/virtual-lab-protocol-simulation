@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Cell Counter Basic — NEW0 Reference HTML</title>
+	<link rel="stylesheet" href="../styles/instrument.css">
+	<style>
+		/* Inline minimal overrides specific to this scene (none needed for now) */
+	</style>
+</head>
+<body>
+	<div class="scene-container scene--instrument" data-scene-mode="template">
+		<!-- Region 1: Rear Shelf (reagents, stock bottles) -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Rear Shelf</span>
+		</div>
+
+		<!-- Region 2: Work Surface (active workspace) -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Work Surface</span>
+		</div>
+
+		<!-- Region 3: Front Tools (pipettes, racks, small tools) -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Front Tools</span>
+
+			<!-- Counter Slide Cartridge (handheld) -->
+			<div class="placement" data-placement="front_tools_counter_slide_cartridge" data-placement-name="front_tools_counter_slide_cartridge" data-object-name="counter_slide_cartridge">
+				<div class="object-graphic footprint--handheld">
+					<img src="../../../assets/equipment/cell_counter.svg" alt="Counter Slide Cartridge">
+				</div>
+				<span class="placement-label">Cartridge</span>
+			</div>
+		</div>
+
+		<!-- Region 4: Instrument Station (large equipment) -->
+		<div class="region region--instrument_station" data-region="instrument_station">
+			<span class="region-label">Instrument Station</span>
+
+			<!-- Cell Counter (large-equipment) -->
+			<div class="placement" data-placement="instrument_main_cell_counter" data-placement-name="instrument_main_cell_counter" data-object-name="cell_counter">
+				<div class="object-graphic footprint--large-equipment">
+					<img src="../../../assets/equipment/cell_counter_new.svg" alt="Cell Counter">
+				</div>
+				<span class="placement-label">Cell Counter</span>
+			</div>
+		</div>
+
+		<!-- Region 5: Popup Layer (overlays, hidden by default) -->
+		<div class="region region--popup_layer" data-region="popup_layer">
+			<!-- Populated only when a modal or overlay is active -->
+		</div>
+	</div>
+
+	<script>
+		// Data export for testing/verification
+		window.sceneData = {
+			sceneName: 'cell_counter_basic',
+			workspace: 'instrument',
+			totalPlacements: 2,
+			regions: {
+				rear_shelf: 0,
+				work_surface: 0,
+				front_tools: 1,
+				instrument_station: 1,
+				popup_layer: 0
+			},
+			placements: [
+				{ placement: 'front_tools_counter_slide_cartridge', object: 'counter_slide_cartridge', region: 'front_tools', footprint: 'footprint--handheld' },
+				{ placement: 'instrument_main_cell_counter', object: 'cell_counter', region: 'instrument_station', footprint: 'footprint--large-equipment' }
+			]
+		};
+
+		// Verify no overflow on load
+		function checkOverflow() {
+			const regions = document.querySelectorAll('.region');
+			regions.forEach(region => {
+				const regionName = region.getAttribute('data-region');
+				if (regionName === 'popup_layer') return;
+
+				const rect = region.getBoundingClientRect();
+				const scrollHeight = region.scrollHeight;
+				const scrollWidth = region.scrollWidth;
+
+				console.log(`Region "${regionName}": height=${rect.height.toFixed(1)} (scroll=${scrollHeight}), width=${rect.width.toFixed(1)} (scroll=${scrollWidth})`);
+			});
+		}
+
+		window.addEventListener('load', checkOverflow);
+		window.addEventListener('resize', checkOverflow);
+	</script>
+</body>
+</html>

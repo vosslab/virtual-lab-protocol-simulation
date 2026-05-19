@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Bench Basic — NEW0 Direction C (Instrument-First)</title>
+	<link rel="stylesheet" href="../../styles/dir_c_bench.css">
+</head>
+<body>
+	<!-- Direction C: left column reserved for instruments (empty in basic bench); right panel has objects -->
+	<div class="scene-container scene--bench" data-scene-mode="template">
+		<!-- Left column: empty in simple bench -->
+		<div class="region region--instrument_station" data-region="instrument_station">
+			<span class="region-label">Instruments</span>
+		</div>
+
+		<!-- Top-right: rear shelf (empty here) -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Rear Shelf</span>
+		</div>
+
+		<!-- Center-right: primary bench object -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Work Surface</span>
+
+			<div class="placement" data-placement="center_well_plate" data-placement-name="center_well_plate" data-object-name="well_plate_96" data-primary="true">
+				<div class="object-graphic footprint--container">
+					<img src="../../../../assets/equipment/96well_pcr_plate.svg" alt="Well Plate">
+				</div>
+				<span class="placement-label">Well Plate 96</span>
+			</div>
+		</div>
+
+		<!-- Bottom-right: tools -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Front Tools</span>
+
+			<div class="placement" data-placement="right_tool_p200_micropipette" data-placement-name="right_tool_p200_micropipette" data-object-name="p200_micropipette">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../../assets/equipment/p200_micropipette_filled.svg" alt="p200 Micropipette">
+				</div>
+				<span class="placement-label">p200</span>
+			</div>
+		</div>
+
+		<!-- Popup layer: unused -->
+		<div class="region region--popup_layer" data-region="popup_layer"></div>
+	</div>
+	<script>
+		window.sceneData = { sceneName: 'bench_basic', direction: 'C', workspace: 'bench', totalPlacements: 2 };
+	</script>
+</body>
+</html>

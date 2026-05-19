@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Bench Basic — NEW0 Reference HTML</title>
+	<link rel="stylesheet" href="../styles/bench.css">
+	<style>
+		/* Inline minimal overrides specific to this scene (none needed for now) */
+	</style>
+</head>
+<body>
+	<div class="scene-container scene--bench" data-scene-mode="template">
+		<!-- Region 1: Rear Shelf (reagents, stock bottles) -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Rear Shelf</span>
+		</div>
+
+		<!-- Region 2: Work Surface (active workspace) -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Work Surface</span>
+
+			<!-- Well Plate (container) -->
+			<div class="placement" data-placement="center_well_plate" data-placement-name="center_well_plate" data-object-name="well_plate_96">
+				<div class="object-graphic footprint--container">
+					<img src="../../../assets/equipment/96well_pcr_plate.svg" alt="Well Plate">
+				</div>
+				<span class="placement-label">Well Plate 96</span>
+			</div>
+		</div>
+
+		<!-- Region 3: Front Tools (pipettes, racks, small tools) -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Front Tools</span>
+
+			<!-- P200 Micropipette (small-tool) -->
+			<div class="placement" data-placement="right_tool_p200_micropipette" data-placement-name="right_tool_p200_micropipette" data-object-name="p200_micropipette">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../assets/equipment/p200_micropipette_filled.svg" alt="p200 Micropipette">
+				</div>
+				<span class="placement-label">p200</span>
+			</div>
+		</div>
+
+		<!-- Region 4: Instrument Station (large equipment) -->
+		<div class="region region--instrument_station" data-region="instrument_station">
+			<span class="region-label">Instrument Station</span>
+		</div>
+
+		<!-- Region 5: Popup Layer (overlays, hidden by default) -->
+		<div class="region region--popup_layer" data-region="popup_layer">
+			<!-- Populated only when a modal or overlay is active -->
+		</div>
+	</div>
+
+	<script>
+		// Data export for testing/verification
+		window.sceneData = {
+			sceneName: 'bench_basic',
+			workspace: 'bench',
+			totalPlacements: 2,
+			regions: {
+				rear_shelf: 0,
+				work_surface: 1,
+				front_tools: 1,
+				instrument_station: 0,
+				popup_layer: 0
+			},
+			placements: [
+				{ placement: 'center_well_plate', object: 'well_plate_96', region: 'work_surface', footprint: 'footprint--container' },
+				{ placement: 'right_tool_p200_micropipette', object: 'p200_micropipette', region: 'front_tools', footprint: 'footprint--small-tool' }
+			]
+		};
+
+		// Verify no overflow on load
+		function checkOverflow() {
+			const regions = document.querySelectorAll('.region');
+			regions.forEach(region => {
+				const regionName = region.getAttribute('data-region');
+				if (regionName === 'popup_layer') return;
+
+				const rect = region.getBoundingClientRect();
+				const scrollHeight = region.scrollHeight;
+				const scrollWidth = region.scrollWidth;
+
+				console.log(`Region "${regionName}": height=${rect.height.toFixed(1)} (scroll=${scrollHeight}), width=${rect.width.toFixed(1)} (scroll=${scrollWidth})`);
+			});
+		}
+
+		window.addEventListener('load', checkOverflow);
+		window.addEventListener('resize', checkOverflow);
+	</script>
+</body>
+</html>
