@@ -1,5 +1,5 @@
 /*
-NEW0 CSS Layout: Hood Workspace — Direction C: Instrument-First
+NEW0 CSS Layout: Hood Workspace - Direction C: Instrument-First
 Focus: biohazard hood interior emphasized; primary object centered and large.
 Hood scenes are template-mode so the 2-column layout degrades gracefully
 (instrument column stays visible but mostly empty in simple hood scenes).
@@ -216,7 +216,7 @@ body {
 	filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.12));
 }
 
-/* Footprint categories: Direction C — hood workspace */
+/* Footprint categories: Direction C - hood workspace */
 
 .footprint--small-tool {
 	min-width: 44px;

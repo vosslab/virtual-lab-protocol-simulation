@@ -1,6 +1,6 @@
 # NEW0: CSS Native Layout (Clean-Room Prototype)
 
-## Status: EXPERIMENTAL — not contract-compliant
+## Status: EXPERIMENTAL - not contract-compliant
 
 NEW0 is an experiment under `experiments/` (gitignored scratch). It is **not** a candidate for promotion to production at this time.
 

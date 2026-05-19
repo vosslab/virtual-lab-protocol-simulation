@@ -1,13 +1,13 @@
 /*
-NEW0 CSS Layout: Instrument Workspace — Direction C: Instrument-First
+NEW0 CSS Layout: Instrument Workspace - Direction C: Instrument-First
 Focus: primary scientific instrument anchors the left column; displays and
 accessories on the right. Dark theme maintained for instrument panel feel.
 
 Layout: 2-column asymmetric grid
-- instrument_station: left wide column (700px) — primary instrument
-- rear_shelf: top-right strip — accessories, reagents
-- work_surface: center-right — secondary instruments, displays
-- front_tools: bottom-right strip — controls, slides
+- instrument_station: left wide column (700px) - primary instrument
+- rear_shelf: top-right strip - accessories, reagents
+- work_surface: center-right - secondary instruments, displays
+- front_tools: bottom-right strip - controls, slides
 
 Region vocabulary: rear_shelf, work_surface, front_tools, instrument_station, popup_layer.
 
@@ -56,7 +56,7 @@ body {
 	padding: 0;
 }
 
-/* Scene container: 2-column grid — instrument left (wide), accessories right */
+/* Scene container: 2-column grid - instrument left (wide), accessories right */
 .scene-container {
 	display: grid;
 	grid-template-columns: 700px 1fr;
@@ -214,7 +214,7 @@ body {
 	filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6));
 }
 
-/* Footprint categories: Direction C — instrument workspace */
+/* Footprint categories: Direction C - instrument workspace */
 
 .footprint--small-tool {
 	min-width: 44px;

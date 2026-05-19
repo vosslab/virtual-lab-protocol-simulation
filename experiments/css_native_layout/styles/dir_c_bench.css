@@ -1,12 +1,12 @@
 /*
-NEW0 CSS Layout: Bench Workspace — Direction C: Instrument-First
+NEW0 CSS Layout: Bench Workspace - Direction C: Instrument-First
 Focus: large equipment anchors the left side; bench objects flow around it.
 Design intent: in instrument-heavy scenes (electrophoresis, staining), the
 instrument dominates the left column. In simple bench scenes, the layout
 degrades gracefully to a single-column flow.
 
 Layout: 2-column asymmetric grid
-- instrument_station: left column, wide (600px), full-height — large equipment
+- instrument_station: left column, wide (600px), full-height - large equipment
 - right panel: 3 bands (rear shelf | work surface | front tools)
 
 Region vocabulary: rear_shelf, work_surface, front_tools, instrument_station, popup_layer.
@@ -62,7 +62,7 @@ body {
 	padding: 0;
 }
 
-/* Scene container: 2-column grid — instrument left, bench right */
+/* Scene container: 2-column grid - instrument left, bench right */
 .scene-container {
 	display: grid;
 	grid-template-columns: 600px 1fr;
@@ -220,7 +220,7 @@ body {
 	filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.20));
 }
 
-/* Footprint categories: Direction C — bench workspace, instrument-first */
+/* Footprint categories: Direction C - bench workspace, instrument-first */
 
 /* Small tools */
 .scene--bench .footprint--small-tool {

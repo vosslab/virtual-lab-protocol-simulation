@@ -1,5 +1,5 @@
 /*
-NEW0 CSS Layout: Bench Workspace — Direction C: Hybrid Lab Diorama
+NEW0 CSS Layout: Bench Workspace - Direction C: Hybrid Lab Diorama
 Focus: physical warm bench + subtle region dividers + faint labels.
 Combines Direction A warm wood-grain feel with Direction B region cues (hairlines, not boxes).
 
@@ -240,7 +240,7 @@ body {
 	flex-grow: 0;
 }
 
-/* Crowded density modifier (0.60× for small items, 0.70× for supporting containers/racks, keep large items normal) */
+/* Crowded density modifier (0.60x for small items, 0.70x for supporting containers/racks, keep large items normal) */
 .scene-container[data-scene-density="crowded"] .scene--bench .footprint--small-tool {
 	min-width: 30px;
 	max-width: 48px;

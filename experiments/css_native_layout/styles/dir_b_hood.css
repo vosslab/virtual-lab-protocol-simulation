@@ -1,13 +1,13 @@
 /*
-NEW0 CSS Layout: Hood Workspace — Direction B: Stage/Composition
+NEW0 CSS Layout: Hood Workspace - Direction B: Stage/Composition
 Focus: primary task object centered; supporting reagents and tools at periphery.
 Design intent: stainless steel hood interior with clear central stage.
 Hood scenes are template-mode (1-3 objects), so the center region expands fully.
 
 Layout: 3-band vertical grid (narrow rear | large center stage | narrow front)
-- rear_shelf: 120px — reagent bottles only
-- work_surface: 1fr — hood primary objects (flasks, plates, instruments)
-- front_tools: 100px — tools and accessories
+- rear_shelf: 120px - reagent bottles only
+- work_surface: 1fr - hood primary objects (flasks, plates, instruments)
+- front_tools: 100px - tools and accessories
 
 Region vocabulary: rear_shelf, work_surface, front_tools, popup_layer.
 
@@ -200,7 +200,7 @@ body {
 	filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.12));
 }
 
-/* Footprint categories: Direction B — hood workspace */
+/* Footprint categories: Direction B - hood workspace */
 
 .footprint--small-tool {
 	min-width: 44px;

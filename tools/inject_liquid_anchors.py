@@ -161,9 +161,9 @@ def main():
 	for source_file in files_to_process:
 		print(f"Processing {source_file}...")
 		if inject_anchors_into_svg(source_file, source_file):
-			print(f"  -> OK")
+			print("  -> OK")
 		else:
-			print(f"  -> FAILED")
+			print("  -> FAILED")
 			failed.append(source_file)
 
 	if failed:

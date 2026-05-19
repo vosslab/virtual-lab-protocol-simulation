@@ -1,4 +1,4 @@
-# NEW0 Visual Diagnostic Precheck — Tracked-Code Audit
+# NEW0 Visual Diagnostic Precheck - Tracked-Code Audit
 
 ## Status
 
@@ -29,13 +29,13 @@ see [DECISION_MEMO.md](DECISION_MEMO.md).
 
 Verification: run
 `bash _temp_inspect_links.sh` (or `grep -n stylesheet
-experiments/css_native_layout/templates/*.html`) — no template links a
+experiments/css_native_layout/templates/*.html`) - no template links a
 `_<letter>.css`, `_diorama.css`, `_focusedstage.css`, or `_gameboard.css`
 variant.
 
 ## File produced
 
-- `experiments/css_native_layout/precheck.mjs` — standalone Playwright
+- `experiments/css_native_layout/precheck.mjs` - standalone Playwright
   diagnostic. Reads HTML templates, computes per-scene visual checks, emits
   `visual_audit.{json,md}` and `sizing_manifest.json`.
 
@@ -51,28 +51,28 @@ variant.
 
 ## Diagnostic algorithms (one sentence each)
 
-1. **clipped_artwork** — placements whose bbox exceeds parent region bbox.
-2. **off_page** — placements whose center or corners lie outside the 1920x1080 viewport.
-3. **svg_svg_overlap** — placement-bbox intersection pairs (>=1 px).
-4. **label_label_overlap** — placement-label-bbox intersection pairs.
-5. **svg_label_overlap** — object-graphic vs foreign placement-label intersection.
-6. **region_overflow** — region scrollHeight > clientHeight (or width).
-7. **region_whitespace** — occupied_area / region_area; flags regions >80% empty.
-8. **scene_whitespace** — scene-level occupied_area / scene_area ratio.
-9. **primary_object** — identified via `data-primary="true"` (fallback: first
+1. **clipped_artwork** - placements whose bbox exceeds parent region bbox.
+2. **off_page** - placements whose center or corners lie outside the 1920x1080 viewport.
+3. **svg_svg_overlap** - placement-bbox intersection pairs (>=1 px).
+4. **label_label_overlap** - placement-label-bbox intersection pairs.
+5. **svg_label_overlap** - object-graphic vs foreign placement-label intersection.
+6. **region_overflow** - region scrollHeight > clientHeight (or width).
+7. **region_whitespace** - occupied_area / region_area; flags regions >80% empty.
+8. **scene_whitespace** - scene-level occupied_area / scene_area ratio.
+9. **primary_object** - identified via `data-primary="true"` (fallback: first
    placement in `primary_work_surface` / `work_surface`, else largest bbox);
    reports area_ratio; flags <25% (non-zoom) or <70% (zoom).
-10. **largest_empty_band** — largest empty quadrant of the scene.
-11. **supporting_distance** — each non-primary placement's normalized
+10. **largest_empty_band** - largest empty quadrant of the scene.
+11. **supporting_distance** - each non-primary placement's normalized
     distance to the primary's center.
 
 Artwork-integrity sub-checks:
 
-- **a — natural vs rendered aspect / area**: compares natural image
+- **a - natural vs rendered aspect / area**: compares natural image
   dimensions to rendered bbox.
-- **b — outside card**: flags artwork bbox extending beyond placement card.
-- **c — region clip**: artwork bbox clipped by region.
-- **d — label clip**: label bbox clipped by region.
+- **b - outside card**: flags artwork bbox extending beyond placement card.
+- **c - region clip**: artwork bbox clipped by region.
+- **d - label clip**: label bbox clipped by region.
 
 ## Verdict ladder
 
@@ -96,11 +96,11 @@ flag.
 
 ## Output files
 
-- `test-results/new0_css_native/audit/visual_audit.json` — machine report.
-- `test-results/new0_css_native/audit/visual_audit.md` — human report.
-- `test-results/new0_css_native/audit/sizing_manifest.json` — per-placement
+- `test-results/new0_css_native/audit/visual_audit.json` - machine report.
+- `test-results/new0_css_native/audit/visual_audit.md` - human report.
+- `test-results/new0_css_native/audit/sizing_manifest.json` - per-placement
   natural vs rendered measurements.
-- `test-results/new0_css_native/audit/*_annotated.png` — overlay PNGs (when
+- `test-results/new0_css_native/audit/*_annotated.png` - overlay PNGs (when
   the `_temp_annotate.py` helper is present; missing helper is a
   non-blocking warning).
 
@@ -125,14 +125,14 @@ Run date: 2026-05-18 (post outside-review handoff cleanup).
 
 | Scene | Mode | Verdict | Primary ratio | Notable warn flags |
 | --- | --- | --- | --- | --- |
-| bench_basic | template | PASS_TEMPLATE | — | — |
-| cell_counter_basic | template | PASS_TEMPLATE | — | — |
+| bench_basic | template | PASS_TEMPLATE | - | - |
+| cell_counter_basic | template | PASS_TEMPLATE | - | - |
 | drug_dilution_plate_workspace | composition | WARN | 1.4% < 25% | aspect mismatch + outside-card on 6 placements |
 | electrophoresis_bench | composition | WARN | 2.7% < 25% | upscaling + outside-card on 11 placements |
-| hood_basic | template | PASS_TEMPLATE | — | — |
-| microscope_basic | template | PASS_TEMPLATE | — | — |
+| hood_basic | template | PASS_TEMPLATE | - | - |
+| microscope_basic | template | PASS_TEMPLATE | - | - |
 | staining_bench | composition | WARN | 0.7% < 25% | upscaling + outside-card on 5 placements |
-| well_plate_96_zoom | composition | PASS | 875.5% (zoom) | — |
+| well_plate_96_zoom | composition | PASS | 875.5% (zoom) | - |
 
 **Summary**: 8 scenes, 0 hard fails, 0 FAIL verdicts. 1 PASS, 4
 PASS_TEMPLATE, 3 WARN.
@@ -153,21 +153,21 @@ primary ratio under the unsourced 25% threshold.
 
 ## Notes on residual risks and limitations
 
-1. **Annotation helper missing** — `_temp_annotate.py` (the Pillow overlay
+1. **Annotation helper missing** - `_temp_annotate.py` (the Pillow overlay
    helper invoked by `precheck.mjs`) is not present in the working tree at
    the time of this audit; the precheck reports a non-blocking warning and
    skips annotated-PNG generation. Visual review can still inspect base
    captures (currently in `test-results/new0_css_native/audit/captures/`
    from prior runs; this audit run did not produce new base captures
    because annotation is the trigger).
-2. **Primary-ratio threshold is unsourced** — the 25% and 70% cutoffs are
+2. **Primary-ratio threshold is unsourced** - the 25% and 70% cutoffs are
    not derived from a calibrated reference. With three of four composition
    scenes warning against them, the threshold, the metric, or the scenes
    are wrong; likely all three. Treat the WARN verdicts here as
    measurement signals, not failures.
-3. **Viewport fixed at 1920x1080** — precheck does not test resize
+3. **Viewport fixed at 1920x1080** - precheck does not test resize
    behavior. Resize-test functionality lives in capture.mjs.
-4. **Artwork integrity diagnostics show systematic aspect mismatch** —
+4. **Artwork integrity diagnostics show systematic aspect mismatch** -
    bottles render at ~110 px tall against natural 150 px (forced height
    shrink); pipettes and slim tools render at upscaled widths. This is a
    consequence of the current `.object-graphic img { width: auto;

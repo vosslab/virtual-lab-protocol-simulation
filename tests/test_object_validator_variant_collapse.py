@@ -402,7 +402,7 @@ def test_asset_readiness_soft_report_missing_anchors(validator):
 	# For now, with empty SVG base (non-existent), we expect a soft report
 	# If the base SVG does not exist, asset-readiness check should soft-report
 	# (This test is informational; the actual behavior depends on SVG filesystem state)
-
+	assert readiness_warnings != 12
 
 #============================================
 def test_existing_validator_tests_still_pass(validator):

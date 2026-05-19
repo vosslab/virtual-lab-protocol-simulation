@@ -1,12 +1,12 @@
 /*
-NEW0 CSS Layout: Instrument Workspace — Direction B: Stage/Composition
+NEW0 CSS Layout: Instrument Workspace - Direction B: Stage/Composition
 Focus: primary instrument dominates; support items compact at periphery.
 Design intent: instrument panel dark theme, equipment centered and large.
 
 Layout: 3-band vertical grid (narrow rear | large center stage | narrow front)
-- rear_shelf: 100px — accessories, small items
-- work_surface: 1fr — primary instrument (microscope, cell counter) large
-- front_tools: 80px — controls, slides, accessories
+- rear_shelf: 100px - accessories, small items
+- work_surface: 1fr - primary instrument (microscope, cell counter) large
+- front_tools: 80px - controls, slides, accessories
 
 Region vocabulary: rear_shelf, work_surface, front_tools, popup_layer.
 
@@ -197,7 +197,7 @@ body {
 	filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.5));
 }
 
-/* Footprint categories: Direction B — instrument workspace */
+/* Footprint categories: Direction B - instrument workspace */
 
 .footprint--small-tool {
 	min-width: 44px;

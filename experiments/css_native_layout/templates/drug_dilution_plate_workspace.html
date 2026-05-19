@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Drug Dilution Plate Workspace — NEW0 Direction E</title>
+	<title>Drug Dilution Plate Workspace - NEW0 Direction E</title>
 	<link rel="stylesheet" href="../styles/bench.css">
 	<style>
 		/* Inline minimal overrides specific to this scene (none needed for now) */
@@ -11,7 +11,7 @@
 </head>
 <body>
 	<div class="scene-container scene--bench" data-scene-mode="composition" data-scene-density="crowded">
-		<!-- Region 1: Reagent Shelf (Row 1, spans full width) — reagents, stock bottles -->
+		<!-- Region 1: Reagent Shelf (Row 1, spans full width) - reagents, stock bottles -->
 		<div class="region region--reagent_shelf" data-region="reagent_shelf">
 			<span class="region-label">Reagents</span>
 
@@ -40,7 +40,7 @@
 			</div>
 		</div>
 
-		<!-- Region 2: Side Support (Row 2, Col 1) — racks, tip boxes near pipette -->
+		<!-- Region 2: Side Support (Row 2, Col 1) - racks, tip boxes near pipette -->
 		<div class="region region--side_support" data-region="side_support">
 			<span class="region-label">Support</span>
 
@@ -61,7 +61,7 @@
 			</div>
 		</div>
 
-		<!-- Region 3: Primary Work Surface (Row 2, Col 2) — well plate 96 dominant -->
+		<!-- Region 3: Primary Work Surface (Row 2, Col 2) - well plate 96 dominant -->
 		<div class="region region--primary_work_surface" data-region="primary_work_surface">
 			<span class="region-label">Work Surface</span>
 
@@ -74,7 +74,7 @@
 			</div>
 		</div>
 
-		<!-- Region 4: Tool Lane (Row 3, Col 1) — pipettes, handheld tools (adjacent to side_support above) -->
+		<!-- Region 4: Tool Lane (Row 3, Col 1) - pipettes, handheld tools (adjacent to side_support above) -->
 		<div class="region region--tool_lane" data-region="tool_lane">
 			<span class="region-label">Tools</span>
 
@@ -87,7 +87,7 @@
 			</div>
 		</div>
 
-		<!-- Region 5: Waste Corner (Row 3, Col 2) — waste disposal, bottom-right -->
+		<!-- Region 5: Waste Corner (Row 3, Col 2) - waste disposal, bottom-right -->
 		<div class="region region--waste_corner" data-region="waste_corner">
 			<span class="region-label">Waste</span>
 
@@ -140,7 +140,7 @@
 			const containerRect = sceneContainer.getBoundingClientRect();
 
 			console.log('=== Direction E Layout Check ===');
-			console.log(`Scene container: ${containerRect.width.toFixed(0)}×${containerRect.height.toFixed(0)}`);
+			console.log(`Scene container: ${containerRect.width.toFixed(0)}x${containerRect.height.toFixed(0)}`);
 
 			// Check each region for overflow and visibility
 			const regionRects = new Map();
@@ -156,7 +156,7 @@
 
 				const overflowY = scrollHeight > rect.height ? 'YES' : 'NO';
 				const overflowX = scrollWidth > rect.width ? 'YES' : 'NO';
-				console.log(`Region "${regionName}": ${rect.width.toFixed(0)}×${rect.height.toFixed(0)} (overflow: H=${overflowX} V=${overflowY})`);
+				console.log(`Region "${regionName}": ${rect.width.toFixed(0)}x${rect.height.toFixed(0)} (overflow: H=${overflowX} V=${overflowY})`);
 			});
 
 			// Check plate dominance: plate bbox area / scene area
@@ -199,7 +199,7 @@
 
 				console.log(`Pipette to Sample Rack distance: ${pipetteToTubeDistance.toFixed(1)}px`);
 				console.log(`Pipette to Tip Box distance: ${pipetteToTipDistance.toFixed(1)}px`);
-				console.log(`Proximity rule (≤300px): ${pipetteToTubeDistance <= 300 && pipetteToTipDistance <= 300 ? 'PASS' : 'FAIL'}`);
+				console.log(`Proximity rule (<=300px): ${pipetteToTubeDistance <= 300 && pipetteToTipDistance <= 300 ? 'PASS' : 'FAIL'}`);
 			}
 
 			console.log('=== End Layout Check ===');

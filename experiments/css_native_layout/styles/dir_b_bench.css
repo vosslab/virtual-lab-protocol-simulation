@@ -1,14 +1,14 @@
 /*
-NEW0 CSS Layout: Bench Workspace — Direction B: Stage/Composition
+NEW0 CSS Layout: Bench Workspace - Direction B: Stage/Composition
 Focus: primary task object dominates; supporting items organized to clear stages.
 Design intent: the primary object (plate, flask, gel) gets the center stage.
 Supporting reagents are relegated to a narrow rear shelf. Tools are in a narrow
 bottom strip. This maximizes primary-object visual dominance in composition scenes.
 
 Layout: vertical 3-band grid (narrow rear | large center stage | narrow front)
-- rear_shelf: 120px — reagent bottles only, row layout
-- work_surface: 1fr — primary task + supporting workspace items, centered
-- front_tools: 100px — tools, tip boxes, small accessories
+- rear_shelf: 120px - reagent bottles only, row layout
+- work_surface: 1fr - primary task + supporting workspace items, centered
+- front_tools: 100px - tools, tip boxes, small accessories
 
 No instrument_station: large equipment shares work_surface (it IS the primary).
 popup_layer: overlay for modals.
@@ -222,7 +222,7 @@ body {
 	max-height: 100%;
 }
 
-/* Footprint categories: Direction B — bench workspace, stage layout */
+/* Footprint categories: Direction B - bench workspace, stage layout */
 
 /* Small tools: pipette, comb, brush, slide */
 .scene--bench .footprint--small-tool {
