@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="us-ascii">
+<title>NEW2 Lane A: CSS-native best-case showcase gallery</title>
+<style>
+  body {
+    font-family: -apple-system, system-ui, sans-serif;
+    background: #f4f4f4;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 24px;
+  }
+  h1 { font-size: 22px; margin: 0 0 4px 0; }
+  .subtitle { color: #555; font-size: 14px; margin: 0 0 24px 0; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+    gap: 18px;
+  }
+  .card {
+    background: #fff;
+    border: 1px solid #d0d0d0;
+    border-radius: 6px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .card img {
+    width: 100%;
+    height: auto;
+    display: block;
+    border: 1px solid #e0e0e0;
+    background: #fafafa;
+  }
+  .scene-name {
+    font-weight: 600;
+    font-size: 15px;
+    margin: 10px 0 4px 0;
+    font-family: ui-monospace, Menlo, monospace;
+  }
+  .meta {
+    font-size: 13px;
+    color: #333;
+    margin: 2px 0;
+  }
+  .verdict {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+  }
+  .pass { background: #d4edda; color: #155724; }
+  .pass_template { background: #d1ecf1; color: #0c5460; }
+  .warn { background: #fff3cd; color: #856404; }
+  .caption {
+    font-size: 13px;
+    line-height: 1.45;
+    color: #2a2a2a;
+    margin-top: 8px;
+  }
+  .disclaimer {
+    background: #fff3cd;
+    border-left: 4px solid #ffb300;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #5a4a00;
+  }
+</style>
+</head>
+<body>
+  <h1>NEW2 Lane A: CSS-native best-case showcase gallery</h1>
+  <p class="subtitle">
+    Generated 2026-05-20 from
+    <code>test-results/new0_css_native/audit/</code> PNGs after running
+    <code>experiments/css_native_layout/precheck.mjs</code>.
+  </p>
+
+  <div class="disclaimer">
+    These scenes are the current best examples of the CSS-native layout direction.
+    Not production-final. Each caption identifies what is working and what limits
+    each scene. WARN-verdict scenes are included to honestly represent dense and
+    instrument-heavy cases.
+  </div>
+
+  <div class="grid">
+
+    <div class="card">
+      <img src="lane_a_gallery_01_well_plate_96_zoom.png" alt="well_plate_96_zoom">
+      <div class="scene-name">well_plate_96_zoom</div>
+      <div class="meta">Scorecard: 92 &middot; <span class="verdict pass">PASS</span></div>
+      <div class="caption">
+        Single-primary zoom scene. The 96-well plate fills the canvas at near
+        9x natural area; no clipping, no off-page geometry, no SVG-SVG overlap.
+        Best current example of the zoomed-workspace pattern.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_02_microscope_basic.png" alt="microscope_basic">
+      <div class="scene-name">microscope_basic</div>
+      <div class="meta">Scorecard: 90 &middot; <span class="verdict pass_template">PASS_TEMPLATE</span></div>
+      <div class="caption">
+        Template-mode scene: zoned regions composed cleanly. Clean rear/center/front
+        separation; instrument body framed by region cards without artwork bleed.
+        Best current template-mode reference.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_03_cell_counter_basic.png" alt="cell_counter_basic">
+      <div class="scene-name">cell_counter_basic</div>
+      <div class="meta">Scorecard: 80 &middot; <span class="verdict pass_template">PASS_TEMPLATE</span></div>
+      <div class="caption">
+        Template-mode scene with one minor artwork-fit issue (counter slide
+        cartridge underutilizes its card). Regions are otherwise clean and
+        readable. Best current example, not production-final.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_04_bench_basic.png" alt="bench_basic">
+      <div class="scene-name">bench_basic</div>
+      <div class="meta">Scorecard: 70 &middot; <span class="verdict pass_template">PASS_TEMPLATE</span></div>
+      <div class="caption">
+        Template-mode bench. Layout zones render without overflow, but the
+        p200 micropipette aspect ratio is noticeably distorted and the
+        well plate extends slightly beyond its card bottom. Best current
+        example, not production-final.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_05_hood_basic.png" alt="hood_basic">
+      <div class="scene-name">hood_basic</div>
+      <div class="meta">Scorecard: 70 &middot; <span class="verdict pass_template">PASS_TEMPLATE</span></div>
+      <div class="caption">
+        Template-mode hood. Workspace zoning is intact; bottle SVGs render
+        with tall-narrow aspect mismatches (ethanol, ddH2O spray) inside
+        their cards. Best current example, not production-final.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_06_crowded_bench_dense.png" alt="crowded_bench_dense">
+      <div class="scene-name">crowded_bench_dense</div>
+      <div class="meta">Scorecard: 54 &middot; <span class="verdict warn">WARN</span></div>
+      <div class="caption">
+        Best-of dense composition. Eleven objects placed across rear/center/front
+        without SVG-SVG overlap or off-page geometry. Multiple objects upscale
+        beyond natural area and some artwork extends past card bottoms; included
+        as honest dense-scene reference.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_07_drug_dilution_workspace_dense.png" alt="drug_dilution_workspace_dense">
+      <div class="scene-name">drug_dilution_workspace_dense</div>
+      <div class="meta">Scorecard: 53 &middot; <span class="verdict warn">WARN</span></div>
+      <div class="caption">
+        Dense drug-dilution workspace. Composition contains no overlaps or
+        off-page elements; multiple bottle and rack SVGs distort under
+        tight card sizing. Best current dense-workspace example, not
+        production-final.
+      </div>
+    </div>
+
+    <div class="card">
+      <img src="lane_a_gallery_08_electrophoresis_bench.png" alt="electrophoresis_bench">
+      <div class="scene-name">electrophoresis_bench</div>
+      <div class="meta">Scorecard: 32 (post-Candidate-1; was 0) &middot; <span class="verdict warn">WARN</span></div>
+      <div class="caption">
+        Instrument-heavy bench. Candidate-1 recovered the scene from a hard-fail
+        baseline; tank, gel cassette, and electrode module now place without
+        SVG-SVG overlap, though one label-label overlap remains and several
+        instruments upscale past natural area. Best current instrument-heavy
+        example, not production-final.
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>

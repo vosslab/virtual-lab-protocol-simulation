@@ -10,9 +10,9 @@
 	</style>
 </head>
 <body>
-	<div class="scene-container scene--bench" data-scene-mode="composition" data-scene-density="crowded">
-		<!-- Region 1: Reagent Shelf (Row 1, spans full width) - reagents, stock bottles -->
-		<div class="region region--reagent_shelf" data-region="reagent_shelf">
+	<div class="scene-container scene--bench scene--drug-dilution" data-scene-mode="composition" data-scene-density="crowded">
+		<!-- Region 1: Rear Shelf - reagents, stock bottles -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
 			<span class="region-label">Reagents</span>
 
 			<!-- DMSO Stock Bottle -->
@@ -40,29 +40,8 @@
 			</div>
 		</div>
 
-		<!-- Region 2: Side Support (Row 2, Col 1) - racks, tip boxes near pipette -->
-		<div class="region region--side_support" data-region="side_support">
-			<span class="region-label">Support</span>
-
-			<!-- Microtube Rack (near pipette for proximity rule) -->
-			<div class="placement" data-placement="work_sample_rack" data-placement-name="work_sample_rack" data-object-name="tube_rack_24">
-				<div class="object-graphic footprint--rack">
-					<img src="../../../assets/equipment/microtube_rack_24_placeholder.svg" alt="Sample Rack">
-				</div>
-				<span class="placement-label">Rack</span>
-			</div>
-
-			<!-- Tip Box (near pipette) -->
-			<div class="placement" data-placement="tool_tips" data-placement-name="tool_tips" data-object-name="tip_box">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../assets/equipment/tip_box_new.svg" alt="Tip Box">
-				</div>
-				<span class="placement-label">Tips</span>
-			</div>
-		</div>
-
-		<!-- Region 3: Primary Work Surface (Row 2, Col 2) - well plate 96 dominant -->
-		<div class="region region--primary_work_surface" data-region="primary_work_surface">
+		<!-- Region 2: Work Surface - well plate 96 dominant + support items -->
+		<div class="region region--work_surface" data-region="work_surface">
 			<span class="region-label">Work Surface</span>
 
 			<!-- Well Plate 96 (primary object, fully visible, dominant) -->
@@ -72,10 +51,26 @@
 				</div>
 				<span class="placement-label">Plate</span>
 			</div>
+
+			<!-- Microtube Rack (supporting, positioned left of plate) -->
+			<div class="placement" data-placement="work_sample_rack" data-placement-name="work_sample_rack" data-object-name="tube_rack_24">
+				<div class="object-graphic footprint--rack">
+					<img src="../../../assets/equipment/microtube_rack_24_placeholder.svg" alt="Sample Rack">
+				</div>
+				<span class="placement-label">Rack</span>
+			</div>
+
+			<!-- Tip Box (supporting, positioned right of plate) -->
+			<div class="placement" data-placement="tool_tips" data-placement-name="tool_tips" data-object-name="tip_box">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../assets/equipment/tip_box_new.svg" alt="Tip Box">
+				</div>
+				<span class="placement-label">Tips</span>
+			</div>
 		</div>
 
-		<!-- Region 4: Tool Lane (Row 3, Col 1) - pipettes, handheld tools (adjacent to side_support above) -->
-		<div class="region region--tool_lane" data-region="tool_lane">
+		<!-- Region 3: Front Tools - pipettes and waste -->
+		<div class="region region--front_tools" data-region="front_tools">
 			<span class="region-label">Tools</span>
 
 			<!-- P200 Micropipette -->
@@ -85,11 +80,6 @@
 				</div>
 				<span class="placement-label">p200</span>
 			</div>
-		</div>
-
-		<!-- Region 5: Waste Corner (Row 3, Col 2) - waste disposal, bottom-right -->
-		<div class="region region--waste_corner" data-region="waste_corner">
-			<span class="region-label">Waste</span>
 
 			<!-- Waste Container -->
 			<div class="placement" data-placement="waste_container" data-placement-name="waste_container" data-object-name="waste_container">
@@ -111,25 +101,23 @@
 		window.sceneData = {
 			sceneName: 'drug_dilution_plate_workspace',
 			workspace: 'bench',
-			direction: 'E',
+			layout: '3-band',
 			totalPlacements: 8,
 			regions: {
-				reagent_shelf: 3,
-				primary_work_surface: 1,
-				tool_lane: 1,
-				side_support: 2,
-				waste_corner: 1,
+				rear_shelf: 3,
+				work_surface: 3,
+				front_tools: 2,
 				popup_layer: 0
 			},
 			placements: [
-				{ placement: 'rear_dmso_bottle', object: 'stock_bottle', region: 'reagent_shelf', footprint: 'footprint--handheld' },
-				{ placement: 'rear_pbs_bottle', object: 'stock_bottle', region: 'reagent_shelf', footprint: 'footprint--handheld' },
-				{ placement: 'rear_drug_bottle', object: 'stock_bottle', region: 'reagent_shelf', footprint: 'footprint--handheld' },
-				{ placement: 'center_well_plate', object: 'well_plate_96', region: 'primary_work_surface', footprint: 'footprint--container' },
-				{ placement: 'tool_p200', object: 'p200_micropipette', region: 'tool_lane', footprint: 'footprint--small-tool' },
-				{ placement: 'work_sample_rack', object: 'tube_rack_24', region: 'side_support', footprint: 'footprint--rack' },
-				{ placement: 'tool_tips', object: 'tip_box', region: 'side_support', footprint: 'footprint--small-tool' },
-				{ placement: 'waste_container', object: 'waste_container', region: 'waste_corner', footprint: 'footprint--handheld' }
+				{ placement: 'rear_dmso_bottle', object: 'stock_bottle', region: 'rear_shelf', footprint: 'footprint--handheld' },
+				{ placement: 'rear_pbs_bottle', object: 'stock_bottle', region: 'rear_shelf', footprint: 'footprint--handheld' },
+				{ placement: 'rear_drug_bottle', object: 'stock_bottle', region: 'rear_shelf', footprint: 'footprint--handheld' },
+				{ placement: 'center_well_plate', object: 'well_plate_96', region: 'work_surface', footprint: 'footprint--container' },
+				{ placement: 'work_sample_rack', object: 'tube_rack_24', region: 'work_surface', footprint: 'footprint--rack' },
+				{ placement: 'tool_tips', object: 'tip_box', region: 'work_surface', footprint: 'footprint--small-tool' },
+				{ placement: 'tool_p200', object: 'p200_micropipette', region: 'front_tools', footprint: 'footprint--small-tool' },
+				{ placement: 'waste_container', object: 'waste_container', region: 'front_tools', footprint: 'footprint--handheld' }
 			]
 		};
 

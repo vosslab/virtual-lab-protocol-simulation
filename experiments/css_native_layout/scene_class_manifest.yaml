@@ -1,0 +1,71 @@
+# NEW0 Scene Classification Manifest
+# Closed mapping: scene_name -> scene class (enum)
+# Enum values: template, composition, instrument_heavy, zoom_detail, dense_clutter
+# Each scene has exactly one class (no multi-assignment).
+# Fallback for missing scenes: filename heuristic.
+#   - *_zoom.html -> zoom_detail
+#   - *_dense.html -> dense_clutter
+#   - otherwise -> composition
+
+generated_at: "2026-05-19"
+generated_by: "scorecard-engineer task #69"
+
+# Canonical list of 10 NEW0 scenes
+scenes:
+  - scene_name: "bench_basic"
+    class: "template"
+    notes: "Single-instrument skeleton; one well plate on work_surface. 3-band layout."
+
+  - scene_name: "cell_counter_basic"
+    class: "template"
+    notes: "Single-instrument skeleton; cell counter on work_surface. 3-band layout."
+
+  - scene_name: "hood_basic"
+    class: "template"
+    notes: "Single-instrument skeleton; hood with one item. 3-band layout."
+
+  - scene_name: "microscope_basic"
+    class: "template"
+    notes: "Single-instrument skeleton; microscope on work_surface. 3-band layout."
+
+  - scene_name: "drug_dilution_plate_workspace"
+    class: "composition"
+    notes: "Multi-placement composition; well plate is primary; reagents and tools; 25.2% primary ratio."
+
+  - scene_name: "electrophoresis_bench"
+    class: "instrument_heavy"
+    notes: "Instrument-heavy composition; electrophoresis tank as primary; 18.5% primary ratio (tagged data-primary=true)."
+
+  - scene_name: "staining_bench"
+    class: "composition"
+    notes: "Bench composition; staining tray + reagents; 31.3% primary ratio."
+
+  - scene_name: "crowded_bench_dense"
+    class: "dense_clutter"
+    notes: "Maximum-crowding stress scene; 13 placements; 31.3% primary ratio; dense_clutter class."
+
+  - scene_name: "drug_dilution_workspace_dense"
+    class: "dense_clutter"
+    notes: "Density-stress variant of drug_dilution; 13.9% primary ratio; dense_clutter class."
+
+  - scene_name: "well_plate_96_zoom"
+    class: "zoom_detail"
+    notes: "Zoom/detail view; single well plate filling 88.7% of viewport; .scene-mode--detail class."
+
+# Fallback rules (applied when scene_name is not in this manifest)
+# If a new scene is added to the repo and scorecard.mjs runs before this manifest is updated,
+# the scorer will apply these heuristics:
+fallback_rules:
+  - pattern: "*_zoom.html"
+    class: "zoom_detail"
+  - pattern: "*_dense.html"
+    class: "dense_clutter"
+  - default: "composition"
+
+# Total count by class (informational; updated when manifest changes)
+class_distribution:
+  template: 4
+  composition: 2
+  instrument_heavy: 1
+  zoom_detail: 1
+  dense_clutter: 2

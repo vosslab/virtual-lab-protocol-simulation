@@ -10,6 +10,14 @@ Until then, every artifact under this folder is exploratory. Verdicts, screensho
 
 See `docs/active_plans/new0_outside_review_handoff.md` for the outside-review concerns this status note responds to.
 
+See plan: [../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../docs/active_plans/new1_css_native_layout_integration_plan.md).
+
+## Operational entry points
+
+- [PRECHECK_USAGE.md](PRECHECK_USAGE.md) - one-command precheck run, troubleshooting, verdict ladder.
+- [run_precheck.sh](run_precheck.sh) - thin wrapper script for the precheck runner.
+- [spike_fixtures/](spike_fixtures/) - pinned DOM contract, manifest, expected precheck command, expected screenshot paths for the NEW1 well_plate_96_zoom integration spike.
+
 ## Overview
 
 NEW0 is a clean-room rebuild of the scene layout system from first principles.

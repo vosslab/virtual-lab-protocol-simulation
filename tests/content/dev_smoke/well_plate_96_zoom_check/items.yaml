@@ -1,0 +1,7 @@
+items:
+  well_plate_96:
+    label: "96-Well Plate (Zoomed)"
+    role: culture_vessel
+    asset: well_plate_96
+    scene: well_plate_96_zoom_check_scene
+    visualOnly: true

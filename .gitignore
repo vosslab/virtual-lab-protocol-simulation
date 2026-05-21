@@ -10,9 +10,16 @@ experiments/*
 experiments/css_native_layout/*
 !experiments/css_native_layout/README.md
 !experiments/css_native_layout/PRECHECK_SUMMARY.md
+!experiments/css_native_layout/PRECHECK_USAGE.md
 !experiments/css_native_layout/DECISION_MEMO.md
+!experiments/css_native_layout/LAYOUT_SCORECARD.md
+!experiments/css_native_layout/scene_class_manifest.yaml
+!experiments/css_native_layout/score_layout.mjs
 !experiments/css_native_layout/precheck.mjs
-!experiments/css_native_layout/emitter.py
+!experiments/css_native_layout/render_and_dump.mjs
+!experiments/css_native_layout/VISUAL_TARGETS.md
+!experiments/css_native_layout/run_precheck.sh
+!experiments/css_native_layout/run_built_app_precheck.sh
 !experiments/css_native_layout/regions/
 !experiments/css_native_layout/styles/
 !experiments/css_native_layout/templates/
@@ -41,6 +48,22 @@ experiments/css_native_layout/templates/dir_c/*
 !experiments/css_native_layout/scenes/
 experiments/css_native_layout/scenes/*
 !experiments/css_native_layout/scenes/*.yaml
+!experiments/css_native_layout/spike_fixtures/
+experiments/css_native_layout/spike_fixtures/*
+!experiments/css_native_layout/spike_fixtures/*.md
+!experiments/css_native_layout/spike_fixtures/*.yaml
+!experiments/css_native_layout/spike_paths/
+experiments/css_native_layout/spike_paths/*
+!experiments/css_native_layout/spike_paths/*/
+experiments/css_native_layout/spike_paths/*/*
+!experiments/css_native_layout/spike_paths/*/*.md
+!experiments/css_native_layout/spike_paths/*/*.json
+!experiments/css_native_layout/stress_generators/
+experiments/css_native_layout/stress_generators/*
+!experiments/css_native_layout/stress_generators/*.py
+!experiments/css_native_layout/stress_results/
+experiments/css_native_layout/stress_results/*
+!experiments/css_native_layout/stress_results/*.md
 tools/svg_picker/*.json
 manual*.md
 output_manuals/
@@ -78,3 +101,14 @@ report_*.txt
 
 # OS
 .DS_Store
+# === UNIVERSAL ===
+_temp*.?*
+# === TYPESCRIPT ===
+_site/
+*.tsbuildinfo
+.eslintcache
+.prettiercache
+blob-report/
+coverage/
+meta.json
+stats.html

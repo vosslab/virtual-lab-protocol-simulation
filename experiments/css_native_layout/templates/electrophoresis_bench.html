@@ -60,15 +60,15 @@
 		<div class="region region--work_surface" data-region="work_surface">
 			<span class="region-label">Work Surface</span>
 
-			<!-- Serological Pipette (small-tool) -->
-			<div class="placement" data-placement="center_serological_pipette" data-placement-name="center_serological_pipette" data-object-name="serological_pipette">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../assets/equipment/aspirating_pipette.svg" alt="Serological Pipette">
+			<!-- Electrophoresis Tank (large-equipment, primary for electrophoresis scene) -->
+			<div class="placement" data-placement="center_electrophoresis_tank" data-placement-name="center_electrophoresis_tank" data-object-name="electrophoresis_tank" data-primary="true">
+				<div class="object-graphic footprint--large-equipment">
+					<img src="../../../assets/equipment/electrophoresis_tank.svg" alt="Electrophoresis Tank">
 				</div>
-				<span class="placement-label">Serological Pipette</span>
+				<span class="placement-label">Electrophoresis Tank</span>
 			</div>
 
-			<!-- Gel Cassette (instrument - primary workspace item) -->
+			<!-- Gel Cassette (instrument - supporting item) -->
 			<div class="placement" data-placement="center_gel_cassette" data-placement-name="center_gel_cassette" data-object-name="gel_cassette">
 				<div class="object-graphic footprint--instrument">
 					<img src="../../../assets/equipment/gel_cassette.svg" alt="Gel Cassette">
@@ -82,6 +82,14 @@
 					<img src="../../../assets/equipment/electrode_module.svg" alt="Electrode Module">
 				</div>
 				<span class="placement-label">Electrode Module</span>
+			</div>
+
+			<!-- Serological Pipette (small-tool, supporting) -->
+			<div class="placement" data-placement="center_serological_pipette" data-placement-name="center_serological_pipette" data-object-name="serological_pipette">
+				<div class="object-graphic footprint--small-tool">
+					<img src="../../../assets/equipment/aspirating_pipette.svg" alt="Serological Pipette">
+				</div>
+				<span class="placement-label">Serological Pipette</span>
 			</div>
 		</div>
 
@@ -138,25 +146,9 @@
 			</div>
 		</div>
 
-		<!-- Region 4: Instrument Station (large equipment) -->
+		<!-- Region 4: Instrument Station (hidden; large equipment moved to work_surface) -->
 		<div class="region region--instrument_station" data-region="instrument_station">
 			<span class="region-label">Instrument Station</span>
-
-			<!-- Electrophoresis Tank (large-equipment) -->
-			<div class="placement" data-placement="rear_center_electrophoresis_tank" data-placement-name="rear_center_electrophoresis_tank" data-object-name="electrophoresis_tank" data-primary="true">
-				<div class="object-graphic footprint--large-equipment">
-					<img src="../../../assets/equipment/electrophoresis_tank.svg" alt="Electrophoresis Tank">
-				</div>
-				<span class="placement-label">Electrophoresis Tank</span>
-			</div>
-
-			<!-- Power Supply (large-equipment) -->
-			<div class="placement" data-placement="rear_right_power_supply" data-placement-name="rear_right_power_supply" data-object-name="power_supply">
-				<div class="object-graphic footprint--large-equipment">
-					<img src="../../../assets/equipment/power_supply_off.svg" alt="Power Supply">
-				</div>
-				<span class="placement-label">Power Supply</span>
-			</div>
 		</div>
 
 		<!-- Region 5: Popup Layer (overlays, hidden by default) -->

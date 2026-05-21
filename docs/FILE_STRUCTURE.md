@@ -234,6 +234,10 @@ in place.
 | [devel/setup_playwright.sh](../devel/setup_playwright.sh) | Idempotent Playwright (chromium) install |
 | [devel/commit_changelog.py](../devel/commit_changelog.py) | Helper for changelog hygiene |
 
+### [experiments/](../experiments/) - Transient prototypes
+
+Non-production prototypes outside the layout-engine path. Transient: current contents are subject to removal once integration spikes resolve.
+
 ### Other repos
 
 [OTHER_REPOS/](../OTHER_REPOS/) holds sibling-repo checkouts for

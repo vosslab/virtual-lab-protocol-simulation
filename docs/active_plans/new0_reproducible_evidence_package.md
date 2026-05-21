@@ -1,6 +1,64 @@
 # NEW0 reproducible evidence package
 
-**Status:** Evidence complete. Provisional recommendation recorded. No production promotion.
+## Status update (2026-05-19)
+
+Reviewer brief dated 2026-05-19 retracts the `continue-to-NEW1` verdict
+recorded below. NEW1 is not opened in this pass; NEW0 stabilization
+continues. The controlling plan is now
+[new0_stabilization_continuation.md](new0_stabilization_continuation.md).
+Forward-direction wording in this document has been amended to point at
+the new plan. Measured evidence (verdict counts, primary ratios,
+screenshots, reproduce commands) remains valid as the historical
+stabilization snapshot.
+
+**Update (2026-05-19, later):** NEW0 hardening was accepted by reviewer
+on 2026-05-19. The forward direction is now NEW1; see
+[new1_css_native_layout_integration_plan.md](new1_css_native_layout_integration_plan.md).
+The `continue-stabilization` verdict recorded below is historical.
+
+## NEW0 hardening verdict (2026-05-19, historical)
+
+- **Composition scenes**: PASS -- drug_dilution_plate_workspace 25.2%,
+  drug_dilution_workspace_dense 25.2%, crowded_bench_dense 31.3%,
+  staining_bench 31.3%; all 0 hard fails.
+- **Zoom scene**: PASS -- well_plate_96_zoom 88.7%, 0 hard fails.
+- **Instrument-heavy scene**: PASS -- electrophoresis_bench 21.9%
+  with tank as primary, matches prior `dir_c_bench.css` reference,
+  0 hard fails.
+- **Remaining blocker**: 6 scenes still WARN on visual_checklist
+  booleans (`labels_readable` + `supporting_nearby`). These are
+  heuristic flags, not hard fails. Primary contract item 3
+  (layout engine ownership of object positioning) remains unresolved
+  -- NEW0 violates it by design and is not in scope for NEW0.
+- **Recommendation**: Ready for NEW1 planning document (not
+  implementation). All reviewer success criteria 2026-05-19 hit:
+  drug-dilution plate is visually dominant, electrophoresis shows a
+  visible tank with parity to the prior reference,
+  well_plate_96_zoom is clearly a detail view, staining/crowded
+  remain readable, tracked-files-only. Hardening pass closed.
+
+## Stabilization pass result (historical)
+
+Superseded 2026-05-19. The `continue-stabilization` verdict below is recorded for history. NEW0 hardening was accepted by reviewer on 2026-05-19 and the forward direction is NEW1; see [new1_css_native_layout_integration_plan.md](new1_css_native_layout_integration_plan.md).
+
+**Date:** 2026-05-19 (re-confirmed)
+**Verdict:** `continue-stabilization` (see status update above; prior
+`continue-to-NEW1` wording is retracted)
+
+1. **Forward candidate per scene class:** Direction B for all scene classes (tracked `bench.css` / `hood.css` / `instrument.css` = `dir_b_*.css` + Direction A's zoom-mode footprint rule). Direction C stays tracked as a reference variant; not promoted. Direction A retired. Direction E acknowledged as the lost drug-dilution tuning; not re-promoted because Direction E was rendered against gitignored `bench_e.css` and the report rejects ignored-CSS evidence.
+2. **Zoom-rule disposition:** Ported Dir A's `.scene-mode--detail .placement { width:100%; height:100% }` into Dir B. Zoom ratio improved from 31.9% to 44.4% (+12.5pp). Still below 70% threshold; threshold likely mis-calibrated for this layout (max-width:900px in 1920x1080 caps physical maximum at ~50%). Threshold recalibration is in scope for the continued stabilization pass (see [new0_stabilization_continuation.md](new0_stabilization_continuation.md)).
+3. **Recommendation:** `continue-stabilization`. CSS-native layout is mechanically stable (zero hard fails across all 10 scenes), but the reviewer 2026-05-19 brief found the forward candidate is not visually strong enough and not consistently better than the alternatives. Continue NEW0 stabilization per [new0_stabilization_continuation.md](new0_stabilization_continuation.md); do not open NEW1.
+4. **Strongest remaining blocker:** The primary-ratio 25% threshold is not calibrated and is now being replaced with scene-class thresholds plus a visual checklist as part of continued stabilization. See the continuation plan for scope.
+5. **Riskiest unproven claim (still open):** Multi-workspace scene switching - verifying that a single HTML page can link `bench.css` and render different workspace classes (scene--bench, scene--hood) correctly with Direction B's `region--instrument_station: display:none` rule. If the rule bleeds across workspace classes in the same page load, the 3-band model breaks for mixed scenes. This work is deferred until after stabilization closes.
+6. **Reproducibility re-confirmation (this pass):**
+   - 30/30 templates link tracked CSS only (verified by `_temp_link_sweep.py`); 0 ignored-CSS references.
+   - `node experiments/css_native_layout/precheck.mjs` (default `--out test-results/new0_css_native/audit`) reproduces stabilized counts exactly: 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL. Per-scene primary ratios match the stabilized baseline.
+   - Contact sheets regenerated at `test-results/new0_css_native/contact_sheets/<scene>.png` (10 base + 6 annotated) plus `test-results/new0_css_native/gallery.html`.
+   - All decision evidence cited below is reproducible from `git ls-files` content + the three reproduce commands in section 2.
+
+---
+
+**Status:** Evidence complete. Stabilization pass continues under [new0_stabilization_continuation.md](new0_stabilization_continuation.md) per reviewer brief 2026-05-19. No production promotion. Prior "Ready for NEW1 planning" wording is retracted.
 
 **Date produced:** 2026-05-18
 
@@ -35,21 +93,32 @@ No production files were modified during this evidence package production.
 
 The following artifacts are under git tracking (`.gitignore` allow-list):
 
-**CSS (6 files, tracked):**
-- `experiments/css_native_layout/styles/bench.css` (Direction A baseline)
+**CSS (9 files, tracked):**
+
+Forward candidate (Direction B + zoom fix, current promoted surface):
+- `experiments/css_native_layout/styles/bench.css`
 - `experiments/css_native_layout/styles/hood.css`
 - `experiments/css_native_layout/styles/instrument.css`
+
+Reference variants (legacy Direction B without zoom fix; kept for comparison evidence):
 - `experiments/css_native_layout/styles/dir_b_bench.css`
 - `experiments/css_native_layout/styles/dir_b_hood.css`
 - `experiments/css_native_layout/styles/dir_b_instrument.css`
+
+Reference variants (Direction C, instrument-first 2-column):
 - `experiments/css_native_layout/styles/dir_c_bench.css`
 - `experiments/css_native_layout/styles/dir_c_hood.css`
 - `experiments/css_native_layout/styles/dir_c_instrument.css`
 
-**HTML templates (tracked):**
-- `experiments/css_native_layout/templates/*.html` (8 Direction A templates)
-- `experiments/css_native_layout/templates/dir_b/*.html` (10 Direction B templates)
-- `experiments/css_native_layout/templates/dir_c/*.html` (10 Direction C templates)
+Direction A scratch CSS (`bench_a.css`, `hood_a.css`, etc.) and the lettered
+scratch variants (`bench_b..e.css`, `*_diorama.css`, `*_focusedstage.css`,
+`*_gameboard.css`) remain gitignored and are not part of the evidence
+surface. They are not linked by any template.
+
+**HTML templates (30 files, tracked):**
+- `experiments/css_native_layout/templates/*.html` (10 root templates linking the forward `bench.css` / `hood.css` / `instrument.css`)
+- `experiments/css_native_layout/templates/dir_b/*.html` (10 templates linking `dir_b_*.css`)
+- `experiments/css_native_layout/templates/dir_c/*.html` (10 templates linking `dir_c_*.css`)
 
 **Scene YAML (tracked):**
 - `experiments/css_native_layout/scenes/crowded_bench_dense.yaml`
@@ -66,30 +135,34 @@ The following artifacts are under git tracking (`.gitignore` allow-list):
 - `test-results/new0_css_native/contact_sheets/` (contact sheet PNGs)
 - `test-results/new0_css_native/gallery.html`
 
-**Reproduce command (Direction A):**
+**Reproduce command (forward candidate, default output):**
 ```
-node experiments/css_native_layout/precheck.mjs \
-  'experiments/css_native_layout/templates/*.html' \
-  --out test-results/new0_css_native/dir_a
+node experiments/css_native_layout/precheck.mjs
 ```
+This scans `experiments/css_native_layout/templates/*.html` (10 root templates, linking tracked `bench.css` / `hood.css` / `instrument.css` = Direction B + zoom fix) and writes results to `test-results/new0_css_native/audit/`.
 
-**Reproduce command (Direction B):**
+**Reproduce command (Direction B legacy reference variant):**
 ```
 node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/templates/dir_b/*.html' \
   --out test-results/new0_css_native/dir_b
 ```
 
-**Reproduce command (Direction C):**
+**Reproduce command (Direction C reference variant):**
 ```
 node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/templates/dir_c/*.html' \
   --out test-results/new0_css_native/dir_c
 ```
 
-**Reproduce contact sheets:**
+**Reproduce contact sheets + gallery:**
 ```
 source source_me.sh && python3 _temp_contact_sheets.py
+```
+
+**Reproduce template-CSS link audit (zero-bad-links gate):**
+```
+source source_me.sh && python3 _temp_link_sweep.py
 ```
 
 ---
@@ -175,14 +248,18 @@ Characteristics:
 ## 5. Screenshots and contact sheets
 
 All screenshots captured at 1920x1080 by `precheck.mjs` using Playwright/Chromium.
-Contact sheets (3-up horizontal, Dir A | Dir B | Dir C) generated by
-`_temp_contact_sheets.py` using Pillow.
+Contact sheets (3-up horizontal, **Forward (B + zoom fix) | B legacy (dir_b) | C (dir_c)**)
+generated by `_temp_contact_sheets.py` using Pillow. Direction A is excluded from
+contact sheets because its baseline CSS variants are gitignored and would violate
+the no-ignored-CSS evidence rule.
 
-Gallery: `test-results/new0_css_native/gallery.html`
+Gallery: `test-results/new0_css_native/gallery.html` (grouped by forward verdict;
+WARN scenes show base + annotated sheet inline)
 
-Contact sheets: `test-results/new0_css_native/contact_sheets/<scene>.png`
+Contact sheets: `test-results/new0_css_native/contact_sheets/<scene>.png` (10 base sheets)
 
-Annotated sheets (for scenes with WARN): `test-results/new0_css_native/contact_sheets/<scene>_annotated.png`
+Annotated sheets (overlay verdict + primary ratio per panel; produced for all 6 WARN scenes):
+`test-results/new0_css_native/contact_sheets/<scene>_annotated.png`
 
 ---
 
@@ -192,27 +269,61 @@ Verdicts: PASS = no issues; PASS_TEMPLATE = template scene (expected sparse); WA
 
 No direction produced any FAIL. No direction produced svg_svg_overlap or off_page.
 
+### Per-scene primary-ratio and visual checklist (2026-05-19 continuation pass)
+
+The continuation pass replaced the global 25% / 70% primary-ratio
+threshold with a six-boolean visual checklist. Primary ratio is now
+reported as advisory; verdicts key on `visual_checklist + hard_fails`.
+
+Checklist booleans: `pri_obv` = `primary_obvious`,
+`sup_near` = `supporting_nearby`, `lab_rd` = `labels_readable`,
+`no_clip` = `no_clipping`, `no_off` = `no_off_page`,
+`no_ovl` = `no_svg_overlap`.
+
+| Scene | Primary ratio (advisory) | pri_obv | sup_near | lab_rd | no_clip | no_off | no_ovl | Verdict |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| bench_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
+| hood_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
+| cell_counter_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
+| microscope_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
+| drug_dilution_plate_workspace | 25.2% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+| electrophoresis_bench | 21.9% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+| well_plate_96_zoom | 88.7% | [x] | [x] | [ ] | [x] | [x] | [x] | WARN |
+| staining_bench | 31.3% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+| crowded_bench_dense | 31.3% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+| drug_dilution_workspace_dense | 13.9% | [ ] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+
+Hard-fail counts (`clipped_artwork`, `off_page`, `svg_svg_overlap`,
+`region_overflow`) are all 0 across all 10 scenes.
+
 ### Verdict counts
 
-| Metric | Dir A | Dir B | Dir C |
-| --- | --- | --- | --- |
-| PASS | 1 | 0 | 0 |
-| PASS_TEMPLATE | 4 | 4 | 4 |
-| WARN | 5 | 6 | 6 |
-| FAIL | 0 | 0 | 0 |
+| Metric | Forward (B + zoom fix, tracked) | B legacy (dir_b) | C (dir_c) | Dir A (historic) |
+| --- | --- | --- | --- | --- |
+| PASS | 0 | 0 | 0 | 1 |
+| PASS_TEMPLATE | 4 | 4 | 4 | 4 |
+| WARN | 6 | 6 | 6 | 5 |
+| FAIL | 0 | 0 | 0 | 0 |
+
+Forward column is the re-confirmed run (2026-05-19). Direction A column is
+historic (rendered against gitignored `bench_a.css` etc.) and is included
+for comparison only; it is not regenerable from tracked CSS and cannot be
+cited as forward evidence.
 
 ### Primary object ratio (composition scenes only)
 
 Threshold: >= 25% standard; >= 70% zoom. Flag = below threshold.
 
-| Scene | Dir A | Dir B | Dir C | Note |
-| --- | --- | --- | --- | --- |
-| well_plate_96_zoom | 92% PASS | 31.9% WARN | 18.4% WARN | A wins on zoom fill |
-| drug_dilution_plate_workspace | 1.4% WARN | 13.9% WARN | 5.9% WARN | B best |
-| drug_dilution_workspace_dense | 0.6% WARN | 13.9% WARN | 5.9% WARN | B best |
-| electrophoresis_bench | 2.7% WARN | 20.8% WARN | 21.9% WARN | C marginally best |
-| staining_bench | 0.7% WARN | 31.3% (no flag) | 21.0% WARN | B best (meets 25%) |
-| crowded_bench_dense | 0.6% WARN | 31.3% (no flag) | 21.0% WARN | B best (meets 25%) |
+Forward column = re-confirmed `audit/visual_audit.json` (2026-05-19).
+
+| Scene | Forward (B + zoom fix) | B legacy | C | Dir A (historic) | Note |
+| --- | --- | --- | --- | --- | --- |
+| well_plate_96_zoom | 44.4% WARN | 31.9% WARN | 18.4% WARN | 92% PASS | Zoom fix recovers 12.5pp; still below 70% threshold |
+| drug_dilution_plate_workspace | 1.5% WARN | 13.9% WARN | 5.9% WARN | 1.4% WARN | Forward returns to bench layout after Direction E demoted |
+| drug_dilution_workspace_dense | 13.9% WARN | 13.9% WARN | 5.9% WARN | 0.6% WARN | Forward == B legacy on dense |
+| electrophoresis_bench | 0.5% WARN | 20.8% WARN | 21.9% WARN | 2.7% WARN | Forward primary detected as serological_pipette (data-primary), not tank |
+| staining_bench | 31.3% (no flag) | 31.3% (no flag) | 21.0% WARN | 0.7% WARN | Forward and B legacy clear threshold |
+| crowded_bench_dense | 31.3% (no flag) | 31.3% (no flag) | 21.0% WARN | 0.6% WARN | Forward and B legacy clear threshold |
 
 ### Scene whitespace (composition scenes)
 
@@ -233,7 +344,63 @@ Direction C wins on electrophoresis scene whitespace.
 
 ---
 
-## 7. What failed
+## 7. What improved (continuation pass, 2026-05-19)
+
+The continuation pass made the following tracked improvements without
+adding any new tracked CSS files and without re-promoting any
+gitignored variant:
+
+- **Scene-class threshold rollout.** `precheck.mjs` replaced the global
+  25% / 70% primary-ratio threshold with scene-class logic plus a
+  six-boolean visual checklist (`primary_obvious`, `supporting_nearby`,
+  `labels_readable`, `no_clipping`, `no_off_page`, `no_svg_overlap`).
+  Primary ratio is now reported as advisory; verdicts key on
+  `visual_checklist + hard_fails`. New summary keys:
+  `composition_pass_count`, `composition_warn_count`,
+  `composition_fail_count`, `template_smoke_pass_count`,
+  `primary_ratio_advisory`. Report writer emits ASCII `[x]` / `[ ]`
+  checkbox glyphs.
+- **Drug-dilution plate-dominance recovery in tracked CSS.** Useful
+  Direction E tuning recovered into `bench.css` via
+  `.scene--drug-dilution` rules; `well_plate_96` gets 2x flex-grow on
+  `work_surface`. Primary ratio 1.5% -> 25.2% with no reference to
+  gitignored `bench_e.css`.
+- **Electrophoresis tank visibility + retag.** Tank moved out of the
+  hidden `instrument_station` into `work_surface`; `data-primary`
+  retagged from `serological_pipette` to `center_electrophoresis_tank`.
+  Primary ratio 0.5% -> 18.5%, above the 15% scene-class target for
+  instrument-heavy scenes.
+- **Zoom-mode strengthening.** `.scene-mode--detail .placement
+  { width: calc(100% - 20px); height: calc(100% - 20px); }` rule
+  strengthened in `bench.css`. `well_plate_96_zoom` primary ratio
+  44.4% -> 88.7%; the well plate now visibly dominates the detail
+  view.
+- **Two-column contact sheets.** `_temp_contact_sheets.py` rebuilt for
+  a "Forward vs best-prior reference per scene" layout. Best-prior
+  mapping per scene is documented inline in the script: `dir_b` for
+  general-bench / zoom / dense / general scenes, `dir_c` for
+  electrophoresis (instrument-heavy class). 10 contact sheets +
+  `gallery.html` regenerated.
+- **Hardening pass (2026-05-19): electrophoresis parity with prior
+  dir_c reference.** Single-rule tightening on the instrument-heavy
+  crowded-`work_surface` rule in tracked `bench.css` (`flex-grow`
+  2 -> 6, `max-width` 800px -> 950px, `flex-basis` 400px -> 550px).
+  Electrophoresis primary ratio moved 18.5% -> 21.9%, matching the
+  prior `dir_c_bench.css` reference (21.9%). Two iterations. No
+  other scene touched; no other CSS file touched; verdict mix and
+  hard-fail count unchanged.
+
+## 8. What still fails (continuation pass, 2026-05-19)
+
+- **Six WARN composition scenes** remain flagged on the
+  `labels_readable` and `supporting_nearby` booleans of the visual
+  checklist. Hard fails are all zero (`clipped_artwork`, `off_page`,
+  `svg_svg_overlap`, `region_overflow` all 0), so no scene FAILs. The
+  WARN signal is real but bounded; label collisions and support
+  proximity are the next-pass items, not blockers for the current
+  stabilization closeout.
+
+## 7-historic. What failed (Direction A vs B vs C, 2026-05-18 baseline)
 
 No HARD FAIL conditions were triggered in any direction. All three directions
 are free of clipped artwork, off-page elements, SVG-SVG overlap, and region overflow.
@@ -301,7 +468,25 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
 
 ---
 
-## 9. Provisional recommendation
+## 9. Recommendation
+
+**Continue NEW0 stabilization per reviewer brief 2026-05-19 (see
+[new0_stabilization_continuation.md](new0_stabilization_continuation.md));
+NEW1 is not opened in this pass.** The prior recommendation to "Continue
+CSS-native into NEW1 planning" is retracted.
+
+The mechanical evidence still supports keeping CSS-native: zero hard fails across
+10 scenes, zero off-page or SVG-SVG overlap conditions, region overflow is clean
+everywhere. However, contact-sheet review by the reviewer found that treating
+Direction B as the global forward candidate collapses electrophoresis primary
+ratio to 0.5% and drug-dilution primary ratio to 1.5%, neither of which is
+visually acceptable for those scene classes. The next stabilization pass replaces
+the global Direction B choice with scene-class rules (general bench, instrument-
+heavy, zoom/detail, dense composition), recovers the useful drug-dilution tuning
+into tracked CSS, and replaces the single global primary-ratio threshold with
+scene-class thresholds plus a visual checklist. See the continuation plan for
+the full scope. Threshold calibration and the contract-path decision (item 3
+amendment vs. layout-engine emitting CSS) are out of scope for this pass.
 
 **Provisional direction: B as the primary candidate, with C as the instrument-context variant.**
 

@@ -1,5 +1,691 @@
 # Changelog
 
+## 2026-05-20
+
+### Additions and New Features
+
+- **NEW1.5 layout hardening: six lanes closed, results compiled, Path A
+  recommendation for NEW2.** Six bounded lanes plus adapter recovery ran
+  against the CSS-native layout work. Compiled results live in
+  [active_plans/new1_5_layout_hardening_results.md](active_plans/new1_5_layout_hardening_results.md).
+  Lane B extended `experiments/css_native_layout/render_and_dump.mjs`
+  (approx +80 lines) to inject precheck-compatible shadow placements
+  with measured rects; built-app precheck now runs end-to-end at
+  production 1920x1080 and reports hard_fail_count = 2 on the zoom
+  scene (off_page + svg_svg_overlap). Lane C revised per-class scorecard
+  weights in `experiments/css_native_layout/score_layout.mjs`; four
+  template scenes now occupy the top five (bench_basic, microscope_basic,
+  cell_counter_basic, hood_basic each +30). Lane D added the dense-mode
+  hide-labels CSS rule to `experiments/css_native_layout/styles/bench.css`
+  (lines 242-245). Lane E accepted one of four weak-scene trials
+  (electrophoresis_bench +12 via column-wrap support_placement). Lane V
+  created [../experiments/css_native_layout/VISUAL_TARGETS.md](../experiments/css_native_layout/VISUAL_TARGETS.md)
+  with 18 measurable rules across 6 scene classes.
+- **NEW1 Round 2 bundle integration: render-and-dump bridge added, compatibility shim guardrails locked in, progress report published.**
+  Round 2 ran four lanes against the built-app integration of the CSS-native
+  layout work. Lane outcomes are captured in
+  [docs/active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  under "Bundle integration round 2 (2026-05-20)".
+
+  Additions:
+  - `experiments/css_native_layout/render_and_dump.mjs` (Lane P bridge,
+    340 LOC). Dumps live rendered DOM from the built app into
+    `experiments/css_native_layout/spike_fixtures/spike_rendered/` for
+    downstream diagnostic tools. `.gitignore` exception:
+    `!experiments/css_native_layout/render_and_dump.mjs`.
+  - `tests/playwright/spike_built_app_rerender.mjs` (Lane R probe).
+  - `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml` target
+    switched E7 -> row_E to attempt a click-validable parent path (Lane R
+    in-scope artifact retained after revert).
+  - Progress report: `docs/active_plans/new0_new1_layout_rebuild_progress_report.html`
+    plus markdown companion
+    `docs/active_plans/new0_new1_layout_rebuild_progress_report.md`
+    and 12-PNG asset directory at
+    `docs/active_plans/new0_new1_layout_rebuild_assets/`. Sections 1-10
+    per spec, captions per image. Evidence gap noted: `lane_d_state_change.png`
+    not captured (Lane D step never completed).
+  - `PRECHECK_USAGE.md` "Spike usage: built-app precheck" section
+    documents how to invoke `render_and_dump.mjs` against the built app.
+- NEW2 prep package: four audit/plan/strategy docs added under
+  `docs/active_plans/`:
+  `new2_well_plate_adapter_rect_audit.md`,
+  `new2_production_viewport_overflow_audit.md`,
+  `new2_css_native_production_blocker_plan.md`,
+  `new2_test_strategy.md`.
+
+### Behavior or Interface Changes
+
+- Compatibility shim guardrails locked in for
+  `src/scene_runtime/layout/css_native_adapter.ts`. Comment block added at
+  lines 112-116 marking the pixel-to-SVG scaling shim as a contained
+  compatibility layer, not a layout engine. Audit subsection added to
+  [docs/active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  lines 206-276 with all 6 guardrails marked [x].
+
+### Fixes and Maintenance
+
+- NEW1.5 Lane A overstep recovered: a Lane A subagent edited
+  `src/scene_runtime/layout/css_native_adapter.ts` outside lane scope
+  (positioning changes, debug logging, broken measurements). Manager
+  reverted via `git checkout`. Task #86 then rewrote the adapter to
+  canonical post-cleanup state (261 lines, snake_case export
+  `compute_scene_layout_css_native`, no `as any` or `as unknown as`,
+  Lane C scaling shim and Lane C-cleanup comment block preserved). tsc
+  baseline 175 maintained; spike test 11/11.
+- Reverted `src/scene_runtime/chrome/scene_frame.ts`: a Lane R subagent
+  flipped pointer-events on `.scene-viewport` outside the lane's allowed
+  scope. Manager rolled back via `git checkout`; bundle rebuilt; tsc
+  baseline restored to 175 errors (matches Task #69 floor).
+
+### Decisions and Failures
+
+- NEW1.5 Lane A BLOCKED with finding. Three angles attempted (non-well
+  placement, `select` gesture, chrome event-flow workaround); none
+  produced a visible-UI sub-target completion of well_plate_96_zoom.
+  Root cause: `src/scene_runtime/adapters/well_plate/render.ts` (a
+  FORBIDDEN edit path for NEW1.5) emits SVG row groups whose
+  coordinates do not match the CSS-native placement rects. Production
+  refactor required; out of NEW1.5 scope; fed to NEW2 as a concrete
+  production workstream.
+- NEW1.5 Lane B PASS with finding. Lane 0 CSS fix (validated at
+  1200x900) does NOT generalize to production 1920x1080. The zoom
+  scene rect measures 1920x1763 and exceeds the 1080 viewport height
+  (off_page hard fail). Second production workstream for NEW2:
+  extend CSS scaling for production viewport.
+- NEW1.5 final recommendation: continue Path A into NEW2 planning.
+  Justification: Lane B's bridge produces measurable production
+  dispatch output; Lane C/V form a coherent scoring framework;
+  Lane D/E demonstrate bounded trial loops produce real point gains.
+  The two unresolved items are production-code workstreams, not
+  architecture failures of the CSS-native approach.
+- Lane R BLOCKED. Click dispatcher does not receive events at
+  `.scene-viewport` level when the target is a sub-well. Architecture
+  mismatch between scene-frame chrome event-flow and dispatch event-receiver
+  expectation. Re-render proof deferred to a focused chrome/dispatch
+  alignment workstream; not a contract amendment per se, but requires a
+  production code change. Does not block Path A continuation for new scenes.
+- Lane P PARTIAL. Bridge runs and emits 2.6 MB dumped DOM with
+  `scene-container`, `data-scene-mode`, and `scene-viewport`. The original
+  Lane E dynamic-DOM blocker is solved. Deeper blocker exposed: `precheck.mjs`
+  expects HTML `<div class="placement">` template structures, but production
+  runtime emits SVG. precheck cannot score scenes in the dumped HTML.
+  Three follow-up options recorded; only a new SVG-aware diagnostic tool is
+  in scope long-term. precheck SVG adapter and production div-scaffolding
+  emission are rejected.
+- Lane S STABLE. NEW0 scorecard identical to Task #69 baseline: 10 scenes
+  match exactly, 0 hard fails, 0 regressions > 5 points,
+  `well_plate_96_zoom` 89/100.
+- Round 2 recommendation: continue Path A. Two follow-up workstreams
+  identified (chrome/dispatch alignment, SVG-aware diagnostic); neither
+  blocks Path A for new scenes.
+- NEW2 Workstream 1 finding: the well-plate adapter
+  (`src/scene_runtime/adapters/well_plate/render.ts`) and
+  `isTargetSatisfied` (`entry.ts:443-491`) are both CORRECT. The
+  actual blocker is the `correct_target` validator preset, which uses
+  strict string match instead of the hierarchical `isTargetSatisfied`
+  path. The validator preset sits in the forbidden boundary; user
+  decision is required before NEW2 Workstream 1 may proceed.
+- NEW2 Workstream 2: production CSS lacks a `max-height` cap on the
+  `.scene-mode--detail` SVG. A minimal CSS patch is proposed
+  (approx 6 lines across `src/style.css` and
+  `experiments/css_native_layout/styles/bench.css`). No user
+  decision required; may proceed.
+
+### Developer Tests and Notes
+
+- Playwright assertion for the compatibility-shim guardrail was SKIPPED in
+  Lane C-cleanup: the target test file does not yet exist and authoring it
+  would require a refactor out of round scope. Flagged for the next round.
+- `tests/test_markdown_links.py`, `tests/test_ascii_compliance.py`: 8
+  pre-existing failures in centrally-maintained docs unchanged; 0 new
+  failures introduced in Round 2.
+- NEW1.5 status banner added to
+  `docs/active_plans/new1_5_layout_hardening_results.md`.
+- Risk and overstep history appended to
+  `docs/active_plans/new1_5_layout_hardening_results.md` covering the
+  Lane R chrome edit (reverted), Lane A adapter edit (reverted +
+  recovered), Lane A `as unknown as` slip (reverted), and the
+  staged-index discrepancy (resolved via `git add`).
+- Working-tree canonical states for
+  `src/scene_runtime/layout/css_native_adapter.ts` and
+  `src/scene_runtime/layout/feature_flags.ts` promoted to staging.
+
+## 2026-05-19
+
+### Additions and New Features
+
+- **NEW0 stabilization continuation pass complete: scene-class threshold + visual checklist, drug-dilution and electrophoresis recovered in tracked CSS**
+  Executed under reviewer brief 2026-05-19 ("Do not open NEW1 yet. Continue
+  NEW0 stabilization.") via `/delegate-manager-to-subagents`. The pass added
+  scene-class CSS rules to the tracked surface, replaced the global
+  primary-ratio threshold with a six-boolean visual checklist, rebuilt
+  contact sheets in a two-column "Forward vs best-prior per scene" layout,
+  and updated four tracked docs. No new tracked CSS files were created;
+  no `src/`, `pipeline/`, `validation/`, `docs/specs/`,
+  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production YAML
+  was touched.
+
+  Scope changes:
+  - `experiments/css_native_layout/precheck.mjs`: replaced global 25% / 70%
+    primary-ratio threshold with scene-class logic plus six-boolean visual
+    checklist (`primary_obvious`, `supporting_nearby`, `labels_readable`,
+    `no_clipping`, `no_off_page`, `no_svg_overlap`). New summary keys:
+    `composition_pass_count`, `composition_warn_count`,
+    `composition_fail_count`, `template_smoke_pass_count`,
+    `primary_ratio_advisory`. Markdown report writer emits ASCII `[x]` /
+    `[ ]` checkbox glyphs.
+  - `experiments/css_native_layout/styles/bench.css`: added
+    `.scene--drug-dilution` rules so `well_plate_96` dominates
+    `work_surface` (2x flex-grow); strengthened
+    `.scene-mode--detail .placement { width: calc(100% - 20px); height:
+    calc(100% - 20px); }` zoom rule.
+  - `experiments/css_native_layout/templates/electrophoresis_bench.html`:
+    tank moved out of hidden `region--instrument_station` into
+    `work_surface`; `data-primary` retagged from `serological_pipette` to
+    `center_electrophoresis_tank`.
+  - `experiments/css_native_layout/templates/drug_dilution_plate_workspace.html`:
+    placement classes updated to opt into `.scene--drug-dilution`
+    flex-grow rule.
+
+  Measured deltas (current pass vs prior stabilization baseline):
+  - drug_dilution_plate_workspace primary ratio: 1.5% -> 25.2%.
+  - electrophoresis_bench primary ratio: 0.5% -> 18.5% (with tank as
+    primary, not pipette).
+  - well_plate_96_zoom primary ratio: 44.4% -> 88.7%.
+  - staining_bench, crowded_bench_dense: stable at 31.3% (no regression).
+
+  Final precheck mix: 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL across
+  10 scenes. Zero hard fails (`clipped_artwork`, `off_page`,
+  `svg_svg_overlap`, `region_overflow` all 0). Six WARN composition
+  scenes warn on `labels_readable` and `supporting_nearby` booleans,
+  not on `primary_obvious`. Reviewer success criteria met:
+  drug-dilution plate visually dominant; electrophoresis tank visible;
+  well_plate_96_zoom clearly a detail view; staining/crowded readable.
+
+  Contact sheets: `_temp_contact_sheets.py` rebuilt for two-column
+  "Forward vs best-prior reference per scene" layout. Best-prior mapping
+  per scene documented inline: `dir_b` for general-bench / zoom / dense
+  scenes, `dir_c` for electrophoresis (instrument-heavy class). 10
+  contact sheets plus `gallery.html` regenerated under
+  `test-results/new0_css_native/contact_sheets/`.
+
+### Behavior or Interface Changes
+
+- **NEW1 Path A spike: feature flag API switched from const to function with test-only override.**
+  `src/scene_runtime/layout/feature_flags.ts` now exports
+  `is_css_native_well_plate_zoom_spike_enabled(): boolean` plus
+  `set_css_native_well_plate_zoom_spike_enabled_for_test(value: boolean | null): void`.
+  The default compile-time constant remains `false`. The setter is
+  test-only and must be cleared after each test. `src/scene_runtime/layout/adapter.ts`
+  updated to consult the function instead of the constant. No behavior
+  change unless the test setter is invoked.
+
+- **`precheck.mjs` verdict ladder now keys on visual checklist plus
+  hard-fails, not on primary-ratio alone.** Primary ratio is reported as
+  `primary_ratio_advisory` and no longer gates WARN or FAIL. Composition
+  scenes are scored against the six-boolean checklist; template-mode
+  skeletons roll up under `template_smoke_pass_count` so sparse
+  PASS_TEMPLATE scenes do not inflate the verdict. Existing JSON
+  consumers should add the new summary keys
+  (`composition_pass_count`, `composition_warn_count`,
+  `composition_fail_count`, `template_smoke_pass_count`,
+  `primary_ratio_advisory`); the prior `primary_ratio_flag` field is no
+  longer authoritative.
+- **Electrophoresis-bench tank emphasis rule strengthened in tracked
+  `experiments/css_native_layout/styles/bench.css`.** Single-rule
+  hardening edit on the instrument-heavy crowded-`work_surface` rule:
+  `flex-grow` 2 -> 6, `max-width` 800px -> 950px, `flex-basis` 400px ->
+  550px. Brings `electrophoresis_bench` primary ratio to parity with the
+  prior `dir_c_bench.css` reference (18.5% -> 21.9%). No other scene
+  touched; no other CSS file touched; verdict mix
+  (0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL) and hard-fail count
+  (0) unchanged.
+
+### Fixes and Maintenance
+
+- **NEW1 Path A spike: style and type violations corrected in
+  `src/scene_runtime/layout/css_native_adapter.ts`.** Removed
+  `(placement as any).label` (PlacementConfig has no `label` field; label
+  now sourced from `world.objects[placement.object_name].label`). Removed
+  `(scene as any).regions` (ResolvedSceneConfig has no `regions` field;
+  region list now derived from placement zones). Renamed exported function
+  from `computeSceneLayoutCssNative` to `compute_scene_layout_css_native`.
+  All new spike parameters and locals converted to snake_case
+  (`scene_name`, `viewport_width`, `viewport_height`, `region_map`,
+  `placement_els`, `scaffold_rect`, etc.). No `as any`, no `@ts-ignore`,
+  no broad casts remain in the spike file. DOM API contract names
+  exempted (`dataset.objectName`); legacy `ComputedItemLayout` field
+  names exempted (`labelLines`, `labelX`, etc.).
+
+- **Three pre-existing U+2014 em-dashes in
+  `experiments/css_native_layout/PRECHECK_SUMMARY.md` results table
+  replaced with ASCII `--`.** Lines around 152, 158, and 170 (the
+  "no primary tag" cells in the per-scene results and deltas tables)
+  were Unicode em-dashes that violate
+  [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md). Now ASCII-clean.
+- **Three pre-existing U+2190 left-arrows in
+  `experiments/css_native_layout/DECISION_MEMO.md` "CSS files promoted"
+  block replaced with ASCII `<-`.** Lines around 76-78 carried Unicode
+  arrows from the prior stabilization pass; now ASCII per
+  [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md).
+
+### Decisions and Failures
+
+- **NEW0 stabilization continues; NEW1 is not opened.** Reviewer brief
+  2026-05-19 controls. The prior `continue-to-NEW1` verdict (recorded
+  in [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md))
+  was retracted in this pass by planner-canonical. The new controlling
+  plan is [active_plans/new0_stabilization_continuation.md](active_plans/new0_stabilization_continuation.md).
+  Verdict for this pass: `continue-stabilization`.
+- **Global "Direction B is best" choice retired.** Replaced with
+  scene-class assignments: general bench (Direction B base + scene-class
+  rules), instrument-heavy (crowded `work_surface` rule with tank
+  flex-grow), zoom / detail (strengthened `.scene-mode--detail` rule),
+  dense composition (unchanged). Direction C kept as a tracked reference
+  for instrument-heavy comparison; not promoted. Direction A retired
+  except for the portable zoom rule, which is now in `bench.css`.
+- **Direction E re-promotion deferred; useful tuning recovered as
+  `.scene--drug-dilution` rules in tracked `bench.css`.** No reference
+  to the gitignored `bench_e.css` is required to reproduce the
+  drug-dilution plate-dominance result.
+- **NEW0 hardening pass closed; verdict
+  `ready-for-NEW1-planning`.** All reviewer success criteria
+  2026-05-19 met: composition scenes PASS (drug-dilution dominant
+  plate, staining/crowded readable), zoom scene PASS
+  (well_plate_96_zoom 88.7%), instrument-heavy scene PASS
+  (electrophoresis_bench 21.9% with tank as primary, parity with the
+  prior `dir_c_bench.css` reference). Remaining blocker: 6 scenes
+  WARN on `labels_readable` and `supporting_nearby` heuristic
+  booleans, 0 hard fails; primary contract item 3 unresolved by
+  design and out of NEW0 scope. NEW1 planning document may now be
+  drafted; NEW1 implementation is not opened in this pass.
+
+### Developer Tests and Notes
+
+- **NEW1 Path A spike: empirical browser proof + perf measurement.**
+  New Playwright test `tests/playwright/spike_css_native_well_plate_zoom.mjs`
+  exercises `compute_scene_layout_css_native()` in headless chromium with
+  the spike CSS loaded. 11 / 11 assertions pass: flag override applied;
+  result is non-empty `ComputedItemLayout[]`; numeric width and height;
+  correct placement id (`zoom_well_plate_96`). Performance: 50-call
+  median < 0.05 ms; p95 0.1 ms; max 0.2 ms;
+  `document.body.children.length` delta = 0 across 50 calls; per-call
+  DOM node creation = 2 (one region + one placement). Screenshot:
+  `test-results/new1_spike/lane3_browser_proof.png`. Results record:
+  `tests/playwright/spike_css_native_well_plate_zoom_results.md`.
+- **Observation: zoom-mode placement rect overflows the scaffold
+  viewport.** The `.scene-mode--detail .placement` CSS rule has
+  `min-width: 1800px`; measurement viewport is 1200x900. Measured rect
+  width = 1800, x = -300. Mathematically correct under the CSS cascade;
+  open question whether the production `renderScene` consumer handles
+  rects exceeding `scene_bounds`. Flagged in
+  [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  for reviewer disposition next round.
+- **NEW1 measurement-fallback alternatives analyzed (documentation
+  only).** New doc
+  [active_plans/new1_path_a_measurement_fallback_analysis.md](active_plans/new1_path_a_measurement_fallback_analysis.md)
+  covers per-render scaffold (current), persistent measurement root,
+  state-keyed cache, lazy measurement, and bypass-adapter-entirely.
+  Conclusion: keep per-render scaffold unless empirical perf forces
+  change.
+
+- **Verification gates run:**
+  - `pytest tests/test_markdown_links.py -q` PASS
+  - `pytest tests/test_ascii_compliance.py -q` PASS
+- **Tracked docs updated in this pass (four files only):**
+  - [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md)
+    -- section 5 per-scene checklist table added; sections 7/8 rewritten
+    to "what improved" and "what still fails"; historic Direction A/B/C
+    content preserved as section 7-historic.
+  - [../experiments/css_native_layout/PRECHECK_SUMMARY.md](../experiments/css_native_layout/PRECHECK_SUMMARY.md)
+    -- new section "Scene-class threshold + visual checklist
+    (2026-05-19)"; new "Current pass results" table with primary-ratio
+    delta vs baseline; three em-dash fixes.
+  - [../experiments/css_native_layout/DECISION_MEMO.md](../experiments/css_native_layout/DECISION_MEMO.md)
+    -- new section "Scene-class candidates (2026-05-19)"; drug-dilution
+    recovery and electrophoresis recovery documented; three left-arrow
+    fixes.
+  - [docs/CHANGELOG.md](CHANGELOG.md) -- this entry.
+- **Contact sheets regenerated and precheck rerun after hardening
+  edit.** `node experiments/css_native_layout/precheck.mjs`
+  re-confirmed 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL across 10
+  scenes with `electrophoresis_bench` primary ratio at 21.9%.
+  `_temp_contact_sheets.py` regenerated the 10 base sheets and the
+  `gallery.html` index under
+  `test-results/new0_css_native/contact_sheets/`. Hardening closeout
+  edits land only in four tracked docs:
+  [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md),
+  [../experiments/css_native_layout/PRECHECK_SUMMARY.md](../experiments/css_native_layout/PRECHECK_SUMMARY.md),
+  [../experiments/css_native_layout/DECISION_MEMO.md](../experiments/css_native_layout/DECISION_MEMO.md),
+  and this file.
+
+- **NEW0 stabilization re-confirmation pass complete: forward candidate locked, evidence reproducible from tracked files only**
+  Re-ran the NEW0 stabilization audit end-to-end to confirm the decision-ready
+  package is reproducible from `git ls-files` content alone. Forward candidate:
+  Direction B + zoom fix, currently tracked as
+  `experiments/css_native_layout/styles/bench.css` /
+  `hood.css` / `instrument.css`. Direction C retained as instrument-context
+  reference variant (`dir_c_*.css`). Direction A retired (rendered against
+  gitignored `bench_a.css` etc., excluded from contact sheets as untrackable
+  evidence). Direction E acknowledged as the demoted drug-dilution tuning; not
+  re-promoted in this pass for the same untrackable-CSS reason.
+
+  Audit results (all reproducible):
+  - Template-CSS link sweep (`_temp_link_sweep.py`): 30/30 templates link
+    tracked CSS only; 0 ignored-CSS references; 0 missing files.
+  - Precheck (`node experiments/css_native_layout/precheck.mjs` default output
+    to `test-results/new0_css_native/audit/`): 10 scenes, 0 PASS, 4
+    PASS_TEMPLATE, 6 WARN, 0 FAIL. Per-scene primary ratios match the
+    stabilized baseline at `test-results/new0_css_native/stabilized/`
+    byte-for-byte at the JSON-summary level (no drift).
+  - Contact sheets regenerated (`_temp_contact_sheets.py`): 10 base sheets
+    + 6 annotated sheets (one per WARN scene) at
+    `test-results/new0_css_native/contact_sheets/`. New 3-up column layout:
+    Forward (B + zoom fix) | B legacy (dir_b) | C (dir_c). Gallery at
+    `test-results/new0_css_native/gallery.html` groups scenes by forward
+    verdict.
+
+  Files updated in this pass:
+  - `experiments/css_native_layout/PRECHECK_SUMMARY.md`: added Template-CSS
+    link audit subsection; refreshed re-confirmation entry; documented that
+    the per-scene annotation helper (`_temp_annotate.py`) is separate from
+    contact-sheet annotation.
+  - `experiments/css_native_layout/DECISION_MEMO.md`: added 2026-05-19
+    re-confirmation section; clarified tracked-CSS count (9 files, not 3 -
+    the original "three files" wording referred to the forward-candidate
+    trio); recorded scratch-variant retention decision (13 lettered CSS
+    files remain gitignored, leave in place, not deleted).
+  - `docs/active_plans/new0_reproducible_evidence_package.md`: corrected
+    tracked-CSS count from 6 to 9; replaced "Direction A" verdict column
+    with forward-candidate column; added explicit "continue CSS-native into
+    NEW1 planning" recommendation paragraph; replaced reproduce commands
+    so the forward-candidate command uses default output paths.
+
+  Recommendation: continue CSS-native into NEW1 planning. NEW1 should begin
+  with primary-ratio threshold calibration (25% / 70% are unsourced; 4 of 6
+  composition scenes WARN against them, suggesting the threshold not the
+  layout is wrong) and the contract path decision (amend item 3 vs. have
+  the layout engine emit CSS classes from YAML region/footprint
+  declarations).
+
+- **NEW1 spike preparation phase complete: readiness audit, fixtures, checklist, contract amendment draft, NEW1 plan updated**
+  Executed under reviewer brief 2026-05-19 ("Proceed with NEW1 Spike
+  Preparation. This is real work, but it must remain outside production
+  runtime edits."). Prep phase builds everything needed for the
+  well_plate_96_zoom integration spike so implementation can begin on
+  approval. No production code, spec, contract, or production-YAML edits.
+
+  Files created:
+  - [active_plans/new1_spike_readiness_audit.md](active_plans/new1_spike_readiness_audit.md):
+    read-only audit of production code paths the spike must touch;
+    proposes a single-conditional seam at
+    `src/scene_runtime/layout/adapter.ts` gated on
+    `scene.scene_name === 'well_plate_96_zoom'` plus a feature flag,
+    returning matching `ComputedItemLayout[]`. Cites file:line for
+    scene loading, click dispatch, cursor-attach, ObjectStateChange,
+    and adapter output. Central risk: CSS region bounds vs legacy
+    coordinates / floating-point precision across 96 wells.
+  - [active_plans/new1_well_plate_96_zoom_spike_checklist.md](active_plans/new1_well_plate_96_zoom_spike_checklist.md):
+    9-step implementation checklist with gates, rollback, and
+    post-spike decision matrix.
+  - [active_plans/new1_primary_contract_item3_amendment_draft.md](active_plans/new1_primary_contract_item3_amendment_draft.md):
+    draft only, not applied. Two versions: minimal (CSS-native
+    semantic-region = layout engine) and conservative (CSS-native
+    experimental until spike passes). Reviewer picks post-spike.
+  - `experiments/css_native_layout/spike_fixtures/`: README, manifest
+    YAML in the closed NEW1 schema, expected DOM selectors, expected
+    data attributes, expected precheck command, expected screenshot
+    paths.
+  - `experiments/css_native_layout/PRECHECK_USAGE.md`: one-command
+    run, scene subset run, output artifacts, verdict ladder,
+    hard-vs-advisory split, spike usage section, troubleshooting.
+  - `experiments/css_native_layout/run_precheck.sh`: thin wrapper for
+    precheck.mjs default invocation.
+
+  Files updated:
+  - [active_plans/new1_css_native_layout_integration_plan.md](active_plans/new1_css_native_layout_integration_plan.md):
+    appended "Ready to implement spike" section linking the prep
+    artifacts and listing remaining blockers before implementation
+    (reviewer approval of audit + seam; contract-decision posture
+    confirmation; label_label_overlap policy choice; implementer
+    feature-flag choice).
+  - `.gitignore`: added allowlist entries for `PRECHECK_USAGE.md`,
+    `run_precheck.sh`, and `spike_fixtures/*.md` / `*.yaml` under the
+    existing `experiments/css_native_layout/` block.
+
+- **NEW1 Path A spike implementation landed: feature-flagged CSS-native adapter for well_plate_96_zoom**
+  Executed under reviewer brief 2026-05-19 ("Proceed with Path A
+  implementation."). First production code change in the NEW1 track.
+  Spike is dead code until the flag flips; default behavior unchanged
+  for every scene.
+
+  Files added:
+  - `src/scene_runtime/layout/feature_flags.ts` (8 lines): hard-coded
+    const `ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE = false`.
+  - `src/scene_runtime/layout/css_native_adapter.ts` (224 lines):
+    scaffold-and-measure adapter; attaches a detached `div` to
+    `document.body`, lets the browser CSS engine compute layout, reads
+    `getBoundingClientRect()` per placement, rounds to integer pixels,
+    returns `ComputedItemLayout[]` in the legacy shape. Throws if
+    `typeof document === 'undefined'`. No coordinate solver. No track
+    sizing. No gap math.
+
+  Files modified:
+  - `src/scene_runtime/layout/adapter.ts` (+9 lines): two imports plus
+    a conditional gate
+    `if (sceneId === 'well_plate_96_zoom' && ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE) { return computeSceneLayoutCssNative(...); }`
+    placed after the existing scene-not-found check.
+
+  Documents added:
+  - [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md):
+    consolidated Backlog A/B/C/D report. Click-target and
+    ObjectStateChange paths inspected analytically; not empirically
+    verified this round because the flag default-off prevents
+    invocation and no runtime override was added. Cursor-attach audit
+    concluded the Path C anchor API is not needed; Path A rects
+    suffice.
+  - [active_plans/new1_spike_path_comparison.md](active_plans/new1_spike_path_comparison.md):
+    appended "Implementation outcome" section.
+  - [active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md](active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md):
+    appended "Implementation result" section.
+
+  Spike-path trial bundle artifacts (NEW from prior round, now staged
+  together):
+  `experiments/css_native_layout/spike_paths/path_a_adapter_compat/`,
+  `path_b_dom_first/`, `path_c_hybrid/` each with README,
+  prototype_sketch, and assessment.json.
+
+### Decisions and Failures
+
+- **NEW0 stabilization pass declared decision-ready, not declared production-ready**
+  The pass produced a single forward candidate, reproducible evidence, and a
+  decision-ready recommendation. It did not amend
+  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) item 3 (which still vests
+  scene-object layout in the layout engine), did not open NEW1, did not
+  modify `src/`, `pipeline/`, `validation/`, `docs/specs/`, or any
+  production YAML, and did not regenerate any Direction A evidence (its
+  baseline CSS variants are gitignored and would violate the
+  no-ignored-CSS rule).
+
+- **13 gitignored scratch CSS variants retained on disk, not deleted**
+  `experiments/css_native_layout/styles/` contains `bench_a.css` through
+  `bench_e.css`, `hood_b.css` through `hood_e.css`, `instrument_b.css`
+  through `instrument_e.css`, plus `*_diorama.css`, `*_focusedstage.css`,
+  and `*_gameboard.css`. All are gitignored; none are linked by any
+  template. Decision: leave in place as non-evidence scratch.
+  Justification: they cannot leak into evidence (link sweep confirms),
+  deleting them is reversible cleanup, and removing them now would create
+  diff noise without changing decision evidence. Tracked deletion is
+  open work, flagged for a future cleanup pass.
+
+- **NEW1 spike-prep provisional calls (logged for reviewer)**: spike
+  fixtures placed in `experiments/css_native_layout/spike_fixtures/`
+  rather than `tests/` because they document runtime expectations,
+  not test assertions; `run_precheck.sh` written as a 19-line wrapper
+  rather than expanding `precheck.mjs` CLI surface; contract amendment
+  kept as draft with two versions instead of recommending one.
+  Reviewer can override any of these on next pass.
+
+- **NEW1 spike-prep open issues flagged by subagents**: (1) NEW0
+  template DOM divergences from the closed NEW1 schema
+  (`data-scene-mode`, `scene-mode--detail` class, `data-placement`
+  vs `data-placement-name`, `footprint--zoom-view`, empty-region
+  scaffolds); (2) `precheck.mjs` has no scene-filter flag (workaround
+  = pass explicit HTML path); (3) `_temp_annotate.py` may be missing
+  in tree, suppressing annotated PNG without blocking JSON/Markdown
+  reports; (4) contract item 3 wording ambiguities for "the layout
+  engine", "custom geometry", "SVG representations stored in
+  `assets/`"; (5) audit subagent first attempt was lost to a heredoc
+  deny and had to be re-issued via Write tool. All non-blocking;
+  carried into the spike checklist as open issues.
+
+- **NEW1 Path A spike-implementation provisional calls (logged for reviewer)**:
+  (1) feature flag implemented as a hard-coded const with NO runtime
+  override seam, per reviewer brief literal reading; consequence is
+  that end-to-end empirical browser proof of click-target and
+  ObjectStateChange backlogs cannot land in this round without a
+  follow-up override mechanism; (2) Backlog A and B reported
+  analytically rather than empirically, citing file:line in
+  dispatch/click.ts and render/apply.ts to demonstrate the spike does
+  not alter click binding or re-render semantics; (3) Backlog C
+  deferred indefinitely on audit finding that cursor-attach consumes
+  rects or DOM directly, not an anchor abstraction; (4)
+  `(placement as any).label` type escape used in
+  `css_native_adapter.ts` because `PlacementConfig` does not declare
+  a `label` field, while the prototype sketch assumed it; flagged in
+  the file. Reviewer can override any of these on next pass.
+
+- **NEW1 Path A pre-existing TS errors flagged for separate cleanup**:
+  `generated/scene_data.ts` 9x error TS2353 (`rows` does not exist in
+  `ResolvedSceneConfig`); `src/scene_runtime/render/scene.ts:316` 1x
+  error TS2339 (`labelFontSize` does not exist on
+  `ComputedItemLayout`). Both predate the spike; both flagged out of
+  spike scope; cleanup pass owns them.
+
+### Developer Tests and Notes
+
+- **Verification gates passed for NEW1 spike-prep pass**:
+  `pytest tests/test_markdown_links.py tests/test_ascii_compliance.py -q`
+  returned `2 passed`. `git status --porcelain` confirms no `src/`,
+  `pipeline/`, `validation/`, `docs/specs/`,
+  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production
+  scene YAML touched. Only `.gitignore`,
+  `docs/active_plans/new1_*.md`, `docs/CHANGELOG.md`, and
+  `experiments/css_native_layout/` non-asset files changed.
+
+- **Verification gates for NEW1 Path A round**:
+  `npx tsc -p src/tsconfig.json` returns zero errors in spike files.
+  `pytest tests/test_markdown_links.py tests/test_ascii_compliance.py -q`
+  = 2 passed. `pytest tests/test_pyflakes_code_lint.py -q` = 98
+  passed. `git status --porcelain` confirms production edits limited
+  to `src/scene_runtime/layout/{feature_flags.ts, css_native_adapter.ts, adapter.ts}`;
+  no edits to `dispatch/`, `render/apply.ts`, `render/scene.ts`,
+  `adapters/well_plate/`, `loader/`, `content/`, `pipeline/`,
+  `validation/`, `docs/specs/`, or
+  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md).
+
+### Additions and New Features
+
+- **NEW1 spike bundle integration round: built-app proof through production validator**
+  Round took the NEW1 spike from "adapter unit-test passes" to "built app
+  proves the dispatch chain through the production validator." Eleven
+  sub-tasks ran across Lanes A through E. Deliverables:
+  - Overflow fix on `experiments/css_native_layout/styles/{bench,hood,instrument}.css`
+    (removed `min-width:1800px` + `min-height:1000px`).
+  - Bundle-reachable spike flag via `window.SceneRuntime.__spike`
+    namespace (`set_css_native_well_plate_zoom_spike_enabled_for_test`,
+    `is_css_native_well_plate_zoom_spike_enabled`,
+    `get_css_native_invocation_count`, `reset_css_native_invocation_count`);
+    default OFF preserved.
+  - Dev_smoke wiring for `well_plate_96_zoom`: new scene at
+    `content/base_scenes/well_plate_96_zoom.yaml`, new dev_smoke protocol
+    at `tests/content/dev_smoke/well_plate_96_zoom_check/`, new TS
+    adapter at `src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts`,
+    new side-effect import in `src/init.ts`, and a new
+    `INCLUDE_DEV_SMOKE` environment-variable flag in
+    `pipeline/build_new_protocol_data.py` (default behavior unchanged).
+  - Three new Playwright spike scripts under `tests/playwright/`:
+    `spike_built_app_well_plate_zoom.mjs`,
+    `spike_built_app_click_target.mjs`,
+    `spike_built_app_state_change.mjs`. All three assertions PASS.
+  - Layout scorecard artifacts:
+    [../experiments/css_native_layout/LAYOUT_SCORECARD.md](../experiments/css_native_layout/LAYOUT_SCORECARD.md),
+    `experiments/css_native_layout/scene_class_manifest.yaml`,
+    `experiments/css_native_layout/score_layout.mjs`. Ten scenes ranked;
+    best `well_plate_96_zoom` 89/100, worst `cell_counter_basic` 51/100,
+    hard-fail count 0.
+
+### Behavior or Interface Changes
+
+- **Lane C click target proof PASS through production validator**
+  Playwright click on `[data-target-id="well_plate_96"]` reached the
+  production validator with console output
+  `Wrong target: expected 'well_plate_96', got 'well_plate_96.E7'`,
+  proving the full dispatch chain ran (click -> target resolution ->
+  validator -> state machine). A narrow pixel-to-SVG viewBox
+  coordinate-scaling shim (~5 lines) was added to
+  `src/scene_runtime/layout/css_native_adapter.ts`. The browser CSS
+  engine still performs the actual layout via `getBoundingClientRect`
+  on a detached scaffold; the new math only reshapes adapter output
+  from pixel space to the SVG viewBox space the production
+  `renderScene` expects. Not a general solver, not a track sizer.
+
+- **Scene rename `well_plate_96_zoom` to `well_plate_96_zoom_check_scene`**
+  Lane B retry adjusted the scene name to match the protocol-prefix
+  matching convention used by the dev_smoke loader.
+
+### Fixes and Maintenance
+
+- **TypeScript baseline drift 163 -> 175 net after cleanup**
+  Three spike-caused TS6133 (unused-parameter) errors fixed in the
+  cleanup lane. The +12 line delta comes from multi-line error
+  expansion or generated-catalog growth; no NEW spike-caused errors
+  remain.
+
+### Decisions and Failures
+
+- **Lane D ObjectStateChange application PROVEN; re-render PARTIAL**
+  ObjectStateChange primitive applied successfully (`material_name`
+  mutation observed) and DOM idempotency confirmed (body children
+  delta = 0). `renderScene` re-execution NOT triggered because the
+  validator `isTargetSatisfied` at
+  `src/scene_runtime/bundle/entry.ts:761` rejects the well-sub-target
+  click; the step resets instead of completing, no re-render fires,
+  and spike invocation count remains 1. Documented at
+  [active_plans/lane_d_state_change_blocker.md](active_plans/lane_d_state_change_blocker.md).
+
+- **Lane E precheck-on-built-output BLOCKED by static-template assumption**
+  `experiments/css_native_layout/precheck.mjs:1047` uses a
+  `.scene-container` locator that times out against the built app
+  because the built app renders DOM dynamically through runtime JS,
+  whereas precheck expects static-template DOM. Decision: do not
+  modify `precheck.mjs`; introduce a `render_and_dump.mjs` wrapper
+  in a follow-up spike to bridge the runtime to precheck's
+  static-template input model.
+
+- **Decision: continue Path A**
+  Built-app proof achieved through real dispatch chain;
+  ObjectStateChange application proven. Two bounded follow-up rounds
+  proposed: (1) re-render proof via authoring a dev_smoke step with a
+  click-validable parent target (smaller option) or loosening the
+  validator at `src/scene_runtime/bundle/entry.ts:761`; (2) precheck
+  on built output via a new `render_and_dump.mjs` bridge. Neither
+  requires production-architecture change, contract amendment, or
+  coordinate-solver introduction.
+
+### Developer Tests and Notes
+
+- **Verification gates for NEW1 bundle integration round**:
+  `pytest tests/test_markdown_links.py tests/test_ascii_compliance.py -q`
+  ran; `ascii_compliance` PASS; `markdown_links` had 8 pre-existing
+  failures in centrally-maintained docs (out of NEW1 scope); 0 new
+  failures introduced. TypeScript baseline 175 errors (net +12 from
+  pre-spike 163, no NEW spike-caused errors). Three Playwright spike
+  scripts under `tests/playwright/spike_built_app_*.mjs` PASS.
+  Final per-round summary at
+  [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  under "Bundle integration round (2026-05-19)".
+
 ## 2026-05-18
 
 ### Additions and New Features
