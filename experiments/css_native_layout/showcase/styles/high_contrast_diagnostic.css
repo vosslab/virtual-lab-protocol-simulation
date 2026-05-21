@@ -1,0 +1,82 @@
+/*
+NEW2 Lane H: Visual style direction - high_contrast_diagnostic
+Purpose: visual override only. Reuses bench.css for grid/layout/footprints.
+Treatment: yellow/black palette, sharp 90-degree edges, accessibility-first.
+No changes to grid template, region geometry, or footprint sizes.
+*/
+
+:root {
+	--color-bg: #fff8c4;
+	--color-text: #000000;
+	--color-text-light: #000000;
+	--color-accent: #000000;
+	--color-warning: #ffd400;
+	--color-border: #000000;
+}
+
+body {
+	background: var(--color-bg);
+	color: #000000;
+}
+
+/* Override bench background: solid high-contrast yellow with stripe edge */
+.scene-container.scene--bench {
+	background:
+		repeating-linear-gradient(
+			135deg,
+			#fff8c4 0px,
+			#fff8c4 28px,
+			#ffd400 28px,
+			#ffd400 32px
+		);
+	background-attachment: scroll;
+}
+
+/* Regions: sharp black borders, opaque yellow inner fill */
+.region {
+	background: #ffffff;
+	border: 3px solid #000000;
+	border-bottom: 6px solid #000000;
+	border-radius: 0;
+	padding: 12px;
+}
+
+/* Visible region labels in heavy mono caps */
+.region-label {
+	display: block;
+	font-family: 'JetBrains Mono', 'Courier New', monospace;
+	font-weight: 900;
+	font-size: 12px;
+	color: #000000;
+	background: #ffd400;
+	border: 2px solid #000000;
+	padding: 2px 8px;
+	text-transform: uppercase;
+	letter-spacing: 2px;
+	opacity: 1;
+	margin-bottom: 8px;
+	align-self: flex-start;
+}
+
+/* Placement labels: black-on-yellow chip */
+.placement-label {
+	font-family: 'JetBrains Mono', 'Courier New', monospace;
+	font-weight: 700;
+	font-size: 12px;
+	color: #000000;
+	background: #ffd400;
+	border: 2px solid #000000;
+	padding: 1px 6px;
+	border-radius: 0;
+}
+
+/* Object graphics: thick black ring, no shadow */
+.object-graphic {
+	background: #ffffff;
+	border: 2px solid #000000;
+	border-radius: 0;
+}
+
+.object-graphic img {
+	filter: none;
+}

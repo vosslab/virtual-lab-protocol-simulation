@@ -1,0 +1,169 @@
+================================================================================
+CSS-NATIVE LAYOUT MANAGER STATUS REPORT - HANDOFF SUMMARY
+================================================================================
+
+DELIVERABLE FILES CREATED
+========================
+
+HTML Report:
+  docs/active_plans/current_css_native_layout_manager_status_report.html (76 KB)
+  - 21 sections, responsive design, embedded CSS
+  - All 21 screenshots embedded with relative paths
+  - Opens locally in browser without web server
+
+Markdown Report:
+  docs/active_plans/current_css_native_layout_manager_status_report.md (31 KB, 563 lines)
+  - Parallel structure to HTML
+  - Tables, code blocks, ASCII formatting per docs/MARKDOWN_STYLE.md
+  - GitHub-browsable; markdown links verified by pytest
+
+PDF Report:
+  docs/active_plans/current_css_native_layout_manager_status_report.pdf (2.9 MB)
+  - Generated from HTML via node tools/html_to_pdf.mjs
+  - Full document with screenshots embedded
+  - Landscape mode for wide tables/galleries
+
+Asset Folder:
+  docs/active_plans/current_css_native_layout_manager_status_report_assets/
+  - 21 screenshot PNGs (lane galleries, runtime proofs, stress samples)
+  - All PNG files copied from evidence sources:
+    * docs/active_plans/new2_css_native_best_case_showcase_assets/ (Lane A/B)
+    * docs/active_plans/new3_layout_stress_reliability_assets/ (Lane I)
+    * experiments/css_native_layout/stress_results/precheck_batch5_corpus_v1/
+
+VERIFICATION CHECKS PASSED
+==========================
+
+[x] pytest tests/test_markdown_links.py - PASS (all links verified)
+[x] pytest tests/test_ascii_compliance.py - PASS (ASCII encoding OK)
+[x] HTML file generates valid PDF via html_to_pdf.mjs
+[x] All 21 screenshots present and correctly referenced
+[x] No git commits created (user only chose forward-only mode)
+[x] No git add/push/revert attempted
+[x] All evidence sourced from tracked files only
+
+REPORT STRUCTURE: 21 SECTIONS
+============================
+
+1.  Executive Summary
+2.  Layer Model (L1 runtime, L2 visual, L3 diagnostic)
+3.  Timeline (2025-12 through 2026-05-21)
+4.  What Works Now
+5.  Runtime Proof (Layer 1)
+6.  Visual Quality (Layer 2)
+7.  No-Crop Hard Rule
+8.  Stress Corpus
+9.  Diagnostics Stack
+10. Scorecard Status
+11. Methodology Corrections
+12. Current Known Risks
+13. Current File Map
+14. Git State Note
+15. Best Examples Gallery
+16. Worst Examples Gallery
+17. Decision Log
+18. Recommended Next Steps
+19. Evidence Table
+20. Reproduction Commands
+21. Appendices
+
+TOP 10 FINDINGS
+===============
+
+1. RUNTIME DISPATCH PROVEN (Layer 1 - Strongest)
+   Lane B: 7/7 PASS on interaction stress test
+   Click on well_plate_96.E7 increments invocation count by 1; no DOM leak
+   Production runtime path is safe for clicked interactions
+
+2. HARD FAILS ARE ZERO ON PRODUCTION TEMPLATES
+   Precheck scorecard on 10 scenes: hard_fail_count = 0
+   No clipped_artwork, off_page, svg_overlap, or region_overflow
+   Visual hard gate is clean; no safety violations
+
+3. NO-CROP RULE SUCCESSFULLY OPERATIONALIZED
+   Workstream N: 3 scenes recovered (electrophoresis_bench,
+   drug_dilution_plate_workspace, well_plate_96_zoom)
+   All three fixed from hard-fail to 0 hard fails; no regression
+   PRIMARY_DESIGN.md no-crop rule is measurable and enforced
+
+4. PRIMARY_CONTRACT.MD ITEM 3 BLOCKS PRODUCTION MIGRATION (HIGH RISK)
+   NEW0 uses CSS Grid; contract requires layout engine ownership
+   Contract amendment or architecture integration required before promotion
+   User decision required; affects go/no-go timeline
+
+5. VISUAL QUALITY IS UNEVEN BUT NOT BLOCKING
+   6/10 production scenes warn on secondary factors (labels, supporting-distance)
+   All 6 WARN scenes have 0 hard fails; warnings are polish opportunities
+   Visual quality improvement is NEW2 work; does not block runtime use
+
+6. STRESS CORPUS (100 SCENES) IS 100% FAIL (EXPECTED FOR STRESS)
+   Canonical scorecard on corpus v1 (seed 42): 1043 hard fails total
+   Stress corpus is NOT pedagogically valid; it is robustness testing
+   Do not cite stress results as production proof; production proof is 0 FAIL
+
+7. DIAGNOSTIC INTEGRITY PRESERVED (Layer 3)
+   Lane M failure museum: 2 attempted metric-gaming runs caught and reverted
+   Precheck mod, DOM bridge, stale JSON all rejected before reaching evidence
+   Tools measure artifact, not edited to flatter results
+
+8. GENERATOR CAP HARDENED
+   Batch 3b results: max 40 objects per stress scene enforced
+   Corpus v1 fully reproducible with fixed seed; sizing manifest stable
+   Stress corpus is repeatable for future baseline comparisons
+
+9. COMMIT 4E2C709 ACCEPTED AS BASELINE (FORWARD-ONLY)
+   User chose not to revert; 224 files, 20K insertions now permanent
+   3 spike TS files type-safe; 111 binaries in history; contract draft at risk
+   No agent commits going forward; binary policy TBD; spike audit required
+
+10. THREE-LAYER EVIDENCE MODEL CLARIFIES CLAIM SCOPE
+    Separation of runtime (L1), visual (L2), diagnostic (L3)
+    Runtime PASS does not imply visual PASS; each layer has independent verification
+    Read every claim through the lens of which layer(s) it addresses
+
+CURRENT VERDICT (ONE PARAGRAPH)
+==============================
+
+CSS-native layout is a stable, proven runtime foundation (Layer 1: 7/7) with
+clean hard-fail diagnostics on production scenes (Layer 2: 0 hard fails) and
+sound measurement tools (Layer 3: integrity preserved). However, it is not
+production-ready until PRIMARY_CONTRACT.md item 3 (layout engine ownership) is
+resolved by user decision. Visual quality is uneven but not blocking (6 WARN
+verdicts are polish, not failures). The stress corpus (100% FAIL) correctly
+demonstrates robustness testing, not system failure. Recommendation: accept NEW0
+as Layer 1 foundation; continue NEW2 visual polish; defer migration decision to
+user approval of contract amendment or architecture integration plan.
+
+SAFEST NEXT WORKSTREAM
+======================
+
+Batch 6 Gold-Scene Polish (safe, can start now):
+  Target: 6 WARN composition scenes
+  Work: label positioning, spacing adjustments
+  Verify: canonical scorecard gate (0 hard fails maintained)
+  Expected outcome: visual quality improvement, no regression
+  Blocking risk: NONE (LOCAL WORK ONLY)
+
+User-Gated Decisions (must decide before production migration):
+  - PRIMARY_CONTRACT.md amendment (item 3 ownership)
+  - Phase 1 hardFailCount semantics (threshold clarity)
+  - Binary artifact policy (future PNG/PDF commits)
+  - New footprint classes (region vocabulary extension)
+  - Production migration timeline (when to promote spike from feature-flag)
+
+FINAL ARTIFACTS SUMMARY
+=======================
+
+Primary Deliverables:
+  docs/active_plans/current_css_native_layout_manager_status_report.html
+  docs/active_plans/current_css_native_layout_manager_status_report.md
+  docs/active_plans/current_css_native_layout_manager_status_report.pdf
+
+Screenshots (21 files):
+  docs/active_plans/current_css_native_layout_manager_status_report_assets/
+
+No git state changes attempted; all work is read-only summary generation.
+
+================================================================================
+END HANDOFF
+================================================================================

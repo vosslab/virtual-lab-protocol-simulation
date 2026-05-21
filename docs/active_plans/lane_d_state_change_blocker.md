@@ -22,25 +22,25 @@ The protocol target matching logic in the dispatch layer is failing to validate 
 ```
 1. Mount scene (spike enabled)
    -> spike invocation count = 1 (OK)
-   
+
 2. User clicks center of viewport
    -> click dispatch triggered
    -> click lands on "well_plate_96.E7" (confirmed)
-   
+
 3. isTargetSatisfied() evaluates (entry.ts:761)
    -> accepts target OR validator preset checks fail elsewhere
-   
+
 4. ObjectStateChange applied (lines 769-772)
    -> well_plate_96.material_name = "empty" (OK)
-   
+
 5. currentInteractionIndex incremented (line 778)
-   
+
 6. orchestrateNextInteractionWithCompletion (line 785)
    -> checkStepCompletion() called (line 421)
    -> evaluateStepValidator() called (line 250)
    -> VALIDATOR FAILS (returns false)
    -> step restarted (currentInteractionIndex = 0)
-   
+
 7. NO renderScene() call happens because step didn't complete
    -> spike invocation count stays 1
 ```
@@ -60,7 +60,7 @@ Without access to edit these files, the target matching issue cannot be debugged
    - `rows` group with members like `row_A` containing `A1-A12`
    - `columns` group with members like `col_1` containing `A1,B1,C1,D1,E1,F1,G1,H1`
    - `regions` group with `all_wells` containing all 96 wells
-   
+
    But E7 is NOT a direct member of any group (it's at the grid coordinate level). The logic may be looking for exact group matches.
 
 2. **Validator preset implementation**: The `correct_target` preset validator may be implemented separately and have different matching logic than `isTargetSatisfied`.

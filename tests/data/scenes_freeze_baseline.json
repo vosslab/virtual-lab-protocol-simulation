@@ -26,5 +26,6 @@
 	"src/scenes/well_plate_workspace/render.ts": 638,
 	"src/scenes/well_plate_workspace/tube_layout.ts": 44,
 	"src/scenes/well_plate_workspace/tube_state.ts": 71,
-	"src/scenes/well_plate_workspace/well_plate_workspace.ts": 59
+	"src/scenes/well_plate_workspace/well_plate_workspace.ts": 59,
+	"src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts": 57
 }

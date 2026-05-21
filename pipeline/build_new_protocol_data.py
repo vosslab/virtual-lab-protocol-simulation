@@ -8,9 +8,14 @@ those belong in the browser runtime entry point.
 
 Validates against new closed vocabulary: protocol_type, entry_step, learning block (for
 mini_protocol), steps, interactions, gestures, validators, and scene operations.
+
+Dev_smoke discovery: By default skips tests/content/dev_smoke. Pass --include-dev-smoke to
+include dev_smoke protocols. Example:
+  source source_me.sh && python3 pipeline/build_new_protocol_data.py --include-dev-smoke
 """
 
 import sys
+import argparse
 from pathlib import Path
 from typing import Any
 
@@ -42,9 +47,14 @@ ALLOWED_OUTCOME_ON_FAILURE = {"retry"}
 # Discovery and loading
 #============================================
 
-def discover_protocol_yamls() -> list[Path]:
+def discover_protocol_yamls(include_dev_smoke: bool) -> list[Path]:
 	"""
-	Find all protocol.yaml files under content/protocols/ (skip dev_smoke under tests/).
+	Find all protocol.yaml files under content/protocols/.
+	Conditionally include new-schema dev_smoke fixtures from tests/content/dev_smoke/
+	when include_dev_smoke is True.
+
+	Args:
+		include_dev_smoke: Whether to include new-schema dev_smoke fixtures.
 
 	Returns:
 		Sorted list of absolute Path objects to protocol.yaml files.
@@ -58,6 +68,19 @@ def discover_protocol_yamls() -> list[Path]:
 		# Skip any protocol under tests/content/dev_smoke/
 		if "tests/content/dev_smoke" not in str(protocol_yaml):
 			protocol_files.append(protocol_yaml)
+
+	# Additionally discover NEW SCHEMA dev_smoke protocols from tests/content/dev_smoke/ if flag set.
+	# Only new-schema fixtures (e.g., well_plate_96_zoom_check) use the new vocabulary.
+	# Legacy fixtures (bench_direct_check, plate_reader_check) use old schema and must be excluded.
+	if include_dev_smoke:
+		# Explicit allowlist of new-schema dev_smoke fixtures
+		allowed_fixtures = {"well_plate_96_zoom_check"}
+		dev_smoke_dir = REPO_ROOT / "tests" / "content" / "dev_smoke"
+		if dev_smoke_dir.exists():
+			for protocol_yaml in find_protocol_yaml_files(dev_smoke_dir):
+				fixture_name = protocol_yaml.parent.name
+				if fixture_name in allowed_fixtures:
+					protocol_files.append(protocol_yaml)
 
 	return sorted(protocol_files)
 
@@ -615,9 +638,12 @@ def generate_ts_file(protocols_data: dict[str, dict]) -> str:
 # Main build logic
 #============================================
 
-def build_protocol_catalog() -> dict[str, dict]:
+def build_protocol_catalog(include_dev_smoke: bool) -> dict[str, dict]:
 	"""
 	Discover, load, validate, and transform all protocols in content/protocols/.
+
+	Args:
+		include_dev_smoke: Whether to include new-schema dev_smoke fixtures.
 
 	Returns:
 		Dict of protocol_name -> ProtocolConfig dict.
@@ -625,7 +651,7 @@ def build_protocol_catalog() -> dict[str, dict]:
 	Raises:
 		RuntimeError: On any validation failure.
 	"""
-	protocol_yaml_files = discover_protocol_yamls()
+	protocol_yaml_files = discover_protocol_yamls(include_dev_smoke)
 
 	if not protocol_yaml_files:
 		raise RuntimeError("No protocols discovered under content/protocols/")
@@ -659,12 +685,30 @@ def build_protocol_catalog() -> dict[str, dict]:
 	return catalog
 
 
+def parse_args() -> argparse.Namespace:
+	"""
+	Parse command-line arguments.
+	"""
+	parser = argparse.ArgumentParser(
+		description="Build new-vocabulary protocol data from content/protocols YAML source."
+	)
+	parser.add_argument(
+		'-d', '--include-dev-smoke', dest='include_dev_smoke',
+		action='store_true',
+		help='Include tests/content/dev_smoke/ protocols in the catalog'
+	)
+	parser.set_defaults(include_dev_smoke=False)
+	args = parser.parse_args()
+	return args
+
+
 def main() -> None:
 	"""
 	Main entry point: build protocol catalog and emit TypeScript.
 	"""
+	args = parse_args()
 	try:
-		catalog = build_protocol_catalog()
+		catalog = build_protocol_catalog(args.include_dev_smoke)
 
 		# Generate TypeScript file
 		ts_content = generate_ts_file(catalog)

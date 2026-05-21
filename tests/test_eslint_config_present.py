@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -72,3 +73,28 @@ def test_eslintrc_cjs_not_present() -> None:
 		pytest.fail(".eslintrc.cjs should not exist; use flat config (eslint.config.js)")
 
 
+#============================================
+def test_package_json_has_eslint_devdeps() -> None:
+	"""
+	Ensure package.json devDependencies include eslint tools.
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	package_json_path = os.path.join(repo_root, "package.json")
+	if not os.path.exists(package_json_path):
+		pytest.fail("package.json missing in a typescript-typed repo")
+
+	with open(package_json_path, "r", encoding="utf-8") as handle:
+		data = json.load(handle)
+
+	dev_deps = data.get("devDependencies", {})
+	required_deps = ["eslint", "@eslint/js", "typescript-eslint", "globals"]
+	for dep in required_deps:
+		if dep not in dev_deps:
+			raise AssertionError(f"package.json devDependencies missing: {dep}")

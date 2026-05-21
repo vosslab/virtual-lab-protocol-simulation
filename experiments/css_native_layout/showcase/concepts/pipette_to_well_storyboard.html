@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Concept: Pipette to Well Storyboard</title>
+<style>
+	body { margin: 0; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; background: #f6f7fa; color: #1f2933; }
+	.banner {
+		background: #b91c1c; color: #fff; padding: 10px 24px; font-weight: 700;
+		letter-spacing: 0.04em; text-align: center; border-bottom: 3px solid #7f1d1d;
+	}
+	h1 { margin: 24px 24px 4px; font-size: 22px; }
+	.subtitle { margin: 0 24px 16px; color: #475569; font-size: 14px; }
+	.storyboard {
+		display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+		padding: 0 24px 16px;
+	}
+	.frame {
+		background: #fff; border: 1px solid #cbd5e1; border-radius: 8px;
+		padding: 12px; display: flex; flex-direction: column; min-height: 280px;
+	}
+	.frame-label {
+		font-size: 12px; font-weight: 700; color: #1d4ed8;
+		text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px;
+	}
+	.frame-title { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+	.frame svg { flex: 1; width: 100%; }
+	.frame-caption { font-size: 12px; color: #334155; margin-top: 8px; line-height: 1.4; }
+	.explainer {
+		margin: 16px 24px 32px; padding: 16px; background: #eef2ff;
+		border-left: 4px solid #4338ca; border-radius: 4px; font-size: 13px; line-height: 1.5;
+	}
+	.explainer strong { color: #312e81; }
+</style>
+</head>
+<body>
+<div class="banner">CONCEPT DEMO -- NOT PRODUCTION, NOT WIRED TO RUNTIME</div>
+
+<h1>Concept: Pipette-to-Well Interaction Storyboard</h1>
+<p class="subtitle">Four-frame walkthrough of a student transferring 100 uL from a pipette tip into well A1.</p>
+
+<div class="storyboard">
+	<!-- Frame 1: Pipette idle near rack -->
+	<div class="frame">
+		<div class="frame-label">Frame 1 / Idle</div>
+		<div class="frame-title">Pipette held at rack</div>
+		<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+			<rect x="0" y="0" width="200" height="180" fill="#f1f5f9"/>
+			<!-- well plate -->
+			<rect x="10" y="120" width="90" height="50" fill="#fff" stroke="#475569" stroke-width="1.5" rx="3"/>
+			<g fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.6">
+				<circle cx="22" cy="135" r="4"/><circle cx="34" cy="135" r="4"/><circle cx="46" cy="135" r="4"/>
+				<circle cx="58" cy="135" r="4"/><circle cx="70" cy="135" r="4"/><circle cx="82" cy="135" r="4"/>
+				<circle cx="22" cy="150" r="4"/><circle cx="34" cy="150" r="4"/><circle cx="46" cy="150" r="4"/>
+				<circle cx="58" cy="150" r="4"/><circle cx="70" cy="150" r="4"/><circle cx="82" cy="150" r="4"/>
+			</g>
+			<!-- pipette idle, top right -->
+			<g transform="translate(140,15)">
+				<rect x="-6" y="0" width="12" height="60" fill="#1e40af" rx="2"/>
+				<rect x="-4" y="60" width="8" height="35" fill="#cbd5e1"/>
+				<polygon points="-3,95 3,95 0,110" fill="#fbbf24"/>
+			</g>
+			<text x="100" y="14" font-size="9" fill="#475569" text-anchor="middle">step 1: select pipette</text>
+		</svg>
+		<div class="frame-caption">Student clicks the pipette. Highlight pulses on the tool to acknowledge selection.</div>
+	</div>
+
+	<!-- Frame 2: Pipette attached to cursor, moving -->
+	<div class="frame">
+		<div class="frame-label">Frame 2 / Travel</div>
+		<div class="frame-title">Cursor-attached pipette</div>
+		<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+			<rect x="0" y="0" width="200" height="180" fill="#f1f5f9"/>
+			<rect x="10" y="120" width="90" height="50" fill="#fff" stroke="#475569" stroke-width="1.5" rx="3"/>
+			<g fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.6">
+				<circle cx="22" cy="135" r="4"/><circle cx="34" cy="135" r="4"/><circle cx="46" cy="135" r="4"/>
+				<circle cx="58" cy="135" r="4"/><circle cx="70" cy="135" r="4"/><circle cx="82" cy="135" r="4"/>
+				<circle cx="22" cy="150" r="4"/><circle cx="34" cy="150" r="4"/><circle cx="46" cy="150" r="4"/>
+				<circle cx="58" cy="150" r="4"/><circle cx="70" cy="150" r="4"/><circle cx="82" cy="150" r="4"/>
+			</g>
+			<!-- pipette mid-travel with motion trail -->
+			<g opacity="0.3">
+				<rect x="134" y="20" width="12" height="60" fill="#1e40af" rx="2"/>
+			</g>
+			<g opacity="0.6">
+				<rect x="110" y="40" width="12" height="60" fill="#1e40af" rx="2"/>
+			</g>
+			<g transform="translate(90,60)">
+				<rect x="-6" y="0" width="12" height="60" fill="#1e40af" rx="2"/>
+				<rect x="-4" y="60" width="8" height="35" fill="#cbd5e1"/>
+				<polygon points="-3,95 3,95 0,110" fill="#fbbf24"/>
+				<!-- cursor halo -->
+				<circle cx="0" cy="55" r="20" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.7"/>
+			</g>
+			<text x="100" y="14" font-size="9" fill="#475569" text-anchor="middle">step 2: pipette follows cursor</text>
+		</svg>
+		<div class="frame-caption">Pipette attaches to the cursor (CursorAttach operation). Motion trail conveys travel; no game-state mutation yet.</div>
+	</div>
+
+	<!-- Frame 3: Hover over A1 -->
+	<div class="frame">
+		<div class="frame-label">Frame 3 / Target</div>
+		<div class="frame-title">Hover well A1</div>
+		<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+			<rect x="0" y="0" width="200" height="180" fill="#f1f5f9"/>
+			<rect x="10" y="120" width="90" height="50" fill="#fff" stroke="#475569" stroke-width="1.5" rx="3"/>
+			<g fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.6">
+				<circle cx="34" cy="135" r="4"/><circle cx="46" cy="135" r="4"/>
+				<circle cx="58" cy="135" r="4"/><circle cx="70" cy="135" r="4"/><circle cx="82" cy="135" r="4"/>
+				<circle cx="22" cy="150" r="4"/><circle cx="34" cy="150" r="4"/><circle cx="46" cy="150" r="4"/>
+				<circle cx="58" cy="150" r="4"/><circle cx="70" cy="150" r="4"/><circle cx="82" cy="150" r="4"/>
+			</g>
+			<!-- A1 highlighted -->
+			<circle cx="22" cy="135" r="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+			<circle cx="22" cy="135" r="10" fill="none" stroke="#f59e0b" stroke-width="1" stroke-dasharray="2,2"/>
+			<!-- pipette near A1 -->
+			<g transform="translate(22,55)">
+				<rect x="-6" y="0" width="12" height="50" fill="#1e40af" rx="2"/>
+				<rect x="-4" y="50" width="8" height="25" fill="#cbd5e1"/>
+				<polygon points="-3,75 3,75 0,88" fill="#fbbf24"/>
+			</g>
+			<text x="100" y="14" font-size="9" fill="#475569" text-anchor="middle">step 3: aim at well A1</text>
+			<text x="40" y="138" font-size="7" fill="#92400e" font-weight="bold">A1</text>
+		</svg>
+		<div class="frame-caption">Validator preset "correct_target" matches; well A1 highlights amber to confirm the right target before commit.</div>
+	</div>
+
+	<!-- Frame 4: Dispense - well filled blue -->
+	<div class="frame">
+		<div class="frame-label">Frame 4 / Commit</div>
+		<div class="frame-title">Dispense complete</div>
+		<svg viewBox="0 0 200 180" xmlns="http://www.w3.org/2000/svg">
+			<rect x="0" y="0" width="200" height="180" fill="#f1f5f9"/>
+			<rect x="10" y="120" width="90" height="50" fill="#fff" stroke="#475569" stroke-width="1.5" rx="3"/>
+			<g fill="#e2e8f0" stroke="#94a3b8" stroke-width="0.6">
+				<circle cx="34" cy="135" r="4"/><circle cx="46" cy="135" r="4"/>
+				<circle cx="58" cy="135" r="4"/><circle cx="70" cy="135" r="4"/><circle cx="82" cy="135" r="4"/>
+				<circle cx="22" cy="150" r="4"/><circle cx="34" cy="150" r="4"/><circle cx="46" cy="150" r="4"/>
+				<circle cx="58" cy="150" r="4"/><circle cx="70" cy="150" r="4"/><circle cx="82" cy="150" r="4"/>
+			</g>
+			<!-- A1 filled blue -->
+			<circle cx="22" cy="135" r="5" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1"/>
+			<!-- pipette retracting -->
+			<g transform="translate(22,40)" opacity="0.7">
+				<rect x="-6" y="0" width="12" height="50" fill="#1e40af" rx="2"/>
+				<rect x="-4" y="50" width="8" height="25" fill="#cbd5e1"/>
+				<polygon points="-3,75 3,75 0,88" fill="#fbbf24"/>
+			</g>
+			<!-- success check -->
+			<g transform="translate(160,30)">
+				<circle cx="0" cy="0" r="14" fill="#16a34a"/>
+				<path d="M -6,0 L -2,5 L 7,-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+			</g>
+			<text x="100" y="14" font-size="9" fill="#475569" text-anchor="middle">step 4: liquid in A1, 100 uL</text>
+		</svg>
+		<div class="frame-caption">ObjectStateChange writes material_name and material_volume on A1. Visual state renders blue fill. Step resolves; next_step fires.</div>
+	</div>
+</div>
+
+<div class="explainer">
+	<strong>What this concept shows:</strong> a four-beat storyboard for a single
+	pipette-to-well interaction broken into idle, cursor-attached travel, target hover, and
+	commit. Each beat maps to existing primitives in the protocol vocabulary
+	(CursorAttach, ObjectStateChange) and a validator preset (correct_target). The frames
+	make explicit which beats are visual-only and which mutate object state. To realize
+	this in production, the scene runtime would need to animate the cursor-attached
+	pipette with motion trails, render a target-hover highlight that distinguishes
+	"hovered" from "selected," and sequence the dispense visual to follow validator
+	success rather than precede it. None of this requires new vocabulary; it requires
+	wiring existing primitives into the render layer and adding a hover-state visual to
+	the well object's visual_states.
+</div>
+
+</body>
+</html>

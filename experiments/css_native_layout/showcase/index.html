@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>CSS-Native Layout Showcase</title>
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --card-bg: #ffffff;
+    --border: #d9dde3;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --accent: #2563eb;
+    --accent-soft: #e8efff;
+    --pending: #f5d28a;
+    --pending-bg: #fff7e6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 24px 32px 16px;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  header h1 {
+    margin: 0 0 4px 0;
+    font-size: 22px;
+    color: var(--accent);
+  }
+  header p {
+    margin: 0 0 12px 0;
+    color: var(--muted);
+    font-size: 14px;
+  }
+  nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    font-size: 13px;
+  }
+  nav a {
+    color: var(--accent);
+    text-decoration: none;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    background: var(--accent-soft);
+  }
+  nav a:hover { background: var(--accent); color: #fff; }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 24px 32px 64px;
+  }
+  section {
+    margin-bottom: 40px;
+    scroll-margin-top: 140px;
+  }
+  section h2 {
+    margin: 0 0 4px 0;
+    font-size: 18px;
+    color: var(--text);
+    border-left: 4px solid var(--accent);
+    padding-left: 10px;
+  }
+  section .desc {
+    color: var(--muted);
+    font-size: 14px;
+    margin: 0 0 16px 14px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 16px;
+  }
+  .card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    text-decoration: none;
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    transition: border-color 0.15s, transform 0.15s;
+  }
+  .card:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+  }
+  .card .thumb {
+    background: #eef1f5;
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+    border-bottom: 1px solid var(--border);
+  }
+  .card .thumb-placeholder {
+    background: var(--pending-bg);
+    color: #a06010;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 12px;
+  }
+  .card .body {
+    padding: 10px 12px 12px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .card .title {
+    font-weight: 600;
+    font-size: 14px;
+  }
+  .card .caption {
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .card.pending {
+    border-style: dashed;
+    border-color: var(--pending);
+    cursor: default;
+  }
+  .card.pending:hover {
+    border-color: var(--pending);
+    transform: none;
+  }
+  .card .badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .badge.ready { background: var(--accent-soft); color: var(--accent); }
+  .badge.pending { background: var(--pending-bg); color: #a06010; }
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    padding: 24px;
+    border-top: 1px solid var(--border);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>CSS-Native Layout Showcase</h1>
+  <p>Browsable index of artifacts from the CSS-native scene layout investigation (NEW2 evidence package).</p>
+  <nav>
+    <a href="#static">Static scenes</a>
+    <a href="#runtime">Runtime proof</a>
+    <a href="#diagnostics">Diagnostics</a>
+    <a href="#scorecard">Scorecard</a>
+    <a href="#styles">Visual styles</a>
+    <a href="#future">Future demos</a>
+    <a href="#failures">Failure museum</a>
+    <a href="#concepts">Concept demos</a>
+    <a href="#guide">Reviewer guide</a>
+    <a href="#pipeline">Pipeline</a>
+  </nav>
+</header>
+
+<main>
+
+<!-- ============================================ -->
+<section id="static">
+  <h2>1. Best static scenes (Lane A gallery)</h2>
+  <p class="desc">Top static layouts produced by the CSS-native engine. Curated set covering core scene types and density extremes.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_01_well_plate_96_zoom.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_01_well_plate_96_zoom.png" alt="well plate 96 zoom">
+      <div class="body">
+        <div class="title">96-well plate (zoom)</div>
+        <div class="caption">High-density well grid, polished spacing.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_02_microscope_basic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_02_microscope_basic.png" alt="microscope basic">
+      <div class="body">
+        <div class="title">Microscope (basic)</div>
+        <div class="caption">Instrument-centric scene composition.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_03_cell_counter_basic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_03_cell_counter_basic.png" alt="cell counter">
+      <div class="body">
+        <div class="title">Cell counter (basic)</div>
+        <div class="caption">Compact instrument with readout panel.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_04_bench_basic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_04_bench_basic.png" alt="bench basic">
+      <div class="body">
+        <div class="title">Bench (basic)</div>
+        <div class="caption">Default bench arrangement with core tools.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_05_hood_basic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_05_hood_basic.png" alt="hood basic">
+      <div class="body">
+        <div class="title">Hood (basic)</div>
+        <div class="caption">Biosafety hood scene baseline.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_06_crowded_bench_dense.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_06_crowded_bench_dense.png" alt="crowded bench">
+      <div class="body">
+        <div class="title">Crowded bench (dense)</div>
+        <div class="caption">Density stress test, no overlaps.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_07_drug_dilution_workspace_dense.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_07_drug_dilution_workspace_dense.png" alt="drug dilution workspace">
+      <div class="body">
+        <div class="title">Drug dilution workspace</div>
+        <div class="caption">Multi-region dense workspace.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_08_electrophoresis_bench.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_gallery_08_electrophoresis_bench.png" alt="electrophoresis bench">
+      <div class="body">
+        <div class="title">Electrophoresis bench</div>
+        <div class="caption">Gel rig with power supply and accessories.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_a_contact_sheet.html">
+      <div class="thumb thumb-placeholder">Contact sheet (HTML)</div>
+      <div class="body">
+        <div class="title">Lane A contact sheet</div>
+        <div class="caption">All gallery images on one page for review.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="runtime">
+  <h2>2. Runtime proof (Lane B)</h2>
+  <p class="desc">Evidence that the CSS-native layout survives a live click interaction, not just a static render.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_b_runtime_before_click.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_b_runtime_before_click.png" alt="runtime before">
+      <div class="body">
+        <div class="title">Before click</div>
+        <div class="caption">Initial runtime state, layout settled.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png" alt="runtime after">
+      <div class="body">
+        <div class="title">After click</div>
+        <div class="caption">State change preserved layout integrity.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_b_assertion_log.txt">
+      <div class="thumb thumb-placeholder">Assertion log (text)</div>
+      <div class="body">
+        <div class="title">Assertion log</div>
+        <div class="caption">Click-through assertions and timings.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="diagnostics">
+  <h2>3. Diagnostics (Lane C)</h2>
+  <p class="desc">Diagnostic notes on layout edges, failure modes, and probe results.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_c_diagnostics.md">
+      <div class="thumb thumb-placeholder">Diagnostics report (Markdown)</div>
+      <div class="body">
+        <div class="title">Lane C diagnostics</div>
+        <div class="caption">Probe results and edge-case observations.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="scorecard">
+  <h2>4. Scorecard (Lane D)</h2>
+  <p class="desc">Quantitative scorecard rating the CSS-native approach across scene types.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_d_scorecard.md">
+      <div class="thumb thumb-placeholder">Scorecard (Markdown)</div>
+      <div class="body">
+        <div class="title">Lane D scorecard</div>
+        <div class="caption">Pass/fail and grade per scene and metric.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="styles">
+  <h2>5. Visual style directions (Lane H)</h2>
+  <p class="desc">Three rendered style directions exploring the visual range of the same layout.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_clean_instructional.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_clean_instructional.png" alt="clean instructional">
+      <div class="body">
+        <div class="title">Clean instructional</div>
+        <div class="caption">High-clarity textbook-style rendering.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_high_contrast_diagnostic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_high_contrast_diagnostic.png" alt="high contrast diagnostic">
+      <div class="body">
+        <div class="title">High-contrast diagnostic</div>
+        <div class="caption">Debug-oriented vivid contrast palette.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_lab_bench_realistic.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_h_style_lab_bench_realistic.png" alt="lab bench realistic">
+      <div class="body">
+        <div class="title">Lab bench realistic</div>
+        <div class="caption">Material-styled realistic rendering.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="future">
+  <h2>6. Future demos (Lane J)</h2>
+  <p class="desc">Notes on future demos that would extend or validate this approach further.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_j_future_demos.md">
+      <div class="thumb thumb-placeholder">Future demos (Markdown)</div>
+      <div class="body">
+        <div class="title">Lane J future demos</div>
+        <div class="caption">Backlog of demos worth building next.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="failures">
+  <h2>7. Failure museum (Lane M)</h2>
+  <p class="desc">Curated record of failure modes encountered during the investigation. Wave 2 lane.</p>
+  <div class="grid">
+    <div class="card pending">
+      <div class="thumb thumb-placeholder">Pending</div>
+      <div class="body">
+        <div class="title">Failure museum</div>
+        <div class="caption">Pending - check back when Lane M completes.</div>
+        <span class="badge pending">Pending</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="concepts">
+  <h2>8. Concept demos (Lane N)</h2>
+  <p class="desc">Speculative concept demos exploring extensions of the CSS-native approach. Wave 2 lane.</p>
+  <div class="grid">
+    <div class="card pending">
+      <div class="thumb thumb-placeholder">Pending</div>
+      <div class="body">
+        <div class="title">Concept demos</div>
+        <div class="caption">Pending - check back when Lane N completes.</div>
+        <span class="badge pending">Pending</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="guide">
+  <h2>9. Reviewer guide (Lane R2)</h2>
+  <p class="desc">Suggested reading order and decision pointers for reviewers of the evidence package. Wave 2 lane.</p>
+  <div class="grid">
+    <div class="card pending">
+      <div class="thumb thumb-placeholder">Pending</div>
+      <div class="body">
+        <div class="title">Reviewer guide</div>
+        <div class="caption">Pending - check back when Lane R2 completes.</div>
+        <span class="badge pending">Pending</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================ -->
+<section id="pipeline">
+  <h2>10. Pipeline diagram (Lane I)</h2>
+  <p class="desc">End-to-end pipeline diagram showing how YAML, layout engine, and rendered output connect.</p>
+  <div class="grid">
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.html">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.png" alt="pipeline diagram">
+      <div class="body">
+        <div class="title">Pipeline diagram (HTML)</div>
+        <div class="caption">Interactive diagram of the build pipeline.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+    <a class="card" href="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.png">
+      <img class="thumb" src="../../../docs/active_plans/new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.png" alt="pipeline diagram png">
+      <div class="body">
+        <div class="title">Pipeline diagram (PNG)</div>
+        <div class="caption">Static export for embedding in docs.</div>
+        <span class="badge ready">Ready</span>
+      </div>
+    </a>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  CSS-native layout showcase index. Open via file:// or any local static server. ASCII only, no JS, no external dependencies.
+</footer>
+
+</body>
+</html>

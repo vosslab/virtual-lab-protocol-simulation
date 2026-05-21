@@ -97,7 +97,7 @@ body {
 /* Rear shelf: wrap allowed for small tools */
 .region--rear_shelf {
 	flex-wrap: wrap;
-	min-height: 100px;
+	min-height: 320px;
 }
 
 /* Work surface: single row, no wrap (vertical stack via order) */
@@ -113,7 +113,7 @@ body {
 /* Front tools: wrap allowed for small tools */
 .region--front_tools {
 	flex-wrap: wrap;
-	min-height: 100px;
+	min-height: 260px;
 }
 
 /* Instrument station: single row, large equipment pinned */

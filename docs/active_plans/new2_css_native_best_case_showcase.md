@@ -312,4 +312,4 @@ Four before/after comparison panels from the round.
   [new2_showcase_evidence_inventory.md](new2_showcase_evidence_inventory.md)
 - Reviewer guide: [new2_showcase_reviewer_guide.md](new2_showcase_reviewer_guide.md)
 - Showcase index (interactive HTML, link out):
-  [../../experiments/css_native_layout/showcase/index.html](../../experiments/css_native_layout/showcase/index.html)
+  [experiments/css_native_layout/showcase/index.html](../../experiments/css_native_layout/showcase/index.html)

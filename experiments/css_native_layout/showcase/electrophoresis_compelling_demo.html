@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Electrophoresis Compelling Demo - NEW2 Showcase (Demo-Only)</title>
+	<!--
+		Demo-only variant for NEW2 showcase.
+		NOT production: production electrophoresis_bench remains at the bottom
+		of the scorecard (32, 0 hard fails post-Candidate-1 revert).
+		Reuses canonical instrument.css; demo-scoped polish only inside <style>.
+	-->
+	<link rel="stylesheet" href="../styles/instrument.css">
+	<style>
+		/* Demo-scoped polish overlay. Production CSS is not modified. */
+
+		/* Group dividers: visually separate the power+gel pair from supports */
+		.demo-group {
+			display: flex;
+			flex-direction: row;
+			gap: 32px;
+			align-items: center;
+			padding: 8px 16px;
+			border-radius: 4px;
+			background: rgba(255, 255, 255, 0.02);
+		}
+
+		.demo-group--primary {
+			background: rgba(74, 222, 128, 0.04);
+			border: 1px solid rgba(74, 222, 128, 0.12);
+			padding: 16px 24px;
+		}
+
+		.demo-group--supports {
+			background: rgba(168, 176, 186, 0.04);
+			border: 1px solid rgba(168, 176, 186, 0.10);
+			padding: 8px 16px;
+			gap: 18px;
+		}
+
+		.demo-group-label {
+			position: absolute;
+			top: 4px;
+			left: 12px;
+			font-size: 10px;
+			font-weight: 600;
+			letter-spacing: 0.8px;
+			text-transform: uppercase;
+			color: rgba(224, 230, 237, 0.55);
+		}
+
+		.demo-group {
+			position: relative;
+		}
+
+		/* Make the primary pair (power supply + gel cassette) visually dominant */
+		.placement--primary-pair .object-graphic {
+			min-width: 320px;
+			min-height: 320px;
+			max-width: 420px;
+			max-height: 420px;
+		}
+
+		/* Support items: trim down so instruments dominate */
+		.placement--support .object-graphic {
+			max-width: 90px;
+			max-height: 110px;
+		}
+
+		/* Slightly stronger label readability for the demo */
+		.placement-label {
+			font-weight: 500;
+		}
+
+		.placement--primary-pair .placement-label {
+			font-size: 14px;
+			color: #e0e6ed;
+			max-width: 180px;
+		}
+
+		/* Demo annotation banner */
+		.demo-banner {
+			position: fixed;
+			top: 12px;
+			right: 12px;
+			background: rgba(251, 191, 36, 0.92);
+			color: #1a202c;
+			font-size: 12px;
+			font-weight: 600;
+			padding: 6px 12px;
+			border-radius: 3px;
+			letter-spacing: 0.4px;
+			z-index: 50;
+		}
+	</style>
+</head>
+<body>
+	<div class="demo-banner">DEMO ONLY - NOT PRODUCTION</div>
+
+	<div class="scene-container scene--instrument" data-scene-mode="composition" data-scene-density="normal">
+
+		<!-- Region 1: Rear Shelf - bulk reagents (related, grouped left) -->
+		<div class="region region--rear_shelf" data-region="rear_shelf">
+			<span class="region-label">Rear Shelf</span>
+
+			<div class="demo-group demo-group--supports">
+				<span class="demo-group-label">Buffers</span>
+
+				<div class="placement placement--support" data-placement="rear_running_buffer_1x" data-placement-name="rear_running_buffer_1x" data-object-name="running_buffer_1x_carboy">
+					<div class="object-graphic footprint--handheld">
+						<img src="../../../assets/equipment/running_buffer_1x_carboy_filled.svg" alt="Running Buffer 1x">
+					</div>
+					<span class="placement-label">Running Buffer 1x</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="rear_running_buffer_10x" data-placement-name="rear_running_buffer_10x" data-object-name="running_buffer_10x_bottle">
+					<div class="object-graphic footprint--handheld">
+						<img src="../../../assets/equipment/running_buffer_10x_bottle_filled.svg" alt="Running Buffer 10x">
+					</div>
+					<span class="placement-label">Running Buffer 10x</span>
+				</div>
+			</div>
+
+			<div class="demo-group demo-group--supports">
+				<span class="demo-group-label">Samples</span>
+
+				<div class="placement placement--support" data-placement="rear_protein_ladder" data-placement-name="rear_protein_ladder" data-object-name="protein_ladder_tube">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/protein_ladder_tube_filled.svg" alt="Protein Ladder">
+					</div>
+					<span class="placement-label">Ladder Marker</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="rear_protein_sample_a" data-placement-name="rear_protein_sample_a" data-object-name="protein_sample_tube_a">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/protein_sample_tube_filled.svg" alt="Protein Sample A">
+					</div>
+					<span class="placement-label">Sample A</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="rear_protein_sample_b" data-placement-name="rear_protein_sample_b" data-object-name="protein_sample_tube_b">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/protein_sample_tube_filled.svg" alt="Protein Sample B">
+					</div>
+					<span class="placement-label">Sample B</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Region 2: Work Surface - PRIMARY INSTRUMENT GROUP (power supply + gel cassette) -->
+		<div class="region region--work_surface" data-region="work_surface">
+			<span class="region-label">Work Surface</span>
+
+			<div class="demo-group demo-group--primary">
+				<span class="demo-group-label">Electrophoresis Rig</span>
+
+				<!-- Power Supply (primary instrument, paired with gel cassette) -->
+				<div class="placement placement--primary-pair" data-placement="center_power_supply" data-placement-name="center_power_supply" data-object-name="power_supply" data-primary="true">
+					<div class="object-graphic footprint--instrument">
+						<img src="../../../assets/equipment/power_supply_on.svg" alt="Power Supply">
+					</div>
+					<span class="placement-label">Power Supply (120 V)</span>
+				</div>
+
+				<!-- Gel Cassette (primary instrument) -->
+				<div class="placement placement--primary-pair" data-placement="center_gel_cassette" data-placement-name="center_gel_cassette" data-object-name="gel_cassette">
+					<div class="object-graphic footprint--instrument">
+						<img src="../../../assets/equipment/gel_cassette.svg" alt="Gel Cassette">
+					</div>
+					<span class="placement-label">Gel Cassette</span>
+				</div>
+
+				<!-- Buffer Reservoir / Tank (primary support, scaled with rig) -->
+				<div class="placement placement--primary-pair" data-placement="center_buffer_reservoir" data-placement-name="center_buffer_reservoir" data-object-name="electrophoresis_tank">
+					<div class="object-graphic footprint--instrument">
+						<img src="../../../assets/equipment/electrophoresis_tank.svg" alt="Buffer Reservoir">
+					</div>
+					<span class="placement-label">Buffer Reservoir</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Region 3: Front Tools - loading tools, kept compact -->
+		<div class="region region--front_tools" data-region="front_tools">
+			<span class="region-label">Front Tools</span>
+
+			<div class="demo-group demo-group--supports">
+				<span class="demo-group-label">Loading Tools</span>
+
+				<div class="placement placement--support" data-placement="front_p200_micropipette" data-placement-name="front_p200_micropipette" data-object-name="p200_micropipette">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/p200_micropipette_filled.svg" alt="p200 Micropipette">
+					</div>
+					<span class="placement-label">p200 Micropipette</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="front_p10_tip_box" data-placement-name="front_p10_tip_box" data-object-name="p10_gel_loading_tip_box">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/p10_gel_loading_tip_box.svg" alt="p10 Tip Box">
+					</div>
+					<span class="placement-label">Gel Loading Tips</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="front_gel_comb" data-placement-name="front_gel_comb" data-object-name="gel_comb">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/gel_comb.svg" alt="Gel Comb">
+					</div>
+					<span class="placement-label">Gel Comb</span>
+				</div>
+
+				<div class="placement placement--support" data-placement="front_electrode_module" data-placement-name="front_electrode_module" data-object-name="electrode_module">
+					<div class="object-graphic footprint--small-tool">
+						<img src="../../../assets/equipment/electrode_module.svg" alt="Electrode Module">
+					</div>
+					<span class="placement-label">Electrodes</span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Region 5: Popup Layer (hidden) -->
+		<div class="region region--popup_layer" data-region="popup_layer"></div>
+	</div>
+
+	<script>
+		// Demo-only scene data; does not feed the production runtime.
+		window.sceneData = {
+			sceneName: 'electrophoresis_compelling_demo',
+			sceneType: 'demo_only',
+			workspace: 'instrument',
+			totalPlacements: 12,
+			groups: {
+				primary_rig: ['power_supply', 'gel_cassette', 'buffer_reservoir'],
+				buffers: ['running_buffer_1x_carboy', 'running_buffer_10x_bottle'],
+				samples: ['protein_ladder_tube', 'protein_sample_tube_a', 'protein_sample_tube_b'],
+				loading_tools: ['p200_micropipette', 'p10_gel_loading_tip_box', 'gel_comb', 'electrode_module']
+			},
+			productionStatus: 'demo_only_not_production'
+		};
+	</script>
+</body>
+</html>

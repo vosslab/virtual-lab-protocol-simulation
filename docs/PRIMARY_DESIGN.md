@@ -125,3 +125,38 @@ auditing existing canonical docs or onboarding a new spec.
 See [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) for the full
 checklist.
 
+## Visual integrity: never crop scientific assets
+
+A scene cannot pass visual review if any scientific SVG asset is cropped or aspect-distorted enough to change what the object is.
+
+This rule applies even if precheck reports `hard_fail_count = 0`. Visible cropping or distortion is a visual failure regardless of bbox-level checks.
+
+Forbidden in any rendered scene:
+
+- Cropped bottoms of volumetric flasks
+- Cropped bottle necks or caps
+- Clipped pipette tips
+- Hidden instrument edges
+- Object artwork cut off by cards, regions, wrappers, `overflow: hidden`, or `.object-graphic` containers
+- Squashing or stretching that changes the intended asset aspect ratio
+
+Diagnostic requirement:
+
+- The `artwork_integrity` check must compare the rendered asset bbox against its parent placement card and flag overflow clipping plus aspect-ratio deviation > 5%.
+- Visible clipping is HARD FAIL.
+- Aspect distortion is HARD FAIL for lab glassware, pipettes, plates, and instruments; advisory for decorative items.
+
+Fix direction (not a substitute for the rule):
+
+- Use `object-fit: contain`, never `cover`.
+- Preserve SVG `preserveAspectRatio="xMidYMid meet"`.
+- Remove parent `overflow: hidden` where it clips assets.
+- Size cards around assets, not assets into too-small cards.
+- Add `min-height` / `min-width` for tall glassware cards.
+
+Anti-patterns (forbidden):
+
+- Do not "fix" cropping by hiding cropped assets, deleting DOM, or weakening diagnostics.
+- Do not accept a high score if the asset is visibly cropped.
+- Do not claim visual success while glassware bottoms are cut off.
+

@@ -276,18 +276,57 @@ async function checkLabelLabelOverlap(page) {
 
 // ============================================
 // ARTWORK INTEGRITY DIAGNOSTIC CHECKS (P3.0)
-// Four sub-checks per placement:
+// Six sub-checks per placement:
 // a. Image/SVG natural bbox vs rendered bbox (aspect ratio mismatch, shrink detection)
 // b. Visible artwork bbox vs card/container bbox (clipping by ancestors)
 // c. Object clipped by parent region (overflow:hidden + overflow content)
 // d. Label clipped separately from artwork
+// e. clipped_by_parent: img bbox clipped by any ancestor with overflow != visible (HARD FAIL)
+// f. aspect_distorted: rendered aspect ratio differs from natural by more than tolerance
+//    (HARD FAIL for glassware/pipette/plate/instrument; otherwise WARN)
+
+// Tolerance (percent) for rendered vs natural aspect ratio mismatch in sub-check f.
+// Used as the threshold for both the advisory and escalation. Configurable here.
+const ASPECT_DISTORTION_TOLERANCE_PCT = 5;
+
+// Tolerance in pixels for clipping detection in sub-check e. Sub-pixel
+// rounding can produce 1px deltas at the visible bbox edge; guard against it.
+const CLIP_TOLERANCE_PX = 1;
+
+// Object-name pattern groups for hard-fail escalation. Matched as substrings
+// against placement.object_name (case-insensitive).
+const HARD_FAIL_OBJECT_PATTERNS = {
+	glassware: ['flask', 'beaker', 'bottle', 'tube', 'cylinder'],
+	pipette: ['pipette', 'tip'],
+	plate: ['plate', 'well'],
+	instrument: [
+		'microscope', 'centrifuge', 'power_supply', 'electrophoresis',
+		'incubator', 'cell_counter', 'hemocytometer', 'vortex', 'heat_block'
+	]
+};
+
+// Classify an object_name into its hard-fail group, or null if none matches.
+function classifyHardFailGroup(objectName) {
+	if (!objectName) return null;
+	const lower = objectName.toLowerCase();
+	for (const group of Object.keys(HARD_FAIL_OBJECT_PATTERNS)) {
+		for (const pattern of HARD_FAIL_OBJECT_PATTERNS[group]) {
+			if (lower.includes(pattern)) {
+				return group;
+			}
+		}
+	}
+	return null;
+}
 
 async function checkArtworkIntegrity(page, sceneContainer) {
 	const result = {
 		natural_vs_rendered: [],
 		artwork_vs_card: [],
 		object_vs_region: [],
-		label_clipping: []
+		label_clipping: [],
+		clipped_by_parent: [],
+		aspect_distorted: []
 	};
 
 	const placements = await page.locator('.placement').all();
@@ -484,6 +523,135 @@ async function checkArtworkIntegrity(page, sceneContainer) {
 						});
 					}
 				}
+			}
+		}
+
+		// Sub-check e: clipped_by_parent
+		// Detect when the rendered <img> bbox extends beyond the intersection of
+		// all ancestor clip rects (ancestors with overflow != visible). This
+		// catches SVG cropping by parent overflow:hidden, which violates the
+		// "never crop SVG assets" rule and must be a hard fail.
+		const clipInfo = await imgElem.evaluate((el, tolerancePx) => {
+			const imgRect = el.getBoundingClientRect();
+			if (imgRect.width === 0 || imgRect.height === 0) return null;
+
+			// Walk ancestors collecting clipping rects. Stop at document root.
+			let clipLeft = -Infinity;
+			let clipTop = -Infinity;
+			let clipRight = Infinity;
+			let clipBottom = Infinity;
+			let clippedByAncestorTag = null;
+
+			let parent = el.parentElement;
+			while (parent && parent !== document.body && parent !== document.documentElement) {
+				const style = window.getComputedStyle(parent);
+				const overflowX = style.overflowX;
+				const overflowY = style.overflowY;
+				const clipsX = overflowX !== 'visible';
+				const clipsY = overflowY !== 'visible';
+
+				if (clipsX || clipsY) {
+					const r = parent.getBoundingClientRect();
+					if (clipsX) {
+						if (r.left > clipLeft) {
+							clipLeft = r.left;
+							clippedByAncestorTag = parent.tagName + (parent.className ? '.' + String(parent.className).split(' ').join('.') : '');
+						}
+						if (r.right < clipRight) clipRight = r.right;
+					}
+					if (clipsY) {
+						if (r.top > clipTop) clipTop = r.top;
+						if (r.bottom < clipBottom) clipBottom = r.bottom;
+					}
+				}
+				parent = parent.parentElement;
+			}
+
+			// Convert -Infinity / Infinity sentinels to img bounds (no clip).
+			if (clipLeft === -Infinity) clipLeft = imgRect.left;
+			if (clipTop === -Infinity) clipTop = imgRect.top;
+			if (clipRight === Infinity) clipRight = imgRect.right;
+			if (clipBottom === Infinity) clipBottom = imgRect.bottom;
+
+			const clipOverLeft = Math.max(0, clipLeft - imgRect.left);
+			const clipOverTop = Math.max(0, clipTop - imgRect.top);
+			const clipOverRight = Math.max(0, imgRect.right - clipRight);
+			const clipOverBottom = Math.max(0, imgRect.bottom - clipBottom);
+
+			const isClipped = (
+				clipOverLeft > tolerancePx
+				|| clipOverTop > tolerancePx
+				|| clipOverRight > tolerancePx
+				|| clipOverBottom > tolerancePx
+			);
+
+			return {
+				img_bbox: {
+					x: imgRect.left,
+					y: imgRect.top,
+					w: imgRect.width,
+					h: imgRect.height
+				},
+				visible_bbox: {
+					x: Math.max(imgRect.left, clipLeft),
+					y: Math.max(imgRect.top, clipTop),
+					w: Math.max(0, Math.min(imgRect.right, clipRight) - Math.max(imgRect.left, clipLeft)),
+					h: Math.max(0, Math.min(imgRect.bottom, clipBottom) - Math.max(imgRect.top, clipTop))
+				},
+				clip_over_px: {
+					left: clipOverLeft,
+					top: clipOverTop,
+					right: clipOverRight,
+					bottom: clipOverBottom
+				},
+				is_clipped: isClipped,
+				clipper_tag: clippedByAncestorTag
+			};
+		}, CLIP_TOLERANCE_PX);
+
+		if (clipInfo && clipInfo.is_clipped) {
+			const overflowSides = Object.keys(clipInfo.clip_over_px)
+				.filter(s => clipInfo.clip_over_px[s] > CLIP_TOLERANCE_PX);
+			result.clipped_by_parent.push({
+				placement_name: placementName,
+				object_name: objectName,
+				img_bbox: clipInfo.img_bbox,
+				visible_bbox: clipInfo.visible_bbox,
+				clip_over_px: clipInfo.clip_over_px,
+				overflow_sides: overflowSides,
+				clipper: clipInfo.clipper_tag,
+				severity: 'HARD_FAIL',
+				reason: `SVG cropped by parent overflow on ${overflowSides.join(', ')}: never crop SVG assets`
+			});
+		}
+
+		// Sub-check f: aspect_distorted
+		// Compare the rendered aspect ratio against the natural asset aspect
+		// ratio with a configurable tolerance. For glassware/pipette/plate/
+		// instrument objects, distortion is escalated to HARD_FAIL because
+		// these are highest-priority semantic objects.
+		if (artworkBox && naturalDims.width && naturalDims.height) {
+			const renderedAspect = artworkBox.width / artworkBox.height;
+			const naturalAspect = naturalDims.width / naturalDims.height;
+			const deltaPct = Math.abs((renderedAspect - naturalAspect) / naturalAspect * 100);
+
+			if (deltaPct > ASPECT_DISTORTION_TOLERANCE_PCT) {
+				const hardFailGroup = classifyHardFailGroup(objectName);
+				const severity = hardFailGroup ? 'HARD_FAIL' : 'WARN';
+				const reasonPrefix = hardFailGroup
+					? `aspect distorted on ${hardFailGroup}`
+					: 'aspect distorted';
+				result.aspect_distorted.push({
+					placement_name: placementName,
+					object_name: objectName,
+					hard_fail_group: hardFailGroup,
+					natural_aspect_ratio: parseFloat(naturalAspect.toFixed(3)),
+					rendered_aspect_ratio: parseFloat(renderedAspect.toFixed(3)),
+					delta_pct: parseFloat(deltaPct.toFixed(2)),
+					tolerance_pct: ASPECT_DISTORTION_TOLERANCE_PCT,
+					severity: severity,
+					reason: `${reasonPrefix}: ${deltaPct.toFixed(1)}% (natural ${naturalAspect.toFixed(2)}, rendered ${renderedAspect.toFixed(2)}, tolerance ${ASPECT_DISTORTION_TOLERANCE_PCT}%)`
+				});
 			}
 		}
 	}
@@ -911,11 +1079,21 @@ async function runPrecheck(htmlPath, theme = '', outDir = 'test-results/new0_css
 		const sceneMode = checks.primary_object?.scene_mode || 'composition';
 
 		// Determine verdict
+		// Artwork integrity sub-checks contribute hard fails when:
+		//   - any clipped_by_parent finding (severity HARD_FAIL by design)
+		//   - any aspect_distorted finding escalated to HARD_FAIL via the
+		//     glassware/pipette/plate/instrument classifier
+		const integrityClippedByParent = checks.artwork_integrity?.clipped_by_parent || [];
+		const integrityAspectHardFails = (checks.artwork_integrity?.aspect_distorted || [])
+			.filter(item => item.severity === 'HARD_FAIL');
+
 		const hardFails = [
 			checks.clipped_artwork.length > 0,
 			checks.off_page.length > 0,
 			checks.svg_svg_overlap.length > 0,
-			checks.region_overflow.length > 0
+			checks.region_overflow.length > 0,
+			integrityClippedByParent.length > 0,
+			integrityAspectHardFails.length > 0
 		];
 
 		const hasHardFail = hardFails.some(x => x);
@@ -964,6 +1142,8 @@ function generateMarkdownReport(sceneResults) {
 			if (checks.svg_svg_overlap.length > 0) count++;
 			if (checks.label_label_overlap.length > 0) count++;
 			if (checks.region_overflow.length > 0) count++;
+			if ((checks.artwork_integrity?.clipped_by_parent || []).length > 0) count++;
+			if ((checks.artwork_integrity?.aspect_distorted || []).some(i => i.severity === 'HARD_FAIL')) count++;
 			return sum + count;
 		}, 0)
 	};
@@ -1066,7 +1246,9 @@ function generateMarkdownReport(sceneResults) {
 			const hasFails = integrity.natural_vs_rendered.filter(i => i.severity === 'WARN').length > 0
 				|| integrity.artwork_vs_card.length > 0
 				|| integrity.object_vs_region.length > 0
-				|| integrity.label_clipping.length > 0;
+				|| integrity.label_clipping.length > 0
+				|| (integrity.clipped_by_parent || []).length > 0
+				|| (integrity.aspect_distorted || []).length > 0;
 
 			if (hasFails) {
 				md += `## Artwork Integrity Diagnostics\n\n`;
@@ -1101,6 +1283,23 @@ function generateMarkdownReport(sceneResults) {
 					md += `**Sub-check d: Label Clipped by Region**\n`;
 					for (const item of integrity.label_clipping) {
 						md += `- ${item.placement_name}: ${item.reason}\n`;
+					}
+					md += '\n';
+				}
+
+				if ((integrity.clipped_by_parent || []).length > 0) {
+					md += `**Sub-check e: SVG Clipped by Parent Overflow (HARD FAIL)**\n`;
+					for (const item of integrity.clipped_by_parent) {
+						md += `- ${item.placement_name} (${item.object_name}): ${item.reason}\n`;
+					}
+					md += '\n';
+				}
+
+				if ((integrity.aspect_distorted || []).length > 0) {
+					md += `**Sub-check f: Rendered Aspect Distorted vs Natural**\n`;
+					for (const item of integrity.aspect_distorted) {
+						const tag = item.severity === 'HARD_FAIL' ? ' (HARD FAIL)' : '';
+						md += `- ${item.placement_name} (${item.object_name})${tag}: ${item.reason}\n`;
 					}
 					md += '\n';
 				}
@@ -1212,6 +1411,8 @@ async function main() {
 				if (r.checks.off_page.length > 0) count++;
 				if (r.checks.svg_svg_overlap.length > 0) count++;
 				if (r.checks.region_overflow.length > 0) count++;
+				if ((r.checks.artwork_integrity?.clipped_by_parent || []).length > 0) count++;
+				if ((r.checks.artwork_integrity?.aspect_distorted || []).some(i => i.severity === 'HARD_FAIL')) count++;
 				return sum + count;
 			}, 0)
 		},

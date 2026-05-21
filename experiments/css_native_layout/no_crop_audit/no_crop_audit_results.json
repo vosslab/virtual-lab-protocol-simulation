@@ -1,0 +1,1551 @@
+{
+  "generated_at": "2026-05-20T21:51:15.807Z",
+  "results": [
+    {
+      "scene": "bench_basic",
+      "total_placements": 2,
+      "violations": [
+        {
+          "scene": "bench_basic",
+          "placement_name": "right_tool_p200_micropipette",
+          "object_name": "p200_micropipette",
+          "placement_x": 28,
+          "placement_y": 777,
+          "placement_w": 50,
+          "placement_h": 112,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 777,
+          "graphic_w": 50,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/p200_micropipette_filled.svg",
+          "img_x": 32,
+          "img_y": 730.578125,
+          "img_w": 42,
+          "img_h": 182.84375,
+          "natural_w": 34,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "bench_basic__right_tool_p200_micropipette.png"
+        }
+      ]
+    },
+    {
+      "scene": "cell_counter_basic",
+      "total_placements": 2,
+      "violations": [
+        {
+          "scene": "cell_counter_basic",
+          "placement_name": "front_tools_counter_slide_cartridge",
+          "object_name": "counter_slide_cartridge",
+          "placement_x": 36,
+          "placement_y": 995,
+          "placement_w": 70,
+          "placement_h": 67,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 36,
+          "graphic_y": 995,
+          "graphic_w": 70,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/cell_counter.svg",
+          "img_x": 40,
+          "img_y": 1018.0625,
+          "img_w": 62,
+          "img_h": 43.875,
+          "natural_w": 212,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 8.6
+            }
+          ],
+          "screenshot": "cell_counter_basic__front_tools_counter_slide_cartridge.png"
+        },
+        {
+          "scene": "cell_counter_basic",
+          "placement_name": "instrument_main_cell_counter",
+          "object_name": "cell_counter",
+          "placement_x": 0,
+          "placement_y": 0,
+          "placement_w": 0,
+          "placement_h": 0,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 0,
+          "graphic_y": 0,
+          "graphic_w": 0,
+          "graphic_h": 0,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/cell_counter_new.svg",
+          "img_x": 0,
+          "img_y": 0,
+          "img_w": 0,
+          "img_h": 0,
+          "natural_w": 212,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 0
+            }
+          ],
+          "screenshot": "cell_counter_basic__instrument_main_cell_counter.png"
+        }
+      ]
+    },
+    {
+      "scene": "crowded_bench_dense",
+      "total_placements": 13,
+      "violations": [
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_coomassie_stain",
+          "object_name": "coomassie_stain_bottle",
+          "placement_x": 28,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/coomassie_stain_bottle_filled.svg",
+          "img_x": 32,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_coomassie_stain.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_destain",
+          "object_name": "destain_bottle",
+          "placement_x": 126,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 126,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_bottle_filled.svg",
+          "img_x": 130,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_destain.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_ddh2o",
+          "object_name": "ddh2o_bottle",
+          "placement_x": 224,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 224,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ddh2o_bottle_filled.svg",
+          "img_x": 228,
+          "img_y": 428.375,
+          "img_w": 82,
+          "img_h": 179.265625,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_ddh2o.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_coomassie_recycle",
+          "object_name": "coomassie_recycle_bottle",
+          "placement_x": 322,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 322,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/coomassie_recycle_bottle_filled.svg",
+          "img_x": 326,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_coomassie_recycle.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_destain_waste",
+          "object_name": "destain_waste_bottle",
+          "placement_x": 420,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 420,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_waste_bottle_filled.svg",
+          "img_x": 424,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_destain_waste.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_laemmli_buffer",
+          "object_name": "laemmli_4x_bottle",
+          "placement_x": 518,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 518,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/laemmli_4x_bottle_filled.svg",
+          "img_x": 522,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_laemmli_buffer.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "rear_bme_bottle",
+          "object_name": "bme_bottle",
+          "placement_x": 616,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 616,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/bme_bottle_filled.svg",
+          "img_x": 620,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "crowded_bench_dense__rear_bme_bottle.png"
+        },
+        {
+          "scene": "crowded_bench_dense",
+          "placement_name": "center_kimwipe_pad",
+          "object_name": "kimwipe_pad",
+          "placement_x": 1802,
+          "placement_y": 325.140625,
+          "placement_w": 90,
+          "placement_h": 132,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 1802,
+          "graphic_y": 325.140625,
+          "graphic_w": 90,
+          "graphic_h": 110,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/kimwipe_pad.svg",
+          "img_x": 1806,
+          "img_y": 339.140625,
+          "img_w": 82,
+          "img_h": 82,
+          "natural_w": 150,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 29.9
+            }
+          ],
+          "screenshot": "crowded_bench_dense__center_kimwipe_pad.png"
+        }
+      ]
+    },
+    {
+      "scene": "drug_dilution_plate_workspace",
+      "total_placements": 8,
+      "violations": [
+        {
+          "scene": "drug_dilution_plate_workspace",
+          "placement_name": "rear_dmso_bottle",
+          "object_name": "stock_bottle",
+          "placement_x": 28,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_bottle_filled.svg",
+          "img_x": 32,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_plate_workspace__rear_dmso_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_plate_workspace",
+          "placement_name": "rear_pbs_bottle",
+          "object_name": "stock_bottle",
+          "placement_x": 126,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 126,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ddh2o_bottle_filled.svg",
+          "img_x": 130,
+          "img_y": 428.375,
+          "img_w": 82,
+          "img_h": 179.265625,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_plate_workspace__rear_pbs_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_plate_workspace",
+          "placement_name": "rear_drug_bottle",
+          "object_name": "stock_bottle",
+          "placement_x": 224,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 224,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/bme_bottle_filled.svg",
+          "img_x": 228,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_plate_workspace__rear_drug_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_plate_workspace",
+          "placement_name": "tool_tips",
+          "object_name": "tip_box",
+          "placement_x": 1842,
+          "placement_y": 765.96875,
+          "placement_w": 50,
+          "placement_h": 82,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 1842,
+          "graphic_y": 765.96875,
+          "graphic_w": 50,
+          "graphic_h": 60,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/tip_box_new.svg",
+          "img_x": 1846,
+          "img_y": 782.265625,
+          "img_w": 42,
+          "img_h": 27.40625,
+          "natural_w": 230,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 3.3
+            }
+          ],
+          "screenshot": "drug_dilution_plate_workspace__tool_tips.png"
+        },
+        {
+          "scene": "drug_dilution_plate_workspace",
+          "placement_name": "tool_p200",
+          "object_name": "p200_micropipette",
+          "placement_x": 28,
+          "placement_y": 939,
+          "placement_w": 50,
+          "placement_h": 112,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 939,
+          "graphic_w": 50,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/p200_micropipette_filled.svg",
+          "img_x": 32,
+          "img_y": 892.578125,
+          "img_w": 42,
+          "img_h": 182.84375,
+          "natural_w": 34,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_plate_workspace__tool_p200.png"
+        }
+      ]
+    },
+    {
+      "scene": "drug_dilution_workspace_dense",
+      "total_placements": 14,
+      "violations": [
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_dmso_bottle",
+          "object_name": "dmso_stock_bottle",
+          "placement_x": 28,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_bottle_filled.svg",
+          "img_x": 32,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_dmso_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_pbs_bottle",
+          "object_name": "pbs_buffer_bottle",
+          "placement_x": 126,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 126,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ddh2o_bottle_filled.svg",
+          "img_x": 130,
+          "img_y": 428.375,
+          "img_w": 82,
+          "img_h": 179.265625,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_pbs_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_drug_bottle_1",
+          "object_name": "drug_stock_bottle",
+          "placement_x": 224,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 224,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/bme_bottle_filled.svg",
+          "img_x": 228,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_1.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_drug_bottle_2",
+          "object_name": "drug_stock_bottle",
+          "placement_x": 322,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 322,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/laemmli_4x_bottle_filled.svg",
+          "img_x": 326,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_2.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_drug_bottle_3",
+          "object_name": "drug_stock_bottle",
+          "placement_x": 420,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 420,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/coomassie_stain_bottle_filled.svg",
+          "img_x": 424,
+          "img_y": 403.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_3.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "rear_ethanol_bottle",
+          "object_name": "ethanol_bottle",
+          "placement_x": 518,
+          "placement_y": 438,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 518,
+          "graphic_y": 438,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/bottle.svg",
+          "img_x": 522,
+          "img_y": 429.078125,
+          "img_w": 82,
+          "img_h": 177.84375,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__rear_ethanol_bottle.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "work_vial_rack",
+          "object_name": "drug_vial_rack",
+          "placement_x": 1752,
+          "placement_y": 551,
+          "placement_w": 140,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 1752,
+          "graphic_y": 551,
+          "graphic_w": 140,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/drug_vial_rack.svg",
+          "img_x": 1756,
+          "img_y": 598.546875,
+          "img_w": 132,
+          "img_h": 64.890625,
+          "natural_w": 300,
+          "natural_h": 148,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 19.3
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__work_vial_rack.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "tool_p200_micropipette",
+          "object_name": "p200_micropipette",
+          "placement_x": 28,
+          "placement_y": 824.03125,
+          "placement_w": 50,
+          "placement_h": 112,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 824.03125,
+          "graphic_w": 50,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/p200_micropipette_filled.svg",
+          "img_x": 32,
+          "img_y": 777.609375,
+          "img_w": 42,
+          "img_h": 182.84375,
+          "natural_w": 34,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__tool_p200_micropipette.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "tool_tip_box",
+          "object_name": "tip_box",
+          "placement_x": 86,
+          "placement_y": 854.03125,
+          "placement_w": 50,
+          "placement_h": 82,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 86,
+          "graphic_y": 854.03125,
+          "graphic_w": 50,
+          "graphic_h": 60,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/tip_box_new.svg",
+          "img_x": 90,
+          "img_y": 870.328125,
+          "img_w": 42,
+          "img_h": 27.40625,
+          "natural_w": 230,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 3.3
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__tool_tip_box.png"
+        },
+        {
+          "scene": "drug_dilution_workspace_dense",
+          "placement_name": "waste_tray_secondary",
+          "object_name": "waste_tray",
+          "placement_x": 242,
+          "placement_y": 804.03125,
+          "placement_w": 90,
+          "placement_h": 132,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 242,
+          "graphic_y": 804.03125,
+          "graphic_w": 90,
+          "graphic_h": 110,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/waste_tray.svg",
+          "img_x": 246,
+          "img_y": 829.75,
+          "img_w": 82,
+          "img_h": 58.5625,
+          "natural_w": 210,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 15.2
+            }
+          ],
+          "screenshot": "drug_dilution_workspace_dense__waste_tray_secondary.png"
+        }
+      ]
+    },
+    {
+      "scene": "electrophoresis_bench",
+      "total_placements": 15,
+      "violations": [
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "rear_left_running_buffer_10x",
+          "object_name": "running_buffer_10x_bottle",
+          "placement_x": 28,
+          "placement_y": 438,
+          "placement_w": 100,
+          "placement_h": 200,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 438,
+          "graphic_w": 100,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/running_buffer_10x_bottle_filled.svg",
+          "img_x": 32,
+          "img_y": 389.125,
+          "img_w": 92,
+          "img_h": 257.765625,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__rear_left_running_buffer_10x.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "center_running_buffer_1x_carboy",
+          "object_name": "running_buffer_1x_carboy",
+          "placement_x": 136,
+          "placement_y": 456,
+          "placement_w": 99.65625,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 136,
+          "graphic_y": 456,
+          "graphic_w": 99.65625,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/running_buffer_1x_carboy_filled.svg",
+          "img_x": 140,
+          "img_y": 375.265625,
+          "img_w": 91.65625,
+          "img_h": 321.46875,
+          "natural_w": 43,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__center_running_buffer_1x_carboy.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "center_ddh2o_bottle",
+          "object_name": "ddh2o_bottle",
+          "placement_x": 243.65625,
+          "placement_y": 456,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 243.65625,
+          "graphic_y": 456,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ddh2o_bottle_filled.svg",
+          "img_x": 247.65625,
+          "img_y": 446.375,
+          "img_w": 82,
+          "img_h": 179.265625,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__center_ddh2o_bottle.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "rear_left_recycle_buffer_bottle",
+          "object_name": "recycle_buffer_bottle",
+          "placement_x": 341.65625,
+          "placement_y": 456,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 341.65625,
+          "graphic_y": 456,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/running_buffer_10x_bottle_filled.svg",
+          "img_x": 345.65625,
+          "img_y": 421.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__rear_left_recycle_buffer_bottle.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "right_tool_area_p200_micropipette",
+          "object_name": "p200_micropipette",
+          "placement_x": 28,
+          "placement_y": 925.859375,
+          "placement_w": 73.3125,
+          "placement_h": 112,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 925.859375,
+          "graphic_w": 73.3125,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/p200_micropipette_filled.svg",
+          "img_x": 32,
+          "img_y": 828.703125,
+          "img_w": 65.3125,
+          "img_h": 284.328125,
+          "natural_w": 34,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__right_tool_area_p200_micropipette.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "right_tool_area_p10_gel_loading_tip_box",
+          "object_name": "p10_gel_loading_tip_box",
+          "placement_x": 109.3125,
+          "placement_y": 955.859375,
+          "placement_w": 65.671875,
+          "placement_h": 82,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 109.3125,
+          "graphic_y": 955.859375,
+          "graphic_w": 65.671875,
+          "graphic_h": 60,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/p10_gel_loading_tip_box.svg",
+          "img_x": 113.3125,
+          "img_y": 967.046875,
+          "img_w": 57.671875,
+          "img_h": 37.625,
+          "natural_w": 230,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 6.3
+            }
+          ],
+          "screenshot": "electrophoresis_bench__right_tool_area_p10_gel_loading_tip_box.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "rear_left_protein_ladder_tube",
+          "object_name": "protein_ladder_tube",
+          "placement_x": 182.984375,
+          "placement_y": 925.859375,
+          "placement_w": 83.1875,
+          "placement_h": 112,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 184.578125,
+          "graphic_y": 925.859375,
+          "graphic_w": 80,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/protein_ladder_tube_filled.svg",
+          "img_x": 188.578125,
+          "img_y": 910.296875,
+          "img_w": 72,
+          "img_h": 121.140625,
+          "natural_w": 89,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "electrophoresis_bench__rear_left_protein_ladder_tube.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "rear_right_gel_opening_tool",
+          "object_name": "gel_opening_tool",
+          "placement_x": 274.171875,
+          "placement_y": 935.859375,
+          "placement_w": 96.96875,
+          "placement_h": 102,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 282.65625,
+          "graphic_y": 935.859375,
+          "graphic_w": 80,
+          "graphic_h": 80,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/gel_opening_tool.svg",
+          "img_x": 286.65625,
+          "img_y": 939.859375,
+          "img_w": 72,
+          "img_h": 72,
+          "natural_w": 150,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 23
+            }
+          ],
+          "screenshot": "electrophoresis_bench__rear_right_gel_opening_tool.png"
+        },
+        {
+          "scene": "electrophoresis_bench",
+          "placement_name": "front_right_gel_comb",
+          "object_name": "gel_comb",
+          "placement_x": 607.140625,
+          "placement_y": 954.328125,
+          "placement_w": 55.71875,
+          "placement_h": 83.53125,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 607.140625,
+          "graphic_y": 954.328125,
+          "graphic_w": 55.71875,
+          "graphic_h": 61.53125,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/gel_comb.svg",
+          "img_x": 611.140625,
+          "img_y": 958.328125,
+          "img_w": 47.71875,
+          "img_h": 53.53125,
+          "natural_w": 134,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 12.7
+            }
+          ],
+          "screenshot": "electrophoresis_bench__front_right_gel_comb.png"
+        }
+      ]
+    },
+    {
+      "scene": "hood_basic",
+      "total_placements": 3,
+      "violations": [
+        {
+          "scene": "hood_basic",
+          "placement_name": "rear_left_ethanol_bottle",
+          "object_name": "ethanol_bottle",
+          "placement_x": 36,
+          "placement_y": 20,
+          "placement_w": 70,
+          "placement_h": 103,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 36,
+          "graphic_y": 20,
+          "graphic_w": 70,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/bottle.svg",
+          "img_x": 40,
+          "img_y": -2.234375,
+          "img_w": 62,
+          "img_h": 134.46875,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "cropped",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "hood_basic__rear_left_ethanol_bottle.png"
+        },
+        {
+          "scene": "hood_basic",
+          "placement_name": "rear_center_ddh2o_spray",
+          "object_name": "ddh2o_spray_bottle",
+          "placement_x": 126,
+          "placement_y": 20,
+          "placement_w": 75.96875,
+          "placement_h": 103,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 126,
+          "graphic_y": 20,
+          "graphic_w": 75.96875,
+          "graphic_h": 90,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ethanol_spray.svg",
+          "img_x": 130,
+          "img_y": -34.234375,
+          "img_w": 67.96875,
+          "img_h": 198.46875,
+          "natural_w": 51,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "cropped",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "hood_basic__rear_center_ddh2o_spray.png"
+        },
+        {
+          "scene": "hood_basic",
+          "placement_name": "center_p1000_pipette",
+          "object_name": "p1000_pipette",
+          "placement_x": 938,
+          "placement_y": 499.796875,
+          "placement_w": 44,
+          "placement_h": 100.390625,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 938,
+          "graphic_y": 499.796875,
+          "graphic_w": 44,
+          "graphic_h": 80,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/aspirating_pipette.svg",
+          "img_x": 942,
+          "img_y": 383.421875,
+          "img_w": 36,
+          "img_h": 312.75,
+          "natural_w": 17,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "cropped",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "hood_basic__center_p1000_pipette.png"
+        }
+      ]
+    },
+    {
+      "scene": "microscope_basic",
+      "total_placements": 1,
+      "violations": [
+        {
+          "scene": "microscope_basic",
+          "placement_name": "instrument_main_microscope",
+          "object_name": "microscope",
+          "placement_x": 0,
+          "placement_y": 0,
+          "placement_w": 0,
+          "placement_h": 0,
+          "placement_overflow": "hidden",
+          "placement_overflowX": "hidden",
+          "placement_overflowY": "hidden",
+          "graphic_x": 0,
+          "graphic_y": 0,
+          "graphic_w": 0,
+          "graphic_h": 0,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/centrifuge_new.svg",
+          "img_x": 0,
+          "img_y": 0,
+          "img_w": 0,
+          "img_h": 0,
+          "natural_w": 114,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 0
+            }
+          ],
+          "screenshot": "microscope_basic__instrument_main_microscope.png"
+        }
+      ]
+    },
+    {
+      "scene": "staining_bench",
+      "total_placements": 10,
+      "violations": [
+        {
+          "scene": "staining_bench",
+          "placement_name": "rear_left_coomassie_stain",
+          "object_name": "coomassie_stain_bottle",
+          "placement_x": 28,
+          "placement_y": 456,
+          "placement_w": 94.078125,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 28,
+          "graphic_y": 456,
+          "graphic_w": 94.078125,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/coomassie_stain_bottle_filled.svg",
+          "img_x": 32,
+          "img_y": 415.421875,
+          "img_w": 86.078125,
+          "img_h": 241.171875,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "staining_bench__rear_left_coomassie_stain.png"
+        },
+        {
+          "scene": "staining_bench",
+          "placement_name": "rear_center_destain",
+          "object_name": "destain_bottle",
+          "placement_x": 130.078125,
+          "placement_y": 456,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 130.078125,
+          "graphic_y": 456,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_bottle_filled.svg",
+          "img_x": 134.078125,
+          "img_y": 421.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "staining_bench__rear_center_destain.png"
+        },
+        {
+          "scene": "staining_bench",
+          "placement_name": "rear_right_ddh2o",
+          "object_name": "ddh2o_bottle",
+          "placement_x": 228.078125,
+          "placement_y": 456,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 228.078125,
+          "graphic_y": 456,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/ddh2o_bottle_filled.svg",
+          "img_x": 232.078125,
+          "img_y": 446.375,
+          "img_w": 82,
+          "img_h": 179.265625,
+          "natural_w": 69,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top"
+              ]
+            }
+          ],
+          "screenshot": "staining_bench__rear_right_ddh2o.png"
+        },
+        {
+          "scene": "staining_bench",
+          "placement_name": "rear_left_coomassie_recycle",
+          "object_name": "coomassie_recycle_bottle",
+          "placement_x": 326.078125,
+          "placement_y": 438,
+          "placement_w": 100,
+          "placement_h": 200,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 326.078125,
+          "graphic_y": 438,
+          "graphic_w": 100,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/coomassie_recycle_bottle_filled.svg",
+          "img_x": 330.078125,
+          "img_y": 389.125,
+          "img_w": 92,
+          "img_h": 257.765625,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "staining_bench__rear_left_coomassie_recycle.png"
+        },
+        {
+          "scene": "staining_bench",
+          "placement_name": "rear_center_destain_waste",
+          "object_name": "destain_waste_bottle",
+          "placement_x": 434.078125,
+          "placement_y": 456,
+          "placement_w": 90,
+          "placement_h": 182,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 434.078125,
+          "graphic_y": 456,
+          "graphic_w": 90,
+          "graphic_h": 160,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/destain_waste_bottle_filled.svg",
+          "img_x": 438.078125,
+          "img_y": 421.140625,
+          "img_w": 82,
+          "img_h": 229.734375,
+          "natural_w": 54,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "off-card",
+              "sides": [
+                "top",
+                "bottom"
+              ]
+            }
+          ],
+          "screenshot": "staining_bench__rear_center_destain_waste.png"
+        },
+        {
+          "scene": "staining_bench",
+          "placement_name": "center_kimwipe_pad",
+          "object_name": "kimwipe_pad",
+          "placement_x": 1802,
+          "placement_y": 426.96875,
+          "placement_w": 90,
+          "placement_h": 132,
+          "placement_overflow": "visible",
+          "placement_overflowX": "visible",
+          "placement_overflowY": "visible",
+          "graphic_x": 1802,
+          "graphic_y": 426.96875,
+          "graphic_w": 90,
+          "graphic_h": 110,
+          "img_tag": "IMG",
+          "img_src": "../../../assets/equipment/kimwipe_pad.svg",
+          "img_x": 1806,
+          "img_y": 440.96875,
+          "img_w": 82,
+          "img_h": 82,
+          "natural_w": 150,
+          "natural_h": 150,
+          "issues": [
+            {
+              "type": "too-small",
+              "area_pct": 29.9
+            }
+          ],
+          "screenshot": "staining_bench__center_kimwipe_pad.png"
+        }
+      ]
+    },
+    {
+      "scene": "well_plate_96_zoom",
+      "total_placements": 1,
+      "violations": []
+    }
+  ]
+}

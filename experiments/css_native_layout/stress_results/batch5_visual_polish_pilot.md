@@ -68,7 +68,7 @@ This means:
 }
 ```
 
-**Rationale**: 
+**Rationale**:
 - Dense scenes (gold_drug_dilution_workspace) have long equipment names (e.g., "microtube rack 24 placeholder", "dilution tube rack")
 - 100px width clips labels at typical word break points
 - +10px additional width allows slightly longer labels without wrapping as much
@@ -121,7 +121,7 @@ Both before and after rendered scenes were audited via:
 | gold_drug_dilution_workspace | 0 | 0 | 0 | no change (structural issues dominate) |
 | gold_hood_prep | 0 | 0 | 0 | no change (structural issues dominate) |
 
-**Interpretation**: 
+**Interpretation**:
 - CSS tweaks (label width, color, gap) do NOT affect the scoring metrics
 - Scoring is based on object placement bboxes, aspect ratios, primary object area ratios - not CSS styling
 - Visual improvements (label readability, spacing) are real but not quantified by the scorecard

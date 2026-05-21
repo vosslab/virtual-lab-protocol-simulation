@@ -1,0 +1,52 @@
+/*
+NEW3 Batch 2 Workstream F - Label Policy 5: numbered objects with legend.
+
+CSS counter-reset on the scene-container, counter-increment per placement,
+::before injects "[N]" as the visible label. The original label text is
+hidden visually but kept in the accessibility tree so screen readers still
+hear the object name. A legend would normally be rendered alongside; under
+the CSS-only constraint, the region-label slot is repurposed to read
+"Legend: 1=first object, 2=second object, ..." but generating per-scene
+legend text requires DOM injection, which is out of scope. The visible
+numbering still validates the spatial density gain without legend text.
+
+Accessibility: the label text node is preserved (clip pattern). Screen
+readers continue to announce the full object name. Sighted users see the
+numeric badge. A DOM-aware follow-up should inject a legend region.
+*/
+
+.scene-container {
+	counter-reset: placement-counter;
+}
+
+.placement {
+	counter-increment: placement-counter;
+	position: relative;
+}
+
+.placement-label {
+	font-size: 0;
+	line-height: 0;
+	color: transparent;
+}
+
+.placement-label::before {
+	content: "[" counter(placement-counter) "]";
+	font-size: 14px;
+	line-height: 1.2;
+	color: var(--color-text);
+	font-weight: 600;
+	display: inline-block;
+}
+
+/* Repurpose region-label as a static "Legend" hint (no per-scene content). */
+.region-label {
+	display: block;
+	font-size: 10px;
+	color: rgba(90, 108, 125, 0.6);
+}
+
+.region-label::after {
+	content: " (numbered)";
+	font-style: italic;
+}

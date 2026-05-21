@@ -1,0 +1,20 @@
+/*
+NEW3 Batch 2 Workstream F - Label Policy 4: abbreviated labels.
+
+Truncate label text to ~12 chars with ellipsis. CSS-only: no DOM rewrite.
+We constrain max-width to ~75px and clip the overflow. Full text remains
+in the accessibility tree.
+
+Accessibility: text-overflow:ellipsis only changes the visual presentation
+of the text node; assistive tech still reads the full label content. The
+placement still carries data-object-name as a secondary affordance.
+*/
+
+.placement-label {
+	display: inline-block;
+	max-width: 75px;
+	width: 75px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}

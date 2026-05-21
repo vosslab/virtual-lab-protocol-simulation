@@ -24,5 +24,5 @@ npm run build
 
 echo "Setup complete."
 echo "  npm run serve - start the dev server"
-echo "  npm run check - type-check, lint, format-check, and test"
+echo "  npm run check - full gate (typecheck, lint, format-check, tests, build); pass --fast to skip build"
 echo "  ./devel/setup_playwright.sh - install Playwright browsers, optional"

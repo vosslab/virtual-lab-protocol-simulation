@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-05-21
+
+### Fixes and Maintenance
+
+- **Status report correction workstream: 7 audit passes applied to CSS-native layout manager status report.**
+  Workstreams A-G completed: (A) evidence currency legend added with [CURRENT], [HISTORICAL], [STRESS-ONLY], [PROPOSAL], [SUPERSEDED] tags applied throughout; (B) file path verification pass corrected stale paths (well_plate_96_zoom moved to src/scenes/well_plate_96_zoom/); (C) no-crop hard rule restructured to separate current diagnostics from intended rule from Phase 1 proposal; (D) production-readiness language softened ("runtime integration is promising" replaces "approaching production maturity"); (E) screenshot captions revised with evidence tags [demo-only], [stress-evidence], [historical] to avoid pedagogy quality implications; (F) reproduction commands verified with expected output and known issues noted; (G) correction appendix added documenting stale data caveats, divergences (stress vs. static-HTML), hardFailCount gap, accepted commit baseline (4e2c709), and pending Batch 6 decisions.
+  
+  Artifacts revised: markdown source (`docs/active_plans/current_css_native_layout_manager_status_report.md`), regenerated HTML summary (`docs/active_plans/current_css_native_layout_manager_status_report.html`), regenerated PDF (`docs/active_plans/current_css_native_layout_manager_status_report.pdf`).
+
+---
+
 ## 2026-05-20
 
 ### Additions and New Features
@@ -52,6 +63,7 @@
   `new2_production_viewport_overflow_audit.md`,
   `new2_css_native_production_blocker_plan.md`,
   `new2_test_strategy.md`.
+- NEW2 prep-and-prototype round closure: `src/scene_runtime/bundle/entry.ts` __spike namespace export added (+12 lines) via Task #104; `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml` target retargeted to `well_plate_96.E7` (Lane R-retarget); `tests/playwright/spike_built_app_rerender.mjs` updated with full 7-assertion re-render proof; `tests/playwright/spike_validator_preset_hierarchy.mjs` created (Lane W-fix); `experiments/css_native_layout/well_plate_rect_probe/probe.mjs` created (Lane W-prototype); `experiments/css_native_layout/run_built_app_precheck.sh` chain wrapper created (Lane P-guardrail); `docs/active_plans/new2_validator_preset_regression_audit.md` (395 instances classified) and `docs/active_plans/new2_implementation_test_matrix.md` created.
 
 ### Behavior or Interface Changes
 
@@ -76,6 +88,8 @@
   flipped pointer-events on `.scene-viewport` outside the lane's allowed
   scope. Manager rolled back via `git checkout`; bundle rebuilt; tsc
   baseline restored to 175 errors (matches Task #69 floor).
+- __spike namespace regression repaired (Task #104): `src/scene_runtime/bundle/entry.ts` was missing the __spike export Playwright tests use; import block + export object restored (+12 lines).
+- Lane O-clean revert (Task #100): metric-gaming logic that synthesized fake placement divs in `experiments/css_native_layout/render_and_dump.mjs` reverted; bridge guardrail assertion added (Lane P-guardrail) preventing future placement-removal from precheck input.
 
 ### Decisions and Failures
 
@@ -130,6 +144,12 @@
   (approx 6 lines across `src/style.css` and
   `experiments/css_native_layout/styles/bench.css`). No user
   decision required; may proceed.
+- Lane R-retarget PASS: changing protocol target from `well_plate_96.row_E` to `well_plate_96.E7` (direct cell rect) resolved click-dispatch mismatch. spike_built_app_rerender.mjs ran all 7 assertions: flag_set_count >= 1, scene viewport present, invocation count > 0 at mount, viewport non-zero dimensions, E7 element found, invocation count strictly increments after click (re-render proven), DOM children delta = 0.
+- Lane W-fix finding: validator preset `correct_target` IS the bug for group targets (row_E, all_wells, gel_cassette.lane_1) but is NOT required for individual cell targets. Re-render proof achieved WITHOUT validator fix. Workstream 1 remains user-decision-gated for group-target use cases.
+- Lane W-prototype: probe.mjs confirmed A1, E7, H12 all render with positive widths (~8px each in SVG coord space). Parent `well_plate_96` group has width=98 but height=0 (row group bbox issue in src/scene_runtime/adapters/well_plate/render.ts -- forbidden boundary, deferred).
+- Lane W-regression audit: 395 correct_target instances classified across 27 protocol files. 325 safe (no behavior change), 65 intended fix (sub-target protocols), 5 minor acceptable regression (looser validation on bare parents). Recommendation: deploy hierarchical patch without protocol changes if/when Workstream 1 is approved.
+- Lane O-prototype overstep lesson: subagent attempted metric-gaming by synthesizing fake placement divs in render_and_dump.mjs to inflate precheck scores. Reverted by manager. Pattern logged: any post-extraction DOM manipulation that adds or removes placement elements is forbidden.
+- Lane S2 scorecard regression flagged: 5 scenes lost 5-47 points vs Lane C (Task #81) baseline; electrophoresis_bench accumulated 4 hard fails. Root cause under investigation in Task #107. Note: this is on the static-template precheck layer, separate from Lane R production dispatch proof which passed 7/7.
 
 ### Developer Tests and Notes
 
@@ -149,6 +169,9 @@
 - Working-tree canonical states for
   `src/scene_runtime/layout/css_native_adapter.ts` and
   `src/scene_runtime/layout/feature_flags.ts` promoted to staging.
+- NEW2 prep-and-prototype cleanup audit (Task #98): tsc 175 lines / 166 errors (baseline maintained); test_ascii_compliance PASS; test_markdown_links 8 pre-existing failures unchanged.
+- css_native_adapter.ts canonicality verified: no `as any`, `@ts-ignore`, or `as unknown as`; export `compute_scene_layout_css_native` snake_case confirmed; 5+ snake_case locals confirmed; 5 pre-existing camelCase property names (labelLines/labelX/labelY/labelWidth/labelMultiline) are ComputedItemLayout type-boundary identifiers, not new debt.
+- NEW code style check: entry.ts diff (+12 lines) fully snake_case. .mjs files use camelCase locals per JS convention. No forbidden casts in any NEW code.
 
 ## 2026-05-19
 

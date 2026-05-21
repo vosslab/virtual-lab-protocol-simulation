@@ -1,0 +1,38 @@
+/*
+NEW3 Batch 2 Workstream F - Label Policy 6: region-level group labels.
+
+Hide every individual .placement-label. Show the .region-label (which the
+canonical bench.css hides via display:none) so each zone advertises its
+group name ("Rear Shelf", "Work Surface", "Front Tools", etc.) instead
+of labelling each placement.
+
+Accessibility: per-placement labels are kept in the accessibility tree
+via the visually-hidden clip pattern. Screen readers still announce the
+specific object name on focus; sighted users see only the region heading.
+The region label is decorative-but-discoverable text, not a substitute
+for per-object semantics.
+*/
+
+.placement-label {
+	position: absolute;
+	width: 1px;
+	height: 1px;
+	padding: 0;
+	margin: -1px;
+	overflow: hidden;
+	clip: rect(0, 0, 0, 0);
+	white-space: nowrap;
+	border: 0;
+}
+
+.region-label {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	color: rgba(90, 108, 125, 0.85);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 6px;
+	width: 100%;
+	padding-left: 4px;
+}

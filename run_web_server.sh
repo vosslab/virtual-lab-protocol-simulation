@@ -1,35 +1,24 @@
-#!/bin/bash
-# run_web_server.sh - Build the bundled game and serve it on the local network.
-# Usage: bash run_web_server.sh
+#!/usr/bin/env bash
+# run_web_server.sh - local dev preview for the GitHub Pages build.
 #
-# This serves the canonical dist/ build produced by build_github_pages.sh.
-# For a portable single-file artifact, run export_single_file.sh instead;
-# its output lands in dist-single/ and is not served here.
+# Always serves dist/ (the GitHub Pages artifact). Never serves the
+# repo root or _site/.
 
-set -e
-
-REPO_ROOT="$(git rev-parse --show-toplevel)"
-cd "$REPO_ROOT"
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
 
 if [ ! -d node_modules ]; then
 	echo "node_modules missing. Run 'npm install' first." >&2
 	exit 1
 fi
 
-# Rebuild the canonical GitHub Pages artifact into dist/.
+# Random port per session: each port is its own browser origin, so the
+# cache is effectively invalidated every run. PORT env var overrides.
+PORT="${PORT:-$((8000 + RANDOM % 1000))}"
+
 ./build_github_pages.sh
 
-# Detect the local IP address for the LAN URL
-LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || hostname -I 2>/dev/null | awk '{print $1}')
-PORT="${PORT:-5080}"
-
-echo ""
-echo "========================================"
-echo "  Send this link to others on your network:"
-echo "  http://${LOCAL_IP}:${PORT}"
-echo "========================================"
-echo ""
-
-# Open the browser, then start the static server bound to all interfaces.
-sleep 1 && open "http://127.0.0.1:${PORT}" &
-python3 -m http.server "${PORT}" --bind 0.0.0.0 --directory dist
+if command -v open >/dev/null 2>&1 && [ -t 0 ]; then
+	(sleep 1 && open "http://localhost:${PORT}/") &
+fi
+python3 -m http.server "${PORT}" --directory dist

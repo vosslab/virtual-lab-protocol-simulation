@@ -4,8 +4,9 @@ Language Model guide to Neil TypeScript programming
 
 ## TypeScript version
 
-* I like using a recent stable version of TypeScript, but not the absolute newest on day one.
-* Prefer modern TypeScript with strict type checking enabled.
+* Require `5.x` (latest stable, loose-pinned via devDependencies; no version lock-in beyond floor `>=9` for ESLint).
+* Required strict flags: `strict: true`, `noImplicitAny: true`, `noUncheckedIndexedAccess: true`, `target: es2020`, `module: esnext`, `moduleResolution: bundler`.
+* Point at canonical `tsconfig.json` at repo root (propagated from `templates/typescript/tsconfig.json`).
 
 ## FILENAMES
 * Prefer snake_case for TypeScript filenames.
@@ -26,7 +27,7 @@ Language Model guide to Neil TypeScript programming
 * Avoid broad `try/catch` blocks when possible. I find they often hide bugs.
 * Use `try/catch` rarely, and keep the scope small.
 * Throw `Error` objects rather than returning silent failure values.
-* Apply "fix the design, not the symptom" here too: do not paper over a misbehaving caller with a swallowed error or a silent default. See [Design philosophy](REPO_STYLE.md#core-philosophies).
+* Apply "fix the design, not the symptom" here too: do not paper over a misbehaving caller with a swallowed error or a silent default. See [Design philosophy](../../../docs/REPO_STYLE.md#core-philosophies).
 * Return statements should be simple and should not build large objects or long strings inline. Store computed values first, then return the variable.
 * Add comments within the code to describe what different lines are doing, especially for complex lines.
 * Please only use ASCII characters in the script. If special characters are needed in output, escape them when appropriate.
@@ -187,6 +188,7 @@ import { writeReport } from "./write_report";
 * For real projects, use a normal test framework and keep tests in a `tests/` folder.
 * Keep tests small and deterministic.
 * Avoid network calls, random behavior, and time-based logic unless mocked.
+* Browser tests live under `tests/playwright/` (see [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)). Pure Node unit tests via `node --test tests/test_*.mjs`. TS hygiene tests under `tests/test_typescript_*.py` enforce ESLint, tsc, package.json schema, tsconfig canonical fields, and ESLint flat-config presence.
 
 ## FORMATTERS AND LINTERS
 
@@ -195,12 +197,93 @@ import { writeReport } from "./write_report";
 * Do not fight Prettier on style choices. If Prettier formats it, that is the style.
 * ESLint rules should catch problems, not enforce cosmetic preferences that Prettier already handles.
 * Strict typing is preferred. Enable `noImplicitAny` and `strict` in `tsconfig.json`.
+* ESLint config lives at `eslint.config.js` at the repo root (canonical, propagated). Hygiene test `tests/test_typescript_eslint.py` enforces zero errors.
+
+### ESLint canonical rules
+
+Each enabled rule enforces a single class of error:
+
+- `@typescript-eslint/no-explicit-any: error` &mdash; `any` defeats type system.
+- `@typescript-eslint/no-unused-vars: error` &mdash; dead code rots.
+- `@typescript-eslint/explicit-function-return-type: warn` &mdash; exported function signatures are API.
+- `@typescript-eslint/no-floating-promises: error` &mdash; silent async errors.
+- `no-var: error` &mdash; function-scoping breaks expectations.
+- `prefer-const: error` &mdash; mutability should be deliberate.
+- `no-implicit-coercion: warn` &mdash; silent type coercion hides bugs.
+- `eqeqeq: error` &mdash; `==` coerces; use `===`.
+- `no-throw-literal: error` &mdash; stack traces require Error instances.
+- `no-console: warn` &mdash; production code should not log to console (user decision: warn only, do not fail builds).
+
+### tsconfig.json canonical fields
+
+| Field | Value | Why |
+| --- | --- | --- |
+| `target` | `es2020` | Widely-supported modern JavaScript (async/await, nullish coalescing, optional chaining). |
+| `module` | `esnext` | Native ESM, no transpilation to CJS. |
+| `moduleResolution` | `bundler` | Resolves as bundlers do (esbuild, webpack, parcel). |
+| `strict` | `true` | Enables all strict type checks. |
+| `noImplicitAny` | `true` | Explicit type annotations required. |
+| `noUncheckedIndexedAccess` | `true` | Accessing an array or object by index/key is `unknown` unless bounds-checked. |
+| `exactOptionalPropertyTypes` | `true` | `{ x?: string }` is not assignable to `{ x: string \| undefined }`. |
+| `noImplicitOverride` | `true` | Derived class methods must mark `override` keyword. |
+| `verbatimModuleSyntax` | `true` | Import/export syntax must match module kind exactly. |
+| `useUnknownInCatchVariables` | `true` | Caught exceptions are `unknown`, not `any`. |
+| `noEmit` | `true` | Type-check only; do not emit `.js` files. |
+| `skipLibCheck` | `true` | Skip type-checking declaration files (speed). |
+| `noFallthroughCasesInSwitch` | `true` | Every case must break or return. |
+| `noImplicitReturns` | `true` | All code paths must return a value. |
+| `noUnusedLocals` | `true` | Unused local variables are errors. |
+| `noUnusedParameters` | `true` | Unused function parameters are errors. |
+| `forceConsistentCasingInFileNames` | `true` | Import paths must match filesystem case exactly. |
+| `isolatedModules` | `true` | Files can be transpiled independently (no cross-file const enum). |
+| `esModuleInterop` | `true` | Interop helpers for CommonJS imports (rare; maintained for compat). |
+| `sourceMap` | `true` | Generate source maps for debugging. |
+| `lib` | `["dom", "dom.iterable", "esnext"]` | Browser APIs, DOM iteration, ESM features. |
+
+## BUILD SYSTEM
+
+Use `npx tsc --noEmit -p tsconfig.json` to type-check, and `npx esbuild <entry>.ts --bundle --format=esm --target=es2020 --platform=browser --minify --sourcemap --outfile=dist/main.js` for runtime bundle.
+
+### Why this shape
+
+esbuild produces a single deterministic ESM bundle GitHub Pages serves without per-file MIME quirks. The alternative (repo-root `tsc -p tsconfig.json` emitting many `.js` files served alongside `index.html`) multiplies HTTP requests and produces inconsistent module-resolution across browsers.
+
+### Output convention
+
+Single `dist/main.js` + `dist/index.html` + `dist/.nojekyll`. GitHub Pages serves `dist/`. No `dist-single/` portable single-file variant in the canonical base.
+
+### Canonical scripts
+
+- `[build_github_pages.sh](../build_github_pages.sh)` (build esbuild bundle).
+- `[run_web_server.sh](../run_web_server.sh)` (serve `dist/` on random port).
+- `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, lint, format-check, tests, and build via npm scripts; pass `--fast` to skip the build step; Playwright is not part of this gate).
+- `[dist_clean.sh](../dist_clean.sh)` (wipe `dist/`).
+
+### Module system
+
+ESM only. No IIFE. No file:// loading path.
+
+### Lockfile policy
+
+`package-lock.json` committed in every TS consumer repo. Not propagated by `propagate_style_guides.py` (per-repo artifact, generated by `npm install` at bootstrap). `yarn.lock` and `pnpm-lock.yaml` not used.
 
 ## CONFIGURATION
 
 * The program should not require custom environment variables to function.
 * Configuration must be explicit and visible via config files or command line arguments.
 * Environment variables may be read only when they are standard OS or ecosystem variables, not variables invented to control program behavior.
+
+## Canonical repo shape
+
+This is the baseline TypeScript repository layout:
+
+- `src/main.ts` &mdash; entry point (legacy `src/init.ts` accepted via fallback in `build_github_pages.sh`).
+- `src/index.html` &mdash; HTML host with `<script type="module" src="main.js">`.
+- `src/style.css` &mdash; stylesheet copied verbatim into `dist/`.
+- `dist/` &mdash; only build output (canonical GitHub Pages artifact).
+- `tests/test_smoke.mjs` &mdash; ships from template; keeps `node --test` green on a freshly-bootstrapped repo until real tests exist.
+
+This is the canonical floor, not a ceiling. Per-repo additions (extra `src/*.ts` modules, `tests/test_*.mjs`, `tests/playwright/*.spec.ts`) are expected and not constrained.
 
 ## ARGUMENT PARSING
 

@@ -1,0 +1,29 @@
+/*
+NEW3 Batch 2 Workstream F - Label Policy 3: hover/focus reveal.
+
+Labels default-hidden but reveal on :hover or :focus-within (matches Lane O2
+pattern). Hidden via opacity + pointer-events so the label can animate in
+and remain in the accessibility tree.
+
+Accessibility: Lane O2 finding requires that the label text remain
+addressable by assistive tech even when not visible. We use opacity:0
+(not display:none, not visibility:hidden) so screen readers and the
+keyboard focus path still see the label. Hover reveal is supplementary;
+the label is the accessible name.
+*/
+
+.placement-label {
+	opacity: 0;
+	transition: opacity 120ms ease-out;
+	pointer-events: none;
+}
+
+.placement:hover .placement-label,
+.placement:focus-within .placement-label {
+	opacity: 1;
+}
+
+/* Keyboard-focus on the placement itself shows the label too. */
+.placement:focus .placement-label {
+	opacity: 1;
+}

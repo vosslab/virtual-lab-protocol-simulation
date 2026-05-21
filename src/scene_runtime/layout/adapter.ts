@@ -11,6 +11,8 @@
 import type { RuntimeWorld, ResolvedSceneConfig, ObjectConfig, PlacementConfig } from '../types';
 import { computeSceneLayout as legacyComputeLayout } from './layout_engine';
 import type { SceneItem, AssetSpec, SceneLayoutRules, ZoneDef, ComputedItemLayout } from './types';
+import { is_css_native_well_plate_zoom_spike_enabled } from './feature_flags';
+import { compute_scene_layout_css_native } from './css_native_adapter';
 
 /**
  * Default label styling when layout_rules does not specify.
@@ -38,6 +40,13 @@ export function computeSceneLayout(
 	const scene = world.scenes[sceneId];
 	if (!scene) {
 		throw new Error(`computeSceneLayout: scene '${sceneId}' not found in world.scenes`);
+	}
+
+	// NEW1 spike: gate to CSS-native adapter for well_plate_96_zoom_check_scene only.
+	// Default false. Returns ComputedItemLayout[] in the legacy shape.
+	// See docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md.
+	if (sceneId === 'well_plate_96_zoom_check_scene' && is_css_native_well_plate_zoom_spike_enabled()) {
+		return compute_scene_layout_css_native(world, sceneId, viewportW, viewportH);
 	}
 
 	// Build SceneItem[] from placements + object specs

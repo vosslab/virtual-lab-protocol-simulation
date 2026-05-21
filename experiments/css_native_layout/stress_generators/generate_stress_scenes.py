@@ -23,7 +23,6 @@ Reproducible: each scene is seeded by its scene index.
 
 # Standard Library
 import os
-import sys
 import random
 import argparse
 

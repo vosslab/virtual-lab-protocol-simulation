@@ -95,6 +95,8 @@ The walker, validator, and runtime dispatch from the step and interaction struct
 
 A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object. Targets that fan out to several scene objects are listed explicitly by subpart (for example `treatment_plate.A1`, `treatment_plate.A2`); the vocabulary has no named-group construct. See [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) for the scene side of this boundary.
 
+- Scientific SVG assets must never be cropped or aspect-distorted in display. See [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) and [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md).
+
 ## Events
 
 Events are emitted by the runtime on a state transition, not hand-authored per step. The runtime emits a `<step_name>_complete` event when a step's `step_validator` passes, and a `<equipment_name>_elapsed` event when a timed phase ends. Event names are snake_case and derived from the `step_name` or equipment name of the thing they report; an author who renames a step renames its completion event with it.

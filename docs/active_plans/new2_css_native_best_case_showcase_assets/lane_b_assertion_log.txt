@@ -25,7 +25,7 @@ Method 1 (Playwright mouse.click): sent
 Method 2 failed: locator.click: Timeout 30000ms exceeded.
 Call log:
 [2m  - waiting for locator('[data-testid="scene-viewport"]')[22m
-[2m    60 × locator resolved to <div class="scene-viewport" data-testid="scene-viewport">…</div>[22m
+[2m    60 x locator resolved to <div class="scene-viewport" data-testid="scene-viewport">...</div>[22m
 [2m     - attempting click action[22m
 [2m       - waiting for element to be visible, enabled and stable[22m
 [2m       - element is visible, enabled and stable[22m

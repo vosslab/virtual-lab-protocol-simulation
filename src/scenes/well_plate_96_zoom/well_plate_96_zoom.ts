@@ -20,32 +20,34 @@ import { registeredEmitters } from "../../game_state";
 registeredEmitters.add('zoom_complete');
 
 //============================================
-// dispatchWellPlate96ZoomInteraction - No-op dispatch
+// dispatch_well_plate_96_zoom_interaction - No-op dispatch
 //
 // Spike scene has no item-driven interactions. All rendering is handled by
 // the css_native_adapter gate in the layout engine (src/scene_runtime/layout/adapter.ts).
 //============================================
-function dispatchWellPlate96ZoomInteraction(_itemId: string, _ctx: SceneContext): void {
+function dispatch_well_plate_96_zoom_interaction(_itemId: string, _ctx: SceneContext): void {
 	// Well plate 96 zoom is a spike render-only scene with no item-zone interactions.
 	// Rendering is delegated to css_native_adapter via layout engine gate.
 	// This method is a no-op.
 }
 
 //============================================
-// renderWellPlate96Zoom - No-op render (delegated to layout engine)
+// render_well_plate_96_zoom - No-op render (delegated to layout engine)
 //
 // Rendering is handled by the layout engine's css_native_adapter path
 // via adapter.ts line 48 gate. This function is a pass-through.
 //============================================
-function renderWellPlate96Zoom(_ctx: SceneContext): void {
+function render_well_plate_96_zoom(_ctx: SceneContext): void {
 	// Rendering is delegated to layout engine css_native_adapter.
 	// No additional scene-specific render needed for spike.
 }
 
+// Property names sceneId, dispatchInteraction, and render are required by the
+// SceneAdapter interface in scene_registry.ts and cannot be renamed here.
 const well_plate_96_zoom_adapter = {
 	sceneId: 'well_plate_96_zoom_check_scene',
-	dispatchInteraction: dispatchWellPlate96ZoomInteraction,
-	render: renderWellPlate96Zoom,
+	dispatchInteraction: dispatch_well_plate_96_zoom_interaction,
+	render: render_well_plate_96_zoom,
 };
 
 //============================================

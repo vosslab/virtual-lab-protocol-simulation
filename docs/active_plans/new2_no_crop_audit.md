@@ -4,9 +4,9 @@ Generated: 2026-05-20T21:51:15.807Z
 
 This audit enforces the hard rule that visible SVG assets must never be cropped or aspect-distorted. It runs Playwright against each canonical scene template and measures, per placement, the natural SVG intrinsic size vs. the rendered bounding box and the rendered bounding box vs. the placement card. Three failure types are reported: `off-card` / `cropped` (artwork bbox extends beyond placement bbox), `distorted` (rendered aspect ratio deviates >10% from natural), and `too-small` (rendered area <30% of natural).
 
-Script: [experiments/css_native_layout/no_crop_audit/inspect.mjs](../../experiments/css_native_layout/no_crop_audit/inspect.mjs)
+Script: [../../experiments/css_native_layout/no_crop_audit/inspect.mjs](../../experiments/css_native_layout/no_crop_audit/inspect.mjs)
 
-Source data: [experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json](../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json)
+Source data: [../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json](../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json)
 
 Annotated screenshots: `docs/active_plans/new2_no_crop_audit_assets/`
 

@@ -84,9 +84,7 @@ kind_to_footprint:
     - gel_tank
     - electrophoresis_tank
     - power_supply
-    - well_plate_96
-    - tube_rack_24
-    - tube_rack_15ml
+    - cell_counter
   equipment_small:
     - vortex
     - water_bath
@@ -100,7 +98,6 @@ kind_to_footprint:
     - gel_opening_tool
     - lightbox
     - microwave
-    - cell_counter
     - hemocytometer_slide
 
 exposed_regions:

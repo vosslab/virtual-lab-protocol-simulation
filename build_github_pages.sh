@@ -3,61 +3,75 @@
 #
 # Contract:
 #   - Wipes dist/ from scratch.
-#   - Type-checks via `tsc --noEmit` (src/tsconfig.json keeps noEmit: true).
-#   - Bundles src/init.ts into dist/main.js with esbuild.
-#   - Assembles dist/index.html from src/head.html + body.html + tail.html,
-#     inserting the stylesheet link in the head and the script tag before
-#     </body>. This preserves the DOM scaffolding the legacy concat build
-#     used.
-#   - Copies src/style.css into dist/.
-#   - Creates dist/.nojekyll so GitHub Pages serves files starting with _.
-#   - Asserts dist/index.html exists before exiting.
+#   - Type-checks via 'tsc --noEmit -p tsconfig.json'.
+#   - Resolves the entry: src/main.ts preferred, src/init.ts legacy fallback.
+#     Aborts with an actionable error if neither exists.
+#   - Verifies src/index.html and src/style.css exist before copying;
+#     aborts with an actionable error if missing.
+#   - Verifies src/index.html references dist/main.js with a module script
+#     tag (warns if missing -- the page will load but main.js is dead).
+#   - Bundles the entry into dist/main.js with esbuild (ESM, es2020,
+#     browser, minified, with sourcemap).
+#   - Copies src/index.html and src/style.css into dist/.
+#   - Writes dist/.nojekyll so GitHub Pages serves files starting with _.
+#   - Asserts dist/index.html and dist/main.js exist before exiting.
 #
-# Hard rule: this script must NOT produce single-file output. GitHub Pages
-# output and portable export are different artifacts. For a portable
-# one-file HTML build, use export_single_file.sh (output goes to
-# dist-single/, never to dist/).
+# Hard rule: never produces single-file output. ESM only.
 
 set -euo pipefail
-
 cd "$(git rev-parse --show-toplevel)"
+
+# Resolve entry point.
+if [ -f "src/main.ts" ]; then
+	ENTRY="src/main.ts"
+elif [ -f "src/init.ts" ]; then
+	ENTRY="src/init.ts"
+	echo "WARNING: using legacy src/init.ts. Rename to src/main.ts." >&2
+else
+	echo "ERROR: no entry point. Create src/main.ts (preferred) or src/init.ts." >&2
+	exit 1
+fi
+
+# Verify required static assets before any destructive step.
+for required in src/index.html src/style.css; do
+	if [ ! -f "$required" ]; then
+		echo "ERROR: required source file missing: $required" >&2
+		case "$required" in
+			src/index.html)
+				echo "  Create src/index.html with a <script type=\"module\" src=\"main.js\"></script> tag." >&2 ;;
+			src/style.css)
+				echo "  Create src/style.css (empty file is fine)." >&2 ;;
+		esac
+		exit 1
+	fi
+done
+
+# Soft-warn if index.html does not reference main.js as an ES module.
+if ! grep -Eq '<script[^>]+type="module"[^>]+src="(\./)?main\.js"' src/index.html; then
+	echo "WARNING: src/index.html does not appear to load main.js as an ES module." >&2
+	echo "  Expected tag: <script type=\"module\" src=\"main.js\"></script>" >&2
+	echo "  Build will proceed; the page may render but main.js will not run." >&2
+fi
 
 rm -rf dist
 mkdir -p dist
 
-# Bootstrap all YAML-emitted generated TS families: protocol_data.ts,
-# inventory_data.ts, scene_data.ts, and SVG manifest. The script is idempotent
-# and handles validation ordering (protocol first as a fast gate).
-bash pipeline/bootstrap_generated.sh
+npx tsc --noEmit -p tsconfig.json
 
-npx tsc --noEmit -p src/tsconfig.json
-
-npx esbuild src/init.ts \
+npx esbuild "$ENTRY" \
 	--bundle \
 	--format=esm \
 	--target=es2020 \
 	--platform=browser \
+	--minify \
+	--sourcemap \
 	--outfile=dist/main.js
 
+cp src/index.html dist/index.html
 cp src/style.css dist/style.css
-
-# Assemble dist/index.html from src/head.html + body.html + tail.html so
-# the bundled build inherits the legacy DOM scaffolding. Inject the stylesheet
-# link in <head> (head.html is missing its closing </head>) and the module
-# script tag before </body>.
-{
-	cat src/head.html
-	echo '<link rel="stylesheet" href="./style.css">'
-	echo '</head>'
-	# body.html already begins with <body> and ends with the closing </div>
-	# of #game-container; it does NOT include </body> -- tail.html does.
-	cat src/body.html
-	echo '<script type="module" src="./main.js"></script>'
-	cat src/tail.html
-} > dist/index.html
-
 touch dist/.nojekyll
 
 test -f dist/index.html
+test -f dist/main.js
 
 echo "Built dist/ (GitHub Pages-ready)."

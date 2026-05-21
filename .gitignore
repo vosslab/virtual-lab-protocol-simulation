@@ -64,6 +64,12 @@ experiments/css_native_layout/stress_generators/*
 !experiments/css_native_layout/stress_results/
 experiments/css_native_layout/stress_results/*
 !experiments/css_native_layout/stress_results/*.md
+!experiments/css_native_layout/showcase/
+!experiments/css_native_layout/showcase/**/*.html
+!experiments/css_native_layout/showcase/**/*.json
+!experiments/css_native_layout/no_crop_audit/
+!experiments/css_native_layout/no_crop_audit/*.mjs
+!experiments/css_native_layout/no_crop_audit/*.json
 tools/svg_picker/*.json
 manual*.md
 output_manuals/
@@ -112,3 +118,5 @@ blob-report/
 coverage/
 meta.json
 stats.html
+
+

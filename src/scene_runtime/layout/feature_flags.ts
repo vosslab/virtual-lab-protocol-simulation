@@ -29,6 +29,7 @@ export function is_css_native_well_plate_zoom_spike_enabled(): boolean {
 	return CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE_DEFAULT;
 }
 
+/** Test-only. Never call from production code. Overrides the compile-time default for the spike flag. Pass null to clear the override. */
 export function set_css_native_well_plate_zoom_spike_enabled_for_test(
 	value: boolean | null,
 ): void {

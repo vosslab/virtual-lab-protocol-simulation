@@ -15,6 +15,7 @@
 
 import type { RuntimeWorld, ResolvedSceneConfig, PlacementConfig } from '../types';
 import type { ComputedItemLayout } from './types';
+import { increment_css_native_invocation_count } from './feature_flags';
 
 /**
  * Default five-region vocabulary for scene layout.
@@ -145,7 +146,12 @@ export function compute_scene_layout_css_native(
 
 		// Compute label text: use object label from world.objects, never placement label
 		const object_spec = world.objects[placement.object_name];
-		const object_label = object_spec?.label ?? '';
+		if (!object_spec) {
+			throw new Error(
+				`compute_scene_layout_css_native: object '${placement.object_name}' not found in world.objects`
+			);
+		}
+		const object_label = object_spec.label ?? '';
 
 		// Compute raw pixel coordinates relative to scaffold
 		const pixel_x = Math.round(rect.left - scaffold_rect.left);
@@ -197,6 +203,9 @@ export function compute_scene_layout_css_native(
 	//============================================
 	// OUTPUT: ComputedItemLayout[] with integer-pixel rects
 	//============================================
+
+	// Increment spike invocation counter for Playwright tests
+	increment_css_native_invocation_count();
 
 	return layouts;
 }

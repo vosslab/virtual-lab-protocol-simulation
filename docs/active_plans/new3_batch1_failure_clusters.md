@@ -56,11 +56,11 @@ to stay honest.
   account for 544 of 631 clip incidents.
 - **Representative scenes**:
   - `stress_many_bottles_scene_002` (17 bottle placements, all clipped 19px
-    bottom): [test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png](../../test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png)
+    bottom): `test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png`
   - `stress_dense_clutter_010` (13 bottom-clip incidents):
-    [test-results/new3_stress_batch1/audit/stress_dense_clutter_010.png](../../test-results/new3_stress_batch1/audit/stress_dense_clutter_010.png)
+    `test-results/new3_stress_batch1/audit/stress_dense_clutter_010.png`
   - `gold_heat_block_sample_prep` (11 bottom-clip incidents):
-    [test-results/new3_stress_batch1/audit/gold_heat_block_sample_prep.png](../../test-results/new3_stress_batch1/audit/gold_heat_block_sample_prep.png)
+    `test-results/new3_stress_batch1/audit/gold_heat_block_sample_prep.png`
 - **Likely root cause**: the placement card geometry is 220 wide x 207 tall,
   but `img` renders at 220 x 240 because `.object-graphic img` uses
   `width:auto; height:auto; max-width:100%; max-height:100%; object-fit:contain`
@@ -186,9 +186,9 @@ to stay honest.
   scroll_height 649, overflow_h 417.
 - **Representative scenes**:
   - `stress_many_bottles_scene_002` (17 bottles into a 232px shelf):
-    [test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png](../../test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png)
+    `test-results/new3_stress_batch1/audit/stress_many_bottles_scene_002.png`
   - `stress_many_bottles_scene_001` (16 bottles, same pattern):
-    [test-results/new3_stress_batch1/audit/stress_many_bottles_scene_001.png](../../test-results/new3_stress_batch1/audit/stress_many_bottles_scene_001.png)
+    `test-results/new3_stress_batch1/audit/stress_many_bottles_scene_001.png`
 - **Likely root cause**: the generator emits more bottles than the region can
   hold; the region wraps onto multiple rows and the rows overflow vertically.
   This is generator over-stuff, not a CSS bug.
@@ -203,7 +203,7 @@ to stay honest.
   placements consistently clip top+bottom in zoom layouts.
 - **Representative scenes**:
   - `stress_zoom_detail_001` (microscope top 52 + bottom 112 clip):
-    [test-results/new3_stress_batch1/audit/stress_zoom_detail_001.png](../../test-results/new3_stress_batch1/audit/stress_zoom_detail_001.png)
+    `test-results/new3_stress_batch1/audit/stress_zoom_detail_001.png`
   - `stress_zoom_detail_004` (same): same path
   - `gold_well_plate_96_zoom_with_state`: same path
 - **Likely root cause**: zoom_detail layout uses a tight card that targets a
@@ -222,7 +222,7 @@ to stay honest.
   scene, so the absolute incident count is small.
 - **Representative scenes**:
   - `stress_template_007` (2 CBP, well_plate + pbs_bottle):
-    [test-results/new3_stress_batch1/audit/stress_template_007.png](../../test-results/new3_stress_batch1/audit/stress_template_007.png)
+    `test-results/new3_stress_batch1/audit/stress_template_007.png`
   - `stress_template_014` (2 CBP, plate_reader + ethanol_bottle): same path
   - `stress_template_019`: same path
 - **Likely root cause**: same C1/C2 root cause; the template scenes are not

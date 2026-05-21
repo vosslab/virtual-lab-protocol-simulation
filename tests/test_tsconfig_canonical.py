@@ -559,9 +559,8 @@ def test_tsconfig_lib_includes_es2020_and_dom() -> None:
 
 	compiler_opts = data.get("compilerOptions", {})
 	lib_list = compiler_opts.get("lib", [])
-	expected_libs = {"es2020", "dom"}
+	expected_libs = {"es2020", "dom", "dom.iterable"}
 	actual_libs = set(lib_list)
 
-	if not expected_libs.issubset(actual_libs):
-		missing = expected_libs - actual_libs
-		raise AssertionError(f"lib must include {expected_libs}, missing: {missing}; got: {actual_libs}")
+	if actual_libs != expected_libs:
+		raise AssertionError(f"lib must be {expected_libs}, got: {actual_libs}")

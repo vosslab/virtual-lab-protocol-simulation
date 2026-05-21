@@ -43,6 +43,7 @@ import "./scenes/cell_culture_hood/cell_culture_hood";
 import "./scenes/incubator/incubator";
 import "./scenes/well_plate_workspace/well_plate_workspace";
 import "./scenes/plate_reader/plate_reader";
+import "./scenes/well_plate_96_zoom/well_plate_96_zoom";
 import "./scenes/microscope/microscope";
 
 const PROTOCOL_KIND_LABELS: Record<ProtocolSummary["kind"], string> = {

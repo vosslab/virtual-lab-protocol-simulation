@@ -24,6 +24,12 @@ import { renderFeedback } from '../chrome/feedback_area';
 import { mountSceneFrame } from '../chrome/scene_frame';
 import { setProtocolCatalog, setSceneCatalog, setObjectCatalog } from '../loader/index';
 import { loadWorld, getBaseObjectName, resolveSceneForTarget } from '../loader/world';
+import {
+	is_css_native_well_plate_zoom_spike_enabled,
+	set_css_native_well_plate_zoom_spike_enabled_for_test,
+	get_css_native_invocation_count,
+	reset_css_native_invocation_count,
+} from '../layout/feature_flags';
 
 /**
  * Type for runtime data passed from the HTML embedding code.
@@ -815,3 +821,16 @@ export async function loadAndMountByProtocolName(
 		throw err;
 	}
 }
+
+/**
+ * Spike-only namespace for CSS native well plate zoom feature flags.
+ * Provides test-only access to feature flag state and invocation counters.
+ * Production code must not call or reference `__spike`.
+ * Must be removed or replaced before production migration off the spike path (deferred per NEW2 plan).
+ */
+export const __spike = {
+	is_css_native_well_plate_zoom_spike_enabled,
+	set_css_native_well_plate_zoom_spike_enabled_for_test,
+	get_css_native_invocation_count,
+	reset_css_native_invocation_count,
+};

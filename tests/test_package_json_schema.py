@@ -38,6 +38,32 @@ def _read_marker() -> str:
 
 
 #============================================
+def test_package_json_required_keys() -> None:
+	"""
+	Ensure package.json has required top-level keys.
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	package_json_path = os.path.join(repo_root, "package.json")
+	if not os.path.exists(package_json_path):
+		pytest.fail("package.json missing in a typescript-typed repo")
+
+	with open(package_json_path, "r", encoding="utf-8") as handle:
+		data = json.load(handle)
+
+	required_keys = ["name", "type", "scripts", "devDependencies"]
+	for key in required_keys:
+		if key not in data:
+			raise AssertionError(f"package.json missing required key: {key}")
+
+
+#============================================
 def test_package_json_type_module() -> None:
 	"""
 	Ensure package.json has type set to "module".
@@ -97,3 +123,37 @@ def test_package_json_canonical_scripts() -> None:
 			raise AssertionError(f"package.json missing script: {script}")
 
 
+#============================================
+def test_package_json_canonical_devdeps() -> None:
+	"""
+	Ensure package.json has all canonical devDependencies.
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	package_json_path = os.path.join(repo_root, "package.json")
+	if not os.path.exists(package_json_path):
+		pytest.fail("package.json missing in a typescript-typed repo")
+
+	with open(package_json_path, "r", encoding="utf-8") as handle:
+		data = json.load(handle)
+
+	dev_deps = data.get("devDependencies", {})
+	canonical_deps = [
+		"eslint",
+		"@eslint/js",
+		"typescript-eslint",
+		"globals",
+		"typescript",
+		"esbuild",
+		"prettier",
+		"@playwright/test",
+	]
+	for dep in canonical_deps:
+		if dep not in dev_deps:
+			raise AssertionError(f"package.json missing devDependency: {dep}")

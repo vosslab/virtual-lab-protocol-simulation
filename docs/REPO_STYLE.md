@@ -19,6 +19,10 @@ Five principles guide work in this repo. Cite them by name when making judgment 
 - Keep `README.md` and `AGENTS.md` at the repo root.
 - Determine REPO_ROOT with `git rev-parse --show-toplevel`, not by deriving paths from the current working directory.
 
+## Project type marker
+
+Every repo carries `REPO_TYPE` at the repo root: one lowercase token plus newline. Tokens: `python`, `typescript`, `rust`, `other`. Missing marker triggers detection via `tools/detect_repo_type.py`; if detection is unavailable or ambiguous, falls back to `LANG_UNKNOWN`. Files gated by `ROUTING_OVERRIDES` (language- or `requires_repo_file`-tagged) do not ship to `LANG_UNKNOWN` repos; universal walker-routed files (`docs/`, `tests/`, `devel/`) still ship. The propagator (`propagate_style_guides.py` entry script + `propagate/` package: `repo.read_repo_type` reads the marker, `files.compute_propagation_plan` dispatches overlays) routes files by repo type; `reset_repo.py` writes the marker during bootstrap. `REPO_TYPE` is maintained after bootstrap; it controls future propagation behavior, not just initial scaffolding. Note: `other`-typed repos no longer receive `docs/PYTHON_STYLE.md`, as this historical exception was removed when `ROUTING_OVERRIDES` replaced the legacy language-file manifest.
+
 ## AGENTS.md files
 
 Keep `AGENTS.md` files concise and operational. They should usually be around
@@ -28,6 +32,23 @@ guidance. Put canonical explanations in the appropriate `docs/*.md` file, then
 link to that file from `AGENTS.md`.
 Concise `AGENTS.md` files help coding agents perform better because the
 instructions are easier to scan, prioritize, and follow.
+
+## README.md and GitHub About descriptions
+
+- The first paragraph of `README.md` is the source text for the GitHub About description.
+- The first paragraph must remain readable as raw Markdown source text.
+- Repository About descriptions must stay under 250 characters.
+- Agents edit only the first paragraph of `README.md`; the user copies that text into the GitHub About field.
+- Write a clear, searchable hook that helps readers quickly understand the repository.
+- Lead with the repository purpose and the main user benefit.
+- Include one distinguishing detail if space allows.
+- Prefer concrete nouns and plain language.
+- Leave workflow steps, setup instructions, framework lists, and detailed claims for the rest of `README.md`.
+- The first paragraph must be pure prose. Do not use badges, Markdown links, images, code spans, or raw URLs.
+- Avoid repeating information already obvious, do not include repo name.
+
+Preferred structure:
+`[What it is] + [who/use case] + [distinctive detail]`
 
 ## Naming
 - Use SCREAMING_SNAKE_CASE for Markdown docs filenames, with the .md extension
@@ -74,6 +95,7 @@ instructions are easier to scan, prioritize, and follow.
 - Categories are not required when they would be empty, but every changelog entry must belong to one category.
 - Changelog entries are never removed, but they may be rephrased for accuracy and clarity.
 - Legacy archives that use the older `CHANGELOG_ARCHIVE_NN.md` form must be renamed to the documented `CHANGELOG-YYYY-MM[a-z].md` form. The new name follows the most-recent-month-in-range rule above (use the most recent `## YYYY-MM-DD` heading inside the archive). Use `git mv` so history is preserved. Only one archive naming style should exist in the repo at any time.
+- Automation: [devel/rotate_changelog.py](../devel/rotate_changelog.py) enforces this rotation policy (keeps the two newest day blocks, archives the rest into `docs/CHANGELOG-YYYY-MM[a-z].md`, refuses to clobber boundary dates). [devel/query_changelog.py](../devel/query_changelog.py) searches the active changelog and archives by date range, category, keyword, or source. [devel/commit_changelog.py](../devel/commit_changelog.py) drafts the seed commit message from changelog entries dated at or after the last commit that touched `docs/CHANGELOG.md`. All three share [devel/changelog_lib.py](../devel/changelog_lib.py) (parser/serializer, git helpers, console + prompt helpers).
 
 ## Versioning
 - Prefer `pyproject.toml` as the single source of truth when the repo is a single Python package with a single `pyproject.toml`.
