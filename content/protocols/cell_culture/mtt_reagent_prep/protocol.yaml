@@ -27,6 +27,8 @@ steps:
           preset: correct_target
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: mtt_reagent_prep_bench_workspace
             - type: CursorAttach
               target: mtt_powder_container
               operation: attach

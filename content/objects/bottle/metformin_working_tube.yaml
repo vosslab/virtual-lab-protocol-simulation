@@ -21,11 +21,11 @@ visual_states:
     kind: svg
     cases:
       - when: empty
-        output: { asset_name: microtube_1ml }
+        output: { asset_name: microtube }
       - when: metformin
-        output: { asset_name: microtube_1ml }
+        output: { asset_name: microtube }
       - when: media
-        output: { asset_name: microtube_1ml }
+        output: { asset_name: microtube }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ul=1000)

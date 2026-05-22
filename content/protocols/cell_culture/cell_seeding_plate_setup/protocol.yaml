@@ -41,6 +41,8 @@ steps:
             set_volume: 2.4
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: seeding_workspace
             - type: ObjectStateChange
               target: serological_pipette
               state:

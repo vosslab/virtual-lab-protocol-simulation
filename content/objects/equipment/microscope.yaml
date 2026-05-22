@@ -29,9 +29,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: microscope_dark }
+        output: { asset_name: microscope }
       - when: true
-        output: { asset_name: microscope_lit }
+        output: { asset_name: microscope }
 
 capabilities: [clickable]
 

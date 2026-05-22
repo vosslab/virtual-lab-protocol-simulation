@@ -14,9 +14,9 @@ visual_states:
     kind: svg
     cases:
       - when: dirty
-        output: { asset_name: hood_surface_dirty }
+        output: { asset_name: glove_box }
       - when: ethanol_sprayed
-        output: { asset_name: hood_surface_clean }
+        output: { asset_name: glove_box }
 
 capabilities: [clickable]
 

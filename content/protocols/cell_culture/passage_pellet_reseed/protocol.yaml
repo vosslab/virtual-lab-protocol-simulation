@@ -44,6 +44,8 @@ steps:
           preset: correct_target
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: hood_workspace
             - type: CursorAttach
               target: t75_flask
               operation: attach

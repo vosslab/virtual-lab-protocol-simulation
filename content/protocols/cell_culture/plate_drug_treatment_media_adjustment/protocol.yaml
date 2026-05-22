@@ -35,7 +35,9 @@ steps:
         validator:
           preset: correct_target
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: plate_drug_treatment_media_adjustment_plate_workspace
       - target: multichannel_pipette
         gesture: adjust
         validator:

@@ -13,9 +13,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: vortex_idle }
+        output: { asset_name: vortex }
       - when: true
-        output: { asset_name: vortex_spinning }
+        output: { asset_name: vortex }
 
 capabilities: [clickable]
 

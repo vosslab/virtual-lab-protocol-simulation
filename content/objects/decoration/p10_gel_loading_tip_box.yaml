@@ -2,9 +2,20 @@ object_name: p10_gel_loading_tip_box
 kind: decoration
 label: p10 gel loading tip box
 
-state_fields: []
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the tip box is visible.
 
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: p10_gel_loading_tip_box }
+      - when: false
+        output: { asset_name: p10_gel_loading_tip_box }
 
 capabilities: [clickable, cursor_attachable]
 

@@ -69,11 +69,11 @@ visual_states:
     applies_to: subpart
     cases:
       - when: empty
-        output: { asset_name: gel_lane_empty }
+        output: { asset_name: mini_protean_gel }
       - when: protein_ladder
-        output: { asset_name: gel_lane_ladder }
+        output: { asset_name: mini_protean_gel }
       - when: protein_sample_denatured
-        output: { asset_name: gel_lane_sample }
+        output: { asset_name: mini_protean_gel }
   material_volume:
     kind: composite
     applies_to: subpart

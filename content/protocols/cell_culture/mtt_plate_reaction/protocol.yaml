@@ -40,7 +40,9 @@ steps:
         validator:
           preset: correct_target
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: incubator_workspace
       - target: well_plate_96
         gesture: click
         validator:

@@ -21,9 +21,9 @@ visual_states:
     kind: svg
     cases:
       - when: mtt_powder
-        output: { asset_name: mtt_powder_container }
+        output: { asset_name: mtt_vial }
       - when: empty
-        output: { asset_name: mtt_powder_container }
+        output: { asset_name: mtt_vial }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_mg=10)

@@ -31,7 +31,9 @@ steps:
         validator:
           preset: correct_target
         response:
-          scene_operations: []
+          scene_operations:
+            - type: SceneChange
+              to_scene: plate_workspace
       - target: micropipette
         gesture: adjust
         validator:

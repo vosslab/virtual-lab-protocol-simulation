@@ -2,9 +2,22 @@ object_name: kimwipe_pad
 kind: decoration
 label: Kimwipe pad
 
-state_fields: []
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the kimwipe pad is visible.
 
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output:
+          asset_name: kimwipe_pad
+      - when: false
+        output:
+          asset_name: kimwipe_pad
 
 capabilities: [clickable]
 

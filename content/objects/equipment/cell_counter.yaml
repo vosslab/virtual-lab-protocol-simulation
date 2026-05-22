@@ -35,6 +35,15 @@ state_fields:
 
 visual_states:
   slide_loaded:
+    kind: svg
+    cases:
+      - when: false
+        output:
+          asset_name: cell_counter
+      - when: true
+        output:
+          asset_name: cell_counter
+  slide_loaded_overlay:
     kind: overlay
     formula: conditional(state(slide_loaded), "Slide loaded", "Empty")
   focused:

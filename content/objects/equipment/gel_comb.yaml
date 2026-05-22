@@ -5,13 +5,18 @@ label: Gel comb
 state_fields:
   - field_name: position
     type: enum
-    allowed: [not_in_cassette]
-    default: not_in_cassette
-    description: Position state of the comb after removal.
+    allowed: [not_in_cassette, in_cassette]
+    default: in_cassette
+    description: Position state of the comb.
 
 visual_states:
   position:
-    kind: composite
+    kind: svg
+    cases:
+      - when: in_cassette
+        output: { asset_name: gel_comb }
+      - when: not_in_cassette
+        output: { asset_name: gel_comb }
 
 capabilities: [clickable]
 

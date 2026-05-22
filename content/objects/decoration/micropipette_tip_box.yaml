@@ -2,9 +2,22 @@ object_name: micropipette_tip_box
 kind: decoration
 label: Micropipette tip box
 
-state_fields: []
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the tip box is visible.
 
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output:
+          asset_name: tip_box
+      - when: false
+        output:
+          asset_name: tip_box
 
 capabilities: [decoration_only]
 

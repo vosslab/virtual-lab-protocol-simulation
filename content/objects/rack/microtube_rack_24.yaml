@@ -19,7 +19,11 @@ state_fields:
 
 visual_states:
   material_name:
-    kind: composite
+    kind: svg
+    cases:
+      - when: empty
+        output:
+          asset_name: microtube_rack_24_placeholder
   material_volume:
     kind: composite
 

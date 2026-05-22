@@ -25,10 +25,10 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: ethanol_bottle
+          asset_name: bottle
       - when: ethanol_70
         output:
-          asset_name: ethanol_bottle
+          asset_name: bottle
 capabilities:
   - clickable
   - material_container

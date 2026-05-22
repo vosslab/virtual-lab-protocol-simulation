@@ -2,9 +2,22 @@ object_name: paper_towel_pad
 kind: decoration
 label: Paper towel pad
 
-state_fields: []
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the paper towel pad is visible.
 
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output:
+          asset_name: kimwipe_pad
+      - when: false
+        output:
+          asset_name: kimwipe_pad
 
 capabilities: [clickable]
 

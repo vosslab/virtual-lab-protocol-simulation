@@ -22,6 +22,21 @@ state_fields:
 
 visual_states:
   material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output:
+          asset_name: bottle
+      - when: trypan_blue
+        output:
+          asset_name: bottle
+      - when: cell_suspension
+        output:
+          asset_name: bottle
+      - when: trypan_blue_mixture
+        output:
+          asset_name: bottle
+  material_name_overlay:
     kind: overlay
     formula: 'label(state(material_name), format="Loaded: {value}")'
   material_volume:

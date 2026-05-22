@@ -52,6 +52,8 @@ steps:
           preset: correct_target
         response:
           scene_operations:
+            - type: SceneChange
+              to_scene: cell_counter_workspace
             - type: CursorAttach
               target: micropipette
               operation: attach

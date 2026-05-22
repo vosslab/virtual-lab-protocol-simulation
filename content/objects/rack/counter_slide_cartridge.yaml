@@ -35,9 +35,12 @@ visual_states:
     kind: overlay
     formula: 'label(state(slide_count), format="Slides: {value}")'
   material_name:
-    kind: composite
+    kind: svg
     applies_to: subpart
-    composite: []
+    cases:
+      - when: empty
+        output:
+          asset_name: tip_box
   material_volume:
     kind: composite
     applies_to: subpart

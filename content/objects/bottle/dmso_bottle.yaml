@@ -21,7 +21,7 @@ visual_states:
     kind: svg
     cases:
       - when: dmso
-        output: { asset_name: dmso_bottle }
+        output: { asset_name: bottle }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=50)

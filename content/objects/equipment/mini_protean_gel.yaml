@@ -10,8 +10,12 @@ state_fields:
 
 visual_states:
   sealed:
-    kind: composite
-    composite: []
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: mini_protean_gel }
+      - when: false
+        output: { asset_name: mini_protean_gel }
 
 capabilities: [clickable]
 

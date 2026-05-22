@@ -2,9 +2,20 @@ object_name: gel_opening_tool
 kind: equipment
 label: Gel Opening Tool
 
-state_fields: []
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the tool is visible.
 
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output: { asset_name: gel_opening_tool }
+      - when: false
+        output: { asset_name: gel_opening_tool }
 
 capabilities: [clickable, cursor_attachable]
 

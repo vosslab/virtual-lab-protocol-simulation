@@ -35,9 +35,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: incubator_closed }
+        output: { asset_name: incubator }
       - when: true
-        output: { asset_name: incubator_open }
+        output: { asset_name: incubator }
 
 capabilities: [clickable, instrument_with_setpoint]
 

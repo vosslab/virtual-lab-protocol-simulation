@@ -30,7 +30,7 @@ steps:
         response:
           scene_operations:
             - type: SceneChange
-              to_scene: microscope_view
+              to_scene: passage_hood_detachment_microscope_view
             - type: ObjectStateChange
               target: t75_flask
               state:
@@ -252,7 +252,7 @@ steps:
         response:
           scene_operations:
             - type: SceneChange
-              to_scene: microscope_view
+              to_scene: passage_hood_detachment_microscope_view
             - type: ObjectStateChange
               target: t75_flask
               state:

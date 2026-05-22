@@ -25,10 +25,10 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: pbs_bottle
+          asset_name: bottle
       - when: pbs
         output:
-          asset_name: pbs_bottle
+          asset_name: bottle
 capabilities:
   - clickable
   - material_container

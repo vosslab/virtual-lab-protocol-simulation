@@ -35,10 +35,10 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: media_bottle
+          asset_name: bottle
       - when: media
         output:
-          asset_name: media_bottle
+          asset_name: bottle
 capabilities:
   - clickable
   - material_container
