@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 # dist_clean.sh - wipe build artifacts, tool caches, and dependency installs.
 #
-# After this runs you must `npm install` again before `npm run check`,
-# `npm run build`, or `npm run serve` will work.
+# Universal across repo types (python, typescript, rust). Patterns that do
+# not exist in a given repo are silently skipped via `nullglob` + an
+# existence check, so no false-positive output.
+#
+# After this runs you may need to reinstall language-specific dependencies
+# before the usual gates work again:
+#   typescript: npm install
+#   python:     pip install -r pip_requirements.txt -r pip_requirements-dev.txt
+#   rust:       cargo build (recompiles dependencies on next invocation)
 set -euo pipefail
 shopt -s globstar nullglob
 cd "$(git rev-parse --show-toplevel)"
@@ -23,17 +30,14 @@ delete_if_exists() {
 	done
 }
 
-# Build outputs. _bundle.js is a legacy single-file artifact swept for one
-# more release; remove the entry below once no consumer has it on disk.
-delete_if_exists dist dist-single _site _bundle.js
+# Generic build outputs (any language).
+delete_if_exists dist dist-single _site build out
 
-# Bundler/esbuild meta artifacts.
-delete_if_exists meta.json stats.html
-
-# TypeScript incremental build info (any depth).
+# TypeScript / JS build artifacts and bundler metadata.
+delete_if_exists _bundle.js meta.json stats.html
 delete_if_exists **/*.tsbuildinfo
 
-# Dependency installs and lockfile (forces clean reinstall on next npm install).
+# JS dependency installs and lockfile (forces clean reinstall on next npm install).
 delete_if_exists node_modules package-lock.json
 
 # JS/TS tool caches.
@@ -44,6 +48,9 @@ delete_if_exists test-results playwright-report blob-report coverage
 
 # Python bytecode and tool caches (any depth).
 delete_if_exists **/__pycache__ **/.pytest_cache **/.mypy_cache **/.ruff_cache
+
+# Rust build outputs.
+delete_if_exists target
 
 if [ "${#DELETED[@]}" -eq 0 ]; then
 	echo "Nothing to clean."
