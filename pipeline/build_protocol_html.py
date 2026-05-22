@@ -97,6 +97,32 @@ def generate_html_shell(protocol_name):
 	html_parts.append('\t\t\theight: 100vh;')
 	html_parts.append('\t\t\tbackground-color: white;')
 	html_parts.append('\t\t}')
+	# Round 3 R3-ALT CSS-only label readability variant.
+	# Scene labels render as SVG <text> elements with an inline font-size
+	# attribute (default 14 user-units); they collide and overflow at runtime
+	# (see docs/active_plans/reports/round3_runtime_truth_audit.md Finding 2).
+	# CSS font-size overrides the SVG presentation attribute, so capping it
+	# here shrinks each label's horizontal footprint without touching TS or
+	# the layout engine. paint-order + white stroke keeps labels legible
+	# where they still overlap each other or asset artwork.
+	html_parts.append('\t\t#runtime-root .scene-viewport svg text,')
+	html_parts.append('\t\t#runtime-root svg text {')
+	# Do not override font-size: the layout engine sets per-scene font-size
+	# in viewBox user-units, and CSS px is interpreted in user-units once
+	# the SVG viewBox transform is in place, so a stylesheet override here
+	# is per-scene unsafe. Limit the CSS-only intervention to paint-order
+	# halo for legibility where labels overlap each other or asset artwork
+	# (see docs/active_plans/reports/round3_runtime_truth_audit.md
+	# Finding 2 -- the dominant failure is overlap, not raw font size).
+	html_parts.append('\t\t\tpaint-order: stroke fill;')
+	html_parts.append('\t\t\tstroke: #ffffff;')
+	# stroke-width is in user-units inside SVG context, so use a small
+	# fractional value so the halo scales with the label rather than
+	# swamping it.
+	html_parts.append('\t\t\tstroke-width: 0.35px;')
+	html_parts.append('\t\t\tstroke-linejoin: round;')
+	html_parts.append('\t\t\tfont-weight: 600;')
+	html_parts.append('\t\t}')
 	html_parts.append('\t</style>')
 	html_parts.append('</head>')
 	html_parts.append('<body>')

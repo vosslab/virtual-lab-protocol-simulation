@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
-# check_codebase.sh - orchestrator over npm scripts for codebase checks.
+# check_codebase.sh - run the codebase check gate (no build).
 #
 # Runs (in order):
-#   1. TypeScript typecheck via tsconfig.json (covers src/ + tests/ via **/*.ts).
-#   2. ESLint (zero errors; warnings allowed per docs/TYPESCRIPT_STYLE.md).
-#   3. Prettier --check on tracked JS/TS surfaces.
-#   4. Node unit tests under tests/ (node --test tests/test_*.mjs).
-#   5. Production build (npm run build), with post-build artifact checks
-#      on dist/index.html, dist/main.js, and dist/style.css (when
-#      src/style.css existed at the start of the run).
+#   1. TypeScript typecheck via tsconfig.json (src/).
+#   2. Wider typecheck via tsconfig.lint.json if present (tests/, tools/).
+#   3. ESLint (zero warnings).
+#   4. Prettier --check.
+#   5. Node unit tests under tests/ (node --test tests/test_*.mjs).
 #
-# Playwright (browser walkthroughs) is intentionally NOT part of this
-# gate; this script checks the codebase only. Run Playwright manually
-# via `npm run test:playwright` after `bash run_web_server.sh`.
+# Each step invokes its tool directly (npx tsc, npx eslint, npx prettier,
+# node --test). No dependency on package.json scripts; the package.json
+# "check" alias points at this script and stays canonical, but every
+# individual step is owned by the shell script.
 #
-# All steps are invoked via 'npm run --silent <name>' so package.json
-# remains the single source of truth for what each check does.
+# Build is not part of this gate. Run ./build_github_pages.sh (or
+# npm run build) for that. Playwright is not part of this gate either;
+# run npm run test:playwright manually after bash run_web_server.sh.
 #
 # Flags:
-#   --fast              Skip the build step (inner-loop iteration).
 #   -h, --help          Print usage and exit 0.
 #
 # A per-run summary is printed on exit (after preflight succeeds) listing
@@ -30,24 +29,17 @@ set -euo pipefail
 # Usage
 usage() {
 	cat <<'USAGE'
-Usage: check_codebase.sh [--fast] [-h|--help]
+Usage: check_codebase.sh [-h|--help]
 
-  --fast              Skip the build step (inner-loop iteration).
   -h, --help          Print this help and exit 0.
 
-All steps are invoked via 'npm run --silent <name>'; package.json is
-the source of truth for each check.
+Each step runs its tool directly; package.json is not consulted.
 USAGE
 }
 
 # Parse flags
-FAST=0
 while [ "$#" -gt 0 ]; do
 	case "$1" in
-		--fast)
-			FAST=1
-			shift
-			;;
 		-h|--help)
 			usage
 			exit 0
@@ -89,13 +81,6 @@ if [ ! -f package-lock.json ]; then
 	echo "WARN: package-lock.json missing; npm install will not produce a reproducible install." >&2
 fi
 
-# Capture whether src/style.css existed at the start of the run; this
-# governs whether the post-build artifact check requires dist/style.css.
-HAS_STYLE_CSS=0
-if [ -f src/style.css ]; then
-	HAS_STYLE_CSS=1
-fi
-
 # Step tracking (bash 3.2 compatible)
 STEP_NAMES=()
 STEP_STATUS=()
@@ -121,26 +106,15 @@ step_skip() {
 	step_record "$name" "SKIP" "$reason"
 }
 
-# require_script <name>
-# Verifies that the named npm script exists in package.json. The script name
-# is passed via env var, not interpolated into the JS source, so names that
-# contain quotes or other JS metachars cannot break the probe.
-require_script() {
-	local name="$1"
-	NAME="$name" node -e "process.exit(((require('./package.json').scripts)||{})[process.env.NAME] ? 0 : 1)" \
-		|| { echo "ERROR: npm script '$name' missing in package.json." >&2; exit 1; }
-}
-
-# step_run <name>
-# Runs 'npm run --silent <name>' after verifying the script exists.
-# Records PASS or FAIL+summary+exit 1.
+# step_run <name> <command...>
+# Runs the given command. Records PASS or FAIL+summary+exit 1.
 step_run() {
 	local name="$1"
+	shift
 	echo "==> $name"
-	require_script "$name"
 	local rc=0
 	set +e
-	npm run --silent "$name"
+	"$@"
 	rc=$?
 	set -e
 	if [ "$rc" -eq 0 ]; then
@@ -189,57 +163,23 @@ trap print_summary EXIT
 SUMMARY_ENABLED=1
 
 # 1. typecheck (always)
-step_run typecheck
+step_run typecheck npx tsc --noEmit -p tsconfig.json
 
-# 2. lint
-step_run lint
-
-# 3. format:check
-step_run format:check
-
-# 4. test:node
-step_run test:node
-
-# 5. build (with post-build artifact checks)
-if [ "$FAST" = "1" ]; then
-	step_skip build "--fast"
+# 2. typecheck:lint only if tsconfig.lint.json exists
+if [ -f tsconfig.lint.json ]; then
+	step_run typecheck:lint npx tsc --noEmit -p tsconfig.lint.json
 else
-	echo "==> build"
-	require_script build
-	build_rc=0
-	set +e
-	npm run --silent build
-	build_rc=$?
-	set -e
-	if [ "$build_rc" -ne 0 ]; then
-		step_record build "FAIL"
-		print_summary
-		trap - EXIT
-		exit 1
-	fi
-	# Post-build artifact checks. Required: dist/index.html, dist/main.js.
-	# Conditionally required: dist/style.css when src/style.css existed
-	# at the start of the run.
-	artifact_ok=1
-	for required in dist/index.html dist/main.js; do
-		if [ ! -f "$required" ]; then
-			echo "ERROR: missing build artifact: $required" >&2
-			artifact_ok=0
-		fi
-	done
-	if [ "$HAS_STYLE_CSS" = "1" ] && [ ! -f dist/style.css ]; then
-		echo "ERROR: missing build artifact: dist/style.css" >&2
-		artifact_ok=0
-	fi
-	if [ "$artifact_ok" = "1" ]; then
-		step_record build "PASS"
-	else
-		step_record build "FAIL"
-		print_summary
-		trap - EXIT
-		exit 1
-	fi
+	step_skip typecheck:lint "tsconfig.lint.json not present"
 fi
+
+# 3. lint
+step_run lint npx eslint --max-warnings 0 'src/**/*.ts' 'tests/**/*.ts' '*.ts'
+
+# 4. format:check
+step_run format:check npx prettier --check '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'
+
+# 5. test:node
+step_run test:node node --test 'tests/test_*.mjs'
 
 # All steps complete; summary prints via EXIT trap. Exit 0 (no failures
 # reach here -- failure paths exit 1 directly).
