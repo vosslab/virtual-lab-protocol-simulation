@@ -7,20 +7,49 @@ set -euo pipefail
 shopt -s globstar nullglob
 cd "$(git rev-parse --show-toplevel)"
 
+DELETED=()
+
+# delete_if_exists <path...>
+# Removes each path that exists (file, dir, or symlink) and records it.
+# Unmatched globs expand to nothing under nullglob, so missing entries
+# silently no-op and are not reported.
+delete_if_exists() {
+	local p
+	for p in "$@"; do
+		if [ -e "$p" ] || [ -L "$p" ]; then
+			rm -rf "$p"
+			DELETED+=("$p")
+		fi
+	done
+}
+
 # Build outputs. _bundle.js is a legacy single-file artifact swept for one
 # more release; remove the entry below once no consumer has it on disk.
-rm -rf dist dist-single _site _bundle.js
+delete_if_exists dist dist-single _site _bundle.js
+
+# Bundler/esbuild meta artifacts.
+delete_if_exists meta.json stats.html
 
 # TypeScript incremental build info (any depth).
-rm -rf **/*.tsbuildinfo
+delete_if_exists **/*.tsbuildinfo
 
 # Dependency installs and lockfile (forces clean reinstall on next npm install).
-rm -rf node_modules package-lock.json
+delete_if_exists node_modules package-lock.json
 
-# Tool caches.
-rm -rf .cache .eslintcache .prettiercache
+# JS/TS tool caches.
+delete_if_exists .cache .eslintcache .prettiercache .nyc_output
 
-# Python bytecode and pytest caches (any depth).
-rm -rf **/__pycache__ **/.pytest_cache
+# Test outputs (Playwright, coverage).
+delete_if_exists test-results playwright-report blob-report coverage
 
-echo "Cleaned dist/, dist-single/, _site/, _bundle.js, *.tsbuildinfo, node_modules/, package-lock.json, .cache, .eslintcache, .prettiercache, __pycache__/, .pytest_cache/."
+# Python bytecode and tool caches (any depth).
+delete_if_exists **/__pycache__ **/.pytest_cache **/.mypy_cache **/.ruff_cache
+
+if [ "${#DELETED[@]}" -eq 0 ]; then
+	echo "Nothing to clean."
+else
+	echo "Cleaned ${#DELETED[@]} path(s):"
+	for p in "${DELETED[@]}"; do
+		echo "  $p"
+	done
+fi
