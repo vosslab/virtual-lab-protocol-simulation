@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Layout manager clean-start contact sheet</title>
+<style>
+* { box-sizing: border-box; }
+body {
+	margin: 0;
+	padding: 24px;
+	font-family: -apple-system, system-ui, sans-serif;
+	background: #f3f4f6;
+	color: #1f2937;
+	font-size: 14px;
+}
+h1 { margin: 0 0 8px 0; color: #1e3a8a; }
+h2 { margin: 24px 0 8px 0; color: #1e40af; }
+.subtitle { margin: 0 0 16px 0; color: #4b5563; font-size: 13px; }
+.legend {
+	background: #ffffff;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 12px;
+	margin-bottom: 16px;
+	font-size: 12px;
+}
+.legend .swatch {
+	display: inline-block;
+	width: 12px;
+	height: 12px;
+	margin-right: 6px;
+	vertical-align: middle;
+	border: 1px solid #9ca3af;
+}
+.swatch.best { background: #d1fae5; }
+.swatch.worst { background: #fee2e2; }
+.grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 12px;
+}
+.card {
+	background: #ffffff;
+	border: 1px solid #d1d5db;
+	border-radius: 6px;
+	padding: 10px;
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+.card.best { border-left: 6px solid #10b981; }
+.card.worst { border-left: 6px solid #ef4444; }
+.card img {
+	width: 100%;
+	height: auto;
+	display: block;
+	border: 1px solid #e5e7eb;
+	background: #f9fafb;
+}
+.card-title {
+	font-weight: 600;
+	margin-top: 8px;
+	font-size: 13px;
+	color: #111827;
+	word-break: break-all;
+}
+.card-meta {
+	font-size: 11px;
+	color: #4b5563;
+	margin-top: 4px;
+	line-height: 1.4;
+}
+.card-meta .path {
+	font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+	font-size: 10px;
+	color: #6b7280;
+	word-break: break-all;
+}
+.badge {
+	display: inline-block;
+	padding: 2px 6px;
+	border-radius: 4px;
+	font-size: 10px;
+	margin: 2px 4px 2px 0;
+	font-weight: 600;
+}
+.badge.best { background: #d1fae5; color: #065f46; }
+.badge.worst { background: #fee2e2; color: #991b1b; }
+.badge.note { background: #dbeafe; color: #1e3a8a; }
+.row-label {
+	grid-column: 1 / -1;
+	font-weight: 700;
+	color: #1e3a8a;
+	font-size: 16px;
+	margin-top: 16px;
+	margin-bottom: 0;
+	padding: 6px 10px;
+	background: #e0e7ff;
+	border-radius: 4px;
+}
+@media (max-width: 1100px) {
+	.grid { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 800px) {
+	.grid { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+<h1>Layout manager clean-start contact sheet</h1>
+<div class="subtitle">Curated best 10 and worst 10 screenshots from existing PNGs in
+<code>experiments/css_native_layout/</code>. Companion to
+<a href="screenshot_gallery.md">screenshot_gallery.md</a>. No new screenshots were
+generated. Date: 2026-05-22.</div>
+
+<div class="legend">
+	<span class="swatch best"></span><strong>Best</strong> &mdash; 0 composition hard fails per the canonical precheck audit; real SVGs; no glassware cropping; primary object visible.
+	&nbsp;&nbsp;
+	<span class="swatch worst"></span><strong>Worst</strong> &mdash; one or more hard fails (clipped_artwork, off_page, svg_svg_overlap, region_overflow) or visible aspect distortion on glassware/instruments above the 5% tolerance.
+</div>
+
+<div class="grid">
+
+<div class="row-label">Best 10 &mdash; precheck_b1_final/ (NEW0 baseline, 1200x900, 0 hard fails per visual_audit.md)</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/microscope_basic.png" alt="microscope_basic" loading="lazy">
+	<div class="card-title">B1. microscope_basic</div>
+	<div class="card-meta">
+		<span class="badge best">PASS_TEMPLATE</span>
+		<span class="badge note">template</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/microscope_basic.png</span><br>
+		Only PASS_TEMPLATE in the 10-template baseline. Clean single-instrument reference.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/bench_basic.png" alt="bench_basic" loading="lazy">
+	<div class="card-title">B2. bench_basic</div>
+	<div class="card-meta">
+		<span class="badge note">template</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/bench_basic.png</span><br>
+		0 clipped, 0 off_page; one small bench/p200 overlap (1146 px&sup2;).
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/cell_counter_basic.png" alt="cell_counter_basic" loading="lazy">
+	<div class="card-title">B3. cell_counter_basic</div>
+	<div class="card-meta">
+		<span class="badge note">template</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/cell_counter_basic.png</span><br>
+		0 composition hard-fails; 8.1% aspect HARD FAIL on cell_counter (advisory).
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/hood_basic.png" alt="hood_basic" loading="lazy">
+	<div class="card-title">B4. hood_basic</div>
+	<div class="card-meta">
+		<span class="badge note">template</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/hood_basic.png</span><br>
+		Hood frame intact; 2 small SVG-SVG overlap pairs.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/well_plate_96_zoom.png" alt="well_plate_96_zoom" loading="lazy">
+	<div class="card-title">B5. well_plate_96_zoom</div>
+	<div class="card-meta">
+		<span class="badge note">composition / zoom_detail</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/well_plate_96_zoom.png</span><br>
+		NEW0 spike scene; primary ratio 88.7%. Regresses at 1920x1080 (Workstream 2).
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/staining_bench.png" alt="staining_bench" loading="lazy">
+	<div class="card-title">B6. staining_bench</div>
+	<div class="card-meta">
+		<span class="badge note">composition</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/staining_bench.png</span><br>
+		0 composition hard-fails; primary ratio 31.3%.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/crowded_bench_dense.png" alt="crowded_bench_dense" loading="lazy">
+	<div class="card-title">B7. crowded_bench_dense</div>
+	<div class="card-meta">
+		<span class="badge note">composition / dense_clutter</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/crowded_bench_dense.png</span><br>
+		Dense reference scene; low primary ratio authorized by dense_clutter policy.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_plate_workspace.png" alt="drug_dilution_plate_workspace" loading="lazy">
+	<div class="card-title">B8. drug_dilution_plate_workspace</div>
+	<div class="card-meta">
+		<span class="badge note">composition</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_plate_workspace.png</span><br>
+		Recovered to 0 hard-fails via CSS-only edits; primary ratio 25.2%.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_workspace_dense.png" alt="drug_dilution_workspace_dense" loading="lazy">
+	<div class="card-title">B9. drug_dilution_workspace_dense</div>
+	<div class="card-meta">
+		<span class="badge note">composition / dense_clutter</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_workspace_dense.png</span><br>
+		Dense variant of B8; primary ratio 13.9% authorized by dense policy.
+	</div>
+</div>
+
+<div class="card best">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_b1_final/electrophoresis_bench.png" alt="electrophoresis_bench" loading="lazy">
+	<div class="card-title">B10. electrophoresis_bench</div>
+	<div class="card-meta">
+		<span class="badge note">composition / instrument_heavy</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_b1_final/electrophoresis_bench.png</span><br>
+		Only instrument_heavy reference; borderline (1 off_page, 8 SVG-SVG overlaps on this run).
+	</div>
+</div>
+
+<div class="row-label">Worst 10 &mdash; precheck_post_trial5_gold/ synthetic gold + 2 stress synthetics</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_cell_counter_station.png" alt="gold_cell_counter_station" loading="lazy">
+	<div class="card-title">W1. gold_cell_counter_station</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">CLIPPED x6</span>
+		<span class="badge worst">ASPECT HARD x4</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_cell_counter_station.png</span><br>
+		1 off_page; pipette stretched 177%; bottles forced to square; cell_counter clipped.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_drug_dilution_workspace.png" alt="gold_drug_dilution_workspace" loading="lazy">
+	<div class="card-title">W2. gold_drug_dilution_workspace</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">CLIPPED x7</span>
+		<span class="badge worst">ASPECT HARD</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_drug_dilution_workspace.png</span><br>
+		Glassware aspect destroyed to 99.3%; well-plate bottom clipped; placeholder leakage (microtube_rack_24_placeholder).
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_electrophoresis_full_setup.png" alt="gold_electrophoresis_full_setup" loading="lazy">
+	<div class="card-title">W3. gold_electrophoresis_full_setup</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">OFF_PAGE x2</span>
+		<span class="badge worst">CLIPPED</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_electrophoresis_full_setup.png</span><br>
+		Placement centers computed beyond scene rect; canonical off_page failure mode.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_heat_block_sample_prep.png" alt="gold_heat_block_sample_prep" loading="lazy">
+	<div class="card-title">W4. gold_heat_block_sample_prep</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">OFF_PAGE</span>
+		<span class="badge worst">CLIPPED</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_heat_block_sample_prep.png</span><br>
+		Heat block walks off scene; sample-prep tools clipped by region edges.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_hood_prep.png" alt="gold_hood_prep" loading="lazy">
+	<div class="card-title">W5. gold_hood_prep</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">CLIPPED</span>
+		<span class="badge worst">ASPECT HARD</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_hood_prep.png</span><br>
+		Hood frame ok; bottles inside aspect-distorted enough to read as the wrong shape.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_microscope_slide_prep.png" alt="gold_microscope_slide_prep" loading="lazy">
+	<div class="card-title">W6. gold_microscope_slide_prep</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">OFF_PAGE</span>
+		<span class="badge worst">CLIPPED</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_microscope_slide_prep.png</span><br>
+		Microscope placed beyond region; slide-prep tools clipped at edges.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_mixed_bench.png" alt="gold_mixed_bench" loading="lazy">
+	<div class="card-title">W7. gold_mixed_bench</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">OFF_PAGE</span>
+		<span class="badge worst">CLIPPED</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_mixed_bench.png</span><br>
+		No priority signal; small tools and large instruments compete for the same region.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_plate_reader_assay.png" alt="gold_plate_reader_assay" loading="lazy">
+	<div class="card-title">W8. gold_plate_reader_assay</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">OFF_PAGE</span>
+		<span class="badge worst">CLIPPED</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_plate_reader_assay.png</span><br>
+		Plate reader and 96-well plate both large-equipment; one is always clipped.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_dense_clutter_004.png" alt="stress_dense_clutter_004" loading="lazy">
+	<div class="card-title">W9. stress_dense_clutter_004</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">CLIPPED</span>
+		<span class="badge worst">OVERLAP</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_dense_clutter_004.png</span><br>
+		Synthetic dense_clutter case; from the stress corpus where 100% of 100 scenes FAIL.
+	</div>
+</div>
+
+<div class="card worst">
+	<img src="../../../../experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_many_small_tools_scene_002.png" alt="stress_many_small_tools_scene_002" loading="lazy">
+	<div class="card-title">W10. stress_many_small_tools_scene_002</div>
+	<div class="card-meta">
+		<span class="badge worst">FAIL</span>
+		<span class="badge worst">ASPECT HARD</span>
+		1200x900<br>
+		<span class="path">experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_many_small_tools_scene_002.png</span><br>
+		Out-of-policy small-tool count; synthetic scene class not in the closed production set.
+	</div>
+</div>
+
+</div>
+</body>
+</html>

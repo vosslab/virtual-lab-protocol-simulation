@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-05-22
+
+### Additions and New Features
+
+- **layout-manager clean-start handoff bundle: 9 new artifacts added under `docs/active_plans/active/layout_manager_clean_start/`.**
+  - [docs/active_plans/active/layout_manager_clean_start/ONBOARDING.md](active_plans/active/layout_manager_clean_start/ONBOARDING.md): entry point for the clean-start effort (already committed as 4d7889d).
+  - [docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md](active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md): 6 extraction milestones (M1-M6) with 19 USER_DECISION_REQUIRED markers.
+  - [docs/active_plans/active/layout_manager_clean_start/contact_sheet.html](active_plans/active/layout_manager_clean_start/contact_sheet.html): contact sheet pairing best/worst screenshots.
+  - [docs/active_plans/active/layout_manager_clean_start/diagnostics_baseline.md](active_plans/active/layout_manager_clean_start/diagnostics_baseline.md): 10 templates, 0 hard fails at 1200x900; 2 hard fails at 1920x1080 on well_plate_96_zoom.
+  - [docs/active_plans/active/layout_manager_clean_start/experiments_code_triage.md](active_plans/active/layout_manager_clean_start/experiments_code_triage.md): triage of experiments/ tree for keep/rewrite/delete.
+  - [docs/active_plans/active/layout_manager_clean_start/js_mjs_usage_audit.md](active_plans/active/layout_manager_clean_start/js_mjs_usage_audit.md): 21 JS/MJS scripts audited (9 KEEP_AS_MJS, 6 REWRITE_TO_TS, 5 DELETE, 1 DELETE_AFTER_MERGE).
+  - [docs/active_plans/active/layout_manager_clean_start/scene_object_audit.md](active_plans/active/layout_manager_clean_start/scene_object_audit.md): 574 object records across 72 files; 354 real SVG, 167 placeholder, 11 missing, 42 wrong-asset.
+  - [docs/active_plans/active/layout_manager_clean_start/screenshot_gallery.md](active_plans/active/layout_manager_clean_start/screenshot_gallery.md): 10 best + 10 worst screenshots curated.
+  - [docs/active_plans/active/layout_manager_clean_start/svg_completeness_plan.md](active_plans/active/layout_manager_clean_start/svg_completeness_plan.md): 124 tracked SVGs in assets/equipment/, 78 object YAMLs, 12 missing SVGs, 49 orphan SVGs.
+
+### Behavior or Interface Changes
+
+- [experiments/css_native_layout/README.md](../experiments/css_native_layout/README.md) rewritten as a 15-section operational README for the css_native_layout experiment.
+
+### Decisions and Failures
+
+- 2026-05-22 reset archived NEW0/NEW1/NEW2/NEW3 plans under `docs/archive/plan-reset-2026-05-22/` to clear the active plans surface for the clean-start bundle.
+- PRIMARY_CONTRACT.md item 3 (clickable SVG-backed scene objects laid out by the layout engine) remains unresolved; the clean-start bundle is scoped to extraction planning, not contract closure.
+- Discovered bug: `experiments/css_native_layout/templates/microscope_basic.html` references `centrifuge_new.svg` for a `microscope` object. The `dir_b/` and `dir_c/` variants already fix this; the canonical template still needs the fix.
+- Discovered bug: `microtube_rack_24_placeholder.svg` is tracked in `assets/equipment/` as a dashed-rect placeholder masquerading as a real SVG, with 9 production-template references. Higher leak risk than the dashed `_placeholder.svg` family.
+- Pre-existing failure (not introduced by this batch): `tests/conftest.py` `pytest_sessionstart` hook calls `pipeline/bootstrap_generated.sh`, which fails because `pipeline/build_new_protocol_data.py` is missing post-reset. This blocks all `pytest` invocations repo-wide and needs a separate fix.
+
+### Developer Tests and Notes
+
+- M0 milestone in [docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md](active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md) is a read-only baseline regen; regeneration command targets are named in [docs/active_plans/active/layout_manager_clean_start/diagnostics_baseline.md](active_plans/active/layout_manager_clean_start/diagnostics_baseline.md) section 6.
+- `tests/test_markdown_links.py` was skipped for this changelog entry because the broken `pytest_sessionstart` bootstrap (noted above) blocks pytest invocations repo-wide.
+
+---
+
 ## 2026-05-21
 
 ### Additions and New Features
