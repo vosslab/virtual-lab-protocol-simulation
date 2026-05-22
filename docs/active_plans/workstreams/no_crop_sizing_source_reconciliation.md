@@ -1,4 +1,4 @@
-# No-crop footprint vocabulary proposal (WS-E / WP-E1)
+# No-crop sizing-source reconciliation (WS-E / WP-E1)
 
 Date: 2026-05-21
 HEAD: 8795d25
@@ -6,7 +6,23 @@ Status: DONE_WITH_CONCERNS
 Author note: Proposal only. No CSS, TypeScript, or YAML is edited.
 This document does not introduce any class names in production code.
 
-Amended 2026-05-21: Vocabulary corrected per
+Amended 2026-05-21 (sizing-source reconciliation): Renamed from
+`no_crop_footprint_vocab_proposal.md` to
+`no_crop_sizing_source_reconciliation.md` (`git mv`). Reframed per
+[docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md).
+The user directive is that permanent CSS `footprint--*` classes are
+probably the wrong direction; at most they are a temporary diagnostic
+shim for the broken static harness. The durable sizing chain is
+`scene object -> asset_name -> ASSET_SPECS/default_width -> display_width_cm or width_scale -> layout engine computed box -> renderer preserves SVG aspect ratio`,
+owned by [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md),
+[docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), and
+[docs/specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md). The
+candidate `footprint--*` classes named below are downgraded from
+"permanent vocabulary" to "experiment-local test-harness shim" unless
+the gate in section "Gate for promoting an experiment-local shim to a
+permanent class" is satisfied.
+
+Amended 2026-05-21 (vocabulary correction): Vocabulary corrected per
 [docs/active_plans/no_crop_round3_architecture_vocabulary_clarification.md](../no_crop_round3_architecture_vocabulary_clarification.md).
 References to `regions/*.yaml` and "Path 3" describe experiment-local
 scaffolding for a static visual-test renderer, not sanctioned project
@@ -22,8 +38,11 @@ unchanged.
 For each candidate `footprint--*` class surfaced by the Round 3 work, name
 the objects that would consume it, the existing screenshot evidence that
 justifies it, the expected crop reduction, the drift risk, and an explicit
-permanent versus experiment-only call. Permanent count is capped at 4 by
-the WP-E1 brief; excess candidates are routed to experiment-only.
+sizing-surface classification (experiment-local shim vs candidate
+permanent class). Per the sizing-source reconciliation amendment, the
+default classification is **experiment-local shim**; promotion to a
+permanent class requires the gate in section "Gate for promoting an
+experiment-local shim to a permanent class".
 
 This proposal is gated by a hard upstream finding (WS-D, no_crop_render_harness_audit.md):
 none of the three render paths consume the experiment-local
@@ -32,6 +51,42 @@ below states what would have to change for any class proposed here to
 take effect, and why this proposal is paper-only without that decision.
 The mapping artifact is experiment-local scaffolding, not project
 architecture; see the architecture vocabulary clarification note.
+
+## Durable sizing source (precedence)
+
+Before any CSS class is proposed (permanent or experiment-local), the
+durable sizing chain owned by `docs/specs/` must be checked. See
+[docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) for the
+`display_width_cm` and per-scene `px_per_cm` model, and
+[docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections
+"Asset specs", "Scene items", and "Footprints" for the
+`ASSET_SPECS.default_width` and `width_scale` surfaces. A cropping
+incident must be diagnosed against this chain before any CSS class
+adoption is considered.
+
+## Gate for promoting an experiment-local shim to a permanent class
+
+A permanent CSS class is allowed only when this document proves all
+four of the following have been checked and none can represent the
+object:
+
+- `ASSET_SPECS.default_width` (per asset in `src/asset_specs.ts`; see
+  [docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Asset
+  specs").
+- `display_width_cm` (per object in
+  `content/objects/<kind>/<object_name>.yaml`; see
+  [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How
+  sizing works").
+- `width_scale` (per placement in scene YAML; see
+  [docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Scene
+  items").
+- SVG `viewBox` correctness (per asset in `assets/equipment/*.svg`;
+  see [docs/specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Four-
+  layer flow").
+
+This proposal does not yet provide that proof for any of the four
+candidates below. They are therefore downgraded to
+**experiment-local test-harness shims** until the gate is satisfied.
 
 ## Baseline references
 
@@ -78,7 +133,7 @@ risk to decide which are permanent and which are experiment-only.
 | Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (7 remaining crops, tall containers in dense scene; cite WS-A scoreboard "Remaining template violations" row). Pre-hybrid baseline: `test-results/no_crop_fresh_manager_sanity/templates/electrophoresis_bench.png` (12 visible crops). Gold cross-check: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 visible crops). |
 | Expected crop reduction | Targets the 7-8 residual crops on `electrophoresis_bench` plus an estimated 3-4 in `staining_bench` / `crowded_bench_dense` involving tall containers. Estimated 5-10 visible_crops removed from the 21-crop post-hybrid template residual (~24-48% of residual). Source: WS-A "Remaining template violations" row count, no fresh measurement performed (proposal-only). |
 | Drift risk | LOW. The existing `footprint--container` class already mixes flasks, plates, and gel cassettes in one box (220-320 min-width, 240-360 min-height); splitting tall items out is a natural narrowing of an over-broad class, not a new authoring axis. The CSS rule reads vertical (min-height > min-width) and matches a stable physical category. |
-| Permanent vs experiment-only | **PERMANENT (candidate 1 of 4)**. The "tall glassware" category recurs in every wet-lab scene; closing this geometry now removes the largest single chunk of residual crops. Aligns with PRIMARY_DESIGN "scientific assets must never be cropped". |
+| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 1 of 4"). The "tall glassware" category recurs in every wet-lab scene, but the existing scaling model (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) has not been proven inadequate to size tall glassware. Until the gate above is satisfied per-object, this remains an experiment-local diagnostic shim, not a durable schema class. The no-crop rule from [docs/PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) "Visual integrity: never crop scientific assets" still binds regardless. |
 
 ### Class 2: footprint--portrait-tool
 
@@ -90,7 +145,7 @@ risk to decide which are permanent and which are experiment-only.
 | Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/bench_basic.png` (1 remaining crop, p200_micropipette bottom-of-viewport; cite WS-A "Remaining template violations" row). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/cell_counter_basic.png` (1 crop). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/bench_basic.png` (2 visible crops). |
 | Expected crop reduction | Targets the 3 isolated bottom-of-viewport crops on `bench_basic`, `cell_counter_basic`, `microscope_basic` plus 2-3 in `drug_dilution_workspace_dense`. Estimated 4-6 visible_crops from the 21-crop residual (~19-29%). Source: WS-A "Remaining template violations" rows. |
 | Drift risk | MEDIUM. The current `small-tool` class (50-80 width, 60-200 height) and `handheld` class (90-130 width, 110-260 height) already overlap with portrait tools. A third tier risks fragmenting an already-thin band and may invite per-object class assignment by author rather than systematic mapping. |
-| Permanent vs experiment-only | **PERMANENT (candidate 2 of 4)**. Pipettes are the most-touched objects in every protocol; persistent crops on them are visually unacceptable. Risk is mitigated by gating with a clear vertical-aspect rule (h:w > 2:1) rather than per-object opt-in. |
+| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 2 of 4"). Pipettes are the most-touched objects in every protocol and persistent crops on them are visually unacceptable, but the diagnosis through the durable sizing chain has not been performed (asset_name -> SVG viewBox -> `ASSET_SPECS.default_width` -> `display_width_cm` -> `width_scale`). Until those four checks fail per pipette object, this remains an experiment-local diagnostic shim. |
 
 ### Class 3: footprint--landscape-plate
 
@@ -102,7 +157,7 @@ risk to decide which are permanent and which are experiment-only.
 | Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_plate_workspace.png` (2 remaining crops on well_plate_96, tube_rack_24). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_workspace_dense.png` (4 crops on well_plate_96, tube_rack_24, drug_vial_rack). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/drug_dilution_workspace_dense.png` (8 visible crops); `test-results/no_crop_fresh_manager_sanity/gold/gold_drug_dilution_workspace.png` (8 crops). |
 | Expected crop reduction | Targets the 6 residual crops across the two drug_dilution templates plus 2-3 in `staining_bench`. Estimated 6-8 visible_crops from the 21-crop residual (~29-38%). Source: WS-A "Remaining template violations" rows. |
 | Drift risk | LOW-MEDIUM. The current `container` class lumps plates and tall glassware together; splitting landscape plates out is the symmetric move to Class 1 and helps both. Risk: gel cassettes are borderline (slightly portrait); a clear aspect-ratio rule (w:h > 1.3:1) keeps assignment deterministic. |
-| Permanent vs experiment-only | **PERMANENT (candidate 3 of 4)**. Well plates and tube racks are placed in nearly every protocol; consistent landscape framing is a stable category. |
+| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 3 of 4"). Well plates and tube racks recur in nearly every protocol, but the durable sizing chain (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) already represents wide aspect ratios; landscape framing should fall out of correct asset metrics, not a new CSS class. Until per-object proof is provided that the scaling model cannot represent these objects, this remains an experiment-local diagnostic shim. |
 
 ### Class 4: footprint--instrument-wide
 
@@ -116,27 +171,36 @@ risk to decide which are permanent and which are experiment-only.
 | Drift risk | HIGH. The current `instrument` (220-280 width, 200-260 height) and `large-equipment` (360-480 width, 280-380 height) classes already cover wide instruments; adding a third "wide-but-not-large" band is a fine-grained slice that may be better served by tuning the existing two classes. Evidence in screenshots is the weakest of the four - it requires per-object inspection to confirm the crops are actually aspect-driven rather than density-driven. |
 | Permanent vs experiment-only | **EXPERIMENT-ONLY**. Weakest evidence (lowest expected reduction, highest classification overlap with existing classes). Round 3 should prototype this as a labeled experiment-only class to measure delta before promoting; do not adopt as permanent in this proposal. |
 
-## Permanent versus experiment-only summary
+## Sizing-surface classification summary
 
-Permanent cap = 4. Recommended split: 3 permanent, 1 experiment-only.
+Amended 2026-05-21 per sizing-source reconciliation: all four
+candidates are reclassified as **experiment-local test-harness shims**
+pending per-object proof that the durable sizing chain
+(`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG
+`viewBox`) cannot represent the object. No permanent class is
+adopted by this proposal.
 
-| Class | Recommendation | Permanent slot | Reason for slot |
-| --- | --- | --- | --- |
-| footprint--tall-glassware | PERMANENT | 1 | Largest expected reduction; stable category; low drift risk. |
-| footprint--portrait-tool | PERMANENT | 2 | Persistent crops on pipettes (highest-touch objects); clear aspect rule mitigates risk. |
-| footprint--landscape-plate | PERMANENT | 3 | Plates and racks recur in every protocol; symmetric to Class 1. |
-| footprint--instrument-wide | EXPERIMENT-ONLY | n/a | Weakest evidence; high overlap with existing `instrument` and `large-equipment` classes; needs prototype delta before promotion. |
-
-Permanent count: 3 (<= 4, satisfies the WP-E1 cap).
-Experiment-only count: 1.
+| Class | Classification | Reason |
+| --- | --- | --- |
+| footprint--tall-glassware | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
+| footprint--portrait-tool | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
+| footprint--landscape-plate | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
+| footprint--instrument-wide | EXPERIMENT-LOCAL SHIM | Weakest evidence; high overlap with existing `instrument` and `large-equipment` classes. Diagnostic shim only. |
 
 Total candidate classes evaluated: 4.
+Permanent class count adopted by this proposal: 0.
+Experiment-local shim count: 4 (all four candidates).
 
-The fourth permanent slot is intentionally held open for a class
-surfaced by the first Round 3 experiment cycle, in case Strategy C
-hybrid plus the three permanent classes does not close the residual to
-zero. Holding a slot in reserve avoids burning the cap on the weakest
-evidence row.
+The historical framing of "3 permanent + 1 experiment-only" is
+superseded. Any future promotion of an experiment-local shim to a
+permanent class must run through the gate in section "Gate for
+promoting an experiment-local shim to a permanent class" and document
+the per-object failure of the durable sizing chain.
+
+Each experiment-local shim must be labeled verbatim "test harness
+only, not production schema" wherever it is referenced, per the
+sizing-source reconciliation note's "Allowed scope for CSS-native
+experiment artifacts" section.
 
 ## Application path (CRITICAL gap from WS-D)
 

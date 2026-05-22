@@ -7,7 +7,33 @@ Author note: Doc-only synthesis. No code, CSS, YAML, or contract edits.
 No commits. Inputs are the five landed M1 deliverables and the two
 surviving Round 2 reference docs.
 
-Amended 2026-05-21: Vocabulary corrected per
+Amended 2026-05-21 (sizing-source reconciliation): Round 3 is reframed
+from "footprint vocabulary" to **sizing-source reconciliation** per
+[docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md).
+The durable sizing chain is
+`scene object -> asset_name -> ASSET_SPECS/default_width -> display_width_cm or width_scale -> layout engine computed box -> renderer preserves SVG aspect ratio`,
+owned by [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md),
+[docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), and
+[docs/specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md). The
+ready-to-fix table is reordered to follow the user's 7-step
+fix-priority order: asset mapping / SVG existence, SVG viewBox
+correctness, `ASSET_SPECS.default_width`, object `display_width_cm`,
+item `width_scale`, zone placement / overload, renderer CSS preserving
+aspect ratio. Exp 5 is reframed: it is no longer "permanent footprint
+vocab adoption (cap=4)" but instead "sizing-source reconciliation:
+investigate per-object failure cause through the scaling-model chain
+before considering any CSS class adoption". Adoption of any permanent
+`footprint--*` class remains user-gated and additionally requires
+proof through the scaling-model chain per the WS-E amendment. No
+permanent class is adopted by this plan. The "WS-E permanent classes"
+language in this file is superseded; all four candidates are
+experiment-local shims pending the gate in
+[docs/active_plans/workstreams/no_crop_sizing_source_reconciliation.md](no_crop_sizing_source_reconciliation.md)
+"Gate for promoting an experiment-local shim to a permanent class".
+Measurements, counts, and baselines below are unchanged (templates 41
+/ gold 78 baseline; templates 21 / gold 38 post-hybrid).
+
+Amended 2026-05-21 (vocabulary correction): Vocabulary corrected per
 [docs/active_plans/no_crop_round3_architecture_vocabulary_clarification.md](../no_crop_round3_architecture_vocabulary_clarification.md).
 Round 3 fixes are framed as scene / scene-object / SVG-asset / footprint
 driven, not region-driven. `experiments/css_native_layout/regions/*.yaml`
@@ -17,6 +43,23 @@ not project architecture or canonical scene YAML
 Exp 3 / Exp 5 are reconstructions of an experiment-local static
 visual-test renderer, not adoption of a "region architecture".
 Measurements, counts, and baselines below are unchanged.
+
+## Round 3 must answer
+
+Any Round 3 fix that touches a cropping symptom must answer these
+three questions before proposing CSS or vocabulary changes:
+
+1. Why did the current sizing model fail to preserve the SVG?
+2. Is the failure in asset data, layout data, renderer CSS, or static
+   harness divergence?
+3. What is the smallest fix that makes the real engine preserve the
+   full SVG?
+
+If a workstream report cannot answer all three, it has not yet
+diagnosed the cropping cause through the durable sizing chain. A
+CSS-class proposal is not a substitute for that diagnosis. See
+[docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md)
+for the full reconciliation note.
 
 ## Purpose
 
@@ -108,15 +151,35 @@ of 101 (28 + 73) is SUPERSEDED by WS-G.
   and Author YAML vocabulary lock in `docs/specs/SPEC_DESIGN_CHECKLIST.md`).
 - Dependencies: Exp 3 must land first.
 
-### Exp 5: prototype experiment-only `footprint--instrument-wide`
+### Exp 5: sizing-source reconciliation (per-object failure investigation)
 
-- Goal: ship the fourth WS-E candidate behind the Exp 3 renderer as a
-  labeled experiment-only class to measure its delta against the
-  existing `instrument` and `large-equipment` classes. WS-E flags this
-  as weakest evidence and highest overlap.
-- Reversibility: HIGH (experiment-only label, not adopted as permanent).
-- User-gated: NO (experiment-only by definition).
-- Dependencies: Exp 3.
+Amended 2026-05-21: this experiment is reframed from "prototype
+experiment-only `footprint--instrument-wide`" to "sizing-source
+reconciliation: investigate per-object failure cause through the
+scaling-model chain before considering any CSS class adoption".
+
+- Goal: for each object that still crops after Exp 1-4, walk the
+  durable sizing chain
+  (`asset_name` -> SVG `viewBox` -> `ASSET_SPECS.default_width` ->
+  `display_width_cm` -> `width_scale` -> zone placement -> renderer
+  CSS) and identify which link is wrong. Produce per-object
+  diagnoses, not a CSS class proposal. See
+  [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How
+  sizing works" and
+  [docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Tuning
+  order" for the canonical order.
+- Effect: each crop is either resolved by a fix in asset data, layout
+  data, or renderer CSS, OR is shown to be unrepresentable by the
+  existing sizing model. Only the second outcome justifies a future
+  permanent `footprint--*` class, gated by
+  [docs/active_plans/workstreams/no_crop_sizing_source_reconciliation.md](no_crop_sizing_source_reconciliation.md)
+  "Gate for promoting an experiment-local shim to a permanent class".
+- Reversibility: HIGH for the diagnoses (documentation only); per-
+  object fixes are bounded scope (one SVG or one YAML each).
+- User-gated: YES for any CSS class addition (per the gate); NO for
+  the diagnoses themselves.
+- Dependencies: Exp 3 lands first (renderer feedback loop), then
+  parallelizable with Exp 4 and Exp 6.
 
 ### Exp 6: region and parent overflow trim on gold scenes
 
@@ -145,24 +208,43 @@ of 101 (28 + 73) is SUPERSEDED by WS-G.
 ## Ready-to-fix table
 
 Crop-reduction estimates are upper bounds taken from WS-A (measured)
-and WS-E (estimated). Reductions for Exp 4-5 are conditional on Exp 3
-landing.
+and WS-E (estimated). Reductions for sizing-source reconciliation
+rows (rows 3, 8) are conditional on the prior renderer-recovery row
+(row 7) landing.
 
-| # | Candidate fix | Scope | Expected crop reduction | Files touched | User-gated | First command to run |
-| ---: | --- | --- | --- | --- | --- | --- |
-| 1 | Apply Strategy C hybrid CSS (`.placement` + `.region--work_surface` overflow visible, drop `max-height: 100%`) | Templates + gold (CSS only) | Templates 41 -> 21 (-20, -49%); gold 78 -> 38 (-40, -51%) | `experiments/css_native_layout/styles/bench.css` | NO | `git apply test-results/no_crop_round3_static_template_repair/hybrid_bench.css.diff` |
-| 2 | Rename `assets/equipment/96well_pcr_plate.svg` to `well_plate_96.svg` to satisfy the dev-smoke `well_plate_96` mapping (WS-C Bucket A row 12) | One asset filename | Resolves 1 of 12 Bucket A rows; closes 1 visible crop on `well_plate_96_zoom_check` smoke | `assets/equipment/96well_pcr_plate.svg` -> `assets/equipment/well_plate_96.svg` | NO | `git mv assets/equipment/96well_pcr_plate.svg assets/equipment/well_plate_96.svg` |
-| 3 | Add base-name SVG aliases for `ethanol_bottle`, `pbs_bottle`, `media_bottle`, `trypan_blue_bottle`, `conical_15ml`, `sharps_container` (WS-C Bucket A bottle/conical/sharps sub-bucket, 6 rows) by `git mv`-ing the `*_empty` variant to the bare name and re-deriving the `*_empty` from the recipe layer | Six asset filenames | Resolves 6 of 12 Bucket A rows; lifts 6 missing-asset placeholders out of every scene that places them | 6 SVGs under `assets/equipment/` | NO | `git mv assets/equipment/ethanol_bottle_empty.svg assets/equipment/ethanol_bottle.svg` (then repeat for pbs, media, trypan_blue, conical_15ml, sharps_container) |
-| 4 | Re-apply Strategy C hybrid CSS on gold scenes and triage newly surfaced hard fails (region_overflow 0 -> 20, svg_svg_overlap 0 -> 15) per scene | 10 gold scenes (CSS + per-scene region rows) | Templates unchanged; gold residual 38 -> target < 20 | `experiments/css_native_layout/styles/bench.css` (additive scene-scoped rules) | NO | `node experiments/css_native_layout/precheck.mjs 'experiments/css_native_layout/stress_scenes/rendered/gold_*.html' --out test-results/no_crop_round3_gold_repair/baseline --annotate off` |
-| 5 | Reconstruct a static visual-test renderer (`render_stress_to_html.py`) with ALIGN against an explicit experiment-local footprint mapping (today `experiments/css_native_layout/regions/*.yaml` `kind_to_footprint`; preferred future shape `experiments/css_native_layout/object_footprints.yaml`) (WS-D Option 2; precondition for any permanent class adoption; experiment-local scaffolding, not region architecture) | New committed Python script under `experiments/css_native_layout/stress_generators/` | None directly; unlocks Exp 6 + Exp 7 reductions | `experiments/css_native_layout/stress_generators/render_stress_to_html.py` (new) | YES | `git ls-files 'experiments/css_native_layout/regions/*.yaml'` (list inputs before drafting the renderer) |
-| 6 | Adopt three WS-E permanent classes (`footprint--tall-glassware`, `footprint--portrait-tool`, `footprint--landscape-plate`) with aspect-ratio rules; declare CSS at top level (not bench-scoped) | Vocabulary + 3 new CSS blocks; class assignment via Exp 5 renderer | Templates 21 -> 5-12 residual; gold proportional | `experiments/css_native_layout/styles/bench.css` (additive); experiment-local footprint mapping (today `regions/*.yaml`, future preferred `object_footprints.yaml`) -- extend `kind_to_footprint` | YES | `node experiments/css_native_layout/precheck.mjs 'experiments/css_native_layout/templates/*.html' --out test-results/no_crop_round3_vocab/baseline --annotate off` |
-| 7 | Ship `footprint--instrument-wide` as experiment-only class behind Exp 5 renderer; measure delta vs `instrument` and `large-equipment` before promotion | Experiment-only CSS block; not permanent | 3-5 crops on `electrophoresis_bench`, `gold_plate_reader_assay` | `experiments/css_native_layout/styles/bench.css` (experiment-only block); renderer mapping | NO | (after Exp 5) re-run gold precheck and diff against pre-class baseline |
-| 8 | Generate final visual acceptance report covering all 20 scenes with before/after screenshots and combined crop total vs Round 2 (101) and WS-G baseline (119) | Reporting only | Reporting; no direct reduction | `docs/active_plans/workstreams/no_crop_round3_visual_acceptance_report.md` (new) | NO | `node experiments/css_native_layout/precheck.mjs 'experiments/css_native_layout/templates/*.html' 'experiments/css_native_layout/stress_scenes/rendered/gold_*.html' --out test-results/no_crop_round3_final --annotate off` |
+Reordered 2026-05-21 to follow the user's 7-step fix-priority order
+(asset mapping / SVG existence -> SVG viewBox -> `ASSET_SPECS.default_width`
+-> object `display_width_cm` -> item `width_scale` -> zone placement /
+overload -> renderer CSS preserving aspect ratio). Numeric estimates,
+file paths, and reversibility classifications are preserved verbatim
+from the prior table; only ordering and the Exp 5 row scope change.
 
-User-gated rows: 2 (Exp 3 renderer reconstruction, Exp 4 permanent
-class adoption).
-Reversible rows: 6 (rows 1-4, 7, 8).
+| # | Fix-priority bucket | Candidate fix | Scope | Expected crop reduction | Files touched | User-gated | First command to run |
+| ---: | --- | --- | --- | --- | --- | --- | --- |
+| 1 | asset mapping / SVG existence | Rename `assets/equipment/96well_pcr_plate.svg` to `well_plate_96.svg` to satisfy the dev-smoke `well_plate_96` mapping (WS-C Bucket A row 12) | One asset filename | Resolves 1 of 12 Bucket A rows; closes 1 visible crop on `well_plate_96_zoom_check` smoke | `assets/equipment/96well_pcr_plate.svg` -> `assets/equipment/well_plate_96.svg` | NO | `git mv assets/equipment/96well_pcr_plate.svg assets/equipment/well_plate_96.svg` |
+| 2 | asset mapping / SVG existence | Add base-name SVG aliases for `ethanol_bottle`, `pbs_bottle`, `media_bottle`, `trypan_blue_bottle`, `conical_15ml`, `sharps_container` (WS-C Bucket A bottle/conical/sharps sub-bucket, 6 rows) by `git mv`-ing the `*_empty` variant to the bare name and re-deriving the `*_empty` from the recipe layer | Six asset filenames | Resolves 6 of 12 Bucket A rows; lifts 6 missing-asset placeholders out of every scene that places them | 6 SVGs under `assets/equipment/` | NO | `git mv assets/equipment/ethanol_bottle_empty.svg assets/equipment/ethanol_bottle.svg` (then repeat for pbs, media, trypan_blue, conical_15ml, sharps_container) |
+| 3 | SVG viewBox + `ASSET_SPECS.default_width` + `display_width_cm` + `width_scale` (sizing-source reconciliation) | **Sizing-source reconciliation: investigate per-object failure cause through scaling-model chain before considering any CSS class adoption.** For each object still cropping after rows 1-2 and 7-8, walk the chain `asset_name` -> SVG `viewBox` -> `ASSET_SPECS.default_width` -> `display_width_cm` -> `width_scale` and identify the broken link. Produce per-object diagnoses, not CSS classes. Any permanent `footprint--*` class proposal requires per-object proof per the WS-E gate. | Per-object investigation (no CSS adoption in this row) | Unknown until per-object diagnoses complete; bounded by residual crops after rows 1-2, 7-8 | `src/asset_specs.ts`, `content/objects/<kind>/<object_name>.yaml`, `assets/equipment/*.svg`, scene YAML `width_scale` | YES (for any CSS class adoption arising from the investigation; per-object asset/YAML fixes themselves are not gated) | (per object) inspect `src/asset_specs.ts`, then `content/objects/`, then `assets/equipment/<asset>.svg` `viewBox`, then scene YAML; see [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How sizing works" |
+| 4 | zone placement / overload | Re-apply Strategy C hybrid CSS on gold scenes and triage newly surfaced hard fails (region_overflow 0 -> 20, svg_svg_overlap 0 -> 15) per scene | 10 gold scenes (CSS + per-scene region rows) | Templates unchanged; gold residual 38 -> target < 20 | `experiments/css_native_layout/styles/bench.css` (additive scene-scoped rules) | NO | `node experiments/css_native_layout/precheck.mjs 'experiments/css_native_layout/stress_scenes/rendered/gold_*.html' --out test-results/no_crop_round3_gold_repair/baseline --annotate off` |
+| 5 | renderer CSS preserving aspect ratio | Apply Strategy C hybrid CSS (`.placement` + `.region--work_surface` overflow visible, drop `max-height: 100%`) | Templates + gold (CSS only) | Templates 41 -> 21 (-20, -49%); gold 78 -> 38 (-40, -51%) | `experiments/css_native_layout/styles/bench.css` | NO | `git apply test-results/no_crop_round3_static_template_repair/hybrid_bench.css.diff` |
+| 6 | renderer CSS preserving aspect ratio (experiment-local shim, gated) | Ship `footprint--instrument-wide` as an experiment-local test-harness shim behind the renderer recovery (row 7); measure delta vs `instrument` and `large-equipment`. **Not a permanent class** unless the WS-E gate is satisfied. Must be labeled "test harness only, not production schema". | Experiment-only CSS block; not permanent | 3-5 crops on `electrophoresis_bench`, `gold_plate_reader_assay` | `experiments/css_native_layout/styles/bench.css` (experiment-only block); renderer mapping | YES (any CSS class addition requires scaling-model proof of inadequacy per WS-E amendment) | (after row 7) re-run gold precheck and diff against pre-class baseline |
+| 7 | static harness recovery (experiment-local) | Reconstruct a static visual-test renderer (`render_stress_to_html.py`) with ALIGN against an explicit experiment-local footprint mapping (today `experiments/css_native_layout/regions/*.yaml` `kind_to_footprint`; preferred future shape `experiments/css_native_layout/object_footprints.yaml`) (WS-D Option 2; precondition for any permanent class adoption; experiment-local scaffolding, not region architecture) | New committed Python script under `experiments/css_native_layout/stress_generators/` | None directly; unlocks Exp 6 + Exp 7 reductions | `experiments/css_native_layout/stress_generators/render_stress_to_html.py` (new) | YES | `git ls-files 'experiments/css_native_layout/regions/*.yaml'` (list inputs before drafting the renderer) |
+| 8 | reporting | Generate final visual acceptance report covering all 20 scenes with before/after screenshots and combined crop total vs Round 2 (101) and WS-G baseline (119) | Reporting only | Reporting; no direct reduction | `docs/active_plans/workstreams/no_crop_round3_visual_acceptance_report.md` (new) | NO | `node experiments/css_native_layout/precheck.mjs 'experiments/css_native_layout/templates/*.html' 'experiments/css_native_layout/stress_scenes/rendered/gold_*.html' --out test-results/no_crop_round3_final --annotate off` |
+
+User-gated rows: 4 (row 3 sizing-source reconciliation for any CSS
+class arising from it, row 6 instrument-wide shim, row 7 renderer
+reconstruction, plus any future permanent class promotion through the
+WS-E gate).
+Reversible rows: row 1, row 2 (asset renames), row 4, row 5, row 8.
 Total rows: 8.
+
+Note: the prior "adopt three WS-E permanent classes" row is removed
+from this table per the sizing-source reconciliation; the three
+candidate classes (`footprint--tall-glassware`,
+`footprint--portrait-tool`, `footprint--landscape-plate`) are
+downgraded to experiment-local shims in
+[docs/active_plans/workstreams/no_crop_sizing_source_reconciliation.md](no_crop_sizing_source_reconciliation.md)
+pending per-object proof through the gate. They may be re-added to
+this table only after the gate is satisfied.
 
 ## Source-of-truth table
 
@@ -176,7 +258,7 @@ Total rows: 8.
 | Missing-asset issue count | 39 (12 + 16 + 11 across A, B, C/E), WS-C `no_crop_missing_asset_audit.md` | "~30" estimate in WS-A dispatch text; 65-row brief in `round3_missing_asset_repair_brief.md` | All `assets/equipment/` + `content/objects/` + `content/base_scenes/` | not screenshot-evidenced; filesystem audit only |
 | Render-path consumption of `kind_to_footprint` | NONE across all three paths, WS-D `no_crop_render_harness_audit.md` | `current_css_native_layout_manager_status_report.md` section 7 claim "css_native_adapter.ts reads kind_to_footprint" (unsupported by source) | Production runtime, static template, stress static-HTML | n/a (code audit) |
 | Existence of `render_stress_to_html.py` | MISSING, never tracked in git, WS-D `no_crop_render_harness_audit.md` | References in `new3_batch5_stress_pipeline_alignment_options.md`, `git_incident_4e2c709_inventory.md`, and prior plan docs treating it as canonical | `experiments/css_native_layout/stress_generators/` | n/a (absence finding) |
-| Footprint class vocabulary recommendation | 3 permanent + 1 experiment-only, WS-E `no_crop_footprint_vocab_proposal.md` (cap 4, one slot reserved) | None; first canonical statement | All four WS-E candidate classes | per-class evidence cites WS-A hybrid screenshots |
+| Footprint class vocabulary recommendation | 3 permanent + 1 experiment-only, WS-E `no_crop_sizing_source_reconciliation.md (renamed 2026-05-21 from no_crop_footprint_vocab_proposal.md)` (cap 4, one slot reserved) | None; first canonical statement | All four WS-E candidate classes | per-class evidence cites WS-A hybrid screenshots |
 | Strategy C reject decisions (A, B) | REJECT both, WS-A `no_crop_round3_static_template_repair_report.md` | None; prior Round 2 reports did not evaluate these levers | Templates (precheck-measured) | `test-results/no_crop_round3_static_template_repair/strategy_a/`, `.../strategy_b/`, `.../strategy_c/` |
 | Gold honest-failure increase (region_overflow, svg_svg_overlap) | region_overflow 0 -> 20; svg_svg_overlap 0 -> 15, WS-A `no_crop_round3_static_template_repair_report.md` | None; previously masked by `.placement { overflow: hidden }` | 10 gold scenes post-hybrid | `test-results/no_crop_round3_static_template_repair/hybrid_gold/visual_audit.json` |
 | Bottom-of-viewport residuals (template) | 21 crops in 8 of 10 templates listed by scene, WS-A `no_crop_round3_static_template_repair_report.md` | None; first per-scene residual inventory | Templates only, post-hybrid | `test-results/no_crop_round3_static_template_repair/hybrid_templates/*.png` |
@@ -218,7 +300,7 @@ Concerns flagged forward:
 - `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/no_crop_missing_asset_audit.md`
 - `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/no_crop_render_harness_audit.md`
 - `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/no_crop_current_render_sanity.md`
-- `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/no_crop_footprint_vocab_proposal.md`
+- `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/no_crop_sizing_source_reconciliation.md (renamed 2026-05-21 from no_crop_footprint_vocab_proposal.md)`
 - `/Users/vosslab/nsh/TYPESCRIPT/virtual-lab-protocol-simulation/docs/active_plans/workstreams/round3_missing_asset_repair_brief.md` (cross-reference)
 
 Round 2 reference docs cited via WS-E and WS-G (not re-opened in this

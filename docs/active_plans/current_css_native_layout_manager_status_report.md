@@ -2,6 +2,8 @@
 
 **Report Date:** 2026-05-21 | **Scope:** NEW0 through NEW3 Batch 5 | **Evidence Base:** Tracked code, canonical diagnostics, runtime proof, stress corpus v1
 
+**Amended 2026-05-21 (sizing-source reconciliation):** Permanent CSS footprint vocabulary classes are no longer the production direction. See docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md; durable no-crop fixes go through the existing scaling model and SVG pipeline.
+
 ---
 
 ## Evidence Currency Legend
@@ -664,7 +666,7 @@ This section documents caveats and divergences discovered during Workstream G au
 - Binary artifact policy (allow, restrict, external storage)
 - PRIMARY_CONTRACT.md amendment (item 3: layout engine ownership)
 - Spike promotion timeline (when to enable NEW0 feature flag in production)
-- New footprint vocabulary classes (multi-workspace region support)
+- New footprint vocabulary classes (multi-workspace region support) [SUPERSEDED: see docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md - permanent CSS footprint classes are no longer the production direction; durable fixes go through the existing scaling model and SVG pipeline.]
 
 ---
 
