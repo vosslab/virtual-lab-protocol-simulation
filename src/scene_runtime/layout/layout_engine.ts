@@ -255,13 +255,11 @@ export function layoutZoneItems(
     const fpItem = zoneItems[i]!;
     const fpSpec = specs[fpItem.svgAsset]!;
     // depth multiplier: back 0.80, mid 1.00, front 1.10.
-    // Applied to item.widthScale so downstream footprint and label math
-    // all see the depth-adjusted size consistently.
     const depthScale = depthScaleFor(fpItem.depth);
-    const visualW = fpSpec.defaultWidth * fpItem.widthScale * depthScale;
+    const visualW = fpSpec.defaultWidth * depthScale;
     // estimate label width same way as layoutLabels()
     const charW = fpItem.label.length * AVG_CHAR_WIDTH_PCT;
-    const specLabelW = fpSpec.labelWidth * fpItem.widthScale;
+    const specLabelW = fpSpec.labelWidth;
     let estLabelW = Math.max(charW, specLabelW);
     // if label would wrap, use the wider wrapped line
     if (estLabelW > visualW && fpItem.label.indexOf(" ") >= 0) {
@@ -563,7 +561,7 @@ export function layoutLabels(
 
     // estimate label width from character count (unscaled char units)
     const charWidth = item.label.length * AVG_CHAR_WIDTH_PCT;
-    const specWidth = spec.labelWidth * item.widthScale;
+    const specWidth = spec.labelWidth;
     const estWidth = Math.max(charWidth, specWidth);
 
     // Available width for label wrap decisions. lay.footprint is
@@ -572,7 +570,7 @@ export function layoutLabels(
     // lay.footprint back into unscaled units. All comparisons below
     // (charWidth, estWidth, finalWidth, availableWidth) are then in
     // unscaled units, matching the existing char-width math.
-    const unscaledVisual = spec.defaultWidth * item.widthScale;
+    const unscaledVisual = spec.defaultWidth;
     const effectiveScale =
       unscaledVisual > 0 ? lay.width / unscaledVisual : 1.0;
     const unscaledFootprint =

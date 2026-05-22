@@ -185,6 +185,25 @@ function inferInitialScene(
     }
   }
 
+  // Explicit-SceneChange disambiguation: if the entry step's first interaction
+  // declares a SceneChange in its scene_operations and the named to_scene is
+  // among the matching scenes for the target, use that scene as the initial.
+  // This honors the author's explicit scene intent in cases where target-only
+  // inference is ambiguous (e.g. an object placed in many bench scenes).
+  // Round 3 runtime-mount-gap repair (2026-05-22).
+  const firstResponse = firstInteraction.response;
+  if (firstResponse && Array.isArray(firstResponse.scene_operations)) {
+    for (const op of firstResponse.scene_operations) {
+      if (
+        op.type === "SceneChange" &&
+        typeof op.to_scene === "string" &&
+        matchingScenes.includes(op.to_scene)
+      ) {
+        return op.to_scene;
+      }
+    }
+  }
+
   // Use the shared resolver to pick the best match (with prefix preference and no-switch logic).
   // For entry, we don't have a currentSceneId, so pass undefined.
   try {

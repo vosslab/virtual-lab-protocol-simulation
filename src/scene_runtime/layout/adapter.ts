@@ -149,7 +149,6 @@ function buildSceneItem(
     kind: objectSpec.kind,
     zone: placement.zone,
     depthTier: placement.depth_tier || 0,
-    widthScale: 1.0, // Default scale; scene authors can override via placement.position.scale
     label: objectSpec.label,
     anchorY: anchorY,
     // Optional fields: shortLabel and depth are omitted, not set to undefined

@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Layout Manager Forensic Assessment</title>
+<style>
+  @page { size: Letter; margin: 0.6in; }
+  html, body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    color: #1a1a1a;
+    line-height: 1.42;
+    margin: 0; padding: 0;
+  }
+  .page { page-break-after: always; padding: 0.2in 0.1in; min-height: 9.5in; box-sizing: border-box; }
+  .page:last-child { page-break-after: auto; }
+  h1 { font-size: 21pt; margin: 0 0 0.3em 0; color: #102a43; border-bottom: 3px solid #102a43; padding-bottom: 0.2em; }
+  h2 { font-size: 14pt; margin: 0.7em 0 0.3em 0; color: #243b53; border-bottom: 1px solid #bcccdc; padding-bottom: 0.15em; }
+  h3 { font-size: 12pt; margin: 0.6em 0 0.25em 0; color: #334e68; }
+  h4 { font-size: 10.5pt; margin: 0.5em 0 0.2em 0; color: #486581; }
+  p, li { font-size: 10.5pt; }
+  code, .mono { font-family: "SF Mono", Menlo, Consolas, monospace; font-size: 9pt; background: #f0f4f8; padding: 0 0.25em; border-radius: 2px; }
+  pre { background: #f0f4f8; padding: 0.5em 0.7em; border-left: 3px solid #486581; border-radius: 3px;
+        font-family: "SF Mono", Menlo, monospace; font-size: 8.5pt; overflow-x: auto; white-space: pre; }
+  table { border-collapse: collapse; width: 100%; font-size: 9pt; margin: 0.4em 0; }
+  th, td { border: 1px solid #bcccdc; padding: 3px 5px; text-align: left; vertical-align: top; }
+  th { background: #d9e2ec; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  td.num, th.num { text-align: right; font-family: "SF Mono", Menlo, monospace; }
+  figure { margin: 0.4em 0; text-align: center; }
+  figure img { max-width: 95%; max-height: 3.6in; border: 1px solid #9fb3c8; border-radius: 3px; }
+  figcaption { font-size: 8.5pt; color: #486581; margin-top: 0.15em; font-style: italic; }
+  .row { display: flex; gap: 0.4em; align-items: flex-start; margin: 0.4em 0; }
+  .row figure { flex: 1; margin: 0; }
+  .row figure img { max-height: 2.6in; }
+  .verdict { background: #fff4e6; border-left: 4px solid #c45a00; padding: 0.4em 0.7em; margin: 0.4em 0; }
+  .good { background: #ecf7ed; border-left: 4px solid #2a7a32; padding: 0.4em 0.7em; margin: 0.4em 0; }
+  .bad  { background: #fdecec; border-left: 4px solid #a01a1a; padding: 0.4em 0.7em; margin: 0.4em 0; }
+  .neutral { background: #eef2f7; border-left: 4px solid #486581; padding: 0.4em 0.7em; margin: 0.4em 0; }
+  .footer { color: #627d98; font-size: 8.5pt; margin-top: 1em; }
+  .small { font-size: 9pt; }
+  ul, ol { margin: 0.3em 0 0.3em 1.2em; padding: 0; }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+<h1>Layout Manager Forensic Assessment</h1>
+<p><strong>Subject:</strong> Experiments vs Runtime vs Salvage &mdash; what currently ships, what is dead code, what is unpromoted value.</p>
+<p><strong>Date:</strong> 2026-05-22 &middot; <strong>Repo:</strong> virtual-lab-protocol-simulation &middot; <strong>Author:</strong> forensic assembly pass (FH)</p>
+<p><strong>Inputs:</strong> FA provenance, FB experiments-value audit, FC salvage-contamination audit, FD SVG completeness, FF side-by-side, FG diagnostic measurements, plus the layout_manager_forensic_gallery (45 PNGs) and runtime_svg_completeness gallery (per-protocol crops).</p>
+
+<h2>1. Executive summary</h2>
+
+<div class="verdict"><strong>Headline finding:</strong> both layout paths fail their own quality bars. The shipping procedural runtime exhibits 17.3% hard fails on SVG completeness (48/278 placements) and only 12 of 26 protocols complete an end-to-end walker pass. The CSS-native experiments path scores 0/10 PASS on its own precheck and 0/110 on its own stress corpus. There is no clean winner today; there is the path we ship and the path we did not.</div>
+
+<p>The user's standing suspicion &mdash; that "broken salvage code has come back into <code>src/</code>" &mdash; is <strong>REFUTED</strong>. <code>src/scene_runtime/layout/layout_engine.ts</code> was mined verbatim from <code>src/layout_engine.ts</code> (commit <code>ff8c664</code>, 2026-05-17), which itself dates to <code>41a236d</code> (2026-05-05). The <code>salvage/</code> tree contains only Python utilities and agent-transcript text; zero TypeScript source files. <code>experiments/css_native_layout/</code> is bidirectionally isolated from <code>src/</code>: it explicitly imports nothing from <code>src/</code>, and <code>git ls-files src/</code> shows zero files referencing any <code>experiments/</code> path. The one apparent exception &mdash; <code>src/scene_runtime/layout/css_native_adapter.ts</code> &mdash; is a fresh spike (2026-05-21) authored inside <code>src/</code>, feature-flagged off, and its own header reads "Must be removed or replaced before NEW1 promotion."</p>
+
+<p>The runtime side ships a zone-based pixel-math layout engine plus a working dispatch and chrome stack. It mounts 26/26 protocols cleanly and renders 230 real SVG assets out of 278 placements (82.7%). But 48 placements fall into <code>generic_outline</code> (42, mostly instrument off-states such as <code>power_supply_off</code>, <code>microwave_closed</code>, <code>heat_block_closed</code>, <code>lightbox_off</code>, and the recurring <code>electrode_module</code> / <code>gel_opening_tool</code>) or <code>empty_bubble</code> (6, all on <code>well_plate_96</code>). The walker completes only 12 of 26 protocols end-to-end; failure modes are split across "missing DOM affordance," "visible-but-timed wait without test-clock affordance," and "next-button gating after step_validator." None of these failures are mount failures.</p>
+
+<p>The experiments side never got close to shipping. Its own precheck verdict (<code>visual_audit.json</code>) marks all ten gold templates FAIL, dominated by <code>artwork_integrity</code> findings that the precheck design also classifies as hard-fail. The stress corpus is worse (<code>scenes_pass=0/110</code>, <code>checks_failed=216</code>). The verdict-vs-score disagreement is by design: even <code>well_plate_96_zoom</code> at score 92 is FAIL. Where the experiments side did add durable value is in its diagnostic vocabulary (<code>checkArtworkIntegrity</code>, <code>checkRegionOverflow</code>, <code>checkSvgSvgOverlap</code>, <code>checkSupportingDistance</code>), its CSS containment idiom (<code>.object-graphic</code> + <code>object-fit: contain</code> + <code>overflow: visible</code> on <code>.placement</code>), and the 10 gold YAMLs as adversarial fixtures. None of these were promoted to <code>src/</code> or <code>tests/playwright/</code>.</p>
+
+<p>Direct head-to-head: in <strong>5 of 6</strong> static template vs runtime pairings, the runtime renders closer to a usable scene. The runtime wins on bench, hood, electrophoresis, dense_composition, and instrument; the experiments static template wins on well_plate (where the runtime's six <code>empty_bubble</code> hard fails are exactly the problem). This inverts the user's prior framing: the runtime is the better realised path today, not just the path that got polish.</p>
+
+<p>The recommended posture: keep the runtime mount/dispatch/walker/chrome stack, remove the dead <code>css_native_adapter.ts</code> spike, and promote four contract-compatible items from <code>experiments/</code> &mdash; the <code>.object-graphic</code> containment wrapper, the <code>checkArtworkIntegrity</code> diagnostic, <code>object_footprints.yaml</code>, and the 10 gold YAML stress fixtures. None of these require amending <code>PRIMARY_CONTRACT.md</code> item 3.</p>
+
+</div>
+
+<div class="page">
+
+<h2>2. What currently ships (dist/, call graph)</h2>
+
+<p>The production bundle is built by esbuild from <code>src/main.ts</code> into <code>dist/main.js</code> plus 26 per-protocol HTML pages. The transitive call graph from FA:</p>
+
+<pre>dist/main.js  &lt;-- src/main.ts
+  -&gt; src/scene_runtime/bundle/entry.ts
+       -&gt; src/scene_runtime/loader/world.ts
+       -&gt; src/scene_runtime/render/scene.ts
+            -&gt; src/scene_runtime/layout/index.ts                   (barrel)
+                 -&gt; src/scene_runtime/layout/adapter.ts           (primary: computeSceneLayout)
+                      -&gt; src/scene_runtime/layout/layout_engine.ts (legacyComputeLayout)
+                      -&gt; src/scene_runtime/layout/css_native_adapter.ts  (spike; NEVER called)
+                      -&gt; src/scene_runtime/layout/feature_flags.ts       (gate: always false)
+       -&gt; src/scene_runtime/chrome/*       (prompt, feedback, next button, scene frame, adjust panel, CSS)
+       -&gt; src/scene_runtime/dispatch/*     (click.ts, adjust.ts)
+       -&gt; src/scene_runtime/adapters/well_plate/*
+
+dist/runtime.bundle.js  &lt;-- src/scene_runtime/bundle/entry.ts  (same tree, IIFE entry)</pre>
+
+<p>Every file under <code>src/scene_runtime/</code> is reachable from <code>entry.ts</code>. The single orphan-at-runtime is <code>layout_engine.ts</code>'s <code>computeRowSlotSceneLayout</code> (FA Concern 3) &mdash; exported and re-exported but never called in the production render path.</p>
+
+<p><code>generated/protocol_data</code>, <code>generated/scene_data</code>, and <code>generated/object_data</code> are dynamic imports inside <code>entry.ts</code>, resolved at bundle time. SVG assets are loaded by <code>render/svg_loader.ts</code> and inlined.</p>
+
+<h2>3. What lives only in experiments/</h2>
+
+<p>FB enumerated nine feature classes in <code>experiments/css_native_layout/</code> against current <code>src/</code>:</p>
+
+<table>
+<thead><tr><th>Feature</th><th>Classification</th><th>Priority</th></tr></thead>
+<tbody>
+<tr><td>Scene-class CSS (<code>bench.css</code> / <code>hood.css</code> / <code>instrument.css</code>)</td><td>Not promoted</td><td>Blocked by contract item 3</td></tr>
+<tr><td>No-crop discipline (CSS enforcement mechanism)</td><td>Rule text promoted, CSS mechanism not</td><td>HIGH &mdash; not contract-blocked</td></tr>
+<tr><td>Diagnostic precheck (<code>precheck.mjs</code>, 12 checks, 1692 lines)</td><td>Not promoted</td><td>HIGH &mdash; ship <code>checkArtworkIntegrity</code> as gate</td></tr>
+<tr><td>Scorecard infrastructure (<code>score_layout.mjs</code>, 649 lines)</td><td>Not promoted</td><td>Medium &mdash; spec value</td></tr>
+<tr><td>Stress corpus (10 gold YAMLs + 110-scene generated batch)</td><td>Not promoted</td><td>Medium &mdash; not contract-blocked</td></tr>
+<tr><td><code>templates/dir_b/</code> (10 static HTML templates)</td><td>Not promoted</td><td>Blocked by contract; reference value</td></tr>
+<tr><td>Showcase gallery (label policies, hover demos)</td><td>Not promoted</td><td>Low; label policies applicable</td></tr>
+<tr><td>Region/zone vocabulary (5 named regions)</td><td>Promoted incorrectly (partial, spike-gated)</td><td>HIGH &mdash; wire footprints</td></tr>
+<tr><td><code>.object-graphic</code> &rarr; <code>img</code> containment rules</td><td>Not promoted</td><td>HIGH &mdash; not contract-blocked</td></tr>
+</tbody>
+</table>
+
+<p>Four items are <strong>not blocked by PRIMARY_CONTRACT item 3</strong> and can be promoted immediately:</p>
+<ol>
+<li><code>.object-graphic</code> containment wrapper + <code>object-fit: contain</code> (a render-layer CSS rule, not layout engine behavior)</li>
+<li><code>checkArtworkIntegrity</code> from <code>precheck.mjs</code> (a test, not production layout logic)</li>
+<li><code>object_footprints.yaml</code> (146 entries; a mapping reference, not engine logic)</li>
+<li>The 10 gold stress YAMLs (content fixtures under <code>tests/content/dev_smoke/</code>)</li>
+</ol>
+
+<h2>4. Whether salvage/archive code returned</h2>
+
+<div class="good"><strong>FC verdict: CLEAN.</strong> The <code>salvage/</code> tree contains only <code>normalize_svg.py</code>, <code>purge_inline_images.py</code>, and an agent-transcript archive (<code>.output</code>, <code>.diff</code>, <code>.patch</code> text). Zero TypeScript source files exist under <code>salvage/</code>. Nothing in <code>src/</code> imports from <code>salvage/</code> or matches any signature found there.</div>
+
+<p>The user's recurring concern that the layout subsystem was reconstituted from a broken archive is unsupported by evidence. The provenance chain (FA section 6):</p>
+
+<pre>2026-05-05  41a236d  src/layout_engine.ts created (production zone engine)
+2026-05-17  ff8c664  src/scene_runtime/layout/layout_engine.ts mined from above
+2026-05-21  4e2c709  src/scene_runtime/layout/css_native_adapter.ts (NEW1 spike; flag off)
+2026-05-22  b24d031  src/layout_engine.ts deleted; src/scene_runtime/layout/ is sole impl</pre>
+
+<p>The misleading visual signal: <code>css_native_adapter.ts</code> ships in every bundle because <code>adapter.ts</code> imports it unconditionally. Its <em>code</em> never executes (gate <code>is_css_native_well_plate_zoom_spike_enabled()</code> default false). FA Concern 1 flags this as low-severity dead code with non-zero ship risk if the flag is ever toggled accidentally.</p>
+
+</div>
+
+<div class="page">
+
+<h2>5. SVG completeness audit (FD)</h2>
+
+<p>Driver: <code>tests/playwright/forensic_svg_completeness.mjs</code>. Sample: 26 mounted protocols, 278 rendered placements.</p>
+
+<table>
+<thead><tr><th>Category</th><th class="num">Count</th><th class="num">Share</th><th>Severity</th></tr></thead>
+<tbody>
+<tr><td>real_svg</td><td class="num">230</td><td class="num">82.7%</td><td>ok</td></tr>
+<tr><td>generic_outline</td><td class="num">42</td><td class="num">15.1%</td><td>hard_fail</td></tr>
+<tr><td>empty_bubble</td><td class="num">6</td><td class="num">2.2%</td><td>hard_fail</td></tr>
+<tr><td>missing_svg / fallback_rectangle / generated_placeholder / non_scientific_blob</td><td class="num">0</td><td class="num">0%</td><td>&mdash;</td></tr>
+<tr><td>thin_svg (advisory)</td><td class="num">0</td><td class="num">0%</td><td>advisory</td></tr>
+<tr><th>Total hard fails</th><th class="num">48</th><th class="num">17.3%</th><th>&mdash;</th></tr>
+</tbody>
+</table>
+
+<h3>Top offenders (recurring objects)</h3>
+
+<table>
+<thead><tr><th>Object</th><th class="num">Hard fails</th><th>Category</th><th>Notes</th></tr></thead>
+<tbody>
+<tr><td><code>well_plate_96</code></td><td class="num">6</td><td>empty_bubble</td><td>Group rendered with no SVG child and no fallback rect; affects plate-centric protocols</td></tr>
+<tr><td><code>power_supply</code> (off state)</td><td class="num">8</td><td>generic_outline</td><td>1-shape inline SVG; appears in every SDS-PAGE workspace</td></tr>
+<tr><td><code>gel_opening_tool</code></td><td class="num">8</td><td>generic_outline</td><td>Single-shape outline asset</td></tr>
+<tr><td><code>electrode_module</code></td><td class="num">8</td><td>generic_outline</td><td>Single-shape outline asset</td></tr>
+<tr><td><code>microwave_closed</code></td><td class="num">2</td><td>generic_outline</td><td>Off-state lacks anatomy</td></tr>
+<tr><td><code>kimwipe_pad</code> / <code>paper_towel_pad</code></td><td class="num">3</td><td>generic_outline</td><td>Pad assets are 1-shape rectangles</td></tr>
+<tr><td><code>heat_block_closed</code></td><td class="num">1</td><td>generic_outline</td><td>Off-state outline</td></tr>
+<tr><td><code>microtube_rack_24_placeholder</code></td><td class="num">1</td><td>generic_outline</td><td>Explicit placeholder asset still in dist</td></tr>
+<tr><td><code>lightbox_off</code></td><td class="num">1</td><td>generic_outline</td><td>Off-state outline</td></tr>
+</tbody>
+</table>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/runtime_svg_completeness/mtt_plate_reaction/obj_treatment_plate_main.png" alt="well_plate_96 empty bubble">
+    <figcaption>well_plate_96 empty_bubble in mtt_plate_reaction</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/runtime_svg_completeness/sdspage_assemble_electrode_module/obj_rear_right_power_supply.png" alt="power_supply generic outline">
+    <figcaption>power_supply_off generic_outline (sdspage_assemble_electrode_module)</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/runtime_svg_completeness/sdspage_assemble_electrode_module/obj_center_electrode_module.png" alt="electrode_module outline">
+    <figcaption>electrode_module generic_outline (recurring across 8 SDS-PAGE workspaces)</figcaption>
+  </figure>
+</div>
+
+<h2>6. Runtime capabilities (FG)</h2>
+
+<p>Driver: <code>tests/playwright/forensic_diagnostic_runtime.mjs</code> + <code>tests/playwright/forensic_walker_sweep.mjs</code>.</p>
+
+<table>
+<thead><tr><th>Metric</th><th class="num">Value</th><th>Interpretation</th></tr></thead>
+<tbody>
+<tr><td>protocol count</td><td class="num">26</td><td>all <code>dist/*.html</code> minus index</td></tr>
+<tr><td>mount count</td><td class="num">26 / 26</td><td>no <code>RUNTIME INITIALIZATION ERROR</code> overlays</td></tr>
+<tr><td>walkthrough success</td><td class="num">12 / 26</td><td><strong>46%</strong> end-to-end completion</td></tr>
+<tr><td>clickWorks total</td><td class="num">133</td><td>successful interactions across all walks</td></tr>
+<tr><td>OSC top-10 (proxy)</td><td class="num">96</td><td>interactionsWalked on top-10 most-clicked protocols</td></tr>
+<tr><td>placeholder count</td><td class="num">0</td><td>no <code>data-render-fallback</code> nor <code>#e8f5e9</code> rects</td></tr>
+<tr><td>real SVG count</td><td class="num">246</td><td>(FG counts inline+img; FD counts placements)</td></tr>
+<tr><td>visible crop count</td><td class="num">0</td><td>no bbox overflow beyond <code>.object-graphic</code> parent</td></tr>
+<tr><td>off-page count</td><td class="num">0</td><td>no clickable elements outside 1440x1200 viewport</td></tr>
+<tr><td>label overlap count</td><td class="num">46</td><td>bbox-intersecting <code>&lt;text&gt;</code> pairs (SDS-PAGE-heavy)</td></tr>
+<tr><td>console errors</td><td class="num">2</td><td>both from <code>sdspage_run_electrophoresis</code></td></tr>
+<tr><td>DOM growth post-mount</td><td class="num">0</td><td>stable DOM in 800ms post-mount window</td></tr>
+</tbody>
+</table>
+
+<p>What the runtime delivers cleanly: complete mount, no placeholder fallbacks, no visible crops at the runtime measurement, stable DOM, working dispatch for click and adjust gestures (133 successful interactions), and a usable scene chrome (prompt, feedback, next button).</p>
+
+</div>
+
+<div class="page">
+
+<h2>7. Runtime shortcomings</h2>
+
+<p>Three independent classes of shortcoming surface in the runtime metrics:</p>
+
+<h3>7.1 SVG asset gap (48 hard fails)</h3>
+<p>17.3% of placements still resolve to a single-shape outline or an empty group. The pattern is concentrated: <strong>off-state instrument SVGs</strong> (<code>power_supply_off</code>, <code>microwave_closed</code>, <code>heat_block_closed</code>, <code>lightbox_off</code>) account for the bulk of <code>generic_outline</code> fails, and <strong><code>well_plate_96</code></strong> accounts for every <code>empty_bubble</code> fail. These are content/asset gaps, not engine bugs.</p>
+
+<h3>7.2 Walker completes only 12/26</h3>
+<p>Failure modes (FG Appendix):</p>
+<ul>
+<li>missing DOM affordance for a declared target (8 protocols)</li>
+<li>waitForSelector timeout on visible-but-timed waits (5 protocols)</li>
+<li>step_validator passes but next-button affordance does not appear (2 protocols)</li>
+</ul>
+<p>None of these are mount failures. All three are walker-instrument or scene-wiring concerns, not layout engine concerns.</p>
+
+<h3>7.3 Label overlap (46 pairs)</h3>
+<p>Concentrates in the SDS-PAGE family (<code>sdspage_extract_gel_from_cassette</code>=4, <code>sdspage_load_sample_single_lane</code>=3, <code>sdspage_prepare_gel_cassette</code>=3, <code>sdspage_run_electrophoresis</code>=3). Production CSS has no label policy; FB Feature 7 identified six worked label-policy CSS variants in <code>experiments/css_native_layout/showcase/label_policies/</code> that were never applied.</p>
+
+<div class="bad"><strong>Honest read:</strong> the shipping runtime fails its own SVG-completeness gate on 17.3% of placements and only walks through 46% of protocols end-to-end. "Mounts cleanly" is a floor, not a quality claim.</div>
+
+<h2>8. Experiments vs runtime side-by-side (FF)</h2>
+
+<p>Driver: side-by-side captures of CSS-native static template vs procedural runtime, six representative pairs (chromium headless, 1280x900).</p>
+
+<table>
+<thead><tr><th>pair</th><th class="num">exp crops</th><th class="num">run crops</th><th class="num">exp placeholders</th><th class="num">run placeholders</th><th class="num">exp labels bad</th><th class="num">run labels bad</th><th class="num">exp offpage</th><th class="num">run offpage</th><th>verdict</th></tr></thead>
+<tbody>
+<tr><td>bench</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td>runtime-better</td></tr>
+<tr><td>hood</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td>runtime-better</td></tr>
+<tr><td>electrophoresis</td><td class="num">6</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">3</td><td class="num">12</td><td class="num">0</td><td>runtime-better</td></tr>
+<tr><td>well_plate</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td>experiments-better</td></tr>
+<tr><td>dense_composition</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">6</td><td class="num">0</td><td>runtime-better</td></tr>
+<tr><td>instrument</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">4</td><td class="num">0</td><td>runtime-better</td></tr>
+</tbody>
+</table>
+
+<p><strong>Tally:</strong> runtime-better 5 &middot; experiments-better 1 &middot; tied 0.</p>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/hood/experiments.png" alt="experiments hood">
+    <figcaption>experiments: hood (CSS-native static template) &mdash; 6 crops</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/hood/runtime.png" alt="runtime hood">
+    <figcaption>runtime: passage_hood_detachment &mdash; 0 crops, 1 label issue</figcaption>
+  </figure>
+</div>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/electrophoresis/experiments.png" alt="experiments electrophoresis">
+    <figcaption>experiments: electrophoresis_bench &mdash; 6 crops, 12 off-page</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/electrophoresis/runtime.png" alt="runtime electrophoresis">
+    <figcaption>runtime: sdspage_run_electrophoresis &mdash; 0 crops, 3 label issues</figcaption>
+  </figure>
+</div>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/well_plate/experiments.png" alt="experiments well_plate">
+    <figcaption>experiments: well_plate_96_zoom (the one experiments-better pair)</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/experiments_vs_runtime_side_by_side/well_plate/runtime.png" alt="runtime well_plate">
+    <figcaption>runtime: plate_drug_treatment_drug_addition &mdash; 2 label issues plus the well_plate empty_bubble</figcaption>
+  </figure>
+</div>
+
+</div>
+
+<div class="page">
+
+<h2>9. Diagnostic measurement tables (FG)</h2>
+
+<h3>Table A: production runtime, 26 protocols</h3>
+<table>
+<thead><tr><th>Metric</th><th class="num">Value</th></tr></thead>
+<tbody>
+<tr><td>mount count</td><td class="num">26 / 26</td></tr>
+<tr><td>walkthrough count</td><td class="num">12 / 26</td></tr>
+<tr><td>clickWorks total</td><td class="num">133</td></tr>
+<tr><td>placeholder count</td><td class="num">0</td></tr>
+<tr><td>real SVG count</td><td class="num">246</td></tr>
+<tr><td>visible crop count</td><td class="num">0</td></tr>
+<tr><td>off-page count</td><td class="num">0</td></tr>
+<tr><td>label overlap count</td><td class="num">46</td></tr>
+<tr><td>console errors</td><td class="num">2</td></tr>
+<tr><td>DOM growth post-mount</td><td class="num">0</td></tr>
+</tbody>
+</table>
+
+<h3>Table B: experiments static, 10 gold templates</h3>
+<table>
+<thead><tr><th>Scene</th><th>verdict</th><th class="num">hard_fails</th><th class="num">score</th><th class="num">off_page</th><th class="num">label_overlap</th><th class="num">svg_label_overlap</th><th class="num">region_overflow</th><th class="num">artwork_integrity</th></tr></thead>
+<tbody>
+<tr><td>bench_basic</td><td>FAIL</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>cell_counter_basic</td><td>FAIL</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>crowded_bench_dense</td><td>FAIL</td><td class="num">5</td><td class="num">0</td><td class="num">3</td><td class="num">0</td><td class="num">0</td><td class="num">2</td><td class="num">6</td></tr>
+<tr><td>drug_dilution_plate_workspace</td><td>FAIL</td><td class="num">2</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>drug_dilution_workspace_dense</td><td>FAIL</td><td class="num">4</td><td class="num">0</td><td class="num">4</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>electrophoresis_bench</td><td>FAIL</td><td class="num">8</td><td class="num">0</td><td class="num">7</td><td class="num">0</td><td class="num">3</td><td class="num">1</td><td class="num">6</td></tr>
+<tr><td>hood_basic</td><td>FAIL</td><td class="num">1</td><td class="num">60</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>microscope_basic</td><td>FAIL</td><td class="num">1</td><td class="num">0</td><td class="num">1</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+<tr><td>staining_bench</td><td>FAIL</td><td class="num">3</td><td class="num">0</td><td class="num">2</td><td class="num">0</td><td class="num">0</td><td class="num">1</td><td class="num">6</td></tr>
+<tr><td>well_plate_96_zoom</td><td>FAIL</td><td class="num">0</td><td class="num">92</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">0</td><td class="num">6</td></tr>
+</tbody>
+</table>
+
+<p><strong>Roll-up:</strong> 0 PASS / 10 FAIL on the gold corpus. The stress corpus is worse: 0/110 PASS, 216 checks failed. <code>artwork_integrity</code> contributes 6 findings to every template (FG caveat: this is the precheck-specific aspect-ratio + container fit signal and the binary FAIL verdict is dominated by it; do not read FAIL count as a quality ranking, but the verdict-vs-score disagreement is itself a sign the bar is mis-calibrated).</p>
+
+<h3>Table C: walker per-protocol rollup</h3>
+<table>
+<thead><tr><th>Result</th><th>Protocol</th><th class="num">Steps</th><th class="num">Inter</th><th>Failure summary</th></tr></thead>
+<tbody>
+<tr><td>OK</td><td>mtt_reagent_prep</td><td class="num">4/4</td><td class="num">10</td><td></td></tr>
+<tr><td>OK</td><td>mtt_solubilization_readout</td><td class="num">3/3</td><td class="num">10</td><td></td></tr>
+<tr><td>OK</td><td>plate_drug_treatment_media_adjustment</td><td class="num">2/2</td><td class="num">12</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_assemble_electrode_module</td><td class="num">4/4</td><td class="num">4</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_attach_lid_and_leads</td><td class="num">1/1</td><td class="num">3</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_extract_gel_from_cassette</td><td class="num">5/5</td><td class="num">10</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_fill_tank_buffer</td><td class="num">2/2</td><td class="num">8</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_heat_denature_samples</td><td class="num">4/4</td><td class="num">5</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_prepare_gel_cassette</td><td class="num">4/4</td><td class="num">4</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_prepare_running_buffer</td><td class="num">2/2</td><td class="num">8</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_prepare_sample_mix_single_lane</td><td class="num">4/4</td><td class="num">12</td><td></td></tr>
+<tr><td>OK</td><td>sdspage_recycle_buffer</td><td class="num">3/3</td><td class="num">5</td><td></td></tr>
+<tr><td>FAIL</td><td>cell_seeding_plate_setup</td><td class="num">2/4</td><td class="num">10</td><td>next button not visible after step_validator</td></tr>
+<tr><td>FAIL</td><td>drug_dilution_setup</td><td class="num">1/9</td><td class="num">9</td><td>missing DOM affordance mid-step</td></tr>
+<tr><td>FAIL</td><td>mtt_plate_reaction</td><td class="num">0/6</td><td class="num">0</td><td>next button not visible after step_validator</td></tr>
+<tr><td>FAIL</td><td>passage_hood_detachment</td><td class="num">0/9</td><td class="num">0</td><td>locator.click timeout (visibility)</td></tr>
+<tr><td>FAIL</td><td>passage_pellet_reseed</td><td class="num">1/9</td><td class="num">2</td><td>missing DOM affordance</td></tr>
+<tr><td>FAIL</td><td>plate_drug_treatment_drug_addition</td><td class="num">0/9</td><td class="num">0</td><td>missing DOM affordance</td></tr>
+<tr><td>FAIL</td><td>sdspage_destain_gel_rock</td><td class="num">0/3</td><td class="num">0</td><td>waitForSelector timeout (visible-but-timed wait)</td></tr>
+<tr><td>FAIL</td><td>sdspage_destain_gel_setup</td><td class="num">4/6</td><td class="num">7</td><td>waitForSelector timeout</td></tr>
+<tr><td>FAIL</td><td>sdspage_image_gel</td><td class="num">0/3</td><td class="num">0</td><td>missing DOM affordance</td></tr>
+<tr><td>FAIL</td><td>sdspage_load_protein_ladder</td><td class="num">5/6</td><td class="num">5</td><td>missing DOM affordance</td></tr>
+<tr><td>FAIL</td><td>sdspage_load_sample_single_lane</td><td class="num">2/3</td><td class="num">5</td><td>missing DOM affordance</td></tr>
+<tr><td>FAIL</td><td>sdspage_run_electrophoresis</td><td class="num">0/3</td><td class="num">0</td><td>waitForSelector timeout (visible-but-timed wait)</td></tr>
+<tr><td>FAIL</td><td>sdspage_stain_gel</td><td class="num">2/5</td><td class="num">4</td><td>locator.click timeout</td></tr>
+<tr><td>FAIL</td><td>trypan_blue_counting</td><td class="num">0/9</td><td class="num">0</td><td>missing DOM affordance</td></tr>
+</tbody>
+</table>
+
+</div>
+
+<div class="page">
+
+<h2>10. Best current examples</h2>
+
+<p>From the Round 3 best-5 gallery (subjective ranking after R6 scoreboard). These represent the strongest demo-grade runtime frames available today.</p>
+
+<table>
+<thead><tr><th>Rank</th><th>Scene</th><th>Score</th><th>Why good</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>staining_bench (after R1 fix)</td><td>not scored (post-R1)</td><td>Four real volumetric flask SVGs, real Rocking Shaker asset, staining tray clearly labeled</td></tr>
+<tr><td>2</td><td>sdspage_heat_denature_samples (after R3 label fix)</td><td>R6 -4 (initial); R3 cleaner</td><td>Labeled Heat Block placeholder, recognizable Microtube rack, real Protein ladder SVG, no overlapping label clusters</td></tr>
+<tr><td>3</td><td>mtt_solubilization_readout (R3 label CSS variant, after_entry)</td><td>R6 -5; click+OSC smoke pass</td><td>Only scene with verified click-driven state change: real 96-well plate SVG, DMSO+Waste pair, live Pipette Volume slider</td></tr>
+<tr><td>4</td><td>mtt_solubilization_readout (after R3 label fix)</td><td>R6 -5; click+OSC pass</td><td>Same click-through success; hash-marked plate placeholder still legible; Pipette Volume widget is unambiguous focal point</td></tr>
+<tr><td>5</td><td>electrophoresis_bench (after R1 fix)</td><td>not scored (post-R1)</td><td>Real Running buffer flask, Protein ladder microtube, Buffer recycle bottle; labeled dashed Power Supply gives semantic structure</td></tr>
+</tbody>
+</table>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/electrophoresis_bench_after_fix.png" alt="best 5: electrophoresis_bench">
+    <figcaption>Best #5: electrophoresis_bench after R1 fix &mdash; labeled dashed Power Supply placeholder gives structure to the rig</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/mtt_plate_reader_workspace_after_entry.png" alt="best 3: mtt plate reader">
+    <figcaption>Best #3: mtt_solubilization_readout after_entry &mdash; only scene with verified click-driven OSC</figcaption>
+  </figure>
+</div>
+
+<h2>11. Worst current examples</h2>
+
+<p>From the Round 3 worst-5 gallery, lowest combined R6 scoreboard rows. These rank the highest-leverage fix targets.</p>
+
+<table>
+<thead><tr><th>Rank</th><th>Scene</th><th>Score</th><th>Defect callouts</th><th>Highest-leverage fix</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>sdspage_attach_lid_and_leads (initial)</td><td>-17</td><td>5 placeholders, 8 label overlaps, 4 off-page</td><td>A1B SVG import (power supply, gel cell, lead-wire) + R7 label-overflow guard</td></tr>
+<tr><td>2</td><td>mtt_reagent_prep (initial)</td><td>-10</td><td>4 placeholders, 3 overlaps, 4 off-page</td><td>A1B (tube, MTT-solution tube, vortex) + R7 label clamp</td></tr>
+<tr><td>3</td><td>mtt_solubilization_readout (initial)</td><td>-6</td><td>2 placeholders incl. hash-mark plate, 2 overlaps, 3 off-page</td><td>A1B (real 96-well plate SVG) + R7 DMSO/vortex label width</td></tr>
+<tr><td>4</td><td>mtt_solubilization_readout (after_entry)</td><td>-5</td><td>same as #3; slider recovers clarity</td><td>R9 propagate click-driven pattern</td></tr>
+<tr><td>5</td><td>sdspage_heat_denature_samples (initial)</td><td>-4</td><td>1 placeholder, 2 overlaps, 2 off-page</td><td>A1B (real heat-block SVG) + R7 shrink mid-canvas Heat Block label</td></tr>
+</tbody>
+</table>
+
+<div class="row">
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/sdspage_attach_lid_workspace_initial.png" alt="worst 1: sdspage_attach_lid">
+    <figcaption>Worst #1: sdspage_attach_lid_and_leads initial &mdash; 5 placeholders, 8 label overlaps, 4 off-page (score -17)</figcaption>
+  </figure>
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/mtt_reagent_prep_bench_workspace_initial.png" alt="worst 2: mtt_reagent_prep">
+    <figcaption>Worst #2: mtt_reagent_prep initial &mdash; 4 placeholders, 3 overlaps (score -10)</figcaption>
+  </figure>
+</div>
+
+<p><strong>Cross-cutting:</strong> sum placeholder_count=14 across the worst-5; sum (label_overlap + off_page)=33; visible crops sum to zero. Asset import (A1B) is the highest-leverage lever, not crop fixes.</p>
+
+</div>
+
+<div class="page">
+
+<h2>12. What must be scrapped</h2>
+
+<h3>12.1 css_native_adapter.ts (dead spike in the bundle)</h3>
+<p><code>src/scene_runtime/layout/css_native_adapter.ts</code> (FA Concern 1) is imported by <code>adapter.ts</code> but gated by <code>is_css_native_well_plate_zoom_spike_enabled()</code> which defaults <code>false</code>. The file's own header (line 9) says: "Must be removed or replaced before NEW1 promotion." It has been sitting in <code>src/</code> since 2026-05-21 with no plan-of-record to either de-gate or remove. Every production bundle includes it. Remove it; the bundle gets smaller and the ship-risk of an accidental flag flip goes to zero.</p>
+
+<h3>12.2 computeRowSlotSceneLayout (unwired alternate strategy)</h3>
+<p>FA Concern 3: <code>layout_engine.ts</code> exports <code>computeRowSlotSceneLayout</code> (approx lines 700-799). Re-exported by <code>index.ts</code> as a named export. Not called in <code>adapter.ts</code>, not called in <code>render/scene.ts</code>, not called anywhere in the production path. Either wire it, document its purpose, or delete it. As-shipped it just misleads future readers.</p>
+
+<h3>12.3 The "experiments will replace the runtime" framing</h3>
+<p>FF shows experiments-better in 1 of 6 head-to-heads; the experiments precheck verdict shows 0/10 PASS on its own gold templates and 0/110 on its own stress corpus. The CSS-native render path is not a near-promotion path; it is a research artifact that produced useful diagnostics and CSS idioms. Stop scoping work on the assumption that <code>experiments/css_native_layout/</code> will be the next render target without a contract amendment (which does not exist and is not approved).</p>
+
+<h3>12.4 Showcase concepts and storyboards</h3>
+<p>FB Feature 7: <code>showcase/concepts/</code> storyboards (<code>electrophoresis_setup_walkthrough.html</code>, <code>pipette_to_well_storyboard.html</code>, <code>selected_well_highlight.html</code>) demonstrate interaction states that the production dispatch pipeline now handles. <code>hover_reveal_demo.html</code> and <code>selected_well_demo.html</code> show what CSS-alone visual behavior could be, but production already implements these through protocol dispatch. Obsolete; do not promote.</p>
+
+<h3>12.5 Direction A and scratch CSS variants</h3>
+<p>Per <code>experiments/css_native_layout/DECISION_MEMO.md</code>: <code>bench_a.css</code>, <code>bench_b.css</code>, <code>bench_d.css</code>, <code>bench_diorama.css</code>, <code>bench_focusedstage.css</code>, <code>bench_gameboard.css</code> and hood/instrument siblings are gitignored, superseded by Direction B. <code>spike_css_native_well_plate_zoom.mjs</code> inlines a JS mirror of the adapter (divergence risk per file header). Remove the spike test once the spike adapter is removed.</p>
+
+<h2>13. What should be kept</h2>
+
+<h3>13.1 Runtime mount path</h3>
+<p>26/26 protocols mount cleanly with zero <code>RUNTIME INITIALIZATION ERROR</code> overlays. The mount path through <code>bundle/entry.ts</code> &rarr; <code>loader/world.ts</code> &rarr; <code>render/scene.ts</code> is the load-bearing achievement of Round 3. Keep.</p>
+
+<h3>13.2 Zone-based layout engine</h3>
+<p><code>src/scene_runtime/layout/layout_engine.ts</code> (<code>legacyComputeLayout</code>) is the mined-verbatim production engine, historically active since 2026-05-05, with 8 documented functions. It works; FF shows it beats the CSS-native static templates in 5 of 6 pairings. Keep.</p>
+
+<h3>13.3 Dispatch (click and adjust)</h3>
+<p><code>src/scene_runtime/dispatch/click.ts</code> and <code>src/scene_runtime/dispatch/adjust.ts</code> drove 133 successful interactions. The adjust gesture is the continuous set-point primitive (volume sliders, voltage knobs) that the contract requires must not collapse into <code>click</code>; it is working. Keep.</p>
+
+<h3>13.4 Walker engine</h3>
+<p><code>tests/playwright/walker/engine.mjs</code> walked 12/26 protocols to completion. Its 14 failures decompose into <em>walker-instrument or scene-wiring</em> concerns, not runtime mount failures. Improve the walker (test-clock affordance, next-button visibility detection); do not replace it.</p>
+
+<h3>13.5 Foundation HTML wiring</h3>
+<p>The per-protocol HTML shells produced by the build pipeline mount the runtime bundle consistently. No foundation-level wiring bugs surfaced in FG. Keep.</p>
+
+<h3>13.6 ns0 fix and chrome stack</h3>
+<p>The chrome stack (<code>src/scene_runtime/chrome/*</code>: prompt, feedback, next button, scene frame, adjust panel) renders without console errors on 24/26 protocols. The two console errors both come from <code>sdspage_run_electrophoresis</code> and are non-blocking. Keep the chrome stack; chase the two errors as a focused fix.</p>
+
+<h2>14. What should be promoted from experiments/</h2>
+
+<p>Four contract-compatible promotions. None of these require amending PRIMARY_CONTRACT item 3.</p>
+
+<h3>14.1 .object-graphic containment wrapper + object-fit: contain</h3>
+<p>Source: <code>experiments/css_native_layout/styles/bench.css</code> lines 155-163 (<code>.placement { overflow: visible; }</code>), lines 334-358 (<code>.object-graphic</code> centering + <code>object-fit: contain</code>). This is a render-layer CSS rule, not layout engine behavior. PRIMARY_DESIGN.md's no-crop rule currently has <em>no structural enforcement</em> in <code>src/</code>; the rule text is promoted but the CSS mechanism is not. Promote the wrapper plus the three CSS rules into <code>src/style.css</code> and have <code>src/scene_runtime/render/apply.ts</code> emit the wrapper. Cost: tiny. Value: every SVG placement gets a safety net against accidental crop regression.</p>
+
+<h3>14.2 checkArtworkIntegrity (precheck.mjs)</h3>
+<p>Source: <code>experiments/css_native_layout/precheck.mjs</code> ~lines 1050-1200. Detects <code>clipped_by_parent</code> (ancestor overflow != visible) and <code>aspect_distorted</code> (rendered aspect ratio deviates from natural by >5%). Port as <code>tests/playwright/test_artwork_integrity.mjs</code> running against the canonical 10 templates or against all 26 <code>dist/*.html</code> pages. Only automated verification of the no-crop hard rule. The other 11 precheck checks can follow.</p>
+
+<h3>14.3 object_footprints.yaml</h3>
+<p>Source: <code>experiments/css_native_layout/object_footprints.yaml</code> (146 entries). Maps object names to footprint size classes. Required to correctly size objects under any future CSS-native render path. Move to <code>docs/specs/</code> as authoritative registry or to <code>generated/</code> as builder output. Does not change runtime behavior today; unblocks future work.</p>
+
+<h3>14.4 The 10 gold stress YAMLs</h3>
+<p>Source: <code>experiments/css_native_layout/stress_scenes/gold/gold_*.yaml</code>. Follow the standard placement/zone vocabulary; register as <code>tests/content/dev_smoke/</code> fixtures (per PRIMARY_SPEC.md "dev_smoke" protocol_type). Exercise adversarial scene compositions no current smoke fixture covers: dual large equipment competing for instrument_station, repeated identical small items, adversarial size mix. No contract amendment needed.</p>
+
+<div class="neutral"><strong>Not promoted (deferred):</strong> scene-class CSS dispatch, <code>templates/dir_b/</code>, full scorecard infrastructure. These are blocked by PRIMARY_CONTRACT item 3 unless and until the contract is amended (a draft exists at <code>docs/archive/css_native_layout/new1_primary_contract_item3_amendment_draft.md</code> but is not approved).</div>
+
+</div>
+
+<div class="page">
+
+<h2>15. Recommended next 1-week plan</h2>
+
+<p>Six concrete tracks, sized for parallel execution. Each track is independently completable.</p>
+
+<h3>Day 1-2: Promote no-crop CSS mechanism (Track A)</h3>
+<ul>
+<li>Add <code>.object-graphic</code> wrapper emission to <code>src/scene_runtime/render/apply.ts</code>.</li>
+<li>Add three CSS rules to <code>src/style.css</code>: <code>.placement { overflow: visible; }</code>, <code>.object-graphic { display: flex; align-items: center; justify-content: center; }</code>, <code>.object-graphic img, .object-graphic svg { object-fit: contain; width: auto; height: auto; max-width: 100%; max-height: 100%; }</code>.</li>
+<li>Re-run <code>forensic_svg_completeness.mjs</code>; expect visible-crop count to remain 0 with the structural safety net now in place.</li>
+</ul>
+
+<h3>Day 1-2: Remove dead spike (Track B)</h3>
+<ul>
+<li>Delete <code>src/scene_runtime/layout/css_native_adapter.ts</code>.</li>
+<li>Delete <code>src/scene_runtime/layout/feature_flags.ts</code>.</li>
+<li>Remove the gated branch in <code>adapter.ts</code>.</li>
+<li>Delete <code>tests/playwright/spike_css_native_well_plate_zoom.mjs</code>.</li>
+<li>Either wire or delete <code>computeRowSlotSceneLayout</code> (recommendation: delete; if a use case appears later, it is git-retrievable).</li>
+</ul>
+
+<h3>Day 2-3: SVG asset gap (Track C, highest leverage on quality)</h3>
+<ul>
+<li>Replace generic_outline assets for: <code>power_supply_off</code>, <code>microwave_closed</code>, <code>heat_block_closed</code>, <code>lightbox_off</code>, <code>electrode_module</code>, <code>gel_opening_tool</code>, <code>kimwipe_pad</code>, <code>paper_towel_pad</code>, <code>microtube_rack_24</code>. These are 9 assets driving ~33 of 42 generic_outline hard fails.</li>
+<li>Fix the 6 <code>well_plate_96</code> empty_bubble cases: the well plate adapter emits a group but no SVG child; either inline a real plate SVG or have the well plate subpart adapter populate the group.</li>
+<li>Re-run <code>forensic_svg_completeness.mjs</code>; target <code>&gt;= 95%</code> real_svg.</li>
+</ul>
+
+<h3>Day 3-4: Promote checkArtworkIntegrity (Track D)</h3>
+<ul>
+<li>Port <code>checkArtworkIntegrity</code> from <code>experiments/css_native_layout/precheck.mjs</code> into <code>tests/playwright/test_artwork_integrity.mjs</code>.</li>
+<li>Run against all 26 <code>dist/*.html</code> pages.</li>
+<li>Wire into <code>check_codebase.sh</code> as a fast gate (skip in <code>--fast</code> if needed).</li>
+</ul>
+
+<h3>Day 4-5: Walker robustness (Track E)</h3>
+<ul>
+<li>Add a test-clock affordance to <code>src/scene_runtime/render/clock.ts</code> so visible-but-timed waits (incubation, confluence) can be skipped under walker control. Addresses 5 walker failures.</li>
+<li>Improve next-button visibility detection in <code>tests/playwright/walker/engine.mjs</code>. Addresses 2 walker failures.</li>
+<li>Audit "missing DOM affordance" cases (8 protocols); these are scene-wiring gaps where a declared target name has no resolved scene object. Fix per protocol.</li>
+<li>Target: walker pass &gt;= 22/26.</li>
+</ul>
+
+<h3>Day 5-6: Stress fixtures and footprint registry (Track F)</h3>
+<ul>
+<li>Copy the 10 gold YAMLs from <code>experiments/css_native_layout/stress_scenes/gold/</code> into <code>tests/content/dev_smoke/&lt;name&gt;_check/protocol.yaml</code>; rename placeholder asset names to existing inventory entries.</li>
+<li>Add a builder pass that registers these as <code>protocol_type: dev_smoke</code>.</li>
+<li>Move <code>object_footprints.yaml</code> into <code>docs/specs/OBJECT_FOOTPRINTS.md</code> (table form) or <code>generated/object_footprints.yaml</code>.</li>
+<li>Run mount check on each dev_smoke fixture.</li>
+</ul>
+
+<h3>Day 6-7: Label policy and console error chase (Track G)</h3>
+<ul>
+<li>Apply one of the six worked label policies from <code>experiments/css_native_layout/showcase/label_policies/</code> to <code>src/style.css</code>. Target: drop runtime label-overlap from 46 to &lt;= 10.</li>
+<li>Investigate the two <code>sdspage_run_electrophoresis</code> console errors. Likely a state-machine timing issue with the visible-but-timed wait.</li>
+</ul>
+
+<h3>Out of scope for this week</h3>
+<ul>
+<li>Any work that requires amending PRIMARY_CONTRACT.md item 3 (scene-class CSS, <code>templates/dir_b/</code>, full CSS-native render). If the contract is to be amended, that is its own approval thread.</li>
+<li>Replacing the runtime layout engine. The runtime won 5/6 head-to-heads; there is no evidence that swapping it improves outcomes.</li>
+<li>The full 12-check precheck port. Start with <code>checkArtworkIntegrity</code>; promote others as needed.</li>
+</ul>
+
+<h2>Closing</h2>
+
+<p>The shipping path works at the floor (26/26 mount, 0 crops, 0 placeholders) and fails at quality bars it sets for itself (17.3% SVG hard fails, 46% walker completion, 46 label overlaps). The experiments path failed earlier and harder (0/10 PASS, 0/110 stress) but produced four genuinely useful artifacts that should be promoted. The salvage suspicion is closed: <code>src/scene_runtime/layout/</code> was mined from production code, not from broken archives. The dead spike and the unwired alternate strategy should be removed; the runtime should be improved, not replaced.</p>
+
+<p class="footer">Forensic assembly pass (FH) &middot; 2026-05-22 &middot; Inputs: FA / FB / FC / FD / FF / FG plus per-protocol galleries. No edits to src/, content/, or experiments/. No git commits.</p>
+
+</div>
+
+</body>
+</html>

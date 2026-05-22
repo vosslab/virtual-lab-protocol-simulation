@@ -76,8 +76,8 @@ export function renderScene(
     "viewBox",
     `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`,
   );
-  sceneRoot.setAttribute("width", "100%");
-  sceneRoot.setAttribute("height", "100%");
+  sceneRoot.setAttribute("width", "1280");
+  sceneRoot.setAttribute("height", "900");
   sceneRoot.setAttribute("preserveAspectRatio", "xMidYMid meet");
   sceneRoot.style.border = "1px solid #ccc";
   sceneRoot.style.pointerEvents = "none";
@@ -126,9 +126,16 @@ function insertSvgAsset(
   width: number,
   height: number,
 ): void {
+  // Normalize SVG namespace prefixes (Round 3 fix for malformed SVG assets).
+  // Some SVG files are exported with ns0:svg instead of standard <svg xmlns="">.
+  // Replace ns0:svg and ns0: prefixes with standard svg and no prefix.
+  let normalizedSvgString = svgString.replace(/<ns0:svg/g, "<svg");
+  normalizedSvgString = normalizedSvgString.replace(/<\/ns0:svg>/g, "</svg>");
+  normalizedSvgString = normalizedSvgString.replace(/ns0:/g, "");
+
   // Create a temporary DOM element to parse the SVG string.
   const tempDiv = document.createElement("div");
-  tempDiv.innerHTML = svgString;
+  tempDiv.innerHTML = normalizedSvgString;
   const svgElement = tempDiv.firstElementChild;
 
   if (!svgElement || !(svgElement instanceof SVGSVGElement)) {
@@ -343,7 +350,12 @@ function renderPlacement(
   // Use computed label position, lines, and font-size from layout engine
   // (label_font_size pulled from scene.layout_rules via the layout adapter).
   const layoutRules = (_scene.layout_rules as Record<string, unknown>) || {};
-  const fontSize = (layoutRules.labelFontSize as number) || 14;
+  const declaredFontSize = (layoutRules.labelFontSize as number) || 14;
+  // Renderer-level readability clamp (round3_runtime_label_readability):
+  // cap label font-size to 25% of the placement width in scene units so the
+  // text never visually dominates or overlaps neighboring placements. The
+  // declared author value remains the ceiling; this is a one-way reduction.
+  const fontSize = Math.min(declaredFontSize, width * 0.25);
   const lineHeight = fontSize + 1;
   // labelLines comes from layout engine; fall back to single truncated object_name.
   const lines =

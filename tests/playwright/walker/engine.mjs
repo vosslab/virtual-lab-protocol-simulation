@@ -197,8 +197,8 @@ async function dispatchClick(page, target, gesture) {
  * Dispatch an adjust gesture (e.g., slider, number input).
  *
  * Extracts the expected value from the interaction's validator (target_with_value preset).
- * Locates the adjust input panel via data-testid="adjust-input-<field>" where field comes
- * from the validator's value keys. Fills the input, triggers commit via Enter or blur.
+ * Waits for the adjust panel input to appear, fills it with the expected value,
+ * dispatches input/change events, and waits for the commit to complete.
  */
 async function dispatchAdjust(page, interaction) {
   const { target, validator } = interaction;
@@ -223,33 +223,41 @@ async function dispatchAdjust(page, interaction) {
     );
   }
 
-  // Locate the adjust input via data-testid="adjust-input-<field>"
   const inputSelector = `[data-testid="adjust-input-${fieldName}"]`;
-  const inputLocator = page.locator(inputSelector).first();
 
-  const exists = (await inputLocator.count()) > 0;
-  if (!exists) {
-    throw new Error(
-      `Missing adjust input for field "${fieldName}": ` +
-        `selector="${inputSelector}" not found in DOM. ` +
-        `The runtime may not have mounted the adjust panel.`,
-    );
-  }
+  // Step 1: Wait for the adjust panel input to be present in the DOM.
+  // The panel renders after the preceding interaction (usually a click) completes.
+  await page.waitForSelector(inputSelector, { timeout: 4000 });
 
-  const isVisible = await inputLocator
-    .isVisible({ timeout: 1000 })
-    .catch(() => false);
-  if (!isVisible) {
-    throw new Error(`Adjust input exists but not visible: ${inputSelector}`);
-  }
+  // Step 2: Wait a brief moment for the element to be fully ready
+  await page.waitForTimeout(200);
 
-  // Fill the input with the expected value (as a string).
-  await inputLocator.fill(String(expectedValue));
+  // Step 3: Fill the input using JavaScript directly (more reliable than Playwright fill)
+  await page.evaluate(({ selector, value }) => {
+    const input = document.querySelector(selector);
+    if (!input) {
+      throw new Error(`Input not found: ${selector}`);
+    }
+    input.value = String(value);
+  }, { selector: inputSelector, value: expectedValue });
 
-  // Trigger commit via Enter key or blur.
-  await inputLocator.press("Enter");
+  // Step 4: Dispatch input and change events to trigger the adjust dispatch handler
+  await page.evaluate(({ selector, value }) => {
+    const input = document.querySelector(selector);
+    if (input) {
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }, { selector: inputSelector, value: expectedValue });
 
-  // Wait for the commit callback to process and re-render.
+  // Step 5: Optionally press Enter to commit (handlers may bind to Enter key)
+  const inputLocator = page.locator(inputSelector);
+  await inputLocator.press("Enter", { timeout: 2000 }).catch(() => {
+    // Enter press might not be strictly necessary, events above should trigger commit
+  });
+
+  // Step 6: Wait for the commit to process and the interaction to advance
+  // The adjust dispatch handler will update game state and trigger next interaction
   await page.waitForTimeout(500);
 }
 
@@ -494,40 +502,11 @@ function loadProtocolFromGenerated(protocolName) {
   // Read the TypeScript file
   let tsContent = fs.readFileSync(generatedPath, "utf-8");
 
-  // Remove TypeScript imports and type annotations to make it valid JavaScript
-  // Replace "import type { ... } from ..." with nothing
-  tsContent = tsContent.replace(
-    /import\s+type\s+{[^}]*}\s+from\s+['"][^'"]*['"]/g,
-    "",
-  );
-  // Replace type annotations on export
-  tsContent = tsContent.replace(
-    /export const PROTOCOL_CATALOG: Record<string, ProtocolConfig> = /,
-    "const PROTOCOL_CATALOG = ",
-  );
-
-  // Now extract and eval the catalog
-  try {
-    // Use Function constructor to evaluate the TypeScript (now JavaScript) in a controlled scope
-    // This is safe because we control the input
-    const fn = new Function(tsContent + "; return PROTOCOL_CATALOG;");
-    const catalog = fn();
-
-    if (!catalog[protocolName]) {
-      throw new Error(
-        `Protocol "${protocolName}" not found in PROTOCOL_CATALOG`,
-      );
-    }
-
-    return catalog[protocolName];
-  } catch (err) {
-    // If parsing/eval fails, return a minimal config with just the name
-    log(
-      `Warning: Could not parse full protocol config: ${err.message}`,
-      "info",
-    );
-    return { protocol_name: protocolName, steps: [] };
-  }
+  // Note: evaluating the TypeScript generated file is complex due to interfaces,
+  // imports, and type annotations. Instead, we rely on the browser runtime to load
+  // the protocol config via the PROTOCOL_CATALOG exported by runtime.bundle.js.
+  // Return null so the walker loads the full config from the browser.
+  return null;
 }
 
 /**

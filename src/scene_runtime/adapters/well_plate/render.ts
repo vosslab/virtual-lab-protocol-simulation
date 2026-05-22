@@ -133,6 +133,26 @@ export function renderWellPlate(
       SubpartGroupConfig
     >) || {};
 
+  // Round 3 R2-ALT: render a plate frame (rounded white rectangle) behind
+  // the wells. This is composite custom geometry permitted by the primary
+  // contract for structured scientific objects (wells inside a plate).
+  // The frame is non-clickable and sits below the cells in z-order.
+  const frame = document.createElementNS(
+    "http://www.w3.org/2000/svg",
+    "rect",
+  );
+  frame.setAttribute("x", String(x));
+  frame.setAttribute("y", String(y));
+  frame.setAttribute("width", String(width));
+  frame.setAttribute("height", String(height));
+  frame.setAttribute("fill", "#ffffff");
+  frame.setAttribute("stroke", "#444");
+  frame.setAttribute("stroke-width", "2");
+  frame.setAttribute("rx", String(Math.min(width, height) * 0.04));
+  frame.setAttribute("pointer-events", "none");
+  frame.setAttribute("data-plate-frame", "true");
+  container.appendChild(frame);
+
   // Pre-create group containers for each declared subpart group.
 
   for (const [_groupCategoryKey, groupCategory] of Object.entries(
@@ -169,11 +189,21 @@ export function renderWellPlate(
     }
   }
 
-  // Render each cell once to the main container.
+  // Round 3 R2-ALT: render wells as inset circles for an authentic plate look.
+  // A real 96-well plate has circular wells in a rounded plastic frame, so the
+  // rect-cell legacy representation looked like an unrelated grid of squares.
+  // Cell bbox is preserved for click hit testing via an invisible overlay rect.
+  // Inset the well grid slightly inside the frame so the plate edge is visible.
+  const insetX = cellWidth * 0.15;
+  const insetY = cellHeight * 0.15;
+  const wellRadius = Math.min(cellWidth, cellHeight) * 0.35;
+
   for (let rowIdx = 0; rowIdx < ROWS; rowIdx++) {
     for (let colIdx = 0; colIdx < COLS; colIdx++) {
-      const cellX = x + colIdx * cellWidth;
-      const cellY = y + rowIdx * cellHeight;
+      const cellX = x + colIdx * cellWidth + insetX;
+      const cellY = y + rowIdx * cellHeight + insetY;
+      const cellCx = cellX + (cellWidth - 2 * insetX) / 2;
+      const cellCy = cellY + (cellHeight - 2 * insetY) / 2;
 
       const rowLabel = rowLabels[rowIdx];
       const colLabel = (colIdx + 1).toString();
@@ -183,23 +213,36 @@ export function renderWellPlate(
 
       const fillColor = getCellFillColor(cellName);
 
+      // Visible well as a circle (real wells are round).
+      const wellCircle = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "circle",
+      );
+      wellCircle.setAttribute("cx", String(cellCx));
+      wellCircle.setAttribute("cy", String(cellCy));
+      wellCircle.setAttribute("r", String(wellRadius));
+      wellCircle.setAttribute("fill", fillColor);
+      wellCircle.setAttribute("stroke", "#888");
+      wellCircle.setAttribute("stroke-width", "0.4");
+      wellCircle.setAttribute("pointer-events", "none");
+      wellCircle.setAttribute("data-well-circle", cellName);
+      container.appendChild(wellCircle);
+
+      // Invisible cell bbox rect keeps the click target full-cell.
       const cell = document.createElementNS(
         "http://www.w3.org/2000/svg",
         "rect",
       );
-      cell.setAttribute("x", String(cellX));
-      cell.setAttribute("y", String(cellY));
+      cell.setAttribute("x", String(x + colIdx * cellWidth));
+      cell.setAttribute("y", String(y + rowIdx * cellHeight));
       cell.setAttribute("width", String(cellWidth));
       cell.setAttribute("height", String(cellHeight));
-      cell.setAttribute("fill", fillColor);
-      cell.setAttribute("stroke", "#999");
-      cell.setAttribute("stroke-width", "1");
-      // Ensure cell is clickable
+      cell.setAttribute("fill", "transparent");
+      cell.setAttribute("stroke", "none");
       cell.setAttribute("pointer-events", "auto");
 
       const targetId = `${placement.object_name}.${cellName}`;
       cell.setAttribute("data-target-id", targetId);
-
       cell.setAttribute("data-well", cellName);
 
       container.appendChild(cell);

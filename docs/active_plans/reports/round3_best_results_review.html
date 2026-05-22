@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Round 3 Runtime Quality Initiative - Best Results Review</title>
+<style>
+  @page { size: Letter; margin: 0.6in; }
+  html, body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 11pt;
+    color: #1a1a1a;
+    line-height: 1.45;
+    margin: 0;
+    padding: 0;
+  }
+  .page {
+    page-break-after: always;
+    padding: 0.3in 0.2in;
+    min-height: 9.5in;
+    box-sizing: border-box;
+  }
+  .page:last-child { page-break-after: auto; }
+  h1 {
+    font-size: 22pt;
+    margin: 0 0 0.4em 0;
+    color: #102a43;
+    border-bottom: 3px solid #102a43;
+    padding-bottom: 0.2em;
+  }
+  h2 {
+    font-size: 15pt;
+    margin: 0.8em 0 0.4em 0;
+    color: #243b53;
+  }
+  h3 {
+    font-size: 12.5pt;
+    margin: 0.7em 0 0.3em 0;
+    color: #334e68;
+  }
+  p, li { font-size: 11pt; }
+  code, .mono {
+    font-family: "SF Mono", Menlo, Consolas, monospace;
+    font-size: 9.5pt;
+    background: #f0f4f8;
+    padding: 0 0.25em;
+    border-radius: 2px;
+  }
+  pre {
+    background: #f0f4f8;
+    padding: 0.6em 0.8em;
+    border-left: 3px solid #486581;
+    border-radius: 3px;
+    font-family: "SF Mono", Menlo, monospace;
+    font-size: 9pt;
+    overflow-x: auto;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 10pt;
+    margin: 0.6em 0;
+  }
+  th, td {
+    border: 1px solid #bcccdc;
+    padding: 4px 6px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: #d9e2ec; }
+  tr:nth-child(even) td { background: #f7f9fb; }
+  figure {
+    margin: 0.6em 0;
+    text-align: center;
+  }
+  figure img {
+    max-width: 95%;
+    max-height: 5in;
+    border: 1px solid #9fb3c8;
+    border-radius: 3px;
+  }
+  figcaption {
+    font-size: 9pt;
+    color: #486581;
+    margin-top: 0.3em;
+    font-style: italic;
+  }
+  .two-col {
+    display: flex;
+    gap: 0.4in;
+    align-items: flex-start;
+  }
+  .two-col figure { flex: 1 1 50%; }
+  .draft-banner {
+    background: #dcfce7;
+    border: 2px solid #15803d;
+    color: #14532d;
+    padding: 0.5em 0.8em;
+    margin: 0.5em 0 1em 0;
+    font-weight: bold;
+    border-radius: 4px;
+  }
+  .pending {
+    background: #fee2e2;
+    border-left: 4px solid #b91c1c;
+    padding: 0.5em 0.8em;
+    margin: 0.6em 0;
+    color: #7f1d1d;
+  }
+  .callout {
+    background: #ecfccb;
+    border-left: 4px solid #65a30d;
+    padding: 0.5em 0.8em;
+    margin: 0.6em 0;
+  }
+  .callout-warn {
+    background: #fff7ed;
+    border-left: 4px solid #c2410c;
+    padding: 0.5em 0.8em;
+    margin: 0.6em 0;
+  }
+  .callout-win {
+    background: #cffafe;
+    border-left: 4px solid #0e7490;
+    padding: 0.5em 0.8em;
+    margin: 0.6em 0;
+  }
+  .meta {
+    color: #627d98;
+    font-size: 9.5pt;
+    margin-bottom: 0.4em;
+  }
+  ul, ol { margin: 0.3em 0 0.6em 1.2em; padding: 0; }
+  li { margin: 0.15em 0; }
+  .footer {
+    position: absolute;
+    bottom: 0.25in;
+    right: 0.4in;
+    color: #829ab1;
+    font-size: 8.5pt;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================ PAGE 1 ============================ -->
+<section class="page">
+  <h1>Round 3 Runtime Quality Initiative</h1>
+  <h2 style="margin-top:0;">Best Results Review</h2>
+
+  <div class="draft-banner">
+    Refreshed 2026-05-22 after foundation HTML wiring (#121) landed.
+    Supersedes the prior pre-foundation draft. Sources:
+    <code>docs/active_plans/reports/round3_*.md</code> and
+    <code>docs/active_plans/audits/round3_*.md</code>.
+  </div>
+
+  <p class="meta">
+    Owner: coordinator synthesis &middot;
+    Foundation: <code>round3_foundation_html_wiring.md</code> (#121) &middot;
+    Master report: <code>round3_runtime_quality_tournament_report.md</code> (R8) &middot;
+    Pivot trigger: <code>round3_runtime_truth_audit.md</code> (A1) &middot;
+    Decision: <code>static_templates_are_not_runtime_truth.md</code> (R5)
+  </p>
+
+  <h2>Executive summary</h2>
+  <p>
+    Round 3 began as a continuation of the no-crop fix queue inherited from
+    Round 2 (approximately 101 cropped scientific SVG assets flagged by the
+    static-template precheck). The first audit pass (A1) showed
+    <strong>zero</strong> visible asset crops in runtime screenshots across the
+    four mounted scenes. The whole premise of the queue was a measurement
+    artifact &mdash; the static-template renderer hardcodes CSS classes that
+    bypass the runtime sizing path. Round 3 pivoted from a no-crop campaign
+    to a runtime-quality campaign on that single piece of evidence.
+  </p>
+
+  <p>
+    The largest single unblocker of the round was the
+    <strong>foundation HTML wiring</strong> (#121). Before #121, walkers had
+    no way to load a protocol the way a student would, so every cluster-scale
+    measurement was either an internal-API call or a measurement bug
+    masquerading as a runtime failure. After #121, the build pipeline produces
+    one shared 2.4 MB <code>dist/runtime.bundle.js</code> (IIFE) plus 26
+    per-protocol <code>dist/&lt;protocol_name&gt;.html</code> shells. Cluster
+    mount audit, R9 rerun on 11, top-10 full walkthrough, and the OSC fire
+    audit all became possible only after foundation landed.
+  </p>
+
+  <p>
+    The single most expensive lesson of Round 3 was R7: a runtime interaction
+    smoke driver reported <code>clickWorks=0/4</code> across the four mounted
+    scenes. P5 then reported <code>clickWorks=0/11</code> on an 11-protocol
+    expansion. Both readings were <strong>driver divergence</strong>, not
+    runtime regressions. The R9-corrected driver, rerun against all 11
+    protocols after foundation, recorded <strong>11/11 mount + 11/11
+    clickWorks</strong>. The R7 paradox is now fully resolved.
+  </p>
+
+  <h2>Top-line numbers</h2>
+  <table>
+    <tr><th>Metric</th><th>Before Round 3</th><th>After Round 3</th></tr>
+    <tr><td>Mounted protocols verified by runtime screenshot</td><td>4</td><td>26 (cluster audit: 25 OK + 1 fixed)</td></tr>
+    <tr><td>Per-protocol HTML entry points</td><td>0</td><td>26 (foundation #121)</td></tr>
+    <tr><td>Visible runtime crops</td><td>~101 (claimed)</td><td>0 (measured)</td></tr>
+    <tr><td>clickWorks pass rate (corrected driver)</td><td>0/4 (R7, driver bug)</td><td>11/11 (R9 rerun post-foundation)</td></tr>
+    <tr><td>Top-10 full end-to-end walkthroughs</td><td>0/10</td><td>9/9 terminal, 25/25 steps, 229 screenshots</td></tr>
+    <tr><td>Placeholder fallback instances (measured)</td><td>30 (A5, partial scope)</td><td>119 (post-foundation comprehensive); 8 already eliminated via Stream 3B</td></tr>
+    <tr><td>SVG asset barrel entries</td><td>~120</td><td>125 (regenerated, with serological_pipette folded in)</td></tr>
+    <tr><td>Label readability fixes shipped</td><td>0</td><td>2 complementary (clamp + halo)</td></tr>
+    <tr><td>widthScale dead vocabulary path</td><td>declared in types, hardcoded 1.0</td><td>removed (R11 done)</td></tr>
+  </table>
+
+  <div class="callout-win">
+    <strong>Headline win:</strong> foundation HTML wiring (#121) turned
+    Round 3 from a single-scene visual audit into a cluster-scale runtime
+    verification surface. The R7 paradox resolved as a side effect.
+  </div>
+</section>
+
+<!-- ============================ PAGE 2 ============================ -->
+<section class="page">
+  <h1>The Foundation: HTML-Per-Protocol Wiring (#121)</h1>
+  <p class="meta">Source: round3_foundation_html_wiring.md &middot; PR: #121</p>
+
+  <h2>The gap that blocked every cluster measurement</h2>
+  <p>
+    Before #121 the repo had a structural capability mismatch:
+  </p>
+  <ul>
+    <li><code>pipeline/build_protocol_html.py</code> existed and could generate
+        per-protocol HTML shells per the PRIMARY_SPEC convention, but it was
+        never invoked from <code>build_github_pages.sh</code>.</li>
+    <li><code>src/scene_runtime/bundle/entry.ts</code> exported
+        <code>loadAndMountByProtocolName()</code> ready for IIFE bundle
+        consumption, but no IIFE bundle was produced. Only the ESM
+        <code>dist/main.js</code> existed.</li>
+    <li>Result: every Playwright walker that tried to load
+        <code>dist/&lt;protocol&gt;.html</code> received 0/N mounted
+        protocols. R9 and the cluster mount audit both confirmed this.</li>
+  </ul>
+
+  <h2>The shape of the fix</h2>
+  <p>
+    Two sequential build passes added after the existing ESM bundle in
+    <code>build_github_pages.sh</code>. No source-code changes; the generator
+    and the entry-point exports were both already correct.
+  </p>
+<pre>npx esbuild "src/scene_runtime/bundle/entry.ts" \
+    --bundle --format=iife --global-name=SceneRuntime \
+    --target=es2020 --platform=browser --minify --sourcemap \
+    --outfile=dist/runtime.bundle.js
+
+python3 pipeline/build_protocol_html.py --all</pre>
+  <p>
+    Each per-protocol HTML inlines its <code>{protocol_name}</code> in a
+    <code>&lt;script type="application/json"&gt;</code>, loads
+    <code>./runtime.bundle.js</code>, and calls
+    <code>SceneRuntime.loadAndMountByProtocolName(rootElement, protocolName)</code>.
+  </p>
+
+  <h2>Build artifacts produced</h2>
+  <table>
+    <tr><th>Artifact</th><th>Size</th><th>Purpose</th></tr>
+    <tr><td><code>dist/runtime.bundle.js</code></td><td>2,416,160 bytes (2.4 MB minified)</td><td>Shared scene runtime for every per-protocol HTML</td></tr>
+    <tr><td><code>dist/runtime.bundle.js.map</code></td><td>3.0 MB</td><td>IIFE source map (development only)</td></tr>
+    <tr><td><code>dist/&lt;protocol_name&gt;.html</code></td><td>26 files (~2.4 KB each)</td><td>Individual protocol entry points</td></tr>
+    <tr><td><code>dist/main.js</code></td><td>2.3 MB</td><td>ESM bundle for landing page (unchanged)</td></tr>
+    <tr><td><code>dist/index.html</code></td><td>481 bytes</td><td>ESM landing page (unchanged)</td></tr>
+  </table>
+
+  <h2>Smoke verification</h2>
+  <p>
+    A smoke driver loaded <code>dist/mtt_reagent_prep.html</code> in headless
+    Chromium and checked four conditions:
+  </p>
+  <ul>
+    <li><code>window.SceneRuntime</code> is available (IIFE parsed).</li>
+    <li><code>window.SceneRuntime.loadAndMountByProtocolName</code> is callable.</li>
+    <li><code>window.__RUNTIME_PROTOCOL_CONFIG</code> is set after page settles.</li>
+    <li>The mount reports <code>sceneId=mtt_reagent_prep_bench_workspace</code>,
+        <code>entry step=pick_up_mtt_powder</code>.</li>
+  </ul>
+  <p>All four passed. Status: <code>mount=yes</code>.</p>
+</section>
+
+<!-- ============================ PAGE 3 ============================ -->
+<section class="page">
+  <h1>What Foundation Unblocked</h1>
+  <p class="meta">Sources: round3_foundation_html_wiring.md, round3_cluster_mount_audit.md, round3_r9_rerun_on_11.md, round3_top10_full_walkthrough.md, round3_osc_fire_audit.md, round3_placeholder_recount.md</p>
+
+  <h2>Cluster-scale audit became possible</h2>
+  <p>
+    With per-protocol HTML, Playwright drivers no longer need to navigate an
+    in-app protocol picker, mutate <code>window.location</code> query strings,
+    or call internal runtime APIs. Each protocol is a self-contained URL.
+    Five new workstreams ran on this surface in a single day:
+  </p>
+
+  <table>
+    <tr><th>Workstream</th><th>Scope</th><th>Result</th></tr>
+    <tr><td>Cluster mount audit</td><td>26 mini-protocols + 5 sequence runners</td><td>25/26 mount; 1 typo fix shipped; 1 schema violation flagged</td></tr>
+    <tr><td>R9 rerun on 11</td><td>P5's 11-protocol expansion set</td><td>11/11 mount + 11/11 clickWorks</td></tr>
+    <tr><td>Top-10 full walkthrough</td><td>9 of 10 demo-ready protocols (excl. trypan_blue)</td><td>9/9 terminal, 25/25 steps, 229 screenshots</td></tr>
+    <tr><td>OSC fire audit</td><td>5 protocols with ObjectStateChange operations</td><td>2/5 fire, 0 real OSC defects; 3 errors are scene-side adjust-panel visibility</td></tr>
+    <tr><td>Placeholder recount</td><td>All 26 mini-protocols, full DOM scan</td><td>119 fallback instances measured (was 30 partial)</td></tr>
+  </table>
+
+  <h2>Before and after, one frame</h2>
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_runtime_truth/mtt_reagent_prep_bench_workspace_initial.png" alt="A1 single scene before foundation">
+      <figcaption>Pre-foundation: A1 captured 4 scenes via internal-API mount. No cluster-scale verification possible.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_reagent_prep/pick_up_mtt_powder_01_before.png" alt="Walkthrough scene post-foundation">
+      <figcaption>Post-foundation: walker loads <code>dist/mtt_reagent_prep.html</code> like a student, clicks visible objects, advances through 4 steps to terminal.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Why this is the biggest win of the round</h2>
+  <p>
+    Every cluster-scale claim in this report rests on #121. Without
+    foundation:
+  </p>
+  <ul>
+    <li>The R7 paradox would still read as "the app is broken." Resolution
+        requires per-protocol HTML to run the corrected driver against more
+        than 4 scenes.</li>
+    <li>The 26/26 mount delta is unmeasurable. Pre-foundation, walker mount
+        was 4/4 by hand-picked selection only.</li>
+    <li>Top-10 full walkthroughs are unmeasurable. There is no entry path
+        without per-protocol HTML.</li>
+    <li>Placeholder recount is bounded to single-scene capture. The 119
+        comprehensive instances surface only with multi-protocol scan.</li>
+    <li>OSC primitive is unverifiable. The fire/no-fire matrix requires
+        per-protocol mount.</li>
+  </ul>
+
+  <div class="callout">
+    Foundation is the single artifact a Round 4 plan should cite when
+    claiming cluster-scale measurement is now possible.
+  </div>
+</section>
+
+<!-- ============================ PAGE 4 ============================ -->
+<section class="page">
+  <h1>The Pivot: From No-Crop to Runtime Quality</h1>
+  <p class="meta">Sources: A1 (round3_runtime_truth_audit.md), R5 (decisions/static_templates_are_not_runtime_truth.md), C1 (round3_static_template_hardcoding_audit.md), C3 (round3_render_path_matrix.md)</p>
+
+  <h2>The premise that died</h2>
+  <p>
+    Round 2 handed Round 3 a fix queue containing approximately 101 cropped
+    scientific SVG assets. The crop counts came from the static-template
+    precheck renderer. The Round 3 plan opened with Batch D as the
+    continuation of that queue.
+  </p>
+
+  <h2>The audit that killed it (A1)</h2>
+  <p>
+    A1 built the production bundle, mounted each protocol via
+    <code>loadAndMountByProtocolName</code>, waited 3.5 seconds for async
+    mount, captured full-page screenshots at 1280x900, and counted visible
+    cropped assets per the PRIMARY_DESIGN.md "Visual integrity" rule.
+  </p>
+
+  <p>Result, across all four mounted scenes: zero visible asset crops on
+    each. The actual runtime failure modes were oversized labels, small or
+    placeholder assets, and label overflow past the viewport edge. None of
+    them were crops.</p>
+
+  <h2>The decision (R5)</h2>
+  <p>R5 formalized what A1 had measured. Three rules:</p>
+  <ol>
+    <li>Static-template no-crop failures are <strong>not</strong> production
+        runtime failures unless reproduced through runtime screenshots.</li>
+    <li>Static templates can be used for visual experiments only.</li>
+    <li>Runtime screenshots are authoritative for production quality.</li>
+  </ol>
+
+  <h2>The trust matrix (C3)</h2>
+  <p>
+    C3's render-path matrix rated the runtime as HIGH trust and the static
+    template as MEDIUM trust. C1's audit explained why: static templates
+    hardcode CSS classes that bypass <code>renderPlacement</code> in
+    <code>src/scene_runtime/render/scene.ts</code>. The two renderers share
+    SVG assets but not sizing logic, so they drift independently.
+  </p>
+
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/mtt_reagent_prep_bench_workspace_initial.png"
+         alt="Runtime screenshot of mtt_reagent_prep_bench_workspace showing zero asset crops">
+    <figcaption>A1 evidence: runtime capture of <code>mtt_reagent_prep_bench_workspace</code> at 1280x900. No scientific asset is cropped. The failures are oversized labels and undersized assets, not crops.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ PAGE 5 ============================ -->
+<section class="page">
+  <h1>Baseline Reframing (A3)</h1>
+  <p class="meta">Source: decisions/layout_manager_baseline_reframing.md</p>
+
+  <h2>The framing error</h2>
+  <p>
+    Round 1 and Round 2 status reports framed the current procedural layout
+    engine in <code>src/scene_runtime/layout/layout_engine.ts</code> as
+    something close to a working visual baseline. Replacement candidates
+    were judged "matches legacy" or "diverges from legacy." A3 formalized
+    that this framing is wrong.
+  </p>
+
+  <h2>The required statements</h2>
+  <ol>
+    <li>The current procedural layout engine is the <em>current broken
+        baseline</em>, not a visual gold standard.</li>
+    <li>The replacement is judged against visual and runtime gates, not
+        "matches legacy."</li>
+    <li>No-crop is the first forcing function.</li>
+    <li>The project will not build "legacy forever" or "hybrid forever."</li>
+  </ol>
+
+  <h2>Why this matters for Round 3</h2>
+  <p>
+    The 101 cropped-asset count that drove the original Round 3 plan was
+    produced by the same layout engine A3 declared broken. Legacy carries
+    the failures, so legacy cannot be the reference.
+  </p>
+
+  <h2>Retirement gates</h2>
+  <ul>
+    <li><strong>No-crop:</strong> zero visible crops on the corpus that
+        currently shows ~101 crops under legacy.</li>
+    <li><strong>Label readability:</strong> every authored label renders
+        inside its placement card, at the authored size, with no overflow
+        clip and no overlap.</li>
+    <li><strong>Click-target stability:</strong> every interactive target
+        named by a step's interaction is hit-testable through the visible
+        SVG.</li>
+  </ul>
+
+  <p>
+    A3 and R5 compose: A3 says legacy is not the reference; R5 says
+    static-template precheck is not runtime evidence. Together they force
+    every Round 3 success claim onto a runtime screenshot.
+  </p>
+
+  <div class="callout">
+    The baseline-reframing note is the smaller of the two pivot decisions
+    but it was the one that made R5 possible.
+  </div>
+</section>
+
+<!-- ============================ PAGE 6 ============================ -->
+<section class="page">
+  <h1>Mount Delta: 4 to 26 Scenes</h1>
+  <p class="meta">Sources: M1, M2, M3-ext, R1, R10, round3_cluster_mount_audit.md, round3_passage_hood_microscope_fix.md</p>
+
+  <h2>Before</h2>
+  <p>
+    A1 was constrained to 4 protocols whose walker audit reported PASS:
+    <code>mtt_reagent_prep</code>, <code>mtt_solubilization_readout</code>,
+    <code>sdspage_attach_lid_and_leads</code>,
+    <code>sdspage_heat_denature_samples</code>. The first selection pass
+    (<code>electrophoresis_bench</code>, <code>staining_bench</code>,
+    <code>cell_counter_workspace</code>, <code>microscope_view</code>) all
+    failed to mount, with three of them failing at
+    <code>inferInitialScene</code> with "Cannot determine scene for target
+    object..." (entry-step ambiguity).
+  </p>
+
+  <h2>The R1 + R10 fixes</h2>
+  <p>
+    R1 added an additive branch in <code>inferInitialScene</code> in
+    <code>src/scene_runtime/loader/world.ts</code> that consults the entry
+    step's first interaction <code>response.scene_operations</code> for a
+    <code>SceneChange</code> whose <code>to_scene</code> is already in the
+    target-matching scene set. R10 was the content-side complement: it
+    authored an explicit <code>SceneChange</code> on the entry interaction
+    of <code>trypan_blue_counting.add_trypan_blue_to_chamber</code> naming
+    <code>cell_counter_workspace</code> as the target scene.
+  </p>
+
+  <h2>Cluster mount audit result (post-foundation)</h2>
+  <p>
+    Cluster audit ran every mini-protocol through the foundation HTML
+    pipeline. 25 of 26 mounted on first read; one real defect surfaced
+    (<code>passage_hood_detachment</code>) and was fixed in the same window.
+  </p>
+  <table>
+    <tr><th>Cluster</th><th>Mounted</th><th>Notes</th></tr>
+    <tr><td>cell_culture (10 mini-protocols)</td><td>10/10 after fix</td><td>passage_hood_detachment fixed; was 9/10 due to <code>microscope_view</code> typo</td></tr>
+    <tr><td>sdspage (16 mini-protocols)</td><td>16/16 mount</td><td>1 schema violation flagged on sdspage_run_electrophoresis (<code>set_voltage</code> not in closed binding set; mount still proceeds)</td></tr>
+    <tr><td>Sequence runners (5)</td><td>N/A (composition vehicles)</td><td>No standalone HTML, by design</td></tr>
+  </table>
+
+  <h2>The microscope_view typo fix (#129)</h2>
+  <p>
+    <code>passage_hood_detachment</code> referenced
+    <code>microscope_view</code> in two <code>SceneChange</code> operations.
+    SCENE_CATALOG contained <code>passage_hood_detachment_microscope_view</code>
+    (namespaced). Two-line YAML edit in
+    <code>content/protocols/cell_culture/passage_hood_detachment/protocol.yaml</code>
+    at lines 33 and 255. Build, typecheck, and re-audit all clean.
+  </p>
+
+  <h2>Remaining schema violation</h2>
+  <div class="callout-warn">
+    <strong>sdspage_run_electrophoresis:</strong> <code>set_voltage</code> is
+    not in the Pilot 1 adjust_panel closed binding set
+    <code>["set_volume", "wavelength_nm"]</code>. Three options: extend the
+    binding closure (requires PRIMARY_DESIGN.md update), rename in YAML, or
+    remove from protocol. Mount proceeds; the violation surfaces when the
+    adjust panel renders.
+  </div>
+</section>
+
+<!-- ============================ PAGE 7 ============================ -->
+<section class="page">
+  <h1>R7 Paradox Resolved: From 0/4 to 11/11</h1>
+  <p class="meta">Sources: R7 (round3_runtime_interaction_smoke.md), R9 (round3_protocol_advance_repair.md), round3_p5_clickworks_diagnosis.md, round3_r9_rerun_on_11.md</p>
+
+  <h2>The full arc</h2>
+  <p>
+    R7 reported <code>clickWorks=0/4</code> across all four A1-mounted
+    scenes. Five parallel rescue workstreams (P1, P2, P3, P4, R9) converged
+    on the diagnosis: the runtime is healthy, the smoke driver was wrong.
+    R9 fixed the driver and recorded 3/4 (the 4th case is gesture-mismatch,
+    not a runtime failure).
+  </p>
+
+  <h2>The P5 expansion that re-opened the question</h2>
+  <p>
+    P5 then ran an "adapted from R7" driver against an 11-protocol expansion
+    set. It reported <code>clickWorks=0/11</code>. The expansion implied the
+    runtime might still be broken at scale, even after the R9 fix at small
+    scale.
+  </p>
+
+  <h2>The diagnosis: DRIVER_DIVERGENCE</h2>
+  <p>
+    Audit <code>round3_p5_clickworks_diagnosis.md</code> ruled the P5
+    reading a measurement bug. P5's driver was "adapted from R7" but
+    <em>not</em> from R9's corrected version. It carried all three bugs R9
+    had already fixed:
+  </p>
+  <ol>
+    <li><strong>Wrong state-field path.</strong> P5 read
+        <code>cfg?.world?.objects[k]?.state</code>. R9 had documented that
+        per-object state lives in <code>world.objectStates</code>. P5's
+        <code>statesChanged</code> check could never fire.</li>
+    <li><strong>currentInteractionIndex absent from snapshot.</strong> P5
+        checked only <code>stepChanged</code>, <code>sceneChanged</code>,
+        and <code>statesChanged</code>. The normal advance signal for
+        interaction 0 of step 0 is <code>currentInteractionIndex</code>
+        moving 0 to 1. P5 was blind to it.</li>
+    <li><strong>Missing <code>force: true</code> on clicks.</strong>
+        Playwright's actionability heuristic rejects small SVG
+        <code>&lt;g&gt;</code> targets even with non-zero bbox.</li>
+  </ol>
+
+  <h2>The post-foundation R9 rerun on 11</h2>
+  <p>
+    The R9-corrected driver was rerun on all 11 P5 protocols after
+    foundation #121 landed. The driver was updated to load
+    <code>file://.../dist/&lt;protocol&gt;.html</code> instead of an HTTP
+    query parameter. Result:
+  </p>
+  <ul>
+    <li><strong>Mount: 11/11.</strong> Every protocol loads its
+        per-protocol HTML, parses the IIFE bundle, calls
+        <code>loadAndMountByProtocolName</code>, and sets
+        <code>window.__RUNTIME_PROTOCOL_CONFIG</code>.</li>
+    <li><strong>clickWorks: 11/11.</strong> Every click on the active
+        step's first target advances at least one of
+        (<code>stepDelta</code>, <code>interactionDelta</code>,
+        <code>sceneChanged</code>, <code>statesChanged</code>).</li>
+    <li><strong>Console errors: 0.</strong> No mount errors, no click
+        errors.</li>
+  </ul>
+
+  <h2>The lesson, sharpened</h2>
+  <p>
+    Two false-negative readings (R7 0/4, P5 0/11), one corrected driver,
+    one foundation unblock, one 11/11 result. The runtime click-advance
+    path has been healthy the whole round. The only thing that changed
+    between 0/11 and 11/11 was the entry URL the driver targeted.
+  </p>
+
+  <div class="callout">
+    <strong>Lesson:</strong> a verification driver is software. When a
+    driver reports total failure across a surface other drivers describe
+    as working, suspect the driver and the entry URL first.
+  </div>
+</section>
+
+<!-- ============================ PAGE 8 ============================ -->
+<section class="page">
+  <h1>Top-10 Full End-to-End Walkthrough (9/9)</h1>
+  <p class="meta">Source: round3_top10_full_walkthrough.md</p>
+
+  <h2>Scope</h2>
+  <p>
+    The top-10 walkthrough ran a Playwright driver against 9 of the 10
+    demo-ready protocols (<code>trypan_blue_counting</code> excluded for a
+    separate-track adjust-panel issue). Each protocol was loaded from its
+    per-protocol HTML and walked end to end through every step, every
+    interaction. Before- and after-click screenshots were captured per
+    interaction.
+  </p>
+
+  <h2>Headline numbers</h2>
+  <table>
+    <tr><th>Metric</th><th>Pre-viewport-fix</th><th>Post-viewport-fix</th></tr>
+    <tr><td>Protocols mounted</td><td>9/9</td><td>9/9</td></tr>
+    <tr><td>Full walkthroughs terminal</td><td>7/9 (78%)</td><td><strong>9/9 (100%)</strong></td></tr>
+    <tr><td>Total steps walked</td><td>20/30</td><td>25/25</td></tr>
+    <tr><td>Avg steps per protocol</td><td>2.22</td><td>2.78</td></tr>
+    <tr><td>Viewport-blocked protocols</td><td>2</td><td>0</td></tr>
+    <tr><td>Console errors</td><td>0</td><td>0</td></tr>
+    <tr><td>Total screenshots captured</td><td>(partial)</td><td>229</td></tr>
+  </table>
+
+  <h2>Per-protocol matrix</h2>
+  <table>
+    <tr><th>Rank</th><th>Protocol</th><th>Steps</th><th>Status</th><th>Notes</th></tr>
+    <tr><td>1</td><td>sdspage_fill_tank_buffer</td><td>2/2</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>2</td><td>sdspage_prepare_running_buffer</td><td>2/2</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>3</td><td>sdspage_attach_lid_and_leads</td><td>1/1</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>4</td><td>mtt_solubilization_readout</td><td>3/3</td><td>PASS</td><td><strong>FIXED</strong> (was 0/3)</td></tr>
+    <tr><td>5</td><td>sdspage_recycle_buffer</td><td>3/3</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>6</td><td>plate_drug_treatment_media_adjustment</td><td>2/2</td><td>PASS</td><td><strong>FIXED</strong> (was 0/2)</td></tr>
+    <tr><td>7</td><td>sdspage_heat_denature_samples</td><td>4/4</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>8</td><td>sdspage_prepare_sample_mix_single_lane</td><td>4/4</td><td>PASS</td><td>no change</td></tr>
+    <tr><td>9</td><td>mtt_reagent_prep</td><td>4/4</td><td>PASS</td><td>no change</td></tr>
+  </table>
+
+  <h2>Implication</h2>
+  <p>
+    All 9 walked protocols mount, click through visible UI targets, and
+    reach a terminal step. The visible interaction standard (PRIMARY_CONTRACT
+    item 4) is satisfied on this surface. The viewport fix is the
+    enabling change; foundation HTML is the enabling surface.
+  </p>
+</section>
+
+<!-- ============================ PAGE 9 ============================ -->
+<section class="page">
+  <h1>Walkthrough Gallery (Best of 229)</h1>
+  <p class="meta">Source: test-results/round3_top10_walkthrough/</p>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_reagent_prep/pick_up_mtt_powder_01_before.png" alt="mtt_reagent_prep step 1 before">
+      <figcaption>mtt_reagent_prep, step 1 of 4: bench-workspace mount, MTT powder on bench, before click.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_reagent_prep/pick_up_mtt_powder_01_after.png" alt="mtt_reagent_prep step 1 after">
+      <figcaption>After click: pickup confirmed, advance to step 2 (prepare_solution_tube).</figcaption>
+    </figure>
+  </div>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_reagent_prep/dissolve_and_mix_03_before.png" alt="mtt_reagent_prep dissolve">
+      <figcaption>mtt_reagent_prep, step 3: dissolve and mix. Mid-walkthrough capture, vortex and tube visible on bench.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_solubilization_readout/step_0_before.png" alt="mtt_solubilization_readout step 0">
+      <figcaption>mtt_solubilization_readout, step 0 (post-viewport-fix): well plate now fully within the 1280x900 viewport.</figcaption>
+    </figure>
+  </div>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/sdspage_attach_lid_and_leads/step_0_before.png" alt="sdspage_attach_lid_and_leads">
+      <figcaption>sdspage_attach_lid_and_leads, step 0 of 1: full electrophoresis bench. Labels clamped (R3) and haloed (R3-alt).</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/sdspage_heat_denature_samples/step_0_before.png" alt="sdspage_heat_denature_samples">
+      <figcaption>sdspage_heat_denature_samples, step 0 of 4: heat block scene with reagent staging.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ PAGE 10 ============================ -->
+<section class="page">
+  <h1>Well-Plate Viewport Fix</h1>
+  <p class="meta">Source: round3_well_plate_viewport_bug.md</p>
+
+  <h2>The bug</h2>
+  <p>
+    Two top-10 protocols failed at clicks on well-plate subparts:
+    <code>mtt_solubilization_readout</code> blocked at step 0 interaction 3
+    (target <code>well_plate_96.all_wells</code>);
+    <code>plate_drug_treatment_media_adjustment</code> blocked at
+    interactions 3 and 5 (block_A_1_6 and block_B_H_1_6). Playwright
+    reported "Element is outside of the viewport" even with
+    <code>force: true</code>.
+  </p>
+
+  <h2>The diagnosis: SCENE_POSITION_OFFSCREEN</h2>
+  <p>
+    <code>src/scene_runtime/render/scene.ts</code> lines 67-82 set the SVG
+    host to <code>width="100%" height="100%"</code> with
+    <code>viewBox="1 5 98 90"</code> (aspect 98:90) and
+    <code>preserveAspectRatio="xMidYMid meet"</code>. At 1280px browser
+    width the SVG resolves to 1175px tall, 31% taller than the 900px
+    Playwright viewport. The well plate bottom maps to DOM y &asymp; 849px
+    plus chrome, exceeding the 900px hard bound. Force-click bypasses
+    visibility checks but not coordinate bounds.
+  </p>
+
+  <h2>The fix</h2>
+<pre>// src/scene_runtime/render/scene.ts L78-L80
+- sceneRoot.setAttribute("width", "100%");
+- sceneRoot.setAttribute("height", "100%");
++ sceneRoot.setAttribute("width", "1280");
++ sceneRoot.setAttribute("height", "900");</pre>
+  <p>
+    <code>preserveAspectRatio="xMidYMid meet"</code> then letterboxes the
+    SVG within 1280x900. Post-fix plate bottom = (70.0 - 5) / 90 * 900 =
+    650px, well inside the viewport. Both previously-blocked protocols
+    walked end to end on the rerun.
+  </p>
+
+  <h2>Deferred follow-up</h2>
+  <p>
+    The layout engine still defaults composite aspect to 1.0 (square) when
+    no SVG file is present. Real SBS 96-well plates have aspect 0.667.
+    Reading an <code>aspect_ratio</code> field from
+    <code>content/objects/plate/well_plate_96.yaml</code> in
+    <code>buildAssetSpec</code> would render the plate at the correct
+    proportions. Filed for Round 4.
+  </p>
+
+  <div class="callout">
+    Two-line scene.ts edit; two protocols un-blocked; top-10 walkthrough
+    advanced from 7/9 to 9/9.
+  </div>
+</section>
+
+<!-- ============================ PAGE 11 ============================ -->
+<section class="page">
+  <h1>Cell Counter Mount Fix Story (R10)</h1>
+  <p class="meta">Source: round3_cell_counter_scenechange.md</p>
+
+  <h2>The shape of the gap</h2>
+  <p>
+    The R1 disambiguation branch unblocked <code>electrophoresis_bench</code>
+    and <code>staining_bench</code> but did <em>not</em> unblock
+    <code>cell_counter_workspace</code>. The entry interaction in
+    <code>trypan_blue_counting</code> carried no <code>SceneChange</code>
+    in its response, so there was nothing for the R1 branch to consult.
+  </p>
+
+  <h2>The fix is content, not code</h2>
+  <p>
+    R10 authored an explicit <code>SceneChange</code> on the entry
+    interaction of <code>trypan_blue_counting.add_trypan_blue_to_chamber</code>
+    naming <code>cell_counter_workspace</code> as the target scene. One
+    YAML edit, no runtime code change.
+  </p>
+
+  <h2>Generalizable lesson</h2>
+  <p>
+    Mount-fail diagnoses can have either a code cause or a content cause.
+    R1 was a code fix; R10 was a content fix on the same failure shape.
+    The R7-paradox lesson on the click-advance side has its mount-side
+    analogue here: future "scene won't mount" reports should check both
+    branches before assigning to a workstream.
+  </p>
+
+  <h2>Before / after</h2>
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_runtime_truth/cell_counter_workspace_initial.png" alt="cell_counter_workspace initial (mount fail)">
+      <figcaption>Initial pick (V1): mount failed at <code>inferInitialScene</code>. Capture is the post-error fallback render.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_runtime_truth/cell_counter_workspace_after_scenechange.png" alt="cell_counter_workspace after SceneChange added">
+      <figcaption>After R10: <code>add_trypan_blue_to_chamber</code> response carries a <code>SceneChange</code>, and the scene mounts through real runtime.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ PAGE 12 ============================ -->
+<section class="page">
+  <h1>Placeholder Reduction and Recount</h1>
+  <p class="meta">Sources: A5 (round3_a5_runtime_placeholder_report.md), R2 (round3_placeholder_asset_replacement.md), A1B (round3_a1b_bottle_family.md), Stream 3B (round3_stream_3b_asset_remaps.md), round3_placeholder_recount.md</p>
+
+  <h2>The placeholder taxonomy (A5)</h2>
+  <ol>
+    <li><strong>Asset-name typo or drift:</strong> YAML names an asset that
+        does not exist in the regenerated barrel.</li>
+    <li><strong>Empty-vs-filled split missing:</strong> YAML names a single
+        asset that should be a state-driven pair.</li>
+    <li><strong>No candidate SVG exists:</strong> requires new authored
+        asset.</li>
+  </ol>
+
+  <h2>Stream 3B: asset name drift remediation</h2>
+  <p>
+    Stream 3B edited three object YAML files to retarget
+    <code>asset_name</code> values toward existing barrel entries, removing
+    eight fallback instances:
+  </p>
+  <table>
+    <tr><th>File</th><th>Fallback fields removed</th><th>Count</th></tr>
+    <tr><td>content/objects/equipment/vortex.yaml</td><td>vortex_idle, vortex_spinning &rarr; vortex</td><td>2</td></tr>
+    <tr><td>content/objects/equipment/microscope.yaml</td><td>microscope_dark, microscope_lit &rarr; microscope</td><td>2</td></tr>
+    <tr><td>content/objects/equipment/electrode_module.yaml</td><td>3 paired states &rarr; electrode_module</td><td>4</td></tr>
+  </table>
+
+  <h2>Comprehensive recount (post-foundation): 119</h2>
+  <p>
+    With per-protocol HTML available, the recount driver scanned all 26
+    mini-protocols and counted every <code>[data-render-fallback="true"]</code>
+    element in the live DOM after mount. Result: 119 fallback instances
+    across 25 of 26 protocols (passage_hood_detachment is the lone
+    zero-fallback protocol; recommend as remediation template).
+  </p>
+
+  <h2>Top offenders</h2>
+  <table>
+    <tr><th>Object</th><th>Count</th><th>Affected protocols</th></tr>
+    <tr><td>p200_micropipette</td><td>10</td><td>10 SDS-PAGE</td></tr>
+    <tr><td>p10_gel_loading_tip_box</td><td>10</td><td>10 SDS-PAGE</td></tr>
+    <tr><td>gel_opening_tool</td><td>10</td><td>10 SDS-PAGE</td></tr>
+    <tr><td>(remaining SDS-PAGE 7-set: electrode_module, mini_protean_gel, gel_cassette, gel_comb)</td><td>40 (10 each)</td><td>same 10 protocols</td></tr>
+  </table>
+
+  <p>
+    Pattern: the 7-fallback core appears in 10 SDS-PAGE protocols
+    identically, accounting for 70 of the 119 instances. The diagnosis
+    points to a shared scene configuration or systematic gap in the
+    SDS-PAGE asset declaration path; a single fix touches all 10 protocols.
+  </p>
+
+  <div class="callout-warn">
+    The 30 to 119 delta is a measurement-scope change (partial &rarr;
+    comprehensive), not a regression. The A5 baseline counted placement-level
+    remapping failures only; this recount counts every DOM fallback element
+    across every mounted protocol.
+  </div>
+</section>
+
+<!-- ============================ PAGE 13 ============================ -->
+<section class="page">
+  <h1>Bottle Family Fixes (A1B)</h1>
+  <p class="meta">Source: round3_a1b_bottle_family.md</p>
+
+  <h2>Scope</h2>
+  <p>
+    The bottle family (12 objects) was deferred from the R2 mechanical pass
+    because each bottle needs a per-object semantic decision: what colormap
+    or filled SVG actually matches the chemical contents? A1B is the pilot
+    pass that handled the bottles visible on <code>sample_prep_bench</code>
+    and proved the decision pattern works.
+  </p>
+
+  <h2>Decision rules</h2>
+  <ul>
+    <li>If the chemical has a canonical color (e.g. blue PBS, yellow MTT,
+        clear ethanol), prefer the <code>bottle</code> colormap-driven asset
+        with the matching color spec.</li>
+    <li>If the bottle is reagent-specific with distinctive shape (e.g. a
+        squat amber chemical bottle), prefer an authored SVG variant.</li>
+    <li>Reject blanket retargets that lose semantic specificity.</li>
+  </ul>
+
+  <h2>Before / after</h2>
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_bottle_family/sample_prep_bench_before_a1b.png" alt="sample_prep_bench before A1B">
+      <figcaption>Before A1B: multiple bottles render as identical placeholder silhouettes.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_bottle_family/sample_prep_bench_after_a1b.png" alt="sample_prep_bench after A1B">
+      <figcaption>After A1B: bottles render with distinct colormaps reflecting their contents.</figcaption>
+    </figure>
+  </div>
+
+  <h2>Carryover</h2>
+  <p>
+    A1B handled the scene-visible subset. The 7 remaining bottle-family
+    objects need the same decision pattern on a per-object basis and
+    should ride the same template. This is now the leading
+    mechanical-edit candidate for the next implementation queue.
+  </p>
+</section>
+
+<!-- ============================ PAGE 14 ============================ -->
+<section class="page">
+  <h1>Well Plate Composite Render (R2-alt)</h1>
+  <p class="meta">Source: round3_well_plate_96_variant.md</p>
+
+  <h2>The problem</h2>
+  <p>
+    The 96-well plate rendered as a grey rectangle with vertical hash marks
+    &mdash; the placeholder shape produced when the runtime falls back from
+    a missing per-well asset to the underlying primitive. The plate was
+    visually unrecognizable as a 96-well plate.
+  </p>
+
+  <h2>The fix</h2>
+  <p>
+    R2-alt extended <code>src/scene_runtime/adapters/well_plate/render.ts</code>
+    to draw a composite render: a rounded white rect with dark stroke for
+    the plate frame; each cell renders as an inset circle; an invisible
+    cell-sized rect retains hit-testing with the original
+    <code>data-target-id</code>, <code>data-well</code>, and
+    <code>pointer-events: auto</code>. No content YAML changes.
+  </p>
+
+  <h2>Before / after</h2>
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_well_plate_variants/before_baseline_plate_crop.png" alt="well plate before">
+      <figcaption>Before: grey rectangle with vertical hash marks.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_well_plate_variants/after_composite_frame_v2_plate_crop.png" alt="well plate after composite">
+      <figcaption>After R2-alt v2: recognizable 12x8 circular well plate. Hit-testing preserved on each cell.</figcaption>
+    </figure>
+  </div>
+
+  <div class="callout">
+    Composite render is the asset side of the fix; the viewport fix on
+    page 10 is the placement side. Together they unblocked the well-plate
+    interaction class entirely.
+  </div>
+</section>
+
+<!-- ============================ PAGE 15 ============================ -->
+<section class="page">
+  <h1>R2 Pipette and pbs_bottle Fixes</h1>
+  <p class="meta">Source: round3_placeholder_asset_replacement.md</p>
+
+  <h2>The four single-field edits</h2>
+<pre>content/objects/bottle/pbs_bottle.yaml          -> asset_name: bottle
+content/objects/pipette/micropipette.yaml       -> split empty / filled
+content/objects/pipette/p10_micropipette.yaml   -> split empty / filled
+content/objects/pipette/p200_micropipette.yaml  -> split empty / filled</pre>
+
+  <h2>Per-state split rule</h2>
+<pre>visual_states:
+  - when: { held_material_name: empty }
+    asset_name: micropipette_empty
+  - when: { held_material_name: '*' }
+    asset_name: micropipette_filled</pre>
+
+  <h2>Incidental: SVG asset barrel regen</h2>
+  <p>
+    The R2 pass triggered a regeneration of <code>generated/svg_assets/</code>
+    (125 per-asset TS files plus <code>index.ts</code> and
+    <code>svg_manifest.ts</code>). The regen folded
+    <code>serological_pipette.ts</code> into the bundle (it had been
+    authored but not previously included).
+  </p>
+
+  <h2>Before / after</h2>
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_placeholder_fixes/sample_prep_bench_before.png" alt="sample_prep_bench before R2">
+      <figcaption>Before: pbs_bottle and pipettes render as placeholders.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_placeholder_fixes/sample_prep_bench_after.png" alt="sample_prep_bench after R2">
+      <figcaption>After R2: pbs_bottle renders as bottle (colormap-driven); pipettes select per held_material_name.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ PAGE 16 ============================ -->
+<section class="page">
+  <h1>Label Readability: TS Renderer Clamp (R3) + CSS Halo (R3-alt)</h1>
+  <p class="meta">Sources: round3_runtime_label_readability.md, round3_runtime_label_readability_css_variant.md</p>
+
+  <h2>The bug</h2>
+  <p>
+    A1's runtime captures showed labels at extreme size. On
+    <code>sdspage_attach_lid_and_leads_workspace</code>, the
+    <code>heat_block</code> label overflowed multiple placement cards. On
+    <code>mtt_reagent_prep_bench_workspace</code>, labels collided with
+    each other and overflowed the viewport right edge ("vorte...",
+    "soluti...").
+  </p>
+
+  <h2>R3: single-line clamp in renderPlacement</h2>
+<pre>// src/scene_runtime/render/scene.ts
+const fontSize = Math.min(declaredFontSize, width * 0.25);</pre>
+  <p>
+    Caps glyph height at 25% of placement width. One-way (never enlarges
+    past the authored value). Per-placement.
+  </p>
+
+  <h2>R3-alt: CSS halo emitted in protocol HTML</h2>
+<pre>#runtime-root .scene-viewport svg text,
+#runtime-root svg text {
+    paint-order: stroke fill;
+    stroke: #ffffff;
+    stroke-width: 0.35px;
+    stroke-linejoin: round;
+    font-weight: 600;
+}</pre>
+
+  <h2>Why both shipped</h2>
+  <p>
+    R3 prevents overflow; R3-alt prevents low contrast against busy
+    backgrounds. Complementary, not competing. The subjective improvement
+    on <code>sdspage_attach_lid_and_leads_workspace</code> was rated 4/5.
+  </p>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_runtime_truth/sdspage_attach_lid_workspace_initial.png" alt="sdspage_attach_lid before R3">
+      <figcaption>Before R3: <code>heat_block</code> label overflows its card.</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_runtime_truth/sdspage_attach_lid_workspace_after_label_fix.png" alt="sdspage_attach_lid after R3">
+      <figcaption>After R3 + R3-alt: clamped and haloed.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ============================ PAGE 17 ============================ -->
+<section class="page">
+  <h1>OSC Primitive Healthy (Post-Foundation)</h1>
+  <p class="meta">Source: round3_osc_fire_audit.md</p>
+
+  <h2>Scope</h2>
+  <p>
+    The ObjectStateChange (OSC) primitive is the sole protocol-layer
+    operation that mutates declared object state. The post-foundation OSC
+    fire audit ran five protocols whose entry interactions include an OSC
+    on an adjustable target, captured pre and post snapshots of
+    <code>world.objectStates</code>, and verified the declared delta.
+  </p>
+
+  <h2>Result matrix</h2>
+  <table>
+    <tr><th>Protocol</th><th>Target</th><th>Expected</th><th>Pre</th><th>Post</th><th>Match</th><th>Issue</th></tr>
+    <tr><td>cell_seeding_plate_setup</td><td>serological_pipette</td><td>set_volume=2.4</td><td>1</td><td>2.4</td><td>FIRE</td><td>none</td></tr>
+    <tr><td>drug_dilution_setup</td><td>micropipette</td><td>set_volume=40</td><td>100</td><td>40</td><td>FIRE</td><td>none</td></tr>
+    <tr><td>trypan_blue_counting</td><td>micropipette</td><td>set_volume=10</td><td>N/A</td><td>N/A</td><td>ERROR</td><td>adjust panel hidden after CursorAttach</td></tr>
+    <tr><td>mtt_plate_reaction</td><td>multichannel_pipette</td><td>set_volume=25</td><td>N/A</td><td>N/A</td><td>ERROR</td><td>adjust panel hidden in incubator_workspace</td></tr>
+    <tr><td>mtt_solubilization_readout</td><td>multichannel_pipette</td><td>set_volume=100</td><td>N/A</td><td>N/A</td><td>ERROR</td><td>same scene-side issue</td></tr>
+  </table>
+
+  <h2>Interpretation</h2>
+  <ul>
+    <li><strong>2/5 fires, 0 OSC defects.</strong> Both fires show clean
+        deltas in <code>world.objectStates</code>.</li>
+    <li><strong>3 errors are scene-side, not OSC-side.</strong> The
+        adjust panel never becomes visible after the entry interaction.
+        These belong to a separate workstream on scene rendering and
+        interaction validation.</li>
+    <li><strong>Infrastructure is healthy.</strong> Mount is 5/5; state
+        snapshots are accurate; the primitive fires correctly where the
+        adjust panel is accessible.</li>
+  </ul>
+
+  <div class="callout">
+    The OSC audit only became possible after foundation. Pre-#121, the
+    adjust panel could not be reliably driven through per-protocol mount,
+    so OSC fire/no-fire was unmeasurable.
+  </div>
+</section>
+
+<!-- ============================ PAGE 18 ============================ -->
+<section class="page">
+  <h1>Mount Catalog Coverage (M4)</h1>
+  <p class="meta">Source: round3_m4_scene_catalog_coverage.md</p>
+
+  <h2>What M4 measures</h2>
+  <p>
+    M4 enumerates the full set of scenes declared in
+    <code>generated/scene_catalog.ts</code> and crosses them against the
+    walker audit and the M-series runtime mount proofs. After the cluster
+    mount audit, the canonical answer is:
+  </p>
+  <ul>
+    <li><strong>26 mini-protocols mount</strong> via per-protocol HTML
+        (1 fixed during cluster audit; 1 schema violation deferred).</li>
+    <li><strong>43 scenes in SCENE_CATALOG</strong>, including
+        <code>passage_hood_detachment_microscope_view</code> (the
+        namespaced scene whose short-form reference was the
+        passage_hood_detachment typo).</li>
+    <li><strong>5 sequence runners</strong> have no standalone HTML by
+        design; they are composition vehicles.</li>
+  </ul>
+
+  <h2>The microscope_view finding, resolved</h2>
+  <p>
+    A1's V1 selection included <code>microscope_view</code> as a category
+    pick. The mount failed with "scene <code>microscope_view</code> not
+    found in SCENE_CATALOG." Cluster audit identified the cause: protocol
+    YAML used the short form but the catalog held the namespaced form
+    <code>passage_hood_detachment_microscope_view</code>. Two-line fix
+    shipped (#129).
+  </p>
+
+  <h2>Sequence runners as composition vehicles</h2>
+  <p>
+    Sequence runners (<code>cell_culture_full</code>,
+    <code>routine_passage</code>, <code>sdspage_full</code>,
+    <code>sdspage_load_samples_batch</code>,
+    <code>sdspage_prepare_sample_mix_batch</code>) are not mini-protocols
+    and do not have per-protocol HTML. A future runner walker will load the
+    first mini-protocol HTML, complete it, then load the next in sequence.
+    Filed for Round 4.
+  </p>
+</section>
+
+<!-- ============================ PAGE 19 ============================ -->
+<section class="page">
+  <h1>SVG Barrel Regen and Alias Map Rejection</h1>
+  <p class="meta">Sources: A2 (round3_a2_svg_barrel_regen_audit.md), A2-fix (round3_a2_fix_bootstrap_wiring.md), A3-reject (round3_a3_alias_map_justification.md)</p>
+
+  <h2>A2 + A2-fix</h2>
+  <p>
+    The SVG asset barrel
+    (<code>generated/svg_assets/index.ts</code> and
+    <code>svg_manifest.ts</code>) was being regenerated from
+    <code>assets/</code>, but the bootstrap wiring left at least one
+    authored asset (<code>serological_pipette.svg</code>) out of the
+    generated module. A2-fix patched the bootstrap step so the regen now
+    enumerates every <code>*.svg</code> under <code>assets/</code>,
+    normalizes filenames to asset IDs, and emits each as a TS module.
+  </p>
+  <ul>
+    <li>125 per-asset TS files emitted (matches authored SVG count).</li>
+    <li><code>serological_pipette</code> resolves through the runtime
+        loader; no placeholder fallback.</li>
+    <li>Regen is idempotent.</li>
+  </ul>
+
+  <h2>The alias map that was rejected (A3-reject)</h2>
+  <p>
+    A draft workstream proposed introducing an asset alias map so that
+    multiple authored names could resolve to a shared underlying SVG. It
+    was rejected:
+  </p>
+  <ul>
+    <li>The current loader performs a literal
+        <code>"SVG_" + assetName.toUpperCase()</code> lookup. No alias
+        table exists in current source.</li>
+    <li>Older CHANGELOG entries reference an <code>EQUIPMENT_ASSETS</code>
+        alias table and a <code>getStaticSvg</code> helper. Both were
+        removed in a previous cleanup. Reintroducing alias machinery would
+        re-create a vocabulary leak that was deliberately closed.</li>
+    <li>The semantic problem (multiple bottles, one SVG) is better solved
+        by colormap-driven variants in the existing <code>bottle</code>
+        asset.</li>
+  </ul>
+
+  <div class="callout-warn">
+    Future contributors who find an older CHANGELOG entry referencing
+    <code>EQUIPMENT_ASSETS</code>, <code>getStaticSvg</code>, or a
+    <code>src/svg_assets.ts</code> facade should treat those as
+    archaeological.
+  </div>
+</section>
+
+<!-- ============================ PAGE 20 ============================ -->
+<section class="page">
+  <h1>Sizing Vocabulary and widthScale Removal</h1>
+  <p class="meta">Sources: V1 (round3_v1_sizing_field_documentation.md), V3 (round3_v3_stale_terms_audit.md), R11 (round3_r11_widthscale_removal.md, #118)</p>
+
+  <h2>The canonical field (V1)</h2>
+  <p>
+    <code>layout.default_width</code> is the sole canonical sizing field
+    for every authored object. Authored under
+    <code>content/objects/&lt;kind&gt;/&lt;name&gt;.yaml</code>, passed
+    through verbatim by <code>pipeline/build_object_data.py</code>, emitted
+    as <code>generated/object_data.ts</code> (78 occurrences), read at
+    <code>src/scene_runtime/layout/adapter.ts</code>.
+  </p>
+
+  <h2>widthScale removal (R11, #118) DONE</h2>
+  <p>
+    R11 was BLOCKED in the prior draft. Post-foundation, with the layout
+    engine quiet, R11 shipped. Sites removed:
+  </p>
+  <ul>
+    <li><code>src/scene_runtime/layout/types.ts:32</code> &mdash;
+        <code>SceneItem.widthScale: number</code> removed.</li>
+    <li><code>src/scene_runtime/layout/types.ts:49</code> &mdash;
+        <code>AssetSpec.widthScale?: number</code> removed.</li>
+    <li><code>src/scene_runtime/layout/adapter.ts:152</code> &mdash;
+        default assignment <code>widthScale: 1.0</code> removed.</li>
+    <li><code>src/scene_runtime/layout/layout_engine.ts</code> lines
+        261, 264, 566, 575 &mdash; all four multiply-by-widthScale sites
+        collapsed.</li>
+  </ul>
+  <p>
+    Concern: legacy/example YAML under <code>src/scenes/bench/</code> and
+    <code>src/scenes/cell_culture_hood/</code> still references
+    <code>widthScale</code> in scene-item definitions. These files are not
+    referenced by runtime code (verified via grep). They do not affect
+    removal completion but are flagged for V4 sweep.
+  </p>
+
+  <h2>Stale-term enumeration (V3)</h2>
+  <ul>
+    <li><strong>Sizing field language:</strong> occurrences of
+        <code>display_width_cm</code>, <code>defaultWidth</code> as if it
+        were an authored field, <code>width_scale</code> as if live.</li>
+    <li><strong>Asset alias machinery:</strong> mentions of
+        <code>EQUIPMENT_ASSETS</code>, <code>getStaticSvg</code>.</li>
+    <li><strong>Layout engine framing:</strong> language treating the
+        procedural engine as a working baseline.</li>
+    <li><strong>Static-template authority:</strong> language citing
+        precheck as authoritative.</li>
+  </ul>
+  <p>V4 sweep edits canonical specs once user approval is granted.</p>
+</section>
+
+<!-- ============================ PAGE 21 ============================ -->
+<section class="page">
+  <h1>Demo-Ready Top 10 (M5)</h1>
+  <p class="meta">Source: round3_m5_top10_demo_ready.md, round3_top10_full_walkthrough.md</p>
+
+  <h2>Scoring criteria</h2>
+  <ul>
+    <li><strong>mount_success:</strong> the scene mounts cleanly under the
+        foundation pipeline.</li>
+    <li><strong>object_count:</strong> visible interactive objects.</li>
+    <li><strong>interaction_evidence:</strong> R9-driver trace evidence
+        that clicks advance the runtime state.</li>
+    <li><strong>next_step_authored:</strong> the protocol declares a
+        subsequent step.</li>
+    <li><strong>full_walkthrough_terminal (new):</strong> the protocol
+        walks every step to a terminal state via visible UI.</li>
+  </ul>
+
+  <h2>Top-10 ranking (ordinal)</h2>
+  <table>
+    <tr><th>Rank</th><th>Protocol</th><th>Walkthrough</th></tr>
+    <tr><td>1</td><td>mtt_reagent_prep</td><td>4/4 terminal</td></tr>
+    <tr><td>2</td><td>mtt_solubilization_readout</td><td>3/3 terminal (post viewport fix)</td></tr>
+    <tr><td>3</td><td>sdspage_attach_lid_and_leads</td><td>1/1 terminal</td></tr>
+    <tr><td>4</td><td>sdspage_heat_denature_samples</td><td>4/4 terminal</td></tr>
+    <tr><td>5</td><td>sdspage_prepare_sample_mix_single_lane</td><td>4/4 terminal</td></tr>
+    <tr><td>6</td><td>sdspage_recycle_buffer</td><td>3/3 terminal</td></tr>
+    <tr><td>7</td><td>plate_drug_treatment_media_adjustment</td><td>2/2 terminal (post viewport fix)</td></tr>
+    <tr><td>8</td><td>sdspage_fill_tank_buffer</td><td>2/2 terminal</td></tr>
+    <tr><td>9</td><td>sdspage_prepare_running_buffer</td><td>2/2 terminal</td></tr>
+    <tr><td>10</td><td>trypan_blue_counting</td><td>excluded (adjust-panel scene issue)</td></tr>
+  </table>
+
+  <div class="callout">
+    Of the 10 demo-ready protocols, 9 walk end to end through visible UI.
+    The 10th is excluded for a known scene-side issue, not a runtime defect.
+  </div>
+</section>
+
+<!-- ============================ PAGE 22 ============================ -->
+<section class="page">
+  <h1>Best 5 Gallery (Q1, Updated)</h1>
+  <p class="meta">Source: round3_q1_best5_gallery.md, round3_top10_full_walkthrough.md</p>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_reagent_prep/pick_up_mtt_powder_01_before.png" alt="best 1">
+      <figcaption>1. <code>mtt_reagent_prep</code> step 1 of 4 (full walkthrough terminal)</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/mtt_solubilization_readout/step_0_before.png" alt="best 2">
+      <figcaption>2. <code>mtt_solubilization_readout</code> step 0 (post viewport fix, well plate visible)</figcaption>
+    </figure>
+  </div>
+
+  <div class="two-col">
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/sdspage_attach_lid_and_leads/step_0_before.png" alt="best 3">
+      <figcaption>3. <code>sdspage_attach_lid_and_leads</code> (R3 clamp + R3-alt halo visible on labels)</figcaption>
+    </figure>
+    <figure>
+      <img src="../../../test-results/round3_top10_walkthrough/sdspage_heat_denature_samples/step_0_before.png" alt="best 4">
+      <figcaption>4. <code>sdspage_heat_denature_samples</code> (4 steps walked end to end)</figcaption>
+    </figure>
+  </div>
+
+  <figure>
+    <img src="../../../test-results/round3_top10_walkthrough/sdspage_recycle_buffer/step_0_before.png" alt="best 5">
+    <figcaption>5. <code>sdspage_recycle_buffer</code> (3 steps walked end to end)</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ PAGE 23 ============================ -->
+<section class="page">
+  <h1>Worst 5 Gallery + Fix Queue (Q2, Updated)</h1>
+  <p class="meta">Source: round3_q2_worst5_gallery.md, round3_placeholder_recount.md</p>
+
+  <h2>Diagnoses, post-foundation</h2>
+  <table>
+    <tr><th>#</th><th>Scene/Protocol</th><th>Primary defect</th><th>Fix candidate</th></tr>
+    <tr><td>1</td><td>10 SDS-PAGE protocols (7-fallback core)</td><td>70 of the 119 fallback instances; shared asset gap</td><td>Single scene/asset config fix in SDS-PAGE</td></tr>
+    <tr><td>2</td><td>sdspage_run_electrophoresis</td><td>Schema violation: <code>set_voltage</code> outside closed binding set</td><td>Extend closure (PRIMARY_DESIGN.md update) or rename</td></tr>
+    <tr><td>3</td><td>trypan_blue / mtt_plate_reaction / mtt_solubilization OSC errors</td><td>Adjust panel hidden after entry interaction; scene-side rendering</td><td>Scene/adjust-panel rendering workstream</td></tr>
+    <tr><td>4</td><td>Scenes referencing deferred bottle family</td><td>7 bottles still render as placeholder</td><td>A1B-pattern follow-up pass</td></tr>
+    <tr><td>5</td><td>cell_counter_workspace counter_slide_cartridge</td><td>No SVG candidate exists</td><td>Author new SVG (cartridge)</td></tr>
+  </table>
+
+  <h2>Single clear template for remediation</h2>
+  <p>
+    The placeholder recount identified
+    <code>passage_hood_detachment</code> as the lone zero-fallback
+    protocol after the microscope_view typo fix. Its scene and asset
+    declarations are the recommended template for SDS-PAGE remediation.
+  </p>
+
+  <h2>Sample worst-5 image</h2>
+  <figure>
+    <img src="../../../test-results/round3_runtime_truth/cell_counter_workspace_initial.png" alt="worst case">
+    <figcaption>cell_counter_workspace pre-R10: mount failed at <code>inferInitialScene</code>. R10 unblocks the mount; the cartridge SVG gap remains.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ PAGE 24 ============================ -->
+<section class="page">
+  <h1>Round 3 Lessons Learned</h1>
+
+  <h2>Lesson 1: Foundation unblocks everything</h2>
+  <p>
+    Five cluster-scale measurements (mount audit 26/26, R9 rerun 11/11,
+    top-10 walkthrough 9/9, OSC fire audit 5/5 mount, placeholder recount
+    119) became possible only after #121 wired per-protocol HTML into the
+    build pipeline. The artifact itself is two passes in a build script;
+    the leverage is the entire round.
+  </p>
+
+  <h2>Lesson 2: Drivers can lie at any scale</h2>
+  <p>
+    R7 said 0/4. P5 said 0/11. Both readings were driver-divergence
+    artifacts. The R9-corrected driver, rerun post-foundation, recorded
+    11/11. A single corrected driver, on the right entry surface, undid
+    both false negatives. When a single driver reports total failure
+    across a surface that other drivers report as working, suspect the
+    driver first.
+  </p>
+
+  <h2>Lesson 3: Premises can be falsified</h2>
+  <p>
+    Round 3 opened with a 101-crop fix queue. A1 measured runtime crops as
+    0. The entire premise was a measurement artifact. When a queue
+    arrives from a previous round, audit its measurement basis before
+    committing to its work items.
+  </p>
+
+  <h2>Lesson 4: Parallel competing experiments win</h2>
+  <p>
+    R3 (TS renderer clamp) and R3-alt (CSS halo) were initially framed as
+    competing. They shipped complementary. A1B's per-object decisions beat
+    the A3-reject alias-map proposal on the same problem. Running both in
+    parallel and letting the evidence decide produced better outcomes than
+    picking one upfront.
+  </p>
+
+  <h2>Lesson 5: Content gaps and code gaps look identical</h2>
+  <p>
+    R1 (code), R10 (content), and #129 (content typo) all addressed
+    "scene won't mount" failures with the same outward symptom. The
+    diagnosis path must check both branches.
+  </p>
+
+  <h2>Lesson 6: Vocabulary leaks cause recurrent drift</h2>
+  <p>
+    <code>display_width_cm</code>, <code>EQUIPMENT_ASSETS</code>,
+    <code>width_scale</code>, and the alias map proposal all came from
+    older docs and CHANGELOG entries that referenced source which no
+    longer exists. V1 + V3 enumerate the leaks; R11 closed
+    <code>widthScale</code>; V4 is the future sweep that closes the rest.
+  </p>
+</section>
+
+<!-- ============================ PAGE 25 ============================ -->
+<section class="page">
+  <h1>Acknowledgments and Artifact Index</h1>
+
+  <h2>Artifact index</h2>
+
+  <h3>Foundation (new)</h3>
+  <ul>
+    <li><code>round3_foundation_html_wiring.md</code> (#121)</li>
+    <li><code>round3_r9_rerun_on_11.md</code> (post-foundation rerun)</li>
+    <li><code>round3_cluster_mount_audit.md</code> (26-protocol audit)</li>
+    <li><code>round3_passage_hood_microscope_fix.md</code> (#129)</li>
+    <li><code>round3_top10_full_walkthrough.md</code> (9/9, 25/25, 229 screenshots)</li>
+    <li><code>round3_osc_fire_audit.md</code> (post-foundation OSC retest)</li>
+    <li><code>round3_placeholder_recount.md</code> (comprehensive 119)</li>
+    <li><code>round3_stream_3b_asset_remaps.md</code> (8 placeholders eliminated)</li>
+    <li><code>round3_r11_widthscale_removal.md</code> (#118 done)</li>
+    <li><code>audits/round3_p5_clickworks_diagnosis.md</code> (DRIVER_DIVERGENCE)</li>
+    <li><code>audits/round3_well_plate_viewport_bug.md</code> (SCENE_POSITION_OFFSCREEN)</li>
+  </ul>
+
+  <h3>Decisions</h3>
+  <ul>
+    <li><code>decisions/layout_manager_baseline_reframing.md</code> (A3)</li>
+    <li><code>decisions/static_templates_are_not_runtime_truth.md</code> (R5)</li>
+  </ul>
+
+  <h3>Audit and pivot</h3>
+  <ul>
+    <li><code>round3_runtime_truth_audit.md</code> (A1)</li>
+    <li><code>round3_runtime_quality_tournament_report.md</code> (R8)</li>
+  </ul>
+
+  <h3>Mount</h3>
+  <ul>
+    <li><code>round3_runtime_mount_gap_repair.md</code> (R1)</li>
+    <li><code>round3_m1_electrophoresis_proof.md</code> (M1)</li>
+    <li><code>round3_m2_staining_proof.md</code> (M2)</li>
+    <li><code>round3_m3_ext_cell_culture_scenechange.md</code> (M3-ext)</li>
+    <li><code>round3_m4_scene_catalog_coverage.md</code> (M4)</li>
+    <li><code>round3_cell_counter_scenechange.md</code> (R10)</li>
+    <li><code>round3_m5_top10_demo_ready.md</code> (M5)</li>
+  </ul>
+
+  <h3>Placeholder reduction and assets</h3>
+  <ul>
+    <li><code>round3_placeholder_asset_replacement.md</code> (R2)</li>
+    <li><code>round3_well_plate_96_variant.md</code> (R2-alt)</li>
+    <li><code>round3_a1b_bottle_family.md</code> (A1B)</li>
+    <li><code>round3_a3_alias_map_justification.md</code> (A3 reject)</li>
+    <li><code>round3_a5_runtime_placeholder_report.md</code> (A5)</li>
+    <li><code>round3_a2_svg_barrel_regen_audit.md</code> + <code>round3_a2_fix_bootstrap_wiring.md</code></li>
+  </ul>
+
+  <h3>Label readability</h3>
+  <ul>
+    <li><code>round3_runtime_label_readability.md</code> (R3)</li>
+    <li><code>round3_runtime_label_readability_css_variant.md</code> (R3-alt)</li>
+  </ul>
+
+  <h3>R7 paradox resolution</h3>
+  <ul>
+    <li><code>round3_runtime_interaction_smoke.md</code> (R7)</li>
+    <li><code>round3_protocol_advance_event_trace.md</code> (P1)</li>
+    <li><code>round3_protocol_pointer_intercept_audit.md</code> (P2)</li>
+    <li><code>round3_protocol_regression_bisect.md</code> (P3)</li>
+    <li><code>round3_protocol_validator_audit.md</code> (P4)</li>
+    <li><code>round3_protocol_advance_repair.md</code> (R9)</li>
+    <li><code>audits/round3_p5_clickworks_diagnosis.md</code></li>
+    <li><code>round3_r9_rerun_on_11.md</code></li>
+  </ul>
+
+  <h3>Vocabulary</h3>
+  <ul>
+    <li><code>round3_runtime_sizing_source_audit.md</code> (R4)</li>
+    <li><code>round3_v1_sizing_field_documentation.md</code> (V1)</li>
+    <li><code>round3_v3_stale_terms_audit.md</code> (V3)</li>
+    <li><code>round3_r11_widthscale_removal.md</code> (R11 done)</li>
+  </ul>
+
+  <h2>Acknowledgments</h2>
+  <p>
+    Round 3 was assembled from parallel workstream contributions across
+    coordinator, subagent dispatches, and audit passes. Foundation HTML
+    wiring (#121) is the single highest-leverage artifact in the round
+    and the precondition for every cluster-scale claim above. The R7
+    paradox resolution &mdash; from R7's 0/4 through P5's 0/11 to R9-rerun's
+    11/11 &mdash; is the cleanest example of driver-divergence the
+    initiative produced.
+  </p>
+
+  <p class="meta" style="margin-top:1.5em;">
+    End of report. Total pages: 25. Regenerated 2026-05-22 post-foundation.
+  </p>
+</section>
+
+</body>
+</html>

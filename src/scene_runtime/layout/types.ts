@@ -29,7 +29,6 @@ export type SceneItem = {
   kind: string;
   zone: string;
   depthTier: number;
-  widthScale: number;
   label: string;
   shortLabel?: string;
   anchorY: "top" | "bottom" | "tip";
@@ -46,7 +45,6 @@ export type AssetSpec = {
   defaultWidth: number;
   labelWidth: number;
   anchorYOffset?: number;
-  widthScale?: number;
 };
 
 //============================================

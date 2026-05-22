@@ -27,6 +27,35 @@
   pointer-events: none;
 }
 
+/*
+ * Round 3 R3-ALT CSS-only label readability variant.
+ *
+ * Problem (audit: round3_runtime_truth_audit.md, Finding 2): scene labels
+ * overlap one another and overflow the viewport. Labels are SVG <text>
+ * elements drawn as siblings of placement groups inside the scene-root
+ * SVG (see src/scene_runtime/render/scene.ts renderPlacement). The inline
+ * font-size SVG attribute is set per-scene by the layout engine in viewBox
+ * user-units, so overriding it from CSS is per-scene unsafe (viewBox sizes
+ * vary widely, from ~98x90 to ~1000x700, and a single CSS px value lands
+ * in user-units after the viewBox transform).
+ *
+ * CSS-only mitigation here is limited to legibility (paint-order halo),
+ * not size control. The font-size cap experiment is recorded in the
+ * R3-ALT variant report at
+ * docs/active_plans/reports/round3_runtime_label_readability_css_variant.md.
+ *
+ * Authoritative scoping lives in the inlined <style> block emitted by
+ * pipeline/build_protocol_html.py because chrome/style.css is not loaded
+ * by the per-protocol HTML shells.
+ */
+.scene-viewport svg text {
+  paint-order: stroke fill;
+  stroke: #ffffff;
+  stroke-width: 0.35px;
+  stroke-linejoin: round;
+  font-weight: 600;
+}
+
 .prompt-panel {
   padding: 16px;
   background-color: #f5f5f5;
