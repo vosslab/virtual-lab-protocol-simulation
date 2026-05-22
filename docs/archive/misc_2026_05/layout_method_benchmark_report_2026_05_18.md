@@ -94,31 +94,31 @@ sophisticated constraint handling.
 
 ## Metrics defined
 
-| Metric | Definition | Interpretation |
-| --- | --- | --- |
-| `object_count` | Total placements rendered | Baseline for comparison |
-| `label_count` | Total labels rendered | Should equal object_count |
-| `object_object_overlaps` | Count of object pairs with >5% area overlap | Lower is better; 0 is ideal |
-| `max_object_overlap_pct` | Largest single overlap percentage | Severity indicator |
-| `label_object_collisions` | Count of labels colliding with non-owner objects (>50% overlap) | Lower is better; 0 is ideal |
-| `label_label_overlaps` | Count of label pairs with >50% area overlap | Lower is better; 0 is ideal |
-| `objects_outside_viewport` | Count of objects with bboxes fully or partially outside 1200x900 viewport | Lower is better; 0 is ideal |
-| `labels_outside_viewport` | Count of labels outside viewport | Lower is better; 0 is ideal |
-| `zero_width_objects` | Count of objects with width = 0 | Must be 0 (indicates renderer bug) |
-| `zero_height_objects` | Count of objects with height = 0 | Must be 0 (indicates renderer bug) |
+| Metric                     | Definition                                                                | Interpretation                     |
+| -------------------------- | ------------------------------------------------------------------------- | ---------------------------------- |
+| `object_count`             | Total placements rendered                                                 | Baseline for comparison            |
+| `label_count`              | Total labels rendered                                                     | Should equal object_count          |
+| `object_object_overlaps`   | Count of object pairs with >5% area overlap                               | Lower is better; 0 is ideal        |
+| `max_object_overlap_pct`   | Largest single overlap percentage                                         | Severity indicator                 |
+| `label_object_collisions`  | Count of labels colliding with non-owner objects (>50% overlap)           | Lower is better; 0 is ideal        |
+| `label_label_overlaps`     | Count of label pairs with >50% area overlap                               | Lower is better; 0 is ideal        |
+| `objects_outside_viewport` | Count of objects with bboxes fully or partially outside 1200x900 viewport | Lower is better; 0 is ideal        |
+| `labels_outside_viewport`  | Count of labels outside viewport                                          | Lower is better; 0 is ideal        |
+| `zero_width_objects`       | Count of objects with width = 0                                           | Must be 0 (indicates renderer bug) |
+| `zero_height_objects`      | Count of objects with height = 0                                          | Must be 0 (indicates renderer bug) |
 
 ## Findings: per-method scoreboard
 
 ### Aggregate results (9 scenes, lower score is better)
 
-| Rank | Method | Object-Object Overlaps | Label-Object Collisions | Objects+Labels Outside | Composite Score |
-| --- | --- | --- | --- | --- | --- |
-| 1 (tie) | constraint-based | 0 | 0 | 0 | 0 |
-| 1 (tie) | legacy-zone | 0 | 0 | 0 | 0 |
-| 1 (tie) | row-slot-capacity-wrap | 0 | 0 | 0 | 0 |
-| 4 | row-slot-naive | 0 | 0 | 45 | 450 |
-| 5 | hybrid-region-label-solver | 8 | 8 | 0 | 1200 |
-| 6 | region-slot | 38 | 15 | 7 | 4620 |
+| Rank    | Method                     | Object-Object Overlaps | Label-Object Collisions | Objects+Labels Outside | Composite Score |
+| ------- | -------------------------- | ---------------------- | ----------------------- | ---------------------- | --------------- |
+| 1 (tie) | constraint-based           | 0                      | 0                       | 0                      | 0               |
+| 1 (tie) | legacy-zone                | 0                      | 0                       | 0                      | 0               |
+| 1 (tie) | row-slot-capacity-wrap     | 0                      | 0                       | 0                      | 0               |
+| 4       | row-slot-naive             | 0                      | 0                       | 45                     | 450             |
+| 5       | hybrid-region-label-solver | 8                      | 8                       | 0                      | 1200            |
+| 6       | region-slot                | 38                     | 15                      | 7                      | 4620            |
 
 **Composite score calculation**: (overlaps x 100) + (label-collisions x 50) +
 (outside-viewport x 10) + (zero-area x 20). Weights reflect severity.
@@ -126,6 +126,7 @@ sophisticated constraint handling.
 ### Per-scene findings
 
 #### Scenes with 100% success across all methods:
+
 - bench_basic (2 placements)
 - cell_counter_basic (2 placements)
 - heat_block_bench (3 placements)
@@ -135,6 +136,7 @@ sophisticated constraint handling.
 - sample_prep_bench (5 placements)
 
 #### Problem scenes:
+
 - **electrophoresis_bench** (16 placements): Highest failure rate.
   - row-slot-naive: 16 labels outside viewport (single-row overflow)
   - region-slot: 30 object-object overlaps, 12 label-object collisions, 5 outside viewport
@@ -151,17 +153,18 @@ sophisticated constraint handling.
 
 Failures are classified into these categories:
 
-| Category | Definition | Observed in Methods |
-| --- | --- | --- |
-| `label-placement-gap` | Labels cannot be positioned near objects without viewport violation | row-slot-naive (45 instances) |
-| `object-placement-gap` | Objects placed by method have no valid label position | row-slot-naive (inherent to single-row model) |
-| `capacity-overload` | More objects in region/row than algorithm can space safely | region-slot (38 overlaps in electrophoresis) |
-| `method-insufficiency` | Algorithm is fundamentally unable to handle placement count | (none; all methods handle up to 16 objects) |
-| `content-incomplete` | Scene YAML is missing authored placements | (not applicable; base scenes are complete) |
-| `adapter-render-gap` | Scene rendering differs from method's output | (none; harness measurement is accurate) |
-| `measurement-harness-gap` | Metrics collection has bugs | (none; confirmed real DOM bboxes) |
+| Category                  | Definition                                                          | Observed in Methods                           |
+| ------------------------- | ------------------------------------------------------------------- | --------------------------------------------- |
+| `label-placement-gap`     | Labels cannot be positioned near objects without viewport violation | row-slot-naive (45 instances)                 |
+| `object-placement-gap`    | Objects placed by method have no valid label position               | row-slot-naive (inherent to single-row model) |
+| `capacity-overload`       | More objects in region/row than algorithm can space safely          | region-slot (38 overlaps in electrophoresis)  |
+| `method-insufficiency`    | Algorithm is fundamentally unable to handle placement count         | (none; all methods handle up to 16 objects)   |
+| `content-incomplete`      | Scene YAML is missing authored placements                           | (not applicable; base scenes are complete)    |
+| `adapter-render-gap`      | Scene rendering differs from method's output                        | (none; harness measurement is accurate)       |
+| `measurement-harness-gap` | Metrics collection has bugs                                         | (none; confirmed real DOM bboxes)             |
 
 ### Distribution of failures (9 scenes x 6 methods = 54 benchmark runs):
+
 - **0 failures**: constraint-based (9/9 scenes), legacy-zone (9/9), row-slot-capacity-wrap (9/9)
 - **45 total failures, 1 scene**: row-slot-naive (all 45 in electrophoresis_bench + staining_bench + others)
 - **23 total failures**: region-slot (distributed across 4 scenes)
@@ -226,28 +229,34 @@ eliminate these overlaps.
 Three sample bounding box measurements from results.json:
 
 ### Sample 1: electrophoresis_bench with legacy-zone
+
 ```
 Item: "front_center_rack" x=549.89, y=316.61, width=76.13, height=76.13
 Item: "left_sample_lane_rack" x=42.56, y=401.67, width=76.13, height=76.13
 Label for "front_center_rack": x=587.45, y=384.92, width=78.5, height=15.0
 ```
+
 (Placements measured in pixels, real page coordinates via page.evaluate()
 getBoundingClientRect())
 
 ### Sample 2: staining_bench with constraint-based
+
 ```
 Item: "stain_container_1" x=187.33, y=318.45, width=100.00, height=70.00
 Item: "stain_container_2" x=310.67, y=318.45, width=100.00, height=70.00
 Label for "stain_container_1": x=237.33, y=390.45, width=100.00, height=14.00
 ```
+
 (No overlaps; items spaced evenly; labels positioned below)
 
 ### Sample 3: hood_basic with region-slot
+
 ```
 Item: "hood_surface" x=63.58, y=148.71, width=99.56, height=219.02
 Item: "ethanol_bottle" x=63.58, y=417.51, width=99.56, height=308.62
 Label for "hood_surface": x=78.84, y=360.71, width=69.03, height=15.00
 ```
+
 (Region-based stacking; vertical separation prevents overlap)
 
 All measurements are real DOM bounding boxes captured by Playwright
@@ -285,6 +294,7 @@ Row-slot-capacity-wrap remains the strongest algorithm-prototype CANDIDATE, pend
 ## Errata 2026-05-18
 
 **Reviewer findings (5 defects):**
+
 1. EXP2 measures synthetic SVG scaffold output, not real HTML dom. Each method produces placement data; synthetic SVG is rendered from that data. Not production-render integration.
 2. Production-render baseline (actual HTML in Playwright) is 547 failures in real DOM (18 scenes), not the 0 failures claimed by EXP2 algorithm-level scoreboard.
 3. EXP2 baseline scenes are 9 real base scenes; precheck extends to 18 scenes (9 base + 9 row+slot variants).
@@ -293,7 +303,7 @@ Row-slot-capacity-wrap remains the strongest algorithm-prototype CANDIDATE, pend
 
 **Rescope decision (manager judgment):** EXP2 is a valid prototype-level algorithm comparison. Invalid as production-fidelity benchmark. Production-readiness gated on precheck harness (`_temp_layout_prechecks.mjs`). Recommendation updated: row-slot-capacity-wrap is the strongest prototype CANDIDATE; production adoption BLOCKED pending precheck resolution and label-solver experiment.
 
-**Evidence:** Spec audit (PRIMARY_SPEC.md: mini-protocol completion requires visible interaction evidence, not synthetic data); production precheck results (test-results/_layout_prechecks/results.json: 545 real failures vs. EXP2's 0 prototype failures).
+**Evidence:** Spec audit (PRIMARY_SPEC.md: mini-protocol completion requires visible interaction evidence, not synthetic data); production precheck results (test-results/\_layout_prechecks/results.json: 545 real failures vs. EXP2's 0 prototype failures).
 
 ## Experiment roadmap
 
@@ -313,6 +323,7 @@ This benchmark is Experiment 2 of the broader layout-system evaluation:
   contracts (per-scene overlap/occupancy rules as assertions).
 
 Experiment 1 and Experiment 2 together establish:
+
 1. Authoring model: Model B (row+slot) is viable corpus-wide.
 2. Runtime method: row-slot-capacity-wrap is zero-failure on base scenes.
 

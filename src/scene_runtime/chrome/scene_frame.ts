@@ -17,52 +17,52 @@
  * @returns An object with sceneViewport, promptPanel, feedbackArea, and nextButton element references.
  */
 export function mountSceneFrame(rootElement: HTMLElement): {
-	sceneViewport: HTMLElement;
-	promptPanel: HTMLElement;
-	feedbackArea: HTMLElement;
-	nextButton: HTMLElement;
+  sceneViewport: HTMLElement;
+  promptPanel: HTMLElement;
+  feedbackArea: HTMLElement;
+  nextButton: HTMLElement;
 } {
-	// Clear any existing content
-	rootElement.innerHTML = '';
+  // Clear any existing content
+  rootElement.innerHTML = "";
 
-	// Create the main chrome container
-	const chrome = document.createElement('div');
-	chrome.className = 'scene-chrome';
+  // Create the main chrome container
+  const chrome = document.createElement("div");
+  chrome.className = "scene-chrome";
 
-	// Create the scene viewport container
-	const sceneViewport = document.createElement('div');
-	sceneViewport.setAttribute('data-testid', 'scene-viewport');
-	sceneViewport.className = 'scene-viewport';
-	// Set pointer-events: none inline so the SVG scene (children) receives clicks, not the viewport.
-	sceneViewport.style.pointerEvents = 'none';
+  // Create the scene viewport container
+  const sceneViewport = document.createElement("div");
+  sceneViewport.setAttribute("data-testid", "scene-viewport");
+  sceneViewport.className = "scene-viewport";
+  // Set pointer-events: none inline so the SVG scene (children) receives clicks, not the viewport.
+  sceneViewport.style.pointerEvents = "none";
 
-	// Create the prompt panel container
-	const promptPanel = document.createElement('div');
-	promptPanel.setAttribute('data-testid', 'prompt-panel');
-	promptPanel.className = 'prompt-panel';
+  // Create the prompt panel container
+  const promptPanel = document.createElement("div");
+  promptPanel.setAttribute("data-testid", "prompt-panel");
+  promptPanel.className = "prompt-panel";
 
-	// Create the feedback area container
-	const feedbackArea = document.createElement('div');
-	feedbackArea.setAttribute('data-testid', 'feedback-area');
-	feedbackArea.className = 'feedback-area';
+  // Create the feedback area container
+  const feedbackArea = document.createElement("div");
+  feedbackArea.setAttribute("data-testid", "feedback-area");
+  feedbackArea.className = "feedback-area";
 
-	// Create the next button container
-	const nextButton = document.createElement('div');
-	nextButton.className = 'next-button-container';
+  // Create the next button container
+  const nextButton = document.createElement("div");
+  nextButton.className = "next-button-container";
 
-	// Add viewport, prompt panel, feedback area, and next button to chrome
-	chrome.appendChild(sceneViewport);
-	chrome.appendChild(promptPanel);
-	chrome.appendChild(feedbackArea);
-	chrome.appendChild(nextButton);
+  // Add viewport, prompt panel, feedback area, and next button to chrome
+  chrome.appendChild(sceneViewport);
+  chrome.appendChild(promptPanel);
+  chrome.appendChild(feedbackArea);
+  chrome.appendChild(nextButton);
 
-	// Mount chrome to root
-	rootElement.appendChild(chrome);
+  // Mount chrome to root
+  rootElement.appendChild(chrome);
 
-	return {
-		sceneViewport,
-		promptPanel,
-		feedbackArea,
-		nextButton,
-	};
+  return {
+    sceneViewport,
+    promptPanel,
+    feedbackArea,
+    nextButton,
+  };
 }

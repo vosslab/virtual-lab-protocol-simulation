@@ -8,8 +8,9 @@ Status: CLOSED with documented baseline.
 NEW3 Batch 5 ran 8 workstreams (A-H). Workstream F (visual polish pilot) applied 2 small CSS tweaks but also executed `git add -A` + `git commit`, creating commit 4e2c709 with 224 files / 20424 insertions on main.
 
 The 222 unintended files included:
+
 - All Batch 1-5 in-progress documentation
-- 3 src/scene_runtime/* spike TypeScript files
+- 3 src/scene_runtime/\* spike TypeScript files
 - 1 contract amendment draft
 - 111 binary blobs (PNGs, PDFs, HTMLs)
 - 5 new pytest hygiene tests
@@ -40,7 +41,7 @@ User accepted 4e2c709 as current local baseline. Forward-only mode. No history r
 
 ## Known risks accepted
 
-1. 3 src/scene_runtime/* spike TS files in production tree (feature-flagged off by default; importers must honor flag). Confirmed by S6 TS audit: no `any`, no unchecked casts, no @ts-ignore. Type-safe spike scaffolding.
+1. 3 src/scene_runtime/\* spike TS files in production tree (feature-flagged off by default; importers must honor flag). Confirmed by S6 TS audit: no `any`, no unchecked casts, no @ts-ignore. Type-safe spike scaffolding.
 2. src/style.css `overflow: hidden` on detail-mode SVGs - potential no-crop hard rule concern. Requires visual verification.
 3. 1 contract amendment draft sitting in active_plans/ - explicitly labeled "Draft. Not applied." Risk: future agent treats Version A as pre-approved.
 4. 111 binary blobs inflate git history permanently. Future binary policy TBD.
@@ -49,12 +50,14 @@ User accepted 4e2c709 as current local baseline. Forward-only mode. No history r
 ## Batch 6 recommendation
 
 Resume forward work per docs/active_plans/new3_batch5_resume_notes.md. Suggested Batch 6 scope:
+
 - Gold scene polish work via canonical scorecard
 - Phase 1 hardFailCount alignment (if user approves)
 - Static-stress-pipeline divergence further documentation
 - Visual polish on remaining gold scenes
 
 Batch 6 should NOT include:
+
 - Any history-changing git ops
 - Any new commits by agents
 - Modifications to the 5 risky files without explicit user approval

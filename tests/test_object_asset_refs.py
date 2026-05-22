@@ -9,11 +9,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import git_file_utils
 
 
-# Soft-reporter ceiling. Post-WP-YAML-3 (9 additional variant collapses), the gap
-# is 48 slots. The SVG picker pipeline (tools/svg_picker/) is the remediation path.
-# The follow-up patch that hardens this test to a true zero-gap assertion deletes
-# this constant and asserts len(missing) == 0.
-BASELINE_MISSING_COUNT = 48
+# Soft-reporter ceiling. Round 3 no-crop asset rename pass closed one slot
+# (conical_15ml -> falcon_15ml or sharps_container -> waste_container), so
+# the gap is now 47. The SVG picker pipeline (tools/svg_picker/) is the
+# remediation path. The follow-up patch that hardens this test to a true
+# zero-gap assertion deletes this constant and asserts len(missing) == 0.
+BASELINE_MISSING_COUNT = 47
 
 REPO_ROOT = pathlib.Path(git_file_utils.get_repo_root())
 OBJECTS_DIR = REPO_ROOT / "content" / "objects"

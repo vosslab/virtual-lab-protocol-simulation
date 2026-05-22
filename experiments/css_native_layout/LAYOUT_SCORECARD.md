@@ -10,12 +10,12 @@ This document defines the scoring model, metric hierarchy, weight assignments pe
 
 Four metrics cause an immediate zero score: hard fails prevent progress regardless of other metrics.
 
-| Metric | Definition | Trigger |
-| --- | --- | --- |
-| `clipped_artwork` | Placement bbox exceeds parent region bbox | Any placement clipped by its region |
-| `off_page` | Placement center or corner exits 1920x1080 viewport | Any placement center or 4 corners outside viewport |
-| `svg_svg_overlap` | Two placement bboxes intersect by >= 1 pixel | Any pair of placements overlap |
-| `region_overflow` | Region scrollHeight > clientHeight (or width) | Any region in scroll overflow |
+| Metric            | Definition                                          | Trigger                                            |
+| ----------------- | --------------------------------------------------- | -------------------------------------------------- |
+| `clipped_artwork` | Placement bbox exceeds parent region bbox           | Any placement clipped by its region                |
+| `off_page`        | Placement center or corner exits 1920x1080 viewport | Any placement center or 4 corners outside viewport |
+| `svg_svg_overlap` | Two placement bboxes intersect by >= 1 pixel        | Any pair of placements overlap                     |
+| `region_overflow` | Region scrollHeight > clientHeight (or width)       | Any region in scroll overflow                      |
 
 **Hard-fail result:** If any hard-fail metric is triggered, `total_layout_score = 0` immediately. No other metrics are evaluated.
 
@@ -25,13 +25,13 @@ Four metrics cause an immediate zero score: hard fails prevent progress regardle
 
 Five closed scene classes. Each class represents a distinct pedagogical or layout profile. The metric weights differ per class to reflect what matters most for that class.
 
-| Class | Examples | Definition | Target primary ratio |
-| --- | --- | --- | --- |
-| `template` | bench_basic, hood_basic, cell_counter_basic, microscope_basic | Single-instrument skeleton; 1-2 placements; used as launch surface | N/A (template mode, no ratio threshold) |
-| `composition` | drug_dilution_plate_workspace, staining_bench, electrophoresis_bench | Multi-placement layout; pedagogically focused on one primary object; other objects support or contextualize | >= 15% (soft target; used for recommendation only, not verdict) |
-| `instrument_heavy` | electrophoresis_bench (subclass) | Composition where the primary is a large scientific instrument and supporting objects cluster around it | >= 15% (soft target) |
-| `zoom_detail` | well_plate_96_zoom | Detail/magnified view of a single object filling most of the viewport; high primary ratio by design | >= 70% (zoom-specific target) |
-| `dense_clutter` | crowded_bench_dense, drug_dilution_workspace_dense | Stress-test density scenes; many placements in a constrained space; collision and label-overlap are the main challenges | >= 10% primary ratio; focus on label clarity |
+| Class              | Examples                                                             | Definition                                                                                                              | Target primary ratio                                            |
+| ------------------ | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `template`         | bench_basic, hood_basic, cell_counter_basic, microscope_basic        | Single-instrument skeleton; 1-2 placements; used as launch surface                                                      | N/A (template mode, no ratio threshold)                         |
+| `composition`      | drug_dilution_plate_workspace, staining_bench, electrophoresis_bench | Multi-placement layout; pedagogically focused on one primary object; other objects support or contextualize             | >= 15% (soft target; used for recommendation only, not verdict) |
+| `instrument_heavy` | electrophoresis_bench (subclass)                                     | Composition where the primary is a large scientific instrument and supporting objects cluster around it                 | >= 15% (soft target)                                            |
+| `zoom_detail`      | well_plate_96_zoom                                                   | Detail/magnified view of a single object filling most of the viewport; high primary ratio by design                     | >= 70% (zoom-specific target)                                   |
+| `dense_clutter`    | crowded_bench_dense, drug_dilution_workspace_dense                   | Stress-test density scenes; many placements in a constrained space; collision and label-overlap are the main challenges | >= 10% primary ratio; focus on label clarity                    |
 
 ## Per-scene metrics (12 total)
 
@@ -54,7 +54,7 @@ Each metric is measured from the precheck output and normalized to a 0-100 scale
 3. **scene_occupied** (alias: `scene_whitespace_inverse`)
    - Definition: percentage of scene area occupied by any placement.
    - Source: `visual_audit.json[scene].checks.scene_whitespace.occupied_area / scene_area`.
-   - Measurement: occupied_area / (viewport width * viewport height).
+   - Measurement: occupied_area / (viewport width \* viewport height).
    - Normalization: inverted from whitespace_pct: `100 - whitespace_pct`. Higher is better for composition; very high is poor for template.
    - Used by: composition and dense_clutter; de-emphasized for template.
 
@@ -140,78 +140,78 @@ Each table shows recommended weight allocation. Weights sum to 1.0. Normalize be
 
 #### Template class weights
 
-| Metric | Weight | Rationale |
-| --- | --- | --- |
-| primary_area_ratio | 0.0 | Skipped (template mode, single object OK) |
-| label_overlap | 0.30 | Labels must be readable on skeleton |
-| scene_occupied | 0.15 | Some usage is OK; empty is OK for template |
-| support_distance | 0.0 | Skipped (template mode, no support) |
-| balance | 0.20 | Single object should be centered |
-| region_filling | 0.20 | Regions should not be cluttered |
-| label_readability | 0.10 | Critical: labels must be legible |
-| aspect_ratio_fidelity | 0.05 | Minor: artwork integrity |
-| primary_prominence | 0.0 | N/A (single object) |
-| **Sum** | **1.00** | |
+| Metric                | Weight   | Rationale                                  |
+| --------------------- | -------- | ------------------------------------------ |
+| primary_area_ratio    | 0.0      | Skipped (template mode, single object OK)  |
+| label_overlap         | 0.30     | Labels must be readable on skeleton        |
+| scene_occupied        | 0.15     | Some usage is OK; empty is OK for template |
+| support_distance      | 0.0      | Skipped (template mode, no support)        |
+| balance               | 0.20     | Single object should be centered           |
+| region_filling        | 0.20     | Regions should not be cluttered            |
+| label_readability     | 0.10     | Critical: labels must be legible           |
+| aspect_ratio_fidelity | 0.05     | Minor: artwork integrity                   |
+| primary_prominence    | 0.0      | N/A (single object)                        |
+| **Sum**               | **1.00** |                                            |
 
 #### Composition class weights
 
-| Metric | Weight | Rationale |
-| --- | --- | --- |
-| primary_area_ratio | 0.25 | Core pedagogical goal: primary must stand out |
-| label_overlap | 0.15 | Important: no label collisions |
-| scene_occupied | 0.15 | Moderate: some whitespace is good; not too sparse |
-| support_distance | 0.20 | Important: support objects near primary |
-| balance | 0.15 | Moderate: spatial distribution matters |
-| region_filling | 0.0 | Implicit in scene_occupied |
-| label_readability | 0.15 | Important: all labels readable |
-| aspect_ratio_fidelity | 0.05 | Minor: artwork integrity |
-| primary_prominence | 0.10 | Important: primary clearly stands out from support |
-| **Sum** | **1.20** | Normalize by dividing by 1.20 |
+| Metric                | Weight   | Rationale                                          |
+| --------------------- | -------- | -------------------------------------------------- |
+| primary_area_ratio    | 0.25     | Core pedagogical goal: primary must stand out      |
+| label_overlap         | 0.15     | Important: no label collisions                     |
+| scene_occupied        | 0.15     | Moderate: some whitespace is good; not too sparse  |
+| support_distance      | 0.20     | Important: support objects near primary            |
+| balance               | 0.15     | Moderate: spatial distribution matters             |
+| region_filling        | 0.0      | Implicit in scene_occupied                         |
+| label_readability     | 0.15     | Important: all labels readable                     |
+| aspect_ratio_fidelity | 0.05     | Minor: artwork integrity                           |
+| primary_prominence    | 0.10     | Important: primary clearly stands out from support |
+| **Sum**               | **1.20** | Normalize by dividing by 1.20                      |
 
 #### Instrument-heavy class weights
 
-| Metric | Weight | Rationale |
-| --- | --- | --- |
-| primary_area_ratio | 0.35 | Critical: instrument must dominate visually |
-| label_overlap | 0.15 | Important: labels around dense instrument |
-| scene_occupied | 0.15 | Moderate: instrument plus support objects |
-| support_distance | 0.20 | Important: tools cluster around instrument |
-| balance | 0.15 | Moderate: distributed layout around primary |
-| region_filling | 0.0 | Implicit in scene_occupied |
-| label_readability | 0.15 | Important: identify instrument parts |
-| aspect_ratio_fidelity | 0.05 | Minor: artwork integrity |
-| primary_prominence | 0.15 | Critical: instrument clearly distinguished |
-| **Sum** | **1.35** | Normalize by dividing by 1.35 |
+| Metric                | Weight   | Rationale                                   |
+| --------------------- | -------- | ------------------------------------------- |
+| primary_area_ratio    | 0.35     | Critical: instrument must dominate visually |
+| label_overlap         | 0.15     | Important: labels around dense instrument   |
+| scene_occupied        | 0.15     | Moderate: instrument plus support objects   |
+| support_distance      | 0.20     | Important: tools cluster around instrument  |
+| balance               | 0.15     | Moderate: distributed layout around primary |
+| region_filling        | 0.0      | Implicit in scene_occupied                  |
+| label_readability     | 0.15     | Important: identify instrument parts        |
+| aspect_ratio_fidelity | 0.05     | Minor: artwork integrity                    |
+| primary_prominence    | 0.15     | Critical: instrument clearly distinguished  |
+| **Sum**               | **1.35** | Normalize by dividing by 1.35               |
 
 #### Zoom-detail class weights
 
-| Metric | Weight | Rationale |
-| --- | --- | --- |
-| primary_area_ratio | 0.50 | Critical: magnified object fills viewport (70%+) |
-| label_overlap | 0.10 | Minor: few labels in zoom view |
-| scene_occupied | 0.20 | Important: well plate should fill available space |
-| support_distance | 0.0 | N/A (zoom context, no supporting objects) |
-| balance | 0.10 | Minor: centering matters but less critical |
-| region_filling | 0.0 | N/A (single object) |
-| label_readability | 0.10 | Moderate: identify specific wells/regions |
-| aspect_ratio_fidelity | 0.05 | Minor: artwork integrity |
-| primary_prominence | 0.0 | N/A (single object, 100% prominent by design) |
-| **Sum** | **1.05** | Normalize by dividing by 1.05 |
+| Metric                | Weight   | Rationale                                         |
+| --------------------- | -------- | ------------------------------------------------- |
+| primary_area_ratio    | 0.50     | Critical: magnified object fills viewport (70%+)  |
+| label_overlap         | 0.10     | Minor: few labels in zoom view                    |
+| scene_occupied        | 0.20     | Important: well plate should fill available space |
+| support_distance      | 0.0      | N/A (zoom context, no supporting objects)         |
+| balance               | 0.10     | Minor: centering matters but less critical        |
+| region_filling        | 0.0      | N/A (single object)                               |
+| label_readability     | 0.10     | Moderate: identify specific wells/regions         |
+| aspect_ratio_fidelity | 0.05     | Minor: artwork integrity                          |
+| primary_prominence    | 0.0      | N/A (single object, 100% prominent by design)     |
+| **Sum**               | **1.05** | Normalize by dividing by 1.05                     |
 
 #### Dense-clutter class weights
 
-| Metric | Weight | Rationale |
-| --- | --- | --- |
-| primary_area_ratio | 0.15 | Soft target (10% OK in dense) vs composition (15%+) |
-| label_overlap | 0.30 | Critical: dense scenes have label-collision risk |
-| scene_occupied | 0.15 | Important: tight packing but measurable |
-| support_distance | 0.20 | Important: objects should cluster, not spread |
-| balance | 0.10 | Minor: extreme crowding makes symmetry hard |
-| region_filling | 0.0 | Implicit in scene_occupied |
-| label_readability | 0.25 | Critical: cramped labels are unreadable |
-| aspect_ratio_fidelity | 0.05 | Minor: artwork integrity |
-| primary_prominence | 0.10 | Moderate: primary should still stand out in crowd |
-| **Sum** | **1.30** | Normalize by dividing by 1.30 |
+| Metric                | Weight   | Rationale                                           |
+| --------------------- | -------- | --------------------------------------------------- |
+| primary_area_ratio    | 0.15     | Soft target (10% OK in dense) vs composition (15%+) |
+| label_overlap         | 0.30     | Critical: dense scenes have label-collision risk    |
+| scene_occupied        | 0.15     | Important: tight packing but measurable             |
+| support_distance      | 0.20     | Important: objects should cluster, not spread       |
+| balance               | 0.10     | Minor: extreme crowding makes symmetry hard         |
+| region_filling        | 0.0      | Implicit in scene_occupied                          |
+| label_readability     | 0.25     | Critical: cramped labels are unreadable             |
+| aspect_ratio_fidelity | 0.05     | Minor: artwork integrity                            |
+| primary_prominence    | 0.10     | Moderate: primary should still stand out in crowd   |
+| **Sum**               | **1.30** | Normalize by dividing by 1.30                       |
 
 ### Normalization and clamping
 
@@ -263,6 +263,7 @@ node experiments/css_native_layout/score_layout.mjs
 ```
 
 Reads precheck output from `test-results/new0_css_native/audit/` (current run) or falls back to `stabilized/`. Emits:
+
 - `test-results/new0_css_native/scorecard/scorecard.json` (machine-readable).
 - `test-results/new0_css_native/scorecard/scorecard.md` (human-readable ranked table).
 
@@ -309,13 +310,13 @@ Adjustments made during scorecard runs are documented in LAYOUT_SCORECARD.md und
 
 ## Score interpretation guide
 
-| Score range | Interpretation |
-| --- | --- |
-| 0 | Hard fail: clipped artwork, off-page, overlaps, or region overflow |
-| 1-30 | Poor: multiple major metrics failing (primary too small, many label overlaps, sparse filling) |
-| 31-60 | Fair: one or two metrics dragging (acceptable layout overall; addressable next-iteration adjustments) |
-| 61-85 | Good: most metrics acceptable; minor adjustments needed |
-| 86-100 | Excellent: no hard fails, all metrics within acceptable ranges for the scene class |
+| Score range | Interpretation                                                                                        |
+| ----------- | ----------------------------------------------------------------------------------------------------- |
+| 0           | Hard fail: clipped artwork, off-page, overlaps, or region overflow                                    |
+| 1-30        | Poor: multiple major metrics failing (primary too small, many label overlaps, sparse filling)         |
+| 31-60       | Fair: one or two metrics dragging (acceptable layout overall; addressable next-iteration adjustments) |
+| 61-85       | Good: most metrics acceptable; minor adjustments needed                                               |
+| 86-100      | Excellent: no hard fails, all metrics within acceptable ranges for the scene class                    |
 
 ## Revised weights (NEW1.5 Lane C)
 
@@ -325,19 +326,19 @@ Adjustments made during scorecard runs are documented in LAYOUT_SCORECARD.md und
 
 ### Template class (revised)
 
-| Metric | Old Weight | New Weight | Rationale |
-| --- | --- | --- | --- |
-| primary_area_ratio | 0.0 | 0.0 | Skipped (no primary-specific tag in templates) |
-| label_overlap | 0.30 | 0.40 | Increase: labels must be crisp on skeleton layouts |
-| scene_occupied | 0.15 | 0.0 | **Eliminated:** sparse by design, no longer penalized |
-| support_distance | 0.0 | 0.0 | N/A (single object, no support) |
-| balance | 0.20 | 0.20 | Moderate: centered single object preferred |
-| region_filling | 0.20 | 0.0 | **Eliminated:** sparse by design, no longer penalized |
-| label_readability | 0.10 | 0.40 | Increase: labels must be fully legible on minimal layout |
-| aspect_ratio_fidelity | 0.05 | 0.0 | De-emphasized (artwork can be basic in templates) |
-| primary_prominence | 0.0 | 0.0 | N/A (single object) |
-| **Old Sum** | **1.00** | | |
-| **New Sum** | | **1.00** | No normalization needed; weights sum to 1.0 exactly |
+| Metric                | Old Weight | New Weight | Rationale                                                |
+| --------------------- | ---------- | ---------- | -------------------------------------------------------- |
+| primary_area_ratio    | 0.0        | 0.0        | Skipped (no primary-specific tag in templates)           |
+| label_overlap         | 0.30       | 0.40       | Increase: labels must be crisp on skeleton layouts       |
+| scene_occupied        | 0.15       | 0.0        | **Eliminated:** sparse by design, no longer penalized    |
+| support_distance      | 0.0        | 0.0        | N/A (single object, no support)                          |
+| balance               | 0.20       | 0.20       | Moderate: centered single object preferred               |
+| region_filling        | 0.20       | 0.0        | **Eliminated:** sparse by design, no longer penalized    |
+| label_readability     | 0.10       | 0.40       | Increase: labels must be fully legible on minimal layout |
+| aspect_ratio_fidelity | 0.05       | 0.0        | De-emphasized (artwork can be basic in templates)        |
+| primary_prominence    | 0.0        | 0.0        | N/A (single object)                                      |
+| **Old Sum**           | **1.00**   |            |                                                          |
+| **New Sum**           |            | **1.00**   | No normalization needed; weights sum to 1.0 exactly      |
 
 ### Other classes (revised)
 
@@ -351,18 +352,18 @@ Adjustments made during scorecard runs are documented in LAYOUT_SCORECARD.md und
 
 ### Ranking impact (before vs. after)
 
-| Rank | Scene | Class | OLD Score | NEW Score | Delta | Direction |
-| --- | --- | --- | --- | --- | --- | --- |
-| 1 | bench_basic | template | 59 | 90 | +31 | UP |
-| 2 | microscope_basic | template | 65 | 90 | +25 | UP |
-| 3 | well_plate_96_zoom | zoom_detail | 89 | 90 | +1 | UP |
-| 4 | cell_counter_basic | template | 51 | 80 | +29 | UP |
-| 5 | hood_basic | template | 53 | 70 | +17 | UP |
-| 6 | staining_bench | composition | 59 | 64 | +5 | UP |
-| 7 | drug_dilution_plate_workspace | composition | 58 | 63 | +5 | UP |
-| 8 | crowded_bench_dense | dense_clutter | 61 | 60 | -1 | DOWN |
-| 9 | drug_dilution_workspace_dense | dense_clutter | 60 | 58 | -2 | DOWN |
-| 10 | electrophoresis_bench | instrument_heavy | 54 | 47 | -7 | DOWN |
+| Rank | Scene                         | Class            | OLD Score | NEW Score | Delta | Direction |
+| ---- | ----------------------------- | ---------------- | --------- | --------- | ----- | --------- |
+| 1    | bench_basic                   | template         | 59        | 90        | +31   | UP        |
+| 2    | microscope_basic              | template         | 65        | 90        | +25   | UP        |
+| 3    | well_plate_96_zoom            | zoom_detail      | 89        | 90        | +1    | UP        |
+| 4    | cell_counter_basic            | template         | 51        | 80        | +29   | UP        |
+| 5    | hood_basic                    | template         | 53        | 70        | +17   | UP        |
+| 6    | staining_bench                | composition      | 59        | 64        | +5    | UP        |
+| 7    | drug_dilution_plate_workspace | composition      | 58        | 63        | +5    | UP        |
+| 8    | crowded_bench_dense           | dense_clutter    | 61        | 60        | -1    | DOWN      |
+| 9    | drug_dilution_workspace_dense | dense_clutter    | 60        | 58        | -2    | DOWN      |
+| 10   | electrophoresis_bench         | instrument_heavy | 54        | 47        | -7    | DOWN      |
 
 ### Verification
 

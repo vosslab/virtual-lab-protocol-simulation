@@ -20,130 +20,133 @@
  * 3. Screenshot captured before and after state changes.
  */
 
-import { chromium } from 'playwright';
-import path from 'node:path';
-import fs from 'node:fs';
-import { REPO_ROOT } from './repo_root.mjs';
+import { chromium } from "playwright";
+import path from "node:path";
+import fs from "node:fs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 async function runTest() {
-	console.log('Starting WP-WELLPLATE-ADAPTER-1C test...');
+  console.log("Starting WP-WELLPLATE-ADAPTER-1C test...");
 
-	// Materials registry for the test (matching MTT solubilization material palette)
-	const materialsData = {
-		dmso: {
-			label: 'DMSO',
-			display_color: {
-				light: '#f5deb3',  // tan/beige color for DMSO
-				dark: '#c4a05a',
-			},
-		},
-		formazan_dmso_solution: {
-			label: 'Formazan in DMSO',
-			display_color: {
-				light: '#8b4513',  // saddle brown for formazan
-				dark: '#d2b48c',
-			},
-		},
-		media: {
-			label: 'Cell culture media',
-			display_color: {
-				light: '#ffcccc',  // light pink for media
-				dark: '#ff6666',
-			},
-		},
-	};
+  // Materials registry for the test (matching MTT solubilization material palette)
+  const materialsData = {
+    dmso: {
+      label: "DMSO",
+      display_color: {
+        light: "#f5deb3", // tan/beige color for DMSO
+        dark: "#c4a05a",
+      },
+    },
+    formazan_dmso_solution: {
+      label: "Formazan in DMSO",
+      display_color: {
+        light: "#8b4513", // saddle brown for formazan
+        dark: "#d2b48c",
+      },
+    },
+    media: {
+      label: "Cell culture media",
+      display_color: {
+        light: "#ffcccc", // light pink for media
+        dark: "#ff6666",
+      },
+    },
+  };
 
-	// Scene data with a well_plate_96 placement
-	const sceneData = {
-		scene_name: 'well_plate_visual_test',
-		workspace: 'test',
-		capabilities: ['item_workspace'],
-		scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
-		background: { asset: 'test_bg' },
-		zones: [
-			{
-				id: 'plate_zone',
-				bounds: { left: 10, right: 90, top: 10, bottom: 90 },
-				align: 'center',
-			},
-		],
-		placements: [
-			{
-				placement_name: 'test_plate',
-				object_name: 'well_plate_96',
-				zone: 'plate_zone',
-				depth_tier: 1,
-			},
-		],
-	};
+  // Scene data with a well_plate_96 placement
+  const sceneData = {
+    scene_name: "well_plate_visual_test",
+    workspace: "test",
+    capabilities: ["item_workspace"],
+    scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
+    background: { asset: "test_bg" },
+    zones: [
+      {
+        id: "plate_zone",
+        bounds: { left: 10, right: 90, top: 10, bottom: 90 },
+        align: "center",
+      },
+    ],
+    placements: [
+      {
+        placement_name: "test_plate",
+        object_name: "well_plate_96",
+        zone: "plate_zone",
+        depth_tier: 1,
+      },
+    ],
+  };
 
-	// Object config for well_plate_96
-	const objectConfig = {
-		object_name: 'well_plate_96',
-		kind: 'plate',
-		label: '96-well plate',
-		state_fields: [
-			{
-				field_name: 'material_name',
-				type: 'enum',
-				allowed: ['empty', 'dmso', 'media', 'formazan_dmso_solution'],
-				default: 'empty',
-				applies_to: 'subpart',
-			},
-			{
-				field_name: 'material_volume',
-				type: 'float',
-				unit: 'ul',
-				default: 0,
-				applies_to: 'subpart',
-			},
-		],
-		visual_states: {
-			material_name: {
-				kind: 'svg',
-				pilot_0_eligible: true,
-				cases: [
-					{ when: 'empty', output: { asset_name: 'well_empty' } },
-					{ when: 'dmso', output: { asset_name: 'well_filled' } },
-					{ when: 'media', output: { asset_name: 'well_filled' } },
-					{ when: 'formazan_dmso_solution', output: { asset_name: 'well_filled' } },
-				],
-			},
-		},
-		capabilities: ['clickable', 'structured_surface', 'material_container'],
-		structure: {
-			subpart_kind: 'well',
-			layout: 'grid',
-			rows: 8,
-			cols: 12,
-			name_pattern: '{row_letter}{col}',
-			subpart_groups: {},
-		},
-		layout: {
-			default_width: 80,
-		},
-	};
+  // Object config for well_plate_96
+  const objectConfig = {
+    object_name: "well_plate_96",
+    kind: "plate",
+    label: "96-well plate",
+    state_fields: [
+      {
+        field_name: "material_name",
+        type: "enum",
+        allowed: ["empty", "dmso", "media", "formazan_dmso_solution"],
+        default: "empty",
+        applies_to: "subpart",
+      },
+      {
+        field_name: "material_volume",
+        type: "float",
+        unit: "ul",
+        default: 0,
+        applies_to: "subpart",
+      },
+    ],
+    visual_states: {
+      material_name: {
+        kind: "svg",
+        pilot_0_eligible: true,
+        cases: [
+          { when: "empty", output: { asset_name: "well_empty" } },
+          { when: "dmso", output: { asset_name: "well_filled" } },
+          { when: "media", output: { asset_name: "well_filled" } },
+          {
+            when: "formazan_dmso_solution",
+            output: { asset_name: "well_filled" },
+          },
+        ],
+      },
+    },
+    capabilities: ["clickable", "structured_surface", "material_container"],
+    structure: {
+      subpart_kind: "well",
+      layout: "grid",
+      rows: 8,
+      cols: 12,
+      name_pattern: "{row_letter}{col}",
+      subpart_groups: {},
+    },
+    layout: {
+      default_width: 80,
+    },
+  };
 
-	// Protocol config
-	const protocolConfig = {
-		protocol_type: 'dev_smoke',
-		protocol_name: 'well_plate_visual_test',
-		entry_step: 'test_step',
-		steps: [
-			{
-				step_name: 'test_step',
-				prompt: 'Test visual state',
-				sequence: [],
-				step_validator: { preset: 'sequence_complete' },
-				outcome: { on_success: 'complete', on_failure: 'retry' },
-				next_step: null,
-			},
-		],
-		materials: materialsData,
-	};
+  // Protocol config
+  const protocolConfig = {
+    protocol_type: "dev_smoke",
+    protocol_name: "well_plate_visual_test",
+    entry_step: "test_step",
+    steps: [
+      {
+        step_name: "test_step",
+        prompt: "Test visual state",
+        sequence: [],
+        step_validator: { preset: "sequence_complete" },
+        outcome: { on_success: "complete", on_failure: "retry" },
+        next_step: null,
+      },
+    ],
+    materials: materialsData,
+  };
 
-	// Create HTML test harness
-	const htmlContent = `
+  // Create HTML test harness
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -442,66 +445,88 @@ async function runTest() {
 </html>
 	`;
 
-	// Create test-results directory
-	const testResultsDir = path.join(REPO_ROOT, 'test-results', '_well_plate_visual');
-	if (!fs.existsSync(testResultsDir)) {
-		fs.mkdirSync(testResultsDir, { recursive: true });
-	}
+  // Create test-results directory
+  const testResultsDir = path.join(
+    REPO_ROOT,
+    "test-results",
+    "_well_plate_visual",
+  );
+  if (!fs.existsSync(testResultsDir)) {
+    fs.mkdirSync(testResultsDir, { recursive: true });
+  }
 
-	// Write HTML to file
-	const htmlPath = path.join(testResultsDir, '_test_well_plate_visual_state.html');
-	fs.writeFileSync(htmlPath, htmlContent);
+  // Write HTML to file
+  const htmlPath = path.join(
+    testResultsDir,
+    "_test_well_plate_visual_state.html",
+  );
+  fs.writeFileSync(htmlPath, htmlContent);
 
-	// Run in browser
-	const browser = await chromium.launch({ headless: true });
-	try {
-		const page = await browser.newPage({ viewport: { width: 1200, height: 1400 } });
-		const fileUrl = `file://${htmlPath}`;
-		await page.goto(fileUrl, { waitUntil: 'domcontentloaded' });
+  // Run in browser
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1200, height: 1400 },
+    });
+    const fileUrl = `file://${htmlPath}`;
+    await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
 
-		// Allow page JS to run fully
-		await page.waitForTimeout(1000);
+    // Allow page JS to run fully
+    await page.waitForTimeout(1000);
 
-		// Get test results from the page
-		const results = await page.evaluate(() => window.TEST_RESULTS);
+    // Get test results from the page
+    const results = await page.evaluate(() => window.TEST_RESULTS);
 
-		console.log('\n=== Well Plate Visual State Test Results ===');
-		console.log(`Baseline render: ${results.baselineRender ? 'OK' : 'FAIL'}`);
-		console.log(`State-driven render: ${results.stateDrivenRender ? 'OK' : 'FAIL'}`);
+    console.log("\n=== Well Plate Visual State Test Results ===");
+    console.log(`Baseline render: ${results.baselineRender ? "OK" : "FAIL"}`);
+    console.log(
+      `State-driven render: ${results.stateDrivenRender ? "OK" : "FAIL"}`,
+    );
 
-		if (results.error) {
-			console.error(`Test error: ${results.error}`);
-		} else if (results.cellColorResults && results.cellColorResults.length > 0) {
-			console.log('\nCell color verification:');
-			for (const row of results.cellColorResults) {
-				const status = row.match ? 'PASS' : 'FAIL';
-				console.log(`  ${row.cell} (${row.material}): expected ${row.expected}, got ${row.actual} [${status}]`);
-			}
-		}
+    if (results.error) {
+      console.error(`Test error: ${results.error}`);
+    } else if (
+      results.cellColorResults &&
+      results.cellColorResults.length > 0
+    ) {
+      console.log("\nCell color verification:");
+      for (const row of results.cellColorResults) {
+        const status = row.match ? "PASS" : "FAIL";
+        console.log(
+          `  ${row.cell} (${row.material}): expected ${row.expected}, got ${row.actual} [${status}]`,
+        );
+      }
+    }
 
-		console.log(`\nOverall: ${results.allMatch ? 'PASS' : 'FAIL'}`);
+    console.log(`\nOverall: ${results.allMatch ? "PASS" : "FAIL"}`);
 
-		// Take screenshots
-		await page.screenshot({ path: path.join(testResultsDir, 'before_state.png') });
-		await page.screenshot({ path: path.join(testResultsDir, 'after_state.png') });
+    // Take screenshots
+    await page.screenshot({
+      path: path.join(testResultsDir, "before_state.png"),
+    });
+    await page.screenshot({
+      path: path.join(testResultsDir, "after_state.png"),
+    });
 
-		console.log(`\nScreenshots saved to ${testResultsDir}`);
+    console.log(`\nScreenshots saved to ${testResultsDir}`);
 
-		await page.close();
+    await page.close();
 
-		// Check overall pass/fail
-		if (!results.allMatch || results.error) {
-			console.error('\nTest FAILED');
-			process.exit(1);
-		}
+    // Check overall pass/fail
+    if (!results.allMatch || results.error) {
+      console.error("\nTest FAILED");
+      process.exit(1);
+    }
 
-		console.log('\nTest PASSED: All cells rendered with correct material colors');
-	} finally {
-		await browser.close();
-	}
+    console.log(
+      "\nTest PASSED: All cells rendered with correct material colors",
+    );
+  } finally {
+    await browser.close();
+  }
 }
 
 runTest().catch((error) => {
-	console.error('Test error:', error);
-	process.exit(1);
+  console.error("Test error:", error);
+  process.exit(1);
 });

@@ -9,165 +9,165 @@
  */
 
 export interface CompletionPathBase {
-	completionEvent: string;
+  completionEvent: string;
 }
 
 export interface Interaction {
-	tool?: string;
-	source?: string;
-	destination?: string;
-	liquid?: string;
-	volumeMl?: number;
+  tool?: string;
+  source?: string;
+  destination?: string;
+  liquid?: string;
+  volumeMl?: number;
 }
 
 export interface PlateTarget {
-	rows?: string[];
-	cols?: number[];
-	row?: string;
-	col?: number;
-	wellId?: string;
-	liquid?: string;
-	volumeMl?: number;
-	label?: string;
+  rows?: string[];
+  cols?: number[];
+  row?: string;
+  col?: number;
+  wellId?: string;
+  liquid?: string;
+  volumeMl?: number;
+  label?: string;
 }
 
 export interface TubeTarget {
-	tubeId: string;
+  tubeId: string;
 }
 
 export interface InteractionSequencePath extends CompletionPathBase {
-	kind: 'interactionSequence';
-	tool?: string;
-	source?: string;
-	destination?: string;
-	interactions?: Interaction[];
-	plateTargets?: PlateTarget[];
-	tubeTargets?: TubeTarget[];
+  kind: "interactionSequence";
+  tool?: string;
+  source?: string;
+  destination?: string;
+  interactions?: Interaction[];
+  plateTargets?: PlateTarget[];
+  tubeTargets?: TubeTarget[];
 }
 
 export interface DirectToolPath extends CompletionPathBase {
-	kind: 'directTool';
-	tool: string;
+  kind: "directTool";
+  tool: string;
 }
 
 export interface ModalPath extends CompletionPathBase {
-	kind: 'modal';
-	openClick: string;
-	advanceClick?: string;
+  kind: "modal";
+  openClick: string;
+  advanceClick?: string;
 }
 
 export interface ModalChoiceConfig {
-	id: string;
-	text: string;
-	correct?: boolean;
-	feedback?: string;
+  id: string;
+  text: string;
+  correct?: boolean;
+  feedback?: string;
 }
 
 export interface MultipleChoicePath extends CompletionPathBase {
-	kind: 'multipleChoice';
-	question: string;
-	choices: ModalChoiceConfig[];
+  kind: "multipleChoice";
+  question: string;
+  choices: ModalChoiceConfig[];
 }
 
 export type CompletionPath =
-	| InteractionSequencePath
-	| DirectToolPath
-	| ModalPath
-	| MultipleChoicePath;
+  | InteractionSequencePath
+  | DirectToolPath
+  | ModalPath
+  | MultipleChoicePath;
 
 export interface ProtocolEntry {
-	scene: string;
-	step: string;
+  scene: string;
+  step: string;
 }
 
 export interface ProtocolStep {
-	id: string;
-	label: string;
-	action?: string;
-	why?: string;
-	scene: string;
-	requiredItems?: string[];
-	usedItems?: string[];
-	completionPath: CompletionPath;
-	errorHints?: Record<string, string>;
-	nextId?: string;
-	stepIndex?: number;
-	partId?: string;
-	dayId?: string;
+  id: string;
+  label: string;
+  action?: string;
+  why?: string;
+  scene: string;
+  requiredItems?: string[];
+  usedItems?: string[];
+  completionPath: CompletionPath;
+  errorHints?: Record<string, string>;
+  nextId?: string;
+  stepIndex?: number;
+  partId?: string;
+  dayId?: string;
 }
 
-export type ProtocolType = 'mini_protocol' | 'sequence_runner' | 'dev_smoke';
+export type ProtocolType = "mini_protocol" | "sequence_runner" | "dev_smoke";
 
 export interface LearningBlock {
-	objectives: string;
-	outcomes: string;
-	goals: string;
+  objectives: string;
+  outcomes: string;
+  goals: string;
 }
 
 export interface ProtocolPart {
-	id: string;
-	label: string;
-	dayId?: string;
+  id: string;
+  label: string;
+  dayId?: string;
 }
 
 export interface ProtocolDay {
-	id: string;
-	label: string;
+  id: string;
+  label: string;
 }
 
 export interface ProtocolConfig {
-	protocol_type: ProtocolType;
-	entry: ProtocolEntry;
-	id?: string;
-	title?: string;
-	description?: string;
-	learning?: LearningBlock;
-	steps?: ProtocolStep[];
-	parts?: ProtocolPart[];
-	sequence?: string[];
-	days?: ProtocolDay[];
+  protocol_type: ProtocolType;
+  entry: ProtocolEntry;
+  id?: string;
+  title?: string;
+  description?: string;
+  learning?: LearningBlock;
+  steps?: ProtocolStep[];
+  parts?: ProtocolPart[];
+  sequence?: string[];
+  days?: ProtocolDay[];
 }
 
 export interface SceneItem {
-	id: string;
-	label: string;
-	scene: string;
-	role?: string;
-	asset?: string;
-	liquidCapable?: boolean;
-	capacityMl?: number;
-	allowedLiquids?: string[];
-	contains?: string;
-	containsAny?: string[];
-	visualOnly?: boolean;
+  id: string;
+  label: string;
+  scene: string;
+  role?: string;
+  asset?: string;
+  liquidCapable?: boolean;
+  capacityMl?: number;
+  allowedLiquids?: string[];
+  contains?: string;
+  containsAny?: string[];
+  visualOnly?: boolean;
 }
 
 export interface SceneReagent {
-	label: string;
-	colorKey: string;
-	displayColor: string;
+  label: string;
+  colorKey: string;
+  displayColor: string;
 }
 
 export interface SceneConfig {
-	id: string;
-	items: Record<string, SceneItem>;
-	reagents?: Record<string, SceneReagent>;
+  id: string;
+  items: Record<string, SceneItem>;
+  reagents?: Record<string, SceneReagent>;
 }
 
 export interface ProtocolCatalogEntry {
-	summary: {
-		id: string;
-		title: string;
-		kind: 'full_protocol' | 'tutorial';
-		stepCount: number;
-		description?: string;
-	};
-	steps: ProtocolStep[];
-	parts: Record<string, ProtocolPart>;
-	days: Record<string, ProtocolDay>;
+  summary: {
+    id: string;
+    title: string;
+    kind: "full_protocol" | "tutorial";
+    stepCount: number;
+    description?: string;
+  };
+  steps: ProtocolStep[];
+  parts: Record<string, ProtocolPart>;
+  days: Record<string, ProtocolDay>;
 }
 
 export interface SceneCatalogEntry {
-	equipment: Record<string, SceneItem>;
-	reagents: Record<string, SceneReagent>;
+  equipment: Record<string, SceneItem>;
+  reagents: Record<string, SceneReagent>;
 }

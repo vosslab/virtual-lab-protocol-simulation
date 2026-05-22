@@ -13,7 +13,16 @@ state_fields:
     description: Volume the pipette is set to dispense.
   - field_name: held_material_name
     type: enum
-    allowed: [empty, protein_sample_denatured, protein_ladder, laemmli_4x, bme, running_buffer_1x, ddh2o]
+    allowed:
+      [
+        empty,
+        protein_sample_denatured,
+        protein_ladder,
+        laemmli_4x,
+        bme,
+        running_buffer_1x,
+        ddh2o,
+      ]
     default: empty
     description: Contents currently aspirated in the pipette tip.
   - field_name: held_material_volume
@@ -49,7 +58,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=10)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 2

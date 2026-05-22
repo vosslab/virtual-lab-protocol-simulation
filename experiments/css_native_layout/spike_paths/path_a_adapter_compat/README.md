@@ -19,7 +19,7 @@ back.
   Estimated diff: 4-6 lines.
 - `src/scene_runtime/layout/css_native_adapter.ts` -- NEW. Exports
   `computeSceneLayoutCssNative(world, sceneId, viewportW, viewportH)
-  : ComputedItemLayout[]`. Estimated size: ~80-120 lines including the DOM
+: ComputedItemLayout[]`. Estimated size: ~80-120 lines including the DOM
   render helper.
 - `src/scene_runtime/layout/feature_flags.ts` -- NEW (optional). Holds
   `export const ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE = false;`. May be

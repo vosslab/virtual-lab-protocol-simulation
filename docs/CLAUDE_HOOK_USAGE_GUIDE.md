@@ -15,7 +15,7 @@ preferred alternatives for denied patterns.
 This doc is Claude-specific and does not apply to Codex.
 
 This guide documents current Claude hook behavior. Repo style conventions live in
-[docs/REPO_STYLE.md](REPO_STYLE.md) and [docs/PYTHON_STYLE.md](PYTHON_STYLE.md).
+[REPO_STYLE.md](REPO_STYLE.md) and [PYTHON_STYLE.md](PYTHON_STYLE.md).
 
 ## Trust model
 
@@ -25,10 +25,10 @@ The hook optimizes for high task completion with bounded blast radius: allow rou
 
 The permissions hook intercepts every Claude Code tool call and evaluates it against TOML config rules. Each call gets one of three outcomes:
 
-| Outcome | Meaning |
-| --- | --- |
-| **Allow** | Tool call proceeds automatically |
-| **Deny** | Tool call is blocked with an error message |
+| Outcome         | Meaning                                                           |
+| --------------- | ----------------------------------------------------------------- |
+| **Allow**       | Tool call proceeds automatically                                  |
+| **Deny**        | Tool call is blocked with an error message                        |
 | **Passthrough** | Falls back to Claude Code's default permission flow (user prompt) |
 
 ### Command decomposition
@@ -51,12 +51,12 @@ Commands with more than **5** chained sub-commands are denied automatically.
 
 `Read`, `Edit`, and `Write` are first-class Claude Code tool calls. For file discovery and content search, use `git ls-files`, `ls`, the Read tool, piped `grep`/`rg`, and `_temp.py` helpers. File-path `grep`/`rg` is denied (scope-control rule); pipeline forms stay allowed. `find` is partially allowed: read-only in safe path zones (relative paths, `/tmp`, `~/<workspace>/...`, `~/.claude/agents|commands|skills`) are auto-allowed. The columns below show denied Bash forms, preferred recovery paths, and Bash forms that remain allowed.
 
-| Denied Bash form | Preferred recovery | Allowed Bash forms |
-| --- | --- | --- |
-| `cat /path/to/file`, `head -20 /path`, `tail -20 /path` | Read tool with `file_path`, `offset`, `limit` | `... \| cat`, `... \| head -5`, `... \| tail -5` (pipeline, no file arg) |
-| `grep pat /path`, `/usr/bin/grep ...`, `rg pat dir/`, `egrep`, `fgrep` | `git ls-files <pathspec>` to list candidates, then use the Read tool on targeted files; piped `grep`/`rg` on bounded stdout; `_temp.py` (bounded candidate list) for broad search | `... \| grep pat`, `... \| rg pat` (pipeline, no file arg) for stdout filtering |
-| `find /etc -name '*.conf'`, `find . -delete`, `find /Users` (unsafe shapes) | Use bounded read-only `find` in a safe path zone (`.`, `/tmp`, `~/<workspace>/...`, `/Users/<me>/<workspace>/...`). For repo content, `git ls-files <pathspec>` is still preferred. | `find . -name '*.py'`, `find /tmp -type f`, `find ~/<workspace>/repo -type f` |
-| `sed -n '10,20p' file.txt` | Read tool with `offset=10`, `limit=11` | `... \| sed -n '10,20p'` (pipeline) |
+| Denied Bash form                                                            | Preferred recovery                                                                                                                                                                  | Allowed Bash forms                                                              |
+| --------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `cat /path/to/file`, `head -20 /path`, `tail -20 /path`                     | Read tool with `file_path`, `offset`, `limit`                                                                                                                                       | `... \| cat`, `... \| head -5`, `... \| tail -5` (pipeline, no file arg)        |
+| `grep pat /path`, `/usr/bin/grep ...`, `rg pat dir/`, `egrep`, `fgrep`      | `git ls-files <pathspec>` to list candidates, then use the Read tool on targeted files; piped `grep`/`rg` on bounded stdout; `_temp.py` (bounded candidate list) for broad search   | `... \| grep pat`, `... \| rg pat` (pipeline, no file arg) for stdout filtering |
+| `find /etc -name '*.conf'`, `find . -delete`, `find /Users` (unsafe shapes) | Use bounded read-only `find` in a safe path zone (`.`, `/tmp`, `~/<workspace>/...`, `/Users/<me>/<workspace>/...`). For repo content, `git ls-files <pathspec>` is still preferred. | `find . -name '*.py'`, `find /tmp -type f`, `find ~/<workspace>/repo -type f`   |
+| `sed -n '10,20p' file.txt`                                                  | Read tool with `offset=10`, `limit=11`                                                                                                                                              | `... \| sed -n '10,20p'` (pipeline)                                             |
 
 The deny rules cover all binary variants (alternate names, absolute paths like
 `/usr/bin/grep` or `/opt/homebrew/.../grep`, `rg`). The fastest path through a
@@ -251,13 +251,13 @@ convert in.png out.png                          # passthrough (no tmp path)
 
 The `rm` command is denied by default, but these specific patterns are allowed:
 
-| Pattern | Example |
-| --- | --- |
-| Underscore-prefixed files | `rm _temp.py`, `rm -f /path/to/_scratch.sh` |
-| `/tmp/` paths | `rm /tmp/test_output.json` |
-| Cache directories | `rm -rf __pycache__`, `rm -r ~/Library/Caches/foo` |
-| `git rm` with relative paths | `git rm old_file.py` |
-| `rmdir` (empty-dir only) | `rmdir /tmp/empty`, `rmdir src/content/old/` |
+| Pattern                      | Example                                            |
+| ---------------------------- | -------------------------------------------------- |
+| Underscore-prefixed files    | `rm _temp.py`, `rm -f /path/to/_scratch.sh`        |
+| `/tmp/` paths                | `rm /tmp/test_output.json`                         |
+| Cache directories            | `rm -rf __pycache__`, `rm -r ~/Library/Caches/foo` |
+| `git rm` with relative paths | `git rm old_file.py`                               |
+| `rmdir` (empty-dir only)     | `rmdir /tmp/empty`, `rmdir src/content/old/`       |
 
 `rmdir` (including `rmdir -p`) is allowed because it only removes empty directories and fails if non-empty. Use to clean up empty source directories after `git mv` chains.
 
@@ -289,13 +289,13 @@ every agent context (`Grep` and `Glob` in particular -- see notes
 below). This guide recommends only recovery paths observed to be
 available in the target context.
 
-| Tool | Allowed paths |
-| --- | --- |
-| Read | `~/nsh/`, `~/.<dotdirs>`, site-packages, `/tmp/`, `/var/folders/` |
-| Write | `~/nsh/`, `~/.claude/`, `/tmp/` |
-| Edit | `~/nsh/`, `~/.claude/`, `/tmp/` |
-| Glob | Supported defensively when exposed by Claude Code; not a standard recovery path in this agent context |
-| Grep | Supported defensively when exposed by Claude Code; not a standard recovery path in this agent context |
+| Tool  | Allowed paths                                                                                         |
+| ----- | ----------------------------------------------------------------------------------------------------- |
+| Read  | `~/nsh/`, `~/.<dotdirs>`, site-packages, `/tmp/`, `/var/folders/`                                     |
+| Write | `~/nsh/`, `~/.claude/`, `/tmp/`                                                                       |
+| Edit  | `~/nsh/`, `~/.claude/`, `/tmp/`                                                                       |
+| Glob  | Supported defensively when exposed by Claude Code; not a standard recovery path in this agent context |
+| Grep  | Supported defensively when exposed by Claude Code; not a standard recovery path in this agent context |
 
 All file tools block path traversal (`..`). Reading `.env` and `.secret` files is denied.
 
@@ -490,7 +490,7 @@ not the actual tool.
 chained or piped, since the decomposer splits leaves before matching:
 `echo hi && Read README.md`, `cat /tmp/x | Grep foo`.
 
-A grep pattern that *contains* a tool name does not hit *this* deny:
+A grep pattern that _contains_ a tool name does not hit _this_ deny:
 `grep "Grep\|Read" file` is not flagged as a tool-name-in-Bash command
 (the deny anchors at start-of-leaf, so only the lowercase `grep` token
 matters). Note it is still denied by the file-`grep` rule above if a
@@ -501,11 +501,11 @@ regardless of what the pattern spells.
 
 These have a "use dedicated tool" deny with file paths, but stay allowed as piped stdin:
 
-| Command | Denied (lead) | Allowed (in pipe) |
-| --- | --- | --- |
-| `cat`, `head`, `tail` | `cat /tmp/x.txt` | `... \| head -5` |
-| `grep`, `egrep`, `fgrep`, `rg` | `grep pat /tmp/x.txt` | `... \| grep pat` |
-| `sed -n` | `sed -n '10,20p' /tmp/x.txt` | `... \| sed -n '10,20p'` |
+| Command                        | Denied (lead)                | Allowed (in pipe)        |
+| ------------------------------ | ---------------------------- | ------------------------ |
+| `cat`, `head`, `tail`          | `cat /tmp/x.txt`             | `... \| head -5`         |
+| `grep`, `egrep`, `fgrep`, `rg` | `grep pat /tmp/x.txt`        | `... \| grep pat`        |
+| `sed -n`                       | `sed -n '10,20p' /tmp/x.txt` | `... \| sed -n '10,20p'` |
 
 ### `tsc` via `node_modules` paths
 
@@ -702,13 +702,13 @@ Before evaluating allow or deny rules, the hook stats the target path of `Read`,
 
 ### Per-tool semantics
 
-| Tool | Requirement | Failure modes |
-| --- | --- | --- |
-| `Read` | `file_path` resolves to an existing, non-directory target | missing path; path is a directory; broken symlink |
-| `Edit` / `MultiEdit` | `file_path` exists, OR its parent directory exists | both file and parent missing |
-| `Glob` | resolved `path` is an existing directory | missing path; file passed where directory expected |
-| `Grep` | resolved `path` (when provided) exists as file or directory | missing path |
-| `Write` | exempt | n/a -- Write creates new files by design |
+| Tool                 | Requirement                                                 | Failure modes                                      |
+| -------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
+| `Read`               | `file_path` resolves to an existing, non-directory target   | missing path; path is a directory; broken symlink  |
+| `Edit` / `MultiEdit` | `file_path` exists, OR its parent directory exists          | both file and parent missing                       |
+| `Glob`               | resolved `path` is an existing directory                    | missing path; file passed where directory expected |
+| `Grep`               | resolved `path` (when provided) exists as file or directory | missing path                                       |
+| `Write`              | exempt                                                      | n/a -- Write creates new files by design           |
 
 Symlinks-to-existing-files are accepted for `Read`. Broken symlinks deny
 because `fs::metadata` follows the link and reports the missing target.
@@ -718,14 +718,14 @@ cwd fallback is trusted).
 
 ### Reason strings the agent sees
 
-| Condition | Reason |
-| --- | --- |
-| Read target missing | `Verify the file path before retrying. Read target does not exist: <path>.` |
-| Read target is a directory | ``Read targets a file, not a directory. Use `ls <dir>` or `git ls-files <pathspec>` to list directory contents. Path is a directory: <path>.`` |
-| Edit / MultiEdit both missing | `Create the parent directory first or choose an existing path. Edit target and parent directory are both missing: <path>; parent: <parent>.` |
-| Glob path missing or not a directory | `Choose an existing search directory before retrying. Glob path does not exist as a directory: <path>.` |
-| Grep path missing | `Choose an existing file or directory before retrying. Grep path does not exist: <path>.` |
-| Stat failed for any reason other than NotFound (permissions, etc.) | `Verify the path before retrying. The hook could not confirm that this path exists: <path>.` |
+| Condition                                                          | Reason                                                                                                                                         |
+| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Read target missing                                                | `Verify the file path before retrying. Read target does not exist: <path>.`                                                                    |
+| Read target is a directory                                         | ``Read targets a file, not a directory. Use `ls <dir>` or `git ls-files <pathspec>` to list directory contents. Path is a directory: <path>.`` |
+| Edit / MultiEdit both missing                                      | `Create the parent directory first or choose an existing path. Edit target and parent directory are both missing: <path>; parent: <parent>.`   |
+| Glob path missing or not a directory                               | `Choose an existing search directory before retrying. Glob path does not exist as a directory: <path>.`                                        |
+| Grep path missing                                                  | `Choose an existing file or directory before retrying. Grep path does not exist: <path>.`                                                      |
+| Stat failed for any reason other than NotFound (permissions, etc.) | `Verify the path before retrying. The hook could not confirm that this path exists: <path>.`                                                   |
 
 The pre-check distinguishes `Ok(false)` (path confirmed missing) from
 `Err(_)` (could not stat -- permission denied on a parent directory,
@@ -772,14 +772,14 @@ significant side effects or security implications:
 These tools intentionally passthrough to Claude Code's default permission flow
 so the user sees interactive dialogs:
 
-| Tool | Reason |
-| --- | --- |
+| Tool              | Reason                                       |
+| ----------------- | -------------------------------------------- |
 | `AskUserQuestion` | User must see and answer the question dialog |
-| `EnterWorktree` | User must consent to worktree creation |
-| `ExitWorktree` | User must consent to keep/remove decision |
-| `CronCreate` | User should approve scheduled recurring jobs |
-| `CronDelete` | User should approve canceling scheduled jobs |
-| `CronList` | Kept consistent with other Cron tools |
+| `EnterWorktree`   | User must consent to worktree creation       |
+| `ExitWorktree`    | User must consent to keep/remove decision    |
+| `CronCreate`      | User should approve scheduled recurring jobs |
+| `CronDelete`      | User should approve canceling scheduled jobs |
+| `CronList`        | Kept consistent with other Cron tools        |
 
 Do NOT add these tools to any allow rule. Auto-approving them bypasses Claude Code's
 interactive UI dialogs, causing blank answers or skipped consent screens.
@@ -799,22 +799,22 @@ interactive UI dialogs, causing blank answers or skipped consent screens.
 
 Use `Read`, `Edit`, `Write` as tool calls; file discovery via `git ls-files`, `ls`, and the Read tool; `grep`/`rg` as pipeline filters on bounded output.
 
-| Task | Wrong | Right |
-| --- | --- | --- |
-| Run Python | `python3 script.py` | `source source_me.sh && python3 script.py` |
-| Read a file | `cat /path/to/file.py` | Read tool: `file_path="/path/to/file.py"` |
-| Search files | `grep -r "pattern" src/` | `git ls-files <pathspec>` to list candidates, then use the Read tool on targeted files; piped `grep`/`rg` on bounded stdout; `_temp.py` (bounded candidates) for broad/structured search |
-| Tool name as Bash | `Grep -n "^## " docs/CHANGELOG.md` | Invoke the actual tool. For search, use `git ls-files` + Read |
-| Find files | `find / -name "*.py"` (system root); `find . -delete` (destructive) | Bounded read-only: `find <safe-root> -type f -name PAT` (relative paths, `/tmp`, `~/<workspace>/...`); or `git ls-files <pathspec>` for tracked-only repo content |
-| Read lines 10-20 | `sed -n '10,20p' file.txt` | Read tool: `offset=10`, `limit=11` |
-| Delete temp file | `rm temp.py` | Name it `_temp.py`, then `rm _temp.py` |
-| Rename file | `mv old.py new.py` | `git mv old.py new.py` |
-| Loop over files | `for f in *.py; do ...` | Write `_temp.sh` with the loop, run `bash _temp.sh` |
-| Inline Python | `python3 -c "print(1)"` | Write `_temp.py`, run with source_me.sh |
-| Inline JS | `node -e "console.log(1)"` | Write `_temp.mjs`, run with `node _temp.mjs` |
-| Write file via printf | `printf '...' > FILE` | Use the Write tool (or Edit for appends) |
-| Set env + run | `REPO_ROOT=/x && python3 s.py` | `REPO_ROOT=/x python3 s.py` (one line) |
-| Run heredoc | `python3 - <<EOF ...` | Write `_temp.py`, run with source_me.sh |
-| GitHub CLI | `gh pr list` | Not available (`gh` not installed) |
-| Probe media | `ffprobe -show_streams f.m4b` | `mediainfo --Output=JSON f.m4b` (ffprobe only for chapters/packets/frames/lavfi) |
-| Encode audio | `ffmpeg -i in.wav out.m4a` | Stage to `/tmp`: `ffmpeg -i /tmp/in.wav /tmp/out.m4a` |
+| Task                  | Wrong                                                               | Right                                                                                                                                                                                    |
+| --------------------- | ------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Run Python            | `python3 script.py`                                                 | `source source_me.sh && python3 script.py`                                                                                                                                               |
+| Read a file           | `cat /path/to/file.py`                                              | Read tool: `file_path="/path/to/file.py"`                                                                                                                                                |
+| Search files          | `grep -r "pattern" src/`                                            | `git ls-files <pathspec>` to list candidates, then use the Read tool on targeted files; piped `grep`/`rg` on bounded stdout; `_temp.py` (bounded candidates) for broad/structured search |
+| Tool name as Bash     | `Grep -n "^## " docs/CHANGELOG.md`                                  | Invoke the actual tool. For search, use `git ls-files` + Read                                                                                                                            |
+| Find files            | `find / -name "*.py"` (system root); `find . -delete` (destructive) | Bounded read-only: `find <safe-root> -type f -name PAT` (relative paths, `/tmp`, `~/<workspace>/...`); or `git ls-files <pathspec>` for tracked-only repo content                        |
+| Read lines 10-20      | `sed -n '10,20p' file.txt`                                          | Read tool: `offset=10`, `limit=11`                                                                                                                                                       |
+| Delete temp file      | `rm temp.py`                                                        | Name it `_temp.py`, then `rm _temp.py`                                                                                                                                                   |
+| Rename file           | `mv old.py new.py`                                                  | `git mv old.py new.py`                                                                                                                                                                   |
+| Loop over files       | `for f in *.py; do ...`                                             | Write `_temp.sh` with the loop, run `bash _temp.sh`                                                                                                                                      |
+| Inline Python         | `python3 -c "print(1)"`                                             | Write `_temp.py`, run with source_me.sh                                                                                                                                                  |
+| Inline JS             | `node -e "console.log(1)"`                                          | Write `_temp.mjs`, run with `node _temp.mjs`                                                                                                                                             |
+| Write file via printf | `printf '...' > FILE`                                               | Use the Write tool (or Edit for appends)                                                                                                                                                 |
+| Set env + run         | `REPO_ROOT=/x && python3 s.py`                                      | `REPO_ROOT=/x python3 s.py` (one line)                                                                                                                                                   |
+| Run heredoc           | `python3 - <<EOF ...`                                               | Write `_temp.py`, run with source_me.sh                                                                                                                                                  |
+| GitHub CLI            | `gh pr list`                                                        | Not available (`gh` not installed)                                                                                                                                                       |
+| Probe media           | `ffprobe -show_streams f.m4b`                                       | `mediainfo --Output=JSON f.m4b` (ffprobe only for chapters/packets/frames/lavfi)                                                                                                         |
+| Encode audio          | `ffmpeg -i in.wav out.m4a`                                          | Stage to `/tmp`: `ffmpeg -i /tmp/in.wav /tmp/out.m4a`                                                                                                                                    |

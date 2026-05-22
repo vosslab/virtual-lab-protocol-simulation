@@ -1,135 +1,282 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>SVG Picker</title>
-	<link rel="stylesheet" href="picker.css">
-</head>
-<body data-theme="light">
-	<header>
-		<h1>SVG Picker</h1>
-		<div class="header-controls">
-			<div class="progress-counters">
-				<div class="counter">
-					<span id="counter-assigned">0</span> assigned
-				</div>
-				<div class="counter">
-					<span id="counter-deferred">0</span> deferred
-				</div>
-				<div class="counter">
-					<span id="counter-ignored">0</span> ignored
-				</div>
-				<div class="counter">
-					<span id="counter-remaining">0</span> remaining
-				</div>
-			</div>
-			<div class="filter-chips" id="filter-chips">
-				<div class="chip" data-filter="unassigned" title="Show only unassigned targets">
-					Unassigned only
-				</div>
-				<div class="chip" data-filter="needsAttribution" title="Show targets where top candidate needs attribution">
-					Needs attribution
-				</div>
-				<div class="chip" data-filter="variantLooking" title="Show only variant-looking targets">
-					Variant-looking
-				</div>
-			</div>
-			<button id="export-btn" type="button">Export decisions</button>
-			<div class="theme-toggle" id="theme-toggle" title="Toggle light/dark theme">
-				&#9728;
-			</div>
-		</div>
-	</header>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SVG Picker</title>
+    <link rel="stylesheet" href="picker.css" />
+  </head>
+  <body data-theme="light">
+    <header>
+      <h1>SVG Picker</h1>
+      <div class="header-controls">
+        <div class="progress-counters">
+          <div class="counter">
+            <span id="counter-assigned">0</span> assigned
+          </div>
+          <div class="counter">
+            <span id="counter-deferred">0</span> deferred
+          </div>
+          <div class="counter"><span id="counter-ignored">0</span> ignored</div>
+          <div class="counter">
+            <span id="counter-remaining">0</span> remaining
+          </div>
+        </div>
+        <div class="filter-chips" id="filter-chips">
+          <div
+            class="chip"
+            data-filter="unassigned"
+            title="Show only unassigned targets"
+          >
+            Unassigned only
+          </div>
+          <div
+            class="chip"
+            data-filter="needsAttribution"
+            title="Show targets where top candidate needs attribution"
+          >
+            Needs attribution
+          </div>
+          <div
+            class="chip"
+            data-filter="variantLooking"
+            title="Show only variant-looking targets"
+          >
+            Variant-looking
+          </div>
+        </div>
+        <button id="export-btn" type="button">Export decisions</button>
+        <div
+          class="theme-toggle"
+          id="theme-toggle"
+          title="Toggle light/dark theme"
+        >
+          &#9728;
+        </div>
+      </div>
+    </header>
 
-	<div class="error-banner" id="error-banner">
-		<strong>Error loading picker data.</strong> If using Chrome, you may need to use the fallback server:
-		<br>
-		<code>python3 -m http.server --directory tools/svg_picker 8127</code>
-		<br>
-		Then visit <code>http://127.0.0.1:8127/</code>
-	</div>
+    <div class="error-banner" id="error-banner">
+      <strong>Error loading picker data.</strong> If using Chrome, you may need
+      to use the fallback server:
+      <br />
+      <code>python3 -m http.server --directory tools/svg_picker 8127</code>
+      <br />
+      Then visit <code>http://127.0.0.1:8127/</code>
+    </div>
 
-	<div id="main-grid">
-		<div id="left-pane" class="pane"></div>
-		<div id="middle-pane" class="pane"></div>
-		<div id="right-pane" class="pane"></div>
-	</div>
+    <div id="main-grid">
+      <div id="left-pane" class="pane"></div>
+      <div id="middle-pane" class="pane"></div>
+      <div id="right-pane" class="pane"></div>
+    </div>
 
-	<footer>
-		<button id="keyboard-help-btn" type="button" title="Show keyboard shortcuts">
-			&#9000; Shortcuts
-		</button>
-	</footer>
+    <footer>
+      <button
+        id="keyboard-help-btn"
+        type="button"
+        title="Show keyboard shortcuts"
+      >
+        &#9000; Shortcuts
+      </button>
+    </footer>
 
-	<!-- Resume session modal -->
-	<div id="session-modal" class="session-modal">
-		<div class="session-modal-content">
-			<h2>Resume previous session?</h2>
-			<p>A saved session was found. Would you like to resume or start fresh?</p>
-			<div class="session-modal-buttons">
-				<button id="session-resume">Resume</button>
-				<button id="session-fresh">Start fresh</button>
-			</div>
-		</div>
-	</div>
+    <!-- Resume session modal -->
+    <div id="session-modal" class="session-modal">
+      <div class="session-modal-content">
+        <h2>Resume previous session?</h2>
+        <p>
+          A saved session was found. Would you like to resume or start fresh?
+        </p>
+        <div class="session-modal-buttons">
+          <button id="session-resume">Resume</button>
+          <button id="session-fresh">Start fresh</button>
+        </div>
+      </div>
+    </div>
 
-	<!-- Keyboard help modal -->
-	<div id="help-modal" class="decision-dialog">
-		<div class="dialog-content">
-			<h2>Keyboard Shortcuts</h2>
-			<table style="width: 100%; border-collapse: collapse;">
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">Enter</td>
-					<td style="padding: 6px 0; font-size: 12px;">Assign highlighted candidate</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">&#8593; / &#8595;</td>
-					<td style="padding: 6px 0; font-size: 12px;">Navigate candidates</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">/</td>
-					<td style="padding: 6px 0; font-size: 12px;">Focus search box</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">n</td>
-					<td style="padding: 6px 0; font-size: 12px;">Next unassigned target</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">b</td>
-					<td style="padding: 6px 0; font-size: 12px;">Previous target</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">[ / ]</td>
-					<td style="padding: 6px 0; font-size: 12px;">Previous / next target</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">d</td>
-					<td style="padding: 6px 0; font-size: 12px;">Defer current target</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">i</td>
-					<td style="padding: 6px 0; font-size: 12px;">Ignore-intentional (prompts for reason)</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">x</td>
-					<td style="padding: 6px 0; font-size: 12px;">Hide highlighted candidate for target</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">X</td>
-					<td style="padding: 6px 0; font-size: 12px;">Hide highlighted candidate for family</td>
-				</tr>
-				<tr style="border-bottom: 1px solid var(--color-border);">
-					<td style="padding: 6px 0; padding-right: 12px; text-align: right; font-weight: 600; font-size: 12px;">Shift+click</td>
-					<td style="padding: 6px 0; font-size: 12px;">Multi-select targets</td>
-				</tr>
-			</table>
-			<div style="margin-top: 16px; text-align: right;">
-				<button id="help-close" type="button">Close</button>
-			</div>
-		</div>
-	</div>
+    <!-- Keyboard help modal -->
+    <div id="help-modal" class="decision-dialog">
+      <div class="dialog-content">
+        <h2>Keyboard Shortcuts</h2>
+        <table style="width: 100%; border-collapse: collapse">
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              Enter
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Assign highlighted candidate
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              &#8593; / &#8595;
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">Navigate candidates</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              /
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">Focus search box</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              n
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Next unassigned target
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              b
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">Previous target</td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              [ / ]
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Previous / next target
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              d
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Defer current target
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              i
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Ignore-intentional (prompts for reason)
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              x
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Hide highlighted candidate for target
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              X
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Hide highlighted candidate for family
+            </td>
+          </tr>
+          <tr style="border-bottom: 1px solid var(--color-border)">
+            <td
+              style="
+                padding: 6px 0;
+                padding-right: 12px;
+                text-align: right;
+                font-weight: 600;
+                font-size: 12px;
+              "
+            >
+              Shift+click
+            </td>
+            <td style="padding: 6px 0; font-size: 12px">
+              Multi-select targets
+            </td>
+          </tr>
+        </table>
+        <div style="margin-top: 16px; text-align: right">
+          <button id="help-close" type="button">Close</button>
+        </div>
+      </div>
+    </div>
 
-	<script src="picker.js"></script>
-</body>
+    <script src="picker.js"></script>
+  </body>
 </html>

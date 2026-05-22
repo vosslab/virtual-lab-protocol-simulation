@@ -8,19 +8,19 @@ Use "workstream" not "lane".
 
 ## Pre/Post Metric Table
 
-| Metric | Batch1 pre-fix | Batch2-N-Canonical post-fix | Delta |
-| --- | --- | --- | --- |
-| primary_area_ratio | 0.2 | 0 | -0.2 |
-| label_overlap | 70 | 10 | -60 |
-| scene_occupied | 7.4 | 7.4 | 0 |
-| support_distance | 100 | 100 | 0 |
-| balance | 50 | 50 | 0 |
-| region_filling | 18.6 | 18.5 | -0.1 |
-| label_readability | 0 | 0 | 0 |
-| aspect_ratio_fidelity | 70.6 | 70.6 | 0 |
-| primary_prominence | 0 | 0 | 0 |
-| total_layout_score | 49 | 30 | -19 |
-| hard_fails (scorecard field) | 0 | 0 | 0 |
+| Metric                       | Batch1 pre-fix | Batch2-N-Canonical post-fix | Delta |
+| ---------------------------- | -------------- | --------------------------- | ----- |
+| primary_area_ratio           | 0.2            | 0                           | -0.2  |
+| label_overlap                | 70             | 10                          | -60   |
+| scene_occupied               | 7.4            | 7.4                         | 0     |
+| support_distance             | 100            | 100                         | 0     |
+| balance                      | 50             | 50                          | 0     |
+| region_filling               | 18.6           | 18.5                        | -0.1  |
+| label_readability            | 0              | 0                           | 0     |
+| aspect_ratio_fidelity        | 70.6           | 70.6                        | 0     |
+| primary_prominence           | 0              | 0                           | 0     |
+| total_layout_score           | 49             | 30                          | -19   |
+| hard_fails (scorecard field) | 0              | 0                           | 0     |
 
 Critical note: both scorecards report hard_fails=0 because scorecard hardFailCount function counts only clipped_artwork, off_page, svg_svg_overlap, region_overflow. The batch1 precheck JSON contains 10 HARD_FAIL entries under clipped_by_parent (SVG assets cropped by parent overflow 27-116px on bottom) and 8 HARD_FAIL entries under aspect_distorted (glassware distorted 8-170%). These existed pre-fix but are invisible to scorecard formula. Pre-fix score 49 earned while scene was already visually broken with active crop hard-fails.
 
@@ -42,21 +42,21 @@ Net visual: scene looks broken and nearly empty. No object reads as pedagogicall
 
 13 total objects, 0 large_equipment, label_density: high.
 
-| Object | Zone | Footprint class |
-| --- | --- | --- |
-| dilution_rack (primary, data-primary) | work_surface | rack |
-| ladder_tube | work_surface | small-tool |
-| tube_rack_15ml | work_surface | rack |
-| ladder_tube (2nd instance) | work_surface | small-tool |
-| microtube | work_surface | small-tool |
-| micropipette_p1000 | front_tools | handheld |
-| brush | front_tools | small-tool |
-| kimwipes | front_tools | small-tool |
-| waste_container | front_tools | handheld |
-| tip_box_10 | front_tools | rack |
-| ethanol_bottle | rear_shelf | container |
-| dmso_bottle | rear_shelf | container |
-| dmso_bottle (2nd instance) | rear_shelf | container |
+| Object                                | Zone         | Footprint class |
+| ------------------------------------- | ------------ | --------------- |
+| dilution_rack (primary, data-primary) | work_surface | rack            |
+| ladder_tube                           | work_surface | small-tool      |
+| tube_rack_15ml                        | work_surface | rack            |
+| ladder_tube (2nd instance)            | work_surface | small-tool      |
+| microtube                             | work_surface | small-tool      |
+| micropipette_p1000                    | front_tools  | handheld        |
+| brush                                 | front_tools  | small-tool      |
+| kimwipes                              | front_tools  | small-tool      |
+| waste_container                       | front_tools  | handheld        |
+| tip_box_10                            | front_tools  | rack            |
+| ethanol_bottle                        | rear_shelf   | container       |
+| dmso_bottle                           | rear_shelf   | container       |
+| dmso_bottle (2nd instance)            | rear_shelf   | container       |
 
 Region load: work_surface=5, front_tools=5, rear_shelf=3, instrument_station=0.
 
@@ -67,7 +67,8 @@ Small-tool placements: 4 (ladder_tube x2, microtube, brush, kimwipes) across wor
 
 Batch1 score=70, post-fix score=10. Delta=-60 on raw metric.
 
-computeLabelOverlapScore in score_layout.mjs: max(0, 100 - totalOverlap * 30).
+computeLabelOverlapScore in score_layout.mjs: max(0, 100 - totalOverlap \* 30).
+
 - score=70 implies 1 total overlap pair (batch1: 1 label_label overlap, 0 svg_label overlap).
 - score=10 implies 3 total overlap pairs (batch2: confirmed from scorecard penalty=27 in top_worst_metrics).
 
@@ -82,7 +83,9 @@ Primary object (dilution_rack) renders with card h=30px, artwork h=160px, visibl
 Three reasons:
 
 ### 1. Pre-fix score 49 was false-high.
+
 Batch1 precheck JSON records 10 HARD_FAIL clipped_by_parent entries and 8 HARD_FAIL aspect_distorted entries for this scene:
+
 - ethanol_bottle: 107px cropped from bottom (card h=119px, artwork h=240px)
 - dmso_bottle x2: 107px cropped from bottom each
 - dilution_rack: 116px cropped from bottom (card h=30px)
@@ -95,9 +98,11 @@ Batch1 precheck JSON records 10 HARD_FAIL clipped_by_parent entries and 8 HARD_F
 Scorecard formula does not count clipped_by_parent in hardFailCount. Correct hardFailCount for batch1 would be at minimum 10, which would have zeroed total_layout_score (if hardFailCount > 0: totalScore = 0). The 49 score is measurement artifact of incomplete hardFail definition, not evidence of good pre-fix layout.
 
 ### 2. -19pt delta entirely explained by label_overlap worsening from 1 to 3 pairs.
+
 N-patch legitimately increased card heights to prevent real bottom-crop hard-fails on container-class and handheld objects in normal scenes. Taller minimum height collapses work_surface column for this stress scene (5 objects in column that cannot hold them). Expected behavior for intended_difficulty: hard stress scene.
 
 ### 3. Stress scenes are not curriculum scenes.
+
 stress_dense_clutter_014 exists to expose edge cases. It scores 30 pre-fix (truly) and 30 post-fix. N-patch did not make it worse; scorecard formula made it appear better pre-fix than it was.
 
 ## Recommendation: KEEP

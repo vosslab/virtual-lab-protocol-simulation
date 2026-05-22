@@ -8,9 +8,9 @@ Forward references (sibling NEW2 lane outputs; some not yet on disk are
 listed as code spans rather than Markdown links so the markdown-links
 pytest gate stays green until they land):
 
-- [new2_production_viewport_overflow_audit.md](new2_production_viewport_overflow_audit.md) (Lane O, on disk)
-- [new2_test_strategy.md](new2_test_strategy.md) (Lane T, on disk)
-- [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md) (Lane W, on disk)
+- `new2_production_viewport_overflow_audit.md` (Lane O, on disk)
+- `new2_test_strategy.md` (Lane T, on disk)
+- `new2_well_plate_adapter_rect_audit.md` (Lane W, on disk)
 
 Upstream context:
 
@@ -78,7 +78,7 @@ Lane R re-render proof remains BLOCKED.
 
 ## Workstream 2: Production viewport overflow CSS fix
 
-Source: [new2_production_viewport_overflow_audit.md](new2_production_viewport_overflow_audit.md).
+Source: `new2_production_viewport_overflow_audit.md`.
 
 Proposed patch:
 
@@ -129,7 +129,7 @@ Per workstream:
 
 ## How to prove success
 
-Sequence per [new2_test_strategy.md](new2_test_strategy.md):
+Sequence per `new2_test_strategy.md`:
 
 - W1 success: `tests/playwright/spike_built_app_rerender.mjs` PASSES
   with the strictly-increment assertion.
@@ -165,9 +165,9 @@ For Workstream 2: no user decision; may proceed.
 
 ## Cross-references
 
-- [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md) (Lane W, on disk)
-- [new2_production_viewport_overflow_audit.md](new2_production_viewport_overflow_audit.md) (Lane O)
-- [new2_test_strategy.md](new2_test_strategy.md) (Lane T)
+- `new2_well_plate_adapter_rect_audit.md` (Lane W, on disk)
+- `new2_production_viewport_overflow_audit.md` (Lane O)
+- `new2_test_strategy.md` (Lane T)
 - [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
 - [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) (item 3)
 
@@ -394,5 +394,4 @@ Anti-patterns (forbidden):
 See also:
 [../../experiments/css_native_layout/VISUAL_TARGETS.md](../../experiments/css_native_layout/VISUAL_TARGETS.md),
 [../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md](../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md),
-[new2_css_native_best_case_showcase_no_crop_addendum.md](new2_css_native_best_case_showcase_no_crop_addendum.md).
-
+`new2_css_native_best_case_showcase_no_crop_addendum.md`.

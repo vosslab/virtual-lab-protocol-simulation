@@ -20,11 +20,11 @@ production: 11 cell_culture + 15 sdspage).
 
 ## Classification breakdown
 
-| Class | Count | Description |
-| --- | --- | --- |
-| (a) Simple parent | ~325 | Non-decomposing targets (micropipette, bottles, tubes, racks); identical under strict and hierarchical; no behavior change. |
-| (b) Explicit sub-target | ~65 | Specific well/lane targets (`well_plate_96.B1`, `well_plate_96.row_E`, `gel_cassette.lane_1`); strict preset fails; hierarchical patch unblocks; INTENDED FIX. |
-| (c) Ambiguous parent | ~5 | Parent with children queried bare (`well_plate_96` without dot, `gel_cassette` bare); hierarchical patch now ACCEPTS sub-cell clicks; POTENTIAL REGRESSION. |
+| Class                   | Count | Description                                                                                                                                                    |
+| ----------------------- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| (a) Simple parent       | ~325  | Non-decomposing targets (micropipette, bottles, tubes, racks); identical under strict and hierarchical; no behavior change.                                    |
+| (b) Explicit sub-target | ~65   | Specific well/lane targets (`well_plate_96.B1`, `well_plate_96.row_E`, `gel_cassette.lane_1`); strict preset fails; hierarchical patch unblocks; INTENDED FIX. |
+| (c) Ambiguous parent    | ~5    | Parent with children queried bare (`well_plate_96` without dot, `gel_cassette` bare); hierarchical patch now ACCEPTS sub-cell clicks; POTENTIAL REGRESSION.    |
 
 ## Class (a) examples (safe, no regression)
 
@@ -41,6 +41,7 @@ result as strict equality.
 ## Class (b) examples (intended fix unblocked)
 
 Well plate sub-targets:
+
 - `well_plate_96.B1` through `well_plate_96.B12` (file:
   `content/protocols/.../plate_drug_treatment_drug_addition/protocol.yaml`).
 - `well_plate_96.C1` through `well_plate_96.C12` (same file).
@@ -48,6 +49,7 @@ Well plate sub-targets:
 - `well_plate_96.all_wells` (`content/protocols/.../passage_pellet_reseed/protocol.yaml`).
 
 Gel cassette sub-targets:
+
 - `gel_cassette.lane_1`, `gel_cassette.lane_2`, `gel_cassette.lane_3`
   (`content/protocols/.../sdspage_load_sample_single_lane/protocol.yaml`).
 
@@ -57,6 +59,7 @@ These 65 instances are the primary use case for the Lane W-fix patch.
 
 About 5 instances query parent containers without explicit sub-target
 notation. Examples:
+
 - `well_plate_96` (bare) in
   `content/protocols/.../passage_pellet_reseed/protocol.yaml` line 287:
   prompt says "add fresh media to plate"; scene operation modifies
@@ -85,6 +88,7 @@ Breaking-change finding: YES, but LOW IMPACT.
 Deploy the Lane W-fix hierarchical patch WITHOUT protocol changes.
 
 Justification:
+
 - Class (a) (325 instances): no behavior change.
 - Class (b) (65 instances): patch unblocks intended functionality.
 - Class (c) (~5 instances): looser validation is acceptable.
@@ -96,8 +100,8 @@ preset variant. Out of scope for Lane W-fix.
 ## Cross-references
 
 - [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md)
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)
-- [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+- `new2_css_native_production_blocker_plan.md`
+- `new1_5_layout_hardening_results.md`
 
 ## Contract check
 

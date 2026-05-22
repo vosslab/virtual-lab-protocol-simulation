@@ -46,7 +46,7 @@ Two diagnostic methodology issues surfaced during stress:
 
 ## What is left
 
-- 2 remaining hard failures are generator over-stuffing of rear_shelf (16-17 bottles in stress_many_bottles_scene_001/_002). Adversarial synthetic load, not curriculum content. Workstream-B added generator placement cap; B-verify confirms metrics.
+- 2 remaining hard failures are generator over-stuffing of rear_shelf (16-17 bottles in stress_many_bottles_scene_001/\_002). Adversarial synthetic load, not curriculum content. Workstream-B added generator placement cap; B-verify confirms metrics.
 - 4 latent YAML reclassifications applied (cell_counter -> equipment_large; well_plate_96, tube_rack_24, tube_rack_15ml -> out of equipment_large). Semantically correct; no visible effect on stress templates (static HTML); benefits production runtime.
 - 2 latent landscape-asset issues (t75_flask 2.15:1, drug_vial_rack 2.03:1) deferred. Need new CSS classes (user-gated).
 

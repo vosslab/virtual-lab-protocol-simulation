@@ -101,35 +101,35 @@ design theater per the four-archive lesson.
 Per-scene table columns. Model-specific columns are computed twice per
 scene (once for Model B, once for Model C).
 
-| Column | Type | Definition |
-| --- | --- | --- |
-| `file` | path | scene file path |
-| `scene_name` | string | scene_name |
-| `workspace` | enum | `hood` \| `bench` \| `instrument` \| `default` |
-| `placement_count` | int | current placement count |
-| `structured_object_count` | int | placements whose `object_name` is in the structured-object inventory |
-| `current_geometry_fields` | int | count of authored geometry fields in Model A (any of `bounds`, `scene_bounds`, `x`, `y`, `left`, `right`, `top`, `bottom`, `width`, `height`, `center`, `center_x`, `center_y`, `anchor_x`, `anchor_y`, `offset`, `offset_x`, `offset_y`, `margin`, `padding`, `row_y`, `slot_x`, `pixel`, `px`, `depth_tier`, `zone`, `zones`, `align`, `alignment`, `label_orientation`, `align_stop`, `scale`, `baseline`) |
-| `B.sketched_rows` | int | rows in Model B sketch |
-| `B.placement_preservation` | percent | percent of Model A `placement_name` values preserved verbatim in Model B |
-| `B.geometry_leak_count` | int | count of authored geometry fields in Model B (target: 0) |
-| `B.ambiguity` | string | one-line note if more than one valid Model B sketch exists; `none` otherwise |
-| `B.needs_extra_author_hint` | bool | true if Model B requires the sketcher to invent a hint not in `scene_name`/`workspace`/`capabilities`/`background`/`rows`/`slots`/`placement_name`/`object_name`/`active` |
-| `B.inheritance_handled` | bool | for override files: whether `add_placements` / `remove_placements` / `deactivate_placements` / `reposition_placements` can be expressed against Model B without geometry |
-| `B.structured_boundary_respected` | bool | true if structured objects appear as one placement in Model B |
-| `B.expressible` | bool | true iff `B.geometry_leak_count == 0` AND `B.placement_preservation == 100%` AND `B.needs_extra_author_hint == false` AND (inheritance absent OR `B.inheritance_handled == true`) AND `B.structured_boundary_respected == true` |
-| `B.blocker` | string | one-line reason if `B.expressible == false`; empty otherwise |
-| `C.sketched_regions` | int | regions in Model C sketch |
-| `C.placement_preservation` | percent | percent of Model A `placement_name` values preserved verbatim in Model C |
-| `C.geometry_leak_count` | int | count of authored geometry fields in Model C (target: 0) |
-| `C.ambiguity` | string | one-line note if more than one valid Model C sketch exists; `none` otherwise |
-| `C.needs_extra_author_hint` | bool | true if Model C requires the sketcher to invent a hint not in `scene_name`/`workspace`/`capabilities`/`background`/`regions`/`slots`/`placement_name`/`object_name`/`active` |
-| `C.inheritance_handled` | bool | for override files: whether inheritance keys can be expressed against Model C without geometry |
-| `C.structured_boundary_respected` | bool | true if structured objects appear as one placement in Model C |
-| `C.expressible` | bool | true iff `C.geometry_leak_count == 0` AND `C.placement_preservation == 100%` AND `C.needs_extra_author_hint == false` AND (inheritance absent OR `C.inheritance_handled == true`) AND `C.structured_boundary_respected == true` |
-| `C.blocker` | string | one-line reason if `C.expressible == false`; empty otherwise |
-| `gap_signal` | string | optional one-line note about any real scene need that neither Model B nor Model C naturally expresses |
-| `scene_content_known_issue` | string | optional one-line note when the scene YAML is known incomplete (e.g. `well_plate_workspace` per `focused_well_plate_workspace_plan.md`); carries a pointer to the doc that records the gap |
-| `failure_mode` | enum | one of `none`, `model_insufficiency`, `scene_content_incomplete`, `both`. Set when neither model is expressible. Distinguishes "no coordinate-free model can express this" from "the scene is missing content" |
+| Column                            | Type    | Definition                                                                                                                                                                                                                                                                                                                                                                                                    |
+| --------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `file`                            | path    | scene file path                                                                                                                                                                                                                                                                                                                                                                                               |
+| `scene_name`                      | string  | scene_name                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `workspace`                       | enum    | `hood` \| `bench` \| `instrument` \| `default`                                                                                                                                                                                                                                                                                                                                                                |
+| `placement_count`                 | int     | current placement count                                                                                                                                                                                                                                                                                                                                                                                       |
+| `structured_object_count`         | int     | placements whose `object_name` is in the structured-object inventory                                                                                                                                                                                                                                                                                                                                          |
+| `current_geometry_fields`         | int     | count of authored geometry fields in Model A (any of `bounds`, `scene_bounds`, `x`, `y`, `left`, `right`, `top`, `bottom`, `width`, `height`, `center`, `center_x`, `center_y`, `anchor_x`, `anchor_y`, `offset`, `offset_x`, `offset_y`, `margin`, `padding`, `row_y`, `slot_x`, `pixel`, `px`, `depth_tier`, `zone`, `zones`, `align`, `alignment`, `label_orientation`, `align_stop`, `scale`, `baseline`) |
+| `B.sketched_rows`                 | int     | rows in Model B sketch                                                                                                                                                                                                                                                                                                                                                                                        |
+| `B.placement_preservation`        | percent | percent of Model A `placement_name` values preserved verbatim in Model B                                                                                                                                                                                                                                                                                                                                      |
+| `B.geometry_leak_count`           | int     | count of authored geometry fields in Model B (target: 0)                                                                                                                                                                                                                                                                                                                                                      |
+| `B.ambiguity`                     | string  | one-line note if more than one valid Model B sketch exists; `none` otherwise                                                                                                                                                                                                                                                                                                                                  |
+| `B.needs_extra_author_hint`       | bool    | true if Model B requires the sketcher to invent a hint not in `scene_name`/`workspace`/`capabilities`/`background`/`rows`/`slots`/`placement_name`/`object_name`/`active`                                                                                                                                                                                                                                     |
+| `B.inheritance_handled`           | bool    | for override files: whether `add_placements` / `remove_placements` / `deactivate_placements` / `reposition_placements` can be expressed against Model B without geometry                                                                                                                                                                                                                                      |
+| `B.structured_boundary_respected` | bool    | true if structured objects appear as one placement in Model B                                                                                                                                                                                                                                                                                                                                                 |
+| `B.expressible`                   | bool    | true iff `B.geometry_leak_count == 0` AND `B.placement_preservation == 100%` AND `B.needs_extra_author_hint == false` AND (inheritance absent OR `B.inheritance_handled == true`) AND `B.structured_boundary_respected == true`                                                                                                                                                                               |
+| `B.blocker`                       | string  | one-line reason if `B.expressible == false`; empty otherwise                                                                                                                                                                                                                                                                                                                                                  |
+| `C.sketched_regions`              | int     | regions in Model C sketch                                                                                                                                                                                                                                                                                                                                                                                     |
+| `C.placement_preservation`        | percent | percent of Model A `placement_name` values preserved verbatim in Model C                                                                                                                                                                                                                                                                                                                                      |
+| `C.geometry_leak_count`           | int     | count of authored geometry fields in Model C (target: 0)                                                                                                                                                                                                                                                                                                                                                      |
+| `C.ambiguity`                     | string  | one-line note if more than one valid Model C sketch exists; `none` otherwise                                                                                                                                                                                                                                                                                                                                  |
+| `C.needs_extra_author_hint`       | bool    | true if Model C requires the sketcher to invent a hint not in `scene_name`/`workspace`/`capabilities`/`background`/`regions`/`slots`/`placement_name`/`object_name`/`active`                                                                                                                                                                                                                                  |
+| `C.inheritance_handled`           | bool    | for override files: whether inheritance keys can be expressed against Model C without geometry                                                                                                                                                                                                                                                                                                                |
+| `C.structured_boundary_respected` | bool    | true if structured objects appear as one placement in Model C                                                                                                                                                                                                                                                                                                                                                 |
+| `C.expressible`                   | bool    | true iff `C.geometry_leak_count == 0` AND `C.placement_preservation == 100%` AND `C.needs_extra_author_hint == false` AND (inheritance absent OR `C.inheritance_handled == true`) AND `C.structured_boundary_respected == true`                                                                                                                                                                               |
+| `C.blocker`                       | string  | one-line reason if `C.expressible == false`; empty otherwise                                                                                                                                                                                                                                                                                                                                                  |
+| `gap_signal`                      | string  | optional one-line note about any real scene need that neither Model B nor Model C naturally expresses                                                                                                                                                                                                                                                                                                         |
+| `scene_content_known_issue`       | string  | optional one-line note when the scene YAML is known incomplete (e.g. `well_plate_workspace` per `focused_well_plate_workspace_plan.md`); carries a pointer to the doc that records the gap                                                                                                                                                                                                                    |
+| `failure_mode`                    | enum    | one of `none`, `model_insufficiency`, `scene_content_incomplete`, `both`. Set when neither model is expressible. Distinguishes "no coordinate-free model can express this" from "the scene is missing content"                                                                                                                                                                                                |
 
 No metric added after sketching begins.
 
@@ -294,42 +294,42 @@ authored YAML (including inside `add_placements` overrides).
 file. `inheritance` lists the inheritance keys present at the top level
 of the file (empty list means standalone scene).
 
-| # | file | placements | objects | inheritance |
-| --- | --- | --- | --- | --- |
-| 1 | content/base_scenes/bench_basic.yaml | 2 | 2 | [] |
-| 2 | content/base_scenes/cell_counter_basic.yaml | 2 | 2 | [] |
-| 3 | content/base_scenes/electrophoresis_bench.yaml | 16 | 16 | [] |
-| 4 | content/base_scenes/heat_block_bench.yaml | 3 | 3 | [] |
-| 5 | content/base_scenes/hood_basic.yaml | 4 | 4 | [] |
-| 6 | content/base_scenes/imaging_bench.yaml | 2 | 2 | [] |
-| 7 | content/base_scenes/microscope_basic.yaml | 1 | 1 | [] |
-| 8 | content/base_scenes/sample_prep_bench.yaml | 5 | 5 | [] |
-| 9 | content/base_scenes/staining_bench.yaml | 10 | 10 | [] |
-| 10 | content/protocols/cell_culture/cell_seeding_plate_setup/scenes/seeding_workspace.yaml | 8 | 8 | [add_placements] |
-| 11 | content/protocols/cell_culture/drug_dilution_setup/scenes/bench_setup.yaml | 8 | 8 | [add_placements] |
-| 12 | content/protocols/cell_culture/drug_dilution_setup/scenes/dilution_workspace.yaml | 9 | 9 | [add_placements] |
-| 13 | content/protocols/cell_culture/mtt_plate_reaction/scenes/incubator_workspace.yaml | 6 | 6 | [add_placements] |
-| 14 | content/protocols/cell_culture/mtt_reagent_prep/scenes/bench_workspace.yaml | 5 | 5 | [add_placements] |
-| 15 | content/protocols/cell_culture/mtt_solubilization_readout/scenes/bench_workspace.yaml | 3 | 3 | [add_placements] |
-| 16 | content/protocols/cell_culture/mtt_solubilization_readout/scenes/plate_reader_workspace.yaml | 2 | 2 | [add_placements] |
-| 17 | content/protocols/cell_culture/passage_hood_detachment/scenes/hood_workspace.yaml | 6 | 4 | [add_placements, reposition_placements] |
-| 18 | content/protocols/cell_culture/passage_hood_detachment/scenes/microscope_view.yaml | 1 | 1 | [add_placements] |
-| 19 | content/protocols/cell_culture/passage_pellet_reseed/scenes/centrifuge_workspace.yaml | 6 | 6 | [add_placements] |
-| 20 | content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml | 6 | 6 | [add_placements] |
-| 21 | content/protocols/cell_culture/plate_drug_treatment_drug_addition/scenes/plate_workspace.yaml | 4 | 4 | [add_placements] |
-| 22 | content/protocols/cell_culture/plate_drug_treatment_media_adjustment/scenes/plate_workspace.yaml | 3 | 3 | [add_placements] |
-| 23 | content/protocols/cell_culture/trypan_blue_counting/scenes/cell_counter_workspace.yaml | 3 | 3 | [add_placements] |
-| 24 | content/protocols/cell_culture/trypan_blue_counting/scenes/hemocytometer_view.yaml | 2 | 2 | [add_placements] |
-| 25 | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml | 0 | 0 | [] |
-| 26 | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml | 0 | 0 | [] |
-| 27 | content/protocols/sdspage/sdspage_extract_gel_from_cassette/scenes/extraction_workspace.yaml | 1 | 1 | [add_placements] |
-| 28 | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml | 0 | 0 | [] |
-| 29 | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml | 0 | 0 | [] |
-| 30 | content/protocols/sdspage/sdspage_load_sample_single_lane/scenes/sdspage_load_sample_single_lane_workspace.yaml | 1 | 1 | [add_placements] |
-| 31 | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml | 0 | 0 | [] |
-| 32 | content/protocols/sdspage/sdspage_prepare_sample_mix_single_lane/scenes/sample_prep_bench_override.yaml | 1 | 1 | [add_placements] |
-| 33 | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml | 0 | 0 | [] |
-| 34 | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml | 0 | 0 | [] |
+| #   | file                                                                                                            | placements | objects | inheritance                             |
+| --- | --------------------------------------------------------------------------------------------------------------- | ---------- | ------- | --------------------------------------- |
+| 1   | content/base_scenes/bench_basic.yaml                                                                            | 2          | 2       | []                                      |
+| 2   | content/base_scenes/cell_counter_basic.yaml                                                                     | 2          | 2       | []                                      |
+| 3   | content/base_scenes/electrophoresis_bench.yaml                                                                  | 16         | 16      | []                                      |
+| 4   | content/base_scenes/heat_block_bench.yaml                                                                       | 3          | 3       | []                                      |
+| 5   | content/base_scenes/hood_basic.yaml                                                                             | 4          | 4       | []                                      |
+| 6   | content/base_scenes/imaging_bench.yaml                                                                          | 2          | 2       | []                                      |
+| 7   | content/base_scenes/microscope_basic.yaml                                                                       | 1          | 1       | []                                      |
+| 8   | content/base_scenes/sample_prep_bench.yaml                                                                      | 5          | 5       | []                                      |
+| 9   | content/base_scenes/staining_bench.yaml                                                                         | 10         | 10      | []                                      |
+| 10  | content/protocols/cell_culture/cell_seeding_plate_setup/scenes/seeding_workspace.yaml                           | 8          | 8       | [add_placements]                        |
+| 11  | content/protocols/cell_culture/drug_dilution_setup/scenes/bench_setup.yaml                                      | 8          | 8       | [add_placements]                        |
+| 12  | content/protocols/cell_culture/drug_dilution_setup/scenes/dilution_workspace.yaml                               | 9          | 9       | [add_placements]                        |
+| 13  | content/protocols/cell_culture/mtt_plate_reaction/scenes/incubator_workspace.yaml                               | 6          | 6       | [add_placements]                        |
+| 14  | content/protocols/cell_culture/mtt_reagent_prep/scenes/bench_workspace.yaml                                     | 5          | 5       | [add_placements]                        |
+| 15  | content/protocols/cell_culture/mtt_solubilization_readout/scenes/bench_workspace.yaml                           | 3          | 3       | [add_placements]                        |
+| 16  | content/protocols/cell_culture/mtt_solubilization_readout/scenes/plate_reader_workspace.yaml                    | 2          | 2       | [add_placements]                        |
+| 17  | content/protocols/cell_culture/passage_hood_detachment/scenes/hood_workspace.yaml                               | 6          | 4       | [add_placements, reposition_placements] |
+| 18  | content/protocols/cell_culture/passage_hood_detachment/scenes/microscope_view.yaml                              | 1          | 1       | [add_placements]                        |
+| 19  | content/protocols/cell_culture/passage_pellet_reseed/scenes/centrifuge_workspace.yaml                           | 6          | 6       | [add_placements]                        |
+| 20  | content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml                                 | 6          | 6       | [add_placements]                        |
+| 21  | content/protocols/cell_culture/plate_drug_treatment_drug_addition/scenes/plate_workspace.yaml                   | 4          | 4       | [add_placements]                        |
+| 22  | content/protocols/cell_culture/plate_drug_treatment_media_adjustment/scenes/plate_workspace.yaml                | 3          | 3       | [add_placements]                        |
+| 23  | content/protocols/cell_culture/trypan_blue_counting/scenes/cell_counter_workspace.yaml                          | 3          | 3       | [add_placements]                        |
+| 24  | content/protocols/cell_culture/trypan_blue_counting/scenes/hemocytometer_view.yaml                              | 2          | 2       | [add_placements]                        |
+| 25  | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml       | 0          | 0       | []                                      |
+| 26  | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml               | 0          | 0       | []                                      |
+| 27  | content/protocols/sdspage/sdspage_extract_gel_from_cassette/scenes/extraction_workspace.yaml                    | 1          | 1       | [add_placements]                        |
+| 28  | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml               | 0          | 0       | []                                      |
+| 29  | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml     | 0          | 0       | []                                      |
+| 30  | content/protocols/sdspage/sdspage_load_sample_single_lane/scenes/sdspage_load_sample_single_lane_workspace.yaml | 1          | 1       | [add_placements]                        |
+| 31  | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml   | 0          | 0       | []                                      |
+| 32  | content/protocols/sdspage/sdspage_prepare_sample_mix_single_lane/scenes/sample_prep_bench_override.yaml         | 1          | 1       | [add_placements]                        |
+| 33  | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml                   | 0          | 0       | []                                      |
+| 34  | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml         | 0          | 0       | []                                      |
 
 Note on sdspage zero-placement rows (#25, #26, #28, #29, #31, #33, #34):
 the scene YAML for these protocols references no `placement_name` /
@@ -433,20 +433,20 @@ regions:
       - { placement_name: rear_right_vortex, object_name: vortex }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could split rear_left vs rear_right into two rows | could split into two regions |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a (no inheritance) | n/a (no inheritance) |
-| structured_boundary_respected | true (no structured objects) | true (no structured objects) |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                 | C                            |
+| -------------------------------- | ------------------------------------------------- | ---------------------------- |
+| sketched_rows / sketched_regions | 1                                                 | 1                            |
+| placement_preservation           | 100%                                              | 100%                         |
+| geometry_leak_count              | 0                                                 | 0                            |
+| ambiguity                        | could split rear_left vs rear_right into two rows | could split into two regions |
+| needs_extra_author_hint          | false                                             | false                        |
+| inheritance_handled              | n/a (no inheritance)                              | n/a (no inheritance)         |
+| structured_boundary_respected    | true (no structured objects)                      | true (no structured objects) |
+| expressible                      | true                                              | true                         |
+| blocker                          | (empty)                                           | (empty)                      |
+| gap_signal                       | (none)                                            | (none)                       |
+| scene_content_known_issue        | (none)                                            | (none)                       |
+| failure_mode                     | none                                              | none                         |
 
 ### 2. cell_counter_basic (content/base_scenes/cell_counter_basic.yaml)
 
@@ -471,7 +471,10 @@ regions:
       - { placement_name: main_cell_counter, object_name: cell_counter }
   - region_name: accessory_shelf
     slots:
-      - { placement_name: counter_slide_cartridge, object_name: counter_slide_cartridge }
+      - {
+          placement_name: counter_slide_cartridge,
+          object_name: counter_slide_cartridge,
+        }
 ```
 
 Model B sketch:
@@ -488,23 +491,26 @@ rows:
       - { placement_name: main_cell_counter, object_name: cell_counter }
   - row_name: accessory_row
     slots:
-      - { placement_name: counter_slide_cartridge, object_name: counter_slide_cartridge }
+      - {
+          placement_name: counter_slide_cartridge,
+          object_name: counter_slide_cartridge,
+        }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could combine into one row | could combine into one region |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (cell_counter + counter_slide_cartridge each one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                           | C                             |
+| -------------------------------- | ----------------------------------------------------------- | ----------------------------- |
+| sketched_rows / sketched_regions | 2                                                           | 2                             |
+| placement_preservation           | 100%                                                        | 100%                          |
+| geometry_leak_count              | 0                                                           | 0                             |
+| ambiguity                        | could combine into one row                                  | could combine into one region |
+| needs_extra_author_hint          | false                                                       | false                         |
+| inheritance_handled              | n/a                                                         | n/a                           |
+| structured_boundary_respected    | true (cell_counter + counter_slide_cartridge each one slot) | true                          |
+| expressible                      | true                                                        | true                          |
+| blocker                          | (empty)                                                     | (empty)                       |
+| gap_signal                       | (none)                                                      | (none)                        |
+| scene_content_known_issue        | (none)                                                      | (none)                        |
+| failure_mode                     | none                                                        | none                          |
 
 ### 3. electrophoresis_bench (content/base_scenes/electrophoresis_bench.yaml)
 
@@ -532,29 +538,62 @@ background: { asset: bench_workspace_bg }
 regions:
   - region_name: rear_shelf_reagents
     slots:
-      - { placement_name: rear_left_running_buffer_10x, object_name: running_buffer_10x_bottle }
-      - { placement_name: rear_left_protein_ladder_tube, object_name: protein_ladder_tube }
-      - { placement_name: rear_left_recycle_buffer_bottle, object_name: recycle_buffer_bottle }
+      - {
+          placement_name: rear_left_running_buffer_10x,
+          object_name: running_buffer_10x_bottle,
+        }
+      - {
+          placement_name: rear_left_protein_ladder_tube,
+          object_name: protein_ladder_tube,
+        }
+      - {
+          placement_name: rear_left_recycle_buffer_bottle,
+          object_name: recycle_buffer_bottle,
+        }
   - region_name: rear_apparatus
     slots:
-      - { placement_name: rear_center_electrophoresis_tank, object_name: electrophoresis_tank }
+      - {
+          placement_name: rear_center_electrophoresis_tank,
+          object_name: electrophoresis_tank,
+        }
       - { placement_name: rear_right_power_supply, object_name: power_supply }
-      - { placement_name: rear_right_gel_opening_tool, object_name: gel_opening_tool }
+      - {
+          placement_name: rear_right_gel_opening_tool,
+          object_name: gel_opening_tool,
+        }
   - region_name: work_surface
     slots:
-      - { placement_name: center_running_buffer_1x_carboy, object_name: running_buffer_1x_carboy }
+      - {
+          placement_name: center_running_buffer_1x_carboy,
+          object_name: running_buffer_1x_carboy,
+        }
       - { placement_name: center_ddh2o_bottle, object_name: ddh2o_bottle }
-      - { placement_name: center_serological_pipette, object_name: serological_pipette }
+      - {
+          placement_name: center_serological_pipette,
+          object_name: serological_pipette,
+        }
       - { placement_name: center_waste_container, object_name: waste_container }
-      - { placement_name: center_electrode_module, object_name: electrode_module }
+      - {
+          placement_name: center_electrode_module,
+          object_name: electrode_module,
+        }
       - { placement_name: center_gel_cassette, object_name: gel_cassette }
   - region_name: tool_shelf
     slots:
-      - { placement_name: right_tool_area_p200_micropipette, object_name: p200_micropipette }
-      - { placement_name: right_tool_area_p10_gel_loading_tip_box, object_name: p10_gel_loading_tip_box }
+      - {
+          placement_name: right_tool_area_p200_micropipette,
+          object_name: p200_micropipette,
+        }
+      - {
+          placement_name: right_tool_area_p10_gel_loading_tip_box,
+          object_name: p10_gel_loading_tip_box,
+        }
   - region_name: gel_staging
     slots:
-      - { placement_name: front_left_mini_protean_gel, object_name: mini_protean_gel }
+      - {
+          placement_name: front_left_mini_protean_gel,
+          object_name: mini_protean_gel,
+        }
       - { placement_name: front_right_gel_comb, object_name: gel_comb }
 ```
 
@@ -569,44 +608,77 @@ background: { asset: bench_workspace_bg }
 rows:
   - row_name: rear_reagents
     slots:
-      - { placement_name: rear_left_running_buffer_10x, object_name: running_buffer_10x_bottle }
-      - { placement_name: rear_center_electrophoresis_tank, object_name: electrophoresis_tank }
+      - {
+          placement_name: rear_left_running_buffer_10x,
+          object_name: running_buffer_10x_bottle,
+        }
+      - {
+          placement_name: rear_center_electrophoresis_tank,
+          object_name: electrophoresis_tank,
+        }
       - { placement_name: rear_right_power_supply, object_name: power_supply }
-      - { placement_name: rear_left_protein_ladder_tube, object_name: protein_ladder_tube }
-      - { placement_name: rear_left_recycle_buffer_bottle, object_name: recycle_buffer_bottle }
-      - { placement_name: rear_right_gel_opening_tool, object_name: gel_opening_tool }
+      - {
+          placement_name: rear_left_protein_ladder_tube,
+          object_name: protein_ladder_tube,
+        }
+      - {
+          placement_name: rear_left_recycle_buffer_bottle,
+          object_name: recycle_buffer_bottle,
+        }
+      - {
+          placement_name: rear_right_gel_opening_tool,
+          object_name: gel_opening_tool,
+        }
   - row_name: work_surface
     slots:
-      - { placement_name: center_running_buffer_1x_carboy, object_name: running_buffer_1x_carboy }
+      - {
+          placement_name: center_running_buffer_1x_carboy,
+          object_name: running_buffer_1x_carboy,
+        }
       - { placement_name: center_ddh2o_bottle, object_name: ddh2o_bottle }
-      - { placement_name: center_serological_pipette, object_name: serological_pipette }
+      - {
+          placement_name: center_serological_pipette,
+          object_name: serological_pipette,
+        }
       - { placement_name: center_waste_container, object_name: waste_container }
-      - { placement_name: center_electrode_module, object_name: electrode_module }
+      - {
+          placement_name: center_electrode_module,
+          object_name: electrode_module,
+        }
       - { placement_name: center_gel_cassette, object_name: gel_cassette }
   - row_name: tools
     slots:
-      - { placement_name: right_tool_area_p200_micropipette, object_name: p200_micropipette }
-      - { placement_name: right_tool_area_p10_gel_loading_tip_box, object_name: p10_gel_loading_tip_box }
+      - {
+          placement_name: right_tool_area_p200_micropipette,
+          object_name: p200_micropipette,
+        }
+      - {
+          placement_name: right_tool_area_p10_gel_loading_tip_box,
+          object_name: p10_gel_loading_tip_box,
+        }
   - row_name: gel_staging
     slots:
-      - { placement_name: front_left_mini_protean_gel, object_name: mini_protean_gel }
+      - {
+          placement_name: front_left_mini_protean_gel,
+          object_name: mini_protean_gel,
+        }
       - { placement_name: front_right_gel_comb, object_name: gel_comb }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 4 | 5 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | rear could split into rear_reagents + rear_apparatus | could merge tool_shelf into work_surface |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (power_supply, mini_protean_gel, gel_cassette each one slot; tank kept one slot per Section 6 workspace classification) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                                                                                            | C                                        |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
+| sketched_rows / sketched_regions | 4                                                                                                                            | 5                                        |
+| placement_preservation           | 100%                                                                                                                         | 100%                                     |
+| geometry_leak_count              | 0                                                                                                                            | 0                                        |
+| ambiguity                        | rear could split into rear_reagents + rear_apparatus                                                                         | could merge tool_shelf into work_surface |
+| needs_extra_author_hint          | false                                                                                                                        | false                                    |
+| inheritance_handled              | n/a                                                                                                                          | n/a                                      |
+| structured_boundary_respected    | true (power_supply, mini_protean_gel, gel_cassette each one slot; tank kept one slot per Section 6 workspace classification) | true                                     |
+| expressible                      | true                                                                                                                         | true                                     |
+| blocker                          | (empty)                                                                                                                      | (empty)                                  |
+| gap_signal                       | (none)                                                                                                                       | (none)                                   |
+| scene_content_known_issue        | (none)                                                                                                                       | (none)                                   |
+| failure_mode                     | none                                                                                                                         | none                                     |
 
 ### 4. heat_block_bench (content/base_scenes/heat_block_bench.yaml)
 
@@ -628,8 +700,14 @@ background: { asset: bench_workspace_bg }
 rows:
   - row_name: rear_supplies
     slots:
-      - { placement_name: rear_left_eppendorf_rack, object_name: microtube_rack_24 }
-      - { placement_name: rear_right_protein_ladder, object_name: protein_ladder_tube }
+      - {
+          placement_name: rear_left_eppendorf_rack,
+          object_name: microtube_rack_24,
+        }
+      - {
+          placement_name: rear_right_protein_ladder,
+          object_name: protein_ladder_tube,
+        }
   - row_name: work_surface
     slots:
       - { placement_name: center_heat_block, object_name: heat_block }
@@ -646,27 +724,33 @@ background: { asset: bench_workspace_bg }
 regions:
   - region_name: rear_shelf
     slots:
-      - { placement_name: rear_left_eppendorf_rack, object_name: microtube_rack_24 }
-      - { placement_name: rear_right_protein_ladder, object_name: protein_ladder_tube }
+      - {
+          placement_name: rear_left_eppendorf_rack,
+          object_name: microtube_rack_24,
+        }
+      - {
+          placement_name: rear_right_protein_ladder,
+          object_name: protein_ladder_tube,
+        }
   - region_name: work_surface
     slots:
       - { placement_name: center_heat_block, object_name: heat_block }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (heat_block + microtube_rack_24 each one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                   | C       |
+| -------------------------------- | --------------------------------------------------- | ------- |
+| sketched_rows / sketched_regions | 2                                                   | 2       |
+| placement_preservation           | 100%                                                | 100%    |
+| geometry_leak_count              | 0                                                   | 0       |
+| ambiguity                        | none                                                | none    |
+| needs_extra_author_hint          | false                                               | false   |
+| inheritance_handled              | n/a                                                 | n/a     |
+| structured_boundary_respected    | true (heat_block + microtube_rack_24 each one slot) | true    |
+| expressible                      | true                                                | true    |
+| blocker                          | (empty)                                             | (empty) |
+| gap_signal                       | (none)                                              | (none)  |
+| scene_content_known_issue        | (none)                                              | (none)  |
+| failure_mode                     | none                                                | none    |
 
 ### 5. hood_basic (content/base_scenes/hood_basic.yaml)
 
@@ -695,7 +779,10 @@ regions:
       - { placement_name: center_hood_surface, object_name: hood_surface }
   - region_name: tool_shelf
     slots:
-      - { placement_name: right_aspirating_pipette, object_name: aspirating_pipette }
+      - {
+          placement_name: right_aspirating_pipette,
+          object_name: aspirating_pipette,
+        }
 ```
 
 Model B sketch:
@@ -716,23 +803,26 @@ rows:
       - { placement_name: center_hood_surface, object_name: hood_surface }
   - row_name: tools
     slots:
-      - { placement_name: right_aspirating_pipette, object_name: aspirating_pipette }
+      - {
+          placement_name: right_aspirating_pipette,
+          object_name: aspirating_pipette,
+        }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | tools could fold into work_surface | tools could fold into work_surface |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (no structured objects) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                  | C                                  |
+| -------------------------------- | ---------------------------------- | ---------------------------------- |
+| sketched_rows / sketched_regions | 3                                  | 3                                  |
+| placement_preservation           | 100%                               | 100%                               |
+| geometry_leak_count              | 0                                  | 0                                  |
+| ambiguity                        | tools could fold into work_surface | tools could fold into work_surface |
+| needs_extra_author_hint          | false                              | false                              |
+| inheritance_handled              | n/a                                | n/a                                |
+| structured_boundary_respected    | true (no structured objects)       | true                               |
+| expressible                      | true                               | true                               |
+| blocker                          | (empty)                            | (empty)                            |
+| gap_signal                       | (none)                             | (none)                             |
+| scene_content_known_issue        | (none)                             | (none)                             |
+| failure_mode                     | none                               | none                               |
 
 ### 6. imaging_bench (content/base_scenes/imaging_bench.yaml)
 
@@ -776,20 +866,20 @@ regions:
       - { placement_name: center_staining_tray, object_name: staining_tray }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (no structured objects) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                            | C       |
+| -------------------------------- | ---------------------------- | ------- |
+| sketched_rows / sketched_regions | 2                            | 2       |
+| placement_preservation           | 100%                         | 100%    |
+| geometry_leak_count              | 0                            | 0       |
+| ambiguity                        | none                         | none    |
+| needs_extra_author_hint          | false                        | false   |
+| inheritance_handled              | n/a                          | n/a     |
+| structured_boundary_respected    | true (no structured objects) | true    |
+| expressible                      | true                         | true    |
+| blocker                          | (empty)                      | (empty) |
+| gap_signal                       | (none)                       | (none)  |
+| scene_content_known_issue        | (none)                       | (none)  |
+| failure_mode                     | none                         | none    |
 
 ### 7. microscope_basic (content/base_scenes/microscope_basic.yaml)
 
@@ -827,20 +917,20 @@ rows:
       - { placement_name: main_microscope, object_name: microscope }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none (single placement, only one shape) | none |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (microscope one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                       | C       |
+| -------------------------------- | --------------------------------------- | ------- |
+| sketched_rows / sketched_regions | 1                                       | 1       |
+| placement_preservation           | 100%                                    | 100%    |
+| geometry_leak_count              | 0                                       | 0       |
+| ambiguity                        | none (single placement, only one shape) | none    |
+| needs_extra_author_hint          | false                                   | false   |
+| inheritance_handled              | n/a                                     | n/a     |
+| structured_boundary_respected    | true (microscope one slot)              | true    |
+| expressible                      | true                                    | true    |
+| blocker                          | (empty)                                 | (empty) |
+| gap_signal                       | (none)                                  | (none)  |
+| scene_content_known_issue        | (none)                                  | (none)  |
+| failure_mode                     | none                                    | none    |
 
 ### 8. sample_prep_bench (content/base_scenes/sample_prep_bench.yaml)
 
@@ -861,12 +951,18 @@ background: { asset: bench_workspace_bg }
 rows:
   - row_name: rear_reagents
     slots:
-      - { placement_name: rear_left_protein_sample, object_name: protein_sample_tube }
+      - {
+          placement_name: rear_left_protein_sample,
+          object_name: protein_sample_tube,
+        }
       - { placement_name: rear_center_laemmli, object_name: laemmli_4x_bottle }
       - { placement_name: rear_right_bme, object_name: bme_bottle }
   - row_name: work_surface
     slots:
-      - { placement_name: center_eppendorf_rack, object_name: microtube_rack_24 }
+      - {
+          placement_name: center_eppendorf_rack,
+          object_name: microtube_rack_24,
+        }
       - { placement_name: center_micropipette, object_name: micropipette }
 ```
 
@@ -881,29 +977,35 @@ background: { asset: bench_workspace_bg }
 regions:
   - region_name: rear_reagents
     slots:
-      - { placement_name: rear_left_protein_sample, object_name: protein_sample_tube }
+      - {
+          placement_name: rear_left_protein_sample,
+          object_name: protein_sample_tube,
+        }
       - { placement_name: rear_center_laemmli, object_name: laemmli_4x_bottle }
       - { placement_name: rear_right_bme, object_name: bme_bottle }
   - region_name: work_surface
     slots:
-      - { placement_name: center_eppendorf_rack, object_name: microtube_rack_24 }
+      - {
+          placement_name: center_eppendorf_rack,
+          object_name: microtube_rack_24,
+        }
       - { placement_name: center_micropipette, object_name: micropipette }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could split tools from work_surface | could split tools from work_surface |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (microtube_rack_24 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                   | C                                   |
+| -------------------------------- | ----------------------------------- | ----------------------------------- |
+| sketched_rows / sketched_regions | 2                                   | 2                                   |
+| placement_preservation           | 100%                                | 100%                                |
+| geometry_leak_count              | 0                                   | 0                                   |
+| ambiguity                        | could split tools from work_surface | could split tools from work_surface |
+| needs_extra_author_hint          | false                               | false                               |
+| inheritance_handled              | n/a                                 | n/a                                 |
+| structured_boundary_respected    | true (microtube_rack_24 one slot)   | true                                |
+| expressible                      | true                                | true                                |
+| blocker                          | (empty)                             | (empty)                             |
+| gap_signal                       | (none)                              | (none)                              |
+| scene_content_known_issue        | (none)                              | (none)                              |
+| failure_mode                     | none                                | none                                |
 
 ### 9. staining_bench (content/base_scenes/staining_bench.yaml)
 
@@ -927,13 +1029,22 @@ background: { asset: bench_workspace_bg }
 regions:
   - region_name: rear_stains
     slots:
-      - { placement_name: rear_left_coomassie_stain, object_name: coomassie_stain_bottle }
+      - {
+          placement_name: rear_left_coomassie_stain,
+          object_name: coomassie_stain_bottle,
+        }
       - { placement_name: rear_center_destain, object_name: destain_bottle }
       - { placement_name: rear_right_ddh2o, object_name: ddh2o_bottle }
   - region_name: rear_recycle
     slots:
-      - { placement_name: rear_left_coomassie_recycle, object_name: coomassie_recycle_bottle }
-      - { placement_name: rear_center_destain_waste, object_name: destain_waste_bottle }
+      - {
+          placement_name: rear_left_coomassie_recycle,
+          object_name: coomassie_recycle_bottle,
+        }
+      - {
+          placement_name: rear_center_destain_waste,
+          object_name: destain_waste_bottle,
+        }
   - region_name: work_surface
     slots:
       - { placement_name: center_staining_tray, object_name: staining_tray }
@@ -942,7 +1053,10 @@ regions:
   - region_name: tool_shelf
     slots:
       - { placement_name: right_tool_area_microwave, object_name: microwave }
-      - { placement_name: right_tool_area_rocking_shaker, object_name: rocking_shaker }
+      - {
+          placement_name: right_tool_area_rocking_shaker,
+          object_name: rocking_shaker,
+        }
 ```
 
 Model B sketch:
@@ -956,11 +1070,20 @@ background: { asset: bench_workspace_bg }
 rows:
   - row_name: rear_reagents
     slots:
-      - { placement_name: rear_left_coomassie_stain, object_name: coomassie_stain_bottle }
+      - {
+          placement_name: rear_left_coomassie_stain,
+          object_name: coomassie_stain_bottle,
+        }
       - { placement_name: rear_center_destain, object_name: destain_bottle }
       - { placement_name: rear_right_ddh2o, object_name: ddh2o_bottle }
-      - { placement_name: rear_left_coomassie_recycle, object_name: coomassie_recycle_bottle }
-      - { placement_name: rear_center_destain_waste, object_name: destain_waste_bottle }
+      - {
+          placement_name: rear_left_coomassie_recycle,
+          object_name: coomassie_recycle_bottle,
+        }
+      - {
+          placement_name: rear_center_destain_waste,
+          object_name: destain_waste_bottle,
+        }
   - row_name: work_surface
     slots:
       - { placement_name: center_staining_tray, object_name: staining_tray }
@@ -969,23 +1092,26 @@ rows:
   - row_name: tools
     slots:
       - { placement_name: right_tool_area_microwave, object_name: microwave }
-      - { placement_name: right_tool_area_rocking_shaker, object_name: rocking_shaker }
+      - {
+          placement_name: right_tool_area_rocking_shaker,
+          object_name: rocking_shaker,
+        }
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 4 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | rear_reagents could split into stains + recycle | rear_stains and rear_recycle could merge |
-| needs_extra_author_hint | false | false |
-| inheritance_handled | n/a | n/a |
-| structured_boundary_respected | true (no structured objects) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | rear_reagents fan-out within Model B forces 5-slot row (engine ordering vs author intent) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                                                         | C                                        |
+| -------------------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------- |
+| sketched_rows / sketched_regions | 3                                                                                         | 4                                        |
+| placement_preservation           | 100%                                                                                      | 100%                                     |
+| geometry_leak_count              | 0                                                                                         | 0                                        |
+| ambiguity                        | rear_reagents could split into stains + recycle                                           | rear_stains and rear_recycle could merge |
+| needs_extra_author_hint          | false                                                                                     | false                                    |
+| inheritance_handled              | n/a                                                                                       | n/a                                      |
+| structured_boundary_respected    | true (no structured objects)                                                              | true                                     |
+| expressible                      | true                                                                                      | true                                     |
+| blocker                          | (empty)                                                                                   | (empty)                                  |
+| gap_signal                       | rear_reagents fan-out within Model B forces 5-slot row (engine ordering vs author intent) | (none)                                   |
+| scene_content_known_issue        | (none)                                                                                    | (none)                                   |
+| failure_mode                     | none                                                                                      | none                                     |
 
 ### 10. seeding_workspace (content/protocols/cell_culture/cell_seeding_plate_setup/scenes/seeding_workspace.yaml)
 
@@ -1008,14 +1134,23 @@ add_slots:
       - { placement_name: rear_right_incubator, object_name: incubator }
   - row_name: work_surface
     slots:
-      - { placement_name: center_cell_suspension_tube, object_name: cell_suspension_tube }
-      - { placement_name: center_conical_tube_for_dilution, object_name: conical_tube_for_dilution }
+      - {
+          placement_name: center_cell_suspension_tube,
+          object_name: cell_suspension_tube,
+        }
+      - {
+          placement_name: center_conical_tube_for_dilution,
+          object_name: conical_tube_for_dilution,
+        }
       - { placement_name: center_well_plate_96, object_name: well_plate_96 }
       - { placement_name: center_vortex, object_name: vortex }
   - row_name: tools
     slots:
       - { placement_name: right_micropipette, object_name: micropipette }
-      - { placement_name: right_serological_pipette, object_name: serological_pipette }
+      - {
+          placement_name: right_serological_pipette,
+          object_name: serological_pipette,
+        }
 ```
 
 Model C sketch:
@@ -1030,32 +1165,41 @@ add_slots:
       - { placement_name: rear_right_incubator, object_name: incubator }
   - region_name: work_surface
     slots:
-      - { placement_name: center_cell_suspension_tube, object_name: cell_suspension_tube }
-      - { placement_name: center_conical_tube_for_dilution, object_name: conical_tube_for_dilution }
+      - {
+          placement_name: center_cell_suspension_tube,
+          object_name: cell_suspension_tube,
+        }
+      - {
+          placement_name: center_conical_tube_for_dilution,
+          object_name: conical_tube_for_dilution,
+        }
       - { placement_name: center_well_plate_96, object_name: well_plate_96 }
       - { placement_name: center_vortex, object_name: vortex }
   - region_name: tool_shelf
     slots:
       - { placement_name: right_micropipette, object_name: micropipette }
-      - { placement_name: right_serological_pipette, object_name: serological_pipette }
+      - {
+          placement_name: right_serological_pipette,
+          object_name: serological_pipette,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | sketch shape of add_slots as rows[] vs flat list | same as B |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true (add_slots keyed as rows) | true (add_slots keyed as regions) |
-| structured_boundary_respected | true (well_plate_96 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                | C                                             |
+| -------------------------------- | ------------------------------------------------ | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                                | 3                                             |
+| placement_preservation           | 100%                                             | 100%                                          |
+| geometry_leak_count              | 0                                                | 0                                             |
+| ambiguity                        | sketch shape of add_slots as rows[] vs flat list | same as B                                     |
+| needs_extra_author_hint          | false (override surface allowed by amendment)    | false (override surface allowed by amendment) |
+| inheritance_handled              | true (add_slots keyed as rows)                   | true (add_slots keyed as regions)             |
+| structured_boundary_respected    | true (well_plate_96 one slot)                    | true                                          |
+| expressible                      | true                                             | true                                          |
+| blocker                          | (empty)                                          | (empty)                                       |
+| gap_signal                       | (none)                                           | (none)                                        |
+| scene_content_known_issue        | (none)                                           | (none)                                        |
+| failure_mode                     | none                                             | none                                          |
 
 ### 11. drug_dilution_setup_bench_setup (content/protocols/cell_culture/drug_dilution_setup/scenes/bench_setup.yaml)
 
@@ -1074,18 +1218,39 @@ extends: bench_basic
 add_slots:
   - region_name: rear_stocks
     slots:
-      - { placement_name: rear_left_carboplatin_stock, object_name: carboplatin_stock_bottle }
-      - { placement_name: rear_center_metformin_stock, object_name: metformin_stock_bottle }
-      - { placement_name: rear_right_sterile_water, object_name: sterile_water_bottle }
+      - {
+          placement_name: rear_left_carboplatin_stock,
+          object_name: carboplatin_stock_bottle,
+        }
+      - {
+          placement_name: rear_center_metformin_stock,
+          object_name: metformin_stock_bottle,
+        }
+      - {
+          placement_name: rear_right_sterile_water,
+          object_name: sterile_water_bottle,
+        }
   - region_name: work_surface
     slots:
-      - { placement_name: center_microtube_intermediate, object_name: microtube_15ml_intermediate }
-      - { placement_name: center_metformin_working_tube, object_name: metformin_working_tube }
-      - { placement_name: center_dilution_tube_rack, object_name: dilution_tube_rack_8 }
+      - {
+          placement_name: center_microtube_intermediate,
+          object_name: microtube_15ml_intermediate,
+        }
+      - {
+          placement_name: center_metformin_working_tube,
+          object_name: metformin_working_tube,
+        }
+      - {
+          placement_name: center_dilution_tube_rack,
+          object_name: dilution_tube_rack_8,
+        }
   - region_name: tool_shelf
     slots:
       - { placement_name: right_tool_micropipette, object_name: micropipette }
-      - { placement_name: right_tool_tip_box, object_name: micropipette_tip_box }
+      - {
+          placement_name: right_tool_tip_box,
+          object_name: micropipette_tip_box,
+        }
 ```
 
 Model B sketch:
@@ -1096,36 +1261,57 @@ extends: bench_basic
 add_slots:
   - row_name: rear_stocks
     slots:
-      - { placement_name: rear_left_carboplatin_stock, object_name: carboplatin_stock_bottle }
-      - { placement_name: rear_center_metformin_stock, object_name: metformin_stock_bottle }
-      - { placement_name: rear_right_sterile_water, object_name: sterile_water_bottle }
+      - {
+          placement_name: rear_left_carboplatin_stock,
+          object_name: carboplatin_stock_bottle,
+        }
+      - {
+          placement_name: rear_center_metformin_stock,
+          object_name: metformin_stock_bottle,
+        }
+      - {
+          placement_name: rear_right_sterile_water,
+          object_name: sterile_water_bottle,
+        }
   - row_name: work_surface
     slots:
-      - { placement_name: center_microtube_intermediate, object_name: microtube_15ml_intermediate }
-      - { placement_name: center_metformin_working_tube, object_name: metformin_working_tube }
-      - { placement_name: center_dilution_tube_rack, object_name: dilution_tube_rack_8 }
+      - {
+          placement_name: center_microtube_intermediate,
+          object_name: microtube_15ml_intermediate,
+        }
+      - {
+          placement_name: center_metformin_working_tube,
+          object_name: metformin_working_tube,
+        }
+      - {
+          placement_name: center_dilution_tube_rack,
+          object_name: dilution_tube_rack_8,
+        }
   - row_name: tools
     slots:
       - { placement_name: right_tool_micropipette, object_name: micropipette }
-      - { placement_name: right_tool_tip_box, object_name: micropipette_tip_box }
+      - {
+          placement_name: right_tool_tip_box,
+          object_name: micropipette_tip_box,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (dilution_tube_rack_8 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (dilution_tube_rack_8 one slot)          | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 12. dilution_workspace (content/protocols/cell_culture/drug_dilution_setup/scenes/dilution_workspace.yaml)
 
@@ -1146,9 +1332,15 @@ add_slots:
       - { placement_name: carb_stock, object_name: carboplatin_stock_bottle }
       - { placement_name: met_stock, object_name: metformin_stock_bottle }
       - { placement_name: water_source, object_name: sterile_water_bottle }
-      - { placement_name: carb_intermediate, object_name: microtube_15ml_intermediate }
+      - {
+          placement_name: carb_intermediate,
+          object_name: microtube_15ml_intermediate,
+        }
       - { placement_name: media_source, object_name: media_bottle }
-      - { placement_name: met_working_tube, object_name: metformin_working_tube }
+      - {
+          placement_name: met_working_tube,
+          object_name: metformin_working_tube,
+        }
   - row_name: work_surface
     slots:
       - { placement_name: dilution_rack, object_name: dilution_tube_rack_8 }
@@ -1171,9 +1363,15 @@ add_slots:
       - { placement_name: water_source, object_name: sterile_water_bottle }
   - region_name: rear_intermediates
     slots:
-      - { placement_name: carb_intermediate, object_name: microtube_15ml_intermediate }
+      - {
+          placement_name: carb_intermediate,
+          object_name: microtube_15ml_intermediate,
+        }
       - { placement_name: media_source, object_name: media_bottle }
-      - { placement_name: met_working_tube, object_name: metformin_working_tube }
+      - {
+          placement_name: met_working_tube,
+          object_name: metformin_working_tube,
+        }
   - region_name: work_surface
     slots:
       - { placement_name: dilution_rack, object_name: dilution_tube_rack_8 }
@@ -1185,20 +1383,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 4 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | rear_stocks could split into stocks + intermediates | combining stocks + intermediates is plausible |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                   | C                                             |
+| -------------------------------- | --------------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                                   | 4                                             |
+| placement_preservation           | 100%                                                | 100%                                          |
+| geometry_leak_count              | 0                                                   | 0                                             |
+| ambiguity                        | rear_stocks could split into stocks + intermediates | combining stocks + intermediates is plausible |
+| needs_extra_author_hint          | false (override surface allowed by amendment)       | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                                | true                                          |
+| structured_boundary_respected    | true                                                | true                                          |
+| expressible                      | true                                                | true                                          |
+| blocker                          | (empty)                                             | (empty)                                       |
+| gap_signal                       | (none)                                              | (none)                                        |
+| scene_content_known_issue        | (none)                                              | (none)                                        |
+| failure_mode                     | none                                                | none                                          |
 
 ### 13. incubator_workspace (content/protocols/cell_culture/mtt_plate_reaction/scenes/incubator_workspace.yaml)
 
@@ -1226,7 +1424,10 @@ add_slots:
       - { placement_name: treatment_plate_main, object_name: well_plate_96 }
   - region_name: tool_shelf
     slots:
-      - { placement_name: pipette_multichannel, object_name: multichannel_pipette }
+      - {
+          placement_name: pipette_multichannel,
+          object_name: multichannel_pipette,
+        }
 ```
 
 Model B sketch:
@@ -1246,25 +1447,28 @@ add_slots:
       - { placement_name: treatment_plate_main, object_name: well_plate_96 }
   - row_name: tools
     slots:
-      - { placement_name: pipette_multichannel, object_name: multichannel_pipette }
+      - {
+          placement_name: pipette_multichannel,
+          object_name: multichannel_pipette,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (well_plate_96 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (well_plate_96 one slot)                 | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 14. mtt_reagent_prep_bench_workspace (content/protocols/cell_culture/mtt_reagent_prep/scenes/bench_workspace.yaml)
 
@@ -1282,15 +1486,24 @@ extends: bench_basic
 add_slots:
   - row_name: rear_reagents
     slots:
-      - { placement_name: rear_left_mtt_powder, object_name: mtt_powder_container }
+      - {
+          placement_name: rear_left_mtt_powder,
+          object_name: mtt_powder_container,
+        }
       - { placement_name: rear_center_pbs_bottle, object_name: pbs_bottle }
   - row_name: work_surface
     slots:
-      - { placement_name: center_mtt_solution_tube, object_name: mtt_solution_tube }
+      - {
+          placement_name: center_mtt_solution_tube,
+          object_name: mtt_solution_tube,
+        }
   - row_name: tools
     slots:
       - { placement_name: right_tool_micropipette, object_name: micropipette }
-      - { placement_name: right_tool_tip_box, object_name: micropipette_tip_box }
+      - {
+          placement_name: right_tool_tip_box,
+          object_name: micropipette_tip_box,
+        }
 ```
 
 Model C sketch:
@@ -1301,33 +1514,42 @@ extends: bench_basic
 add_slots:
   - region_name: rear_reagents
     slots:
-      - { placement_name: rear_left_mtt_powder, object_name: mtt_powder_container }
+      - {
+          placement_name: rear_left_mtt_powder,
+          object_name: mtt_powder_container,
+        }
       - { placement_name: rear_center_pbs_bottle, object_name: pbs_bottle }
   - region_name: work_surface
     slots:
-      - { placement_name: center_mtt_solution_tube, object_name: mtt_solution_tube }
+      - {
+          placement_name: center_mtt_solution_tube,
+          object_name: mtt_solution_tube,
+        }
   - region_name: tool_shelf
     slots:
       - { placement_name: right_tool_micropipette, object_name: micropipette }
-      - { placement_name: right_tool_tip_box, object_name: micropipette_tip_box }
+      - {
+          placement_name: right_tool_tip_box,
+          object_name: micropipette_tip_box,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (no structured objects) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (no structured objects)                  | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 15. mtt_solubilization_readout_bench_workspace (content/protocols/cell_culture/mtt_solubilization_readout/scenes/bench_workspace.yaml)
 
@@ -1373,20 +1595,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (well_plate_96 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (well_plate_96 one slot)                 | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 16. mtt_solubilization_readout_plate_reader_workspace (content/protocols/cell_culture/mtt_solubilization_readout/scenes/plate_reader_workspace.yaml)
 
@@ -1405,7 +1627,10 @@ extends: bench_basic
 add_slots:
   - row_name: rear_supply
     slots:
-      - { placement_name: rear_center_treated_plate, object_name: well_plate_96 }
+      - {
+          placement_name: rear_center_treated_plate,
+          object_name: well_plate_96,
+        }
   - row_name: instrument_face
     slots:
       - { placement_name: center_plate_reader, object_name: plate_reader }
@@ -1419,7 +1644,10 @@ extends: bench_basic
 add_slots:
   - region_name: rear_staging
     slots:
-      - { placement_name: rear_center_treated_plate, object_name: well_plate_96 }
+      - {
+          placement_name: rear_center_treated_plate,
+          object_name: well_plate_96,
+        }
   - region_name: instrument_face
     slots:
       - { placement_name: center_plate_reader, object_name: plate_reader }
@@ -1427,20 +1655,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could merge into single row | could merge into single region |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (well_plate_96 + plate_reader each one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                 | C                                             |
+| -------------------------------- | ------------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 2                                                 | 2                                             |
+| placement_preservation           | 100%                                              | 100%                                          |
+| geometry_leak_count              | 0                                                 | 0                                             |
+| ambiguity                        | could merge into single row                       | could merge into single region                |
+| needs_extra_author_hint          | false (override surface allowed by amendment)     | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                              | true                                          |
+| structured_boundary_respected    | true (well_plate_96 + plate_reader each one slot) | true                                          |
+| expressible                      | true                                              | true                                          |
+| blocker                          | (empty)                                           | (empty)                                       |
+| gap_signal                       | (none)                                            | (none)                                        |
+| scene_content_known_issue        | (none)                                            | (none)                                        |
+| failure_mode                     | none                                              | none                                          |
 
 ### 17. passage_hood_detachment_hood_workspace (content/protocols/cell_culture/passage_hood_detachment/scenes/hood_workspace.yaml)
 
@@ -1499,20 +1727,20 @@ reposition_placements:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 add + 2 reposition | 2 add + 2 reposition |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | reposition shape (slots-with-no-object_name) is plausible | same as B |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true (add_slots and reposition_placements both expressed via row/region grouping; depth_tier not authored) | true (same) |
-| structured_boundary_respected | true (no structured objects) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                                                                          | C                                             |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 2 add + 2 reposition                                                                                       | 2 add + 2 reposition                          |
+| placement_preservation           | 100%                                                                                                       | 100%                                          |
+| geometry_leak_count              | 0                                                                                                          | 0                                             |
+| ambiguity                        | reposition shape (slots-with-no-object_name) is plausible                                                  | same as B                                     |
+| needs_extra_author_hint          | false (override surface allowed by amendment)                                                              | false (override surface allowed by amendment) |
+| inheritance_handled              | true (add_slots and reposition_placements both expressed via row/region grouping; depth_tier not authored) | true (same)                                   |
+| structured_boundary_respected    | true (no structured objects)                                                                               | true                                          |
+| expressible                      | true                                                                                                       | true                                          |
+| blocker                          | (empty)                                                                                                    | (empty)                                       |
+| gap_signal                       | (none)                                                                                                     | (none)                                        |
+| scene_content_known_issue        | (none)                                                                                                     | (none)                                        |
+| failure_mode                     | none                                                                                                       | none                                          |
 
 ### 18. passage_hood_detachment_microscope_view (content/protocols/cell_culture/passage_hood_detachment/scenes/microscope_view.yaml)
 
@@ -1547,20 +1775,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (no structured objects in override) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 1                                             | 1                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (no structured objects in override)      | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 19. centrifuge_workspace (content/protocols/cell_culture/passage_pellet_reseed/scenes/centrifuge_workspace.yaml)
 
@@ -1578,7 +1806,10 @@ extends: bench_basic
 add_slots:
   - region_name: rear_staging
     slots:
-      - { placement_name: rear_center_conical_rack, object_name: conical_15ml_rack }
+      - {
+          placement_name: rear_center_conical_rack,
+          object_name: conical_15ml_rack,
+        }
       - { placement_name: rear_left_conical_tube, object_name: conical_15ml }
   - region_name: work_surface
     slots:
@@ -1587,7 +1818,10 @@ add_slots:
   - region_name: tool_shelf
     slots:
       - { placement_name: right_label_pen, object_name: label_pen }
-      - { placement_name: right_aspirating_pipette, object_name: aspirating_pipette }
+      - {
+          placement_name: right_aspirating_pipette,
+          object_name: aspirating_pipette,
+        }
 ```
 
 Model B sketch:
@@ -1598,7 +1832,10 @@ extends: bench_basic
 add_slots:
   - row_name: rear_staging
     slots:
-      - { placement_name: rear_center_conical_rack, object_name: conical_15ml_rack }
+      - {
+          placement_name: rear_center_conical_rack,
+          object_name: conical_15ml_rack,
+        }
       - { placement_name: rear_left_conical_tube, object_name: conical_15ml }
   - row_name: work_surface
     slots:
@@ -1607,25 +1844,28 @@ add_slots:
   - row_name: tools
     slots:
       - { placement_name: right_label_pen, object_name: label_pen }
-      - { placement_name: right_aspirating_pipette, object_name: aspirating_pipette }
+      - {
+          placement_name: right_aspirating_pipette,
+          object_name: aspirating_pipette,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (conical_15ml_rack one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (conical_15ml_rack one slot)             | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 20. hood_workspace -- passage_pellet_reseed (content/protocols/cell_culture/passage_pellet_reseed/scenes/hood_workspace.yaml)
 
@@ -1678,20 +1918,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (conical_15ml_rack + well_plate_96 each one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                      | C                                             |
+| -------------------------------- | ------------------------------------------------------ | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                                      | 3                                             |
+| placement_preservation           | 100%                                                   | 100%                                          |
+| geometry_leak_count              | 0                                                      | 0                                             |
+| ambiguity                        | none                                                   | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment)          | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                                   | true                                          |
+| structured_boundary_respected    | true (conical_15ml_rack + well_plate_96 each one slot) | true                                          |
+| expressible                      | true                                                   | true                                          |
+| blocker                          | (empty)                                                | (empty)                                       |
+| gap_signal                       | (none)                                                 | (none)                                        |
+| scene_content_known_issue        | (none)                                                 | (none)                                        |
+| failure_mode                     | none                                                   | none                                          |
 
 ### 21. plate_workspace -- drug_addition (content/protocols/cell_culture/plate_drug_treatment_drug_addition/scenes/plate_workspace.yaml)
 
@@ -1710,8 +1950,14 @@ extends: hood_basic
 add_slots:
   - region_name: rear_stocks
     slots:
-      - { placement_name: rear_center_carb_stocks, object_name: dilution_tube_rack_8 }
-      - { placement_name: rear_center_metformin_stock, object_name: metformin_working_tube }
+      - {
+          placement_name: rear_center_carb_stocks,
+          object_name: dilution_tube_rack_8,
+        }
+      - {
+          placement_name: rear_center_metformin_stock,
+          object_name: metformin_working_tube,
+        }
   - region_name: work_surface
     slots:
       - { placement_name: center_well_plate, object_name: well_plate_96 }
@@ -1728,8 +1974,14 @@ extends: hood_basic
 add_slots:
   - row_name: rear_stocks
     slots:
-      - { placement_name: rear_center_carb_stocks, object_name: dilution_tube_rack_8 }
-      - { placement_name: rear_center_metformin_stock, object_name: metformin_working_tube }
+      - {
+          placement_name: rear_center_carb_stocks,
+          object_name: dilution_tube_rack_8,
+        }
+      - {
+          placement_name: rear_center_metformin_stock,
+          object_name: metformin_working_tube,
+        }
   - row_name: work_surface
     slots:
       - { placement_name: center_well_plate, object_name: well_plate_96 }
@@ -1740,20 +1992,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (well_plate_96 + dilution_tube_rack_8 each one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                                         | C                                             |
+| -------------------------------- | --------------------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                                         | 3                                             |
+| placement_preservation           | 100%                                                      | 100%                                          |
+| geometry_leak_count              | 0                                                         | 0                                             |
+| ambiguity                        | none                                                      | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment)             | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                                      | true                                          |
+| structured_boundary_respected    | true (well_plate_96 + dilution_tube_rack_8 each one slot) | true                                          |
+| expressible                      | true                                                      | true                                          |
+| blocker                          | (empty)                                                   | (empty)                                       |
+| gap_signal                       | (none)                                                    | (none)                                        |
+| scene_content_known_issue        | (none)                                                    | (none)                                        |
+| failure_mode                     | none                                                      | none                                          |
 
 ### 22. plate_drug_treatment_media_adjustment_plate_workspace (content/protocols/cell_culture/plate_drug_treatment_media_adjustment/scenes/plate_workspace.yaml)
 
@@ -1777,7 +2029,10 @@ add_slots:
       - { placement_name: center_well_plate_96, object_name: well_plate_96 }
   - row_name: tools
     slots:
-      - { placement_name: right_tool_multichannel, object_name: multichannel_pipette }
+      - {
+          placement_name: right_tool_multichannel,
+          object_name: multichannel_pipette,
+        }
 ```
 
 Model C sketch:
@@ -1794,25 +2049,28 @@ add_slots:
       - { placement_name: center_well_plate_96, object_name: well_plate_96 }
   - region_name: tool_shelf
     slots:
-      - { placement_name: right_tool_multichannel, object_name: multichannel_pipette }
+      - {
+          placement_name: right_tool_multichannel,
+          object_name: multichannel_pipette,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 3 | 3 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (well_plate_96 one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 3                                             | 3                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (well_plate_96 one slot)                 | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 23. cell_counter_workspace (content/protocols/cell_culture/trypan_blue_counting/scenes/cell_counter_workspace.yaml)
 
@@ -1831,7 +2089,10 @@ add_slots:
   - region_name: accessory_shelf
     slots:
       - { placement_name: right_micropipette, object_name: micropipette }
-      - { placement_name: right_hemocytometer_slide, object_name: hemocytometer_slide }
+      - {
+          placement_name: right_hemocytometer_slide,
+          object_name: hemocytometer_slide,
+        }
   - region_name: instrument_face
     slots:
       - { placement_name: instrument_lens_tissue, object_name: lens_tissue }
@@ -1846,7 +2107,10 @@ add_slots:
   - row_name: accessories
     slots:
       - { placement_name: right_micropipette, object_name: micropipette }
-      - { placement_name: right_hemocytometer_slide, object_name: hemocytometer_slide }
+      - {
+          placement_name: right_hemocytometer_slide,
+          object_name: hemocytometer_slide,
+        }
   - row_name: instrument_row
     slots:
       - { placement_name: instrument_lens_tissue, object_name: lens_tissue }
@@ -1854,20 +2118,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 2 | 2 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could merge into one row | could merge into one region |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (hemocytometer_slide one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 2                                             | 2                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | could merge into one row                      | could merge into one region                   |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (hemocytometer_slide one slot)           | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 24. hemocytometer_view (content/protocols/cell_culture/trypan_blue_counting/scenes/hemocytometer_view.yaml)
 
@@ -1885,7 +2149,10 @@ extends: microscope_basic
 add_slots:
   - row_name: instrument_face
     slots:
-      - { placement_name: prepared_hemocytometer, object_name: hemocytometer_slide }
+      - {
+          placement_name: prepared_hemocytometer,
+          object_name: hemocytometer_slide,
+        }
       - { placement_name: staining_bottles, object_name: trypan_blue_bottle }
 ```
 
@@ -1897,26 +2164,29 @@ extends: microscope_basic
 add_slots:
   - region_name: instrument_face
     slots:
-      - { placement_name: prepared_hemocytometer, object_name: hemocytometer_slide }
+      - {
+          placement_name: prepared_hemocytometer,
+          object_name: hemocytometer_slide,
+        }
       - { placement_name: staining_bottles, object_name: trypan_blue_bottle }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | could split staining_bottles into a side row | same as B |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true (hemocytometer_slide one slot) | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 1                                             | 1                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | could split staining_bottles into a side row  | same as B                                     |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true (hemocytometer_slide one slot)           | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 25. sdspage_attach_lid_and_leads_workspace (content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml)
 
@@ -1949,20 +2219,20 @@ extends: electrophoresis_bench
 rows: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% (no placements to preserve) | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | empty sketch only valid shape |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true (no inheritance overrides authored) | true |
-| structured_boundary_respected | true (no structured object slots authored here) | true |
-| expressible | false | false |
-| blocker | `extends` not in locked surface; no placements to sketch | same |
-| gap_signal | empty sketch shape under locked surface limits | same |
-| scene_content_known_issue | no scene-layer placements; lid/lead interaction targets not authored at scene layer | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                                                   | C                             |
+| -------------------------------- | ----------------------------------------------------------------------------------- | ----------------------------- |
+| sketched_rows / sketched_regions | 0                                                                                   | 0                             |
+| placement_preservation           | 100% (no placements to preserve)                                                    | 100%                          |
+| geometry_leak_count              | 0                                                                                   | 0                             |
+| ambiguity                        | empty sketch only valid shape                                                       | empty sketch only valid shape |
+| needs_extra_author_hint          | true (`extends`)                                                                    | true (`extends`)              |
+| inheritance_handled              | true (no inheritance overrides authored)                                            | true                          |
+| structured_boundary_respected    | true (no structured object slots authored here)                                     | true                          |
+| expressible                      | false                                                                               | false                         |
+| blocker                          | `extends` not in locked surface; no placements to sketch                            | same                          |
+| gap_signal                       | empty sketch shape under locked surface limits                                      | same                          |
+| scene_content_known_issue        | no scene-layer placements; lid/lead interaction targets not authored at scene layer | same                          |
+| failure_mode                     | scene_content_incomplete                                                            | scene_content_incomplete      |
 
 ### 26. sdspage_destain_gel_rock_workspace (content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml)
 
@@ -1989,20 +2259,20 @@ extends: staining_bench
 regions: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true (no overrides authored) | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | no scene-layer placements authored for rocking destain workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                               | C                        |
+| -------------------------------- | --------------------------------------------------------------- | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                               | 0                        |
+| placement_preservation           | 100%                                                            | 100%                     |
+| geometry_leak_count              | 0                                                               | 0                        |
+| ambiguity                        | empty sketch only valid shape                                   | same                     |
+| needs_extra_author_hint          | true (`extends`)                                                | true (`extends`)         |
+| inheritance_handled              | true (no overrides authored)                                    | true                     |
+| structured_boundary_respected    | true                                                            | true                     |
+| expressible                      | false                                                           | false                    |
+| blocker                          | `extends` + no placements to sketch                             | same                     |
+| gap_signal                       | empty sketch shape                                              | same                     |
+| scene_content_known_issue        | no scene-layer placements authored for rocking destain workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                        | scene_content_incomplete |
 
 ### 27. extraction_workspace (content/protocols/sdspage/sdspage_extract_gel_from_cassette/scenes/extraction_workspace.yaml)
 
@@ -2020,7 +2290,10 @@ extends: electrophoresis_bench
 add_slots:
   - region_name: gel_staging
     slots:
-      - { placement_name: front_center_staining_tray, object_name: staining_tray }
+      - {
+          placement_name: front_center_staining_tray,
+          object_name: staining_tray,
+        }
 ```
 
 Model B sketch:
@@ -2031,25 +2304,28 @@ extends: electrophoresis_bench
 add_slots:
   - row_name: gel_staging
     slots:
-      - { placement_name: front_center_staining_tray, object_name: staining_tray }
+      - {
+          placement_name: front_center_staining_tray,
+          object_name: staining_tray,
+        }
 ```
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 1                                             | 1                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true                                          | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 28. sdspage_fill_tank_buffer_workspace (content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml)
 
@@ -2075,20 +2351,20 @@ extends: electrophoresis_bench
 regions: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | scene-layer placements not authored for tank-fill workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                          | C                        |
+| -------------------------------- | ---------------------------------------------------------- | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                          | 0                        |
+| placement_preservation           | 100%                                                       | 100%                     |
+| geometry_leak_count              | 0                                                          | 0                        |
+| ambiguity                        | empty sketch only valid shape                              | same                     |
+| needs_extra_author_hint          | true (`extends`)                                           | true (`extends`)         |
+| inheritance_handled              | true                                                       | true                     |
+| structured_boundary_respected    | true                                                       | true                     |
+| expressible                      | false                                                      | false                    |
+| blocker                          | `extends` + no placements to sketch                        | same                     |
+| gap_signal                       | empty sketch shape                                         | same                     |
+| scene_content_known_issue        | scene-layer placements not authored for tank-fill workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                   | scene_content_incomplete |
 
 ### 29. sdspage_heat_denature_samples_workspace (content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml)
 
@@ -2114,20 +2390,20 @@ extends: heat_block_bench
 rows: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | scene-layer placements not authored for denature workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                         | C                        |
+| -------------------------------- | --------------------------------------------------------- | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                         | 0                        |
+| placement_preservation           | 100%                                                      | 100%                     |
+| geometry_leak_count              | 0                                                         | 0                        |
+| ambiguity                        | empty sketch only valid shape                             | same                     |
+| needs_extra_author_hint          | true (`extends`)                                          | true (`extends`)         |
+| inheritance_handled              | true                                                      | true                     |
+| structured_boundary_respected    | true                                                      | true                     |
+| expressible                      | false                                                     | false                    |
+| blocker                          | `extends` + no placements to sketch                       | same                     |
+| gap_signal                       | empty sketch shape                                        | same                     |
+| scene_content_known_issue        | scene-layer placements not authored for denature workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                  | scene_content_incomplete |
 
 ### 30. sdspage_load_sample_single_lane_workspace (content/protocols/sdspage/sdspage_load_sample_single_lane/scenes/sdspage_load_sample_single_lane_workspace.yaml)
 
@@ -2161,20 +2437,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none for the authored placement; the full lane-load workflow may need more scene-layer placements but only one is currently authored) | (same) |
-| failure_mode | none | none |
+| metric                           | B                                                                                                                                      | C                                             |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 1                                                                                                                                      | 1                                             |
+| placement_preservation           | 100%                                                                                                                                   | 100%                                          |
+| geometry_leak_count              | 0                                                                                                                                      | 0                                             |
+| ambiguity                        | none                                                                                                                                   | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment)                                                                                          | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                                                                                                                   | true                                          |
+| structured_boundary_respected    | true                                                                                                                                   | true                                          |
+| expressible                      | true                                                                                                                                   | true                                          |
+| blocker                          | (empty)                                                                                                                                | (empty)                                       |
+| gap_signal                       | (none)                                                                                                                                 | (none)                                        |
+| scene_content_known_issue        | (none for the authored placement; the full lane-load workflow may need more scene-layer placements but only one is currently authored) | (same)                                        |
+| failure_mode                     | none                                                                                                                                   | none                                          |
 
 ### 31. sdspage_prepare_running_buffer_workspace (content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml)
 
@@ -2200,20 +2476,20 @@ extends: electrophoresis_bench
 rows: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | scene-layer placements not authored for buffer-prep workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                            | C                        |
+| -------------------------------- | ------------------------------------------------------------ | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                            | 0                        |
+| placement_preservation           | 100%                                                         | 100%                     |
+| geometry_leak_count              | 0                                                            | 0                        |
+| ambiguity                        | empty sketch only valid shape                                | same                     |
+| needs_extra_author_hint          | true (`extends`)                                             | true (`extends`)         |
+| inheritance_handled              | true                                                         | true                     |
+| structured_boundary_respected    | true                                                         | true                     |
+| expressible                      | false                                                        | false                    |
+| blocker                          | `extends` + no placements to sketch                          | same                     |
+| gap_signal                       | empty sketch shape                                           | same                     |
+| scene_content_known_issue        | scene-layer placements not authored for buffer-prep workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                     | scene_content_incomplete |
 
 ### 32. sdspage_prepare_sample_mix_single_lane_workspace (content/protocols/sdspage/sdspage_prepare_sample_mix_single_lane/scenes/sample_prep_bench_override.yaml)
 
@@ -2247,20 +2523,20 @@ add_slots:
 
 Row amended 2026-05-17 under WP-EXP1-AMEND-1: override surface (`extends` + `add_slots`) is now allowed; prior `model_insufficiency` verdict was an instrument defect.
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 1 | 1 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | none | none |
-| needs_extra_author_hint | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | true | true |
-| blocker | (empty) | (empty) |
-| gap_signal | (none) | (none) |
-| scene_content_known_issue | (none) | (none) |
-| failure_mode | none | none |
+| metric                           | B                                             | C                                             |
+| -------------------------------- | --------------------------------------------- | --------------------------------------------- |
+| sketched_rows / sketched_regions | 1                                             | 1                                             |
+| placement_preservation           | 100%                                          | 100%                                          |
+| geometry_leak_count              | 0                                             | 0                                             |
+| ambiguity                        | none                                          | none                                          |
+| needs_extra_author_hint          | false (override surface allowed by amendment) | false (override surface allowed by amendment) |
+| inheritance_handled              | true                                          | true                                          |
+| structured_boundary_respected    | true                                          | true                                          |
+| expressible                      | true                                          | true                                          |
+| blocker                          | (empty)                                       | (empty)                                       |
+| gap_signal                       | (none)                                        | (none)                                        |
+| scene_content_known_issue        | (none)                                        | (none)                                        |
+| failure_mode                     | none                                          | none                                          |
 
 ### 33. sdspage_recycle_buffer_workspace (content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml)
 
@@ -2286,20 +2562,20 @@ extends: electrophoresis_bench
 rows: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | scene-layer placements not authored for recycle workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                        | C                        |
+| -------------------------------- | -------------------------------------------------------- | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                        | 0                        |
+| placement_preservation           | 100%                                                     | 100%                     |
+| geometry_leak_count              | 0                                                        | 0                        |
+| ambiguity                        | empty sketch only valid shape                            | same                     |
+| needs_extra_author_hint          | true (`extends`)                                         | true (`extends`)         |
+| inheritance_handled              | true                                                     | true                     |
+| structured_boundary_respected    | true                                                     | true                     |
+| expressible                      | false                                                    | false                    |
+| blocker                          | `extends` + no placements to sketch                      | same                     |
+| gap_signal                       | empty sketch shape                                       | same                     |
+| scene_content_known_issue        | scene-layer placements not authored for recycle workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                 | scene_content_incomplete |
 
 ### 34. sdspage_run_electrophoresis_workspace (content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml)
 
@@ -2325,20 +2601,20 @@ extends: electrophoresis_bench
 regions: []
 ```
 
-| metric | B | C |
-| --- | --- | --- |
-| sketched_rows / sketched_regions | 0 | 0 |
-| placement_preservation | 100% | 100% |
-| geometry_leak_count | 0 | 0 |
-| ambiguity | empty sketch only valid shape | same |
-| needs_extra_author_hint | true (`extends`) | true (`extends`) |
-| inheritance_handled | true | true |
-| structured_boundary_respected | true | true |
-| expressible | false | false |
-| blocker | `extends` + no placements to sketch | same |
-| gap_signal | empty sketch shape | same |
-| scene_content_known_issue | scene-layer placements not authored for run-electrophoresis workflow | same |
-| failure_mode | scene_content_incomplete | scene_content_incomplete |
+| metric                           | B                                                                    | C                        |
+| -------------------------------- | -------------------------------------------------------------------- | ------------------------ |
+| sketched_rows / sketched_regions | 0                                                                    | 0                        |
+| placement_preservation           | 100%                                                                 | 100%                     |
+| geometry_leak_count              | 0                                                                    | 0                        |
+| ambiguity                        | empty sketch only valid shape                                        | same                     |
+| needs_extra_author_hint          | true (`extends`)                                                     | true (`extends`)         |
+| inheritance_handled              | true                                                                 | true                     |
+| structured_boundary_respected    | true                                                                 | true                     |
+| expressible                      | false                                                                | false                    |
+| blocker                          | `extends` + no placements to sketch                                  | same                     |
+| gap_signal                       | empty sketch shape                                                   | same                     |
+| scene_content_known_issue        | scene-layer placements not authored for run-electrophoresis workflow | same                     |
+| failure_mode                     | scene_content_incomplete                                             | scene_content_incomplete |
 
 ## 5. Aggregate scoreboard
 
@@ -2364,22 +2640,22 @@ Conventions:
   amendment), so the corpus totals and the eligible-scene totals only
   diverge on `expressible` itself.
 
-| metric | Model B | Model C |
-| --- | --- | --- |
-| total scenes scored | 34 | 34 |
-| eligible scenes (`failure_mode == none`) | 27 | 27 |
-| expressible count | 27 | 27 |
-| expressible percent (eligible) | 100% | 100% |
-| `placement_preservation == 100%` (corpus) | 34 / 34 | 34 / 34 |
-| `geometry_leak_count` sum (corpus, target 0) | 0 | 0 |
-| `needs_extra_author_hint == false` (corpus) | 27 / 27 eligible (incomplete rows carry `extends`-only hint that no longer counts post-amendment, so corpus total is 34 / 34) | 27 / 27 eligible (corpus 34 / 34, same logic) |
-| `inheritance_handled == true` or n/a (corpus) | 34 / 34 | 34 / 34 |
-| `structured_boundary_respected == true` (corpus) | 34 / 34 | 34 / 34 |
-| `ambiguity != none` rows (corpus) | 19 | 19 |
-| `failure_mode == none` | 27 | 27 |
-| `failure_mode == scene_content_incomplete` | 7 | 7 |
-| `failure_mode == model_insufficiency` | 0 | 0 |
-| `failure_mode == both` | 0 | 0 |
+| metric                                           | Model B                                                                                                                       | Model C                                       |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| total scenes scored                              | 34                                                                                                                            | 34                                            |
+| eligible scenes (`failure_mode == none`)         | 27                                                                                                                            | 27                                            |
+| expressible count                                | 27                                                                                                                            | 27                                            |
+| expressible percent (eligible)                   | 100%                                                                                                                          | 100%                                          |
+| `placement_preservation == 100%` (corpus)        | 34 / 34                                                                                                                       | 34 / 34                                       |
+| `geometry_leak_count` sum (corpus, target 0)     | 0                                                                                                                             | 0                                             |
+| `needs_extra_author_hint == false` (corpus)      | 27 / 27 eligible (incomplete rows carry `extends`-only hint that no longer counts post-amendment, so corpus total is 34 / 34) | 27 / 27 eligible (corpus 34 / 34, same logic) |
+| `inheritance_handled == true` or n/a (corpus)    | 34 / 34                                                                                                                       | 34 / 34                                       |
+| `structured_boundary_respected == true` (corpus) | 34 / 34                                                                                                                       | 34 / 34                                       |
+| `ambiguity != none` rows (corpus)                | 19                                                                                                                            | 19                                            |
+| `failure_mode == none`                           | 27                                                                                                                            | 27                                            |
+| `failure_mode == scene_content_incomplete`       | 7                                                                                                                             | 7                                             |
+| `failure_mode == model_insufficiency`            | 0                                                                                                                             | 0                                             |
+| `failure_mode == both`                           | 0                                                                                                                             | 0                                             |
 
 ### 5.1 Scene-content-incomplete callout
 
@@ -2388,15 +2664,15 @@ Section 2.5. They are excluded from the H1 threshold and from
 `expressible_percent`, but listed here explicitly so the verdict
 remains audit-traceable:
 
-| # | scene file |
-| --- | --- |
-| 25 | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml |
-| 26 | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml |
-| 28 | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml |
-| 29 | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml |
-| 31 | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml |
-| 33 | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml |
-| 34 | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml |
+| #   | scene file                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------- |
+| 25  | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml     |
+| 26  | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml             |
+| 28  | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml             |
+| 29  | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml   |
+| 31  | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml |
+| 33  | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml                 |
+| 34  | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml       |
 
 Each row authored zero scene-layer placements at its current YAML
 revision, so a best-effort sketch under either Model B or Model C is
@@ -2430,21 +2706,21 @@ Classification rule used:
   `workspace` with an inline note rather than silently promoted to
   `structured`.
 
-| object_name | object YAML path | reason structured |
-| --- | --- | --- |
-| well_plate_96 | content/objects/plate/well_plate_96.yaml | YAML carries `structure` key; owns 96-well A1..H12 interior layout |
-| gel_cassette | content/objects/equipment/gel_cassette.yaml | YAML carries `structure` key; owns gel lane interior |
-| conical_15ml_rack | content/objects/rack/conical_15ml_rack.yaml | YAML carries `structure` key; rack owns conical tube slot interior |
-| counter_slide_cartridge | content/objects/rack/counter_slide_cartridge.yaml | YAML carries `structure` key; cartridge owns counter chamber sub-cells |
-| dilution_tube_rack_8 | content/objects/rack/dilution_tube_rack_8.yaml | YAML carries `structure` key; rack owns 8 tube slot interior |
-| microtube_rack_24 | content/objects/rack/microtube_rack_24.yaml | rack-kind object; owns 24 microtube slot interior even though `structure` key is implicit at adapter level |
-| microscope | content/objects/equipment/microscope.yaml | owns microscope field marks / quadrant view interior per plan's `microscope_*` enumeration |
-| plate_reader | content/objects/equipment/plate_reader.yaml | owns plate-reader readout surface / channel display per plan's `plate_reader_*` enumeration |
-| cell_counter | content/objects/equipment/cell_counter.yaml | instrument display readout (cell count); display surface is adapter-owned |
-| hemocytometer_slide | content/objects/equipment/hemocytometer_slide.yaml | owns counting grid sub-cells (4 corner quadrants + center) interior |
-| heat_block | content/objects/equipment/heat_block.yaml | instrument display readout (set_temperature); display surface is adapter-owned |
-| power_supply | content/objects/equipment/power_supply.yaml | instrument display readout (set_voltage / set_current); display surface is adapter-owned |
-| mini_protean_gel | content/objects/equipment/mini_protean_gel.yaml | gel-family object per plan's `gel_*` enumeration; owns lane interior |
+| object_name             | object YAML path                                   | reason structured                                                                                          |
+| ----------------------- | -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| well_plate_96           | content/objects/plate/well_plate_96.yaml           | YAML carries `structure` key; owns 96-well A1..H12 interior layout                                         |
+| gel_cassette            | content/objects/equipment/gel_cassette.yaml        | YAML carries `structure` key; owns gel lane interior                                                       |
+| conical_15ml_rack       | content/objects/rack/conical_15ml_rack.yaml        | YAML carries `structure` key; rack owns conical tube slot interior                                         |
+| counter_slide_cartridge | content/objects/rack/counter_slide_cartridge.yaml  | YAML carries `structure` key; cartridge owns counter chamber sub-cells                                     |
+| dilution_tube_rack_8    | content/objects/rack/dilution_tube_rack_8.yaml     | YAML carries `structure` key; rack owns 8 tube slot interior                                               |
+| microtube_rack_24       | content/objects/rack/microtube_rack_24.yaml        | rack-kind object; owns 24 microtube slot interior even though `structure` key is implicit at adapter level |
+| microscope              | content/objects/equipment/microscope.yaml          | owns microscope field marks / quadrant view interior per plan's `microscope_*` enumeration                 |
+| plate_reader            | content/objects/equipment/plate_reader.yaml        | owns plate-reader readout surface / channel display per plan's `plate_reader_*` enumeration                |
+| cell_counter            | content/objects/equipment/cell_counter.yaml        | instrument display readout (cell count); display surface is adapter-owned                                  |
+| hemocytometer_slide     | content/objects/equipment/hemocytometer_slide.yaml | owns counting grid sub-cells (4 corner quadrants + center) interior                                        |
+| heat_block              | content/objects/equipment/heat_block.yaml          | instrument display readout (set_temperature); display surface is adapter-owned                             |
+| power_supply            | content/objects/equipment/power_supply.yaml        | instrument display readout (set_voltage / set_current); display surface is adapter-owned                   |
+| mini_protean_gel        | content/objects/equipment/mini_protean_gel.yaml    | gel-family object per plan's `gel_*` enumeration; owns lane interior                                       |
 
 Workspace-classified note (carried with uncertainty per the
 conservative rule):
@@ -2538,10 +2814,10 @@ column is treated as a repeat of the Model B signal for the same
 scene, not as a distinct signal. Rank is by occurrence count
 across the corpus (signal-instances, summing B and C columns).
 
-| rank | count | signal | scenes (corpus #) |
-| --- | --- | --- | --- |
-| 1 | 14 | empty sketch shape under locked surface limits (Model B `rows: []` / Model C `regions: []`); blocked solely on missing scene content, not on model insufficiency | 25, 26, 28, 29, 31, 33, 34 (Model B and Model C columns each) |
-| 2 | 1 | `rear_reagents` fan-out within Model B forces a 5-slot row, exposing engine row-ordering versus author intent (single-axis Model B can flatten a multi-shelf rear surface into one long row); Model C carries no equivalent signal because its semantic regions already separate the shelves | 9 (staining_bench, Model B only) |
+| rank | count | signal                                                                                                                                                                                                                                                                                       | scenes (corpus #)                                             |
+| ---- | ----- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| 1    | 14    | empty sketch shape under locked surface limits (Model B `rows: []` / Model C `regions: []`); blocked solely on missing scene content, not on model insufficiency                                                                                                                             | 25, 26, 28, 29, 31, 33, 34 (Model B and Model C columns each) |
+| 2    | 1     | `rear_reagents` fan-out within Model B forces a 5-slot row, exposing engine row-ordering versus author intent (single-axis Model B can flatten a multi-shelf rear surface into one long row); Model C carries no equivalent signal because its semantic regions already separate the shelves | 9 (staining_bench, Model B only)                              |
 
 ### 8.1 Signal-class roll-up
 
@@ -2595,21 +2871,21 @@ The following seven scenes carry `failure_mode = scene_content_incomplete`
 and must author their scene-layer placements before the experiment can
 be re-run to produce a content-complete verdict:
 
-| # | scene file |
-| --- | --- |
-| 25 | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml |
-| 26 | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml |
-| 28 | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml |
-| 29 | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml |
-| 31 | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml |
-| 33 | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml |
-| 34 | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml |
+| #   | scene file                                                                                                    |
+| --- | ------------------------------------------------------------------------------------------------------------- |
+| 25  | content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml     |
+| 26  | content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml             |
+| 28  | content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml             |
+| 29  | content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml   |
+| 31  | content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml |
+| 33  | content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml                 |
+| 34  | content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml       |
 
 #### 9.1.2 Narrow content-completion plan reference
 
 A narrow per-scene content-completion plan must precede any re-run.
 The next-step guidance from
-[../archive/well_plate_workspace_pause_note.md](../archive/well_plate_workspace_pause_note.md)
+`well_plate_workspace_pause_note.md`
 is the template: each incomplete scene completes against a stable
 render contract, a stable dispatch contract, and a stable visual
 contract; each scene carries a per-scene layout invariant doc; each

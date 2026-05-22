@@ -31,23 +31,23 @@ Evidence for each row comes from one or more of:
 - the `scene:` field on the first authored step (historically used to
   derive the scene; now informational),
 - the curriculum map in
-  [../active_plans/curriculum_decomposition.md](../active_plans/curriculum_decomposition.md).
+  `curriculum_decomposition.md`.
 
 No `protocol.yaml` is modified by this audit. The audit is read-only.
 
 ## Per-protocol intended entry block
 
-| Protocol folder                                  | protocol_type     | Intended entry.scene  | Intended entry.step   | Source of decision                                   | Notes                                                                                                          |
-| ------------------------------------------------ | ---------------- | --------------------- | --------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
-| content/cell_culture                             | (none declared)  | hood                  | spray_hood            | First step `scene: hood` (line 41); curriculum map   | Legacy monolith. No top-of-file comment, no formal entry block. Scheduled for deletion at M9; audit for record. |
-| content/hood_flask_prep                          | mini_protocol    | hood                  | spray_hood            | First step `scene: hood` (line 30); comment mismatch | Comment line 1 reads `cell_culture_hood`, but first step declares `scene: hood`. Treat step scene as canonical. |
-| content/cell_counting_and_seeding                | mini_protocol    | bench                 | count_cells           | Comment line 1; first step `scene: bench` (line 31)  | Comment and first step agree.                                                                                  |
-| content/drug_dilution_setup                      | mini_protocol    | well_plate_workspace  | calc_carb_stock       | Existing formal entry block (lines 8 to 10)          | Already has a formal entry block. WP-ENTRY-2 should verify and leave intact.                                   |
-| content/plate_drug_treatment                     | mini_protocol    | well_plate_workspace  | open_plate_workspace  | Existing formal entry block (lines 6 to 8)           | Already has a formal entry block. WP-ENTRY-2 should verify and leave intact.                                   |
-| content/mtt_assay_readout                        | mini_protocol    | hood                  | add_mtt               | First step `scene: hood` (line 30); comment mismatch | Comment line 1 reads `cell_culture_hood`, but first step declares `scene: hood`. Treat step scene as canonical. |
-| content/cell_culture_full                        | sequence_runner  | cell_culture_hood     | spray_hood            | Existing formal entry block (lines 8 to 10)          | Sequence runner. Uses long-form scene id `cell_culture_hood`. Verified by reading the file.                    |
-| tests/content/dev_smoke/bench_direct_check       | dev_smoke        | bench                 | tutorial_centrifuge   | First step `scene: bench` (line 21)                  | Diagnostic protocol. Single step.                                                                              |
-| tests/content/dev_smoke/plate_reader_check       | dev_smoke        | bench                 | tutorial_plate_read   | First step `scene: bench` (line 21)                  | Diagnostic protocol. Single step.                                                                              |
+| Protocol folder                            | protocol_type   | Intended entry.scene | Intended entry.step  | Source of decision                                   | Notes                                                                                                           |
+| ------------------------------------------ | --------------- | -------------------- | -------------------- | ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| content/cell_culture                       | (none declared) | hood                 | spray_hood           | First step `scene: hood` (line 41); curriculum map   | Legacy monolith. No top-of-file comment, no formal entry block. Scheduled for deletion at M9; audit for record. |
+| content/hood_flask_prep                    | mini_protocol   | hood                 | spray_hood           | First step `scene: hood` (line 30); comment mismatch | Comment line 1 reads `cell_culture_hood`, but first step declares `scene: hood`. Treat step scene as canonical. |
+| content/cell_counting_and_seeding          | mini_protocol   | bench                | count_cells          | Comment line 1; first step `scene: bench` (line 31)  | Comment and first step agree.                                                                                   |
+| content/drug_dilution_setup                | mini_protocol   | well_plate_workspace | calc_carb_stock      | Existing formal entry block (lines 8 to 10)          | Already has a formal entry block. WP-ENTRY-2 should verify and leave intact.                                    |
+| content/plate_drug_treatment               | mini_protocol   | well_plate_workspace | open_plate_workspace | Existing formal entry block (lines 6 to 8)           | Already has a formal entry block. WP-ENTRY-2 should verify and leave intact.                                    |
+| content/mtt_assay_readout                  | mini_protocol   | hood                 | add_mtt              | First step `scene: hood` (line 30); comment mismatch | Comment line 1 reads `cell_culture_hood`, but first step declares `scene: hood`. Treat step scene as canonical. |
+| content/cell_culture_full                  | sequence_runner | cell_culture_hood    | spray_hood           | Existing formal entry block (lines 8 to 10)          | Sequence runner. Uses long-form scene id `cell_culture_hood`. Verified by reading the file.                     |
+| tests/content/dev_smoke/bench_direct_check | dev_smoke       | bench                | tutorial_centrifuge  | First step `scene: bench` (line 21)                  | Diagnostic protocol. Single step.                                                                               |
+| tests/content/dev_smoke/plate_reader_check | dev_smoke       | bench                | tutorial_plate_read  | First step `scene: bench` (line 21)                  | Diagnostic protocol. Single step.                                                                               |
 
 ## Residual risks
 

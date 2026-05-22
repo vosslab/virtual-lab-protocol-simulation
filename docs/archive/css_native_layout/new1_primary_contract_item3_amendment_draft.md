@@ -4,18 +4,18 @@
 
 Draft. Not applied. Decision deferred until well_plate_96_zoom spike result.
 
-This document does not modify [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md). It records two candidate amendments to contract item 3 so that, when the spike result lands, the reviewer can pick one (or reject both) without re-deriving the wording.
+This document does not modify `PRIMARY_CONTRACT.md`. It records two candidate amendments to contract item 3 so that, when the spike result lands, the reviewer can pick one (or reject both) without re-deriving the wording.
 
 ## Current contract item 3 (verbatim quote)
 
-The following is a verbatim quote of contract item 3 from [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md), lines 19-24:
+The following is a verbatim quote of contract item 3 from `PRIMARY_CONTRACT.md`, lines 19-24:
 
 > 3. **Clickable objects are SVG-backed scene objects laid out by the layout engine.**
 >    All clickable objects, including pipettes, instruments, bottles, flasks, plates, racks, tubes, and wells, have SVG representations stored in `assets/`. All asset SVG files must be normalized. All SVGs used in a scene are declared in that scene's YAML file.
 >
 >    Scene object layout is handled by the layout engine. Scenes must use the layout engine for positioning clickable objects. Custom geometry is allowed only for subparts inside a structured scientific object, such as wells inside a plate, tubes inside a rack, lanes inside a gel, or marks inside an instrument display. The structured object itself still remains a YAML-declared scene object placed by the layout engine.
 >
->    See [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md). All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by [specs/MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md). Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
+>    See `LAYOUT_ENGINE.md`. All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by `MATERIAL_CONVENTION.md`. Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
 
 ## Version A: minimal amendment
 
@@ -28,7 +28,7 @@ Proposes that a CSS-native semantic-region renderer counts as a conforming imple
 >
 >    Scene object layout is handled by the layout engine. Scenes must use the layout engine for positioning clickable objects. The layout engine is the layer that resolves YAML-declared scene objects into on-screen positions; both the absolute-coordinate solver and the CSS-native semantic-region renderer are conforming implementations of the layout engine when driven by the same YAML scene declarations. Custom geometry is allowed only for subparts inside a structured scientific object, such as wells inside a plate, tubes inside a rack, lanes inside a gel, or marks inside an instrument display. The structured object itself still remains a YAML-declared scene object placed by the layout engine.
 >
->    See [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md). All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by [specs/MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md). Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
+>    See `LAYOUT_ENGINE.md`. All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by `MATERIAL_CONVENTION.md`. Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
 
 ### Diff against current wording
 
@@ -57,7 +57,7 @@ The contract names "the layout engine" as a singular authority, but the term den
 
 - Two conforming implementations of "the layout engine" may drift in subtle ways (rounding, overflow handling, hit-target geometry), and the contract no longer forces a single canonical positioning result.
 - The walker may need to tolerate small per-renderer pixel differences in screenshot evidence.
-- "Conforming implementation" is not defined in the contract; the definition is pushed into [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md), which is agent-editable.
+- "Conforming implementation" is not defined in the contract; the definition is pushed into `LAYOUT_ENGINE.md`, which is agent-editable.
 
 ## Version B: conservative amendment
 
@@ -70,9 +70,9 @@ Keeps the current wording intact and adds a single clause that marks the CSS-nat
 >
 >    Scene object layout is handled by the layout engine. Scenes must use the layout engine for positioning clickable objects. Custom geometry is allowed only for subparts inside a structured scientific object, such as wells inside a plate, tubes inside a rack, lanes inside a gel, or marks inside an instrument display. The structured object itself still remains a YAML-declared scene object placed by the layout engine.
 >
->    Alternative layout implementations (such as a CSS-native semantic-region renderer) are experimental and may be used only in clearly labeled spike scenes until they pass the promotion gates documented in [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md). Production scenes use the absolute-coordinate layout engine.
+>    Alternative layout implementations (such as a CSS-native semantic-region renderer) are experimental and may be used only in clearly labeled spike scenes until they pass the promotion gates documented in `LAYOUT_ENGINE.md`. Production scenes use the absolute-coordinate layout engine.
 >
->    See [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md). All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by [specs/MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md). Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
+>    See `LAYOUT_ENGINE.md`. All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by `MATERIAL_CONVENTION.md`. Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
 
 ### Diff against current wording
 
@@ -94,7 +94,7 @@ The contract should not pre-bless a renderer that has not yet shipped a producti
 
 ### Gates the spike must pass before promotion
 
-The spike must produce documented evidence for all of the following before [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md) can promote the CSS-native renderer from experimental to conforming:
+The spike must produce documented evidence for all of the following before `LAYOUT_ENGINE.md` can promote the CSS-native renderer from experimental to conforming:
 
 - A non-trivial production scene (for example, well_plate_96_zoom) runs end-to-end under the CSS-native renderer.
 - The walker completes the scene's mini-protocol through visible UI, satisfying contract item 4.
@@ -112,13 +112,13 @@ The spike must produce documented evidence for all of the following before [spec
 
 ## Decision criteria
 
-| Criterion | Favors Version A | Favors Version B |
-| --- | --- | --- |
-| Spike outcome | Spike passes cleanly, no surprises, parity with absolute solver | Spike passes with caveats, edge cases, or partial parity |
-| Migration scope | Many scenes are ready to switch immediately | Only the spike scene is ready; others need work |
-| Runtime risk | Per-renderer drift is small and bounded | Per-renderer drift is observable in walker evidence |
-| Walker compatibility | Walker handles both renderers without per-renderer branching | Walker needs renderer-aware tolerance or fixtures |
-| Layer-boundary purity | CSS-native renderer reads only YAML and object state | CSS-native renderer requires extra adapters or hidden inputs |
+| Criterion             | Favors Version A                                                | Favors Version B                                             |
+| --------------------- | --------------------------------------------------------------- | ------------------------------------------------------------ |
+| Spike outcome         | Spike passes cleanly, no surprises, parity with absolute solver | Spike passes with caveats, edge cases, or partial parity     |
+| Migration scope       | Many scenes are ready to switch immediately                     | Only the spike scene is ready; others need work              |
+| Runtime risk          | Per-renderer drift is small and bounded                         | Per-renderer drift is observable in walker evidence          |
+| Walker compatibility  | Walker handles both renderers without per-renderer branching    | Walker needs renderer-aware tolerance or fixtures            |
+| Layer-boundary purity | CSS-native renderer reads only YAML and object state            | CSS-native renderer requires extra adapters or hidden inputs |
 
 ## Recommendation
 
@@ -128,11 +128,11 @@ None. Reviewer decides after spike result.
 
 The amendment alone cannot answer these; the spike report or a follow-up spec edit must resolve them:
 
-- What is the canonical definition of "conforming implementation of the layout engine"? Does it live in the contract, in [specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md), or in a new spec?
+- What is the canonical definition of "conforming implementation of the layout engine"? Does it live in the contract, in `LAYOUT_ENGINE.md`, or in a new spec?
 - What pixel or geometry tolerance is acceptable between solvers for the same YAML scene?
 - Does the walker need a per-renderer screenshot baseline, or one shared baseline with tolerance?
 - If both renderers ship, how is the per-scene choice recorded (scene YAML field, build flag, registry entry)?
-- Does the CSS-native renderer need its own entry in [specs/SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md), or is it invisible at the vocabulary layer?
+- Does the CSS-native renderer need its own entry in `SCENE_VOCABULARY.md`, or is it invisible at the vocabulary layer?
 - How are material overlays and set-point displays guaranteed to render identically under both solvers?
 - What is the rollback path if a promoted scene fails in production under the CSS-native renderer?
 - Does "absolute-coordinate solver" need a contract-level definition, or is the current shared understanding enough?

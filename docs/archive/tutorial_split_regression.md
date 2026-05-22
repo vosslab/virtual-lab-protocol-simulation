@@ -3,7 +3,7 @@
 > Read-only diagnosis. Mini-protocol `tutorial_split` fails on its first
 > step `tutorial_spray_hood` with "click on ethanol_bottle produced no
 > state change after 3000ms". `tutorial_bench_direct` (same `kind:
-> directTool` shape) passes. Pair with
+directTool` shape) passes. Pair with
 > `mini_protocol_integration.md` and `sp_k2e_step_id_dispatch_cleanup.md`.
 
 ## 1. Failing protocol step
@@ -19,14 +19,14 @@ Walker log line: `click on ethanol_bottle produced no state change after 3000ms`
 
 ## 2. Comparison: tutorial_split vs tutorial_bench_direct
 
-| Aspect             | tutorial_split            | tutorial_bench_direct                  |
-| ------------------ | ------------------------- | -------------------------------------- |
-| Scene              | hood                      | bench                                  |
-| Item               | ethanol_bottle            | centrifuge                             |
-| Step id            | tutorial_spray_hood       | tutorial_centrifuge                    |
-| completionEvent    | spray_ethanol             | centrifuge                             |
-| Dispatch handler   | `hood.ts:997` (legacy)    | `bench.ts:403-420` (post-SP-K2e)       |
-| Walker outcome     | timeout (3000ms)          | passes                                 |
+| Aspect           | tutorial_split         | tutorial_bench_direct            |
+| ---------------- | ---------------------- | -------------------------------- |
+| Scene            | hood                   | bench                            |
+| Item             | ethanol_bottle         | centrifuge                       |
+| Step id          | tutorial_spray_hood    | tutorial_centrifuge              |
+| completionEvent  | spray_ethanol          | centrifuge                       |
+| Dispatch handler | `hood.ts:997` (legacy) | `bench.ts:403-420` (post-SP-K2e) |
+| Walker outcome   | timeout (3000ms)       | passes                           |
 
 ## 3. Hood directTool support
 
@@ -70,16 +70,18 @@ through the same generic path. Sketch:
 
 ```ts
 const currentStep = getCurrentStep();
-if (currentStep?.completionPath?.kind === 'directTool'
-    && currentStep.completionPath.tool === 'ethanol_bottle'
-    && gameState.activeStepId) {
-    gameState.hoodSprayed = true;
-    triggerStep(gameState.activeStepId);
-    showNotification('Sprayed hood with 70% ethanol.', 'success');
-    renderHoodScene();
-    renderProtocolPanel();
-    renderScoreDisplay();
-    return;
+if (
+  currentStep?.completionPath?.kind === "directTool" &&
+  currentStep.completionPath.tool === "ethanol_bottle" &&
+  gameState.activeStepId
+) {
+  gameState.hoodSprayed = true;
+  triggerStep(gameState.activeStepId);
+  showNotification("Sprayed hood with 70% ethanol.", "success");
+  renderHoodScene();
+  renderProtocolPanel();
+  renderScoreDisplay();
+  return;
 }
 ```
 

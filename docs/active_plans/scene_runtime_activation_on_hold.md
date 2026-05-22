@@ -90,7 +90,7 @@ no longer admits them.
 ## Original plan
 
 The verbatim original big plan is archived in its own file at
-[scene_runtime_activation_plan_original.md](scene_runtime_activation_plan_original.md).
+`scene_runtime_activation_plan_original.md`.
 
 That file preserves the Context, Objectives, and Design philosophy verbatim. The
 remaining ~2100 lines (subagent rules, dispatch templates, milestone plan M0-M6, work
@@ -104,7 +104,7 @@ via the system-reminder block in the same session that quoted the plan verbatim 
 before the focused row+slot plan overwrote it at
 `~/.claude/plans/serene-stargazing-moore.md`. To inline the full body, replace the
 truncation block at the bottom of
-[scene_runtime_activation_plan_original.md](scene_runtime_activation_plan_original.md).
+`scene_runtime_activation_plan_original.md`.
 
 The condensed retrievable summary above ("What landed", "What is paused",
 "Resumption criteria") plus the held-binding operational reference sections below
@@ -179,4 +179,3 @@ the layout-engine + scene-yaml workstreams are superseded by the focused row+slo
 - `content/base_scenes/minimal_test_scene.yaml` deleted as orphaned content.
 - Pilot 1 downgrade trigger never fired; `mtt_solubilization_readout` reached green
   walker. `mtt_reagent_prep` also green. Both pilots stand.
-

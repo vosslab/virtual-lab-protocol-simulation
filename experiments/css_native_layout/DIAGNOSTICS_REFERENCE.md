@@ -305,7 +305,7 @@ Anti-patterns (forbidden):
 
 See also: [VISUAL_TARGETS.md](VISUAL_TARGETS.md),
 [../../docs/active_plans/new2_css_native_production_blocker_plan.md](../../docs/active_plans/new2_css_native_production_blocker_plan.md),
-[../../docs/active_plans/new2_css_native_best_case_showcase_no_crop_addendum.md](../../docs/active_plans/new2_css_native_best_case_showcase_no_crop_addendum.md).
+[new2_css_native_best_case_showcase_no_crop_addendum.md](../../docs/archive/css_native_layout/new2_css_native_best_case_showcase_no_crop_addendum.md).
 
 ---
 

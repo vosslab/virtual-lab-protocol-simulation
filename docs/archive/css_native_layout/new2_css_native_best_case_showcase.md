@@ -44,8 +44,9 @@ Synthesis of Lane T2, Lane B, and Lane D.
   reached the final evidence set.
 
 See:
-- [new2_css_native_best_case_showcase_assets/lane_b_assertion_log.txt](new2_css_native_best_case_showcase_assets/lane_b_assertion_log.txt)
-- [new2_css_native_best_case_showcase_assets/lane_d_scorecard.md](new2_css_native_best_case_showcase_assets/lane_d_scorecard.md)
+
+- `lane_b_assertion_log.txt`
+- `lane_d_scorecard.md`
 - [new2_why_css_native_is_getting_better.md](new2_why_css_native_is_getting_better.md)
 
 ## 2. Best static layouts (Lane A gallery)
@@ -55,28 +56,29 @@ template scenes carry `PASS_TEMPLATE`, two dense scenes carry honest
 `WARN`, and the instrument-heavy bench carries `WARN` after Candidate 1
 recovery.
 
-| Rank | Scene | Score | Verdict |
-| --- | --- | --- | --- |
-| 1 | well_plate_96_zoom | 92 | PASS |
-| 2 | microscope_basic | 90 | PASS_TEMPLATE |
-| 3 | cell_counter_basic | 80 | PASS_TEMPLATE |
-| 4 | bench_basic | 70 | PASS_TEMPLATE |
-| 5 | hood_basic | 70 | PASS_TEMPLATE |
-| 6 | crowded_bench_dense | 54 | WARN |
-| 7 | drug_dilution_workspace_dense | 53 | WARN |
-| 8 | electrophoresis_bench | 32 | WARN |
+| Rank | Scene                         | Score | Verdict       |
+| ---- | ----------------------------- | ----- | ------------- |
+| 1    | well_plate_96_zoom            | 92    | PASS          |
+| 2    | microscope_basic              | 90    | PASS_TEMPLATE |
+| 3    | cell_counter_basic            | 80    | PASS_TEMPLATE |
+| 4    | bench_basic                   | 70    | PASS_TEMPLATE |
+| 5    | hood_basic                    | 70    | PASS_TEMPLATE |
+| 6    | crowded_bench_dense           | 54    | WARN          |
+| 7    | drug_dilution_workspace_dense | 53    | WARN          |
+| 8    | electrophoresis_bench         | 32    | WARN          |
 
-Contact sheet: [new2_css_native_best_case_showcase_assets/lane_a_contact_sheet.html](new2_css_native_best_case_showcase_assets/lane_a_contact_sheet.html)
+Contact sheet: `lane_a_contact_sheet.html`
 
 PNGs:
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_01_well_plate_96_zoom.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_01_well_plate_96_zoom.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_02_microscope_basic.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_02_microscope_basic.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_03_cell_counter_basic.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_03_cell_counter_basic.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_04_bench_basic.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_04_bench_basic.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_05_hood_basic.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_05_hood_basic.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_06_crowded_bench_dense.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_06_crowded_bench_dense.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_07_drug_dilution_workspace_dense.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_07_drug_dilution_workspace_dense.png)
-- [new2_css_native_best_case_showcase_assets/lane_a_gallery_08_electrophoresis_bench.png](new2_css_native_best_case_showcase_assets/lane_a_gallery_08_electrophoresis_bench.png)
+
+- `lane_a_gallery_01_well_plate_96_zoom.png`
+- `lane_a_gallery_02_microscope_basic.png`
+- `lane_a_gallery_03_cell_counter_basic.png`
+- `lane_a_gallery_04_bench_basic.png`
+- `lane_a_gallery_05_hood_basic.png`
+- `lane_a_gallery_06_crowded_bench_dense.png`
+- `lane_a_gallery_07_drug_dilution_workspace_dense.png`
+- `lane_a_gallery_08_electrophoresis_bench.png`
 
 ## 3. Best runtime proof (Lane B)
 
@@ -98,9 +100,10 @@ click hit pixel-space target `well_plate_96.E7` (center 1022.8, 982.0)
 inside the rendered viewport (1920 by 1768).
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_b_runtime_before_click.png](new2_css_native_best_case_showcase_assets/lane_b_runtime_before_click.png)
-- [new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png](new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png)
-- [new2_css_native_best_case_showcase_assets/lane_b_assertion_log.txt](new2_css_native_best_case_showcase_assets/lane_b_assertion_log.txt)
+
+- `lane_b_runtime_before_click.png`
+- `lane_b_runtime_after_click.png`
+- `lane_b_assertion_log.txt`
 
 ## 4. Best diagnostic tools (Lane C and Lane Q)
 
@@ -126,8 +129,9 @@ Lane Q diagnostic overlay illustrates the precheck warn rendering for
 the `staining_bench` scene.
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_c_diagnostics.md](new2_css_native_best_case_showcase_assets/lane_c_diagnostics.md)
-- [new2_css_native_best_case_showcase_assets/lane_q_diagnostic_overlay.png](new2_css_native_best_case_showcase_assets/lane_q_diagnostic_overlay.png)
+
+- `lane_c_diagnostics.md`
+- `lane_q_diagnostic_overlay.png`
 
 ## 5. Best interaction proof (Lane B plus Lane P2)
 
@@ -140,8 +144,9 @@ runtime did" plus "this is what the rendered affordance should look
 like next".
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png](new2_css_native_best_case_showcase_assets/lane_b_runtime_after_click.png) (proof)
-- [new2_css_native_best_case_showcase_assets/lane_p2_selected_well_states.png](new2_css_native_best_case_showcase_assets/lane_p2_selected_well_states.png) (concept only, not production)
+
+- `lane_b_runtime_after_click.png` (proof)
+- `lane_p2_selected_well_states.png` (concept only, not production)
 
 ## 6. Best dense and clutter stress example (Lane F plus Lane O2)
 
@@ -157,9 +162,10 @@ a single scene object. The hovered frame surfaces the semantic target
 name as a tooltip. Concept only, not production.
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_f_dense_workspace.png](new2_css_native_best_case_showcase_assets/lane_f_dense_workspace.png) (concept render, paired with Lane A 07 proof)
-- [new2_css_native_best_case_showcase_assets/lane_o2_hover_reveal_normal.png](new2_css_native_best_case_showcase_assets/lane_o2_hover_reveal_normal.png) (concept only, not production)
-- [new2_css_native_best_case_showcase_assets/lane_o2_hover_reveal_hovered.png](new2_css_native_best_case_showcase_assets/lane_o2_hover_reveal_hovered.png) (concept only, not production)
+
+- `lane_f_dense_workspace.png` (concept render, paired with Lane A 07 proof)
+- `lane_o2_hover_reveal_normal.png` (concept only, not production)
+- `lane_o2_hover_reveal_hovered.png` (concept only, not production)
 
 ## 7. Best zoom and detail example (Lane E)
 
@@ -170,10 +176,11 @@ contrast). All three trials are kept; the precheck PASS state remains
 the production-recommended state.
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_e_zoom_before.png](new2_css_native_best_case_showcase_assets/lane_e_zoom_before.png) (precheck PASS baseline, proof)
-- [new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial1.png](new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial1.png) (concept polish trial)
-- [new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial2.png](new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial2.png) (concept polish trial)
-- [new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial3.png](new2_css_native_best_case_showcase_assets/lane_e_zoom_after_trial3.png) (concept polish trial)
+
+- `lane_e_zoom_before.png` (precheck PASS baseline, proof)
+- `lane_e_zoom_after_trial1.png` (concept polish trial)
+- `lane_e_zoom_after_trial2.png` (concept polish trial)
+- `lane_e_zoom_after_trial3.png` (concept polish trial)
 
 ## 8. Best instrument-heavy example (Lane G)
 
@@ -192,8 +199,9 @@ Two paired artifacts:
   CSS. This is the rendered reality, including the residual warns.
 
 Artifacts:
-- [new2_css_native_best_case_showcase_assets/lane_g_electrophoresis_demo.png](new2_css_native_best_case_showcase_assets/lane_g_electrophoresis_demo.png) (concept demo, not production)
-- [new2_css_native_best_case_showcase_assets/lane_g_electrophoresis_production.png](new2_css_native_best_case_showcase_assets/lane_g_electrophoresis_production.png) (production precheck render, proof)
+
+- `lane_g_electrophoresis_demo.png` (concept demo, not production)
+- `lane_g_electrophoresis_production.png` (production precheck render, proof)
 
 ## 9. What still needs production hardening
 
@@ -225,9 +233,10 @@ From the failure museum (Lane M):
    green.
 
 See:
+
 - [new2_showcase_reviewer_guide.md](new2_showcase_reviewer_guide.md)
-- [new2_css_native_best_case_showcase_assets/lane_m_failure_museum.md](new2_css_native_best_case_showcase_assets/lane_m_failure_museum.md)
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)
+- `lane_m_failure_museum.md`
+- `new2_css_native_production_blocker_plan.md`
 - [new2_scorecard_regression_root_cause.md](new2_scorecard_regression_root_cause.md)
 
 ## 10. Cool next demos worth building
@@ -254,12 +263,13 @@ Top 5 from Lane S2 (composite score):
 
 Concept previews from Lane N (concept only, not production):
 
-- Pipette-to-well storyboard: [new2_css_native_best_case_showcase_assets/lane_n_concept_pipette_to_well_storyboard.png](new2_css_native_best_case_showcase_assets/lane_n_concept_pipette_to_well_storyboard.png)
-- Selected-well highlight: [new2_css_native_best_case_showcase_assets/lane_n_concept_selected_well_highlight.png](new2_css_native_best_case_showcase_assets/lane_n_concept_selected_well_highlight.png)
-- Electrophoresis setup walkthrough: [new2_css_native_best_case_showcase_assets/lane_n_concept_electrophoresis_setup_walkthrough.png](new2_css_native_best_case_showcase_assets/lane_n_concept_electrophoresis_setup_walkthrough.png)
+- Pipette-to-well storyboard: `lane_n_concept_pipette_to_well_storyboard.png`
+- Selected-well highlight: `lane_n_concept_selected_well_highlight.png`
+- Electrophoresis setup walkthrough: `lane_n_concept_electrophoresis_setup_walkthrough.png`
 
 Source documents:
-- [new2_css_native_best_case_showcase_assets/lane_j_future_demos.md](new2_css_native_best_case_showcase_assets/lane_j_future_demos.md)
+
+- `lane_j_future_demos.md`
 - [new2_demo_backlog.md](new2_demo_backlog.md)
 
 ## Appendix A: Pipeline diagram (Lane I)
@@ -268,18 +278,18 @@ Six-stage pipeline diagram: YAML scene declaration, layout engine,
 rendered DOM, precheck snapshot, score_layout, scorecard. Anti-drift
 boundaries called out at each stage.
 
-- [new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.html](new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.html)
-- [new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.png](new2_css_native_best_case_showcase_assets/lane_i_pipeline_diagram.png)
+- `lane_i_pipeline_diagram.html`
+- `lane_i_pipeline_diagram.png`
 
 ## Appendix B: Visual style comparison (Lane H)
 
 Three style variants of the same bench scene. Recommended style:
 `clean_instructional`. Other variants kept for comparison.
 
-- [new2_css_native_best_case_showcase_assets/lane_h_style_clean_instructional.png](new2_css_native_best_case_showcase_assets/lane_h_style_clean_instructional.png) (recommended, concept)
-- [new2_css_native_best_case_showcase_assets/lane_h_style_lab_bench_realistic.png](new2_css_native_best_case_showcase_assets/lane_h_style_lab_bench_realistic.png) (concept)
-- [new2_css_native_best_case_showcase_assets/lane_h_style_high_contrast_diagnostic.png](new2_css_native_best_case_showcase_assets/lane_h_style_high_contrast_diagnostic.png) (concept)
-- [new2_css_native_best_case_showcase_assets/lane_h_style_comparison.html](new2_css_native_best_case_showcase_assets/lane_h_style_comparison.html)
+- `lane_h_style_clean_instructional.png` (recommended, concept)
+- `lane_h_style_lab_bench_realistic.png` (concept)
+- `lane_h_style_high_contrast_diagnostic.png` (concept)
+- `lane_h_style_comparison.html`
 
 ## Appendix C: Failure museum (Lane M, verbatim summary)
 
@@ -295,16 +305,16 @@ oversteps:
 - Static-template regression vs Lane C baseline: STILL REAL. Runtime
   PASS does not cover this.
 
-Full text: [new2_css_native_best_case_showcase_assets/lane_m_failure_museum.md](new2_css_native_best_case_showcase_assets/lane_m_failure_museum.md)
+Full text: `lane_m_failure_museum.md`
 
 ## Appendix D: Before and after panels (Lane L)
 
 Four before/after comparison panels from the round.
 
-- Well plate zoom: [new2_css_native_best_case_showcase_assets/lane_l_well_plate_before.png](new2_css_native_best_case_showcase_assets/lane_l_well_plate_before.png) / [new2_css_native_best_case_showcase_assets/lane_l_well_plate_after.png](new2_css_native_best_case_showcase_assets/lane_l_well_plate_after.png)
-- Electrophoresis bench: [new2_css_native_best_case_showcase_assets/lane_l_electrophoresis_before.png](new2_css_native_best_case_showcase_assets/lane_l_electrophoresis_before.png) / [new2_css_native_best_case_showcase_assets/lane_l_electrophoresis_after.png](new2_css_native_best_case_showcase_assets/lane_l_electrophoresis_after.png)
-- Dense labels visible: [new2_css_native_best_case_showcase_assets/lane_l_dense_labels_visible.png](new2_css_native_best_case_showcase_assets/lane_l_dense_labels_visible.png)
-- Panel wrapper: [new2_css_native_best_case_showcase_assets/lane_l_before_after_panels.html](new2_css_native_best_case_showcase_assets/lane_l_before_after_panels.html)
+- Well plate zoom: `lane_l_well_plate_before.png` / `lane_l_well_plate_after.png`
+- Electrophoresis bench: `lane_l_electrophoresis_before.png` / `lane_l_electrophoresis_after.png`
+- Dense labels visible: `lane_l_dense_labels_visible.png`
+- Panel wrapper: `lane_l_before_after_panels.html`
 
 ## Appendix E: Evidence inventory and showcase index
 
@@ -312,4 +322,4 @@ Four before/after comparison panels from the round.
   [new2_showcase_evidence_inventory.md](new2_showcase_evidence_inventory.md)
 - Reviewer guide: [new2_showcase_reviewer_guide.md](new2_showcase_reviewer_guide.md)
 - Showcase index (interactive HTML, link out):
-  [experiments/css_native_layout/showcase/index.html](../../experiments/css_native_layout/showcase/index.html)
+  `index.html`

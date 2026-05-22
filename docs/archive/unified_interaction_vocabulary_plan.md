@@ -12,7 +12,7 @@ plan started narrow and widened at every step:
   (`interactionSequence`, `directTool`, `modal`, `multipleChoice`) is four
   special-click systems, each with its own dispatch branch.
 - The legacy `src/interaction_resolver.ts` already had a click-level action
-  model (`InteractionResult.kind: load | discharge | ...`) that *derived*
+  model (`InteractionResult.kind: load | discharge | ...`) that _derived_
   load/discharge from click context. The K2 `completionPath.kind` refactor
   lost that and pushed action semantics into structural YAML conventions.
 - Three more source protocols were read for coverage:
@@ -25,22 +25,22 @@ plan started narrow and widened at every step:
   (`liquid`, `equipment`, `object`, `choose`, `popup`, `question`,
   `navigate`), each with an optional sub-type. The count is still settling:
   `solid` was dropped once it became clear that handling a solid (berries to
-  powder) is not a distinct action -- it is an SVG-swap *effect* of an
+  powder) is not a distinct action -- it is an SVG-swap _effect_ of an
   ordinary `equipment` or `liquid` action. Separating the action (the verb
   the student does) from its effect (what changes) is itself a design task.
 - Then one more correction, pedagogy-first: not every interaction is a click.
-  Setting a pipette volume or a voltage is a *skill*. The current sim
+  Setting a pipette volume or a voltage is a _skill_. The current sim
   regressed skill-based pipetting into a timed click. The model needs a
   second axis -- an interaction `mode` -- where `click` is the simple mode and
   `dial` is the continuous, skill-based mode (volume set-points, voltage, pH
   titration-to-target).
 - Then the action model itself reframed: actions form a class hierarchy in
   the vocabulary sense (not necessarily a TypeScript inheritance requirement),
-  not a flat list. A small set of *base* actions are SVG / layout / cursor /
+  not a flat list. A small set of _base_ actions are SVG / layout / cursor /
   scene primitives -- `SvgSwap`, `ColorChange`, `CursorAttach` (a picked-up
   tool follows the cursor), `SceneChange`, `LayoutMove`. Designers build the
   higher-level, pedagogically-named actions (draw, dispense, grind, assemble)
-  by *composing* one or more base primitives -- composition, not single-parent
+  by _composing_ one or more base primitives -- composition, not single-parent
   inheritance. The earlier "families" were mid-level composed actions, not the
   base.
 
@@ -200,7 +200,7 @@ all four protocols, and ready for a separate follow-on plan to implement.
   from what the learner does and what the scene changes.
 - Define domain verbs (grind, draw, dispense, assemble) as named compositions.
   An interaction-level domain verb expands to one `target / gesture /
-  validator / response`; a step-level domain verb expands to a whole
+validator / response`; a step-level domain verb expands to a whole
   `sequence` plus its `step_validator`. Each has a documented expansion. A
   domain verb is authoring vocabulary, not base vocabulary, and implies no
   hidden state change -- all state change is explicit in a `response`, as a
@@ -315,7 +315,7 @@ substrate -- is sound and carried forward. Only the terminology is reworked.
 
 - Building the `adjust`-gesture interaction (the continuous volume/voltage
   control) -- the user wants it built, but building is code; this plan
-  *defines* the gesture, the follow-on code plan builds it.
+  _defines_ the gesture, the follow-on code plan builds it.
 - Changing `src/scene_runtime/contract.ts` or any runtime code.
 - Editing `src/scenes/` -- frozen per `SRC_SCENES_FREEZE.md`.
 - Migrating `content/*/protocol.yaml` files -- ratification maps them on
@@ -552,22 +552,22 @@ scene / runtime architecture and is out of scope for this plan.
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-EV | `docs/active_plans/protocol_interaction_inventory.md` | 1 to 2 |
-| M2 / WS-PHIL | `docs/PRIMARY_DESIGN.md` -- semantic inheritance section | 1 |
-| M2 / WS-SLOT | design doc -- two-level step/interaction model, target + gesture slots | 1 |
-| M2 / WS-SOP | design doc -- response container, scene_operation primitives, domain-verb mechanism | 1 |
-| M2 / WS-PED | design doc -- pedagogy-first rule | 1 |
-| M2 / WS-STA | design doc -- interaction validator, step_validator, outcome, state + event model | 1 |
-| M2 / WS-BND | design doc -- scene/protocol boundary | 1 |
-| M3 / WS-RAT-A | ratification: OVCAR8 + 7 current content files | 1 |
-| M3 / WS-RAT-B | ratification: Miraculin | 1 |
-| M3 / WS-RAT-C | ratification: SDS-PAGE | 1 |
-| M4 / WS-DOC-P | `docs/PROTOCOL_VOCABULARY.md` rewrite | 1 to 2 |
-| M4 / WS-DOC-S | `docs/SCENE_VOCABULARY.md` rewrite | 1 to 2 |
-| M4 / WS-DOC-D | dependent-doc alignment (all docs/ referencing the model) | 2 to 3 |
-| M4 / WS-DOC-C | changelog + close-out + follow-on plan stub | 1 |
+| Milestone / Workstream | Component                                                                           | Expected patches |
+| ---------------------- | ----------------------------------------------------------------------------------- | ---------------- |
+| M1 / WS-EV             | `docs/active_plans/protocol_interaction_inventory.md`                               | 1 to 2           |
+| M2 / WS-PHIL           | `docs/PRIMARY_DESIGN.md` -- semantic inheritance section                            | 1                |
+| M2 / WS-SLOT           | design doc -- two-level step/interaction model, target + gesture slots              | 1                |
+| M2 / WS-SOP            | design doc -- response container, scene_operation primitives, domain-verb mechanism | 1                |
+| M2 / WS-PED            | design doc -- pedagogy-first rule                                                   | 1                |
+| M2 / WS-STA            | design doc -- interaction validator, step_validator, outcome, state + event model   | 1                |
+| M2 / WS-BND            | design doc -- scene/protocol boundary                                               | 1                |
+| M3 / WS-RAT-A          | ratification: OVCAR8 + 7 current content files                                      | 1                |
+| M3 / WS-RAT-B          | ratification: Miraculin                                                             | 1                |
+| M3 / WS-RAT-C          | ratification: SDS-PAGE                                                              | 1                |
+| M4 / WS-DOC-P          | `docs/PROTOCOL_VOCABULARY.md` rewrite                                               | 1 to 2           |
+| M4 / WS-DOC-S          | `docs/SCENE_VOCABULARY.md` rewrite                                                  | 1 to 2           |
+| M4 / WS-DOC-D          | dependent-doc alignment (all docs/ referencing the model)                           | 2 to 3           |
+| M4 / WS-DOC-C          | changelog + close-out + follow-on plan stub                                         | 1                |
 
 Patch counts are deliberately below the `CAPACITY_AND_SIZING.md` code-plan
 ranges: this is a documentation-design plan, and each doc artifact is sized
@@ -593,7 +593,7 @@ for one owner and one reviewable patch.
     `resuspend` volume mismatch; `completionEvent` naming chaos).
   - `docs/CHANGELOG.md` draft entry started.
 - Note: M1 is complete. Its artifact uses the first pass's `target + mode +
-  action` terms; that is valid evidence and M2 re-reads it under the
+action` terms; that is valid evidence and M2 re-reads it under the
   two-level step/interaction model rather than rewriting it.
 - Parallel-plan ready: no -- a single consolidation artifact authored by one
   owner; splitting it creates merge churn on one file. Max parallel doers: 1.
@@ -1072,7 +1072,7 @@ for one owner and one reviewable patch.
 - Verification commands:
   - `source source_me.sh && pytest tests/test_ascii_compliance.py`
 - Obvious follow-ons:
-  - Hand the rule to WS-RAT-* so ratification can check each interaction's
+  - Hand the rule to WS-RAT-\* so ratification can check each interaction's
     pedagogy.
 
 ### Work package WP-STA1: Tighten to the linear spec; define validators, outcome, state and event model
@@ -1089,15 +1089,15 @@ for one owner and one reviewable patch.
     `entry_step`, `steps[]`); drops `sequence_mode`, the optional interaction
     `name`, and `state_update` from `response`; defers complex branching. The
     tight model is `protocol -> step(name, prompt, sequence, step_validator,
-    outcome, next_step) -> interaction(target, gesture, validator, response)
-    -> response(scene_operations[], feedback?)`.
+outcome, next_step) -> interaction(target, gesture, validator, response)
+-> response(scene_operations[], feedback?)`.
   - Interaction `validator` is a named preset with typed parameters:
     `{preset: <name>, ...params}` -- for example `{preset: correct_target}`,
     `{preset: correct_choice}`, `{preset: target_with_value, value:
-    {volume_ml: 4}}`. Interaction validators check local correctness only.
+{volume_ml: 4}}`. Interaction validators check local correctness only.
   - `step_validator` is a named preset with typed parameters -- for example
     `{preset: sequence_complete}`, `{preset: final_state_matches, target:
-    flask, contains: {liquid: pbs, volume_ml: 4}}`. It checks only whole-step
+flask, contains: {liquid: pbs, volume_ml: 4}}`. It checks only whole-step
     completion; it does not re-run interaction validators.
   - Writes the initial **validator preset library**: at minimum
     `correct_target`, `correct_choice`, `target_with_value` (interaction
@@ -1108,7 +1108,7 @@ for one owner and one reviewable patch.
     creators select from the library; they never write custom validation
     logic.
   - `outcome` is the simple mapping `{on_success: complete, on_failure:
-    retry}`. `retry` restarts the whole step (the entire `sequence` resets).
+retry}`. `retry` restarts the whole step (the entire `sequence` resets).
     Advancing is `next_step`'s job. Update the worked example, the slot
     charter, and all prose to this shape.
   - State change is explicit in a `response` via a `scene_operation` mutation
@@ -1363,39 +1363,39 @@ for one owner and one reviewable patch.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| gesture set is incomplete | High | M3 finds a skill-based interaction that fits no `gesture` value | architect (WS-SLOT) | The gesture extension rule (WP-SLOT1) makes adding a value possible; M3 ratifies all four protocols in parallel to surface this early, not after the docs are written. |
-| Pedagogy rule is too vague to apply | High | M3 reviewers cannot decide a step's target and gesture from the rule; M4 manual gate fails | planner (WS-PED) | WP-PED1 must ship worked examples per gesture, not just principles; the rule is tested in M3, before the canonical rewrite. |
-| Rough-draft protocols give thin evidence | Medium | Miraculin / SDS-PAGE steps too stubbed to map | reviewer (WS-RAT-B/C) | Map only steps with real procedure content; record stubbed sections as "protocol needs polishing", not as vocabulary gaps. |
-| Slot model churns after M2 | Medium | M3 keeps finding unmappable steps | planner (WS-SOP) | The domain-verb layer absorbs most new behavior cheaply via slot composition; a design revision is only forced when a genuinely new `gesture` value or `scene_operation` primitive is missing. |
-| "action" re-collapse, `interaction` slot creeps back, or the two levels flatten | Medium | A doer reintroduces one term spanning learner behavior, validation, scene mutation, and pedagogy; re-adds a task-type enum on top of `target`; or collapses the `step` / `sequence` / `interaction` nesting back to one-step-one-gesture | architect (WS-SLOT) | The two-level model and the one-line per-slot charter make the separation explicit; the target's kind carries task semantics, so no `interaction` slot is needed; the "wash the flask" worked example shows why nesting is required; reviewers reject any doc text that merges slots, re-adds the enum, or flattens the levels. |
-| Design over-fits to one protocol | Medium | A construct works for cell culture but not SDS-PAGE assembly or Miraculin extraction | architect (WS-BND) | M2 work packages each cite evidence from at least two protocols; M3 ratifies all four in parallel. |
-| Timed-wait gap is deferred and forgotten | Low | The follow-on code plan hits a timed incubation step with no design | planner (WS-STA) | WP-STA1 must give timed-wait a written disposition (designed into a `scene_operation` typed field or explicitly deferred with a reason); M2 integration gate checks for it. The iterative loop is no longer a gap -- the two-level model handles it as `step_validator` plus `outcome: retry`. |
-| Scope creep back into code | Low | A doer "just builds" the `adjust` gesture or edits `contract.ts` | planner | Non-goals are explicit; reviewers reject any code change in this plan. |
+| Risk                                                                            | Impact | Trigger                                                                                                                                                                                                                                  | Owner                 | Mitigation                                                                                                                                                                                                                                                                                                                      |
+| ------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| gesture set is incomplete                                                       | High   | M3 finds a skill-based interaction that fits no `gesture` value                                                                                                                                                                          | architect (WS-SLOT)   | The gesture extension rule (WP-SLOT1) makes adding a value possible; M3 ratifies all four protocols in parallel to surface this early, not after the docs are written.                                                                                                                                                          |
+| Pedagogy rule is too vague to apply                                             | High   | M3 reviewers cannot decide a step's target and gesture from the rule; M4 manual gate fails                                                                                                                                               | planner (WS-PED)      | WP-PED1 must ship worked examples per gesture, not just principles; the rule is tested in M3, before the canonical rewrite.                                                                                                                                                                                                     |
+| Rough-draft protocols give thin evidence                                        | Medium | Miraculin / SDS-PAGE steps too stubbed to map                                                                                                                                                                                            | reviewer (WS-RAT-B/C) | Map only steps with real procedure content; record stubbed sections as "protocol needs polishing", not as vocabulary gaps.                                                                                                                                                                                                      |
+| Slot model churns after M2                                                      | Medium | M3 keeps finding unmappable steps                                                                                                                                                                                                        | planner (WS-SOP)      | The domain-verb layer absorbs most new behavior cheaply via slot composition; a design revision is only forced when a genuinely new `gesture` value or `scene_operation` primitive is missing.                                                                                                                                  |
+| "action" re-collapse, `interaction` slot creeps back, or the two levels flatten | Medium | A doer reintroduces one term spanning learner behavior, validation, scene mutation, and pedagogy; re-adds a task-type enum on top of `target`; or collapses the `step` / `sequence` / `interaction` nesting back to one-step-one-gesture | architect (WS-SLOT)   | The two-level model and the one-line per-slot charter make the separation explicit; the target's kind carries task semantics, so no `interaction` slot is needed; the "wash the flask" worked example shows why nesting is required; reviewers reject any doc text that merges slots, re-adds the enum, or flattens the levels. |
+| Design over-fits to one protocol                                                | Medium | A construct works for cell culture but not SDS-PAGE assembly or Miraculin extraction                                                                                                                                                     | architect (WS-BND)    | M2 work packages each cite evidence from at least two protocols; M3 ratifies all four in parallel.                                                                                                                                                                                                                              |
+| Timed-wait gap is deferred and forgotten                                        | Low    | The follow-on code plan hits a timed incubation step with no design                                                                                                                                                                      | planner (WS-STA)      | WP-STA1 must give timed-wait a written disposition (designed into a `scene_operation` typed field or explicitly deferred with a reason); M2 integration gate checks for it. The iterative loop is no longer a gap -- the two-level model handles it as `step_validator` plus `outcome: retry`.                                  |
+| Scope creep back into code                                                      | Low    | A doer "just builds" the `adjust` gesture or edits `contract.ts`                                                                                                                                                                         | planner               | Non-goals are explicit; reviewers reject any code change in this plan.                                                                                                                                                                                                                                                          |
 
 ## Rollout and release checklist
 
 - [ ] Two-level step/interaction course-correction accepted; OQ-6 and OQ-7
-  resolved.
+      resolved.
 - [ ] M1 evidence artifact committed.
 - [ ] M2 design doc complete; first pass's `target + mode + action` draft, the
-  seven-slot `interaction` slot, and the flat six-slot framing reworked away;
-  integration gate passed (no TBD; timed-wait residual gap dispositioned).
+      seven-slot `interaction` slot, and the flat six-slot framing reworked away;
+      integration gate passed (no TBD; timed-wait residual gap dispositioned).
 - [ ] M3 ratification matrices complete for all four protocols and the 7
-  content files; every step has its step slots, each interaction's slots, its
-  domain verb if any, and a taught skill; residual-gap list dispositioned.
+      content files; every step has its step slots, each interaction's slots, its
+      domain verb if any, and a taught skill; residual-gap list dispositioned.
 - [ ] M2 design doc revised if M3 surfaced gaps; affected steps re-ratified.
 - [ ] `docs/PROTOCOL_VOCABULARY.md` rewritten; target-state and current-code
-  sections clearly labeled.
+      sections clearly labeled.
 - [ ] `docs/SCENE_VOCABULARY.md` rewritten; cross-references resolve.
 - [ ] Dependent docs aligned (rewritten, deleted, or archived -- no
-  transitional notes).
+      transitional notes).
 - [ ] `docs/CHANGELOG.md` entry finalized.
 - [ ] Follow-on code-migration plan stubbed; `adjust`-gesture build named.
 - [ ] `scene_runtime_doc_conflicts.md` annotated.
 - [ ] Human review of the two canonical docs for internal consistency, a
-  usable scene/protocol boundary, and an applicable pedagogy rule.
+      usable scene/protocol boundary, and an applicable pedagogy rule.
 
 ## Documentation close-out requirements
 
@@ -1471,7 +1471,7 @@ ASCII / link gate output, not test runs.
   Each dependent-doc section affected by the new vocabulary is rewritten to
   match it, deleted if obsolete, or moved to `docs/archive/` if it is still
   useful as historical context. WP-DOC-D1 applies this rule.
-- OQ-6: resolved. The slot *content* is settled: no seventh `interaction`
+- OQ-6: resolved. The slot _content_ is settled: no seventh `interaction`
   slot is needed -- the `target`'s kind carries the task semantics
   (`target: voltage_dial` + `gesture: adjust`, not `interaction: set_value` on
   top), and QTI's interaction names (Choice, Hot Spot, Slider, Position
@@ -1566,12 +1566,12 @@ named the first three -- validator schema, retry/branching, target resolution
 
 - OQ-14: resolved by the user. **Validators are named presets with typed
   parameters.** A validator is written as `{preset: <name>, ...typed
-  params}`, never free-form prose and never an inline expression. Examples:
+params}`, never free-form prose and never an inline expression. Examples:
   `validator: {preset: correct_target}`; `validator: {preset:
-  correct_choice}`; `validator: {preset: target_with_value, value:
-  {volume_ml: 4}}`; `step_validator: {preset: sequence_complete}`;
+correct_choice}`; `validator: {preset: target_with_value, value:
+{volume_ml: 4}}`; `step_validator: {preset: sequence_complete}`;
   `step_validator: {preset: final_state_matches, target: flask, contains:
-  {liquid: pbs, volume_ml: 4}}`. Both the interaction `validator` and the
+{liquid: pbs, volume_ml: 4}}`. Both the interaction `validator` and the
   `step_validator` use named presets. Content creators select from a
   documented preset library; they do not write custom validation logic. Each
   preset must document its required fields, what it checks, where it can be

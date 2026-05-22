@@ -9,13 +9,13 @@ to its source.
 
 ## Per-scene regression breakdown
 
-| Scene | Baseline (Lane C) | Current | Delta | Type | Suspected source |
-| --- | --- | --- | --- | --- | --- |
-| bench_basic | 90 | 70 | -20 | B | `experiments/css_native_layout/styles/bench.css` 3-band grid applied unconditionally |
-| staining_bench | 60 | 45 | -15 | B | same bench.css 3-band grid plus region styling |
-| drug_dilution_plate_workspace | 63 | 46 | -17 | B | bench.css 3-band grid plus template region merge (5 regions -> 3) |
-| crowded_bench_dense | 60 | 54 | -6 | B | bench.css 3-band grid + label-hide interaction |
-| electrophoresis_bench | 47 | 0 + 4 hard fails | -47 | A | `experiments/css_native_layout/templates/electrophoresis_bench.html` inline CSS column-wrap (Lane E Trial 1.2) |
+| Scene                         | Baseline (Lane C) | Current          | Delta | Type | Suspected source                                                                                               |
+| ----------------------------- | ----------------- | ---------------- | ----- | ---- | -------------------------------------------------------------------------------------------------------------- |
+| bench_basic                   | 90                | 70               | -20   | B    | `experiments/css_native_layout/styles/bench.css` 3-band grid applied unconditionally                           |
+| staining_bench                | 60                | 45               | -15   | B    | same bench.css 3-band grid plus region styling                                                                 |
+| drug_dilution_plate_workspace | 63                | 46               | -17   | B    | bench.css 3-band grid plus template region merge (5 regions -> 3)                                              |
+| crowded_bench_dense           | 60                | 54               | -6    | B    | bench.css 3-band grid + label-hide interaction                                                                 |
+| electrophoresis_bench         | 47                | 0 + 4 hard fails | -47   | A    | `experiments/css_native_layout/templates/electrophoresis_bench.html` inline CSS column-wrap (Lane E Trial 1.2) |
 
 ## Type categorization
 
@@ -117,10 +117,10 @@ monitoring is meaningless.
 
 ## Cross-references
 
-- [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md) (Lane C baseline at lines 95-117 + 149-169).
+- `new1_5_layout_hardening_results.md` (Lane C baseline at lines 95-117 + 149-169).
 - Commit `4d03b4b` ("I have no idea") applied bench.css + hood.css +
   instrument.css refactors and template restructures simultaneously.
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md) (separate Workstream 2 production CSS context).
+- `new2_css_native_production_blocker_plan.md` (separate Workstream 2 production CSS context).
 - Task #97 scorecard regression check (Lane S2).
 - Task #100 Lane O-clean revert (separate metric-gaming context).
 

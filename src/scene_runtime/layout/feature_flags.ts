@@ -23,27 +23,27 @@ let css_native_well_plate_zoom_spike_override: boolean | null = null;
 let css_native_invocation_count = 0;
 
 export function is_css_native_well_plate_zoom_spike_enabled(): boolean {
-	if (css_native_well_plate_zoom_spike_override !== null) {
-		return css_native_well_plate_zoom_spike_override;
-	}
-	return CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE_DEFAULT;
+  if (css_native_well_plate_zoom_spike_override !== null) {
+    return css_native_well_plate_zoom_spike_override;
+  }
+  return CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE_DEFAULT;
 }
 
 /** Test-only. Never call from production code. Overrides the compile-time default for the spike flag. Pass null to clear the override. */
 export function set_css_native_well_plate_zoom_spike_enabled_for_test(
-	value: boolean | null,
+  value: boolean | null,
 ): void {
-	css_native_well_plate_zoom_spike_override = value;
+  css_native_well_plate_zoom_spike_override = value;
 }
 
 export function increment_css_native_invocation_count(): void {
-	css_native_invocation_count++;
+  css_native_invocation_count++;
 }
 
 export function get_css_native_invocation_count(): number {
-	return css_native_invocation_count;
+  return css_native_invocation_count;
 }
 
 export function reset_css_native_invocation_count(): void {
-	css_native_invocation_count = 0;
+  css_native_invocation_count = 0;
 }

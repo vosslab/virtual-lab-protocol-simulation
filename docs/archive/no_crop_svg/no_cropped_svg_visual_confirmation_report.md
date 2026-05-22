@@ -7,16 +7,16 @@ Status: TRIAL 5 APPLIED AND VERIFIED
 
 Trial 5 CSS edits were successfully applied to three CSS files (bench.css, hood.css, instrument.css). Post-trial renders were generated for 10 production templates and 10 gold reference scenes (20 total). Diagnostic precheck audit measured improvement against baseline.
 
-| Metric | Value |
-| --- | --- |
-| Trial 5 Applied | Y |
-| CSS Files Changed | 3 |
-| Visible Failures Before | 58 |
-| Visible Failures After | 28 |
-| Fixed Count | 30 |
-| Improved Count | 0 |
-| Unchanged Count | 1 |
-| Worsened Count | 2 |
+| Metric                  | Value |
+| ----------------------- | ----- |
+| Trial 5 Applied         | Y     |
+| CSS Files Changed       | 3     |
+| Visible Failures Before | 58    |
+| Visible Failures After  | 28    |
+| Fixed Count             | 30    |
+| Improved Count          | 0     |
+| Unchanged Count         | 1     |
+| Worsened Count          | 2     |
 
 **Verdict: MAJOR IMPROVEMENT** - Trial 5 CSS edits resolved 30 clipped-by-parent issues (58 -> 28), a 52% reduction. Production template coverage: 8 of 10 scenes fixed/improved, 2 regressed minimally, 1 unchanged.
 
@@ -71,29 +71,29 @@ All 52 original failures from [no_cropped_svg_screenshot_audit.md](no_cropped_sv
 
 ## Per-Scene Analysis (Production Templates)
 
-| Scene | Clipped Before | Clipped After | Delta | Status |
-| --- | --- | --- | --- | --- |
-| bench_basic | 2 | 1 | -1 | FIXED |
-| crowded_bench_dense | 13 | 4 | -9 | FIXED |
-| drug_dilution_plate_workspace | 7 | 3 | -4 | FIXED |
-| drug_dilution_workspace_dense | 12 | 4 | -8 | FIXED |
-| electrophoresis_bench | 12 | 7 | -5 | FIXED |
-| hood_basic | 2 | 1 | -1 | FIXED |
-| microscope_basic | 0 | 1 | +1 | WORSENED |
-| cell_counter_basic | 0 | 1 | +1 | WORSENED |
-| staining_bench | 10 | 6 | -4 | FIXED |
-| well_plate_96_zoom | 0 | 0 | 0 | UNCHANGED |
+| Scene                         | Clipped Before | Clipped After | Delta | Status    |
+| ----------------------------- | -------------- | ------------- | ----- | --------- |
+| bench_basic                   | 2              | 1             | -1    | FIXED     |
+| crowded_bench_dense           | 13             | 4             | -9    | FIXED     |
+| drug_dilution_plate_workspace | 7              | 3             | -4    | FIXED     |
+| drug_dilution_workspace_dense | 12             | 4             | -8    | FIXED     |
+| electrophoresis_bench         | 12             | 7             | -5    | FIXED     |
+| hood_basic                    | 2              | 1             | -1    | FIXED     |
+| microscope_basic              | 0              | 1             | +1    | WORSENED  |
+| cell_counter_basic            | 0              | 1             | +1    | WORSENED  |
+| staining_bench                | 10             | 6             | -4    | FIXED     |
+| well_plate_96_zoom            | 0              | 0             | 0     | UNCHANGED |
 
 **Summary:** 8 of 10 production templates show fixed/improved status. 2 scenes (microscope_basic, cell_counter_basic) regressed by +1 clipped issue each (both template-mode skeletons with minimal object placement, likely diagnostic artifacts).
 
 ## Comparison Table: Before/After Metrics
 
-| Metric | Before | After | Delta |
-| --- | --- | --- | --- |
-| Visible crop failures (clipped_by_parent) | 58 | 28 | -30 (52% reduction) |
-| Aspect distorted hard fails | 45 | 39 | -6 (13% reduction) |
-| Scene fail count | 9 | 10 | +1 (regression) |
-| Diagnostic catch rate | 0/52 | ~20/52 | +20 (38% catch improvement) |
+| Metric                                    | Before | After  | Delta                       |
+| ----------------------------------------- | ------ | ------ | --------------------------- |
+| Visible crop failures (clipped_by_parent) | 58     | 28     | -30 (52% reduction)         |
+| Aspect distorted hard fails               | 45     | 39     | -6 (13% reduction)          |
+| Scene fail count                          | 9      | 10     | +1 (regression)             |
+| Diagnostic catch rate                     | 0/52   | ~20/52 | +20 (38% catch improvement) |
 
 ## Remaining No-Crop Violations (28 Post-Trial5)
 
@@ -116,7 +116,7 @@ Representative samples of remaining failures by scene:
 
 ## Supersession Note
 
-This report supersedes [current_css_native_layout_manager_status_report.pdf](current_css_native_layout_manager_status_report.pdf) for no-crop claims. The old PDF reflects pre-Trial5 baseline state (58 clipped issues). Trial 5 application reduced that to 28 (52% improvement). All future no-crop work should reference this Trial 5 visual confirmation report, not the pre-trial baseline.
+This report supersedes `current_css_native_layout_manager_status_report.pdf` for no-crop claims. The old PDF reflects pre-Trial5 baseline state (58 clipped issues). Trial 5 application reduced that to 28 (52% improvement). All future no-crop work should reference this Trial 5 visual confirmation report, not the pre-trial baseline.
 
 ## Cross-References
 
@@ -143,4 +143,4 @@ This report supersedes [current_css_native_layout_manager_status_report.pdf](cur
 ---
 
 Generated: 2026-05-21 | Trial 5 CSS No-Crop Visual Confirmation
-Report artifacts: [no_cropped_svg_visual_confirmation_assets/](no_cropped_svg_visual_confirmation_assets/) (before/after screenshot pairs)
+Report artifacts: `no_cropped_svg_visual_confirmation_assets` (before/after screenshot pairs)

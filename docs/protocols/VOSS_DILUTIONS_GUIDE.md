@@ -1,4 +1,5 @@
 # <img
+
 src="media/Pictures/100000000000062800000240054CC6EF54003D63.png"
 style="width:3.539in;height:1.2929in" />Lab 1B: Solution and Dilutions
 
@@ -46,9 +47,9 @@ Similar units apply generally to measures of length (meters, m) and
 chemical equivalents (E).
 
 See
-[*http://en.wikipedia.org/wiki/International_System_of_Units*](http://en.wikipedia.org/wiki/International_System_of_Units)
+[_http://en.wikipedia.org/wiki/International_System_of_Units_](http://en.wikipedia.org/wiki/International_System_of_Units)
 and
-[*http://en.wikipedia.org/wiki/SI_prefix*](http://en.wikipedia.org/wiki/SI_prefix)
+[_http://en.wikipedia.org/wiki/SI_prefix_](http://en.wikipedia.org/wiki/SI_prefix)
 for more.
 
 ## Solution Preparation
@@ -63,7 +64,7 @@ for more.
 ### Introduction to solutions
 
 When talking about solutions, it is important to remember that a
-***solute*** is dissolved in a ***solvent*** to create a ***solution***.
+**_solute_** is dissolved in a **_solvent_** to create a **_solution_**.
 In any biology lab, 99.99% of the time the solvent is distilled water
 (dH<sub>2</sub>O) or a pre-existing solution of solutes in water.
 
@@ -96,7 +97,7 @@ concentrations: mass concentration, percent mass concentration, molar
 concentration, number concentration, and volume concentration.
 
 **Mass concentration** is the amount of mass per unit volume. Typically,
-biology this is given in grams per milliliter or *g/mL*. For example a
+biology this is given in grams per milliliter or _g/mL_. For example a
 protein sample concentration may be given as 10 mg/mL (or 1% (w/v) as
 described below).
 
@@ -136,8 +137,8 @@ moles.
 **Volume concentration** is used when dissolving one volume into
 another. Volume concentration is given as a percentage of the total
 volume. For example, if you add 300 mL of ethanol and fill with water
-until you get to exactly 1000 mL, you would have a *30% (v/v) ethanol
-solution*. Note: the "v*/v*" stands for volume divided by volume.
+until you get to exactly 1000 mL, you would have a _30% (v/v) ethanol
+solution_. Note: the "v*/v*" stands for volume divided by volume.
 
 ### Making solutions
 
@@ -149,7 +150,7 @@ weight.
 
 $$\frac{\text{mass in grams}}{\text{formula weight}}{=}\text{number of moles}$$
 
-*Note:* some compounds contain water molecules and their formula weight
+_Note:_ some compounds contain water molecules and their formula weight
 will differ from the molecular weight of the elements alone, it is
 therefore a good idea to check the label of the compound to find out if
 it is anhydrous (without water).
@@ -159,7 +160,7 @@ of solution.
 
 First calculate the amount of salt you will need in grams (g): Looking
 at a periodic table, NaCl has a formula weight of 22.99 g per mole (Na)
-plus 35.45 g per mole (Cl) which equals a total of *58.44 g per mole*.
+plus 35.45 g per mole (Cl) which equals a total of _58.44 g per mole_.
 We want exactly 1 mole of NaCl, so we need to weigh out 58.4 grams.
 
 Example 2: make a 200 mM (=200 mmol/L) solution of NaCl in 500 mL of
@@ -174,10 +175,12 @@ is placed on the bottom. The only units remaining are the units of your
 final answer. For example, in example problem \#1, we would use the
 following units table:
 
-$$\begin{pmatrix}
+$$
+\begin{pmatrix}
 {1\text{mol}} & \mid & {58.44\text{g}} & \mid & {1\text{L}} \\
 {1\text{L}} & \mid & {1\text{mol}} & \mid &
-\end{pmatrix}{=}58.4\text{g}$$
+\end{pmatrix}{=}58.4\text{g}
+$$
 
 In this table, all the units cancel out except grams. We then multiply
 the top numbers and divide by the bottom numbers to get 1 \* 58.44 \* 1
@@ -186,10 +189,12 @@ tackle, the harder problem, since example \#2 has more units, we need to
 convert millimolar (mM) into molar (M) and milliliters (mL) into
 liters (L).
 
-$$\begin{pmatrix}
+$$
+\begin{pmatrix}
 {200\text{mmol}} & \mid & {1\text{mol}} & \mid & {58.44\text{g}} & \mid & {500\text{mL}} & \mid & {1\text{L}} \\
 {1\text{L}} & \mid & {1000\text{mmol}} & \mid & {1\text{mol}} & \mid & & \mid & {1000\text{mL}}
-\end{pmatrix}{=}5.8\text{g}$$
+\end{pmatrix}{=}5.8\text{g}
+$$
 
 Using the above table, you should see that all the units cancel out
 except grams (the units you are expecting to get out). Now it is just a
@@ -209,14 +214,14 @@ equal zero with the paper on it).
 
 Add the amount of compound until you reach the total weight. Next, add
 the solid slowly to distilled water (dH<sub>2</sub>O) that is stirring.
-*Do not start with the total volume of water because adding the solid
-will increase the volume.* Obtain about 75 to 80% of the final volume of
+_Do not start with the total volume of water because adding the solid
+will increase the volume._ Obtain about 75 to 80% of the final volume of
 water that you need (depending on how much material you plan to add).
 
 After the solid dissolves, add distilled water (dH<sub>2</sub>O) to the
 final volume. If using with cells, place the solution in an autoclave
 flask to destroy any living cells. For chromatography, it sometimes
-requires to *degas* the solution (*i.e.*, remove any dissolved gases in
+requires to _degas_ the solution (_i.e._, remove any dissolved gases in
 the liquid). In order to degas a solution, place the solution under
 vacuum, such as an aspirator attached to a sink faucet.
 
@@ -235,8 +240,8 @@ vacuum, such as an aspirator attached to a sink faucet.
 ### Introduction
 
 When talking about dilutions, it is important to remember that an
-***aliquot*** (a portion of a total amount of a solution) is diluted in
-a ***diluent*** to create a ***dilution***. In any biology lab, most of
+**_aliquot_** (a portion of a total amount of a solution) is diluted in
+a **_diluent_** to create a **_dilution_**. In any biology lab, most of
 the time the diluent is distilled water (dH<sub>2</sub>O) or another
 bulk solution, such as cell media.
 
@@ -286,21 +291,21 @@ now we have
 
 c<sub>2 </sub>x (2 L) = 10 g
 
-Solve for c<sub>2</sub> to obtain *5 g/L*.
+Solve for c<sub>2</sub> to obtain _5 g/L_.
 
 Determining what you already know and putting the information into the
 equation c<sub>1 </sub>x V<sub>1</sub> = c<sub>2 </sub>x V<sub>2</sub>
 establishes the relationship that you need in order to solve dilution
 problems.
 
-Second, we need to determine the amount of diluent (V<sub>*d*</sub>) to
+Second, we need to determine the amount of diluent (V<sub>_d_</sub>) to
 be added. It is simply the final dilution value (V<sub>2</sub>) minus
 the aliquot volume (V<sub>1</sub>) or:
 
 $$\text{V}_{d}{=}\text{V}_{\text{dilution}}-\text{V}_{\text{aliquot}}{=}\text{V}_{2}-\text{V}_{1}$$
 
-So, in the above example, the diluent volume (V<sub>*d*</sub>) =
-V<sub>2</sub> - V<sub>1</sub> = 2 L - 0.2 L = *1.8 L*.
+So, in the above example, the diluent volume (V<sub>_d_</sub>) =
+V<sub>2</sub> - V<sub>1</sub> = 2 L - 0.2 L = _1.8 L_.
 
 ### Determine the objective
 
@@ -332,7 +337,7 @@ c<sub>1 </sub>x V<sub>1</sub> = c<sub>2 </sub>x V<sub>2</sub>
 V<sub>2</sub> = 50 x 0.2 / 10 = 1 L
 
 So, we need to dilute our solution to 1 L and to obtain a final
-concentration of 10 g/L. Likewise, the diluent volume (V<sub>*d*</sub>)
+concentration of 10 g/L. Likewise, the diluent volume (V<sub>_d_</sub>)
 = V<sub>2</sub> - V<sub>1</sub> = 1 L - 0.2 L = 0*.8 L*.
 
 Now for the second type problem. You know c<sub>1</sub>, the starting
@@ -359,8 +364,8 @@ V<sub>1</sub> = 2.5 x 100 / 47 = 5.3 mL
 Notice the final answer is in milliliters (mL) not liters (L), that is
 because we plugged milliliters in the equation. It is important to make
 sure all of your units cancel when using these equations. Likewise, the
-diluent volume (V<sub>*d*</sub>) = V<sub>2</sub> - V<sub>1</sub> =
-100 mL - 5.3 mL = *94.7 mL* of water.
+diluent volume (V<sub>_d_</sub>) = V<sub>2</sub> - V<sub>1</sub> =
+100 mL - 5.3 mL = _94.7 mL_ of water.
 
 Example 6. Prepare a 100 mL of NaCl solution at a concentration 25 mM
 using a 2 M stock solution.
@@ -375,7 +380,7 @@ c<sub>1 </sub>x V<sub>1</sub> = c<sub>2 </sub>x V<sub>2</sub>
 V<sub>1</sub> = 25 x 100 / 2 = 1250 mL
 
 So, just by putting in the numbers it says we need to dilute a 1250 mL
-aliquot to form 100 mL of solution. That is *impossible*! What did we do
+aliquot to form 100 mL of solution. That is _impossible_! What did we do
 wrong? Well, we did not make sure our units cancelled out. If we did it
 properly, we would convert 2 M into 2000 mM (or 25 mM into 0.025 M) and
 it would look like this:
@@ -388,8 +393,8 @@ V<sub>1</sub> = 25 x 100 / 2000 = 1.25 mL
 
 This is a much more reasonable answer. It now says we need to dilute a
 1.25 mL aliquot to form 100 mL of solution. As before, the diluent
-volume (V<sub>*d*</sub>) = V<sub>2</sub> - V<sub>1</sub> = 100 mL -
-1.25 mL = *98.75 mL* of water.
+volume (V<sub>_d_</sub>) = V<sub>2</sub> - V<sub>1</sub> = 100 mL -
+1.25 mL = _98.75 mL_ of water.
 
 It is critical that you report units for concentrations, volumes, and
 amounts, and when you make calculations for dilutions you must not mix
@@ -400,7 +405,7 @@ V<sub>1</sub> (160 mL) x c<sub>1</sub> (160 mg/L) = V<sub>2</sub>
 
 However, because concentration represents a proportional relationship,
 you can select from a variety of units. For example, 1 mg/mL is the same
-as 1 g/L, 1 &micro;g/&micro;L, 1 ng/nL, *etc*. It is also the same as 1000 mg/L, but
+as 1 g/L, 1 &micro;g/&micro;L, 1 ng/nL, _etc_. It is also the same as 1000 mg/L, but
 why would we write it that way? Select units that simplify your
 expressions.
 
@@ -411,7 +416,7 @@ desired or can be managed for a given protocol, it is frequently
 necessary to dilute these solutions to a desired level. This requires a
 working knowledge of the principles of diluting, dilution factors,
 concentration factors and the calculations involved. High dilutions are
-usually expressed exponentially, *i.e.*, a solution which has been
+usually expressed exponentially, _i.e._, a solution which has been
 diluted a million fold is termed a 10<sup>6</sup> dilution (DF), or is
 10<sup>-6</sup> concentration (CF).
 
@@ -434,9 +439,9 @@ $$\text{CF}{=}\frac{1}{\text{DF}}{=}\frac{\text{aliquot volume}}{\text{final vol
 
 Typically dilutions are written as a "1:50 dilution." In this example,
 50 is the dilution factor (DF) and 1/50 = 0.02 is the concentration
-factor (CF). *As a rule of thumb, the dilution factor (DF) will be
+factor (CF). _As a rule of thumb, the dilution factor (DF) will be
 greater than 1 and the concentration factor (CF) will always be less
-than 1.*
+than 1._
 
 In order to calculate the volume of the aliquot, it can be determined in
 two ways:
@@ -448,7 +453,7 @@ Example 7. How would you prepare 20 mL of a 1:50 dilution?
 
 Determine required aliquot by dividing final volume by dilution factor:
 20 mL/50 = 0.4 mL sample. Subtract the aliquot volume from the final
-volume:  20 mL - 0.4 mL = 19.6 mL diluent. Measure out 19.6 mL diluent,
+volume: 20 mL - 0.4 mL = 19.6 mL diluent. Measure out 19.6 mL diluent,
 add 0.4 mL sample to it, mix thoroughly
 
 ### Serial Dilutions
@@ -477,7 +482,7 @@ microbiology, biotechnology, and in chemistry classes, to name just a
 few. Therefore a clear and concise approach to the learning of this very
 important concept is essential.
 
-Serial dilutions are *usually* made in increments of 1000, 100 or 10.
+Serial dilutions are _usually_ made in increments of 1000, 100 or 10.
 The concentration of the original solution and the desired concentration
 will determine how great the dilutions need to be and how many dilutions
 are required. Important also is the total volume of solution needed. If
@@ -493,44 +498,44 @@ dilution. Adding 1 &micro;L of sample to 999 mL of water (for a
 1:10<sup>6</sup> dilution) never makes sense. Using a serial dilution
 provides two additional advantages over one large dilution:
 
-1.  *Saves materials.* Allows for small aliquots to be diluted instead
+1.  _Saves materials._ Allows for small aliquots to be diluted instead
     of unnecessarily large quantities of materials.
-2.  *Increases accuracy.* If you are off only slightly on the aliquot
+2.  _Increases accuracy._ If you are off only slightly on the aliquot
     volume the concentration goes way off.
 
 Example 8: Let us demonstrate the second property on a 1:10<sup>6</sup>
 dilution, using three steps of 1:100 dilutions versus one big step.
 
-*One big step method.* In the one big step method, we are going to
+_One big step method._ In the one big step method, we are going to
 dilute the sample one time, doing a 1:10<sup>6</sup> dilution to get a
 final volume of 10 L. This is easy,
 
-- *Step 1:* aliquot 10 &micro;L of sample to 9999.99 mL (~10 L!) of water to
+- _Step 1:_ aliquot 10 &micro;L of sample to 9999.99 mL (~10 L!) of water to
   form final dilution. (DF = 10<sup>6</sup>)
 
 The 1:10<sup>6</sup> dilution is done. Do we really need 10 L of sample?
 Where are we going to get all this distilled water?
 
-*Three step method.* In the three step method, we are going to dilute
+_Three step method._ In the three step method, we are going to dilute
 the sample three times, doing a 1:100 dilution each time to get a final
 volume of 100 L.
 
-- *Step 1:* aliquot 1 mL of sample to 99 mL of water to form
+- _Step 1:_ aliquot 1 mL of sample to 99 mL of water to form
   dilution #1. (DF = 100)
-- *Step 2:* aliquot 1 mL of dilution #1 to 99 mL of water to form
+- _Step 2:_ aliquot 1 mL of dilution #1 to 99 mL of water to form
   dilution #2. (DF = 100)
-- *Step 3:* aliquot 1 mL of dilution #2 to 99 mL of water to form final
+- _Step 3:_ aliquot 1 mL of dilution #2 to 99 mL of water to form final
   dilution. (DF = 100)
 
 Now, let's say our pipet was off by 1 uL. This means that when we want 10 &micro;L
 we get 9 &micro;L and when we want 1 mL, we get 0.999 mL. What are the
 adjusted dilution factors?
 
-- *One big step method.*** **Dilution factor (DF) = 10 L/9 &micro;L = (1 x
-  10<sup>7</sup> &micro;L)/9 &micro;L = *1.11 x 10*<sup>*6*</sup>. An error of 11%.
-- *Three step method.*** **Dilution factor (DF) = (100 mL/0.999 mL) \*
+- \*One big step method.**\* **Dilution factor (DF) = 10 L/9 &micro;L = (1 x
+  10<sup>7</sup> &micro;L)/9 &micro;L = _1.11 x 10_<sup>_6_</sup>. An error of 11%.
+- \*Three step method.**\* **Dilution factor (DF) = (100 mL/0.999 mL) \*
   (100 mL/0.999 mL) \* (100 mL/0.999 mL) = (100 mL/0.999 mL)<sup>3</sup>
-  = *1.003 x 10*<sup>*6*</sup>. An error of 0.3%.
+  = _1.003 x 10_<sup>_6_</sup>. An error of 0.3%.
 
 **Example 9:** If you have 1 mL of your original solution, and you
 remove a 10 µL aliquot and place it in a tube containing 990 µL of

@@ -12,14 +12,14 @@ Declare canonical pre-fix count for WS-H. Surface caveats that block a
 
 ## Comparison Table
 
-| WS | Hypothesis | Crops Before | Crops After | Crops Fixed | New Hard Fails | Score Change | Off-Page Change | Region Overflow Change | Files Touched | Complexity | Keep/Reject/Escalate | Root-Cause Finding |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| A | Missing/misnamed SVG assets drive crops; YAML rename fixes them | 31 (AR>10%) | 55 (AR>10%) | -24 (regression) | +24 AR distortions | regression | 0 | 0 | 5 object YAML (reverted) | HIGH | reject (reverted), escalate asset architecture | 48 missing assets; empty/filled variant aspect ratios incompatible; YAML-only renames cannot resolve |
-| B | Region min-height is the primary lever | 28 | 0 | 28 | 0 | clean pass | 0 | 0 | bench.css, hood.css, instrument.css (2 lines each) | LOW | keep | Region height was the constraint; +40px rear_shelf, +20px front_tools eliminates all crops in 10-scene corpus |
-| C | Footprint classes mix incompatible shapes | 23 (dedup HARD FAIL) | 52 (Phase 1) | -29 (regression) | unbounded | regression | n/a | n/a | bench.css footprint classes (reverted) | MED Phase1 / HIGH Phase2 | reject Phase 1; escalate Phase 2 (spec extension) | Shape mismatch is real but CSS-only tightening regresses; needs YAML shape_group vocab extension |
-| D | overflow:hidden is the silent killer | 34 (clipped_by_parent) | 21 isolated / 58 full | -13 isolated / +24 full | unstable | regression on full apply | n/a | cascading | bench.css .placement, footprint max-heights (reverted) | MED | reject | overflow:hidden is correct; removing it only shifts where clipping is measured; cascades to parent regions |
-| E | One global policy cannot satisfy all scene classes; per-class CSS overrides | 28 | not executed (design-only) | projected 13-16 reduction | unknown | projected partial | unknown | unknown | conceptual bench.css additions | MED | reject (unnecessary once WS-B passed) | Per-class patterns exist but WS-B global fix already solves; complexity not warranted |
-| F | Best-of-A-E hybrid | 50+ (bench.css unfixed) / 28 (post-Trial5 reference) | 0 | 28-50+ | 0 | clean pass | 0 | 0 | bench.css aligned to hood/instrument 320/260 | LOW | keep (= WS-B applied uniformly) | Hybrid reduces to WS-B; bench.css had not been updated, hence the 50+ "before" inflation |
+| WS  | Hypothesis                                                                  | Crops Before                                         | Crops After                | Crops Fixed               | New Hard Fails     | Score Change             | Off-Page Change | Region Overflow Change | Files Touched                                          | Complexity               | Keep/Reject/Escalate                              | Root-Cause Finding                                                                                            |
+| --- | --------------------------------------------------------------------------- | ---------------------------------------------------- | -------------------------- | ------------------------- | ------------------ | ------------------------ | --------------- | ---------------------- | ------------------------------------------------------ | ------------------------ | ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| A   | Missing/misnamed SVG assets drive crops; YAML rename fixes them             | 31 (AR>10%)                                          | 55 (AR>10%)                | -24 (regression)          | +24 AR distortions | regression               | 0               | 0                      | 5 object YAML (reverted)                               | HIGH                     | reject (reverted), escalate asset architecture    | 48 missing assets; empty/filled variant aspect ratios incompatible; YAML-only renames cannot resolve          |
+| B   | Region min-height is the primary lever                                      | 28                                                   | 0                          | 28                        | 0                  | clean pass               | 0               | 0                      | bench.css, hood.css, instrument.css (2 lines each)     | LOW                      | keep                                              | Region height was the constraint; +40px rear_shelf, +20px front_tools eliminates all crops in 10-scene corpus |
+| C   | Footprint classes mix incompatible shapes                                   | 23 (dedup HARD FAIL)                                 | 52 (Phase 1)               | -29 (regression)          | unbounded          | regression               | n/a             | n/a                    | bench.css footprint classes (reverted)                 | MED Phase1 / HIGH Phase2 | reject Phase 1; escalate Phase 2 (spec extension) | Shape mismatch is real but CSS-only tightening regresses; needs YAML shape_group vocab extension              |
+| D   | overflow:hidden is the silent killer                                        | 34 (clipped_by_parent)                               | 21 isolated / 58 full      | -13 isolated / +24 full   | unstable           | regression on full apply | n/a             | cascading              | bench.css .placement, footprint max-heights (reverted) | MED                      | reject                                            | overflow:hidden is correct; removing it only shifts where clipping is measured; cascades to parent regions    |
+| E   | One global policy cannot satisfy all scene classes; per-class CSS overrides | 28                                                   | not executed (design-only) | projected 13-16 reduction | unknown            | projected partial        | unknown         | unknown                | conceptual bench.css additions                         | MED                      | reject (unnecessary once WS-B passed)             | Per-class patterns exist but WS-B global fix already solves; complexity not warranted                         |
+| F   | Best-of-A-E hybrid                                                          | 50+ (bench.css unfixed) / 28 (post-Trial5 reference) | 0                          | 28-50+                    | 0                  | clean pass               | 0               | 0                      | bench.css aligned to hood/instrument 320/260           | LOW                      | keep (= WS-B applied uniformly)                   | Hybrid reduces to WS-B; bench.css had not been updated, hence the 50+ "before" inflation                      |
 
 ## Baseline Reconciliation
 
@@ -74,6 +74,7 @@ each workstream cared about.
 Use **28** as the canonical visible-crop baseline.
 
 Justification:
+
 - 28 is the WS-B `clipped_by_parent` count on the 10-scene NEW0 corpus
   with the post-Trial5 CSS state (hood.css and instrument.css at
   320/260, bench.css at legacy 100/100 because Trial 5's edits had
@@ -150,6 +151,7 @@ the no-crop loop. Required:
    crops in the Round 1 visual confirmation report.
 
 WS-H decision matrix:
+
 - 0 visible crops, 0 hard-fails, 0 off-page across full corpus:
   ship WS-B/WS-F fix.
 - 0 visible crops on 10-scene precheck but residual visible crops

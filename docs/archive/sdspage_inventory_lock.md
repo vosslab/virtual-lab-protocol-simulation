@@ -34,69 +34,69 @@ distribution is `click` 128, `adjust` 15.
 Resolved against Table 2 canonical object names, after aliasing the
 action-map target tokens that drifted from the plan's naming:
 
-| Parent object (Table 2) | Source | Touches |
-| --- | --- | --- |
-| `staining_tray` | Created new | 18 |
-| `eppendorf_tube` | Created new | 15 |
-| `gel_cassette` | Created new | 11 |
-| `power_supply` | Created new | 9 |
-| `electrode_module` | Created new | 7 |
-| `electrophoresis_tank` | Created new | 6 |
-| `ddh2o_bottle` | Created new | 5 |
-| `microwave` | Created new | 4 |
-| `heat_block` | Created new | 4 |
-| `running_buffer_1x_carboy` | Created new | 4 |
-| `p10_gel_loading_tip_box` | Created new | 4 |
-| `serological_pipette` | Reused existing | 4 |
-| `bme_bottle` | Created new | 3 |
-| `laemmli_4x_bottle` | Created new | 3 |
-| `protein_sample_tube` | Created new | 3 |
-| `rocking_shaker` | Created new | 2 |
-| `protein_ladder_tube` | Created new | 2 |
-| `kimwipe_pad` | Created new | 2 |
-| `gel_opening_tool` | Created new | 2 |
-| `coomassie_stain_bottle` | Created new | 1 |
-| `destain_bottle` | Created new | 1 |
-| `running_buffer_10x_bottle` | Created new | 1 |
-| `recycle_buffer_bottle` | Created new | 1 |
-| `mini_protean_gel` | Created new | 1 |
-| `p10_micropipette` | Created new | 1 |
-| `lightbox` | Created new | 1 |
+| Parent object (Table 2)     | Source          | Touches |
+| --------------------------- | --------------- | ------- |
+| `staining_tray`             | Created new     | 18      |
+| `eppendorf_tube`            | Created new     | 15      |
+| `gel_cassette`              | Created new     | 11      |
+| `power_supply`              | Created new     | 9       |
+| `electrode_module`          | Created new     | 7       |
+| `electrophoresis_tank`      | Created new     | 6       |
+| `ddh2o_bottle`              | Created new     | 5       |
+| `microwave`                 | Created new     | 4       |
+| `heat_block`                | Created new     | 4       |
+| `running_buffer_1x_carboy`  | Created new     | 4       |
+| `p10_gel_loading_tip_box`   | Created new     | 4       |
+| `serological_pipette`       | Reused existing | 4       |
+| `bme_bottle`                | Created new     | 3       |
+| `laemmli_4x_bottle`         | Created new     | 3       |
+| `protein_sample_tube`       | Created new     | 3       |
+| `rocking_shaker`            | Created new     | 2       |
+| `protein_ladder_tube`       | Created new     | 2       |
+| `kimwipe_pad`               | Created new     | 2       |
+| `gel_opening_tool`          | Created new     | 2       |
+| `coomassie_stain_bottle`    | Created new     | 1       |
+| `destain_bottle`            | Created new     | 1       |
+| `running_buffer_10x_bottle` | Created new     | 1       |
+| `recycle_buffer_bottle`     | Created new     | 1       |
+| `mini_protean_gel`          | Created new     | 1       |
+| `p10_micropipette`          | Created new     | 1       |
+| `lightbox`                  | Created new     | 1       |
 
 #### Orphan objects in Table 2
 
 Objects in Table 2 "Created new" that the action map does not touch by name:
 
-| Object | Disposition | Reason |
-| --- | --- | --- |
-| `gel_comb` | Keep | Touched only as the `gel_cassette.comb` subpart at P3.7; the standalone object exists after removal (ObjectStateChange flips `comb_present` and instantiates the standalone). Justified per M6 usage-audit "forward-compatible scaffolding" allowance. |
-| `eppendorf_rack_24` | Keep | Passive scene-placement container for the 3 eppendorf tubes; never clicked. Acceptable per scene-placement carve-out. |
-| `p10_gel_loading_tip` | Keep | Instantiated via cursor-attach state on `p10_micropipette` after grabbing from `p10_gel_loading_tip_box` (P5.1, P5.6, P5.10, P5.14); not clicked as a standalone target. |
+| Object                | Disposition | Reason                                                                                                                                                                                                                                                 |
+| --------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `gel_comb`            | Keep        | Touched only as the `gel_cassette.comb` subpart at P3.7; the standalone object exists after removal (ObjectStateChange flips `comb_present` and instantiates the standalone). Justified per M6 usage-audit "forward-compatible scaffolding" allowance. |
+| `eppendorf_rack_24`   | Keep        | Passive scene-placement container for the 3 eppendorf tubes; never clicked. Acceptable per scene-placement carve-out.                                                                                                                                  |
+| `p10_gel_loading_tip` | Keep        | Instantiated via cursor-attach state on `p10_micropipette` after grabbing from `p10_gel_loading_tip_box` (P5.1, P5.6, P5.10, P5.14); not clicked as a standalone target.                                                                               |
 
 Objects in Table 2 "Reused existing" that the action map does not touch:
 
-| Object | Disposition | Reason |
-| --- | --- | --- |
-| `waste_container` | Keep, reconcile aliases | Action map references it under three drift names (`tip_eject_waste`, `sink_drain`, `stain_waste_bottle`); see Locked inventory delta below. |
-| `aspirating_pipette` | Drop from Table 2 | Plan WP-1.5 listed it for "Part 8 tank drain", but the action map's Part 8 only removes the module/cassette and never drains the tank. The recycle path (MP-14) uses pour-into-funnel, not aspirate; the dispose path is cut by SG-stepper limitation. No interaction needs this object. |
+| Object               | Disposition             | Reason                                                                                                                                                                                                                                                                                   |
+| -------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `waste_container`    | Keep, reconcile aliases | Action map references it under three drift names (`tip_eject_waste`, `sink_drain`, `stain_waste_bottle`); see Locked inventory delta below.                                                                                                                                              |
+| `aspirating_pipette` | Drop from Table 2       | Plan WP-1.5 listed it for "Part 8 tank drain", but the action map's Part 8 only removes the module/cassette and never drains the tank. The recycle path (MP-14) uses pour-into-funnel, not aspirate; the dispose path is cut by SG-stepper limitation. No interaction needs this object. |
 
 #### Action-map rows that do not yet map to a Table 2 object
 
 Residual aliases requiring reconciliation (resolution decided in
 "Locked inventory delta" below):
 
-| Action-map token | Touches | Resolution |
-| --- | --- | --- |
-| `micropipette_p20` | 9 | Reuse existing repo `micropipette` object (set_volume 0.5-1000 ul); add to Table 2 Reused existing |
-| `tip_eject_waste` | 4 | Subpart of `waste_container.tip_eject_slot` |
-| `sink_drain` | 3 | Subpart of `waste_container.sink_drain` |
-| `timer` | 4 | Per-host equipment subpart (see delta) |
-| `gel_slab` | 2 | Post-extraction state of `mini_protean_gel` (no new object) |
-| `stain_waste_bottle` | 2 | New object `destain_waste_bottle` (used destain storage) |
-| `coomassie_recycle_bottle` | 1 | New object `coomassie_recycle_bottle` (used Coomassie storage for reuse) |
-| `funnel` | 1 | Overlay on `recycle_buffer_bottle` per plan Table 2 note; no new object |
-| `smartphone_camera` | 1 | Replaced per SG16: `lightbox.capture_button` subpart |
-| `buffer_inspection_choice` | 1 | Replaced per R4: `electrophoresis_tank.clean_buffer_affordance` subpart |
+| Action-map token           | Touches | Resolution                                                                                         |
+| -------------------------- | ------- | -------------------------------------------------------------------------------------------------- |
+| `micropipette_p20`         | 9       | Reuse existing repo `micropipette` object (set_volume 0.5-1000 ul); add to Table 2 Reused existing |
+| `tip_eject_waste`          | 4       | Subpart of `waste_container.tip_eject_slot`                                                        |
+| `sink_drain`               | 3       | Subpart of `waste_container.sink_drain`                                                            |
+| `timer`                    | 4       | Per-host equipment subpart (see delta)                                                             |
+| `gel_slab`                 | 2       | Post-extraction state of `mini_protean_gel` (no new object)                                        |
+| `stain_waste_bottle`       | 2       | New object `destain_waste_bottle` (used destain storage)                                           |
+| `coomassie_recycle_bottle` | 1       | New object `coomassie_recycle_bottle` (used Coomassie storage for reuse)                           |
+| `funnel`                   | 1       | Overlay on `recycle_buffer_bottle` per plan Table 2 note; no new object                            |
+| `smartphone_camera`        | 1       | Replaced per SG16: `lightbox.capture_button` subpart                                               |
+| `buffer_inspection_choice` | 1       | Replaced per R4: `electrophoresis_tank.clean_buffer_affordance` subpart                            |
 
 #### Per-mini interaction count (after reconciliation)
 
@@ -104,25 +104,25 @@ Mini IDs follow Table 4. MP-3, MP-11, and MP-18 are sequence runners and
 have no authored interaction count of their own. R1 below leaves totals
 unchanged.
 
-| Mini ID | Mini name | Source-doc Part | Action-map slice | Count |
-| --- | --- | --- | --- | --- |
-| MP-1 | `sdspage_prepare_running_buffer` | Part 2 | P2.1-P2.6 | 6 |
-| MP-2 | `sdspage_prepare_sample_mix_single_lane` | Part 1 (lane 1 slice) | P1.1-P1.9 | 9 |
-| MP-3 | `sdspage_prepare_sample_mix_batch` | Part 1 (3 lanes) | composes MP-2 x 3 = P1.1-P1.27 | (27) |
-| MP-4 | `sdspage_heat_denature_samples` | Part 1 step 3 | P1.28-P1.36 | 9 |
-| MP-5 | `sdspage_prepare_gel_cassette` | Part 3 | P3.1-P3.7 | 7 |
-| MP-6 | `sdspage_assemble_electrode_module` | Part 4 | P4.1-P4.4 | 4 |
-| MP-7 | `sdspage_fill_tank_buffer` | Parts 3+4 | P4.5-P4.10 | 6 |
-| MP-8 | `sdspage_attach_lid_and_leads` | Part 4 | P4.11-P4.13 | 3 |
-| MP-9 | `sdspage_load_protein_ladder` | Part 5 (ladder slice) | P5.1-P5.5 | 5 |
-| MP-10 | `sdspage_load_sample_single_lane` | Part 5 (per lane) | P5.6-P5.9 (one lane) | 4 |
-| MP-11 | `sdspage_load_samples_batch` | Part 5 (3 lanes) | composes MP-10 x 3 = P5.6-P5.17 | (12) |
-| MP-12 | `sdspage_run_electrophoresis` | Part 6 | P6.1-P6.6 | 6 |
-| MP-13 | `sdspage_extract_gel_from_cassette` | Part 8 | P8.1-P8.11 | 11 |
-| MP-14 | `sdspage_recycle_buffer` | Part 7 | P7.1-P7.5 (after R4) | 5 |
-| MP-15 | `sdspage_stain_gel` | Part 9 first half | P9.1-P9.14 | 14 |
-| MP-16 | `sdspage_destain_gel` | Part 9 second half | P9.15-P9.35 | 21 |
-| MP-17 | `sdspage_image_gel` | Part 10 | P10.1-P10.7 | 7 |
+| Mini ID | Mini name                                | Source-doc Part       | Action-map slice                | Count |
+| ------- | ---------------------------------------- | --------------------- | ------------------------------- | ----- |
+| MP-1    | `sdspage_prepare_running_buffer`         | Part 2                | P2.1-P2.6                       | 6     |
+| MP-2    | `sdspage_prepare_sample_mix_single_lane` | Part 1 (lane 1 slice) | P1.1-P1.9                       | 9     |
+| MP-3    | `sdspage_prepare_sample_mix_batch`       | Part 1 (3 lanes)      | composes MP-2 x 3 = P1.1-P1.27  | (27)  |
+| MP-4    | `sdspage_heat_denature_samples`          | Part 1 step 3         | P1.28-P1.36                     | 9     |
+| MP-5    | `sdspage_prepare_gel_cassette`           | Part 3                | P3.1-P3.7                       | 7     |
+| MP-6    | `sdspage_assemble_electrode_module`      | Part 4                | P4.1-P4.4                       | 4     |
+| MP-7    | `sdspage_fill_tank_buffer`               | Parts 3+4             | P4.5-P4.10                      | 6     |
+| MP-8    | `sdspage_attach_lid_and_leads`           | Part 4                | P4.11-P4.13                     | 3     |
+| MP-9    | `sdspage_load_protein_ladder`            | Part 5 (ladder slice) | P5.1-P5.5                       | 5     |
+| MP-10   | `sdspage_load_sample_single_lane`        | Part 5 (per lane)     | P5.6-P5.9 (one lane)            | 4     |
+| MP-11   | `sdspage_load_samples_batch`             | Part 5 (3 lanes)      | composes MP-10 x 3 = P5.6-P5.17 | (12)  |
+| MP-12   | `sdspage_run_electrophoresis`            | Part 6                | P6.1-P6.6                       | 6     |
+| MP-13   | `sdspage_extract_gel_from_cassette`      | Part 8                | P8.1-P8.11                      | 11    |
+| MP-14   | `sdspage_recycle_buffer`                 | Part 7                | P7.1-P7.5 (after R4)            | 5     |
+| MP-15   | `sdspage_stain_gel`                      | Part 9 first half     | P9.1-P9.14                      | 14    |
+| MP-16   | `sdspage_destain_gel`                    | Part 9 second half    | P9.15-P9.35                     | 21    |
+| MP-17   | `sdspage_image_gel`                      | Part 10               | P10.1-P10.7                     | 7     |
 
 Authored-interaction subtotal (single-lane minis only, not double-counting
 the sequence runners): 6 + 9 + 9 + 7 + 4 + 6 + 3 + 5 + 4 + 6 + 11 + 5 + 14 +
@@ -142,12 +142,12 @@ this is a real over-cap and is recorded in the deltas below).
 
 ### Residual-risk decisions (R1 through R4)
 
-| Risk | Decision | Rationale |
-| --- | --- | --- |
-| R1 (collapse `adjust micropipette` to per-pipette set-point) | NO collapse. Adjust stays per-aspirate. Total stays 143. | The action map already lists one `adjust` per distinct aspirate, and the volumes differ between draws (21 ul protein, 7.5 ul Laemmli, 1.5 ul BME). `set_volume` being a stateful field on the pipette per `content/objects/micropipette.yaml` does not justify collapsing distinct set-point writes; only consecutive duplicate volumes would collapse, and there are none. The plan note's "~9 drop" worry was premised on a double-counted action map; the action map did not double-count. |
-| R2 (adopt subpart-group authoring for staining-tray repeats) | NO. Out of scope per plan default. | Plan default keeps per-step authoring; MP-15 / MP-16 stay flat. |
-| R3 (audit subpart targets vs Table 2 declarations) | Multiple drift items, all reconciled in Locked inventory delta below. | Drift items: cassette `bottom_tape` vs Table 2 `tape_bottom`; cassette `seal_left/right` vs Table 2 `arrow_left/right`; cassette `top_plate` vs Table 2 `glass_plate_front`; electrode_module subparts and power_supply/microwave/heat_block subparts not enumerated in Table 2; resolved below. |
-| R4 (cut Part 7 `select`) | YES. Replace P7.2 with `click electrophoresis_tank.clean_buffer_affordance`. | Plan's allowed-simplifications and SG-stepper-limitation block require no `select` gestures; new subpart name keeps the pedagogy ("inspect the buffer for contamination, click 'clean' to proceed to recycle") without leaving the linear stepper path. Net interaction count unchanged at 143. |
+| Risk                                                         | Decision                                                                     | Rationale                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| R1 (collapse `adjust micropipette` to per-pipette set-point) | NO collapse. Adjust stays per-aspirate. Total stays 143.                     | The action map already lists one `adjust` per distinct aspirate, and the volumes differ between draws (21 ul protein, 7.5 ul Laemmli, 1.5 ul BME). `set_volume` being a stateful field on the pipette per `content/objects/micropipette.yaml` does not justify collapsing distinct set-point writes; only consecutive duplicate volumes would collapse, and there are none. The plan note's "~9 drop" worry was premised on a double-counted action map; the action map did not double-count. |
+| R2 (adopt subpart-group authoring for staining-tray repeats) | NO. Out of scope per plan default.                                           | Plan default keeps per-step authoring; MP-15 / MP-16 stay flat.                                                                                                                                                                                                                                                                                                                                                                                                                               |
+| R3 (audit subpart targets vs Table 2 declarations)           | Multiple drift items, all reconciled in Locked inventory delta below.        | Drift items: cassette `bottom_tape` vs Table 2 `tape_bottom`; cassette `seal_left/right` vs Table 2 `arrow_left/right`; cassette `top_plate` vs Table 2 `glass_plate_front`; electrode_module subparts and power_supply/microwave/heat_block subparts not enumerated in Table 2; resolved below.                                                                                                                                                                                              |
+| R4 (cut Part 7 `select`)                                     | YES. Replace P7.2 with `click electrophoresis_tank.clean_buffer_affordance`. | Plan's allowed-simplifications and SG-stepper-limitation block require no `select` gestures; new subpart name keeps the pedagogy ("inspect the buffer for contamination, click 'clean' to proceed to recycle") without leaving the linear stepper path. Net interaction count unchanged at 143.                                                                                                                                                                                               |
 
 ## Physical-scale schema-acceptance check
 
@@ -311,26 +311,26 @@ Interaction counts revised after reconciliation. The plan body's
 estimates remain useful as order-of-magnitude bounds; the table below
 is the authoring contract:
 
-| Mini ID | Plan estimate | Locked count | Delta | Note |
-| --- | --- | --- | --- | --- |
-| MP-1 | 4 | 6 | +2 | Two extra cap/place steps the plan rounded out |
-| MP-2 | 9 | 9 | 0 | -- |
-| MP-3 | composes MP-2 x 3 | composes MP-2 x 3 | 0 | -- |
-| MP-4 | 6 | 9 | +3 | Action map enumerates per-tube placements (4 tubes x slot, plus timer); plan rounded to 6 |
-| MP-5 | 10 | 7 | -3 | Action map decomposes more compactly (no per-clamp leak-check step) |
-| MP-6 | 6 | 4 | -2 | Module-drop-into-tank is one ObjectStateChange, not multiple steps |
-| MP-7 | 5 | 6 | +1 | Two distinct chamber-fill aspirate/dispense pairs |
-| MP-8 | 5 | 3 | -2 | Plan over-rounded the lid+leads sequence |
-| MP-9 | 4 | 5 | +1 | Tip change discipline included (matches SG10) |
-| MP-10 | 7 | 4 | -3 | Per-lane is leaner; the +3 lives in MP-11 sequence-runner expansion |
-| MP-11 | composes MP-10 x 3 | composes MP-10 x 3 (= 12) | 0 | -- |
-| MP-12 | 4 | 6 | +2 | Action map enumerates power-switch on/off bracketing run |
-| MP-13 | 10 | 11 | +1 | One extra pour-off step before opening tool work |
-| MP-14 | 3 | 5 | +2 | R4 adds clean-buffer affordance click; plan didn't budget the inspection step |
-| MP-15 | 10 | 14 | +4 | Two distinct rinses before stain plus pour-off into recycle bottle |
-| MP-16 | 10 | 21 | +11 | Two rinses before destain, two kimwipe steps, full destain pour to waste; **over the 15-interaction cap**, see follow-up note below |
-| MP-17 | 5 | 7 | +2 | Action map includes ddh2o rinse and gel-removal steps |
-| MP-18 | composes MP-1..MP-17 | composes MP-1..MP-17 | 0 | -- |
+| Mini ID | Plan estimate        | Locked count              | Delta | Note                                                                                                                                |
+| ------- | -------------------- | ------------------------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| MP-1    | 4                    | 6                         | +2    | Two extra cap/place steps the plan rounded out                                                                                      |
+| MP-2    | 9                    | 9                         | 0     | --                                                                                                                                  |
+| MP-3    | composes MP-2 x 3    | composes MP-2 x 3         | 0     | --                                                                                                                                  |
+| MP-4    | 6                    | 9                         | +3    | Action map enumerates per-tube placements (4 tubes x slot, plus timer); plan rounded to 6                                           |
+| MP-5    | 10                   | 7                         | -3    | Action map decomposes more compactly (no per-clamp leak-check step)                                                                 |
+| MP-6    | 6                    | 4                         | -2    | Module-drop-into-tank is one ObjectStateChange, not multiple steps                                                                  |
+| MP-7    | 5                    | 6                         | +1    | Two distinct chamber-fill aspirate/dispense pairs                                                                                   |
+| MP-8    | 5                    | 3                         | -2    | Plan over-rounded the lid+leads sequence                                                                                            |
+| MP-9    | 4                    | 5                         | +1    | Tip change discipline included (matches SG10)                                                                                       |
+| MP-10   | 7                    | 4                         | -3    | Per-lane is leaner; the +3 lives in MP-11 sequence-runner expansion                                                                 |
+| MP-11   | composes MP-10 x 3   | composes MP-10 x 3 (= 12) | 0     | --                                                                                                                                  |
+| MP-12   | 4                    | 6                         | +2    | Action map enumerates power-switch on/off bracketing run                                                                            |
+| MP-13   | 10                   | 11                        | +1    | One extra pour-off step before opening tool work                                                                                    |
+| MP-14   | 3                    | 5                         | +2    | R4 adds clean-buffer affordance click; plan didn't budget the inspection step                                                       |
+| MP-15   | 10                   | 14                        | +4    | Two distinct rinses before stain plus pour-off into recycle bottle                                                                  |
+| MP-16   | 10                   | 21                        | +11   | Two rinses before destain, two kimwipe steps, full destain pour to waste; **over the 15-interaction cap**, see follow-up note below |
+| MP-17   | 5                    | 7                         | +2    | Action map includes ddh2o rinse and gel-removal steps                                                                               |
+| MP-18   | composes MP-1..MP-17 | composes MP-1..MP-17      | 0     | --                                                                                                                                  |
 
 **MP-16 over-cap follow-up**: the plan's "Stop-and-escalate conditions"
 include "any mini exceeds 15 interactions after decomposition". MP-16 at

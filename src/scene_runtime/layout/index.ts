@@ -6,10 +6,25 @@
  */
 
 // Public API: adapter that bridges RuntimeWorld to layout engine.
-export { computeSceneLayout } from './adapter';
+export { computeSceneLayout } from "./adapter";
 
 // Mined layout engine (internal; exported for testing/documentation).
-export { computeSceneLayout as computeSceneLayoutLegacy, computeRowSlotSceneLayout, preCacheAspectRatios } from './layout_engine';
+export {
+  computeSceneLayout as computeSceneLayoutLegacy,
+  computeRowSlotSceneLayout,
+  preCacheAspectRatios,
+} from "./layout_engine";
 
 // Types
-export type { SceneItem, SceneLayoutRules, ZoneDef, ComputedItemLayout, AssetSpec, SceneBounds, SceneItemGroup, RowSlotSceneInput, Row, Slot } from './types';
+export type {
+  SceneItem,
+  SceneLayoutRules,
+  ZoneDef,
+  ComputedItemLayout,
+  AssetSpec,
+  SceneBounds,
+  SceneItemGroup,
+  RowSlotSceneInput,
+  Row,
+  Slot,
+} from "./types";

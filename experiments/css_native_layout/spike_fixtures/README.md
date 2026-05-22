@@ -1,13 +1,13 @@
 # Spike fixtures - well_plate_96_zoom
 
 These files are planning fixtures for the NEW1 integration spike defined in
-[../../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../../docs/active_plans/new1_css_native_layout_integration_plan.md),
+[new1_css_native_layout_integration_plan.md](../../../docs/archive/css_native_layout/new1_css_native_layout_integration_plan.md),
 section 3.
 
 ## What these fixtures are
 
 - A stable scene manifest in the closed schema from
-  [../../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../../docs/active_plans/new1_css_native_layout_integration_plan.md)
+  [new1_css_native_layout_integration_plan.md](../../../docs/archive/css_native_layout/new1_css_native_layout_integration_plan.md)
   section 4.
 - A frozen description of the DOM selectors and data attributes the spike
   rendering must expose so a Playwright walkthrough can drive it.
@@ -20,7 +20,7 @@ They are inputs to the spike implementation task, not outputs of it.
 ## What these fixtures are NOT
 
 - NOT wired into the production runtime. Nothing under
-  [../../../src/](../../../src/) reads these files.
+  `src` reads these files.
 - NOT production. They live under `experiments/` and have no consumers
   outside the NEW1 spike.
 - NOT a contract amendment. The closed schema documented here mirrors the

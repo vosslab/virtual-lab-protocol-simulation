@@ -21,7 +21,7 @@ The reviewer issued a controlling instruction on 2026-05-19: "Do not open
 NEW1 yet. Continue NEW0 stabilization." The prior evidence package
 ([new0_reproducible_evidence_package.md](new0_reproducible_evidence_package.md))
 and the experiment-side decision memo
-([../../experiments/css_native_layout/DECISION_MEMO.md](../../experiments/css_native_layout/DECISION_MEMO.md))
+(`DECISION_MEMO.md`)
 had marked NEW0 as "Ready for NEW1 planning" with a `continue-to-NEW1`
 verdict. The reviewer's contact-sheet inspection contradicts that:
 Direction B as a global forward candidate collapses the
@@ -97,12 +97,12 @@ Direct quote of the reviewer's "Success for the next pass":
 
 Four tracked workstreams run under this plan. None of them open NEW1.
 
-| Workstream | Owner | Tracked outputs |
-| --- | --- | --- |
-| Scene-class CSS rules | coder subagent (CSS) | [../../experiments/css_native_layout/styles/bench.css](../../experiments/css_native_layout/styles/bench.css), [../../experiments/css_native_layout/styles/hood.css](../../experiments/css_native_layout/styles/hood.css), [../../experiments/css_native_layout/styles/instrument.css](../../experiments/css_native_layout/styles/instrument.css), and the affected templates under [../../experiments/css_native_layout/templates/](../../experiments/css_native_layout/templates/) |
-| Precheck threshold + checklist | coder subagent (precheck) | [../../experiments/css_native_layout/precheck.mjs](../../experiments/css_native_layout/precheck.mjs) |
-| Contact-sheet rebuild | docs/coder coordination | `_temp_contact_sheets.py` regeneration into `test-results/new0_css_native/contact_sheets/` and `gallery.html` |
-| Doc retractions and closeout | docs subagents | this file plus [new0_reproducible_evidence_package.md](new0_reproducible_evidence_package.md), [../../experiments/css_native_layout/DECISION_MEMO.md](../../experiments/css_native_layout/DECISION_MEMO.md), [../../experiments/css_native_layout/PRECHECK_SUMMARY.md](../../experiments/css_native_layout/PRECHECK_SUMMARY.md), and [../CHANGELOG.md](../CHANGELOG.md) (the closing docs subagent owns the CHANGELOG entry after the coders finish) |
+| Workstream                     | Owner                     | Tracked outputs                                                                                                                                                                                                                           |
+| ------------------------------ | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Scene-class CSS rules          | coder subagent (CSS)      | `bench.css`, `hood.css`, `instrument.css`, and the affected templates under `templates`                                                                                                                                                   |
+| Precheck threshold + checklist | coder subagent (precheck) | `precheck.mjs`                                                                                                                                                                                                                            |
+| Contact-sheet rebuild          | docs/coder coordination   | `_temp_contact_sheets.py` regeneration into `test-results/new0_css_native/contact_sheets/` and `gallery.html`                                                                                                                             |
+| Doc retractions and closeout   | docs subagents            | this file plus [new0_reproducible_evidence_package.md](new0_reproducible_evidence_package.md), `DECISION_MEMO.md`, `PRECHECK_SUMMARY.md`, and `CHANGELOG.md` (the closing docs subagent owns the CHANGELOG entry after the coders finish) |
 
 Scene-class targets for the CSS workstream:
 
@@ -120,7 +120,7 @@ Scene-class targets for the CSS workstream:
 ## Hard boundaries
 
 - No edits to `src/`, `pipeline/`, `validation/`, `docs/specs/`,
-  [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md), production YAML, or
+  `PRIMARY_CONTRACT.md`, production YAML, or
   any gitignored CSS variant.
 - No new tracked CSS files. Scene-class behavior lives in the existing
   `bench.css` / `hood.css` / `instrument.css` (and templates that opt in
@@ -154,14 +154,14 @@ The `docs/active_plans/` directory currently holds 36 markdown files
 (this file is the 37th). The reviewer brief does not authorize archival
 in this pass, so the table below labels relationships only.
 
-| Doc | Relationship to this plan |
-| --- | --- |
+| Doc                                                                            | Relationship to this plan                                                                                                              |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | [new0_reproducible_evidence_package.md](new0_reproducible_evidence_package.md) | Superseded as forward-direction guidance. Evidence content remains valid; NEW1-ready language is being retracted in the same dispatch. |
-| [new0_outside_review_handoff.md](new0_outside_review_handoff.md) | Historic handoff. Still authoritative as the description of how NEW0 reached stabilization; not the controlling forward-direction doc. |
-| [2026_05_18_layout_rollout_status.md](2026_05_18_layout_rollout_status.md), [2026-05-18_rollout_status.md](2026-05-18_rollout_status.md) | Rollout status snapshots. Out of scope for this pass. |
-| [layout_engine_audit.md](layout_engine_audit.md), [layout_method_benchmark_report_2026_05_18.md](layout_method_benchmark_report_2026_05_18.md) | Background on the contract item 3 layout-engine path. Out of scope for NEW0 stabilization. |
-| [production_precheck_summary_2026_05_18.md](production_precheck_summary_2026_05_18.md) | Production-side precheck record; do not conflate with NEW0 experiment precheck. |
-| All other `docs/active_plans/*.md` files | Unrelated workstreams. Not touched by this dispatch. |
+| [new0_outside_review_handoff.md](new0_outside_review_handoff.md)               | Historic handoff. Still authoritative as the description of how NEW0 reached stabilization; not the controlling forward-direction doc. |
+| `2026_05_18_layout_rollout_status.md`, `2026-05-18_rollout_status.md`          | Rollout status snapshots. Out of scope for this pass.                                                                                  |
+| `layout_engine_audit.md`, `layout_method_benchmark_report_2026_05_18.md`       | Background on the contract item 3 layout-engine path. Out of scope for NEW0 stabilization.                                             |
+| `production_precheck_summary_2026_05_18.md`                                    | Production-side precheck record; do not conflate with NEW0 experiment precheck.                                                        |
+| All other `docs/active_plans/*.md` files                                       | Unrelated workstreams. Not touched by this dispatch.                                                                                   |
 
 Open cleanup work flagged here only: the `docs/active_plans/` count is
 large enough that a future archival sweep is warranted. That sweep is
@@ -174,7 +174,7 @@ This plan closes when either:
 1. All five acceptance criteria above are met against the stabilized
    tracked surface, the verification gates pass, the final contact
    sheet is produced, and the closing docs subagent records the result
-   in [../CHANGELOG.md](../CHANGELOG.md) and updates the experiment-side
+   in `CHANGELOG.md` and updates the experiment-side
    memos; or
 2. The reviewer issues a follow-on brief that supersedes the current
    one.

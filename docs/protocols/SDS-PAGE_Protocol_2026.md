@@ -2,11 +2,11 @@
 
 ### BCHM 356/456 - Spring 2026
 
-Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0\_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit](https://docs.google.com/document/d/1WCDT4y1Lw0_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit)
+Link to Miraculin Protocol 2026: [https://docs.google.com/document/d/1WCDT4y1Lw0_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit](https://docs.google.com/document/d/1WCDT4y1Lw0_mQ8rfynNoAkJwaleMF9rK8Una7qgFp64/edit)
 
 ## **Required materials provided by the students**
 
-1. Safety 	Glasses
+1. Safety Glasses
 2. Lab Coat - no paper lab coats
 3. Lab Notebook and sharpie marker
 4. Long pants and closed shoes
@@ -21,41 +21,41 @@ Students check to make sure all of these items are available
 
 ### Equipment
 
-* BioRad electrophoresis apparatus
-* DC Power supply
-* Heating block set to 95°C
-* Gel opening tool
-* Microwave
-* Staining tray
-* Shaker
+- BioRad electrophoresis apparatus
+- DC Power supply
+- Heating block set to 95°C
+- Gel opening tool
+- Microwave
+- Staining tray
+- Shaker
 
 ### Materials
 
-* SDS buffer
-* Mini-PROTEAN precast gel
-* 10X running buffer
-* Deionized water
-* Protein ladder
-* 4x Laemmli Sample Buffer  (BioRad \#1610747)
-* &beta;-mercaptoethanol (liquid)
-* Micropipettes and tips
-* Coomassie stain solution
-* Destain solution
-* Kimwipes
+- SDS buffer
+- Mini-PROTEAN precast gel
+- 10X running buffer
+- Deionized water
+- Protein ladder
+- 4x Laemmli Sample Buffer (BioRad \#1610747)
+- &beta;-mercaptoethanol (liquid)
+- Micropipettes and tips
+- Coomassie stain solution
+- Destain solution
+- Kimwipes
 
-* Centrifuge
-* Spectrophotometer
-* Light box
-* Fume hood access
-* Microcentrifuge tubes (1.5 mL or 2 mL Eppendorf tubes)
-* Bradford reagent (Coomassie Brilliant Blue G-250 solution)
-* Cuvettes
-* Amicon&reg; Ultra 10 kDa MWCO centrifugal filters
-* Miraculin protein sample
-* Biohazard waste container
-* Chemical waste container (for Coomassie, destain, BME waste)
-* Organic non-halogenated waste container
-* Nitrile gloves
+- Centrifuge
+- Spectrophotometer
+- Light box
+- Fume hood access
+- Microcentrifuge tubes (1.5 mL or 2 mL Eppendorf tubes)
+- Bradford reagent (Coomassie Brilliant Blue G-250 solution)
+- Cuvettes
+- Amicon&reg; Ultra 10 kDa MWCO centrifugal filters
+- Miraculin protein sample
+- Biohazard waste container
+- Chemical waste container (for Coomassie, destain, BME waste)
+- Organic non-halogenated waste container
+- Nitrile gloves
 
 ## **Laboratory Learning Objectives**
 
@@ -74,12 +74,13 @@ Students completing this lab protocol will be able to:
 5. Perform SDS-PAGE electrophoresis under appropriate voltage and timing conditions to achieve effective protein separation.
 6. Stain and destain polyacrylamide gels using Coomassie Stain to visualize separated protein bands.
 7. Analyze SDS-PAGE results by comparing sample bands to a molecular weight ladder in order to estimate protein size and evaluate relative protein purity.
-* A strong band at approximately 24-28 kDa indicating the miraculin monomer
-* A possible band near 50 kDa indicating miraculin dimerization
-* Sharp, distinct bands indicating successful protein separation
-* Multiple bands indicating impurities or incomplete purification
-* Smeared or streaked lanes indicating protein overloading, degraded samples, incomplete reduction, or poor loading technique
-* Faint bands indicating insufficient protein concentration or underloading.
+
+- A strong band at approximately 24-28 kDa indicating the miraculin monomer
+- A possible band near 50 kDa indicating miraculin dimerization
+- Sharp, distinct bands indicating successful protein separation
+- Multiple bands indicating impurities or incomplete purification
+- Smeared or streaked lanes indicating protein overloading, degraded samples, incomplete reduction, or poor loading technique
+- Faint bands indicating insufficient protein concentration or underloading.
 
 8. If the experiment was unsuccessful, know common experimental errors such as smeared bands, streaking, smiling effects, or sample leakage, and explain how these issues may affect gel processes.
 9. Apply proper laboratory safety practices and hazardous waste disposal procedures when handling electrophoresis equipment, Coomassie stain, methanol, acetic acid, and &beta;-mercaptoethanol.
@@ -104,7 +105,7 @@ BME is highly toxic, volatile, and emits a strong, unpleasant odor reminiscent o
 
 1. **How does gel electrophoresis work?**
 
-	Electrophoresis is a laboratory technique employed to separate and analyze biological macromolecules, including DNA, RNA, and proteins. This method works by applying an electric field that induces molecular movement through a semisolid medium. Samples are loaded into wells of a gel matrix situated within a chamber containing a conductive buffer. Once the current is applied, molecules with a net charge migrate toward the electrode of opposite polarity; negatively charged molecules move toward the positive anode. The gel acts as a molecular sieve, allowing smaller molecules to navigate the pores more easily and travel more quickly, while larger molecules encounter greater resistance and move more slowly. As a result, the mixture is sorted into distinct bands.
+   Electrophoresis is a laboratory technique employed to separate and analyze biological macromolecules, including DNA, RNA, and proteins. This method works by applying an electric field that induces molecular movement through a semisolid medium. Samples are loaded into wells of a gel matrix situated within a chamber containing a conductive buffer. Once the current is applied, molecules with a net charge migrate toward the electrode of opposite polarity; negatively charged molecules move toward the positive anode. The gel acts as a molecular sieve, allowing smaller molecules to navigate the pores more easily and travel more quickly, while larger molecules encounter greater resistance and move more slowly. As a result, the mixture is sorted into distinct bands.
 
 2. **What do SDS and BME do?**
 
@@ -113,19 +114,19 @@ B-mercaptoethanol (BME) is a potent reducing agent utilized in protein sample pr
 
 3. **Why run a gel to assess purity?**
 
-	Conducting a gel run is crucial as it provides a visual representation of each component within the sample. This process allows assessment of the relative abundance of the target protein compared with other constituents in the mixture. A single, well-defined band at the expected molecular weight indicates a pure sample. In contrast, the presence of multiple bands may indicate that other proteins or impurities were not fully removed during purification. Faint bands may represent degradation products, while vertical smears often indicate the presence of insoluble aggregates or a high sample concentration.
+   Conducting a gel run is crucial as it provides a visual representation of each component within the sample. This process allows assessment of the relative abundance of the target protein compared with other constituents in the mixture. A single, well-defined band at the expected molecular weight indicates a pure sample. In contrast, the presence of multiple bands may indicate that other proteins or impurities were not fully removed during purification. Faint bands may represent degradation products, while vertical smears often indicate the presence of insoluble aggregates or a high sample concentration.
 
 ### Equipment
 
 The Bio-RAD PROTEAN electrophoresis apparatus is used to separate the proteins by molecular weight during SDS-PAGE. The system consists of many components that work together to create an electric field across the polyacrylamide gel.
 
-* Lid and Electrodes: The lid contains a red (anode, positive) and black (cathode, negative) electrical leads that connect with the electrophoresis tank to the power supply. These electrodes help to generate the electric current required for protein migration through the gel.
-* Electrode Assembly/ Running Module: Helps in holding the gel cassettes securely in place and forms the inner buffer chamber where electrophoresis occurs.
-* Gel Cassettes: Contains the precast polyacrylamide gel used used for protein separation. The wells located on the top of the gel are used for loading protein samples and molecular weight ladder.
-* Buffer chambers: The inner and outer chambers are filled with Tris/Glycine/SDS running buffer to complete the electrical circuit and helps to maintain proper conductivity during electrophoresis.
-* Power Supply: Provides constant voltage and current to the electrophoresis apparatus, allowing negatively charged protein samples to migrate through the gel toward the positive electrode.
-* Polyacrylamide Gel Matrix: Functions as a molecular sieve that separates proteins based on molecular weight, where smaller proteins travels faster than large proteins.
-* Molecular Weight Ladder: A standard protein marker loaded into one of the wells is used to estimate the molecular weights of experimental protein bands.
+- Lid and Electrodes: The lid contains a red (anode, positive) and black (cathode, negative) electrical leads that connect with the electrophoresis tank to the power supply. These electrodes help to generate the electric current required for protein migration through the gel.
+- Electrode Assembly/ Running Module: Helps in holding the gel cassettes securely in place and forms the inner buffer chamber where electrophoresis occurs.
+- Gel Cassettes: Contains the precast polyacrylamide gel used used for protein separation. The wells located on the top of the gel are used for loading protein samples and molecular weight ladder.
+- Buffer chambers: The inner and outer chambers are filled with Tris/Glycine/SDS running buffer to complete the electrical circuit and helps to maintain proper conductivity during electrophoresis.
+- Power Supply: Provides constant voltage and current to the electrophoresis apparatus, allowing negatively charged protein samples to migrate through the gel toward the positive electrode.
+- Polyacrylamide Gel Matrix: Functions as a molecular sieve that separates proteins based on molecular weight, where smaller proteins travels faster than large proteins.
+- Molecular Weight Ladder: A standard protein marker loaded into one of the wells is used to estimate the molecular weights of experimental protein bands.
 
 The complete electrophoresis setup allows visualization based analysis of separated protein bands after staining and imaging the gel.
 
@@ -140,36 +141,36 @@ Concentration (ug/mL) \= 2633 x A595 - 52
 
 Protein concentration is determined using the bradford protein assay, which measures absorbance at 595 nm after the binding of Coomassie Brilliant Blue dye to the proteins. The intensity of the blue color produced is proportional to protein concentration.
 
-* Label a clean cuvette for the blank, and an additional cuvette for each protein sample.
-* Add 2 mL of Bradford dye reagent into each cuvette.
-* Add 20 uL of protein sample into the corresponding cuvette and mixed gently using resuspending technique with the same micropipette to ensure the sample and Bradford dye are thoroughly combined without introducing bubbles.
-* Prepare the blank cuvette using only Bradford dye reagent without protein sample.
-* Incubate the samples at room temperature for approximately 5 minutes.
-* Blank the spectrophotometer at 595 nm using the blank cuvette.
-* Measure and record the absorbance (A595) values for each protein sample.
-* Calculate the protein sample concentration using the following equation:
+- Label a clean cuvette for the blank, and an additional cuvette for each protein sample.
+- Add 2 mL of Bradford dye reagent into each cuvette.
+- Add 20 uL of protein sample into the corresponding cuvette and mixed gently using resuspending technique with the same micropipette to ensure the sample and Bradford dye are thoroughly combined without introducing bubbles.
+- Prepare the blank cuvette using only Bradford dye reagent without protein sample.
+- Incubate the samples at room temperature for approximately 5 minutes.
+- Blank the spectrophotometer at 595 nm using the blank cuvette.
+- Measure and record the absorbance (A595) values for each protein sample.
+- Calculate the protein sample concentration using the following equation:
 
-	Concentration (ug/ml) \= 2633A \- 52 \= 182.3 ug/mL
+  Concentration (ug/ml) \= 2633A \- 52 \= 182.3 ug/mL
 
 Example calculation for an absorbance value of 0.089:
 
-	Concentration \= 2633(0.089) \- 52 \= 182.3 ug/ml
+    Concentration \= 2633(0.089) \- 52 \= 182.3 ug/ml
 
-* Use the calculated protein concentration to determine the appropriate loading volume for SDS-PAGE sample preparation.
+- Use the calculated protein concentration to determine the appropriate loading volume for SDS-PAGE sample preparation.
 
 ### Part 2: Sample Concentration Range
 
-* Use your protein concentration to determine the amount of proteins (by volume) that can be loaded into your sample
-  * Loading too many proteins will cause your sample to smear, but loading too little will cause bands to be invisible.
-* For practical SDS-PAGE loading, aim for a range of **0.5-2.0&micro;g** of proteins
-* Assuming your wells can hold 30&micro;L:
-  * 1.5 &micro;L of BME and 7.5&micro;L of Laemmli buffer would leave 21&micro;L for your sample
-  * If your sample has a concentration of 47.62&micro;g/mL, then you'll have exactly 1&micro;g in 21&micro;L of sample
-    * But it's highly unlikely that you'll have this exact concentration, so you'll have to figure out how much protein can fit into the well
-  * If 21&micro;L would result in more than 2.0&micro;g of proteins being loaded, determine the maximum volume of sample that can produce a proper amount of proteins using the following equation:
-    * 2&micro;g  x your concentration(1mL / w &micro;g) x 1000&micro;L/1mL \= v &micro;L
-  * Round down your calculated volume to the nearest whole value to determine the amount of Laemmli and BME that will added based on the decided ratio
-    * You will need to determine the amount of proteins present in this rounded volume for recording purposes
+- Use your protein concentration to determine the amount of proteins (by volume) that can be loaded into your sample
+  - Loading too many proteins will cause your sample to smear, but loading too little will cause bands to be invisible.
+- For practical SDS-PAGE loading, aim for a range of **0.5-2.0&micro;g** of proteins
+- Assuming your wells can hold 30&micro;L:
+  - 1.5 &micro;L of BME and 7.5&micro;L of Laemmli buffer would leave 21&micro;L for your sample
+  - If your sample has a concentration of 47.62&micro;g/mL, then you'll have exactly 1&micro;g in 21&micro;L of sample
+    - But it's highly unlikely that you'll have this exact concentration, so you'll have to figure out how much protein can fit into the well
+  - If 21&micro;L would result in more than 2.0&micro;g of proteins being loaded, determine the maximum volume of sample that can produce a proper amount of proteins using the following equation:
+    - 2&micro;g x your concentration(1mL / w &micro;g) x 1000&micro;L/1mL \= v &micro;L
+  - Round down your calculated volume to the nearest whole value to determine the amount of Laemmli and BME that will added based on the decided ratio
+    - You will need to determine the amount of proteins present in this rounded volume for recording purposes
 
 ### Part 3: Increasing Protein Concentration using 10k MWCO Filter
 
@@ -178,7 +179,7 @@ Example calculation for an absorbance value of 0.089:
 2. Counter-balancing: Measure the total mass of the tube containing the unknown protein sample and use this as the reference weight. Prepare a second tube of equal mass filled with distilled water to balance the centrifuge if no other students are adding tubes.
 
 3. Centrifugation: Set the centrifuge to 4,000 RPM and run for 15 minutes.
-   * Ensure tubes are evenly spaced within the centrifuge. For example, if using a four-slot centrifuge with two tubes, place them opposite each other. Repeat centrifugation until the sample volume is at or below 250 &micro;L. If the volume does not reach 250 &micro;L, discard the filtrate, add distilled water above the filter line, rebalance the centrifuge, and repeat the process.
+   - Ensure tubes are evenly spaced within the centrifuge. For example, if using a four-slot centrifuge with two tubes, place them opposite each other. Repeat centrifugation until the sample volume is at or below 250 &micro;L. If the volume does not reach 250 &micro;L, discard the filtrate, add distilled water above the filter line, rebalance the centrifuge, and repeat the process.
 
 4. After centrifugation, molecules smaller than the filter's MWCO are collected in the bottom reservoir. Molecules larger than the MWCO remain in the upper reservoir as the concentrated sample.
 
@@ -193,12 +194,14 @@ Example calculation for an absorbance value of 0.089:
 Prepare a 1 L solution containing 0.1% Coomassie R250, 10% acetic acid, and 40% methanol.
 
 Reagents:
+
 - 1 g Coomassie R250
 - 100 mL glacial acetic acid
 - 400 mL methanol
 - 500 mL ddH2O
 
 Procedure:
+
 1. Add 100 mL of glacial acetic acid to 500 mL of ddH2O.
 2. Add 400 mL of methanol and mix.
 3. Add 1 g of Coomassie R250 and mix.
@@ -210,11 +213,13 @@ Procedure:
 Prepare a 1 L solution containing 20% methanol and 10% acetic acid.
 
 Reagents:
+
 - 200 mL methanol
 - 100 mL glacial acetic acid
 - 700 mL ddH2O
 
 Procedure:
+
 1. Add 100 mL of glacial acetic acid to 700 mL of ddH2O.
 2. Add 200 mL of methanol and mix.
 3. Store the solution at room temperature in a sealed container.
@@ -295,8 +300,6 @@ Brief outline of steps in the procedure
 
    Substitute your values:
 
-
-
 2. Verify that your miraculin samples have been properly prepared by mixing them with 4x Laemmli sample buffer (containing beta-mercaptoethanol or DTT) and heating them at 90-95°C for 5 minutes to ensure full denaturation.
 
 3. Use the sample mixture prepared in Part 1, which contains 21 &micro;L protein sample + 7.5 &micro;L 4x Laemmli + 1.5 &micro;L BME. Adjust sample volume to deliver the target microgram per well while keeping the final 1x Laemmli concentration.
@@ -318,75 +321,75 @@ Brief outline of steps in the procedure
 
 ### Part 6: Connect Power Supply and Run the Gel
 
-| Voltage | Run time |
-| :---- | :---- |
-| 150 V | 25-30 min |
-| 200 V | 20-25 min |
+| Voltage | Run time  |
+| :------ | :-------- |
+| 150 V   | 25-30 min |
+| 200 V   | 20-25 min |
 
 Note : If bands have reached the bottom of the gel, turn off the power supply and remove SDS-PAGE gel.
 
 ### Part 7: Recycle the SDS buffer and store
 
-* After the running of the gel has finished, and the gel has been removed, you can recycle the buffer for storage to be used for a later SDS-PAGE
-* Observe the buffer prior to recycling to check for visible contamination or discoloration
-  * If it is, DO NOT recycle this buffer. This should be disposed of as hazardous waste because it may contain Laemmli Buffer or BME, which are both hazardous materials
-  * If no contamination or discoloration is observed within the chamber, proceed.
-* Carefully pour the buffer from the chamber in a clean glass bottle with a screwable lid (use a funnel)
-* Appropriately label the bottle:
-  * SDS Buffer with concentration
-  * Date of creation
-  * Course number
-  * Number of uses (buffer can lose effectiveness after repeated recycling so this is important)
-* Store the bottle at room temperature in a designated location
+- After the running of the gel has finished, and the gel has been removed, you can recycle the buffer for storage to be used for a later SDS-PAGE
+- Observe the buffer prior to recycling to check for visible contamination or discoloration
+  - If it is, DO NOT recycle this buffer. This should be disposed of as hazardous waste because it may contain Laemmli Buffer or BME, which are both hazardous materials
+  - If no contamination or discoloration is observed within the chamber, proceed.
+- Carefully pour the buffer from the chamber in a clean glass bottle with a screwable lid (use a funnel)
+- Appropriately label the bottle:
+  - SDS Buffer with concentration
+  - Date of creation
+  - Course number
+  - Number of uses (buffer can lose effectiveness after repeated recycling so this is important)
+- Store the bottle at room temperature in a designated location
 
 ### Part 8: Separate the Gel from its Cassette
 
-* Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
+- Once the electrophoresis is complete, turn off the power supply, and disconnect the electrical leads from its electrophoresis apparatus.
 
-* Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.
-* Pour off and properly dispose of the running buffer solution.
-* Locate the arrows marked on the side of the gel cassette.
-* Align the gel opening tool with the arrows on the cassette and carefully insert the tool between the cassette plates.
-* apply gentle downward pressure to break the seals holding the cassette together. Do not twist the opening tool, as this may crack the gel.
-* Once both sides of the cassette are opened, carefully pull the two plastic plates apart from the top of the cassette.
-* Gently remove the gel from the cassette using gloved hands or forceps, taking care not to tear or fold the gel. If needed, a deionized water wash bottle may be used to gently loosen the gel from the cassette edges by carefully squirting small amounts of DI water along the sides of the gel.
-* Immediately transfer the gel into a staining tray containing deionized water or coomassie stain solution for the next step of the procedure.
+- Remove the lid from the electrophoresis tank, and carefully remove the gel cassette from the tank.
+- Pour off and properly dispose of the running buffer solution.
+- Locate the arrows marked on the side of the gel cassette.
+- Align the gel opening tool with the arrows on the cassette and carefully insert the tool between the cassette plates.
+- apply gentle downward pressure to break the seals holding the cassette together. Do not twist the opening tool, as this may crack the gel.
+- Once both sides of the cassette are opened, carefully pull the two plastic plates apart from the top of the cassette.
+- Gently remove the gel from the cassette using gloved hands or forceps, taking care not to tear or fold the gel. If needed, a deionized water wash bottle may be used to gently loosen the gel from the cassette edges by carefully squirting small amounts of DI water along the sides of the gel.
+- Immediately transfer the gel into a staining tray containing deionized water or coomassie stain solution for the next step of the procedure.
 
 ### Part 9: Staining the Gel
 
-* Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually
-* Dispose of ddH2O into the sink being careful to keep gel inside the container
-  * You can use a plastic plate from the deconstructed cassette at an angle to pour water out from a corner of the tray while keeping the gel from sliding out
-* Add enough Coomassie stain to the tray to cover the gel by 1/2 inch (\~ 1.5 cm)
-* Microwave the tray on high power for 40 seconds to 1 minute (stop if Coomassie Stain starts to boil)
-  * When removing from the microwave, be careful to not breath deeply as the emitted odor will be very strong
-* Incubate the gel in the Coomassie stain for 5 to 10 minutes on a mechanical rocking table
-  * Do not set the speed too high or the stain will slosh and spill over
-* Pour out the Coomassie stain (using the same method as was used to dispose of ddH2O) into a bottle and label the bottle for storage:
-  * Coomassie stain
-  * Date
-  * Course number
-* Rinse the gel twice in ddH2O as done previously before adding Destain solution
-* Add enough fresh Destain solution to cover the gel by 3/4 inch (\~ 2 cm)
-* Tie 4 Kimwipes in a simple loose knot and place them into the Destain solution around the gel
-  * Try to avoid laying the Kimwipes on the gel as this will cause uneven destaining
-* Microwave the tray on high power for 40 seconds to 1 minute (stop if Destain begins to boil)
-  * Again, be careful to not breath deeply when removing from the microwave
-* Remove and discard the Kimwipes
-* Incubate the gel in the Destain solution for 10 minutes on a mechanical rocking table
-* If level of destaining is not to your satisfaction:
-  * Remove Destain solution into stain waste in the fume hood
-  * Re-add Destain solution and microwave with Kimwipes
-  * Incubate a second time for 10 min-overnight on a mechanical rocking table. Stop when the level of destaining is sufficient
-* The used Destain solution will contain Coomassie stain and should be disposed of in designated stain waste within the fume hood
+- Rinse the gel inside the staining tray once in ddH2O by adding enough to just cover the gel and gently shake the container manually
+- Dispose of ddH2O into the sink being careful to keep gel inside the container
+  - You can use a plastic plate from the deconstructed cassette at an angle to pour water out from a corner of the tray while keeping the gel from sliding out
+- Add enough Coomassie stain to the tray to cover the gel by 1/2 inch (\~ 1.5 cm)
+- Microwave the tray on high power for 40 seconds to 1 minute (stop if Coomassie Stain starts to boil)
+  - When removing from the microwave, be careful to not breath deeply as the emitted odor will be very strong
+- Incubate the gel in the Coomassie stain for 5 to 10 minutes on a mechanical rocking table
+  - Do not set the speed too high or the stain will slosh and spill over
+- Pour out the Coomassie stain (using the same method as was used to dispose of ddH2O) into a bottle and label the bottle for storage:
+  - Coomassie stain
+  - Date
+  - Course number
+- Rinse the gel twice in ddH2O as done previously before adding Destain solution
+- Add enough fresh Destain solution to cover the gel by 3/4 inch (\~ 2 cm)
+- Tie 4 Kimwipes in a simple loose knot and place them into the Destain solution around the gel
+  - Try to avoid laying the Kimwipes on the gel as this will cause uneven destaining
+- Microwave the tray on high power for 40 seconds to 1 minute (stop if Destain begins to boil)
+  - Again, be careful to not breath deeply when removing from the microwave
+- Remove and discard the Kimwipes
+- Incubate the gel in the Destain solution for 10 minutes on a mechanical rocking table
+- If level of destaining is not to your satisfaction:
+  - Remove Destain solution into stain waste in the fume hood
+  - Re-add Destain solution and microwave with Kimwipes
+  - Incubate a second time for 10 min-overnight on a mechanical rocking table. Stop when the level of destaining is sufficient
+- The used Destain solution will contain Coomassie stain and should be disposed of in designated stain waste within the fume hood
 
 ### Part 10: Imaging the Gel
 
-* After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.
-* Place the tray with gel flat onto a light box with bright white light.
-* Ensure the ladder and all sample lanes are clearly visible.
-* Using a smartphone camera, capture a clear image directly from above the gel while avoiding shadows and reflections.
-* Save and label the gel with the sample name, lane assignment, date, and group information for future analysis.
+- After destaining, carefully empty the destaining solution into the appropriate container. Then, carefully remove the gel from the staining tray and briefly rinse with deionized water.
+- Place the tray with gel flat onto a light box with bright white light.
+- Ensure the ladder and all sample lanes are clearly visible.
+- Using a smartphone camera, capture a clear image directly from above the gel while avoiding shadows and reflections.
+- Save and label the gel with the sample name, lane assignment, date, and group information for future analysis.
 
 ## **Timing Estimates**
 
@@ -411,22 +414,22 @@ This will depend on how many samples are loaded in
 
 ### Part 6: Connect Power Supply and Run the Gel
 
-| Voltage | Run time |
-| :---- | :---- |
-| 150 V | 25-30 min |
-| 200 V | 20-25 min |
+| Voltage | Run time  |
+| :------ | :-------- |
+| 150 V   | 25-30 min |
+| 200 V   | 20-25 min |
 
 ### Part 9: Staining the Gel
 
 ### **Time breakdown**
 
-* Initial rinse and adding stain: 1-3 min
-* Microwave stain step: 1-2 min or until it boils
-* Staining on rocker: 5-10 min
-* Pouring/rinsing before destain: 3-5 min
-* Adding destain \+ Kimwipes: 1-3 min
-* Microwave destain step: 1-2 minor until it boils
-* Destaining on rocker: 10 min
+- Initial rinse and adding stain: 1-3 min
+- Microwave stain step: 1-2 min or until it boils
+- Staining on rocker: 5-10 min
+- Pouring/rinsing before destain: 3-5 min
+- Adding destain \+ Kimwipes: 1-3 min
+- Microwave destain step: 1-2 minor until it boils
+- Destaining on rocker: 10 min
 
 ## **Post-Experiment Analysis**
 
@@ -446,29 +449,29 @@ Items that the TA might need to prepare before class to make sure the lab goes s
 
 ### Equipment
 
-* Bio-Rad Mini-PROTEAN electrophoresis apparatus
-* Power supply
-* Heating block set to 95°C
-* Micropipettes and gel loading tips
-* Gel opening tool
-* Microwave
-* Shaker
-* Lightbox
+- Bio-Rad Mini-PROTEAN electrophoresis apparatus
+- Power supply
+- Heating block set to 95°C
+- Micropipettes and gel loading tips
+- Gel opening tool
+- Microwave
+- Shaker
+- Lightbox
 
 ### Materials
 
-* Mini-PROTEAN precast gels
-* 10x Tris/Glycine/SDS running buffer
-* Deionized water
-* protein ladder
-* 4x Laemmli sample buffer
-* Beta-Mercaptoethanol (BME)
-* Bradford dye reagent
-* Coomassie stain and destaining solution
-* Microcentrifuge tubes
-* Cuvettes
-* Kimwipes
-* Gloves and safety glasses
+- Mini-PROTEAN precast gels
+- 10x Tris/Glycine/SDS running buffer
+- Deionized water
+- protein ladder
+- 4x Laemmli sample buffer
+- Beta-Mercaptoethanol (BME)
+- Bradford dye reagent
+- Coomassie stain and destaining solution
+- Microcentrifuge tubes
+- Cuvettes
+- Kimwipes
+- Gloves and safety glasses
 
 All buffers, stain solution, and electrophoresis equipment should be prepared and checked before the start of the lab to ensure efficient workflow and minimize delays.
 
@@ -477,4 +480,3 @@ All buffers, stain solution, and electrophoresis equipment should be prepared an
 **Bio-Rad Laboratories**. **Mini-PROTEAN® Precast Gels Instruction Manual and Application Guide**. Bio-Rad Laboratories, Inc., **10016085 Rev A**. This comprehensive manual provides instructions for using **Mini-PROTEAN precast gels** with various electrophoresis cells, including the **Mini-PROTEAN Tetra** and **Mini-PROTEAN 3 Dodeca** systems. It covers applications such as **SDS-PAGE**, **Native PAGE**, **peptide analysis**, and **nucleic acid separation**.
 
 **Bio-Rad Laboratories**. **Instructions for Staining Polyacrylamide Gels Quick Start Guide**. Bio-Rad Laboratories, Inc.. This guide outlines the protocol for using **Bio-Safe&trade; Coomassie Stain** (catalog \#161-0786) to visualize protein bands in polyacrylamide gels. It includes specific procedures for **SDS-PAGE mini gels**, large format gels, and **peptide gels**.
-

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access */
 /**
  * src/scene_runtime/layout/adapter.ts
  *
@@ -6,13 +7,27 @@
  * Public API: computeSceneLayout(world: RuntimeWorld, sceneId: string)
  * transforms world + scene into the legacy SceneItem[], AssetSpec[], and
  * SceneLayoutRules needed by the mined layout engine.
+ *
+ * This file accesses builder-generated data structures that have flexible schemas
+ * (e.g., layout_rules, wrong_order_message). Disabling unsafe-access rules locally.
  */
 
-import type { RuntimeWorld, ResolvedSceneConfig, ObjectConfig, PlacementConfig } from '../types';
-import { computeSceneLayout as legacyComputeLayout } from './layout_engine';
-import type { SceneItem, AssetSpec, SceneLayoutRules, ZoneDef, ComputedItemLayout } from './types';
-import { is_css_native_well_plate_zoom_spike_enabled } from './feature_flags';
-import { compute_scene_layout_css_native } from './css_native_adapter';
+import type {
+  RuntimeWorld,
+  ResolvedSceneConfig,
+  ObjectConfig,
+  PlacementConfig,
+} from "../types";
+import { computeSceneLayout as legacyComputeLayout } from "./layout_engine";
+import type {
+  SceneItem,
+  AssetSpec,
+  SceneLayoutRules,
+  ZoneDef,
+  ComputedItemLayout,
+} from "./types";
+import { is_css_native_well_plate_zoom_spike_enabled } from "./feature_flags";
+import { compute_scene_layout_css_native } from "./css_native_adapter";
 
 /**
  * Default label styling when layout_rules does not specify.
@@ -32,104 +47,113 @@ const DEFAULT_ZONE_GAP = 2;
  * scene, missing objects, or malformed layout data.
  */
 export function computeSceneLayout(
-	world: RuntimeWorld,
-	sceneId: string,
-	viewportW: number = 1200,
-	viewportH: number = 900
+  world: RuntimeWorld,
+  sceneId: string,
+  viewportW: number = 1200,
+  viewportH: number = 900,
 ): ComputedItemLayout[] {
-	const scene = world.scenes[sceneId];
-	if (!scene) {
-		throw new Error(`computeSceneLayout: scene '${sceneId}' not found in world.scenes`);
-	}
+  const scene = world.scenes[sceneId];
+  if (!scene) {
+    throw new Error(
+      `computeSceneLayout: scene '${sceneId}' not found in world.scenes`,
+    );
+  }
 
-	// NEW1 spike: gate to CSS-native adapter for well_plate_96_zoom_check_scene only.
-	// Default false. Returns ComputedItemLayout[] in the legacy shape.
-	// See docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md.
-	if (sceneId === 'well_plate_96_zoom_check_scene' && is_css_native_well_plate_zoom_spike_enabled()) {
-		return compute_scene_layout_css_native(world, sceneId, viewportW, viewportH);
-	}
+  // NEW1 spike: gate to CSS-native adapter for well_plate_96_zoom_check_scene only.
+  // Default false. Returns ComputedItemLayout[] in the legacy shape.
+  // See docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md.
+  if (
+    sceneId === "well_plate_96_zoom_check_scene" &&
+    is_css_native_well_plate_zoom_spike_enabled()
+  ) {
+    return compute_scene_layout_css_native(
+      world,
+      sceneId,
+      viewportW,
+      viewportH,
+    );
+  }
 
-	// Build SceneItem[] from placements + object specs
-	const sceneItems: SceneItem[] = [];
-	const placements = scene.placements || [];
+  // Build SceneItem[] from placements + object specs
+  const sceneItems: SceneItem[] = [];
+  const placements = scene.placements || [];
 
-	for (const placement of placements) {
-		const objectSpec = world.objects[placement.object_name];
-		if (!objectSpec) {
-			throw new Error(
-				`computeSceneLayout: placement '${placement.placement_name}' references`
-				+ ` unknown object '${placement.object_name}'`
-			);
-		}
+  for (const placement of placements) {
+    const objectSpec = world.objects[placement.object_name];
+    if (!objectSpec) {
+      throw new Error(
+        `computeSceneLayout: placement '${placement.placement_name}' references` +
+          ` unknown object '${placement.object_name}'`,
+      );
+    }
 
-		// Build SceneItem from placement + object spec
-		const item = buildSceneItem(
-			placement,
-			objectSpec,
-			sceneId
-		);
-		sceneItems.push(item);
-	}
+    // Build SceneItem from placement + object spec
+    const item = buildSceneItem(placement, objectSpec, sceneId);
+    sceneItems.push(item);
+  }
 
-	// Build AssetSpec[] from object specs
-	const assetSpecs: Record<string, AssetSpec> = {};
-	for (const item of sceneItems) {
-		if (!assetSpecs[item.svgAsset]) {
-			const objectSpec = world.objects[item.svgAsset];
-			if (!objectSpec) {
-				throw new Error(
-					`computeSceneLayout: object '${item.svgAsset}' not found in world.objects`
-				);
-			}
-			assetSpecs[item.svgAsset] = buildAssetSpec(objectSpec);
-		}
-	}
+  // Build AssetSpec[] from object specs
+  const assetSpecs: Record<string, AssetSpec> = {};
+  for (const item of sceneItems) {
+    if (!assetSpecs[item.svgAsset]) {
+      const objectSpec = world.objects[item.svgAsset];
+      if (!objectSpec) {
+        throw new Error(
+          `computeSceneLayout: object '${item.svgAsset}' not found in world.objects`,
+        );
+      }
+      assetSpecs[item.svgAsset] = buildAssetSpec(objectSpec);
+    }
+  }
 
-	// Build SceneLayoutRules from scene zones + layout_rules
-	const layoutRules = buildSceneLayoutRules(scene);
+  // Build SceneLayoutRules from scene zones + layout_rules
+  const layoutRules = buildSceneLayoutRules(scene);
 
-	// Call mined layout engine
-	return legacyComputeLayout(
-		sceneItems,
-		assetSpecs,
-		layoutRules,
-		viewportW,
-		viewportH
-	);
+  // Call mined layout engine
+  return legacyComputeLayout(
+    sceneItems,
+    assetSpecs,
+    layoutRules,
+    viewportW,
+    viewportH,
+  );
 }
 
 /**
  * Build a SceneItem from a PlacementConfig and ObjectConfig.
  */
 function buildSceneItem(
-	placement: PlacementConfig,
-	objectSpec: ObjectConfig,
-	sceneId: string
+  placement: PlacementConfig,
+  objectSpec: ObjectConfig,
+
+  _sceneId: string,
 ): SceneItem {
-	const layoutConfig = objectSpec.layout || {};
-	const defaultWidth = layoutConfig.default_width || 15;
-	const labelWidth = layoutConfig.label_width || 10;
+  const layoutConfig = objectSpec.layout || {};
 
-	// Determine anchor_y: from layout config or fallback to 'center'
-	let anchorY: 'top' | 'bottom' | 'tip' = 'center' as any;
-	const configAnchorY = layoutConfig.anchor_y;
-	if (configAnchorY === 'top' || configAnchorY === 'bottom' || configAnchorY === 'tip') {
-		anchorY = configAnchorY;
-	} else if (configAnchorY === 'center' || configAnchorY === 0) {
-		anchorY = 'center' as any;
-	}
+  // Determine anchor_y: from layout config or fallback to 'center'
+  let anchorY: "top" | "bottom" | "tip" = "center" as any;
+  const configAnchorY = layoutConfig.anchor_y;
+  if (
+    configAnchorY === "top" ||
+    configAnchorY === "bottom" ||
+    configAnchorY === "tip"
+  ) {
+    anchorY = configAnchorY;
+  } else if (configAnchorY === "center" || configAnchorY === 0) {
+    anchorY = "center" as any;
+  }
 
-	return {
-		id: placement.placement_name,
-		svgAsset: objectSpec.object_name,
-		kind: objectSpec.kind,
-		zone: placement.zone,
-		depthTier: placement.depth_tier || 0,
-		widthScale: 1.0, // Default scale; scene authors can override via placement.position.scale
-		label: objectSpec.label,
-		anchorY: anchorY,
-		// Optional fields: shortLabel and depth are omitted, not set to undefined
-	};
+  return {
+    id: placement.placement_name,
+    svgAsset: objectSpec.object_name,
+    kind: objectSpec.kind,
+    zone: placement.zone,
+    depthTier: placement.depth_tier || 0,
+    widthScale: 1.0, // Default scale; scene authors can override via placement.position.scale
+    label: objectSpec.label,
+    anchorY: anchorY,
+    // Optional fields: shortLabel and depth are omitted, not set to undefined
+  };
 }
 
 /**
@@ -137,16 +161,16 @@ function buildSceneItem(
  * Extracts default_width, label_width, and anchor_y_offset from layout config.
  */
 function buildAssetSpec(objectSpec: ObjectConfig): AssetSpec {
-	const layoutConfig = objectSpec.layout || {};
-	const defaultWidth = layoutConfig.default_width || 15;
-	const labelWidth = layoutConfig.label_width || 10;
-	const anchorYOffset = layoutConfig.anchor_y_offset || 0;
+  const layoutConfig = objectSpec.layout || {};
+  const defaultWidth = layoutConfig.default_width || 15;
+  const labelWidth = layoutConfig.label_width || 10;
+  const anchorYOffset = layoutConfig.anchor_y_offset || 0;
 
-	return {
-		defaultWidth,
-		labelWidth,
-		anchorYOffset: typeof anchorYOffset === 'number' ? anchorYOffset : 0,
-	};
+  return {
+    defaultWidth,
+    labelWidth,
+    anchorYOffset: typeof anchorYOffset === "number" ? anchorYOffset : 0,
+  };
 }
 
 /**
@@ -154,44 +178,52 @@ function buildAssetSpec(objectSpec: ObjectConfig): AssetSpec {
  * Converts scene.zones + layout_rules into the legacy ZoneDef[] map + defaults.
  */
 function buildSceneLayoutRules(scene: ResolvedSceneConfig): SceneLayoutRules {
-	// Build ZoneDef map from scene.zones
-	const zonesMap: Record<string, ZoneDef> = {};
-	const zones = scene.zones || [];
+  // Build ZoneDef map from scene.zones
+  const zonesMap: Record<string, ZoneDef> = {};
+  const zones = scene.zones || [];
 
-	for (const zone of zones) {
-		const bounds = zone.bounds || { left: 0, right: 100, top: 0, bottom: 100 };
-		zonesMap[zone.id] = {
-			x0: bounds.left,
-			x1: bounds.right,
-			baseline: bounds.top + (bounds.bottom - bounds.top) / 2, // center baseline
-			gap: DEFAULT_ZONE_GAP,
-			align: (zone.align || 'center') as 'center' | 'left' | 'right' | 'justify' | 'tab-stops',
-		};
-	}
+  for (const zone of zones) {
+    const bounds = zone.bounds || { left: 0, right: 100, top: 0, bottom: 100 };
+    zonesMap[zone.id] = {
+      x0: bounds.left,
+      x1: bounds.right,
+      baseline: bounds.top + (bounds.bottom - bounds.top) / 2, // center baseline
+      gap: DEFAULT_ZONE_GAP,
+      align: (zone.align || "center") as
+        | "center"
+        | "left"
+        | "right"
+        | "justify"
+        | "tab-stops",
+    };
+  }
 
-	// Extract label styling from layout_rules if present
-	const layoutRules = scene.layout_rules || {};
-	const labelFontSize = (layoutRules as any).label_font_size || DEFAULT_LABEL_FONT_SIZE;
-	const labelLineHeight = (layoutRules as any).label_line_height || DEFAULT_LABEL_LINE_HEIGHT;
-	const labelOffsetY = (layoutRules as any).label_offset_y || DEFAULT_LABEL_OFFSET_Y;
+  // Extract label styling from layout_rules if present
+  const layoutRules = scene.layout_rules || {};
+  const labelFontSize =
+    (layoutRules as any).label_font_size || DEFAULT_LABEL_FONT_SIZE;
+  const labelLineHeight =
+    (layoutRules as any).label_line_height || DEFAULT_LABEL_LINE_HEIGHT;
+  const labelOffsetY =
+    (layoutRules as any).label_offset_y || DEFAULT_LABEL_OFFSET_Y;
 
-	// Build return object
-	const rules: SceneLayoutRules = {
-		zones: zonesMap,
-		labelFontSize,
-		labelLineHeight,
-		labelOffsetY,
-	};
+  // Build return object
+  const rules: SceneLayoutRules = {
+    zones: zonesMap,
+    labelFontSize,
+    labelLineHeight,
+    labelOffsetY,
+  };
 
-	// Optional scene bounds: only add if present
-	if (scene.scene_bounds) {
-		rules.sceneBounds = {
-			left: scene.scene_bounds.left,
-			right: scene.scene_bounds.right,
-			top: scene.scene_bounds.top,
-			bottom: scene.scene_bounds.bottom,
-		};
-	}
+  // Optional scene bounds: only add if present
+  if (scene.scene_bounds) {
+    rules.sceneBounds = {
+      left: scene.scene_bounds.left,
+      right: scene.scene_bounds.right,
+      top: scene.scene_bounds.top,
+      bottom: scene.scene_bounds.bottom,
+    };
+  }
 
-	return rules;
+  return rules;
 }

@@ -56,7 +56,7 @@ This plan leans on **long-term over short-term** and **fix the design, not the s
 
 Inventory snapshot (taken via `ls docs/active_plans/` and `git status`, 130 entries, ~35M):
 
-- **NEW* series:** 60 files across NEW0 (stabilization), NEW1 + NEW1.5 (CSS-native spike), NEW2 (production blockers), NEW3 (batch 1-5 stress reliability). All four series closed per CHANGELOG 2026-05-20 and prior.
+- **NEW\* series:** 60 files across NEW0 (stabilization), NEW1 + NEW1.5 (CSS-native spike), NEW2 (production blockers), NEW3 (batch 1-5 stress reliability). All four series closed per CHANGELOG 2026-05-20 and prior.
 - **no_crop / no_cropped_svg cluster:** 16 files. Visual integrity rule diagnostics + round 2 acceptance reports.
 - **git_incident_4e2c709 + post_commit_4e2c709:** 9 files. Postmortem and recovery scaffolding; commit `4e2c709` is now the accepted baseline per CHANGELOG.
 - **Generated artifact clutter:** 12 HTML+PDF pairs, 7 `*_assets/` directories. Roughly 30M of the 35M footprint.
@@ -72,16 +72,16 @@ Inventory snapshot (taken via `ls docs/active_plans/` and `git status`, 130 entr
 
 The inventory is a single markdown file at `docs/active_plans/active_plans_cleanup_inventory.md`. It enumerates every entry in `docs/active_plans/` with these columns:
 
-| Column | Required content |
-| --- | --- |
-| path | Repo-relative path, including trailing `/` for directories |
-| tracked | `tracked` or `untracked` (from `git status` + `git ls-files`) |
-| size | `du -sh` output (one line per row) |
-| classification | `KEEP`, `ARCHIVE:<cluster>`, or `DELETE:generated` |
-| reason | One sentence citing the live-work signal or the closeout evidence |
-| inbound references | Files that link to this path (`git grep -l <path> docs/`) |
-| regeneration recipe | Only for `DELETE:generated`: one of (a) regeneration command (e.g., `node tools/html_to_pdf.mjs --input X.md`), (b) source markdown path, (c) `regenerable from test-results`, (d) `intentionally dropped, not required as source evidence` |
-| proposed destination | Only for `ARCHIVE:<cluster>` and KEEP-with-move-to-`workstreams/`: target path |
+| Column               | Required content                                                                                                                                                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| path                 | Repo-relative path, including trailing `/` for directories                                                                                                                                                                                  |
+| tracked              | `tracked` or `untracked` (from `git status` + `git ls-files`)                                                                                                                                                                               |
+| size                 | `du -sh` output (one line per row)                                                                                                                                                                                                          |
+| classification       | `KEEP`, `ARCHIVE:<cluster>`, or `DELETE:generated`                                                                                                                                                                                          |
+| reason               | One sentence citing the live-work signal or the closeout evidence                                                                                                                                                                           |
+| inbound references   | Files that link to this path (`git grep -l <path> docs/`)                                                                                                                                                                                   |
+| regeneration recipe  | Only for `DELETE:generated`: one of (a) regeneration command (e.g., `node tools/html_to_pdf.mjs --input X.md`), (b) source markdown path, (c) `regenerable from test-results`, (d) `intentionally dropped, not required as source evidence` |
+| proposed destination | Only for `ARCHIVE:<cluster>` and KEEP-with-move-to-`workstreams/`: target path                                                                                                                                                              |
 
 The inventory must include tracked files, untracked files, directories, generated HTML/PDF siblings, and `*_assets/` directories. Sourcing only `git ls-files` would miss the two untracked working files plus directory entries; the inventory script must combine `git ls-files docs/active_plans/`, `find docs/active_plans -maxdepth 1`, and `git status --porcelain docs/active_plans/`.
 
@@ -98,20 +98,20 @@ Surfaces touched:
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-INVENTORY | `docs/active_plans/active_plans_cleanup_inventory.md` (new) | 1 |
-| M2 / WS-NEW-SERIES | `docs/active_plans/new*` -> `docs/archive/css_native_layout/` | 1-2 |
-| M2 / WS-NO-CROP | `docs/active_plans/no_crop*`, `no_cropped*` -> `docs/archive/no_crop_svg/` | 1 |
-| M2 / WS-INCIDENT | `docs/active_plans/git_incident*`, `post_commit*` -> `docs/archive/git_incident_4e2c709/` | 1 |
-| M2 / WS-SCENE-RUNTIME | `docs/active_plans/scene_runtime*`, `row_slot*`, related | 1 |
-| M2 / WS-MISC | residual singletons -> `docs/archive/misc_2026_05/` | 1 |
-| M2 / WS-DELETE-GEN | HTML, PDF, `*_assets/` deletes | 1 |
-| M2 / WS-FOCUSED-MOVE | KEEP files with `plan_type: focused` or `diagnostic` -> `docs/active_plans/workstreams/` | 1 |
-| M2 / WS-CLUSTER-README | One `README.md` per new `docs/archive/<cluster>/` | 1 |
-| M3 / WS-REFS | `docs/TODO.md`, `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/FILE_STRUCTURE.md`, `AGENTS.md`, sibling plan links | 1 |
-| M4 / WS-POLICY | `docs/active_plans/README.md` (new) | 1 |
-| M4 / WS-CHANGELOG | `docs/CHANGELOG.md` rollup entry (manager-owned, single patch) | 1 |
+| Milestone / Workstream | Component                                                                                                         | Expected patches |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------- |
+| M1 / WS-INVENTORY      | `docs/active_plans/active_plans_cleanup_inventory.md` (new)                                                       | 1                |
+| M2 / WS-NEW-SERIES     | `docs/active_plans/new*` -> `docs/archive/css_native_layout/`                                                     | 1-2              |
+| M2 / WS-NO-CROP        | `docs/active_plans/no_crop*`, `no_cropped*` -> `docs/archive/no_crop_svg/`                                        | 1                |
+| M2 / WS-INCIDENT       | `docs/active_plans/git_incident*`, `post_commit*` -> `docs/archive/git_incident_4e2c709/`                         | 1                |
+| M2 / WS-SCENE-RUNTIME  | `docs/active_plans/scene_runtime*`, `row_slot*`, related                                                          | 1                |
+| M2 / WS-MISC           | residual singletons -> `docs/archive/misc_2026_05/`                                                               | 1                |
+| M2 / WS-DELETE-GEN     | HTML, PDF, `*_assets/` deletes                                                                                    | 1                |
+| M2 / WS-FOCUSED-MOVE   | KEEP files with `plan_type: focused` or `diagnostic` -> `docs/active_plans/workstreams/`                          | 1                |
+| M2 / WS-CLUSTER-README | One `README.md` per new `docs/archive/<cluster>/`                                                                 | 1                |
+| M3 / WS-REFS           | `docs/TODO.md`, `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/FILE_STRUCTURE.md`, `AGENTS.md`, sibling plan links | 1                |
+| M4 / WS-POLICY         | `docs/active_plans/README.md` (new)                                                                               | 1                |
+| M4 / WS-CHANGELOG      | `docs/CHANGELOG.md` rollup entry (manager-owned, single patch)                                                    | 1                |
 
 ## Milestone plan
 
@@ -123,7 +123,7 @@ Surfaces touched:
 - Exit criteria:
   - `docs/active_plans/active_plans_cleanup_inventory.md` exists with the eight required columns plus the dry-run move preview table.
   - Inventory includes tracked, untracked, directory, and asset-directory rows (not only `git ls-files` output).
-  - Every NEW*/no_crop/git_incident/post_commit row has a non-KEEP classification (CHANGELOG-confirmed closed).
+  - Every NEW\*/no_crop/git_incident/post_commit row has a non-KEEP classification (CHANGELOG-confirmed closed).
   - Every file referenced by `docs/TODO.md`, `docs/ROADMAP.md`, or the latest two `docs/CHANGELOG.md` day blocks is classified KEEP.
   - Every KEEP row has a proposed destination: top-level `docs/active_plans/` (if `plan_type: full`) or `docs/active_plans/workstreams/` (if `plan_type: focused` or `diagnostic`); rows missing frontmatter default to top-level with a note.
   - Every `DELETE:generated` row has a regeneration recipe or explicit drop reason.
@@ -193,7 +193,7 @@ Surfaces touched:
 - Owner: `maintainer`.
 - Interfaces:
   - Needs: approved inventory.
-  - Provides: `docs/archive/css_native_layout/<file>.md` for each NEW* survivor.
+  - Provides: `docs/archive/css_native_layout/<file>.md` for each NEW\* survivor.
 - Expected patches: 1-2 (split if review queue stalls).
 
 ### Workstream WS-NO-CROP: Archive no_crop / no_cropped_svg
@@ -220,7 +220,7 @@ Surfaces touched:
 - Interfaces: approved inventory in, archived `.md` under `docs/archive/misc_2026_05/` out.
 - Expected patches: 1.
 
-### Workstream WS-DELETE-GEN: Delete HTML / PDF / *_assets/
+### Workstream WS-DELETE-GEN: Delete HTML / PDF / \*\_assets/
 
 - Owner: `maintainer`.
 - Interfaces: approved inventory in (each DELETE:generated row has regeneration recipe or drop reason), removal of regeneratable artifacts out.
@@ -336,7 +336,7 @@ Surfaces touched:
 - Verification: `git status --porcelain docs/archive/misc_2026_05/ | grep -c '^R'` matches expected count.
 - Obvious follow-ons: none mid-workstream.
 
-### Work package WP-DEL-1: Remove HTML, PDF, *_assets/
+### Work package WP-DEL-1: Remove HTML, PDF, \*\_assets/
 
 - Owner: `maintainer`.
 - Touch points: every DELETE:generated row.
@@ -444,18 +444,18 @@ Surfaces touched:
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| In-flight file misclassified as ARCHIVE | medium | User flags missing file after move | planner (WS-INVENTORY) | M1 hard manual approval gate before any M2 work |
-| Generated artifact deleted without recipe captured | medium | Future request to rebuild a PDF | maintainer (WS-DELETE-GEN) | DELETE:generated rows must name regeneration tool, source markdown, or explicit drop reason; inventory column is mandatory |
-| Concurrent M2 workstreams edit CHANGELOG and conflict | medium | Two patches touch `docs/CHANGELOG.md` | manager | Hard rule: only WP-CL-1 writes to CHANGELOG; M2 acceptance includes "no CHANGELOG diff" check |
-| Untracked active_plans files missed by inventory | medium | User notices file not classified | planner (WS-INVENTORY) | Inventory must combine `git ls-files`, `git status --porcelain`, and `find -maxdepth 1`; never rely on `git ls-files` alone |
-| Frontmatter missing on a KEEP file (no `plan_type`) | low | WP-FOC-1 cannot route the file | planner (WS-INVENTORY) | Inventory rows for KEEPs without frontmatter default proposed destination to top-level `docs/active_plans/` with a note; user resolves at M1 approval |
-| Concurrent M2 workstreams collide on a shared ref doc | low | `git status` shows two edits on same file | manager | M3 (refs) is single-owner; M2 workstreams touch disjoint path prefixes; cluster READMEs land in WP-CLR-1, not in per-workstream patches |
-| Broken relative link inside an archived plan | low | `pytest tests/test_markdown_links.py` fails | maintainer (WS-REFS) | Run link test after each M2 patch and at M3 exit |
-| `git mv` fails with `.git/index.lock` | low | Hook reports lock | maintainer | Follow REPO_STYLE locked-index protocol: stop, report, do not auto-delete |
-| Lifecycle policy too strict, blocks legitimate future plans | low | User feedback after first new plan | planner (WS-POLICY) | Policy lists 20 as soft cap; user override allowed; folder split routes by `plan_type`, not by count |
-| Cluster README drifts from cluster contents | low | Future archive addition without README update | maintainer | Lifecycle policy requires touching cluster README on every future archive-add patch |
+| Risk                                                        | Impact | Trigger                                       | Owner                      | Mitigation                                                                                                                                            |
+| ----------------------------------------------------------- | ------ | --------------------------------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| In-flight file misclassified as ARCHIVE                     | medium | User flags missing file after move            | planner (WS-INVENTORY)     | M1 hard manual approval gate before any M2 work                                                                                                       |
+| Generated artifact deleted without recipe captured          | medium | Future request to rebuild a PDF               | maintainer (WS-DELETE-GEN) | DELETE:generated rows must name regeneration tool, source markdown, or explicit drop reason; inventory column is mandatory                            |
+| Concurrent M2 workstreams edit CHANGELOG and conflict       | medium | Two patches touch `docs/CHANGELOG.md`         | manager                    | Hard rule: only WP-CL-1 writes to CHANGELOG; M2 acceptance includes "no CHANGELOG diff" check                                                         |
+| Untracked active_plans files missed by inventory            | medium | User notices file not classified              | planner (WS-INVENTORY)     | Inventory must combine `git ls-files`, `git status --porcelain`, and `find -maxdepth 1`; never rely on `git ls-files` alone                           |
+| Frontmatter missing on a KEEP file (no `plan_type`)         | low    | WP-FOC-1 cannot route the file                | planner (WS-INVENTORY)     | Inventory rows for KEEPs without frontmatter default proposed destination to top-level `docs/active_plans/` with a note; user resolves at M1 approval |
+| Concurrent M2 workstreams collide on a shared ref doc       | low    | `git status` shows two edits on same file     | manager                    | M3 (refs) is single-owner; M2 workstreams touch disjoint path prefixes; cluster READMEs land in WP-CLR-1, not in per-workstream patches               |
+| Broken relative link inside an archived plan                | low    | `pytest tests/test_markdown_links.py` fails   | maintainer (WS-REFS)       | Run link test after each M2 patch and at M3 exit                                                                                                      |
+| `git mv` fails with `.git/index.lock`                       | low    | Hook reports lock                             | maintainer                 | Follow REPO_STYLE locked-index protocol: stop, report, do not auto-delete                                                                             |
+| Lifecycle policy too strict, blocks legitimate future plans | low    | User feedback after first new plan            | planner (WS-POLICY)        | Policy lists 20 as soft cap; user override allowed; folder split routes by `plan_type`, not by count                                                  |
+| Cluster README drifts from cluster contents                 | low    | Future archive addition without README update | maintainer                 | Lifecycle policy requires touching cluster README on every future archive-add patch                                                                   |
 
 ## Rollout and release checklist
 

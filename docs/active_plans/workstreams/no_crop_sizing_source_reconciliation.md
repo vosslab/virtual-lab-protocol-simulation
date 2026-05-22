@@ -9,27 +9,27 @@ This document does not introduce any class names in production code.
 Amended 2026-05-21 (sizing-source reconciliation): Renamed from
 `no_crop_footprint_vocab_proposal.md` to
 `no_crop_sizing_source_reconciliation.md` (`git mv`). Reframed per
-[docs/active_plans/decisions/no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md).
+[no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md).
 The user directive is that permanent CSS `footprint--*` classes are
 probably the wrong direction; at most they are a temporary diagnostic
 shim for the broken static harness. The durable sizing chain is
 `scene object -> asset_name -> ASSET_SPECS/default_width -> display_width_cm or width_scale -> layout engine computed box -> renderer preserves SVG aspect ratio`,
-owned by [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md),
-[docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), and
-[docs/specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md). The
+owned by [SCALING_MODEL.md](../../specs/SCALING_MODEL.md),
+[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), and
+[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md). The
 candidate `footprint--*` classes named below are downgraded from
 "permanent vocabulary" to "experiment-local test-harness shim" unless
 the gate in section "Gate for promoting an experiment-local shim to a
 permanent class" is satisfied.
 
 Amended 2026-05-21 (vocabulary correction): Vocabulary corrected per
-[docs/active_plans/no_crop_round3_architecture_vocabulary_clarification.md](../no_crop_round3_architecture_vocabulary_clarification.md).
+[no_crop_round3_architecture_vocabulary_clarification.md](../no_crop_round3_architecture_vocabulary_clarification.md).
 References to `regions/*.yaml` and "Path 3" describe experiment-local
 scaffolding for a static visual-test renderer, not sanctioned project
 architecture. `footprint--*` classes are an experimental visual-test
 layout aid, not a durable scene-side vocabulary; durable scene-side
 terms are `scene`, `scene object`, `SVG asset`, and `zone` per
-[docs/specs/SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md).
+[SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md).
 Class counts, evidence citations, and reduction estimates are
 unchanged.
 
@@ -56,9 +56,9 @@ architecture; see the architecture vocabulary clarification note.
 
 Before any CSS class is proposed (permanent or experiment-local), the
 durable sizing chain owned by `docs/specs/` must be checked. See
-[docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) for the
+[SCALING_MODEL.md](../../specs/SCALING_MODEL.md) for the
 `display_width_cm` and per-scene `px_per_cm` model, and
-[docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections
+[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections
 "Asset specs", "Scene items", and "Footprints" for the
 `ASSET_SPECS.default_width` and `width_scale` surfaces. A cropping
 incident must be diagnosed against this chain before any CSS class
@@ -71,17 +71,17 @@ four of the following have been checked and none can represent the
 object:
 
 - `ASSET_SPECS.default_width` (per asset in `src/asset_specs.ts`; see
-  [docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Asset
+  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Asset
   specs").
 - `display_width_cm` (per object in
   `content/objects/<kind>/<object_name>.yaml`; see
-  [docs/specs/SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How
+  [SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How
   sizing works").
 - `width_scale` (per placement in scene YAML; see
-  [docs/specs/LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Scene
+  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Scene
   items").
 - SVG `viewBox` correctness (per asset in `assets/equipment/*.svg`;
-  see [docs/specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Four-
+  see [SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Four-
   layer flow").
 
 This proposal does not yet provide that proof for any of the four
@@ -125,51 +125,51 @@ risk to decide which are permanent and which are experiment-only.
 
 ### Class 1: footprint--tall-glassware
 
-| Field | Value |
-| --- | --- |
-| Class name | `footprint--tall-glassware` |
-| Intent | Vertical aspect (height > width); preserve natural SVG aspect to avoid bottom-edge crop in dense rows. |
-| Candidate objects | volumetric flasks (250 mL, 500 mL, 1 L), graduated cylinders, gel tank with running buffer, large reagent bottles (media_bottle, pbs_bottle), erlenmeyer flask. |
-| Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (7 remaining crops, tall containers in dense scene; cite WS-A scoreboard "Remaining template violations" row). Pre-hybrid baseline: `test-results/no_crop_fresh_manager_sanity/templates/electrophoresis_bench.png` (12 visible crops). Gold cross-check: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 visible crops). |
-| Expected crop reduction | Targets the 7-8 residual crops on `electrophoresis_bench` plus an estimated 3-4 in `staining_bench` / `crowded_bench_dense` involving tall containers. Estimated 5-10 visible_crops removed from the 21-crop post-hybrid template residual (~24-48% of residual). Source: WS-A "Remaining template violations" row count, no fresh measurement performed (proposal-only). |
-| Drift risk | LOW. The existing `footprint--container` class already mixes flasks, plates, and gel cassettes in one box (220-320 min-width, 240-360 min-height); splitting tall items out is a natural narrowing of an over-broad class, not a new authoring axis. The CSS rule reads vertical (min-height > min-width) and matches a stable physical category. |
-| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 1 of 4"). The "tall glassware" category recurs in every wet-lab scene, but the existing scaling model (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) has not been proven inadequate to size tall glassware. Until the gate above is satisfied per-object, this remains an experiment-local diagnostic shim, not a durable schema class. The no-crop rule from [docs/PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) "Visual integrity: never crop scientific assets" still binds regardless. |
+| Field                        | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Class name                   | `footprint--tall-glassware`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Intent                       | Vertical aspect (height > width); preserve natural SVG aspect to avoid bottom-edge crop in dense rows.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| Candidate objects            | volumetric flasks (250 mL, 500 mL, 1 L), graduated cylinders, gel tank with running buffer, large reagent bottles (media_bottle, pbs_bottle), erlenmeyer flask.                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| Evidence screenshot          | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (7 remaining crops, tall containers in dense scene; cite WS-A scoreboard "Remaining template violations" row). Pre-hybrid baseline: `test-results/no_crop_fresh_manager_sanity/templates/electrophoresis_bench.png` (12 visible crops). Gold cross-check: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 visible crops).                                                                                                                                                               |
+| Expected crop reduction      | Targets the 7-8 residual crops on `electrophoresis_bench` plus an estimated 3-4 in `staining_bench` / `crowded_bench_dense` involving tall containers. Estimated 5-10 visible_crops removed from the 21-crop post-hybrid template residual (~24-48% of residual). Source: WS-A "Remaining template violations" row count, no fresh measurement performed (proposal-only).                                                                                                                                                                                                                                                        |
+| Drift risk                   | LOW. The existing `footprint--container` class already mixes flasks, plates, and gel cassettes in one box (220-320 min-width, 240-360 min-height); splitting tall items out is a natural narrowing of an over-broad class, not a new authoring axis. The CSS rule reads vertical (min-height > min-width) and matches a stable physical category.                                                                                                                                                                                                                                                                                |
+| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 1 of 4"). The "tall glassware" category recurs in every wet-lab scene, but the existing scaling model (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) has not been proven inadequate to size tall glassware. Until the gate above is satisfied per-object, this remains an experiment-local diagnostic shim, not a durable schema class. The no-crop rule from [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) "Visual integrity: never crop scientific assets" still binds regardless. |
 
 ### Class 2: footprint--portrait-tool
 
-| Field | Value |
-| --- | --- |
-| Class name | `footprint--portrait-tool` |
-| Intent | Vertical handheld; preserve natural aspect; allow taller rendered box than the current `small-tool` / `handheld` while keeping width narrow. |
-| Candidate objects | p20 / p200 / p1000 micropipettes, multichannel pipette, electronic pipette, transfer pipette, scoopulas, large forceps, manual cell counter. |
-| Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/bench_basic.png` (1 remaining crop, p200_micropipette bottom-of-viewport; cite WS-A "Remaining template violations" row). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/cell_counter_basic.png` (1 crop). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/bench_basic.png` (2 visible crops). |
-| Expected crop reduction | Targets the 3 isolated bottom-of-viewport crops on `bench_basic`, `cell_counter_basic`, `microscope_basic` plus 2-3 in `drug_dilution_workspace_dense`. Estimated 4-6 visible_crops from the 21-crop residual (~19-29%). Source: WS-A "Remaining template violations" rows. |
-| Drift risk | MEDIUM. The current `small-tool` class (50-80 width, 60-200 height) and `handheld` class (90-130 width, 110-260 height) already overlap with portrait tools. A third tier risks fragmenting an already-thin band and may invite per-object class assignment by author rather than systematic mapping. |
+| Field                        | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Class name                   | `footprint--portrait-tool`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| Intent                       | Vertical handheld; preserve natural aspect; allow taller rendered box than the current `small-tool` / `handheld` while keeping width narrow.                                                                                                                                                                                                                                                                                                                                                                          |
+| Candidate objects            | p20 / p200 / p1000 micropipettes, multichannel pipette, electronic pipette, transfer pipette, scoopulas, large forceps, manual cell counter.                                                                                                                                                                                                                                                                                                                                                                          |
+| Evidence screenshot          | `test-results/no_crop_round3_static_template_repair/hybrid_templates/bench_basic.png` (1 remaining crop, p200_micropipette bottom-of-viewport; cite WS-A "Remaining template violations" row). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/cell_counter_basic.png` (1 crop). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/bench_basic.png` (2 visible crops).                                                                                               |
+| Expected crop reduction      | Targets the 3 isolated bottom-of-viewport crops on `bench_basic`, `cell_counter_basic`, `microscope_basic` plus 2-3 in `drug_dilution_workspace_dense`. Estimated 4-6 visible_crops from the 21-crop residual (~19-29%). Source: WS-A "Remaining template violations" rows.                                                                                                                                                                                                                                           |
+| Drift risk                   | MEDIUM. The current `small-tool` class (50-80 width, 60-200 height) and `handheld` class (90-130 width, 110-260 height) already overlap with portrait tools. A third tier risks fragmenting an already-thin band and may invite per-object class assignment by author rather than systematic mapping.                                                                                                                                                                                                                 |
 | Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 2 of 4"). Pipettes are the most-touched objects in every protocol and persistent crops on them are visually unacceptable, but the diagnosis through the durable sizing chain has not been performed (asset_name -> SVG viewBox -> `ASSET_SPECS.default_width` -> `display_width_cm` -> `width_scale`). Until those four checks fail per pipette object, this remains an experiment-local diagnostic shim. |
 
 ### Class 3: footprint--landscape-plate
 
-| Field | Value |
-| --- | --- |
-| Class name | `footprint--landscape-plate` |
-| Intent | Wide-aspect (width > height); preserve natural aspect to avoid left/right clip on dense rows; replaces the current overloaded `container` class for plate-like artwork. |
-| Candidate objects | well_plate_96, well_plate_24, drug_vial_rack, tube_rack_24, multichannel reservoir, gel tray (loaded), staining_tray, source plate reservoir, gel_imager tray. |
-| Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_plate_workspace.png` (2 remaining crops on well_plate_96, tube_rack_24). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_workspace_dense.png` (4 crops on well_plate_96, tube_rack_24, drug_vial_rack). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/drug_dilution_workspace_dense.png` (8 visible crops); `test-results/no_crop_fresh_manager_sanity/gold/gold_drug_dilution_workspace.png` (8 crops). |
-| Expected crop reduction | Targets the 6 residual crops across the two drug_dilution templates plus 2-3 in `staining_bench`. Estimated 6-8 visible_crops from the 21-crop residual (~29-38%). Source: WS-A "Remaining template violations" rows. |
-| Drift risk | LOW-MEDIUM. The current `container` class lumps plates and tall glassware together; splitting landscape plates out is the symmetric move to Class 1 and helps both. Risk: gel cassettes are borderline (slightly portrait); a clear aspect-ratio rule (w:h > 1.3:1) keeps assignment deterministic. |
+| Field                        | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Class name                   | `footprint--landscape-plate`                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| Intent                       | Wide-aspect (width > height); preserve natural aspect to avoid left/right clip on dense rows; replaces the current overloaded `container` class for plate-like artwork.                                                                                                                                                                                                                                                                                                                                                                                           |
+| Candidate objects            | well_plate_96, well_plate_24, drug_vial_rack, tube_rack_24, multichannel reservoir, gel tray (loaded), staining_tray, source plate reservoir, gel_imager tray.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| Evidence screenshot          | `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_plate_workspace.png` (2 remaining crops on well_plate_96, tube_rack_24). Cross-check: `test-results/no_crop_round3_static_template_repair/hybrid_templates/drug_dilution_workspace_dense.png` (4 crops on well_plate_96, tube_rack_24, drug_vial_rack). Pre-hybrid: `test-results/no_crop_fresh_manager_sanity/templates/drug_dilution_workspace_dense.png` (8 visible crops); `test-results/no_crop_fresh_manager_sanity/gold/gold_drug_dilution_workspace.png` (8 crops).    |
+| Expected crop reduction      | Targets the 6 residual crops across the two drug_dilution templates plus 2-3 in `staining_bench`. Estimated 6-8 visible_crops from the 21-crop residual (~29-38%). Source: WS-A "Remaining template violations" rows.                                                                                                                                                                                                                                                                                                                                             |
+| Drift risk                   | LOW-MEDIUM. The current `container` class lumps plates and tall glassware together; splitting landscape plates out is the symmetric move to Class 1 and helps both. Risk: gel cassettes are borderline (slightly portrait); a clear aspect-ratio rule (w:h > 1.3:1) keeps assignment deterministic.                                                                                                                                                                                                                                                               |
 | Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 3 of 4"). Well plates and tube racks recur in nearly every protocol, but the durable sizing chain (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) already represents wide aspect ratios; landscape framing should fall out of correct asset metrics, not a new CSS class. Until per-object proof is provided that the scaling model cannot represent these objects, this remains an experiment-local diagnostic shim. |
 
 ### Class 4: footprint--instrument-wide
 
-| Field | Value |
-| --- | --- |
-| Class name | `footprint--instrument-wide` |
-| Intent | Wide-aspect instrument (electrophoresis chamber, plate reader, gel imager); preserve landscape framing without forcing height growth that the current `instrument` and `large-equipment` classes impose. |
-| Candidate objects | electrophoresis chamber, gel imager, plate reader, microscope (when shown in landscape orientation), water bath (wide), gel imaging lightbox. |
-| Evidence screenshot | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (3 of 7 crops belong to wide instruments per WS-A bucket "tall containers in dense scene" - subset assignment needs confirmation). Cross-check gold: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 crops); `test-results/no_crop_fresh_manager_sanity/gold/gold_plate_reader_assay.png` (6 crops). |
-| Expected crop reduction | Targets 2-4 residual crops on `electrophoresis_bench` (subset of the 7) and 2-3 on `gold_plate_reader_assay`. Estimated 3-5 visible_crops from the 21-crop residual (~14-24%). Lowest expected reduction of the four. |
-| Drift risk | HIGH. The current `instrument` (220-280 width, 200-260 height) and `large-equipment` (360-480 width, 280-380 height) classes already cover wide instruments; adding a third "wide-but-not-large" band is a fine-grained slice that may be better served by tuning the existing two classes. Evidence in screenshots is the weakest of the four - it requires per-object inspection to confirm the crops are actually aspect-driven rather than density-driven. |
-| Permanent vs experiment-only | **EXPERIMENT-ONLY**. Weakest evidence (lowest expected reduction, highest classification overlap with existing classes). Round 3 should prototype this as a labeled experiment-only class to measure delta before promoting; do not adopt as permanent in this proposal. |
+| Field                        | Value                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Class name                   | `footprint--instrument-wide`                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| Intent                       | Wide-aspect instrument (electrophoresis chamber, plate reader, gel imager); preserve landscape framing without forcing height growth that the current `instrument` and `large-equipment` classes impose.                                                                                                                                                                                                                                                       |
+| Candidate objects            | electrophoresis chamber, gel imager, plate reader, microscope (when shown in landscape orientation), water bath (wide), gel imaging lightbox.                                                                                                                                                                                                                                                                                                                  |
+| Evidence screenshot          | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (3 of 7 crops belong to wide instruments per WS-A bucket "tall containers in dense scene" - subset assignment needs confirmation). Cross-check gold: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 crops); `test-results/no_crop_fresh_manager_sanity/gold/gold_plate_reader_assay.png` (6 crops).                  |
+| Expected crop reduction      | Targets 2-4 residual crops on `electrophoresis_bench` (subset of the 7) and 2-3 on `gold_plate_reader_assay`. Estimated 3-5 visible_crops from the 21-crop residual (~14-24%). Lowest expected reduction of the four.                                                                                                                                                                                                                                          |
+| Drift risk                   | HIGH. The current `instrument` (220-280 width, 200-260 height) and `large-equipment` (360-480 width, 280-380 height) classes already cover wide instruments; adding a third "wide-but-not-large" band is a fine-grained slice that may be better served by tuning the existing two classes. Evidence in screenshots is the weakest of the four - it requires per-object inspection to confirm the crops are actually aspect-driven rather than density-driven. |
+| Permanent vs experiment-only | **EXPERIMENT-ONLY**. Weakest evidence (lowest expected reduction, highest classification overlap with existing classes). Round 3 should prototype this as a labeled experiment-only class to measure delta before promoting; do not adopt as permanent in this proposal.                                                                                                                                                                                       |
 
 ## Sizing-surface classification summary
 
@@ -180,11 +180,11 @@ pending per-object proof that the durable sizing chain
 `viewBox`) cannot represent the object. No permanent class is
 adopted by this proposal.
 
-| Class | Classification | Reason |
-| --- | --- | --- |
-| footprint--tall-glassware | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
-| footprint--portrait-tool | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
-| footprint--landscape-plate | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only. |
+| Class                      | Classification        | Reason                                                                                                         |
+| -------------------------- | --------------------- | -------------------------------------------------------------------------------------------------------------- |
+| footprint--tall-glassware  | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only.                   |
+| footprint--portrait-tool   | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only.                   |
+| footprint--landscape-plate | EXPERIMENT-LOCAL SHIM | Gate not satisfied: durable sizing chain not yet diagnosed per-object. Diagnostic shim only.                   |
 | footprint--instrument-wide | EXPERIMENT-LOCAL SHIM | Weakest evidence; high overlap with existing `instrument` and `large-equipment` classes. Diagnostic shim only. |
 
 Total candidate classes evaluated: 4.
@@ -261,7 +261,7 @@ A class addition takes effect only if one of the following lands first:
 is paper-only.** No CSS class added to `bench.css` will reach a scene
 object. The proposal therefore recommends:
 
-- Adopt the three permanent classes as a *vocabulary* decision only;
+- Adopt the three permanent classes as a _vocabulary_ decision only;
   defer the CSS rule additions until an application path lands.
 - Queue WS-D Recovery Option 2 (reconstruct a static visual-test
   renderer with ALIGN against an explicit experiment-local footprint
@@ -280,13 +280,13 @@ after the application path lands.
 
 ## Risk and drift summary
 
-| Risk | Class(es) affected | Mitigation |
-| --- | --- | --- |
-| Vocabulary growth without authoring discipline | All 4 | Aspect-ratio rule per class (Class 1: h:w > 2:1; Class 3: w:h > 1.3:1; Class 4: 1.0:1 <= w:h < 1.3:1 wide instruments). Forbid per-object opt-in. |
-| Overlap with existing classes | Class 4 (instrument-wide vs instrument vs large-equipment) | Experiment-only; do not adopt until prototype delta is measured. |
-| Application path gap (WS-D) | All 4 | Block class adoption on Recovery Option 2 landing; document in WP-F1 ready-to-fix table. |
-| Strategy C hybrid already in flight | All 4 | This proposal is additive to Strategy C, not a replacement; estimated reductions are on top of the 21/38 post-hybrid residuals, not the pre-hybrid 41/78. |
-| Author drift on hand-typed templates (WS-D Path 2) | All 4 if Option 1 application path is chosen | Prefer Option 2 (YAML to build) over Option 1 (hand-typed). |
+| Risk                                               | Class(es) affected                                         | Mitigation                                                                                                                                                |
+| -------------------------------------------------- | ---------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Vocabulary growth without authoring discipline     | All 4                                                      | Aspect-ratio rule per class (Class 1: h:w > 2:1; Class 3: w:h > 1.3:1; Class 4: 1.0:1 <= w:h < 1.3:1 wide instruments). Forbid per-object opt-in.         |
+| Overlap with existing classes                      | Class 4 (instrument-wide vs instrument vs large-equipment) | Experiment-only; do not adopt until prototype delta is measured.                                                                                          |
+| Application path gap (WS-D)                        | All 4                                                      | Block class adoption on Recovery Option 2 landing; document in WP-F1 ready-to-fix table.                                                                  |
+| Strategy C hybrid already in flight                | All 4                                                      | This proposal is additive to Strategy C, not a replacement; estimated reductions are on top of the 21/38 post-hybrid residuals, not the pre-hybrid 41/78. |
+| Author drift on hand-typed templates (WS-D Path 2) | All 4 if Option 1 application path is chosen               | Prefer Option 2 (YAML to build) over Option 1 (hand-typed).                                                                                               |
 
 ## Source files read
 

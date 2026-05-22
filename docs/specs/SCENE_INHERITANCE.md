@@ -49,35 +49,35 @@ Every placement in a base scene must carry a stable `placement_name`. The `place
 
 Inherited from base, LOCKED (extending scene may not declare these fields at all):
 
-| Field | Owner | Why locked |
-| --- | --- | --- |
-| `workspace` | base | workspace identity |
-| `scene_bounds` | base | canvas geometry; layout-engine contract |
-| `background` | base | stable student orientation |
-| `zones` | base | zone schema = workspace contract |
-| `layout_rules` | base | layout-engine hints; drift risk |
-| `accent_rules` | base | visual consistency |
-| `capabilities` | base | workspace contract; if a protocol scene needs a capability, the base scene needs it |
-| `wrong_order_message` (base entries) | base | base entries untouchable; extending may add entries keyed to its own new placements only |
-| camera / zoom defaults | base | stable student orientation |
-| object `label`, `kind`, `state_fields`, `visual_states`, `capabilities`, layout defaults | object file | scene inheritance is layout composition, not object mutation |
+| Field                                                                                    | Owner       | Why locked                                                                               |
+| ---------------------------------------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------- |
+| `workspace`                                                                              | base        | workspace identity                                                                       |
+| `scene_bounds`                                                                           | base        | canvas geometry; layout-engine contract                                                  |
+| `background`                                                                             | base        | stable student orientation                                                               |
+| `zones`                                                                                  | base        | zone schema = workspace contract                                                         |
+| `layout_rules`                                                                           | base        | layout-engine hints; drift risk                                                          |
+| `accent_rules`                                                                           | base        | visual consistency                                                                       |
+| `capabilities`                                                                           | base        | workspace contract; if a protocol scene needs a capability, the base scene needs it      |
+| `wrong_order_message` (base entries)                                                     | base        | base entries untouchable; extending may add entries keyed to its own new placements only |
+| camera / zoom defaults                                                                   | base        | stable student orientation                                                               |
+| object `label`, `kind`, `state_fields`, `visual_states`, `capabilities`, layout defaults | object file | scene inheritance is layout composition, not object mutation                             |
 
 Declared by the protocol scene file (LOCAL):
 
-| Field | Required | Notes |
-| --- | --- | --- |
-| `scene_name` | yes | unique per file |
-| `extends` | yes | base scene name; exactly one |
-| `scene_notes` | no | optional human-readable purpose |
+| Field         | Required | Notes                           |
+| ------------- | -------- | ------------------------------- |
+| `scene_name`  | yes      | unique per file                 |
+| `extends`     | yes      | base scene name; exactly one    |
+| `scene_notes` | no       | optional human-readable purpose |
 
 Inherited from base, CHANGEABLE only via the four named operations:
 
-| Operation | Selector | What it changes | What it may NOT change |
-| --- | --- | --- | --- |
-| `add_placements` | n/a (new entries) | adds protocol-specific placements; each new placement carries its own `placement_name`. An added placement may declare only the same placement fields allowed by [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for a base placement entry. | object identity, state, capabilities, render fields |
-| `reposition_placements` | `placement_name` | placement fields only: `zone`, `position`, `depth`, `anchor` | object identity, state, capabilities, render fields |
-| `deactivate_placements` | `placement_name` | marks placement as muted and non-clickable while keeping it visible for orientation | object identity, state, capabilities, render fields |
-| `remove_placements` | `placement_name` | drops placement entirely | n/a |
+| Operation               | Selector          | What it changes                                                                                                                                                                                                                           | What it may NOT change                              |
+| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `add_placements`        | n/a (new entries) | adds protocol-specific placements; each new placement carries its own `placement_name`. An added placement may declare only the same placement fields allowed by [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) for a base placement entry. | object identity, state, capabilities, render fields |
+| `reposition_placements` | `placement_name`  | placement fields only: `zone`, `position`, `depth`, `anchor`                                                                                                                                                                              | object identity, state, capabilities, render fields |
+| `deactivate_placements` | `placement_name`  | marks placement as muted and non-clickable while keeping it visible for orientation                                                                                                                                                       | object identity, state, capabilities, render fields |
+| `remove_placements`     | `placement_name`  | drops placement entirely                                                                                                                                                                                                                  | n/a                                                 |
 
 ## Operation order
 
@@ -134,7 +134,7 @@ Base scene: `content/base_scenes/hood_basic.yaml`
 # Base scene provides stable hood workspace context
 scene_name: hood_basic
 workspace: hood
-scene_bounds: {...}
+scene_bounds: { ... }
 zones: [...]
 placements:
   - placement_name: hood_waste_container
@@ -180,7 +180,7 @@ scene_name: hood_flask_prep_hood_setup
 extends: hood_basic
 reposition_placements:
   - placement_name: hood_waste_container
-    capabilities: [clickable]   # ERROR: capabilities is locked
+    capabilities: [clickable] # ERROR: capabilities is locked
     zone: rear_right_far
 ```
 

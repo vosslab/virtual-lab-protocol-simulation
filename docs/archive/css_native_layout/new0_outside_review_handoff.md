@@ -19,7 +19,7 @@ Do not do yet:
 
 - Do not score NEW0.
 - Do not open NEW1.
-- Do not amend [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md).
+- Do not amend `PRIMARY_CONTRACT.md`.
 - Do not restart M3 onward until the cleaned audit is available.
 
 ## Purpose
@@ -32,7 +32,7 @@ The outside review was three independent subagents wearing the `ui-ux-engineer`,
 
 1. **The audit evidence is not grounded in tracked code.** `experiments/` is in `.gitignore`. The tracked CSS deliverable is one file per workspace family (`bench.css`, `hood.css`, `instrument.css`). The audited templates link gitignored variants instead (for example `templates/hood_basic.html` links `styles/hood_c.css`; `templates/drug_dilution_plate_workspace.html` links `styles/bench_e.css`). The numbers in `experiments/css_native_layout/PRECHECK_SUMMARY.md` therefore measure scratch the build cannot reproduce. This is the single most important issue.
 2. **The verdict ladder was adjusted mid-flight.** `PASS_TEMPLATE` is a new verdict not defined in the controlling plan at `~/.claude/plans/serene-stargazing-moore.md`; it appears in the P2.5 cleanup patch summary. `data-primary` was added to `electrophoresis_bench` so a 1.2 percent primary-object area ratio is accepted against a stated 25 percent threshold. The threshold and the verdict vocabulary moved without the restart clause the controlling plan attached to goalpost shifts.
-3. **NEW0 is not contract-compliant and has not been declared experimental on its surface.** [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3 still vests scene-object layout in the layout engine. NEW0 cannot be promoted to production under that contract. The contract has not been amended, and `experiments/css_native_layout/README.md` does not currently declare NEW0 as out-of-contract experimental work. Either statement is fine; the absence of either is the gap.
+3. **NEW0 is not contract-compliant and has not been declared experimental on its surface.** `PRIMARY_CONTRACT.md` item 3 still vests scene-object layout in the layout engine. NEW0 cannot be promoted to production under that contract. The contract has not been amended, and `experiments/css_native_layout/README.md` does not currently declare NEW0 as out-of-contract experimental work. Either statement is fine; the absence of either is the gap.
 4. **The "no engine" framing is rhetorical.** The 932-LOC `src/scene_runtime/layout/layout_engine.ts` has been paralleled by approximately 1258 LOC of `experiments/css_native_layout/precheck.mjs` plus roughly 3000 LOC of tracked CSS plus per-scene hand-authored HTML. Per-object pixel decisions moved from TS to CSS class minimums. Complexity moved sideways; it did not shrink. Acknowledge this in any future verdict report rather than carrying the "no engine" framing forward unqualified.
 
 ## Methodological concerns (about how NEW0 is being judged)
@@ -57,7 +57,7 @@ These are concrete items the manager can act on inside the experiment without es
 A verdict on NEW0 is not meaningful until these are resolved.
 
 - **Evidence reproducibility.** All audited templates must link the tracked CSS per workspace. `PRECHECK_SUMMARY.md` (or its successor) must reflect a re-audit against tracked code only.
-- **Surface declaration.** `experiments/css_native_layout/README.md` and any verdict report must state clearly that NEW0 is experimental and not currently contract-compliant. This does not require amending [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md); it requires the experiment to label itself honestly.
+- **Surface declaration.** `experiments/css_native_layout/README.md` and any verdict report must state clearly that NEW0 is experimental and not currently contract-compliant. This does not require amending `PRIMARY_CONTRACT.md`; it requires the experiment to label itself honestly.
 - **Verdict-ladder honesty.** If the verdict report continues to use `PASS_TEMPLATE` or accepts low primary-ratio values via `data-primary`, the report must explicitly say so and explain the reasoning. Carrying these adjustments forward silently is the drift the controlling plan warned against.
 
 ## Useful follow-up issues (not blockers)
@@ -72,7 +72,7 @@ These belong in a follow-up agenda the manager can sequence at their discretion.
 
 ## Contract and governance concern
 
-[docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3 still says scene-object layout is handled by the layout engine. NEW0 proposes to replace that engine; the contract has not been amended. Two acceptable resolutions:
+`PRIMARY_CONTRACT.md` item 3 still says scene-object layout is handled by the layout engine. NEW0 proposes to replace that engine; the contract has not been amended. Two acceptable resolutions:
 
 1. Amend the contract with user approval, scoping the new contract item explicitly.
 2. Declare NEW0 an experiment outside the production contract on its own surface (`experiments/css_native_layout/README.md` and any verdict report).
@@ -97,7 +97,7 @@ The manager has authority to execute the steps below without re-checking with th
 1. Pick one CSS variant per workspace family (hood, bench, instrument). The pick can be the manager's judgment based on existing scratch. Replace the contents of the tracked `experiments/css_native_layout/styles/{hood,bench,instrument}.css` with the chosen variant. Leave the unchosen scratch variants where they are (gitignored) or delete them; either is fine.
 2. Update every template's `<link rel="stylesheet">` to point at the tracked CSS, not at any `_b / _c / _d / _e / _diorama / _focusedstage / _gameboard` variant.
 3. Re-run `node experiments/css_native_layout/precheck.mjs` against the cleaned templates. Replace `experiments/css_native_layout/PRECHECK_SUMMARY.md` with the re-audit.
-4. Add a clear status note at the top of `experiments/css_native_layout/README.md`: NEW0 is experimental, not contract-compliant under [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3, and is not a candidate for promotion until either the contract is amended or NEW0 is rescoped. Flag for user review.
+4. Add a clear status note at the top of `experiments/css_native_layout/README.md`: NEW0 is experimental, not contract-compliant under `PRIMARY_CONTRACT.md` item 3, and is not a candidate for promotion until either the contract is amended or NEW0 is rescoped. Flag for user review.
 5. Produce a short decision memo (one or two pages) alongside the re-audit: what the convergent findings were, that `PASS_TEMPLATE` and `data-primary` were added mid-flight, and whether to keep those adjustments, source them, or revert. Flag for user review.
 
 After step 5: re-read the cleaned evidence with the user. Restart of M3 onward, stabilization of `layout_engine.ts`, and continuation of NEW0 toward NEW1 all remain options. None of them are mandated by this handoff.
@@ -123,4 +123,4 @@ After step 5: re-read the cleaned evidence with the user. Restart of M3 onward, 
 - `src/scene_runtime/layout/layout_engine.ts`
 - `src/scene_runtime/layout/adapter.ts`
 - `src/scene_runtime/layout/types.ts`
-- [docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md)
+- `PRIMARY_CONTRACT.md`

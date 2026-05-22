@@ -12,10 +12,10 @@ one end-to-end interaction, and producing the evidence the section 9 success
 gates consume. It is NOT a production edit, NOT a contract amendment, and
 NOT a broad migration plan. Inputs: the NEW1 plan above, the spike readiness
 audit (seam at `src/scene_runtime/layout/adapter.ts`), the spike fixtures in
-[../../experiments/css_native_layout/spike_fixtures/](../../experiments/css_native_layout/spike_fixtures/),
-[../../experiments/css_native_layout/PRECHECK_USAGE.md](../../experiments/css_native_layout/PRECHECK_USAGE.md),
+`spike_fixtures`,
+`PRECHECK_USAGE.md`,
 and
-[../../experiments/css_native_layout/run_precheck.sh](../../experiments/css_native_layout/run_precheck.sh).
+`run_precheck.sh`.
 
 ## Preconditions
 
@@ -28,14 +28,14 @@ Manager must verify all of the following before spike start:
       via `closest()` on `data-target-id`).
 - [ ] Contract decision NOT required to start. The spike runs under the
       current
-      [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3 because the
+      `PRIMARY_CONTRACT.md` item 3 because the
       seam is a conditional substitution inside the existing adapter, not
       a replacement of the contract-mandated layout engine. Reviewer should
       still confirm this interpretation in writing before implementation
       begins. Path A vs Path B (NEW1 plan section 1) is a post-spike
       decision.
 - [ ] Spike fixtures present under
-      [../../experiments/css_native_layout/spike_fixtures/](../../experiments/css_native_layout/spike_fixtures/):
+      `spike_fixtures`:
       manifest, expected DOM selectors, expected data attributes, expected
       precheck command, expected screenshot paths.
 - [ ] Precheck reproducible: a clean run of
@@ -43,7 +43,7 @@ Manager must verify all of the following before spike start:
       root produces `visual_audit.json` and the per-scene MD report under
       `test-results/new0_css_native/audit/` with 0 hard fails on the
       stabilized NEW0 set, per
-      [../../experiments/css_native_layout/PRECHECK_USAGE.md](../../experiments/css_native_layout/PRECHECK_USAGE.md).
+      `PRECHECK_USAGE.md`.
 - [ ] Baseline screenshot of current `well_plate_96_zoom` production
       rendering captured at
       `test-results/new1_spike/well_plate_96_zoom/baseline_layout_engine.png`
@@ -82,11 +82,11 @@ Each step lists: action, file(s) touched, verification command, rollback note.
 
 3. **DOM render path: read fixture, emit selectors and data attributes.**
    - Action: render the manifest at
-     [../../experiments/css_native_layout/spike_fixtures/well_plate_96_zoom_manifest.yaml](../../experiments/css_native_layout/spike_fixtures/well_plate_96_zoom_manifest.yaml)
+     `well_plate_96_zoom_manifest.yaml`
      to a DOM whose selectors match
-     [../../experiments/css_native_layout/spike_fixtures/expected_dom_selectors.md](../../experiments/css_native_layout/spike_fixtures/expected_dom_selectors.md)
+     `expected_dom_selectors.md`
      and whose `data-*` attributes match
-     [../../experiments/css_native_layout/spike_fixtures/expected_data_attributes.md](../../experiments/css_native_layout/spike_fixtures/expected_data_attributes.md).
+     `expected_data_attributes.md`.
      Emit no coordinate `data-*` attributes (closed-schema denylist).
    - File(s): the new render module from step 2 only.
    - Verify: Playwright walkthrough asserts each required selector resolves
@@ -117,16 +117,16 @@ Each step lists: action, file(s) touched, verification command, rollback note.
      existing tree, name follows `*_walkthrough.mjs` convention).
    - Verify: walkthrough completes with the visible-UI path only (no
      internal state writes, no API shortcuts), per contract item 4 in
-     [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md).
+     `PRIMARY_CONTRACT.md`.
    - Rollback: delete the walkthrough script.
 
 6. **Run precheck against the rendered scene.**
    - Action: execute the command pinned in
-     [../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md](../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md).
+     `expected_precheck_command.md`.
      The rendered DOM is captured to
      `experiments/css_native_layout/spike_fixtures/spike_rendered/well_plate_96_zoom.html`,
      then audited by the existing
-     [../../experiments/css_native_layout/precheck.mjs](../../experiments/css_native_layout/precheck.mjs).
+     `precheck.mjs`.
      Do NOT modify the precheck runner.
    - File(s): no source edits; writes only to `test-results/new1_spike/`
      and `experiments/css_native_layout/spike_fixtures/spike_rendered/`.
@@ -138,7 +138,7 @@ Each step lists: action, file(s) touched, verification command, rollback note.
 7. **Capture Playwright screenshots at pinned paths.**
    - Action: walkthrough script writes the five interaction screenshots and
      the precheck-side captures to the paths listed in
-     [../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md](../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md).
+     `expected_screenshot_paths.md`.
    - File(s): no source edits; outputs under `test-results/new1_spike/`
      (gitignored).
    - Verify: all five `0N_*.png` paths exist; raw and annotated precheck
@@ -171,8 +171,8 @@ Each step lists: action, file(s) touched, verification command, rollback note.
    - File(s): none modified; walker invocation only
      (`tests/playwright/walker/run.mjs`).
    - Verify: walker exit code 0; walker screenshot evidence captured per
-     [../E2E_TESTS.md](../E2E_TESTS.md) and
-     [../PLAYWRIGHT_USAGE.md](../PLAYWRIGHT_USAGE.md).
+     `E2E_TESTS.md` and
+     `PLAYWRIGHT_USAGE.md`.
    - Rollback: turn the feature flag off; the walker falls back to the
      legacy adapter path.
 
@@ -186,16 +186,16 @@ precheck currently treats it as advisory, the NEW1 plan precedence applies;
 the spike must explicitly verify by reading the relevant boolean from the
 precheck output rather than relying on the hard-fail count alone.
 
-| Gate | Source | Pass criterion |
-| --- | --- | --- |
-| Scene renders through production runtime under flag-on | NEW1 plan section 9 | `well_plate_96_zoom` loads via the production scene loader and adapter, not via the experiment harness |
-| One click target via visible UI | NEW1 plan section 9 | Playwright click on the primary placement registers through `data-target-id` dispatch |
-| End-to-end interaction completes | NEW1 plan section 9 | click -> validator -> response -> `ObjectStateChange` re-render runs without internal API writes |
-| Precheck hard-fail count = 0 | NEW1 plan section 5; precheck `visual_audit.json` | Zero of: `clipped_artwork`, `off_page`, `svg_svg_overlap`, `region_overflow`, `label_label_overlap` |
-| Pixel-diff vs production baseline acceptable | NEW1 plan section 9 | Under 5% per-region delta OR documented human review pass |
-| No reintroduction of coordinate engine | NEW1 plan section 9 failure gate; spike readiness audit | No pixel-math, JS-side `getBoundingClientRect()`-keyed state, or coordinate-keyed lookups added in adapter or new module |
-| CSS region bounds vs legacy coordinates stable across 96 wells | Spike readiness audit (central risk) | Per-well-center delta within the pixel-diff threshold; no floating-point precision drift visible in diff overlay |
-| Walker completes via visible UI | Contract item 4; NEW1 plan section 7 stage-1 gate | Walker exit 0 against the spike scene with the flag on |
+| Gate                                                           | Source                                                  | Pass criterion                                                                                                           |
+| -------------------------------------------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Scene renders through production runtime under flag-on         | NEW1 plan section 9                                     | `well_plate_96_zoom` loads via the production scene loader and adapter, not via the experiment harness                   |
+| One click target via visible UI                                | NEW1 plan section 9                                     | Playwright click on the primary placement registers through `data-target-id` dispatch                                    |
+| End-to-end interaction completes                               | NEW1 plan section 9                                     | click -> validator -> response -> `ObjectStateChange` re-render runs without internal API writes                         |
+| Precheck hard-fail count = 0                                   | NEW1 plan section 5; precheck `visual_audit.json`       | Zero of: `clipped_artwork`, `off_page`, `svg_svg_overlap`, `region_overflow`, `label_label_overlap`                      |
+| Pixel-diff vs production baseline acceptable                   | NEW1 plan section 9                                     | Under 5% per-region delta OR documented human review pass                                                                |
+| No reintroduction of coordinate engine                         | NEW1 plan section 9 failure gate; spike readiness audit | No pixel-math, JS-side `getBoundingClientRect()`-keyed state, or coordinate-keyed lookups added in adapter or new module |
+| CSS region bounds vs legacy coordinates stable across 96 wells | Spike readiness audit (central risk)                    | Per-well-center delta within the pixel-diff threshold; no floating-point precision drift visible in diff overlay         |
+| Walker completes via visible UI                                | Contract item 4; NEW1 plan section 7 stage-1 gate       | Walker exit 0 against the spike scene with the flag on                                                                   |
 
 ## Rollback plan
 
@@ -221,16 +221,16 @@ Commit-scope rule:
 - No contract amendment; Path A vs Path B is deferred to the post-spike
   decision in NEW1 plan section 1.
 - No new metrics added to
-  [../../experiments/css_native_layout/precheck.mjs](../../experiments/css_native_layout/precheck.mjs).
+  `precheck.mjs`.
   The precheck runner is consumed as-is.
 
 ## Post-spike decision matrix
 
-| Outcome | Next action |
-| --- | --- |
-| Spike passes all gates | Recommend Path A (contract amendment) to reviewer; open NEW1 stage-2 one-protocol spike per plan section 7 |
-| Spike fails coord-math / no-coordinate-engine gate | Recommend Path B (CSS-native stays under `experiments/`); close NEW1 spike; revert via the one-PR rule |
-| Spike passes but reveals new requirement (e.g., footprint class (e.g., the `.footprint--zoom-view` class), scene_mode field) | Pause spike closure; open a focused fixture/schema follow-up under `experiments/`; do NOT silently expand the closed schema |
+| Outcome                                                                                                                                                             | Next action                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| Spike passes all gates                                                                                                                                              | Recommend Path A (contract amendment) to reviewer; open NEW1 stage-2 one-protocol spike per plan section 7                                |
+| Spike fails coord-math / no-coordinate-engine gate                                                                                                                  | Recommend Path B (CSS-native stays under `experiments/`); close NEW1 spike; revert via the one-PR rule                                    |
+| Spike passes but reveals new requirement (e.g., footprint class (e.g., the `.footprint--zoom-view` class), scene_mode field)                                        | Pause spike closure; open a focused fixture/schema follow-up under `experiments/`; do NOT silently expand the closed schema               |
 | Spike inconclusive (precheck passes, pixel-diff inconclusive, walker passes but cursor-attach behavior (CursorAttach scene operation; see PRIMARY_SPEC.md) unclear) | Record findings; extend the walkthrough to cover the unclear interaction; re-run gates; do not declare success and do not declare failure |
 
 ## Open issues from prep phase
@@ -239,13 +239,13 @@ Prep subagents flagged these unresolved questions. Resolve before declaring
 the spike closed; do not silently absorb them into the schema.
 
 - `expected_data_attributes` divergences vs the NEW0 template (see
-  [../../experiments/css_native_layout/spike_fixtures/expected_data_attributes.md](../../experiments/css_native_layout/spike_fixtures/expected_data_attributes.md)):
+  `expected_data_attributes.md`):
   `data-scene-mode` vs no `scene_mode` schema field; `data-placement`
   duplicate of `data-placement-name`; `footprint--zoom-view` class with no
   schema source; `scene-mode--detail` class with no schema source; the five
   empty-region scaffolds rendered even when unused in zoom view.
 - `precheck.mjs` has no `--scene` filter flag. Workaround documented in
-  [../../experiments/css_native_layout/PRECHECK_USAGE.md](../../experiments/css_native_layout/PRECHECK_USAGE.md):
+  `PRECHECK_USAGE.md`:
   pass an explicit HTML path or a narrower glob as the positional argument.
 - Contract item 3 wording ambiguities flagged in
   [new1_primary_contract_item3_amendment_draft.md](new1_primary_contract_item3_amendment_draft.md):

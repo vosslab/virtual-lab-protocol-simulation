@@ -37,12 +37,12 @@ Broader search for the file by name pattern:
 Closest active candidates that may contain or feed the WS-C bucketed
 data, ordered by likelihood:
 
-| Candidate file | Lines | Possible role |
-| --- | --- | --- |
-| `docs/active_plans/no_cropped_svg_diagnostic_gap_audit.md` | 183 | Diagnostic gap audit; may be the renamed source |
-| `docs/active_plans/no_cropped_svg_asset_sizing_table.md` | 198 | Tabular asset audit; closest table shape |
-| `docs/active_plans/no_cropped_svg_screenshot_audit.md` | 127 | Screenshot-derived audit |
-| `docs/active_plans/no_cropped_svg_repair_summary.md` | 148 | Repair summary; may already aggregate buckets |
+| Candidate file                                             | Lines | Possible role                                   |
+| ---------------------------------------------------------- | ----- | ----------------------------------------------- |
+| `docs/active_plans/no_cropped_svg_diagnostic_gap_audit.md` | 183   | Diagnostic gap audit; may be the renamed source |
+| `docs/active_plans/no_cropped_svg_asset_sizing_table.md`   | 198   | Tabular asset audit; closest table shape        |
+| `docs/active_plans/no_cropped_svg_screenshot_audit.md`     | 127   | Screenshot-derived audit                        |
+| `docs/active_plans/no_cropped_svg_repair_summary.md`       | 148   | Repair summary; may already aggregate buckets   |
 
 Spot-check of bucket counts against actual rows is not possible until
 the source file is located or regenerated.
@@ -62,13 +62,13 @@ carry once the audit is available:
 
 Bucket-level first-fix templates (apply per row once data is in hand):
 
-| Bucket | Rows | Default first-fix | Effort floor | User-gated |
-| --- | --- | --- | --- | --- |
-| mapping-exists-file-missing | 30 | Add SVG file at expected path OR remove the mapping entry | M | YES if asset must be authored; NO if mapping is the stale side |
-| file-exists-mapping-missing | 12 | Add mapping entry pointing to the existing SVG file | S | NO |
-| placeholder-despite-valid | 11 | Investigate placeholder fallback path in renderer | M | YES (diagnostic-affecting) |
-| obsolete | 7 | Drop registry entry; verify no live references | S | NO |
-| asset-authoring | 5 | Author SVG to spec | L | YES |
+| Bucket                      | Rows | Default first-fix                                         | Effort floor | User-gated                                                     |
+| --------------------------- | ---- | --------------------------------------------------------- | ------------ | -------------------------------------------------------------- |
+| mapping-exists-file-missing | 30   | Add SVG file at expected path OR remove the mapping entry | M            | YES if asset must be authored; NO if mapping is the stale side |
+| file-exists-mapping-missing | 12   | Add mapping entry pointing to the existing SVG file       | S            | NO                                                             |
+| placeholder-despite-valid   | 11   | Investigate placeholder fallback path in renderer         | M            | YES (diagnostic-affecting)                                     |
+| obsolete                    | 7    | Drop registry entry; verify no live references            | S            | NO                                                             |
+| asset-authoring             | 5    | Author SVG to spec                                        | L            | YES                                                            |
 
 User-gated YES count under this scheme: mapping-exists-file-missing
 (conditional, treat as YES until per-row triage), plus
@@ -137,10 +137,11 @@ decision shared across two buckets).
 
 If WS-B closure must be parallelized, the next-best shape is 2 doers:
 one for the user-gated NO sweep (buckets file-exists-mapping-missing
-+ obsolete + mapping-side mapping-exists-file-missing) and one for
-the user-gated YES triage memo (buckets placeholder-despite-valid +
-asset-authoring + asset-side mapping-exists-file-missing). This keeps
-the user-gate boundary clean across doer outputs.
+
+- obsolete + mapping-side mapping-exists-file-missing) and one for
+  the user-gated YES triage memo (buckets placeholder-despite-valid +
+  asset-authoring + asset-side mapping-exists-file-missing). This keeps
+  the user-gate boundary clean across doer outputs.
 
 ## Handoff
 

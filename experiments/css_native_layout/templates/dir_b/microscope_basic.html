@@ -1,41 +1,55 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Microscope Basic - NEW0 Direction B (Stage/Composition)</title>
-	<link rel="stylesheet" href="../../styles/dir_b_instrument.css">
-</head>
-<body>
-	<!-- Direction B: instrument goes in work_surface (no separate instrument_station) -->
-	<div class="scene-container scene--instrument" data-scene-mode="template">
-		<!-- Rear shelf: empty in basic microscope -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Rear Shelf</span>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Microscope Basic - NEW0 Direction B (Stage/Composition)</title>
+    <link rel="stylesheet" href="../../styles/dir_b_instrument.css" />
+  </head>
+  <body>
+    <!-- Direction B: instrument goes in work_surface (no separate instrument_station) -->
+    <div class="scene-container scene--instrument" data-scene-mode="template">
+      <!-- Rear shelf: empty in basic microscope -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Rear Shelf</span>
+      </div>
 
-		<!-- Center stage: microscope as primary, fills the stage -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Center stage: microscope as primary, fills the stage -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="instrument_main_microscope" data-placement-name="instrument_main_microscope" data-object-name="microscope" data-primary="true">
-				<div class="object-graphic footprint--large-equipment">
-					<img src="../../../../assets/equipment/microscope_new.svg" alt="Microscope">
-				</div>
-				<span class="placement-label">Microscope</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="instrument_main_microscope"
+          data-placement-name="instrument_main_microscope"
+          data-object-name="microscope"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--large-equipment">
+            <img
+              src="../../../../assets/equipment/microscope_new.svg"
+              alt="Microscope"
+            />
+          </div>
+          <span class="placement-label">Microscope</span>
+        </div>
+      </div>
 
-		<!-- Front tools: empty -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Front Tools</span>
-		</div>
+      <!-- Front tools: empty -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Front Tools</span>
+      </div>
 
-		<!-- Popup layer: unused -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
-	<script>
-		window.sceneData = { sceneName: 'microscope_basic', direction: 'B', workspace: 'instrument', totalPlacements: 1 };
-	</script>
-</body>
+      <!-- Popup layer: unused -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
+    <script>
+      window.sceneData = {
+        sceneName: "microscope_basic",
+        direction: "B",
+        workspace: "instrument",
+        totalPlacements: 1,
+      };
+    </script>
+  </body>
 </html>

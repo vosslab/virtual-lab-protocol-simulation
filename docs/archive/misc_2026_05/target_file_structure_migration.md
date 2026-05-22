@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Implementation sequencing for moving the repo from its current layout, described in [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md), to the steady-state layout described in [../specs/TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md). This doc tracks moves and order; it does not duplicate folder-purpose rationale.
+Implementation sequencing for moving the repo from its current layout, described in `FILE_STRUCTURE.md`, to the steady-state layout described in `TARGET_FILE_STRUCTURE.md`. This doc tracks moves and order; it does not duplicate folder-purpose rationale.
 
 ## Moves
 
@@ -14,12 +14,12 @@ Implementation sequencing for moving the repo from its current layout, described
 
 ## Coordination
 
-Ordering within the broader refactor is owned by [docs/archive/scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md) and [docs/active_plans/curriculum_decomposition.md](curriculum_decomposition.md). This doc only enumerates the moves; those plans schedule them.
+Ordering within the broader refactor is owned by `scene_runtime_spine_plan.md` and [curriculum_decomposition.md](curriculum_decomposition.md). This doc only enumerates the moves; those plans schedule them.
 
 ## Closure
 
 When all moves are complete:
 
-- Fold the target layout into [docs/FILE_STRUCTURE.md](../FILE_STRUCTURE.md).
-- Archive [../specs/TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md) under `docs/archive/`.
+- Fold the target layout into `FILE_STRUCTURE.md`.
+- Archive `TARGET_FILE_STRUCTURE.md` under `docs/archive/`.
 - Archive this migration doc under `docs/archive/`.

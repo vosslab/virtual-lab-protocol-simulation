@@ -6,7 +6,7 @@ and the exit criteria that close NEW2.
 
 Cross-links:
 
-- [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+- `new1_5_layout_hardening_results.md`
 - Forward references (produced by sibling NEW2 lanes, not yet on disk):
   - `docs/active_plans/new2_css_native_production_blocker_plan.md` (Lane P)
   - `docs/active_plans/new2_well_plate_adapter_rect_audit.md` (Lane W)

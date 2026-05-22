@@ -241,6 +241,6 @@ top of it.
 - Walker: `tests/playwright/e2e/protocol_walkthrough_yaml.mjs` (carries the
   scene-isolation assertion for `tutorial_plate_drug_additions`).
 - Diagnostic scripts (manager-side, not propagated): `tests/playwright/
-  debug_workspace_render.mjs`, `tests/playwright/debug_step6_dispatch.mjs`.
+debug_workspace_render.mjs`, `tests/playwright/debug_step6_dispatch.mjs`.
 - Changelog entries: `docs/CHANGELOG.md` 2026-05-11 and 2026-05-12 day
   blocks carry the per-task summary trail.

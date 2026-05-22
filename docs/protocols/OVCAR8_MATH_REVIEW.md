@@ -193,11 +193,11 @@ well to a uniform 200 uL.
 
 ## Summary decision table
 
-| Ambiguity                       | Question                       | User's chosen resolution |
-| ---                             | ---                            | ---                      |
-| 1. Carboplatin row B final      | 10 nM or 20 nM?                | 10 nM (well total = 200 &micro;L; protocol doc Part 5 line 129 "ends at 100 &micro;L" is the typo) |
-| 2. Metformin final              | 0.5 mM or 5 mM?                | 5 mM final via 200 mM working stock (Part 3 Day 2 line 71 is correct; Part 4 line 117 "10 mM working stock" is the typo) |
-| 3. Cols 7-12 media adjustment   | 85 &micro;L or 90 &micro;L?    | 90 &micro;L (so 100 cells + 90 media + 5 carb + 5 met = 200 &micro;L, matching cols 1-6 at 100 + 95 + 5 = 200 &micro;L) |
+| Ambiguity                     | Question                    | User's chosen resolution                                                                                                 |
+| ----------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| 1. Carboplatin row B final    | 10 nM or 20 nM?             | 10 nM (well total = 200 &micro;L; protocol doc Part 5 line 129 "ends at 100 &micro;L" is the typo)                       |
+| 2. Metformin final            | 0.5 mM or 5 mM?             | 5 mM final via 200 mM working stock (Part 3 Day 2 line 71 is correct; Part 4 line 117 "10 mM working stock" is the typo) |
+| 3. Cols 7-12 media adjustment | 85 &micro;L or 90 &micro;L? | 90 &micro;L (so 100 cells + 90 media + 5 carb + 5 met = 200 &micro;L, matching cols 1-6 at 100 + 95 + 5 = 200 &micro;L)  |
 
 > The protocol should use a 200 &micro;L final well volume. Each drug
 > addition is 5 &micro;L, so all working stocks are 40&times; the desired
@@ -273,11 +273,11 @@ fixed-dose metformin shift the carboplatin response?**
 
 **Role separation table:**
 
-| Component   | Role                          | Student choice?          | Calculation                            |
-| ---         | ---                           | ---                      | ---                                    |
-| Carboplatin | Variable dose-response drug   | Yes, choose dose series  | Calculate each row                     |
-| Metformin   | Fixed modifier                | No, fixed dose           | One working stock                      |
-| Media       | Volume balancer               | No                       | Adjust so all wells reach 200 &micro;L |
+| Component   | Role                        | Student choice?         | Calculation                            |
+| ----------- | --------------------------- | ----------------------- | -------------------------------------- |
+| Carboplatin | Variable dose-response drug | Yes, choose dose series | Calculate each row                     |
+| Metformin   | Fixed modifier              | No, fixed dose          | One working stock                      |
+| Media       | Volume balancer             | No                      | Adjust so all wells reach 200 &micro;L |
 
 **Rule for multi-drug protocols:**
 
@@ -292,7 +292,7 @@ series-design complexity.
 **Corrected examples table for the 200 &micro;L well model:**
 
 | Drug        | Final in well | Volume added | Final well volume | Required working stock |
-| ---         | ---           | ---          | ---               | ---                    |
+| ----------- | ------------- | ------------ | ----------------- | ---------------------- |
 | Carboplatin | 1 &micro;M    | 5 &micro;L   | 200 &micro;L      | 40 &micro;M            |
 | Carboplatin | 10 &micro;M   | 5 &micro;L   | 200 &micro;L      | 400 &micro;M           |
 | Metformin   | 5 mM          | 5 &micro;L   | 200 &micro;L      | 200 mM                 |
@@ -409,7 +409,7 @@ steps, broad range (3 decades), values look intentional. Makes a nice bar
 plot because students can see the low-to-high effect transition clearly.
 
 | Row | Dose         |
-| --- | ---          |
+| --- | ------------ |
 | A   | 0 &micro;M   |
 | B   | 0.1 &micro;M |
 | C   | 0.3 &micro;M |
@@ -429,7 +429,7 @@ A binary series is also defensible. Teaches serial dilution beautifully, but
 labels are less clean for a bar plot.
 
 | Row | Dose          |
-| --- | ---           |
+| --- | ------------- |
 | A   | 0 &micro;M    |
 | B   | 0.78 &micro;M |
 | C   | 1.56 &micro;M |
@@ -448,16 +448,16 @@ intermediate labels for a bar plot.
 This may be the best compromise: clear rule, simple labels, easy for students
 to explain.
 
-| Row | Dose         |
-| --- | ---          |
-| A   | 0 &micro;M   |
-| B   | 1 &micro;M   |
-| C   | 2 &micro;M   |
-| D   | 4 &micro;M   |
-| E   | 8 &micro;M   |
-| F   | 16 &micro;M  |
-| G   | 32 &micro;M  |
-| H   | 64 &micro;M  |
+| Row | Dose        |
+| --- | ----------- |
+| A   | 0 &micro;M  |
+| B   | 1 &micro;M  |
+| C   | 2 &micro;M  |
+| D   | 4 &micro;M  |
+| E   | 8 &micro;M  |
+| F   | 16 &micro;M |
+| G   | 32 &micro;M |
+| H   | 64 &micro;M |
 
 Net DF: 1:2 per step (same as binary above, but rounded so the lowest dose is
 a clean 1 &micro;M). Pro: every label is a power-of-2 integer in &micro;M,
@@ -471,7 +471,7 @@ very memorable. Con: doesn't capture sub-&micro;M activity if IC50 is below
 The 1-2-5 pattern is a rounded version of equal log spacing with three intervals per decade. The exact log-spaced values are 10^(0/3) = 1.00, 10^(1/3) = 2.15, 10^(2/3) = 4.64, 10^(3/3) = 10.00. Rounded to "preferred numbers" they become 1, 2, 5, 10:
 
 | Step | Exact log-spaced value | Rounded teaching value |
-| ---  | ---                    | ---                    |
+| ---- | ---------------------- | ---------------------- |
 | 1    | 1.00                   | 1                      |
 | 2    | 2.15                   | 2                      |
 | 3    | 4.64                   | 5                      |
@@ -489,7 +489,7 @@ values per decade instead of two (vs the 1,3 series), with alternating
 2&times; and 2.5&times; step ratios (average ~2.15&times;).
 
 | Row | Dose         |
-| --- | ---          |
+| --- | ------------ |
 | A   | 0 &micro;M   |
 | B   | 0.1 &micro;M |
 | C   | 0.2 &micro;M |
@@ -608,11 +608,11 @@ That is cleaner than asking students to choose between "binary," "half-log,"
 
 ### Three log-spaced options
 
-| Option            | Pattern                | Points per decade | Best use                                |
-| ---               | ---                    | ---               | ---                                     |
-| Low resolution    | 1, 10, 100             | 1                 | Very broad scouting                     |
-| Medium resolution | 1, 3, 10, 30, 100      | 2                 | Standard log-style IC50 scouting        |
-| High resolution   | 1, 2, 5, 10, 20, 50    | 3                 | Clean graph labels, better resolution   |
+| Option            | Pattern             | Points per decade | Best use                              |
+| ----------------- | ------------------- | ----------------- | ------------------------------------- |
+| Low resolution    | 1, 10, 100          | 1                 | Very broad scouting                   |
+| Medium resolution | 1, 3, 10, 30, 100   | 2                 | Standard log-style IC50 scouting      |
+| High resolution   | 1, 2, 5, 10, 20, 50 | 3                 | Clean graph labels, better resolution |
 
 ### Where 2-fold fits
 
@@ -631,11 +631,11 @@ the goal.
 
 Offer only three choices to students, framed as resolution trade-offs:
 
-| Option         | Pattern                 | Why choose it                                |
-| ---            | ---                     | ---                                          |
-| Broad          | 1, 10, 100              | Fast scan across orders of magnitude         |
-| Balanced       | 1, 3, 10, 30, 100       | Standard log-style IC50 scouting             |
-| Graph-friendly | 1, 2, 5, 10, 20, 50     | More points per decade with clean labels     |
+| Option         | Pattern             | Why choose it                            |
+| -------------- | ------------------- | ---------------------------------------- |
+| Broad          | 1, 10, 100          | Fast scan across orders of magnitude     |
+| Balanced       | 1, 3, 10, 30, 100   | Standard log-style IC50 scouting         |
+| Graph-friendly | 1, 2, 5, 10, 20, 50 | More points per decade with clean labels |
 
 The 2-fold series is mentioned only as an aside when the discussion shifts
 to dilution mechanics.

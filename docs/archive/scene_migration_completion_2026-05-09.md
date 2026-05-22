@@ -2,7 +2,7 @@
 
 > Archived 2026-05-09 -- migration complete. Patches A1-A6 (Plan A), B1-B12
 > (Plan B), and C1-C5 (Plan C) all landed. Final cleanroom + walker green.
-> See [docs/CHANGELOG.md](../CHANGELOG.md) under `## 2026-05-09` for the
+> See [CHANGELOG.md](../CHANGELOG.md) under `## 2026-05-09` for the
 > grouped closeout entry. Live-doc references to `src/svg_globals.ts`,
 > `src/content/{protocol,inventory,scene}_data.ts`, `src/bench_config.ts`,
 > `src/hood_config.ts`, and `src/scenes/shared/legacy_tokens.ts` were
@@ -223,7 +223,7 @@ Three doctrines, three boundaries:
   begin with `AUTO-GENERATED` or `Generated file`. Every file in
   `generated/` must begin with one of those markers. Both checks are
   Grep-tool assertions.
-- **Facade boundary for generated data.** *All* authored modules
+- **Facade boundary for generated data.** _All_ authored modules
   under `src/**` import generated data only through these facades:
   - `src/svg_assets.ts` (SVG; already in place)
   - `src/scene_configs.ts` (re-exports `SCENE_CONFIGS` and
@@ -238,6 +238,7 @@ Three doctrines, three boundaries:
   capabilities, init, game_state, protocol_ui, step_dispatch, and
   any future authored module. (Decision recorded; was open question
   in prior draft.)
+
 - **YAML owns static, declarative scene facts.** TypeScript owns
   algorithms, derived state, event effects, validation, and runtime
   conditionals. Once a static, declarative fact moves into
@@ -249,32 +250,32 @@ Three doctrines, three boundaries:
 
 ### Ownership map
 
-| Doctrine | Authored owner | Generated owner | Facade owner | Verifier |
-| --- | --- | --- | --- | --- |
-| Authored vs generated tree | `src/` | `generated/` | n/a | `tests/test_authored_vs_generated.py` (new) |
-| Generated data facade | `src/svg_assets.ts`, `src/scene_configs.ts`, `src/inventory.ts`, `src/protocol.ts` | `generated/svg_assets/*`, `generated/svg_manifest.ts`, `generated/scene_data.ts`, `generated/inventory_data.ts`, `generated/protocol_data.ts` | (see authored owner) | `tests/test_facade_imports.py` (new; covers all of `src/**`) |
-| YAML layout truth | `src/scenes/<scene>/<scene>.yaml` | `generated/scene_data.ts` | `src/scene_configs.ts` | `tests/test_scene_yaml_validator.py` (new); zero importers of `bench_config`, `hood_config` from `src/**` |
+| Doctrine                   | Authored owner                                                                     | Generated owner                                                                                                                               | Facade owner           | Verifier                                                                                                  |
+| -------------------------- | ---------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------- | --------------------------------------------------------------------------------------------------------- |
+| Authored vs generated tree | `src/`                                                                             | `generated/`                                                                                                                                  | n/a                    | `tests/test_authored_vs_generated.py` (new)                                                               |
+| Generated data facade      | `src/svg_assets.ts`, `src/scene_configs.ts`, `src/inventory.ts`, `src/protocol.ts` | `generated/svg_assets/*`, `generated/svg_manifest.ts`, `generated/scene_data.ts`, `generated/inventory_data.ts`, `generated/protocol_data.ts` | (see authored owner)   | `tests/test_facade_imports.py` (new; covers all of `src/**`)                                              |
+| YAML layout truth          | `src/scenes/<scene>/<scene>.yaml`                                                  | `generated/scene_data.ts`                                                                                                                     | `src/scene_configs.ts` | `tests/test_scene_yaml_validator.py` (new); zero importers of `bench_config`, `hood_config` from `src/**` |
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone | Workstream | Components touched | Patch grouping |
-| --- | --- | --- | --- |
-| M1 (Plan A) | M1.WS0 generated bootstrap command | `tools/bootstrap_generated.sh` (or equivalent), `build_github_pages.sh`, `export_single_file.sh`, `tests/conftest.py` | Patch A1 |
-| M1 (Plan A) | M1.WS1 generated tree relocation + facade introduction (per data family) | `tools/build_*.py`, `generated/`, `src/{scene_configs,inventory,protocol}.ts`, all importers | Patches A2-A4 |
-| M1 (Plan A) | M1.WS2 boundary tests | `tests/test_authored_vs_generated.py`, `tests/test_facade_imports.py` | Patch A5 |
-| M1 (Plan A) | M1.WS3 docs + closeout grep + cleanroom gate | `docs/CODE_ARCHITECTURE.md`, `docs/FILE_STRUCTURE.md`, `tsconfig.json`, `.gitignore` | Patch A6 |
-| M2 (Plan B) | M2.WS0 scene classification | `docs/archive/scene_classification_<date>.md` | Patch B1 |
-| M2 (Plan B) | M2.WS1 SceneConfig schema extension + emitter | `tools/build_scene_data.py`, `generated/scene_data.ts` (regen), `docs/SCENE_YAML_FORMAT.md` | Patch B2 |
-| M2 (Plan B) | M2.WS6 YAML validator pytest + corpora | `tests/test_scene_yaml_validator.py`, fixture corpora | Patch B3 |
-| M2 (Plan B) | M2.WS2 layout duplication audit | `docs/archive/scene_yaml_layout_audit_<date>.md` | Patch B4 (doc only) |
-| M2 (Plan B) | M2.WS3 game_state.ts dependency audit + extraction | `src/game_state.ts`, possibly `src/scenes/shared/` helpers | Patch B5 |
-| M2 (Plan B) | M2.WS4 small-scene migration | `src/scenes/{incubator,plate,plate_reader,microscope}/<scene>.yaml` + adapter | Patches B6-B9 (one per scene) |
-| M2 (Plan B) | M2.WS5 bench/hood migration + `_config.ts` retirement | `src/scenes/{bench,cell_culture_hood}/**`, `src/{bench,hood}_config.ts` | Patches B10-B11 |
-| M3 (Plan C) | M3.WS1 hood compatibility-token ladder retirement | `src/scenes/cell_culture_hood/cell_culture_hood.ts` | Patch C1 |
-| M3 (Plan C) | M3.WS2 bench decomposition | `src/scenes/bench/{bench,render,dispatch,effects}.ts` | Patch C2 |
-| M3 (Plan C) | M3.WS3 microscope decomposition | `src/scenes/microscope/{microscope,manual_hemocytometer}.ts` | Patch C3 |
-| M3 (Plan C) | M3.WS4 legacy_tokens retirement | `src/scenes/shared/legacy_tokens.ts` (delete) | Patch C4 |
-| M3 (Plan C) | M3.WS5 docs closeout + archive + docs freshness grep | `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/archive/scene_migration_completion_<date>.md`, all `docs/**` | Patch C5 |
+| Milestone   | Workstream                                                               | Components touched                                                                                                    | Patch grouping                |
+| ----------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------- | ----------------------------- |
+| M1 (Plan A) | M1.WS0 generated bootstrap command                                       | `tools/bootstrap_generated.sh` (or equivalent), `build_github_pages.sh`, `export_single_file.sh`, `tests/conftest.py` | Patch A1                      |
+| M1 (Plan A) | M1.WS1 generated tree relocation + facade introduction (per data family) | `tools/build_*.py`, `generated/`, `src/{scene_configs,inventory,protocol}.ts`, all importers                          | Patches A2-A4                 |
+| M1 (Plan A) | M1.WS2 boundary tests                                                    | `tests/test_authored_vs_generated.py`, `tests/test_facade_imports.py`                                                 | Patch A5                      |
+| M1 (Plan A) | M1.WS3 docs + closeout grep + cleanroom gate                             | `docs/CODE_ARCHITECTURE.md`, `docs/FILE_STRUCTURE.md`, `tsconfig.json`, `.gitignore`                                  | Patch A6                      |
+| M2 (Plan B) | M2.WS0 scene classification                                              | `docs/archive/scene_classification_<date>.md`                                                                         | Patch B1                      |
+| M2 (Plan B) | M2.WS1 SceneConfig schema extension + emitter                            | `tools/build_scene_data.py`, `generated/scene_data.ts` (regen), `docs/SCENE_YAML_FORMAT.md`                           | Patch B2                      |
+| M2 (Plan B) | M2.WS6 YAML validator pytest + corpora                                   | `tests/test_scene_yaml_validator.py`, fixture corpora                                                                 | Patch B3                      |
+| M2 (Plan B) | M2.WS2 layout duplication audit                                          | `docs/archive/scene_yaml_layout_audit_<date>.md`                                                                      | Patch B4 (doc only)           |
+| M2 (Plan B) | M2.WS3 game_state.ts dependency audit + extraction                       | `src/game_state.ts`, possibly `src/scenes/shared/` helpers                                                            | Patch B5                      |
+| M2 (Plan B) | M2.WS4 small-scene migration                                             | `src/scenes/{incubator,plate,plate_reader,microscope}/<scene>.yaml` + adapter                                         | Patches B6-B9 (one per scene) |
+| M2 (Plan B) | M2.WS5 bench/hood migration + `_config.ts` retirement                    | `src/scenes/{bench,cell_culture_hood}/**`, `src/{bench,hood}_config.ts`                                               | Patches B10-B11               |
+| M3 (Plan C) | M3.WS1 hood compatibility-token ladder retirement                        | `src/scenes/cell_culture_hood/cell_culture_hood.ts`                                                                   | Patch C1                      |
+| M3 (Plan C) | M3.WS2 bench decomposition                                               | `src/scenes/bench/{bench,render,dispatch,effects}.ts`                                                                 | Patch C2                      |
+| M3 (Plan C) | M3.WS3 microscope decomposition                                          | `src/scenes/microscope/{microscope,manual_hemocytometer}.ts`                                                          | Patch C3                      |
+| M3 (Plan C) | M3.WS4 legacy_tokens retirement                                          | `src/scenes/shared/legacy_tokens.ts` (delete)                                                                         | Patch C4                      |
+| M3 (Plan C) | M3.WS5 docs closeout + archive + docs freshness grep                     | `docs/ROADMAP.md`, `docs/CHANGELOG.md`, `docs/archive/scene_migration_completion_<date>.md`, all `docs/**`            | Patch C5                      |
 
 Component name discipline: workstream IDs are planning labels and
 never appear in source filenames or test names. Module names use
@@ -332,7 +333,7 @@ durable terminology (`render`, `dispatch`, `effects`,
     emitters does not produce new files git would track.
   - `bash check_codebase.sh` exits 0 (after a regen pass; see the
     build/check responsibility note in `Migration and compatibility
-    policy`).
+policy`).
   - `bash export_single_file.sh` succeeds.
   - Playwright full walker green:
     `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs`
@@ -341,7 +342,7 @@ durable terminology (`render`, `dispatch`, `effects`,
   and `docs/FILE_STRUCTURE.md` describe `generated/` and the four
   facades; one or more `docs/CHANGELOG.md` entries cover M1 (per
   the grouped-entry rule in `Documentation close-out
-  requirements`). Obvious follow-ons: regen
+requirements`). Obvious follow-ons: regen
   `generated/scene_data.ts` from YAML on first emitter run after
   the move; update emitter `--output` defaults in the same patch
   as the file relocation; clean stale `.gitignore` lines.
@@ -437,12 +438,11 @@ durable terminology (`render`, `dispatch`, `effects`,
   plan; `docs/CHANGELOG.md` covers M3 (grouped entry permitted).
   **Closeout docs-grep gate:** Grep tool,
   `pattern="src/svg_globals\\.ts|src/content/scene_data\\.ts|src/content/protocol_data\\.ts|src/content/inventory_data\\.ts|flat monolithic scene modules"`,
-  `path="docs/"`, **excluding `docs/archive/**` and `docs/CHANGELOG*.md`** -> zero.
-  CHANGELOG entries are historical and immutable per [docs/REPO_STYLE.md](../REPO_STYLE.md), so they intentionally retain references to retired paths.
-  Any hit outside the archive or changelog blocks plan archive until the doc is
-  updated. Obvious follow-ons: rerun
-  `bash check_codebase.sh` after each decomposition patch; update
-  `docs/SCENE_ARCHITECTURE.md` if the responsibility-seam
+  `path="docs/"`, **excluding `docs/archive/**`and`docs/CHANGELOG\*.md`** -> zero.
+CHANGELOG entries are historical and immutable per [REPO_STYLE.md](../REPO_STYLE.md), so they intentionally retain references to retired paths.
+Any hit outside the archive or changelog blocks plan archive until the doc is
+updated. Obvious follow-ons: rerun
+`bash check_codebase.sh`after each decomposition patch; update`docs/SCENE_ARCHITECTURE.md` if the responsibility-seam
   vocabulary changes.
 - **Parallel-plan ready:** yes. M3.WS1, M3.WS2, M3.WS3 run
   concurrently. M3.WS4 (legacy_tokens delete) is a serial gate
@@ -488,7 +488,7 @@ adding information for a plan with 13 workstreams.
   `bash dist_clean.sh && bash tools/bootstrap_generated.sh && npx tsc --noEmit -p src/tsconfig.json`
   succeeds. The script is idempotent: running it twice produces
   byte-identical `generated/` and zero `git status --short
-  generated/` output (the tree is gitignored, so this is the
+generated/` output (the tree is gitignored, so this is the
   determinism check across reruns). Build scripts and conftest no
   longer call individual generators directly.
 - **Verification commands:**
@@ -678,45 +678,45 @@ extends it to absorb every static declarative fact currently in
 contract; coders may not invent shapes patch by patch. Cross-reference
 fields list which other namespace each value resolves against.
 
-| Field | Owner | Required | Shape | Cross-references |
-| --- | --- | --- | --- | --- |
-| `sceneId` | YAML | yes | string | unique across `SCENE_CONFIGS` |
-| `workspace` | YAML | yes | enum, current values from `docs/SCENE_VOCABULARY.md` (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, plus whatever already appears in committed YAMLs); new values are added only if the layout audit (WP-2.2.1) proves they are needed | docs/SCENE_VOCABULARY.md |
-| `capabilities` | YAML | yes | string[] | `CAPABILITY_REGISTRY` |
-| `elementId` | YAML | optional | string | DOM id used by the renderer; defaults to `${sceneId}-scene` per current `docs/SCENE_YAML_FORMAT.md` (preserves existing behavior; do not require this field unless the audit proves the default is wrong) |
-| `items` | YAML | yes (when scene has items) | `SceneItem[]`, where each entry is one of two variants below: `LayoutSceneItem` (full layout-engine item) or `DispatchOnlySceneItem` (minimal item, id and label only). The validator picks the variant per item by inspecting which fields are present; a scene may mix variants if its classification (see WP-2.4) calls for it. | per-item cross-refs below |
-| `zones` | YAML | yes (when items reference zones) | `SceneZone[]` (see below) | items' `zone` field |
-| `layoutRules` | YAML | optional | `SceneLayoutRules` (see below) | -- |
-| `accentRules` | YAML | optional | `SceneAccentRules` (see below) | item.id |
-| `wrongOrderMessage` | YAML | optional | `{ template: string; toastDurationMs: number }` | reserved field, validator-required only |
-| `tabStops` | YAML | optional | `string[][]` (groups of item ids that share a tab stop) | item.id |
+| Field               | Owner | Required                         | Shape                                                                                                                                                                                                                                                                                                                              | Cross-references                                                                                                                                                                                          |
+| ------------------- | ----- | -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sceneId`           | YAML  | yes                              | string                                                                                                                                                                                                                                                                                                                             | unique across `SCENE_CONFIGS`                                                                                                                                                                             |
+| `workspace`         | YAML  | yes                              | enum, current values from `docs/SCENE_VOCABULARY.md` (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, plus whatever already appears in committed YAMLs); new values are added only if the layout audit (WP-2.2.1) proves they are needed                                                                                       | docs/SCENE_VOCABULARY.md                                                                                                                                                                                  |
+| `capabilities`      | YAML  | yes                              | string[]                                                                                                                                                                                                                                                                                                                           | `CAPABILITY_REGISTRY`                                                                                                                                                                                     |
+| `elementId`         | YAML  | optional                         | string                                                                                                                                                                                                                                                                                                                             | DOM id used by the renderer; defaults to `${sceneId}-scene` per current `docs/SCENE_YAML_FORMAT.md` (preserves existing behavior; do not require this field unless the audit proves the default is wrong) |
+| `items`             | YAML  | yes (when scene has items)       | `SceneItem[]`, where each entry is one of two variants below: `LayoutSceneItem` (full layout-engine item) or `DispatchOnlySceneItem` (minimal item, id and label only). The validator picks the variant per item by inspecting which fields are present; a scene may mix variants if its classification (see WP-2.4) calls for it. | per-item cross-refs below                                                                                                                                                                                 |
+| `zones`             | YAML  | yes (when items reference zones) | `SceneZone[]` (see below)                                                                                                                                                                                                                                                                                                          | items' `zone` field                                                                                                                                                                                       |
+| `layoutRules`       | YAML  | optional                         | `SceneLayoutRules` (see below)                                                                                                                                                                                                                                                                                                     | --                                                                                                                                                                                                        |
+| `accentRules`       | YAML  | optional                         | `SceneAccentRules` (see below)                                                                                                                                                                                                                                                                                                     | item.id                                                                                                                                                                                                   |
+| `wrongOrderMessage` | YAML  | optional                         | `{ template: string; toastDurationMs: number }`                                                                                                                                                                                                                                                                                    | reserved field, validator-required only                                                                                                                                                                   |
+| `tabStops`          | YAML  | optional                         | `string[][]` (groups of item ids that share a tab stop)                                                                                                                                                                                                                                                                            | item.id                                                                                                                                                                                                   |
 
 `LayoutSceneItem` shape (full layout-engine item; required for
 items consumed by the layout engine in `src/scenes/<scene>/<scene>.ts`):
 
-| Field | Required | Shape | Cross-reference |
-| --- | --- | --- | --- |
-| `id` | yes | string | unique within `items` |
-| `label` | yes | string | -- |
-| `zone` | yes | string | one of `zones[].id` |
-| `depthTier` | yes | integer 1..5 | -- |
-| `svgAsset` | yes | string | one of `SVG_IDS` keys (validator cross-checks against `generated/svg_manifest.ts`; this cross-reference is performed by the build tool / pytest, not by authored `src/**` runtime code) |
-| `kind` | yes | enum (`bottle`, `flask`, `plate`, `pipette`, `instrument`, `tip_box`, `waste`, etc.) | docs/SCENE_VOCABULARY.md |
-| `widthScale` | yes | number > 0 | -- |
-| `anchorY` | yes | enum (`top`, `bottom`) | -- |
-| `alignStop` | yes | enum (`left`, `center`, `right`) | -- |
-| `accentKey` | optional | string | one of `accentRules` keys |
-| `inventoryRef` | optional | string | one of `REAGENTS` keys (validator cross-checks against `generated/inventory_data.ts`; build-tool / pytest only) |
+| Field          | Required | Shape                                                                                | Cross-reference                                                                                                                                                                         |
+| -------------- | -------- | ------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`           | yes      | string                                                                               | unique within `items`                                                                                                                                                                   |
+| `label`        | yes      | string                                                                               | --                                                                                                                                                                                      |
+| `zone`         | yes      | string                                                                               | one of `zones[].id`                                                                                                                                                                     |
+| `depthTier`    | yes      | integer 1..5                                                                         | --                                                                                                                                                                                      |
+| `svgAsset`     | yes      | string                                                                               | one of `SVG_IDS` keys (validator cross-checks against `generated/svg_manifest.ts`; this cross-reference is performed by the build tool / pytest, not by authored `src/**` runtime code) |
+| `kind`         | yes      | enum (`bottle`, `flask`, `plate`, `pipette`, `instrument`, `tip_box`, `waste`, etc.) | docs/SCENE_VOCABULARY.md                                                                                                                                                                |
+| `widthScale`   | yes      | number > 0                                                                           | --                                                                                                                                                                                      |
+| `anchorY`      | yes      | enum (`top`, `bottom`)                                                               | --                                                                                                                                                                                      |
+| `alignStop`    | yes      | enum (`left`, `center`, `right`)                                                     | --                                                                                                                                                                                      |
+| `accentKey`    | optional | string                                                                               | one of `accentRules` keys                                                                                                                                                               |
+| `inventoryRef` | optional | string                                                                               | one of `REAGENTS` keys (validator cross-checks against `generated/inventory_data.ts`; build-tool / pytest only)                                                                         |
 
 `DispatchOnlySceneItem` shape (minimal item; for scenes whose
 items are dispatch surfaces only, not laid out by the layout
 engine -- e.g., the current minimal microscope items per
 `docs/SCENE_YAML_FORMAT.md`):
 
-| Field | Required | Shape |
-| --- | --- | --- |
-| `id` | yes | string |
-| `label` | yes | string |
+| Field   | Required | Shape  |
+| ------- | -------- | ------ |
+| `id`    | yes      | string |
+| `label` | yes      | string |
 
 The validator accepts either variant per item. A scene's
 classification (see WP-2.4) determines which variant is
@@ -729,16 +729,16 @@ this plan.
 `SceneZone` shape (migration-first; preserves the current
 fields documented in `docs/SCENE_YAML_FORMAT.md`):
 
-| Field | Required | Shape |
-| --- | --- | --- |
-| `id` | yes | string |
-| `x0` | yes | number (left edge in scene coords) |
-| `x1` | yes | number (right edge in scene coords) |
-| `baseline` | yes | number (vertical baseline in scene coords) |
-| `gap` | yes | number (item spacing) |
-| `align` | yes | enum (`left`, `center`, `right`) |
-| `tier` | optional | integer 1..5 (only if existing YAMLs already carry it) |
-| `label` | optional | string |
+| Field      | Required | Shape                                                  |
+| ---------- | -------- | ------------------------------------------------------ |
+| `id`       | yes      | string                                                 |
+| `x0`       | yes      | number (left edge in scene coords)                     |
+| `x1`       | yes      | number (right edge in scene coords)                    |
+| `baseline` | yes      | number (vertical baseline in scene coords)             |
+| `gap`      | yes      | number (item spacing)                                  |
+| `align`    | yes      | enum (`left`, `center`, `right`)                       |
+| `tier`     | optional | integer 1..5 (only if existing YAMLs already carry it) |
+| `label`    | optional | string                                                 |
 
 A `rect` / `polygon` representation may be introduced **only if**
 the layout audit (WP-2.2.1) proves the current
@@ -749,18 +749,18 @@ the default.
 
 `SceneLayoutRules` shape:
 
-| Field | Required | Shape |
-| --- | --- | --- |
-| `clusterSpacingPx` | optional | integer |
-| `tierBrightnessFactor` | optional | number map keyed by tier |
-| `tierOpacity` | optional | number map keyed by tier |
-| `defaultAlignStop` | optional | enum (`left`, `center`, `right`) |
+| Field                  | Required | Shape                            |
+| ---------------------- | -------- | -------------------------------- |
+| `clusterSpacingPx`     | optional | integer                          |
+| `tierBrightnessFactor` | optional | number map keyed by tier         |
+| `tierOpacity`          | optional | number map keyed by tier         |
+| `defaultAlignStop`     | optional | enum (`left`, `center`, `right`) |
 
 `SceneAccentRules` shape:
 
-| Field | Required | Shape |
-| --- | --- | --- |
-| `<key>` | -- | `{ stroke?: string; fill?: string; pattern?: string }` |
+| Field   | Required | Shape                                                  |
+| ------- | -------- | ------------------------------------------------------ |
+| `<key>` | --       | `{ stroke?: string; fill?: string; pattern?: string }` |
 
 The schema doc table above is the contract for both
 `tools/build_scene_data.py` (emitter) and
@@ -1048,7 +1048,7 @@ catches.
   grep passes:
   - Grep tool,
     `pattern="src/svg_globals\\.ts|src/content/scene_data\\.ts|src/content/protocol_data\\.ts|src/content/inventory_data\\.ts|flat monolithic scene modules"`,
-    `path="docs/"`, **excluding `docs/archive/**`** -> zero. The
+    `path="docs/"`, **excluding `docs/archive/**`\*\* -> zero. The
     archive intentionally preserves historical terminology and
     must not block this gate.
 - **Verification commands:**
@@ -1114,16 +1114,16 @@ catches.
 
 ## Test and verification strategy
 
-| Tier | Where | Owner | What it proves |
-| --- | --- | --- | --- |
-| Unit | `tests/test_scene_yaml_validator.py` | `tester` | Malformed scene YAML fails per file; valid YAML loads; cross-refs resolve. |
-| Unit | `tests/test_authored_vs_generated.py` | `tester` | No `AUTO-GENERATED` files under `src/`; `generated/` files all carry the marker. |
-| Unit | `tests/test_facade_imports.py` | `tester` | No file under `src/**` imports from `generated/` except the four facades. |
-| Unit | facade smoke pytest | `tester` | Each facade exports the expected top-level keys (catches facade drift). |
-| Unit | existing `tests/test_pyflakes_code_lint.py`, `tests/test_ascii_compliance.py`, `tests/test_import_dot.py`, `tests/test_test_naming_conventions.py` | `tester` | Repo-wide invariants. |
-| Integration | per-scene Playwright tests under `tests/playwright/` (`test_bench_layout.mjs`, `test_hood_layout.mjs`, `test_layout_engine.mjs`, etc.) | `coder` then `tester` | Per-scene render and layout proofs after each migrated scene. |
-| Integration | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs` | `coder` then `tester` | Full `cell_culture` 25/25 + 9 tutorials. |
-| Smoke | `bash build_github_pages.sh`, `bash export_single_file.sh` | `coder` | Build pipeline still produces both bundles. |
+| Tier        | Where                                                                                                                                              | Owner                 | What it proves                                                                   |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------- | -------------------------------------------------------------------------------- |
+| Unit        | `tests/test_scene_yaml_validator.py`                                                                                                               | `tester`              | Malformed scene YAML fails per file; valid YAML loads; cross-refs resolve.       |
+| Unit        | `tests/test_authored_vs_generated.py`                                                                                                              | `tester`              | No `AUTO-GENERATED` files under `src/`; `generated/` files all carry the marker. |
+| Unit        | `tests/test_facade_imports.py`                                                                                                                     | `tester`              | No file under `src/**` imports from `generated/` except the four facades.        |
+| Unit        | facade smoke pytest                                                                                                                                | `tester`              | Each facade exports the expected top-level keys (catches facade drift).          |
+| Unit        | existing `tests/test_pyflakes_code_lint.py`, `tests/test_ascii_compliance.py`, `tests/test_import_dot.py`, `tests/test_test_naming_conventions.py` | `tester`              | Repo-wide invariants.                                                            |
+| Integration | per-scene Playwright tests under `tests/playwright/` (`test_bench_layout.mjs`, `test_hood_layout.mjs`, `test_layout_engine.mjs`, etc.)             | `coder` then `tester` | Per-scene render and layout proofs after each migrated scene.                    |
+| Integration | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs`                                                                                          | `coder` then `tester` | Full `cell_culture` 25/25 + 9 tutorials.                                         |
+| Smoke       | `bash build_github_pages.sh`, `bash export_single_file.sh`                                                                                         | `coder`               | Build pipeline still produces both bundles.                                      |
 
 Failure semantics: any verification-gate failure blocks patch
 landing. Any integration-gate failure blocks milestone close. Any
@@ -1167,7 +1167,7 @@ scripts check, pytest bootstraps explicitly. Concretely:
   `generated/`, `dist/`, the bundled HTML/SVG, `test-results/`,
   and Python caches; the next build must regenerate everything.
   This is the cleanroom build gate referenced in `Acceptance
-  criteria and gates`.
+criteria and gates`.
 
 ### Patch sequencing
 
@@ -1214,17 +1214,17 @@ revert and route the work back to the owning workstream.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Facade re-export gap surfaces as tsc errors after M1 | medium | `src/init.ts` etc. depend on internals not re-exported by `src/protocol.ts` | `coder` (M1.WS1) | Add named re-exports as needed; the facade is allowed to grow surface area; the rule is "imports through facade", not "minimal facade" |
-| YAML schema extension breaks an existing YAML during WP-2.1.1 | high (walker red) | emitter test corpus passes but a real scene YAML fails | `coder` (M2.WS1) | Extend schema additively; keep old field names valid until M2.WS4-WS5; round-trip the existing six YAMLs as part of acceptance |
-| Bench/hood layout audit reveals TS-encoded runtime logic, not pure data | high | audit (WP-2.2.1) finds a helper that computes layout from runtime state | `planner` (M2.WS2) | Apply the YAML/TS rule from `Architecture boundaries and ownership`: static declarative facts only move to YAML; runtime helpers stay in `src/scenes/shared/`; document each decision in the audit |
-| `game_state.ts` carries scene-config dependencies that resist extraction | high | WP-2.3.1 finds a runtime invariant that requires layout data at game-state init | `coder` (M2.WS3) | If extraction would invert dependency direction (game_state depending on scenes), keep the runtime helper in `src/scenes/shared/` and import it from game_state; do not import `SCENE_CONFIGS` into game_state for runtime invariants |
-| Hood ladder cleanup misses a code path the walker does not exercise | medium | regression in a non-walker scene | `coder` (M3.WS1) | Run all 4 hood tutorials + full `cell_culture`; if uncovered surface emerges, add a fixture before continuing |
-| `legacy_tokens.ts` has a caller outside `src/` (e.g., test fixture) | medium | Grep at WP-3.4.1 returns a hit in `tests/` | `coder` (M3.WS4) | WP-3.4.1 stops, files a sub-WP for the discovered caller, then resumes |
-| Scope creep into `layout_engine.ts` | medium | Reviewer asks "while we're here, split layout_engine" | `architect` | Decline; ROADMAP entry survives; this plan stays focused |
-| Drift risk between plan and implementation | low-medium | mid-plan, milestone exit checks lag | `orchestrator` (if used) or `planner` | Per-milestone CHANGELOG entry covers the milestone's patches; M3.WS5 archives the plan with a final state diff |
-| Module-load side-effect regression (lesson from archived plan) | high | A migration patch leaves a top-level statement in a retired module | `coder` | Per archived plan: enumerate `registeredEmitters.add(...)`, `registerScene(...)`, `window.*` bindings before deleting any module; M3.WS3 keeps registration in parent adapter explicitly |
+| Risk                                                                     | Impact            | Trigger                                                                         | Owner                                 | Mitigation                                                                                                                                                                                                                            |
+| ------------------------------------------------------------------------ | ----------------- | ------------------------------------------------------------------------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Facade re-export gap surfaces as tsc errors after M1                     | medium            | `src/init.ts` etc. depend on internals not re-exported by `src/protocol.ts`     | `coder` (M1.WS1)                      | Add named re-exports as needed; the facade is allowed to grow surface area; the rule is "imports through facade", not "minimal facade"                                                                                                |
+| YAML schema extension breaks an existing YAML during WP-2.1.1            | high (walker red) | emitter test corpus passes but a real scene YAML fails                          | `coder` (M2.WS1)                      | Extend schema additively; keep old field names valid until M2.WS4-WS5; round-trip the existing six YAMLs as part of acceptance                                                                                                        |
+| Bench/hood layout audit reveals TS-encoded runtime logic, not pure data  | high              | audit (WP-2.2.1) finds a helper that computes layout from runtime state         | `planner` (M2.WS2)                    | Apply the YAML/TS rule from `Architecture boundaries and ownership`: static declarative facts only move to YAML; runtime helpers stay in `src/scenes/shared/`; document each decision in the audit                                    |
+| `game_state.ts` carries scene-config dependencies that resist extraction | high              | WP-2.3.1 finds a runtime invariant that requires layout data at game-state init | `coder` (M2.WS3)                      | If extraction would invert dependency direction (game_state depending on scenes), keep the runtime helper in `src/scenes/shared/` and import it from game_state; do not import `SCENE_CONFIGS` into game_state for runtime invariants |
+| Hood ladder cleanup misses a code path the walker does not exercise      | medium            | regression in a non-walker scene                                                | `coder` (M3.WS1)                      | Run all 4 hood tutorials + full `cell_culture`; if uncovered surface emerges, add a fixture before continuing                                                                                                                         |
+| `legacy_tokens.ts` has a caller outside `src/` (e.g., test fixture)      | medium            | Grep at WP-3.4.1 returns a hit in `tests/`                                      | `coder` (M3.WS4)                      | WP-3.4.1 stops, files a sub-WP for the discovered caller, then resumes                                                                                                                                                                |
+| Scope creep into `layout_engine.ts`                                      | medium            | Reviewer asks "while we're here, split layout_engine"                           | `architect`                           | Decline; ROADMAP entry survives; this plan stays focused                                                                                                                                                                              |
+| Drift risk between plan and implementation                               | low-medium        | mid-plan, milestone exit checks lag                                             | `orchestrator` (if used) or `planner` | Per-milestone CHANGELOG entry covers the milestone's patches; M3.WS5 archives the plan with a final state diff                                                                                                                        |
+| Module-load side-effect regression (lesson from archived plan)           | high              | A migration patch leaves a top-level statement in a retired module              | `coder`                               | Per archived plan: enumerate `registeredEmitters.add(...)`, `registerScene(...)`, `window.*` bindings before deleting any module; M3.WS3 keeps registration in parent adapter explicitly                                              |
 
 ## Rollout and release checklist
 
@@ -1242,7 +1242,7 @@ revert and route the work back to the owning workstream.
       per-scene mini-protocols green.
 - [ ] M3 done checks pass; CHANGELOG entry; walker green.
 - [ ] All release-gate Grep checks (`Acceptance criteria and
-      gates`) return zero.
+  gates`) return zero.
 - [ ] Docs freshness grep returns zero (excluding `docs/archive/`).
 - [ ] Cleanroom build:
       `bash dist_clean.sh && bash build_github_pages.sh` succeeds.
@@ -1293,27 +1293,27 @@ close on its own hard endpoint. Plan A patches do not depend on
 Plan B or C; Plan B patches assume Plan A is closed; Plan C
 patches assume Plan B is closed.
 
-| Patch | Plan | Component | Intent |
-| --- | --- | --- | --- |
-| A1 | A | tools, build scripts, conftest | Add `tools/bootstrap_generated.sh`; wire build scripts and pytest conftest |
-| A2 | A | tools, generated, src/protocol.ts, init/game_state/protocol_ui/step_dispatch | `git rm src/content/protocol_data.ts`; retarget emitter; add `src/protocol.ts` facade; redirect 4 importers |
-| A3 | A | tools, generated, src/inventory.ts, scene adapters | `git rm src/content/inventory_data.ts`; retarget emitter; add `src/inventory.ts` facade; redirect 3 scene importers. **Serializes after A2 (shared emitter file) or bundles with A2 into a single patch** |
-| A4 | A | tools, generated, src/scene_configs.ts | `git rm src/content/scene_data.ts`; retarget emitter; add `src/scene_configs.ts` facade. Independent of A2/A3 (different emitter file) |
-| A5 | A | tests | Add `test_authored_vs_generated.py`, `test_facade_imports.py`, and the facade smoke test |
-| A6 | A | docs, tsconfig, .gitignore | Architecture / file-structure doc updates; tsconfig include; clean stale gitignore; cleanroom gate |
-| B1 | B | docs/archive | Classify each scene (layout-engine / modal-dispatch / render-only-modal / dispatch-only-item) |
-| B2 | B | tools, generated, docs | Extend `SceneConfig` schema (only fields classification justifies); emitter and format doc |
-| B3 | B | tests | YAML validator pytest + corpora (cross-references for svgAsset, inventoryRef, zone) |
-| B4 | B | docs/archive | Layout duplication audit |
-| B5 | B | src/game_state.ts, src/scenes/shared | `game_state.ts` dependency audit and extraction |
-| B6-B9 | B | scenes (incubator / plate / plate_reader / microscope) | Small-scene YAML migration (one per scene; per-scene classification governs schema variant) |
-| B10 | B | scenes/bench, src/bench_config | Bench layout to YAML; retire `bench_config` |
-| B11 | B | scenes/cell_culture_hood, src/hood_config | Hood layout to YAML; retire `hood_config` |
-| C1 | C | scenes/cell_culture_hood | Fold hood compatibility-token ladder into completionPath dispatch |
-| C2 | C | scenes/bench | Bench responsibility split (render / dispatch / effects) |
-| C3 | C | scenes/microscope | Manual hemocytometer extraction |
-| C4 | C | scenes/shared | Delete `legacy_tokens.ts` |
-| C5 | C | docs | Close-out + archive + docs freshness grep |
+| Patch | Plan | Component                                                                    | Intent                                                                                                                                                                                                    |
+| ----- | ---- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A1    | A    | tools, build scripts, conftest                                               | Add `tools/bootstrap_generated.sh`; wire build scripts and pytest conftest                                                                                                                                |
+| A2    | A    | tools, generated, src/protocol.ts, init/game_state/protocol_ui/step_dispatch | `git rm src/content/protocol_data.ts`; retarget emitter; add `src/protocol.ts` facade; redirect 4 importers                                                                                               |
+| A3    | A    | tools, generated, src/inventory.ts, scene adapters                           | `git rm src/content/inventory_data.ts`; retarget emitter; add `src/inventory.ts` facade; redirect 3 scene importers. **Serializes after A2 (shared emitter file) or bundles with A2 into a single patch** |
+| A4    | A    | tools, generated, src/scene_configs.ts                                       | `git rm src/content/scene_data.ts`; retarget emitter; add `src/scene_configs.ts` facade. Independent of A2/A3 (different emitter file)                                                                    |
+| A5    | A    | tests                                                                        | Add `test_authored_vs_generated.py`, `test_facade_imports.py`, and the facade smoke test                                                                                                                  |
+| A6    | A    | docs, tsconfig, .gitignore                                                   | Architecture / file-structure doc updates; tsconfig include; clean stale gitignore; cleanroom gate                                                                                                        |
+| B1    | B    | docs/archive                                                                 | Classify each scene (layout-engine / modal-dispatch / render-only-modal / dispatch-only-item)                                                                                                             |
+| B2    | B    | tools, generated, docs                                                       | Extend `SceneConfig` schema (only fields classification justifies); emitter and format doc                                                                                                                |
+| B3    | B    | tests                                                                        | YAML validator pytest + corpora (cross-references for svgAsset, inventoryRef, zone)                                                                                                                       |
+| B4    | B    | docs/archive                                                                 | Layout duplication audit                                                                                                                                                                                  |
+| B5    | B    | src/game_state.ts, src/scenes/shared                                         | `game_state.ts` dependency audit and extraction                                                                                                                                                           |
+| B6-B9 | B    | scenes (incubator / plate / plate_reader / microscope)                       | Small-scene YAML migration (one per scene; per-scene classification governs schema variant)                                                                                                               |
+| B10   | B    | scenes/bench, src/bench_config                                               | Bench layout to YAML; retire `bench_config`                                                                                                                                                               |
+| B11   | B    | scenes/cell_culture_hood, src/hood_config                                    | Hood layout to YAML; retire `hood_config`                                                                                                                                                                 |
+| C1    | C    | scenes/cell_culture_hood                                                     | Fold hood compatibility-token ladder into completionPath dispatch                                                                                                                                         |
+| C2    | C    | scenes/bench                                                                 | Bench responsibility split (render / dispatch / effects)                                                                                                                                                  |
+| C3    | C    | scenes/microscope                                                            | Manual hemocytometer extraction                                                                                                                                                                           |
+| C4    | C    | scenes/shared                                                                | Delete `legacy_tokens.ts`                                                                                                                                                                                 |
+| C5    | C    | docs                                                                         | Close-out + archive + docs freshness grep                                                                                                                                                                 |
 
 Reporting format per
 `docs/REPO_STYLE.md`:

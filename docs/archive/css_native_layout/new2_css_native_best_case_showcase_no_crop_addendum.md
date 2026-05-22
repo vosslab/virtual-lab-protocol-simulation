@@ -81,6 +81,6 @@ promoted as a no-crop exemplar.
 ## Cross-references
 
 - `new2_css_native_best_case_showcase.md` (sibling, on disk but untracked)
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)
-- [../../experiments/css_native_layout/VISUAL_TARGETS.md](../../experiments/css_native_layout/VISUAL_TARGETS.md)
-- [../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md](../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md)
+- `new2_css_native_production_blocker_plan.md`
+- `VISUAL_TARGETS.md`
+- `DIAGNOSTICS_REFERENCE.md`

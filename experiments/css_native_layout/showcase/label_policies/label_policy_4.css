@@ -11,10 +11,10 @@ placement still carries data-object-name as a secondary affordance.
 */
 
 .placement-label {
-	display: inline-block;
-	max-width: 75px;
-	width: 75px;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
+  display: inline-block;
+  max-width: 75px;
+  width: 75px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

@@ -20,6 +20,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ## Inventory Status
 
 ### Items with full usage coverage
+
 - well_plate (12 steps)
 - dilution_tube_rack (7 steps)
 - flask (6 steps)
@@ -56,6 +57,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 1-5: Cell Splitting (Part 1: Split, Day 1)
 
 **Step 1: spray_hood**
+
 - Required: [ethanol_bottle]
 - Target: [ethanol_bottle]
 - Scene: hood
@@ -63,6 +65,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Handler coverage: ethanol_bottle click routes through allowedInteractions to spray_ethanol event
 
 **Step 2: aspirate_old_media**
+
 - Required: [flask, aspirating_pipette, waste_container]
 - Target: [flask, aspirating_pipette, waste_container]
 - Scene: hood
@@ -71,6 +74,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 2.1 (remove old media)
 
 **Step 3: pbs_wash**
+
 - Required: [flask, pbs_bottle, serological_pipette]
 - Target: [flask, pbs_bottle, serological_pipette]
 - Scene: hood
@@ -79,6 +83,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 2.2 (wash with PBS)
 
 **Step 4: add_trypsin**
+
 - Required: [flask, trypsin_bottle, serological_pipette]
 - Target: [flask, trypsin_bottle, serological_pipette]
 - Scene: hood
@@ -87,6 +92,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 2.3 (trypsin addition)
 
 **Step 5: neutralize_trypsin**
+
 - Required: [flask, media_bottle, serological_pipette]
 - Target: [flask, media_bottle, serological_pipette]
 - Scene: hood
@@ -97,6 +103,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 6-10: Cell Counting (Part 2: Count, Day 1)
 
 **Step 6: centrifuge**
+
 - Required: [centrifuge, conical_15ml_rack]
 - Target: [centrifuge, conical_15ml_rack]
 - Scene: bench
@@ -106,6 +113,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Proposed fix: Mark conical_15ml_rack as decoration with visualOnly: true (tubes are assumed ready on shelf-row). Then remove from targetItems, keep in requiredItems as implicit.
 
 **Step 7: resuspend**
+
 - Required: [flask, media_bottle, serological_pipette, waste_container]
 - Target: [flask, media_bottle, serological_pipette, waste_container]
 - Scene: hood
@@ -114,6 +122,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 3.2 (resuspend in media)
 
 **Step 8: count_cells**
+
 - Required: [cell_counter, dilution_tube_rack]
 - Target: [cell_counter]
 - Scene: bench
@@ -122,6 +131,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Modal routing: count_cells is modal-owned (microscope scene); this step correctly uses cell_counter on bench as the interactive path.
 
 **Step 9: seed_plate**
+
 - Required: [well_plate, serological_pipette, flask]
 - Target: [well_plate, serological_pipette, flask]
 - Scene: hood
@@ -130,6 +140,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 3.3 (seed 96-well plate)
 
 **Step 10: incubate_day1**
+
 - Required: [incubator, well_plate]
 - Target: [incubator, well_plate]
 - Scene: bench
@@ -141,6 +152,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 11-15: Drug Dilution (Part 4: Dilute, Day 2)
 
 **Step 11: carb_intermediate**
+
 - Required: [carboplatin_stock, sterile_water, dilution_tube_rack]
 - Target: [multichannel_pipette, drug_vials, well_plate]
 - Scene: hood
@@ -153,24 +165,28 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Fix: For consistency, remove multichannel_pipette, drug_vials, well_plate from targetItems. These are modal UI references, not scene targets.
 
 **Step 12: carb_low_range**
+
 - Required: [dilution_tube_rack, media_bottle]
 - Target: [dilution_tube_rack, media_bottle]
 - Scene: hood
 - Status: OK (modal-owned; targetItems match required)
 
 **Step 13: carb_high_range**
+
 - Required: [carboplatin_stock, dilution_tube_rack, media_bottle]
 - Target: [carboplatin_stock, dilution_tube_rack, media_bottle]
 - Scene: hood
 - Status: OK (modal-owned; targetItems match required)
 
 **Step 14: metformin_stock**
+
 - Required: [metformin_stock, sterile_water, dilution_tube_rack]
 - Target: [metformin_stock, sterile_water, dilution_tube_rack]
 - Scene: hood
 - Status: OK (modal-owned; targetItems match required)
 
 **Step 15: prewarm_media**
+
 - Required: [water_bath, media_bottle]
 - Target: [water_bath]
 - Scene: bench
@@ -181,6 +197,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 16-19: Drug Treatment (Part 5: Treat, Day 2)
 
 **Step 16: media_adjust**
+
 - Required: [well_plate, multichannel_pipette, media_bottle]
 - Target: [well_plate, multichannel_pipette, media_bottle]
 - Scene: hood
@@ -189,6 +206,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 5.2 (add media adjustment)
 
 **Step 17: add_carboplatin**
+
 - Required: [well_plate, multichannel_pipette, dilution_tube_rack]
 - Target: [multichannel_pipette, drug_vials, well_plate]
 - Scene: hood
@@ -197,12 +215,14 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Fix: Remove drug_vials from targetItems (modal UI reference, not scene click target).
 
 **Step 18: add_metformin**
+
 - Required: [well_plate, multichannel_pipette, dilution_tube_rack]
 - Target: [well_plate, multichannel_pipette, dilution_tube_rack]
 - Scene: hood
 - Status: OK (modal-owned; targetItems match required)
 
 **Step 19: incubate_48h**
+
 - Required: [incubator, well_plate]
 - Target: [incubator, well_plate]
 - Scene: bench
@@ -212,6 +232,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 20-23: MTT Readout (Part 6: MTT, Day 4)
 
 **Step 20: add_mtt**
+
 - Required: [well_plate, multichannel_pipette, mtt_vial]
 - Target: [well_plate, multichannel_pipette, mtt_vial]
 - Scene: hood
@@ -220,6 +241,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 6.1 (add MTT)
 
 **Step 21: incubate_mtt**
+
 - Required: [incubator, well_plate]
 - Target: [incubator, well_plate]
 - Scene: bench
@@ -227,6 +249,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Status: ISSUE - scene mismatch, same reason. No fix needed.
 
 **Step 22: decant_mtt**
+
 - Required: [well_plate, biohazard_decant]
 - Target: [well_plate, biohazard_decant]
 - Scene: hood
@@ -235,6 +258,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Protocol reference: OVCAR8 section 6.3 (decant MTT)
 
 **Step 23: add_dmso**
+
 - Required: [well_plate, multichannel_pipette, dmso_bottle]
 - Target: [well_plate, multichannel_pipette, dmso_bottle]
 - Scene: hood
@@ -245,6 +269,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Steps 24-25: Plate Reading (Part 7: Read, Day 4)
 
 **Step 24: plate_read**
+
 - Required: [well_plate]
 - Target: [well_plate]
 - Scene: plate_reader
@@ -252,6 +277,7 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 - Status: ISSUE - scene mismatch, same reason. well_plate is accessible from plate_reader modal scene. No fix needed; correct by design.
 
 **Step 25: results**
+
 - Required: [well_plate]
 - Target: [well_plate]
 - Scene: plate_reader
@@ -265,18 +291,21 @@ to ensure the highlighted items match click handlers and every piece of equipmen
 ### Category 1: Modal-Owned Steps with UI Reference Targets (non-critical)
 
 Steps 11, 17 have targetItems that are modal UI references, not scene click targets:
+
 - carb_intermediate targets multichannel_pipette, drug_vials, well_plate (not clicked on hood)
 - add_carboplatin targets drug_vials (not clicked on hood)
 
 **Fix:** Remove non-required targetItems from modal-owned steps to align with the rule "every targetItem is a requiredItem or virtual_target".
 
 **Affected steps:**
+
 1. carb_intermediate: Remove multichannel_pipette, drug_vials, well_plate from targetItems
 2. add_carboplatin: Remove drug_vials from targetItems
 
 ### Category 2: Scene Mismatch for Multi-Scene Items (acceptable by design)
 
 Steps 10, 19, 21, 24, 25 list well_plate as target but well_plate has scene: hood. This is by design: well_plate appears in steps across hood, bench, incubator, and plate_reader scenes, but its scene declaration is hood (origin scene). This is acceptable because:
+
 - well_plate is a persistent item that moves between scenes
 - The interaction_resolver can highlight it regardless of step scene
 - Layout engine renders it on the appropriate scene dynamically
@@ -296,6 +325,7 @@ The plan requires: "count_cells reachable both from bench microscope and cell_co
 Current state: Step 8 (count_cells) targets only cell_counter. Microscope is unused and should serve as an alternate path.
 
 **Fix:**
+
 1. Add microscope to targetItems of count_cells
 2. Add microscope to requiredItems of count_cells
 3. Wire microscope as an alternate interaction target for count_cells in interaction_resolver OR mark as scene: bench for layout visibility
@@ -313,67 +343,71 @@ Vortex (role: instrument, scene: bench) is never used.
 ### 1. Fix items.yaml: conical_15ml_rack, vortex, microscope
 
 ```yaml
-  conical_15ml_rack:
-    label: "15 mL Tubes"
-    role: decoration
-    asset: conical_15ml_rack
-    scene: hood
-    visualOnly: true         # <-- ADD: tubes are shelf-ready, not clicked
+conical_15ml_rack:
+  label: "15 mL Tubes"
+  role: decoration
+  asset: conical_15ml_rack
+  scene: hood
+  visualOnly: true # <-- ADD: tubes are shelf-ready, not clicked
 
-  vortex:
-    label: "Vortex"
-    role: instrument
-    asset: vortex
-    scene: bench
-    visualOnly: true         # <-- ADD: bench decoration, not used in protocol
+vortex:
+  label: "Vortex"
+  role: instrument
+  asset: vortex
+  scene: bench
+  visualOnly: true # <-- ADD: bench decoration, not used in protocol
 
-  microscope:
-    label: "Microscope"
-    role: instrument
-    asset: microscope
-    scene: bench
-    # Keep scene: bench, drop visualOnly (count_cells will target it)
+microscope:
+  label: "Microscope"
+  role: instrument
+  asset: microscope
+  scene: bench
+  # Keep scene: bench, drop visualOnly (count_cells will target it)
 ```
 
 ### 2. Fix protocol.yaml steps
 
 **Step 6 (centrifuge):**
+
 ```yaml
-  - id: centrifuge
-    # ... other fields ...
-    requiredItems: [centrifuge, conical_15ml_rack]  # KEEP (implicit prep)
-    targetItems: [centrifuge]                       # CHANGE: remove conical_15ml_rack
+- id: centrifuge
+  # ... other fields ...
+  requiredItems: [centrifuge, conical_15ml_rack] # KEEP (implicit prep)
+  targetItems: [centrifuge] # CHANGE: remove conical_15ml_rack
 ```
 
 **Step 8 (count_cells):**
+
 ```yaml
-  - id: count_cells
-    # ... other fields ...
-    requiredItems: [cell_counter, dilution_tube_rack, microscope]  # CHANGE: add microscope
-    targetItems: [cell_counter, microscope]                        # CHANGE: add microscope
-    # Scene: bench (both cell_counter and microscope are bench items)
+- id: count_cells
+  # ... other fields ...
+  requiredItems: [cell_counter, dilution_tube_rack, microscope] # CHANGE: add microscope
+  targetItems: [cell_counter, microscope] # CHANGE: add microscope
+  # Scene: bench (both cell_counter and microscope are bench items)
 ```
 
 **Step 11 (carb_intermediate):**
+
 ```yaml
-  - id: carb_intermediate
-    # ... other fields ...
-    requiredItems: [carboplatin_stock, sterile_water, dilution_tube_rack]
-    targetItems: [sterile_water, dilution_tube_rack]  # CHANGE: remove multichannel_pipette, drug_vials, well_plate
-    modal:
-      owner: drug_treatment
-      screen: carb_intermediate
+- id: carb_intermediate
+  # ... other fields ...
+  requiredItems: [carboplatin_stock, sterile_water, dilution_tube_rack]
+  targetItems: [sterile_water, dilution_tube_rack] # CHANGE: remove multichannel_pipette, drug_vials, well_plate
+  modal:
+    owner: drug_treatment
+    screen: carb_intermediate
 ```
 
 **Step 17 (add_carboplatin):**
+
 ```yaml
-  - id: add_carboplatin
-    # ... other fields ...
-    requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
-    targetItems: [well_plate, multichannel_pipette, dilution_tube_rack]  # CHANGE: remove drug_vials
-    modal:
-      owner: drug_treatment
-      screen: add_carboplatin
+- id: add_carboplatin
+  # ... other fields ...
+  requiredItems: [well_plate, multichannel_pipette, dilution_tube_rack]
+  targetItems: [well_plate, multichannel_pipette, dilution_tube_rack] # CHANGE: remove drug_vials
+  modal:
+    owner: drug_treatment
+    screen: add_carboplatin
 ```
 
 ---
@@ -381,6 +415,7 @@ Vortex (role: instrument, scene: bench) is never used.
 ## Test Coverage
 
 The new `devel/test_step_completeness.mjs` test enforces:
+
 1. Every targetItem is in requiredItems OR has role: virtual_target
 2. Every targetItem in a scene:hood step is scene:hood in items (or multi-scene exception like well_plate)
 3. Every step is reachable via nextId chain (no orphans)
@@ -393,6 +428,7 @@ Expected result after fixes: 25/25 steps pass completeness audit.
 ## Build and Verification
 
 After applying YAML edits:
+
 ```bash
 bash build_game.sh
 node devel/test_step_completeness.mjs  # Should pass all 25 steps
@@ -400,4 +436,3 @@ bash walkthrough.sh                     # Should still be 25/25
 ```
 
 Expected: All tests pass, walkthrough continues to show 25/25 screenshots and real-click coverage.
-

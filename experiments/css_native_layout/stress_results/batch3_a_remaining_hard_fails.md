@@ -9,9 +9,9 @@ Use "workstream" not "lane".
 - stress_scenes/generated/stress_many_bottles_scene_001.yaml
 - stress_scenes/generated/stress_many_bottles_scene_002.yaml
 - stress_results/precheck_batch2_n_canonical/visual_audit.md
-- stress_results/scorecard_batch2_n_canonical/stress_many_bottles_scene_001.json + _002.json
+- stress_results/scorecard_batch2_n_canonical/stress_many_bottles_scene_001.json + \_002.json
 - stress_generators/generate_stress_scenes.py
-- stress_scenes/rendered/stress_many_bottles_scene_001.html + _002.html
+- stress_scenes/rendered/stress_many_bottles_scene_001.html + \_002.html
 - regions/bench.yaml
 - styles/bench.css
 - stress_results/batch2_e_failure_recluster.md

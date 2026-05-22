@@ -1,60 +1,93 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Hood Basic - NEW0 Direction C (Instrument-First)</title>
-	<link rel="stylesheet" href="../../styles/dir_c_hood.css">
-</head>
-<body>
-	<!-- Direction C: narrow left column (structural, empty for hood); right panel for hood work -->
-	<div class="scene-container scene--hood" data-scene-mode="template">
-		<!-- Left column: empty in hood scene -->
-		<div class="region region--instrument_station" data-region="instrument_station">
-			<span class="region-label">Instruments</span>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hood Basic - NEW0 Direction C (Instrument-First)</title>
+    <link rel="stylesheet" href="../../styles/dir_c_hood.css" />
+  </head>
+  <body>
+    <!-- Direction C: narrow left column (structural, empty for hood); right panel for hood work -->
+    <div class="scene-container scene--hood" data-scene-mode="template">
+      <!-- Left column: empty in hood scene -->
+      <div
+        class="region region--instrument_station"
+        data-region="instrument_station"
+      >
+        <span class="region-label">Instruments</span>
+      </div>
 
-		<!-- Top-right: reagent bottles -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Rear Shelf</span>
+      <!-- Top-right: reagent bottles -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Rear Shelf</span>
 
-			<div class="placement" data-placement="rear_left_ethanol_bottle" data-placement-name="rear_left_ethanol_bottle" data-object-name="ethanol_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../../assets/equipment/bottle.svg" alt="Ethanol Bottle">
-				</div>
-				<span class="placement-label">Ethanol</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_left_ethanol_bottle"
+          data-placement-name="rear_left_ethanol_bottle"
+          data-object-name="ethanol_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../../assets/equipment/bottle.svg"
+              alt="Ethanol Bottle"
+            />
+          </div>
+          <span class="placement-label">Ethanol</span>
+        </div>
 
-			<div class="placement" data-placement="rear_center_ddh2o_spray" data-placement-name="rear_center_ddh2o_spray" data-object-name="ddh2o_spray_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../../assets/equipment/ethanol_spray.svg" alt="ddH2O Spray">
-				</div>
-				<span class="placement-label">ddH2O Spray</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="rear_center_ddh2o_spray"
+          data-placement-name="rear_center_ddh2o_spray"
+          data-object-name="ddh2o_spray_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../../assets/equipment/ethanol_spray.svg"
+              alt="ddH2O Spray"
+            />
+          </div>
+          <span class="placement-label">ddH2O Spray</span>
+        </div>
+      </div>
 
-		<!-- Center-right: primary hood object -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Center-right: primary hood object -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="center_p1000_pipette" data-placement-name="center_p1000_pipette" data-object-name="p1000_pipette" data-primary="true">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../../assets/equipment/aspirating_pipette.svg" alt="P1000 Pipette">
-				</div>
-				<span class="placement-label">P1000</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="center_p1000_pipette"
+          data-placement-name="center_p1000_pipette"
+          data-object-name="p1000_pipette"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--small-tool">
+            <img
+              src="../../../../assets/equipment/aspirating_pipette.svg"
+              alt="P1000 Pipette"
+            />
+          </div>
+          <span class="placement-label">P1000</span>
+        </div>
+      </div>
 
-		<!-- Bottom-right: tools (empty) -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Front Tools</span>
-		</div>
+      <!-- Bottom-right: tools (empty) -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Front Tools</span>
+      </div>
 
-		<!-- Popup layer: unused -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
-	<script>
-		window.sceneData = { sceneName: 'hood_basic', direction: 'C', workspace: 'hood', totalPlacements: 3 };
-	</script>
-</body>
+      <!-- Popup layer: unused -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
+    <script>
+      window.sceneData = {
+        sceneName: "hood_basic",
+        direction: "C",
+        workspace: "hood",
+        totalPlacements: 3,
+      };
+    </script>
+  </body>
 </html>

@@ -1,194 +1,538 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Concept: Selected Well Highlight</title>
-<style>
-	body { margin: 0; font-family: -apple-system, "Helvetica Neue", Arial, sans-serif; background: #0f172a; color: #e2e8f0; }
-	.banner {
-		background: #b91c1c; color: #fff; padding: 10px 24px; font-weight: 700;
-		letter-spacing: 0.04em; text-align: center; border-bottom: 3px solid #7f1d1d;
-	}
-	h1 { margin: 24px 24px 4px; font-size: 22px; color: #f8fafc; }
-	.subtitle { margin: 0 24px 16px; color: #94a3b8; font-size: 14px; }
-	.layout {
-		display: grid; grid-template-columns: 1fr 320px; gap: 24px;
-		padding: 0 24px 16px;
-	}
-	.stage {
-		background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-		padding: 24px; display: flex; align-items: center; justify-content: center;
-	}
-	.stage svg { width: 100%; max-height: 820px; }
-	.panel {
-		background: #1e293b; border: 1px solid #334155; border-radius: 8px;
-		padding: 16px; font-size: 13px; line-height: 1.5;
-	}
-	.panel h3 { margin: 0 0 8px; font-size: 14px; color: #f8fafc; text-transform: uppercase; letter-spacing: 0.05em; }
-	.legend-row { display: flex; align-items: center; gap: 8px; margin: 6px 0; }
-	.swatch { width: 18px; height: 18px; border-radius: 3px; flex-shrink: 0; border: 1px solid #475569; }
-	.state-list { margin-top: 12px; padding-top: 12px; border-top: 1px solid #334155; }
-	.state-list code { background: #0f172a; padding: 1px 6px; border-radius: 3px; font-size: 11px; color: #facc15; }
-	.explainer {
-		margin: 16px 24px 32px; padding: 16px; background: #1e293b;
-		border-left: 4px solid #6366f1; border-radius: 4px; font-size: 13px; line-height: 1.5; color: #cbd5e1;
-	}
-	.explainer strong { color: #c7d2fe; }
-</style>
-</head>
-<body>
-<div class="banner">CONCEPT DEMO -- NOT PRODUCTION, NOT WIRED TO RUNTIME</div>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Concept: Selected Well Highlight</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: -apple-system, "Helvetica Neue", Arial, sans-serif;
+        background: #0f172a;
+        color: #e2e8f0;
+      }
+      .banner {
+        background: #b91c1c;
+        color: #fff;
+        padding: 10px 24px;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-align: center;
+        border-bottom: 3px solid #7f1d1d;
+      }
+      h1 {
+        margin: 24px 24px 4px;
+        font-size: 22px;
+        color: #f8fafc;
+      }
+      .subtitle {
+        margin: 0 24px 16px;
+        color: #94a3b8;
+        font-size: 14px;
+      }
+      .layout {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 24px;
+        padding: 0 24px 16px;
+      }
+      .stage {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .stage svg {
+        width: 100%;
+        max-height: 820px;
+      }
+      .panel {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 16px;
+        font-size: 13px;
+        line-height: 1.5;
+      }
+      .panel h3 {
+        margin: 0 0 8px;
+        font-size: 14px;
+        color: #f8fafc;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .legend-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0;
+      }
+      .swatch {
+        width: 18px;
+        height: 18px;
+        border-radius: 3px;
+        flex-shrink: 0;
+        border: 1px solid #475569;
+      }
+      .state-list {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #334155;
+      }
+      .state-list code {
+        background: #0f172a;
+        padding: 1px 6px;
+        border-radius: 3px;
+        font-size: 11px;
+        color: #facc15;
+      }
+      .explainer {
+        margin: 16px 24px 32px;
+        padding: 16px;
+        background: #1e293b;
+        border-left: 4px solid #6366f1;
+        border-radius: 4px;
+        font-size: 13px;
+        line-height: 1.5;
+        color: #cbd5e1;
+      }
+      .explainer strong {
+        color: #c7d2fe;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="banner">
+      CONCEPT DEMO -- NOT PRODUCTION, NOT WIRED TO RUNTIME
+    </div>
 
-<h1>Concept: Selected Well Highlight States</h1>
-<p class="subtitle">96-well plate with five distinct well visual states demonstrated simultaneously.</p>
+    <h1>Concept: Selected Well Highlight States</h1>
+    <p class="subtitle">
+      96-well plate with five distinct well visual states demonstrated
+      simultaneously.
+    </p>
 
-<div class="layout">
-	<div class="stage">
-		<svg viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg">
-			<!-- plate body -->
-			<rect x="20" y="20" width="680" height="440" fill="#f8fafc" stroke="#475569" stroke-width="2" rx="8"/>
-			<rect x="20" y="20" width="680" height="32" fill="#cbd5e1" stroke="#475569" stroke-width="2" rx="8"/>
-			<text x="40" y="42" font-size="14" font-weight="600" fill="#1f2937">96-well plate</text>
+    <div class="layout">
+      <div class="stage">
+        <svg viewBox="0 0 720 480" xmlns="http://www.w3.org/2000/svg">
+          <!-- plate body -->
+          <rect
+            x="20"
+            y="20"
+            width="680"
+            height="440"
+            fill="#f8fafc"
+            stroke="#475569"
+            stroke-width="2"
+            rx="8"
+          />
+          <rect
+            x="20"
+            y="20"
+            width="680"
+            height="32"
+            fill="#cbd5e1"
+            stroke="#475569"
+            stroke-width="2"
+            rx="8"
+          />
+          <text x="40" y="42" font-size="14" font-weight="600" fill="#1f2937">
+            96-well plate
+          </text>
 
-			<!-- column labels -->
-			<g font-size="11" fill="#475569" text-anchor="middle">
-				<text x="80" y="74">1</text><text x="130" y="74">2</text><text x="180" y="74">3</text>
-				<text x="230" y="74">4</text><text x="280" y="74">5</text><text x="330" y="74">6</text>
-				<text x="380" y="74">7</text><text x="430" y="74">8</text><text x="480" y="74">9</text>
-				<text x="530" y="74">10</text><text x="580" y="74">11</text><text x="630" y="74">12</text>
-			</g>
-			<!-- row labels -->
-			<g font-size="11" fill="#475569" text-anchor="middle">
-				<text x="55" y="98">A</text><text x="55" y="130">B</text><text x="55" y="162">C</text>
-				<text x="55" y="194">D</text><text x="55" y="226">E</text><text x="55" y="258">F</text>
-				<text x="55" y="290">G</text><text x="55" y="322">H</text>
-			</g>
+          <!-- column labels -->
+          <g font-size="11" fill="#475569" text-anchor="middle">
+            <text x="80" y="74">1</text>
+            <text x="130" y="74">2</text>
+            <text x="180" y="74">3</text>
+            <text x="230" y="74">4</text>
+            <text x="280" y="74">5</text>
+            <text x="330" y="74">6</text>
+            <text x="380" y="74">7</text>
+            <text x="430" y="74">8</text>
+            <text x="480" y="74">9</text>
+            <text x="530" y="74">10</text>
+            <text x="580" y="74">11</text>
+            <text x="630" y="74">12</text>
+          </g>
+          <!-- row labels -->
+          <g font-size="11" fill="#475569" text-anchor="middle">
+            <text x="55" y="98">A</text>
+            <text x="55" y="130">B</text>
+            <text x="55" y="162">C</text>
+            <text x="55" y="194">D</text>
+            <text x="55" y="226">E</text>
+            <text x="55" y="258">F</text>
+            <text x="55" y="290">G</text>
+            <text x="55" y="322">H</text>
+          </g>
 
-			<!-- wells, default empty grey -->
-			<g id="wells">
-				<!-- script-style generation would be ideal, but we inline -->
-			</g>
-			<!-- Generate 8x12 grid manually -->
-			<g fill="#e2e8f0" stroke="#94a3b8" stroke-width="1">
-				<!-- Row A -->
-				<circle cx="80" cy="94" r="14"/><circle cx="130" cy="94" r="14"/><circle cx="180" cy="94" r="14"/>
-				<circle cx="230" cy="94" r="14"/><circle cx="280" cy="94" r="14"/><circle cx="330" cy="94" r="14"/>
-				<circle cx="380" cy="94" r="14"/><circle cx="430" cy="94" r="14"/><circle cx="480" cy="94" r="14"/>
-				<circle cx="530" cy="94" r="14"/><circle cx="580" cy="94" r="14"/><circle cx="630" cy="94" r="14"/>
-				<!-- Row B -->
-				<circle cx="80" cy="126" r="14"/><circle cx="130" cy="126" r="14"/><circle cx="180" cy="126" r="14"/>
-				<circle cx="230" cy="126" r="14"/><circle cx="280" cy="126" r="14"/><circle cx="330" cy="126" r="14"/>
-				<circle cx="380" cy="126" r="14"/><circle cx="430" cy="126" r="14"/><circle cx="480" cy="126" r="14"/>
-				<circle cx="530" cy="126" r="14"/><circle cx="580" cy="126" r="14"/><circle cx="630" cy="126" r="14"/>
-				<!-- Row C-H abbreviated -->
-				<circle cx="80" cy="158" r="14"/><circle cx="130" cy="158" r="14"/><circle cx="180" cy="158" r="14"/>
-				<circle cx="230" cy="158" r="14"/><circle cx="280" cy="158" r="14"/><circle cx="330" cy="158" r="14"/>
-				<circle cx="380" cy="158" r="14"/><circle cx="430" cy="158" r="14"/><circle cx="480" cy="158" r="14"/>
-				<circle cx="530" cy="158" r="14"/><circle cx="580" cy="158" r="14"/><circle cx="630" cy="158" r="14"/>
-				<circle cx="80" cy="190" r="14"/><circle cx="130" cy="190" r="14"/><circle cx="180" cy="190" r="14"/>
-				<circle cx="230" cy="190" r="14"/><circle cx="280" cy="190" r="14"/><circle cx="330" cy="190" r="14"/>
-				<circle cx="380" cy="190" r="14"/><circle cx="430" cy="190" r="14"/><circle cx="480" cy="190" r="14"/>
-				<circle cx="530" cy="190" r="14"/><circle cx="580" cy="190" r="14"/><circle cx="630" cy="190" r="14"/>
-				<circle cx="80" cy="222" r="14"/><circle cx="130" cy="222" r="14"/><circle cx="180" cy="222" r="14"/>
-				<circle cx="230" cy="222" r="14"/><circle cx="280" cy="222" r="14"/><circle cx="330" cy="222" r="14"/>
-				<circle cx="380" cy="222" r="14"/><circle cx="430" cy="222" r="14"/><circle cx="480" cy="222" r="14"/>
-				<circle cx="530" cy="222" r="14"/><circle cx="580" cy="222" r="14"/><circle cx="630" cy="222" r="14"/>
-				<circle cx="80" cy="254" r="14"/><circle cx="130" cy="254" r="14"/><circle cx="180" cy="254" r="14"/>
-				<circle cx="230" cy="254" r="14"/><circle cx="280" cy="254" r="14"/><circle cx="330" cy="254" r="14"/>
-				<circle cx="380" cy="254" r="14"/><circle cx="430" cy="254" r="14"/><circle cx="480" cy="254" r="14"/>
-				<circle cx="530" cy="254" r="14"/><circle cx="580" cy="254" r="14"/><circle cx="630" cy="254" r="14"/>
-				<circle cx="80" cy="286" r="14"/><circle cx="130" cy="286" r="14"/><circle cx="180" cy="286" r="14"/>
-				<circle cx="230" cy="286" r="14"/><circle cx="280" cy="286" r="14"/><circle cx="330" cy="286" r="14"/>
-				<circle cx="380" cy="286" r="14"/><circle cx="430" cy="286" r="14"/><circle cx="480" cy="286" r="14"/>
-				<circle cx="530" cy="286" r="14"/><circle cx="580" cy="286" r="14"/><circle cx="630" cy="286" r="14"/>
-				<circle cx="80" cy="318" r="14"/><circle cx="130" cy="318" r="14"/><circle cx="180" cy="318" r="14"/>
-				<circle cx="230" cy="318" r="14"/><circle cx="280" cy="318" r="14"/><circle cx="330" cy="318" r="14"/>
-				<circle cx="380" cy="318" r="14"/><circle cx="430" cy="318" r="14"/><circle cx="480" cy="318" r="14"/>
-				<circle cx="530" cy="318" r="14"/><circle cx="580" cy="318" r="14"/><circle cx="630" cy="318" r="14"/>
-			</g>
+          <!-- wells, default empty grey -->
+          <g id="wells">
+            <!-- script-style generation would be ideal, but we inline -->
+          </g>
+          <!-- Generate 8x12 grid manually -->
+          <g fill="#e2e8f0" stroke="#94a3b8" stroke-width="1">
+            <!-- Row A -->
+            <circle cx="80" cy="94" r="14" />
+            <circle cx="130" cy="94" r="14" />
+            <circle cx="180" cy="94" r="14" />
+            <circle cx="230" cy="94" r="14" />
+            <circle cx="280" cy="94" r="14" />
+            <circle cx="330" cy="94" r="14" />
+            <circle cx="380" cy="94" r="14" />
+            <circle cx="430" cy="94" r="14" />
+            <circle cx="480" cy="94" r="14" />
+            <circle cx="530" cy="94" r="14" />
+            <circle cx="580" cy="94" r="14" />
+            <circle cx="630" cy="94" r="14" />
+            <!-- Row B -->
+            <circle cx="80" cy="126" r="14" />
+            <circle cx="130" cy="126" r="14" />
+            <circle cx="180" cy="126" r="14" />
+            <circle cx="230" cy="126" r="14" />
+            <circle cx="280" cy="126" r="14" />
+            <circle cx="330" cy="126" r="14" />
+            <circle cx="380" cy="126" r="14" />
+            <circle cx="430" cy="126" r="14" />
+            <circle cx="480" cy="126" r="14" />
+            <circle cx="530" cy="126" r="14" />
+            <circle cx="580" cy="126" r="14" />
+            <circle cx="630" cy="126" r="14" />
+            <!-- Row C-H abbreviated -->
+            <circle cx="80" cy="158" r="14" />
+            <circle cx="130" cy="158" r="14" />
+            <circle cx="180" cy="158" r="14" />
+            <circle cx="230" cy="158" r="14" />
+            <circle cx="280" cy="158" r="14" />
+            <circle cx="330" cy="158" r="14" />
+            <circle cx="380" cy="158" r="14" />
+            <circle cx="430" cy="158" r="14" />
+            <circle cx="480" cy="158" r="14" />
+            <circle cx="530" cy="158" r="14" />
+            <circle cx="580" cy="158" r="14" />
+            <circle cx="630" cy="158" r="14" />
+            <circle cx="80" cy="190" r="14" />
+            <circle cx="130" cy="190" r="14" />
+            <circle cx="180" cy="190" r="14" />
+            <circle cx="230" cy="190" r="14" />
+            <circle cx="280" cy="190" r="14" />
+            <circle cx="330" cy="190" r="14" />
+            <circle cx="380" cy="190" r="14" />
+            <circle cx="430" cy="190" r="14" />
+            <circle cx="480" cy="190" r="14" />
+            <circle cx="530" cy="190" r="14" />
+            <circle cx="580" cy="190" r="14" />
+            <circle cx="630" cy="190" r="14" />
+            <circle cx="80" cy="222" r="14" />
+            <circle cx="130" cy="222" r="14" />
+            <circle cx="180" cy="222" r="14" />
+            <circle cx="230" cy="222" r="14" />
+            <circle cx="280" cy="222" r="14" />
+            <circle cx="330" cy="222" r="14" />
+            <circle cx="380" cy="222" r="14" />
+            <circle cx="430" cy="222" r="14" />
+            <circle cx="480" cy="222" r="14" />
+            <circle cx="530" cy="222" r="14" />
+            <circle cx="580" cy="222" r="14" />
+            <circle cx="630" cy="222" r="14" />
+            <circle cx="80" cy="254" r="14" />
+            <circle cx="130" cy="254" r="14" />
+            <circle cx="180" cy="254" r="14" />
+            <circle cx="230" cy="254" r="14" />
+            <circle cx="280" cy="254" r="14" />
+            <circle cx="330" cy="254" r="14" />
+            <circle cx="380" cy="254" r="14" />
+            <circle cx="430" cy="254" r="14" />
+            <circle cx="480" cy="254" r="14" />
+            <circle cx="530" cy="254" r="14" />
+            <circle cx="580" cy="254" r="14" />
+            <circle cx="630" cy="254" r="14" />
+            <circle cx="80" cy="286" r="14" />
+            <circle cx="130" cy="286" r="14" />
+            <circle cx="180" cy="286" r="14" />
+            <circle cx="230" cy="286" r="14" />
+            <circle cx="280" cy="286" r="14" />
+            <circle cx="330" cy="286" r="14" />
+            <circle cx="380" cy="286" r="14" />
+            <circle cx="430" cy="286" r="14" />
+            <circle cx="480" cy="286" r="14" />
+            <circle cx="530" cy="286" r="14" />
+            <circle cx="580" cy="286" r="14" />
+            <circle cx="630" cy="286" r="14" />
+            <circle cx="80" cy="318" r="14" />
+            <circle cx="130" cy="318" r="14" />
+            <circle cx="180" cy="318" r="14" />
+            <circle cx="230" cy="318" r="14" />
+            <circle cx="280" cy="318" r="14" />
+            <circle cx="330" cy="318" r="14" />
+            <circle cx="380" cy="318" r="14" />
+            <circle cx="430" cy="318" r="14" />
+            <circle cx="480" cy="318" r="14" />
+            <circle cx="530" cy="318" r="14" />
+            <circle cx="580" cy="318" r="14" />
+            <circle cx="630" cy="318" r="14" />
+          </g>
 
-			<!-- State overrides on top -->
-			<!-- Filled wells (blue, dispensed) - B3, B4, B5 -->
-			<g>
-				<circle cx="180" cy="126" r="13" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5"/>
-				<circle cx="230" cy="126" r="13" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5"/>
-				<circle cx="280" cy="126" r="13" fill="#3b82f6" stroke="#1d4ed8" stroke-width="1.5"/>
-			</g>
-			<!-- Selected (amber ring) A1 -->
-			<g>
-				<circle cx="80" cy="94" r="13" fill="#fef3c7" stroke="#f59e0b" stroke-width="3"/>
-				<circle cx="80" cy="94" r="20" fill="none" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,2"/>
-			</g>
-			<!-- Hovered (cyan dashed) C7 -->
-			<g>
-				<circle cx="380" cy="158" r="14" fill="none" stroke="#06b6d4" stroke-width="2" stroke-dasharray="2,2"/>
-			</g>
-			<!-- Target (next-action, green pulse) D4 -->
-			<g>
-				<circle cx="230" cy="190" r="14" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
-				<circle cx="230" cy="190" r="22" fill="none" stroke="#16a34a" stroke-width="1" opacity="0.6"/>
-				<circle cx="230" cy="190" r="28" fill="none" stroke="#16a34a" stroke-width="0.6" opacity="0.3"/>
-			</g>
-			<!-- Locked (gray X) F8 -->
-			<g>
-				<circle cx="430" cy="254" r="13" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
-				<path d="M 422,246 L 438,262 M 438,246 L 422,262" stroke="#475569" stroke-width="2"/>
-			</g>
-			<!-- Error (red border) G6 -->
-			<g>
-				<circle cx="330" cy="286" r="13" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>
-			</g>
+          <!-- State overrides on top -->
+          <!-- Filled wells (blue, dispensed) - B3, B4, B5 -->
+          <g>
+            <circle
+              cx="180"
+              cy="126"
+              r="13"
+              fill="#3b82f6"
+              stroke="#1d4ed8"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="230"
+              cy="126"
+              r="13"
+              fill="#3b82f6"
+              stroke="#1d4ed8"
+              stroke-width="1.5"
+            />
+            <circle
+              cx="280"
+              cy="126"
+              r="13"
+              fill="#3b82f6"
+              stroke="#1d4ed8"
+              stroke-width="1.5"
+            />
+          </g>
+          <!-- Selected (amber ring) A1 -->
+          <g>
+            <circle
+              cx="80"
+              cy="94"
+              r="13"
+              fill="#fef3c7"
+              stroke="#f59e0b"
+              stroke-width="3"
+            />
+            <circle
+              cx="80"
+              cy="94"
+              r="20"
+              fill="none"
+              stroke="#f59e0b"
+              stroke-width="1.5"
+              stroke-dasharray="3,2"
+            />
+          </g>
+          <!-- Hovered (cyan dashed) C7 -->
+          <g>
+            <circle
+              cx="380"
+              cy="158"
+              r="14"
+              fill="none"
+              stroke="#06b6d4"
+              stroke-width="2"
+              stroke-dasharray="2,2"
+            />
+          </g>
+          <!-- Target (next-action, green pulse) D4 -->
+          <g>
+            <circle
+              cx="230"
+              cy="190"
+              r="14"
+              fill="#dcfce7"
+              stroke="#16a34a"
+              stroke-width="2"
+            />
+            <circle
+              cx="230"
+              cy="190"
+              r="22"
+              fill="none"
+              stroke="#16a34a"
+              stroke-width="1"
+              opacity="0.6"
+            />
+            <circle
+              cx="230"
+              cy="190"
+              r="28"
+              fill="none"
+              stroke="#16a34a"
+              stroke-width="0.6"
+              opacity="0.3"
+            />
+          </g>
+          <!-- Locked (gray X) F8 -->
+          <g>
+            <circle
+              cx="430"
+              cy="254"
+              r="13"
+              fill="#cbd5e1"
+              stroke="#64748b"
+              stroke-width="1.5"
+            />
+            <path
+              d="M 422,246 L 438,262 M 438,246 L 422,262"
+              stroke="#475569"
+              stroke-width="2"
+            />
+          </g>
+          <!-- Error (red border) G6 -->
+          <g>
+            <circle
+              cx="330"
+              cy="286"
+              r="13"
+              fill="#fee2e2"
+              stroke="#dc2626"
+              stroke-width="3"
+            />
+          </g>
 
-			<!-- callout labels -->
-			<g font-size="10" fill="#1f2937" font-weight="600">
-				<line x1="80" y1="94" x2="80" y2="380" stroke="#f59e0b" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="80" y="395" text-anchor="middle">SELECTED</text>
-				<line x1="230" y1="126" x2="230" y2="370" stroke="#3b82f6" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="230" y="385" text-anchor="middle">FILLED</text>
-				<line x1="380" y1="158" x2="380" y2="370" stroke="#06b6d4" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="380" y="385" text-anchor="middle">HOVERED</text>
-				<line x1="230" y1="204" x2="230" y2="410" stroke="#16a34a" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="230" y="425" text-anchor="middle">TARGET</text>
-				<line x1="430" y1="254" x2="430" y2="410" stroke="#64748b" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="430" y="425" text-anchor="middle">LOCKED</text>
-				<line x1="330" y1="286" x2="330" y2="425" stroke="#dc2626" stroke-width="0.8" stroke-dasharray="2,2"/>
-				<text x="330" y="440" text-anchor="middle">ERROR</text>
-			</g>
-		</svg>
-	</div>
+          <!-- callout labels -->
+          <g font-size="10" fill="#1f2937" font-weight="600">
+            <line
+              x1="80"
+              y1="94"
+              x2="80"
+              y2="380"
+              stroke="#f59e0b"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="80" y="395" text-anchor="middle">SELECTED</text>
+            <line
+              x1="230"
+              y1="126"
+              x2="230"
+              y2="370"
+              stroke="#3b82f6"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="230" y="385" text-anchor="middle">FILLED</text>
+            <line
+              x1="380"
+              y1="158"
+              x2="380"
+              y2="370"
+              stroke="#06b6d4"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="380" y="385" text-anchor="middle">HOVERED</text>
+            <line
+              x1="230"
+              y1="204"
+              x2="230"
+              y2="410"
+              stroke="#16a34a"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="230" y="425" text-anchor="middle">TARGET</text>
+            <line
+              x1="430"
+              y1="254"
+              x2="430"
+              y2="410"
+              stroke="#64748b"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="430" y="425" text-anchor="middle">LOCKED</text>
+            <line
+              x1="330"
+              y1="286"
+              x2="330"
+              y2="425"
+              stroke="#dc2626"
+              stroke-width="0.8"
+              stroke-dasharray="2,2"
+            />
+            <text x="330" y="440" text-anchor="middle">ERROR</text>
+          </g>
+        </svg>
+      </div>
 
-	<div class="panel">
-		<h3>Well visual states</h3>
-		<div class="legend-row"><span class="swatch" style="background:#e2e8f0;"></span><span>Empty (default)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:#3b82f6;"></span><span>Filled (material present)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:#fef3c7; border-color:#f59e0b;"></span><span>Selected (student picked)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:transparent; border:2px dashed #06b6d4;"></span><span>Hovered (cursor over)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:#dcfce7; border-color:#16a34a;"></span><span>Target (next action)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:#cbd5e1;"></span><span>Locked (not interactable)</span></div>
-		<div class="legend-row"><span class="swatch" style="background:#fee2e2; border-color:#dc2626;"></span><span>Error (wrong target)</span></div>
+      <div class="panel">
+        <h3>Well visual states</h3>
+        <div class="legend-row">
+          <span class="swatch" style="background: #e2e8f0"></span
+          ><span>Empty (default)</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: #3b82f6"></span
+          ><span>Filled (material present)</span>
+        </div>
+        <div class="legend-row">
+          <span
+            class="swatch"
+            style="background: #fef3c7; border-color: #f59e0b"
+          ></span
+          ><span>Selected (student picked)</span>
+        </div>
+        <div class="legend-row">
+          <span
+            class="swatch"
+            style="background: transparent; border: 2px dashed #06b6d4"
+          ></span
+          ><span>Hovered (cursor over)</span>
+        </div>
+        <div class="legend-row">
+          <span
+            class="swatch"
+            style="background: #dcfce7; border-color: #16a34a"
+          ></span
+          ><span>Target (next action)</span>
+        </div>
+        <div class="legend-row">
+          <span class="swatch" style="background: #cbd5e1"></span
+          ><span>Locked (not interactable)</span>
+        </div>
+        <div class="legend-row">
+          <span
+            class="swatch"
+            style="background: #fee2e2; border-color: #dc2626"
+          ></span
+          ><span>Error (wrong target)</span>
+        </div>
 
-		<div class="state-list">
-			<p><strong>Where each state lives:</strong></p>
-			<p><code>visual_states</code> on the well object declares static renderings (empty, filled).</p>
-			<p>Runtime-only overlays (selected, hovered, target, error) are scene-side highlights, not declared object state.</p>
-			<p>"Locked" is an object-level <code>interactive</code> flag toggled by an <code>ObjectStateChange</code>.</p>
-		</div>
-	</div>
-</div>
+        <div class="state-list">
+          <p><strong>Where each state lives:</strong></p>
+          <p>
+            <code>visual_states</code> on the well object declares static
+            renderings (empty, filled).
+          </p>
+          <p>
+            Runtime-only overlays (selected, hovered, target, error) are
+            scene-side highlights, not declared object state.
+          </p>
+          <p>
+            "Locked" is an object-level <code>interactive</code> flag toggled by
+            an <code>ObjectStateChange</code>.
+          </p>
+        </div>
+      </div>
+    </div>
 
-<div class="explainer">
-	<strong>What this concept shows:</strong> a single 96-well plate displaying all seven
-	candidate well visual states at once, separated into declared object states (empty,
-	filled, locked) and scene-side ephemeral highlights (selected, hovered, target,
-	error). Today the runtime mostly distinguishes only empty vs. filled; adding target
-	and error highlights is the lowest-hanging fruit for student feedback. To realize
-	this in production, the scene runtime would need a small highlight overlay layer
-	keyed to per-target validator outcomes, the well object would need a "locked"
-	interactive flag toggled by ObjectStateChange, and the protocol validator would need
-	to emit a transient "wrong_target" event the highlight layer can subscribe to.
-	None of the highlight states require new vocabulary; they require a render-layer
-	subscription to validator results.
-</div>
-
-</body>
+    <div class="explainer">
+      <strong>What this concept shows:</strong> a single 96-well plate
+      displaying all seven candidate well visual states at once, separated into
+      declared object states (empty, filled, locked) and scene-side ephemeral
+      highlights (selected, hovered, target, error). Today the runtime mostly
+      distinguishes only empty vs. filled; adding target and error highlights is
+      the lowest-hanging fruit for student feedback. To realize this in
+      production, the scene runtime would need a small highlight overlay layer
+      keyed to per-target validator outcomes, the well object would need a
+      "locked" interactive flag toggled by ObjectStateChange, and the protocol
+      validator would need to emit a transient "wrong_target" event the
+      highlight layer can subscribe to. None of the highlight states require new
+      vocabulary; they require a render-layer subscription to validator results.
+    </div>
+  </body>
 </html>

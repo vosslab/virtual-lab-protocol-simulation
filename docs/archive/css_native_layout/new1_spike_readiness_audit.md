@@ -50,6 +50,7 @@ return legacyComputeLayout(sceneItems, assetSpecs, layoutRules, viewportW, viewp
 ```
 
 Why least invasive:
+
 - Single conditional, one call site.
 - Returns the same type signature (`ComputedItemLayout[]`).
 - Other five scenes untouched.
@@ -61,6 +62,7 @@ Why least invasive:
 One revert of the spike PR. The new function and conditional gate live in a single feature-flagged code path. Removing the flag + the function + the conditional restores prior behavior with no schema, render, dispatch, or state changes to undo.
 
 Commit-scope rule for spike PR:
+
 - One PR.
 - One feature flag.
 - One new module (`computeSceneLayoutCssNative`).
@@ -70,16 +72,19 @@ Commit-scope rule for spike PR:
 ## Files likely touched during spike
 
 Production code:
+
 - `src/scene_runtime/layout/adapter.ts` (one conditional added)
 - `src/scene_runtime/layout/css_native_adapter.ts` (NEW, proposed name; implementer may choose differently)
 - one feature-flag config file (TBD by implementer; may be a top-level config or inline constant)
 
 Non-production:
+
 - `experiments/css_native_layout/spike_fixtures/` (already in place)
 - `test-results/new1_well_plate_96_zoom/` (output only)
 - spike screenshot fixtures + Playwright walker addition under `tests/playwright/`
 
 NOT touched:
+
 - production scene YAML
 - `docs/PRIMARY_CONTRACT.md`
 - `docs/specs/`

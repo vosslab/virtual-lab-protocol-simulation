@@ -64,7 +64,7 @@ performed by static reading of `tests/test_canonical_scorecard_rule.py`:
 
 - Test function `test_scorecard_claims_require_canonical_command` checks each
   scorecard report file for substring membership in `canonical_sources =
-  ["score_layout.mjs", "batch2_n_canonical", "batch1"]`.
+["score_layout.mjs", "batch2_n_canonical", "batch1"]`.
 - Both annotated files now contain the substring `batch2_n_canonical`
   (via `scorecard_batch2_n_canonical/`), so `cites_canonical` is True
   and no violation is appended.

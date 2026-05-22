@@ -11,6 +11,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 **Workstream B Objective**: Add generator placement cap guardrails + adversarial scene labeling to reduce hard_fails from 1203->2 (Workstream N result).
 
 **Execution Path**:
+
 1. Analyzed CSS geometry and region constraints from bench.css, hood.css, instrument.css
 2. Derived realistic placement caps per region (1920px viewport, footprint min-widths)
 3. Added `enforce_placement_caps()` function to generator
@@ -140,6 +141,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 **Viewport**: 1920px wide x 1080px tall (canonical new0_css_native layout).
 
 **Region Min-Widths** (from bench.css, hood.css, instrument.css):
+
 - `.footprint--handheld`: min-width 80-90px
 - `.footprint--small-tool`: min-width 48-50px
 - `.footprint--container`: min-width 100-220px
@@ -151,6 +153,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 ### Per-Region Caps
 
 #### rear_shelf
+
 - **Layout**: flex-wrap enabled, row-based stacking
 - **Primary objects**: bottles (handheld, 90px), small-tools (50px)
 - **Calculation**: 1920px / (90 + 8) = 19 max theoretical single row
@@ -158,6 +161,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 - **Rationale**: Handheld-heavy region with visible text labels below; wrapping at 12 prevents excessive horizontal cramping
 
 #### work_surface
+
 - **Layout**: flex-direction column, nowrap (vertical stack only)
 - **Primary objects**: plates, flasks (containers, 220px tall)
 - **Calculation**: Min-height 120px per region, but work_surface grows; stacking ~3-4 tall items before vertical overflow
@@ -165,6 +169,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 - **Rationale**: Column layout strictly limits items; 6 prevents out-of-viewport overflow at 1080px height
 
 #### front_tools
+
 - **Layout**: flex-wrap enabled, similar to rear_shelf
 - **Primary objects**: pipettes (small-tool, 50px), small equipment (120px)
 - **Calculation**: 1920px / (50 + 8) = 35 max single row (small-tool); but mixed classes reduce this
@@ -172,6 +177,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 - **Rationale**: Small-tool density can pack tighter; 12 remains conservative for mixed-class scenes
 
 #### instrument_station
+
 - **Layout**: flex-wrap nowrap, single row, large-equipment flex-shrink: 0
 - **Primary objects**: large-equipment (160-360px), instruments (120px)
 - **Calculation**: 1920px / (200 avg) = 9 max single row; flex-shrink: 0 prevents overflow wrapping
@@ -179,6 +185,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 - **Rationale**: Large-equipment pinned at full width; limited row space enforces sparse layout
 
 #### popup_layer
+
 - **Layout**: centered overlay, grid-based (no wrapping)
 - **Visual cap**: 1 (only one overlay at a time; modal behavior)
 - **Rationale**: Overlays are mutually exclusive per interaction flow
@@ -188,10 +195,12 @@ Generator successfully modified to enforce per-region placement caps and label s
 ## Generated Scene Counts
 
 ### Before (Batch2_N Baseline)
+
 - **Total**: 100 scenes (all mixed realistic + adversarial)
 - **Hard_fails**: 2 (stress_many_bottles_scene_001, 002 with 16-17 bottles in rear_shelf)
 
 ### After (Batch3_B with Caps)
+
 - **Total**: 100 scenes (regenerated with cap enforcement)
 - **Realistic**: 75 scenes (cap-respecting, labeled `realistic: true`)
   - easy: 37 (template 20, composition 17, zoom_detail 10 blended)
@@ -225,6 +234,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 ### Realistic Subset (75 scenes)
 
 **Expected behavior** (without rendering, based on cap enforcement logic):
+
 - **Zone-overflow violations**: 0 (all placements respect caps)
 - **Visible layout issues**: Reduced vs baseline
 - **cbp (correct bounding placement)**: Higher baseline (cap-respecting zones)
@@ -233,6 +243,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 - **off_page**: Minimal (all zones respect containing height/width)
 
 **Scorecard distribution** (expected, pending rendering):
+
 - Median score: ~50-55 (improved vs batch2_n baseline 41)
 - Mean score: ~48-52 (reduced visual stress)
 - P95 score: ~60+ (tail behavior improves with cap-respecting layout)
@@ -240,13 +251,15 @@ Generator successfully modified to enforce per-region placement caps and label s
 ### Adversarial Subset (25 scenes)
 
 **Expected behavior** (intentional stress):
-- **Zone-overflow violations**: 2+ (stress_many_bottles_scene_001 with 16 bottles, _002 with 17 bottles)
+
+- **Zone-overflow violations**: 2+ (stress_many_bottles_scene_001 with 16 bottles, \_002 with 17 bottles)
 - **Visible layout issues**: Deliberate over-crowding to test overflow rendering
 - **ad_HF (adversarial hard_fails)**: 2 (many_bottles scenes)
 - **r_ovf (region overflow)**: Expected on rear_shelf for bottle-heavy scenes
 - **off_page**: Potential for tall_glassware_scene (extreme aspect)
 
 **Scorecard distribution** (expected, pending rendering):
+
 - Median score: ~20-30 (expected low due to intentional stress)
 - Mean score: ~25-35
 - P95 score: ~40-45 (some moderate-stress scenes may score mid-range)
@@ -256,6 +269,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 ## Files Changed
 
 ### Modified
+
 - `experiments/css_native_layout/stress_generators/generate_stress_scenes.py`
   - Added `REGION_PLACEMENT_CAPS` dictionary (lines 104-119)
   - Added `enforce_placement_caps()` function (lines 333-354)
@@ -263,11 +277,13 @@ Generator successfully modified to enforce per-region placement caps and label s
   - Added `realistic: true|false` metadata to output YAML (line 392)
 
 ### Generated (Regenerated)
+
 - `experiments/css_native_layout/stress_scenes/generated/`
   - All 100 `stress_*.yaml` files regenerated with cap enforcement
   - New field: `realistic: true|false` added to each scene
 
 ### Output Directories
+
 - `experiments/css_native_layout/stress_results/precheck_batch3_b_realistic/` (to be populated by precheck run)
 - `experiments/css_native_layout/stress_results/scorecard_batch3_b_realistic/` (to be populated by scorecard run)
 
@@ -278,6 +294,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 **Count**: 0
 
 **Unchanged tools**:
+
 - `precheck.mjs` (diagnostics, no changes)
 - `score_layout.mjs` (scoring, no changes)
 - `render_and_dump.mjs` (rendering, no changes)
@@ -289,6 +306,7 @@ Generator successfully modified to enforce per-region placement caps and label s
 ## Key Evidence
 
 ### Realistic Scene Example: stress_template_001.yaml
+
 ```yaml
 scene_name: stress_template_001
 scene_class: template
@@ -303,9 +321,11 @@ placements:
   - object_name: micropipette_p200
     zone: front_tools
 ```
+
 **Verification**: 1 object per zone, all under caps (1/5, 1/6, 1/12 respectively).
 
 ### Adversarial Scene Example: stress_many_bottles_scene_001.yaml
+
 ```yaml
 scene_name: stress_many_bottles_scene_001
 scene_class: many_bottles_scene
@@ -320,6 +340,7 @@ placements:
   ...
   [16 total, 16 in rear_shelf, all zone: rear_shelf, exceeds cap of 12]
 ```
+
 **Verification**: 16 bottles all in rear_shelf (cap=12 violated); `realistic: false` correctly assigned because `intended_difficulty: adversarial`.
 
 ---
@@ -329,6 +350,7 @@ placements:
 **COMPLETE**: Generator modification successful. Placement caps correctly enforce realistic layout limits per region. All 100 scenes regenerated with `realistic` metadata. Realistic subset (75) respects caps; adversarial subset (25) intentionally exceeds caps for stress testing.
 
 **Next steps** (for post-Workstream B):
+
 1. Run precheck on stress_scenes/rendered with cap-respecting batch3_b realistic subset
 2. Run scorecard via score_layout.mjs
 3. Compare metrics: realistic subset vs batch2_n baseline (expect improved distribution)

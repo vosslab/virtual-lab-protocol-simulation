@@ -1,137 +1,231 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>NEW0 CSS Layout: Staining Bench</title>
-	<link rel="stylesheet" href="../styles/bench.css">
-	<style>
-		/* Local overrides for staining bench (if needed) */
-	</style>
-</head>
-<body>
-	<div class="scene-container scene--bench" data-scene-mode="composition" data-scene-density="crowded">
-		<!-- Rear shelf: reagent bottles and waste -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Reagents &amp; Waste</span>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NEW0 CSS Layout: Staining Bench</title>
+    <link rel="stylesheet" href="../styles/bench.css" />
+    <style>
+      /* Local overrides for staining bench (if needed) */
+    </style>
+  </head>
+  <body>
+    <div
+      class="scene-container scene--bench"
+      data-scene-mode="composition"
+      data-scene-density="crowded"
+    >
+      <!-- Rear shelf: reagent bottles and waste -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Reagents &amp; Waste</span>
 
-			<div class="placement" data-placement="rear_left_coomassie_stain" data-placement-name="rear_left_coomassie_stain" data-object-name="coomassie_stain_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/coomassie_stain_bottle_filled.svg" alt="Coomassie Stain Bottle">
-				</div>
-				<div class="placement-label">Coomassie Stain</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_left_coomassie_stain"
+          data-placement-name="rear_left_coomassie_stain"
+          data-object-name="coomassie_stain_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/coomassie_stain_bottle_filled.svg"
+              alt="Coomassie Stain Bottle"
+            />
+          </div>
+          <div class="placement-label">Coomassie Stain</div>
+        </div>
 
-			<div class="placement" data-placement="rear_center_destain" data-placement-name="rear_center_destain" data-object-name="destain_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/destain_bottle_filled.svg" alt="Destain Bottle">
-				</div>
-				<div class="placement-label">Destain</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_center_destain"
+          data-placement-name="rear_center_destain"
+          data-object-name="destain_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/destain_bottle_filled.svg"
+              alt="Destain Bottle"
+            />
+          </div>
+          <div class="placement-label">Destain</div>
+        </div>
 
-			<div class="placement" data-placement="rear_right_ddh2o" data-placement-name="rear_right_ddh2o" data-object-name="ddh2o_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/ddh2o_bottle_filled.svg" alt="ddH2O Bottle">
-				</div>
-				<div class="placement-label">ddH_2O</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_right_ddh2o"
+          data-placement-name="rear_right_ddh2o"
+          data-object-name="ddh2o_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/ddh2o_bottle_filled.svg"
+              alt="ddH2O Bottle"
+            />
+          </div>
+          <div class="placement-label">ddH_2O</div>
+        </div>
 
-			<div class="placement" data-placement="rear_left_coomassie_recycle" data-placement-name="rear_left_coomassie_recycle" data-object-name="coomassie_recycle_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/coomassie_recycle_bottle_filled.svg" alt="Coomassie Recycle Bottle">
-				</div>
-				<div class="placement-label">Coomassie Recycle</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_left_coomassie_recycle"
+          data-placement-name="rear_left_coomassie_recycle"
+          data-object-name="coomassie_recycle_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/coomassie_recycle_bottle_filled.svg"
+              alt="Coomassie Recycle Bottle"
+            />
+          </div>
+          <div class="placement-label">Coomassie Recycle</div>
+        </div>
 
-			<div class="placement" data-placement="rear_center_destain_waste" data-placement-name="rear_center_destain_waste" data-object-name="destain_waste_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/destain_waste_bottle_filled.svg" alt="Destain Waste Bottle">
-				</div>
-				<div class="placement-label">Destain Waste</div>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="rear_center_destain_waste"
+          data-placement-name="rear_center_destain_waste"
+          data-object-name="destain_waste_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/destain_waste_bottle_filled.svg"
+              alt="Destain Waste Bottle"
+            />
+          </div>
+          <div class="placement-label">Destain Waste</div>
+        </div>
+      </div>
 
-		<!-- Work surface: active lab items -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Work surface: active lab items -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="center_staining_tray" data-placement-name="center_staining_tray" data-object-name="staining_tray" data-primary="true">
-				<div class="object-graphic footprint--container">
-					<img src="../../../assets/equipment/staining_tray_empty.svg" alt="Staining Tray">
-				</div>
-				<div class="placement-label">Staining Tray</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="center_staining_tray"
+          data-placement-name="center_staining_tray"
+          data-object-name="staining_tray"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--container">
+            <img
+              src="../../../assets/equipment/staining_tray_empty.svg"
+              alt="Staining Tray"
+            />
+          </div>
+          <div class="placement-label">Staining Tray</div>
+        </div>
 
-			<div class="placement" data-placement="center_kimwipe_pad" data-placement-name="center_kimwipe_pad" data-object-name="kimwipe_pad">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/kimwipe_pad.svg" alt="Kimwipe Pad">
-				</div>
-				<div class="placement-label">Kimwipe Pad</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="center_kimwipe_pad"
+          data-placement-name="center_kimwipe_pad"
+          data-object-name="kimwipe_pad"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/kimwipe_pad.svg"
+              alt="Kimwipe Pad"
+            />
+          </div>
+          <div class="placement-label">Kimwipe Pad</div>
+        </div>
 
-			<div class="placement" data-placement="center_waste_container" data-placement-name="center_waste_container" data-object-name="waste_container">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/waste_container.svg" alt="Waste Container">
-				</div>
-				<div class="placement-label">Waste</div>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="center_waste_container"
+          data-placement-name="center_waste_container"
+          data-object-name="waste_container"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/waste_container.svg"
+              alt="Waste Container"
+            />
+          </div>
+          <div class="placement-label">Waste</div>
+        </div>
+      </div>
 
-		<!-- Front tools: small equipment -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Tools &amp; Equipment</span>
+      <!-- Front tools: small equipment -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Tools &amp; Equipment</span>
 
-			<div class="placement" data-placement="right_tool_area_microwave" data-placement-name="right_tool_area_microwave" data-object-name="microwave">
-				<div class="object-graphic footprint--instrument">
-					<img src="../../../assets/equipment/microwave_closed.svg" alt="Microwave">
-				</div>
-				<div class="placement-label">Microwave</div>
-			</div>
+        <div
+          class="placement"
+          data-placement="right_tool_area_microwave"
+          data-placement-name="right_tool_area_microwave"
+          data-object-name="microwave"
+        >
+          <div class="object-graphic footprint--instrument">
+            <img
+              src="../../../assets/equipment/microwave_closed.svg"
+              alt="Microwave"
+            />
+          </div>
+          <div class="placement-label">Microwave</div>
+        </div>
 
-			<div class="placement" data-placement="right_tool_area_rocking_shaker" data-placement-name="right_tool_area_rocking_shaker" data-object-name="rocking_shaker">
-				<div class="object-graphic footprint--instrument">
-					<img src="../../../assets/equipment/rocking_shaker_idle.svg" alt="Rocking Shaker">
-				</div>
-				<div class="placement-label">Rocking Shaker</div>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="right_tool_area_rocking_shaker"
+          data-placement-name="right_tool_area_rocking_shaker"
+          data-object-name="rocking_shaker"
+        >
+          <div class="object-graphic footprint--instrument">
+            <img
+              src="../../../assets/equipment/rocking_shaker_idle.svg"
+              alt="Rocking Shaker"
+            />
+          </div>
+          <div class="placement-label">Rocking Shaker</div>
+        </div>
+      </div>
 
-		<!-- Instrument station: large equipment (empty for this bench) -->
-		<div class="region region--instrument_station" data-region="instrument_station">
-			<span class="region-label">Large Equipment</span>
-			<div style="flex: 1; text-align: center; color: var(--color-text-light); font-size: 12px;">
-				(None on this bench)
-			</div>
-		</div>
+      <!-- Instrument station: large equipment (empty for this bench) -->
+      <div
+        class="region region--instrument_station"
+        data-region="instrument_station"
+      >
+        <span class="region-label">Large Equipment</span>
+        <div
+          style="
+            flex: 1;
+            text-align: center;
+            color: var(--color-text-light);
+            font-size: 12px;
+          "
+        >
+          (None on this bench)
+        </div>
+      </div>
 
-		<!-- Popup layer: overlay modals (empty) -->
-		<div class="region region--popup_layer" data-region="popup_layer">
-		</div>
-	</div>
+      <!-- Popup layer: overlay modals (empty) -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
 
-	<script>
-		// Capture bounding boxes for verification
-		function captureMetrics() {
-			const bboxes = [];
-			const placements = document.querySelectorAll('[data-placement]');
+    <script>
+      // Capture bounding boxes for verification
+      function captureMetrics() {
+        const bboxes = [];
+        const placements = document.querySelectorAll("[data-placement]");
 
-			placements.forEach((elem) => {
-				const rect = elem.getBoundingClientRect();
-				const placement = elem.getAttribute('data-placement');
-				bboxes.push({
-					placement_name: placement,
-					x: Math.round(rect.x),
-					y: Math.round(rect.y),
-					width: Math.round(rect.width),
-					height: Math.round(rect.height),
-				});
-			});
+        placements.forEach((elem) => {
+          const rect = elem.getBoundingClientRect();
+          const placement = elem.getAttribute("data-placement");
+          bboxes.push({
+            placement_name: placement,
+            x: Math.round(rect.x),
+            y: Math.round(rect.y),
+            width: Math.round(rect.width),
+            height: Math.round(rect.height),
+          });
+        });
 
-			return bboxes;
-		}
+        return bboxes;
+      }
 
-		// Expose for Playwright to call
-		window.captureMetrics = captureMetrics;
-	</script>
-</body>
+      // Expose for Playwright to call
+      window.captureMetrics = captureMetrics;
+    </script>
+  </body>
 </html>

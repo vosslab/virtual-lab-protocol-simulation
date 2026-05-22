@@ -1,4 +1,5 @@
 <!-- Archived 2026-05-09; render ownership migration complete. -->
+
 # Plan: Scene render-ownership migration (successor to scene_capability_architecture)
 
 ## Context
@@ -14,12 +15,12 @@ But render ownership did not migrate. `init.ts:237` unconditionally calls the fl
 
 **Terminology -- avoid "legacy".** In this repo culture, "legacy" reads as "cruft and broken code." The flat scene files are not cruft. They are current, load-bearing render source modules whose ownership is being transferred. Use this vocabulary in the plan, in patches, and in commit messages:
 
-| Phase | Term to use |
-|---|---|
-| Before A1 | flat scene files |
-| After A1 | temporary render source modules |
-| After A2-A6b | migrated render ownership |
-| After B2 | retired source modules |
+| Phase        | Term to use                     |
+| ------------ | ------------------------------- |
+| Before A1    | flat scene files                |
+| After A1     | temporary render source modules |
+| After A2-A6b | migrated render ownership       |
+| After B2     | retired source modules          |
 
 Also avoid "legacy path", "legacy router", "legacy deletion." Prefer "current render path", "current routing mode" (or "temporary routing mode"), and "source-module retirement." The function name `buildLegacyToken` itself is a code identifier from before this plan; do not rename in this scope.
 
@@ -34,6 +35,7 @@ The original plan's "thin adapter <50 LOC" budget was wrong. Capability mechanic
 ## Scope
 
 In scope:
+
 - Add `render(ctx: SceneContext): void` to the `SceneAdapter` contract.
 - Move `renderHoodScene` / `renderBenchScene` / `renderMicroscopeScene` (and its 4 sub-screens + grid drawers) / `renderPlateScene` (and its 2 modal screens) / `renderIncubatorScene` (+ `renderTrypsinIncubation`, `runIncubationOverlay`) into the per-scene adapter files. Create a separate `src/scenes/plate_reader/` adapter for the `plate_reader` activeScene rather than continuing to host its render under microscope.
 - Route `init.ts` render switch through scene driver's `render()` for opted-in scenes.
@@ -43,6 +45,7 @@ In scope:
 - Update `docs/CODE_ARCHITECTURE.md`, `docs/FILE_STRUCTURE.md`, `docs/ROADMAP.md`. Archive this plan.
 
 Out of scope (untouched):
+
 - `src/svg_globals.ts` (2503 LOC, generated, exempt).
 - `src/layout_engine.ts` (847 LOC, deferred).
 - `src/bench_config.ts`, `src/hood_config.ts` (still legitimate sources of layout truth; YAML duplication is a separate problem flagged in the YAML critique).
@@ -84,11 +87,11 @@ Throughout this plan, statements about `sceneRouter` are framed as "resolve afte
 
 ```ts
 interface SceneAdapter {
-	sceneId: string;
-	dispatchInteraction(itemId: string, ctx: SceneContext): void;
-	// `render?` is a temporary bridge during A1-A6b only.
-	// After A6b lands, the optional marker is removed and `render(ctx)` is required.
-	render?(ctx: SceneContext): void;
+  sceneId: string;
+  dispatchInteraction(itemId: string, ctx: SceneContext): void;
+  // `render?` is a temporary bridge during A1-A6b only.
+  // After A6b lands, the optional marker is removed and `render(ctx)` is required.
+  render?(ctx: SceneContext): void;
 }
 ```
 
@@ -117,25 +120,26 @@ Note: `PROTOCOL_SCENE_ROUTER_MODE === 'driver'` check disappears in Patch B3.
 
 ## Patch plan
 
-| Patch | WS | Component / proof | Mini-protocol gate | Owner |
-|---|---|---|---|---|
-| A1 | render bridge | Add `render?(ctx)` to SceneAdapter + `runSceneRender(sceneId)` to driver. Each adapter implements `render()` that delegates to the current source-module `renderXxxScene()` for one patch only. init.ts switches its render switch to `runSceneRender()`. The source modules' `renderXxxScene` exports remain only because A2-A6b have not landed yet. | full walker (25/25 + 9/9) | coder |
-| A2 | bench render move | Move `renderBenchScene` body into `bench/bench.ts` adapter. **In the same patch:** delete the export from `src/scenes/bench.ts` and remove the import in the bench adapter. After A2, no other module imports `renderBenchScene` from the source module. | tutorial_bench_direct + full walker | coder |
-| A3 | hood render move | Move `renderHoodScene` body into `cell_culture_hood/cell_culture_hood.ts`. **In the same patch:** delete the export from `src/scenes/hood.ts`. If a clear render/effects/dispatch seam emerges, split into `render.ts` / `effects.ts` / `adapter.ts` siblings -- by responsibility, not size. | tutorial_hood_transfer, tutorial_split, tutorial_drug_dilution, tutorial_pbs + full walker | coder |
-| A4 | incubator render move | Move `renderIncubatorScene` + `renderTrypsinIncubation` + `runIncubationOverlay` into `incubator/incubator.ts`. **In the same patch:** delete those exports from `src/scenes/incubator.ts`. | full cell_culture incubator-step path (existing incubator driver runner) + full walker | coder |
-| A5 | plate render move | Move `renderPlateScene` + 2 modal-screen functions into `plate/plate.ts`. **In the same patch:** delete those exports from `src/scenes/plate.ts`. | tutorial_plate_intro, tutorial_plate_reader + full walker | coder |
-| A6a | microscope render move | Move `renderMicroscopeScene` + 2 hemocytometer screens + `renderQuadrantButtons` + `drawHemocytometerGrid` + `drawCellsOnGrid` into `microscope/microscope.ts`. **In the same patch:** delete those exports from `src/scenes/microscope.ts`. | tutorial_cell_counter, tutorial_hemocytometer_count + full walker | coder |
-| A6b | plate_reader adapter + render move | Create `src/scenes/plate_reader/plate_reader.{yaml,ts}` as a first-class adapter (plate_reader is a top-level activeScene; do not keep it nested under microscope just because the source happened to live there). Move `renderPlateReaderScene` from the microscope source module into this adapter and **delete the export from `src/scenes/microscope.ts` in the same patch.** Register via scene_registry. init.ts case `'plate_reader'` calls `runSceneRender('plate_reader')`. **At the end of A6b:** make `render(ctx)` required on the `SceneAdapter` interface -- drop the `?` on the optional. The bridge is gone. | tutorial_plate_reader + full cell_culture plate-read/results path + full walker | coder |
-| B1 | helper dedup + import cleanup | No duplicate implementations of `deriveHeldLiquid`, `canonicalTool`, or `buildLegacyToken` remain anywhere in `src/`. `deriveHeldLiquid` and `canonicalTool` consolidate to `shared/liquid_transfer.ts`. `buildLegacyToken` lands in `shared/legacy_tokens.ts` (token formatting is not liquid logic -- locked, no override). All callers import from the chosen shared module. tsc clean. | full walker | coder |
-| B2 | source-module retirement | Pure verification + delete. Entry criteria (must hold before `git rm`): (1) no production or test file imports any symbol from `src/scenes/hood.ts`, `bench.ts`, `microscope.ts`, `plate.ts`, `incubator.ts`; (2) each source module has no exported symbol still consumed anywhere; (3) the adapter `render(ctx)` is no longer optional. With those satisfied, `git rm src/scenes/hood.ts src/scenes/bench.ts src/scenes/microscope.ts src/scenes/plate.ts src/scenes/incubator.ts`. tsc clean, walker green. If any entry criterion fails, B2 stops and the missing migration goes back to its A-patch. | full walker | coder |
-| B3 | sceneRouter resolution | Apply the decision rule from "sceneRouter resolution" above. Either: (a) remove the field from every protocol YAML and delete its switch in `resolveSceneRouter`; or (b) keep and rename it to honest non-migration vocabulary (`sceneImplementation` / `sceneProfile` / `sceneSet`). Document the decision and rationale in the patch's CHANGELOG entry. tsc clean, walker green. | full walker | coder |
-| B4 | docs + archive | Update `docs/CODE_ARCHITECTURE.md` (corrected adapter ownership model: capabilities own reusable mechanics, adapters own scene-specific render and effects), `docs/FILE_STRUCTURE.md` (source modules retired, plate_reader adapter added), `docs/ROADMAP.md` (rendering migration done; `bench_config.ts`/`hood_config.ts` vs YAML duplication remains as deferred; sceneRouter resolution recorded). Archive this plan to `docs/archive/scene_render_migration_<date>.md`. | n/a | planner |
+| Patch | WS                                 | Component / proof                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Mini-protocol gate                                                                         | Owner   |
+| ----- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ------- |
+| A1    | render bridge                      | Add `render?(ctx)` to SceneAdapter + `runSceneRender(sceneId)` to driver. Each adapter implements `render()` that delegates to the current source-module `renderXxxScene()` for one patch only. init.ts switches its render switch to `runSceneRender()`. The source modules' `renderXxxScene` exports remain only because A2-A6b have not landed yet.                                                                                                                                                                                                                                                                       | full walker (25/25 + 9/9)                                                                  | coder   |
+| A2    | bench render move                  | Move `renderBenchScene` body into `bench/bench.ts` adapter. **In the same patch:** delete the export from `src/scenes/bench.ts` and remove the import in the bench adapter. After A2, no other module imports `renderBenchScene` from the source module.                                                                                                                                                                                                                                                                                                                                                                     | tutorial_bench_direct + full walker                                                        | coder   |
+| A3    | hood render move                   | Move `renderHoodScene` body into `cell_culture_hood/cell_culture_hood.ts`. **In the same patch:** delete the export from `src/scenes/hood.ts`. If a clear render/effects/dispatch seam emerges, split into `render.ts` / `effects.ts` / `adapter.ts` siblings -- by responsibility, not size.                                                                                                                                                                                                                                                                                                                                | tutorial_hood_transfer, tutorial_split, tutorial_drug_dilution, tutorial_pbs + full walker | coder   |
+| A4    | incubator render move              | Move `renderIncubatorScene` + `renderTrypsinIncubation` + `runIncubationOverlay` into `incubator/incubator.ts`. **In the same patch:** delete those exports from `src/scenes/incubator.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                  | full cell_culture incubator-step path (existing incubator driver runner) + full walker     | coder   |
+| A5    | plate render move                  | Move `renderPlateScene` + 2 modal-screen functions into `plate/plate.ts`. **In the same patch:** delete those exports from `src/scenes/plate.ts`.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | tutorial_plate_intro, tutorial_plate_reader + full walker                                  | coder   |
+| A6a   | microscope render move             | Move `renderMicroscopeScene` + 2 hemocytometer screens + `renderQuadrantButtons` + `drawHemocytometerGrid` + `drawCellsOnGrid` into `microscope/microscope.ts`. **In the same patch:** delete those exports from `src/scenes/microscope.ts`.                                                                                                                                                                                                                                                                                                                                                                                 | tutorial_cell_counter, tutorial_hemocytometer_count + full walker                          | coder   |
+| A6b   | plate_reader adapter + render move | Create `src/scenes/plate_reader/plate_reader.{yaml,ts}` as a first-class adapter (plate_reader is a top-level activeScene; do not keep it nested under microscope just because the source happened to live there). Move `renderPlateReaderScene` from the microscope source module into this adapter and **delete the export from `src/scenes/microscope.ts` in the same patch.** Register via scene_registry. init.ts case `'plate_reader'` calls `runSceneRender('plate_reader')`. **At the end of A6b:** make `render(ctx)` required on the `SceneAdapter` interface -- drop the `?` on the optional. The bridge is gone. | tutorial_plate_reader + full cell_culture plate-read/results path + full walker            | coder   |
+| B1    | helper dedup + import cleanup      | No duplicate implementations of `deriveHeldLiquid`, `canonicalTool`, or `buildLegacyToken` remain anywhere in `src/`. `deriveHeldLiquid` and `canonicalTool` consolidate to `shared/liquid_transfer.ts`. `buildLegacyToken` lands in `shared/legacy_tokens.ts` (token formatting is not liquid logic -- locked, no override). All callers import from the chosen shared module. tsc clean.                                                                                                                                                                                                                                   | full walker                                                                                | coder   |
+| B2    | source-module retirement           | Pure verification + delete. Entry criteria (must hold before `git rm`): (1) no production or test file imports any symbol from `src/scenes/hood.ts`, `bench.ts`, `microscope.ts`, `plate.ts`, `incubator.ts`; (2) each source module has no exported symbol still consumed anywhere; (3) the adapter `render(ctx)` is no longer optional. With those satisfied, `git rm src/scenes/hood.ts src/scenes/bench.ts src/scenes/microscope.ts src/scenes/plate.ts src/scenes/incubator.ts`. tsc clean, walker green. If any entry criterion fails, B2 stops and the missing migration goes back to its A-patch.                    | full walker                                                                                | coder   |
+| B3    | sceneRouter resolution             | Apply the decision rule from "sceneRouter resolution" above. Either: (a) remove the field from every protocol YAML and delete its switch in `resolveSceneRouter`; or (b) keep and rename it to honest non-migration vocabulary (`sceneImplementation` / `sceneProfile` / `sceneSet`). Document the decision and rationale in the patch's CHANGELOG entry. tsc clean, walker green.                                                                                                                                                                                                                                           | full walker                                                                                | coder   |
+| B4    | docs + archive                     | Update `docs/CODE_ARCHITECTURE.md` (corrected adapter ownership model: capabilities own reusable mechanics, adapters own scene-specific render and effects), `docs/FILE_STRUCTURE.md` (source modules retired, plate*reader adapter added), `docs/ROADMAP.md` (rendering migration done; `bench_config.ts`/`hood_config.ts` vs YAML duplication remains as deferred; sceneRouter resolution recorded). Archive this plan to `docs/archive/scene_render_migration*<date>.md`.                                                                                                                                                 | n/a                                                                                        | planner |
 
 Total: **11 patches** (A1, A2, A3, A4, A5, A6a, A6b, B1, B2, B3, B4).
 
 ## Acceptance gates
 
 ### Per-patch
+
 - `npx tsc --noEmit -p src/tsconfig.json` clean.
 - `bash check_codebase.sh` exits 0.
 - Walker: cell_culture 25/25 + 9/9 mini-protocols green through driver.
@@ -144,6 +148,7 @@ Total: **11 patches** (A1, A2, A3, A4, A5, A6a, A6b, B1, B2, B3, B4).
 - Source-module export of the migrated render function is removed in the same patch (or, if not practical, the very next patch); no migrated render path coexists with its source-module original beyond a single patch boundary.
 
 ### Release gate
+
 - No flat monolithic scene implementation files remain at `src/scenes/*.ts`. Flat shared infrastructure files (`scene_driver.ts`, `scene_registry.ts`, future `types.ts`, `capability_registry.ts`, `scene_test_api.ts`, etc.) are allowed.
 - Explicit deletion check: `git ls-files src/scenes/hood.ts src/scenes/bench.ts src/scenes/microscope.ts src/scenes/plate.ts src/scenes/incubator.ts` returns no output.
 - `grep -rE "deriveHeldLiquid|canonicalTool" src/scenes/` returns hits only in `shared/liquid_transfer.ts` and adapter usages.
@@ -155,14 +160,14 @@ Total: **11 patches** (A1, A2, A3, A4, A5, A6a, A6b, B1, B2, B3, B4).
 
 ## Risks
 
-| Risk | Mitigation |
-|---|---|
-| Inlined render references private source-module helpers not exported | First check imports before inlining; if a helper is needed across scenes, move it to `shared/` in the same patch |
-| `renderHoodScene` calls into `getItemSvgHtml` / `getHoodItemAccentStyle` which other scenes also use | These are already exported; keep them temporarily in `src/scenes/hood_render_helpers.ts` if cross-scene, or inline if only hood uses them |
-| init.ts has scene-specific show/hide logic for hood/bench DOM | Preserve that block; only the render call changes |
-| Adapter contains two clearly independent responsibilities after a migration patch | Split by responsibility into sibling files (e.g., `render.ts`, `effects.ts`, `adapter.ts`). Do not split based on line count alone; do not avoid splitting just because it adds files |
-| Walker drops mid-migration | Single `git revert` per patch; stop and diagnose, do not push past red |
-| `sceneRouter` decision is rushed in B3 | Treat B3 as a real design decision, not a cleanup formality. If evidence is mixed, defer the rename and document why in CHANGELOG; removal is not the only success outcome |
+| Risk                                                                                                 | Mitigation                                                                                                                                                                            |
+| ---------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Inlined render references private source-module helpers not exported                                 | First check imports before inlining; if a helper is needed across scenes, move it to `shared/` in the same patch                                                                      |
+| `renderHoodScene` calls into `getItemSvgHtml` / `getHoodItemAccentStyle` which other scenes also use | These are already exported; keep them temporarily in `src/scenes/hood_render_helpers.ts` if cross-scene, or inline if only hood uses them                                             |
+| init.ts has scene-specific show/hide logic for hood/bench DOM                                        | Preserve that block; only the render call changes                                                                                                                                     |
+| Adapter contains two clearly independent responsibilities after a migration patch                    | Split by responsibility into sibling files (e.g., `render.ts`, `effects.ts`, `adapter.ts`). Do not split based on line count alone; do not avoid splitting just because it adds files |
+| Walker drops mid-migration                                                                           | Single `git revert` per patch; stop and diagnose, do not push past red                                                                                                                |
+| `sceneRouter` decision is rushed in B3                                                               | Treat B3 as a real design decision, not a cleanup formality. If evidence is mixed, defer the rename and document why in CHANGELOG; removal is not the only success outcome            |
 
 ## Open questions
 

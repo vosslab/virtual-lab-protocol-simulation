@@ -1,48 +1,70 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Cell Counter Basic - NEW0 Direction B (Stage/Composition)</title>
-	<link rel="stylesheet" href="../../styles/dir_b_instrument.css">
-</head>
-<body>
-	<!-- Direction B: instrument goes in work_surface (no separate instrument_station) -->
-	<div class="scene-container scene--instrument" data-scene-mode="template">
-		<!-- Rear shelf: accessories -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Rear Shelf</span>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cell Counter Basic - NEW0 Direction B (Stage/Composition)</title>
+    <link rel="stylesheet" href="../../styles/dir_b_instrument.css" />
+  </head>
+  <body>
+    <!-- Direction B: instrument goes in work_surface (no separate instrument_station) -->
+    <div class="scene-container scene--instrument" data-scene-mode="template">
+      <!-- Rear shelf: accessories -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Rear Shelf</span>
+      </div>
 
-		<!-- Center stage: cell counter as primary instrument -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Center stage: cell counter as primary instrument -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="instrument_main_cell_counter" data-placement-name="instrument_main_cell_counter" data-object-name="cell_counter" data-primary="true">
-				<div class="object-graphic footprint--large-equipment">
-					<img src="../../../../assets/equipment/cell_counter_new.svg" alt="Cell Counter">
-				</div>
-				<span class="placement-label">Cell Counter</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="instrument_main_cell_counter"
+          data-placement-name="instrument_main_cell_counter"
+          data-object-name="cell_counter"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--large-equipment">
+            <img
+              src="../../../../assets/equipment/cell_counter_new.svg"
+              alt="Cell Counter"
+            />
+          </div>
+          <span class="placement-label">Cell Counter</span>
+        </div>
+      </div>
 
-		<!-- Front tools: cartridge at bottom -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Front Tools</span>
+      <!-- Front tools: cartridge at bottom -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Front Tools</span>
 
-			<div class="placement" data-placement="front_tools_counter_slide_cartridge" data-placement-name="front_tools_counter_slide_cartridge" data-object-name="counter_slide_cartridge">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../../assets/equipment/cell_counter.svg" alt="Counter Slide Cartridge">
-				</div>
-				<span class="placement-label">Cartridge</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="front_tools_counter_slide_cartridge"
+          data-placement-name="front_tools_counter_slide_cartridge"
+          data-object-name="counter_slide_cartridge"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../../assets/equipment/cell_counter.svg"
+              alt="Counter Slide Cartridge"
+            />
+          </div>
+          <span class="placement-label">Cartridge</span>
+        </div>
+      </div>
 
-		<!-- Popup layer: unused -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
-	<script>
-		window.sceneData = { sceneName: 'cell_counter_basic', direction: 'B', workspace: 'instrument', totalPlacements: 2 };
-	</script>
-</body>
+      <!-- Popup layer: unused -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
+    <script>
+      window.sceneData = {
+        sceneName: "cell_counter_basic",
+        direction: "B",
+        workspace: "instrument",
+        totalPlacements: 2,
+      };
+    </script>
+  </body>
 </html>

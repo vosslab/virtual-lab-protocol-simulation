@@ -20,7 +20,7 @@
  * that prevents the callback if called before the deadline.
  */
 export interface Clock {
-	schedule(durationMs: number, callback: () => void): () => void;
+  schedule(durationMs: number, callback: () => void): () => void;
 }
 
 /**
@@ -30,7 +30,7 @@ export interface Clock {
  * whose deadline has elapsed.
  */
 export interface TestClock extends Clock {
-	advance(ms: number): void;
+  advance(ms: number): void;
 }
 
 /**
@@ -39,10 +39,10 @@ export interface TestClock extends Clock {
  * Backed by setTimeout. schedule() returns a cancel function via clearTimeout.
  */
 export const productionClock: Clock = {
-	schedule(durationMs: number, callback: () => void): () => void {
-		const timeoutId = setTimeout(callback, durationMs);
-		return () => clearTimeout(timeoutId);
-	},
+  schedule(durationMs: number, callback: () => void): () => void {
+    const timeoutId = setTimeout(callback, durationMs);
+    return () => clearTimeout(timeoutId);
+  },
 };
 
 /**
@@ -53,39 +53,39 @@ export const productionClock: Clock = {
  * has elapsed.
  */
 export function createTestClock(): TestClock {
-	let currentTimeMs = 0;
-	interface ScheduledCallback {
-		deadline: number;
-		callback: () => void;
-		cancelled: boolean;
-	}
-	const scheduledCallbacks: ScheduledCallback[] = [];
+  let currentTimeMs = 0;
+  interface ScheduledCallback {
+    deadline: number;
+    callback: () => void;
+    cancelled: boolean;
+  }
+  const scheduledCallbacks: ScheduledCallback[] = [];
 
-	return {
-		schedule(durationMs: number, callback: () => void): () => void {
-			const scheduled: ScheduledCallback = {
-				deadline: currentTimeMs + durationMs,
-				callback,
-				cancelled: false,
-			};
-			scheduledCallbacks.push(scheduled);
+  return {
+    schedule(durationMs: number, callback: () => void): () => void {
+      const scheduled: ScheduledCallback = {
+        deadline: currentTimeMs + durationMs,
+        callback,
+        cancelled: false,
+      };
+      scheduledCallbacks.push(scheduled);
 
-			// Return a cancel function.
-			return () => {
-				scheduled.cancelled = true;
-			};
-		},
+      // Return a cancel function.
+      return () => {
+        scheduled.cancelled = true;
+      };
+    },
 
-		advance(ms: number): void {
-			currentTimeMs += ms;
+    advance(ms: number): void {
+      currentTimeMs += ms;
 
-			// Fire all callbacks whose deadline has elapsed (and have not been cancelled).
-			for (const scheduled of scheduledCallbacks) {
-				if (!scheduled.cancelled && scheduled.deadline <= currentTimeMs) {
-					scheduled.callback();
-					scheduled.cancelled = true;
-				}
-			}
-		},
-	};
+      // Fire all callbacks whose deadline has elapsed (and have not been cancelled).
+      for (const scheduled of scheduledCallbacks) {
+        if (!scheduled.cancelled && scheduled.deadline <= currentTimeMs) {
+          scheduled.callback();
+          scheduled.cancelled = true;
+        }
+      }
+    },
+  };
 }

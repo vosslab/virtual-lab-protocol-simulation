@@ -47,7 +47,7 @@ learning:
 
 ## Protocol kinds
 
-The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and the surrounding structural terms (protocol package, `protocol_type`, `protocol.yaml`) are defined canonically in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds). Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
+The authored kinds (`mini_protocol`, `sequence_runner`, `dev_smoke`) and the surrounding structural terms (protocol package, `protocol_type`, `protocol.yaml`) are defined canonically in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds). Large protocols are assembled from mini-protocols so each part can be authored, tested, and walked independently.
 
 ## Visible interaction standard
 
@@ -159,4 +159,3 @@ Anti-patterns (forbidden):
 - Do not "fix" cropping by hiding cropped assets, deleting DOM, or weakening diagnostics.
 - Do not accept a high score if the asset is visibly cropped.
 - Do not claim visual success while glassware bottoms are cut off.
-

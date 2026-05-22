@@ -18,7 +18,6 @@ Total scenes: 0
 ## Ranked Scenes (by total_layout_score)
 
 | Rank | Scene | Class | Score | Hard Fails | Top Worst Metric | Recommendation |
-| --- | --- | --- | --- | --- | --- | --- |
+| ---- | ----- | ----- | ----- | ---------- | ---------------- | -------------- |
 
 ## Per-Scene Breakdown
-

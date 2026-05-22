@@ -16,6 +16,7 @@ The no-crop hard rule is now the priority over scorecard polish, reports, and br
 The hard rule: visible scientific SVG cropping is NOT acceptable, regardless of whether a current advisory metric flags it as HARD_FAIL. If a human reviewer sees a cropped bottle, flask, or pipette in a screenshot, the scene fails the visual rule.
 
 Possible explanations for the gap:
+
 1. Diagnostic does not yet catch all visible crops (clipped_by_parent + aspect_distorted_HF cover most, but specific failure modes may slip)
 2. Diagnostic is correct but screenshot rendering itself reveals an issue the metric measures correctly but the score weight does not penalize sufficiently
 3. Static stress harness uses hardcoded footprint mapping (render_stress_to_html.py:27-44) divergent from production runtime, so same scene renders differently in production vs harness
@@ -23,12 +24,14 @@ Possible explanations for the gap:
 ## Suspicious screenshots in the current report
 
 Per user review:
+
 - Page 10: electrophoresis or instrument-heavy scene example
 - Page 11: dense workspace example
 - Page 24: best/worst examples gallery (figure 6 or 7)
 - Page 26: worst examples gallery continuation
 
 Specific objects most likely showing visible crop:
+
 - Volumetric flasks (bottoms cropped against card boundary)
 - Tall narrow bottles (cropped tops or bottoms)
 - Pipettes (extreme aspect ratio - tips cropped against cards too wide)
@@ -40,21 +43,27 @@ These suspicions are catalogued by the no-crop repair round and confirmed via Wo
 ## Claims in the report to soften until repairs land
 
 ### Section 4 (What works now) - "no-crop rule enforcement"
+
 Current wording implies the rule is enforced everywhere. Soften to: "no-crop hard rule is documented and partially enforced via precheck artwork_integrity sub-checks; visible cropping audit (in progress) may surface diagnostic gaps."
 
 ### Section 7 (No-crop hard rule)
+
 Phase 1 hardFailCount proposal is correctly tagged PROPOSAL. Add: "Visible cropping detected by human review still possible while scorecard reports 0 hard fails. Diagnostic semantic alignment proposal pending user approval."
 
 ### Section 15 (Best Examples Gallery)
+
 Captions imply pedagogy-quality renderings. Replace any claim of "no cropping" with "no hard-fail per current advisory metrics; visible review pending."
 
 ### Section 16 (Worst Examples Gallery)
+
 Captions currently identify visible problems honestly. No softening needed.
 
 ### Section 19 (Evidence Table)
+
 Entry "no-crop diagnostics work" should clarify: "no-crop diagnostics catch most cases under current metric definition; gap audit in progress."
 
 ### Section 22 (Verdict)
+
 "Production promotion remains blocked by contract and visual-polish decisions" already candid. No softening needed.
 
 ## What the repair round is doing
@@ -78,6 +87,7 @@ Workstream G: final summary after A-F land.
 Do not update the full status report (HTML + MD + PDF) until repair round closes.
 
 When repair round closes (Workstream G):
+
 1. Update section 7 (no-crop hard rule) to reflect what is now actually working
 2. Replace worst-cropped screenshots in galleries with after-repair versions
 3. Update evidence table entries for no-crop and visual quality claims

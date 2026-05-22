@@ -3,7 +3,7 @@
 Exact command, working directory, and expected output paths for the NEW1
 spike precheck run. See NEW1 plan section 3 step 4 and section 5 hard-fail
 gates in
-[../../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../../docs/active_plans/new1_css_native_layout_integration_plan.md).
+[new1_css_native_layout_integration_plan.md](../../../docs/archive/css_native_layout/new1_css_native_layout_integration_plan.md).
 
 ## Command line
 
@@ -39,12 +39,12 @@ subdirectory.
 The precheck runner writes its artifacts under the directory passed to
 `--out`. The spike pins this to `test-results/new1_spike/well_plate_96_zoom/`.
 
-| Output | Path | Notes |
-| --- | --- | --- |
-| Annotated screenshot | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.annotated.png` | Annotated overlay used for visual review |
-| Raw screenshot | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.png` | Unannotated capture for pixel-diff vs current production |
-| Diagnostics JSON | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.diagnostics.json` | Per-scene diagnostics; section 5 hard-fail counts read from here |
-| Summary JSON | `test-results/new1_spike/well_plate_96_zoom/summary.json` | Aggregate verdict; spike gate consumes this |
+| Output               | Path                                                                             | Notes                                                            |
+| -------------------- | -------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| Annotated screenshot | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.annotated.png`    | Annotated overlay used for visual review                         |
+| Raw screenshot       | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.png`              | Unannotated capture for pixel-diff vs current production         |
+| Diagnostics JSON     | `test-results/new1_spike/well_plate_96_zoom/well_plate_96_zoom.diagnostics.json` | Per-scene diagnostics; section 5 hard-fail counts read from here |
+| Summary JSON         | `test-results/new1_spike/well_plate_96_zoom/summary.json`                        | Aggregate verdict; spike gate consumes this                      |
 
 Exact filenames inside the `--out` directory follow whatever
 [../precheck.mjs](../precheck.mjs) emits today; the spike does not rename

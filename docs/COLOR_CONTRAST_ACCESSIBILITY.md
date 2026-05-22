@@ -6,10 +6,10 @@ Our problems target a **5.5:1** contrast ratio for all foreground/background
 text pairs. This exceeds WCAG AA's 4.5:1 minimum for normal text.
 
 | WCAG level | Minimum ratio (normal text) |
-| --- | --- |
-| AA | 4.5:1 |
-| AAA | 7:1 |
-| Our target | 5.5:1 |
+| ---------- | --------------------------- |
+| AA         | 4.5:1                       |
+| AAA        | 7:1                         |
+| Our target | 5.5:1                       |
 
 The maximum possible contrast ratio is 21:1 (black `#000000` on white `#FFFFFF`).
 
@@ -32,6 +32,7 @@ For CR = 5.5, L_fg = 0.14091.
 WCAG v2 contrast formula with backward solving via binary search on HSL lightness.
 
 Usage:
+
 ```bash
 # audit the 14-color rainbow palette
 python3 tools/contrast_calculator.py --audit
@@ -59,22 +60,22 @@ python3 tools/contrast_calculator.py --audit --ratio 7.0
 All colors verified via `tools/contrast_calculator.py` and spot-checked against
 WebAIM API. Background: white (`#FFFFFF`). Target: 5.5:1.
 
-| Slot | Label | Old hex | Old ratio | New hex | New ratio | Change |
-| --- | --- | --- | --- | --- | --- | --- |
-| A | RED | `#e60000` | 4.81:1 | `#d40000` | 5.53:1 | Darkened |
-| B | DARK ORANGE | `#e65400` | 3.73:1 | `#b74300` | 5.50:1 | Darkened |
-| C | LIGHT ORANGE | `#e69100` | 2.50:1 | `#935d00` | 5.52:1 | Darkened |
-| D | DARK YELLOW | `#b3b300` | 2.24:1 | `#6c6c00` | 5.55:1 | Darkened |
-| E | LIME GREEN | `#59b300` | 2.67:1 | `#3b7600` | 5.56:1 | Darkened |
-| F | GREEN | `#009900` | 3.78:1 | `#007a00` | 5.55:1 | Darkened |
-| G | TEAL | `#00b38f` | 2.68:1 | `#00775f` | 5.52:1 | Darkened |
-| H | CYAN | `#00b3b3` | 2.59:1 | `#007576` | 5.52:1 | Darkened |
-| I | SKY BLUE | `#0a9bf5` | 2.99:1 | `#076dad` | 5.53:1 | Darkened |
-| J | BLUE | `#0039e6` | 7.70:1 | `#003fff` | 6.66:1 | Brightened |
-| K | NAVY | `#004d99` | 8.33:1 | `#0067cc` | 5.51:1 | Brightened |
-| L | PURPLE | `#7b12a1` | 8.59:1 | `#a719db` | 5.52:1 | Brightened |
-| M | MAGENTA | `#b30077` | 6.60:1 | `#c80085` | 5.53:1 | Brightened |
-| N | PINK | `#cc0066` | 5.59:1 | `#cc0066` | 5.59:1 | Unchanged |
+| Slot | Label        | Old hex   | Old ratio | New hex   | New ratio | Change     |
+| ---- | ------------ | --------- | --------- | --------- | --------- | ---------- |
+| A    | RED          | `#e60000` | 4.81:1    | `#d40000` | 5.53:1    | Darkened   |
+| B    | DARK ORANGE  | `#e65400` | 3.73:1    | `#b74300` | 5.50:1    | Darkened   |
+| C    | LIGHT ORANGE | `#e69100` | 2.50:1    | `#935d00` | 5.52:1    | Darkened   |
+| D    | DARK YELLOW  | `#b3b300` | 2.24:1    | `#6c6c00` | 5.55:1    | Darkened   |
+| E    | LIME GREEN   | `#59b300` | 2.67:1    | `#3b7600` | 5.56:1    | Darkened   |
+| F    | GREEN        | `#009900` | 3.78:1    | `#007a00` | 5.55:1    | Darkened   |
+| G    | TEAL         | `#00b38f` | 2.68:1    | `#00775f` | 5.52:1    | Darkened   |
+| H    | CYAN         | `#00b3b3` | 2.59:1    | `#007576` | 5.52:1    | Darkened   |
+| I    | SKY BLUE     | `#0a9bf5` | 2.99:1    | `#076dad` | 5.53:1    | Darkened   |
+| J    | BLUE         | `#0039e6` | 7.70:1    | `#003fff` | 6.66:1    | Brightened |
+| K    | NAVY         | `#004d99` | 8.33:1    | `#0067cc` | 5.51:1    | Brightened |
+| L    | PURPLE       | `#7b12a1` | 8.59:1    | `#a719db` | 5.52:1    | Brightened |
+| M    | MAGENTA      | `#b30077` | 6.60:1    | `#c80085` | 5.53:1    | Brightened |
+| N    | PINK         | `#cc0066` | 5.59:1    | `#cc0066` | 5.59:1    | Unchanged  |
 
 All 14 colors now pass the 5.5:1 target. Colors A-I were darkened to meet the
 minimum; J-M were brightened to be more vivid while still passing.
@@ -83,23 +84,23 @@ minimum; J-M were brightened to be more vivid while still passing.
 
 Verified via WebAIM API against white (`#FFFFFF`) background:
 
-| Color | Use | Ratio vs white | Passes 5.5:1? |
-| --- | --- | --- | --- |
-| `#0066cc` | Blue, data values | 5.56:1 | YES |
-| `#997300` | Gold, key terms | 4.36:1 | NO |
-| `#cc0000` | Red, negations | 5.88:1 | YES |
-| `#888888` bg + white text | Old table headers | 3.54:1 | NO (fails AA) |
-| `#cccccc` bg + black text | New table headers | 13.0:1 | YES |
-| `#000000` on `#FFFFFF` | Body text | 21:1 | YES |
+| Color                     | Use               | Ratio vs white | Passes 5.5:1? |
+| ------------------------- | ----------------- | -------------- | ------------- |
+| `#0066cc`                 | Blue, data values | 5.56:1         | YES           |
+| `#997300`                 | Gold, key terms   | 4.36:1         | NO            |
+| `#cc0000`                 | Red, negations    | 5.88:1         | YES           |
+| `#888888` bg + white text | Old table headers | 3.54:1         | NO (fails AA) |
+| `#cccccc` bg + black text | New table headers | 13.0:1         | YES           |
+| `#000000` on `#FFFFFF`    | Body text         | 21:1           | YES           |
 
 ## Recommended replacements for non-palette colors
 
 All verified via WebAIM API:
 
-| Current | Replacement | Ratio | Use |
-| --- | --- | --- | --- |
-| `#997300` | `#7a5c00` | ~5.7:1 | Dark gold/brown for key terms |
-| `#888888` bg | `#cccccc` bg + `#000` text | 13.0:1 | Table headers |
+| Current      | Replacement                | Ratio  | Use                           |
+| ------------ | -------------------------- | ------ | ----------------------------- |
+| `#997300`    | `#7a5c00`                  | ~5.7:1 | Dark gold/brown for key terms |
+| `#888888` bg | `#cccccc` bg + `#000` text | 13.0:1 | Table headers                 |
 
 ## Custom colors in YAML files
 

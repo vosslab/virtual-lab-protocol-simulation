@@ -20,8 +20,9 @@
 `src/steps/plate_96.ts:11-12` hardcodes the per-row concentrations:
 
 ```ts
-export const CARB_CONC_BY_ROW_UM: number[] =
-    [0.0, 0.010, 0.050, 0.125, 0.250, 0.500, 5.0, 25.0];
+export const CARB_CONC_BY_ROW_UM: number[] = [
+  0.0, 0.01, 0.05, 0.125, 0.25, 0.5, 5.0, 25.0,
+];
 ```
 
 Exactly 2 high-range entries (5.0 and 25.0 uM) at rows G and H. There is no
@@ -33,6 +34,7 @@ empirical truth of what the game scores against.
 **Option (a): keep 2 high-range stocks (rows G, H).**
 
 Rationale:
+
 - Plate geometry is fixed at 8 rows; cannot add a 9th.
 - Dose map already commits to (5.0, 25.0); changing it cascades to scoring,
   rendering, and plate reader output.
@@ -54,8 +56,14 @@ Mirrors `carb_low_range` (already migrated, walker-green). 8 interactions
 ```yaml
 - id: carb_high_range
   scene: hood
-  requiredItems: [micropipette, carboplatin_stock, media_bottle,
-                  dilution_tube_carb_g, dilution_tube_carb_h]
+  requiredItems:
+    [
+      micropipette,
+      carboplatin_stock,
+      media_bottle,
+      dilution_tube_carb_g,
+      dilution_tube_carb_h,
+    ]
   completionPath:
     kind: interactionSequence
     interactions:
@@ -126,10 +134,10 @@ Tool: micropipette. Final completionEvent: `carb-high-range-confirm`
 
 ## 5. Items to add (`src/content/cell_culture/items.yaml`)
 
-| Item ID                | Label         | Role           | Asset              | allowedLiquids      | capacityMl |
-| ---------------------- | ------------- | -------------- | ------------------ | ------------------- | ---------- |
-| `dilution_tube_carb_g` | "Carb row G"  | culture_vessel | dilution_tube_rack | [carboplatin, media]| 1          |
-| `dilution_tube_carb_h` | "Carb row H"  | culture_vessel | dilution_tube_rack | [carboplatin, media]| 1          |
+| Item ID                | Label        | Role           | Asset              | allowedLiquids       | capacityMl |
+| ---------------------- | ------------ | -------------- | ------------------ | -------------------- | ---------- |
+| `dilution_tube_carb_g` | "Carb row G" | culture_vessel | dilution_tube_rack | [carboplatin, media] | 1          |
+| `dilution_tube_carb_h` | "Carb row H" | culture_vessel | dilution_tube_rack | [carboplatin, media] | 1          |
 
 No new visual assets - reuse `dilution_tube_rack` like B-F do.
 

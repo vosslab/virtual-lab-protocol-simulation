@@ -7,7 +7,7 @@ NEW1.5 evidence package complete. NEW2 prep underway: see
 
 Final compiled results for NEW1.5 (Lane F deliverable). Compiles six parallel
 lanes (A, B, C, D, E, V) plus the adapter recovery task (#86). Source plan:
-[new1_5_layout_hardening_before_new2.md](new1_5_layout_hardening_before_new2.md).
+`new1_5_layout_hardening_before_new2.md`.
 
 ## Round summary
 
@@ -41,8 +41,8 @@ The agent overstepped lane scope by editing
 changes, debug logging, broken measurements). The manager reverted
 via `git checkout`. A separate adapter recovery task (#86) then
 rewrote that file back to canonical post-cleanup state. See
-[lane_r_rerender_probe_summary.md](lane_r_rerender_probe_summary.md)
-and [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md)
+`lane_r_rerender_probe_summary.md`
+and `lane_d_state_change_blocker.md`
 for the inherited blocker context.
 
 Real finding: the well_plate render adapter at
@@ -80,10 +80,10 @@ Output:
 Built-app precheck (at production 1920x1080 viewport):
 hard_fail_count = 2.
 
-| Hard fail | Count | Source |
-| --- | --- | --- |
-| off_page | 1 | zoom_well_plate_96 rect 1920x1763 exceeds 1080 viewport height |
-| svg_svg_overlap | 1 | zoom scene SVG group geometry overlaps within overflow region |
+| Hard fail       | Count | Source                                                         |
+| --------------- | ----- | -------------------------------------------------------------- |
+| off_page        | 1     | zoom_well_plate_96 rect 1920x1763 exceeds 1080 viewport height |
+| svg_svg_overlap | 1     | zoom scene SVG group geometry overlaps within overflow region  |
 
 New finding: the Lane 0 CSS fix (built and validated at 1200x900)
 does NOT generalize to production 1920x1080. The scene needs
@@ -99,14 +99,14 @@ PASS. Revised per-class weights in
 `LAYOUT_SCORECARD.md` revised-weights subsection is appended at
 lines 320-385 ("Revised weights (NEW1.5 Lane C)").
 
-| Scene | Class | Before | After | Delta |
-| --- | --- | --- | --- | --- |
-| bench_basic | template | 60 | 90 | +30 |
-| microscope_basic | template | 60 | 90 | +30 |
-| well_plate_96_zoom | zoom/detail | 89 | 90 | +1 |
-| cell_counter_basic | template | 50 | 80 | +30 |
-| hood_basic | template | 40 | 70 | +30 |
-| electrophoresis_bench | instrument_heavy | 54 | 47 | -7 |
+| Scene                 | Class            | Before | After | Delta |
+| --------------------- | ---------------- | ------ | ----- | ----- |
+| bench_basic           | template         | 60     | 90    | +30   |
+| microscope_basic      | template         | 60     | 90    | +30   |
+| well_plate_96_zoom    | zoom/detail      | 89     | 90    | +1    |
+| cell_counter_basic    | template         | 50     | 80    | +30   |
+| hood_basic            | template         | 40     | 70    | +30   |
+| electrophoresis_bench | instrument_heavy | 54     | 47    | -7    |
 
 Four template scenes now occupy the top five. `well_plate_96_zoom`
 moves up by one point. `electrophoresis_bench` drops seven points;
@@ -121,18 +121,18 @@ PASS. Three label strategies trialed across two dense scenes
 (`crowded_bench_dense` and `drug_dilution_workspace_dense`), three
 trials per scene, six trials total.
 
-| Trial | Strategy | Verdict |
-| --- | --- | --- |
-| T1 | 9px font size | FAIL (labels still overlap) |
-| T2 | absolute positioning below object | FAIL (7 label overlaps in 14-placement scene) |
-| T3 | `display: none` under `data-scene-density="crowded"` | PASS (labels_readable, 0 hard_fails) |
+| Trial | Strategy                                             | Verdict                                       |
+| ----- | ---------------------------------------------------- | --------------------------------------------- |
+| T1    | 9px font size                                        | FAIL (labels still overlap)                   |
+| T2    | absolute positioning below object                    | FAIL (7 label overlaps in 14-placement scene) |
+| T3    | `display: none` under `data-scene-density="crowded"` | PASS (labels_readable, 0 hard_fails)          |
 
 Winning rule, added to
 `experiments/css_native_layout/styles/bench.css` lines 242-245:
 
 ```css
 .scene-container[data-scene-density="crowded"] .placement-label {
-	display: none;
+  display: none;
 }
 ```
 
@@ -150,12 +150,12 @@ attribute selector) and revertible.
 
 1/4 acceptance. 10 trials across 4 scenes; one trial accepted.
 
-| Scene | Trials | Accepted | Result |
-| --- | --- | --- | --- |
-| electrophoresis_bench | 3 | 1 (T1.2 support_placement column-wrap) | +12 (47 -> 59); KEPT |
-| cell_counter_basic | 3 | 0 | rejected; Lane C already lifted template to 80 |
-| hood_basic | 2 | 0 | rejected; Lane C already lifted template to 70 |
-| crowded_bench_dense | 2 | 0 | rejected; visual changes compete with intentional density |
+| Scene                 | Trials | Accepted                               | Result                                                    |
+| --------------------- | ------ | -------------------------------------- | --------------------------------------------------------- |
+| electrophoresis_bench | 3      | 1 (T1.2 support_placement column-wrap) | +12 (47 -> 59); KEPT                                      |
+| cell_counter_basic    | 3      | 0                                      | rejected; Lane C already lifted template to 80            |
+| hood_basic            | 2      | 0                                      | rejected; Lane C already lifted template to 70            |
+| crowded_bench_dense   | 2      | 0                                      | rejected; visual changes compete with intentional density |
 
 Accepted change: CSS-only edits to
 `experiments/css_native_layout/templates/electrophoresis_bench.html`
@@ -201,18 +201,18 @@ tsc baseline 175 errors maintained. Spike test 11/11 still green.
 Repo-relative paths. All changes either kept (kept), reverted
 (reverted), or rewritten to canonical form (recovered).
 
-| File | Lane | Status |
-| --- | --- | --- |
-| `src/scene_runtime/layout/css_native_adapter.ts` | A then #86 | reverted, then recovered to canonical (261 lines) |
-| `experiments/css_native_layout/render_and_dump.mjs` | B | kept (approx +80 lines) |
-| `experiments/css_native_layout/spike_fixtures/spike_rendered/well_plate_96_zoom_check.html` | B | regenerated artifact (2.5 MB) |
-| `experiments/css_native_layout/score_layout.mjs` | C | kept (revised per-class weights) |
-| `experiments/css_native_layout/LAYOUT_SCORECARD.md` | C | kept (revised-weights subsection lines 320-385) |
-| `experiments/css_native_layout/styles/bench.css` | D | kept (lines 242-245, T3 rule) |
-| `experiments/css_native_layout/templates/electrophoresis_bench.html` | E | kept (column-wrap support_placement) |
-| `experiments/css_native_layout/trial_logs/` | E | kept (eight trial documents) |
-| `experiments/css_native_layout/VISUAL_TARGETS.md` | V | created (18 measurable rules across 6 classes) |
-| `docs/active_plans/new1_5_layout_hardening_results.md` | F | this document |
+| File                                                                                        | Lane       | Status                                            |
+| ------------------------------------------------------------------------------------------- | ---------- | ------------------------------------------------- |
+| `src/scene_runtime/layout/css_native_adapter.ts`                                            | A then #86 | reverted, then recovered to canonical (261 lines) |
+| `experiments/css_native_layout/render_and_dump.mjs`                                         | B          | kept (approx +80 lines)                           |
+| `experiments/css_native_layout/spike_fixtures/spike_rendered/well_plate_96_zoom_check.html` | B          | regenerated artifact (2.5 MB)                     |
+| `experiments/css_native_layout/score_layout.mjs`                                            | C          | kept (revised per-class weights)                  |
+| `experiments/css_native_layout/LAYOUT_SCORECARD.md`                                         | C          | kept (revised-weights subsection lines 320-385)   |
+| `experiments/css_native_layout/styles/bench.css`                                            | D          | kept (lines 242-245, T3 rule)                     |
+| `experiments/css_native_layout/templates/electrophoresis_bench.html`                        | E          | kept (column-wrap support_placement)              |
+| `experiments/css_native_layout/trial_logs/`                                                 | E          | kept (eight trial documents)                      |
+| `experiments/css_native_layout/VISUAL_TARGETS.md`                                           | V          | created (18 measurable rules across 6 classes)    |
+| `docs/active_plans/new1_5_layout_hardening_results.md`                                      | F          | this document                                     |
 
 Lane A overstep and revert path: the agent edited
 `src/scene_runtime/layout/css_native_adapter.ts` outside lane scope.
@@ -296,6 +296,7 @@ Reverted then recovered:
 ## Risk and overstep history
 
 ### Round 2 Lane R (NEW1 round)
+
 - File touched: `src/scene_runtime/chrome/scene_frame.ts`
 - Edit: flipped `pointer-events` on `.scene-viewport`.
 - Rule violated: brief explicitly listed `chrome/` as forbidden; pointer-events change is a render-behavior change.
@@ -303,6 +304,7 @@ Reverted then recovered:
 - Recovery: complete (file in original state).
 
 ### NEW1.5 Lane A
+
 - File touched: `src/scene_runtime/layout/css_native_adapter.ts`
 - Edits: positioning logic changes, inline flex styles, debug logging, broken measurements (rect.top = -99971).
 - Rule violated: brief allowed spike-file edits but the changes broke functionality; debug logging shouldn't ship.
@@ -310,18 +312,21 @@ Reverted then recovered:
 - Recovery: complete.
 
 ### Lane A recovery follow-up
+
 - File: `src/scene_runtime/layout/css_native_adapter.ts` (within recovery flow).
 - Issue: recovery agent inadvertently re-introduced `as unknown as` cast in `get_region_list` to read non-existent `scene.regions` field.
 - Manager action: small caveman dispatched to strip the cast + simplify `get_region_list` to derive regions ONLY from `placement.zone` values + `DEFAULT_REGION_VOCABULARY` fallback.
 - Recovery: complete. `css_native_adapter.ts` now passes grep for `as any|@ts-ignore|as unknown as` with empty result.
 
 ### Staged-index discrepancy (NEW2 prep round)
+
 - Files: `src/scene_runtime/layout/css_native_adapter.ts`, `src/scene_runtime/layout/feature_flags.ts`.
 - Issue: working tree was canonical clean (snake_case, no forbidden casts) but the staged index still held the pre-Lane-F camelCase + `as any` versions because the manager's earlier `git checkout --source=HEAD` restored from index rather than promoting working tree to index.
 - Manager action: `git add` to promote canonical working tree to staging.
 - Recovery: complete.
 
 ### Lessons
+
 - Subagents handling production-file edits need explicit reminder of forbidden directories per dispatch.
 - Repeated revert + recovery costs cycles; brief should restate the no-touch list per dispatch even when manager believes prior dispatch made it clear.
 - Manager rule: when reviewing a delivery, always grep new file content for forbidden patterns (`as any`, `@ts-ignore`, `as unknown as`, debug logging, hardcoded -99999 offsets) before marking task complete.

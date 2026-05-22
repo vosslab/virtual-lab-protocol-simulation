@@ -11,14 +11,14 @@ compiled at build time into a typed TypeScript constant. Each step carries
 the six
 required slots from [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md):
 
-| Slot | Purpose |
-| --- | --- |
-| `step_name` | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
-| `prompt` | States what the student is asked to accomplish in this step. |
-| `sequence` | The ordered list of `interaction` blocks; order always matters. |
-| `step_validator` | Named preset that checks whole-step completion. |
-| `outcome` | The `{on_success, on_failure}` mapping that says how the step resolves. |
-| `next_step` | Names the next step by its `step_name`, or `null` for a terminal step. |
+| Slot             | Purpose                                                                                  |
+| ---------------- | ---------------------------------------------------------------------------------------- |
+| `step_name`      | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
+| `prompt`         | States what the student is asked to accomplish in this step.                             |
+| `sequence`       | The ordered list of `interaction` blocks; order always matters.                          |
+| `step_validator` | Named preset that checks whole-step completion.                                          |
+| `outcome`        | The `{on_success, on_failure}` mapping that says how the step resolves.                  |
+| `next_step`      | Names the next step by its `step_name`, or `null` for a terminal step.                   |
 
 The full YAML schema for these slots, the `interaction` block, the
 `response` container, and the validator presets is documented in

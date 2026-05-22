@@ -18,39 +18,41 @@ Trial 5 baseline measured against regular (non-gold) NEW0 scenes:
 
 #### Per-Scene Summary
 
-| Scene Name | Class | Crops | Objects |
-| --- | --- | --- | --- |
-| bench_basic | template | 1 | well_plate_96 (bottom) |
-| cell_counter_basic | template | 1 | cell_counter (bottom) |
-| hood_basic | template | 1 | p1000_pipette (bottom) |
-| microscope_basic | template | 1 | microscope (bottom) |
-| drug_dilution_plate_workspace | composition | 3 | well_plate_96, tube_rack_24, tip_box (all bottom) |
-| staining_bench | composition | 6 | coomassie_stain, coomassie_recycle, staining_tray, kimwipe_pad, waste_container, rocking_shaker (mostly bottom, some top) |
-| well_plate_96_zoom | zoom_detail | 0 | (no crops) |
-| crowded_bench_dense | dense_clutter | 4 | staining_tray, kimwipe_pad, gel_cassette, rocking_shaker (all bottom) |
-| drug_dilution_workspace_dense | dense_clutter | 4 | well_plate_96, tube_rack_24 x2, drug_vial_rack (all bottom) |
-| electrophoresis_bench | instrument_heavy | 7 | buffer bottles, electrophoresis_tank, gel_cassette, electrode_module, serological_pipette, mini_protean_gel (mostly bottom, some top) |
+| Scene Name                    | Class            | Crops | Objects                                                                                                                               |
+| ----------------------------- | ---------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| bench_basic                   | template         | 1     | well_plate_96 (bottom)                                                                                                                |
+| cell_counter_basic            | template         | 1     | cell_counter (bottom)                                                                                                                 |
+| hood_basic                    | template         | 1     | p1000_pipette (bottom)                                                                                                                |
+| microscope_basic              | template         | 1     | microscope (bottom)                                                                                                                   |
+| drug_dilution_plate_workspace | composition      | 3     | well_plate_96, tube_rack_24, tip_box (all bottom)                                                                                     |
+| staining_bench                | composition      | 6     | coomassie_stain, coomassie_recycle, staining_tray, kimwipe_pad, waste_container, rocking_shaker (mostly bottom, some top)             |
+| well_plate_96_zoom            | zoom_detail      | 0     | (no crops)                                                                                                                            |
+| crowded_bench_dense           | dense_clutter    | 4     | staining_tray, kimwipe_pad, gel_cassette, rocking_shaker (all bottom)                                                                 |
+| drug_dilution_workspace_dense | dense_clutter    | 4     | well_plate_96, tube_rack_24 x2, drug_vial_rack (all bottom)                                                                           |
+| electrophoresis_bench         | instrument_heavy | 7     | buffer bottles, electrophoresis_tank, gel_cassette, electrode_module, serological_pipette, mini_protean_gel (mostly bottom, some top) |
 
 #### By Scene Class
 
-| Class | Scenes | Total Crops | Avg/Scene | Pattern |
-| --- | --- | --- | --- | --- |
-| template | 4 | 4 | 1.0 | 1 primary object per scene, all clipped at bottom |
-| composition | 2 | 9 | 4.5 | Multiple objects; bottles and trays clipped at top/bottom |
-| zoom_detail | 1 | 0 | 0.0 | NO CROPS - zoom mode working |
-| dense_clutter | 2 | 8 | 4.0 | Compact layouts; containers and small items clipped at bottom |
-| instrument_heavy | 1 | 7 | 7.0 | Tall equipment (electrophoresis tank, serological pipette); mostly bottom clipping |
+| Class            | Scenes | Total Crops | Avg/Scene | Pattern                                                                            |
+| ---------------- | ------ | ----------- | --------- | ---------------------------------------------------------------------------------- |
+| template         | 4      | 4           | 1.0       | 1 primary object per scene, all clipped at bottom                                  |
+| composition      | 2      | 9           | 4.5       | Multiple objects; bottles and trays clipped at top/bottom                          |
+| zoom_detail      | 1      | 0           | 0.0       | NO CROPS - zoom mode working                                                       |
+| dense_clutter    | 2      | 8           | 4.0       | Compact layouts; containers and small items clipped at bottom                      |
+| instrument_heavy | 1      | 7           | 7.0       | Tall equipment (electrophoresis tank, serological pipette); mostly bottom clipping |
 
 ### 2. Root Cause Analysis
 
 #### Crop Mechanisms
 
 **Primary causes**:
+
 1. **Footprint min-height too small** - Card does not accommodate tall SVG artwork
 2. **Aspect ratio mismatch** - SVG natural aspect (tall:narrow for pipettes/bottles) conflicts with card constraints
 3. **Region height constraints** - Parent region (rear_shelf, work_surface, front_tools) limits vertical space
 
 **Most affected object types**:
+
 - Tall pipettes (p1000, serological): natural aspect ~1:5, footprint forces aspect ~1:2.5
 - Tall bottles (coomassie, buffer, waste): natural aspect ~1:2.2, handheld card constraint creates mismatch
 - Large equipment (microscope, cell_counter): natural aspect ~1.4:1, large-equipment footprint is still constraining
@@ -59,30 +61,35 @@ Trial 5 baseline measured against regular (non-gold) NEW0 scenes:
 #### Per-Class Patterns
 
 **Template scenes**:
+
 - 4 scenes, 1 primary object each, all clipped at bottom
 - Objects: well_plate_96, cell_counter, microscope, p1000_pipette
 - Root cause: Primary object footprint min-height is too conservative (100-240px) for tall SVGs
 - Symptom: Exactly 1 crop per scene, always bottom overflow
 
 **Composition scenes**:
+
 - 2 scenes, 9 total crops, mixed patterns (6 in staining_bench, 3 in drug_dilution_plate_workspace)
 - Objects: handheld bottles (coomassie, waste), containers (staining_tray), small items (kimwipe), instruments (rocking_shaker)
 - Root cause: Handheld footprint (110px min-height) too tight for tall bottles; work_surface region height insufficient
 - Symptom: Clipping at both top and bottom in tall bottles; bottom clipping in containers
 
 **Dense clutter scenes**:
+
 - 2 scenes, 8 total crops, all clipped at bottom
 - Objects: containers (staining_tray, gel_cassette, well_plate_96), racks (tube_rack_24, drug_vial_rack), small items (kimwipe_pad)
 - Root cause: Crowded density mode shrinks footprint min-heights (0.60x factor), but SVG artwork remains same size; CSS overflow:hidden on .placement clips excess
 - Symptom: Systematic bottom clipping in all footprint classes at crowded scale
 
 **Instrument-heavy scenes**:
+
 - 1 scene (electrophoresis_bench), 7 crops
 - Objects: handheld bottles (buffer 10x, buffer 1x carboy), large instrument (electrophoresis_tank), containers (gel_cassette, mini_protean_gel), small items (electrode_module, serological_pipette)
 - Root cause: Electrophoresis tank is large and takes up space; tall bottles and serological pipette require more height than handheld/small-tool footprint provides
 - Symptom: Mixed top/bottom clipping; electrophoresis_tank clipped at bottom; buffer bottles clipped at both top and bottom
 
 **Zoom detail scenes**:
+
 - 1 scene, 0 crops
 - No action needed; zoom mode is working
 
@@ -101,19 +108,19 @@ Strategy: Increase footprint min-height constraints per class to reduce overflow
 ```css
 /* NEW: Per-class min-height overrides for template scenes */
 .scene--bench .footprint--container {
-	min-height: 250px;  /* was 240px */
+  min-height: 250px; /* was 240px */
 }
 
 .scene--bench .footprint--instrument {
-	min-height: 220px;  /* was 200px */
+  min-height: 220px; /* was 200px */
 }
 
 .scene--bench .footprint--large-equipment {
-	min-height: 300px;  /* was 280px */
+  min-height: 300px; /* was 280px */
 }
 
 .scene--bench .footprint--small-tool {
-	min-height: 200px;  /* was 180px */
+  min-height: 200px; /* was 180px */
 }
 ```
 
@@ -130,12 +137,12 @@ Strategy: Increase footprint min-height constraints per class to reduce overflow
 ```css
 /* NEW: Composition scene handheld override */
 .scene--bench .footprint--handheld {
-	min-height: 140px;  /* was 110px; +27% to accommodate tall bottles */
+  min-height: 140px; /* was 110px; +27% to accommodate tall bottles */
 }
 
 /* Allow visible overflow in work_surface for tall items */
 .region--work_surface {
-	overflow: visible;  /* was hidden; allows tall items to not be clipped */
+  overflow: visible; /* was hidden; allows tall items to not be clipped */
 }
 ```
 
@@ -151,20 +158,26 @@ Strategy: Increase footprint min-height constraints per class to reduce overflow
 
 ```css
 /* NEW: Crowded density class-specific overrides */
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--container {
-	min-height: 180px;  /* was 168px (0.60 * 280); boost by +7% */
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--container {
+  min-height: 180px; /* was 168px (0.60 * 280); boost by +7% */
 }
 
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--handheld {
-	min-height: 90px;  /* was 77px (0.60 * 128); boost by +17% */
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--handheld {
+  min-height: 90px; /* was 77px (0.60 * 128); boost by +17% */
 }
 
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--small-tool {
-	min-height: 50px;  /* was 36px (0.60 * 60); boost by +39% */
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--small-tool {
+  min-height: 50px; /* was 36px (0.60 * 60); boost by +39% */
 }
 
 .scene-container[data-scene-density="crowded"] .region--work_surface {
-	min-height: 200px;  /* was 120px; allow more vertical space */
+  min-height: 200px; /* was 120px; allow more vertical space */
 }
 ```
 
@@ -181,11 +194,11 @@ Strategy: Increase footprint min-height constraints per class to reduce overflow
 ```css
 /* NEW: Instrument-heavy scene overrides */
 .scene--bench .footprint--handheld {
-	min-height: 140px;  /* was 110px; +27% to fit tall buffer bottles */
+  min-height: 140px; /* was 110px; +27% to fit tall buffer bottles */
 }
 
 .scene--bench .footprint--small-tool {
-	min-height: 200px;  /* was 180px; +11% to fit serological pipette */
+  min-height: 200px; /* was 180px; +11% to fit serological pipette */
 }
 ```
 
@@ -208,45 +221,51 @@ Below is the proposed unified CSS addition to `bench.css`:
 
 /* TEMPLATE scenes: Increase all primary footprints by ~10% */
 .scene--bench .footprint--container {
-	min-height: 250px;
+  min-height: 250px;
 }
 
 .scene--bench .footprint--instrument {
-	min-height: 220px;
+  min-height: 220px;
 }
 
 .scene--bench .footprint--large-equipment {
-	min-height: 300px;
+  min-height: 300px;
 }
 
 .scene--bench .footprint--small-tool {
-	min-height: 200px;
+  min-height: 200px;
 }
 
 /* COMPOSITION scenes: Handheld boost + work_surface visibility */
 .scene--bench .footprint--handheld {
-	min-height: 140px;
+  min-height: 140px;
 }
 
 .region--work_surface {
-	overflow: visible;
+  overflow: visible;
 }
 
 /* DENSE_CLUTTER scenes: Crowded mode footprint boosts + region height */
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--container {
-	min-height: 180px;
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--container {
+  min-height: 180px;
 }
 
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--handheld {
-	min-height: 90px;
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--handheld {
+  min-height: 90px;
 }
 
-.scene-container[data-scene-density="crowded"] .scene--bench .footprint--small-tool {
-	min-height: 50px;
+.scene-container[data-scene-density="crowded"]
+  .scene--bench
+  .footprint--small-tool {
+  min-height: 50px;
 }
 
 .scene-container[data-scene-density="crowded"] .region--work_surface {
-	min-height: 200px;
+  min-height: 200px;
 }
 
 /* INSTRUMENT_HEAVY scenes: Already covered by template + composition overrides */
@@ -268,24 +287,28 @@ For each class-specific override:
 ### 6. Adoption Recommendation
 
 **Hypothesis validity**: Per-class policies are necessary. Single global policy (Trial 5) cannot satisfy:
+
 - Template scenes (tight primary object constraints)
 - Dense clutter (crowded scaling conflicts)
 - Instrument-heavy (tall equipment and bottles)
 
 **Risk assessment**:
+
 - Low: CSS-only changes, no YAML modifications, no asset work
 - Contained: Changes scoped to footprint min-height + region overflow properties
 - Reversible: Each override can be reverted independently
 
 **Recommendation**:
-1. **Apply in order**: template → composition → dense_clutter → instrument_heavy
+
+1. **Apply in order**: template -> composition -> dense_clutter -> instrument_heavy
 2. **Measure after each class** to isolate impact and detect regressions
 3. **Stop if a class causes net regression** (crop increase elsewhere)
 4. **If all classes pass**: Combine all overrides and measure full corpus
 
-**Expected outcome**: 28 crops → 12-15 crops (50-65% reduction across all classes)
+**Expected outcome**: 28 crops -> 12-15 crops (50-65% reduction across all classes)
 
 Remaining crops (~12-15) will likely be:
+
 - Placeholder SVGs (not CSS-fixable; require asset work)
 - Extreme aspect ratio objects (serological pipette at ~1:5)
 - Instrument positioning conflicts (electrophoresis tank multi-object layout)
@@ -321,6 +344,7 @@ Remaining crops (~12-15) will likely be:
 ## Final Notes
 
 This analysis revealed that:
+
 - Template scenes need conservative footprints (4 crops, all same pattern)
 - Composition scenes need handheld flexibility (9 crops, diverse objects)
 - Dense clutter scenes need crowded-aware scaling (8 crops, systematic pattern)

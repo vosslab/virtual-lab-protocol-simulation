@@ -62,7 +62,7 @@ reachable from the production runtime. Code-path inspection shows the
 spike returns `ComputedItemLayout[]` (built at css_native_adapter.ts
 lines 149-162) in the legacy shape consumed by
 `renderPlacement` at
-[render/scene.ts](../../src/scene_runtime/render/scene.ts) lines 230-238. No
+[scene.ts](../../src/scene_runtime/render/scene.ts) lines 230-238. No
 field shape incompatibility detected.
 
 ## Backlog A: click target proof
@@ -71,11 +71,11 @@ Conclusion: the spike does NOT change the click-binding mechanism.
 
 Click resolution at runtime walks the DOM via `closest('[data-target-id]')`
 at
-[dispatch/click.ts](../../src/scene_runtime/dispatch/click.ts) lines 43-45.
+[click.ts](../../src/scene_runtime/dispatch/click.ts) lines 43-45.
 The `data-target-id` attribute is set on the rendered SVG group at
-[render/scene.ts](../../src/scene_runtime/render/scene.ts) line 247 and on
+[scene.ts](../../src/scene_runtime/render/scene.ts) line 247 and on
 well-plate subpart groups at
-[adapters/well_plate/render.ts](../../src/scene_runtime/adapters/well_plate/render.ts) line 136.
+[render.ts](../../src/scene_runtime/adapters/well_plate/render.ts) line 136.
 
 The new CSS-native adapter scaffolds an off-screen DOM tree
 (css_native_adapter.ts:65-122) where placement elements carry
@@ -101,7 +101,7 @@ idempotent and compatible with the ObjectStateChange re-render loop,
 with one perf caveat.
 
 `applyObjectStateChange` at
-[render/apply.ts](../../src/scene_runtime/render/apply.ts) lines 31-111
+[apply.ts](../../src/scene_runtime/render/apply.ts) lines 31-111
 mutates `world.objectStates` and returns a new RuntimeWorld. The
 re-render path then calls `computeSceneLayout`, which (if the flag
 were on for `well_plate_96_zoom`) re-invokes
@@ -126,7 +126,7 @@ Conclusion: an anchor API is NOT needed. Path C is deferred
 indefinitely.
 
 `applyCursorAttach` at
-[render/apply.ts](../../src/scene_runtime/render/apply.ts) lines 161-198 is
+[apply.ts](../../src/scene_runtime/render/apply.ts) lines 161-198 is
 state-only; it updates `world.cursorState.attachedTo` and
 `world.cursorState.operation`. It does not read any layout
 coordinates. Visual cursor following is not implemented in the
@@ -255,6 +255,7 @@ This comment establishes the boundary: what the shim IS (a coordinate transform)
 **Requirement:** Add an assertion to `tests/playwright/spike_built_app_well_plate_zoom.mjs` verifying that spike output rect coords are in SVG space.
 
 **SVG coordinate range determined:** Unambiguous from `content/base_scenes/well_plate_96_zoom.yaml`:
+
 - scene_bounds: left=1, right=99, top=5, bottom=95
 - Expected SVG x range: [1, 99], max width 98
 - Expected SVG y range: [5, 95], max height 90
@@ -290,10 +291,12 @@ Confirmed. Edits this round are limited to three files under
 ### Style and type cleanup applied
 
 Reviewer flagged two violations in the first Path A landing:
+
 - `(placement as any).label` -- wrong field (PlacementConfig has no `label`) plus disallowed cast.
 - `sceneId`, `viewportW`, `viewportH`, internal camelCase locals -- propagated forbidden naming into NEW spike code.
 
 Fixed in [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts):
+
 - `as any` casts removed (both `(placement as any).label` and `(scene as any).regions`).
 - Label is now derived from `world.objects[placement.object_name].label`. Placement label dropped entirely.
 - Region list now derived only from placement `zone` values; `work_surface` is always included as fallback host.
@@ -305,6 +308,7 @@ Fixed in [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_
 ### Feature flag override applied
 
 Replaced const-only flag with override-aware API in [../../src/scene_runtime/layout/feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts):
+
 - `is_css_native_well_plate_zoom_spike_enabled(): boolean`
 - `set_css_native_well_plate_zoom_spike_enabled_for_test(value: boolean | null): void`
 
@@ -313,15 +317,18 @@ Default compile-time constant remains `false`. The setter is test-only; calling 
 ### Style debt -- what remains and why
 
 Fixed in this round (NEW spike code only):
+
 - Removed camelCase locals/params in css_native_adapter.ts.
 - Removed both `as any` casts.
 
 Pre-existing legacy debt (NOT in scope for the spike):
+
 - `src/scene_runtime/layout/adapter.ts` still uses `sceneId`, `viewportW`, `viewportH`. Touching these would broaden scope beyond the approved seam.
 - `src/scene_runtime/layout/layout_engine.ts` uses camelCase throughout.
 - `src/scene_runtime/layout/types.ts` field names `labelLines`, `labelX`, `labelY`, etc. are part of the legacy contract.
 
 Deliberately out of scope this round:
+
 - Full migration of layout module to snake_case + non-Id-suffix identifiers. Reviewer brief flagged this as a separate cleanup pass.
 
 ### Lane 3: browser empirical proof
@@ -332,11 +339,13 @@ Screenshot saved at `test-results/new1_spike/lane3_browser_proof.png` (gitignore
 Results record: [../../tests/playwright/spike_css_native_well_plate_zoom_results.md](../../tests/playwright/spike_css_native_well_plate_zoom_results.md).
 
 Verified:
+
 - The CSS-native adapter path actually runs when the override is set.
 - It returns a non-empty `ComputedItemLayout[]` with numeric `x`, `y`, `width`, `height`.
 - Result placement id matches `zoom_well_plate_96`.
 
 Known gap (documented, not closed):
+
 - Click-target proof through the FULL production `renderScene` + dispatch pipeline cannot run in this test because the production bundle is not loaded. The test exercises the spike module in isolation in a real browser, not the full integrated runtime.
 - ObjectStateChange proof through the FULL production pipeline has the same dependency.
 
@@ -350,7 +359,7 @@ Max: 0.2 ms.
 DOM-leak check: `document.body.children.length` delta = 0 across 50 calls.
 Scaffold node count per call: 2 (1 region + 1 placement) for the well_plate_96_zoom fixture with one placement declaring `work_surface` as its zone; the default-five-region fallback is not triggered.
 
-Verdict: per-render scaffold attach/detach is well under any reasonable frame budget for the spike scene. No optimization needed at this time. See [new1_path_a_measurement_fallback_analysis.md](new1_path_a_measurement_fallback_analysis.md) for alternatives if perf becomes an issue at a larger scene scale.
+Verdict: per-render scaffold attach/detach is well under any reasonable frame budget for the spike scene. No optimization needed at this time. See `new1_path_a_measurement_fallback_analysis.md` for alternatives if perf becomes an issue at a larger scene scale.
 
 ### Observation: zoom-mode placement overflows the scaffold viewport
 
@@ -361,6 +370,7 @@ Open question for the next round: does the production `renderScene` consumer cop
 ### Recommendation
 
 Continue Path A. Specifically:
+
 1. Reviewer disposition on the overflow-rect question above.
 2. Add the bundle-level integration test (build pipeline + override reachable from test page) so click and state-change can be proven through the full runtime.
 3. Defer Path C anchor follow-up indefinitely (audit confirms rect output is sufficient).
@@ -371,18 +381,21 @@ Continue Path A. Specifically:
 **Problem:** Zoom-mode placement rect overflowed the 1200x900 scaffold viewport: measured width=1800, height=968, x=-300, y=28 (x+width=1500 > 1200, y+height=996 > 900).
 
 **Root cause:** Two CSS rules forced overflow:
+
 1. `.scene-mode--detail .placement` had `min-width: 1800px; min-height: 950px;` in bench.css (line 215-216).
 2. `.scene-container.scene-mode--detail .region--work_surface` had `min-height: 1000px;` in all three stylesheets (bench.css, hood.css, instrument.css lines 408, 307, 304 respectively).
 
 The placement's `width: calc(100% - 20px);` was constrained to ~1180px (within scaffold). But the min-width: 1800px forced the browser to expand the placement beyond viewport bounds.
 
 **Solution:** CSS fix (preferred path, no adapter clamp needed). Removed the overflow-inducing min-constraints:
+
 - Deleted `min-width: 1800px; min-height: 950px;` from bench.css `.scene-mode--detail .placement` rule.
 - Deleted `min-height: 1000px;` from `.scene-container.scene-mode--detail .region--work_surface` in all three stylesheets.
 
 **Rect after fix:** width=900, height=844, x=150, y=28.
 
 **Bounds check (1200x900 scaffold):**
+
 - 0 <= x (150) OK
 - 0 <= y (28) OK
 - x+width <= 1200 (150+900=1050 <= 1200) OK
@@ -393,6 +406,7 @@ The placement's `width: calc(100% - 20px);` was constrained to ~1180px (within s
 **TypeScript impact:** Zero new errors. Pre-existing error count remains 10 (9 in generated/scene_data.ts + 1 in render/scene.ts:316). CSS edits do not touch TypeScript.
 
 **Files modified:**
+
 - [../../experiments/css_native_layout/styles/bench.css](../../experiments/css_native_layout/styles/bench.css): removed min-width/min-height from detail placement rule; removed min-height from detail work_surface rule.
 - [../../experiments/css_native_layout/styles/hood.css](../../experiments/css_native_layout/styles/hood.css): removed min-height from detail work_surface rule.
 - [../../experiments/css_native_layout/styles/instrument.css](../../experiments/css_native_layout/styles/instrument.css): removed min-height from detail work_surface rule.
@@ -402,6 +416,7 @@ The placement's `width: calc(100% - 20px);` was constrained to ~1180px (within s
 The feature flag override (setter and getter) is now reachable from browser-based Playwright tests via the SceneRuntime global IIFE bundle.
 
 **Changes:**
+
 - [../../src/scene_runtime/bundle/entry.ts](../../src/scene_runtime/bundle/entry.ts): re-exports `is_css_native_well_plate_zoom_spike_enabled` and `set_css_native_well_plate_zoom_spike_enabled_for_test` under a spike-only `__spike` namespace.
 
 **Bundle integration:** esbuild's `--global-name=SceneRuntime --format=iife` wrapper exposes the `__spike` object as a property of the global `SceneRuntime` object.
@@ -410,15 +425,24 @@ The feature flag override (setter and getter) is now reachable from browser-base
 
 ```javascript
 // Enable the spike at test start
-await page.evaluate(() => window.SceneRuntime.__spike.set_css_native_well_plate_zoom_spike_enabled_for_test(true));
+await page.evaluate(() =>
+  window.SceneRuntime.__spike.set_css_native_well_plate_zoom_spike_enabled_for_test(
+    true,
+  ),
+);
 
 // ... run your test ...
 
 // Reset the flag to null (fallback to compile-time default) when done
-await page.evaluate(() => window.SceneRuntime.__spike.set_css_native_well_plate_zoom_spike_enabled_for_test(null));
+await page.evaluate(() =>
+  window.SceneRuntime.__spike.set_css_native_well_plate_zoom_spike_enabled_for_test(
+    null,
+  ),
+);
 ```
 
 **Verification:**
+
 - TypeScript: `npx tsc --noEmit -p tsconfig.json` shows no new errors (pre-existing 160 errors unchanged).
 - Build: `bash pipeline/build_runtime_bundle.sh` exit 0; bundle size 2.62 MB.
 - Symbol presence: both `set_css_native_well_plate_zoom_spike_enabled_for_test` (2x) and `is_css_native_well_plate_zoom_spike_enabled` (3x) present in minified bundle.
@@ -432,21 +456,21 @@ NEW0 layout quantitative scorecard generated from stabilized precheck audit. See
 
 ### Worst 3 scenes (by total_layout_score)
 
-| Rank | Scene | Class | Score | Top worst metric | Recommendation |
-| --- | --- | --- | --- | --- | --- |
-| 10 | cell_counter_basic | template | 51 | region_filling | region_density_tuning |
-| 9 | hood_basic | template | 53 | region_filling | region_density_tuning |
-| 8 | electrophoresis_bench | instrument_heavy | 54 | primary_area_ratio | primary_area_increase |
+| Rank | Scene                 | Class            | Score | Top worst metric   | Recommendation        |
+| ---- | --------------------- | ---------------- | ----- | ------------------ | --------------------- |
+| 10   | cell_counter_basic    | template         | 51    | region_filling     | region_density_tuning |
+| 9    | hood_basic            | template         | 53    | region_filling     | region_density_tuning |
+| 8    | electrophoresis_bench | instrument_heavy | 54    | primary_area_ratio | primary_area_increase |
 
 All three are starved for fill (sparse templates) or primary size (electrophoresis tank below 15% class target).
 
 ### Best 3 scenes (by total_layout_score)
 
-| Rank | Scene | Class | Score | Top worst metric | Recommendation |
-| --- | --- | --- | --- | --- | --- |
-| 1 | well_plate_96_zoom | zoom_detail | 89 | primary_area_ratio | primary_area_increase |
-| 2 | microscope_basic | template | 65 | scene_occupied | primary_area_increase |
-| 3 | crowded_bench_dense | dense_clutter | 61 | label_readability | label_separation |
+| Rank | Scene               | Class         | Score | Top worst metric   | Recommendation        |
+| ---- | ------------------- | ------------- | ----- | ------------------ | --------------------- |
+| 1    | well_plate_96_zoom  | zoom_detail   | 89    | primary_area_ratio | primary_area_increase |
+| 2    | microscope_basic    | template      | 65    | scene_occupied     | primary_area_increase |
+| 3    | crowded_bench_dense | dense_clutter | 61    | label_readability  | label_separation      |
 
 well_plate_96_zoom leads (89), validating the zoom CSS fix (primary ratio lifted from 31.9% to 88.7%). dense_clutter and composition scenes score 58-61 (fair range; label and primary tuning available).
 
@@ -516,7 +540,7 @@ Working directory: repo root. Exit code: 0 (process completed but with errors du
 **Exact failure:** The precheck tool times out waiting for the `.scene-container` locator at `precheck.mjs` line 1047:
 
 ```javascript
-const container = await page.locator('.scene-container').boundingBox();
+const container = await page.locator(".scene-container").boundingBox();
 ```
 
 Error message:
@@ -533,7 +557,9 @@ The built app HTML file (`dist/_spike_well_plate_96_zoom_check.html`) is a thin 
 
 ```html
 <div id="runtime-root"></div>
-<script type="application/json" id="protocol-runtime-data">{ "protocol_name": "well_plate_96_zoom_check" }</script>
+<script type="application/json" id="protocol-runtime-data">
+  { "protocol_name": "well_plate_96_zoom_check" }
+</script>
 <script src="./runtime.bundle.js"></script>
 <script>
   // Mount SceneRuntime.loadAndMountByProtocolName(runtimeRoot, protocolName)
@@ -546,7 +572,8 @@ The experiments-folder static templates (e.g., `experiments/css_native_layout/te
 
 ### Precheck design assumption
 
-Precheck was designed to ingest static HTML templates that have the scene DOM fully specified at page-load time, with data-* attributes like:
+Precheck was designed to ingest static HTML templates that have the scene DOM fully specified at page-load time, with data-\* attributes like:
+
 - `.scene-container` present
 - `.placement` elements with `data-placement-name` and `data-object-name`
 - `.region` divs with `data-region-name`
@@ -561,20 +588,22 @@ If precheck must audit the built app's rendered output, one of two approaches is
 1. **Renderer adapter (recommended):** Create a wrapper script that:
    - Loads the built HTML file via Playwright (or jsdom/puppeteer with longer timeouts).
    - Waits for the `.scene-container` to appear (with a longer timeout or explicit readiness detection).
-   - Extracts the rendered DOM to a static HTML file (preserving all .placement, .region, .placement-label elements and their data-* attributes).
+   - Extracts the rendered DOM to a static HTML file (preserving all .placement, .region, .placement-label elements and their data-\* attributes).
    - Invokes precheck.mjs against that static HTML dump.
 
    Pseudocode:
 
    ```javascript
    const browser = await chromium.launch();
-   const page = await browser.newPage({ viewport: { width: 1920, height: 1080 } });
-   await page.goto('file:///path/to/dist/_spike_well_plate_96_zoom_check.html');
+   const page = await browser.newPage({
+     viewport: { width: 1920, height: 1080 },
+   });
+   await page.goto("file:///path/to/dist/_spike_well_plate_96_zoom_check.html");
    // Wait for runtime mount (with much longer timeout)
-   await page.waitForSelector('.scene-container', { timeout: 10000 });
+   await page.waitForSelector(".scene-container", { timeout: 10000 });
    // Extract rendered DOM
    const html = await page.content();
-   fs.writeFileSync('spike_rendered/well_plate_96_zoom_static.html', html);
+   fs.writeFileSync("spike_rendered/well_plate_96_zoom_static.html", html);
    await browser.close();
    // Invoke precheck on the static dump
    ```
@@ -619,7 +648,7 @@ PASS. A Playwright click on `[data-target-id="well_plate_96"]` reached the produ
 
 ### ObjectStateChange proof
 
-PARTIAL. The ObjectStateChange primitive was applied successfully (a `material_name` mutation was observed on the scene state). DOM idempotency was confirmed: body children delta after re-mount equals 0, so no DOM leak. However, `renderScene` re-execution was NOT triggered: the validator at [../../src/scene_runtime/bundle/entry.ts](../../src/scene_runtime/bundle/entry.ts) (function `isTargetSatisfied`, around line 761) rejects the well sub-target click, so the step resets instead of completing. With no step completion, no re-render fires, and the spike invocation count remains 1. The "no production code path forbidden boundary" was not fully crossed. Blocker documented at [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md).
+PARTIAL. The ObjectStateChange primitive was applied successfully (a `material_name` mutation was observed on the scene state). DOM idempotency was confirmed: body children delta after re-mount equals 0, so no DOM leak. However, `renderScene` re-execution was NOT triggered: the validator at [../../src/scene_runtime/bundle/entry.ts](../../src/scene_runtime/bundle/entry.ts) (function `isTargetSatisfied`, around line 761) rejects the well sub-target click, so the step resets instead of completing. With no step completion, no re-render fires, and the spike invocation count remains 1. The "no production code path forbidden boundary" was not fully crossed. Blocker documented at `lane_d_state_change_blocker.md`.
 
 ### Precheck on built output
 

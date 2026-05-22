@@ -10,9 +10,10 @@ Baseline: 23 unique HARD FAIL cropping items (SVG clipped by parent overflow) po
 **Strategy**: Tighten min/max ranges to better accommodate the dominant object shapes within each class, forcing outliers to break (requiring YAML retagging).
 
 **Changes attempted**:
-- `handheld`: min-height 110px → 220px (accommodate tall bottles AR ~0.4)
-- `container`: max-width 320px → 280px, min-height 240px → 260px (focus on portrait flasks, exclude wide plates)
-- `rack`: min-height 160px → 200px, max-width 190px → 200px (accommodate tall tip boxes)
+
+- `handheld`: min-height 110px -> 220px (accommodate tall bottles AR ~0.4)
+- `container`: max-width 320px -> 280px, min-height 240px -> 260px (focus on portrait flasks, exclude wide plates)
+- `rack`: min-height 160px -> 200px, max-width 190px -> 200px (accommodate tall tip boxes)
 
 **Result**: **REGRESSION**. Crops increased from 23 to 52 items.
 
@@ -31,16 +32,19 @@ Baseline: 23 unique HARD FAIL cropping items (SVG clipped by parent overflow) po
 **Proposed new classes** (prototype-only, NOT adopted):
 
 ### `footprint--tall-glassware`
+
 - **Use case**: Volumetric flasks, Erlenmeyer flasks, tall portrait glassware (AR ~0.35-0.5)
 - **CSS dimensions**: min 160x300, max 240x420
 - **Expected benefit**: Eliminates aspect distortion on flask rendering (currently 7-8% HARD FAIL when forced into portrait container 220x360)
 
 ### `footprint--landscape-plate`
+
 - **Use case**: 96-well plates, 24-well plates, wide shallow containers (AR 1.4-1.5)
 - **CSS dimensions**: min 280x200, max 380x280
 - **Expected benefit**: Eliminates cropping on wide plates (currently "Artwork Extends Outside Card on bottom" when forced into portrait container)
 
 ### `footprint--instrument-wide`
+
 - **Use case**: Plate reader, wide instruments (AR 1.8-2.0)
 - **CSS dimensions**: min 380x220, max 500x300
 - **Expected benefit**: Removes 19% aspect distortion on plate_reader (currently too tall in landscape large-equipment 360x380)
@@ -52,6 +56,7 @@ Baseline: 23 unique HARD FAIL cropping items (SVG clipped by parent overflow) po
 3. Or: introduce new `object.shape_group` or `object.ar_category` field to guide footprint selection
 
 **Adoption recommendation** (escalate to user):
+
 - Phase 2 classes are theoretically sound and dimensionally justified by SVG viewBox analysis
 - Adoption requires YAML vocabulary extension (PRIMARY_SPEC.md, object kind taxonomy, scene format)
 - This is a spec-level decision, not a CSS-only fix
@@ -62,16 +67,17 @@ Baseline: 23 unique HARD FAIL cropping items (SVG clipped by parent overflow) po
 The 23 baseline crops break down by root cause:
 
 ### Cause: Inherent aspect mismatch (cannot fix by footprint alone)
+
 - **Pipettes** (AR 0.11-0.23 ultra-narrow): serological_pipette, p200_micropipette, p1000_pipette, p10_gel_loading_tip_box
   - Root issue: current small-tool class (50x60 to 80x200) is barely adequate for 0.11 AR; items still render as near-invisible sliver
   - Workaround: requires custom CSS or asset redesign (wider tip visualization)
-  
 - **Waste shapes** (AR mismatch): waste_container (0.6), waste_tray (1.4)
   - Assigned to `handheld` class designed for bottles (AR 0.4)
   - Cannot coexist in one footprint class without unacceptable compromise
   - Needs separate `footprint--waste` class
 
 ### Cause: Artifact in specific scenes (overcrowding or region pressure)
+
 - **Well plates** (center_well_plate, well_plate_96): 3 crops in different scenes
   - Issue: wide plate forced into "work_surface" region that constrains height
   - Region itself has overflow:hidden, clipping artwork bottom
@@ -85,23 +91,23 @@ The 23 baseline crops break down by root cause:
   - Root fix: region/layout design, not footprint
 
 ### Cause: Aspect tolerance exceedance
+
 - **Bottles** (coomassie_stain, destain, laemmli, bme, ddh2o, ethanol): 7-8% aspect distortion
   - SVG AR ~0.36, rendered AR 0.39 (within 5% tolerance threshold)
   - Barely exceeds tolerance; minor CSS adjustment (min-height + 10px) may resolve
-  
 - **Cell_counter, microscope**: portrait instruments in landscape-biased large-equipment class
   - Root fix: split large-equipment into portrait and landscape variants
 
 ## Summary Table
 
-| Metric | Value |
-| --- | --- |
-| Baseline crops (deduplicated) | 23 |
-| Phase 1 impact | REGRESSION (+29, total 52) |
-| Phase 2 impact (theoretical) | 15-25 resolved if adopted |
-| Crops resolvable by footprint alone | ~8-10 (well plates, wide plates, instruments) |
-| Crops requiring region redesign | ~8 (crowded scene overflows, region constraints) |
-| Crops requiring new object kinds | ~5 (waste, narrow pipettes, ultra-wide items) |
+| Metric                              | Value                                            |
+| ----------------------------------- | ------------------------------------------------ |
+| Baseline crops (deduplicated)       | 23                                               |
+| Phase 1 impact                      | REGRESSION (+29, total 52)                       |
+| Phase 2 impact (theoretical)        | 15-25 resolved if adopted                        |
+| Crops resolvable by footprint alone | ~8-10 (well plates, wide plates, instruments)    |
+| Crops requiring region redesign     | ~8 (crowded scene overflows, region constraints) |
+| Crops requiring new object kinds    | ~5 (waste, narrow pipettes, ultra-wide items)    |
 
 ## Recommendations
 

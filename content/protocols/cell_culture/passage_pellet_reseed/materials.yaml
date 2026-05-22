@@ -2,25 +2,25 @@ materials:
   cell_suspension:
     label: Cell suspension
     display_color:
-      light: '#cc0066'
-      dark: '#cc0066'
+      light: "#cc0066"
+      dark: "#cc0066"
   cell_pellet:
     label: Cell pellet (centrifuged)
     display_color:
-      light: '#cc0066'
-      dark: '#cc0066'
+      light: "#cc0066"
+      dark: "#cc0066"
   media:
     label: Growth media
     display_color:
-      light: '#6c6c00'
-      dark: '#6c6c00'
+      light: "#6c6c00"
+      dark: "#6c6c00"
   fresh_media:
     label: Fresh culture media
     display_color:
-      light: '#6c6c00'
-      dark: '#6c6c00'
+      light: "#6c6c00"
+      dark: "#6c6c00"
   empty:
     label: Empty
     display_color:
-      light: '#ffffff'
-      dark: '#ffffff'
+      light: "#ffffff"
+      dark: "#ffffff"

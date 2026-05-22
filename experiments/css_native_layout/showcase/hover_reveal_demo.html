@@ -1,12 +1,12 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Lane O2: Hover/Reveal Label Demo</title>
-	<link rel="stylesheet" href="../styles/bench.css">
-	<style>
-		/*
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lane O2: Hover/Reveal Label Demo</title>
+    <link rel="stylesheet" href="../styles/bench.css" />
+    <style>
+      /*
 		Scoped overrides for the hover/reveal label pattern.
 		Pure CSS: no JS involved in label visibility.
 		- Hide every .placement-label by default
@@ -18,202 +18,344 @@
 		even when the visible label is hidden.
 		*/
 
-		.demo-banner {
-			background: #fff3cd;
-			border: 1px solid #ffc107;
-			color: #664d03;
-			padding: 12px 16px;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-			font-size: 14px;
-			font-weight: 600;
-			text-align: center;
-		}
+      .demo-banner {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        color: #664d03;
+        padding: 12px 16px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        text-align: center;
+      }
 
-		.demo-explainer {
-			background: #f8f9fa;
-			border-top: 1px solid #dee2e6;
-			color: #2c3e50;
-			padding: 16px 24px;
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-			font-size: 13px;
-			line-height: 1.6;
-			max-width: 1200px;
-			margin: 0 auto;
-		}
+      .demo-explainer {
+        background: #f8f9fa;
+        border-top: 1px solid #dee2e6;
+        color: #2c3e50;
+        padding: 16px 24px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        font-size: 13px;
+        line-height: 1.6;
+        max-width: 1200px;
+        margin: 0 auto;
+      }
 
-		/* Make placement a positioning context so labels can float above */
-		.scene-container .placement {
-			position: relative;
-			overflow: visible;
-		}
-		.scene-container .region {
-			overflow: visible;
-		}
+      /* Make placement a positioning context so labels can float above */
+      .scene-container .placement {
+        position: relative;
+        overflow: visible;
+      }
+      .scene-container .region {
+        overflow: visible;
+      }
 
-		/* Hide labels by default; float above the object on reveal */
-		.scene-container .placement-label {
-			opacity: 0;
-			transition: opacity 160ms ease-out, transform 160ms ease-out;
-			pointer-events: none;
-			background: #2c3e50;
-			color: #ffffff;
-			border: 1px solid #1a252f;
-			border-radius: 4px;
-			padding: 5px 12px;
-			font-size: 14px;
-			font-weight: 600;
-			box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
-			white-space: nowrap;
-			max-width: none;
-			position: absolute;
-			left: 50%;
-			top: -8px;
-			transform: translate(-50%, -100%) translateY(-4px);
-			z-index: 100;
-		}
+      /* Hide labels by default; float above the object on reveal */
+      .scene-container .placement-label {
+        opacity: 0;
+        transition:
+          opacity 160ms ease-out,
+          transform 160ms ease-out;
+        pointer-events: none;
+        background: #2c3e50;
+        color: #ffffff;
+        border: 1px solid #1a252f;
+        border-radius: 4px;
+        padding: 5px 12px;
+        font-size: 14px;
+        font-weight: 600;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+        white-space: nowrap;
+        max-width: none;
+        position: absolute;
+        left: 50%;
+        top: -8px;
+        transform: translate(-50%, -100%) translateY(-4px);
+        z-index: 100;
+      }
 
-		/* Reveal on hover */
-		.scene-container .placement:hover .placement-label {
-			opacity: 1;
-			transform: translate(-50%, -100%) translateY(0);
-		}
+      /* Reveal on hover */
+      .scene-container .placement:hover .placement-label {
+        opacity: 1;
+        transform: translate(-50%, -100%) translateY(0);
+      }
 
-		/* Reveal on keyboard focus (focus-within catches focus on the placement
+      /* Reveal on keyboard focus (focus-within catches focus on the placement
 		   itself or any descendant focusable child) */
-		.scene-container .placement:focus-within .placement-label {
-			opacity: 1;
-			transform: translate(-50%, -100%) translateY(0);
-		}
+      .scene-container .placement:focus-within .placement-label {
+        opacity: 1;
+        transform: translate(-50%, -100%) translateY(0);
+      }
 
-		/* Faint highlight on the placement itself when hovered or focused, so the
+      /* Faint highlight on the placement itself when hovered or focused, so the
 		   target is discoverable without a permanent label */
-		.scene-container .placement:hover .object-graphic,
-		.scene-container .placement:focus-within .object-graphic {
-			outline: 3px solid rgba(196, 30, 58, 0.85);
-			outline-offset: 3px;
-		}
+      .scene-container .placement:hover .object-graphic,
+      .scene-container .placement:focus-within .object-graphic {
+        outline: 3px solid rgba(196, 30, 58, 0.85);
+        outline-offset: 3px;
+      }
 
-		.scene-container .placement:focus-visible {
-			outline: none;
-		}
-	</style>
-</head>
-<body>
-	<div class="demo-banner">
-		DEMO ONLY: hover/reveal label pattern, not wired into production layout
-	</div>
+      .scene-container .placement:focus-visible {
+        outline: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-banner">
+      DEMO ONLY: hover/reveal label pattern, not wired into production layout
+    </div>
 
-	<div class="scene-container scene--bench" data-scene-mode="composition" data-scene-density="crowded">
-		<!-- Rear shelf: 5 reagent bottles -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Reagents and Waste</span>
+    <div
+      class="scene-container scene--bench"
+      data-scene-mode="composition"
+      data-scene-density="crowded"
+    >
+      <!-- Rear shelf: 5 reagent bottles -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Reagents and Waste</span>
 
-			<div class="placement" data-placement="rear_coomassie_stain" data-placement-name="rear_coomassie_stain" data-object-name="coomassie_stain_bottle" tabindex="0" role="button" title="Coomassie Stain" aria-label="Coomassie Stain">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/coomassie_stain_bottle_filled.svg" alt="Coomassie Stain">
-				</div>
-				<span class="placement-label">Coomassie</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_coomassie_stain"
+          data-placement-name="rear_coomassie_stain"
+          data-object-name="coomassie_stain_bottle"
+          tabindex="0"
+          role="button"
+          title="Coomassie Stain"
+          aria-label="Coomassie Stain"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/coomassie_stain_bottle_filled.svg"
+              alt="Coomassie Stain"
+            />
+          </div>
+          <span class="placement-label">Coomassie</span>
+        </div>
 
-			<div class="placement" data-placement="rear_destain" data-placement-name="rear_destain" data-object-name="destain_bottle" tabindex="0" role="button" title="Destain" aria-label="Destain">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/destain_bottle_filled.svg" alt="Destain">
-				</div>
-				<span class="placement-label">Destain</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_destain"
+          data-placement-name="rear_destain"
+          data-object-name="destain_bottle"
+          tabindex="0"
+          role="button"
+          title="Destain"
+          aria-label="Destain"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/destain_bottle_filled.svg"
+              alt="Destain"
+            />
+          </div>
+          <span class="placement-label">Destain</span>
+        </div>
 
-			<div class="placement" data-placement="rear_ddh2o" data-placement-name="rear_ddh2o" data-object-name="ddh2o_bottle" tabindex="0" role="button" title="ddH2O" aria-label="ddH2O">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/ddh2o_bottle_filled.svg" alt="ddH2O">
-				</div>
-				<span class="placement-label">ddH2O</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_ddh2o"
+          data-placement-name="rear_ddh2o"
+          data-object-name="ddh2o_bottle"
+          tabindex="0"
+          role="button"
+          title="ddH2O"
+          aria-label="ddH2O"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/ddh2o_bottle_filled.svg"
+              alt="ddH2O"
+            />
+          </div>
+          <span class="placement-label">ddH2O</span>
+        </div>
 
-			<div class="placement" data-placement="rear_laemmli_buffer" data-placement-name="rear_laemmli_buffer" data-object-name="laemmli_4x_bottle" tabindex="0" role="button" title="Laemmli 4x Buffer" aria-label="Laemmli 4x Buffer">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/laemmli_4x_bottle_filled.svg" alt="Laemmli">
-				</div>
-				<span class="placement-label">Laemmli</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_laemmli_buffer"
+          data-placement-name="rear_laemmli_buffer"
+          data-object-name="laemmli_4x_bottle"
+          tabindex="0"
+          role="button"
+          title="Laemmli 4x Buffer"
+          aria-label="Laemmli 4x Buffer"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/laemmli_4x_bottle_filled.svg"
+              alt="Laemmli"
+            />
+          </div>
+          <span class="placement-label">Laemmli</span>
+        </div>
 
-			<div class="placement" data-placement="rear_bme_bottle" data-placement-name="rear_bme_bottle" data-object-name="bme_bottle" tabindex="0" role="button" title="Beta-mercaptoethanol" aria-label="Beta-mercaptoethanol">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/bme_bottle_filled.svg" alt="BME">
-				</div>
-				<span class="placement-label">BME</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="rear_bme_bottle"
+          data-placement-name="rear_bme_bottle"
+          data-object-name="bme_bottle"
+          tabindex="0"
+          role="button"
+          title="Beta-mercaptoethanol"
+          aria-label="Beta-mercaptoethanol"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/bme_bottle_filled.svg"
+              alt="BME"
+            />
+          </div>
+          <span class="placement-label">BME</span>
+        </div>
+      </div>
 
-		<!-- Work surface: staining tray + kimwipes + gel cassette -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Work surface: staining tray + kimwipes + gel cassette -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="center_staining_tray" data-placement-name="center_staining_tray" data-object-name="staining_tray" data-primary="true" tabindex="0" role="button" title="Staining Tray" aria-label="Staining Tray">
-				<div class="object-graphic footprint--container">
-					<img src="../../../assets/equipment/staining_tray_empty.svg" alt="Staining Tray">
-				</div>
-				<span class="placement-label">Staining Tray</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="center_staining_tray"
+          data-placement-name="center_staining_tray"
+          data-object-name="staining_tray"
+          data-primary="true"
+          tabindex="0"
+          role="button"
+          title="Staining Tray"
+          aria-label="Staining Tray"
+        >
+          <div class="object-graphic footprint--container">
+            <img
+              src="../../../assets/equipment/staining_tray_empty.svg"
+              alt="Staining Tray"
+            />
+          </div>
+          <span class="placement-label">Staining Tray</span>
+        </div>
 
-			<div class="placement" data-placement="center_kimwipe_pad" data-placement-name="center_kimwipe_pad" data-object-name="kimwipe_pad" tabindex="0" role="button" title="Kimwipe Pad" aria-label="Kimwipe Pad">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/kimwipe_pad.svg" alt="Kimwipes">
-				</div>
-				<span class="placement-label">Kimwipes</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="center_kimwipe_pad"
+          data-placement-name="center_kimwipe_pad"
+          data-object-name="kimwipe_pad"
+          tabindex="0"
+          role="button"
+          title="Kimwipe Pad"
+          aria-label="Kimwipe Pad"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/kimwipe_pad.svg"
+              alt="Kimwipes"
+            />
+          </div>
+          <span class="placement-label">Kimwipes</span>
+        </div>
 
-			<div class="placement" data-placement="center_gel_cassette" data-placement-name="center_gel_cassette" data-object-name="gel_cassette" tabindex="0" role="button" title="Gel Cassette" aria-label="Gel Cassette">
-				<div class="object-graphic footprint--instrument">
-					<img src="../../../assets/equipment/gel_cassette.svg" alt="Gel Cassette">
-				</div>
-				<span class="placement-label">Gel Cassette</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="center_gel_cassette"
+          data-placement-name="center_gel_cassette"
+          data-object-name="gel_cassette"
+          tabindex="0"
+          role="button"
+          title="Gel Cassette"
+          aria-label="Gel Cassette"
+        >
+          <div class="object-graphic footprint--instrument">
+            <img
+              src="../../../assets/equipment/gel_cassette.svg"
+              alt="Gel Cassette"
+            />
+          </div>
+          <span class="placement-label">Gel Cassette</span>
+        </div>
+      </div>
 
-		<!-- Front tools -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Instruments and Waste</span>
+      <!-- Front tools -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Instruments and Waste</span>
 
-			<div class="placement" data-placement="front_microwave" data-placement-name="front_microwave" data-object-name="microwave" tabindex="0" role="button" title="Microwave" aria-label="Microwave">
-				<div class="object-graphic footprint--instrument">
-					<img src="../../../assets/equipment/microwave_closed.svg" alt="Microwave">
-				</div>
-				<span class="placement-label">Microwave</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="front_microwave"
+          data-placement-name="front_microwave"
+          data-object-name="microwave"
+          tabindex="0"
+          role="button"
+          title="Microwave"
+          aria-label="Microwave"
+        >
+          <div class="object-graphic footprint--instrument">
+            <img
+              src="../../../assets/equipment/microwave_closed.svg"
+              alt="Microwave"
+            />
+          </div>
+          <span class="placement-label">Microwave</span>
+        </div>
 
-			<div class="placement" data-placement="front_rocking_shaker" data-placement-name="front_rocking_shaker" data-object-name="rocking_shaker" tabindex="0" role="button" title="Rocking Shaker" aria-label="Rocking Shaker">
-				<div class="object-graphic footprint--instrument">
-					<img src="../../../assets/equipment/rocking_shaker_idle.svg" alt="Shaker">
-				</div>
-				<span class="placement-label">Shaker</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="front_rocking_shaker"
+          data-placement-name="front_rocking_shaker"
+          data-object-name="rocking_shaker"
+          tabindex="0"
+          role="button"
+          title="Rocking Shaker"
+          aria-label="Rocking Shaker"
+        >
+          <div class="object-graphic footprint--instrument">
+            <img
+              src="../../../assets/equipment/rocking_shaker_idle.svg"
+              alt="Shaker"
+            />
+          </div>
+          <span class="placement-label">Shaker</span>
+        </div>
 
-			<div class="placement" data-placement="front_waste_container" data-placement-name="front_waste_container" data-object-name="waste_container" tabindex="0" role="button" title="Waste Container" aria-label="Waste Container">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/waste_container.svg" alt="Waste">
-				</div>
-				<span class="placement-label">Waste</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="front_waste_container"
+          data-placement-name="front_waste_container"
+          data-object-name="waste_container"
+          tabindex="0"
+          role="button"
+          title="Waste Container"
+          aria-label="Waste Container"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/waste_container.svg"
+              alt="Waste"
+            />
+          </div>
+          <span class="placement-label">Waste</span>
+        </div>
+      </div>
 
-		<!-- Instrument station: empty -->
-		<div class="region region--instrument_station" data-region="instrument_station">
-			<span class="region-label">Large Equipment</span>
-		</div>
+      <!-- Instrument station: empty -->
+      <div
+        class="region region--instrument_station"
+        data-region="instrument_station"
+      >
+        <span class="region-label">Large Equipment</span>
+      </div>
 
-		<!-- Popup layer: unused -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
+      <!-- Popup layer: unused -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
 
-	<div class="demo-explainer">
-		Labels are hidden by default and revealed only when the student hovers
-		or keyboard-focuses an object, keeping a dense scene visually quiet while
-		preserving full discoverability. The reveal is pure CSS using
-		<code>:hover</code> and <code>:focus-within</code> on
-		<code>.placement</code>, with opacity and transform transitions for a
-		soft fade. Accessibility is preserved because every placement carries
-		<code>title</code> and <code>aria-label</code> attributes that screen
-		readers and native tooltips can read regardless of label visibility.
-	</div>
-</body>
+    <div class="demo-explainer">
+      Labels are hidden by default and revealed only when the student hovers or
+      keyboard-focuses an object, keeping a dense scene visually quiet while
+      preserving full discoverability. The reveal is pure CSS using
+      <code>:hover</code> and <code>:focus-within</code> on
+      <code>.placement</code>, with opacity and transform transitions for a soft
+      fade. Accessibility is preserved because every placement carries
+      <code>title</code> and <code>aria-label</code> attributes that screen
+      readers and native tooltips can read regardless of label visibility.
+    </div>
+  </body>
 </html>

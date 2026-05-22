@@ -9,7 +9,7 @@ Lane P (precheck bridge on built output) are in flight as the two
 remaining round-2 follow-ups. No contract amendment, no coordinate
 solver, no forbidden-file edits required.
 
-Full report: [new0_new1_layout_rebuild_progress_report.html](new0_new1_layout_rebuild_progress_report.html)
+Full report: `new0_new1_layout_rebuild_progress_report.html`
 
 Status summary:
 
@@ -25,12 +25,12 @@ Status summary:
 
 Key plan documents:
 
-- [new0_reproducible_evidence_package.md](new0_reproducible_evidence_package.md)
-- [new0_stabilization_continuation.md](new0_stabilization_continuation.md)
-- [new1_spike_path_comparison.md](new1_spike_path_comparison.md)
+- `new0_reproducible_evidence_package.md`
+- `new0_stabilization_continuation.md`
+- `new1_spike_path_comparison.md`
 - [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md)
-- [new1_well_plate_96_zoom_dev_smoke_wiring.md](new1_well_plate_96_zoom_dev_smoke_wiring.md)
-- [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md)
+- `new1_well_plate_96_zoom_dev_smoke_wiring.md`
+- `lane_d_state_change_blocker.md`
 
 Diagnostic artifacts (generated, gitignored):
 
@@ -41,7 +41,7 @@ Diagnostic artifacts (generated, gitignored):
 
 Tracked scorecard specification:
 
-- [experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md)
+- [LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md)
 
 Tracked HTML assets copied for this report live under
 `docs/active_plans/new0_new1_layout_rebuild_assets/` and are referenced

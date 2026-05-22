@@ -4,7 +4,7 @@
 
 Three implementation paths for the NEW1 `well_plate_96_zoom` CSS-native
 layout spike were investigated in parallel. Each path produced a packet
-under [../../experiments/css_native_layout/spike_paths/](../../experiments/css_native_layout/spike_paths/)
+under `spike_paths`
 containing a README, a prototype sketch, and a JSON assessment. This
 document compares the three packets and recommends a single safest-first
 path. It also reconciles a tension between Path B (rejected for breaking
@@ -14,18 +14,18 @@ adapter return is safe).
 ## Paths inspected
 
 - Path A: Adapter compatibility. Packet:
-  [../../experiments/css_native_layout/spike_paths/path_a_adapter_compat/](../../experiments/css_native_layout/spike_paths/path_a_adapter_compat/).
+  `path_a_adapter_compat`.
   Summary: gate `computeSceneLayout`, run a hidden DOM scaffold, measure
   with `getBoundingClientRect()`, return populated `ComputedItemLayout[]`
   with integer rects.
 - Path B: DOM-first hit target. Packet:
-  [../../experiments/css_native_layout/spike_paths/path_b_dom_first/](../../experiments/css_native_layout/spike_paths/path_b_dom_first/).
+  `path_b_dom_first`.
   Summary: render CSS-native DOM, eliminate the rect emission, rely on
   `data-target-id` and `closest()`. Rejected because the lone external
   rect consumer at `src/scene_runtime/render/scene.ts:235-238` is in a
   forbidden file.
 - Path C: Hybrid bridge. Packet:
-  [../../experiments/css_native_layout/spike_paths/path_c_hybrid/](../../experiments/css_native_layout/spike_paths/path_c_hybrid/).
+  `path_c_hybrid`.
   Summary: CSS-native DOM mounted "elsewhere", empty `ComputedItemLayout[]`
   from the adapter, plus a minimal 2-3 function anchor API
   (`getAnchorForObject`, `getAnchorForTarget`, `getAnchorBoundsForObject`)
@@ -34,21 +34,21 @@ adapter return is safe).
 
 ## Comparison table
 
-| Criterion | Path A | Path B | Path C (as written) | Path C (reclassified as A + anchor) |
-| --- | --- | --- | --- | --- |
-| Production files touched (count) | 3 | 4 | 2 | 4 |
-| Production lines added (estimate) | 110 | 180 | ~60 | ~150 |
-| Needs ComputedItemLayout[] populated | yes | no | no (empty) | yes |
-| Uses DOM hit targets | yes | yes | yes | yes |
-| Introduces coordinate math | no | no | no | no |
-| CursorAttach works | yes (state + synthetic rects) | yes (state-only) | yes (one-shot anchor read) | yes (one-shot anchor read) |
-| ObjectStateChange re-renders cleanly | yes (re-enters adapter) | only with render/scene.ts branch | unclear: empty return throws at scene.ts:229-232 | yes (re-enters adapter; anchor API not called) |
-| Rollback complexity | trivial | moderate | low on paper, broken in practice | low |
-| Precheck expected verdict | PASS_TEMPLATE | PASS_TEMPLATE | n/a (renderer throws) | PASS_TEMPLATE |
-| Screenshot expected | yes | yes | no (throw before paint) | yes |
-| Failure mode triggered (general coord solver) | no | no | no | no |
-| Forbidden-file edit required | no | yes (render/scene.ts) | yes (render/scene.ts) to suppress the throw | no |
-| Recommendation | keep | reject | reject as written | keep as follow-up to A |
+| Criterion                                     | Path A                        | Path B                           | Path C (as written)                              | Path C (reclassified as A + anchor)            |
+| --------------------------------------------- | ----------------------------- | -------------------------------- | ------------------------------------------------ | ---------------------------------------------- |
+| Production files touched (count)              | 3                             | 4                                | 2                                                | 4                                              |
+| Production lines added (estimate)             | 110                           | 180                              | ~60                                              | ~150                                           |
+| Needs ComputedItemLayout[] populated          | yes                           | no                               | no (empty)                                       | yes                                            |
+| Uses DOM hit targets                          | yes                           | yes                              | yes                                              | yes                                            |
+| Introduces coordinate math                    | no                            | no                               | no                                               | no                                             |
+| CursorAttach works                            | yes (state + synthetic rects) | yes (state-only)                 | yes (one-shot anchor read)                       | yes (one-shot anchor read)                     |
+| ObjectStateChange re-renders cleanly          | yes (re-enters adapter)       | only with render/scene.ts branch | unclear: empty return throws at scene.ts:229-232 | yes (re-enters adapter; anchor API not called) |
+| Rollback complexity                           | trivial                       | moderate                         | low on paper, broken in practice                 | low                                            |
+| Precheck expected verdict                     | PASS_TEMPLATE                 | PASS_TEMPLATE                    | n/a (renderer throws)                            | PASS_TEMPLATE                                  |
+| Screenshot expected                           | yes                           | yes                              | no (throw before paint)                          | yes                                            |
+| Failure mode triggered (general coord solver) | no                            | no                               | no                                               | no                                             |
+| Forbidden-file edit required                  | no                            | yes (render/scene.ts)            | yes (render/scene.ts) to suppress the throw      | no                                             |
+| Recommendation                                | keep                          | reject                           | reject as written                                | keep as follow-up to A                         |
 
 ## Evaluation against reviewer gates
 
@@ -98,10 +98,10 @@ Gates per the NEW1 implementation packet at
 Tension: Path C's assessment lists `adapter_return.populated_at_all:
 false` and recommends returning an empty `ComputedItemLayout[]`. Path B
 was rejected explicitly because the lone external consumer at
-[../../src/scene_runtime/render/scene.ts](../../src/scene_runtime/render/scene.ts):229-232
+`scene.ts`:229-232
 calls `layoutMap.get(placement.placement_name)` and throws when the
 entry is missing. The full consumer audit lives at
-[../../experiments/css_native_layout/spike_paths/path_b_dom_first/layout_xy_consumers.md](../../experiments/css_native_layout/spike_paths/path_b_dom_first/layout_xy_consumers.md).
+`layout_xy_consumers.md`.
 
 Finding: Path C as written has the same hidden defect as Path B. An
 empty adapter return for the spike scene does not bypass
@@ -154,11 +154,11 @@ right shape to add once cursor-attach asks for a point.
   `agent/new1_path_a_adapter_compat_spike`; add the new
   `src/scene_runtime/layout/css_native_adapter.ts` module (created by the spike)
   exporting `computeSceneLayoutCssNative(world, sceneId, viewportW,
-  viewportH): ComputedItemLayout[]` that builds a hidden offscreen
+viewportH): ComputedItemLayout[]` that builds a hidden offscreen
   scaffold, attaches it to `document.body`, reads
   `getBoundingClientRect()` per placement, and returns integer-rounded
   rects; gate the existing
-  [../../src/scene_runtime/layout/adapter.ts](../../src/scene_runtime/layout/adapter.ts):32-90
+  `adapter.ts`:32-90
   call to `legacyComputeLayout(...)` behind one conditional
   `if (sceneId === 'well_plate_96_zoom' && ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE) { return computeSceneLayoutCssNative(...); }`.
 
@@ -176,12 +176,12 @@ right shape to add once cursor-attach asks for a point.
   `Math.round` at the adapter boundary. The spike must capture
   measured rects for the production viewport range and confirm they
   fall inside the pixel-diff tolerance described in
-  [../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md](../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md).
+  `expected_screenshot_paths.md`.
   If rounding shifts a placement by more than one pixel relative to
   the legacy solver at any supported viewport width, document the
   shift and revisit before promoting beyond the spike scene.
 - Renderer-side rect zero-tolerance behavior of
-  [../../src/scene_runtime/render/scene.ts](../../src/scene_runtime/render/scene.ts):235-238:
+  `scene.ts`:235-238:
   the consumer reads `layout.x`, `layout.y`, `layout.width`,
   `layout.height` unconditionally and the upstream `layoutMap.get`
   throws on a missing entry at lines 229-232. Path A satisfies this by
@@ -192,9 +192,10 @@ right shape to add once cursor-attach asks for a point.
 
 ## Implementation outcome (2026-05-19)
 
-Path A selected and implemented. See [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md).
+Path A selected and implemented. See `new1_well_plate_96_zoom_spike_result.md`.
 
 Outcome by path:
+
 - Path A: implemented; TS compile clean; empirical proof deferred pending flag-override decision.
 - Path B: not implemented (rejected on `src/scene_runtime/render/scene.ts:235-238` consumer-edit requirement).
 - Path C: cursor-attach audit concluded anchor API NOT needed; Path A rect output sufficient; Path C deferred indefinitely.

@@ -16,10 +16,10 @@ Materials are authored per protocol in `content/protocols/<cluster>/<protocol_na
 
 Closed schema, two required keys, no optional keys:
 
-| Field | Required | Type | Meaning |
-| --- | --- | --- | --- |
-| `label` | yes | string | Human display label (`"1x PBS"`, `"Cell suspension"`) |
-| `display_color` | yes | mapping with `light` and `dark` keys | Nested mapping with theme-specific hex colors (see Palette mapping section below). **DEPRECATED scalar form** (`display_color: "#..."`) will be rejected by V6a validator; migration required. |
+| Field           | Required | Type                                 | Meaning                                                                                                                                                                                        |
+| --------------- | -------- | ------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `label`         | yes      | string                               | Human display label (`"1x PBS"`, `"Cell suspension"`)                                                                                                                                          |
+| `display_color` | yes      | mapping with `light` and `dark` keys | Nested mapping with theme-specific hex colors (see Palette mapping section below). **DEPRECATED scalar form** (`display_color: "#..."`) will be rejected by V6a validator; migration required. |
 
 Unknown keys are rejected by the validator. A material kind enum (liquid, solid, gel, powder) is intentionally not authored until a non-liquid material needs distinct behavior.
 
@@ -57,8 +57,8 @@ The `display_color` field contains theme-specific colors for light and dark rend
 
 ```yaml
 display_color:
-  light: "<hex_color>"    # rendered on light background (#ffffff)
-  dark: "<hex_color>"     # rendered on dark background (#1a1a1a)
+  light: "<hex_color>" # rendered on light background (#ffffff)
+  dark: "<hex_color>" # rendered on dark background (#1a1a1a)
 ```
 
 Both `light` and `dark` keys are required and contain hex color codes (for example, `"#076dad"`).
@@ -79,7 +79,7 @@ Every `display_color` pair must meet WCAG v2 AA accessibility standards:
 - `light` hex color must have a **contrast ratio &ge; 5.5:1** against light background `#ffffff`
 - `dark` hex color must have a **contrast ratio &ge; 5.5:1** against dark background `#1a1a1a`
 
-This exceeds WCAG AA's 4.5:1 minimum (see [docs/COLOR_CONTRAST_ACCESSIBILITY.md](../COLOR_CONTRAST_ACCESSIBILITY.md) for details and formula).
+This exceeds WCAG AA's 4.5:1 minimum (see [COLOR_CONTRAST_ACCESSIBILITY.md](../COLOR_CONTRAST_ACCESSIBILITY.md) for details and formula).
 
 ### Finding accessible shades
 
@@ -117,7 +117,7 @@ Old form (invalid):
 materials:
   pbs:
     label: "1x PBS"
-    display_color: "#b8e5ff"    # INVALID: scalar instead of nested mapping
+    display_color: "#b8e5ff" # INVALID: scalar instead of nested mapping
 ```
 
 **Action required:** All per-protocol `materials.yaml` files using scalar `display_color` must migrate to the nested mapping form. M4 content migration sweeps all existing materials and applies automated migration using `tools/contrast_calculator.py` to derive safe shades for each theme. After M4 completes, V6a validation will enforce nested form and reject any remaining scalars.
@@ -129,16 +129,16 @@ A small closed set of material-name values is exempt from per-protocol
 the stepper and skipped by the `s-unregistered` gate. The full set is
 eight values, grouped by purpose:
 
-| Sentinel | Class | Meaning |
-| --- | --- | --- |
-| `empty` | state sentinel | empty container; no material present |
-| `mixed` | state sentinel | generic blended material whose identity is not tracked |
-| `cells` | biological identity | cell biomass; identity is intrinsic to the protocol and is not authored as a chemical reagent |
-| `formazan` | biological identity | MTT assay product synthesized in-well from MTT plus living cells; identity is tracked structurally rather than registered |
-| `waste_mtt` | disposal sink | MTT-contaminated waste stream |
-| `waste_media` | disposal sink | spent-media waste stream |
-| `waste_drug` | disposal sink | drug-contaminated waste stream |
-| `waste_buffer` | disposal sink | buffer (PBS, wash) waste stream |
+| Sentinel       | Class               | Meaning                                                                                                                   |
+| -------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `empty`        | state sentinel      | empty container; no material present                                                                                      |
+| `mixed`        | state sentinel      | generic blended material whose identity is not tracked                                                                    |
+| `cells`        | biological identity | cell biomass; identity is intrinsic to the protocol and is not authored as a chemical reagent                             |
+| `formazan`     | biological identity | MTT assay product synthesized in-well from MTT plus living cells; identity is tracked structurally rather than registered |
+| `waste_mtt`    | disposal sink       | MTT-contaminated waste stream                                                                                             |
+| `waste_media`  | disposal sink       | spent-media waste stream                                                                                                  |
+| `waste_drug`   | disposal sink       | drug-contaminated waste stream                                                                                            |
+| `waste_buffer` | disposal sink       | buffer (PBS, wash) waste stream                                                                                           |
 
 The state sentinels are defined by [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md);
 the biological-identity and disposal-sink sentinels are recognized by the
@@ -174,6 +174,7 @@ The clip path geometry must cover the interior space where liquid appears withou
 Two invisible anchor rects help position overlays:
 
 1. **anchor_liquid_bounds**: Defines the fill region where liquid can rise. Typically matches the inner tube bounds.
+
    ```svg
    <rect id="anchor_liquid_bounds" x="5.5" y="15" width="5" height="101" fill="none" stroke="none" display="none"/>
    ```

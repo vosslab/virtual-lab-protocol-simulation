@@ -6,13 +6,13 @@ Status: DONE
 
 ## Scoreboard
 
-| Pass | Templates visible_crops | Gold visible_crops | Templates off_page | Templates region_overflow | Templates svg_overlap |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| baseline (HEAD 8795d25) | 41 | 78 | 20 | 0 | 0 |
-| strategy_a (literal class sizing) | 64 (+23) | not run | 20 | 0 | 0 |
-| strategy_b (region/card growth) | 41 (0) | not run | 26 (+6) | 0 | 0 |
-| strategy_c (object containment) | 21 (-20) | not run | 21 (+1) | 4 (+4) | 0 |
-| hybrid (== Strategy C alone) | 21 (-20) | 38 (-40) | 21 (+1) | 4 (+4) | 0 templates / 15 gold |
+| Pass                              | Templates visible_crops | Gold visible_crops | Templates off_page | Templates region_overflow | Templates svg_overlap |
+| --------------------------------- | ----------------------: | -----------------: | -----------------: | ------------------------: | --------------------: |
+| baseline (HEAD 8795d25)           |                      41 |                 78 |                 20 |                         0 |                     0 |
+| strategy_a (literal class sizing) |                64 (+23) |            not run |                 20 |                         0 |                     0 |
+| strategy_b (region/card growth)   |                  41 (0) |            not run |            26 (+6) |                         0 |                     0 |
+| strategy_c (object containment)   |                21 (-20) |            not run |            21 (+1) |                    4 (+4) |                     0 |
+| hybrid (== Strategy C alone)      |                21 (-20) |           38 (-40) |            21 (+1) |                    4 (+4) | 0 templates / 15 gold |
 
 Visible crops = `checks.artwork_integrity.clipped_by_parent` length per scene
 (Round 2 definition). off_page, region_overflow, svg_svg_overlap are the
@@ -95,12 +95,12 @@ viewport-edge cases unmasked by C.
 
 Applied to a clean baseline and re-run:
 
-| Suite | visible_crops | off_page | region_overflow | svg_svg_overlap |
-| ---: | ---: | ---: | ---: | ---: |
-| templates baseline | 41 | 20 | 0 | 0 |
-| templates hybrid | 21 | 21 | 4 | 0 |
-| gold baseline | 78 | 34 | 0 | 0 |
-| gold hybrid | 38 | 38 | 20 | 15 |
+|              Suite | visible_crops | off_page | region_overflow | svg_svg_overlap |
+| -----------------: | ------------: | -------: | --------------: | --------------: |
+| templates baseline |            41 |       20 |               0 |               0 |
+|   templates hybrid |            21 |       21 |               4 |               0 |
+|      gold baseline |            78 |       34 |               0 |               0 |
+|        gold hybrid |            38 |       38 |              20 |              15 |
 
 Templates: -20 visible crops (-49%) with +5 net other hard fails. Gold:
 -40 visible crops (-51%) with +39 other hard fails (20 region_overflow,
@@ -115,6 +115,7 @@ Gold visible_crops: baseline 78 -> hybrid 38. No worsening; substantial
 improvement.
 
 The hybrid does surface previously-hidden hard fails on gold:
+
 - region_overflow 0 -> 20: the gold scenes contain placements that
   always overflowed their regions; the baseline `overflow: hidden`
   masked this. Surfacing the metric is good; the underlying layout
@@ -132,18 +133,18 @@ to the next workstream (gold repair).
 
 After hybrid, 21 visible_crops remain across 8 of 10 templates:
 
-| Scene | crops | objects |
-| ---: | ---: | --- |
-| electrophoresis_bench | 7 | tall containers in dense scene |
-| drug_dilution_workspace_dense | 4 | well_plate_96, tube_rack_24, drug_vial_rack, etc. |
-| crowded_bench_dense | 3 | dense work_surface |
-| drug_dilution_plate_workspace | 2 | well_plate_96, tube_rack_24 |
-| staining_bench | 2 | staining_tray, waste_container |
-| bench_basic | 1 | p200_micropipette bottom-of-viewport |
-| cell_counter_basic | 1 | cell_counter bottom-of-viewport |
-| microscope_basic | 1 | microscope bottom-of-viewport |
-| hood_basic | 0 | none |
-| well_plate_96_zoom | 0 | none |
+|                         Scene | crops | objects                                           |
+| ----------------------------: | ----: | ------------------------------------------------- |
+|         electrophoresis_bench |     7 | tall containers in dense scene                    |
+| drug_dilution_workspace_dense |     4 | well_plate_96, tube_rack_24, drug_vial_rack, etc. |
+|           crowded_bench_dense |     3 | dense work_surface                                |
+| drug_dilution_plate_workspace |     2 | well_plate_96, tube_rack_24                       |
+|                staining_bench |     2 | staining_tray, waste_container                    |
+|                   bench_basic |     1 | p200_micropipette bottom-of-viewport              |
+|            cell_counter_basic |     1 | cell_counter bottom-of-viewport                   |
+|              microscope_basic |     1 | microscope bottom-of-viewport                     |
+|                    hood_basic |     0 | none                                              |
+|            well_plate_96_zoom |     0 | none                                              |
 
 These are predominantly bottom-of-viewport overflow: the SVG asset
 renders at its natural size and extends below the 1080px viewport
@@ -159,12 +160,12 @@ boundary. The fix lives in two follow-on workstreams:
 
 ## Decisions and rejects
 
-| Pass | Decision | Reason |
-| --- | --- | --- |
-| Strategy A | REJECT | regression: 41 -> 64 visible crops |
-| Strategy B | REJECT in isolation | crops unchanged, off_page +6 |
-| Strategy C | KEEP | 41 -> 21 crops, minor off_page +1 |
-| Hybrid | KEEP (== Strategy C) | A and B add no value over C; combining would worsen off_page |
+| Pass       | Decision             | Reason                                                       |
+| ---------- | -------------------- | ------------------------------------------------------------ |
+| Strategy A | REJECT               | regression: 41 -> 64 visible crops                           |
+| Strategy B | REJECT in isolation  | crops unchanged, off_page +6                                 |
+| Strategy C | KEEP                 | 41 -> 21 crops, minor off_page +1                            |
+| Hybrid     | KEEP (== Strategy C) | A and B add no value over C; combining would worsen off_page |
 
 ## Artifact paths
 
@@ -188,8 +189,8 @@ before/after pairs.
 
 ## Files edited
 
-| File | Status |
-| --- | --- |
+| File                                             | Status                                                    |
+| ------------------------------------------------ | --------------------------------------------------------- |
 | `experiments/css_native_layout/styles/bench.css` | REVERTED to HEAD 8795d25 (git status clean for this file) |
 
 The hybrid diff is preserved at `hybrid_bench.css.diff` so it can be
@@ -254,8 +255,8 @@ separate axis from layout containment.
 Status: DONE
 
 - Baseline visible_crops (templates): 41 (cite: `_temp_count.py
-  test-results/.../baseline/visual_audit.json` -> `TOTAL
-  visible_crops (clipped_by_parent): 41`)
+test-results/.../baseline/visual_audit.json` -> `TOTAL
+visible_crops (clipped_by_parent): 41`)
 - Per-strategy delta:
   - A: +23 (REJECT)
   - B: 0 (REJECT, off_page +6)

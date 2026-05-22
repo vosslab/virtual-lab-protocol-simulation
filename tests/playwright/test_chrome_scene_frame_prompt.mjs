@@ -12,30 +12,30 @@
  * 5. Screenshots captured under test-results/_chrome/.
  */
 
-import { chromium } from 'playwright';
-import path from 'node:path';
-import fs from 'node:fs';
-import { REPO_ROOT } from './repo_root.mjs';
+import { chromium } from "playwright";
+import path from "node:path";
+import fs from "node:fs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 //============================================
 // TEST: scene frame mount and prompt render
 //============================================
 
 async function runTest() {
-	console.log('Starting WP-CHROME-MINIMAL-1A test...');
+  console.log("Starting WP-CHROME-MINIMAL-1A test...");
 
-	// Sample step to render.
-	const testStep = {
-		step_name: 'test_step_1',
-		prompt: 'Open the well plate workspace and prepare to add media.',
-		sequence: [],
-		step_validator: { preset: 'sequence_complete' },
-		outcome: { on_success: 'complete', on_failure: 'retry' },
-		next_step: null,
-	};
+  // Sample step to render.
+  const testStep = {
+    step_name: "test_step_1",
+    prompt: "Open the well plate workspace and prepare to add media.",
+    sequence: [],
+    step_validator: { preset: "sequence_complete" },
+    outcome: { on_success: "complete", on_failure: "retry" },
+    next_step: null,
+  };
 
-	// HTML test harness that mounts the chrome and renders the step.
-	const htmlContent = `<!DOCTYPE html>
+  // HTML test harness that mounts the chrome and renders the step.
+  const htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
 	<meta charset="UTF-8" />
@@ -146,109 +146,129 @@ async function runTest() {
 </body>
 </html>`;
 
-	const tempDir = path.join(REPO_ROOT, 'test-results', '_chrome');
-	fs.mkdirSync(tempDir, { recursive: true });
+  const tempDir = path.join(REPO_ROOT, "test-results", "_chrome");
+  fs.mkdirSync(tempDir, { recursive: true });
 
-	const htmlPath = path.join(tempDir, 'index.html');
-	fs.writeFileSync(htmlPath, htmlContent);
+  const htmlPath = path.join(tempDir, "index.html");
+  fs.writeFileSync(htmlPath, htmlContent);
 
-	// Start a browser and load the HTML.
-	console.log('  Launching browser...');
-	const browser = await chromium.launch({ headless: true });
-	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  // Start a browser and load the HTML.
+  console.log("  Launching browser...");
+  const browser = await chromium.launch({ headless: true });
+  const page = await browser.newPage({
+    viewport: { width: 1200, height: 900 },
+  });
 
-	const fileUrl = `file://${htmlPath}`;
-	console.log(`  Loading ${fileUrl}...`);
-	await page.goto(fileUrl);
+  const fileUrl = `file://${htmlPath}`;
+  console.log(`  Loading ${fileUrl}...`);
+  await page.goto(fileUrl);
 
-	// Wait for chrome to be ready.
-	await page.waitForFunction(() => window.chromeReady === true, { timeout: 5000 });
-	console.log('  Chrome mounted and ready');
+  // Wait for chrome to be ready.
+  await page.waitForFunction(() => window.chromeReady === true, {
+    timeout: 5000,
+  });
+  console.log("  Chrome mounted and ready");
 
-	// Take a screenshot after mount.
-	const screenshotAfter = path.join(tempDir, '01_scene_frame_prompt.png');
-	await page.screenshot({ path: screenshotAfter });
-	console.log(`  Screenshot: ${screenshotAfter}`);
+  // Take a screenshot after mount.
+  const screenshotAfter = path.join(tempDir, "01_scene_frame_prompt.png");
+  await page.screenshot({ path: screenshotAfter });
+  console.log(`  Screenshot: ${screenshotAfter}`);
 
-	// ============================================
-	// Assertion 1: scene-viewport element exists
-	// ============================================
-	const viewportExists = await page.locator('[data-testid="scene-viewport"]').count();
-	if (viewportExists !== 1) {
-		throw new Error(`Expected 1 scene-viewport element, found ${viewportExists}`);
-	}
-	console.log('  ✓ Scene viewport element exists with data-testid="scene-viewport"');
+  // ============================================
+  // Assertion 1: scene-viewport element exists
+  // ============================================
+  const viewportExists = await page
+    .locator('[data-testid="scene-viewport"]')
+    .count();
+  if (viewportExists !== 1) {
+    throw new Error(
+      `Expected 1 scene-viewport element, found ${viewportExists}`,
+    );
+  }
+  console.log(
+    '  ✓ Scene viewport element exists with data-testid="scene-viewport"',
+  );
 
-	// ============================================
-	// Assertion 2: prompt-panel element exists
-	// ============================================
-	const panelExists = await page.locator('[data-testid="prompt-panel"]').count();
-	if (panelExists !== 1) {
-		throw new Error(`Expected 1 prompt-panel element, found ${panelExists}`);
-	}
-	console.log('  ✓ Prompt panel element exists with data-testid="prompt-panel"');
+  // ============================================
+  // Assertion 2: prompt-panel element exists
+  // ============================================
+  const panelExists = await page
+    .locator('[data-testid="prompt-panel"]')
+    .count();
+  if (panelExists !== 1) {
+    throw new Error(`Expected 1 prompt-panel element, found ${panelExists}`);
+  }
+  console.log(
+    '  ✓ Prompt panel element exists with data-testid="prompt-panel"',
+  );
 
-	// ============================================
-	// Assertion 3: prompt text is rendered verbatim
-	// ============================================
-	const promptPanel = page.locator('[data-testid="prompt-panel"]');
-	const panelText = await promptPanel.textContent();
-	const expectedText = testStep.prompt;
+  // ============================================
+  // Assertion 3: prompt text is rendered verbatim
+  // ============================================
+  const promptPanel = page.locator('[data-testid="prompt-panel"]');
+  const panelText = await promptPanel.textContent();
+  const expectedText = testStep.prompt;
 
-	if (panelText !== expectedText) {
-		throw new Error(`Prompt text mismatch.\nExpected: "${expectedText}"\nGot: "${panelText}"`);
-	}
-	console.log('  ✓ Prompt panel displays step prompt verbatim');
+  if (panelText !== expectedText) {
+    throw new Error(
+      `Prompt text mismatch.\nExpected: "${expectedText}"\nGot: "${panelText}"`,
+    );
+  }
+  console.log("  ✓ Prompt panel displays step prompt verbatim");
 
-	// ============================================
-	// Assertion 4: XSS prevention (textContent used)
-	// ============================================
-	const xssTestStep = {
-		step_name: 'xss_test',
-		prompt: '<script>alert("xss")</script>Test content',
-		sequence: [],
-		step_validator: { preset: 'sequence_complete' },
-		outcome: { on_success: 'complete', on_failure: 'retry' },
-		next_step: null,
-	};
+  // ============================================
+  // Assertion 4: XSS prevention (textContent used)
+  // ============================================
+  const xssTestStep = {
+    step_name: "xss_test",
+    prompt: '<script>alert("xss")</script>Test content',
+    sequence: [],
+    step_validator: { preset: "sequence_complete" },
+    outcome: { on_success: "complete", on_failure: "retry" },
+    next_step: null,
+  };
 
-	await page.evaluate((step) => {
-		// Re-render with XSS test step
-		const promptPanel = document.querySelector('[data-testid="prompt-panel"]');
-		promptPanel.innerHTML = '';
-		const promptText = document.createElement('div');
-		promptText.className = 'prompt-text';
-		promptText.textContent = step.prompt;
-		promptPanel.appendChild(promptText);
-	}, xssTestStep);
+  await page.evaluate((step) => {
+    // Re-render with XSS test step
+    const promptPanel = document.querySelector('[data-testid="prompt-panel"]');
+    promptPanel.innerHTML = "";
+    const promptText = document.createElement("div");
+    promptText.className = "prompt-text";
+    promptText.textContent = step.prompt;
+    promptPanel.appendChild(promptText);
+  }, xssTestStep);
 
-	// Check that the HTML tags are rendered as text (not executed).
-	const xssText = await promptPanel.textContent();
-	if (!xssText.includes('<script>')) {
-		throw new Error('XSS test failed: script tags should be rendered as text');
-	}
-	if (xssText !== xssTestStep.prompt) {
-		throw new Error(`XSS test mismatch.\nExpected: "${xssTestStep.prompt}"\nGot: "${xssText}"`);
-	}
-	console.log('  ✓ XSS prevention verified: HTML tags rendered as text via textContent');
+  // Check that the HTML tags are rendered as text (not executed).
+  const xssText = await promptPanel.textContent();
+  if (!xssText.includes("<script>")) {
+    throw new Error("XSS test failed: script tags should be rendered as text");
+  }
+  if (xssText !== xssTestStep.prompt) {
+    throw new Error(
+      `XSS test mismatch.\nExpected: "${xssTestStep.prompt}"\nGot: "${xssText}"`,
+    );
+  }
+  console.log(
+    "  ✓ XSS prevention verified: HTML tags rendered as text via textContent",
+  );
 
-	// ============================================
-	// Final screenshot
-	// ============================================
-	const screenshotFinal = path.join(tempDir, '02_xss_test.png');
-	await page.screenshot({ path: screenshotFinal });
-	console.log(`  Screenshot (XSS test): ${screenshotFinal}`);
+  // ============================================
+  // Final screenshot
+  // ============================================
+  const screenshotFinal = path.join(tempDir, "02_xss_test.png");
+  await page.screenshot({ path: screenshotFinal });
+  console.log(`  Screenshot (XSS test): ${screenshotFinal}`);
 
-	// ============================================
-	// Cleanup and exit
-	// ============================================
-	await browser.close();
-	console.log('Test passed! All assertions green.');
-	process.exit(0);
+  // ============================================
+  // Cleanup and exit
+  // ============================================
+  await browser.close();
+  console.log("Test passed! All assertions green.");
+  process.exit(0);
 }
 
 // Run the test.
 runTest().catch((err) => {
-	console.error('Test failed:', err.message);
-	process.exit(1);
+  console.error("Test failed:", err.message);
+  process.exit(1);
 });

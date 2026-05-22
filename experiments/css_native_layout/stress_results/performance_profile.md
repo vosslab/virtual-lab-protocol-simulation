@@ -22,24 +22,24 @@ See `runtime_hotpath_profile.md` for the corrected breakdown.
 
 ## Headline metrics
 
-| Metric | median | p95 | max | mean |
-| --- | --- | --- | --- | --- |
-| adapter call time (ms) | 11.9 | 11.9 | 11.9 | 11.9 |
-| render_and_dump (ms) | 33475 | 33481 | 33481 | 33458.1 |
-| precheck per scene (ms) | 26 | 32 | 32 | 24 |
-| scorecard per scene (ms) | 4.7 | 5.5 | 5.5 | 4.933 |
-| full built-app render (ms) | 63 | 63 | 63 | 62.8 |
-| ObjectStateChange re-render (ms) | 2005 | 2007.1 | 2007.7 | 1965.036 |
+| Metric                           | median | p95    | max    | mean     |
+| -------------------------------- | ------ | ------ | ------ | -------- |
+| adapter call time (ms)           | 11.9   | 11.9   | 11.9   | 11.9     |
+| render_and_dump (ms)             | 33475  | 33481  | 33481  | 33458.1  |
+| precheck per scene (ms)          | 26     | 32     | 32     | 24       |
+| scorecard per scene (ms)         | 4.7    | 5.5    | 5.5    | 4.933    |
+| full built-app render (ms)       | 63     | 63     | 63     | 62.8     |
+| ObjectStateChange re-render (ms) | 2005   | 2007.1 | 2007.7 | 1965.036 |
 
 ## Resource growth
 
-| Snapshot | DOM nodes | heap (bytes) |
-| --- | --- | --- |
-| mount | 166 | 15200000 |
-| after 50 iter | 167 | 15200000 |
-| after 500 iter | 167 | 15200000 |
-| growth (500 iter) | 1 | 0 |
-| growth per iter | 0.002 | - |
+| Snapshot          | DOM nodes | heap (bytes) |
+| ----------------- | --------- | ------------ |
+| mount             | 166       | 15200000     |
+| after 50 iter     | 167       | 15200000     |
+| after 500 iter    | 167       | 15200000     |
+| growth (500 iter) | 1         | 0            |
+| growth per iter   | 0.002     | -            |
 
 getBoundingClientRect calls per render (approx): 0
 
@@ -47,17 +47,17 @@ CI practical total (sum of full-render + precheck-batch + scorecard-batch): 352.
 
 ## Threshold verdicts
 
-| Metric | value | threshold | verdict |
-| --- | --- | --- | --- |
-| adapter_median | 11.9 | 5 | FAIL |
-| adapter_p95 | 11.9 | 20 | PASS |
-| dom_growth_per_iter | 0.002 | 0 | FAIL |
-| precheck_per_scene | 32 | 2000 | PASS |
-| scorecard_per_scene | 5.5 | 1000 | PASS |
-| full_render | 63 | 5000 | PASS |
-| heap_growth_500 | 0 | 10485760 | PASS |
-| object_state_change_rerender_p95 | 2007.1 | 50 | FAIL |
-| ci_practical_total | 352.33 | 60000 | PASS |
+| Metric                           | value  | threshold | verdict |
+| -------------------------------- | ------ | --------- | ------- |
+| adapter_median                   | 11.9   | 5         | FAIL    |
+| adapter_p95                      | 11.9   | 20        | PASS    |
+| dom_growth_per_iter              | 0.002  | 0         | FAIL    |
+| precheck_per_scene               | 32     | 2000      | PASS    |
+| scorecard_per_scene              | 5.5    | 1000      | PASS    |
+| full_render                      | 63     | 5000      | PASS    |
+| heap_growth_500                  | 0      | 10485760  | PASS    |
+| object_state_change_rerender_p95 | 2007.1 | 50        | FAIL    |
+| ci_practical_total               | 352.33 | 60000     | PASS    |
 
 ## Re-render time sparkline (50 iterations)
 

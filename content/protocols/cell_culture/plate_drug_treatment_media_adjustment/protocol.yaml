@@ -2,15 +2,18 @@ protocol_type: mini_protocol
 protocol_name: plate_drug_treatment_media_adjustment
 entry_step: adjust_media_quadrant_a1_h6
 learning:
-  objectives: Students completing this mini-protocol will have achieved understanding
+  objectives:
+    Students completing this mini-protocol will have achieved understanding
     of media-volume adjustments needed before multi-drug dosing on a 96-well plate,
     and how to distribute exact micropipette volumes uniformly across named plate
     blocks using a multichannel pipette organized by plate half and row block.
-  outcomes: Students completing this mini-protocol will be able to adjust media volumes
+  outcomes:
+    Students completing this mini-protocol will be able to adjust media volumes
     in each of four plate blocks (row A halves and rows B-H halves) to achieve uniform
     200 microL final well volumes after Day 2 drug additions, and validate that each
     block received the correct pre-drug media adjustment.
-  goals: Overall, this mini-protocol aims to accomplish the critical pre-dosing media-adjustment
+  goals:
+    Overall, this mini-protocol aims to accomplish the critical pre-dosing media-adjustment
     step for a two-drug dose-response experiment. Each of four geometric blocks of
     the 96-well plate receives a specific media volume before carboplatin and metformin
     are added, ensuring that every well reaches the same final volume (200 microL)
@@ -19,145 +22,147 @@ learning:
     (Day 2, adding 5-10 microL per well of working stocks), keeping the assay's quantitative
     rigor intact.
 steps:
-- step_name: adjust_media_quadrant_a1_h6
-  prompt: 'Adjust media volumes in columns 1-6 before drug additions. Row A (untreated
-    control, no drug Day 2) receives 100 microL media. Rows B-H (carboplatin to be
-    added Day 2) receive 95 microL media. Post-step well totals: A1-A6 at 200 microL
-    (100 cells + 100 media); B-H 1-6 at 195 microL (100 cells + 95 media). The carboplatin
-    5 microL added on Day 2 brings rows B-H to 200 microL.'
-  sequence:
-  - target: multichannel_pipette
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: multichannel_pipette
-    gesture: adjust
-    validator:
-      preset: target_with_value
-      value:
-        set_volume: 100
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          set_volume: 100
-  - target: media_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: well_plate_96.block_A_1_6
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.block_A_1_6
-        state:
-          material_name: cells
-          material_volume: 200
-  - target: multichannel_pipette
-    gesture: adjust
-    validator:
-      preset: target_with_value
-      value:
-        set_volume: 95
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          set_volume: 95
-  - target: well_plate_96.block_B_H_1_6
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.block_B_H_1_6
-        state:
-          material_name: cells
-          material_volume: 195
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: adjust_media_quadrant_a7_h12
-- step_name: adjust_media_quadrant_a7_h12
-  prompt: 'Adjust media volumes in columns 7-12 before drug additions. Row A (metformin-only
-    control, 5 microL metformin Day 2) receives 95 microL media. Rows B-H (carboplatin
-    + metformin co-treatment, 10 microL drugs Day 2) receive 90 microL media. Post-step
-    well totals: A7-A12 at 195 microL (100 cells + 95 media); B-H 7-12 at 190 microL
-    (100 cells + 90 media). The Day 2 drug additions bring every well to 200 microL.'
-  sequence:
-  - target: multichannel_pipette
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: multichannel_pipette
-    gesture: adjust
-    validator:
-      preset: target_with_value
-      value:
-        set_volume: 95
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          set_volume: 95
-  - target: media_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: well_plate_96.block_A_7_12
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.block_A_7_12
-        state:
-          material_name: cells
-          material_volume: 195
-  - target: multichannel_pipette
-    gesture: adjust
-    validator:
-      preset: target_with_value
-      value:
-        set_volume: 90
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          set_volume: 90
-  - target: well_plate_96.block_B_H_7_12
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.block_B_H_7_12
-        state:
-          material_name: cells
-          material_volume: 190
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: null
+  - step_name: adjust_media_quadrant_a1_h6
+    prompt:
+      "Adjust media volumes in columns 1-6 before drug additions. Row A (untreated
+      control, no drug Day 2) receives 100 microL media. Rows B-H (carboplatin to be
+      added Day 2) receive 95 microL media. Post-step well totals: A1-A6 at 200 microL
+      (100 cells + 100 media); B-H 1-6 at 195 microL (100 cells + 95 media). The carboplatin
+      5 microL added on Day 2 brings rows B-H to 200 microL."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: multichannel_pipette
+        gesture: adjust
+        validator:
+          preset: target_with_value
+          value:
+            set_volume: 100
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 100
+      - target: media_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: well_plate_96.block_A_1_6
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.block_A_1_6
+              state:
+                material_name: cells
+                material_volume: 200
+      - target: multichannel_pipette
+        gesture: adjust
+        validator:
+          preset: target_with_value
+          value:
+            set_volume: 95
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 95
+      - target: well_plate_96.block_B_H_1_6
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.block_B_H_1_6
+              state:
+                material_name: cells
+                material_volume: 195
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: adjust_media_quadrant_a7_h12
+  - step_name: adjust_media_quadrant_a7_h12
+    prompt:
+      "Adjust media volumes in columns 7-12 before drug additions. Row A (metformin-only
+      control, 5 microL metformin Day 2) receives 95 microL media. Rows B-H (carboplatin
+      + metformin co-treatment, 10 microL drugs Day 2) receive 90 microL media. Post-step
+      well totals: A7-A12 at 195 microL (100 cells + 95 media); B-H 7-12 at 190 microL
+      (100 cells + 90 media). The Day 2 drug additions bring every well to 200 microL."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: multichannel_pipette
+        gesture: adjust
+        validator:
+          preset: target_with_value
+          value:
+            set_volume: 95
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 95
+      - target: media_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: well_plate_96.block_A_7_12
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.block_A_7_12
+              state:
+                material_name: cells
+                material_volume: 195
+      - target: multichannel_pipette
+        gesture: adjust
+        validator:
+          preset: target_with_value
+          value:
+            set_volume: 90
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 90
+      - target: well_plate_96.block_B_H_7_12
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.block_B_H_7_12
+              state:
+                material_name: cells
+                material_volume: 190
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

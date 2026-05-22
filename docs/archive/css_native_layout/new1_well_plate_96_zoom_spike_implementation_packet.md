@@ -2,12 +2,12 @@
 
 ## Scope
 
-This packet is the implementation-ready handoff for the NEW1 `well_plate_96_zoom` integration spike. It captures reviewer-approved defaults and concrete specs the implementer needs to start work. The reviewer dispatched defaults on 2026-05-19; this packet locks them. Linked inputs: the spike readiness audit at [new1_spike_readiness_audit.md](new1_spike_readiness_audit.md), the NEW1 integration plan at [new1_css_native_layout_integration_plan.md](new1_css_native_layout_integration_plan.md), the spike implementation checklist at [new1_well_plate_96_zoom_spike_checklist.md](new1_well_plate_96_zoom_spike_checklist.md), the (unapplied) contract amendment draft at [new1_primary_contract_item3_amendment_draft.md](new1_primary_contract_item3_amendment_draft.md), and the spike fixtures under [../../experiments/css_native_layout/spike_fixtures/](../../experiments/css_native_layout/spike_fixtures/).
+This packet is the implementation-ready handoff for the NEW1 `well_plate_96_zoom` integration spike. It captures reviewer-approved defaults and concrete specs the implementer needs to start work. The reviewer dispatched defaults on 2026-05-19; this packet locks them. Linked inputs: the spike readiness audit at [new1_spike_readiness_audit.md](new1_spike_readiness_audit.md), the NEW1 integration plan at [new1_css_native_layout_integration_plan.md](new1_css_native_layout_integration_plan.md), the spike implementation checklist at [new1_well_plate_96_zoom_spike_checklist.md](new1_well_plate_96_zoom_spike_checklist.md), the (unapplied) contract amendment draft at [new1_primary_contract_item3_amendment_draft.md](new1_primary_contract_item3_amendment_draft.md), and the spike fixtures under `spike_fixtures`.
 
 ## Reviewer-approved defaults (2026-05-19)
 
 - Seam: one conditional in `src/scene_runtime/layout/adapter.ts`, scene-limited to `well_plate_96_zoom`, feature-flagged, legacy fallback for all other scenes, rollback by one revert.
-- Contract posture: spike runs under current contract item 3 as experimental conditional substitution. No edits to [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md). The amendment draft remains post-spike material.
+- Contract posture: spike runs under current contract item 3 as experimental conditional substitution. No edits to `PRIMARY_CONTRACT.md`. The amendment draft remains post-spike material.
 - `label_label_overlap` policy: advisory for the spike. Hard fails are `clipped_artwork`, `off_page`, `svg_svg_overlap`, `region_overflow`. Label readability is still reported.
 - Feature flag: hard-coded boolean named `ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE`. Default off unless the spike test explicitly enables it.
 - Style debt note: production adapter param `sceneId` (camelCase + Id-suffix) violates current repo style. Out of scope for this prep round; recorded as pre-existing style debt; do not rename.
@@ -23,7 +23,7 @@ This packet is the implementation-ready handoff for the NEW1 `well_plate_96_zoom
 ## Files forbidden during implementation
 
 - `src/scene_runtime/dispatch/**`, `src/scene_runtime/render/**`, `src/scene_runtime/adapters/well_plate/**`, `src/scene_runtime/loader/**`: untouched.
-- [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md): untouched.
+- `PRIMARY_CONTRACT.md`: untouched.
 - `docs/specs/**`: untouched.
 - `pipeline/**`, `validation/**`: untouched.
 - `content/protocols/**`: untouched.
@@ -70,11 +70,11 @@ This is the central anti-drift rule.
 
 ## One clickable target test plan
 
-- Walker loads the spike-rendered DOM at the path pinned in [../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md](../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md).
+- Walker loads the spike-rendered DOM at the path pinned in `expected_precheck_command.md`.
 - Walker clicks one well (recommend A1: top-left well) via `data-target-id` selector.
 - Assert: dispatch resolves to the correct well object via `closest()`-based hit-testing (matches legacy behavior).
 - Assert: hit-testing succeeds with the exact same `data-target-id` value the legacy renderer emits.
-- Screenshot evidence at the path pinned in [../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md](../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md).
+- Screenshot evidence at the path pinned in `expected_screenshot_paths.md`.
 
 ## ObjectStateChange and re-render test plan
 
@@ -86,11 +86,11 @@ This is the central anti-drift rule.
 
 ## Precheck command
 
-The canonical command is pinned at [../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md](../../experiments/css_native_layout/spike_fixtures/expected_precheck_command.md). Do not duplicate it verbatim here.
+The canonical command is pinned at `expected_precheck_command.md`. Do not duplicate it verbatim here.
 
 ## Screenshot paths
 
-The canonical path list is pinned at [../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md](../../experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md). Do not duplicate it here.
+The canonical path list is pinned at `expected_screenshot_paths.md`. Do not duplicate it here.
 
 ## Rollback
 
@@ -124,26 +124,27 @@ Any of these means the spike is reinventing the layout engine. Bail.
 - [ ] One conditional only (single gate in `adapter.ts`)
 - [ ] One new module only (`css_native_adapter.ts`; `feature_flags.ts` optional)
 - [ ] No broad migration (only one scene name in the gate)
-- [ ] No contract edit ([../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) untouched)
+- [ ] No contract edit (`PRIMARY_CONTRACT.md` untouched)
 - [ ] No old layout deletion (legacy adapter + `layout_engine.ts` intact)
 - [ ] No YAML coordinates (manifest carries no x/y/width/height/bounds/align/offset/depth)
 - [ ] No general coordinate solver (no TS-side track/gap math)
 - [ ] Feature flag present and named `ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE`
 - [ ] All non-spike scenes remain legacy (verified by running precheck on the full template set)
-- [ ] Tests pass: pytest gates green; spike walker passes; precheck on the spike scene matches the expected_*.md fixtures
+- [ ] Tests pass: pytest gates green; spike walker passes; precheck on the spike scene matches the expected\_\*.md fixtures
 
 ## Open follow-ups (not blocking spike start)
 
 - Style debt: rename `sceneId` -> snake_case alternative in `adapter.ts` (out of spike scope).
-- Empty-region DOM scaffolds: implementer chooses scaffold-all vs scaffold-on-demand and records the choice in the PR (see [../../experiments/css_native_layout/spike_fixtures/expected_dom_selectors.md](../../experiments/css_native_layout/spike_fixtures/expected_dom_selectors.md)).
+- Empty-region DOM scaffolds: implementer chooses scaffold-all vs scaffold-on-demand and records the choice in the PR (see `expected_dom_selectors.md`).
 - Pixel-diff threshold (5%) uncalibrated; first spike run produces the calibration baseline.
 - `dir_b_*` / `dir_c_*` CSS variants: historical reference; no role under NEW1 unless a future plan picks one.
 
 ## Implementation result (2026-05-19)
 
-Path A implementation landed. See [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md) for full report.
+Path A implementation landed. See `new1_well_plate_96_zoom_spike_result.md` for full report.
 
 Summary:
+
 - src/scene_runtime/layout/feature_flags.ts (NEW, 8 lines): `ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE = false`.
 - src/scene_runtime/layout/css_native_adapter.ts (NEW, 224 lines): scaffold-and-measure adapter; throws if no DOM.
 - src/scene_runtime/layout/adapter.ts (MODIFIED, +9 lines): 2 imports + 1 conditional gate after scene-not-found check.

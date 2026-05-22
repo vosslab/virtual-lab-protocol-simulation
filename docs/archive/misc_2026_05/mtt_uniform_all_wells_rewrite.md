@@ -3,7 +3,7 @@
 ## Context
 
 The 96-well authoring shape semantics spike
-([docs/active_plans/96_well_authoring_shape_finding.md](96_well_authoring_shape_finding.md))
+(`96_well_authoring_shape_finding.md`)
 measured five candidate YAML shapes for the same MTT uniform plate
 action and surfaced a finding the original design note did not predict:
 `well_plate_96.all_wells` already works on `main` today, produces the
@@ -23,7 +23,7 @@ named regions are reserved for meaningful subsets, not aliases for the
 whole plate.
 
 Two follow-ups surfaced by the spike are tracked separately in
-[docs/TODO.md](../TODO.md) and are NOT part of this plan:
+`TODO.md` and are NOT part of this plan:
 
 - per-cell state tracking in `validation/stepper/state.py`
 - optional named-region syntax with `members: all` shorthand,
@@ -88,7 +88,7 @@ on a whole-plate action.
 ## Approach
 
 1. Branch from `main` (NOT from `spike/region-stepper`): `git checkout
-   -b mtt-all-wells-rewrite main`. The spike branch carries unrelated
+-b mtt-all-wells-rewrite main`. The spike branch carries unrelated
    spike-only tooling that this rewrite must not depend on.
 2. Read the current
    `content/protocols/mtt_solubilization_readout/protocol.yaml` to
@@ -114,10 +114,11 @@ on a whole-plate action.
    Keep the three pre-step interactions (micropipette click,
    micropipette adjust, dmso_bottle click) verbatim; only the 12
    column-dispense entries collapse.
+
 4. Replace the 12 column interactions in `trituration_to_dissolve`
    with one interaction targeting `well_plate_96.all_wells` carrying
    the trituration state (`material_volume: 0.2` with `transition:
-   animated`). Keep the leading `micropipette click` verbatim.
+animated`). Keep the leading `micropipette click` verbatim.
 5. Update the top-of-file simulation comment: drop the "column at a
    time" wording for the two collapsed steps; preserve the
    technique-faithful description in the step `prompt:` fields.
@@ -166,12 +167,12 @@ on a whole-plate action.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Mitigation |
-| --- | --- | --- | --- |
-| Per-well snapshot regresses because the existing geometric cascade does not write the expected fields | high | derived per-cell state for the rewritten protocol differs from baseline | the spike already proved the cascade walks `well_plate_96.all_wells` cleanly via the `mtt_uniform_whole_plate_check` fixture; if regression appears, capture the diff before changing the rewrite (the cascade is the suspect, not the rewrite). |
-| Prompt prose loses the technique description | medium | reviewer reads the rewritten step and cannot recover "multichannel column-by-column" technique | the `prompt:` text is copied verbatim from the pre-rewrite file; only the YAML interaction list changes. |
-| Stepper dashboard warning count does not drop as predicted | low | full-tree run shows the same warning count after the rewrite | `unknown_target_active_scene` is the dominant warning and is orthogonal to this rewrite; only the warnings tied to the 22 dropped interactions should decrease. Spot-check the per-protocol row, not the total. |
-| Spike branch tooling is implicitly required by this rewrite | medium | rewrite validates or steps only on `spike/region-stepper`, not on `main` | rewrite uses `well_plate_96.all_wells` (existing vocab on `main`); validation must succeed on `main` before merging. The branch isolation in Approach step 1 catches this. |
+| Risk                                                                                                  | Impact | Trigger                                                                                        | Mitigation                                                                                                                                                                                                                                       |
+| ----------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Per-well snapshot regresses because the existing geometric cascade does not write the expected fields | high   | derived per-cell state for the rewritten protocol differs from baseline                        | the spike already proved the cascade walks `well_plate_96.all_wells` cleanly via the `mtt_uniform_whole_plate_check` fixture; if regression appears, capture the diff before changing the rewrite (the cascade is the suspect, not the rewrite). |
+| Prompt prose loses the technique description                                                          | medium | reviewer reads the rewritten step and cannot recover "multichannel column-by-column" technique | the `prompt:` text is copied verbatim from the pre-rewrite file; only the YAML interaction list changes.                                                                                                                                         |
+| Stepper dashboard warning count does not drop as predicted                                            | low    | full-tree run shows the same warning count after the rewrite                                   | `unknown_target_active_scene` is the dominant warning and is orthogonal to this rewrite; only the warnings tied to the 22 dropped interactions should decrease. Spot-check the per-protocol row, not the total.                                  |
+| Spike branch tooling is implicitly required by this rewrite                                           | medium | rewrite validates or steps only on `spike/region-stepper`, not on `main`                       | rewrite uses `well_plate_96.all_wells` (existing vocab on `main`); validation must succeed on `main` before merging. The branch isolation in Approach step 1 catches this.                                                                       |
 
 ## Resolved decisions
 

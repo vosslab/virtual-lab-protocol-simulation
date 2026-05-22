@@ -9,7 +9,7 @@
  * exported function only.
  */
 
-import type { InteractionEvent } from '../types';
+import type { InteractionEvent } from "../types";
 
 /**
  * Attaches a capture-phase click listener to a root element.
@@ -27,53 +27,53 @@ import type { InteractionEvent } from '../types';
  * @returns a detach function that removes the listener from the root element.
  */
 export function attachClickDispatch(
-	root: HTMLElement,
-	onEvent: (e: InteractionEvent) => void,
+  root: HTMLElement,
+  onEvent: (e: InteractionEvent) => void,
 ): () => void {
-	const handler = (event: Event): void => {
-		const clickEvent = event as MouseEvent;
-		const target = clickEvent.target as HTMLElement | null;
+  const handler = (event: Event): void => {
+    const clickEvent = event as MouseEvent;
+    const target = clickEvent.target as HTMLElement | null;
 
-		if (!target) {
-			return;
-		}
+    if (!target) {
+      return;
+    }
 
-		// Resolve data-target-id by walking up the DOM tree.
-		// closest() returns the element itself or the nearest ancestor matching the selector.
-		const targetElement = target.closest('[data-target-id]') as
-			| HTMLElement
-			| undefined;
+    // Resolve data-target-id by walking up the DOM tree.
+    // closest() returns the element itself or the nearest ancestor matching the selector.
+    const targetElement = target.closest("[data-target-id]") as
+      | HTMLElement
+      | undefined;
 
-		if (!targetElement) {
-			// No target with data-target-id in the ancestor chain; silently ignore.
-			// This is by design: non-target clicks are legitimate (e.g., background clicks).
-			return;
-		}
+    if (!targetElement) {
+      // No target with data-target-id in the ancestor chain; silently ignore.
+      // This is by design: non-target clicks are legitimate (e.g., background clicks).
+      return;
+    }
 
-		const targetId = targetElement.getAttribute('data-target-id');
+    const targetId = targetElement.getAttribute("data-target-id");
 
-		// Validate that targetId is not null (closest matched the selector, so attribute exists).
-		if (!targetId) {
-			// Should not happen: closest matched [data-target-id] but getAttribute returned null.
-			// Throw loud to surface a programming error.
-			throw new Error(
-				'Internal error: closest([data-target-id]) matched but getAttribute returned null',
-			);
-		}
+    // Validate that targetId is not null (closest matched the selector, so attribute exists).
+    if (!targetId) {
+      // Should not happen: closest matched [data-target-id] but getAttribute returned null.
+      // Throw loud to surface a programming error.
+      throw new Error(
+        "Internal error: closest([data-target-id]) matched but getAttribute returned null",
+      );
+    }
 
-		// Read data-gesture from the same element; default to "click" if absent.
-		const gestureAttr = targetElement.getAttribute('data-gesture');
-		const gesture = gestureAttr && gestureAttr.trim() ? gestureAttr : 'click';
+    // Read data-gesture from the same element; default to "click" if absent.
+    const gestureAttr = targetElement.getAttribute("data-gesture");
+    const gesture = gestureAttr && gestureAttr.trim() ? gestureAttr : "click";
 
-		// Emit the resolved interaction event.
-		onEvent({ targetId, gesture });
-	};
+    // Emit the resolved interaction event.
+    onEvent({ targetId, gesture });
+  };
 
-	// Register the listener in capture phase (third argument = true).
-	root.addEventListener('click', handler, true);
+  // Register the listener in capture phase (third argument = true).
+  root.addEventListener("click", handler, true);
 
-	// Return a detach function that removes the listener.
-	return (): void => {
-		root.removeEventListener('click', handler, true);
-	};
+  // Return a detach function that removes the listener.
+  return (): void => {
+    root.removeEventListener("click", handler, true);
+  };
 }

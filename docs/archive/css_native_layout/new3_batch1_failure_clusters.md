@@ -15,18 +15,18 @@ or two systemic CSS/layout faults amplified across every placement that uses
 the dominant `.placement` card geometry. Until the systemic fault is fixed,
 per-scene tuning is wasted effort.
 
-| Metric | Value | Source |
-| --- | --- | --- |
-| Scenes with at least one HARD fail | 110 / 110 | precheck summary |
-| Total clipped_by_parent records | 631 | aggregated precheck JSONs |
-| Total aspect_distorted records (raw) | 800 | aggregated precheck JSONs |
-| Total aspect_distorted_HF (per summary) | 570 | summary doc |
-| Distinct overflow side patterns | bottom=544, top+bottom=85, top=2 | aggregated |
-| Distinct clipper elements | `DIV.placement` (631 / 631) | aggregated |
-| Aspect hard_fail_group distribution | glassware=339, unclassified=230, pipette=149, instrument=51, plate=31 | aggregated |
-| Delta_pct buckets | <6%=2, 6-10%=265, 10-20%=313, >=20%=220 | aggregated |
-| Natural sizes seen as (150,150) | 614 / 800 distortion records | aggregated |
-| Region_overflow scenes | 2 (both `stress_many_bottles_scene_*`) | precheck JSONs |
+| Metric                                  | Value                                                                 | Source                    |
+| --------------------------------------- | --------------------------------------------------------------------- | ------------------------- |
+| Scenes with at least one HARD fail      | 110 / 110                                                             | precheck summary          |
+| Total clipped_by_parent records         | 631                                                                   | aggregated precheck JSONs |
+| Total aspect_distorted records (raw)    | 800                                                                   | aggregated precheck JSONs |
+| Total aspect_distorted_HF (per summary) | 570                                                                   | summary doc               |
+| Distinct overflow side patterns         | bottom=544, top+bottom=85, top=2                                      | aggregated                |
+| Distinct clipper elements               | `DIV.placement` (631 / 631)                                           | aggregated                |
+| Aspect hard_fail_group distribution     | glassware=339, unclassified=230, pipette=149, instrument=51, plate=31 | aggregated                |
+| Delta_pct buckets                       | <6%=2, 6-10%=265, 10-20%=313, >=20%=220                               | aggregated                |
+| Natural sizes seen as (150,150)         | 614 / 800 distortion records                                          | aggregated                |
+| Region_overflow scenes                  | 2 (both `stress_many_bottles_scene_*`)                                | precheck JSONs            |
 
 Note: the 800 vs. 570 gap between raw aspect_distorted records and
 "aspect_distorted_HF" in the summary suggests the summary deduplicates by
@@ -35,18 +35,18 @@ to stay honest.
 
 ## Cluster summary table
 
-| Cluster | Scenes affected | Placement incidents | Fix type |
-| --- | --- | --- | --- |
-| C1: Universal .placement card clips img bottom 19px | 110 / 110 | ~430 (bottom-only CBP) | CSS |
-| C2: Universal handheld aspect distortion (8.33% glassware) | 105 / 110 | 339 (glassware HF) | CSS + footprint table |
-| C3: Tall-glassware double-axis crop | 8 / 110 | ~95 (top+bottom CBP) | scene-class policy + CSS |
-| C4: Placeholder-asset square inflation | 60+ / 110 | 614 distortion records | generator + missing-asset gap |
-| C5: Stress sub-class fallthrough to composition | 38 / 110 | mode-driven secondary | scorecard manifest |
-| C6: Region overflow on many_bottles | 2 / 110 | 33 placements in 2 scenes | generator (over-stuff) |
-| C7: Zoom_detail large-instrument-in-small-card | 11 / 110 | ~15 (microscope, plate_reader) | scene-class policy |
-| C8: Template scenes still hard-fail | 20 / 110 | ~38 (small but universal) | CSS (downstream of C1) |
-| C9: Unclassified hard_fail_group leaks | 18+ / 110 | 230 records | runtime adapter / object library |
-| C10: 'composition' primary-object flag false positives | 50+ / 110 | scoring-only | diagnostic refinement (NOT a HARD fix) |
+| Cluster                                                    | Scenes affected | Placement incidents            | Fix type                               |
+| ---------------------------------------------------------- | --------------- | ------------------------------ | -------------------------------------- |
+| C1: Universal .placement card clips img bottom 19px        | 110 / 110       | ~430 (bottom-only CBP)         | CSS                                    |
+| C2: Universal handheld aspect distortion (8.33% glassware) | 105 / 110       | 339 (glassware HF)             | CSS + footprint table                  |
+| C3: Tall-glassware double-axis crop                        | 8 / 110         | ~95 (top+bottom CBP)           | scene-class policy + CSS               |
+| C4: Placeholder-asset square inflation                     | 60+ / 110       | 614 distortion records         | generator + missing-asset gap          |
+| C5: Stress sub-class fallthrough to composition            | 38 / 110        | mode-driven secondary          | scorecard manifest                     |
+| C6: Region overflow on many_bottles                        | 2 / 110         | 33 placements in 2 scenes      | generator (over-stuff)                 |
+| C7: Zoom_detail large-instrument-in-small-card             | 11 / 110        | ~15 (microscope, plate_reader) | scene-class policy                     |
+| C8: Template scenes still hard-fail                        | 20 / 110        | ~38 (small but universal)      | CSS (downstream of C1)                 |
+| C9: Unclassified hard_fail_group leaks                     | 18+ / 110       | 230 records                    | runtime adapter / object library       |
+| C10: 'composition' primary-object flag false positives     | 50+ / 110       | scoring-only                   | diagnostic refinement (NOT a HARD fix) |
 
 ## Cluster details
 
@@ -289,6 +289,7 @@ false positive.**
   bottles at 150x150 are real and the 8.33% delta is a real CSS bug.
 
 ### Stress sub-class fallthrough (instrument_heavy, tall_glassware_scene,
+
 many_bottles_scene -> composition)
 
 **Verdict: manifest gap, not a scorecard bug and not by design.**
@@ -302,13 +303,13 @@ many_bottles_scene -> composition)
 
 ## Priority fix order
 
-| Rank | Fix name | Target file | Cluster(s) resolved | Expected incidents resolved | Regression risk |
-| --- | --- | --- | --- | --- | --- |
-| 1 | Bump handheld footprint min-height to 230-260px and drop `.placement { overflow:hidden }` | `experiments/css_native_layout/styles/bench.css`, `hood.css`, `instrument.css`, `src/style.css` | C1, C2, C8 | ~430 CBP + ~339 glassware HF (~770 incidents) | LOW (NEW2 already validated 230-260px range; NEW3-E lists this as Patch C) |
-| 2 | Read scene_class_manifest.yaml from scorecard, replace filename heuristic | `experiments/css_native_layout/score_scene.py` or equivalent scorecard tool | C5 | 38 scenes mis-classified | LOW (scorecard-only; no CSS) |
-| 3 | Add `.footprint--tall` and `.footprint--oversized-instrument` classes, route via scene-class | `bench.css`, `hood.css`, `instrument.css` | C3, C7 | ~95 + ~15 = ~110 CBP incidents | MEDIUM (new CSS classes; require scene-class routing) |
-| 4 | Add `hard_fail_group` field to object library; route diagnostic | object library JSON, precheck script | C9 | 230 unclassified records | LOW (diagnostic refinement) |
-| 5 | Generator: cap placements per region, route overflow to second region | scene generator | C6 | 33 incidents in 2 scenes | LOW (generator-only; bounded) |
+| Rank | Fix name                                                                                     | Target file                                                                                     | Cluster(s) resolved | Expected incidents resolved                   | Regression risk                                                            |
+| ---- | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- | ------------------- | --------------------------------------------- | -------------------------------------------------------------------------- |
+| 1    | Bump handheld footprint min-height to 230-260px and drop `.placement { overflow:hidden }`    | `experiments/css_native_layout/styles/bench.css`, `hood.css`, `instrument.css`, `src/style.css` | C1, C2, C8          | ~430 CBP + ~339 glassware HF (~770 incidents) | LOW (NEW2 already validated 230-260px range; NEW3-E lists this as Patch C) |
+| 2    | Read scene_class_manifest.yaml from scorecard, replace filename heuristic                    | `experiments/css_native_layout/score_scene.py` or equivalent scorecard tool                     | C5                  | 38 scenes mis-classified                      | LOW (scorecard-only; no CSS)                                               |
+| 3    | Add `.footprint--tall` and `.footprint--oversized-instrument` classes, route via scene-class | `bench.css`, `hood.css`, `instrument.css`                                                       | C3, C7              | ~95 + ~15 = ~110 CBP incidents                | MEDIUM (new CSS classes; require scene-class routing)                      |
+| 4    | Add `hard_fail_group` field to object library; route diagnostic                              | object library JSON, precheck script                                                            | C9                  | 230 unclassified records                      | LOW (diagnostic refinement)                                                |
+| 5    | Generator: cap placements per region, route overflow to second region                        | scene generator                                                                                 | C6                  | 33 incidents in 2 scenes                      | LOW (generator-only; bounded)                                              |
 
 NEW2 cross-reference: AUDIT-NOCROP recommendation "bump handheld footprint
 to 230-260px" maps directly to rank 1 above. The NEW2 number is the right

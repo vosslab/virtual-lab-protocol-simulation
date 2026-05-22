@@ -2,7 +2,7 @@
 
 Status: draft, 2026-05-20.
 Owner: layout pipeline team.
-Predecessors: [new1_5_layout_hardening_before_new2.md](new1_5_layout_hardening_before_new2.md), [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md), [new2_no_crop_audit_assets/](new2_no_crop_audit_assets/).
+Predecessors: [new1_5_layout_hardening_before_new2.md](new1_5_layout_hardening_before_new2.md), `new2_css_native_production_blocker_plan.md`, `new2_no_crop_audit_assets`.
 
 ## 1. Purpose and scope
 
@@ -18,7 +18,7 @@ and repeated runtime re-rendering without clipping, overlap, off-page artwork,
 distorted SVG assets, or slow performance?
 
 Anti-drift boundaries inherited from NEW2 (see
-[new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)):
+`new2_css_native_production_blocker_plan.md`):
 
 - No coordinate-bearing fields in scene manifests.
 - No reintroduction of the deprecated layout engine.
@@ -248,14 +248,14 @@ Total generated corpus: 100 scenes, plus the 10 hand-authored gold scenes.
 Closed schema. No coordinate fields, no `bounds`, no x/y, no `metadata`
 blob, no `extras`.
 
-| Field | Type | Notes |
-| --- | --- | --- |
-| `scene_class` | enum | one of: `hood`, `bench`, `incubator`, `microscope`, `instrument` |
-| `object_count` | int | total scene objects |
-| `large_equipment_count` | int | large instruments only |
-| `label_density` | enum | `low`, `medium`, `high` |
-| `expected_primary_object` | name | semantic target name |
-| `intended_difficulty` | enum | `easy`, `medium`, `hard`, `adversarial` |
+| Field                     | Type | Notes                                                            |
+| ------------------------- | ---- | ---------------------------------------------------------------- |
+| `scene_class`             | enum | one of: `hood`, `bench`, `incubator`, `microscope`, `instrument` |
+| `object_count`            | int  | total scene objects                                              |
+| `large_equipment_count`   | int  | large instruments only                                           |
+| `label_density`           | enum | `low`, `medium`, `high`                                          |
+| `expected_primary_object` | name | semantic target name                                             |
+| `intended_difficulty`     | enum | `easy`, `medium`, `hard`, `adversarial`                          |
 
 No other fields are permitted in the stress-scene manifest header.
 

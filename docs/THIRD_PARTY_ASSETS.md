@@ -11,31 +11,31 @@ Attribution: Servier Medical Art, smart.servier.com
 
 ### Microbiology Collection
 
-| Source File | Destination File | Modifications |
-|---|---|---|
-| culture-flask-filled-lid.svg | assets/equipment/t75_flask_v5.svg | Added anchor_liquid_clip, anchor_liquid_bounds, anchor_label, overlay_root |
-| falcon-15ml-empty.svg | assets/equipment/falcon_15ml.svg | Added anchor system |
-| falcon-50ml-empty.svg | assets/equipment/falcon_50ml.svg | Added anchor system |
-| cell-culture-equipment-1.svg | assets/equipment/cell_counter.svg | Added anchor system |
-| tube-screwcap-closed-orange.svg | assets/equipment/mtt_vial.svg | Added anchor system |
+| Source File                     | Destination File                  | Modifications                                                              |
+| ------------------------------- | --------------------------------- | -------------------------------------------------------------------------- |
+| culture-flask-filled-lid.svg    | assets/equipment/t75_flask_v5.svg | Added anchor_liquid_clip, anchor_liquid_bounds, anchor_label, overlay_root |
+| falcon-15ml-empty.svg           | assets/equipment/falcon_15ml.svg  | Added anchor system                                                        |
+| falcon-50ml-empty.svg           | assets/equipment/falcon_50ml.svg  | Added anchor system                                                        |
+| cell-culture-equipment-1.svg    | assets/equipment/cell_counter.svg | Added anchor system                                                        |
+| tube-screwcap-closed-orange.svg | assets/equipment/mtt_vial.svg     | Added anchor system                                                        |
 
 ### Lab Apparatus Collection
 
-| Source File | Destination File | Modifications |
-|---|---|---|
-| centrifuge.svg | assets/equipment/centrifuge.svg | Added anchor system |
-| incubator.svg | assets/equipment/incubator.svg | Added anchor system |
-| microscope.svg | assets/equipment/microscope.svg | Added anchor system |
+| Source File           | Destination File                  | Modifications       |
+| --------------------- | --------------------------------- | ------------------- |
+| centrifuge.svg        | assets/equipment/centrifuge.svg   | Added anchor system |
+| incubator.svg         | assets/equipment/incubator.svg    | Added anchor system |
+| microscope.svg        | assets/equipment/microscope.svg   | Added anchor system |
 | spectrophotometer.svg | assets/equipment/plate_reader.svg | Added anchor system |
-| bath_filled.svg | assets/equipment/water_bath.svg | Added anchor system |
-| agitator.svg | assets/equipment/vortex.svg | Added anchor system |
+| bath_filled.svg       | assets/equipment/water_bath.svg   | Added anchor system |
+| agitator.svg          | assets/equipment/vortex.svg       | Added anchor system |
 
 ### Chemistry Collection
 
-| Source File | Destination File | Modifications |
-|---|---|---|
+| Source File            | Destination File                          | Modifications       |
+| ---------------------- | ----------------------------------------- | ------------------- |
 | micropipette-multi.svg | assets/equipment/multichannel_pipette.svg | Added anchor system |
-| pipette-box.svg | assets/equipment/tip_box.svg | Added anchor system |
+| pipette-box.svg        | assets/equipment/tip_box.svg              | Added anchor system |
 
 ## Bioicons CC-0 Lab Apparatus
 
@@ -44,9 +44,9 @@ Additional lab apparatus icons sourced from bioicons.com (https://bioicons.com/)
 License: CC-0 / Public Domain (https://creativecommons.org/publicdomain/zero/1.0/)
 Source: https://bioicons.com/
 
-| Source File | Destination File | Author / Contributor | Modifications |
-|---|---|---|---|
-| 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen | None (registered as SVG_96WELL_PCR_PLATE via pipeline/generate_svg_globals.py) |
+| Source File                | Destination File                      | Author / Contributor | Modifications                                                                  |
+| -------------------------- | ------------------------------------- | -------------------- | ------------------------------------------------------------------------------ |
+| 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen              | None (registered as SVG_96WELL_PCR_PLATE via pipeline/generate_svg_globals.py) |
 
 ## Anchor System
 
@@ -59,6 +59,7 @@ All integrated Servier SVGs include the following anchor elements for layout and
 - `overlay_root`: transparent group for engine-injected dynamic overlays
 
 Non-liquid equipment (centrifuge, microscope, etc.) include only:
+
 - `anchor_label`: rect positioning dynamic labels
 - `overlay_root`: transparent overlay mount
 

@@ -13,7 +13,29 @@ state_fields:
     description: Volume the pipette is set to dispense.
   - field_name: held_material_name
     type: enum
-    allowed: [empty, water, carboplatin, metformin, media, carboplatin_10mmol, metformin_1mol, cell_suspension, trypan_blue, trypan_blue_mixture, protein_sample_raw, laemmli_4x, bme, running_buffer_1x, ddh2o, coomassie_stain, destain, protein_sample_mixed, protein_sample_denatured, protein_ladder]
+    allowed:
+      [
+        empty,
+        water,
+        carboplatin,
+        metformin,
+        media,
+        carboplatin_10mmol,
+        metformin_1mol,
+        cell_suspension,
+        trypan_blue,
+        trypan_blue_mixture,
+        protein_sample_raw,
+        laemmli_4x,
+        bme,
+        running_buffer_1x,
+        ddh2o,
+        coomassie_stain,
+        destain,
+        protein_sample_mixed,
+        protein_sample_denatured,
+        protein_ladder,
+      ]
     default: empty
     description: Contents currently aspirated in the pipette tip.
   - field_name: held_material_volume
@@ -65,7 +87,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=1000)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 2

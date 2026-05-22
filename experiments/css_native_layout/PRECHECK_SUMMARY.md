@@ -13,6 +13,7 @@ into all three files. Evidence below reflects precheck run against the stabilize
 tracked files.
 
 Previous versions:
+
 - Pre-stabilization (Direction A baseline): 8 scenes, 0 FAIL, 1 PASS, 4 PASS_TEMPLATE, 3 WARN
 - Post outside-review cleanup (still Direction A): same tallies, 8 scenes
 - Stabilization run (Direction B + zoom fix, original 2026-05-19): 10 scenes, 0 FAIL, 0 PASS, 4 PASS_TEMPLATE, 6 WARN
@@ -57,28 +58,28 @@ checkbox glyphs per checklist boolean, per
 
 ## Current pass results (2026-05-19, scene-class threshold + checklist)
 
-| Metric | Value |
-| --- | --- |
-| Scenes audited | 10 |
-| Hard fails (`clipped_artwork`, `off_page`, `svg_svg_overlap`, `region_overflow`) | 0 |
-| Verdict mix | 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL |
-| `composition_pass_count` | 0 |
-| `composition_warn_count` | 6 |
-| `composition_fail_count` | 0 |
-| `template_smoke_pass_count` | 4 |
+| Metric                                                                           | Value                                      |
+| -------------------------------------------------------------------------------- | ------------------------------------------ |
+| Scenes audited                                                                   | 10                                         |
+| Hard fails (`clipped_artwork`, `off_page`, `svg_svg_overlap`, `region_overflow`) | 0                                          |
+| Verdict mix                                                                      | 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL |
+| `composition_pass_count`                                                         | 0                                          |
+| `composition_warn_count`                                                         | 6                                          |
+| `composition_fail_count`                                                         | 0                                          |
+| `template_smoke_pass_count`                                                      | 4                                          |
 
 The six WARN composition scenes warn on `labels_readable` and
 `supporting_nearby` booleans, not on `primary_obvious`. Per-scene
 primary-ratio advisory values vs the prior stabilization baseline:
 
-| Scene | Baseline ratio | Current ratio | Note |
-| --- | --- | --- | --- |
-| drug_dilution_plate_workspace | 1.5% | 25.2% | well_plate_96 dominates work_surface (2x flex-grow) |
-| electrophoresis_bench | 0.5% | 18.5% | tank moved out of hidden instrument_station; retagged as primary |
-| well_plate_96_zoom | 44.4% | 88.7% | `.scene-mode--detail .placement` rule strengthened |
-| staining_bench | 31.3% | 31.3% | stable; no regression |
-| crowded_bench_dense | 31.3% | 31.3% | stable; no regression |
-| drug_dilution_workspace_dense | 13.9% | 13.9% | unchanged; composition-class advisory only |
+| Scene                         | Baseline ratio | Current ratio | Note                                                             |
+| ----------------------------- | -------------- | ------------- | ---------------------------------------------------------------- |
+| drug_dilution_plate_workspace | 1.5%           | 25.2%         | well_plate_96 dominates work_surface (2x flex-grow)              |
+| electrophoresis_bench         | 0.5%           | 18.5%         | tank moved out of hidden instrument_station; retagged as primary |
+| well_plate_96_zoom            | 44.4%          | 88.7%         | `.scene-mode--detail .placement` rule strengthened               |
+| staining_bench                | 31.3%          | 31.3%         | stable; no regression                                            |
+| crowded_bench_dense           | 31.3%          | 31.3%         | stable; no regression                                            |
+| drug_dilution_workspace_dense | 13.9%          | 13.9%         | unchanged; composition-class advisory only                       |
 
 Reviewer brief 2026-05-19 success criteria honored: drug-dilution plate is
 visually dominant; electrophoresis tank is visible (primary 18.5%, above
@@ -89,11 +90,11 @@ clearly a detail view at 88.7%; staining/crowded stay readable.
 
 All 30 templates under `experiments/css_native_layout/templates/` link only tracked CSS files. Sweep result (template -> href -> resolved CSS path -> tracked status):
 
-| Template subdir | Linked CSS (relative href) | Resolved file | Tracked |
-| --- | --- | --- | --- |
-| `templates/*.html` (10 root templates, dir_a slot) | `../styles/bench.css` / `hood.css` / `instrument.css` | `experiments/css_native_layout/styles/bench.css` etc. | YES |
-| `templates/dir_b/*.html` (10) | `../../styles/dir_b_bench.css` / `dir_b_hood.css` / `dir_b_instrument.css` | `experiments/css_native_layout/styles/dir_b_*.css` | YES |
-| `templates/dir_c/*.html` (10) | `../../styles/dir_c_bench.css` / `dir_c_hood.css` / `dir_c_instrument.css` | `experiments/css_native_layout/styles/dir_c_*.css` | YES |
+| Template subdir                                    | Linked CSS (relative href)                                                 | Resolved file                                         | Tracked |
+| -------------------------------------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------- | ------- |
+| `templates/*.html` (10 root templates, dir_a slot) | `../styles/bench.css` / `hood.css` / `instrument.css`                      | `experiments/css_native_layout/styles/bench.css` etc. | YES     |
+| `templates/dir_b/*.html` (10)                      | `../../styles/dir_b_bench.css` / `dir_b_hood.css` / `dir_b_instrument.css` | `experiments/css_native_layout/styles/dir_b_*.css`    | YES     |
+| `templates/dir_c/*.html` (10)                      | `../../styles/dir_c_bench.css` / `dir_c_hood.css` / `dir_c_instrument.css` | `experiments/css_native_layout/styles/dir_c_*.css`    | YES     |
 
 30 templates, 30 hrefs, 0 ignored-CSS references, 0 missing CSS files. The root `templates/*.html` directory historically served as the "Direction A baseline" slot; after the Direction B promotion (2026-05-19) those templates now exercise the tracked forward candidate (Direction B + zoom fix). Direction A's baseline CSS variants (`bench_a.css`, `hood_a.css`, etc.) remain gitignored scratch and are not referenced by any template.
 
@@ -127,13 +128,13 @@ variant.
 
 ## DOM conventions used
 
-| Selector | Purpose |
-| --- | --- |
-| `.placement` | Object placement container; data-placement-name, data-object-name attributes |
-| `.placement-label` | Text label for each placement |
-| `.object-graphic` | SVG/image container inside placement |
-| `.region` | Semantic region container; data-region attribute |
-| `.scene-container` | Top-level scene viewport; data-scene-mode, data-scene-density |
+| Selector           | Purpose                                                                      |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `.placement`       | Object placement container; data-placement-name, data-object-name attributes |
+| `.placement-label` | Text label for each placement                                                |
+| `.object-graphic`  | SVG/image container inside placement                                         |
+| `.region`          | Semantic region container; data-region attribute                             |
+| `.scene-container` | Top-level scene viewport; data-scene-mode, data-scene-density                |
 
 ## Diagnostic algorithms (one sentence each)
 
@@ -162,13 +163,13 @@ Artwork-integrity sub-checks:
 
 ## Verdict ladder
 
-| Mode | Hard fails | Warn flags | Verdict |
-| --- | --- | --- | --- |
-| composition | 0 | 0 | PASS |
-| composition | 0 | >=1 | WARN |
-| composition | >=1 | any | FAIL |
-| template | 0 | any | PASS_TEMPLATE |
-| template | >=1 | any | FAIL |
+| Mode        | Hard fails | Warn flags | Verdict       |
+| ----------- | ---------- | ---------- | ------------- |
+| composition | 0          | 0          | PASS          |
+| composition | 0          | >=1        | WARN          |
+| composition | >=1        | any        | FAIL          |
+| template    | 0          | any        | PASS_TEMPLATE |
+| template    | >=1        | any        | FAIL          |
 
 `PASS_TEMPLATE` and the `data-primary` attribute were introduced in the
 P2.5 cleanup patch (2026-05-18). Both are mid-flight amendments to the
@@ -212,30 +213,30 @@ Defaults: `--out test-results/new0_css_native/audit`, `--annotate on`.
 
 Run date: 2026-05-19 (stabilization pass).
 
-| Scene | Mode | Verdict | Primary ratio | Notable warn flags |
-| --- | --- | --- | --- | --- |
-| bench_basic | template | PASS_TEMPLATE | - | aspect mismatch (micropipette) |
-| cell_counter_basic | template | PASS_TEMPLATE | - | aspect mismatch + outside-card (cartridge) |
-| crowded_bench_dense | composition | WARN | -- (no primary tag) | upscaling on staining_tray, outside-card on 3 |
-| drug_dilution_plate_workspace | composition | WARN | 1.5% < 25% | aspect mismatch on 3 bottles, outside-card on 1 |
-| drug_dilution_workspace_dense | composition | WARN | 13.9% < 25% | aspect mismatch on 14 objects, outside-card on 2 |
-| electrophoresis_bench | composition | WARN | 0.5% < 25% | aspect mismatch on 14 objects, outside-card on 1 |
-| hood_basic | template | PASS_TEMPLATE | - | aspect mismatch on 3 objects |
-| microscope_basic | template | PASS_TEMPLATE | - | - |
-| staining_bench | composition | WARN | -- (no primary tag) | upscaling + outside-card on 2 |
-| well_plate_96_zoom | composition | WARN | 44.4% < 70% (zoom) | rendered at 900x850; zoom fix improved from 31.9% |
+| Scene                         | Mode        | Verdict       | Primary ratio       | Notable warn flags                                |
+| ----------------------------- | ----------- | ------------- | ------------------- | ------------------------------------------------- |
+| bench_basic                   | template    | PASS_TEMPLATE | -                   | aspect mismatch (micropipette)                    |
+| cell_counter_basic            | template    | PASS_TEMPLATE | -                   | aspect mismatch + outside-card (cartridge)        |
+| crowded_bench_dense           | composition | WARN          | -- (no primary tag) | upscaling on staining_tray, outside-card on 3     |
+| drug_dilution_plate_workspace | composition | WARN          | 1.5% < 25%          | aspect mismatch on 3 bottles, outside-card on 1   |
+| drug_dilution_workspace_dense | composition | WARN          | 13.9% < 25%         | aspect mismatch on 14 objects, outside-card on 2  |
+| electrophoresis_bench         | composition | WARN          | 0.5% < 25%          | aspect mismatch on 14 objects, outside-card on 1  |
+| hood_basic                    | template    | PASS_TEMPLATE | -                   | aspect mismatch on 3 objects                      |
+| microscope_basic              | template    | PASS_TEMPLATE | -                   | -                                                 |
+| staining_bench                | composition | WARN          | -- (no primary tag) | upscaling + outside-card on 2                     |
+| well_plate_96_zoom            | composition | WARN          | 44.4% < 70% (zoom)  | rendered at 900x850; zoom fix improved from 31.9% |
 
 **Summary**: 10 scenes, 0 hard fails, 0 FAIL verdicts. 0 PASS, 4
 PASS_TEMPLATE, 6 WARN.
 
 ## Deltas vs previous (Direction A baseline, 8 scenes)
 
-| Scene | Dir A ratio | Dir B (stabilized) ratio | Delta |
-| --- | --- | --- | --- |
-| drug_dilution_plate_workspace | 1.4% | 1.5% | +0.1pp |
-| electrophoresis_bench | 2.7% | 0.5% | -2.2pp (primary detection difference) |
-| staining_bench | 0.7% | -- (no primary tag) | primary not tagged |
-| well_plate_96_zoom | 875.5% (PASS) | 44.4% (WARN) | -831pp; zoom fix reduced gap from 31.9% to 44.4% (+12.5pp) |
+| Scene                         | Dir A ratio   | Dir B (stabilized) ratio | Delta                                                      |
+| ----------------------------- | ------------- | ------------------------ | ---------------------------------------------------------- |
+| drug_dilution_plate_workspace | 1.4%          | 1.5%                     | +0.1pp                                                     |
+| electrophoresis_bench         | 2.7%          | 0.5%                     | -2.2pp (primary detection difference)                      |
+| staining_bench                | 0.7%          | -- (no primary tag)      | primary not tagged                                         |
+| well_plate_96_zoom            | 875.5% (PASS) | 44.4% (WARN)             | -831pp; zoom fix reduced gap from 31.9% to 44.4% (+12.5pp) |
 
 Two new scenes added (crowded_bench_dense, drug_dilution_workspace_dense): WARN.
 
@@ -257,7 +258,7 @@ max-width cap or the 70% threshold is mis-calibrated for this layout.
    for the 6 WARN scenes regardless of whether the per-scene helper
    exists. Re-deriving `_temp_annotate.py` is open work tracked under the
    continued stabilization pass (see
-   [../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md));
+   [new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md));
    it is not blocking the decision-ready handoff.
 2. **Primary-ratio threshold is unsourced** - the 25% and 70% cutoffs are
    not derived from a calibrated reference. With three of four composition
@@ -270,7 +271,7 @@ max-width cap or the 70% threshold is mis-calibrated for this layout.
    bottles render at ~110 px tall against natural 150 px (forced height
    shrink); pipettes and slim tools render at upscaled widths. This is a
    consequence of the current `.object-graphic img { width: auto;
-   height: auto; max-width: 100%; max-height: 100%; object-fit: contain }`
+height: auto; max-width: 100%; max-height: 100%; object-fit: contain }`
    rule clipped to discrete footprint min/max boxes whose aspect ratios
    diverge from natural artwork. Not a precheck bug; it is the real CSS
    behavior. Reviewing whether to (a) tighten footprint aspect to artwork,
@@ -287,7 +288,7 @@ max-width cap or the 70% threshold is mis-calibrated for this layout.
 
 NEW0 stabilization continues under the reviewer brief 2026-05-19; the
 controlling plan is
-[../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md).
+[new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md).
 Prior wording about opening a NEW1 plan is retracted. See
 [DECISION_MEMO.md](DECISION_MEMO.md) for the historical disposition.
 
@@ -299,17 +300,17 @@ touched; no other CSS file touched.
 
 Edit summary (one rule, three property changes):
 
-| Property | Before | After |
-| --- | --- | --- |
-| `flex-grow` | 2 | 6 |
-| `max-width` | 800px | 950px |
-| `flex-basis` | 400px | 550px |
+| Property     | Before | After |
+| ------------ | ------ | ----- |
+| `flex-grow`  | 2      | 6     |
+| `max-width`  | 800px  | 950px |
+| `flex-basis` | 400px  | 550px |
 
 Per-scene before/after (electrophoresis_bench only):
 
-| Scene | Before | After | Hard fails |
-| --- | --- | --- | --- |
-| electrophoresis_bench | 18.5% | 21.9% | 0 |
+| Scene                 | Before | After | Hard fails |
+| --------------------- | ------ | ----- | ---------- |
+| electrophoresis_bench | 18.5%  | 21.9% | 0          |
 
 All other scenes (drug_dilution_plate_workspace 25.2%,
 drug_dilution_workspace_dense 13.9%, well_plate_96_zoom 88.7%,

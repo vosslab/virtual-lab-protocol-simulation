@@ -72,7 +72,7 @@ The driver is the universal scene runtime. Two entry points matter:
   Looks up the registered adapter for `sceneId`, builds a `SceneContext`, and
   calls `adapter.render(ctx)`. Throws a loud error if no adapter is
   registered. Called every frame from the `setRenderGame` switch in
-  [../../src/init.ts](../../src/init.ts).
+  `init.ts`.
 
 - `runScene(sceneId)` at
   `src/scenes/scene_driver.ts:123-210` -
@@ -157,14 +157,14 @@ Six first-class adapters live under `src/scenes/<scene>/`. Each registers
 itself at module load and provides `dispatchInteraction(itemId, ctx)` and
 `render(ctx)`.
 
-| Scene | Adapter file | Notes |
-| --- | --- | --- |
-| Bench | [../../src/scenes/bench/bench.ts](../../src/scenes/bench/bench.ts) | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam: `bench.ts` holds module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and completionPath routing. |
-| Cell-culture hood | [../../src/scenes/cell_culture_hood/cell_culture_hood.ts](../../src/scenes/cell_culture_hood/cell_culture_hood.ts) | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scenes/cell_culture_hood/render.ts) (assembly seam). Dispatch is K2-only: compatibility-token handling folded into completionPath dispatch. |
-| Incubator | [../../src/scenes/incubator/incubator.ts](../../src/scenes/incubator/incubator.ts) | Modal overlay scene for incubation timing. |
-| Microscope | [../../src/scenes/microscope/microscope.ts](../../src/scenes/microscope/microscope.ts) | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted into sibling [manual_hemocytometer.ts](../../src/scenes/microscope/manual_hemocytometer.ts) so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher. |
-| Well-plate workspace | [../../src/scenes/well_plate_workspace/well_plate_workspace.ts](../../src/scenes/well_plate_workspace/well_plate_workspace.ts) | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../../src/scenes/well_plate_workspace/render.ts) and [dispatch.ts](../../src/scenes/well_plate_workspace/dispatch.ts). |
-| Plate reader | [../../src/scenes/plate_reader/plate_reader.ts](../../src/scenes/plate_reader/plate_reader.ts) | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element. |
+| Scene                | Adapter file              | Notes                                                                                                                                                                                                                                                                        |
+| -------------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bench                | `bench.ts`                | Persistent equipment-bench scene; layout-engine-driven items. Split by responsibility seam: `bench.ts` holds module-load registrations and the `SceneAdapter` shell; `render.ts` owns assembly + event wiring; `dispatch.ts` owns click handling and completionPath routing. |
+| Cell-culture hood    | `cell_culture_hood.ts`    | Split across the adapter file (dispatch + registration) and a sibling [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts) (assembly seam). Dispatch is K2-only: compatibility-token handling folded into completionPath dispatch.                             |
+| Incubator            | `incubator.ts`            | Modal overlay scene for incubation timing.                                                                                                                                                                                                                                   |
+| Microscope           | `microscope.ts`           | Modal overlay scene; mounts to the shared `instrument-overlay` element. Manual hemocytometer flow extracted into sibling `manual_hemocytometer.ts` so the automated cell-counter and manual grid-counting paths no longer share a single dispatcher.                         |
+| Well-plate workspace | `well_plate_workspace.ts` | First-class workspace scene for plate-transfer and tube-prep mini-protocols. Render assembly and dispatch live in sibling [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts) and `dispatch.ts`.                                                              |
+| Plate reader         | `plate_reader.ts`         | Render-only modal scene; click handlers are wired directly inside the renderer rather than dispatched through `data-item-id`. Mounts to the shared `instrument-overlay` element.                                                                                             |
 
 The microscope and plate_reader adapters share a single DOM modal slot, the
 `instrument-overlay` element.
@@ -181,14 +181,14 @@ capabilities serve as click routers or no-op state holders and validate a
 small slice of their declared config. This matches the status recorded in
 [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md).
 
-| Capability id | Module | Status |
-| --- | --- | --- |
-| `item_workspace` | [item_workspace.ts](../../src/scenes/capabilities/item_workspace.ts) | Validates `placements` and `zones`; dispatches `data-item-id` clicks to the scene adapter. |
-| `modal_workspace` | [modal_workspace.ts](../../src/scenes/capabilities/modal_workspace.ts) | Validates `scene_name` only. |
-| `instrument_workspace` | [instrument_workspace.ts](../../src/scenes/capabilities/instrument_workspace.ts) | Validates `scene_name` only. |
-| `grid_counting_workspace` | [grid_counting_workspace.ts](../../src/scenes/capabilities/grid_counting_workspace.ts) | Mounts and routes quadrant clicks; validates `scene_name` and `quadrants`. |
-| `incubator_workspace` | [incubator_workspace.ts](../../src/scenes/capabilities/incubator_workspace.ts) | Validates `scene_name` only. |
-| `plate_reader_workspace` | [plate_reader_workspace.ts](../../src/scenes/capabilities/plate_reader_workspace.ts) | Validates `scene_name` only. |
+| Capability id             | Module                       | Status                                                                                     |
+| ------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------ |
+| `item_workspace`          | `item_workspace.ts`          | Validates `placements` and `zones`; dispatches `data-item-id` clicks to the scene adapter. |
+| `modal_workspace`         | `modal_workspace.ts`         | Validates `scene_name` only.                                                               |
+| `instrument_workspace`    | `instrument_workspace.ts`    | Validates `scene_name` only.                                                               |
+| `grid_counting_workspace` | `grid_counting_workspace.ts` | Mounts and routes quadrant clicks; validates `scene_name` and `quadrants`.                 |
+| `incubator_workspace`     | `incubator_workspace.ts`     | Validates `scene_name` only.                                                               |
+| `plate_reader_workspace`  | `plate_reader_workspace.ts`  | Validates `scene_name` only.                                                               |
 
 ## Module-load side effects
 
@@ -257,18 +257,18 @@ TypeScript exports consumed by the driver.
 
 ## Shared infrastructure
 
-Several modules under [../../src/scenes/shared/](../../src/scenes/shared/) host code
+Several modules under `shared` host code
 that multiple scene adapters reuse. Each is a single source of truth for
 its concern.
 
-- [liquid_transfer.ts](../../src/scenes/shared/liquid_transfer.ts) - Liquid
+- `liquid_transfer.ts` - Liquid
   handling abstractions: `deriveHeldLiquid`, `canonicalTool`, and the
   `LIQUID_BY_ASSET_ID` map. Consolidated in the B1 patch; do not duplicate
   these helpers in adapters.
-- [wrong_order_feedback.ts](../../src/scenes/shared/wrong_order_feedback.ts) -
+- `wrong_order_feedback.ts` -
   `showWrongOrderToast(message)` for the transient warning toast. The
   toast styling and 2 s lifetime are hardcoded.
-- [scene_item_lookup.ts](../../src/scenes/shared/scene_item_lookup.ts) -
+- `scene_item_lookup.ts` -
   Item-id lookup helpers introduced during the bench/hood YAML layout
   migration so adapters can resolve scene items without duplicating the
   lookup rules.

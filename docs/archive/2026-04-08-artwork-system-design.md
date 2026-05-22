@@ -17,10 +17,10 @@ dynamic overlays. Western blot equipment is out of scope for this milestone.
 
 ### Separation of concerns
 
-| Owner | Responsible for | Examples |
-| --- | --- | --- |
-| Curator (SVG files) | Shape, proportions, visual clarity, static labels | Equipment body, lid, cap, graduation marks |
-| Engine (TypeScript) | State, interaction, animation, variability | Liquid level, highlights, error/correct indicators, arrows |
+| Owner               | Responsible for                                   | Examples                                                   |
+| ------------------- | ------------------------------------------------- | ---------------------------------------------------------- |
+| Curator (SVG files) | Shape, proportions, visual clarity, static labels | Equipment body, lid, cap, graduation marks                 |
+| Engine (TypeScript) | State, interaction, animation, variability        | Liquid level, highlights, error/correct indicators, arrows |
 
 ### File structure
 
@@ -84,60 +84,60 @@ for every asset -- only include groups that the object actually has.
 
 Dynamic overlay groups created by the engine:
 
-| Group ID | Purpose | Parameterized by |
-| --- | --- | --- |
-| `liquid` | Fill level and color | level (0-1), color name |
-| `highlight` | Glow on valid target | item ID, active step |
-| `error_state` | Red indicator for mistakes | item ID, message |
-| `correct_state` | Green indicator for correct action | item ID |
-| `label_dynamic` | Volume readout, changing text | value, unit |
-| `arrow` | Directional indicator | from position, to position |
+| Group ID        | Purpose                            | Parameterized by           |
+| --------------- | ---------------------------------- | -------------------------- |
+| `liquid`        | Fill level and color               | level (0-1), color name    |
+| `highlight`     | Glow on valid target               | item ID, active step       |
+| `error_state`   | Red indicator for mistakes         | item ID, message           |
+| `correct_state` | Green indicator for correct action | item ID                    |
+| `label_dynamic` | Volume readout, changing text      | value, unit                |
+| `arrow`         | Directional indicator              | from position, to position |
 
 ## Color system
 
 Colors have strict semantic meaning. Never reuse a color for a different meaning.
 
-| Role | Hex | Usage |
-| --- | --- | --- |
-| Buffer/liquid | `#4a90d9` | Any water-based solution in containers |
-| Gel/membrane | `#e8d4a0` | Agarose, PVDF, nitrocellulose |
-| Plastic/housing | `#b0b0b0` | Equipment bodies, racks, holders |
-| Metal | `#888888` | Electrodes, clamps, stage |
-| Media (DMEM) | `#ff9a66` | Cell culture media specifically |
-| Signal/bands | `#222222` | Protein bands, markers |
-| Error state | `#d94444` | Contamination, wrong tool, overfill |
-| Correct state | `#44aa66` | Valid action, completed step |
-| Glass | `#f0f0f0` | Pipettes, flasks, vials |
-| Drug/treatment | `#c8a0d8` | Drug solutions, treatment wells |
-| Ethanol/sterile | `#e0e8f0` | 70% ethanol, sterile solutions |
-| Waste | `#d4d4a0` | Discarded liquid |
+| Role            | Hex       | Usage                                  |
+| --------------- | --------- | -------------------------------------- |
+| Buffer/liquid   | `#4a90d9` | Any water-based solution in containers |
+| Gel/membrane    | `#e8d4a0` | Agarose, PVDF, nitrocellulose          |
+| Plastic/housing | `#b0b0b0` | Equipment bodies, racks, holders       |
+| Metal           | `#888888` | Electrodes, clamps, stage              |
+| Media (DMEM)    | `#ff9a66` | Cell culture media specifically        |
+| Signal/bands    | `#222222` | Protein bands, markers                 |
+| Error state     | `#d94444` | Contamination, wrong tool, overfill    |
+| Correct state   | `#44aa66` | Valid action, completed step           |
+| Glass           | `#f0f0f0` | Pipettes, flasks, vials                |
+| Drug/treatment  | `#c8a0d8` | Drug solutions, treatment wells        |
+| Ethanol/sterile | `#e0e8f0` | 70% ethanol, sterile solutions         |
+| Waste           | `#d4d4a0` | Discarded liquid                       |
 
 ## Stroke and shape rules
 
-| Property | Value | Notes |
-| --- | --- | --- |
-| Outline stroke | 1.5px `#333` | Equipment outer edges |
-| Detail stroke | 0.8px `#666` | Internal features, seams |
-| Fine stroke | 0.4px `#999` | Graduation marks, subtle lines |
-| Highlight stroke | 2.0px semantic color | Error/correct indicators |
-| Corner radius (body) | rx=4 | Equipment main shapes |
-| Corner radius (parts) | rx=2 | Buttons, sub-components |
-| Corner radius (labels) | rx=1 | Text labels, tags |
-| Perspective | 3/4 front, slight top-down | Consistent across all assets |
-| Top face | Ellipse, ry = rx * 0.25 | For containers with openings |
-| Depth offset | 2-4px right, 2-4px down | Fake depth on all equipment |
+| Property               | Value                      | Notes                          |
+| ---------------------- | -------------------------- | ------------------------------ |
+| Outline stroke         | 1.5px `#333`               | Equipment outer edges          |
+| Detail stroke          | 0.8px `#666`               | Internal features, seams       |
+| Fine stroke            | 0.4px `#999`               | Graduation marks, subtle lines |
+| Highlight stroke       | 2.0px semantic color       | Error/correct indicators       |
+| Corner radius (body)   | rx=4                       | Equipment main shapes          |
+| Corner radius (parts)  | rx=2                       | Buttons, sub-components        |
+| Corner radius (labels) | rx=1                       | Text labels, tags              |
+| Perspective            | 3/4 front, slight top-down | Consistent across all assets   |
+| Top face               | Ellipse, ry = rx \* 0.25   | For containers with openings   |
+| Depth offset           | 2-4px right, 2-4px down    | Fake depth on all equipment    |
 
 ## Step-sequence design
 
 For each protocol step, the overlay system must support these visual states:
 
-| State | Visual treatment |
-| --- | --- |
-| Idle | Equipment at rest, no overlays |
-| Target | Green dashed highlight border on valid items |
-| Active | Animation in progress (liquid moving, level changing) |
-| Complete | Subtle green check, state change persists |
-| Error | Red flash, error indicator, warning message |
+| State    | Visual treatment                                      |
+| -------- | ----------------------------------------------------- |
+| Idle     | Equipment at rest, no overlays                        |
+| Target   | Green dashed highlight border on valid items          |
+| Active   | Animation in progress (liquid moving, level changing) |
+| Complete | Subtle green check, state change persists             |
+| Error    | Red flash, error indicator, warning message           |
 
 The 9 protocol steps and their equipment interactions:
 

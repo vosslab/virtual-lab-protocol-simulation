@@ -8,29 +8,29 @@
  *   node tests/playwright/walker/run.mjs --protocol mtt_solubilization_readout --headless false
  */
 
-import { runWalker } from './engine.mjs';
+import { runWalker } from "./engine.mjs";
 
 function parseArgs() {
-	const args = process.argv.slice(2);
-	const opts = {
-		protocol: null,
-		headless: true,
-		verbosity: 'info',
-		screenshotDir: null,
-	};
+  const args = process.argv.slice(2);
+  const opts = {
+    protocol: null,
+    headless: true,
+    verbosity: "info",
+    screenshotDir: null,
+  };
 
-	for (let i = 0; i < args.length; i++) {
-		const arg = args[i];
-		if (arg === '--protocol' && i + 1 < args.length) {
-			opts.protocol = args[++i];
-		} else if (arg === '--headless' && i + 1 < args.length) {
-			opts.headless = args[++i] !== 'false';
-		} else if (arg === '--verbosity' && i + 1 < args.length) {
-			opts.verbosity = args[++i];
-		} else if (arg === '--screenshots' && i + 1 < args.length) {
-			opts.screenshotDir = args[++i];
-		} else if (arg === '--help' || arg === '-h') {
-			console.log(`
+  for (let i = 0; i < args.length; i++) {
+    const arg = args[i];
+    if (arg === "--protocol" && i + 1 < args.length) {
+      opts.protocol = args[++i];
+    } else if (arg === "--headless" && i + 1 < args.length) {
+      opts.headless = args[++i] !== "false";
+    } else if (arg === "--verbosity" && i + 1 < args.length) {
+      opts.verbosity = args[++i];
+    } else if (arg === "--screenshots" && i + 1 < args.length) {
+      opts.screenshotDir = args[++i];
+    } else if (arg === "--help" || arg === "-h") {
+      console.log(`
 Usage: node tests/playwright/walker/run.mjs [options]
 
 Options:
@@ -43,30 +43,30 @@ Options:
 Example:
   node tests/playwright/walker/run.mjs --protocol mtt_solubilization_readout
 `);
-			process.exit(0);
-		}
-	}
+      process.exit(0);
+    }
+  }
 
-	return opts;
+  return opts;
 }
 
 async function main() {
-	const opts = parseArgs();
+  const opts = parseArgs();
 
-	if (!opts.protocol) {
-		console.error('Error: --protocol argument is required');
-		process.exit(1);
-	}
+  if (!opts.protocol) {
+    console.error("Error: --protocol argument is required");
+    process.exit(1);
+  }
 
-	const result = await runWalker({
-		protocolName: opts.protocol,
-		headless: opts.headless,
-		verbosity: opts.verbosity,
-		screenshotDir: opts.screenshotDir,
-	});
+  const result = await runWalker({
+    protocolName: opts.protocol,
+    headless: opts.headless,
+    verbosity: opts.verbosity,
+    screenshotDir: opts.screenshotDir,
+  });
 
-	const status = result.success ? 'SUCCESS' : 'FAILED';
-	console.log(`
+  const status = result.success ? "SUCCESS" : "FAILED";
+  console.log(`
 ==========================================
 Walker Result
 ==========================================
@@ -75,14 +75,14 @@ Steps: ${result.stepsWalked}/${result.stepsTotal}
 Interactions: ${result.interactionsWalked}
 Screenshots: ${result.screenshotsTaken}
 Status: ${status}
-${result.errorMessage ? `Error: ${result.errorMessage}` : ''}
+${result.errorMessage ? `Error: ${result.errorMessage}` : ""}
 ==========================================
 `);
 
-	process.exit(result.success ? 0 : 1);
+  process.exit(result.success ? 0 : 1);
 }
 
-main().catch(err => {
-	console.error('Fatal error:', err);
-	process.exit(1);
+main().catch((err) => {
+  console.error("Fatal error:", err);
+  process.exit(1);
 });

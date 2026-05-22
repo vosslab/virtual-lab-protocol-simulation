@@ -62,10 +62,10 @@ Static cross-file consistency is the validator's domain, not the stepper's. The 
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Live tree already carries `display_color` divergence | medium | Post-patch validator run fails | coder | Run pre-patch audit (`source source_me.sh && python3 _temp.py` indexing colors per material); fix divergent YAML in the same patch; do not relax the check to ship green. |
-| Future material library shared file changes the source location | low | A shared `content/materials/` directory is introduced | maintainer | Re-point the check at the shared file when that spec amendment lands; update fixture path. |
+| Risk                                                            | Impact | Trigger                                               | Owner      | Mitigation                                                                                                                                                                |
+| --------------------------------------------------------------- | ------ | ----------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Live tree already carries `display_color` divergence            | medium | Post-patch validator run fails                        | coder      | Run pre-patch audit (`source source_me.sh && python3 _temp.py` indexing colors per material); fix divergent YAML in the same patch; do not relax the check to ship green. |
+| Future material library shared file changes the source location | low    | A shared `content/materials/` directory is introduced | maintainer | Re-point the check at the shared file when that spec amendment lands; update fixture path.                                                                                |
 
 ## Open questions and decisions needed
 

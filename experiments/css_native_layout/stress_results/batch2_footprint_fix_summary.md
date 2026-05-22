@@ -27,12 +27,12 @@ to improve.
 Subset: 20 scenes (10 worst Batch 1 + 10 class representatives).
 Baseline derived from `experiments/css_native_layout/stress_results/precheck_batch1/`.
 
-| Candidate | clipped_by_parent | aspect_distorted_HF | region_overflow | off_page | sum_all_HF_incidents | delta_vs_baseline |
-| --- | --- | --- | --- | --- | --- | --- |
-| Baseline (no CSS change) | 186 | 171 | 2 | 0 | 359 | 0 |
-| C1: 230/260 px (crowded 161/182) | 207 | 171 | 2 | 0 | 380 | +21 |
-| C2: 245/280 px (crowded 172/196) | 207 | 171 | 2 | 0 | 380 | +21 |
-| C3: 260/320 px (crowded 182/224) | 207 | 171 | 2 | 0 | 380 | +21 |
+| Candidate                        | clipped_by_parent | aspect_distorted_HF | region_overflow | off_page | sum_all_HF_incidents | delta_vs_baseline |
+| -------------------------------- | ----------------- | ------------------- | --------------- | -------- | -------------------- | ----------------- |
+| Baseline (no CSS change)         | 186               | 171                 | 2               | 0        | 359                  | 0                 |
+| C1: 230/260 px (crowded 161/182) | 207               | 171                 | 2               | 0        | 380                  | +21               |
+| C2: 245/280 px (crowded 172/196) | 207               | 171                 | 2               | 0        | 380                  | +21               |
+| C3: 260/320 px (crowded 182/224) | 207               | 171                 | 2               | 0        | 380                  | +21               |
 
 All three candidates produce identical totals. None is a winner.
 
@@ -41,19 +41,19 @@ All three candidates produce identical totals. None is a winner.
 The new HARD-fail incidents introduced by every candidate are all
 micropipettes:
 
-| Scene | base CBP | new CBP | new placements |
-| --- | --- | --- | --- |
-| stress_composition_003 | 4 | 5 | +micropipette_p10 (bottom) |
-| stress_dense_clutter_001 | 12 | 15 | +micropipette_p200, +p10, +p1000 |
-| stress_dense_clutter_004 | 12 | 13 | +micropipette_p200 |
-| stress_dense_clutter_006 | 12 | 13 | +micropipette_p10 |
-| stress_dense_clutter_008 | 12 | 13 | +micropipette_p10 |
-| stress_dense_clutter_009 | 12 | 15 | +p10, +p1000, +p200 |
-| stress_dense_clutter_018 | 10 | 12 | +p1000, +p200 |
-| stress_dense_clutter_019 | 12 | 14 | +p200, +p1000 |
-| stress_extreme_aspect_scene_002 | 5 | 6 | +micropipette_p10 |
-| stress_instrument_heavy_008 | 4 | 6 | +p200, +p10 |
-| stress_many_small_tools_scene_002 | 5 | 9 | +p1000, +p10, +p200, +p200 |
+| Scene                             | base CBP | new CBP | new placements                   |
+| --------------------------------- | -------- | ------- | -------------------------------- |
+| stress_composition_003            | 4        | 5       | +micropipette_p10 (bottom)       |
+| stress_dense_clutter_001          | 12       | 15      | +micropipette_p200, +p10, +p1000 |
+| stress_dense_clutter_004          | 12       | 13      | +micropipette_p200               |
+| stress_dense_clutter_006          | 12       | 13      | +micropipette_p10                |
+| stress_dense_clutter_008          | 12       | 13      | +micropipette_p10                |
+| stress_dense_clutter_009          | 12       | 15      | +p10, +p1000, +p200              |
+| stress_dense_clutter_018          | 10       | 12      | +p1000, +p200                    |
+| stress_dense_clutter_019          | 12       | 14      | +p200, +p1000                    |
+| stress_extreme_aspect_scene_002   | 5        | 6       | +micropipette_p10                |
+| stress_instrument_heavy_008       | 4        | 6       | +p200, +p10                      |
+| stress_many_small_tools_scene_002 | 5        | 9       | +p1000, +p10, +p200, +p200       |
 
 No scene saw `clipped_by_parent` decrease.
 

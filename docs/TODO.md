@@ -14,8 +14,7 @@ for state at hold and resumption criteria.
 ## Stepper and validator follow-ups from 96-well spike
 
 Surfaced by the 96-well authoring shape semantics spike. See
-[docs/active_plans/96_well_authoring_shape_finding.md](active_plans/96_well_authoring_shape_finding.md)
-for measured evidence.
+`96_well_authoring_shape_finding.md` (archived) for measured evidence.
 
 ### Add per-cell state tracking to protocol_stepper
 
@@ -62,7 +61,7 @@ If a real subset use case surfaces:
 - Include a `members: all` (or equivalent inferred-all) shorthand so
   the region shape is not line-count-penalized when the region
   happens to span the whole plate. The spike found the explicit
-  96-member list made the named-region inline form *longer* than
+  96-member list made the named-region inline form _longer_ than
   the expanded enumeration; this shorthand removes the penalty.
 - Reference the spike-only branch `spike/region-stepper` (unmerged)
   for a working validator + stepper implementation of the region
@@ -75,8 +74,7 @@ Reserve for meaningful subsets, not aliases for the whole plate.
 ## Follow-ups from 96-well enumeration audit
 
 Surfaced by WP-AUDIT-1 of the active 96-well cleanup plan. See
-[active_plans/96_well_enumeration_audit.md](active_plans/96_well_enumeration_audit.md)
-for full evidence.
+`96_well_enumeration_audit.md` (archived) for full evidence.
 
 ### Third 96-well over-enumeration site: plate_drug_treatment_drug_addition
 
@@ -222,13 +220,13 @@ triage; M1c does NOT fix either. See the M1b CHANGELOG entry under
 ### Walker `interactionSequence` regression on hood scenes (RESOLVED 2026-05-09)
 
 - Outcome: fixed. Root cause was the capture-phase click handler in
-  [src/scenes/scene_driver.ts](../src/scenes/scene_driver.ts) calling
+  `scene_driver.ts` calling
   `target.getAttribute('data-item-id')` on the raw click target, which is
   often an inner SVG shape (`ellipse`/`rect`/`path`) inside the `.hood-item`
   wrapper, not the wrapper itself. After a `directTool` step that called
   `renderHoodScene()` directly (skipping `runSceneRender`), the per-item
   bubble-phase listeners from
-  [src/scenes/cell_culture_hood/hood_shared.ts](../src/scenes/cell_culture_hood/hood_shared.ts)
+  `hood_shared.ts`
   were not re-attached on the rebuilt DOM, leaving only the capture-phase
   listener -- and that listener could not resolve the data-item-id from a
   nested SVG element. Fix: resolve the nearest ancestor via
@@ -243,8 +241,8 @@ triage; M1c does NOT fix either. See the M1b CHANGELOG entry under
   missing helper at `tests/_compile_for_test.mjs`
   (uses `npx esbuild --bundle --platform=node --define:window=globalThis`
   to compile a `.ts` entry to a tempdir `.mjs` and dynamic-import it).
-  Both [tests/test_svg_color_patch.mjs](../tests/test_svg_color_patch.mjs)
-  and the new [tests/test_svg_pipeline.mjs](../tests/test_svg_pipeline.mjs)
+  Both `test_svg_color_patch.mjs`
+  and the new `test_svg_pipeline.mjs`
   use the helper to exercise production `.ts` modules directly. See the
   M6 CHANGELOG entry under `## 2026-05-09` for full evidence.
 
@@ -253,18 +251,19 @@ triage; M1c does NOT fix either. See the M1b CHANGELOG entry under
 **Resolved 2026-05-17.** All three sites fixed pedagogically:
 
 - [x] `content/protocols/cell_seeding_plate_setup/protocol.yaml`: wrong instrument
-  class (micropipette max 1000 uL used for mL-range transfers). Fixed: switched to
-  serological_pipette; values converted uL->mL (2400->2.4, 9600->9.6). Also fixed
-  bonus bug: `well_plate_96.all_wells material_volume` 9600->100 uL per well.
+      class (micropipette max 1000 uL used for mL-range transfers). Fixed: switched to
+      serological_pipette; values converted uL->mL (2400->2.4, 9600->9.6). Also fixed
+      bonus bug: `well_plate_96.all_wells material_volume` 9600->100 uL per well.
 - [x] `content/protocols/mtt_plate_reaction/protocol.yaml`: biohazard_decant_bin
-  `material_volume` 21600 mL was mL/uL unit confusion (21600 uL total = 21.6 mL).
-  Fixed: 21600->21.6.
+      `material_volume` 21600 mL was mL/uL unit confusion (21600 uL total = 21.6 mL).
+      Fixed: 21600->21.6.
 - [x] `content/protocols/passage_hood_detachment/protocol.yaml`: trypsin_bottle
-  max:100 was too small; protocol assumes 500 mL stock (consistent with pbs_bottle
-  and media_bottle). Fixed: trypsin_bottle max/default 100->500; protocol value
-  197->497.
+      max:100 was too small; protocol assumes 500 mL stock (consistent with pbs_bottle
+      and media_bottle). Fixed: trypsin_bottle max/default 100->500; protocol value
+      197->497.
 
 Equipment V7 WARNINGs also resolved (same run):
+
 - hemocytometer added `material_container` capability (was missing; caused WARNING).
 - V7 gate refined: now warns only when equipment has material fields but lacks
   `material_container` capability (previously warned on any equipment with material fields).
@@ -274,7 +273,7 @@ Equipment V7 WARNINGs also resolved (same run):
 ### V6b: WCAG contrast gate on material YAML palette (deferred)
 
 Dropped from the spec-content-drift-remediation plan (see
-[docs/archive/spec_content_drift_remediation.md](archive/spec_content_drift_remediation.md)
+[spec_content_drift_remediation.md](archive/spec_content_drift_remediation.md)
 Objective #3). Reason: no current consumer renders material `display_color`
 as a color swatch; the gate is forward-looking until a theme-aware visual
 consumer ships. The gate should be included in the future "SVG asset

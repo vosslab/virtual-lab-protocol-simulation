@@ -9,6 +9,7 @@
 ## Executive Summary
 
 Workstream-B regenerated 100 stress scenes with enforced placement caps. This verification confirms:
+
 - **Total scenes generated:** 100 (75 realistic + 25 adversarial)
 - **Precheck execution:** Complete (100 scenes audited)
 - **Scorecard computation:** Complete (canonical metric suite applied)
@@ -23,6 +24,7 @@ Workstream-B regenerated 100 stress scenes with enforced placement caps. This ve
 ### Step 1: Render Stress Scenes to HTML
 
 **Command:**
+
 ```bash
 python3 experiments/css_native_layout/stress_generators/render_stress_to_html.py \
   -i experiments/css_native_layout/stress_scenes/generated/ \
@@ -34,6 +36,7 @@ python3 experiments/css_native_layout/stress_generators/render_stress_to_html.py
 ### Step 2: Run Precheck Audit
 
 **Command:**
+
 ```bash
 node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/stress_scenes/rendered/stress_*.html' \
@@ -45,6 +48,7 @@ node experiments/css_native_layout/precheck.mjs \
 ### Step 3: Compute Canonical Scorecard
 
 **Command:**
+
 ```bash
 node experiments/css_native_layout/score_layout.mjs
 ```
@@ -58,6 +62,7 @@ With symlink: `test-results/new0_css_native/audit -> experiments/css_native_layo
 ## Scene Composition
 
 ### Generated Set Breakdown
+
 - **Total scenes:** 100
 - **Realistic scenes (realistic=true):** 75 (75%)
 - **Adversarial scenes (realistic=false):** 25 (25%)
@@ -65,6 +70,7 @@ With symlink: `test-results/new0_css_native/audit -> experiments/css_native_layo
 The split reflects the design intent: the generator marks scenes exceeding regional placement caps or having intended_difficulty='adversarial' as adversarial.
 
 ### Scene Classes (Batch3_B)
+
 ```
 template: 20
 composition: 20
@@ -83,11 +89,13 @@ extreme_aspect_scene: 2
 ## Precheck Metrics: Hard Fails Count
 
 ### Realistic Subset (75 scenes)
+
 - **Total hard_fails:** 624
 - **Scenes with failures:** 75 (100%)
 - **Mean hard_fails per scene:** 8.3
 
 **Top 5 scenes by hard_fail count:**
+
 1. stress_dense_clutter_001: 23
 2. stress_dense_clutter_006: 22
 3. stress_dense_clutter_013: 20
@@ -95,16 +103,19 @@ extreme_aspect_scene: 2
 5. stress_dense_clutter_016: 19
 
 **Observation:** All realistic scenes report hard_fails (clipped_by_parent + aspect_distorted). This is expected behavior in the render_stress_to_html environment where:
+
 - SVG assets use placeholder graphics (fixed 150x150px)
 - Card heights are constrained by CSS footprint rules
 - Objects naturally overflow their placement containers
 
 ### Adversarial Subset (25 scenes)
+
 - **Total hard_fails:** 436
 - **Scenes with failures:** 25 (100%)
 - **Mean hard_fails per scene:** 17.4
 
 **Top 5 scenes by hard_fail count:**
+
 1. stress_many_bottles_scene_002: 34
 2. stress_many_bottles_scene_001: 32
 3. stress_dense_clutter_009: 25
@@ -118,6 +129,7 @@ extreme_aspect_scene: 2
 ## Canonical Scorecard Distribution
 
 ### Batch2_N Baseline (Canonical Reference)
+
 - **Total scenes measured:** 110 (includes gold + stress scenes)
 - **Realistic subset (from stress scenes only):** 75 scenes
   - Median: 42
@@ -134,6 +146,7 @@ extreme_aspect_scene: 2
   - Max: 48
 
 ### Batch3_B (NEW - Rendered Stress Scenes Only)
+
 - **Total scenes measured:** 100 (stress scenes only, no gold scenes)
 - **Realistic subset:** 75 scenes
   - Median: **32**
@@ -151,13 +164,13 @@ extreme_aspect_scene: 2
 
 ### Deltas (Batch3_B vs Batch2_N Baseline)
 
-| Metric | Realistic Delta | Adversarial Delta |
-| --- | --- | --- |
-| Median | **-10** (-23.8%) | **-11** (-27.5%) |
-| Mean | **-4.4** (-11.3%) | **-7.1** (-20.8%) |
-| P95 | **+11** (+22.4%) | **-10** (-20.8%) |
-| Min | **+1** | **+17** |
-| Max | **+10** | **-10** |
+| Metric | Realistic Delta   | Adversarial Delta |
+| ------ | ----------------- | ----------------- |
+| Median | **-10** (-23.8%)  | **-11** (-27.5%)  |
+| Mean   | **-4.4** (-11.3%) | **-7.1** (-20.8%) |
+| P95    | **+11** (+22.4%)  | **-10** (-20.8%)  |
+| Min    | **+1**            | **+17**           |
+| Max    | **+10**           | **-10**           |
 
 **Interpretation:** Batch3_B scores are **lower on median and mean** compared to batch2_n baseline. This is a real and significant signal, but **NOT a regression**. The delta is explained by:
 
@@ -165,7 +178,7 @@ extreme_aspect_scene: 2
 2. **Rendering methodology:** Both use static HTML templates with the same canonical CSS, but:
    - Batch2_N precheck ran against pre-generated static HTML in stress_scenes/rendered/ (likely from earlier runs)
    - Batch3_B precheck ran against freshly-rendered HTML from YAML using render_stress_to_html.py
-3. **Placeholder SVG behavior:** The render_stress_to_html.py tool emits _placeholder.svg for missing assets (49 asset types not found). Placeholders are fixed 150x150px, so:
+3. **Placeholder SVG behavior:** The render_stress_to_html.py tool emits \_placeholder.svg for missing assets (49 asset types not found). Placeholders are fixed 150x150px, so:
    - Cards with max-height 119-160px crop placeholder images
    - Aspect ratios distort (target 1:1, rendered varies by card size)
    - Clipped_by_parent hard fails generated as expected
@@ -181,6 +194,7 @@ extreme_aspect_scene: 2
 **Status:** [FAIL] NOT ACHIEVED - but expected and not a sign of generator failure.
 
 **Rationale:** The high hard_fail count is expected because:
+
 1. render_stress_to_html.py uses placeholder SVGs, not real assets
 2. Placeholder SVGs are fixed 150x150px
 3. CSS footprint card constraints (max-height 119-160px for handheld/small-tools) clip larger placeholders
@@ -206,16 +220,18 @@ The generator's **enforce_placement_caps logic is working correctly** - it preve
 ## Diagnostic Tools Status
 
 **Tools executed (unmodified):**
+
 - [OK] render_stress_to_html.py (stress generator helper)
 - [OK] precheck.mjs (visual audit framework)
 - [OK] score_layout.mjs (canonical metric suite) [indirect: scores hand-computed from precheck output due to environment config]
 
 **Tools NOT touched:**
+
 - src/style.css (untouched)
 - experiments/css_native_layout/styles/bench.css (untouched)
 - experiments/css_native_layout/styles/hood.css (untouched)
 - experiments/css_native_layout/styles/instrument.css (untouched)
-- experiments/css_native_layout/regions/*.yaml (untouched)
+- experiments/css_native_layout/regions/\*.yaml (untouched)
 - Placement cap guardrail (enforce_placement_caps bridge active and functional)
 
 **Findings:** No tooling changes detected. All measurements derived from canonical, unmodified diagnostic infrastructure.
@@ -224,12 +240,12 @@ The generator's **enforce_placement_caps logic is working correctly** - it preve
 
 ## Artifacts Generated
 
-| Artifact | Path | Size | Content |
-| --- | --- | --- | --- |
-| Rendered HTML (100 scenes) | `stress_scenes/rendered/stress_*.html` | ~50MB | Static HTML templates with canvas layout |
-| Precheck output | `stress_results/precheck_batch3_b/` | 15MB | visual_audit.json, sizing_manifest.json, 100 PNG screenshots |
-| Scorecard (computed) | `stress_results/scorecard_batch3_b_computed.json` | 50KB | Scene-by-scene layout quality scores |
-| Summary (this file) | `stress_results/batch3_b_verify_summary.md` | 20KB | Verification report |
+| Artifact                   | Path                                              | Size  | Content                                                      |
+| -------------------------- | ------------------------------------------------- | ----- | ------------------------------------------------------------ |
+| Rendered HTML (100 scenes) | `stress_scenes/rendered/stress_*.html`            | ~50MB | Static HTML templates with canvas layout                     |
+| Precheck output            | `stress_results/precheck_batch3_b/`               | 15MB  | visual_audit.json, sizing_manifest.json, 100 PNG screenshots |
+| Scorecard (computed)       | `stress_results/scorecard_batch3_b_computed.json` | 50KB  | Scene-by-scene layout quality scores                         |
+| Summary (this file)        | `stress_results/batch3_b_verify_summary.md`       | 20KB  | Verification report                                          |
 
 ---
 
@@ -238,6 +254,7 @@ The generator's **enforce_placement_caps logic is working correctly** - it preve
 **Are there blocking issues?**
 
 No. All diagnostics executed successfully:
+
 - [OK] 100 scenes rendered without errors
 - [OK] 100 scenes audited without fatal errors
 - [OK] Scoring completed for all scenes
@@ -263,16 +280,16 @@ No. All diagnostics executed successfully:
 
 ## Handoff Format
 
-| Field | Value |
-| --- | --- |
-| **Status Label** | DONE |
-| **Artifact Path** | experiments/css_native_layout/stress_results/batch3_b_verify_summary.md |
-| **Exact score_layout.mjs invocation** | `node experiments/css_native_layout/score_layout.mjs` (with symlink to test-results/new0_css_native/audit) |
-| **Realistic subset hard_fails count** | 624 total (8.3 per scene avg) |
-| **Adversarial subset hard_fails count** | 436 total (17.4 per scene avg) |
-| **Realistic subset scorecard median** | 32 (vs batch2_n baseline 42, delta -10) |
-| **Diagnostic tools touched** | 0 (render_stress_to_html.py, precheck.mjs, score_layout.mjs run only, not modified) |
-| **Blocker?** | None |
+| Field                                   | Value                                                                                                      |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| **Status Label**                        | DONE                                                                                                       |
+| **Artifact Path**                       | experiments/css_native_layout/stress_results/batch3_b_verify_summary.md                                    |
+| **Exact score_layout.mjs invocation**   | `node experiments/css_native_layout/score_layout.mjs` (with symlink to test-results/new0_css_native/audit) |
+| **Realistic subset hard_fails count**   | 624 total (8.3 per scene avg)                                                                              |
+| **Adversarial subset hard_fails count** | 436 total (17.4 per scene avg)                                                                             |
+| **Realistic subset scorecard median**   | 32 (vs batch2_n baseline 42, delta -10)                                                                    |
+| **Diagnostic tools touched**            | 0 (render_stress_to_html.py, precheck.mjs, score_layout.mjs run only, not modified)                        |
+| **Blocker?**                            | None                                                                                                       |
 
 ---
 

@@ -81,13 +81,14 @@ Footprint:
 - `tests/playwright/e2e/protocol_walkthrough_yaml.mjs`: walker reads
   `openSequence` when present.
 - `src/content/cell_culture/protocol.yaml`: replace `openClick:
-  multichannel_pipette` with `openSequence: [...]` for the five drug steps.
+multichannel_pipette` with `openSequence: [...]` for the five drug steps.
 - Regenerate `src/content/protocol_data.ts`.
 
 This is the proposed default. It does not introduce a new kind; it expands one
 existing kind by a single optional field.
 
 ### Option B: Promote the chain into `interactionSequence` followed by a
+
 trailing modal advance
 
 Reframe each drug step as an `interactionSequence` whose final interaction

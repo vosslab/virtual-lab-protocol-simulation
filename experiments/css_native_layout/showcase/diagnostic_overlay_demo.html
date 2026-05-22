@@ -1,131 +1,153 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="utf-8">
-<title>Diagnostic Overlay Demo (Lane Q)</title>
-<style>
-	html, body {
-		margin: 0;
-		padding: 0;
-		background: #1b1b1b;
-		font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-		color: #fff;
-	}
-	.stage {
-		position: relative;
-		width: 1920px;
-		height: 1080px;
-		background-image: url("../../../test-results/new0_css_native/audit/staining_bench.png");
-		background-size: 1920px 1080px;
-		background-repeat: no-repeat;
-	}
-	.stage svg.overlay {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 1920px;
-		height: 1080px;
-		pointer-events: none;
-	}
-	.banner {
-		position: absolute;
-		top: 12px;
-		left: 50%;
-		transform: translateX(-50%);
-		background: rgba(0, 0, 0, 0.78);
-		color: #ffd24a;
-		padding: 8px 18px;
-		font-size: 14px;
-		font-weight: 600;
-		letter-spacing: 0.5px;
-		border: 1px solid #ffd24a;
-		border-radius: 4px;
-		z-index: 10;
-	}
-	.legend {
-		position: absolute;
-		top: 60px;
-		right: 20px;
-		background: rgba(0, 0, 0, 0.82);
-		color: #fff;
-		padding: 12px 14px;
-		font-size: 13px;
-		line-height: 1.55;
-		border-radius: 4px;
-		min-width: 240px;
-		z-index: 10;
-	}
-	.legend h3 {
-		margin: 0 0 6px 0;
-		font-size: 13px;
-		text-transform: uppercase;
-		letter-spacing: 1px;
-		color: #aaa;
-	}
-	.legend .sw {
-		display: inline-block;
-		width: 14px;
-		height: 14px;
-		border-width: 3px;
-		border-style: solid;
-		background: transparent;
-		margin-right: 8px;
-		vertical-align: middle;
-		box-sizing: border-box;
-	}
-	.legend ul { list-style: none; margin: 0; padding: 0; }
-	.legend li { margin: 3px 0; }
-	.scene-meta {
-		position: absolute;
-		left: 20px;
-		bottom: 20px;
-		background: rgba(0, 0, 0, 0.78);
-		color: #ddd;
-		font-size: 12px;
-		padding: 10px 14px;
-		border-radius: 4px;
-		max-width: 520px;
-		z-index: 10;
-	}
-	.scene-meta code { color: #ffd24a; }
-	text.olabel {
-		font-family: -apple-system, sans-serif;
-		font-size: 12px;
-		font-weight: 600;
-		paint-order: stroke;
-		stroke: rgba(0, 0, 0, 0.85);
-		stroke-width: 3px;
-	}
-</style>
-</head>
-<body>
-<div class="stage">
-	<div class="banner">
-		PROTOTYPE: diagnostic overlay; rect coordinates hand-authored for demonstration
-	</div>
+  <head>
+    <meta charset="utf-8" />
+    <title>Diagnostic Overlay Demo (Lane Q)</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        background: #1b1b1b;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: #fff;
+      }
+      .stage {
+        position: relative;
+        width: 1920px;
+        height: 1080px;
+        background-image: url("../../../test-results/new0_css_native/audit/staining_bench.png");
+        background-size: 1920px 1080px;
+        background-repeat: no-repeat;
+      }
+      .stage svg.overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 1920px;
+        height: 1080px;
+        pointer-events: none;
+      }
+      .banner {
+        position: absolute;
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.78);
+        color: #ffd24a;
+        padding: 8px 18px;
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        border: 1px solid #ffd24a;
+        border-radius: 4px;
+        z-index: 10;
+      }
+      .legend {
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.82);
+        color: #fff;
+        padding: 12px 14px;
+        font-size: 13px;
+        line-height: 1.55;
+        border-radius: 4px;
+        min-width: 240px;
+        z-index: 10;
+      }
+      .legend h3 {
+        margin: 0 0 6px 0;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #aaa;
+      }
+      .legend .sw {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border-width: 3px;
+        border-style: solid;
+        background: transparent;
+        margin-right: 8px;
+        vertical-align: middle;
+        box-sizing: border-box;
+      }
+      .legend ul {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+      }
+      .legend li {
+        margin: 3px 0;
+      }
+      .scene-meta {
+        position: absolute;
+        left: 20px;
+        bottom: 20px;
+        background: rgba(0, 0, 0, 0.78);
+        color: #ddd;
+        font-size: 12px;
+        padding: 10px 14px;
+        border-radius: 4px;
+        max-width: 520px;
+        z-index: 10;
+      }
+      .scene-meta code {
+        color: #ffd24a;
+      }
+      text.olabel {
+        font-family: -apple-system, sans-serif;
+        font-size: 12px;
+        font-weight: 600;
+        paint-order: stroke;
+        stroke: rgba(0, 0, 0, 0.85);
+        stroke-width: 3px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stage">
+      <div class="banner">
+        PROTOTYPE: diagnostic overlay; rect coordinates hand-authored for
+        demonstration
+      </div>
 
-	<div class="legend">
-		<h3>Verdict overlay legend</h3>
-		<ul>
-			<li><span class="sw" style="border-color:#c41e3a;"></span>Hard fail (FAIL)</li>
-			<li><span class="sw" style="border-color:#ffa500;"></span>Advisory (WARN)</li>
-			<li><span class="sw" style="border-color:#1b7c3f;"></span>Primary object</li>
-			<li><span class="sw" style="border-color:#1e88e5;"></span>Largest empty band</li>
-		</ul>
-	</div>
+      <div class="legend">
+        <h3>Verdict overlay legend</h3>
+        <ul>
+          <li>
+            <span class="sw" style="border-color: #c41e3a"></span>Hard fail
+            (FAIL)
+          </li>
+          <li>
+            <span class="sw" style="border-color: #ffa500"></span>Advisory
+            (WARN)
+          </li>
+          <li>
+            <span class="sw" style="border-color: #1b7c3f"></span>Primary object
+          </li>
+          <li>
+            <span class="sw" style="border-color: #1e88e5"></span>Largest empty
+            band
+          </li>
+        </ul>
+      </div>
 
-	<div class="scene-meta">
-		Scene: <code>staining_bench</code> &middot; verdict <code>WARN</code> &middot;
-		artwork_integrity reports 10 WARN items (aspect mismatch / unintentional
-		upscaling).<br>
-		Rect coordinates: hand-authored to approximate visible placements
-		(<code>visual_audit.json</code> records sizes but not x/y).
-		Largest empty band rect IS from <code>checks.largest_empty_band</code> in
-		the audit JSON.
-	</div>
+      <div class="scene-meta">
+        Scene: <code>staining_bench</code> &middot; verdict
+        <code>WARN</code> &middot; artwork_integrity reports 10 WARN items
+        (aspect mismatch / unintentional upscaling).<br />
+        Rect coordinates: hand-authored to approximate visible placements (<code
+          >visual_audit.json</code
+        >
+        records sizes but not x/y). Largest empty band rect IS from
+        <code>checks.largest_empty_band</code> in the audit JSON.
+      </div>
 
-	<svg class="overlay" viewBox="0 0 1920 1080" preserveAspectRatio="none">
-		<!--
+      <svg class="overlay" viewBox="0 0 1920 1080" preserveAspectRatio="none">
+        <!--
 			NOTE on rect provenance:
 			- WARN rects (amber): hand-authored to bound the visible artwork in
 			  staining_bench.png. The JSON records natural_vs_rendered sizes per
@@ -137,96 +159,198 @@
 			  come DIRECTLY from checks.largest_empty_band.top-right.
 		-->
 
-		<!-- Largest empty band (BLUE) - exact from JSON -->
-		<rect x="960" y="0" width="960" height="540"
-			fill="#1e88e5" fill-opacity="0.08"
-			stroke="#1e88e5" stroke-width="3"
-			stroke-dasharray="10 6" />
-		<text class="olabel" x="975" y="22" fill="#1e88e5">
-			largest_empty_band (top-right) 960x540 -- from JSON
-		</text>
+        <!-- Largest empty band (BLUE) - exact from JSON -->
+        <rect
+          x="960"
+          y="0"
+          width="960"
+          height="540"
+          fill="#1e88e5"
+          fill-opacity="0.08"
+          stroke="#1e88e5"
+          stroke-width="3"
+          stroke-dasharray="10 6"
+        />
+        <text class="olabel" x="975" y="22" fill="#1e88e5">
+          largest_empty_band (top-right) 960x540 -- from JSON
+        </text>
 
-		<!-- WARN rects (AMBER) for 10 artwork_integrity items.
+        <!-- WARN rects (AMBER) for 10 artwork_integrity items.
 			 Rear shelf row: 5 bottles roughly at y=375-540 -->
-		<rect x="36" y="378" width="80" height="170"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="42" y="372" fill="#ffa500">
-			WARN: rear_left_coomassie_stain (area 127.8% of natural)
-		</text>
+        <rect
+          x="36"
+          y="378"
+          width="80"
+          height="170"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="42" y="372" fill="#ffa500">
+          WARN: rear_left_coomassie_stain (area 127.8% of natural)
+        </text>
 
-		<rect x="138" y="378" width="80" height="170"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="144" y="372" fill="#ffa500">
-			WARN: rear_center_destain (area 122.2%)
-		</text>
+        <rect
+          x="138"
+          y="378"
+          width="80"
+          height="170"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="144" y="372" fill="#ffa500">
+          WARN: rear_center_destain (area 122.2%)
+        </text>
 
-		<rect x="232" y="378" width="80" height="170"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="238" y="372" fill="#ffa500">
-			WARN: rear_right_ddh2o (aspect mismatch 77.9%)
-		</text>
+        <rect
+          x="232"
+          y="378"
+          width="80"
+          height="170"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="238" y="372" fill="#ffa500">
+          WARN: rear_right_ddh2o (aspect mismatch 77.9%)
+        </text>
 
-		<rect x="336" y="378" width="80" height="170"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="342" y="372" fill="#ffa500">
-			WARN: rear_left_coomassie_recycle (area 135.8%)
-		</text>
+        <rect
+          x="336"
+          y="378"
+          width="80"
+          height="170"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="342" y="372" fill="#ffa500">
+          WARN: rear_left_coomassie_recycle (area 135.8%)
+        </text>
 
-		<rect x="438" y="378" width="80" height="170"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="444" y="372" fill="#ffa500">
-			WARN: rear_center_destain_waste (area 122.2%)
-		</text>
+        <rect
+          x="438"
+          y="378"
+          width="80"
+          height="170"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="444" y="372" fill="#ffa500">
+          WARN: rear_center_destain_waste (area 122.2%)
+        </text>
 
-		<!-- Center row: staining tray + waste + kimwipe ~ y=625-770 -->
-		<rect x="1666" y="610" width="240" height="78"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="1672" y="604" fill="#ffa500">
-			WARN: center_waste_container (aspect mismatch 36.4%)
-		</text>
+        <!-- Center row: staining tray + waste + kimwipe ~ y=625-770 -->
+        <rect
+          x="1666"
+          y="610"
+          width="240"
+          height="78"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="1672" y="604" fill="#ffa500">
+          WARN: center_waste_container (aspect mismatch 36.4%)
+        </text>
 
-		<rect x="1810" y="688" width="100" height="56"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="1700" y="700" fill="#ffa500">
-			WARN: center_kimwipe_pad (area 44.0%, shrunk)
-		</text>
+        <rect
+          x="1810"
+          y="688"
+          width="100"
+          height="56"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="1700" y="700" fill="#ffa500">
+          WARN: center_kimwipe_pad (area 44.0%, shrunk)
+        </text>
 
-		<!-- Right-tool area: microwave + rocking shaker ~ y=775-960 -->
-		<rect x="60" y="775" width="160" height="180"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="66" y="768" fill="#ffa500">
-			WARN: right_tool_area_microwave (area 215.1%)
-		</text>
+        <!-- Right-tool area: microwave + rocking shaker ~ y=775-960 -->
+        <rect
+          x="60"
+          y="775"
+          width="160"
+          height="180"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="66" y="768" fill="#ffa500">
+          WARN: right_tool_area_microwave (area 215.1%)
+        </text>
 
-		<rect x="250" y="775" width="240" height="180"
-			fill="#ffa500" fill-opacity="0.10" stroke="#ffa500" stroke-width="3"/>
-		<text class="olabel" x="256" y="768" fill="#ffa500">
-			WARN: right_tool_area_rocking_shaker (area 302.6%)
-		</text>
+        <rect
+          x="250"
+          y="775"
+          width="240"
+          height="180"
+          fill="#ffa500"
+          fill-opacity="0.10"
+          stroke="#ffa500"
+          stroke-width="3"
+        />
+        <text class="olabel" x="256" y="768" fill="#ffa500">
+          WARN: right_tool_area_rocking_shaker (area 302.6%)
+        </text>
 
-		<!-- Demonstration HARD FAIL (red): no FAIL items present in
+        <!-- Demonstration HARD FAIL (red): no FAIL items present in
 			 staining_bench audit. Sample rect shown to illustrate palette;
 			 disclosed below. -->
-		<rect x="1840" y="20" width="60" height="32"
-			fill="#c41e3a" fill-opacity="0.10" stroke="#c41e3a" stroke-width="3"/>
-		<text class="olabel" x="1620" y="42" fill="#c41e3a">
-			(demo only -- no hard fails in this scene)
-		</text>
+        <rect
+          x="1840"
+          y="20"
+          width="60"
+          height="32"
+          fill="#c41e3a"
+          fill-opacity="0.10"
+          stroke="#c41e3a"
+          stroke-width="3"
+        />
+        <text class="olabel" x="1620" y="42" fill="#c41e3a">
+          (demo only -- no hard fails in this scene)
+        </text>
 
-		<!-- Center staining tray (GREEN, primary object flagged in JSON) -->
-		<rect x="1665" y="558" width="252" height="86"
-			fill="#1b7c3f" fill-opacity="0.10" stroke="#1b7c3f" stroke-width="3"/>
-		<text class="olabel" x="1671" y="552" fill="#1b7c3f">
-			PRIMARY: center_staining_tray (ratio 0.7, flag=true)
-		</text>
+        <!-- Center staining tray (GREEN, primary object flagged in JSON) -->
+        <rect
+          x="1665"
+          y="558"
+          width="252"
+          height="86"
+          fill="#1b7c3f"
+          fill-opacity="0.10"
+          stroke="#1b7c3f"
+          stroke-width="3"
+        />
+        <text class="olabel" x="1671" y="552" fill="#1b7c3f">
+          PRIMARY: center_staining_tray (ratio 0.7, flag=true)
+        </text>
 
-		<!-- One artwork item missed above: center_staining_tray itself also
+        <!-- One artwork item missed above: center_staining_tray itself also
 			 had WARN (area 325.9%). Marked with both green primary + amber
 			 tick at corner for honesty. -->
-		<rect x="1665" y="558" width="252" height="86"
-			fill="none" stroke="#ffa500" stroke-width="3"
-			stroke-dasharray="6 4"/>
-	</svg>
-</div>
-</body>
+        <rect
+          x="1665"
+          y="558"
+          width="252"
+          height="86"
+          fill="none"
+          stroke="#ffa500"
+          stroke-width="3"
+          stroke-dasharray="6 4"
+        />
+      </svg>
+    </div>
+  </body>
 </html>

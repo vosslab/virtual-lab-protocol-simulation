@@ -21,169 +21,174 @@
  * Run: node tests/protocol_graph_smoke.mjs
  */
 
-import { chromium } from 'playwright';
-import path from 'path';
-import fs from 'fs';
-import process from 'node:process';
+/* global PROTOCOL_STEPS, completeStep, gameState */
+import { chromium } from "playwright";
+import path from "path";
+import fs from "fs";
+import process from "node:process";
 
-import { REPO_ROOT } from './repo_root.mjs';
-import { ensureGameBuilt } from './build_game_if_missing.mjs';
+import { REPO_ROOT } from "./repo_root.mjs";
+import { ensureGameBuilt } from "./build_game_if_missing.mjs";
 
 await ensureGameBuilt(REPO_ROOT);
 
-const gamePath = path.resolve(REPO_ROOT, 'cell_culture_game.html');
+const gamePath = path.resolve(REPO_ROOT, "cell_culture_game.html");
 const gameUrl = `file://${gamePath}`;
-const screenshotDir = 'build/walkthrough';
+const screenshotDir = "build/walkthrough";
 
 // Ensure screenshot directory exists and is empty so stale files from
 // prior runs do not mix with the current walkthrough output.
 fs.mkdirSync(screenshotDir, { recursive: true });
 for (const f of fs.readdirSync(screenshotDir)) {
-	if (f.endsWith('.png')) fs.unlinkSync(path.join(screenshotDir, f));
+  if (f.endsWith(".png")) fs.unlinkSync(path.join(screenshotDir, f));
 }
 
 // ============================================
 async function main() {
-	console.log('Starting protocol walkthrough...\n');
+  console.log("Starting protocol walkthrough...\n");
 
-	const browser = await chromium.launch({ headless: true });
-	try {
-		const page = await browser.newPage();
-		await page.goto(gameUrl, { waitUntil: 'load' });
-		await page.waitForTimeout(500);
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(gameUrl, { waitUntil: "load" });
+    await page.waitForTimeout(500);
 
-		// Dismiss the welcome overlay. In a fresh browser context
-		// localStorage is empty, so init.ts shows welcome-overlay until
-		// the student clicks welcome-start-btn. Click it here so every
-		// screenshot shows the actual game instead of the splash.
-		const startBtn = await page.$('#welcome-start-btn');
-		if (startBtn) {
-			await startBtn.click();
-			await page.waitForTimeout(200);
-		}
+    // Dismiss the welcome overlay. In a fresh browser context
+    // localStorage is empty, so init.ts shows welcome-overlay until
+    // the student clicks welcome-start-btn. Click it here so every
+    // screenshot shows the actual game instead of the splash.
+    const startBtn = await page.$("#welcome-start-btn");
+    if (startBtn) {
+      await startBtn.click();
+      await page.waitForTimeout(200);
+    }
 
-		// ============================================
-		// Pass B (run FIRST): Read validator before state mutations
-		// ============================================
-		console.log('Pass B: Checking wiring coverage...');
+    // ============================================
+    // Pass B (run FIRST): Read validator before state mutations
+    // ============================================
+    console.log("Pass B: Checking wiring coverage...");
 
-		const validation = await page.evaluate(() => window.__protocolValidation);
-		if (!validation || validation.ok !== true) {
-			console.error('[FAIL] validateCompletionEventCoverage failed');
-			console.error(`Title: ${validation?.title || 'unknown'}`);
-			console.error(`Detail: ${validation?.detail || 'unknown'}`);
-			process.exit(1);
-		}
-		console.log('[OK] validateCompletionEventCoverage passed: all steps registered\n');
+    const validation = await page.evaluate(() => window.__protocolValidation);
+    if (!validation || validation.ok !== true) {
+      console.error("[FAIL] validateCompletionEventCoverage failed");
+      console.error(`Title: ${validation?.title || "unknown"}`);
+      console.error(`Detail: ${validation?.detail || "unknown"}`);
+      process.exit(1);
+    }
+    console.log(
+      "[OK] validateCompletionEventCoverage passed: all steps registered\n",
+    );
 
-		// ============================================
-		// Pass A: Walk the nextId chain, call completeStep, screenshot
-		// ============================================
-		console.log('Pass A: Walking the protocol chain...');
+    // ============================================
+    // Pass A: Walk the nextId chain, call completeStep, screenshot
+    // ============================================
+    console.log("Pass A: Walking the protocol chain...");
 
-		// Collect step ids by following nextId
-		const stepIds = await page.evaluate(() => {
-			const ids = [];
-			let current = PROTOCOL_STEPS[0].id;
-			while (current !== null) {
-				ids.push(current);
-				const step = PROTOCOL_STEPS.find(s => s.id === current);
-				if (!step) break;
-				current = step.nextId;
-				// If nextId is a function (branching, not used yet), stop
-				if (typeof current === 'function') break;
-			}
-			return ids;
-		});
+    // Collect step ids by following nextId
+    const stepIds = await page.evaluate(() => {
+      const ids = [];
+      let current = PROTOCOL_STEPS[0].id;
+      while (current !== null) {
+        ids.push(current);
+        const step = PROTOCOL_STEPS.find((s) => s.id === current);
+        if (!step) break;
+        current = step.nextId;
+        // If nextId is a function (branching, not used yet), stop
+        if (typeof current === "function") break;
+      }
+      return ids;
+    });
 
-		console.log(`Found ${stepIds.length} steps in chain\n`);
+    console.log(`Found ${stepIds.length} steps in chain\n`);
 
-		// Walk and screenshot each step
-		for (let i = 0; i < stepIds.length; i++) {
-			const id = stepIds[i];
+    // Walk and screenshot each step
+    for (let i = 0; i < stepIds.length; i++) {
+      const id = stepIds[i];
 
-			// Call completeStep
-			await page.evaluate((stepId) => {
-				// Advance interactionIndex to the end of the sequence so the
-				// backstop check in completeStep allows the step to complete.
-				const step = PROTOCOL_STEPS.find(s => s.id === stepId);
-				if (step && step.interactionSequence) {
-					gameState.interactionIndex = step.interactionSequence.length;
-				}
-				completeStep(stepId);
-			}, id);
+      // Call completeStep
+      await page.evaluate((stepId) => {
+        // Advance interactionIndex to the end of the sequence so the
+        // backstop check in completeStep allows the step to complete.
+        const step = PROTOCOL_STEPS.find((s) => s.id === stepId);
+        if (step && step.interactionSequence) {
+          gameState.interactionIndex = step.interactionSequence.length;
+        }
+        completeStep(stepId);
+      }, id);
 
-			// Screenshot with zero-padded 1-based index so filenames
-			// match human step numbering (01..25 for 25 steps).
-			const index = String(i + 1).padStart(2, '0');
-			const fname = `${index}_${id}.png`;
-			const fpath = path.join(screenshotDir, fname);
-			await page.screenshot({ path: fpath });
-			console.log(`[${i + 1}/${stepIds.length}] ${id}`);
-		}
+      // Screenshot with zero-padded 1-based index so filenames
+      // match human step numbering (01..25 for 25 steps).
+      const index = String(i + 1).padStart(2, "0");
+      const fname = `${index}_${id}.png`;
+      const fpath = path.join(screenshotDir, fname);
+      await page.screenshot({ path: fpath });
+      console.log(`[${i + 1}/${stepIds.length}] ${id}`);
+    }
 
-		console.log('');
+    console.log("");
 
-		// ============================================
-		// Final state assertions
-		// ============================================
-		const finalState = await page.evaluate(() => ({
-			completed: gameState.completedSteps.length,
-			total: PROTOCOL_STEPS.length,
-			outOfOrder: gameState.stepsOutOfOrder,
-			activeStepId: gameState.activeStepId,
-		}));
+    // ============================================
+    // Final state assertions
+    // ============================================
+    const finalState = await page.evaluate(() => ({
+      completed: gameState.completedSteps.length,
+      total: PROTOCOL_STEPS.length,
+      outOfOrder: gameState.stepsOutOfOrder,
+      activeStepId: gameState.activeStepId,
+    }));
 
-		console.log('Final state check:');
-		console.log(`  completedSteps: ${finalState.completed}/${finalState.total}`);
-		console.log(`  stepsOutOfOrder: ${finalState.outOfOrder}`);
-		console.log(`  activeStepId: ${finalState.activeStepId}`);
-		console.log('');
+    console.log("Final state check:");
+    console.log(
+      `  completedSteps: ${finalState.completed}/${finalState.total}`,
+    );
+    console.log(`  stepsOutOfOrder: ${finalState.outOfOrder}`);
+    console.log(`  activeStepId: ${finalState.activeStepId}`);
+    console.log("");
 
-		let failed = false;
+    let failed = false;
 
-		if (finalState.completed !== finalState.total) {
-			console.error(
-				`FAIL: completed ${finalState.completed}/${finalState.total}, expected ${finalState.total}`,
-			);
-			failed = true;
-		}
+    if (finalState.completed !== finalState.total) {
+      console.error(
+        `FAIL: completed ${finalState.completed}/${finalState.total}, expected ${finalState.total}`,
+      );
+      failed = true;
+    }
 
-		if (finalState.outOfOrder !== 0) {
-			console.error(
-				`FAIL: ${finalState.outOfOrder} out-of-order attempts, expected 0`,
-			);
-			failed = true;
-		}
+    if (finalState.outOfOrder !== 0) {
+      console.error(
+        `FAIL: ${finalState.outOfOrder} out-of-order attempts, expected 0`,
+      );
+      failed = true;
+    }
 
-		if (finalState.activeStepId !== null) {
-			console.error(
-				`FAIL: activeStepId is '${finalState.activeStepId}', expected null`,
-			);
-			failed = true;
-		}
+    if (finalState.activeStepId !== null) {
+      console.error(
+        `FAIL: activeStepId is '${finalState.activeStepId}', expected null`,
+      );
+      failed = true;
+    }
 
-		// Report screenshot count
-		const screenshots = fs.readdirSync(screenshotDir).filter(
-			f => f.endsWith('.png'),
-		);
-		console.log(`Screenshots written: ${screenshots.length}`);
+    // Report screenshot count
+    const screenshots = fs
+      .readdirSync(screenshotDir)
+      .filter((f) => f.endsWith(".png"));
+    console.log(`Screenshots written: ${screenshots.length}`);
 
-		await page.close();
+    await page.close();
 
-		if (failed) {
-			process.exit(1);
-		}
+    if (failed) {
+      process.exit(1);
+    }
 
-		console.log(
-			`\n[OK] walkthrough complete: ${finalState.completed}/${finalState.total} steps`,
-		);
-	} finally {
-		await browser.close();
-	}
+    console.log(
+      `\n[OK] walkthrough complete: ${finalState.completed}/${finalState.total} steps`,
+    );
+  } finally {
+    await browser.close();
+  }
 }
 
 main().catch((error) => {
-	console.error('Walkthrough error:', error);
-	process.exit(1);
+  console.error("Walkthrough error:", error);
+  process.exit(1);
 });

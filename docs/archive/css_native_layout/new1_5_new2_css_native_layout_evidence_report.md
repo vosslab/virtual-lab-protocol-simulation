@@ -6,8 +6,8 @@ comparisons across three layers (production dispatch, static visual
 scorecard, and diagnostic integrity). This Markdown is the link index,
 finding list, and reproduction-command sheet.
 
-Full HTML report: [new1_5_new2_css_native_layout_evidence_report.html](new1_5_new2_css_native_layout_evidence_report.html).
-PDF: [new1_5_new2_css_native_layout_evidence_report.pdf](new1_5_new2_css_native_layout_evidence_report.pdf).
+Full HTML report: `new1_5_new2_css_native_layout_evidence_report.html`.
+PDF: `new1_5_new2_css_native_layout_evidence_report.pdf`.
 
 ## Top 10 findings
 
@@ -34,14 +34,14 @@ Run the Task #97 sweep against the restored canonical `precheck.mjs` to re-attri
 
 ## Key plan documents
 
-- [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+- `new1_5_layout_hardening_results.md`
 - [new1_5_layout_hardening_before_new2.md](new1_5_layout_hardening_before_new2.md)
-- [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md)
-- [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md)
-- [new2_production_viewport_overflow_audit.md](new2_production_viewport_overflow_audit.md)
-- [new2_test_strategy.md](new2_test_strategy.md)
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)
-- [new2_implementation_test_matrix.md](new2_implementation_test_matrix.md)
+- `new1_well_plate_96_zoom_spike_result.md`
+- `new2_well_plate_adapter_rect_audit.md`
+- `new2_production_viewport_overflow_audit.md`
+- `new2_test_strategy.md`
+- `new2_css_native_production_blocker_plan.md`
+- `new2_implementation_test_matrix.md`
 - [lane_r_rerender_probe_summary.md](lane_r_rerender_probe_summary.md)
 - [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md)
 

@@ -1,3 +1,4 @@
+/* eslint-disable preserve-caught-error */
 /**
  * src/scene_runtime/loader/world.ts
  *
@@ -17,20 +18,20 @@
  */
 
 import type {
-	ProtocolConfig,
-	ResolvedSceneConfig,
-	ObjectConfig,
-	MaterialConfig,
-	RuntimeWorld,
-	Step,
-} from '../types';
+  ProtocolConfig,
+  ResolvedSceneConfig,
+  ObjectConfig,
+  MaterialConfig,
+  RuntimeWorld,
+  Step,
+} from "../types";
 
-import { findScenesContainingObject } from './scene';
+import { findScenesContainingObject } from "./scene";
 
 // Type definitions for loader functions to avoid circular imports.
-type ProtocolName = string & { readonly __brand: 'ProtocolName' };
-type SceneId = string & { readonly __brand: 'SceneId' };
-type ObjectId = string & { readonly __brand: 'ObjectId' };
+type ProtocolName = string & { readonly __brand: "ProtocolName" };
+type SceneId = string & { readonly __brand: "SceneId" };
+type ObjectId = string & { readonly __brand: "ObjectId" };
 
 /**
  * Extract the base object name from a target by stripping subpart suffix.
@@ -38,11 +39,11 @@ type ObjectId = string & { readonly __brand: 'ObjectId' };
  *           "well_plate_96.all_wells" -> "well_plate_96"
  */
 export function getBaseObjectName(target: string): string {
-	const dotIndex = target.indexOf('.');
-	if (dotIndex === -1) {
-		return target;
-	}
-	return target.substring(0, dotIndex);
+  const dotIndex = target.indexOf(".");
+  if (dotIndex === -1) {
+    return target;
+  }
+  return target.substring(0, dotIndex);
 }
 
 /**
@@ -63,56 +64,63 @@ export function getBaseObjectName(target: string): string {
  * @throws If no scenes contain the target or if multiple scenes match without a clear prefix preference
  */
 export function resolveSceneForTarget(
-	objectName: string,
-	loadedScenes: Record<string, ResolvedSceneConfig>,
-	protocolPrefix: string,
-	currentSceneId?: string
+  objectName: string,
+  loadedScenes: Record<string, ResolvedSceneConfig>,
+  protocolPrefix: string,
+  currentSceneId?: string,
 ): string {
-	// Find all scenes containing this object.
-	const matchingScenes: string[] = [];
-	for (const sceneName of Object.keys(loadedScenes)) {
-		const scene = loadedScenes[sceneName];
-		if (!scene) {
-			continue;
-		}
-		const hasObject = scene.placements.some((p) => p.object_name === objectName);
-		if (hasObject) {
-			matchingScenes.push(sceneName);
-		}
-	}
+  // Find all scenes containing this object.
+  const matchingScenes: string[] = [];
+  for (const sceneName of Object.keys(loadedScenes)) {
+    const scene = loadedScenes[sceneName];
+    if (!scene) {
+      continue;
+    }
+    if (!scene.placements) {
+      continue;
+    }
+    const hasObject = scene.placements.some(
+      (p) => p.object_name === objectName,
+    );
+    if (hasObject) {
+      matchingScenes.push(sceneName);
+    }
+  }
 
-	// FIRST: if currentSceneId is provided and contains the target, return it (no switch needed).
-	if (currentSceneId && matchingScenes.includes(currentSceneId)) {
-		return currentSceneId;
-	}
+  // FIRST: if currentSceneId is provided and contains the target, return it (no switch needed).
+  if (currentSceneId && matchingScenes.includes(currentSceneId)) {
+    return currentSceneId;
+  }
 
-	// SECOND: if multiple scenes contain the target, prefer one with protocol-name prefix match.
-	if (matchingScenes.length > 1) {
-		const protocolNamedScenes = matchingScenes.filter((s) => s.startsWith(protocolPrefix + '_'));
-		if (protocolNamedScenes.length === 1) {
-			const scene = protocolNamedScenes[0];
-			if (scene !== undefined) {
-				return scene;
-			}
-		}
-		// If multiple protocol-named scenes or zero, ambiguity remains; fall through to error below.
-	}
+  // SECOND: if multiple scenes contain the target, prefer one with protocol-name prefix match.
+  if (matchingScenes.length > 1) {
+    const protocolNamedScenes = matchingScenes.filter((s) =>
+      s.startsWith(protocolPrefix + "_"),
+    );
+    if (protocolNamedScenes.length === 1) {
+      const scene = protocolNamedScenes[0];
+      if (scene !== undefined) {
+        return scene;
+      }
+    }
+    // If multiple protocol-named scenes or zero, ambiguity remains; fall through to error below.
+  }
 
-	// THIRD: only one match -> use it.
-	if (matchingScenes.length === 1) {
-		const scene = matchingScenes[0];
-		if (scene === undefined) {
-			throw new Error(`Unexpected: scene list contains undefined after filter`);
-		}
-		return scene;
-	}
+  // THIRD: only one match -> use it.
+  if (matchingScenes.length === 1) {
+    const scene = matchingScenes[0];
+    if (scene === undefined) {
+      throw new Error(`Unexpected: scene list contains undefined after filter`);
+    }
+    return scene;
+  }
 
-	// FOURTH: ambiguous (zero or multiple matches with no prefix preference) -> throw loud error.
-	throw new Error(
-		`Cannot determine scene for target object "${objectName}". ` +
-		`Matching scenes: ${matchingScenes.length === 0 ? '[none found]' : matchingScenes.join(', ')}. ` +
-		`This is a content or spec gap: the target must exist in exactly one scene, or scenes must disambiguate via protocol-name prefix.`
-	);
+  // FOURTH: ambiguous (zero or multiple matches with no prefix preference) -> throw loud error.
+  throw new Error(
+    `Cannot determine scene for target object "${objectName}". ` +
+      `Matching scenes: ${matchingScenes.length === 0 ? "[none found]" : matchingScenes.join(", ")}. ` +
+      `This is a content or spec gap: the target must exist in exactly one scene, or scenes must disambiguate via protocol-name prefix.`,
+  );
 }
 
 /**
@@ -129,115 +137,130 @@ export function resolveSceneForTarget(
  * Throws a loud error if the target is not found in exactly one scene.
  */
 function inferInitialScene(
-	protocol: ProtocolConfig,
-	loadedScenes: Record<string, ResolvedSceneConfig>,
-	sceneIdsFromChanges: Set<string>,
-	sceneIdsFromTargets: Set<string>
+  protocol: ProtocolConfig,
+  loadedScenes: Record<string, ResolvedSceneConfig>,
+
+  _sceneIdsFromChanges: Set<string>,
+
+  _sceneIdsFromTargets: Set<string>,
 ): string {
-	// Find the entry step.
-	const entryStep = protocol.steps.find((s) => s.step_name === protocol.entry_step);
-	if (!entryStep || entryStep.sequence.length === 0) {
-		throw new Error(
-			`entry_step "${protocol.entry_step}" has no interactions. ` +
-				`Cannot infer initial scene from target.`
-		);
-	}
+  // Find the entry step.
+  const entryStep = protocol.steps.find(
+    (s) => s.step_name === protocol.entry_step,
+  );
+  if (!entryStep || entryStep.sequence.length === 0) {
+    throw new Error(
+      `entry_step "${protocol.entry_step}" has no interactions. ` +
+        `Cannot infer initial scene from target.`,
+    );
+  }
 
-	// Get the first interaction's target object name (stripped of subpart).
-	const firstInteraction = entryStep.sequence[0];
-	if (!firstInteraction) {
-		throw new Error(
-			`entry_step "${protocol.entry_step}" sequence[0] is missing. ` +
-				`Cannot infer initial scene from target.`
-		);
-	}
+  // Get the first interaction's target object name (stripped of subpart).
+  const firstInteraction = entryStep.sequence[0];
+  if (!firstInteraction) {
+    throw new Error(
+      `entry_step "${protocol.entry_step}" sequence[0] is missing. ` +
+        `Cannot infer initial scene from target.`,
+    );
+  }
 
-	const firstTarget = firstInteraction.target;
-	const objectName = getBaseObjectName(firstTarget);
+  const firstTarget = firstInteraction.target;
+  const objectName = getBaseObjectName(firstTarget);
 
-	// Find which scenes contain this object; prioritize target-inferred scenes.
-	const matchingScenes: string[] = [];
-	for (const sceneName of Object.keys(loadedScenes)) {
-		const scene = loadedScenes[sceneName];
-		if (!scene) {
-			continue;
-		}
-		const hasObject = scene.placements.some((p) => p.object_name === objectName);
-		if (hasObject) {
-			matchingScenes.push(sceneName);
-		}
-	}
+  // Find which scenes contain this object; prioritize target-inferred scenes.
+  const matchingScenes: string[] = [];
+  for (const sceneName of Object.keys(loadedScenes)) {
+    const scene = loadedScenes[sceneName];
+    if (!scene) {
+      continue;
+    }
+    if (!scene.placements) {
+      continue;
+    }
+    const hasObject = scene.placements.some(
+      (p) => p.object_name === objectName,
+    );
+    if (hasObject) {
+      matchingScenes.push(sceneName);
+    }
+  }
 
-	// Filter to prefer scenes that were inferred from targets (part of protocol workflow)
-	// over scenes that were only collected from SceneChange operations.
-	const targetInferredScenes = matchingScenes.filter((s) => sceneIdsFromTargets.has(s));
-	const candidateScenes = targetInferredScenes.length > 0 ? targetInferredScenes : matchingScenes;
+  // Use the shared resolver to pick the best match (with prefix preference and no-switch logic).
+  // For entry, we don't have a currentSceneId, so pass undefined.
+  try {
+    return resolveSceneForTarget(
+      objectName,
+      loadedScenes,
+      protocol.protocol_name,
+      undefined,
+    );
+  } catch (err) {
+    // Wrap error with entry-step context.
+    const errorMsg = err instanceof Error ? err.message : String(err);
+    const wrappedMsg = `entry_step "${protocol.entry_step}" references target "${firstTarget}": ${errorMsg}`;
+    if (err instanceof Error) {
+      err.message = wrappedMsg;
+      throw err;
+    }
 
-	// Use the shared resolver to pick the best match (with prefix preference and no-switch logic).
-	// For entry, we don't have a currentSceneId, so pass undefined.
-	try {
-		return resolveSceneForTarget(objectName, loadedScenes, protocol.protocol_name, undefined);
-	} catch (err) {
-		// Wrap error with entry-step context.
-		const errorMsg = err instanceof Error ? err.message : String(err);
-		throw new Error(
-			`entry_step "${protocol.entry_step}" references target "${firstTarget}": ${errorMsg}`
-		);
-	}
+    throw new Error(wrappedMsg);
+  }
 }
 
 /**
  * Collect all distinct scene ids referenced by SceneChange operations
  * in a protocol's step chain. This is a first pass to load explicit scenes.
  */
-function collectSceneIdsFromSceneChanges(protocol: ProtocolConfig): Set<string> {
-	const sceneIds = new Set<string>();
+function collectSceneIdsFromSceneChanges(
+  protocol: ProtocolConfig,
+): Set<string> {
+  const sceneIds = new Set<string>();
 
-	// Build a map of step_name -> step for fast lookup during traversal.
-	const stepMap = new Map<string, Step>();
-	for (const step of protocol.steps) {
-		stepMap.set(step.step_name, step);
-	}
+  // Build a map of step_name -> step for fast lookup during traversal.
+  const stepMap = new Map<string, Step>();
+  for (const step of protocol.steps) {
+    stepMap.set(step.step_name, step);
+  }
 
-	// Traverse the protocol's step chain starting from entry_step.
-	// Collect any scene referenced in SceneChange operations.
-	const visited = new Set<string>();
-	const queue: string[] = [protocol.entry_step];
+  // Traverse the protocol's step chain starting from entry_step.
+  // Collect any scene referenced in SceneChange operations.
+  const visited = new Set<string>();
+  const queue: string[] = [protocol.entry_step];
 
-	while (queue.length > 0) {
-		const stepName = queue.shift();
-		if (!stepName || visited.has(stepName)) {
-			continue;
-		}
-		visited.add(stepName);
+  while (queue.length > 0) {
+    const stepName = queue.shift();
+    if (!stepName || visited.has(stepName)) {
+      continue;
+    }
+    visited.add(stepName);
 
-		const step = stepMap.get(stepName);
-		if (!step) {
-			// step_name validation happens in loadProtocol, so we trust it exists.
-			continue;
-		}
+    const step = stepMap.get(stepName);
+    if (!step) {
+      // step_name validation happens in loadProtocol, so we trust it exists.
+      continue;
+    }
 
-		// Scan interactions for SceneChange operations that name a scene.
-		for (const interaction of step.sequence) {
-			const response = interaction.response;
-			if (!response || !Array.isArray(response.scene_operations)) {
-				continue;
-			}
+    // Scan interactions for SceneChange operations that name a scene.
+    for (const interaction of step.sequence) {
+      const response = interaction.response;
+      if (!response || !Array.isArray(response.scene_operations)) {
+        continue;
+      }
 
-			for (const op of response.scene_operations) {
-				if (op.type === 'SceneChange' && op.to_scene) {
-					sceneIds.add(op.to_scene);
-				}
-			}
-		}
+      for (const op of response.scene_operations) {
+        if (op.type === "SceneChange" && op.to_scene) {
+          sceneIds.add(op.to_scene);
+        }
+      }
+    }
 
-		// Add next step to the queue.
-		if (step.next_step) {
-			queue.push(step.next_step);
-		}
-	}
+    // Add next step to the queue.
+    if (step.next_step) {
+      queue.push(step.next_step);
+    }
+  }
 
-	return sceneIds;
+  return sceneIds;
 }
 
 /**
@@ -251,54 +274,54 @@ function collectSceneIdsFromSceneChanges(protocol: ProtocolConfig): Set<string> 
  * scene.ts may not be initialized if this module is compiled separately via esbuild.)
  */
 function collectSceneIdsFromTargets(
-	protocol: ProtocolConfig,
-	sceneLookup: (objectName: string) => string[]
+  protocol: ProtocolConfig,
+  sceneLookup: (objectName: string) => string[],
 ): Set<string> {
-	const sceneIds = new Set<string>();
+  const sceneIds = new Set<string>();
 
-	// Build a map of step_name -> step for fast lookup during traversal.
-	const stepMap = new Map<string, Step>();
-	for (const step of protocol.steps) {
-		stepMap.set(step.step_name, step);
-	}
+  // Build a map of step_name -> step for fast lookup during traversal.
+  const stepMap = new Map<string, Step>();
+  for (const step of protocol.steps) {
+    stepMap.set(step.step_name, step);
+  }
 
-	// Traverse the protocol's step chain starting from entry_step.
-	// For each step, find which scene(s) contain its first interaction's target object.
-	const visited = new Set<string>();
-	const queue: string[] = [protocol.entry_step];
+  // Traverse the protocol's step chain starting from entry_step.
+  // For each step, find which scene(s) contain its first interaction's target object.
+  const visited = new Set<string>();
+  const queue: string[] = [protocol.entry_step];
 
-	while (queue.length > 0) {
-		const stepName = queue.shift();
-		if (!stepName || visited.has(stepName)) {
-			continue;
-		}
-		visited.add(stepName);
+  while (queue.length > 0) {
+    const stepName = queue.shift();
+    if (!stepName || visited.has(stepName)) {
+      continue;
+    }
+    visited.add(stepName);
 
-		const step = stepMap.get(stepName);
-		if (!step) {
-			continue;
-		}
+    const step = stepMap.get(stepName);
+    if (!step) {
+      continue;
+    }
 
-		// Find the target object from the first interaction (if present).
-		if (step.sequence && step.sequence.length > 0) {
-			const firstInteraction = step.sequence[0];
-			if (firstInteraction) {
-				const objectName = getBaseObjectName(firstInteraction.target);
-				// Query the scene catalog for which scenes contain this object.
-				const scenesWithObject = sceneLookup(objectName);
-				for (const sceneName of scenesWithObject) {
-					sceneIds.add(sceneName);
-				}
-			}
-		}
+    // Find the target object from the first interaction (if present).
+    if (step.sequence && step.sequence.length > 0) {
+      const firstInteraction = step.sequence[0];
+      if (firstInteraction) {
+        const objectName = getBaseObjectName(firstInteraction.target);
+        // Query the scene catalog for which scenes contain this object.
+        const scenesWithObject = sceneLookup(objectName);
+        for (const sceneName of scenesWithObject) {
+          sceneIds.add(sceneName);
+        }
+      }
+    }
 
-		// Add next step to the queue.
-		if (step.next_step) {
-			queue.push(step.next_step);
-		}
-	}
+    // Add next step to the queue.
+    if (step.next_step) {
+      queue.push(step.next_step);
+    }
+  }
 
-	return sceneIds;
+  return sceneIds;
 }
 
 /**
@@ -312,38 +335,44 @@ function collectSceneIdsFromTargets(
  * See docs/specs/MATERIAL_CONVENTION.md for sentinel definitions.
  */
 function collectMaterialNames(protocol: ProtocolConfig): Set<string> {
-	const materialNames = new Set<string>();
-	const sentinels = new Set<string>(['empty', 'mixed']);
+  const materialNames = new Set<string>();
+  const sentinels = new Set<string>(["empty", "mixed"]);
 
-	for (const step of protocol.steps) {
-		for (const interaction of step.sequence) {
-			const response = interaction.response;
-			if (!response || !Array.isArray(response.scene_operations)) {
-				continue;
-			}
+  for (const step of protocol.steps) {
+    for (const interaction of step.sequence) {
+      const response = interaction.response;
+      if (!response || !Array.isArray(response.scene_operations)) {
+        continue;
+      }
 
-			for (const op of response.scene_operations) {
-				if (op.type === 'ObjectStateChange' && op.state) {
-					// ObjectStateChange.state may contain material_name or held_material_name.
-					const state = op.state;
-					if ('material_name' in state && typeof state.material_name === 'string') {
-						const name = state.material_name;
-						if (!sentinels.has(name)) {
-							materialNames.add(name);
-						}
-					}
-					if ('held_material_name' in state && typeof state.held_material_name === 'string') {
-						const name = state.held_material_name;
-						if (!sentinels.has(name)) {
-							materialNames.add(name);
-						}
-					}
-				}
-			}
-		}
-	}
+      for (const op of response.scene_operations) {
+        if (op.type === "ObjectStateChange" && op.state) {
+          // ObjectStateChange.state may contain material_name or held_material_name.
+          const state = op.state;
+          if (
+            "material_name" in state &&
+            typeof state.material_name === "string"
+          ) {
+            const name = state.material_name;
+            if (!sentinels.has(name)) {
+              materialNames.add(name);
+            }
+          }
+          if (
+            "held_material_name" in state &&
+            typeof state.held_material_name === "string"
+          ) {
+            const name = state.held_material_name;
+            if (!sentinels.has(name)) {
+              materialNames.add(name);
+            }
+          }
+        }
+      }
+    }
+  }
 
-	return materialNames;
+  return materialNames;
 }
 
 /**
@@ -376,123 +405,138 @@ function collectMaterialNames(protocol: ProtocolConfig): Set<string> {
  * entry_step's first target is not found in exactly one loaded scene.
  */
 export function loadWorld(
-	protocolName: ProtocolName,
-	loaders: {
-		loadProtocol: (name: ProtocolName) => ProtocolConfig;
-		loadScene: (name: SceneId, objectLoader: (name: string) => ObjectConfig) => ResolvedSceneConfig;
-		loadObject: (name: ObjectId) => ObjectConfig;
-		loadMaterial: (protocol: ProtocolConfig, name: string) => MaterialConfig;
-		scenesContainingObject?: (objectName: string) => string[];
-		objectCatalog?: Record<string, ObjectConfig>;
-	}
+  protocolName: ProtocolName,
+  loaders: {
+    loadProtocol: (name: ProtocolName) => ProtocolConfig;
+    loadScene: (
+      name: SceneId,
+      objectLoader: (name: string) => ObjectConfig,
+    ) => ResolvedSceneConfig;
+    loadObject: (name: ObjectId) => ObjectConfig;
+    loadMaterial: (protocol: ProtocolConfig, name: string) => MaterialConfig;
+    scenesContainingObject?: (objectName: string) => string[];
+    objectCatalog?: Record<string, ObjectConfig>;
+  },
 ): RuntimeWorld {
-	const { loadProtocol, loadScene, loadObject, loadMaterial, scenesContainingObject, objectCatalog } = loaders;
+  const {
+    loadProtocol,
+    loadScene,
+    loadObject,
+    loadMaterial,
+    scenesContainingObject,
+    objectCatalog,
+  } = loaders;
 
-	// Load the protocol.
-	const protocol = loadProtocol(protocolName);
+  // Load the protocol.
+  const protocol = loadProtocol(protocolName);
 
-	// First pass: collect all scene ids explicitly referenced via SceneChange operations.
-	const sceneIdsFromChanges = collectSceneIdsFromSceneChanges(protocol);
+  // First pass: collect all scene ids explicitly referenced via SceneChange operations.
+  const sceneIdsFromChanges = collectSceneIdsFromSceneChanges(protocol);
 
-	// Second pass: collect all scene ids inferred from target objects in step first interactions.
-	// Use the scenesContainingObject function from loaders if provided (preferred for bundled
-	// contexts where module initialization order is unpredictable). Fall back to direct
-	// findScenesContainingObject call for tests.
-	const sceneIdsFromTargets = collectSceneIdsFromTargets(
-		protocol,
-		scenesContainingObject || ((objectName: string) => findScenesContainingObject(objectName))
-	);
+  // Second pass: collect all scene ids inferred from target objects in step first interactions.
+  // Use the scenesContainingObject function from loaders if provided (preferred for bundled
+  // contexts where module initialization order is unpredictable). Fall back to direct
+  // findScenesContainingObject call for tests.
+  const sceneIdsFromTargets = collectSceneIdsFromTargets(
+    protocol,
+    scenesContainingObject ||
+      ((objectName: string) => findScenesContainingObject(objectName)),
+  );
 
+  // Combine all scene ids (duplicates automatically removed by Set).
+  const allSceneIds = new Set([...sceneIdsFromChanges, ...sceneIdsFromTargets]);
 
-	// Combine all scene ids (duplicates automatically removed by Set).
-	const allSceneIds = new Set([...sceneIdsFromChanges, ...sceneIdsFromTargets]);
+  // Load all collected scenes and gather object names.
+  const loadedScenes: Record<string, ResolvedSceneConfig> = {};
+  const objectNamesToLoad = new Set<string>();
 
-	// Load all collected scenes and gather object names.
-	const loadedScenes: Record<string, ResolvedSceneConfig> = {};
-	const objectNamesToLoad = new Set<string>();
+  for (const sceneId of allSceneIds) {
+    const scene = loadScene(sceneId as SceneId, (objectName: string) => {
+      // Lazy-load object; will be called during scene validation.
+      // Use objectCatalog if provided (for bundled contexts where module
+      // initialization order is unpredictable), otherwise use loadObject.
+      if (objectCatalog && objectName in objectCatalog) {
+        const obj = objectCatalog[objectName];
+        if (obj) {
+          return obj;
+        }
+      }
+      return loadObject(objectName as ObjectId);
+    });
+    loadedScenes[scene.scene_name] = scene;
 
-	for (const sceneId of allSceneIds) {
-		const scene = loadScene(sceneId as SceneId, (objectName: string) => {
-			// Lazy-load object; will be called during scene validation.
-			// Use objectCatalog if provided (for bundled contexts where module
-			// initialization order is unpredictable), otherwise use loadObject.
-			if (objectCatalog && objectName in objectCatalog) {
-				const obj = objectCatalog[objectName];
-				if (obj) {
-					return obj;
-				}
-			}
-			return loadObject(objectName as ObjectId);
-		});
-		loadedScenes[scene.scene_name] = scene;
+    // Collect object names from placements.
+    if (scene.placements) {
+      for (const placement of scene.placements) {
+        objectNamesToLoad.add(placement.object_name);
+      }
+    }
+  }
 
-		// Collect object names from placements.
-		for (const placement of scene.placements) {
-			objectNamesToLoad.add(placement.object_name);
-		}
-	}
+  // Load all objects and initialize their state.
+  const loadedObjects: Record<string, ObjectConfig> = {};
+  const objectStates: Record<
+    string,
+    Record<string, string | number | boolean>
+  > = {};
 
-	// Load all objects and initialize their state.
-	const loadedObjects: Record<string, ObjectConfig> = {};
-	const objectStates: Record<string, Record<string, string | number | boolean>> = {};
+  for (const objectName of objectNamesToLoad) {
+    const obj = loadObject(objectName as ObjectId);
+    loadedObjects[obj.object_name] = obj;
 
-	for (const objectName of objectNamesToLoad) {
-		const obj = loadObject(objectName as ObjectId);
-		loadedObjects[obj.object_name] = obj;
+    // Initialize state: materialize default values from state_fields.
+    // loadObject validates that every field.default is a materialized string | number | boolean
+    // (not undefined or null).
+    const state: Record<string, string | number | boolean> = {};
+    for (const field of obj.state_fields) {
+      // Since loadObject rejects null defaults, we know field.default is one of the primitives.
+      // TypeScript still sees it as string | number | boolean | null; narrow it here.
+      const defaultValue = field.default;
+      if (defaultValue !== null && defaultValue !== undefined) {
+        state[field.field_name] = defaultValue;
+      }
+    }
+    objectStates[obj.object_name] = state;
+  }
 
-		// Initialize state: materialize default values from state_fields.
-		// loadObject validates that every field.default is a materialized string | number | boolean
-		// (not undefined or null).
-		const state: Record<string, string | number | boolean> = {};
-		for (const field of obj.state_fields) {
-			// Since loadObject rejects null defaults, we know field.default is one of the primitives.
-			// TypeScript still sees it as string | number | boolean | null; narrow it here.
-			const defaultValue = field.default;
-			if (defaultValue !== null && defaultValue !== undefined) {
-				state[field.field_name] = defaultValue;
-			}
-		}
-		objectStates[obj.object_name] = state;
-	}
+  // Collect and load all materials referenced by the protocol.
+  const materialNames = collectMaterialNames(protocol);
+  const loadedMaterials: Record<string, MaterialConfig> = {};
 
-	// Collect and load all materials referenced by the protocol.
-	const materialNames = collectMaterialNames(protocol);
-	const loadedMaterials: Record<string, MaterialConfig> = {};
+  for (const materialName of materialNames) {
+    const material = loadMaterial(protocol, materialName);
+    loadedMaterials[materialName] = material;
+  }
 
-	for (const materialName of materialNames) {
-		const material = loadMaterial(protocol, materialName);
-		loadedMaterials[materialName] = material;
-	}
+  // Determine the initial active scene by inferring from the entry_step's
+  // first interaction's target object. The scene must contain that object
+  // in its placements. Per PRIMARY_SPEC.md, the protocol is geometry-free;
+  // the runtime infers the initial scene from which scene contains the
+  // entry_step's first target.
+  const activeSceneId = inferInitialScene(
+    protocol,
+    loadedScenes,
+    sceneIdsFromChanges,
+    sceneIdsFromTargets,
+  );
 
-	// Determine the initial active scene by inferring from the entry_step's
-	// first interaction's target object. The scene must contain that object
-	// in its placements. Per PRIMARY_SPEC.md, the protocol is geometry-free;
-	// the runtime infers the initial scene from which scene contains the
-	// entry_step's first target.
-	const activeSceneId = inferInitialScene(
-		protocol,
-		loadedScenes,
-		sceneIdsFromChanges,
-		sceneIdsFromTargets
-	);
+  // Assemble the RuntimeWorld.
+  const world: RuntimeWorld = {
+    protocol,
+    activeStepIndex: 0,
+    currentInteractionIndex: 0,
+    activeSceneId,
+    scenes: loadedScenes,
+    objects: loadedObjects,
+    objectStates,
+    cursorState: {
+      attachedTo: null,
+      operation: null,
+    },
+    layoutState: {},
+    materials: loadedMaterials,
+    pendingEvents: [],
+  };
 
-	// Assemble the RuntimeWorld.
-	const world: RuntimeWorld = {
-		protocol,
-		activeStepIndex: 0,
-		currentInteractionIndex: 0,
-		activeSceneId,
-		scenes: loadedScenes,
-		objects: loadedObjects,
-		objectStates,
-		cursorState: {
-			attachedTo: null,
-			operation: null,
-		},
-		layoutState: {},
-		materials: loadedMaterials,
-		pendingEvents: [],
-	};
-
-	return world;
+  return world;
 }

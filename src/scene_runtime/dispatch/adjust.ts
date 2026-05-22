@@ -10,7 +10,7 @@
  * exported functions only.
  */
 
-import type { InteractionEvent } from '../types';
+import type { InteractionEvent } from "../types";
 
 // ============================================
 // Adjust commit interface
@@ -20,12 +20,12 @@ import type { InteractionEvent } from '../types';
  * The value is stored as the control produces it; no normalization in this layer.
  */
 export interface AdjustCommit {
-	/** Semantic target id (object being adjusted). */
-	targetId: string;
-	/** The adjusted value (number for slider/numeric input, boolean for toggle, string for select). */
-	value: number | string | boolean;
-	/** Optional: name of the state field being adjusted (e.g., "set_volume"). */
-	field?: string;
+  /** Semantic target id (object being adjusted). */
+  targetId: string;
+  /** The adjusted value (number for slider/numeric input, boolean for toggle, string for select). */
+  value: number | string | boolean;
+  /** Optional: name of the state field being adjusted (e.g., "set_volume"). */
+  field?: string;
 }
 
 // ============================================
@@ -39,15 +39,15 @@ export interface AdjustCommit {
  * @param onEvent - callback fired with the emitted InteractionEvent.
  */
 export function dispatchAdjustCommit(
-	commit: AdjustCommit,
-	onEvent: (e: InteractionEvent) => void,
+  commit: AdjustCommit,
+  onEvent: (e: InteractionEvent) => void,
 ): void {
-	// Emit one InteractionEvent with adjust gesture and the value attached.
-	onEvent({
-		targetId: commit.targetId,
-		gesture: 'adjust',
-		value: commit.value,
-	});
+  // Emit one InteractionEvent with adjust gesture and the value attached.
+  onEvent({
+    targetId: commit.targetId,
+    gesture: "adjust",
+    value: commit.value,
+  });
 }
 
 // ============================================
@@ -71,51 +71,51 @@ export function dispatchAdjustCommit(
  * @returns a detach function that removes all listeners from the element.
  */
 export function attachAdjustDispatchToElement(
-	element: HTMLElement,
-	targetId: string,
-	onEvent: (e: InteractionEvent) => void,
+  element: HTMLElement,
+  targetId: string,
+  onEvent: (e: InteractionEvent) => void,
 ): () => void {
-	// Resolve the input element; for inputs it is the element itself, for containers it
-	// may be a child. For now assume element is the input.
-	const input = element as HTMLInputElement;
+  // Resolve the input element; for inputs it is the element itself, for containers it
+  // may be a child. For now assume element is the input.
+  const input = element as HTMLInputElement;
 
-	// Handler for blur event.
-	const handleBlur = (): void => {
-		const value = getInputValue(input);
-		if (value !== undefined) {
-			dispatchAdjustCommit({ targetId, value }, onEvent);
-		}
-	};
+  // Handler for blur event.
+  const handleBlur = (): void => {
+    const value = getInputValue(input);
+    if (value !== undefined) {
+      dispatchAdjustCommit({ targetId, value }, onEvent);
+    }
+  };
 
-	// Handler for keydown event (capture Enter key).
-	const handleKeyDown = (event: KeyboardEvent): void => {
-		if (event.key === 'Enter') {
-			const value = getInputValue(input);
-			if (value !== undefined) {
-				dispatchAdjustCommit({ targetId, value }, onEvent);
-			}
-		}
-	};
+  // Handler for keydown event (capture Enter key).
+  const handleKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === "Enter") {
+      const value = getInputValue(input);
+      if (value !== undefined) {
+        dispatchAdjustCommit({ targetId, value }, onEvent);
+      }
+    }
+  };
 
-	// Handler for change event (slider release, select change, etc.).
-	const handleChange = (): void => {
-		const value = getInputValue(input);
-		if (value !== undefined) {
-			dispatchAdjustCommit({ targetId, value }, onEvent);
-		}
-	};
+  // Handler for change event (slider release, select change, etc.).
+  const handleChange = (): void => {
+    const value = getInputValue(input);
+    if (value !== undefined) {
+      dispatchAdjustCommit({ targetId, value }, onEvent);
+    }
+  };
 
-	// Attach all three listeners.
-	input.addEventListener('blur', handleBlur);
-	input.addEventListener('keydown', handleKeyDown);
-	input.addEventListener('change', handleChange);
+  // Attach all three listeners.
+  input.addEventListener("blur", handleBlur);
+  input.addEventListener("keydown", handleKeyDown);
+  input.addEventListener("change", handleChange);
 
-	// Return detach function.
-	return (): void => {
-		input.removeEventListener('blur', handleBlur);
-		input.removeEventListener('keydown', handleKeyDown);
-		input.removeEventListener('change', handleChange);
-	};
+  // Return detach function.
+  return (): void => {
+    input.removeEventListener("blur", handleBlur);
+    input.removeEventListener("keydown", handleKeyDown);
+    input.removeEventListener("change", handleChange);
+  };
 }
 
 // ============================================
@@ -128,28 +128,30 @@ export function attachAdjustDispatchToElement(
  * @param input - the input element to read.
  * @returns the normalized value, or undefined if empty.
  */
-function getInputValue(input: HTMLInputElement): number | string | boolean | undefined {
-	// For type="checkbox" or type="radio", use checked state as boolean.
-	// Check this first since checkboxes have empty .value by default.
-	if (input.type === 'checkbox' || input.type === 'radio') {
-		return input.checked;
-	}
+function getInputValue(
+  input: HTMLInputElement,
+): number | string | boolean | undefined {
+  // For type="checkbox" or type="radio", use checked state as boolean.
+  // Check this first since checkboxes have empty .value by default.
+  if (input.type === "checkbox" || input.type === "radio") {
+    return input.checked;
+  }
 
-	const rawValue = input.value;
+  const rawValue = input.value;
 
-	// Empty value is treated as undefined (no commit).
-	if (rawValue === undefined || rawValue === null || rawValue === '') {
-		return undefined;
-	}
+  // Empty value is treated as undefined (no commit).
+  if (rawValue === undefined || rawValue === null || rawValue === "") {
+    return undefined;
+  }
 
-	// For type="number", try to coerce to number.
-	if (input.type === 'number' || input.type === 'range') {
-		const numValue = parseFloat(rawValue);
-		if (!isNaN(numValue)) {
-			return numValue;
-		}
-	}
+  // For type="number", try to coerce to number.
+  if (input.type === "number" || input.type === "range") {
+    const numValue = parseFloat(rawValue);
+    if (!isNaN(numValue)) {
+      return numValue;
+    }
+  }
 
-	// Otherwise return the string value as-is.
-	return rawValue;
+  // Otherwise return the string value as-is.
+  return rawValue;
 }

@@ -2,10 +2,10 @@ materials:
   protein_sample_mixed:
     label: Protein + Laemmli + BME mix
     display_color:
-      light: '#3730a3'
-      dark: '#3730a3'
+      light: "#3730a3"
+      dark: "#3730a3"
   protein_sample_denatured:
     label: Heat-denatured mixed sample
     display_color:
-      light: '#3730a3'
-      dark: '#3730a3'
+      light: "#3730a3"
+      dark: "#3730a3"

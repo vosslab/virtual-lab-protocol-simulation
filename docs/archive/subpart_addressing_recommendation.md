@@ -99,7 +99,7 @@ structure:
       group_kind: region
       members:
         - name: all_wells
-          contains: [A1, A2, ..., H12]   # expanded fully in real YAML
+          contains: [A1, A2, ..., H12] # expanded fully in real YAML
 ```
 
 Authoring rules baked into the schema:
@@ -273,13 +273,13 @@ Final triage truth table updates in Patch 2c (the
 folds WS-SPEC-SUBPART into M1). Approximate buckets after
 reclassification:
 
-| Bucket | Today | After Patch 2c reclass |
-| --- | --- | --- |
-| S0 (scene-adapter spec gap) | 18 sigs | 18 sigs (unchanged) |
-| S0b (subpart-modeling spec gap) | n/a | ~97 sigs (the well refs) |
-| S1 (authoring bug) | 201 sigs | ~104 sigs |
-| S2 (stepper-gap) | 0 sigs | 0 sigs (unchanged) |
-| Total | 219 sigs | 219 sigs |
+| Bucket                          | Today    | After Patch 2c reclass   |
+| ------------------------------- | -------- | ------------------------ |
+| S0 (scene-adapter spec gap)     | 18 sigs  | 18 sigs (unchanged)      |
+| S0b (subpart-modeling spec gap) | n/a      | ~97 sigs (the well refs) |
+| S1 (authoring bug)              | 201 sigs | ~104 sigs                |
+| S2 (stepper-gap)                | 0 sigs   | 0 sigs (unchanged)       |
+| Total                           | 219 sigs | 219 sigs                 |
 
 The reclassification does not invalidate any prior triage work;
 it relabels the rationale column on ~97 rows and adds one bucket

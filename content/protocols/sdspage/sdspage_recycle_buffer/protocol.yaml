@@ -2,96 +2,102 @@ protocol_type: mini_protocol
 protocol_name: sdspage_recycle_buffer
 entry_step: inspect_buffer
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with
+  objectives:
+    Students completing this mini-protocol will have achieved fluency with
     post-run gel inspection, buffer evaluation, and safe recycling of chemical waste.
-  outcomes: Students completing this mini-protocol will be able to inspect the electrophoresis
+  outcomes:
+    Students completing this mini-protocol will be able to inspect the electrophoresis
     tank after a run is complete, confirm the buffer is clean and suitable for recycling,
     and safely pour the used buffer into a recycling container.
-  goals: Overall, this mini-protocol aims to accomplish the safe disposal and recycling
+  goals:
+    Overall, this mini-protocol aims to accomplish the safe disposal and recycling
     of used electrophoresis buffer -- an essential waste-management step that follows
     every gel run and teaches proper chemical handling and laboratory sustainability.
 steps:
-- step_name: inspect_buffer
-  prompt: Inspect the electrophoresis tank to confirm the buffer is clean and ready
-    for recycling. Review the buffer state in the tank. If the buffer appears colored,
-    cloudy, or contaminated, do NOT recycle. Dispose as hazardous chemical waste -
-    it may contain Laemmli buffer or beta-mercaptoethanol.
-  sequence:
-  - target: electrophoresis_tank
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: SceneChange
-        to_scene: sdspage_recycle_buffer_workspace
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: pour_inner_chamber
-- step_name: pour_inner_chamber
-  prompt: Pour the used buffer from the inner chamber of the electrophoresis tank
-    into the buffer recycle bottle.
-  sequence:
-  - target: electrophoresis_tank
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: recycle_buffer_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: electrophoresis_tank
-        state:
-          inner_chamber_material_name: empty
-          inner_chamber_material_volume: 0
-      - type: ObjectStateChange
-        target: recycle_buffer_bottle
-        state:
-          material_name: running_buffer_1x_used
-          material_volume: 300
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: pour_outer_chamber
-- step_name: pour_outer_chamber
-  prompt: Pour the used buffer from the outer chamber of the electrophoresis tank
-    into the buffer recycle bottle to complete the recycling process.
-  sequence:
-  - target: electrophoresis_tank
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: recycle_buffer_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: electrophoresis_tank
-        state:
-          outer_chamber_material_name: empty
-          outer_chamber_material_volume: 0
-      - type: ObjectStateChange
-        target: recycle_buffer_bottle
-        state:
-          material_name: running_buffer_1x_used
-          material_volume: 800
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: null
+  - step_name: inspect_buffer
+    prompt:
+      Inspect the electrophoresis tank to confirm the buffer is clean and ready
+      for recycling. Review the buffer state in the tank. If the buffer appears colored,
+      cloudy, or contaminated, do NOT recycle. Dispose as hazardous chemical waste -
+      it may contain Laemmli buffer or beta-mercaptoethanol.
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: sdspage_recycle_buffer_workspace
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pour_inner_chamber
+  - step_name: pour_inner_chamber
+    prompt:
+      Pour the used buffer from the inner chamber of the electrophoresis tank
+      into the buffer recycle bottle.
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: recycle_buffer_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                inner_chamber_material_name: empty
+                inner_chamber_material_volume: 0
+            - type: ObjectStateChange
+              target: recycle_buffer_bottle
+              state:
+                material_name: running_buffer_1x_used
+                material_volume: 300
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pour_outer_chamber
+  - step_name: pour_outer_chamber
+    prompt:
+      Pour the used buffer from the outer chamber of the electrophoresis tank
+      into the buffer recycle bottle to complete the recycling process.
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: recycle_buffer_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                outer_chamber_material_name: empty
+                outer_chamber_material_volume: 0
+            - type: ObjectStateChange
+              target: recycle_buffer_bottle
+              state:
+                material_name: running_buffer_1x_used
+                material_volume: 800
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

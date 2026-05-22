@@ -1,135 +1,223 @@
 <body>
-<!-- Browser-first protocol launcher (shown at / before gameplay starts) -->
-<main id="protocol-launcher" class="protocol-launcher" aria-labelledby="protocol-launcher-title" hidden>
-	<div class="protocol-launcher-shell">
-		<div id="protocol-launcher-error" class="protocol-launcher-error" role="alert" hidden></div>
-		<header class="protocol-launcher-header">
-			<p class="protocol-launcher-kicker">Cell Culture Simulation</p>
-			<h1 id="protocol-launcher-title">Choose a protocol or tutorial</h1>
-			<p class="protocol-launcher-subtitle">
-				Run the full cell-culture workflow, or start with a short focused tutorial.
-			</p>
-		</header>
-		<section class="protocol-launcher-section" aria-labelledby="protocol-full-heading">
-			<h2 id="protocol-full-heading">Full protocol</h2>
-			<div id="protocol-full-card" class="protocol-card-grid protocol-card-grid-primary"></div>
-		</section>
-		<section class="protocol-launcher-section" aria-labelledby="protocol-tutorials-heading">
-			<h2 id="protocol-tutorials-heading">Tutorials</h2>
-			<div id="protocol-tutorial-grid" class="protocol-card-grid"></div>
-		</section>
-	</div>
-</main>
+  <!-- Browser-first protocol launcher (shown at / before gameplay starts) -->
+  <main
+    id="protocol-launcher"
+    class="protocol-launcher"
+    aria-labelledby="protocol-launcher-title"
+    hidden
+  >
+    <div class="protocol-launcher-shell">
+      <div
+        id="protocol-launcher-error"
+        class="protocol-launcher-error"
+        role="alert"
+        hidden
+      ></div>
+      <header class="protocol-launcher-header">
+        <p class="protocol-launcher-kicker">Cell Culture Simulation</p>
+        <h1 id="protocol-launcher-title">Choose a protocol or tutorial</h1>
+        <p class="protocol-launcher-subtitle">
+          Run the full cell-culture workflow, or start with a short focused
+          tutorial.
+        </p>
+      </header>
+      <section
+        class="protocol-launcher-section"
+        aria-labelledby="protocol-full-heading"
+      >
+        <h2 id="protocol-full-heading">Full protocol</h2>
+        <div
+          id="protocol-full-card"
+          class="protocol-card-grid protocol-card-grid-primary"
+        ></div>
+      </section>
+      <section
+        class="protocol-launcher-section"
+        aria-labelledby="protocol-tutorials-heading"
+      >
+        <h2 id="protocol-tutorials-heading">Tutorials</h2>
+        <div id="protocol-tutorial-grid" class="protocol-card-grid"></div>
+      </section>
+    </div>
+  </main>
 
-<!-- Welcome overlay (shown once on first visit) -->
-<div id="welcome-overlay" class="modal-overlay active">
-	<div class="modal-content" style="padding:40px 30px 30px;max-width:500px;text-align:center;">
-		<p id="welcome-protocol-kind" class="welcome-protocol-kind"></p>
-		<h2 id="welcome-protocol-title" style="margin:0 0 16px 0;">Cell Culture Simulation</h2>
-		<p style="font-size:14px;color:#757575;line-height:1.6;margin:0 0 12px 0;">
-			Complete a cell culture protocol: feed cells, check viability, count on a hemocytometer, plate cells, add drugs, incubate, and read results.
-		</p>
-		<p style="font-size:13px;color:#757575;line-height:1.6;margin:0 0 20px 0;">
-			<strong>How to play:</strong> Click equipment to pick it up, then click a target to use it. Follow the protocol checklist on the right. Right-click or press Esc to put down a tool.
-		</p>
-		<button id="welcome-start-btn" class="btn-primary" style="padding:12px 32px;">Start</button>
-		<button id="welcome-change-tutorial-btn" class="btn-secondary" type="button">Change tutorial</button>
-	</div>
-</div>
+  <!-- Welcome overlay (shown once on first visit) -->
+  <div id="welcome-overlay" class="modal-overlay active">
+    <div
+      class="modal-content"
+      style="padding: 40px 30px 30px; max-width: 500px; text-align: center"
+    >
+      <p id="welcome-protocol-kind" class="welcome-protocol-kind"></p>
+      <h2 id="welcome-protocol-title" style="margin: 0 0 16px 0">
+        Cell Culture Simulation
+      </h2>
+      <p
+        style="
+          font-size: 14px;
+          color: #757575;
+          line-height: 1.6;
+          margin: 0 0 12px 0;
+        "
+      >
+        Complete a cell culture protocol: feed cells, check viability, count on
+        a hemocytometer, plate cells, add drugs, incubate, and read results.
+      </p>
+      <p
+        style="
+          font-size: 13px;
+          color: #757575;
+          line-height: 1.6;
+          margin: 0 0 20px 0;
+        "
+      >
+        <strong>How to play:</strong> Click equipment to pick it up, then click
+        a target to use it. Follow the protocol checklist on the right.
+        Right-click or press Esc to put down a tool.
+      </p>
+      <button
+        id="welcome-start-btn"
+        class="btn-primary"
+        style="padding: 12px 32px"
+      >
+        Start
+      </button>
+      <button
+        id="welcome-change-tutorial-btn"
+        class="btn-secondary"
+        type="button"
+      >
+        Change tutorial
+      </button>
+    </div>
+  </div>
 
-<div id="game-container">
-	<!-- Main hood scene (left/center area) -->
-	<div id="hood-scene"></div>
+  <div id="game-container">
+    <!-- Main hood scene (left/center area) -->
+    <div id="hood-scene"></div>
 
-	<!-- Bench scene (peer of hood-scene; shown when activeScene === 'bench') -->
-	<div id="bench-scene" style="display:none;"></div>
+    <!-- Bench scene (peer of hood-scene; shown when activeScene === 'bench') -->
+    <div id="bench-scene" style="display: none"></div>
 
-	<!-- Well plate workspace scene (peer of hood-scene; shown when activeScene === 'well_plate_workspace') -->
-	<div id="well-plate-workspace-scene" style="display:none;"></div>
+    <!-- Well plate workspace scene (peer of hood-scene; shown when activeScene === 'well_plate_workspace') -->
+    <div id="well-plate-workspace-scene" style="display: none"></div>
 
-	<!-- Right sidebar: Protocol panel -->
-	<div id="protocol-panel">
-		<div id="score-display">
-			<div class="score-label">Score</div>
-			<div class="score-value">0</div>
-		</div>
-		<div id="meters-panel"></div>
-		<div id="protocol-ui-panel"></div>
-		<div class="protocol-content">
-			<h2>Protocol</h2>
-			<ul id="protocol-checklist" class="protocol-checklist">
-				<!-- Populated dynamically by renderProtocolPanel() from PROTOCOL_STEPS -->
-			</ul>
-			<div id="warning-banner" class="warning-banner" style="display: none;"></div>
-		</div>
-	</div>
+    <!-- Right sidebar: Protocol panel -->
+    <div id="protocol-panel">
+      <div id="score-display">
+        <div class="score-label">Score</div>
+        <div class="score-value">0</div>
+      </div>
+      <div id="meters-panel"></div>
+      <div id="protocol-ui-panel"></div>
+      <div class="protocol-content">
+        <h2>Protocol</h2>
+        <ul id="protocol-checklist" class="protocol-checklist">
+          <!-- Populated dynamically by renderProtocolPanel() from PROTOCOL_STEPS -->
+        </ul>
+        <div
+          id="warning-banner"
+          class="warning-banner"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
 
-	<!-- Instrument overlay modal (shared by microscope and plate_reader; hidden by default) -->
-	<div id="instrument-overlay" class="modal-overlay">
-		<div class="modal-content microscope-modal">
-			<button class="modal-close" aria-label="Close instrument view">&times;</button>
-			<h2>Instrument View</h2>
-			<div class="microscope-view">
-				<!-- SVG microscope view will be injected here -->
-				<svg id="microscope-svg" viewBox="0 0 400 430" width="400" height="430"></svg>
-			</div>
-			<!-- Cell counting is handled by interactive quadrant selection in microscope_scene.ts -->
-		</div>
-	</div>
+    <!-- Instrument overlay modal (shared by microscope and plate_reader; hidden by default) -->
+    <div id="instrument-overlay" class="modal-overlay">
+      <div class="modal-content microscope-modal">
+        <button class="modal-close" aria-label="Close instrument view">
+          &times;
+        </button>
+        <h2>Instrument View</h2>
+        <div class="microscope-view">
+          <!-- SVG microscope view will be injected here -->
+          <svg
+            id="microscope-svg"
+            viewBox="0 0 400 430"
+            width="400"
+            height="430"
+          ></svg>
+        </div>
+        <!-- Cell counting is handled by interactive quadrant selection in microscope_scene.ts -->
+      </div>
+    </div>
 
-	<!-- Plate scene overlay modal (hidden by default) -->
-	<div id="plate-overlay" class="modal-overlay">
-		<div class="modal-content"></div>
-	</div>
+    <!-- Plate scene overlay modal (hidden by default) -->
+    <div id="plate-overlay" class="modal-overlay">
+      <div class="modal-content"></div>
+    </div>
 
-	<!-- Incubator transition screen (hidden by default) -->
-	<div id="incubator-screen" class="modal-overlay">
-		<div class="modal-content incubator-modal">
-			<h2>Incubator</h2>
-			<div class="incubator-view">
-				<!-- SVG incubator will be injected here -->
-				<svg id="incubator-svg" viewBox="0 0 400 300" width="400" height="300"></svg>
-			</div>
-			<div class="incubation-timer">
-				<p>Incubating cells...</p>
-				<div class="progress-bar">
-					<div class="progress-fill"></div>
-				</div>
-				<p id="timer-text">Time remaining: --</p>
-			</div>
-		</div>
-	</div>
+    <!-- Incubator transition screen (hidden by default) -->
+    <div id="incubator-screen" class="modal-overlay">
+      <div class="modal-content incubator-modal">
+        <h2>Incubator</h2>
+        <div class="incubator-view">
+          <!-- SVG incubator will be injected here -->
+          <svg
+            id="incubator-svg"
+            viewBox="0 0 400 300"
+            width="400"
+            height="300"
+          ></svg>
+        </div>
+        <div class="incubation-timer">
+          <p>Incubating cells...</p>
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+          <p id="timer-text">Time remaining: --</p>
+        </div>
+      </div>
+    </div>
 
-	<!-- Results screen (hidden by default) -->
-	<div id="results-screen" class="modal-overlay">
-		<div class="modal-content results-modal">
-			<h2>Game Results</h2>
-			<div class="results-content">
-				<div class="result-item">
-					<span class="result-label">Final Score:</span>
-					<span class="result-value" id="final-score">0</span>
-				</div>
-				<div class="result-item">
-					<span class="result-label">Cell Health:</span>
-					<span class="result-value" id="cell-health">0%</span>
-				</div>
-				<div class="result-item">
-					<span class="result-label">Contamination:</span>
-					<span class="result-value" id="contamination-level">0%</span>
-				</div>
-				<div id="results-message" class="results-message"></div>
-				<button id="play-again-btn" class="btn-primary">Play Again</button>
-			</div>
-		</div>
-	</div>
+    <!-- Results screen (hidden by default) -->
+    <div id="results-screen" class="modal-overlay">
+      <div class="modal-content results-modal">
+        <h2>Game Results</h2>
+        <div class="results-content">
+          <div class="result-item">
+            <span class="result-label">Final Score:</span>
+            <span class="result-value" id="final-score">0</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Cell Health:</span>
+            <span class="result-value" id="cell-health">0%</span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Contamination:</span>
+            <span class="result-value" id="contamination-level">0%</span>
+          </div>
+          <div id="results-message" class="results-message"></div>
+          <button id="play-again-btn" class="btn-primary">Play Again</button>
+        </div>
+      </div>
+    </div>
 
-	<!-- Notifications area (toast notifications) -->
-	<div id="notification-area"></div>
+    <!-- Notifications area (toast notifications) -->
+    <div id="notification-area"></div>
 
-	<!-- Transfer HUD created dynamically by showTransferHud() in ui_rendering.ts -->
+    <!-- Transfer HUD created dynamically by showTransferHud() in ui_rendering.ts -->
 
-	<!-- Credits footer -->
-	<div id="credits-footer" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.85); color: #999; font-size: 11px; padding: 8px 16px; text-align: center; z-index: 1000; border-top: 1px solid #333;">
-		Servier Medical Art icons by Servier (https://smart.servier.com/), licensed under CC-BY-3.0. Sourced via bioicons.com (https://bioicons.com/).
-	</div>
-</div>
+    <!-- Credits footer -->
+    <div
+      id="credits-footer"
+      style="
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.85);
+        color: #999;
+        font-size: 11px;
+        padding: 8px 16px;
+        text-align: center;
+        z-index: 1000;
+        border-top: 1px solid #333;
+      "
+    >
+      Servier Medical Art icons by Servier (https://smart.servier.com/),
+      licensed under CC-BY-3.0. Sourced via bioicons.com
+      (https://bioicons.com/).
+    </div>
+  </div>
+</body>

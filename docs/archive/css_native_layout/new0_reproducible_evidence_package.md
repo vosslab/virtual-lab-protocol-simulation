@@ -71,7 +71,7 @@ This document is the decision input; it is not a promotion decision.
 ## 1. Contract status
 
 NEW0 is NOT contract-compliant under
-[docs/PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3:
+`PRIMARY_CONTRACT.md` item 3:
 
 > "Scene object layout is handled by the layout engine. Scenes must use the layout engine
 > for positioning clickable objects."
@@ -96,16 +96,19 @@ The following artifacts are under git tracking (`.gitignore` allow-list):
 **CSS (9 files, tracked):**
 
 Forward candidate (Direction B + zoom fix, current promoted surface):
+
 - `experiments/css_native_layout/styles/bench.css`
 - `experiments/css_native_layout/styles/hood.css`
 - `experiments/css_native_layout/styles/instrument.css`
 
 Reference variants (legacy Direction B without zoom fix; kept for comparison evidence):
+
 - `experiments/css_native_layout/styles/dir_b_bench.css`
 - `experiments/css_native_layout/styles/dir_b_hood.css`
 - `experiments/css_native_layout/styles/dir_b_instrument.css`
 
 Reference variants (Direction C, instrument-first 2-column):
+
 - `experiments/css_native_layout/styles/dir_c_bench.css`
 - `experiments/css_native_layout/styles/dir_c_hood.css`
 - `experiments/css_native_layout/styles/dir_c_instrument.css`
@@ -116,19 +119,23 @@ scratch variants (`bench_b..e.css`, `*_diorama.css`, `*_focusedstage.css`,
 surface. They are not linked by any template.
 
 **HTML templates (30 files, tracked):**
+
 - `experiments/css_native_layout/templates/*.html` (10 root templates linking the forward `bench.css` / `hood.css` / `instrument.css`)
 - `experiments/css_native_layout/templates/dir_b/*.html` (10 templates linking `dir_b_*.css`)
 - `experiments/css_native_layout/templates/dir_c/*.html` (10 templates linking `dir_c_*.css`)
 
 **Scene YAML (tracked):**
+
 - `experiments/css_native_layout/scenes/crowded_bench_dense.yaml`
 - `experiments/css_native_layout/scenes/drug_dilution_workspace_dense.yaml`
 
 **Documentation (tracked):**
+
 - `experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md`
 - `experiments/css_native_layout/precheck.mjs` (1258-line diagnostic runner)
 
 **Generated outputs (gitignored, reproducible on demand):**
+
 - `test-results/new0_css_native/dir_a/` (screenshots, visual_audit.json, visual_audit.md)
 - `test-results/new0_css_native/dir_b/`
 - `test-results/new0_css_native/dir_c/`
@@ -136,12 +143,15 @@ surface. They are not linked by any template.
 - `test-results/new0_css_native/gallery.html`
 
 **Reproduce command (forward candidate, default output):**
+
 ```
 node experiments/css_native_layout/precheck.mjs
 ```
+
 This scans `experiments/css_native_layout/templates/*.html` (10 root templates, linking tracked `bench.css` / `hood.css` / `instrument.css` = Direction B + zoom fix) and writes results to `test-results/new0_css_native/audit/`.
 
 **Reproduce command (Direction B legacy reference variant):**
+
 ```
 node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/templates/dir_b/*.html' \
@@ -149,6 +159,7 @@ node experiments/css_native_layout/precheck.mjs \
 ```
 
 **Reproduce command (Direction C reference variant):**
+
 ```
 node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/templates/dir_c/*.html' \
@@ -156,11 +167,13 @@ node experiments/css_native_layout/precheck.mjs \
 ```
 
 **Reproduce contact sheets + gallery:**
+
 ```
 source source_me.sh && python3 _temp_contact_sheets.py
 ```
 
 **Reproduce template-CSS link audit (zero-bad-links gate):**
+
 ```
 source source_me.sh && python3 _temp_link_sweep.py
 ```
@@ -172,18 +185,18 @@ source source_me.sh && python3 _temp_link_sweep.py
 10 scenes tested per direction. 4 are base/template scenes (1-3 placements).
 6 are composition scenes with multiple objects.
 
-| Scene | Type | Placements | Primary? | Workspace |
-| --- | --- | --- | --- | --- |
-| bench_basic | template | 2 | no | bench |
-| hood_basic | template | 1 | no | hood |
-| cell_counter_basic | template | 3 | no | instrument |
-| microscope_basic | template | 2 | no | instrument |
-| well_plate_96_zoom | zoom composition | 1 | yes | bench |
-| drug_dilution_plate_workspace | composition | 9 | yes | bench |
-| electrophoresis_bench | composition | 9 | yes | bench |
-| staining_bench | composition | 9 | no (omitted in A) | bench |
-| crowded_bench_dense | stress/composition | 13 | yes | bench |
-| drug_dilution_workspace_dense | stress/composition | 14 | yes | bench |
+| Scene                         | Type               | Placements | Primary?          | Workspace  |
+| ----------------------------- | ------------------ | ---------- | ----------------- | ---------- |
+| bench_basic                   | template           | 2          | no                | bench      |
+| hood_basic                    | template           | 1          | no                | hood       |
+| cell_counter_basic            | template           | 3          | no                | instrument |
+| microscope_basic              | template           | 2          | no                | instrument |
+| well_plate_96_zoom            | zoom composition   | 1          | yes               | bench      |
+| drug_dilution_plate_workspace | composition        | 9          | yes               | bench      |
+| electrophoresis_bench         | composition        | 9          | yes               | bench      |
+| staining_bench                | composition        | 9          | no (omitted in A) | bench      |
+| crowded_bench_dense           | stress/composition | 13         | yes               | bench      |
+| drug_dilution_workspace_dense | stress/composition | 14         | yes               | bench      |
 
 Stress scenes (`crowded_bench_dense`, `drug_dilution_workspace_dense`) were created
 for this evidence package as NEW0-format YAML + HTML templates. They test layout
@@ -202,6 +215,7 @@ behavior under high-density conditions.
 CSS file: `experiments/css_native_layout/styles/bench.css`
 
 Characteristics:
+
 - Uniform horizontal bands; no object-class hierarchy.
 - Objects in all regions share similar footprint sizing.
 - Primary objects do not get preferential sizing; `footprint--zoom-view` is the
@@ -218,6 +232,7 @@ region is hidden (`display: none`). The primary object in `work_surface` gets
 CSS file: `experiments/css_native_layout/styles/dir_b_bench.css`
 
 Characteristics:
+
 - Primary objects larger than Direction A (13-31% ratio vs. 0.6-2.7%).
 - No instrument column; instruments must move to `work_surface`.
 - Rear shelf and front tools bands are narrower (120px / 100px).
@@ -233,6 +248,7 @@ Asymmetric 2-column CSS grid: `instrument_station` is a fixed-width left column
 CSS file: `experiments/css_native_layout/styles/dir_c_bench.css`
 
 Characteristics:
+
 - Instruments anchored in left column; semantically separates instruments from reagents.
 - Electrophoresis and staining bench primary ratios: 21-22% (best across directions
   for those scene types).
@@ -280,30 +296,30 @@ Checklist booleans: `pri_obv` = `primary_obvious`,
 `no_clip` = `no_clipping`, `no_off` = `no_off_page`,
 `no_ovl` = `no_svg_overlap`.
 
-| Scene | Primary ratio (advisory) | pri_obv | sup_near | lab_rd | no_clip | no_off | no_ovl | Verdict |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| bench_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
-| hood_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
-| cell_counter_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
-| microscope_basic | -- | [x] | [x] | [x] | [x] | [x] | [x] | PASS_TEMPLATE |
-| drug_dilution_plate_workspace | 25.2% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
-| electrophoresis_bench | 21.9% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
-| well_plate_96_zoom | 88.7% | [x] | [x] | [ ] | [x] | [x] | [x] | WARN |
-| staining_bench | 31.3% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
-| crowded_bench_dense | 31.3% | [x] | [ ] | [ ] | [x] | [x] | [x] | WARN |
-| drug_dilution_workspace_dense | 13.9% | [ ] | [ ] | [ ] | [x] | [x] | [x] | WARN |
+| Scene                         | Primary ratio (advisory) | pri_obv | sup_near | lab_rd | no_clip | no_off | no_ovl | Verdict       |
+| ----------------------------- | ------------------------ | ------- | -------- | ------ | ------- | ------ | ------ | ------------- |
+| bench_basic                   | --                       | [x]     | [x]      | [x]    | [x]     | [x]    | [x]    | PASS_TEMPLATE |
+| hood_basic                    | --                       | [x]     | [x]      | [x]    | [x]     | [x]    | [x]    | PASS_TEMPLATE |
+| cell_counter_basic            | --                       | [x]     | [x]      | [x]    | [x]     | [x]    | [x]    | PASS_TEMPLATE |
+| microscope_basic              | --                       | [x]     | [x]      | [x]    | [x]     | [x]    | [x]    | PASS_TEMPLATE |
+| drug_dilution_plate_workspace | 25.2%                    | [x]     | [ ]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
+| electrophoresis_bench         | 21.9%                    | [x]     | [ ]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
+| well_plate_96_zoom            | 88.7%                    | [x]     | [x]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
+| staining_bench                | 31.3%                    | [x]     | [ ]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
+| crowded_bench_dense           | 31.3%                    | [x]     | [ ]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
+| drug_dilution_workspace_dense | 13.9%                    | [ ]     | [ ]      | [ ]    | [x]     | [x]    | [x]    | WARN          |
 
 Hard-fail counts (`clipped_artwork`, `off_page`, `svg_svg_overlap`,
 `region_overflow`) are all 0 across all 10 scenes.
 
 ### Verdict counts
 
-| Metric | Forward (B + zoom fix, tracked) | B legacy (dir_b) | C (dir_c) | Dir A (historic) |
-| --- | --- | --- | --- | --- |
-| PASS | 0 | 0 | 0 | 1 |
-| PASS_TEMPLATE | 4 | 4 | 4 | 4 |
-| WARN | 6 | 6 | 6 | 5 |
-| FAIL | 0 | 0 | 0 | 0 |
+| Metric        | Forward (B + zoom fix, tracked) | B legacy (dir_b) | C (dir_c) | Dir A (historic) |
+| ------------- | ------------------------------- | ---------------- | --------- | ---------------- |
+| PASS          | 0                               | 0                | 0         | 1                |
+| PASS_TEMPLATE | 4                               | 4                | 4         | 4                |
+| WARN          | 6                               | 6                | 6         | 5                |
+| FAIL          | 0                               | 0                | 0         | 0                |
 
 Forward column is the re-confirmed run (2026-05-19). Direction A column is
 historic (rendered against gitignored `bench_a.css` etc.) and is included
@@ -316,27 +332,27 @@ Threshold: >= 25% standard; >= 70% zoom. Flag = below threshold.
 
 Forward column = re-confirmed `audit/visual_audit.json` (2026-05-19).
 
-| Scene | Forward (B + zoom fix) | B legacy | C | Dir A (historic) | Note |
-| --- | --- | --- | --- | --- | --- |
-| well_plate_96_zoom | 44.4% WARN | 31.9% WARN | 18.4% WARN | 92% PASS | Zoom fix recovers 12.5pp; still below 70% threshold |
-| drug_dilution_plate_workspace | 1.5% WARN | 13.9% WARN | 5.9% WARN | 1.4% WARN | Forward returns to bench layout after Direction E demoted |
-| drug_dilution_workspace_dense | 13.9% WARN | 13.9% WARN | 5.9% WARN | 0.6% WARN | Forward == B legacy on dense |
-| electrophoresis_bench | 0.5% WARN | 20.8% WARN | 21.9% WARN | 2.7% WARN | Forward primary detected as serological_pipette (data-primary), not tank |
-| staining_bench | 31.3% (no flag) | 31.3% (no flag) | 21.0% WARN | 0.7% WARN | Forward and B legacy clear threshold |
-| crowded_bench_dense | 31.3% (no flag) | 31.3% (no flag) | 21.0% WARN | 0.6% WARN | Forward and B legacy clear threshold |
+| Scene                         | Forward (B + zoom fix) | B legacy        | C          | Dir A (historic) | Note                                                                     |
+| ----------------------------- | ---------------------- | --------------- | ---------- | ---------------- | ------------------------------------------------------------------------ |
+| well_plate_96_zoom            | 44.4% WARN             | 31.9% WARN      | 18.4% WARN | 92% PASS         | Zoom fix recovers 12.5pp; still below 70% threshold                      |
+| drug_dilution_plate_workspace | 1.5% WARN              | 13.9% WARN      | 5.9% WARN  | 1.4% WARN        | Forward returns to bench layout after Direction E demoted                |
+| drug_dilution_workspace_dense | 13.9% WARN             | 13.9% WARN      | 5.9% WARN  | 0.6% WARN        | Forward == B legacy on dense                                             |
+| electrophoresis_bench         | 0.5% WARN              | 20.8% WARN      | 21.9% WARN | 2.7% WARN        | Forward primary detected as serological_pipette (data-primary), not tank |
+| staining_bench                | 31.3% (no flag)        | 31.3% (no flag) | 21.0% WARN | 0.7% WARN        | Forward and B legacy clear threshold                                     |
+| crowded_bench_dense           | 31.3% (no flag)        | 31.3% (no flag) | 21.0% WARN | 0.6% WARN        | Forward and B legacy clear threshold                                     |
 
 ### Scene whitespace (composition scenes)
 
 Lower = objects use more of the scene area.
 
-| Scene | Dir A | Dir B | Dir C |
-| --- | --- | --- | --- |
+| Scene                         | Dir A | Dir B | Dir C |
+| ----------------------------- | ----- | ----- | ----- |
 | drug_dilution_plate_workspace | 95.9% | 83.0% | 91.3% |
 | drug_dilution_workspace_dense | 94.3% | 79.0% | 87.7% |
-| electrophoresis_bench | 88.1% | 70.7% | 68.2% |
-| staining_bench | 93.9% | 64.9% | 72.0% |
-| crowded_bench_dense | 92.2% | 62.2% | 69.4% |
-| well_plate_96_zoom | 8.0% | 68.1% | 81.6% |
+| electrophoresis_bench         | 88.1% | 70.7% | 68.2% |
+| staining_bench                | 93.9% | 64.9% | 72.0% |
+| crowded_bench_dense           | 92.2% | 62.2% | 69.4% |
+| well_plate_96_zoom            | 8.0%  | 68.1% | 81.6% |
 
 Direction A wins on zoom (8% whitespace = nearly full fill).
 Direction B wins on staining and crowded bench density.
@@ -371,7 +387,7 @@ gitignored variant:
   Primary ratio 0.5% -> 18.5%, above the 15% scene-class target for
   instrument-heavy scenes.
 - **Zoom-mode strengthening.** `.scene-mode--detail .placement
-  { width: calc(100% - 20px); height: calc(100% - 20px); }` rule
+{ width: calc(100% - 20px); height: calc(100% - 20px); }` rule
   strengthened in `bench.css`. `well_plate_96_zoom` primary ratio
   44.4% -> 88.7%; the well plate now visibly dominates the detail
   view.
@@ -408,12 +424,14 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
 ### Advisory issues found
 
 **All three directions:**
+
 - High region_whitespace flags across multiple occupied regions, especially in template scenes.
 - `drug_dilution_plate_workspace` in Direction A has region_whitespace flags on five regions;
   this suggests the template used custom region names that do not match standard region IDs,
   causing all five to read as near-empty.
 
 **Direction A specific:**
+
 - Primary object ratios universally below 3% on all composition scenes (except zoom).
 - `drug_dilution_plate_workspace` in Direction A likely used a non-standard region structure
   (flags on `reagent_shelf`, `side_support`, `primary_work_surface`, `tool_lane`, `waste_corner`
@@ -421,6 +439,7 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
 - Scene whitespace 88-96% for composition scenes: objects are too small relative to the viewport.
 
 **Direction B specific:**
+
 - `well_plate_96_zoom` drops from PASS (92%) to WARN (31.9%) vs. the 70% zoom threshold.
   This is a Direction B regression. The `footprint--zoom-view` rule in `dir_b_bench.css`
   does not replicate the Direction A zoom sizing (600px min-width/height).
@@ -428,6 +447,7 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
   Direction B templates; ratio not flagged but objects may not be semantically designated.
 
 **Direction C specific:**
+
 - `well_plate_96_zoom`: 18.4% (far below 70% threshold). The 2-column layout allocates
   much of the viewport to the left instrument column, leaving the right work_surface panel
   narrow; the zoom object cannot fill it.
@@ -441,6 +461,7 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
 ## 8. What worked
 
 **All directions:**
+
 - Zero hard fails across all 30 scene renderings (10 scenes x 3 directions).
 - Zero SVG-SVG overlaps: no artwork collisions in any direction.
 - Zero off-page elements.
@@ -448,11 +469,13 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
 - The precheck runner is reproducible and deterministic; all runs produced consistent verdicts.
 
 **Direction A:**
+
 - `well_plate_96_zoom` achieved PASS (92% primary ratio): the zoom-view footprint sizing works.
 - Template scenes correctly reported PASS_TEMPLATE without false WARN inflation.
 - Artwork integrity check functional; aspect ratio mismatches detected and reported.
 
 **Direction B:**
+
 - Primary object ratios 10-31% on composition scenes: meaningful improvement over Direction A's 0.6-2.7%.
 - `staining_bench` and `crowded_bench_dense` primary ratios above 25% threshold (no flag).
 - Lowest scene whitespace on dense scenes (62-79%): best overall object density.
@@ -460,6 +483,7 @@ are free of clipped artwork, off-page elements, SVG-SVG overlap, and region over
   for scenes where the primary dominates the center band.
 
 **Direction C:**
+
 - Electrophoresis bench: 21.9% primary ratio (best for instrument-class scenes) and
   68.2% scene whitespace (best for electrophoresis across all directions).
 - Instrument-station left column provides clear spatial separation of instruments from

@@ -136,27 +136,27 @@ time, not absorbed silently.
 
 ## Architecture boundaries and ownership
 
-| Component | Owner | Touch rule |
-| --- | --- | --- |
-| Object YAMLs (`content/objects/<kind>/*.yaml`) | content author | Edit `visual_states.material_name.cases[].output.asset_name` and the `held_material_name` analogue only; do not edit `state_fields`, `material_volume` composite formulas, capabilities, layout. |
-| Validator (`validation/yaml/object_validator.py`) | tooling author | Add one new rule + tests; do not refactor existing rules. |
-| Base SVG assets (`assets/equipment/*.svg`) | art author | Inkscape pass to add bare-id `<rect id="anchor_liquid_clip">` + `<rect id="anchor_liquid_bounds">`; do not pre-prefix with `<asset_name>__` (the generator does that); do not modify visual artwork. |
-| Spec docs (`docs/specs/MATERIAL_CONVENTION.md`, `OBJECT_VOCABULARY.md`, `SVG_PIPELINE.md`) | doc author | Update authoring rule and examples; no spec versioning per `docs/PRIMARY_SPEC.md` "No schema version". |
-| Picker manifests (`tools/svg_picker/`) | tooling author | Rebuild only; no code change. |
-| Gate test (`tests/test_object_asset_refs.py`) | tester | Lower `BASELINE_MISSING_COUNT` to the post-collapse floor; do not switch to hard `assert` yet (separate follow-up plan). |
-| Runtime overlay (`src/svg_overlays.ts`, `src/scene_runtime/`) | other manager | Dead reference only. Do not edit or rely on for behavior; the runtime composite handler lands in a separate plan. |
-| Playwright smoke | other manager | Out of scope; the runtime plan owns rendering tests. |
+| Component                                                                                  | Owner          | Touch rule                                                                                                                                                                                           |
+| ------------------------------------------------------------------------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Object YAMLs (`content/objects/<kind>/*.yaml`)                                             | content author | Edit `visual_states.material_name.cases[].output.asset_name` and the `held_material_name` analogue only; do not edit `state_fields`, `material_volume` composite formulas, capabilities, layout.     |
+| Validator (`validation/yaml/object_validator.py`)                                          | tooling author | Add one new rule + tests; do not refactor existing rules.                                                                                                                                            |
+| Base SVG assets (`assets/equipment/*.svg`)                                                 | art author     | Inkscape pass to add bare-id `<rect id="anchor_liquid_clip">` + `<rect id="anchor_liquid_bounds">`; do not pre-prefix with `<asset_name>__` (the generator does that); do not modify visual artwork. |
+| Spec docs (`docs/specs/MATERIAL_CONVENTION.md`, `OBJECT_VOCABULARY.md`, `SVG_PIPELINE.md`) | doc author     | Update authoring rule and examples; no spec versioning per `docs/PRIMARY_SPEC.md` "No schema version".                                                                                               |
+| Picker manifests (`tools/svg_picker/`)                                                     | tooling author | Rebuild only; no code change.                                                                                                                                                                        |
+| Gate test (`tests/test_object_asset_refs.py`)                                              | tester         | Lower `BASELINE_MISSING_COUNT` to the post-collapse floor; do not switch to hard `assert` yet (separate follow-up plan).                                                                             |
+| Runtime overlay (`src/svg_overlays.ts`, `src/scene_runtime/`)                              | other manager  | Dead reference only. Do not edit or rely on for behavior; the runtime composite handler lands in a separate plan.                                                                                    |
+| Playwright smoke                                                                           | other manager  | Out of scope; the runtime plan owns rendering tests.                                                                                                                                                 |
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-AUDIT | Per-object base-asset + anchor-gap audit (static, no runtime probe) | 1 patch (audit doc under `docs/active_plans/`) |
-| M2 / WS-ANCHORS | Base SVG anchor authoring | 1-2 patches (grouped by kind: bottles/flasks first, waste/equipment second) |
-| M2 / WS-YAML | Object YAML rewrite | 1-2 patches (containers + plate subpart in one, pipettes + equipment chambers in another) |
-| M2 / WS-VALIDATOR | Validator rule + unit tests | 1 patch |
-| M3 / WS-PICKER | Manifest rebuild + gate threshold | 1 patch |
-| M4 / WS-DOCS | Spec + changelog + plan archive | 1 patch |
+| Milestone / Workstream | Component                                                           | Expected patches                                                                          |
+| ---------------------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| M1 / WS-AUDIT          | Per-object base-asset + anchor-gap audit (static, no runtime probe) | 1 patch (audit doc under `docs/active_plans/`)                                            |
+| M2 / WS-ANCHORS        | Base SVG anchor authoring                                           | 1-2 patches (grouped by kind: bottles/flasks first, waste/equipment second)               |
+| M2 / WS-YAML           | Object YAML rewrite                                                 | 1-2 patches (containers + plate subpart in one, pipettes + equipment chambers in another) |
+| M2 / WS-VALIDATOR      | Validator rule + unit tests                                         | 1 patch                                                                                   |
+| M3 / WS-PICKER         | Manifest rebuild + gate threshold                                   | 1 patch                                                                                   |
+| M4 / WS-DOCS           | Spec + changelog + plan archive                                     | 1 patch                                                                                   |
 
 ## Milestone plan
 
@@ -263,7 +263,7 @@ time, not absorbed silently.
 - Interfaces:
   - Needs: WS-AUDIT anchor gap list plus the "anchor-authoring by shape" tally.
   - Provides: patched `assets/equipment/*.svg` files with bare `id="anchor_liquid_clip"`
-    + `id="anchor_liquid_bounds"` rects (no prefix; the generator namespaces).
+    - `id="anchor_liquid_bounds"` rects (no prefix; the generator namespaces).
 - Approach: Inkscape for shape-distinct SVGs; `tools/_temp_inject_liquid_anchors.py`
   helper for kinds with many similar shapes (e.g. cylindrical bottles), only if the
   audit tally shows the helper pays off. Helper, if built, lives under `tools/` and is
@@ -319,7 +319,7 @@ time, not absorbed silently.
     authored as bare `anchor_liquid_clip` / `anchor_liquid_bounds`; runtime adds the
     `<asset_name>__` prefix at composition time; overlay color comes from
     `material_name` -> `display_color` lookup; level comes from `fill_height(state(...),
-    capacity=...)`). No live-runtime probe; rendering is the future runtime plan's
+capacity=...)`). No live-runtime probe; rendering is the future runtime plan's
     responsibility.
   - One subsection tallies anchor-authoring work by SVG shape (e.g. "12 bottles, similar
     cylindrical body -- candidate for a `_temp.py` injection script", "4 flasks, each
@@ -465,9 +465,9 @@ time, not absorbed silently.
 - Acceptance criteria:
   - Canonical rule in `MATERIAL_CONVENTION.md` reads: "Each container or pipette is
     rendered from a single base SVG; the runtime overlays liquid fill from `material_name`
-    + `material_volume` (or `held_material_name` + `held_material_volume`) via
-    `anchor_liquid_clip` and `anchor_liquid_bounds`." The "Convention scope" line lists
-    every kind now bound by this rule.
+    - `material_volume` (or `held_material_name` + `held_material_volume`) via
+      `anchor_liquid_clip` and `anchor_liquid_bounds`." The "Convention scope" line lists
+      every kind now bound by this rule.
   - Anchor-id boundary documented explicitly: authored SVG carries bare
     `id="anchor_liquid_clip"` / `id="anchor_liquid_bounds"`; the generator (and the
     future runtime) is responsible for namespacing them to
@@ -533,17 +533,17 @@ time, not absorbed silently.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Future runtime adopts a different anchor convention than this plan assumes | Medium | Runtime plan ships expecting bare or differently-namespaced ids that don't match `<asset_name>__anchor_liquid_clip` after generator namespacing | reviewer | This plan locks the convention in `MATERIAL_CONVENTION.md` (WP-DOCS-1): authors write bare ids, generator/runtime adds `<asset_name>__` prefix. Runtime plan inherits this contract; if it needs a different one, surface during runtime-plan review, not after assets ship. |
-| Future runtime ships before this plan and re-introduces the variant pattern | Low | Runtime plan adds rendering for `_empty`/`_filled` baked variants | reviewer | The validator gate (WP-VALIDATOR-1) blocks YAML drift back to variants; cross-link from the runtime plan once it appears. |
-| Existing base SVGs lack space for anchor rects (artwork crowded) | Medium | WS-ANCHORS coder cannot place `anchor_liquid_bounds` inside the container interior | coder | Pick a different Servier candidate from the picker pool and re-do anchor authoring; document the chosen alternative in WS-AUDIT. |
-| Picker SVG candidate already chosen (or already shipped) for `bottle_empty` becomes wrong base after collapse | Medium | WP-PICKER-1 regen reveals a dangling `assets/equipment/bottle_empty.svg` on disk | coder | Delete the now-unreferenced SVG via `git rm`; record in changelog (prior memory: prefer `git rm` over `archive/` for retired content). |
-| Validator new rule rejects an object outside the audit list (false positive elsewhere) | Medium | `python3 validation/validate.py` fails on an unrelated YAML | coder | Fix the YAML if it's the same variant smell; if not, narrow the validator rule's predicate to the `material_volume` + `fill_height` combination only. |
-| `well_plate_96.yaml` subpart pattern interacts oddly with `applies_to: subpart` | Medium | Validator passes but runtime renders empty wells incorrectly | tester | WS-SMOKE includes one well-plate state in the assertion set; if it fails, escalate to a runtime plan rather than patch the YAML around it. |
-| Anchor authoring breaks existing pipette / well overlay path (collision with prefix rule) | Low | Existing pipette Playwright tests fail after WP-ANCHORS-1 lands | coder | WP-ANCHORS-1 must not touch pipette or well SVGs (out of scope); CI runs the existing pipette smoke as a guard. |
-| (Per-chamber pairing risk moved into WP-VALIDATOR-1 acceptance criteria; no longer a separate risk.) | -- | -- | -- | -- |
-| Spec change conflicts with an in-flight plan elsewhere | Low | WP-DOCS-1 conflicts on `MATERIAL_CONVENTION.md` | doc author | Resolve via plain merge; this plan owns the canonical rule rewrite. |
+| Risk                                                                                                          | Impact | Trigger                                                                                                                                         | Owner      | Mitigation                                                                                                                                                                                                                                                                   |
+| ------------------------------------------------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- | ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Future runtime adopts a different anchor convention than this plan assumes                                    | Medium | Runtime plan ships expecting bare or differently-namespaced ids that don't match `<asset_name>__anchor_liquid_clip` after generator namespacing | reviewer   | This plan locks the convention in `MATERIAL_CONVENTION.md` (WP-DOCS-1): authors write bare ids, generator/runtime adds `<asset_name>__` prefix. Runtime plan inherits this contract; if it needs a different one, surface during runtime-plan review, not after assets ship. |
+| Future runtime ships before this plan and re-introduces the variant pattern                                   | Low    | Runtime plan adds rendering for `_empty`/`_filled` baked variants                                                                               | reviewer   | The validator gate (WP-VALIDATOR-1) blocks YAML drift back to variants; cross-link from the runtime plan once it appears.                                                                                                                                                    |
+| Existing base SVGs lack space for anchor rects (artwork crowded)                                              | Medium | WS-ANCHORS coder cannot place `anchor_liquid_bounds` inside the container interior                                                              | coder      | Pick a different Servier candidate from the picker pool and re-do anchor authoring; document the chosen alternative in WS-AUDIT.                                                                                                                                             |
+| Picker SVG candidate already chosen (or already shipped) for `bottle_empty` becomes wrong base after collapse | Medium | WP-PICKER-1 regen reveals a dangling `assets/equipment/bottle_empty.svg` on disk                                                                | coder      | Delete the now-unreferenced SVG via `git rm`; record in changelog (prior memory: prefer `git rm` over `archive/` for retired content).                                                                                                                                       |
+| Validator new rule rejects an object outside the audit list (false positive elsewhere)                        | Medium | `python3 validation/validate.py` fails on an unrelated YAML                                                                                     | coder      | Fix the YAML if it's the same variant smell; if not, narrow the validator rule's predicate to the `material_volume` + `fill_height` combination only.                                                                                                                        |
+| `well_plate_96.yaml` subpart pattern interacts oddly with `applies_to: subpart`                               | Medium | Validator passes but runtime renders empty wells incorrectly                                                                                    | tester     | WS-SMOKE includes one well-plate state in the assertion set; if it fails, escalate to a runtime plan rather than patch the YAML around it.                                                                                                                                   |
+| Anchor authoring breaks existing pipette / well overlay path (collision with prefix rule)                     | Low    | Existing pipette Playwright tests fail after WP-ANCHORS-1 lands                                                                                 | coder      | WP-ANCHORS-1 must not touch pipette or well SVGs (out of scope); CI runs the existing pipette smoke as a guard.                                                                                                                                                              |
+| (Per-chamber pairing risk moved into WP-VALIDATOR-1 acceptance criteria; no longer a separate risk.)          | --     | --                                                                                                                                              | --         | --                                                                                                                                                                                                                                                                           |
+| Spec change conflicts with an in-flight plan elsewhere                                                        | Low    | WP-DOCS-1 conflicts on `MATERIAL_CONVENTION.md`                                                                                                 | doc author | Resolve via plain merge; this plan owns the canonical rule rewrite.                                                                                                                                                                                                          |
 
 ## Rollout and release checklist
 

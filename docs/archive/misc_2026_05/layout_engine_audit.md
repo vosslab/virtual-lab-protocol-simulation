@@ -2,11 +2,11 @@
 
 WP-LAYOUT-AUDIT-1 (M2 / WS-LAYOUT-AUDIT) - 2026-05-17
 
-Audit of every primitive in [docs/specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md)
-against [src/layout_engine.ts](../../src/layout_engine.ts).
+Audit of every primitive in `LAYOUT_ENGINE.md`
+against `layout_engine.ts`.
 
 Verdict: **mine** (consistent with M0 audit in
-[docs/active_plans/yaml_to_browser_audit.md](yaml_to_browser_audit.md)).
+[yaml_to_browser_audit.md](yaml_to_browser_audit.md)).
 
 Status key:
 
@@ -19,70 +19,70 @@ Status key:
 
 ## Primitive audit table
 
-| Spec section | Primitive / field | Status | Legacy line range |
-| --- | --- | --- | --- |
-| Mental model | `computeSceneLayout()` pure function | present | 234-452 |
-| Mental model | Returns `ComputedItemLayout[]` in percent units | present | 88-115 (types) |
-| Mental model | No DOM mutation | present | (no DOM calls anywhere in file) |
-| Runtime pipeline | Zone grouping pass | present | 454-490 |
-| Runtime pipeline | Per-zone layout pass | present | 491-557 |
-| Runtime pipeline | Label layout pass | present | 558-620 |
-| Runtime pipeline | `sceneBounds` group-translation pass | present | 684-775 |
-| Scene items fields | `id` | present | 88 |
-| Scene items fields | `asset_id` | present | 89 |
-| Scene items fields | `zone` | present | 90 |
-| Scene items fields | `label` | present | 92 |
-| Scene items fields | `depth` | present | 95 |
-| Scene items fields | `anchor_y` (top / center) | present | 96, 375-378 |
-| Scene items fields | `width_hint` | present | 97 |
-| Scene items fields | `align_stop` | present | 98 |
-| Scene items fields | `visual_states` | present | 100 |
-| Scene items fields | `shortLabel` | drifted | 13 (scene_types.ts), 525-557 |
-| Asset spec fields | `asset_id` lookup | present | 26 (`getAssetAspectRatio` import) |
-| Asset spec fields | natural aspect ratio | present | 280-315 |
-| Asset spec fields | width resolved from `width_hint` or zone default | present | 316-340 |
-| Zone fields | `id` | present | 73-80 (SceneItemGroup union) |
-| Zone fields | `anchor_x`, `anchor_y` (zone baseline) | present | 230-232 |
-| Zone fields | `width` | present | 210-220 |
-| Zone fields | `alignment` | present | 456-462 |
-| Zone fields | `label_placement` | present | 558-620 |
-| Alignment modes | `left` | present | 463-472 |
-| Alignment modes | `right` | present | 473-480 |
-| Alignment modes | `center` | present | 481-490 |
-| Alignment modes | `justify` (including single-item fallback to center) | present | 491-510 |
-| Alignment modes | `tab-stops` (per-item `alignStop` partition) | present | 511-540 |
-| Algorithm invariants | `clusterAnchorOk()` visual-edge invariant check | present | 140-165 |
-| Algorithm invariants | `console.warn` on invariant violation | present | 162 |
-| Algorithm invariants | Post-condition containment check per item | present | 406-436 |
-| Footprints | Footprint is spacing slot (can exceed visual width) | present | 316-340 |
-| Footprints | `MAX_FOOTPRINT_RATIO=1.4` label-width cap | present | 41 |
-| Footprints | `AVG_CHAR_WIDTH_PCT=0.55` char-width estimate | present | 37 |
-| Overflow behavior | Shrink gaps first (`MAX_GAP=4`) | present | 350-370 |
-| Overflow behavior | Scale to `MIN_SCALE=0.75` floor | present | 371-385 |
-| Overflow behavior | Negative gap = intentional visual overlap | present | 386-404 |
-| Vertical placement | `anchor_y: center` (default) | present | 375-378 |
-| Vertical placement | `anchor_y: top` fallback centers on baseline | present | 375-378 |
-| Depth system | `back` depth: scale 0.80, baseline offset -4 | present | 47-52 |
-| Depth system | `mid` depth: scale 1.00, baseline offset 0 | present | 53-58 |
-| Depth system | `front` depth: scale 1.10, baseline offset +4 | present | 59-64 |
-| Depth system | `depthScaleFor()` exported function | present | 167-180 |
-| Depth system | `depthBaselineOffsetFor()` exported function | present | 181-195 |
-| Labels | `layoutLabels()` exported function | present | 558-620 |
-| Labels | `splitLabelAtMiddle()` for two-line split | present | 196-230 |
-| Labels | `labelOffsetY` below-object offset | present | 574 |
-| Labels | `labelFontSize` | drifted | 93 (scene_types.ts) - named field in types, not in spec field table |
-| Labels | `labelLineHeight` | drifted | 94 (scene_types.ts) - named field in types, not in spec field table |
-| Labels | `labelOffsetY` as `SceneLayoutRules` field | drifted | 95 (scene_types.ts) - named field in types, not in spec field table |
-| Scene bounds | `groupLayoutsByZone()` | present | 622-683 |
-| Scene bounds | Group-level translation preserving alignment | present | 684-775 |
-| Scene bounds | `ZONE_PADDING=1` | present | 44 |
-| LayoutMove | Protocol primitive definition | out-of-scope | (protocol layer, not engine) |
-| Adapter responsibilities | Zone array to record conversion | out-of-scope | (adapter layer) |
-| Adapter responsibilities | `resolveSceneItemsWithDepth()` depth resolver | out-of-scope | (adapter layer) |
-| Adapter responsibilities | Subpart group expansion | out-of-scope | (object/adapter layer; see subpart-group section) |
-| SceneLayoutRules type | `[key: string]: unknown` escape hatch | gap | 97 (scene_types.ts) - not documented in spec; escape hatch is a vocabulary anti-pattern |
-| SceneItemGroup enum values | `stocks`, `wash`, `waste`, `pipetting`, `plate`, `dilution_prep`, `equipment` | drifted | 33-40 (scene_types.ts) - enum values not listed in LAYOUT_ENGINE.md zone field table |
-| SemanticZoneDef type | Dead legacy type | drifted | 73-80 (scene_types.ts) - not used by current engine, not removed |
+| Spec section               | Primitive / field                                                             | Status       | Legacy line range                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------- |
+| Mental model               | `computeSceneLayout()` pure function                                          | present      | 234-452                                                                                 |
+| Mental model               | Returns `ComputedItemLayout[]` in percent units                               | present      | 88-115 (types)                                                                          |
+| Mental model               | No DOM mutation                                                               | present      | (no DOM calls anywhere in file)                                                         |
+| Runtime pipeline           | Zone grouping pass                                                            | present      | 454-490                                                                                 |
+| Runtime pipeline           | Per-zone layout pass                                                          | present      | 491-557                                                                                 |
+| Runtime pipeline           | Label layout pass                                                             | present      | 558-620                                                                                 |
+| Runtime pipeline           | `sceneBounds` group-translation pass                                          | present      | 684-775                                                                                 |
+| Scene items fields         | `id`                                                                          | present      | 88                                                                                      |
+| Scene items fields         | `asset_id`                                                                    | present      | 89                                                                                      |
+| Scene items fields         | `zone`                                                                        | present      | 90                                                                                      |
+| Scene items fields         | `label`                                                                       | present      | 92                                                                                      |
+| Scene items fields         | `depth`                                                                       | present      | 95                                                                                      |
+| Scene items fields         | `anchor_y` (top / center)                                                     | present      | 96, 375-378                                                                             |
+| Scene items fields         | `width_hint`                                                                  | present      | 97                                                                                      |
+| Scene items fields         | `align_stop`                                                                  | present      | 98                                                                                      |
+| Scene items fields         | `visual_states`                                                               | present      | 100                                                                                     |
+| Scene items fields         | `shortLabel`                                                                  | drifted      | 13 (scene_types.ts), 525-557                                                            |
+| Asset spec fields          | `asset_id` lookup                                                             | present      | 26 (`getAssetAspectRatio` import)                                                       |
+| Asset spec fields          | natural aspect ratio                                                          | present      | 280-315                                                                                 |
+| Asset spec fields          | width resolved from `width_hint` or zone default                              | present      | 316-340                                                                                 |
+| Zone fields                | `id`                                                                          | present      | 73-80 (SceneItemGroup union)                                                            |
+| Zone fields                | `anchor_x`, `anchor_y` (zone baseline)                                        | present      | 230-232                                                                                 |
+| Zone fields                | `width`                                                                       | present      | 210-220                                                                                 |
+| Zone fields                | `alignment`                                                                   | present      | 456-462                                                                                 |
+| Zone fields                | `label_placement`                                                             | present      | 558-620                                                                                 |
+| Alignment modes            | `left`                                                                        | present      | 463-472                                                                                 |
+| Alignment modes            | `right`                                                                       | present      | 473-480                                                                                 |
+| Alignment modes            | `center`                                                                      | present      | 481-490                                                                                 |
+| Alignment modes            | `justify` (including single-item fallback to center)                          | present      | 491-510                                                                                 |
+| Alignment modes            | `tab-stops` (per-item `alignStop` partition)                                  | present      | 511-540                                                                                 |
+| Algorithm invariants       | `clusterAnchorOk()` visual-edge invariant check                               | present      | 140-165                                                                                 |
+| Algorithm invariants       | `console.warn` on invariant violation                                         | present      | 162                                                                                     |
+| Algorithm invariants       | Post-condition containment check per item                                     | present      | 406-436                                                                                 |
+| Footprints                 | Footprint is spacing slot (can exceed visual width)                           | present      | 316-340                                                                                 |
+| Footprints                 | `MAX_FOOTPRINT_RATIO=1.4` label-width cap                                     | present      | 41                                                                                      |
+| Footprints                 | `AVG_CHAR_WIDTH_PCT=0.55` char-width estimate                                 | present      | 37                                                                                      |
+| Overflow behavior          | Shrink gaps first (`MAX_GAP=4`)                                               | present      | 350-370                                                                                 |
+| Overflow behavior          | Scale to `MIN_SCALE=0.75` floor                                               | present      | 371-385                                                                                 |
+| Overflow behavior          | Negative gap = intentional visual overlap                                     | present      | 386-404                                                                                 |
+| Vertical placement         | `anchor_y: center` (default)                                                  | present      | 375-378                                                                                 |
+| Vertical placement         | `anchor_y: top` fallback centers on baseline                                  | present      | 375-378                                                                                 |
+| Depth system               | `back` depth: scale 0.80, baseline offset -4                                  | present      | 47-52                                                                                   |
+| Depth system               | `mid` depth: scale 1.00, baseline offset 0                                    | present      | 53-58                                                                                   |
+| Depth system               | `front` depth: scale 1.10, baseline offset +4                                 | present      | 59-64                                                                                   |
+| Depth system               | `depthScaleFor()` exported function                                           | present      | 167-180                                                                                 |
+| Depth system               | `depthBaselineOffsetFor()` exported function                                  | present      | 181-195                                                                                 |
+| Labels                     | `layoutLabels()` exported function                                            | present      | 558-620                                                                                 |
+| Labels                     | `splitLabelAtMiddle()` for two-line split                                     | present      | 196-230                                                                                 |
+| Labels                     | `labelOffsetY` below-object offset                                            | present      | 574                                                                                     |
+| Labels                     | `labelFontSize`                                                               | drifted      | 93 (scene_types.ts) - named field in types, not in spec field table                     |
+| Labels                     | `labelLineHeight`                                                             | drifted      | 94 (scene_types.ts) - named field in types, not in spec field table                     |
+| Labels                     | `labelOffsetY` as `SceneLayoutRules` field                                    | drifted      | 95 (scene_types.ts) - named field in types, not in spec field table                     |
+| Scene bounds               | `groupLayoutsByZone()`                                                        | present      | 622-683                                                                                 |
+| Scene bounds               | Group-level translation preserving alignment                                  | present      | 684-775                                                                                 |
+| Scene bounds               | `ZONE_PADDING=1`                                                              | present      | 44                                                                                      |
+| LayoutMove                 | Protocol primitive definition                                                 | out-of-scope | (protocol layer, not engine)                                                            |
+| Adapter responsibilities   | Zone array to record conversion                                               | out-of-scope | (adapter layer)                                                                         |
+| Adapter responsibilities   | `resolveSceneItemsWithDepth()` depth resolver                                 | out-of-scope | (adapter layer)                                                                         |
+| Adapter responsibilities   | Subpart group expansion                                                       | out-of-scope | (object/adapter layer; see subpart-group section)                                       |
+| SceneLayoutRules type      | `[key: string]: unknown` escape hatch                                         | gap          | 97 (scene_types.ts) - not documented in spec; escape hatch is a vocabulary anti-pattern |
+| SceneItemGroup enum values | `stocks`, `wash`, `waste`, `pipetting`, `plate`, `dilution_prep`, `equipment` | drifted      | 33-40 (scene_types.ts) - enum values not listed in LAYOUT_ENGINE.md zone field table    |
+| SemanticZoneDef type       | Dead legacy type                                                              | drifted      | 73-80 (scene_types.ts) - not used by current engine, not removed                        |
 
 ---
 
@@ -162,16 +162,16 @@ object, the layout engine does NOT need to re-run `computeSceneLayout()`.
 
 The invalidation rule derived from the architecture:
 
-| Trigger | Re-run `computeSceneLayout()`? | Reason |
-| --- | --- | --- |
-| `material_name` change on object or subpart | NO | Does not affect footprint, zone membership, or depth |
-| `material_volume` change on object or subpart | NO | Affects only SVG fill height, not geometry |
-| Set-point field change (`set_volume`, `set_rpm`, etc.) | NO | Same: render-layer only |
-| Object added to zone | YES | Zone item list changes; spacing must recompute |
-| Object removed from zone | YES | Zone item list changes; spacing must recompute |
-| `depth` change on item | YES | Depth changes scale and baseline; footprint can change |
-| `LayoutMove` scene operation applied | YES | Item moves to new zone |
-| `width_hint` change on item | YES | Footprint changes |
+| Trigger                                                | Re-run `computeSceneLayout()`? | Reason                                                 |
+| ------------------------------------------------------ | ------------------------------ | ------------------------------------------------------ |
+| `material_name` change on object or subpart            | NO                             | Does not affect footprint, zone membership, or depth   |
+| `material_volume` change on object or subpart          | NO                             | Affects only SVG fill height, not geometry             |
+| Set-point field change (`set_volume`, `set_rpm`, etc.) | NO                             | Same: render-layer only                                |
+| Object added to zone                                   | YES                            | Zone item list changes; spacing must recompute         |
+| Object removed from zone                               | YES                            | Zone item list changes; spacing must recompute         |
+| `depth` change on item                                 | YES                            | Depth changes scale and baseline; footprint can change |
+| `LayoutMove` scene operation applied                   | YES                            | Item moves to new zone                                 |
+| `width_hint` change on item                            | YES                            | Footprint changes                                      |
 
 The adapter re-renders only the affected cell's SVG (or the object's `visual_states`
 target element) without invoking the layout engine.
@@ -263,6 +263,7 @@ against the new asset facade; no other cross-layer coupling exists. Mining is th
 lower-risk, lower-cost path.
 
 **Mining steps**:
+
 1. Copy all eight functions verbatim into `src/scene_runtime/layout/layout_engine.ts`.
 2. Update the `getAssetAspectRatio` import to the new asset facade path.
 3. Add `shortLabel?: string` to the `SceneItem` contract in the new types file.

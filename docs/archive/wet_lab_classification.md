@@ -50,6 +50,7 @@ Wet-lab action: insert plate into reader, press Read, view results.
   resolves.
 
 ### Drug dilution preparation: `carb_intermediate`, `carb_low_range`,
+
 ### `carb_high_range`, `metformin_stock`
 
 Wet-lab actions (Part 4 of protocol):
@@ -77,7 +78,7 @@ Proposed shape (carb_intermediate, two-interaction sequence):
   completionPath:
     kind: interactionSequence
     interactions:
-      - tool: micropipette_p1000  # NEW item, see "Items needed"
+      - tool: micropipette_p1000 # NEW item, see "Items needed"
         source: carboplatin_stock
         destination: dilution_tube_rack
         liquid: carboplatin
@@ -102,6 +103,7 @@ existing calculation tables can remain as a modal layered alongside
 (opened by clicking a help icon, not as the step's completionPath).
 
 ### Drug application: `add_carboplatin`, `add_metformin`, `add_mtt`,
+
 ### `add_dmso`
 
 Wet-lab actions (Part 3 / Part 5):
@@ -174,17 +176,17 @@ walker passes them post hood-dispatch fix; confirm in the next walker run.
 
 ## Migration status (per step)
 
-| Step              | Status     | Notes                                  |
-| ----------------- | ---------- | -------------------------------------- |
-| count_cells       | done       | automated cell counter modal           |
-| carb_intermediate | done       | interactionSequence; reference shape   |
-| carb_low_range    | done       | physical interactionSequence (SP-K2f)  |
-| carb_high_range   | done       | interactionSequence; 8 interactions    |
-| metformin_stock   | done       | interactionSequence; 4 interactions    |
-| add_carboplatin   | done       | interactionSequence; 14 interactions   |
-| add_metformin     | done       | interactionSequence; 2 interactions    |
-| plate_read        | done       | modal with plate_reader scene          |
-| results           | done       | modal with plate_reader scene          |
+| Step              | Status | Notes                                 |
+| ----------------- | ------ | ------------------------------------- |
+| count_cells       | done   | automated cell counter modal          |
+| carb_intermediate | done   | interactionSequence; reference shape  |
+| carb_low_range    | done   | physical interactionSequence (SP-K2f) |
+| carb_high_range   | done   | interactionSequence; 8 interactions   |
+| metformin_stock   | done   | interactionSequence; 4 interactions   |
+| add_carboplatin   | done   | interactionSequence; 14 interactions  |
+| add_metformin     | done   | interactionSequence; 2 interactions   |
+| plate_read        | done   | modal with plate_reader scene         |
+| results           | done   | modal with plate_reader scene         |
 
 ## Final status
 

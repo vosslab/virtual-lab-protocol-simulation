@@ -3,20 +3,20 @@ kind: bottle
 label: Trypsin
 
 state_fields:
-- field_name: material_name
-  type: enum
-  allowed:
-  - empty
-  - trypsin
-  default: empty
-  description: Contents currently in the bottle.
-- field_name: material_volume
-  type: float
-  unit: ml
-  min: 0
-  max: 500
-  default: 500
-  description: Volume of trypsin remaining, in milliliters.
+  - field_name: material_name
+    type: enum
+    allowed:
+      - empty
+      - trypsin
+    default: empty
+    description: Contents currently in the bottle.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 500
+    default: 500
+    description: Volume of trypsin remaining, in milliliters.
 visual_states:
   material_volume:
     kind: composite

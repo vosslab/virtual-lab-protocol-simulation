@@ -2,12 +2,11 @@
 # check_codebase.sh - orchestrator over npm scripts for codebase checks.
 #
 # Runs (in order):
-#   1. TypeScript typecheck via tsconfig.json (src/).
-#   2. Wider typecheck via tsconfig.lint.json if present (tests/, tools/).
-#   3. ESLint (zero warnings).
-#   4. Prettier --check.
-#   5. Node unit tests under tests/ (node --test tests/test_*.mjs).
-#   6. Production build (npm run build), with post-build artifact checks
+#   1. TypeScript typecheck via tsconfig.json (covers src/ + tests/ via **/*.ts).
+#   2. ESLint (zero errors; warnings allowed per docs/TYPESCRIPT_STYLE.md).
+#   3. Prettier --check on tracked JS/TS surfaces.
+#   4. Node unit tests under tests/ (node --test tests/test_*.mjs).
+#   5. Production build (npm run build), with post-build artifact checks
 #      on dist/index.html, dist/main.js, and dist/style.css (when
 #      src/style.css existed at the start of the run).
 #
@@ -192,23 +191,16 @@ SUMMARY_ENABLED=1
 # 1. typecheck (always)
 step_run typecheck
 
-# 2. typecheck:lint only if tsconfig.lint.json exists
-if [ -f tsconfig.lint.json ]; then
-	step_run typecheck:lint
-else
-	step_skip typecheck:lint "tsconfig.lint.json not present"
-fi
-
-# 3. lint
+# 2. lint
 step_run lint
 
-# 4. format:check
+# 3. format:check
 step_run format:check
 
-# 5. test:node
+# 4. test:node
 step_run test:node
 
-# 6. build (with post-build artifact checks)
+# 5. build (with post-build artifact checks)
 if [ "$FAST" = "1" ]; then
 	step_skip build "--fast"
 else

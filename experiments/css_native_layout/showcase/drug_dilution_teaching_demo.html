@@ -1,284 +1,400 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Drug Dilution Teaching Demo - NEW2 Showcase (Lane F, demo-only)</title>
-	<link rel="stylesheet" href="../styles/bench.css">
-	<style>
-		/*
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      Drug Dilution Teaching Demo - NEW2 Showcase (Lane F, demo-only)
+    </title>
+    <link rel="stylesheet" href="../styles/bench.css" />
+    <style>
+      /*
 		Demo-only scoped polish. Does not modify canonical bench.css.
 		Goal: nudge a dense scene toward "real teaching scene" feel by adding
 		a subtle inferred-region wash, sharpening label hierarchy, and giving
 		the primary plate a faint pedagogical halo. All effects are scoped
 		to .showcase-demo so the production stylesheet is untouched.
 		*/
-		.showcase-demo .region-label {
-			display: block;
-			font-size: 10px;
-			letter-spacing: 1px;
-			color: rgba(60, 70, 85, 0.55);
-			padding: 2px 6px;
-			margin-bottom: 4px;
-			border-left: 2px solid rgba(60, 70, 85, 0.18);
-			/* Float the label so it does not consume flex space in the region. */
-			position: absolute;
-			pointer-events: none;
-		}
-		.showcase-demo .region {
-			position: relative;
-		}
+      .showcase-demo .region-label {
+        display: block;
+        font-size: 10px;
+        letter-spacing: 1px;
+        color: rgba(60, 70, 85, 0.55);
+        padding: 2px 6px;
+        margin-bottom: 4px;
+        border-left: 2px solid rgba(60, 70, 85, 0.18);
+        /* Float the label so it does not consume flex space in the region. */
+        position: absolute;
+        pointer-events: none;
+      }
+      .showcase-demo .region {
+        position: relative;
+      }
 
-		/* Subtle region washes to imply zones without hard boxes. */
-		.showcase-demo .region--rear_shelf {
-			background:
-				linear-gradient(180deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
-			border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-		}
-		.showcase-demo .region--work_surface {
-			background:
-				radial-gradient(ellipse at center,
-					rgba(255, 250, 240, 0.30) 0%,
-					rgba(255, 250, 240, 0.05) 70%,
-					transparent 100%);
-		}
-		.showcase-demo .region--front_tools {
-			background:
-				linear-gradient(0deg, rgba(255, 255, 255, 0.18) 0%, rgba(255, 255, 255, 0.02) 100%);
-			border-top: 1px solid rgba(0, 0, 0, 0.06);
-		}
+      /* Subtle region washes to imply zones without hard boxes. */
+      .showcase-demo .region--rear_shelf {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.22) 0%,
+          rgba(255, 255, 255, 0.05) 100%
+        );
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+      }
+      .showcase-demo .region--work_surface {
+        background: radial-gradient(
+          ellipse at center,
+          rgba(255, 250, 240, 0.3) 0%,
+          rgba(255, 250, 240, 0.05) 70%,
+          transparent 100%
+        );
+      }
+      .showcase-demo .region--front_tools {
+        background: linear-gradient(
+          0deg,
+          rgba(255, 255, 255, 0.18) 0%,
+          rgba(255, 255, 255, 0.02) 100%
+        );
+        border-top: 1px solid rgba(0, 0, 0, 0.06);
+      }
 
-		/* Primary object gets a faint focus halo + slightly larger label. */
-		.showcase-demo .placement[data-primary="true"] {
-			position: relative;
-		}
-		.showcase-demo .placement[data-primary="true"] .object-graphic::before {
-			content: "";
-			position: absolute;
-			inset: -8px;
-			border-radius: 12px;
-			background:
-				radial-gradient(ellipse at center,
-					rgba(27, 124, 63, 0.10) 0%,
-					rgba(27, 124, 63, 0.0) 70%);
-			pointer-events: none;
-			z-index: 0;
-		}
-		.showcase-demo .placement[data-primary="true"] .placement-label {
-			font-size: 13px;
-			font-weight: 600;
-			color: #2c3e50;
-		}
+      /* Primary object gets a faint focus halo + slightly larger label. */
+      .showcase-demo .placement[data-primary="true"] {
+        position: relative;
+      }
+      .showcase-demo .placement[data-primary="true"] .object-graphic::before {
+        content: "";
+        position: absolute;
+        inset: -8px;
+        border-radius: 12px;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(27, 124, 63, 0.1) 0%,
+          rgba(27, 124, 63, 0) 70%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+      .showcase-demo .placement[data-primary="true"] .placement-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+      }
 
-		/* Dense-mode reagent labels: smaller and tighter, per bench.css crowded rules. */
-		.showcase-demo .region--rear_shelf .placement-label,
-		.showcase-demo .region--front_tools .placement-label {
-			font-size: 10px;
-			letter-spacing: 0.2px;
-			color: rgba(60, 70, 85, 0.85);
-		}
+      /* Dense-mode reagent labels: smaller and tighter, per bench.css crowded rules. */
+      .showcase-demo .region--rear_shelf .placement-label,
+      .showcase-demo .region--front_tools .placement-label {
+        font-size: 10px;
+        letter-spacing: 0.2px;
+        color: rgba(60, 70, 85, 0.85);
+      }
 
-		/*
+      /*
 		Demo-only: pin regions to their intended grid rows. The canonical
 		.scene-container grid sometimes spawns implicit rows when content
 		exceeds declared min-heights; scoping explicit grid-row assignments
 		here keeps the demo well-composed without touching canonical CSS.
 		*/
-		.showcase-demo { grid-template-rows: 110px 1fr 110px 0px 0px; }
-		.showcase-demo .region--rear_shelf { grid-row: 1; }
-		.showcase-demo .region--work_surface { grid-row: 2; }
-		.showcase-demo .region--front_tools { grid-row: 3; }
-		.showcase-demo .region--instrument_station { display: none; }
-		.showcase-demo .region--popup_layer { display: none; }
+      .showcase-demo {
+        grid-template-rows: 110px 1fr 110px 0px 0px;
+      }
+      .showcase-demo .region--rear_shelf {
+        grid-row: 1;
+      }
+      .showcase-demo .region--work_surface {
+        grid-row: 2;
+      }
+      .showcase-demo .region--front_tools {
+        grid-row: 3;
+      }
+      .showcase-demo .region--instrument_station {
+        display: none;
+      }
+      .showcase-demo .region--popup_layer {
+        display: none;
+      }
 
-		/* Spread shelves and tools evenly across the bench. */
-		.showcase-demo .region--rear_shelf {
-			justify-content: center;
-			gap: 24px;
-		}
-		.showcase-demo .region--front_tools {
-			justify-content: center;
-			gap: 24px;
-			flex-wrap: nowrap;
-		}
+      /* Spread shelves and tools evenly across the bench. */
+      .showcase-demo .region--rear_shelf {
+        justify-content: center;
+        gap: 24px;
+      }
+      .showcase-demo .region--front_tools {
+        justify-content: center;
+        gap: 24px;
+        flex-wrap: nowrap;
+      }
 
-		/*
+      /*
 		Demo-only: relax the canonical column-stack on work_surface so plate
 		and racks sit side-by-side. The canonical bench.css uses column flex
 		on work_surface, which collapses items vertically in dense scenes.
 		Scoped override; canonical CSS untouched.
 		*/
-		.showcase-demo .region--work_surface {
-			flex-direction: row;
-			flex-wrap: nowrap;
-			align-items: flex-end;
-			justify-content: center;
-			gap: 36px;
-			overflow: visible;
-			max-height: none;
-		}
+      .showcase-demo .region--work_surface {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: flex-end;
+        justify-content: center;
+        gap: 36px;
+        overflow: visible;
+        max-height: none;
+      }
 
-		/* Demo banner so reviewers know this is not production. */
-		.demo-banner {
-			position: fixed;
-			top: 10px;
-			right: 14px;
-			z-index: 9999;
-			font-size: 11px;
-			letter-spacing: 1px;
-			padding: 4px 10px;
-			background: rgba(196, 30, 58, 0.10);
-			border: 1px solid rgba(196, 30, 58, 0.30);
-			color: #7a1a2c;
-			font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-			text-transform: uppercase;
-		}
-	</style>
-</head>
-<body>
-	<div class="demo-banner">Demo-only (Lane F) - not production</div>
+      /* Demo banner so reviewers know this is not production. */
+      .demo-banner {
+        position: fixed;
+        top: 10px;
+        right: 14px;
+        z-index: 9999;
+        font-size: 11px;
+        letter-spacing: 1px;
+        padding: 4px 10px;
+        background: rgba(196, 30, 58, 0.1);
+        border: 1px solid rgba(196, 30, 58, 0.3);
+        color: #7a1a2c;
+        font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        text-transform: uppercase;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="demo-banner">Demo-only (Lane F) - not production</div>
 
-	<!--
+    <!--
 	NEW2 Lane F showcase scene: drug dilution teaching workspace.
 	14 placements in dense mode. Reuses canonical bench.css; demo-only
 	scoped <style> above adds label polish + region wash + plate halo.
 	-->
-	<div class="scene-container scene--bench scene--drug-dilution showcase-demo"
-		 data-scene-mode="composition"
-		 data-scene-density="crowded">
+    <div
+      class="scene-container scene--bench scene--drug-dilution showcase-demo"
+      data-scene-mode="composition"
+      data-scene-density="crowded"
+    >
+      <!-- Rear shelf: 6 reagent bottles (DMSO, PBS, three drug stocks, ethanol) -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Reagents</span>
 
-		<!-- Rear shelf: 6 reagent bottles (DMSO, PBS, three drug stocks, ethanol) -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Reagents</span>
+        <div
+          class="placement"
+          data-placement="rear_dmso_bottle"
+          data-object-name="dmso_stock_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/destain_bottle_filled.svg"
+              alt="DMSO"
+            />
+          </div>
+          <span class="placement-label">DMSO</span>
+        </div>
 
-			<div class="placement" data-placement="rear_dmso_bottle" data-object-name="dmso_stock_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/destain_bottle_filled.svg" alt="DMSO">
-				</div>
-				<span class="placement-label">DMSO</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_pbs_bottle"
+          data-object-name="pbs_buffer_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/ddh2o_bottle_filled.svg"
+              alt="PBS"
+            />
+          </div>
+          <span class="placement-label">PBS</span>
+        </div>
 
-			<div class="placement" data-placement="rear_pbs_bottle" data-object-name="pbs_buffer_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/ddh2o_bottle_filled.svg" alt="PBS">
-				</div>
-				<span class="placement-label">PBS</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_drug_a"
+          data-object-name="drug_stock_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/bme_bottle_filled.svg"
+              alt="Drug A"
+            />
+          </div>
+          <span class="placement-label">Drug A</span>
+        </div>
 
-			<div class="placement" data-placement="rear_drug_a" data-object-name="drug_stock_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/bme_bottle_filled.svg" alt="Drug A">
-				</div>
-				<span class="placement-label">Drug A</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_drug_b"
+          data-object-name="drug_stock_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/laemmli_4x_bottle_filled.svg"
+              alt="Drug B"
+            />
+          </div>
+          <span class="placement-label">Drug B</span>
+        </div>
 
-			<div class="placement" data-placement="rear_drug_b" data-object-name="drug_stock_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/laemmli_4x_bottle_filled.svg" alt="Drug B">
-				</div>
-				<span class="placement-label">Drug B</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_drug_c"
+          data-object-name="drug_stock_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/coomassie_stain_bottle_filled.svg"
+              alt="Drug C"
+            />
+          </div>
+          <span class="placement-label">Drug C</span>
+        </div>
 
-			<div class="placement" data-placement="rear_drug_c" data-object-name="drug_stock_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/coomassie_stain_bottle_filled.svg" alt="Drug C">
-				</div>
-				<span class="placement-label">Drug C</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="rear_ethanol"
+          data-object-name="ethanol_bottle"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img src="../../../assets/equipment/bottle.svg" alt="Ethanol" />
+          </div>
+          <span class="placement-label">EtOH</span>
+        </div>
+      </div>
 
-			<div class="placement" data-placement="rear_ethanol" data-object-name="ethanol_bottle">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/bottle.svg" alt="Ethanol">
-				</div>
-				<span class="placement-label">EtOH</span>
-			</div>
-		</div>
+      <!-- Work surface: 96-well plate centerpiece + dilution rack + vial rack -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-		<!-- Work surface: 96-well plate centerpiece + dilution rack + vial rack -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+        <div
+          class="placement"
+          data-placement="center_well_plate"
+          data-object-name="well_plate_96"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--container">
+            <img
+              src="../../../assets/equipment/96well_pcr_plate.svg"
+              alt="96-Well Plate"
+            />
+          </div>
+          <span class="placement-label">96-Well Plate (target)</span>
+        </div>
 
-			<div class="placement" data-placement="center_well_plate" data-object-name="well_plate_96" data-primary="true">
-				<div class="object-graphic footprint--container">
-					<img src="../../../assets/equipment/96well_pcr_plate.svg" alt="96-Well Plate">
-				</div>
-				<span class="placement-label">96-Well Plate (target)</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="work_dilution_rack"
+          data-object-name="tube_rack_24"
+        >
+          <div class="object-graphic footprint--rack">
+            <img
+              src="../../../assets/equipment/dilution_tube_rack.svg"
+              alt="Dilution Rack"
+            />
+          </div>
+          <span class="placement-label">Dilution Rack</span>
+        </div>
 
-			<div class="placement" data-placement="work_dilution_rack" data-object-name="tube_rack_24">
-				<div class="object-graphic footprint--rack">
-					<img src="../../../assets/equipment/dilution_tube_rack.svg" alt="Dilution Rack">
-				</div>
-				<span class="placement-label">Dilution Rack</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="work_vial_rack"
+          data-object-name="drug_vial_rack"
+        >
+          <div class="object-graphic footprint--rack">
+            <img
+              src="../../../assets/equipment/drug_vial_rack.svg"
+              alt="Vial Rack"
+            />
+          </div>
+          <span class="placement-label">Drug Vials</span>
+        </div>
+      </div>
 
-			<div class="placement" data-placement="work_vial_rack" data-object-name="drug_vial_rack">
-				<div class="object-graphic footprint--rack">
-					<img src="../../../assets/equipment/drug_vial_rack.svg" alt="Vial Rack">
-				</div>
-				<span class="placement-label">Drug Vials</span>
-			</div>
-		</div>
+      <!-- Front tools: pipette, tip box, waste, waste tray, kimwipes -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Tools</span>
 
-		<!-- Front tools: pipette, tip box, waste, waste tray, kimwipes -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Tools</span>
+        <div
+          class="placement"
+          data-placement="tool_p200"
+          data-object-name="p200_micropipette"
+        >
+          <div class="object-graphic footprint--small-tool">
+            <img
+              src="../../../assets/equipment/p200_micropipette_filled.svg"
+              alt="p200"
+            />
+          </div>
+          <span class="placement-label">p200</span>
+        </div>
 
-			<div class="placement" data-placement="tool_p200" data-object-name="p200_micropipette">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../assets/equipment/p200_micropipette_filled.svg" alt="p200">
-				</div>
-				<span class="placement-label">p200</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="tool_tip_box"
+          data-object-name="tip_box"
+        >
+          <div class="object-graphic footprint--small-tool">
+            <img src="../../../assets/equipment/tip_box_new.svg" alt="Tips" />
+          </div>
+          <span class="placement-label">Tips</span>
+        </div>
 
-			<div class="placement" data-placement="tool_tip_box" data-object-name="tip_box">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../assets/equipment/tip_box_new.svg" alt="Tips">
-				</div>
-				<span class="placement-label">Tips</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="tool_kimwipes"
+          data-object-name="kimwipe_pad"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/kimwipe_pad.svg"
+              alt="Kimwipes"
+            />
+          </div>
+          <span class="placement-label">Kimwipes</span>
+        </div>
 
-			<div class="placement" data-placement="tool_kimwipes" data-object-name="kimwipe_pad">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/kimwipe_pad.svg" alt="Kimwipes">
-				</div>
-				<span class="placement-label">Kimwipes</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="waste_container_main"
+          data-object-name="waste_container"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img
+              src="../../../assets/equipment/waste_container.svg"
+              alt="Waste"
+            />
+          </div>
+          <span class="placement-label">Waste</span>
+        </div>
 
-			<div class="placement" data-placement="waste_container_main" data-object-name="waste_container">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/waste_container.svg" alt="Waste">
-				</div>
-				<span class="placement-label">Waste</span>
-			</div>
+        <div
+          class="placement"
+          data-placement="waste_tray_secondary"
+          data-object-name="waste_tray"
+        >
+          <div class="object-graphic footprint--handheld">
+            <img src="../../../assets/equipment/waste_tray.svg" alt="Tray" />
+          </div>
+          <span class="placement-label">Tray</span>
+        </div>
+      </div>
 
-			<div class="placement" data-placement="waste_tray_secondary" data-object-name="waste_tray">
-				<div class="object-graphic footprint--handheld">
-					<img src="../../../assets/equipment/waste_tray.svg" alt="Tray">
-				</div>
-				<span class="placement-label">Tray</span>
-			</div>
-		</div>
+      <!-- Instrument station: empty (intentional negative space for focus) -->
+      <div
+        class="region region--instrument_station"
+        data-region="instrument_station"
+      >
+        <span class="region-label">Large Equipment</span>
+      </div>
 
-		<!-- Instrument station: empty (intentional negative space for focus) -->
-		<div class="region region--instrument_station" data-region="instrument_station">
-			<span class="region-label">Large Equipment</span>
-		</div>
+      <!-- Popup layer: unused in demo -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
 
-		<!-- Popup layer: unused in demo -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
-
-	<script>
-		window.sceneData = {
-			sceneName: 'drug_dilution_teaching_demo',
-			direction: 'showcase',
-			workspace: 'bench',
-			sceneType: 'demo-only',
-			totalPlacements: 14,
-			lane: 'F',
-			note: 'Demo-only showcase for NEW2; not production. Reuses canonical bench.css.'
-		};
-	</script>
-</body>
+    <script>
+      window.sceneData = {
+        sceneName: "drug_dilution_teaching_demo",
+        direction: "showcase",
+        workspace: "bench",
+        sceneType: "demo-only",
+        totalPlacements: 14,
+        lane: "F",
+        note: "Demo-only showcase for NEW2; not production. Reuses canonical bench.css.",
+      };
+    </script>
+  </body>
 </html>

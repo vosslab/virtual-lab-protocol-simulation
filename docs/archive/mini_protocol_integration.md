@@ -11,15 +11,15 @@ cell_culture chain to reach the affected step.
 
 ## Integration table
 
-| protocol | workspace | completionPath.kind | proves | walker status |
-| --- | --- | --- | --- | --- |
-| tutorial_hood_transfer | hood | interactionSequence | source -> destination physical transfer with `stateChange.heldLiquid` (serological pipette, single liquid, terminal `completionEvent: pbs_wash`) | Walker PASSED |
-| tutorial_drug_dilution | hood | interactionSequence | two-liquid micropipette load/discharge cycle into shared destination tube; mirrors `carb_intermediate` shape | Walker PASSED |
-| tutorial_bench_direct | bench | directTool | one-click instrument completion (`tool: centrifuge`, `completionEvent: centrifuge`) | Walker PASSED |
-| tutorial_cell_counter | cell_counter | modal | modal `openClick` + `advanceClick` chain on a bench-hosted instrument (`openClick: cell_counter`, `advanceClick: capture-count`) | Walker PASSED |
-| tutorial_plate_reader | plate_reader | modal | modal `openClick` + `advanceClick` chain on the plate reader instrument (`openClick: plate_reader`, `advanceClick: complete-plate-read`) | Walker PASSED |
-| tutorial_pbs | hood | interactionSequence | repeatable pipette source -> destination across a four-step chain (regression for nextId chaining of identical interactionSequence steps) | Walker PASSED |
-| tutorial_split | hood | directTool + interactionSequence | mixed-kind chain: directTool spray (ethanol_bottle) followed by interactionSequence pipette steps | Walker FAILED (`tutorial_spray_hood`: click on `ethanol_bottle` produced no state change after 3000 ms) |
+| protocol               | workspace    | completionPath.kind              | proves                                                                                                                                           | walker status                                                                                           |
+| ---------------------- | ------------ | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------- |
+| tutorial_hood_transfer | hood         | interactionSequence              | source -> destination physical transfer with `stateChange.heldLiquid` (serological pipette, single liquid, terminal `completionEvent: pbs_wash`) | Walker PASSED                                                                                           |
+| tutorial_drug_dilution | hood         | interactionSequence              | two-liquid micropipette load/discharge cycle into shared destination tube; mirrors `carb_intermediate` shape                                     | Walker PASSED                                                                                           |
+| tutorial_bench_direct  | bench        | directTool                       | one-click instrument completion (`tool: centrifuge`, `completionEvent: centrifuge`)                                                              | Walker PASSED                                                                                           |
+| tutorial_cell_counter  | cell_counter | modal                            | modal `openClick` + `advanceClick` chain on a bench-hosted instrument (`openClick: cell_counter`, `advanceClick: capture-count`)                 | Walker PASSED                                                                                           |
+| tutorial_plate_reader  | plate_reader | modal                            | modal `openClick` + `advanceClick` chain on the plate reader instrument (`openClick: plate_reader`, `advanceClick: complete-plate-read`)         | Walker PASSED                                                                                           |
+| tutorial_pbs           | hood         | interactionSequence              | repeatable pipette source -> destination across a four-step chain (regression for nextId chaining of identical interactionSequence steps)        | Walker PASSED                                                                                           |
+| tutorial_split         | hood         | directTool + interactionSequence | mixed-kind chain: directTool spray (ethanol_bottle) followed by interactionSequence pipette steps                                                | Walker FAILED (`tutorial_spray_hood`: click on `ethanol_bottle` produced no state change after 3000 ms) |
 
 ## Coverage gaps
 

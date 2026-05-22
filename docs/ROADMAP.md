@@ -81,7 +81,7 @@ Acceptance criteria:
 
 Surfaced cleanups that would land alongside:
 
-- [validation/manual/protocol_manual.py](../validation/manual/protocol_manual.py) already enforces
+- [protocol_manual.py](../validation/manual/protocol_manual.py) already enforces
   "draw" for pipette loading + "aspirate and remove" for vacuum-to-waste;
   glossary ratifies the convention.
 - Repo-wide pass replacing remaining authored "aspirate" prose in
@@ -127,13 +127,13 @@ Archived plan: [archive/scene_migration_completion_2026-05-09.md](archive/scene_
 - Could serve as an intro tutorial before the main cell culture protocol
 
 - **Split `src/layout_engine.ts` (857 LOC) into 2 modules: `layout_assets.ts` + slimmed `layout_engine.ts`.** Coherent at
-current size; revisit if it crosses 1000 LOC. Some of this logic moves into `src/scenes/shared/scene_layout.ts` during this
-plan; the residual layout engine stays where it is.
+  current size; revisit if it crosses 1000 LOC. Some of this logic moves into `src/scenes/shared/scene_layout.ts` during this
+  plan; the residual layout engine stays where it is.
 - **Add `tests/types/` with `Expect<Equal<...>>` scaffold + 2 type-test files for `ProtocolStep` and `CompletionPath`.** Wire
-into all three build scripts. Would have caught the K2 drift at compile time.
+  into all three build scripts. Would have caught the K2 drift at compile time.
 - **Capability contract type tests.** When the type-test suite lands, add a third file that asserts every capability module
-conforms to the `SceneCapability` interface and every YAML scene config conforms to the `SceneConfig` schema. This is the
-type-level safety net for the new system.
+  conforms to the `SceneCapability` interface and every YAML scene config conforms to the `SceneConfig` schema. This is the
+  type-level safety net for the new system.
 
 ## Capability-based scene architecture (added 2026-05-08)
 

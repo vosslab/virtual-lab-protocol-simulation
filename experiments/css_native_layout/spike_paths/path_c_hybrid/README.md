@@ -162,7 +162,7 @@ the following appear.
 
 If any threshold is hit during the spike: STOP. Path C has become a layout
 engine. Bail and document, per the NEW1 packet's failure conditions at
-[../../../../docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md](../../../../docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md)
+[new1_well_plate_96_zoom_spike_implementation_packet.md](../../../../docs/archive/css_native_layout/new1_well_plate_96_zoom_spike_implementation_packet.md)
 section "Failure conditions: CSS-native is recreating the old engine."
 
 ## Recommendation

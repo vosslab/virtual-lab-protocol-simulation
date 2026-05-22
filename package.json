@@ -1,21 +1,27 @@
 {
 	"name": "virtual-lab-protocol-simulation",
 	"type": "module",
+	"private": true,
 	"scripts": {
+		"setup": "./devel/setup_typescript.sh",
+		"setup:playwright": "./devel/setup_playwright.sh",
 		"build": "bash build_github_pages.sh",
 		"serve": "bash run_web_server.sh",
 		"check": "bash check_codebase.sh",
 		"clean": "bash dist_clean.sh",
 		"typecheck": "npx tsc --noEmit -p tsconfig.json",
 		"lint": "npx eslint src/ tests/",
-		"format:check": "npx prettier --check .",
+		"format:check": "npx prettier --check \"**/*.{ts,tsx,mts,cts,js,mjs,cjs}\"",
+		"format:write": "npx prettier --write \"**/*.{ts,tsx,mts,cts,js,mjs,cjs}\"",
 		"test:node": "node --test tests/test_*.mjs",
 		"browser:smoke": "PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright node tests/playwright/test_game_ui.mjs",
-		"ui:review": "node tests/playwright/ui_review.mjs"
+		"ui:review": "node tests/playwright/ui_review.mjs",
+		"pdf": "node tools/html_to_pdf.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": ">=10.0.1",
 		"@playwright/test": ">=1.60.0",
+		"@types/node": "^25.9.1",
 		"esbuild": ">=0.28.0",
 		"eslint": ">=10.4.0",
 		"globals": ">=17.6.0",

@@ -25,15 +25,15 @@ The angry professor character is rendered as a fixed-position overlay in the top
 
 Bench items are scaled to approximate real-world equipment sizes relative to each other.
 
-| Equipment | widthScale | Rationale |
-| --- | --- | --- |
-| centrifuge | 0.95 | Largest bench item; base unit for scaling |
-| water_bath | 0.90 | Slightly smaller than centrifuge |
-| incubator | 0.88 | Compact enclosure, smaller footprint than bath |
-| plate_reader | 0.86 | Similar size to incubator, slightly smaller |
-| cell_counter | 0.85 | Medium-sized countertop instrument |
-| microscope | 0.82 | Smaller optical instrument |
-| vortex | 0.75 | Smallest bench item; compact mixer |
+| Equipment    | widthScale | Rationale                                      |
+| ------------ | ---------- | ---------------------------------------------- |
+| centrifuge   | 0.95       | Largest bench item; base unit for scaling      |
+| water_bath   | 0.90       | Slightly smaller than centrifuge               |
+| incubator    | 0.88       | Compact enclosure, smaller footprint than bath |
+| plate_reader | 0.86       | Similar size to incubator, slightly smaller    |
+| cell_counter | 0.85       | Medium-sized countertop instrument             |
+| microscope   | 0.82       | Smaller optical instrument                     |
+| vortex       | 0.75       | Smallest bench item; compact mixer             |
 
 Scaling is tuned for visual coherence and tab-stop alignment across the mid_bench zone. The ratios preserve the relative ordering (centrifuge > water_bath > ... > vortex) while keeping all items clickable and labels legible.
 
@@ -111,7 +111,7 @@ The test logs pass/fail status for each viewport and assertion. Final exit code 
 
 ## References
 
-- [src/scenes/bench/bench.yaml](../../src/scenes/bench/bench.yaml) - current bench scene layout declaration
-- [src/asset_specs.ts](../../src/asset_specs.ts) - equipment widthScale and visual metrics
-- [src/professor_overlay.ts](../../src/professor_overlay.ts) - coach card rendering and mood
+- [bench.yaml](../../src/scenes/bench/bench.yaml) - current bench scene layout declaration
+- `asset_specs.ts` - equipment widthScale and visual metrics
+- `professor_overlay.ts` - coach card rendering and mood
 - Retired `devel/test_layout_metrics.mjs` - automated layout test referenced by this archived note

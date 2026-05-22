@@ -1,27 +1,35 @@
 # Lane R Rerender Probe Summary (2026-05-20)
 
 ## Objective
+
 Prove that renderScene re-executes after a state change (protocol step completion via correct click) WITHOUT editing the validator, using the smallest dev_smoke target adjustment.
 
 ## Path Chosen
+
 PATH (b) + architectural fixes in allowed files.
 
 ## Changes Made
 
 ### 1. Protocol Target Adjusted (PATH b)
+
 **File**: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
+
 - Changed target from `well_plate_96.E7` (sub-well) to `well_plate_96.row_E` (parent group)
 - Rationale: Sub-wells in a grid require checking if the emitted ID is a member of a group. Row E is a defined group in the object structure.
 - Rebuild: `INCLUDE_DEV_SMOKE=true PYTHONPATH=... python3 pipeline/build_new_protocol_data.py`
 
 ### 2. Pointer Events Fixed (Architectural)
+
 **File**: `src/scene_runtime/chrome/scene_frame.ts`
+
 - Changed `sceneViewport.style.pointerEvents` from 'none' to 'auto'
 - Added CSS rule override: `.scene-viewport svg { pointer-events: auto !important; }`
 - Rationale: The original architecture had both sceneViewport AND SVG with pointer-events: none, causing clicks to pass through all layers to the background. With pointer-events: auto on both, the SVG can receive clicks directly.
 
 ### 3. Protocol Data Builder Fix
+
 **File**: `pipeline/build_new_protocol_data.py` (documentation only, no code change)
+
 - Discovered: When using `source source_me.sh`, environment variables are cleared by ~/.bashrc
 - Solution: Run with explicit PYTHONPATH instead: `INCLUDE_DEV_SMOKE=true PYTHONPATH=/path python3 pipeline/build_new_protocol_data.py`
 - Protocol data now includes well_plate_96_zoom_check as expected (32 protocols total)
@@ -29,6 +37,7 @@ PATH (b) + architectural fixes in allowed files.
 ## Findings
 
 ### What Works
+
 - OK SVG now receives pointer events (CSS override effective)
 - OK elementFromPoint shows SVG as the target element (not background DIV)
 - OK SVG element is clickable
@@ -37,6 +46,7 @@ PATH (b) + architectural fixes in allowed files.
 - OK No DOM leaks detected
 
 ### What Doesn't Work (Blocker)
+
 - FAIL Click events dispatched to SVG are not being received by the attachClickDispatch listener in entry.ts
 - FAIL When clicks are sent (via Playwright mouse.click or programmatic dispatchEvent), no dispatcher logs appear
 - FAIL The state change never happens, so renderScene never re-executes
@@ -74,14 +84,17 @@ To proceed with rerender proof without modifying forbidden files:
 ## Files Modified
 
 ### Source Code
+
 - `src/scene_runtime/chrome/scene_frame.ts`: Added CSS override, changed pointer-events to auto (REVERTED by manager after lane closure; see CHANGELOG 2026-05-20 Fixes and Maintenance)
 - `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`: Changed target to row_E
 - `pipeline/build_new_protocol_data.py`: Documentation only (removed debug logging)
 
 ### Test Code
+
 - `tests/playwright/spike_built_app_rerender.mjs`: Created full rerender proof test with extensive debugging
 
 ### Generated (Auto-rebuilt)
+
 - `generated/protocol_data.ts`: Includes well_plate_96_zoom_check protocol
 - `dist/runtime.bundle.js`: Updated with scene_frame.ts changes
 

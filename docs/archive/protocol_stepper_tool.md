@@ -82,16 +82,16 @@ Durable component names used in code (stage / module / component, never mileston
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-A | `tools/stepper/loader.py`, `tools/stepper/findings.py` | 1 |
-| M1 / WS-B | `tools/stepper/flow.py` | 1 |
-| M1 / WS-C | `tools/stepper/state.py`, `tools/stepper/scene_ops.py` (incl. capability gate) | 1 |
-| M1 / WS-D | `tools/protocol_stepper.py`, `tools/stepper/runner.py` | 1 |
-| M1 / WS-E | `tests/fixtures/stepper/`, `tests/test_protocol_stepper_*.py` | 1-2 |
-| M2 / WS-F | `tools/stepper/cross_mini.py`, sequence-runner traversal in `runner.py` | 1 |
-| M2 / WS-G | live-tree pytest gate, `tests/fixtures/stepper/cross_mini/` | 1 |
-| M3 / WS-H | `docs/CHANGELOG.md`, `docs/USAGE.md` | 1 |
+| Milestone / Workstream | Component                                                                      | Expected patches |
+| ---------------------- | ------------------------------------------------------------------------------ | ---------------- |
+| M1 / WS-A              | `tools/stepper/loader.py`, `tools/stepper/findings.py`                         | 1                |
+| M1 / WS-B              | `tools/stepper/flow.py`                                                        | 1                |
+| M1 / WS-C              | `tools/stepper/state.py`, `tools/stepper/scene_ops.py` (incl. capability gate) | 1                |
+| M1 / WS-D              | `tools/protocol_stepper.py`, `tools/stepper/runner.py`                         | 1                |
+| M1 / WS-E              | `tests/fixtures/stepper/`, `tests/test_protocol_stepper_*.py`                  | 1-2              |
+| M2 / WS-F              | `tools/stepper/cross_mini.py`, sequence-runner traversal in `runner.py`        | 1                |
+| M2 / WS-G              | live-tree pytest gate, `tests/fixtures/stepper/cross_mini/`                    | 1                |
+| M3 / WS-H              | `docs/CHANGELOG.md`, `docs/USAGE.md`                                           | 1                |
 
 ## Resolved decisions
 
@@ -107,8 +107,8 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - **Sentinel materials closed at `empty` and `mixed`.** Per `docs/specs/MATERIAL_CONVENTION.md` line 44. `waste`, `air`, and any other named materials are real materials declared in `materials.yaml` and resolved normally. No stepper-side exemption list. If a third sentinel is ever needed, that is a `MATERIAL_CONVENTION.md` amendment.
 - **CLI flag set.** Per `docs/PYTHON_STYLE.md` argparse minimalism: `--protocol <name>` (frequently changed when debugging one protocol) and `--verbose` (frequently changed when investigating findings). No `--strict`: ERROR drives exit 1, WARNING is advisory only.
 - **CHANGELOG cadence.** Per-milestone entries (one entry per milestone under the correct date heading). No final rollup. Each milestone exit criterion lists the CHANGELOG update as an obvious follow-on.
-- **Validator/stepper boundary on "unknown target".** The validator catches static "target not declared in any scene reachable from this protocol." The stepper catches "target not in the *active* scene at *this* step" - a runtime-context check the static validator cannot make without simulating `SceneChange`. Documented; not duplicative.
-- **Conservation rule deferred.** PRE-V dry-run found within-response volume balance incompatible with current split-response transfer pattern. M1 ships without WP-C3. Spec RFC in [docs/active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md) resolves scope (per-response vs per-step), aspiration-to-air semantics, and disposal sentinel before any stepper conservation rule lands.
+- **Validator/stepper boundary on "unknown target".** The validator catches static "target not declared in any scene reachable from this protocol." The stepper catches "target not in the _active_ scene at _this_ step" - a runtime-context check the static validator cannot make without simulating `SceneChange`. Documented; not duplicative.
+- **Conservation rule deferred.** PRE-V dry-run found within-response volume balance incompatible with current split-response transfer pattern. M1 ships without WP-C3. Spec RFC in `material_volume_conservation_spec.md` resolves scope (per-response vs per-step), aspiration-to-air semantics, and disposal sentinel before any stepper conservation rule lands.
 
 ## Milestone plan
 
@@ -179,7 +179,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 - Owner: coder
 - Interfaces:
   - Needs: loader and findings from WS-A.
-  - Provides: `tools/stepper/state.py:StateMap` keyed by `placement_name` (global instance name per Resolved decisions); per-field mutation gate that uses `ContentDatabase.resolve_state_field()` to confirm the field exists and the value matches the declared type; capability gate (A2) ensuring material-* writes require `material_container` capability on target; `tools/stepper/scene_ops.py` handlers for `CursorAttach`, `ObjectStateChange`, `SceneChange`, `TimedWait` with ordered top-to-bottom application within a response; unknown `scene_operation.type` emits ERROR. Detection of placement-name collision across scenes is in scope here. Material conservation (WP-C3) is DEFERRED; see Resolved decisions and [../active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md).
+  - Provides: `tools/stepper/state.py:StateMap` keyed by `placement_name` (global instance name per Resolved decisions); per-field mutation gate that uses `ContentDatabase.resolve_state_field()` to confirm the field exists and the value matches the declared type; capability gate (A2) ensuring material-\* writes require `material_container` capability on target; `tools/stepper/scene_ops.py` handlers for `CursorAttach`, `ObjectStateChange`, `SceneChange`, `TimedWait` with ordered top-to-bottom application within a response; unknown `scene_operation.type` emits ERROR. Detection of placement-name collision across scenes is in scope here. Material conservation (WP-C3) is DEFERRED; see Resolved decisions and `material_volume_conservation_spec.md`.
 - Expected patches: 1.
 
 ### Workstream WS-D: CLI and orchestration
@@ -303,7 +303,7 @@ The following decisions were pinned during plan drafting; doers do not re-decide
 
 ### Work package WP-C3: material conservation (DEFERRED to follow-on RFC)
 
-**DEFERRED.** Pre-M1 dry-run (PRE-V, 2026-05-16) found every authored mini-protocol splits source-decrement and sink-increment across separate `interaction.response` blocks, so the within-response physical-volume balance rule false-fires on every liquid transfer. The rule scope (per-response vs per-step), the aspiration-to-air case, and the disposal sentinel are unresolved. Owner: tracked in [docs/active_plans/material_volume_conservation_spec.md](../active_plans/material_volume_conservation_spec.md). Stepper M1 ships without conservation; capability gate (WP-C1 A2) is unaffected and remains in scope.
+**DEFERRED.** Pre-M1 dry-run (PRE-V, 2026-05-16) found every authored mini-protocol splits source-decrement and sink-increment across separate `interaction.response` blocks, so the within-response physical-volume balance rule false-fires on every liquid transfer. The rule scope (per-response vs per-step), the aspiration-to-air case, and the disposal sentinel are unresolved. Owner: tracked in `material_volume_conservation_spec.md`. Stepper M1 ships without conservation; capability gate (WP-C1 A2) is unaffected and remains in scope.
 
 ### Work package WP-D1: CLI + runner orchestration
 
@@ -455,14 +455,14 @@ PASS: 10 leaves, 0 findings
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Stepper rule disagrees with spec | medium | A new rule rejects shipped content the spec permits | architect | When in doubt, raise as an open question and emit WARNING (not ERROR) until the spec is amended. **Example in action (M1):** active-scene checks demoted to WARNING (2026-05-16) when live-tree run found 234 findings on intended-good shipped content. Spawned scene-adapter design plan to resolve spec gap. |
-| Generalized cross-mini rule too strict | medium | Live-tree gate fails on a shipped runner | coder (WS-F) | Rule narrowly targets unresolved material names; sentinels (`empty`, `mixed`) exempt; widen exemption list only via `MATERIAL_CONVENTION.md` amendment, never inline. |
-| Loader drift from `ContentDatabase` | low | Validator changes the database shape | coder (WS-A) | M1 entry criterion verifies the API surface; stepper imports `ContentDatabase` directly so renames surface immediately at import. |
-| Placement-name collisions discovered too late | low | M1 entry-criterion audit finds collisions after WS-C work begins | coder (WS-C) | Entry criterion runs the uniqueness check before WS-C; if collisions surface mid-WS-C anyway (e.g. via a fixture), escalate to architect to introduce an explicit `object_instance_name` field rather than weakening the key. |
-| Fixtures grow into a parallel content tree | low | Fixture directory acquires shared helpers | tester (WS-E, WS-G) | Each fixture is the minimum YAML for one error class; shared helpers live in `tools/stepper/`, not `tests/fixtures/`. |
-| Validator and stepper overlap | low | A future validator extension catches what a stepper rule already catches | maintainer | Retire the stepper rule and add a fixture proving the validator now owns it; do not run two rules for the same finding. |
+| Risk                                          | Impact | Trigger                                                                  | Owner               | Mitigation                                                                                                                                                                                                                                                                                                      |
+| --------------------------------------------- | ------ | ------------------------------------------------------------------------ | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stepper rule disagrees with spec              | medium | A new rule rejects shipped content the spec permits                      | architect           | When in doubt, raise as an open question and emit WARNING (not ERROR) until the spec is amended. **Example in action (M1):** active-scene checks demoted to WARNING (2026-05-16) when live-tree run found 234 findings on intended-good shipped content. Spawned scene-adapter design plan to resolve spec gap. |
+| Generalized cross-mini rule too strict        | medium | Live-tree gate fails on a shipped runner                                 | coder (WS-F)        | Rule narrowly targets unresolved material names; sentinels (`empty`, `mixed`) exempt; widen exemption list only via `MATERIAL_CONVENTION.md` amendment, never inline.                                                                                                                                           |
+| Loader drift from `ContentDatabase`           | low    | Validator changes the database shape                                     | coder (WS-A)        | M1 entry criterion verifies the API surface; stepper imports `ContentDatabase` directly so renames surface immediately at import.                                                                                                                                                                               |
+| Placement-name collisions discovered too late | low    | M1 entry-criterion audit finds collisions after WS-C work begins         | coder (WS-C)        | Entry criterion runs the uniqueness check before WS-C; if collisions surface mid-WS-C anyway (e.g. via a fixture), escalate to architect to introduce an explicit `object_instance_name` field rather than weakening the key.                                                                                   |
+| Fixtures grow into a parallel content tree    | low    | Fixture directory acquires shared helpers                                | tester (WS-E, WS-G) | Each fixture is the minimum YAML for one error class; shared helpers live in `tools/stepper/`, not `tests/fixtures/`.                                                                                                                                                                                           |
+| Validator and stepper overlap                 | low    | A future validator extension catches what a stepper rule already catches | maintainer          | Retire the stepper rule and add a fixture proving the validator now owns it; do not run two rules for the same finding.                                                                                                                                                                                         |
 
 ## Rollout and release checklist
 
@@ -496,10 +496,10 @@ Patch counts and cadence follow `references/CAPACITY_AND_SIZING.md`: target 1-2 
 
 These side tasks were identified during stepper plan drafting. Each is out of scope for `tools/protocol_stepper.py` but must not be lost on stepper ship. The planner must draft a stub plan for each under `docs/active_plans/` immediately after this plan is approved, so they exist as durable, trackable artifacts and not just bullets in a paragraph that ages off.
 
-- **[`docs/archive/validator_display_color_check.md`](validator_display_color_check.md)** (SPAWNED 2026-05-16). Add an ERROR-level static cross-file consistency check to `tools/validate_content_yaml.py`: same `material_name` declared with different `display_color` across any two protocols' `materials.yaml` files -> ERROR. Owner: coder. Anchor: stepper Non-goals + Resolved decisions; spawned per user instruction during stepper v3 review.
-- **[`docs/active_plans/step_kind_spec_rfc.md`](../active_plans/step_kind_spec_rfc.md)** (SPAWNED 2026-05-16). Spec RFC to add a `step_kind: incubation|treatment|centrifugation|wait` enum on steps so the stepper can validate `TimedWait` host steps. Without this, the WP-C2 deferred check never lands. Owner: architect.
-- **[`docs/active_plans/material_volume_conservation_spec.md`](../active_plans/material_volume_conservation_spec.md)** (SPAWNED 2026-05-16). Spec amendment to `docs/specs/MATERIAL_CONVENTION.md` adding an explicit "Volume conservation" section that ratifies a physical-volume balance rule. PRE-V dry-run found within-response balance incompatible with current authored protocols; RFC must resolve rule scope and disposal semantics before a stepper conservation rule lands. Owner: architect.
-- **[`docs/archive/scene_adapter_resolution_design.md`](scene_adapter_resolution_design.md)** (SPAWNED 2026-05-16). Design plan to ratify the canonical scene-adapter resolution algorithm (active-scene only, full-protocol-scenes registry, explicit YAML adapter, or hybrid). M1 demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING due to tight active-scene model finding 234 warnings on shipped content; this plan resolves the spec gap and spawns a follow-on stepper plan to re-enable checks at ERROR. Owner: architect.
+- **[validator_display_color_check.md](validator_display_color_check.md)** (SPAWNED 2026-05-16). Add an ERROR-level static cross-file consistency check to `tools/validate_content_yaml.py`: same `material_name` declared with different `display_color` across any two protocols' `materials.yaml` files -> ERROR. Owner: coder. Anchor: stepper Non-goals + Resolved decisions; spawned per user instruction during stepper v3 review.
+- **`step_kind_spec_rfc.md`** (SPAWNED 2026-05-16). Spec RFC to add a `step_kind: incubation|treatment|centrifugation|wait` enum on steps so the stepper can validate `TimedWait` host steps. Without this, the WP-C2 deferred check never lands. Owner: architect.
+- **`material_volume_conservation_spec.md`** (SPAWNED 2026-05-16). Spec amendment to `docs/specs/MATERIAL_CONVENTION.md` adding an explicit "Volume conservation" section that ratifies a physical-volume balance rule. PRE-V dry-run found within-response balance incompatible with current authored protocols; RFC must resolve rule scope and disposal semantics before a stepper conservation rule lands. Owner: architect.
+- **[scene_adapter_resolution_design.md](scene_adapter_resolution_design.md)** (SPAWNED 2026-05-16). Design plan to ratify the canonical scene-adapter resolution algorithm (active-scene only, full-protocol-scenes registry, explicit YAML adapter, or hybrid). M1 demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING due to tight active-scene model finding 234 warnings on shipped content; this plan resolves the spec gap and spawns a follow-on stepper plan to re-enable checks at ERROR. Owner: architect.
 
 ## Open questions and decisions needed
 

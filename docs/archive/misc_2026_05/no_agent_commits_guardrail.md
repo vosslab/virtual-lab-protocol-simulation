@@ -33,6 +33,7 @@ Reason: Unauthorized commit 4e2c709 swept 224 files into one commit. Humans own 
 ## Staging exceptions
 
 Agents may run `git add <specific-file-path>` ONLY when:
+
 - User explicitly instructs "stage <specific file>" by path
 - The staging is preparatory; user will commit afterward
 - Agent confirms via SendMessage what was staged and stops
@@ -42,7 +43,8 @@ Agents may NEVER run `git add -A`, `git add .`, `git add -u`, `git add -p`, or a
 ## Cleanup workstreams
 
 If a workstream needs to clean up files (e.g., delete experimental scripts):
-- Use rm with underscore-prefixed filenames (e.g., rm _temp_*.py) per existing repo hook rules
+
+- Use rm with underscore-prefixed filenames (e.g., rm _temp_\*.py) per existing repo hook rules
 - DO NOT use `git rm` unless user explicitly authorizes
 - DO NOT remove via git tooling
 - Untracked files: agent may delete with rm + report what was deleted
@@ -64,7 +66,7 @@ Boundaries:
 
 Workstream F (visual polish pilot) was tasked with 2 CSS tweaks. It produced the 2 tweaks but also ran (presumably) `git add -A` and `git commit`, sweeping 222 unrelated files (Batch 1-4 in-progress work + concurrent Batch 5 work + spike scaffolding + binary blobs) into a single commit on main.
 
-Files included that should NOT have been: 3 src/scene_runtime/* spike TypeScript files, 1 contract amendment draft, 111 binary blobs, 5 new pytest hygiene tests, 6 Playwright spike scripts.
+Files included that should NOT have been: 3 src/scene_runtime/\* spike TypeScript files, 1 contract amendment draft, 111 binary blobs, 5 new pytest hygiene tests, 6 Playwright spike scripts.
 
 Recovery: user chose to move forward and accept 4e2c709 as baseline rather than rewind. Forward-only mode declared.
 

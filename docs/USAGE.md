@@ -12,7 +12,7 @@ bash export_single_file.sh
 open dist-single/game.html
 ```
 
-The build compiles all TypeScript files in [src/](../src/) into a single
+The build compiles all TypeScript files in `src` into a single
 self-contained HTML file (a generated artifact not tracked in git). No web
 server is needed to play.
 
@@ -59,18 +59,18 @@ technique errors occur.
 
 Performance is rated on four categories:
 
-| Category | Tracks |
-| --- | --- |
-| Order | Steps completed in correct sequence |
+| Category    | Tracks                                     |
+| ----------- | ------------------------------------------ |
+| Order       | Steps completed in correct sequence        |
 | Cleanliness | Contamination and sterile technique errors |
-| Waste | Excess media usage |
-| Timing | Speed to completion |
+| Waste       | Excess media usage                         |
+| Timing      | Speed to completion                        |
 
 A 1-3 star rating is shown on the results screen.
 
 ## Inputs and outputs
 
-- **Source:** TypeScript modules in [src/](../src/) and HTML/CSS templates
+- **Source:** TypeScript modules in `src` and HTML/CSS templates
 - **Build outputs:** `dist/` for the served build and
   `dist-single/game.html` for the portable single-file export
 - **Test outputs:** `report_*.txt`, `test-results/walker/`, and other
@@ -138,22 +138,22 @@ All validation CLIs (aggregate `validation/validate.py`, plus per-stage
 `python3 -m validation.stepper`, and `python3 validation/manual/protocol_manual.py --validate`)
 accept this flag set:
 
-| Long | Short | Type | Default | Notes |
-| --- | --- | --- | --- | --- |
-| `--focus` | `-f` | flag | off | Run on protocols/objects/scenes touched by `git diff HEAD --cached` plus transitive dependents. Mutually exclusive with `--protocol`, `--object`, `--scene`. |
-| `--protocol` | `-p` | name(s) | (all) | One or more protocol names to validate. |
-| `--object` | `-o` | name(s) | (all) | One or more object names. Alias: `--asset` / `-A`. |
-| `--scene` | `-S` | name(s) | (all) | One or more scene names. |
-| `--list` | `-l` | flag | off | List selectable entities for the tool and exit. |
-| `--interactive` | `-i` | flag | off | Numbered picker menu (no effect if stdin not a tty). |
-| `--quiet` | `-q` | flag | off | Suppress stage rows; findings + summary only. Mutually exclusive with `--verbose`. |
-| `--verbose` | `-v` | flag | off | Per-item state + inline warnings. Mutually exclusive with `--quiet`. |
-| `--errors-only` | `-e` | flag | off | Suppress warnings from output (exit code unchanged). |
-| `--strict` | `-s` | flag | off | Exit non-zero on warning in addition to error. |
-| `--no-color` | -- | flag | off | Suppress color output. Also honors `NO_COLOR` env var. |
-| `--json` | `-j` | flag | off | Emit unified JSON document. |
-| `--ndjson` | `-J` | flag | off | Stream one finding per line + final summary record. |
-| `--only` | `-O` | stage(s) | (all) | Stage filter: `yaml`, `svg`, `stepper`, `structure`, `manual` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. `manual` runs `validation/manual/protocol_manual.py --validate` (lint pass over rendered protocol manuals). |
+| Long            | Short | Type     | Default | Notes                                                                                                                                                                                                                                             |
+| --------------- | ----- | -------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--focus`       | `-f`  | flag     | off     | Run on protocols/objects/scenes touched by `git diff HEAD --cached` plus transitive dependents. Mutually exclusive with `--protocol`, `--object`, `--scene`.                                                                                      |
+| `--protocol`    | `-p`  | name(s)  | (all)   | One or more protocol names to validate.                                                                                                                                                                                                           |
+| `--object`      | `-o`  | name(s)  | (all)   | One or more object names. Alias: `--asset` / `-A`.                                                                                                                                                                                                |
+| `--scene`       | `-S`  | name(s)  | (all)   | One or more scene names.                                                                                                                                                                                                                          |
+| `--list`        | `-l`  | flag     | off     | List selectable entities for the tool and exit.                                                                                                                                                                                                   |
+| `--interactive` | `-i`  | flag     | off     | Numbered picker menu (no effect if stdin not a tty).                                                                                                                                                                                              |
+| `--quiet`       | `-q`  | flag     | off     | Suppress stage rows; findings + summary only. Mutually exclusive with `--verbose`.                                                                                                                                                                |
+| `--verbose`     | `-v`  | flag     | off     | Per-item state + inline warnings. Mutually exclusive with `--quiet`.                                                                                                                                                                              |
+| `--errors-only` | `-e`  | flag     | off     | Suppress warnings from output (exit code unchanged).                                                                                                                                                                                              |
+| `--strict`      | `-s`  | flag     | off     | Exit non-zero on warning in addition to error.                                                                                                                                                                                                    |
+| `--no-color`    | --    | flag     | off     | Suppress color output. Also honors `NO_COLOR` env var.                                                                                                                                                                                            |
+| `--json`        | `-j`  | flag     | off     | Emit unified JSON document.                                                                                                                                                                                                                       |
+| `--ndjson`      | `-J`  | flag     | off     | Stream one finding per line + final summary record.                                                                                                                                                                                               |
+| `--only`        | `-O`  | stage(s) | (all)   | Stage filter: `yaml`, `svg`, `stepper`, `structure`, `manual` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. `manual` runs `validation/manual/protocol_manual.py --validate` (lint pass over rendered protocol manuals). |
 
 Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` for `--asset`.
 
@@ -161,13 +161,13 @@ Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` fo
 
 All validation tools enforce a consistent verbosity model:
 
-| Mode | Output | Use case |
-| --- | --- | --- |
-| `-q` / `--quiet` | Final pass/fail only (one line) | CI, automated reporting |
-| (default) | Overview dashboard with counts and top offenders | Human feedback, local development |
-| `-v` / `--verbose` | Diagnostic summary (grouped findings, top codes, per-item counts) | Investigation and debugging |
-| `--json` / `-j` | Full structured JSON document | Agent parsing, programmatic analysis |
-| `--ndjson` / `-J` | Newline-delimited JSON (one finding per line) | Stream processing, large datasets |
+| Mode               | Output                                                            | Use case                             |
+| ------------------ | ----------------------------------------------------------------- | ------------------------------------ |
+| `-q` / `--quiet`   | Final pass/fail only (one line)                                   | CI, automated reporting              |
+| (default)          | Overview dashboard with counts and top offenders                  | Human feedback, local development    |
+| `-v` / `--verbose` | Diagnostic summary (grouped findings, top codes, per-item counts) | Investigation and debugging          |
+| `--json` / `-j`    | Full structured JSON document                                     | Agent parsing, programmatic analysis |
+| `--ndjson` / `-J`  | Newline-delimited JSON (one finding per line)                     | Stream processing, large datasets    |
 
 Key principle: raw per-step, per-file, or per-asset detail is available only via `--json` or `--ndjson`. The text modes (`-q`, default, `-v`) stay bounded and human-readable. All modes preserve the same exit code semantics (0 = clean, 1 = errors).
 
@@ -290,10 +290,10 @@ The stepper also enforces flow-shape invariants:
 Two related checks are deferred to follow-on RFCs and are not enforced
 by the stepper today:
 
-- Material volume conservation across a step's scene operations. See
-  [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md).
-- `step_kind` semantic gating for `TimedWait` and related primitives.
-  See [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md).
+- Material volume conservation across a step's scene operations
+  (see `material_volume_conservation_spec.md`, archived).
+- `step_kind` semantic gating for `TimedWait` and related primitives
+  (see `step_kind_spec_rfc.md`, archived).
 
 ### JSON schema reference
 
@@ -415,7 +415,7 @@ source source_me.sh && python3 pipeline/generate_svg_globals.py
 The diff classifies any path whose fill or stroke is not shared across all
 three variants as part of the liquid layer, assigns `liquid_<sha8(d)>`
 ids, and emits per-id opacity from luminance to preserve Servier shading.
-See [docs/CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md#dynamic-svg-recolor-pipeline)
+See [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md#dynamic-svg-recolor-pipeline)
 for the full pipeline.
 
 ## Known gaps

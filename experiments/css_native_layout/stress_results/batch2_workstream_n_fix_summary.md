@@ -9,20 +9,24 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 ## Changes Applied
 
 ### File 1: experiments/css_native_layout/styles/bench.css
+
 - `.scene--bench .footprint--small-tool`: `max-height: 90px` -> `200px`
 - `.scene--bench .footprint--handheld`: `max-height: 160px` -> `260px`
 
 ### File 2: experiments/css_native_layout/styles/hood.css
+
 - Added scene-specific rules (previously had generic rules without max-height)
 - `.scene--hood .footprint--small-tool`: new rule with `max-height: 200px`, `max-width: 80px`
 - `.scene--hood .footprint--handheld`: new rule with `max-height: 260px`, `max-width: 130px`
 
 ### File 3: experiments/css_native_layout/styles/instrument.css
+
 - Added scene-specific rules (previously had generic rules without max-height)
 - `.scene--instrument .footprint--small-tool`: new rule with `max-height: 200px`, `max-width: 80px`
 - `.scene--instrument .footprint--handheld`: new rule with `max-height: 260px`, `max-width: 130px`
 
 ### Boundaries Maintained
+
 - No changes to crowded-density modifiers (scale proportionally)
 - No changes to min-height values
 - No changes to max-width values
@@ -36,6 +40,7 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 ## Subset Gate: 20-Scene Verification
 
 **Baseline (precheck_batch2_subset_baseline.json):**
+
 - CBP: 186
 - AD_HF: 171
 - R_OVF: 2
@@ -43,6 +48,7 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 - **Total: 359**
 
 **After Fix (precheck_batch2_n_subset):**
+
 - CBP: 0 (-186, -100%)
 - AD_HF: 0 (-171, -100%)
 - R_OVF: 2 (no change)
@@ -54,6 +60,7 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 ## Full Test: 110-Scene Verification
 
 **Baseline (batch2_sweep_summary.json):**
+
 - CBP: 631
 - AD_HF: 570
 - R_OVF: 2
@@ -61,6 +68,7 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 - **Total: 1203**
 
 **After Fix (precheck_batch2_n):**
+
 - CBP: 0 (-631, -100%)
 - AD_HF: 0 (-570, -100%)
 - R_OVF: 2 (no change)
@@ -68,9 +76,11 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 - **Total: 2 (-1201, -99.8%)**
 
 ### Per-Scene Regression Count
+
 - 0 scenes lost >5pt (well below regression budget of 6)
 
 ### Worst 5 Scenes (Current, by total hard fails)
+
 1. stress_many_bottles_scene_001: 1 (1 R_OVF)
 2. stress_many_bottles_scene_002: 1 (1 R_OVF)
 3. gold_cell_counter_station: 0
@@ -78,6 +88,7 @@ Raised `max-height` values for `.footprint--small-tool` and `.footprint--handhel
 5. gold_electrophoresis_full_setup: 0
 
 ### Best 5 Scenes (Current)
+
 - stress_zoom_detail_006 through stress_zoom_detail_010: all 0 total hard fails
 
 ## WINNER Gate Checklist

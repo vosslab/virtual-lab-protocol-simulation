@@ -1,10 +1,10 @@
 # Primary specification
 
-This document is the technical specification for the virtual lab protocol games repo. [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) defines the hard invariants. [docs/PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) describes the design philosophy. [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) defines the Author YAML vocabulary lock that closes authoring surfaces. This specification defines the schema and runtime expectations that implement those invariants.
+This document is the technical specification for the virtual lab protocol games repo. [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) defines the hard invariants. [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) describes the design philosophy. [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) defines the Author YAML vocabulary lock that closes authoring surfaces. This specification defines the schema and runtime expectations that implement those invariants.
 
 ## Protocol types
 
-Every protocol declares a `protocol_type` field. The active enum values are `mini_protocol`, `sequence_runner`, and `dev_smoke`. Definitions for each kind, the protocol package surface, and the structural use of the word "protocol" live in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds).
+Every protocol declares a `protocol_type` field. The active enum values are `mini_protocol`, `sequence_runner`, and `dev_smoke`. Definitions for each kind, the protocol package surface, and the structural use of the word "protocol" live in [PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md#protocol-kinds).
 
 ## Protocol YAML top-level fields
 
@@ -150,4 +150,3 @@ Rules:
 Trigger for revisiting this rule: the first time a downstream consumer persists built artifacts across runs (TS runtime snapshot, student-progress store keyed by protocol shape, CDN-served bundle). At that point, introduce exactly one repo-wide `SCHEMA_VERSION` constant; never per-surface counters. Until that trigger fires, the repo `VERSION` is the schema version.
 
 This rule may be promoted to `docs/PRIMARY_CONTRACT.md` once a persistent consumer exists. While it lives here, it is still binding: a patch that adds per-surface schema versioning or version tokens to filenames is rejected at review.
-

@@ -37,15 +37,18 @@ source source_me.sh && pytest tests/ -q
 Currently: 1201 passing, 2 pre-existing failures (TypeScript setup unrelated to incident).
 
 If any of the 5 risky files are modified, additionally:
+
 ```bash
 npx tsc --noEmit
 npx eslint src/
 ```
 
 For visual verification of src/style.css no-crop concern:
+
 ```bash
 node experiments/css_native_layout/precheck.mjs
 ```
+
 Then visually inspect well_plate_96_zoom rendered output.
 
 ## What agents should avoid
@@ -59,6 +62,7 @@ NO modifications to the 5 risky files without explicit user approval
 NO new contract surface additions (PRIMARY_CONTRACT items) without user approval
 
 Agents MAY:
+
 - Stage specific files when explicitly instructed by user
 - Run pytest / canonical scorecard / precheck
 - Edit bounded experiment files per existing workstream plans
@@ -69,6 +73,7 @@ Agents MAY:
 ## Future commits
 
 Humans own all commits. When ready, human will:
+
 1. Review staged changes via `git diff` or `git status`
 2. Make a clean commit (or split into multiple)
 3. Push when ready

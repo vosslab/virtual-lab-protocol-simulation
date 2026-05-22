@@ -19,7 +19,6 @@
 
 Secure the electrophoresis apparatus for running the gel. First, place the lid on top of the electrophoresis tank. Then connect the red lead from the power supply to the positive electrode and the black lead to the negative electrode. Ensure both connections are firmly seated.
 
-- The Electrophoresis tank is now lid present: *True*.
-- The Power Supply is now cathode lead attached: *True*.
-- The Power Supply is now anode lead attached: *True*.
-
+- The Electrophoresis tank is now lid present: _True_.
+- The Power Supply is now cathode lead attached: _True_.
+- The Power Supply is now anode lead attached: _True_.

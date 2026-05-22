@@ -19,10 +19,19 @@ collect_ignore = ["e2e", "playwright"]
 
 # Standard Library
 import os
+import sys
 import subprocess
 
 # local repo modules
 import git_file_utils
+
+
+# Add repo root to sys.path so tests can import top-level packages
+# (validation/, pipeline/, etc.) without needing `source source_me.sh`.
+# Mirrors what source_me.sh exports via PYTHONPATH.
+_REPO_ROOT = git_file_utils.get_repo_root()
+if _REPO_ROOT not in sys.path:
+	sys.path.insert(0, _REPO_ROOT)
 
 
 def pytest_sessionstart(session) -> None:

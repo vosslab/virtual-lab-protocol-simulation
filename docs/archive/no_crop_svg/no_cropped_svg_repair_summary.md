@@ -15,6 +15,7 @@ Status: CLOSED with proposals queued for user decision
 ## Total suspicious assets found
 
 Workstream A flagged 52 distinct object-level visual failures across 203 PNGs in 5 directories. Top categories:
+
 1. parent-overflow (overflow:visible on region containers): ~10-14 cases
 2. svg-grow-needed (PLACEHOLDER / asset not loading): ~20-24 cases
 3. aspect-cap-wrong (footprint AR mismatch): ~5-8 cases
@@ -27,10 +28,12 @@ Workstream A flagged 52 distinct object-level visual failures across 203 PNGs in
 Via CSS trials (Workstream D), 32 of 58 clipped issues resolved by Trial 5 combo. The combo edits (NOT YET APPLIED):
 
 Trial 4 (region min-height bump):
+
 - bench.css/hood.css/instrument.css: .region--rear_shelf min-height 100px -> 280px
 - bench.css/hood.css/instrument.css: .region--front_tools min-height 100px -> 240px
 
 Trial 3 (small-tool portrait reshape):
+
 - .footprint--small-tool: change to min-width 25px, max-width 40px, min-height 180px, max-height 300px
 
 Status: trials measured then reverted. No commit. User must approve to apply.
@@ -50,6 +53,7 @@ Status: trials measured then reverted. No commit. User must approve to apply.
 ## Diagnostics that missed visible crop
 
 Per Workstream C analysis:
+
 - clipped_artwork: only detects overflow:hidden clipping. Blind to overflow:visible region spillage.
 - artwork_integrity sub-check e (clipped_by_parent): caught ~12 of 52 (placement-card clipping only).
 - artwork_integrity sub-check f (aspect_distorted_HF): caught ~3 of 52 (only assets with real natural dimensions; ~40 assets have 150x150 placeholder).
@@ -63,14 +67,17 @@ Total miss rate: 62% of 52 in AFTER state. PLACEHOLDER + region overflow + templ
 Per Workstream C:
 
 ### Phase 1 (additive, low risk, NO user gate)
+
 - D2 PLACEHOLDER detection: HIGHEST IMPACT (~+20-24 catches). Insert HARD_FAIL branch where img naturalWidth/Height === 0.
 - D1 overflow:visible spillage: +10-14 catches. Use el.closest('.region') for traversal.
 
 ### Phase 2 (semantic change, USER-GATED)
+
 - D3 real SVG viewBox in sizing_manifest: +4-6 catches via accurate aspect deltas. Requires manifest re-build.
 - D4 remove template-mode exception: +4 catches. Removes existing exception.
 
 ### Phase 3 (new spec data, USER-GATED)
+
 - D5 minimum rendered area per object kind: +6-8 catches. Requires per-kind threshold table.
 
 Projected catch rate after all 5: ~96% of 52 (~50/52). Remaining 2-4: cut-side container-width failures (sixth uncovered category).

@@ -56,11 +56,11 @@ Passage OVCAR8 cells at a 1:7 split ratio when they reach 70-80% confluency.
 - Label plate: cell line, date, passage #, initials.
 
 | Cell line | Split ratio | Plate media (10 cm^2) | Plate media (15 cm^2) |
-| --- | --- | --- | --- |
-| OVCAR8 | 1:7 | 10 mL | 20 mL |
-| TYKnu  | 1:4 | 10 mL | 20 mL |
-| CAOV3  | 1:3 | 10 mL | 20 mL |
-| Kura   | 1:2 | 10 mL | 20 mL |
+| --------- | ----------- | --------------------- | --------------------- |
+| OVCAR8    | 1:7         | 10 mL                 | 20 mL                 |
+| TYKnu     | 1:4         | 10 mL                 | 20 mL                 |
+| CAOV3     | 1:3         | 10 mL                 | 20 mL                 |
+| Kura      | 1:2         | 10 mL                 | 20 mL                 |
 
 ## Part 2 - Counting cells (Trypan Blue exclusion)
 
@@ -143,10 +143,10 @@ Plate layout:
 
 Stocks on hand (both in sterile water):
 
-| Drug | Stock conc. |
-| --- | --- |
-| Carboplatin | 10 mM |
-| Metformin   | 1 M   |
+| Drug        | Stock conc. |
+| ----------- | ----------- |
+| Carboplatin | 10 mM       |
+| Metformin   | 1 M         |
 
 **WARNING: WORKING STOCKS ARE 40x FINAL, BUILT FOR A 200 uL WELL, NOT A 100 uL WELL.**
 All working stocks dispense 5 &micro;L per well into a **200 &micro;L final well volume** (NOT 100 uL --
@@ -166,14 +166,14 @@ Every working stock is 40&times; its target final concentration (because 5 &micr
 All working stocks are made directly from the single 400 &micro;M parent stock via C1V1 = C2V2.
 
 | Row | Final in well | Working stock | From 400 &micro;M parent | Drug (&micro;L) | Media (&micro;L) |
-| --- | --- | --- | --- | --- | --- |
-| B | 0.1 &micro;M  | 4 &micro;M            | 10 | 990 |
-| C | 0.2 &micro;M  | 8 &micro;M            | 20 | 980 |
-| D | 0.5 &micro;M  | 20 &micro;M           | 50 | 950 |
-| E | 1 &micro;M    | 40 &micro;M           | 100 | 900 |
-| F | 2 &micro;M    | 80 &micro;M           | 200 | 800 |
-| G | 5 &micro;M    | 200 &micro;M          | 500 | 500 |
-| H | 10 &micro;M   | 400 &micro;M          | (use as-is) | - |
+| --- | ------------- | ------------- | ------------------------ | --------------- | ---------------- |
+| B   | 0.1 &micro;M  | 4 &micro;M    | 10                       | 990             |
+| C   | 0.2 &micro;M  | 8 &micro;M    | 20                       | 980             |
+| D   | 0.5 &micro;M  | 20 &micro;M   | 50                       | 950             |
+| E   | 1 &micro;M    | 40 &micro;M   | 100                      | 900             |
+| F   | 2 &micro;M    | 80 &micro;M   | 200                      | 800             |
+| G   | 5 &micro;M    | 200 &micro;M  | 500                      | 500             |
+| H   | 10 &micro;M   | 400 &micro;M  | (use as-is)              | -               |
 
 The 1-2-5 pattern gives three dose points per order of magnitude with familiar, graph-friendly labels. The dilution
 factors alternate (2&times;, 2.5&times;) so each working stock requires its own C1V1 = C2V2 calculation. See
@@ -190,9 +190,9 @@ magnitude from the stated 5 mM. See
 Prepare fresh on day of treatment. 200 mM working stock, 5 &micro;L per well into a 200 &micro;L well
 &rarr; 5 mM final. Calculate using C1V1 = C2V2: 1 M x V1 = 200 mM x 300 &micro;L, so V1 = 60 &micro;L.
 
-| Final in well | Working stock | Source | Drug (&micro;L) | Media (&micro;L) | Total |
-| --- | --- | --- | --- | --- | --- |
-| 5 mM | 200 mM | 1 M stock | 60 | 240 | 300 &micro;L |
+| Final in well | Working stock | Source    | Drug (&micro;L) | Media (&micro;L) | Total        |
+| ------------- | ------------- | --------- | --------------- | ---------------- | ------------ |
+| 5 mM          | 200 mM        | 1 M stock | 60              | 240              | 300 &micro;L |
 
 Note: prepare at least 300 &micro;L of Metformin working stock per experiment
 (48 wells x 5 &micro;L per well = 240 &micro;L dosing draw, plus &sim;60 &micro;L dead volume).
@@ -222,16 +222,16 @@ Columns 1-6 receive Carboplatin only; columns 7-12 receive the same
 Carboplatin dose **plus** 5 mM Metformin. The carboplatin series follows the 1-2-5 preferred-numbers
 pattern (0.1, 0.2, 0.5, 1, 2, 5, 10 &micro;M) for graph-friendly labels and interpretable dose spacing.
 
-| Row | Carboplatin dose | Cols 1-6 (Carb only) | Cols 7-12 (Carb + Met 5 mM) |
-| --- | --- | --- | --- |
-| A | --              | Untreated control    | Metformin only (5 mM) |
-| B | 0.1 &micro;M   | 0.1 &micro;M Carb    | 0.1 &micro;M Carb + 5 mM Met |
-| C | 0.2 &micro;M   | 0.2 &micro;M Carb    | 0.2 &micro;M Carb + 5 mM Met |
-| D | 0.5 &micro;M   | 0.5 &micro;M Carb    | 0.5 &micro;M Carb + 5 mM Met |
-| E | 1 &micro;M     | 1 &micro;M Carb      | 1 &micro;M Carb + 5 mM Met |
-| F | 2 &micro;M     | 2 &micro;M Carb      | 2 &micro;M Carb + 5 mM Met |
-| G | 5 &micro;M     | 5 &micro;M Carb      | 5 &micro;M Carb + 5 mM Met |
-| H | 10 &micro;M    | 10 &micro;M Carb     | 10 &micro;M Carb + 5 mM Met |
+| Row | Carboplatin dose | Cols 1-6 (Carb only) | Cols 7-12 (Carb + Met 5 mM)  |
+| --- | ---------------- | -------------------- | ---------------------------- |
+| A   | --               | Untreated control    | Metformin only (5 mM)        |
+| B   | 0.1 &micro;M     | 0.1 &micro;M Carb    | 0.1 &micro;M Carb + 5 mM Met |
+| C   | 0.2 &micro;M     | 0.2 &micro;M Carb    | 0.2 &micro;M Carb + 5 mM Met |
+| D   | 0.5 &micro;M     | 0.5 &micro;M Carb    | 0.5 &micro;M Carb + 5 mM Met |
+| E   | 1 &micro;M       | 1 &micro;M Carb      | 1 &micro;M Carb + 5 mM Met   |
+| F   | 2 &micro;M       | 2 &micro;M Carb      | 2 &micro;M Carb + 5 mM Met   |
+| G   | 5 &micro;M       | 5 &micro;M Carb      | 5 &micro;M Carb + 5 mM Met   |
+| H   | 10 &micro;M      | 10 &micro;M Carb     | 10 &micro;M Carb + 5 mM Met  |
 
 ### Per-well volumes
 
@@ -239,12 +239,12 @@ All wells reach 200 &micro;L final volume. Row A gets no Carboplatin, so its med
 absorbs the missing drug volume. Media adjustment is added BEFORE any drug, ensuring each well
 is at its target working volume when drug is dispensed.
 
-| Wells              | Cells  | Carboplatin | Metformin | Media adj. | Total |
-| --- | --- | --- | --- | --- | --- |
-| A, cols 1-6        | 100 &micro;L | --          | --          | 100 &micro;L | 200 &micro;L |
-| A, cols 7-12       | 100 &micro;L | --          | 5 &micro;L  |  95 &micro;L | 200 &micro;L |
-| B-H, cols 1-6      | 100 &micro;L | 5 &micro;L  | --          |  95 &micro;L | 200 &micro;L |
-| B-H, cols 7-12     | 100 &micro;L | 5 &micro;L  | 5 &micro;L  |  90 &micro;L | 200 &micro;L |
+| Wells          | Cells        | Carboplatin | Metformin  | Media adj.   | Total        |
+| -------------- | ------------ | ----------- | ---------- | ------------ | ------------ |
+| A, cols 1-6    | 100 &micro;L | --          | --         | 100 &micro;L | 200 &micro;L |
+| A, cols 7-12   | 100 &micro;L | --          | 5 &micro;L | 95 &micro;L  | 200 &micro;L |
+| B-H, cols 1-6  | 100 &micro;L | 5 &micro;L  | --         | 95 &micro;L  | 200 &micro;L |
+| B-H, cols 7-12 | 100 &micro;L | 5 &micro;L  | 5 &micro;L | 90 &micro;L  | 200 &micro;L |
 
 Reminder: add the media adjustment BEFORE any drug, so each well is at its
 target working volume when the drug goes in.

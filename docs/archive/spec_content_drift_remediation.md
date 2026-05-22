@@ -117,15 +117,15 @@ appears, leaving the architecture question for a follow-up plan.
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M0 / WS-S | `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/OBJECT_YAML_FORMAT.md` | 2 |
-| M1 / WS-V | `validation/yaml/validate.py` + `tests/test_validate_content_yaml.py` | 7 |
-| M2 / WS-C | `content/protocols/sdspage_*/protocol.yaml`, `content/protocols/sdspage_load_sample_single_lane/scenes/`, `content/objects/pipette/` | 4 |
-| M2 / WS-R | `validation/manual/validate.py` (sub-mL revert) | 1 |
-| M3 / WS-O | `content/objects/equipment/*.yaml` (6 objects) | 6 |
-| M4 / WS-M | per-protocol `content/protocols/sdspage_*/materials.yaml`; `content/objects/bottle/*.yaml`, `content/objects/flask/*.yaml`, `content/objects/waste/*.yaml` | 3 |
-| M5 / WS-F | full-repo verification + `docs/CHANGELOG.md` close-out | 1 |
+| Milestone / Workstream | Component                                                                                                                                                  | Expected patches |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| M0 / WS-S              | `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/OBJECT_YAML_FORMAT.md`                                                                                   | 2                |
+| M1 / WS-V              | `validation/yaml/validate.py` + `tests/test_validate_content_yaml.py`                                                                                      | 7                |
+| M2 / WS-C              | `content/protocols/sdspage_*/protocol.yaml`, `content/protocols/sdspage_load_sample_single_lane/scenes/`, `content/objects/pipette/`                       | 4                |
+| M2 / WS-R              | `validation/manual/validate.py` (sub-mL revert)                                                                                                            | 1                |
+| M3 / WS-O              | `content/objects/equipment/*.yaml` (6 objects)                                                                                                             | 6                |
+| M4 / WS-M              | per-protocol `content/protocols/sdspage_*/materials.yaml`; `content/objects/bottle/*.yaml`, `content/objects/flask/*.yaml`, `content/objects/waste/*.yaml` | 3                |
+| M5 / WS-F              | full-repo verification + `docs/CHANGELOG.md` close-out                                                                                                     | 1                |
 
 ## Milestone plan
 
@@ -729,14 +729,14 @@ appears, leaving the architecture question for a follow-up plan.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| `kind`-to-field convention pin (M0) forces a wide sweep through bottle objects | High | M0 picks `material_name` for `kind: bottle`; every bottle file changes | planner | sweep is partitioned per kind in M4 (WP-M2, WP-M3); gate (V7) drives discovery so no manual file-grep is needed |
-| New gate V3 surfaces additional min/max violations across non-SDS protocols (legacy MTT, cell-culture, drug-dilution) | Medium | full-repo V3 run reports failures outside the planned scope | coder / planner | record off-scope failures in M5 closing entry and schedule a follow-up plan; do not in-line fix |
-| Renderer revert (WP-R1) regresses some manual readability (loss of human-friendly unit) | Low | Spot-check of WP-R1 output reads as awkward | coder | accept literal-unit output as canonical; if readability suffers, address with a unit-format helper that converts only when explicitly annotated (out of scope for this plan) |
-| Gate V5 (subpart-target) needs a schema concept (`applies_to: subpart`) the current `OBJECT_YAML_FORMAT.md` does not declare | Medium | WP-V5 doer cannot find the declaration | coder | escalate during WP-V5; if needed, add a small spec addition under M0 before V5 lands |
-| OQ-1 (p10 max resolution) blocks WP-C2 | Medium | OQ-1 stays open at M2 start | planner / user | resolve OQ-1 in writing before M2 begins; default recommendation: add a `p200_micropipette` object and switch MP-9 / MP-10 targets |
-| M4 reconciliation picks a label/color the user dislikes | Low | manual spot-check fails subjective approval | coder | record canonical label/color picks in M4 CHANGELOG entry; user may override before archive |
+| Risk                                                                                                                         | Impact | Trigger                                                                | Owner           | Mitigation                                                                                                                                                                   |
+| ---------------------------------------------------------------------------------------------------------------------------- | ------ | ---------------------------------------------------------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `kind`-to-field convention pin (M0) forces a wide sweep through bottle objects                                               | High   | M0 picks `material_name` for `kind: bottle`; every bottle file changes | planner         | sweep is partitioned per kind in M4 (WP-M2, WP-M3); gate (V7) drives discovery so no manual file-grep is needed                                                              |
+| New gate V3 surfaces additional min/max violations across non-SDS protocols (legacy MTT, cell-culture, drug-dilution)        | Medium | full-repo V3 run reports failures outside the planned scope            | coder / planner | record off-scope failures in M5 closing entry and schedule a follow-up plan; do not in-line fix                                                                              |
+| Renderer revert (WP-R1) regresses some manual readability (loss of human-friendly unit)                                      | Low    | Spot-check of WP-R1 output reads as awkward                            | coder           | accept literal-unit output as canonical; if readability suffers, address with a unit-format helper that converts only when explicitly annotated (out of scope for this plan) |
+| Gate V5 (subpart-target) needs a schema concept (`applies_to: subpart`) the current `OBJECT_YAML_FORMAT.md` does not declare | Medium | WP-V5 doer cannot find the declaration                                 | coder           | escalate during WP-V5; if needed, add a small spec addition under M0 before V5 lands                                                                                         |
+| OQ-1 (p10 max resolution) blocks WP-C2                                                                                       | Medium | OQ-1 stays open at M2 start                                            | planner / user  | resolve OQ-1 in writing before M2 begins; default recommendation: add a `p200_micropipette` object and switch MP-9 / MP-10 targets                                           |
+| M4 reconciliation picks a label/color the user dislikes                                                                      | Low    | manual spot-check fails subjective approval                            | coder           | record canonical label/color picks in M4 CHANGELOG entry; user may override before archive                                                                                   |
 
 ## Rollout and release checklist
 

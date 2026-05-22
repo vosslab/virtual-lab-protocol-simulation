@@ -3,12 +3,12 @@
 1EdTech Final Release
 Spec Version 3.0.1
 
-|  |  |
-|----|----|
-| Document Version: | 2.0 |
-| Date Issued: | 1 October 2024 |
-| Status: | This document is made available for adoption by the public community at large. |
-| This version: | <https://www.imsglobal.org/spec/qti/v3p0/impl/> |
+|                   |                                                                                |
+| ----------------- | ------------------------------------------------------------------------------ |
+| Document Version: | 2.0                                                                            |
+| Date Issued:      | 1 October 2024                                                                 |
+| Status:           | This document is made available for adoption by the public community at large. |
+| This version:     | <https://www.imsglobal.org/spec/qti/v3p0/impl/>                                |
 
 ## IPR and Distribution Notice
 
@@ -31,10 +31,10 @@ Intellectual Property Rights webpage:
 The following participating organizations have made explicit license
 commitments to this specification:
 
-| Org name | Date election made | Necessary claims | Type |
-|----|----|----|----|
-| CITO | March 11, 2022 | No | RF RAND (Required & Optional Elements) |
-| HMH | March 11, 2022 | No | RF RAND (Required & Optional Elements) |
+| Org name | Date election made | Necessary claims | Type                                   |
+| -------- | ------------------ | ---------------- | -------------------------------------- |
+| CITO     | March 11, 2022     | No               | RF RAND (Required & Optional Elements) |
+| HMH      | March 11, 2022     | No               | RF RAND (Required & Optional Elements) |
 
 Use of this specification to develop products or services is governed by
 the license with 1EdTech found on the 1EdTech website:
@@ -48,9 +48,9 @@ revoked by 1EdTech or its successors or assigns.
 
 THIS SPECIFICATION IS BEING OFFERED WITHOUT ANY WARRANTY WHATSOEVER, AND
 IN PARTICULAR, ANY WARRANTY OF NONINFRINGEMENT IS EXPRESSLY DISCLAIMED.
-ANY USE OF THIS SPECIFICATION *SHALL* BE MADE ENTIRELY AT THE
+ANY USE OF THIS SPECIFICATION _SHALL_ BE MADE ENTIRELY AT THE
 IMPLEMENTER'S OWN RISK, AND NEITHER THE CONSORTIUM, NOR ANY OF ITS
-MEMBERS OR SUBMITTERS, *SHALL* HAVE ANY LIABILITY WHATSOEVER TO ANY
+MEMBERS OR SUBMITTERS, _SHALL_ HAVE ANY LIABILITY WHATSOEVER TO ANY
 IMPLEMENTER OR THIRD PARTY FOR ANY DAMAGES OF ANY NATURE WHATSOEVER,
 DIRECTLY OR INDIRECTLY, ARISING FROM THE USE OF THIS SPECIFICATION.
 
@@ -203,7 +203,7 @@ file-format incompatibility issues.
 
 QTI 3 supports bi-directional text, Ruby Markup
 [https://www.w3.org/International/articles/ruby/](https://www.w3.org/International/articles/ruby/&sa=D&ust=1579546925586000)
- , and vertical text (via CSS) to support internationalization.
+, and vertical text (via CSS) to support internationalization.
 
 Interoperability for QTI 3 is also supported by the use of an 1EdTech
 governed conformance and certification process, which employs 1EdTech
@@ -236,15 +236,15 @@ Therefore, to enable validation of each type of QTI-XML resource we have
 supplied an XSD specific to that type. The list of XSDs and their
 intended validation usage is listed in the following Table.
 
-| XSD Name | Validation Purpose |
-|----|----|
-| imsqti_asiv3p0p1_v1p0.xsd | Validation of all of the QTI-XML files. |
-| imsqti_testv3p0p1_v1p0.xsd | Validation of the Test structure only. All of the used Sections must be accessed using the reference mechanism. |
-| imsqti_sectionv3p0p1_v1p0.xsd | Validation of the Section structure only. All of the used Sections and/or Items must be accessed using the reference mechanism. |
-| imsqti_itemv3p0p1_v1p0.xsd | Validation of the Item structure only. All of the used Stimuli must be accessed using the reference mechanism. |
-| imsqti_stimulusv3p0p1_v1p0.xsd | Validation of the Stimulus structure only. |
-| imsqti_outcomev3p0p1_v1p0.xsd | Validation of an Outcome Declaration only. Separate Outcome Declarations are used to align the corresponding learning standards through the QTI Package. |
-| imsqti_responseprocessingv3p0p1_v1p0.xsd | Validation of a Response Processing structure. This enables reusability of a response processing algorithm. |
+| XSD Name                                 | Validation Purpose                                                                                                                                       |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| imsqti_asiv3p0p1_v1p0.xsd                | Validation of all of the QTI-XML files.                                                                                                                  |
+| imsqti_testv3p0p1_v1p0.xsd               | Validation of the Test structure only. All of the used Sections must be accessed using the reference mechanism.                                          |
+| imsqti_sectionv3p0p1_v1p0.xsd            | Validation of the Section structure only. All of the used Sections and/or Items must be accessed using the reference mechanism.                          |
+| imsqti_itemv3p0p1_v1p0.xsd               | Validation of the Item structure only. All of the used Stimuli must be accessed using the reference mechanism.                                           |
+| imsqti_stimulusv3p0p1_v1p0.xsd           | Validation of the Stimulus structure only.                                                                                                               |
+| imsqti_outcomev3p0p1_v1p0.xsd            | Validation of an Outcome Declaration only. Separate Outcome Declarations are used to align the corresponding learning standards through the QTI Package. |
+| imsqti_responseprocessingv3p0p1_v1p0.xsd | Validation of a Response Processing structure. This enables reusability of a response processing algorithm.                                              |
 
 There is NO preferred validation method. Whichever approach is used the
 validations results are consistent. If any problems are encountered
@@ -318,7 +318,7 @@ assessment needs and preferences, and the delivery system which uses the
 candidate profiles to present the dormant assessment content to specific
 candidates.
 
-Figure 1  Figure showing a person
+Figure 1 Figure showing a person
 sitting at a computer taking a test.
 
 See Accessibility and Accommodations`h.gio2zmx6d5zb` (Section 5) for
@@ -364,7 +364,7 @@ Section 3 for a complete description of the assessment item structure.
 
 Assessment items often relate to a common, shared stimulus. This shared
 stimulus is contained in a stimulus structure, and is referenced from an
-assessment item.  See Section 3.7.7 for more specific information on
+assessment item. See Section 3.7.7 for more specific information on
 Shared Stimulus content.
 
 The sequence and structure of any valid QTI 3 file (tests, parts,
@@ -473,7 +473,7 @@ assessment content, custom classes can be used.
 For specifying behavior (semantics) outside of the existing QTI
 attributes, custom data attributes ( **data-**) should be used. In case
 a certain data- attribute is used frequently, and becomes a best
- practice, it is a candidate for promotion to a built-in attribute, part
+practice, it is a candidate for promotion to a built-in attribute, part
 of the QTI schema.
 
 The new standardized QTI presentation classes and attributes use a "qti"
@@ -484,7 +484,7 @@ For standardized custom attributes related to presentation, the
 attribute names begin with "data-qti-"; for example
 "data-qti-max-selections-message."
 
-Note that in XML, attributes *MUST* contain a value to be valid. HTML
+Note that in XML, attributes _MUST_ contain a value to be valid. HTML
 allows for some boolean attributes to leave out the values, for example
 `<video controls>` to indicate the video should include controls. The
 QTI 3 XML validator would flag this markup as invalid. In QTI 3, you
@@ -492,17 +492,17 @@ should use a "true" value for HTML boolean attributes except in the
 following cases:
 
 1.  For the audio and video elements in QTI 3 markup, the "controls"
-  attribute *MUST* include a value for the attribute to be valid XML.
-  As per the HTML 5 specification, the way to exclude controls is to
-  explicitly not include the attribute in the audio or video element.
-  In QTI 3, valid values to include controls are "controls" (as per
-  the HTML specification) or "true" (the more traditional boolean
-  value for XML). So `<video>` would mean the controls are not
-  provided to the candidate (as in the example below), and
-  `<video controls="controls">` would indicate the candidate should be
-  provided with media controls.
+    attribute _MUST_ include a value for the attribute to be valid XML.
+    As per the HTML 5 specification, the way to exclude controls is to
+    explicitly not include the attribute in the audio or video element.
+    In QTI 3, valid values to include controls are "controls" (as per
+    the HTML specification) or "true" (the more traditional boolean
+    value for XML). So `<video>` would mean the controls are not
+    provided to the candidate (as in the example below), and
+    `<video controls="controls">` would indicate the candidate should be
+    provided with media controls.
 2.  For the "default" attribute, use `default="default"` (though "true"
-  is also valid).
+    is also valid).
 
 #### 2.2.3 CSS3
 
@@ -541,7 +541,7 @@ blocks within that item, or the item content itself.
 Adding a reference to a stylesheet is done by referencing the stylesheet
 from your file, as shown in the example below.
 
-``` hljs
+```hljs
 <qti-stylesheet href="style/custom/your-styles.css" type="text/css" />
 ```
 
@@ -574,20 +574,22 @@ The simple example below illustrates the inclusion of a mathematical
 expression marked up with MathML into an item.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd" identifier="math"
 title="Relativity" adaptive="false" time-dependent="false" xml:lang="en">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>E</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-choice-interaction response-identifier="RESPONSE" max-choices="1">
-  <qti-prompt>Which famous scientist is popularly associated with the equation
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>E</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-choice-interaction response-identifier="RESPONSE" max-choices="1">
+<qti-prompt>Which famous scientist is popularly associated with the equation
+
   <div role="math" aria-label="E equals m c squared">
   <math xmlns="http://www.w3.org/1998/Math/MathML" >
   <mrow>
@@ -628,7 +630,7 @@ Vector Graphics
 \[SVG\].
 While direct markup is not supported in the QTI 3 qti-item-body
 structure at this time, it is easy to include via HTML's 'img' or
- 'object' tag. Domain specific languages such as CML can often be
+'object' tag. Domain specific languages such as CML can often be
 rendered as SVG, thus providing a convenient way to integrate material
 with QTI 3.
 
@@ -670,27 +672,29 @@ custom attribute is intended to be used.
 In this example qti-hottext element:
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="data-attribute-example" title="Use of data-attribute"
 adaptive="false" time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>B</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>B</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <p>Select the error in the following passage of text (or "No Error" if there is none).</p>
   <qti-hottext-interaction response-identifier="RESPONSE" max-choices="1"
 
-  data-group-name="group1" data-deselection-allowed="false" data-dont-word-wrap="false" >
+data-group-name="group1" data-deselection-allowed="false" data-dont-word-wrap="false" >
 
   <p>Sponsors of the Olympic Games <qti-hottext identifier="A">who bought</qti-hottext>
   advertising time on United States television
@@ -698,7 +702,8 @@ adaptive="false" time-dependent="false" xml:lang="en-US">
   <qti-hottext identifier="C">at least</qti-hottext> a dozen international firms
   <qti-hottext identifier="D">whose</qti-hottext> names are familiar to American consumers.
 
-  <qti-hottext identifier="E">No error.</qti-hottext>
+<qti-hottext identifier="E">No error.</qti-hottext>
+
   </p>
   </qti-hottext-interaction>
   </qti-item-body>
@@ -706,17 +711,17 @@ adaptive="false" time-dependent="false" xml:lang="en-US">
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml"/>
 </qti-assessment-item>
 
-The *data-group-name*  allows for radio button group assignment.
+The _data-group-name_ allows for radio button group assignment.
 
-The *data-deselection-allowed*  sets whether or not students can
+The _data-deselection-allowed_ sets whether or not students can
 deselect that option.
 
-The *data-dont-word-wrap*  defines if that option is allowed to wrap
+The _data-dont-word-wrap_ defines if that option is allowed to wrap
 onto a new line.
 
 #### 2.3.2 Markup Styles and Conventions
 
-QTI 3 introduces a limited number of *shared CSS style names*  and
+QTI 3 introduces a limited number of _shared CSS style names_ and
 conventions for use by authoring and delivery systems. See the [QTI 3
 Standardized Shared Vocabulary and CSS
 Classes](https://www.imsglobal.org/spec/qti/v3p0/vocab) for complete
@@ -724,7 +729,7 @@ documentation.
 
 By implementing these shared styles and conventions, QTI 3 authoring and
 delivery platforms can safely import/export - or render - items while
-preserving certain presentation characteristics *without* using custom
+preserving certain presentation characteristics _without_ using custom
 stylesheet injection. Note that all of the shared styles are prefaced by
 the "qti-" string so as to avoid collisions with a delivery platform's
 existing CSS.
@@ -838,8 +843,7 @@ Vocabulary and CSS Classes. They include:
   elements
 - Accessibility role indicators
 
-See Section 5.1.7 for guidance on the use of heading structures in QTI
-3.
+See Section 5.1.7 for guidance on the use of heading structures in QTI 3.
 
 ### 2.5 Use of Portable Custom Interactions (PCI)
 
@@ -877,7 +881,7 @@ score on each item. For more details on Caliper Analytics
 \[CALIPER-11\] please
 review the latest specification.
 
-Review the  Results Reporting Specification
+Review the Results Reporting Specification
 \[QTI-RR-30\]
 for more information.
 
@@ -904,25 +908,27 @@ inheritance) for all nested block elements. The ChoiceInteraction and
 its content must be then displayed from right to left as well.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="choice_multiple_rtl_he" title="Composition of Water (Hebrew)"
 adaptive="false" time-dependent="false" xml:lang="he">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>H</qti-value>
-  <qti-value>O</qti-value>
-  </qti-correct-response>
-  <qti-mapping lower-bound="0" upper-bound="2" default-value="-2">
-  <qti-map-entry map-key="H" mapped-value="1"/>
-  <qti-map-entry map-key="O" mapped-value="1"/>
-  <qti-map-entry map-key="Cl" mapped-value="-1"/>
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>H</qti-value>
+<qti-value>O</qti-value>
+</qti-correct-response>
+<qti-mapping lower-bound="0" upper-bound="2" default-value="-2">
+<qti-map-entry map-key="H" mapped-value="1"/>
+<qti-map-entry map-key="O" mapped-value="1"/>
+<qti-map-entry map-key="Cl" mapped-value="-1"/>
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <div dir="rtl">
   <qti-choice-interaction response-identifier="RESPONSE" shuffle="true" max-choices="0">
   <qti-prompt>  </qti-prompt>
@@ -946,21 +952,23 @@ bidirectional algorithm for given text portions ("F1", "Rubens
 Barrichello", "Jenson Button", "Michael Schumacher").
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="order_rtl_he" title="Grand Prix  "
 adaptive="false" time-dependent="false" xml:lang="he" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>DriverC</qti-value>
-  <qti-value>DriverA</qti-value>
-  <qti-value>DriverB</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
+<qti-correct-response>
+<qti-value>DriverC</qti-value>
+<qti-value>DriverA</qti-value>
+<qti-value>DriverB</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <div dir="rtl">
   <qti-order-interaction response-identifier="RESPONSE" >
   <qti-prompt><bdo dir="ltr">F1</bdo>
@@ -1002,17 +1010,18 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd
 http://www.w3.org/1998/Math/MathML https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
 identifier="choice_ruby" title=""
 adaptive="false" time-dependent="false" xml:lang="ja" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>ChoiceHK</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>ChoiceHK</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <p><ruby><rb></rb><rt></rt></ruby></p>
   <qti-choice-interaction response-identifier="RESPONSE" max-choices="1" class="qti-labels-cjk-ideographic" >
   <qti-prompt></qti-prompt>
@@ -1049,17 +1058,18 @@ xsi:schemaLocation=" http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="choice_ruby_i23n" title=""
 adaptive="false" time-dependent="false" xml:lang="ja" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>ChoiceHK</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>ChoiceHK</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <div class="qti-height-96 qti-writing-mode-vertical-rl qti-float-right">
   <p><ruby><rb></rb><rt></rt></ruby></p>
   <qti-choice-interaction response-identifier="RESPONSE" max-choices="1"
@@ -1094,7 +1104,7 @@ interactions) and scoring instructions.
 
 In order for organizations to exchange the assessment items, the item
 files may also need to contain a variety of data elements that support
-the item content. These data elements  are briefly explained in this
+the item content. These data elements are briefly explained in this
 subsection, and with greater details throughout Section 3 of this
 implementation guide. An assessment item encompasses the information
 that is presented to a candidate and information about how to score the
@@ -1147,7 +1157,7 @@ including the adaptive attribute, the item will NOT be considered
 adaptive (changing to the responses of the candidate). The adaptive
 attribute is not related to adaptive assessments, where the sequence of
 the item within the context of an assessment is non-linear. See [Section
-3.7.2](#h.pd5mfepf6mk9)  for more information on item adaptivity.
+3.7.2](#h.pd5mfepf6mk9) for more information on item adaptivity.
 
 The "time-dependent" attribute is a required attribute, where boolean
 values (true/false) are permitted. A time dependent item
@@ -1235,8 +1245,8 @@ information model can improve the effectiveness, efficiency, and
 personalization of TemplateProcessing and ResponseProcessing
 instructions. Contextual information can include candidate information,
 test information, and system (or environmental) information. Context
-declarations are also permitted in tests.  See [Section
-3.7.11](#h.7tgz0gr02037)  for a longer description of context
+declarations are also permitted in tests. See [Section
+3.7.11](#h.7tgz0gr02037) for a longer description of context
 declarations.
 
 ##### 3.1.1.2 Response Declaration
@@ -1256,7 +1266,7 @@ outcome variables represent the score that the candidate can receive for
 responding to, or not responding to, the item. The outcomes variables
 values are set either from a default given in the outcome declaration
 itself or by a ResponseRule during ResponseProcessing. See [Section
-3.5](#h.886q73e2ya9q)  for a longer description of outcome declarations.
+3.5](#h.886q73e2ya9q) for a longer description of outcome declarations.
 
 ##### 3.1.1.4 Template Declaration
 
@@ -1266,7 +1276,7 @@ variables can have their value set only during TemplateProcessing.
 Template declarations are referred to within the qti-item-body in order
 to individualize the clone and possibly also within the
 ResponseProcessing rules if the cloning process affects the way the item
-is scored. See [Section 3.7.4](#h.hs6z9wmqtzq7)  for a longer
+is scored. See [Section 3.7.4](#h.hs6z9wmqtzq7) for a longer
 description of using templates in items.
 
 ##### 3.1.1.5 Template Processing
@@ -1277,16 +1287,16 @@ cloning engine or delivery system in order to assign values to the
 template variables. Template processing is identical in form to
 ResponseProcessing except that the purpose is to assign values to
 template variables, not outcome variables. See [Section
-3.7.4](#h.hs6z9wmqtzq7)  for a description on using template processing
+3.7.4](#h.hs6z9wmqtzq7) for a description on using template processing
 in items.
 
 ##### Reference to a Shared Stimulus
 
 The qti-assessment-stimulus-ref element can be used to associate one or
 more external; i.e., external to the qti-assessment-item XML, stimulus
-blocks with a particular item.  A common use case is to author and
+blocks with a particular item. A common use case is to author and
 package a stimulus such as a passage, which can then be shared among
-multiple items. See [Section 3.7.7](#h.pb0clew9cko9)  for more specifics
+multiple items. See [Section 3.7.7](#h.pb0clew9cko9) for more specifics
 on how to link items to a shared stimulus.
 
 ##### 3.1.1.6 Companion Materials
@@ -1295,7 +1305,7 @@ The qti-companion-materials-info node is used to indicate if the item
 should be presented to candidates with other kinds of (built-in)
 assessment tools or materials (companion materials), including:
 calculators, protractors, rulers, digital materials, or physical
-materials. See [Section 3.7.8](#h.cog67s90rmps)  for a longer
+materials. See [Section 3.7.8](#h.cog67s90rmps) for a longer
 description of including companion materials in items.
 
 ##### 3.1.1.7 Stylesheets
@@ -1303,7 +1313,7 @@ description of including companion materials in items.
 The qti-stylesheet nodes are used to associate external stylesheets for
 the item. QTI 3 supports CSS 2.1 and CSS 3.0 stylesheets (excluding
 speech). Any number of stylesheets can be included in an item. See
-[Section 3.6](#h.fu8olo1248hn)  for examples of how to include
+[Section 3.6](#h.fu8olo1248hn) for examples of how to include
 stylesheets in items.
 
 For conformance purposes, the use of stylesheets may be ignored by
@@ -1331,10 +1341,10 @@ contained within the qti-prompt nodes) and any interactions.
 Composite items are items that contain more than one interaction within
 the ItemBody. Composite items may contain multiple instances of the same
 type of interaction or have a mixture of interaction types within the
-ItemBody. See [Section 3.2](#h.7jm6la7pne1i)  for documentation for
-specific QTI interactions, and [Section 3.3](#h.fzolwwxsh7ga)  for the
+ItemBody. See [Section 3.2](#h.7jm6la7pne1i) for documentation for
+specific QTI interactions, and [Section 3.3](#h.fzolwwxsh7ga) for the
 use of composite items. Note that while the qti-item-body node may
-contain multiple interactions, any interaction *MUST NOT* be nested or
+contain multiple interactions, any interaction _MUST NOT_ be nested or
 contained within other interactions. Items with nested interactions are
 not considered compliant to the QTI standard regardless of whether they
 pass validation or not.
@@ -1375,7 +1385,7 @@ content, including the author, candidate, proctor, scorer,
 testConstructor, or tutor. This content would only be shown to the
 specified audience when the role of that audience is specifically known
 the system presenting the item. See [Section 3.7.5](#h.jr9dryq0pjvh)
- for more information on using rubric blocks in an assessmentItem.
+for more information on using rubric blocks in an assessmentItem.
 
 ##### 3.1.1.9 Catalog Resources
 
@@ -1384,8 +1394,8 @@ content references specific catalogs within the qti-catalog-info node.
 Catalogs hold and reference item content that is presented to candidates
 based on their candidate profile (PNP) requirements. See Section 5 for a
 longer description of using catalogs to store support-specific content.
- In addition to Section 5, there is an annotated item in [Section
-3.8.1](#h.7x7ukes4f72u)  that includes the use of catalogs for encoding
+In addition to Section 5, there is an annotated item in [Section
+3.8.1](#h.7x7ukes4f72u) that includes the use of catalogs for encoding
 Glossaries and Keyword Translations.
 
 ##### 3.1.1.10 Response Processing
@@ -1395,16 +1405,16 @@ process by which a delivery engine assigns outcomes (the scores) based
 on the candidate's responses. Response processing can be achieved using
 either a response processing template (a reference to a common
 processing pattern), or by using customized response processing. See
-[Section 3.4.2](#h.66wn7ucnbn4v)  for information on using response
-processing templates, and [Section 3.7.1](#h.fi29q8dubjgw)  for
+[Section 3.4.2](#h.66wn7ucnbn4v) for information on using response
+processing templates, and [Section 3.7.1](#h.fi29q8dubjgw) for
 information on customized response processing.
 
 ##### 3.1.1.11 Modal and Test Feedback
 
 The qti-modal-feedback node is used to provide item-level feedback,
 which is presented to the candidate directly following response
-processing. See [Section 3.7.3](#h.of39hkegnqll)  for more information
-on providing feedback to candidates.  Similarly, qti-test-feedback
+processing. See [Section 3.7.3](#h.of39hkegnqll) for more information
+on providing feedback to candidates. Similarly, qti-test-feedback
 provides a method to display feedback at the Assessment Test or Test
 Part level and can be presented either during the test or test part
 after each instance of outcome processing, or at the conclusion of the
@@ -1421,8 +1431,8 @@ transformations.
 
 The QTI 3 interaction web components-friendly vocabulary introduces the
 "qti-" prefix on every QTI element. Furthermore, camelcase elements and
-attributes are replaced with all-lowercase elements/attributes *with
-hyphen separators*. See the example below of a choice interaction with
+attributes are replaced with all-lowercase elements/attributes _with
+hyphen separators_. See the example below of a choice interaction with
 the QTI 3 web components-friendly vocabulary.
 
 **Example: qti-choice-interaction**
@@ -1468,88 +1478,88 @@ though it is a sub-element of an interaction.
 QTI 3 includes the following standardized interactions:
 
 1.  **Choice** (qti-choice-interaction): presents a set of choices to
-  the candidate. The candidate's task is to select one or more of the
-  choices, up to a maximum number of choices allowed. (See [Section
-  3.2.2](#h.j9nu1oa1tu3b) )
+    the candidate. The candidate's task is to select one or more of the
+    choices, up to a maximum number of choices allowed. (See [Section
+    3.2.2](#h.j9nu1oa1tu3b) )
 2.  **Text Entry** (qti-text-entry-interaction): an inline interaction
-  that accepts text from the candidate. (See [Section
-  3.2.3](#h.5bw8rpbotrcs) )
+    that accepts text from the candidate. (See [Section
+    3.2.3](#h.5bw8rpbotrcs) )
 3.  **Extended Text**(qti-extended-text-interaction): a block
-  interaction that allows the candidate to enter an extended amount of
-  text.
+    interaction that allows the candidate to enter an extended amount of
+    text.
 4.  **Gap Match** (qti-gap-match-interaction): a block interaction that
-  contains a number of gaps that the candidate can fill from an
-  associated set of choices.
+    contains a number of gaps that the candidate can fill from an
+    associated set of choices.
 5.  **Hot Spot**(qti-hotspot-interaction): a graphical interaction with
-  a corresponding set of choices that are defined as areas of the
-  graphic image. The candidate's task is to select one or more of the
-  areas (hotspots).
+    a corresponding set of choices that are defined as areas of the
+    graphic image. The candidate's task is to select one or more of the
+    areas (hotspots).
 6.  **Hot Text** (qti-hot-text-interaction): presents a set of choices
-  to the candidate represented as selectable runs of text embedded
-  within a surrounding context, such as a passage of text.
+    to the candidate represented as selectable runs of text embedded
+    within a surrounding context, such as a passage of text.
 7.  **Inline Choice** (qti-inline-choice-interaction): an inline
-  interaction that presents the user with a set of choices, each of
-  which is an answer option (usually text). The candidate's task is to
-  select one of the choices.
+    interaction that presents the user with a set of choices, each of
+    which is an answer option (usually text). The candidate's task is to
+    select one of the choices.
 8.  **Match** (qti-match-interaction): a block interaction that presents
-  candidates with two sets of choices and allows them to create
-  associations between pairs of choices in the two sets, but not
-  between pairs of choices in the same set.
+    candidates with two sets of choices and allows them to create
+    associations between pairs of choices in the two sets, but not
+    between pairs of choices in the same set.
 9.  **Order** (qti-order-interaction): the candidate's task is to
-  reorder the choices, the order in which the choices are displayed
-  initially is significant.
+    reorder the choices, the order in which the choices are displayed
+    initially is significant.
 10. **Graphic Order**(qti-graphic-order-interaction): A graphic order
-  interaction is a graphic interaction with a corresponding set of
-  hotspot choices that are defined as areas of the graphic image. The
-  candidate's task is to impose an ordering on the areas (hotspots).
+    interaction is a graphic interaction with a corresponding set of
+    hotspot choices that are defined as areas of the graphic image. The
+    candidate's task is to impose an ordering on the areas (hotspots).
 11. **Associate** (qti-associate-interaction): a block interaction that
-  presents candidates with a number of choices and allows them to
-  create associations between them.
+    presents candidates with a number of choices and allows them to
+    create associations between them.
 12. **Graphic Associate** (qti-graphic-associate-interaction): a graphic
-  interaction with a corresponding set of choices that are defined as
-  areas of the graphic image. The candidate's task is to associate the
-  areas (hotspots) with each other.
+    interaction with a corresponding set of choices that are defined as
+    areas of the graphic image. The candidate's task is to associate the
+    areas (hotspots) with each other.
 13. **Graphic Gap Match** (qti-graphic-gap-match-interaction): a
-  graphical interaction with a set of gaps that are defined as areas
-  (hotspots) of the graphic image and an additional set of gap choices
-  that are defined outside the image. The candidate must associate the
-  gap choices with the gaps in the image and be able to review the
-  image with the gaps filled in context, as indicated by their
-  choices.
+    graphical interaction with a set of gaps that are defined as areas
+    (hotspots) of the graphic image and an additional set of gap choices
+    that are defined outside the image. The candidate must associate the
+    gap choices with the gaps in the image and be able to review the
+    image with the gaps filled in context, as indicated by their
+    choices.
 14. **Media** (qti-media-interaction): allows more control over the way
-  the candidate interacts with a time-based media object and allows
-  the number of times the media object was experienced to be reported
-  in the value of the associated response variable.
+    the candidate interacts with a time-based media object and allows
+    the number of times the media object was experienced to be reported
+    in the value of the associated response variable.
 15. **Position Object** (qti-position-object-interaction): consists of a
-  single image which must be positioned on another graphic image (the
-  stage) by the candidate.
+    single image which must be positioned on another graphic image (the
+    stage) by the candidate.
 16. **Select Point** (qti-select-point-interaction): a graphic
-  interaction in which the candidate's task is to select one or more
-  points.
+    interaction in which the candidate's task is to select one or more
+    points.
 17. **Slider** (qti-slider-interaction): presents the candidate with a
-  control for selecting a numerical value between a lower and upper
-  bound.
+    control for selecting a numerical value between a lower and upper
+    bound.
 18. **Upload**(qti-upload-interaction): allows the candidate to upload a
-  pre-prepared file representing their response.
+    pre-prepared file representing their response.
 19. **Drawing**(qti-drawing-interaction): allows the candidate to use
-  drawing tools provided by the delivery system to modify a given
-  graphical image (the canvas). The result is a file in the same
-  format as the original image.
+    drawing tools provided by the delivery system to modify a given
+    graphical image (the canvas). The result is a file in the same
+    format as the original image.
 20. **Custom**(qti-custom-interaction) and **Portable
-  Custom** (qti-portable-custom-interaction): allow the item author to
-  present an interaction with a custom user interface and behavior,
-  supported by, respectively, delivery engine-specific or
-  author-provided code.  Portable Custom Interactions (PCIs) allow the
-  Javascript code implementing the interaction to be made available to
-  delivery systems, with a standard Javascript interface, offering the
-  potential for making PCIs more interoperable and portable between
-  conforming delivery engines.
+    Custom** (qti-portable-custom-interaction): allow the item author to
+    present an interaction with a custom user interface and behavior,
+    supported by, respectively, delivery engine-specific or
+    author-provided code. Portable Custom Interactions (PCIs) allow the
+    Javascript code implementing the interaction to be made available to
+    delivery systems, with a standard Javascript interface, offering the
+    potential for making PCIs more interoperable and portable between
+    conforming delivery engines.
 21. **End Attempt** (qti-end-attempt-interaction): is a special
-  interaction which immediately ends the current attempt on an
-  assessment item.  It may be used, for example, to allow the
-  candidate to request a hint or model solution, or in an adaptive
-  item to let the candidate display feedback or to move to the next in
-  a series of interactions in the item.
+    interaction which immediately ends the current attempt on an
+    assessment item. It may be used, for example, to allow the
+    candidate to request a hint or model solution, or in an adaptive
+    item to let the candidate display feedback or to move to the next in
+    a series of interactions in the item.
 
 Each of the interactions described in the following sections can contain
 sub-elements and attributes. For full descriptions of these features,
@@ -1573,7 +1583,7 @@ vocabularies:
 2.  An interaction's " **data-**" attributes.
 
 In order to prevent collisions with existing classes, the QTI 3
-interaction shared vocabularies  use classes with the "qti-" prefix.
+interaction shared vocabularies use classes with the "qti-" prefix.
 
 Although the **class** and " **data-**" attributes already exist in QTI
 2.2, the shared interaction vocabularies explicitly define how to use
@@ -1582,7 +1592,7 @@ By agreeing to implement interaction styling and behaviors according to
 the definitions of the shared interaction vocabularies, interaction
 interoperability may be greatly improved.
 
-Implementers of *custom* presentations/behaviors should avoid using
+Implementers of _custom_ presentations/behaviors should avoid using
 classes with the "qti-" prefix, and should also avoid using the QTI 3
 established "data-" attributes from the shared interaction vocabularies.
 Over time, it is the expectation that the shared interaction
@@ -1626,12 +1636,12 @@ orientation attribute value (including the default value of "vertical").
 
 **ChoiceInteraction Attributes (element: qti-choice-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|---------------|-----------|-----------------------------------|---------------|
-| max-choices  | optional  | Non-negative integer  | 1  |
-| min-choices  | optional  | Non-negative integer  | 0 (unlimited) |
-| orientation\* | optional  | Vocabulary:* horizontal* vertical | vertical  |
-| shuffle  | optional  | boolean  | false  |
+| **Name**      | **Usage** | **Value(s)**                      | **Default**   |
+| ------------- | --------- | --------------------------------- | ------------- |
+| max-choices   | optional  | Non-negative integer              | 1             |
+| min-choices   | optional  | Non-negative integer              | 0 (unlimited) |
+| orientation\* | optional  | Vocabulary:_ horizontal_ vertical | vertical      |
+| shuffle       | optional  | boolean                           | false         |
 
 \* Deprecated in favor of the shared interaction vocabulary.
 
@@ -1640,7 +1650,7 @@ qti-simple-choice element (SimpleChoice.Type) to present an ordered list
 of choices to the candidate.
 
 As noted in the table above, the "shuffle" attribute is optional and
-defaults to false.  However, if the shuffle attribute is set to "true",
+defaults to false. However, if the shuffle attribute is set to "true",
 and the delivery engine supports the discretionary "shuffle" feature,
 the presentation system must randomize the order in which the choices
 are originally listed in the Assessment Item XML, subject to the value
@@ -1652,17 +1662,18 @@ then the choice is free to be shuffled.
 
 **SimpleChoice (element: qti-simple-choice) Attributes**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|---------------------|-----------|-------------------------|-------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| fixed  | optional  | boolean  | false  |
+| **Name**            | **Usage** | **Value(s)**            | **Default** |
+| ------------------- | --------- | ----------------------- | ----------- |
+| identifier          | required  | Identifier              |             |
+| template-identifier | optional  | Identifier              |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show        |
+| fixed               | optional  | boolean                 | false       |
 
 Here is an example of a choice interaction that allows the candidate to
 pick one choice (sometimes called single selection choice).
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
  xmlns="http://www.imsglobal.org/xsd/qti/imsqtiasi_v3p0"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -1672,17 +1683,18 @@ pick one choice (sometimes called single selection choice).
  title="BG true false example "
  time-dependent="false"
  xml:lang="en-US">
- <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>true</qti-value>
-  </qti-correct-response>
- </qti-response-declaration>
- <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE">
-  <qti-default-value>
-  <qti-value>1</qti-value>
-  </qti-default-value>
- </qti-outcome-declaration>
- <qti-item-body>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>true</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE">
+<qti-default-value>
+<qti-value>1</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <p>This is a True/False question?</p>
   <qti-choice-interaction max-choices="1" response-identifier="RESPONSE">
   <qti-simple-choice identifier="true">True</qti-simple-choice>
@@ -1702,35 +1714,36 @@ select multiple response options to respond to the prompt.
 **Example: qti-choice-interaction (multiple cardinality)**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="QTI3multiplechoice2" title="QTI 3 Choice with Multiple Cardinality"
   xml:lang="en-US" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>H</qti-value>
-  <qti-value>O</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="6">
-  <qti-prompt>Which of the following elements are used to form water?</qti-prompt>
-  <qti-simple-choice identifier="H">Hydrogen</qti-simple-choice>
-  <qti-simple-choice identifier="He">Helium</qti-simple-choice>
-  <qti-simple-choice identifier="C">Carbon</qti-simple-choice>
-  <qti-simple-choice identifier="O">Oxygen</qti-simple-choice>
-  <qti-simple-choice identifier="N">Nitrogen</qti-simple-choice>
-  <qti-simple-choice identifier="Cl">Chlorine</qti-simple-choice>
-  </qti-choice-interaction>
-  </qti-item-body>
-  <qti-response-processing
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>H</qti-value>
+<qti-value>O</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="6">
+<qti-prompt>Which of the following elements are used to form water?</qti-prompt>
+<qti-simple-choice identifier="H">Hydrogen</qti-simple-choice>
+<qti-simple-choice identifier="He">Helium</qti-simple-choice>
+<qti-simple-choice identifier="C">Carbon</qti-simple-choice>
+<qti-simple-choice identifier="O">Oxygen</qti-simple-choice>
+<qti-simple-choice identifier="N">Nitrogen</qti-simple-choice>
+<qti-simple-choice identifier="Cl">Chlorine</qti-simple-choice>
+</qti-choice-interaction>
+</qti-item-body>
+<qti-response-processing
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct"/>
-  </qti-assessment-item>
+</qti-assessment-item>
 
-Figure 7  Expected Rendering:
+Figure 7 Expected Rendering:
 Choices rendered in a single column, vertically oriented.
 
 By default, in the absence of any shared interaction vocabulary, the
@@ -1746,10 +1759,10 @@ defined as follows:
 
 1.  A "control"; e.g., either a radio button or checkbox control, and
 2.  A "label"; e.g., often an alphanumeric character such as, "A", "B",
-  "1", "2", etc.
+    "1", "2", etc.
 3.  A "label suffix"; e.g., a "." or ")" character after the label, and
 4.  A "description"; e.g., the HTML content contained by a
-  qti-simple-choice element
+    qti-simple-choice element
 
 Go to the [1EdTech QTI 3 Standardized Shared and CSS Classes section on
 Choice Interaction
@@ -1772,19 +1785,20 @@ fields are 'stringValue', 'floatValue', etc.
 **TextEntryInteraction Attributes (element:
 qti-text-entry-interaction)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| response-identifier | required | Identifier |  |
-| base | optional | xs:int | Default is 10. |
-| string-identifier | optional | Identifier of a qti-response-declaration with base-type=string |  |
-| expected-length | optional | Non-negative integer |  |
-| pattern-mask | optional | string |  |
-| placeholder-text | optional | string |  |
-| format | optional | Normalized string |  |
+| **Name**            | **Usage** | **Value(s)**                                                   | **Default**    |
+| ------------------- | --------- | -------------------------------------------------------------- | -------------- |
+| response-identifier | required  | Identifier                                                     |                |
+| base                | optional  | xs:int                                                         | Default is 10. |
+| string-identifier   | optional  | Identifier of a qti-response-declaration with base-type=string |                |
+| expected-length     | optional  | Non-negative integer                                           |                |
+| pattern-mask        | optional  | string                                                         |                |
+| placeholder-text    | optional  | string                                                         |                |
+| format              | optional  | Normalized string                                              |                |
 
 Below is an example of a Text Entry Interaction:
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
  xmlns="http://www.imsglobal.org/xsd/qti/imsqtiasi_v3p0"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -1794,27 +1808,29 @@ Below is an example of a Text Entry Interaction:
  title="Text Entry example"
  time-dependent="false"
  xml:lang="en-US">
- <qti-response-declaration identifier="RESPONSE" base-type="string" cardinality="single">
-  <qti-correct-response>
-  <qti-value>York</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="0">
-  <qti-map-entry map-key="York" mapped-value="1" case-sensitive="true" />
-  <qti-map-entry map-key="york" mapped-value="0.5" />
-  </qti-mapping>
- </qti-response-declaration>
- <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" />
- <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" base-type="string" cardinality="single">
+<qti-correct-response>
+<qti-value>York</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="0">
+<qti-map-entry map-key="York" mapped-value="1" case-sensitive="true" />
+<qti-map-entry map-key="york" mapped-value="0.5" />
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" />
+<qti-item-body>
+
   <p>Identify the missing word in this famous quote from Shakespeare's Richard III.</p>
   <div>
   <blockquote>
   <p>Now is the winter of our discontent
 
-  Made glorious summer by this sun of <qti-text-entry-interaction response-identifier="RESPONSE" />;
+Made glorious summer by this sun of <qti-text-entry-interaction response-identifier="RESPONSE" />;
 
-  And all the clouds that lour'd upon our house
+And all the clouds that lour'd upon our house
 
-  In the deep bosom of the ocean buried.</p>
+In the deep bosom of the ocean buried.</p>
+
   </blockquote>
   </div>
  </qti-item-body>
@@ -1894,12 +1910,12 @@ format
 optional
 Vocabulary:
 
- * plain
+- plain
 
- * preformatted
+- preformatted
 
- * xhtml
-plain
+- xhtml
+  plain
 
 The qti-extended-text-interaction must be bound to a response variable
 of single, multiple, ordered or record cardinality. If the response
@@ -1914,6 +1930,7 @@ The extended text interaction allows a candidate to supply a text string
 for a response. A basic example of the markup is shown below.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
  xmlns="http://www.imsglobal.org/xsd/qti/imsqtiasi_v3p0"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -1923,18 +1940,20 @@ for a response. A basic example of the markup is shown below.
  title="Extended Text example"
  time-dependent="false"
  xml:lang="en-US">
- <qti-response-declaration identifier="RESPONSE" base-type="string" cardinality="single" />
- <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" />
- <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" base-type="string" cardinality="single" />
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" />
+<qti-item-body>
+
   <p>Read this postcard from your English pen-friend, Sam.</p>
   <div>
   <blockquote class="postcard">
   <p>Here is a postcard of my town. Please send me
 
-  A postcard from your town. What size is your Town?
+A postcard from your town. What size is your Town?
 What is the nicest part of your town?
 
-  Where do you go in the evenings?</p>
+Where do you go in the evenings?</p>
+
   <p>Sam</p>
   </blockquote>
   </div>
@@ -1944,7 +1963,7 @@ What is the nicest part of your town?
  </qti-item-body>
 </qti-assessment-item>
 
-Figure 9  A sample item as it might
+Figure 9 A sample item as it might
 be presented during an assessment.
 
 The cardinality of "single" in the qti-response-processing element means
@@ -1968,7 +1987,7 @@ Responsive design implies that delivery systems should display an input
 area (typically, this will be a \<textarea\> or \ html element)
 that has a width equal to 100% of the interaction's encapsulating
 container. Consequently, there is no shared interaction vocabulary for
-overriding the *width* of this interaction.
+overriding the _width_ of this interaction.
 
 Go to the [1EdTech QTI 3 Standardized Shared Vocabulary and CSS
 document](https://www.imsglobal.org/spec/qti/v3p0/vocab#extended-text-interaction)
@@ -1981,7 +2000,7 @@ gaps that the candidate can fill from an associated set of choices. The
 candidate must be able to review the content with the gaps filled in
 context, as indicated by their choices.
 
-The GapMatchInteraction.Type (qti-gap-match-interaction)  is similar to
+The GapMatchInteraction.Type (qti-gap-match-interaction) is similar to
 Match Interaction (qti-match-interaction) except that the choices in the
 second set are gaps (qti-gap) in a given passage of text and the task
 involves selecting choices from the first set and using them to fill the
@@ -1992,41 +2011,41 @@ scoring is again done with a mapping.
 
 **GapMatchInteration Attributes (element: qti-gap-match-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|------------------|-----------|---------------------|-------------|
-| max-associations | optional  | Non-negative number | 1  |
-| min-associations | optional  | Non-negative number |  |
-| shuffle  | optional  | boolean  | false  |
+| **Name**         | **Usage** | **Value(s)**        | **Default** |
+| ---------------- | --------- | ------------------- | ----------- |
+| max-associations | optional  | Non-negative number | 1           |
+| min-associations | optional  | Non-negative number |             |
+| shuffle          | optional  | boolean             | false       |
 
 Sub-elements include qti-gap-text (GapText.Type) and qti-gap-img
 (GapImg.Type).
 
 **GapText Attributes (element: qti-gap-text)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier of a template variable used to control the visibility of the qti-gap-text |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| match-group | optional | IdentifierList |  |
-| match-max | required | Non-negative integer |  |
-| match-min | optional | Non-negative integer | 0 (unlimited) |
+| **Name**            | **Usage** | **Value(s)**                                                                         | **Default**   |
+| ------------------- | --------- | ------------------------------------------------------------------------------------ | ------------- |
+| identifier          | required  | Identifier                                                                           |               |
+| template-identifier | optional  | Identifier of a template variable used to control the visibility of the qti-gap-text |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide                                                              | show          |
+| match-group         | optional  | IdentifierList                                                                       |               |
+| match-max           | required  | Non-negative integer                                                                 |               |
+| match-min           | optional  | Non-negative integer                                                                 | 0 (unlimited) |
 
 The qti-gap-img contains a single HTML object element.
 
 **GapImg Attributes (element: qti-gap-img)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier of a template variable used to control the visibility of the qti-gap-img |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| match-group | optional | IdentifierList |  |
-| match-max | required | Non-negative integer, 0 means unlimited |  |
-| match-min | optional | Non-negative integer \<= match-max | 0 |
-| object-label | optional | string |  |
-| top | optional | *empty* |  |
-| left | optional | *empty* |  |
+| **Name**            | **Usage** | **Value(s)**                                                                        | **Default** |
+| ------------------- | --------- | ----------------------------------------------------------------------------------- | ----------- |
+| identifier          | required  | Identifier                                                                          |             |
+| template-identifier | optional  | Identifier of a template variable used to control the visibility of the qti-gap-img |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide                                                             | show        |
+| match-group         | optional  | IdentifierList                                                                      |             |
+| match-max           | required  | Non-negative integer, 0 means unlimited                                             |             |
+| match-min           | optional  | Non-negative integer \<= match-max                                                  | 0           |
+| object-label        | optional  | string                                                                              |             |
+| top                 | optional  | _empty_                                                                             |             |
+| left                | optional  | _empty_                                                                             |             |
 
 Additional formatting may be applied within the qti-gap-text element
 allowing for a greater variation.' Allowed formats include:
@@ -2047,40 +2066,43 @@ by the match-max attribute of qti-gap-text or qti-gap-img.
 The following is an example of a gap match interaction:
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
  https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
  identifier="gap-match-example-1" title="Gap Match Example 1"
  time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
-  <qti-correct-response>
-  <qti-value>W G1</qti-value>
-  <qti-value>Su G2</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="-1" lower-bound="0">
-  <qti-map-entry map-key="W G1" mapped-value="1"/>
-  <qti-map-entry map-key="Su G2" mapped-value="2"/>
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-gap-match-interaction max-associations="0" response-identifier="RESPONSE"
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
+<qti-correct-response>
+<qti-value>W G1</qti-value>
+<qti-value>Su G2</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="-1" lower-bound="0">
+<qti-map-entry map-key="W G1" mapped-value="1"/>
+<qti-map-entry map-key="Su G2" mapped-value="2"/>
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-gap-match-interaction max-associations="0" response-identifier="RESPONSE"
   class="qti-choices-top" >
-  <qti-prompt>Identify the missing words in this famous quote from Shakespeare's Richard III.</qti-prompt>
-  <qti-gap-text identifier="W" match-max="1">winter</qti-gap-text>
-  <qti-gap-text identifier="Sp" match-max="1">spring</qti-gap-text>
-  <qti-gap-text identifier="Su" match-max="1">summer</qti-gap-text>
-  <qti-gap-text identifier="A" match-max="1">autumn</qti-gap-text>
+<qti-prompt>Identify the missing words in this famous quote from Shakespeare's Richard III.</qti-prompt>
+<qti-gap-text identifier="W" match-max="1">winter</qti-gap-text>
+<qti-gap-text identifier="Sp" match-max="1">spring</qti-gap-text>
+<qti-gap-text identifier="Su" match-max="1">summer</qti-gap-text>
+<qti-gap-text identifier="A" match-max="1">autumn</qti-gap-text>
+
   <blockquote>
   <p>
   Now is the <qti-gap identifier="G1"/> of our discontent
 
-  Made glorious <qti-gap identifier="G2"/> by this sun of York;
+Made glorious <qti-gap identifier="G2"/> by this sun of York;
 
-  And all the clouds that lour'd upon our house
+And all the clouds that lour'd upon our house
 
-  In the deep bosom of the ocean buried.
+In the deep bosom of the ocean buried.
+
   </p>
   </blockquote>
   </qti-gap-match-interaction>
@@ -2096,7 +2118,7 @@ The shared interaction vocabulary for the Gap Match Interaction is
 intended to provide more precision when describing:
 
 1.  Positioning of the Gap Choices container with respect to the passage
-  of text containing the Gaps.
+    of text containing the Gaps.
 2.  Gap Choices container width.
 3.  Gap element widths.
 4.  Custom max\|min-associations message overrides.
@@ -2121,34 +2143,34 @@ each option.
 
 The delivery engine must clearly indicate selected hotspots when such
 hotspots are selected. If the shared interaction vocabulary class
-*qti-unselected-hidden* is present, the delivery engine must hide the
-hotspots in their unselected and unfocused state.  If the
+_qti-unselected-hidden_ is present, the delivery engine must hide the
+hotspots in their unselected and unfocused state. If the
 qti-unselected-hidden is not present, indicating hotspots in their
 unselected and unfocused state is left to the delivery engine.
 
 **HotspotInteraction Attributes (element: qti-hotspot-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|-------------|-----------|---------------------|---------------|
-| max-choices | optional  | Non-negative number | 1  |
+| **Name**    | **Usage** | **Value(s)**        | **Default**   |
+| ----------- | --------- | ------------------- | ------------- |
+| max-choices | optional  | Non-negative number | 1             |
 | min-choices | optional  | Non-negative number | 0 (unlimited) |
 
 The sub-element sequence for the qti-hotspot-interaction:
 
 1.  either img, picture, or object (must have only 1, note that the use
-  of object is deprecated in QTI 3)
+    of object is deprecated in QTI 3)
 2.  qti-hotspot-choice (at least 1)
 
 **HotspotChoice Attributes (element: qti-hotspot-choice)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier of a template variable used to control the visibility of the qti-hotspot-choice |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| shape | required | Vocabulary:* circle* default* ellipse* poly* rect |  |
-| coords | required | Coords.Type |  |
-| hotspot-label | optional | string |  |
+| **Name**            | **Usage** | **Value(s)**                                                                               | **Default** |
+| ------------------- | --------- | ------------------------------------------------------------------------------------------ | ----------- |
+| identifier          | required  | Identifier                                                                                 |             |
+| template-identifier | optional  | Identifier of a template variable used to control the visibility of the qti-hotspot-choice |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide                                                                    | show        |
+| shape               | required  | Vocabulary:_ circle_ default* ellipse* poly\* rect                                         |             |
+| coords              | required  | Coords.Type                                                                                |             |
+| hotspot-label       | optional  | string                                                                                     |             |
 
 The hotspot interaction must be bound to a response variable with a
 base-type of identifier and single or multiple cardinality.
@@ -2165,18 +2187,20 @@ Vocabulary and CSS
 document](https://www.imsglobal.org/spec/qti/v3p0/vocab#hotspot-interaction).
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="QTI3-hotspot" title="hotspot" time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>H</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>H</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+
   <p>The picture illustrates four of the most popular lighthouses on outer Cape Cod, Massachusetts:
   Chatham Lighthouse, Highland Lighthouse, Nauset Lighthouse, and Race Point Lighthouse.</p>
   <qti-hotspot-interaction response-identifier="RESPONSE" max-choices="1">
@@ -2210,32 +2234,34 @@ are selected (the usual case).
 
 **HotTextInteraction Attributes (element: qti-hottext-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|-------------|-----------|----------------------|---------------|
+| **Name**    | **Usage** | **Value(s)**         | **Default**   |
+| ----------- | --------- | -------------------- | ------------- |
 | min-choices | optional  | Non-negative integer | 0 (unlimited) |
-| max-choices | optional  | Non-negative integer | 1  |
+| max-choices | optional  | Non-negative integer | 1             |
 
 The qti-hottext-interaction must be bound to a response variable with a
 base-type of identifier and single or multiple cardinality.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item  xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="hot-text-example-1" title="Q12 Hot-text Interaction - Single Cardinality"
   adaptive="false" time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>B</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>B</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <p>
   Select the error in the following passage of text (or <em>No Error</em> if there is none).
   </p>
@@ -2295,6 +2321,7 @@ Identifier
 required
 optional
 boolean
+
 <p>false</p>
 <p>If <em>true</em> then a choice must be selected by the candidate in
 order to form a valid response to the interaction.</p>
@@ -2311,12 +2338,12 @@ The sub-element seCoolquence of qti-inline-choice-interaction is:
 
 **InlineChoice Attributes (element: qti-inline-choice)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier of a template variable used to control the visibility of the choice |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| fixed | optional | boolean | false |
+| **Name**            | **Usage** | **Value(s)**                                                                   | **Default** |
+| ------------------- | --------- | ------------------------------------------------------------------------------ | ----------- |
+| identifier          | required  | Identifier                                                                     |             |
+| template-identifier | optional  | Identifier of a template variable used to control the visibility of the choice |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide                                                        | show        |
+| fixed               | optional  | boolean                                                                        | false       |
 
 When rendering an inline choice interaction, the common implementation
 is an embodiment of a \<select\> html form element or a combo box form
@@ -2328,40 +2355,43 @@ candidate to select one answer option to respond to the prompt.
 **Example: qti-inline-choice-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="QTI3-inline-choice" title="Inline Choice Interaction"
   time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>Y</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
-  <qti-item-body>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>Y</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
+<qti-item-body>
+
   <p>Identify the missing word in this famous quote from Shakespeare's Richard III.</p>
   <blockquote>
   <p>Now is the winter of our discontent
 
 Made glorious summer by this sun of
-  <qti-inline-choice-interaction response-identifier="RESPONSE" shuffle="false">
-  <qti-inline-choice identifier="G">Gloucester</qti-inline-choice>
-  <qti-inline-choice identifier="L">Lancaster</qti-inline-choice>
-  <qti-inline-choice identifier="Y">York</qti-inline-choice>
-  </qti-inline-choice-interaction>;
+<qti-inline-choice-interaction response-identifier="RESPONSE" shuffle="false">
+<qti-inline-choice identifier="G">Gloucester</qti-inline-choice>
+<qti-inline-choice identifier="L">Lancaster</qti-inline-choice>
+<qti-inline-choice identifier="Y">York</qti-inline-choice>
+</qti-inline-choice-interaction>;
 
 And all the clouds that lour'd upon our house
 
 In the deep bosom of the ocean buried.</p>
+
   </blockquote>
   </qti-item-body>
   <qti-response-processing
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml"/>
   </qti-assessment-item>
 
-Figure 13  Expected Rendering: The
+Figure 13 Expected Rendering: The
 inline choice interaction rendered inline (not block) with the
 surrounding inline markup.
 
@@ -2385,11 +2415,11 @@ characteristic of the choices.
 The sub-element within qti-match-interaction is qti-simple-match-set.
 **MatchInteration Attributes (element: qti-match-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|------------------|-----------|---------------------|-------------|
-| max-associations | optional  | Non-negative number | 1  |
-| min-associations | optional  | Non-negative number |  |
-| shuffle  | optional  | boolean  | false  |
+| **Name**         | **Usage** | **Value(s)**        | **Default** |
+| ---------------- | --------- | ------------------- | ----------- |
+| max-associations | optional  | Non-negative number | 1           |
+| min-associations | optional  | Non-negative number |             |
+| shuffle          | optional  | boolean             | false       |
 
 The sub-element of qti-match-interaction is qti-simple-match-set
 (SimpleMatchSet.Type). The qti-simple-match-set has an optional "id"
@@ -2400,15 +2430,15 @@ qti-simple-associable-choice (SimpleAssociableChoice.Type) elements.
 **SimpleAssociableChoice Attributes (element:
 qti-simple-associable-choice)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|---------------------|-----------|-------------------------|---------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| match-group  | optional  | IdentifierList  |  |
-| match-max  | required  | Non-negative integer  |  |
-| match-min  | optional  | Non-negative integer  | 0 (unlimited) |
-| fixed  | optional  | boolean  | false  |
+| **Name**            | **Usage** | **Value(s)**            | **Default**   |
+| ------------------- | --------- | ----------------------- | ------------- |
+| identifier          | required  | Identifier              |               |
+| template-identifier | optional  | Identifier              |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show          |
+| match-group         | optional  | IdentifierList          |               |
+| match-max           | required  | Non-negative integer    |               |
+| match-min           | optional  | Non-negative integer    | 0 (unlimited) |
+| fixed               | optional  | boolean                 | false         |
 
 The match interaction must be bound to a response variable with
 base-type directedPair and either single or multiple cardinality.
@@ -2426,44 +2456,45 @@ has two associations. In the mapping used for response processing these
 two associations have been awarded only a half a mark each.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="QTI3-match"  title="Match Example"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
-  <qti-correct-response>
-  <qti-value>C R</qti-value>
-  <qti-value>D M</qti-value>
-  <qti-value>L M</qti-value>
-  <qti-value>P T</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="0">
-  <qti-map-entry map-key="C R" mapped-value="1" />
-  <qti-map-entry map-key="D M" mapped-value="0.5" />
-  <qti-map-entry map-key="L M" mapped-value="0.5" />
-  <qti-map-entry map-key="P T" mapped-value="1" />
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
-  <qti-match-interaction response-identifier="RESPONSE" max-associations="4">
-  <qti-prompt>Match the following characters to the Shakespeare play they appeared in:</qti-prompt>
-  <qti-simple-match-set>
-  <qti-simple-associable-choice identifier="C" match-max="1">Capulet</qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="D" match-max="1">Demetrius</qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="L" match-max="1">Lysander</qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="P" match-max="1">Prospero</qti-simple-associable-choice>
-  </qti-simple-match-set>
-  <qti-simple-match-set>
-  <qti-simple-associable-choice identifier="M" match-max="4">A Midsummer-Night's Dream</qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="R" match-max="4">Romeo and Juliet</qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="T" match-max="4">The Tempest</qti-simple-associable-choice>
-  </qti-simple-match-set>
-  </qti-match-interaction>
-  </qti-item-body>
-  <qti-response-processing template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"/>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
+<qti-correct-response>
+<qti-value>C R</qti-value>
+<qti-value>D M</qti-value>
+<qti-value>L M</qti-value>
+<qti-value>P T</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="0">
+<qti-map-entry map-key="C R" mapped-value="1" />
+<qti-map-entry map-key="D M" mapped-value="0.5" />
+<qti-map-entry map-key="L M" mapped-value="0.5" />
+<qti-map-entry map-key="P T" mapped-value="1" />
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+<qti-match-interaction response-identifier="RESPONSE" max-associations="4">
+<qti-prompt>Match the following characters to the Shakespeare play they appeared in:</qti-prompt>
+<qti-simple-match-set>
+<qti-simple-associable-choice identifier="C" match-max="1">Capulet</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="D" match-max="1">Demetrius</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="L" match-max="1">Lysander</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="P" match-max="1">Prospero</qti-simple-associable-choice>
+</qti-simple-match-set>
+<qti-simple-match-set>
+<qti-simple-associable-choice identifier="M" match-max="4">A Midsummer-Night's Dream</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="R" match-max="4">Romeo and Juliet</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="T" match-max="4">The Tempest</qti-simple-associable-choice>
+</qti-simple-match-set>
+</qti-match-interaction>
+</qti-item-body>
+<qti-response-processing template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"/>
 </qti-assessment-item>
 
 Figure 14 Example of a Match
@@ -2473,7 +2504,7 @@ The shared interaction vocabulary for the Match Interaction is intended
 to provide more precision when describing:
 
 1.  Non-tabular Match Interaction positioning of the first Simple Match
-  Set choices with respect to the second Simple Match Set choices.
+    Set choices with respect to the second Simple Match Set choices.
 2.  Tabular Match Interaction styling.
 3.  Custom max\|min-associations message overrides.
 
@@ -2493,12 +2524,12 @@ on them.
 
 **OrderInteraction Attributes (element: qti-order-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|-------------|-----------|-----------------------------------|-------------|
-| min-choices | optional  | Non-negative number  |  |
-| max-choices | optional  | Non-negative number  |  |
-| orientation | optional  | Vocabulary:* horizontal* vertical |  |
-| shuffle  | optional  | false  |  |
+| **Name**    | **Usage** | **Value(s)**                      | **Default** |
+| ----------- | --------- | --------------------------------- | ----------- |
+| min-choices | optional  | Non-negative number               |             |
+| max-choices | optional  | Non-negative number               |             |
+| orientation | optional  | Vocabulary:_ horizontal_ vertical |             |
+| shuffle     | optional  | false                             |             |
 
 The sub-element of qti-order-interaction is qti-simple-choice
 (SimpleChoice.Type) where there must be at least one qti-simple-choice
@@ -2507,12 +2538,12 @@ an order interaction.
 
 **SimpleChoice (element: qti-simple-choice) Attributes**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|---------------------|-----------|-------------------------|-------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| fixed  | optional  | boolean  | false  |
+| **Name**            | **Usage** | **Value(s)**            | **Default** |
+| ------------------- | --------- | ----------------------- | ----------- |
+| identifier          | required  | Identifier              |             |
+| template-identifier | optional  | Identifier              |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show        |
+| fixed               | optional  | boolean                 | false       |
 
 This example below illustrates the Order Interaction. The candidate's
 response is declared to have ordered and the correct value is therefore
@@ -2521,21 +2552,23 @@ response processing template Match Correct to score 1 for a completely
 correct answer and 0 otherwise.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="QTI3-order" title="Order Interaction Example"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>DriverC</qti-value>
-  <qti-value>DriverA</qti-value>
-  <qti-value>DriverB</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
+<qti-correct-response>
+<qti-value>DriverC</qti-value>
+<qti-value>DriverA</qti-value>
+<qti-value>DriverB</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+
   <p>The following F1 drivers finished on the podium in the first ever
   Grand Prix of Bahrain.</p>
   <qti-order-interaction response-identifier="RESPONSE" orientation="horizontal">
@@ -2584,27 +2617,27 @@ defined area(s) of the image.
 **Graphic Order Interaction Attributes (element:
 qti-graphic-order-interaction)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| max-choices | optional | Non-negative number | If unspecified, all of the choices may be ordered. |
-| min-choices | optional | Non-negative number | If unspecified, all of the choices *must* be ordered and max-choices is ignored. |
+| **Name**    | **Usage** | **Value(s)**        | **Default**                                                                      |
+| ----------- | --------- | ------------------- | -------------------------------------------------------------------------------- |
+| max-choices | optional  | Non-negative number | If unspecified, all of the choices may be ordered.                               |
+| min-choices | optional  | Non-negative number | If unspecified, all of the choices _must_ be ordered and max-choices is ignored. |
 
 The sub-element sequence for the qti-graphic-order-interaction:
 
 1.  either img, picture, or object (must have only 1, object is
-  deprecated)
+    deprecated)
 2.  qti-hotspot-choice (at least 1)
 
 **HotspotChoice Attributes (element: qti-hotspot-choice)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier of a template variable used to control the visibility of the qti-hotspot-choice |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| shape | required | Vocabulary:* circle* default* ellipse* poly* rect |  |
-| coords | required | Coords.Type |  |
-| hotspot-label | optional | string |  |
+| **Name**            | **Usage** | **Value(s)**                                                                               | **Default** |
+| ------------------- | --------- | ------------------------------------------------------------------------------------------ | ----------- |
+| identifier          | required  | Identifier                                                                                 |             |
+| template-identifier | optional  | Identifier of a template variable used to control the visibility of the qti-hotspot-choice |             |
+| show-hide           | optional  | Vocabulary:_ show_ hide                                                                    | show        |
+| shape               | required  | Vocabulary:_ circle_ default* ellipse* poly\* rect                                         |             |
+| coords              | required  | Coords.Type                                                                                |             |
+| hotspot-label       | optional  | string                                                                                     |             |
 
 The graphic order interaction must be bound to a response variable with
 a base-type of identifier and ordered cardinality.
@@ -2612,22 +2645,24 @@ a base-type of identifier and ordered cardinality.
 **Example: Demonstrates qti-graphic-order-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="QTI3-graphic-order" title="Graphic Order Interaction Example"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>A</qti-value>
-  <qti-value>D</qti-value>
-  <qti-value>C</qti-value>
-  <qti-value>B</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="ordered" base-type="identifier">
+<qti-correct-response>
+<qti-value>A</qti-value>
+<qti-value>D</qti-value>
+<qti-value>C</qti-value>
+<qti-value>B</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+
   <p>Lorna is flying back home to the UK. Ideally, she would like to fly in directly to her
   home town of Glasgow. Edinburgh is her second choice and, if necessary, she could fly into
   London and pick up an internal connecting flight. Although she has been offered a cheap flight
@@ -2652,16 +2687,16 @@ example, partial response shown.
 #### 3.2.12 Associate Interaction
 
 An AssociateInteraction.Type (qti-associate-interaction) is a block
-interaction that presents candidates with a number of  choices and
+interaction that presents candidates with a number of choices and
 allows them to create associations between them.
 
 **AssociateInteraction Attributes (element: qti-associate-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|------------------|-----------|---------------------|---------------|
-| max-associations | optional  | Non-negative number | 1  |
+| **Name**         | **Usage** | **Value(s)**        | **Default**   |
+| ---------------- | --------- | ------------------- | ------------- |
+| max-associations | optional  | Non-negative number | 1             |
 | min-associations | optional  | Non-negative number | 0 (unlimited) |
-| shuffle  | optional  | boolean  | false  |
+| shuffle          | optional  | boolean             | false         |
 
 The sub-element of qti-associate-interaction is
 qti-simple-associable-choice, where there must be at least one
@@ -2670,14 +2705,14 @@ qti-simple-associable-choice.
 **SimpleAssociableChoice Attributes (element:
 qti-simple-associable-choice)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|---------------------|-----------|-------------------------|---------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| match-max  | required  | Non-negative integer  |  |
-| match-min  | optional  | Non-negative integer  | 0 (unlimited) |
-| fixed  | optional  | boolean  |  |
+| **Name**            | **Usage** | **Value(s)**            | **Default**   |
+| ------------------- | --------- | ----------------------- | ------------- |
+| identifier          | required  | Identifier              |               |
+| template-identifier | optional  | Identifier              |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show          |
+| match-max           | required  | Non-negative integer    |               |
+| match-min           | optional  | Non-negative integer    | 0 (unlimited) |
+| fixed               | optional  | boolean                 |               |
 
 The qti-associate-interaction must be bound to a response variable with
 base-type pair and either single or multiple cardinality.
@@ -2685,53 +2720,54 @@ base-type pair and either single or multiple cardinality.
 Example: Demonstrates qti-associate-interaction allowing for 3 pairings
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="QTI3-associate" title="Classic Associate Interaction Example"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="pair">
-  <qti-correct-response>
-  <qti-value>A P</qti-value>
-  <qti-value>C M</qti-value>
-  <qti-value>D L</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="0">
-  <qti-map-entry map-key="A P" mapped-value="2" />
-  <qti-map-entry map-key="C M" mapped-value="1" />
-  <qti-map-entry map-key="D L" mapped-value="1" />
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="pair">
+<qti-correct-response>
+<qti-value>A P</qti-value>
+<qti-value>C M</qti-value>
+<qti-value>D L</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="0">
+<qti-map-entry map-key="A P" mapped-value="2" />
+<qti-map-entry map-key="C M" mapped-value="1" />
+<qti-map-entry map-key="D L" mapped-value="1" />
 </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
-  <qti-associate-interaction response-identifier="RESPONSE" max-associations="3">
-  <qti-prompt>
-  Hidden in this list of characters from famous
-  Shakespeare plays are three pairs of rivals. Can you match
-  each character to his adversary?
-  </qti-prompt>
-  <qti-simple-associable-choice identifier="A" match-max="1">
-  Antonio
-  </qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="C" match-max="1">
-  Capulet
-  </qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="D" match-max="1">
-  Demetrius
-  </qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="L" match-max="1">
-  Lysander
-  </qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="M" match-max="1">
-  Montague
-  </qti-simple-associable-choice>
-  <qti-simple-associable-choice identifier="P" match-max="1">
-  Prospero
-  </qti-simple-associable-choice>
-  </qti-associate-interaction>
-  </qti-item-body>
-  <qti-response-processing
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+<qti-associate-interaction response-identifier="RESPONSE" max-associations="3">
+<qti-prompt>
+Hidden in this list of characters from famous
+Shakespeare plays are three pairs of rivals. Can you match
+each character to his adversary?
+</qti-prompt>
+<qti-simple-associable-choice identifier="A" match-max="1">
+Antonio
+</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="C" match-max="1">
+Capulet
+</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="D" match-max="1">
+Demetrius
+</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="L" match-max="1">
+Lysander
+</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="M" match-max="1">
+Montague
+</qti-simple-associable-choice>
+<qti-simple-associable-choice identifier="P" match-max="1">
+Prospero
+</qti-simple-associable-choice>
+</qti-associate-interaction>
+</qti-item-body>
+<qti-response-processing
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml" />
 </qti-assessment-item>
 
@@ -2753,30 +2789,30 @@ the image.
 
 **AssociateInteraction Attributes (element: qti-associate-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|------------------|-----------|---------------------|-------------|
-| max-associations | optional  | Non-negative number | 1  |
-| min-associations | optional  | Non-negative number |  |
+| **Name**         | **Usage** | **Value(s)**        | **Default** |
+| ---------------- | --------- | ------------------- | ----------- |
+| max-associations | optional  | Non-negative number | 1           |
+| min-associations | optional  | Non-negative number |             |
 
 The sub-element sequence:
 
 1.  img, picture, or object (limited to a single occurrence, object is
-  deprecated)
+    deprecated)
 2.  qti-associable-hotspot (at least 1)
 
 **AssociableHotspot Attributes (element: qti-associable-hotspot)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| match-group | optional | IdentifierList |  |
-| shape | required | Vocabulary:* circle* default* ellipse* poly* rect |  |
-| coords | required | Coords.Type |  |
-| hotspot-label | optional | string |  |
-| match-max | required | Non-negative integer |  |
-| match-min | optional | Non-negative integer | 0 (unlimited) |
+| **Name**            | **Usage** | **Value(s)**                                       | **Default**   |
+| ------------------- | --------- | -------------------------------------------------- | ------------- |
+| identifier          | required  | Identifier                                         |               |
+| template-identifier | optional  | Identifier                                         |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide                            | show          |
+| match-group         | optional  | IdentifierList                                     |               |
+| shape               | required  | Vocabulary:_ circle_ default* ellipse* poly\* rect |               |
+| coords              | required  | Coords.Type                                        |               |
+| hotspot-label       | optional  | string                                             |               |
+| match-max           | required  | Non-negative integer                               |               |
+| match-min           | optional  | Non-negative integer                               | 0 (unlimited) |
 
 The qti-graphic-associate-interaction must be bound to a response
 variable with base-type pair and either single or multiple cardinality.
@@ -2784,18 +2820,19 @@ variable with base-type pair and either single or multiple cardinality.
 **Example: Demonstrates qti-graphic-associate-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_itemv3p0p1_v1p0.xsd"
 identifier="example-graphic-assoc-1"  title="Graphic Associate Example 1"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="pair">
-  <qti-correct-response>
-  <qti-value>C B</qti-value>
-  <qti-value>C D</qti-value>
-  </qti-correct-response>
-  <qti-mapping lower-bound="0" default-value="0">
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="pair">
+<qti-correct-response>
+<qti-value>C B</qti-value>
+<qti-value>C D</qti-value>
+</qti-correct-response>
+<qti-mapping lower-bound="0" default-value="0">
 
   <qti-map-entry map-key="A B" mapped-value="-1" />
   <qti-map-entry map-key="A C" mapped-value="-1" />
@@ -2845,6 +2882,7 @@ WebP.
 element**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -2852,21 +2890,22 @@ element**
   identifier="example-graphic-assoc-1alt" title="Alternative Graphic Associate Example"
 xml:lang="en-US" time-dependent="false">
 <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="pair">
-  <qti-correct-response>
-  <qti-value>C B</qti-value>
-  <qti-value>C D</qti-value>
-  </qti-correct-response>
-  <qti-mapping lower-bound="0" default-value="0">
-  <qti-map-entry map-key="A B" mapped-value="-1" />
-  <qti-map-entry map-key="A C" mapped-value="-1" />
-  <qti-map-entry map-key="A D" mapped-value="-1" />
-  <qti-map-entry map-key="B D" mapped-value="-1" />
-  <qti-map-entry map-key="B C" mapped-value="1" />
-  <qti-map-entry map-key="C D" mapped-value="1" />
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
-  <qti-item-body>
+<qti-correct-response>
+<qti-value>C B</qti-value>
+<qti-value>C D</qti-value>
+</qti-correct-response>
+<qti-mapping lower-bound="0" default-value="0">
+<qti-map-entry map-key="A B" mapped-value="-1" />
+<qti-map-entry map-key="A C" mapped-value="-1" />
+<qti-map-entry map-key="A D" mapped-value="-1" />
+<qti-map-entry map-key="B D" mapped-value="-1" />
+<qti-map-entry map-key="B C" mapped-value="1" />
+<qti-map-entry map-key="C D" mapped-value="1" />
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
+<qti-item-body>
+
   <p>
   Frizz, a new low cost airline, already operates a service
   connecting Manchester and Edinburgh but has recently opened two
@@ -2916,10 +2955,10 @@ requirements.
 **GraphicGapMatchInteraction Attributes (element:
 qti-graphic-gap-match-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|------------------|-----------|---------------------|-------------|
-| max-associations | optional  | Non-negative number | 1  |
-| min-associations | optional  | Non-negative number |  |
+| **Name**         | **Usage** | **Value(s)**        | **Default** |
+| ---------------- | --------- | ------------------- | ----------- |
+| max-associations | optional  | Non-negative number | 1           |
+| min-associations | optional  | Non-negative number |             |
 
 The sequence of elements within the qti-graphic-gap-match-interaction
 is:
@@ -2932,42 +2971,42 @@ is:
 
 **GapText Attributes (element: qti-gap-text)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|---------------------|-----------|-------------------------|---------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| match-group  | optional  | IdentifierList  |  |
-| match-max  | required  | Non-negative integer  |  |
-| match-min  | optional  | Non-negative integer  | 0 (unlimited) |
+| **Name**            | **Usage** | **Value(s)**            | **Default**   |
+| ------------------- | --------- | ----------------------- | ------------- |
+| identifier          | required  | Identifier              |               |
+| template-identifier | optional  | Identifier              |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show          |
+| match-group         | optional  | IdentifierList          |               |
+| match-max           | required  | Non-negative integer    |               |
+| match-min           | optional  | Non-negative integer    | 0 (unlimited) |
 
 **GapImg Attributes (element: qti-gap-img)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|---------------------|-----------|-------------------------|---------------|
-| identifier  | required  | Identifier  |  |
-| template-identifier | optional  | Identifier  |  |
-| show-hide  | optional  | Vocabulary:* show* hide | show  |
-| match-group  | optional  | IdentifierList  |  |
-| match-max  | required  | Non-negative integer  |  |
-| match-min  | optional  | Non-negative integer  | 0 (unlimited) |
-| object-label  | optional  | string  |  |
-| top  | optional  | *empty*  |  |
-| left  | optional  | *empty*  |  |
+| **Name**            | **Usage** | **Value(s)**            | **Default**   |
+| ------------------- | --------- | ----------------------- | ------------- |
+| identifier          | required  | Identifier              |               |
+| template-identifier | optional  | Identifier              |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide | show          |
+| match-group         | optional  | IdentifierList          |               |
+| match-max           | required  | Non-negative integer    |               |
+| match-min           | optional  | Non-negative integer    | 0 (unlimited) |
+| object-label        | optional  | string                  |               |
+| top                 | optional  | _empty_                 |               |
+| left                | optional  | _empty_                 |               |
 
 **AssociableHotspot Attributes (element: qti-associable-hotspot)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| identifier | required | Identifier |  |
-| template-identifier | optional | Identifier |  |
-| show-hide | optional | Vocabulary:* show* hide | show |
-| match-group | optional | IdentifierList |  |
-| shape | required | Vocabulary:* circle* default* ellipse* poly* rect |  |
-| coords | required | Coords.Type |  |
-| hotspot-label | optional | string |  |
-| match-max | required | Non-negative integer |  |
-| match-min | optional | Non-negative integer | 0 (unlimited) |
+| **Name**            | **Usage** | **Value(s)**                                       | **Default**   |
+| ------------------- | --------- | -------------------------------------------------- | ------------- |
+| identifier          | required  | Identifier                                         |               |
+| template-identifier | optional  | Identifier                                         |               |
+| show-hide           | optional  | Vocabulary:_ show_ hide                            | show          |
+| match-group         | optional  | IdentifierList                                     |               |
+| shape               | required  | Vocabulary:_ circle_ default* ellipse* poly\* rect |               |
+| coords              | required  | Coords.Type                                        |               |
+| hotspot-label       | optional  | string                                             |               |
+| match-max           | required  | Non-negative integer                               |               |
+| match-min           | optional  | Non-negative integer                               | 0 (unlimited) |
 
 The graphic-gap-match-interaction must be bound to a response variable
 with base-type directedPair and multiple cardinality. The choices
@@ -2979,6 +3018,7 @@ times, in which case the corresponding directed pair appears multiple
 times in the value of the response variable.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
   xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -2986,20 +3026,21 @@ times in the value of the response variable.
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="graphic-gap-match-item1" title="Q8 GGM Images - Airport Tags"
   adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
-  <qti-correct-response>
-  <qti-value>GLA A</qti-value>
-  <qti-value>EDI B</qti-value>
-  <qti-value>MAN C</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="-1" lower-bound="0">
-  <qti-map-entry map-key="GLA A" mapped-value="1"/>
-  <qti-map-entry map-key="EDI B" mapped-value="1"/>
-  <qti-map-entry map-key="MAN C" mapped-value="1"/>
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="directedPair">
+<qti-correct-response>
+<qti-value>GLA A</qti-value>
+<qti-value>EDI B</qti-value>
+<qti-value>MAN C</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="-1" lower-bound="0">
+<qti-map-entry map-key="GLA A" mapped-value="1"/>
+<qti-map-entry map-key="EDI B" mapped-value="1"/>
+<qti-map-entry map-key="MAN C" mapped-value="1"/>
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <p>The International Air Transport Association assigns three-letter codes
   to identify airports worldwide. For example, London Heathrow has code LHR.</p>
   <qti-graphic-gap-match-interaction max-associations="0" response-identifier="RESPONSE"
@@ -3044,7 +3085,7 @@ The shared interaction vocabulary for the Graphic Gap Match Interaction
 is intended to provide more precision when describing:
 
 1.  Positioning of the Gap Choices container with respect to the image
-  containing the hotspots.
+    containing the hotspots.
 2.  Gap Choices container width.
 3.  Associable Hotspot Selections theming.
 4.  Custom max\|min-associations message overrides.
@@ -3056,18 +3097,18 @@ section on Graphic Gap Match Interaction for full details.
 #### 3.2.15 Media
 
 The MediaInteraction.Type (qti-media-interaction) enables measurement of
-the number of times the media object was experienced.  This quantity is
+the number of times the media object was experienced. This quantity is
 reported in the value of the interaction's response variable.
 
 **MediaInteraction Attributes (element: qti-media-interaction)**
 
-| **Name** | **Usage** | **Value(s)** | **Default** |
-|----|----|----|----|
-| autostart | required | boolean | Note: Accessibility guidelines suggest that candidates should initiate any media instead of automatically playing the media, therefore the value should be "false". |
-| min-plays | optional | Non-negative integer | 0 (unlimited) |
-| max-plays | optional | Non-negative integer | 0 (unlimited) |
-| loop | optional | boolean | false |
-| coords | optional | Coords.Type |  |
+| **Name**  | **Usage** | **Value(s)**         | **Default**                                                                                                                                                         |
+| --------- | --------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| autostart | required  | boolean              | Note: Accessibility guidelines suggest that candidates should initiate any media instead of automatically playing the media, therefore the value should be "false". |
+| min-plays | optional  | Non-negative integer | 0 (unlimited)                                                                                                                                                       |
+| max-plays | optional  | Non-negative integer | 0 (unlimited)                                                                                                                                                       |
+| loop      | optional  | boolean              | false                                                                                                                                                               |
+| coords    | optional  | Coords.Type          |                                                                                                                                                                     |
 
 The sub-elements include:
 
@@ -3079,7 +3120,7 @@ The qti-media-interaction must be bound to a response variable of
 base-type integer and single cardinality.
 
 Note that for the audio and video elements in QTI 3 markup, the
-"controls" attribute *MUST* include a value for the attribute to be
+"controls" attribute _MUST_ include a value for the attribute to be
 valid XML. As per the HTML 5 specification, the way to exclude controls
 is to explicitly not include the attribute in the audio or video
 element. In QTI 3, valid values to include controls are "controls" (as
@@ -3092,18 +3133,20 @@ provided with media controls.
 **Example: Demonstrates qti-media-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="media-example-1" title="Media Interaction Example"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration base-type="integer" cardinality="single" identifier="RESPONSE_1"/>
-  <qti-item-body>
-  <qti-media-interaction autostart="false" loop="false" response-identifier="RESPONSE_1"
+<qti-response-declaration base-type="integer" cardinality="single" identifier="RESPONSE_1"/>
+<qti-item-body>
+<qti-media-interaction autostart="false" loop="false" response-identifier="RESPONSE_1"
   max-plays="3" >
-  <qti-prompt>Play this video.</qti-prompt>
-  <video width="320" height="240"  >
+<qti-prompt>Play this video.</qti-prompt>
+<video width="320" height="240"  >
+
   <source src="images/bubble.mp4" type="video/mp4"/>
   <source src="images/bubble.ogv" type="video/ogv"/>
   </video>
@@ -3127,15 +3170,14 @@ position(s) selected by the candidate shall be indicated.
 **PositionObjectInteraction Attributes (element:
 qti-position-object-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default** |
-|--------------|-----------|---------------------|-------------|
-| center-point | optional  | IntegerList  |  |
-| min-choices  | optional  | Non-negative number |  |
-| max-choices  | optional  | Non-negative number | 1  |
+| **Name**     | **Usage** | **Value(s)**        | **Default** |
+| ------------ | --------- | ------------------- | ----------- |
+| center-point | optional  | IntegerList         |             |
+| min-choices  | optional  | Non-negative number |             |
+| max-choices  | optional  | Non-negative number | 1           |
 
 The sub-element for the qti-position-object-interaction is either the
-HTML "img" or "picture" element. The object element is deprecated in QTI
-3.
+HTML "img" or "picture" element. The object element is deprecated in QTI 3.
 
 The qti-position-object-interaction must be bound to a response variable
 with a base-type of point and single or multiple cardinality. The point
@@ -3152,6 +3194,7 @@ objects to be positioned on the same "stage".
 **Example: Demonstrates qti-position-object-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -3159,23 +3202,24 @@ xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="position-object-1" title="Position Object, those UK airports again!"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="point">
-  <qti-correct-response>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="point">
+<qti-correct-response>
 
-  <qti-value>118 184</qti-value>
+<qti-value>118 184</qti-value>
 
-  <qti-value>150 235</qti-value>
+<qti-value>150 235</qti-value>
 
-  <qti-value>96 114</qti-value>
-  </qti-correct-response>
-  <qti-area-mapping default-value="0">
-  <qti-area-map-entry shape="circle" coords="118,184,12" mapped-value="1"/>
-  <qti-area-map-entry shape="circle" coords="150,235,12" mapped-value="1"/>
-  <qti-area-map-entry shape="circle" coords="96,114,12" mapped-value="1"/>
-  </qti-area-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-value>96 114</qti-value>
+</qti-correct-response>
+<qti-area-mapping default-value="0">
+<qti-area-map-entry shape="circle" coords="118,184,12" mapped-value="1"/>
+<qti-area-map-entry shape="circle" coords="150,235,12" mapped-value="1"/>
+<qti-area-map-entry shape="circle" coords="96,114,12" mapped-value="1"/>
+</qti-area-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <p>When flying into the UK, you may well find yourself landing at
   Edinburgh, Manchester or London Heathrow; but where are these
   airports actually located?
@@ -3199,7 +3243,7 @@ Interaction example, partial response.
 
 The SelectPointInteraction.Type (qti-select-point-interaction) is a
 graphic interaction. The candidate's task is to select one or more
-points. The associated response may have an qti-area-mapping  that
+points. The associated response may have an qti-area-mapping that
 scores the response on the basis of comparing it against predefined
 areas but the delivery engine must not indicate these areas of the
 image. Only the actual point(s) selected by the candidate shall be
@@ -3208,9 +3252,9 @@ indicated.
 **SelectPointInteraction Attributes (element:
 qti-select-point-interaction)**
 
-| **Name**  | **Usage** | **Value(s)**  | **Default**  |
-|-------------|-----------|---------------------|---------------|
-| min-choices | optional  | Non-negative number | 0  |
+| **Name**    | **Usage** | **Value(s)**        | **Default**   |
+| ----------- | --------- | ------------------- | ------------- |
+| min-choices | optional  | Non-negative number | 0             |
 | max-choices | optional  | Non-negative number | 0 (unlimited) |
 
 The sub-element for the qti-select-point-interaction is either the HTML
@@ -3220,6 +3264,7 @@ The select point interaction must be bound to a response variable with a
 base-type of point and single or multiple cardinality.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
   xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -3227,18 +3272,19 @@ base-type of point and single or multiple cardinality.
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="select-point-item_1" title="Classic Where is Edinburgh Example"
   adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="point">
-  <qti-correct-response>
-  <qti-value>93 111</qti-value>
-  </qti-correct-response>
-  <qti-area-mapping default-value="0" >
-  <qti-area-map-entry shape="circle" coords="93,111,16" mapped-value="1"/>
-  </qti-area-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-select-point-interaction max-choices="1" response-identifier="RESPONSE"  >
-  <qti-prompt>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="point">
+<qti-correct-response>
+<qti-value>93 111</qti-value>
+</qti-correct-response>
+<qti-area-mapping default-value="0" >
+<qti-area-map-entry shape="circle" coords="93,111,16" mapped-value="1"/>
+</qti-area-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-select-point-interaction max-choices="1" response-identifier="RESPONSE"  >
+<qti-prompt>
+
   <p>Mark Edinburgh on this map of the United Kingdom.</p>
   </qti-prompt>
   <img width="196" height="280" src="images/uk_green.png" alt="A map of the United Kingdom" />
@@ -3259,7 +3305,7 @@ and upper bound. It must be bound to a response variable with single
 cardinality with a base-type of either integer or float.
 
 Note that a slider interaction does not have a default or initial
-position except where specified by a default value for  the associated
+position except where specified by a default value for the associated
 response variable. The currently selected value, if any, must be clearly
 indicated to the candidate.
 
@@ -3303,6 +3349,7 @@ false
 
 orientation
 optional
+
 <p>Vocabulary;</p>
 <ul>
 <li>horizontal</li>
@@ -3315,6 +3362,7 @@ optional
 **Example: Demonstrates qti-slider-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -3322,22 +3370,22 @@ xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="slider-1" title="Slider Interaction - Water"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="integer">
-  <qti-correct-response>
-  <qti-value>70</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-slider-interaction response-identifier="RESPONSE"
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="integer">
+<qti-correct-response>
+<qti-value>70</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-slider-interaction response-identifier="RESPONSE"
   lower-bound="0" upper-bound="100" step="10" orientation="horizontal" >
-  <qti-prompt>
-  Roughly (to the nearest 10%) what percentage of the Earth's surface
-  is covered in water?
-  </qti-prompt>
-  </qti-slider-interaction>
-  </qti-item-body>
-  <qti-response-processing
+<qti-prompt>
+Roughly (to the nearest 10%) what percentage of the Earth's surface
+is covered in water?
+</qti-prompt>
+</qti-slider-interaction>
+</qti-item-body>
+<qti-response-processing
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml"/>
 </qti-assessment-item>
 
@@ -3355,18 +3403,19 @@ The UploadInteraction.Type (qti-upload-interaction) allows the candidate
 to upload a pre-prepared file representing their response.
 
 The qti-upload-interaction must be bound to a response variable with
-base-type * file* and *single* cardinality.
+base-type _ file_ and _single_ cardinality.
 
 **UploadInteraction Attributes (element: qti-upload-interaction)**
 
-| **Name**  | **Usage** | **Value(s)** | **Default** |
-|---------------------|-----------|--------------|-------------|
-| class  | optional  | xs:string  |  |
-| response-identifier | mandatory | identifier  |  |
+| **Name**            | **Usage** | **Value(s)** | **Default** |
+| ------------------- | --------- | ------------ | ----------- |
+| class               | optional  | xs:string    |             |
+| response-identifier | mandatory | identifier   |             |
 
 **Example: Demonstrates qti-upload-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -3374,9 +3423,10 @@ xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="upload-interaction" title="Upload Chocolate Spreadsheet"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="file" />
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="file" />
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <p>A chocolate factory produces several types of chocolate, some of which have nut centres.
   The chocolates are mixed together and are randomly packed into cartons of ten.</p>
   <qti-upload-interaction response-identifier="RESPONSE" >
@@ -3399,7 +3449,7 @@ have nut centres. Your spreadsheet should include 50 rows representing
 the 50 cartons, each row containing 10 columns to represent the
 chocolates.</p>
 
-Figure 25  Expected Rendering:
+Figure 25 Expected Rendering:
 Rendering and behaviors of the Upload Interaction are left entirely to
 the delivery platform.
 
@@ -3407,26 +3457,27 @@ the delivery platform.
 
 The DrawingInteraction.Type (qti-drawing-interaction) allows the
 candidate to use a set of drawing tools to modify a given graphical
-image (the canvas).  It must be bound to a response variable with base
-type *file* and *single* cardinality.
+image (the canvas). It must be bound to a response variable with base
+type _file_ and _single_ cardinality.
 
 **DrawingInteraction Attributes (element: qti-drawing-interaction)**
 
-| **Name**  | **Usage** | **Value(s)** | **Default** |
-|---------------------|-----------|--------------|-------------|
-| class  | optional  | xs:string  |  |
-| response-identifier | mandatory | identifier  |  |
+| **Name**            | **Usage** | **Value(s)** | **Default** |
+| ------------------- | --------- | ------------ | ----------- |
+| class               | optional  | xs:string    |             |
+| response-identifier | mandatory | identifier   |             |
 
 The sub-element of the qti-drawing-interaction are the HTML elements
-*img, picture,* or *object*. The image specified within one of the
+_img, picture,_ or _object_. The image specified within one of the
 aforementioned elements acts as the canvas on which the drawing takes
-place. It is best practice to use the *img* or *picture* elements for
-this interaction. If using the deprecated object element it *MUST* be of
-an *image* type, as specified by the type attribute.
+place. It is best practice to use the _img_ or _picture_ elements for
+this interaction. If using the deprecated object element it _MUST_ be of
+an _image_ type, as specified by the type attribute.
 
 **Example: Demonstrates qti-drawing-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -3434,11 +3485,12 @@ xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="drawing-interaction-1" title="Draw an Angle"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="file" />
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
- <qti-item-body>
-  <qti-drawing-interaction response-identifier="RESPONSE">
-  <qti-prompt>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="file" />
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-drawing-interaction response-identifier="RESPONSE">
+<qti-prompt>
+
   <p>Use the compass provided to bisect the angle <em>PQR</em> in the figure below.</p>
   </qti-prompt>
   <picture>
@@ -3451,7 +3503,7 @@ adaptive="false" time-dependent="false" xml:lang="en-US" >
   </qti-item-body>
 </qti-assessment-item>
 
-Figure 26  Expected Rendering: A
+Figure 26 Expected Rendering: A
 background canvas containing the image, upon which a candidate may draw
 using provided delivery platform drawing tools. Such delivery platform
 drawing tools are left entirely to the delivery platform.
@@ -3459,7 +3511,7 @@ drawing tools are left entirely to the delivery platform.
 #### 3.2.21 End Attempt Interaction
 
 End Attempt Interaction is a special interaction which immediately ends
-the current attempt on an assessment item.  It may be used, for example,
+the current attempt on an assessment item. It may be used, for example,
 to allow the candidate to request a hint or model solution, or in an
 adaptive item to let the candidate display feedback or to move to the
 next in a series of interactions in the item.
@@ -3467,36 +3519,38 @@ next in a series of interactions in the item.
 **EndAttemptInteraction Attributes (element:
 qti-end-attempt-interaction)**
 
-| **Name**  | **Usage** | **Value(s)** | **Default** |
-|---------------|-----------|--------------|-------------|
-| title  | mandatory | xs:string  |  |
-| count-attempt | optional  | xs:boolean  |  |
+| **Name**      | **Usage** | **Value(s)** | **Default** |
+| ------------- | --------- | ------------ | ----------- |
+| title         | mandatory | xs:string    |             |
+| count-attempt | optional  | xs:boolean   |             |
 
 **Example: Demonstrates qti-end-attempt-interaction with a Hint**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="end-attempt-example-1" title="End Attempt Example"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>C</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-response-declaration identifier="HINTREQUEST" cardinality="single" base-type="boolean"/>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-outcome-declaration identifier="FEEDBACK" cardinality="single" base-type="identifier"/>
-  <qti-item-body>
-  <qti-choice-interaction response-identifier="RESPONSE" shuffle="false" max-choices="1">
-  <qti-prompt>Who was the President of Mexico from 2000 to 2006?</qti-prompt>
-  <qti-simple-choice identifier="A">George W Bush</qti-simple-choice>
-  <qti-simple-choice identifier="B">Tony Blair</qti-simple-choice>
-  <qti-simple-choice identifier="C">Vicente Fox</qti-simple-choice>
-  <qti-simple-choice identifier="D">Ariel Sharon</qti-simple-choice>
-  </qti-choice-interaction>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>C</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-response-declaration identifier="HINTREQUEST" cardinality="single" base-type="boolean"/>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-outcome-declaration identifier="FEEDBACK" cardinality="single" base-type="identifier"/>
+<qti-item-body>
+<qti-choice-interaction response-identifier="RESPONSE" shuffle="false" max-choices="1">
+<qti-prompt>Who was the President of Mexico from 2000 to 2006?</qti-prompt>
+<qti-simple-choice identifier="A">George W Bush</qti-simple-choice>
+<qti-simple-choice identifier="B">Tony Blair</qti-simple-choice>
+<qti-simple-choice identifier="C">Vicente Fox</qti-simple-choice>
+<qti-simple-choice identifier="D">Ariel Sharon</qti-simple-choice>
+</qti-choice-interaction>
+
   <p>
   <qti-end-attempt-interaction response-identifier="HINTREQUEST" title="Show Hint"/>
   </p>
@@ -3551,12 +3605,12 @@ feature in QTI 3. It is recommended to use Portable Custom Interaction
 (next section) in place of the custom interaction. The Custom
 Interaction provides an opportunity for delivery platform-specific
 extensibility of this specification to include support for interactions
-not currently built into the QTI specification.  This can be used, for
+not currently built into the QTI specification. This can be used, for
 example, to develop technology-enhanced items.
 
 As the user interface and behavior of a qti-custom-interaction are
 custom, there is no predefined shared interaction vocabulary for
-qti-custom-interaction.  However if a qti-custom-interaction implements
+qti-custom-interaction. However if a qti-custom-interaction implements
 a feature or behavior in a way which is consistent with how that has
 been defined for the pre-defined interaction types then it may use qti-
 prefixed class names to indicate it supports a behaviour consistent with
@@ -3567,14 +3621,15 @@ control the visible width allocated to display of the candidate's input.
 
 **CustomInteraction Attributes (element: qti-custom-interaction)**
 
-| **Name**  | **Usage** | **Value(s)** | **Default** |
-|---------------------|-----------|--------------|-------------|
-| class  | optional  | xs:string  |  |
-| response-identifier | mandatory | identifier  |  |
+| **Name**            | **Usage** | **Value(s)** | **Default** |
+| ------------------- | --------- | ------------ | ----------- |
+| class               | optional  | xs:string    |             |
+| response-identifier | mandatory | identifier   |             |
 
 **Example: Demonstrates qti-custom-interaction**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -3582,12 +3637,13 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="custom-deprecated-example-1" title="Custom Interaction Example"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
 <qti-response-declaration cardinality="single" base-type="string" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>3/8</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration cardinality="single" base-type="float" identifier="SCORE"/>
-  <qti-item-body>
+<qti-correct-response>
+<qti-value>3/8</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration cardinality="single" base-type="float" identifier="SCORE"/>
+<qti-item-body>
+
   <p>
   A pie is divided into quarters. Each slice is then divided in half. One half of the
   pie is eaten at lunch. One slice is eaten at snack time.
@@ -3601,7 +3657,7 @@ adaptive="false" time-dependent="false" xml:lang="en-US" >
   <div id="myfractionmodel"></div>
   <qti-custom-interaction class="tei-fractionmodel" response-identifier="RESPONSE">
 
-  <custom-option><![CDATA[
+<custom-option><![CDATA[
   {
   dockingDivId: 'myfractionmodel',
   alignment: 'center',
@@ -3621,11 +3677,11 @@ adaptive="false" time-dependent="false" xml:lang="en-US" >
   }]
   }
   ]]></custom-option>
-  </qti-custom-interaction>
-  </qti-item-body>
+</qti-custom-interaction>
+</qti-item-body>
 </qti-assessment-item>
 
-Figure 28  Expected Rendering:
+Figure 28 Expected Rendering:
 Because custom interactions are by definition, "custom", there are no
 expectations for delivery platform rendering. The example rendering
 below is provided as an example of how a delivery platform
@@ -3644,19 +3700,19 @@ technology-enhanced items.
 The Javascript code which implements a PCI may be included with the item
 in the content package or may reside elsewhere on the network. It will
 be loaded dynamically by the delivery engine when the item containing
-the PCI is presented.  These Javascript modules must be AMD
+the PCI is presented. These Javascript modules must be AMD
 (Asynchronous Module Definition) modules, and must conform to the PCI
-API, detailed later in this document.  The markup of a PCI may include
-any HTML5, MathML, and SSML elements supported elsewhere in QTI.  In
+API, detailed later in this document. The markup of a PCI may include
+any HTML5, MathML, and SSML elements supported elsewhere in QTI. In
 addition, a PCI may contain feedback, template, and printed variable
-elements.  Finally, a special *template*element may be included. This
+elements. Finally, a special *template*element may be included. This
 may be used only in a PCI and is a container for any valid XML markup.
 
 As the user interface and behavior of a PCI are custom, there is no
 predefined shared interaction vocabulary for PCIs. However if a PCI
 implements a feature or behavior in a way which is consistent with how
 that has been defined for the pre-defined interaction types then it
-*MAY* use *qti-* prefixed CSS class names to indicate it supports a
+_MAY_ use _qti-_ prefixed CSS class names to indicate it supports a
 behaviour consistent with the use of that shared interaction vocabulary
 elsewhere in this specification; e.g. a PCI which supports text entry by
 the candidate may support the qti-input-width set of classes to control
@@ -3671,7 +3727,7 @@ All other interactions would use the item level stylesheet reference and
 the item level catalog node.
 
 There is a detailed [example of a PCI in Section
-3.7.12](#h.jsncxx6a57ao) .  Consequently, example definitions and
+3.7.12](#h.jsncxx6a57ao) . Consequently, example definitions and
 expected renderings are not provided here.
 
 ### 3.3 Composite Items
@@ -3680,8 +3736,8 @@ Composite items are items that contain more than one interaction.
 Composite items may contain multiple instances of the same type of
 interaction or have a mixture of interaction types.
 
-While a QTI item may contain multiple interactions, an interaction *MUST
-NOT* be nested or contained within any other interaction. Items with
+While a QTI item may contain multiple interactions, an interaction _MUST
+NOT_ be nested or contained within any other interaction. Items with
 nested interactions are not considered compliant to the QTI standard
 regardless of whether they pass validation or not.
 
@@ -3690,36 +3746,38 @@ interactions and oneText Entry interaction, Response Processing with
 partial scoring**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_itemv3p0p1_v1p0.xsd"
   xml:lang="en-US" identifier="shakespeare_biography" title="Shakespeare Biography" time-dependent="false">
-  <qti-response-declaration identifier="response_1" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>choice_1</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-response-declaration identifier="response_2" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>choice_4</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-response-declaration identifier="response_3" cardinality="single" base-type="string">
-  <qti-correct-response>
-  <qti-value>poet</qti-value>
-  </qti-correct-response>
-  <qti-mapping default-value="0">
-  <qti-map-entry map-key="poet" mapped-value="1"/>
-  <qti-map-entry map-key="playwright" mapped-value="1"/>
-  <qti-map-entry map-key="writer" mapped-value="0.5"/>
-  </qti-mapping>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-outcome-declaration identifier="SCORE_1" cardinality="single" base-type="float"/>
-  <qti-outcome-declaration identifier="SCORE_2" cardinality="single" base-type="float"/>
-  <qti-outcome-declaration identifier="SCORE_3" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="response_1" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>choice_1</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-response-declaration identifier="response_2" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>choice_4</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-response-declaration identifier="response_3" cardinality="single" base-type="string">
+<qti-correct-response>
+<qti-value>poet</qti-value>
+</qti-correct-response>
+<qti-mapping default-value="0">
+<qti-map-entry map-key="poet" mapped-value="1"/>
+<qti-map-entry map-key="playwright" mapped-value="1"/>
+<qti-map-entry map-key="writer" mapped-value="0.5"/>
+</qti-mapping>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-outcome-declaration identifier="SCORE_1" cardinality="single" base-type="float"/>
+<qti-outcome-declaration identifier="SCORE_2" cardinality="single" base-type="float"/>
+<qti-outcome-declaration identifier="SCORE_3" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <p>
   <strong>About William Shakespeare</strong>
   </p>
@@ -3813,7 +3871,7 @@ Example
 ### 3.4 Response Processing
 
 Item response processing occurs after the candidate has completed an
-attempt on an item.  The purpose of response processing is to compute
+attempt on an item. The purpose of response processing is to compute
 the value of the item's outcome variables. The most common application
 is to compute the candidate's score on the item, but in more advanced
 items, response processing may be used to show or hide feedback or
@@ -3824,14 +3882,14 @@ interaction choices, and for other purposes.
 Response processing consists of a sequence of rules that are carried
 out, in order, by the response processor. A
 [ResponseCondition](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#Abstract_ResponseRuleGroup)
- rule is a special type of rule which contains sub-sequences of rules
+rule is a special type of rule which contains sub-sequences of rules
 divided into
 [responseIf](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#DataAttribute_ResponseCondition_qti-response-if)
 ,
 [responseElseIf](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#DataAttribute_ResponseCondition_qti-response-else-if)
- and
+and
 [responseElse](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#DataAttribute_ResponseCondition_qti-response-else)
- sections. The response processor evaluates the expressions in the
+sections. The response processor evaluates the expressions in the
 responseIf and responseElseIf elements to determine which sub-sequence
 to follow. In this example, the responseIf section is followed only if
 the variable with identifier RESPONSE matches the correct response
@@ -3841,23 +3899,23 @@ matches the response explicitly given (which places the correct driver
 followed if neither of the previous two apply. The responseElse section
 has no corresponding expression of course. The
 [qti-set-outcome-value](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_OutcomeRule_qti-set-outcome-value)
- element is just a
+element is just a
 [ResponseRule](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootAttribute_ResponseProcessing_responseRuleGroup)
- that tells the processor to set the value of the specified outcome
+that tells the processor to set the value of the specified outcome
 variable to the value of the expression it contains.
 
 The
 [qti-variable](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_ExpressionGroup_qti-variable)
 ,
 [qti-correct](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_ExpressionGroup_qti-correct)
- and
+and
 [qti-base-value](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_ExpressionGroup_qti-base-value)
- elements are examples of simple expressions. In other words,
+elements are examples of simple expressions. In other words,
 expressions that are indivisible. In contrast, the
 [qti-match](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_ExpressionGroup_qti-match)
- and
+and
 [qti-ordered](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_ExpressionGroup_qti-ordered)
- elements are examples of operators. Operators are expressions that
+elements are examples of operators. Operators are expressions that
 combine other expressions to form new values. For example, match is used
 to form a boolean depending on whether or not two expressions have
 matching values.
@@ -3869,11 +3927,11 @@ There are two forms of response processing:
 1.  Fixed Template Response Processing
 2.  General Response Processing.
 
-In  "fixed template" response processing, the processing to be done is
-identified by a "template name".  There are three standard template
-names, and a delivery engine may define additional template names.  For
+In "fixed template" response processing, the processing to be done is
+identified by a "template name". There are three standard template
+names, and a delivery engine may define additional template names. For
 simple scenarios, the "match_correct" and "map_response" standard
-templates may be used because this maximizes interoperability.  All
+templates may be used because this maximizes interoperability. All
 conformant delivery systems are required to provide response processing
 as defined by these two templates, while there is no assurance that a
 template other than these two will be supported, or that general
@@ -3881,12 +3939,12 @@ response processing will be supported.
 
 The three standard "fixed" response processing templates are:
 
-|  |  |  |
-|----|----|----|
-| Template Name | Description | Location |
-| match_correct | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml |  |
-| map_response | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml |  |
-| map_response_point | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response_point.xml |  |
+|                    |                                                                             |          |
+| ------------------ | --------------------------------------------------------------------------- | -------- |
+| Template Name      | Description                                                                 | Location |
+| match_correct      | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct.xml      |          |
+| map_response       | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response.xml       |          |
+| map_response_point | https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/map_response_point.xml |          |
 
 For "general" response processing, QTI defines an XML-based Domain
 Specific Language (DSL) with a large number of commands and operators
@@ -3918,7 +3976,7 @@ support enough of the response processing DSL to be able to load and
 execute at least the "match_correct" and "map_response" standard
 templates, as well as other templates or inline response processing
 blocks using the same subset of the Domain Specific Language as these
-two standard templates.  For convenience and performance, a QTI 3
+two standard templates. For convenience and performance, a QTI 3
 Core-level delivery system may still also use the "built-in" approach
 for some of the templates which it supports, in addition to supporting
 the response processing language.
@@ -3934,15 +3992,17 @@ appropriate score.
 **External Scoring Example**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item
   xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd" identifier="essay"
   title="Write an essay" adaptive="false" time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"  external-scored="human"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"  external-scored="human"/>
+<qti-item-body>
+
   <p class="stem">
   In the classroom, we discovered Martin Luther King Jr. and his devotion.
   </p>
@@ -3971,7 +4031,7 @@ built-in outcome variable. SCORE must have a base-type of float.
 
 Items that declare a maximum score (in multiple response choice
 interactions, for example) should do so by declaring the built-in
-variable named "MAXSCORE".  MAXSCORE must have a base-type of float.
+variable named "MAXSCORE". MAXSCORE must have a base-type of float.
 
 Items or tests that want to make the fact that the candidate scored
 above a predefined threshold available as a variable should use the
@@ -3982,13 +4042,13 @@ At runtime, outcome variables are instantiated as part of an item
 session. Their values may be initialized with a default value and/or set
 during response processing. If no default value is given in the
 declaration then the outcome variable is initialized to NULL
-*unless* the outcome is of a numeric type (integer or float) in which
+_unless_ the outcome is of a numeric type (integer or float) in which
 case it is initialized to 0.
 
 For non-adaptive Items; i.e., items that do not use template processing
 to compute default values, the values of the outcome variables are reset
 to their default values prior to each invocation of response processing.
-For adaptive Items, the outcome variables *retain* the values that were
+For adaptive Items, the outcome variables _retain_ the values that were
 assigned to them during the previous invocation of response processing.
 For more information, see section [3.4.2 Fixed and General Response
 Processing](#h.66wn7ucnbn4v) .
@@ -4037,6 +4097,7 @@ Identifier
 
 base-type
 required
+
 <p>Normalized string</p>
 <ul>
 <li>identifier</li>
@@ -4054,6 +4115,7 @@ required
 
 cardinality
 required
+
 <p>Normalized string</p>
 <ul>
 <li>single</li>
@@ -4064,6 +4126,7 @@ required
 
 view
 optional
+
 <p>Normalized string</p>
 <ul>
 <li>author</li>
@@ -4093,6 +4156,7 @@ A human interpretation of the variable's value.
 long-interpretation
 optional
 uri
+
 <p>An optional link to an extended interpretation of the outcome
 variable's value.  </p>
 <p>Declared outcomes with numeric types should indicate their range of
@@ -4164,14 +4228,15 @@ instead use the Shared CSS Vocabulary as described above. By using the
 Shared CSS style names, Test Delivery Systems can optimize the rendering
 experience for accessibility and for design responsiveness.
 
-However, *as a last resort*, custom stylesheets may be injected into an
+However, _as a last resort_, custom stylesheets may be injected into an
 item and other QTI content, such as tests, stimuli, and feedback,
 rubric, and template blocks, using the qti-stylesheet element:
 
 ...
 <qti-assessment-item>
-  <qti-stylesheet href="samples/Quizzco-Custom-Styles.css" type="text/css"/>
-  <qti-item-body>
+<qti-stylesheet href="samples/Quizzco-Custom-Styles.css" type="text/css"/>
+<qti-item-body>
+
   <div id="Quizzco__item123" class="qti-layout-row">
   ...
   </div>
@@ -4179,49 +4244,49 @@ rubric, and template blocks, using the qti-stylesheet element:
 </qti-assessment-item>
 
 As in earlier versions of QTI, it is not required for conformance for
-delivery systems to support the *qti-stylesheet* element -- a further
+delivery systems to support the _qti-stylesheet_ element -- a further
 reason why stylesheet injection is likely not to be interoperable.
- Notwithstanding these issues, if your implementation will be using
-stylesheets,  QTI 3 recommends the use of CSS 3 stylesheets. For more
+Notwithstanding these issues, if your implementation will be using
+stylesheets, QTI 3 recommends the use of CSS 3 stylesheets. For more
 information on CSS 3 stylesheets, see the W3C documentation at
-<https://www.w3schools.com/css/default.asp>  .
+<https://www.w3schools.com/css/default.asp> .
 
 The best practice convention in QTI 3 is that stylesheets referenced
 within an AssssmentItem file apply to the item itself, and are not
 assumed to apply to associated content such as stimulus (
-*qti-assessment-stimulus*) or rubric blocks ( *qti-rubric-block)*, both
+_qti-assessment-stimulus_) or rubric blocks ( _qti-rubric-block)_, both
 of which can have their own associated stylesheets. An item's
-stylesheets are assumed to apply to content within *qti-item-body,
-qti-catalog-info,*  as well as to any content generated from the use of
+stylesheets are assumed to apply to content within _qti-item-body,
+qti-catalog-info,_ as well as to any content generated from the use of
 feedback or templates. Any included content using XInclude that is
-placed within the *qti-item-body, qti-catalog-info,* and
-*qti-modal-feedback*, or *qti-template-block* generated content is also
+placed within the _qti-item-body, qti-catalog-info,_ and
+_qti-modal-feedback_, or _qti-template-block_ generated content is also
 assumed to be covered by the stylesheet reference made within an item.
 
 It is the responsibility of an item author to limit the scope of an
 injected stylesheet to the content with which it is associated. Because
-of the way CSS scoping is defined, this is admittedly difficult.  The
+of the way CSS scoping is defined, this is admittedly difficult. The
 following describes some approaches to limiting CSS scope:
 
 - **Use class naming conventions.** Use a naming convention for CSS
   classes which includes a prefix with an item vendor-specific code, and
-  which is likely to make custom  class names globally unique.
+  which is likely to make custom class names globally unique.
 - **Avoid bare element or attribute selectors.** Avoid CSS style rules
   which apply broadly, such as those using "bare" element or attribute
-  selectors.  Such rules are very likely to have a wider impact than
-  intended.  Do not write rules like "div {color: red}". There are bound
+  selectors. Such rules are very likely to have a wider impact than
+  intended. Do not write rules like "div {color: red}". There are bound
   to be many other *div's*in the document, not all of which should be
-  red.  Instead, write ".vendorprefix-red { color: red }", and add the
+  red. Instead, write ".vendorprefix-red { color: red }", and add the
   "vendorprefix-red" class to elements in the content which should be
-  red.  Further note: at all costs, avoid specifying any colors in
+  red. Further note: at all costs, avoid specifying any colors in
   custom style definitions as these are practically guaranteed to result
   in an accessibility problem for the delivery platform.
 - **Do not assume defaults are in effect.** Do not assume that CSS
-  properties will have their default values.  If it is important for an
+  properties will have their default values. If it is important for an
   element to have the default CSS property values, you should set the
   properties explicitly to the default values.
 - **Use id attributes and descendent selectors.** QTI 3 allows the use
-  of the *id* attribute on HTML5 elements.  It may be helpful to assign
+  of the _id_ attribute on HTML5 elements. It may be helpful to assign
   an id to a higher level element within the HTML content you are
   styling, such as a *div,*and write style rules against that id,
   possibly combined with descendant selectors. Choose ids that are
@@ -4239,16 +4304,16 @@ following describes some approaches to limiting CSS scope:
   stylesheets is not defined.
 - **Be aware of delivery system artifacts**. You may observe that the
   HTML generated by the delivery system for QTI content includes HTML
-  elements which were not in the original content.  This is because
+  elements which were not in the original content. This is because
   delivery engines commonly transform QTI content such as interactions,
-  interaction components (e.g. *qti-prompt*, or *qti-simple-choice*),
-  the *qti-item-body*, catalog cards, rubrics, feedback blocks, etc,
+  interaction components (e.g. _qti-prompt_, or _qti-simple-choice_),
+  the _qti-item-body_, catalog cards, rubrics, feedback blocks, etc,
   into standard HTML elements, and these will end up as the parents,
   children, or siblings of the HTML elements placed in the item
-  directly.  It is unwise to style these  system-generated elements or
+  directly. It is unwise to style these system-generated elements or
   to rely on the generated structure in CSS style rules, because another
   delivery system, or even another version of the same delivery system,
-  will generate a different structure.  Be aware when writing style
+  will generate a different structure. Be aware when writing style
   rules that delivery system artifacts may appear "out of nowhere" and
   "get in the way" of sibling selectors, child selectors, adjacency
   selectors, first- and last-child pseudo-selectors, and the like.
@@ -4269,25 +4334,27 @@ some of these best practices applied:
 Item with External Stylesheet Example
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/qti/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="QTI3-custom-stylesheet" title="Custom Stylesheet"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE1">
-  <qti-correct-response>
-  <qti-value>Y</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>Y</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
-  <qti-stylesheet href="samples/Quizzco-Custom-Styles.css" type="text/css"/>
-  <qti-item-body>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE1">
+<qti-correct-response>
+<qti-value>Y</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>Y</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
+<qti-stylesheet href="samples/Quizzco-Custom-Styles.css" type="text/css"/>
+<qti-item-body>
+
   <div id="Quizzco__item123" class="qti-layout-row">
   <div class="qti-layout-col7">
   <p class="Quizzco__item__prompt">
@@ -4295,16 +4362,17 @@ time-dependent="false" xml:lang="en-US">
   <blockquote class="Quizzco__item__passage">
   Now is the winter of our discontent
 
-  Made glorious summer by this sun of
-  <qti-inline-choice-interaction response-identifier="RESPONSE">
-  <qti-inline-choice identifier="G">Gloucester</qti-inline-choice>
-  <qti-inline-choice identifier="L">Lancaster</qti-inline-choice>
-  <qti-inline-choice identifier="Y">York</qti-inline-choice>
-  </qti-inline-choice-interaction>;
+Made glorious summer by this sun of
+<qti-inline-choice-interaction response-identifier="RESPONSE">
+<qti-inline-choice identifier="G">Gloucester</qti-inline-choice>
+<qti-inline-choice identifier="L">Lancaster</qti-inline-choice>
+<qti-inline-choice identifier="Y">York</qti-inline-choice>
+</qti-inline-choice-interaction>;
 
-  And all the clouds that lour'd upon our house
+And all the clouds that lour'd upon our house
 
-  In the deep bosom of the ocean buried.</p>
+In the deep bosom of the ocean buried.</p>
+
   </blockquote>
   </div>
   </div>
@@ -4315,26 +4383,26 @@ time-dependent="false" xml:lang="en-US">
 
 **External Stylesheet Example:** Quizzco-Custom-Styles.css
 
-#Quizzco__item123 Quizzco__item__prompt {
-  all: initial;
-  display: block;
-  margin-block-start: 1em;
-  text-align: start;
-  padding: 5px;
-  font-weight: normal;
-  }
+#Quizzco**item123 Quizzco**item\_\_prompt {
+all: initial;
+display: block;
+margin-block-start: 1em;
+text-align: start;
+padding: 5px;
+font-weight: normal;
+}
 
-  #Quizzco__item123 Quizzco__item__passage {
-  line-height: 1.3em;
-  font-weight: bolder;
-  }
+#Quizzco**item123 Quizzco**item\_\_passage {
+line-height: 1.3em;
+font-weight: bolder;
+}
 
 ### 3.7 Advanced Item Structures
 
 #### 3.7.1 Customized Response Processing
 
 The qti-custom-operator extension mechanism allows the inclusion of
-custom, non-QTI response evaluation rules.  In general, such APIs are
+custom, non-QTI response evaluation rules. In general, such APIs are
 likely to be particular to a specific software library or programming
 language. For that reason, it is difficult to predict what form such
 custom operators will take, and, by extension, how to generalise
@@ -4401,7 +4469,8 @@ In the following example, the feedback is used to contain a solution
 which is displayed when the candidate clicks the "Show Solution" button.
 
 <?xml version="1.0" encoding="UTF-8"?>
-  <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
+
+<qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:m="http://www.w3.org/1998/Math/MathML"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -4411,11 +4480,11 @@ which is displayed when the candidate clicks the "Show Solution" button.
   identifier="Example03-feedbackBlock-solution" title="Using feedbackBlock to show a solution"
   adaptive="true" time-dependent="false" xml:lang="en-US"
   tool-name="Mathqurate" tool-version="0.9.7b">
-  <qti-response-declaration base-type="float" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>7.389</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
+<qti-response-declaration base-type="float" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>7.389</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
 
   <qti-response-declaration base-type="boolean" cardinality="single" identifier="SOLREQUEST"/>
   <qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="FEEDBACK"/>
@@ -4616,7 +4685,8 @@ A randomized version of the item above is shown below. The randomization
 does not affect the display of the solution in this example.
 
 <?xml version="1.0" encoding="UTF-8"?>
-  <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
+
+<qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:m="http://www.w3.org/1998/Math/MathML"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -4625,45 +4695,46 @@ does not affect the display of the solution in this example.
   https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
   identifier="feedbackBlock-solution-random" title="Using feedbackBlock to show a solution (random)"
   adaptive="true" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration base-type="float" cardinality="single" identifier="RESPONSE"/>
-  <qti-response-declaration base-type="boolean" cardinality="single" identifier="SOLREQUEST"/>
-  <qti-response-declaration base-type="boolean" cardinality="single" identifier="EndAttempt"/>
-  <qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="FEEDBACK"/>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="EMPTY"/>
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" normal-maximum="10.0" normal-minimum="0.0">
-  <qti-default-value>
-  <qti-value>0.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenSolution">
-  <qti-default-value>
-  <qti-value>false</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKSOLUTION">
-  <qti-default-value>
-  <qti-value>asksolution</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="iA" math-variable="true" param-variable="false"/>
-  <qti-template-declaration base-type="float" cardinality="single" identifier="fAns" math-variable="true" param-variable="false"/>
-  <qti-template-declaration base-type="float" cardinality="single" identifier="fR" math-variable="true" param-variable="false"/>
-  <qti-template-processing>
-  <qti-set-template-value identifier="iA">
-  <qti-random-integer max="4" min="1"/>
-  </qti-set-template-value>
-  <qti-set-template-value identifier="fAns">
-  <qti-math-operator name="exp">
-  <qti-variable identifier="iA"/>
-  </qti-math-operator>
-  </qti-set-template-value>
-  <qti-set-template-value identifier="fR">
-  <qti-round-to figures="3" rounding-mode="decimalPlaces">
-  <qti-variable identifier="fAns"/>
-  </qti-round-to>
-  </qti-set-template-value>
-  </qti-template-processing>
-  <qti-item-body>
+<qti-response-declaration base-type="float" cardinality="single" identifier="RESPONSE"/>
+<qti-response-declaration base-type="boolean" cardinality="single" identifier="SOLREQUEST"/>
+<qti-response-declaration base-type="boolean" cardinality="single" identifier="EndAttempt"/>
+<qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="FEEDBACK"/>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="EMPTY"/>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" normal-maximum="10.0" normal-minimum="0.0">
+<qti-default-value>
+<qti-value>0.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenSolution">
+<qti-default-value>
+<qti-value>false</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKSOLUTION">
+<qti-default-value>
+<qti-value>asksolution</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-template-declaration base-type="integer" cardinality="single" identifier="iA" math-variable="true" param-variable="false"/>
+<qti-template-declaration base-type="float" cardinality="single" identifier="fAns" math-variable="true" param-variable="false"/>
+<qti-template-declaration base-type="float" cardinality="single" identifier="fR" math-variable="true" param-variable="false"/>
+<qti-template-processing>
+<qti-set-template-value identifier="iA">
+<qti-random-integer max="4" min="1"/>
+</qti-set-template-value>
+<qti-set-template-value identifier="fAns">
+<qti-math-operator name="exp">
+<qti-variable identifier="iA"/>
+</qti-math-operator>
+</qti-set-template-value>
+<qti-set-template-value identifier="fR">
+<qti-round-to figures="3" rounding-mode="decimalPlaces">
+<qti-variable identifier="fAns"/>
+</qti-round-to>
+</qti-set-template-value>
+</qti-template-processing>
+<qti-item-body>
+
   <div class="qti-layout-row">
   <div class="qti-layout-col12">
   <p>Find the value of <math xmlns="http://www.w3.org/1998/Math/MathML" id="mathML0">
@@ -4824,6 +4895,7 @@ here we concentrate on the template elements within the SOLUTION
 feedbackBlock.
 
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
 <qti-assessment-item xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xi="http://www.w3.org/2001/XInclude"
@@ -4839,40 +4911,40 @@ time-dependent="false" adaptive="true" xml:lang="en">
   <qti-response-declaration identifier="HINTREQUEST" cardinality="single" base-type="boolean"/>
   <qti-response-declaration identifier="SOLREQUEST" cardinality="single" base-type="boolean"/>
 
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"
   normal-maximum="10.0" normal-minimum="0.0">
-  <qti-default-value>
-  <qti-value>0.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="FEEDBACK"/>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="EMPTY"/>
-  <qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenSolution">
-  <qti-default-value>
-  <qti-value>false</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenHint">
-  <qti-default-value>
-  <qti-value>false</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKHINT">
-  <qti-default-value>
-  <qti-value>askhint</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKSOLUTION">
-  <qti-default-value>
-  <qti-value>asksolution</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration identifier="oMult" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>1.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration identifier="oPower" cardinality="single" base-type="float"/>
+<qti-default-value>
+<qti-value>0.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="FEEDBACK"/>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="EMPTY"/>
+<qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenSolution">
+<qti-default-value>
+<qti-value>false</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="boolean" cardinality="single" identifier="seenHint">
+<qti-default-value>
+<qti-value>false</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKHINT">
+<qti-default-value>
+<qti-value>askhint</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="ASKSOLUTION">
+<qti-default-value>
+<qti-value>asksolution</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration identifier="oMult" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>1.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration identifier="oPower" cardinality="single" base-type="float"/>
 
   <qti-template-declaration identifier="iA" cardinality="single" base-type="integer" param-variable="false" math-variable="true">
   <qti-default-value>
@@ -5377,6 +5449,7 @@ time-dependent="false" adaptive="true" xml:lang="en">
 of a question**
 
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+
 <qti-assessment-item xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation=" http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
@@ -5421,13 +5494,13 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   </qti-correct-response>
   </qti-response-declaration>
 
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" normal-maximum="10.0"
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" normal-maximum="10.0"
   normal-minimum="0.0">
-  <qti-default-value>
-  <qti-value>0.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="FEEDBACK" />
+<qti-default-value>
+<qti-value>0.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration base-type="identifier" cardinality="single" identifier="FEEDBACK" />
 
   <qti-outcome-declaration base-type="identifier" cardinality="multiple" identifier="BODY">
   <qti-default-value>
@@ -5522,213 +5595,213 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   <qti-response-if>
   <qti-member>
 
-  <qti-base-value base-type="identifier">part1</qti-base-value>
-  <qti-variable identifier="BODY" />
-  </qti-member>
-  <qti-set-outcome-value identifier="BODY">
-  <qti-multiple>
+<qti-base-value base-type="identifier">part1</qti-base-value>
+<qti-variable identifier="BODY" />
+</qti-member>
+<qti-set-outcome-value identifier="BODY">
+<qti-multiple>
 
-  <qti-base-value base-type="identifier">part2</qti-base-value>
-  </qti-multiple>
-  </qti-set-outcome-value>
-  <qti-response-condition>
-  <qti-response-if>
-  <qti-match>
-  <qti-variable identifier="RESPONSE1" />
+<qti-base-value base-type="identifier">part2</qti-base-value>
+</qti-multiple>
+</qti-set-outcome-value>
+<qti-response-condition>
+<qti-response-if>
+<qti-match>
+<qti-variable identifier="RESPONSE1" />
 
-  <qti-base-value base-type="identifier">OPTION1</qti-base-value>
-  </qti-match>
-  <qti-set-outcome-value identifier="BODY">
-  <qti-multiple>
-  <qti-variable identifier="BODY" />
-  <qti-base-value base-type="identifier">option1</qti-base-value>
-  </qti-multiple>
-  </qti-set-outcome-value>
-  </qti-response-if>
-  <qti-response-else-if>
-  <qti-match>
-  <qti-variable identifier="RESPONSE1" />
+<qti-base-value base-type="identifier">OPTION1</qti-base-value>
+</qti-match>
+<qti-set-outcome-value identifier="BODY">
+<qti-multiple>
+<qti-variable identifier="BODY" />
+<qti-base-value base-type="identifier">option1</qti-base-value>
+</qti-multiple>
+</qti-set-outcome-value>
+</qti-response-if>
+<qti-response-else-if>
+<qti-match>
+<qti-variable identifier="RESPONSE1" />
 
-  <qti-base-value base-type="identifier">OPTION2</qti-base-value>
-  </qti-match>
-  <qti-set-outcome-value identifier="BODY">
-  <qti-multiple>
-  <qti-variable identifier="BODY" />
-  <qti-base-value base-type="identifier">option2</qti-base-value>
-  </qti-multiple>
-  </qti-set-outcome-value>
-  </qti-response-else-if>
-  <qti-response-else-if>
-  <qti-match>
-  <qti-variable identifier="RESPONSE1" />
+<qti-base-value base-type="identifier">OPTION2</qti-base-value>
+</qti-match>
+<qti-set-outcome-value identifier="BODY">
+<qti-multiple>
+<qti-variable identifier="BODY" />
+<qti-base-value base-type="identifier">option2</qti-base-value>
+</qti-multiple>
+</qti-set-outcome-value>
+</qti-response-else-if>
+<qti-response-else-if>
+<qti-match>
+<qti-variable identifier="RESPONSE1" />
 
-  <qti-base-value base-type="identifier">OPTION3</qti-base-value>
-  </qti-match>
-  <qti-set-outcome-value identifier="BODY">
-  <qti-multiple>
-  <qti-variable identifier="BODY" />
-  <qti-base-value base-type="identifier">option3</qti-base-value>
-  </qti-multiple>
-  </qti-set-outcome-value>
-  </qti-response-else-if>
-  </qti-response-condition>
-  </qti-response-if>
-  <qti-response-else-if>
-  <qti-member>
+<qti-base-value base-type="identifier">OPTION3</qti-base-value>
+</qti-match>
+<qti-set-outcome-value identifier="BODY">
+<qti-multiple>
+<qti-variable identifier="BODY" />
+<qti-base-value base-type="identifier">option3</qti-base-value>
+</qti-multiple>
+</qti-set-outcome-value>
+</qti-response-else-if>
+</qti-response-condition>
+</qti-response-if>
+<qti-response-else-if>
+<qti-member>
 
-  <qti-base-value base-type="identifier">part2</qti-base-value>
-  <qti-variable identifier="BODY" />
-  </qti-member>
-  <qti-response-condition>
-  <qti-response-if>
-  <qti-member>
-  <qti-base-value base-type="identifier">option1</qti-base-value>
-  <qti-variable identifier="BODY" />
-  </qti-member>
-  <qti-response-condition>
-  <qti-response-if>
-  <qti-match>
-  <qti-variable identifier="RESPONSE21" />
-  <qti-correct identifier="RESPONSE21" />
-  </qti-match>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">CORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">10.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-if>
-  <qti-response-else>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">INCORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">0.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-else>
-  </qti-response-condition>
-  </qti-response-if>
-  <qti-response-else-if>
-  <qti-member>
-  <qti-base-value base-type="identifier">option2</qti-base-value>
-  <qti-variable identifier="BODY" />
-  </qti-member>
-  <qti-response-condition>
-  <qti-response-if>
-  <qti-and>
-  <qti-match>
-  <qti-variable identifier="RESPONSE22" />
-  <qti-correct identifier="RESPONSE22" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE23" />
-  <qti-correct identifier="RESPONSE23" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE24" />
-  <qti-correct identifier="RESPONSE24" />
-  </qti-match>
-  </qti-and>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">CORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">10.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-if>
-  <qti-response-else-if>
-  <qti-or>
-  <qti-match>
-  <qti-variable identifier="RESPONSE22" />
-  <qti-correct identifier="RESPONSE22" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE23" />
-  <qti-correct identifier="RESPONSE23" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE24" />
-  <qti-correct identifier="RESPONSE24" />
-  </qti-match>
-  </qti-or>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">PARTIAL</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">5.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-else-if>
-  <qti-response-else>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">INCORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">0.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-else>
-  </qti-response-condition>
-  </qti-response-else-if>
-  <qti-response-else-if>
-  <qti-member>
-  <qti-base-value base-type="identifier">option3</qti-base-value>
-  <qti-variable identifier="BODY" />
-  </qti-member>
-  <qti-response-condition>
-  <qti-response-if>
-  <qti-and>
-  <qti-match>
-  <qti-variable identifier="RESPONSE25" />
-  <qti-correct identifier="RESPONSE25" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE26" />
-  <qti-correct identifier="RESPONSE26" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE27" />
-  <qti-correct identifier="RESPONSE27" />
-  </qti-match>
-  </qti-and>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">CORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">10.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-if>
-  <qti-response-else-if>
-  <qti-or>
-  <qti-match>
-  <qti-variable identifier="RESPONSE25" />
-  <qti-correct identifier="RESPONSE25" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE26" />
-  <qti-correct identifier="RESPONSE26" />
-  </qti-match>
-  <qti-match>
-  <qti-variable identifier="RESPONSE27" />
-  <qti-correct identifier="RESPONSE27" />
-  </qti-match>
-  </qti-or>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">PARTIAL</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">5.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-else-if>
-  <qti-response-else>
-  <qti-set-outcome-value identifier="FEEDBACK">
-  <qti-base-value base-type="identifier">INCORRECT</qti-base-value>
-  </qti-set-outcome-value>
-  <qti-set-outcome-value identifier="SCORE">
-  <qti-base-value base-type="float">0.0</qti-base-value>
-  </qti-set-outcome-value>
-  </qti-response-else>
-  </qti-response-condition>
-  </qti-response-else-if>
-  </qti-response-condition>
+<qti-base-value base-type="identifier">part2</qti-base-value>
+<qti-variable identifier="BODY" />
+</qti-member>
+<qti-response-condition>
+<qti-response-if>
+<qti-member>
+<qti-base-value base-type="identifier">option1</qti-base-value>
+<qti-variable identifier="BODY" />
+</qti-member>
+<qti-response-condition>
+<qti-response-if>
+<qti-match>
+<qti-variable identifier="RESPONSE21" />
+<qti-correct identifier="RESPONSE21" />
+</qti-match>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">CORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">10.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-if>
+<qti-response-else>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">INCORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">0.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-else>
+</qti-response-condition>
+</qti-response-if>
+<qti-response-else-if>
+<qti-member>
+<qti-base-value base-type="identifier">option2</qti-base-value>
+<qti-variable identifier="BODY" />
+</qti-member>
+<qti-response-condition>
+<qti-response-if>
+<qti-and>
+<qti-match>
+<qti-variable identifier="RESPONSE22" />
+<qti-correct identifier="RESPONSE22" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE23" />
+<qti-correct identifier="RESPONSE23" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE24" />
+<qti-correct identifier="RESPONSE24" />
+</qti-match>
+</qti-and>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">CORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">10.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-if>
+<qti-response-else-if>
+<qti-or>
+<qti-match>
+<qti-variable identifier="RESPONSE22" />
+<qti-correct identifier="RESPONSE22" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE23" />
+<qti-correct identifier="RESPONSE23" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE24" />
+<qti-correct identifier="RESPONSE24" />
+</qti-match>
+</qti-or>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">PARTIAL</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">5.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-else-if>
+<qti-response-else>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">INCORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">0.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-else>
+</qti-response-condition>
+</qti-response-else-if>
+<qti-response-else-if>
+<qti-member>
+<qti-base-value base-type="identifier">option3</qti-base-value>
+<qti-variable identifier="BODY" />
+</qti-member>
+<qti-response-condition>
+<qti-response-if>
+<qti-and>
+<qti-match>
+<qti-variable identifier="RESPONSE25" />
+<qti-correct identifier="RESPONSE25" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE26" />
+<qti-correct identifier="RESPONSE26" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE27" />
+<qti-correct identifier="RESPONSE27" />
+</qti-match>
+</qti-and>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">CORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">10.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-if>
+<qti-response-else-if>
+<qti-or>
+<qti-match>
+<qti-variable identifier="RESPONSE25" />
+<qti-correct identifier="RESPONSE25" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE26" />
+<qti-correct identifier="RESPONSE26" />
+</qti-match>
+<qti-match>
+<qti-variable identifier="RESPONSE27" />
+<qti-correct identifier="RESPONSE27" />
+</qti-match>
+</qti-or>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">PARTIAL</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">5.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-else-if>
+<qti-response-else>
+<qti-set-outcome-value identifier="FEEDBACK">
+<qti-base-value base-type="identifier">INCORRECT</qti-base-value>
+</qti-set-outcome-value>
+<qti-set-outcome-value identifier="SCORE">
+<qti-base-value base-type="float">0.0</qti-base-value>
+</qti-set-outcome-value>
+</qti-response-else>
+</qti-response-condition>
+</qti-response-else-if>
+</qti-response-condition>
 
   <qti-set-outcome-value identifier="completionStatus">
   <qti-base-value base-type="identifier">completed</qti-base-value>
@@ -5744,13 +5817,12 @@ interactions:
 
 **Monty Hall (Take 1)**
 
-[Section 3.8.3 - Annotated Item Examples - Monty Hall (Take
-1)](#h.1s594xl1jzsk)
+[Section 3.8.3 - Annotated Item Examples - Monty Hall (Take 1)](#h.1s594xl1jzsk)
 
 This example takes a famous mathematical problem and presents it to the
 user as a game. The
 [qti-feedback-block](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_FeedandTempBlockStatic_qti-feedback-block)
- element, in association with a number of outcome variables is used to
+element, in association with a number of outcome variables is used to
 control the flow of the story, from the opening gambit through to
 whether or not you have won a prize. When the story concludes you are
 asked about the strategy you adopted. Notice that the scoring for the
@@ -5776,51 +5848,51 @@ based on the values of outcome variables, allowing an item to be
 reconfigured as a result of [Response
 Processing](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootAttribute_qti-response-processing)
 . In other words, feedback is controlled by the values of outcome
-variables. There are several  types of feedback material:
+variables. There are several types of feedback material:
 
 - Feedback blocks (
-  *qti-feedback-block*) are shown to the candidate based on the value of
-  an outcome variable.  Each feedback block is associated with an
-  outcome variable and an *identifier*. If the outcome variable has that
+  _qti-feedback-block_) are shown to the candidate based on the value of
+  an outcome variable. Each feedback block is associated with an
+  outcome variable and an _identifier_. If the outcome variable has that
   identifier as its value, then the feedback block is shown or hidden,
-  as determined by the value of the show-hide attribute.  Feedback
-  blocks may contain almost any valid *qti-item-body* content, including
+  as determined by the value of the show-hide attribute. Feedback
+  blocks may contain almost any valid _qti-item-body_ content, including
   interactions and other feedback blocks. Feedback blocks may be used
   inside many interaction components, such as choices, and within HTML5
-  elements, such as *div*.  After each attempt, following a round of
+  elements, such as _div_. After each attempt, following a round of
   response and outcome processing, the delivery engine re-computes the
   visibility of feedback blocks based on possibly new values of the
-  controlling outcome variables.  By default, the changed state of
+  controlling outcome variables. By default, the changed state of
   feedback content is only shown during subsequent attempts on, or
   review of, an item.
 - Inline feedback (
-  *qti-feedback-inline*) is similar to block feedback, but may only be
+  _qti-feedback-inline_) is similar to block feedback, but may only be
   used in "inline" contexts. Inline feedback elements may only contain
-  inline HTML5 content, such as *span*, and inline QTI interactions,
-  such as *qti-inline-choice-interaction*, or
-  *qti-text-entry-interaction*.
+  inline HTML5 content, such as _span_, and inline QTI interactions,
+  such as _qti-inline-choice-interaction_, or
+  _qti-text-entry-interaction_.
 - Modal feedback (
-  *qti-modal-feedback*) is item content which is shown to (or hidden
+  _qti-modal-feedback_) is item content which is shown to (or hidden
   from) the candidate based on the value of outcome variables, and whose
   display can be changed by response processing. Those display changes
   become visible before any subsequent attempt or review of the item. As
   with feedback blocks, the value of a controlling outcome variable is
-  used in conjunction with the *show-hide* and *identifier* attributes
+  used in conjunction with the _show-hide_ and _identifier_ attributes
   to determine whether or not the feedback is presented. Unlike feedback
   blocks and inline feedback, the modal feedback element cannot contain
   any interactions, and may not be used inside an item body. Because
   modal feedback is not part of the item body, it may be displayed
   "modally" -- for example, as a pop-up "dialog box" which appears after
   response and outcome processing and which must be dismissed by the
-  candidate after it is read.  However, how modal feedback is displayed
+  candidate after it is read. However, how modal feedback is displayed
   is left to the delivery platform, and an implementation may simply
   display modal feedback in-line in the item, similar to other forms of
   feedback.
 - Test feedback (
-  *qti-test-feedback*) is allowed within *qti-assessment-test* and
-  *qti-test-part*, and is otherwise very similar to modal feedback. Test
+  _qti-test-feedback_) is allowed within _qti-assessment-test_ and
+  _qti-test-part_, and is otherwise very similar to modal feedback. Test
   feedback may be configured to be shown during the test or test part (
-  *access*="during"), or only when the candidate reaches the end of the
+  _access_="during"), or only when the candidate reaches the end of the
   test or test part ( *access="*atEnd").
 
 Using qti-modal-feedback
@@ -5830,19 +5902,20 @@ additional outcome variable called FEEDBACK which is used to control the
 visibility of just qti-modal-feedback.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 identifier="Example01-modalFeedback" title="Example 1 - modal feedback"
 adaptive="false" time-dependent="false" xml:lang="en" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
 
   <qti-correct-response>
 
-  <qti-value>true</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
+<qti-value>true</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
 
   <qti-outcome-declaration identifier="FEEDBACK" cardinality="single" base-type="identifier" />
   <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"
@@ -5907,6 +5980,7 @@ moving to a new block or paragraph, so it behaves like the HTML "span"
 element.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation=" http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
@@ -5982,14 +6056,14 @@ delivery engine will run the Template Processing in the item, giving the
 item's template variables values, and possibly computing new correct
 responses based upon the template variable values, effectively creating
 a single clone of the item template dynamically. In combination with the
-QTI *selection* element with the attribute *with-replacement="true"*, a
+QTI _selection_ element with the attribute _with-replacement="true"_, a
 single Item Template in an assessment may be instantiated multiple
 times, and appear to the candidate as a different item each time, as a
 result of the Template Processing in the Item being run in each separate
 instance.
 
 Each item cloned from an Item Template is identical except for the
-value, *qti-default-value,* and *qti-correct-response* value of the
+value, _qti-default-value,_ and _qti-correct-response_ value of the
 template, response, and outcome variables of the item, as assigned by
 the Template Processing.
 
@@ -6015,17 +6089,17 @@ multiple interactions.
 The main QTI features which support Item Templates include:
 
 - Template
-  Variables.  Similar to response, outcome, and context
+  Variables. Similar to response, outcome, and context
   variables, template variables are defined by the
   *qti-template-declaration*element. The default values of template
   variables can be set in the declaration or by
   *qti-template-default*elements. The values may subsequently be changed
   via Template Processing.
 - Template Variable
-  Defaults (*qti-template-default*).  While the default value of
+  Defaults (_qti-template-default_). While the default value of
   a template variable can be set using the *qti-default-value*element
-  within the *qti-template-declaration*, in the same manner as with
-  response and outcome declarations, the *qti-template-default* element
+  within the _qti-template-declaration_, in the same manner as with
+  response and outcome declarations, the _qti-template-default_ element
   may also be used to set the default value within an Assessment Item
   Reference at the Assessment Section level. This allows the default
   values of template variables, as specified within the item, to be
@@ -6033,10 +6107,10 @@ The main QTI features which support Item Templates include:
   assessment. The template default value can be given as an expression
   in the Template Processing domain-specific language.
 - Template
-  Content(*qti-template-block* and *qti-template-inline*).
+  Content(_qti-template-block_ and _qti-template-inline_).
   Conceptually similar to feedback blocks and inline feedback, template
   blocks and inline templates represent content which is shown to, or
-  hidden from, the candidate based on the *identifier* and *show-hide*
+  hidden from, the candidate based on the _identifier_ and _show-hide_
   attributes of the template blocks and inline templates. Many of the
   interaction types also have subcomponents, such as hotspots or
   choices, which can be conditionally displayed (or hidden), using the
@@ -6045,16 +6119,16 @@ The main QTI features which support Item Templates include:
   Interaction on or off via template variables.
 
 - Template Variable
-  Expansion.  Printed variables (*qti-printed-variable*) may be
+  Expansion. Printed variables (_qti-printed-variable_) may be
   used to display template variable values, just as they may be used
   with outcome and context variables. In addition, if a template
-  variable has the *math-variable="true"* attribute, MathML *mi* and
-  *mo* variables will be replaced with the value of the corresponding
+  variable has the _math-variable="true"_ attribute, MathML _mi_ and
+  _mo_ variables will be replaced with the value of the corresponding
   template variable. Similarly, if a template variable has the
-  *param-variable="true"* attribute, *param* element values will be
+  _param-variable="true"_ attribute, _param_ element values will be
   replaced with the corresponding template variables.
 - Template
-  Processing (*qti-template-processing*).  Similar to response
+  Processing (_qti-template-processing_). Similar to response
   and outcome processing, template processing may be defined within an
   item to compute and set the values of template, response, and outcome
   variables. The delivery system will run the template processing rules
@@ -6063,9 +6137,9 @@ The main QTI features which support Item Templates include:
   and still before the initial presentation of the item, the delivery
   system will then determine the visibility of template blocks and
   inline templates, and do variable expansion on printed variables,
-  MathML and *param* elements based on template variables.
+  MathML and _param_ elements based on template variables.
 - Template
-  Constraints (*qti-template-constraint*).  A template constraint
+  Constraints (_qti-template-constraint_). A template constraint
   is a processing rule available only in Template Processing. It
   terminates Template Processing and re-runs it from the beginning if
   the condition specified in the template constraint is not satisfied.
@@ -6121,14 +6195,15 @@ displays the values of the template variables using the
 element.
 
 <?xml version="1.0" encoding="UTF-8"?>
-  <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
+
+<qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation=" http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="template_digging" title="Digging a Hole"
   adaptive="false" time-dependent="false" xml:lang="en" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="float"/>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="float"/>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
 
   <qti-template-declaration identifier="PEOPLE" cardinality="single" base-type="string" math-variable="false" param-variable="false"/>
   <qti-template-declaration identifier="A" cardinality="single" base-type="integer" math-variable="false" param-variable="false"/>
@@ -6210,9 +6285,9 @@ element.
   <p>Answer: <qti-text-entry-interaction response-identifier="RESPONSE" expected-length="8"/> minutes.</p>
   </qti-item-body>
 
-  <qti-response-processing
+<qti-response-processing
   template="https://www.imsglobal.org/question/qti_v3p0/rptemplates/match_correct.xml"/>
-  </qti-assessment-item>
+</qti-assessment-item>
 
 Using a Template to Change an Image
 
@@ -6232,6 +6307,7 @@ in the same way as outcome variables are used to control the visibility
 of feedback.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -6242,9 +6318,9 @@ of feedback.
   <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="integer" />
   <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
 
-  <qti-template-declaration identifier="TRANSPORT" cardinality="single" base-type="identifier"
+<qti-template-declaration identifier="TRANSPORT" cardinality="single" base-type="identifier"
   math-variable="false" param-variable="false" />
-  <qti-template-declaration identifier="SPEED" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="SPEED" cardinality="single" base-type="integer"
   math-variable="false" param-variable="false" />
 
   <qti-template-processing>
@@ -6310,7 +6386,7 @@ of feedback.
   response-identifier="RESPONSE" expected-length="8" /> km.</p>
   </qti-item-body>
 
-  <qti-response-processing
+<qti-response-processing
   template="https://www.imsglobal.org/question/qti_v3p0/rptemplates/match_correct.xml" />
 </qti-assessment-item>
 
@@ -6338,6 +6414,7 @@ Do you think that the outcome of the game will affect the response to
 the final strategy question?
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -6371,19 +6448,19 @@ the final strategy question?
   <qti-outcome-declaration identifier="REVEALED" cardinality="single" base-type="identifier" />
   <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float" />
 
-  <qti-template-declaration identifier="PRIZEDOOR" cardinality="single" base-type="identifier"
+<qti-template-declaration identifier="PRIZEDOOR" cardinality="single" base-type="identifier"
   math-variable="false" param-variable="false" />
-  <qti-template-processing>
-  <qti-set-template-value identifier="PRIZEDOOR">
-  <qti-random>
-  <qti-multiple>
-  <qti-base-value base-type="identifier">DoorA</qti-base-value>
-  <qti-base-value base-type="identifier">DoorB</qti-base-value>
-  <qti-base-value base-type="identifier">DoorC</qti-base-value>
-  </qti-multiple>
-  </qti-random>
-  </qti-set-template-value>
-  </qti-template-processing>
+<qti-template-processing>
+<qti-set-template-value identifier="PRIZEDOOR">
+<qti-random>
+<qti-multiple>
+<qti-base-value base-type="identifier">DoorA</qti-base-value>
+<qti-base-value base-type="identifier">DoorB</qti-base-value>
+<qti-base-value base-type="identifier">DoorC</qti-base-value>
+</qti-multiple>
+</qti-random>
+</qti-set-template-value>
+</qti-template-processing>
 
   <qti-item-body>
   <p>Monty Hall has hidden a prize behind one of these doors.</p>
@@ -6725,123 +6802,124 @@ This example makes extensive use of templates to test knowledge of
 calculus. It has modal feedback and includes some mathML.
 
 <?xml version="1.0" encoding="UTF-8"?>
-  <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns:m="http://www.w3.org/1998/Math/MathML
-  xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
-  https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd http://www.w3.org/1998/Math/MathML https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
-  adaptive="false" time-dependent="false"
-  identifier="mc_calc3" title="The number divisors" xml:lang="en">
+
+<qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:m="http://www.w3.org/1998/Math/MathML
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
+https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd http://www.w3.org/1998/Math/MathML https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
+adaptive="false" time-dependent="false"
+identifier="mc_calc3" title="The number divisors" xml:lang="en">
 
   <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE0" />
   <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="FEEDBACK" />
   <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE" />
 
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="i"
+<qti-template-declaration base-type="integer" cardinality="single" identifier="i"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration base-type="integer" cardinality="ordered" identifier="numbers"
+<qti-template-declaration base-type="integer" cardinality="ordered" identifier="numbers"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration base-type="string" cardinality="ordered" identifier="divisors"
+<qti-template-declaration base-type="string" cardinality="ordered" identifier="divisors"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="CALC0"
+<qti-template-declaration base-type="integer" cardinality="single" identifier="CALC0"
   math-variable="true" param-variable="true" />
-  <qti-template-processing>
-  <qti-set-template-value identifier="i">
-  <qti-random-integer max="7" min="1" />
-  </qti-set-template-value>
-  <qti-set-template-value identifier="numbers">
-  <qti-ordered>
-  <qti-base-value base-type="integer">3</qti-base-value>
-  <qti-base-value base-type="integer">4</qti-base-value>
-  <qti-base-value base-type="integer">6</qti-base-value>
-  <qti-base-value base-type="integer">15</qti-base-value>
-  <qti-base-value base-type="integer">24</qti-base-value>
-  <qti-base-value base-type="integer">25</qti-base-value>
-  <qti-base-value base-type="integer">30</qti-base-value>
-  </qti-ordered>
-  </qti-set-template-value>
-  <qti-set-template-value identifier="divisors">
-  <qti-ordered>
-  <qti-base-value base-type="string">-</qti-base-value>
-  <qti-base-value base-type="string">2</qti-base-value>
-  <qti-base-value base-type="string">2,3</qti-base-value>
-  <qti-base-value base-type="string">3,5</qti-base-value>
-  <qti-base-value base-type="string">2,3,4,6,8,12</qti-base-value>
-  <qti-base-value base-type="string">5</qti-base-value>
-  <qti-base-value base-type="string">2,3,5,6,10,15</qti-base-value>
-  </qti-ordered>
-  </qti-set-template-value>
-  <qti-set-template-value identifier="CALC0">
-  <qti-index n="i">
-  <qti-variable identifier="numbers" />
-  </qti-index>
-  </qti-set-template-value>
-  <qti-template-condition>
-  <qti-template-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">1</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_0</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">2</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_1</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">3</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_2</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">4</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_3</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">5</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_4</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">6</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_5</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  <qti-template-else-if>
-  <qti-equal tolerance-mode="exact">
-  <qti-variable identifier="i" />
-  <qti-base-value base-type="integer">7</qti-base-value>
-  </qti-equal>
-  <qti-set-correct-response identifier="RESPONSE0">
-  <qti-base-value base-type="identifier">SOLUTION0_0_6</qti-base-value>
-  </qti-set-correct-response>
-  </qti-template-else-if>
-  </qti-template-condition>
-  </qti-template-processing>
+<qti-template-processing>
+<qti-set-template-value identifier="i">
+<qti-random-integer max="7" min="1" />
+</qti-set-template-value>
+<qti-set-template-value identifier="numbers">
+<qti-ordered>
+<qti-base-value base-type="integer">3</qti-base-value>
+<qti-base-value base-type="integer">4</qti-base-value>
+<qti-base-value base-type="integer">6</qti-base-value>
+<qti-base-value base-type="integer">15</qti-base-value>
+<qti-base-value base-type="integer">24</qti-base-value>
+<qti-base-value base-type="integer">25</qti-base-value>
+<qti-base-value base-type="integer">30</qti-base-value>
+</qti-ordered>
+</qti-set-template-value>
+<qti-set-template-value identifier="divisors">
+<qti-ordered>
+<qti-base-value base-type="string">-</qti-base-value>
+<qti-base-value base-type="string">2</qti-base-value>
+<qti-base-value base-type="string">2,3</qti-base-value>
+<qti-base-value base-type="string">3,5</qti-base-value>
+<qti-base-value base-type="string">2,3,4,6,8,12</qti-base-value>
+<qti-base-value base-type="string">5</qti-base-value>
+<qti-base-value base-type="string">2,3,5,6,10,15</qti-base-value>
+</qti-ordered>
+</qti-set-template-value>
+<qti-set-template-value identifier="CALC0">
+<qti-index n="i">
+<qti-variable identifier="numbers" />
+</qti-index>
+</qti-set-template-value>
+<qti-template-condition>
+<qti-template-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">1</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_0</qti-base-value>
+</qti-set-correct-response>
+</qti-template-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">2</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_1</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">3</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_2</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">4</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_3</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">5</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_4</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">6</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_5</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+<qti-template-else-if>
+<qti-equal tolerance-mode="exact">
+<qti-variable identifier="i" />
+<qti-base-value base-type="integer">7</qti-base-value>
+</qti-equal>
+<qti-set-correct-response identifier="RESPONSE0">
+<qti-base-value base-type="identifier">SOLUTION0_0_6</qti-base-value>
+</qti-set-correct-response>
+</qti-template-else-if>
+</qti-template-condition>
+</qti-template-processing>
 
   <qti-item-body>
   <div> What are the divisors of <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -6905,15 +6983,16 @@ and uses many common numeric operators in the response processing. It
 has modal feedback and includes some mathML.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns:m=" xmlns:m="http://www.w3.org/1998/Math/MathML"
-  xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
-  https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd
-  http://www.w3.org/1998/Math/MathML
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:m=" xmlns:m="http://www.w3.org/1998/Math/MathML"
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
+https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd
+http://www.w3.org/1998/Math/MathML
 https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
-  identifier="stat2" title="Test of statistics functions"
-  adaptive="false" time-dependent="false" xml:lang="en">
+identifier="stat2" title="Test of statistics functions"
+adaptive="false" time-dependent="false" xml:lang="en">
 
   <qti-response-declaration base-type="integer" cardinality="single" identifier="RESPONSE0"/>
   <qti-response-declaration base-type="integer" cardinality="single" identifier="RESPONSE1"/>
@@ -6923,17 +7002,17 @@ https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
   <qti-outcome-declaration base-type="identifier" cardinality="single" identifier="FEEDBACK"/>
   <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
 
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="n"
+<qti-template-declaration base-type="integer" cardinality="single" identifier="n"
   math-variable="true" param-variable="true"/>
-  <qti-template-declaration base-type="integer" cardinality="ordered" identifier="t"
+<qti-template-declaration base-type="integer" cardinality="ordered" identifier="t"
   math-variable="true" param-variable="true"/>
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="SOLUTION0_0"
+<qti-template-declaration base-type="integer" cardinality="single" identifier="SOLUTION0_0"
   math-variable="true" param-variable="true"/>
-  <qti-template-declaration base-type="integer" cardinality="single" identifier="SOLUTION1_0"
+<qti-template-declaration base-type="integer" cardinality="single" identifier="SOLUTION1_0"
   math-variable="true" param-variable="true"/>
-  <qti-template-declaration base-type="float" cardinality="single" identifier="SOLUTION2_0"
+<qti-template-declaration base-type="float" cardinality="single" identifier="SOLUTION2_0"
   math-variable="true" param-variable="true"/>
-  <qti-template-declaration base-type="float" cardinality="single" identifier="SOLUTION3_0"
+<qti-template-declaration base-type="float" cardinality="single" identifier="SOLUTION3_0"
   math-variable="true" param-variable="true"/>
 
   <qti-template-processing>
@@ -7159,7 +7238,8 @@ notable for its use of
 to determine variables at runtime.
 
 <?xml version="1.0" encoding="UTF-8" ?>
-  <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
+
+<qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
  xmlns:m="http://www.w3.org/1998/Math/MathMLe"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -7181,21 +7261,21 @@ https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
   <qti-outcome-declaration identifier="FEEDBACK3" cardinality="single" base-type="identifier" />
   <qti-outcome-declaration identifier="SCORE0" cardinality="single" base-type="float" />
 
-  <qti-template-declaration identifier="a" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="a" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="b" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="b" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="c" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="c" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="p" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="p" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="Choix0" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="Choix0" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="Choix1" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="Choix1" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="Choix2" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="Choix2" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
-  <qti-template-declaration identifier="Choix3" cardinality="single" base-type="integer"
+<qti-template-declaration identifier="Choix3" cardinality="single" base-type="integer"
   math-variable="true" param-variable="true" />
 
   <qti-template-processing>
@@ -7297,7 +7377,7 @@ https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
   <mi>c</mi>
   </math>
 
- is equal to:
+is equal to:
 
   </qti-prompt>
   <qti-simple-choice identifier="Item0" fixed="false"> - <math xmlns="http://www.w3.org/1998/Math/MathML">
@@ -7423,6 +7503,7 @@ The qti-rubric-block element has two attributes, "use" and "view".
 
 use
 required
+
 <p>Vocabulary:</p>
 <ul>
 <li>instructions</li>
@@ -7434,6 +7515,7 @@ No default
 
 view
 required
+
 <p>Vocabulary:</p>
 <ul>
 <li>author</li>
@@ -7481,6 +7563,7 @@ included in the example to demonstrate good practice.
 Rubric Block in an AssessmentItem
 
 <?xml version="1.0" encoding="UTF-8" ?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -7572,11 +7655,11 @@ adaptive="false" time-dependent="false" xml:lang="en" >
 Printed variable (qti-printed-variable) elements may be used to insert
 the values of template or outcome variables into test- and item-level
 content, such as within feedback, template, and rubric blocks, within
-most HTML5 elements, and within such  interaction components as prompts
-and choices.  This is useful in generating item content from templates,
+most HTML5 elements, and within such interaction components as prompts
+and choices. This is useful in generating item content from templates,
 for customizing feedback and messages, and for similar use cases.
 
-The *format*  attribute of the qti-printed-variable element can be used
+The _format_ attribute of the qti-printed-variable element can be used
 to control the formatting of the printed variable. Appendix A of Section
 2 of this document gives a list of possible formatting options.
 
@@ -7584,22 +7667,22 @@ A delivery system which supports printed variables updates them in all
 content currently displayed to users immediately after response
 processing and outcome processing are completed. Similar to printed
 variables, the values of template variables with math-variable="true"
-are substituted into \< *mi\>* and \< *ci*\>  elements within MathML
+are substituted into \< _mi\>_ and \< _ci_\> elements within MathML
 blocks, and template variables with param-variable="true" are
-substituted into object *param* elements
+substituted into object _param_ elements
 
 #### 3.7.7 Shared Stimulus
 
 From within an AssessmentItem, you can optionally reference one or more
 stimulus files that are necessary to respond to the item. The stimulus
-may or may not be shared across multiple items.  A stimulus reference
+may or may not be shared across multiple items. A stimulus reference
 might look like the example below:
 
 <qti-assessment-stimulus-ref identifier="Stimulus1" href="passages/unbelievableNight.xml" title="An Unbelievable Night" />
 Figure 106  @@@ TODO caption
 
-Both the identifier and href attributes are required attributes.  The
-href is a URI, and the title attribute is optional.  The stimuli must be
+Both the identifier and href attributes are required attributes. The
+href is a URI, and the title attribute is optional. The stimuli must be
 contained as separate resources in the QTI package.
 
 Shared stimulus content can be used by any number of AssessmentItem's,
@@ -7613,16 +7696,16 @@ System A, then System A must be able to recognize/identify/process the
 original shared stimulus information.
 
 An example of a reference to an AssessmentStimulus from an
-AssessmentItem is shown below.  In this example it is left to the
+AssessmentItem is shown below. In this example it is left to the
 delivery platform to determine the stimulus rendering location within
-the qti-item-body.  This may reduce interoperability between delivery
+the qti-item-body. This may reduce interoperability between delivery
 platforms.
 
 Assessment Stimulus Reference in an AssessmentItem
 
 <qti-assessment-item ...>
-  <qti-response-declaration> ... </qti-response-declaration>
-  <qti-outcome-declaration> ... </qti-outcome-declaration>
+<qti-response-declaration> ... </qti-response-declaration>
+<qti-outcome-declaration> ... </qti-outcome-declaration>
 
   <qti-assessment-stimulus-ref identifier="Stimulus1" href="passages/unbelievableNight.xml"/>
 
@@ -7633,14 +7716,14 @@ Assessment Stimulus Reference in an AssessmentItem
   </qti-assessment-item>
 
 To improve interoperability, it is possible to be more prescriptive
-about the placement of the shared stimulus within an qti-item-body.  In
+about the placement of the shared stimulus within an qti-item-body. In
 the following example, QTI 3 Shared CSS is used to create a two-column
 layout in an item, where the stimulus is injected into the left-most
 column of the layout, and the item's stem and interaction are placed
-into the right-most column of the layout.  Placement of the stimulus is
+into the right-most column of the layout. Placement of the stimulus is
 specified through the use of a \ (any QTI 3 HTML5 qti-item-body
 element may be used) with a reference to the identifier of the shared
-stimulus by means of a data-stimulus-idref attribute.  Though not
+stimulus by means of a data-stimulus-idref attribute. Though not
 required, best practice is to add a class="qti-shared-stimulus" to the
 element - in this example, a \ - used to specify the insertion
 location in the itemBody.
@@ -7648,24 +7731,25 @@ location in the itemBody.
 Assessment Stimulus Ref with Explicit Placement within an qti-item-body
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="unbelievable-night-item2" title="Where did the crocodile come from?"
 adaptive="false" time-dependent="false" xml:lang="en" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>B</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>B</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
 
-  <qti-assessment-stimulus-ref identifier="Stimulus1"
+<qti-assessment-stimulus-ref identifier="Stimulus1"
   href="passages/unbelievableNight.xml" title="An Unbelievable Night" />
 
   <qti-item-body>
@@ -7702,8 +7786,8 @@ Example of Assessment Stimulus
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qti/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_stimulusv3p0p1_v1p0.xsd"
   identifier="Stimulus1" title="An Unbelievable Night" xml:lang="en">
-  <qti-stylesheet href="stylesheets/unbelievable_night.css" type="text/css" />
-  <qti-stimulus-body>
+<qti-stylesheet href="stylesheets/unbelievable_night.css" type="text/css" />
+<qti-stimulus-body>
 
   <div class="qti-shared-stimulus-wrapper">
   <div>
@@ -7737,9 +7821,9 @@ xmlns:lom="http://ltsc.ieee.org/xsd/LOM"
 schemaLocation="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_imscpv1p2_v1p0.xsd
 http://ltsc.ieee.org/xsd/LOM  https://purl.imsglobal.org/spec/md/v1p3/schema/xsd/imsmd_loose_v1p3p2.xsd">
-  <metadata/>
-  <organizations/>
-  <resources>
+<metadata/>
+<organizations/>
+<resources>
 
   <resource identifier="Stimulus1" type="imsqti_stimulus_xmlv3p0" href="passages/unbelievableNight.xml">
   <file href="passages/unbelievableNight.xml"/>
@@ -7804,15 +7888,15 @@ calculator functions, Square root (), Percentage (%) , Plus/Minus
 
 **Scientific Calculator:**In the \<qti-calculator-type\> tag, use the
 "Scientific" vocabulary. The functions may include, but are not limited
-to: ALL standard calculator functions, a *p* key, square ( *x*2) , cube
-(x3),  x to the y (xy), cube root , xth root , logarithm keys, log, ln,
+to: ALL standard calculator functions, a _p_ key, square ( *x*2) , cube
+(x3), x to the y (xy), cube root , xth root , logarithm keys, log, ln,
 base 10, base *e,*Trigonometry function keys with an INVERSE key for the
 inverse functions, sin, cos, tan, hsin (hyperbolic sin), hcos,
 (hyperbolic cos), htan (hyperbolic tan), DEG, RAD, GRAD conversion, a
 capacity to work in both degree and radian mode, a reciprocal key (1/
-*x*) - calculate the inverse of the displayed value, permutation and/or
-combination keys ( *n*P *r* , *n*C *r*), parentheses keys, metric
-conversion, permutation and combination keys, nPr,  cPr, x!
+_x_) - calculate the inverse of the displayed value, permutation and/or
+combination keys ( *n*P _r_ , *n*C _r_), parentheses keys, metric
+conversion, permutation and combination keys, nPr, cPr, x!
 
 **Graphing Calculator:**In the \<qti-calculator-type\> tag, use the
 "Graphing" vocabulary. A Graphing calculator includes many of the same
@@ -7910,7 +7994,7 @@ around the presentation of reference materials for candidates.
 If candidates are required to access the materials to answer questions
 (like a reading passage), use the assessment stimulus structures (see
 [Section 3.7.7](#h.pb0clew9cko9) ) instead of digital materials. 3.7.8.5
- Physical Materials
+Physical Materials
 
 These are external materials needed to work with, or respond with, when
 the test taker responds to the item. Use the \<qti-physical-material\>
@@ -8138,7 +8222,7 @@ support="additional-directions". If the support is intended to match the
 predefined supports (see [Section 3.7.10.1](#h.6976yfkh0soz)) of the
 Personal Needs and Preferences 3.0, the support name in the support
 attribute will exactly match the support name of the PNP. If the support
-is *not* intended to match the predefined supports, then the support
+is _not_ intended to match the predefined supports, then the support
 name is considered "custom" and should follow the custom support
 conventions (see [Section 3.7.10.3](#h.ev59heqa114l)).
 
@@ -8226,7 +8310,7 @@ qti qti-catalog -> qti-card -> qti-html-content node.
 A reference is made to the catalog using the attribute
 "data-catalog-idref" from within an element in the qti-item-body - or on
 the qti-item-body element itself - where the value of the attribute is
-the id of the catalog you are referencing. A catalog *MUST* contain a
+the id of the catalog you are referencing. A catalog _MUST_ contain a
 unique id in the qti-catalog element's start tag. In the simple item
 example below, notice the reference (data-catalog-idref="catalog1") to
 the qti-catalog on line 0019, where the data-catalog-idref value matches
@@ -8240,31 +8324,32 @@ support attribute of the qti-card.
 Example: Referencing Catalog Content
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="ReferencingCatalogContent" title="Referencing Catalog Content"
   xml:lang="en-US" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>QTI</qti-value>
-  <qti-value>AfA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="3">
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>QTI</qti-value>
+<qti-value>AfA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="3">
 
-  <qti-prompt id="prompt1">Indicate which of the following statements are
-  <span data-catalog-idref="catalog1">accurate.</span></qti-prompt>
+<qti-prompt id="prompt1">Indicate which of the following statements are
+<span data-catalog-idref="catalog1">accurate.</span></qti-prompt>
 
-  <qti-simple-choice identifier="QTI">QTI is an initialism for
-  Question and Test Interoperability.</qti-simple-choice>
-  <qti-simple-choice identifier="PCI">PCI stands for Personal Care Information.</qti-simple-choice>
-  <qti-simple-choice identifier="AfA">AfA stands for Access for All.</qti-simple-choice>
-  </qti-choice-interaction>
-  </qti-item-body>
+<qti-simple-choice identifier="QTI">QTI is an initialism for
+Question and Test Interoperability.</qti-simple-choice>
+<qti-simple-choice identifier="PCI">PCI stands for Personal Care Information.</qti-simple-choice>
+<qti-simple-choice identifier="AfA">AfA stands for Access for All.</qti-simple-choice>
+</qti-choice-interaction>
+</qti-item-body>
 
   <qti-catalog-info>
   <qti-catalog id="catalog1" >
@@ -8298,31 +8383,32 @@ to them.
 Example: Catalog with Multiple Supports
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="CatalogWithMultipleSupports" title="Catalog with Multiple Supports"
 xml:lang="en-US" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>QTI</qti-value>
-  <qti-value>AfA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
-  <qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="3">
-  <qti-prompt id="prompt1">Indicate which of the following statements are
-  <span data-catalog-idref="catalog1">accurate.</span></qti-prompt>
-  <qti-simple-choice identifier="QTI">QTI is an initialism for
-  Question and Test Interoperability.</qti-simple-choice>
-  <qti-simple-choice identifier="PCI">PCI stands for Personal Care Information.</qti-simple-choice>
-  <qti-simple-choice identifier="AfA">AfA stands for Access for All.</qti-simple-choice>
-  </qti-choice-interaction>
-  </qti-item-body>
-  <qti-catalog-info>
-  <qti-catalog id="catalog1">
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>QTI</qti-value>
+<qti-value>AfA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+<qti-choice-interaction response-identifier="RESPONSE" min-choices="1" max-choices="3">
+<qti-prompt id="prompt1">Indicate which of the following statements are
+<span data-catalog-idref="catalog1">accurate.</span></qti-prompt>
+<qti-simple-choice identifier="QTI">QTI is an initialism for
+Question and Test Interoperability.</qti-simple-choice>
+<qti-simple-choice identifier="PCI">PCI stands for Personal Care Information.</qti-simple-choice>
+<qti-simple-choice identifier="AfA">AfA stands for Access for All.</qti-simple-choice>
+</qti-choice-interaction>
+</qti-item-body>
+<qti-catalog-info>
+<qti-catalog id="catalog1">
 
   <qti-card support="keyword-translation">
   <qti-card-entry xml:lang="es">
@@ -8351,18 +8437,19 @@ their own associations to portions of the sign language video file.
 Example: Multiple Catalogs within a Single Item
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_itemv3p0p1_v1p0.xsd"
 identifier="MultipleCatalogs" title="Multiple Catalogs in a Single Item"
 time-dependent="false" xml:lang="en-US">
-  <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>ChoiceA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>ChoiceA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
 
   <qti-item-body>
 
@@ -8426,20 +8513,21 @@ shown below.
 Example: Catalogs Across Content Nodes
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="CatalogsAcrossContentNodes" title="Catalogs Across Content Nodes"
 xml:lang="en-US" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>QTI</qti-value>
-  <qti-value>AfA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>QTI</qti-value>
+<qti-value>AfA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
 
   <qti-rubric-block view="candidate" use="instructions">
   <qti-content-body>
@@ -8490,7 +8578,7 @@ xml:lang="en-US" time-dependent="false">
 </qti-assessment-item>
 
 For interoperability purposes, catalog ids within assessment content
-files (items, sections, stimulus, parts/tests) *MUST* be unique. Be
+files (items, sections, stimulus, parts/tests) _MUST_ be unique. Be
 aware that there may be referenced/included/nested content (like a
 shared stimulus or rubric blocks) that may also include catalogs and
 could be on the same delivery presentation screen for candidates. It is
@@ -8552,13 +8640,14 @@ name of the custom support used in the content. (See Section 5.4)
 When evaluating Template Processing and Response Processing instructions
 in an Assessment Item, having contextual information available in the
 information model can improve the effectiveness and efficiency of such
-Template Processing and Response Processing instructions.  For example,
+Template Processing and Response Processing instructions. For example,
 Template Processing and Response Processing instructions with easy
 access to a candidate's PNP "context" can yield richer, more effective,
 presentation and outcomes. In another example, enabling an evaluation
 system to pass system or environmental "context" into an Assessment Item
+
 - or an Assessment Test - using common information model conventions can
-add richness to item evaluation and improve interoperability.
+  add richness to item evaluation and improve interoperability.
 
 The built-in QTI_CONTEXT record variable can be visualized with the
 following qti-field-identifier structure when declared in a QTI3
@@ -8566,19 +8655,19 @@ Assessment Item:
 
 The key elements to qti-context-declaration are:
 
-1.  A  variable declaration which declares a variable with global scope.
-  Such a globally scoped variable can be accessed within
-  \<qti-template-processing\>, \<qti-response-processing\>, and
-  \<qti-outcome-processing\> instructions. This approach uses the
-  element qti-context-declaration.
+1.  A variable declaration which declares a variable with global scope.
+    Such a globally scoped variable can be accessed within
+    \<qti-template-processing\>, \<qti-response-processing\>, and
+    \<qti-outcome-processing\> instructions. This approach uses the
+    element qti-context-declaration.
 
 A \<qti-context-declaration\> has all of the typical attributes; e.g.,
 cardinality, identifier, and base-type.
 
 2.  A built-in \<qti-context-declaration\> for a variable named
-  "QTI_CONTEXT", with cardinality of record. The following is an
-  explicit (though unnecessary) \<qti-context-declaration\> of
-  QTI_CONTEXT:
+    "QTI_CONTEXT", with cardinality of record. The following is an
+    explicit (though unnecessary) \<qti-context-declaration\> of
+    QTI_CONTEXT:
 
 \<qti-context-declaration cardinality="record" identifier="QTI_CONTEXT"
 /\>
@@ -8586,40 +8675,40 @@ cardinality, identifier, and base-type.
 "QTI_CONTEXT" is the name used in order to avoid collisions with other
 variables that might already be declared in existing items.
 
-3.  Systems that support context declarations are *required* to support
-  three field definitions within the QTI_CONTEXT record:
+3.  Systems that support context declarations are _required_ to support
+    three field definitions within the QTI_CONTEXT record:
 
 1.  **candidateIdentifier**: a string used to map to a candidate object.
-  A practical application of this would be to encode a user or session
-  ID which could then be used as the key to additional user/candidate
-  information
-2.  **testIdentifier**: a string used to map to a test object. A
-  practical application of this would be to encode an
-  \<qti-assessment-test\> identifier which could then be used as the
-  key to additional "test" contextual information.
-3.  **environmentIdentifier**: a string used to map to an environment
-  runtime in which template processing or response processing is being
-  evaluated. A practical application of this would be to encode a
-  "program" identifier which could then be used as the key to
-  additional system-level properties.
+    A practical application of this would be to encode a user or session
+    ID which could then be used as the key to additional user/candidate
+    information
+1.  **testIdentifier**: a string used to map to a test object. A
+    practical application of this would be to encode an
+    \<qti-assessment-test\> identifier which could then be used as the
+    key to additional "test" contextual information.
+1.  **environmentIdentifier**: a string used to map to an environment
+    runtime in which template processing or response processing is being
+    evaluated. A practical application of this would be to encode a
+    "program" identifier which could then be used as the key to
+    additional system-level properties.
 
 <qti-assessment-item>
 
   <qti-context-declaration cardinality="record" identifier="QTI_CONTEXT">
   <qti-default-value>
 
-  <qti-value base-type="string" field-identifier="candidateIdentifier">Curly</qti-value>
-  <qti-value base-type="string" field-identifier="testIdentifier">essay-test</qti-value>
-  <qti-value base-type="string" field-identifier="environmentIdentifier">2</qti-value>
+<qti-value base-type="string" field-identifier="candidateIdentifier">Curly</qti-value>
+<qti-value base-type="string" field-identifier="testIdentifier">essay-test</qti-value>
+<qti-value base-type="string" field-identifier="environmentIdentifier">2</qti-value>
 
-  <qti-value base-type="string" field-identifier="optionalField1">Larry,Moe,Curly</qti-value>
-  <qti-value base-type="integer" field-identifier="optionalField2">3</qti-value>
-  </qti-default-value>
-  </qti-context-declaration>
-  ...
-  <qti-item-body> ... </qti-item-body>
-  ...
-  </qti-assessment-item>
+<qti-value base-type="string" field-identifier="optionalField1">Larry,Moe,Curly</qti-value>
+<qti-value base-type="integer" field-identifier="optionalField2">3</qti-value>
+</qti-default-value>
+</qti-context-declaration>
+...
+<qti-item-body> ... </qti-item-body>
+...
+</qti-assessment-item>
 
 A system supporting context declarations must implement the
 candidateIdentifier, testIdentifier, and environmentIdentifier fields of
@@ -8639,6 +8728,7 @@ value (either "1" or "2" in this example) is then used with a
 a program.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -8701,34 +8791,34 @@ The functionality of a PCI is implemented by an AMD module written in
 Javascript, which may load any other AMD modules upon which it depends.
 
 PCIs are introduced into an item by the use of a
-*qti-portable-custom-interaction* element. As with the predefined
+_qti-portable-custom-interaction_ element. As with the predefined
 interaction types, PCIs are bound to a response variable via the
 response-identifier attribute.
 
 As two different qti-portable-custom-interaction elements could
-represent two very different custom interaction types, a PCI *MUST* have
+represent two very different custom interaction types, a PCI _MUST_ have
 an attribute (custom-interaction-type-identifier) to identify the actual
 interaction type represented by this PCI. To prevent name collisions
-between the values used by different implementers it is *RECOMMENDED*
+between the values used by different implementers it is _RECOMMENDED_
 that a Federated Content URN
 \[rfc4198\] be
 used for the value of the custom-interaction-type-identifier attribute.
 
 Any custom attributes provided by the item author through the use of
-data- attributes on the qti-portable-custom-interaction element *MUST*
+data- attributes on the qti-portable-custom-interaction element _MUST_
 be passed as properties by the delivery engine to the PCI module on
 initialization.
 
-The item author *MAY* pass the values of template variables defined in
+The item author _MAY_ pass the values of template variables defined in
 the item to the PCI module via qti-template-variable child elements.
 
-The item author *MAY* pass HTML markup to the PCI module to customize
+The item author _MAY_ pass HTML markup to the PCI module to customize
 the user interface of the PCI via a qti-interaction-markup child
 element. It is the responsibility of the PCI module to decide what use
 (if any) it will make of this markup. The markup allowed would be
 similar to that allowed by a qti-rubric-block, so it could for example
 include qti-printed-variable or inline feedback elements. One difference
-with qti-rubric-block is that the qti-interaction-markup element *MAY*
+with qti-rubric-block is that the qti-interaction-markup element _MAY_
 contain a *template*element which in turn may contain any HTML5 markup.
 
 ##### 3.7.12.1PCI AMD Default Module Resolution
@@ -8756,9 +8846,9 @@ the QTI content package which defines the item in a directory called
 
 This file defines the primary location of each named AMD module.
 
-This *MUST* be supported by delivery engines. While it is expected that
+This _MUST_ be supported by delivery engines. While it is expected that
 this will be the most common way to resolve the AMD modules used by PCIs
-its use by content authors and QTI content packages is *RECOMMENDED*,
+its use by content authors and QTI content packages is _RECOMMENDED_,
 but not mandatory.
 
 ##### 3.7.12.2 PCI AMD Module Resolution File Format
@@ -8766,11 +8856,11 @@ but not mandatory.
 This config file is a JSON document like the following example:
 
 {
-  "waitSeconds": 15,  "paths": {
-  "module1": "https://example.com/js/modules/graph1.01/graph",
-  "module2": "https://foobar.com/foo/bar1.2/foo"  }}
+"waitSeconds": 15, "paths": {
+"module1": "https://example.com/js/modules/graph1.01/graph",
+"module2": "https://foobar.com/foo/bar1.2/foo" }}
 
-Figure 107  @@@ TODO caption
+Figure 107 @@@ TODO caption
 
 The "waitSeconds" property defines how long the delivery engine should
 wait for each Javascript file to load before timing out. A setting of 0
@@ -8785,10 +8875,10 @@ If the location starts with a protocol (e.g. https://) then the module
 should be fetched from that location. Otherwise it should be assumed to
 be a QTI content package relative path.
 
-A delivery engine *MAY* ignore any package relative locations which are
+A delivery engine _MAY_ ignore any package relative locations which are
 not defined in the manifest of the QTI content package.
 
-A delivery engine *MAY* apply security rules to the URLs from which it
+A delivery engine _MAY_ apply security rules to the URLs from which it
 will load Javascript files.
 
 In the example above if an AMD require call was made for "module1" the
@@ -8803,9 +8893,9 @@ The second module resolution mechanism is to provide a module resolution
 configuration file called "fallback_module_resolution.js" in the QTI
 content package which defines the item in a directory called "modules".
 
-This *MUST* be supported by delivery engines, but its use in QTI content
+This _MUST_ be supported by delivery engines, but its use in QTI content
 packages is optional. For any modules where the primary location is not
-a package relative path it is *RECOMMENDED* that a fallback location is
+a package relative path it is _RECOMMENDED_ that a fallback location is
 configured which uses a package relative path.
 
 The file format and processing rules are the same as defined in section
@@ -8817,8 +8907,8 @@ attempting to load the module from the primary location.
 
 To associate a PCI module with a qti-portable-custom-interaction (PCI),
 either the "module" attribute or a qti-interaction-modules element
-*MUST* be present.  The value of the "module" attribute (or the
-qti-interaction-modules element) *MUST* be the name of an AMD module
+_MUST_ be present. The value of the "module" attribute (or the
+qti-interaction-modules element) _MUST_ be the name of an AMD module
 defined in the module resolution configuration.
 
 If we take the example of a simple PCI which implements a custom Likert
@@ -8826,24 +8916,26 @@ Scale interaction where the QTI content package included a module
 resolution configuration in "modules/module_resolution.js" with the
 contents: `{`
 
-  "paths": {
-  "exampleLikertScale": "modules/likert",
-  "handlebars": "modules/lib/handlebars.min"  }}
+"paths": {
+"exampleLikertScale": "modules/likert",
+"handlebars": "modules/lib/handlebars.min" }}
 
-Figure 108  @@@ TODO caption
+Figure 108 @@@ TODO caption
 
 Then the item author can use:
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="likertPCI" title="PCI example"
 time-dependent="false" xml:lang="en" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <div>
   <p>How well do you think you have mastered the concepts introduced in this module?</p>
   <qti-portable-custom-interaction
@@ -8868,20 +8960,20 @@ the location for that will be resolved in the same way and the delivery
 engine will attempt to dynamically load "modules/lib/handlebars.min.js"
 from the QTI content package.
 
-The item author *MAY* also override the default location for the primary
+The item author _MAY_ also override the default location for the primary
 resolution config files by adding a qti-interaction-modules child
 element with a "primary-configuration" attribute to set the location for
-the primary module resolution configuration and *MAY* set the fallback
+the primary module resolution configuration and _MAY_ set the fallback
 module resolution configuration location by setting a
-"fallback-configuration" attribute. This *MUST* be supported by the
-delivery engine, however the delivery engine *MAY* refuse to load
+"fallback-configuration" attribute. This _MUST_ be supported by the
+delivery engine, however the delivery engine _MAY_ refuse to load
 relative paths which are not defined in the content package's manifest,
-and *MAY* apply security rules to the URLs it will load Javascript from.
+and _MAY_ apply security rules to the URLs it will load Javascript from.
 
-The item author *MAY* further customize the module loading for an
+The item author _MAY_ further customize the module loading for an
 interaction by specifying the primary and fallback locations to use for
 an individual module by adding one or more qti-interaction-module child
-elements to the qti-interaction-modules element. This *MUST* be
+elements to the qti-interaction-modules element. This _MUST_ be
 supported by the delivery engine.
 
 For example, there may be no default module resolution configuration
@@ -8894,15 +8986,17 @@ require different versions of the handlebars module, the item author may
 wish to override the module version in the item definition, e.g.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="graphingPCI" title="Equation graphing example"
 xml:lang="en" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="string"/>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-item-body>
+
   <div>
   <p>How well do you think you have mastered the concepts introduced in this module?</p>
   <qti-portable-custom-interaction
@@ -8935,7 +9029,7 @@ the item it retrieves from the PCI object in the item session and when
 the candidate returns to the item it passes that stored state back to
 the custom interaction instance.
 
-Figure 109  PCI Lifecycle example 1.
+Figure 109 PCI Lifecycle example 1.
 
 In this second example a more complex flow is shown where a candidate
 may interact with an adaptive composite item which may contain more than
@@ -8944,12 +9038,12 @@ multiple attempts where the candidate uses the endAttemptInteraction to
 end each attempt and a button in the delivery engine to 'submit' the
 item, the item response processing then closes the item.
 
-Figure 110  PCI Lifecycle example 2.
+Figure 110 PCI Lifecycle example 2.
 
 3.7.12.6 PCI
 API
 
-Any Javascript loaded as part of or to support a PCI *MUST* be written
+Any Javascript loaded as part of or to support a PCI _MUST_ be written
 to run inside a strict Javascript execution context (e.g. it must expect
 that the delivery engine has called "use strict" before any of its
 modules are loaded) \[STRICT\]. It is recommended that all PCI modules
@@ -8965,7 +9059,7 @@ delivery engine. The delivery engine will provide this via a standard
 AMD definition of 'qtiCustomInteractionContext' which the portable
 custom interaction can require in its AMD module.As an alternate method
 of discovering the qtiCustomInteractionContext object, the delivery
-engine *MUST* also assign it to the global window object before the PCI
+engine _MUST_ also assign it to the global window object before the PCI
 is loaded.
 
 When a delivery engine is rendering an item which contains one or more
@@ -9006,9 +9100,9 @@ and outcome variables used in that HTML might change, the delivery
 engine should update the HTML and call getInstance on the PCI again to
 pass it the updated HTML.
 
-The *register* method will be called once per PCI type, in each AMD
-loading context where the PCI module is loaded.  How an implementation
-defines AMD loading contexts is beyond the scope of this document.  For
+The _register_ method will be called once per PCI type, in each AMD
+loading context where the PCI module is loaded. How an implementation
+defines AMD loading contexts is beyond the scope of this document. For
 example, there may be only one loading context for an entire assessment,
 or loading contexts for each item, or for each portable custom
 interaction instance, depending on the implementation.
@@ -9018,7 +9112,7 @@ qtiCustomInteractionContext getInstance method may be called multiple
 times to construct more than one PCI in the Assessment Item.
 
 Before unloading a PCI, if the PCI object provides an oncompleted
-callback function the delivery engine *MUST* call it to allow the PCI to
+callback function the delivery engine _MUST_ call it to allow the PCI to
 release any global resources it allocated (e.g. global event listeners).
 
 <strong>PCI Communication Bridge
@@ -9066,9 +9160,9 @@ should contain the following properties:</p>
 <em>properties</em>
 An object containing all of the key/value pairs from the
 data- attributes set on the qti-portable-custom-interaction.The naming
-rules applied by HTML5 for element.dataset should be followed here.  For
+rules applied by HTML5 for element.dataset should be followed here. For
 example, the data- is removed and hyphenated names have the hyphens
-stripped and are camelCased.  Also, data-max-choices-message="Too Many"
+stripped and are camelCased. Also, data-max-choices-message="Too Many"
 would become properties: { maxChoicesMessage: "Too Many" }
 
 <em>templateVariables</em>
@@ -9090,7 +9184,7 @@ follow the structure defined in Appendix C
 
 <em>responseIdentifier</em>
 The interaction's response identifier; e.g., "RESPONSE".
- Useful for logging and events. This should not be relied on to be
+Useful for logging and events. This should not be relied on to be
 unique for the web-page the interaction is rendered on ( e.g. multiple
 items may be rendered on the same web page).
 
@@ -9109,6 +9203,7 @@ solution be shown to the candidate.The signature of this callback
 function is documented in the next Section.
 
 <em>status</em>
+
 <p><em>OPTIONAL</em>. Specify the item status (as per
 Section 4.1 of the QTI 3 Information Model). If not specified it should
 default to "interacting".</p>
@@ -9123,9 +9218,9 @@ default to "interacting".</p>
 
 ###### 3.7.12.7.2 PCI Communication Bridge API - Delivery Engine Callbacks
 
-When the delivery calls *getInstance,* the *configuration*object
-contains one required and one optional callback, *onready*and *ondone*,
-respectively.  The PCI instance is responsible for calling these
+When the delivery calls _getInstance,_ the *configuration*object
+contains one required and one optional callback, *onready*and _ondone_,
+respectively. The PCI instance is responsible for calling these
 callback functions on the events described below.
 
 These two callbacks are defined below:
@@ -9168,12 +9263,14 @@ is bound and its value. The values of variables <em>MUST</em> follow the
 structure defined in Appendix C.
 
 state
+
 <p>The current internal state of the custom interaction instance.
 This should be treated as an opaque string by the delivery engine.</p>
 <p>It can be passed back by the delivery engine to the PCI module in a
 getInstance call to recreate the PCI in the same state.</p>
 
 status
+
 <p><em>OPTIONAL</em>. Requests that the delivery engine transition
 the item to the specified state. If not specified, it should default to
 "interacting". For example, if a value of "closed" is provided that
@@ -9192,8 +9289,8 @@ send are:</p>
 ##### 3.7.19.3 PCI API - PCI Object
 
 The PCI module *getInstance*factory method returns an instance of the
-portable custom interaction.  Each instance will correspond to one
-occurrence of *qti-portable-custom-interaction* in an assessment item.
+portable custom interaction. Each instance will correspond to one
+occurrence of _qti-portable-custom-interaction_ in an assessment item.
 PCI objects have the following properties and methods.
 
 <strong>PCI Instance</strong>
@@ -9258,14 +9355,14 @@ validity error.</p>
 The custom interaction instance is responsible for calling the callback
 functions set by the delivery engine in the getInstance call via the
 onready and/or ondone properties of the configuration. See [Section
-3.7.12.9](#h.lopy3gknkieb)  for the expected signature of these
+3.7.12.9](#h.lopy3gknkieb) for the expected signature of these
 functions, and for information on when in the interaction life cycle the
 custom interaction instance should call these callback functions.
 
 ##### 3.7.19.4 PCI Communication Bridge API - PCI callback
 
-The custom interaction instance returned by the PCI module *MAY*
-implement an "oncompleted" callback which *MUST* be called by the
+The custom interaction instance returned by the PCI module _MAY_
+implement an "oncompleted" callback which _MUST_ be called by the
 delivery engine before unloading the PCI module or removing markup
 associated with the PCI from the DOM.
 
@@ -9274,7 +9371,7 @@ associated with the PCI from the DOM.
 <em>oncompleted</em>has no parameters. If provided, this
 callback <em>MUST</em> be called by the delivery engine before unloading
 the PCI module or removing markup associated with the PCI from the DOM.
- This is to allow the custom interaction instance to release any
+This is to allow the custom interaction instance to release any
 allocated resources; e.g., unbind global event listeners etc., or remove
 markup, which might not be deallocated or removed automatically by
 removing the DOM element associated with the PCI. Typically, the
@@ -9284,14 +9381,14 @@ delivery engine will call <em>getResponse</em>and
 ##### 3.7.19.5 Notifying Changes to the Delivery Engine
 
 When the value of a PCI changes (e.g. the value which would be returned
-by getResponse() changes) a PCI *MUST* send a qti-interaction-changed
+by getResponse() changes) a PCI _MUST_ send a qti-interaction-changed
 event by firing a custom event to the DOM element passed to getInstance.
- The PCI can determine when it considers the response value to have
-changed.  For example, a PCI does not have to send a
+The PCI can determine when it considers the response value to have
+changed. For example, a PCI does not have to send a
 qti-interaction-changed event on every keypress or mouse click - unless
 of course the designer of the PCI explicitly , it does not have to e.g.
-send an event on every keypress.  When sent, the custom event *MUST* be
-set to bubble and be cancellable. The custom event *MUST* be initialized
+send an event on every keypress. When sent, the custom event _MUST_ be
+set to bubble and be cancellable. The custom event _MUST_ be initialized
 with the following data ( which will appear as a 'detail' object on the
 event ).
 
@@ -9321,7 +9418,7 @@ getResponse() would return.
 
 Configuration of portable custom interactions may utilize data-
 attributes of the qti-portable-custom-interaction. The configuration
-data is passed to the PCI module via a call to *getInstance*.
+data is passed to the PCI module via a call to _getInstance_.
 
 QTI template variables may also be utilized to provide configuration
 data to custom interactions by template variable binding. The delivery
@@ -9347,21 +9444,21 @@ Some techniques which the PCI module author might consider applying are
   any template variable starting with *'range'*which the item author has
   bound to the PCI instance via a qti-template-variable element would be
   mapped to the internal variable *'range',*so the item author could use
-  any of the following template variable names, *range*, *rangeOne*,
-  *rangeTwo*, *rangeline1*.
+  any of the following template variable names, _range_, _rangeOne_,
+  _rangeTwo_, _rangeline1_.
 - Allow a suffix to be applied as above but require the item author to
   provide the value of the suffix as a documented data attribute on the
   qti-portable-custom-interaction element; e.g.,using data-instance-id="
-  *One*" might then cause the PCI module to expect the template variable
-  to be named " *rangeOne*". This suffix might apply to multiple
+  _One_" might then cause the PCI module to expect the template variable
+  to be named " _rangeOne_". This suffix might apply to multiple
   template variables used by the PCI module.
 - Allow the item author to override a default expectation for the
   template variable name via a data attribute on the
   qti-portable-custom-interaction element; e.g.,
-  data-range-variable-name=" *rangeOne*" would cause the PCI Module to
-  map a template variable called " *rangeOne*" rather than defaulting to
-  mapping a template variable called " *range*" to an internal variable
-  " *range*".
+  data-range-variable-name=" _rangeOne_" would cause the PCI Module to
+  map a template variable called " _rangeOne_" rather than defaulting to
+  mapping a template variable called " _range_" to an internal variable
+  " _range_".
 
 Where the values of the template variables are not expected to be unique
 to an instance, PCI module authors should consider selecting template
@@ -9371,7 +9468,7 @@ vendor prefix.
 
 The JSON data is passed into the custom interaction object on creation
 via the getInstance method. The example item in [Section
-3.8.2](#h.z1bzfyi60fsm)  below binds two template variables (X and Y) to
+3.8.2](#h.z1bzfyi60fsm) below binds two template variables (X and Y) to
 this interaction, so that the value of these two variables will be
 passed by the delivery engine into the configuration in the
 templateVariables property when the custom interaction object is
@@ -9387,6 +9484,7 @@ assistive technology, and Catalogs for encoding glossaries, keyword
 translations, and computer read aloud.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns:m="http://www.w3.org/1998/Math/MathML"
@@ -9396,13 +9494,14 @@ http://www.w3.org/1998/Math/MathML
 https://purl.imsglobal.org/spec/mathml/v3p0/schema/xsd/mathml3.xsd"
 identifier="qti3-choice-aria-mathml-catalog" title="Surveyors"
 adaptive="false" time-dependent="false" xml:lang="en" >
-  <qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
-  <qti-correct-response>
-  <qti-value>ChoiceA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
-  <qti-item-body>
+<qti-response-declaration base-type="identifier" cardinality="single" identifier="RESPONSE">
+<qti-correct-response>
+<qti-value>ChoiceA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration base-type="float" cardinality="single" identifier="SCORE"/>
+<qti-item-body>
+
   <div class="qti-layout-row">
   <div class="qti-layout-col6">
   <h2 class="qti-visually-hidden">Passage</h2>
@@ -9487,7 +9586,7 @@ adaptive="false" time-dependent="false" xml:lang="en" >
   template="https://purl.imsglobal.org/spec/qti/v3p0/rptemplates/match_correct"/>
 </qti-assessment-item>
 
-Figure 111  Expected Rendering: Two
+Figure 111 Expected Rendering: Two
 column item with shared CSS and shared Interaction vocabularies.
 
 ##### 3.8.1.1 Use of QTI 3 Shared CSS
@@ -9499,45 +9598,45 @@ right-hand side of the item, resulting in what appears to be a
 two-column item.
 
 This kind of layout is achieved by the use of [QTI 3 shared CSS
-layout](#h.zhf232yr6of1)  class names on lines 13 (div
+layout](#h.zhf232yr6of1) class names on lines 13 (div
 class="qti-layout-row") and 14 (div class="qti-layout-col6") where the
 stimulus/passage content is placed, and later on in line 35 (div
 class="qti-layout-col6") where the stem/interaction content is placed.
- By specifying that both Stimulus and Stem consume an equal (6) number
+By specifying that both Stimulus and Stem consume an equal (6) number
 of columns in the responsive grid, we create the visual impression that
 each consumes 50% of the horizontal layout.
 
-Further [QTI 3 shared CSS](#h.9slpfjc0u4tx)  is used on line 18 to
+Further [QTI 3 shared CSS](#h.9slpfjc0u4tx) is used on line 18 to
 create a border around the diagram (img class="qti-bordered"), and on
 line 40 to create a "well" around the prompt (div class="qti-well").
 
 On line 21, the detailed written description of the contents of the
 diagram are hidden from sighted users, but remain "visible" to assistive
 technology by the use of the [qti-visually-hidden](#h.ta85r72yth46)
- class.
+class.
 
 As a final accommodation for users of assistive technology, \<h2
 class="qti-visually-hidden"\> elements are added prior to the stimulus
 (line 15) and stem (line 36) so that AT users can quickly "jump" back
 and forth between the stimulus and stem, much as the human eye scans the
-two column item from left to right, and back again.  An H2 element (not
+two column item from left to right, and back again. An H2 element (not
 an H1) is the preferred, top-most header element in an item because the
 H1 element is typically reserved for the test delivery system as the
-item's "title" to be announced to the candidate by the AT.  For example,
+item's "title" to be announced to the candidate by the AT. For example,
 a delivery system / AT will announce the item as "Item 4" or
 "Surveyors".
 
 ##### 3.8.1.2 Use of QTI 3 Shared Interaction Vocabulary
 
 QTI 3 introduces a new [shared interaction vocabulary](#h.q0bgy0kk6j43)
- for how to specify many different interaction renderings and
+for how to specify many different interaction renderings and
 interaction behaviors. In the example above, the item's author uses a
 qti-choice-interaction, but wants the choices to be "stacked" in two
 columns, and also wants each choice (A, B, C, D) to contain just a radio
 button and a description, but no choice "labels"; i.e., no "A", "B",
-"C", "D", on each choice.  This is achieved by using the class attribute
+"C", "D", on each choice. This is achieved by using the class attribute
 on the qti-choice-interaction itself (line 37) with the classes,
-[qti-labels-none](#h.8hn63bc8u50y)  and
+[qti-labels-none](#h.8hn63bc8u50y) and
 [qti-choices-stacking-2](#h.rw865050eypl) .
 
 ##### 3.8.1.3 Use of WAI-ARIA
@@ -9545,13 +9644,13 @@ on the qti-choice-interaction itself (line 37) with the classes,
 The item's author also endeavored to make this item a fairer geometry
 measurement for both sighted candidates and for candidates with visual
 impairments who use certain forms of assistive technology (AT) such as
-screen readers.  This was accomplished by adorning various parts of the
+screen readers. This was accomplished by adorning various parts of the
 item's content with aria.
 
 On lines 18 and 19, the image uses an "alt" attribute to tell AT that
 the image is indeed the "survey map" to be examined, but goes further by
 linking the detailed description of the image with an "aria-describedby"
-attribute.  By using so-called "down-arrow" navigation, a candidate can
+attribute. By using so-called "down-arrow" navigation, a candidate can
 easily manipulate the screen reader to scan the content linked by the id
 of the element specified by the value of the describedby - in this case
 "imgdesc1"on line 21.
@@ -9561,8 +9660,8 @@ places of the describedby element to get the AT to properly voice the
 mathematical symbols (lines 22, 24-25, 28-31).
 
 In order to properly voice the math on lines 42-44, the author also
-specifies an "alttext" attribute on the MathML.  Delivery systems *MUST*
-convert MathML alttext attributes to aria-label attributes.  Otherwise,
+specifies an "alttext" attribute on the MathML. Delivery systems _MUST_
+convert MathML alttext attributes to aria-label attributes. Otherwise,
 most AT will not properly voice the math.
 
 ##### 3.8.1.4 Use of Catalogs (Glossary, Keyword Translation, and Computer-Read-Aloud)
@@ -9583,16 +9682,16 @@ encodes a translation for Spanish ([\[BCP 47\]](#bib-BCP-47) "es") on
 lines 65-69.
 
 As mentioned previously, there exists a qti-visually-hidden detailed
-description of the survey diagram on lines 21-33.  To *prevent* the
+description of the survey diagram on lines 21-33. To _prevent_ the
 delivery system's computer-read-aloud technology (which is primarily
 used as a literacy support) from voicing the description of the diagram
 that is provided to AT users, a catalog (data-catalog-idref="cat02") is
-linked on line 21.  Then, on lines 73-78, there is a catalog override
+linked on line 21. Then, on lines 73-78, there is a catalog override
 for what the delivery system's computer-read-aloud technology should
 voice, which, in this case, should be nothing because we don't want to
-create a literacy aid to content that we can't see!  Consequently, there
+create a literacy aid to content that we can't see! Consequently, there
 exists what amounts to empty white space for this qti-card-entry (lines
-74-77).  This effectively "hides" the visually-hidden content from the
+74-77). This effectively "hides" the visually-hidden content from the
 delivery system's computer-read-aloud technology while still retaining
 content visibility for assistive technology.
 
@@ -9620,7 +9719,7 @@ provided the item author with a few mechanisms to customize the PCI.
 
 - Two CSS classes can be used with the interaction:
 
--  "hmh-tap-border-rounded" can be applied to the interaction to add a
+- "hmh-tap-border-rounded" can be applied to the interaction to add a
   rounded border to the entire interaction
 - "hmh-tap-image" can be defined to style the tap and reveal images
 
@@ -9641,20 +9740,22 @@ assessment item which allows the student to test their knowledge of
 measuring the pH of solution.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 identifier="measuringPh" title="Exploring the measurement of pH using red cabbage extract"
 adaptive="false" time-dependent="false" xml:lang="en-US" >
-  <qti-response-declaration identifier="RESPONSE" cardinality="single"
+<qti-response-declaration identifier="RESPONSE" cardinality="single"
   base-type="integer" />
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>1.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>1.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <div>
   <h2>Measuring pH</h2>
   <p>Did you know that red cabbage juice can be used to determine if a liquid
@@ -9705,7 +9806,7 @@ adaptive="false" time-dependent="false" xml:lang="en-US" >
   </qti-item-body>
 </qti-assessment-item>
 
-Figure 112  This interaction should
+Figure 112 This interaction should
 initially render as follows.
 
 The response variable RESPONSE will then be updated to the value "1".
@@ -9717,7 +9818,7 @@ alt attributes to the three img elements, when a screen reader voices
 the interaction it should announce the contents of the
 'data-tap-message' attribute instead of the author assigned alt text.
 
-Figure 113  If the user clicks on
+Figure 113 If the user clicks on
 the image labelled "Vinegar" above, then the image should be revealed
 and the interaction redrawn as follows:
 
@@ -9736,14 +9837,13 @@ value which the PCI module will return as it's type-identifier property.
 
 This PCI module requires that any image which the item author wants
 masked initially be tagged with a class of "tap" (see lines 40, 47 and
-55).  A data-tap-message attribute is added (in line 23) to customize
+55). A data-tap-message attribute is added (in line 23) to customize
 the message to the item topic, and also a data-toggle attribute is added
 to allow the candidate to toggle the image visibility.
 
 The author wants the interaction outlined so they apply the CSS class
-"html-tap-border-rounded".  And as this PCI will apply that border to
-the elements tagged with the class "border", they add that class in line
-27.  The HTML which should be displayed to the student is then added in
+"html-tap-border-rounded". And as this PCI will apply that border to
+the elements tagged with the class "border", they add that class in line 27. The HTML which should be displayed to the student is then added in
 lines 27 through 60.
 
 ##### 3.8.2.2 PCI Module Development
@@ -9758,132 +9858,136 @@ directory in QTI packages which use this interaction. An entry will be
 added to the modules/module_resolution.js" file in the package in order
 to resolve "tap" to "modules/tap".
 
-"use strict";/** Tap To Reveal portable custom interaction * @param ctx -
-  PCI communications bridge */define([ "qtiCustomInteractionContext" ], function (ctx)
-  {  var self = {  // The type identifier allows custom interactions types to be identified in an item
-  // Returned values are defined by the implementer.
-  // Here, to minimise the risk of namespace collisions the implementation is
-  // using an ID which includes a domain which they control (hmhco.com)
-  typeIdentifier: 'urn:fdc:hmhco.com:pci:tapToReveal',
-  /** @access private
-  *  defaults for properties (data- attributes)
-  */
-  _propertyDefaults: {
+"use strict";/** Tap To Reveal portable custom interaction _ @param ctx -
+PCI communications bridge _/define([ "qtiCustomInteractionContext" ], function (ctx)
+{ var self = { // The type identifier allows custom interactions types to be identified in an item
+// Returned values are defined by the implementer.
+// Here, to minimise the risk of namespace collisions the implementation is
+// using an ID which includes a domain which they control (hmhco.com)
+typeIdentifier: 'urn:fdc:hmhco.com:pci:tapToReveal',
+/** @access private
+
+- defaults for properties (data- attributes)
+  \*/
+  \_propertyDefaults: {
   toggle: "false",
   altText: "Select to reveal the contents"
   },
-  /** @access private
-  * internal state of the interaction
-  */
-  _state: {
+  /\*\* @access private
+- internal state of the interaction
+  \*/
+  \_state: {
   numReveals: 0
   },
-  _baseElement: null,
-  _config: {},
-  _props: {
+  \_baseElement: null,
+  \_config: {},
+  \_props: {
   toggle: "false",
   altText: "Select to reveal the contents"
   },
   isValid: undefined,
   customValidityMessage: "",
-  _eventListener: undefined,
-  /** @access public
-  *  @method getInstance Create a new instance of this portable custom interaction
-  *  Will be called by the qtiCustomInteractionContext
-  *  @param {DOM Element} dom - the DOM Element this PCI is being added to
-  *  @param {Object} configuration - the configuration to apply to this PCI
-  *  @param {String} state - a previous saved state to apply to this instance.
-  *  This must have been obtained from a prior call to getState on an
-  *  instance of this type (same typeIdentifier)
-  */
+  \_eventListener: undefined,
+  /\*\* @access public
+- @method getInstance Create a new instance of this portable custom interaction
+- Will be called by the qtiCustomInteractionContext
+- @param {DOM Element} dom - the DOM Element this PCI is being added to
+- @param {Object} configuration - the configuration to apply to this PCI
+- @param {String} state - a previous saved state to apply to this instance.
+- This must have been obtained from a prior call to getState on an
+- instance of this type (same typeIdentifier)
+  \*/
   getInstance: function (dom, configuration, state) {
-  var newInstance = this._extend({}, this);
-  newInstance._init = newInstance._init.bind(newInstance);
-  newInstance._init(dom, configuration, state);
+  var newInstance = this.\_extend({}, this);
+  newInstance.\_init = newInstance.\_init.bind(newInstance);
+  newInstance.\_init(dom, configuration, state);
   return newInstance;
   },
 
-  _init: function(dom, configuration, state) {
-  this._baseElement = dom;
-  var uid = "tap-" + Math.floor(Math.random() * 100000);
-  dom.setAttribute("data-uid", uid);
-  this._addCSS(uid);
+\_init: function(dom, configuration, state) {
+this.\_baseElement = dom;
+var uid = "tap-" + Math.floor(Math.random() \* 100000);
+dom.setAttribute("data-uid", uid);
+this.\_addCSS(uid);
 
-  this._config = configuration;
-  this._props = this._extend(this._propertyDefaults, this._config.properties);
-  if (state) {
-  this._state = JSON.parse(state);
-  }
-  var images = dom.querySelectorAll("img.tap");
-  var hasRevelationState = false;
-  if (this._state.revealed && this._state.revealed.length === images.length) {
-  hasRevelationState = true;
-  } else {
-  this._state.revealed = [];
-  }
-  for (var i = 0; i < images.length; i++) {
-  var image = images[i];
-  image.width = image.clientWidth;
-  image.height = image.clientHeight;
-  image.setAttribute("data-src", image.src);
-  image.src = this._coverImage;
-  image.setAttribute("data-alt", image.getAttribute("alt"));
-  image.setAttribute("alt", this._props.altText);
-  image.dataset.index = i;
-  if (hasRevelationState) {
-  if (this._state.revealed[i]) {
-  this._swap(image);
-  }
-  } else {
-  this._state.revealed[i] = false;
-  }
-  var source = image.outerHTML;
-  image.outerHTML = "<button class='hmh-tap-image' aria-live='polite'
+this.\_config = configuration;
+this.\_props = this.\_extend(this.\_propertyDefaults, this.\_config.properties);
+if (state) {
+this.\_state = JSON.parse(state);
+}
+var images = dom.querySelectorAll("img.tap");
+var hasRevelationState = false;
+if (this.\_state.revealed && this.\_state.revealed.length === images.length) {
+hasRevelationState = true;
+} else {
+this.\_state.revealed = [];
+}
+for (var i = 0; i < images.length; i++) {
+var image = images[i];
+image.width = image.clientWidth;
+image.height = image.clientHeight;
+image.setAttribute("data-src", image.src);
+image.src = this.\_coverImage;
+image.setAttribute("data-alt", image.getAttribute("alt"));
+image.setAttribute("alt", this.\_props.altText);
+image.dataset.index = i;
+if (hasRevelationState) {
+if (this.\_state.revealed[i]) {
+this.\_swap(image);
+}
+} else {
+this.\_state.revealed[i] = false;
+}
+var source = image.outerHTML;
+image.outerHTML = "<button class='hmh-tap-image' aria-live='polite'
   aria-relevant='all'>" + source + "</button>";
-  }
-  var buttons = dom.querySelectorAll("button.hmh-tap-image");
-  this._eventListener = this.onclick.bind(this);
-  for (var i = 0; i < buttons.length; i++) {
-  buttons[i].addEventListener("click", this._eventListener);
-  }
-  this.oncompleted = this.cleanup.bind(this);
-  if (this._config.onready !== undefined && this._config.onready !== null) {
-  this._config.onready(this, this.getState());
-  }
-  return this;
-  },
-  /** @access public
-  * @method getResponse
-  * @return {Object} - the value to assign to the bound QTI response variable
-  */
+}
+var buttons = dom.querySelectorAll("button.hmh-tap-image");
+this.\_eventListener = this.onclick.bind(this);
+for (var i = 0; i < buttons.length; i++) {
+buttons[i].addEventListener("click", this.\_eventListener);
+}
+this.oncompleted = this.cleanup.bind(this);
+if (this.\_config.onready !== undefined && this.\_config.onready !== null) {
+this.\_config.onready(this, this.getState());
+}
+return this;
+},
+/\*\* @access public
+
+- @method getResponse
+- @return {Object} - the value to assign to the bound QTI response variable
+  \*/
   getResponse: function () {
   return {
   "base": {
-  "integer": this._state.numReveals
+  "integer": this.\_state.numReveals
   }
   };
   },
-  /** @access public
-  * @method getState
-  * @return {String} The current state of this PCI. May be passed to
-  * getInstance to later restore this PCI instance.
-  */
+  /\*\* @access public
+- @method getState
+- @return {String} The current state of this PCI. May be passed to
+- getInstance to later restore this PCI instance.
+  \*/
   getState: function () {
-  return JSON.stringify(this._state);
+  return JSON.stringify(this.\_state);
   },
 
-  /** @access public
-  * @method checkValidity
-  * @return {boolean} true if candidate input satisfies validation requirements
-  */
+/\*\* @access public
+
+- @method checkValidity
+- @return {boolean} true if candidate input satisfies validation requirements
+  \*/
   checkValidity: function () {
   return this.isValid;
   },
 
-  /** @access public
-  * @method reportValidity
-  * @return {boolean} true if candidate input satisfies validation requirements
-  */
+/\*\* @access public
+
+- @method reportValidity
+- @return {boolean} true if candidate input satisfies validation requirements
+  \*/
   reportValidity: function () {
   var isValid = this.checkValidity();
   if (isValid) {
@@ -9893,21 +9997,22 @@ to resolve "tap" to "modules/tap".
   }
   },
 
-  setCustomValidity: function (customValidityMessage) {
-  this.customValidityMessage = customValidityMessage;
-  },
+setCustomValidity: function (customValidityMessage) {
+this.customValidityMessage = customValidityMessage;
+},
 
-  getCustomValidity: function () {
-  return(this.customValidityMessage);
-  },
+getCustomValidity: function () {
+return(this.customValidityMessage);
+},
 
-  /** @access private
-  *  @method reportChanged
-  **/
+/\*\* @access private
+
+- @method reportChanged
+  \*\*/
   reportChanged: function () {
   var detail = {
   interaction: this,
-  responseIdentifier: this._config.responseIdentifier,
+  responseIdentifier: this.\_config.responseIdentifier,
   valid: this.isValid,
   value: this.getResponse()
   };
@@ -9917,114 +10022,117 @@ to resolve "tap" to "modules/tap".
   this.dom.dispatchEvent(changedEvent);
   }
 
-  /** @access private
-  * @method onclick - user has clicked/pressed Enter on the button
-  * @param {MouseEvent} event - the click Event.
-  */
+/\*\* @access private
+
+- @method onclick - user has clicked/pressed Enter on the button
+- @param {MouseEvent} event - the click Event.
+  \*/
   onclick: function (event) {
   var img = event.currentTarget.querySelector("img");
-  var toggle = this._swap(img);
-  this._state.numReveals += 1;
-  this._state.revealed[ img.dataset.index ] = (toggle?
-  (!this._state.revealed[ img.dataset.index ]) : true);
+  var toggle = this.\_swap(img);
+  this.\_state.numReveals += 1;
+  this.\_state.revealed[ img.dataset.index ] = (toggle?
+  (!this.\_state.revealed[ img.dataset.index ]) : true);
   this.reportChanged();
   },
 
-  _swap: function(img) {
-  var toggle = this._props.toggle && ("true".localeCompare(this._props.toggle) === 0);
-  var alt = img.getAttribute("alt");
-  var src = img.src;
-  img.src = img.dataset.src;
-  img.setAttribute("alt", alt);
-  if (toggle) {
-  img.dataset.src = src;
-  img.dataset.alt = alt;
-  }
-  return toggle;
-  },
+\_swap: function(img) {
+var toggle = this.\_props.toggle && ("true".localeCompare(this.\_props.toggle) === 0);
+var alt = img.getAttribute("alt");
+var src = img.src;
+img.src = img.dataset.src;
+img.setAttribute("alt", alt);
+if (toggle) {
+img.dataset.src = src;
+img.dataset.alt = alt;
+}
+return toggle;
+},
 
-  /** @access private
-  * Add the CSS scoped to this PCI instance
-  * @param {type} uid
-  * @return {undefined}
-  */
-  _addCSS: function (uid) {
+/\*\* @access private
+
+- Add the CSS scoped to this PCI instance
+- @param {type} uid
+- @return {undefined}
+  \*/
+  \_addCSS: function (uid) {
   var stylesheet = document.createElement("style");
-  stylesheet.innerHTML = this._stylesheet.join("").replace(/${uid}/g, uid);
-  this._baseElement.appendChild(stylesheet);
+  stylesheet.innerHTML = this.\_stylesheet.join("").replace(/${uid}/g, uid);
+  this.\_baseElement.appendChild(stylesheet);
   },
 
-  /**
-  * This will be provided as the oncompleted callback to cleanup
-  * before this PCI is unloaded.
-  * @return {none}
-  */
+/\*\*
+
+- This will be provided as the oncompleted callback to cleanup
+- before this PCI is unloaded.
+- @return {none}
+  \*/
   cleanup: function() {
-  var buttons = this._baseElement.querySelectorAll("button.hmh-tap-image");
+  var buttons = this.\_baseElement.querySelectorAll("button.hmh-tap-image");
   for (var i = 0; i < buttons.length; i++) {
-  buttons[i].removeEventListener("click", this._eventListener);
+  buttons[i].removeEventListener("click", this.\_eventListener);
   }
   },
 
-  _stylesheet: [
-  '[data-uid="${uid}"] .qti-interaction-markup {  ',
-  '  display: table;  ',
-  '}  ',
-  '[data-uid="${uid}"] .border {  ',
-  '  display: table;  ',
-  '  padding: 15px;  ',
-  '}  ',
-  '[data-uid="${uid}"] .hmh-tap-image {  ',
-  '  border: 1px solid #00a3c0;  ',
-  '  border-radius: 3px;  ',
-  '  padding: 10px;  ',
-  '  vertical-align: middle;  ',
-  '  background-color: #f1f1f1;  ',
-  '  width: 100%;  ',
-  '}  ',
-  '.hmh-tap-border-rounded [data-uid="${uid}"] .border {  ',
-  '  border: 2px solid #DDDDDD;  ',
-  '  border-radius: 4px;  ',
-  '}  ',
-  '[data-uid="${uid}"] [role="grid"] {  ',
-  '  padding: 15px;  ',
-  '}  ',
-  '[data-uid="${uid}"] [role="gridcell"] {  ',
-  '  display: inline-block;  ',
-  '  width: 100%;  ',
-  '  margin: 15px;  ',
-  '  padding: 10px;  ',
-  '}  ',
-  '[data-uid="${uid}"] figcaption {  ',
-  '  text-align: center;  ',
-  '}  ',
-  '[data-uid="${uid}"] div[role="row"] {  ',
-  '  display: grid;  ',
-  '  grid-auto-flow: column;  ',
-  '  align-items: center;  ',
-  '  justify-items: center;  ',
-  '}  ',
-  '[data-uid="${uid}"] .tap {  ',
-  '  width: 100%;  ',
-  '}'
-  ],
-  _coverImage: "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxuc...+",
-  _extend: function(A, B) {
-  var r = {};
-  for (var prop in A) {
-  r[prop] = A[prop];
-  }
-  for (var prop in B) {
-  r[prop] = B[prop];
-  }
-  return r;
-  }
-  };
-  // Register this PCI instance with the communication bridge
-  if (ctx) {
-  ctx.register( self );
-  }
-  return self;
+\_stylesheet: [
+'[data-uid="${uid}"] .qti-interaction-markup { ',
+' display: table; ',
+'} ',
+'[data-uid="${uid}"] .border { ',
+' display: table; ',
+' padding: 15px; ',
+'} ',
+'[data-uid="${uid}"] .hmh-tap-image { ',
+' border: 1px solid #00a3c0; ',
+' border-radius: 3px; ',
+' padding: 10px; ',
+' vertical-align: middle; ',
+' background-color: #f1f1f1; ',
+' width: 100%; ',
+'} ',
+'.hmh-tap-border-rounded [data-uid="${uid}"] .border { ',
+' border: 2px solid #DDDDDD; ',
+' border-radius: 4px; ',
+'} ',
+'[data-uid="${uid}"] [role="grid"] { ',
+' padding: 15px; ',
+'} ',
+'[data-uid="${uid}"] [role="gridcell"] { ',
+' display: inline-block; ',
+' width: 100%; ',
+' margin: 15px; ',
+' padding: 10px; ',
+'} ',
+'[data-uid="${uid}"] figcaption { ',
+' text-align: center; ',
+'} ',
+'[data-uid="${uid}"] div[role="row"] { ',
+' display: grid; ',
+' grid-auto-flow: column; ',
+' align-items: center; ',
+' justify-items: center; ',
+'} ',
+'[data-uid="${uid}"] .tap { ',
+' width: 100%; ',
+'}'
+],
+\_coverImage: "data:image/svg+xml;charset=utf-8;base64,PHN2ZyB4bWxuc...+",
+\_extend: function(A, B) {
+var r = {};
+for (var prop in A) {
+r[prop] = A[prop];
+}
+for (var prop in B) {
+r[prop] = B[prop];
+}
+return r;
+}
+};
+// Register this PCI instance with the communication bridge
+if (ctx) {
+ctx.register( self );
+}
+return self;
 });
 
 The PCI module must set strict mode (line 1) and must be an AMD module,
@@ -10054,7 +10162,7 @@ In this method it generates a unique id for this instance of the
 interaction which it adds to the DOM element provided by the delivery
 engine for this PCI and then calls another method (lines 40-43, the
 method \_addCSS and the stylesheet property it uses in lines 137-169)
- to dynamically insert the CSS for this interaction, scoped to the
+to dynamically insert the CSS for this interaction, scoped to the
 element with that unique id. While this should prevent any CSS styles
 defined by this PCI module from affecting any HTML in the rest of the
 page it does not prevent CSS styles defined outside the interaction,
@@ -10145,7 +10253,7 @@ updates the count of the number of times images have been revealed (line
 This example takes a famous mathematical problem and presents it to the
 user as a game. The
 [qti-feedback-block](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_BlockGroup_qti-feedback-block)
- element, in association with a number of outcome variables is used to
+element, in association with a number of outcome variables is used to
 control the flow of the story, from the opening gambit through to
 whether or not you have won a prize. When the story concludes you are
 asked about the strategy you adopted. Notice that the scoring for the
@@ -10157,6 +10265,7 @@ question which combines adaptivity with the powerful feature of item
 templates: [Monty Hall (Take 2)](#MontyHallTake2).
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -10479,22 +10588,22 @@ adaptive="true" time-dependent="false" xml:lang="en-US">
 
 **MONTY HALL (TAKE 1) - First Attempt**
 
-Figure 114  Monty Hall First Attempt
+Figure 114 Monty Hall First Attempt
 (Illustration)
 
 **MONTY HALL (TAKE 1) - Second Attempt**
 
-Figure 115  Monty Hall Second
+Figure 115 Monty Hall Second
 Attempt (Illustration)
 
 **MONTY HALL (TAKE 1) - Third Attempt**
 
-Figure 116  Monty Hall Third Attempt
+Figure 116 Monty Hall Third Attempt
 (Illustration)
 
 **MONTY HALL (TAKE 1) - Final Feedback**
 
-Figure 117  Monty Hall Final
+Figure 117 Monty Hall Final
 Feedback (Illustration)
 
 In the previous example, the default method of ending an attempt was
@@ -10546,7 +10655,7 @@ This specification defines two ways in which the overall behavior of
 each test part can be controlled: the navigation mode and the submission
 mode both of which are attributes on the *qti-test-part*element. The
 navigation mode determines the general paths that the candidate may
-take. A *qti-test-part* in linear mode restricts the candidate to
+take. A _qti-test-part_ in linear mode restricts the candidate to
 attempt each item in turn. Once the candidate moves on they are not
 permitted to return. A testPart in nonlinear mode removes this
 restriction - the candidate is free to navigate to any item in the test
@@ -10554,7 +10663,7 @@ at any time. The effect of navigation actions on item states in
 nonlinear mode is left as a matter for delivery system implementers, and
 delivery systems currently vary on this point. In some systems
 navigating away from an item in non-linear mode terminates the current
-attempt, and  returning to the item later starts a new attempt.  In
+attempt, and returning to the item later starts a new attempt. In
 other systems, inter-item navigation in a nonlinear test part has no
 effect on the count of item attempts, and in such systems a candidate
 may return multiple times, with the same attempt continuing until the
@@ -10609,7 +10718,7 @@ evaluated during the test session itself. The figure below illustrates
 part of a test and the way the items are structured into sections and
 sub-sections.
 
-Figure 118  The structure of the
+Figure 118 The structure of the
 test for selection and ordering.
 
 The next figure illustrates a specific instance of the same test part
@@ -10618,16 +10727,14 @@ S01 selects just one of S01A and S01B, a rule in S02 shuffles the order
 of the items contained by it and, finally, rules in S03 select 2 out of
 the 3 items it contains and shuffles the result.
 
-Figure 119  The delivered test after
+Figure 119 The delivered test after
 selection and ordering.
 
 The classes that support selection and ordering are:
 
--
-  [Selection](https://www.imsglobal.org/question/qtiv2p2p1/QTIv2p2p1-ASI-InformationModelv1p0/imsqtiv2p2p1_asi_v1p0_InfoModelv1p0.html)
+- [Selection](https://www.imsglobal.org/question/qtiv2p2p1/QTIv2p2p1-ASI-InformationModelv1p0/imsqtiv2p2p1_asi_v1p0_InfoModelv1p0.html)
   ;
--
-  [Ordering](https://www.imsglobal.org/question/qtiv2p2p1/QTIv2p2p1-ASI-InformationModelv1p0/imsqtiv2p2p1_asi_v1p0_InfoModelv1p0.html)
+- [Ordering](https://www.imsglobal.org/question/qtiv2p2p1/QTIv2p2p1-ASI-InformationModelv1p0/imsqtiv2p2p1_asi_v1p0_InfoModelv1p0.html)
   .
 
 ### 4.3 Time Limits
@@ -10688,7 +10795,7 @@ QTI 2.2 introduced the concept of SectionRefs, allowing re-use of
 sections across multiple AssessmentTests. This can be useful in
 designing parallel test forms with overlap:
 
-Figure 120  Three separate test
+Figure 120 Three separate test
 forms each containing two references to externally defined sections.
 
 In this example, there are three separate test forms (T01, T02, T03),
@@ -10804,14 +10911,14 @@ submission mode (see Navigation and Submission).
 ### 4.5 Item Sequencing
 
 Within a section, the test constructor may use the *qti-selection*and
-*qti-ordering* elements to control which sub-sections or items of a
+_qti-ordering_ elements to control which sub-sections or items of a
 section are selected for presentation to the candidate, and to control
 the order in which the elements will be presented.
 
 As the candidate works through a test part or section, and the delivery
 system must repeatedly determine the next item to be presented to the
 candidate, *qti-pre-condition*and *qti-branch-rule*elements may alter
-the sequence determined by *qti-selection*and *qti-ordering.*
+the sequence determined by *qti-selection*and _qti-ordering._
 
 *qti-pre-condition*defines preconditions for an item, section, or test
 part and the item is skipped if the preconditions are not met.
@@ -10851,11 +10958,11 @@ QTI 3.0.
 
 The *qti-selection*element specifies how many of the subsections and
 items of a section are to be selected. It has two standard attributes,
-*select*and *with-replacement.*
+*select*and _with-replacement._
 
-The *select* attribute, which gives a numeric value, defines how many of
+The _select_ attribute, which gives a numeric value, defines how many of
 the subsections and items in the section should be selected. A value of
-0 is allowed, though of limited application. Unless *with-replacement*
+0 is allowed, though of limited application. Unless _with-replacement_
 is true, it is an error to specify more subsections and items to be
 selected than exist in the section. When selecting "n" items and
 subsections, each subsection counts as one. For example, a section with
@@ -10865,10 +10972,10 @@ considered. Subsections are selected as a unit. But note that if a
 subsection is selected, any *qti-selection*or *qti-ordering*elements in
 the selected subsection will subsequently be processed.
 
-The *required* attribute on subsections and item references further
-controls the selection. If *required="true"*, the subsection or item
-must be included in the selection. If *required="false"*, the subsection
-may be included. Thus the *required* attribute divides the subsections
+The _required_ attribute on subsections and item references further
+controls the selection. If _required="true"_, the subsection or item
+must be included in the selection. If _required="false"_, the subsection
+may be included. Thus the _required_ attribute divides the subsections
 and items into two groups: the required subsections and items must have
 a 100% chance of being included in the selection, while the non-required
 subsections and items should have an equal chance with the other
@@ -10881,17 +10988,17 @@ value of *select*which is less than the number of *required*items.
 
 When the *with-replacement*attribute of *qti-selection*is true, items
 and subsections may be selected multiple times. Conceptually, after
-being picked, the item or subsection is replaced with a clone  in the
+being picked, the item or subsection is replaced with a clone in the
 pool available still to be selected, and the replacement is eligible to
 be selected. A single item or subsection may be represented multiple
 times in the final selection and is cloned. Clones of items become
 instances of the original item.
 
-In general, *with-replacement* is intended to be used in conjunction
+In general, _with-replacement_ is intended to be used in conjunction
 with template processing, so that each of the cloned item instances, as
 presented to the candidate, is different. Refer to the Information Model
 for more details about the cloning of items when processing
-*with-replacement*, and how the cloned item instances and their
+_with-replacement_, and how the cloned item instances and their
 variables are assigned identifiers.
 
 The precise algorithm for *with-replacement*is left to implementers, and
@@ -10904,15 +11011,15 @@ it is likely that delivery engines will vary somewhat in how
   included at least once.
 - If all items and subsections in the section have been included at
   least once, then items and subsections should be cloned until the
-  *select* target number is reached. On each round of cloning, each item
+  _select_ target number is reached. On each round of cloning, each item
   or subsection should have an equal chance of being selected for
-  cloning, irrespective of whether it is *required* and of the number of
+  cloning, irrespective of whether it is _required_ and of the number of
   times it has already been cloned.
 - The selection algorithm should preserve the original order of the
   subsections and items, as reordering is the province of the
-  *qti-ordering* element, whose processing comes later.
+  _qti-ordering_ element, whose processing comes later.
 
-The *qti-selection* element is defined as an "extension point". This
+The _qti-selection_ element is defined as an "extension point". This
 means that a delivery system may define custom attributes on the element
 or may allow custom XML markup to be included within the element. This
 allows a delivery system to implement non-standard selection algorithms.
@@ -10933,21 +11040,21 @@ mechanism).
 #### 4.5.2 Ordering
 
 The *qti-ordering*element defines how the items and subsections within a
-section are ordered. *qti-ordering*is processed after *qti-selection*.
+section are ordered. *qti-ordering*is processed after _qti-selection_.
 
-When the *shuffle* attribute value is " *true*", the subsections and
-items within the section should be  shuffled. However, any items or
-subsections which have *fixed="true"* must be kept in the same position.
+When the _shuffle_ attribute value is " _true_", the subsections and
+items within the section should be shuffled. However, any items or
+subsections which have _fixed="true"_ must be kept in the same position.
 In effect, the fixed items and subsections maintain their positions as
 specified in the source XML, and the other items and subsections are
 shuffled around them. It is possible for an item to specified as
 *required="false"*and *fixed="true".*This means that an item, *if
-selected,*must appear in its original sequence within the section,  but
+selected,*must appear in its original sequence within the section, but
 it is not required to be selected at all.
 
 When a section is being shuffled, how items in subsections are handled
 is controlled by the *visible*and *keep-together*attributes on the
-subsections. If *visible="true"*or * keep-together="true"*(the default),
+subsections. If *visible="true"*or _ keep-together="true"_(the default),
 then the subsection is shuffled as a unit with the other items in the
 section, and the items in the subsection are kept together. However, if
 *visible*and *keep-together*on the subsection are both *false,*then the
@@ -10956,7 +11063,7 @@ together with the items and subsections of the parent section, with the
 result that the children of the section and the subsection are
 interleaved. Refer to the Information Model for more detail.
 
-Like *qti-selection*, *qti-ordering*is an "extension point", and custom
+Like _qti-selection_, *qti-ordering*is an "extension point", and custom
 attributes and child elements may be defined by delivery systems in
 conjunction with custom ordering algorithms. Delivery systems which do
 not recognize attributes or child elements should ignore the
@@ -10965,12 +11072,12 @@ attributes which they do understand.
 
 #### 4.5.3 Branch Rules and Preconditions
 
-In a test part with *navigation-mode="linear",* as the candidate works
+In a test part with _navigation-mode="linear",_ as the candidate works
 through the assessment, the delivery system must repeatedly select the
 next item to be presented to the candidate. The selection and ordering
 discussed above puts the test parts, items, sections, and subsections
 into a natural or statically-determined sequence, and this is often the
- sequence in which the items are presented to the candidate.
+sequence in which the items are presented to the candidate.
 
 However, it is possible to define conditional and branching logic which
 will change the statically-determined sequence during the delivery of
@@ -10982,15 +11089,15 @@ assessment will subsequently present items only about chard based on the
 candidate preferring chard.
 
 There are two features which may be used to alter the static item
-sequence: *qti-pre-condition*and *qti-branch-rule.* These can be defined
+sequence: *qti-pre-condition*and _qti-branch-rule._ These can be defined
 on test parts, sections, and item references. Note that
-*qti-pre-condition*and *qti-branch-rules* on sections and item
+*qti-pre-condition*and _qti-branch-rules_ on sections and item
 references are only considered when the sections and item references are
 in linear test parts, and are ignored in non-linear test parts.
-*qti-pre-condition* and *qti-branch-rule*on TestParts are always
+_qti-pre-condition_ and *qti-branch-rule*on TestParts are always
 considered because TestParts within an assessment are implicitly linear.
 
-With *qti-pre-condition*, after response processing and outcome
+With _qti-pre-condition_, after response processing and outcome
 processing have been run on the item and test level respectively (based
 on submission-mode defined on the test-part level) and before the
 delivery system runs template processing and presents the next item to
@@ -11001,7 +11108,7 @@ followed by those on the first item in the section. Similarly, when a
 candidate enters a new TestPart.
 
 *qti-pre-conditions*are evaluated by evaluating the expression
-associated with the precondition. If the expression returns *false*,
+associated with the precondition. If the expression returns _false_,
 then the precondition has failed; the item, section, or test part should
 be skipped; and the delivery system should proceed to the next item,
 section, or test part, which may end the test. After skipping, the next
@@ -11010,11 +11117,11 @@ evaluation of preconditions continues until the delivery engine arrives
 at a test part, section, and item whose preconditions are met, or until
 it has skipped all the way to the end of the test.
 
-With *qti-branch-rule*, the logic is similar, but whereas preconditions
+With _qti-branch-rule_, the logic is similar, but whereas preconditions
 are evaluated before an item is presented to the candidate, branch rules
 are evaluated after response and outcome processing on the current item,
 and before the next item is determined. If the expression in the
-*qti-branch-rule*evaluates to *"true"*, the delivery engine branches to
+*qti-branch-rule*evaluates to _"true"_, the delivery engine branches to
 the item, section, or test-part with the identifier given by the
 *target*attribute of the branch rule. Branch rules can also be defined
 on sections and test parts, and these are evaluated when the end of the
@@ -11030,14 +11137,14 @@ the candidate, and the branch targets on test parts may only be to later
 test parts. Cycles are not allowed. How these rules are applied when
 items or sections have not been selected or have been reordered is not
 defined, and it is recommended not to combine *qti-selection*and
-*qti-ordering*with *qti-branch-rule*, or at least to be cautious that
+*qti-ordering*with _qti-branch-rule_, or at least to be cautious that
 selection and ordering will not make branch targets invalid.
 
 Preconditions and branch rules may be used together. Thus, the
 processing flow after a candidate has ended an attempt and is moving to
 the next item is:
 
- (1) perform response and outcome processing after the completed item or
+(1) perform response and outcome processing after the completed item or
 part;
 
 \(2\) evaluate item, section, and test part branch rules for the
@@ -11064,7 +11171,7 @@ within an Assessment Item but without allowing for templates. Test-,
 Part-, or Section-level rubric content can be used to provide general,
 navigation, or scoring instructions applicable to an entire test.
 
-Rubric blocks at any level *MUST NOT* contain interactions.
+Rubric blocks at any level _MUST NOT_ contain interactions.
 
 Test content rubric block content (including parts and sections) must be
 presented to the candidate (as indicated by the rubric block's "view"
@@ -11079,21 +11186,21 @@ items, some of the items, or specific items.
 
 Rubric block content, whether at test-, part, or section-level (similar
 to item-level rubric content), is conditional. It is presented to a user
-based on the *view* attribute of the block, one or more of *candidate,
+based on the _view_ attribute of the block, one or more of *candidate,
 proctor, scorer, tutor, testConstructor, or author.*It is outside the
 scope of this document how these roles are associated with users, but a
 delivery system should only display rubric blocks to users who have role
 listed in the *view*attribute of the block. Note that the use of
-*candidate* as the user role indicates that the candidate must be
+_candidate_ as the user role indicates that the candidate must be
 presented the rubric content at runtime, and because it is also often
 useful for the other roles to know what content is presented to the
 candidate, delivery systems commonly present to the other roles as well.
 
-In QTI 3, the *use* attribute is a required attribute for
-*qti-rubric-block*, and must include one term from the following
-vocabulary: *scoring*, *instructions*, *navigation*, or, as an
-extension, a custom *use* string value beginning with the prefix "
-*ext:"*. A delivery system may use the *use*attribute to control how, or
+In QTI 3, the _use_ attribute is a required attribute for
+_qti-rubric-block_, and must include one term from the following
+vocabulary: _scoring_, _instructions_, _navigation_, or, as an
+extension, a custom _use_ string value beginning with the prefix "
+_ext:"_. A delivery system may use the *use*attribute to control how, or
 when, the rubric is presented or made accessible to the user. A delivery
 engine which does not recognize an "extended" use, may ignore the rubric
 block.
@@ -11169,16 +11276,16 @@ for assessment programs, and their use is common among QTI implementers.
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
   title="Two Sections with multiple rubric blocks (THQ)">
-  <qti-outcome-declaration identifier="SCORE_TOTAL" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-outcome-declaration identifier="MAXSCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>100.0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
+<qti-outcome-declaration identifier="SCORE_TOTAL" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-outcome-declaration identifier="MAXSCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>100.0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
 
 <qti-test-part identifier="part1" navigation-mode="nonlinear" submission-mode="individual">
 
@@ -11246,26 +11353,26 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
 
 #### 4.6.2 Test Feedback
 
-Test feedback may be defined at either the *qti-assessment-test* or
-*qti-test-part* level of an assessment. Like modal feedback at the item
-level, the presentation of a *qti-test-feedback* block is controlled by
-an outcome variable, except that in the case of *qti-test-feedback* the
+Test feedback may be defined at either the _qti-assessment-test_ or
+_qti-test-part_ level of an assessment. Like modal feedback at the item
+level, the presentation of a _qti-test-feedback_ block is controlled by
+an outcome variable, except that in the case of _qti-test-feedback_ the
 outcome variable would normally be defined at test level. When the
 outcome variable assumes a defined identifier as its value, the delivery
-system either shows or hides the *qti-test-feedback* block, according to
-whether the value of the block's *show-hide* attribute is "*show"* or
-"*hide".  *
+system either shows or hides the _qti-test-feedback_ block, according to
+whether the value of the block's _show-hide_ attribute is "_show"_ or
+"_hide". _
 
-A *qti-test-feedback* element also has an *access* attribute, which is
-required. The value may be either " *during"* or " *atEnd"* . If
-*access* is " *during",* the *qti-test-feedback*  block is shown or
-hidden, as defined by the *show-hide*  attribute, after each iteration
-of outcome processing. If access is "*atEnd"*, the
-*qti-test-feedback* block is shown or hidden after the final outcome
+A _qti-test-feedback_ element also has an _access_ attribute, which is
+required. The value may be either " _during"_ or " _atEnd"_ . If
+_access_ is " _during",_ the _qti-test-feedback_ block is shown or
+hidden, as defined by the _show-hide_ attribute, after each iteration
+of outcome processing. If access is "_atEnd"_, the
+_qti-test-feedback_ block is shown or hidden after the final outcome
 processing of the associated test or test part - when the test or test
 part is complete.
 
-Test Feedback *MUST NOT* contain interactions.
+Test Feedback _MUST NOT_ contain interactions.
 
 ### 4.7 Outcome Processing
 
@@ -11289,54 +11396,54 @@ such as the SCORE outcome variable - the outcome rules may perform
 evaluation of test-level outcomes for various purposes such as:
 
 1.  Compute a running aggregated total score of all item-level
-  sub-scores.
+    sub-scores.
 2.  Compute pre-condition or branch rules to determine the next item to
-  deliver to the candidate.
+    deliver to the candidate.
 3.  Resulting values of test-level outcomes may be used to activate
-  test-level feedback during the test.
+    test-level feedback during the test.
 
 In the following example, Outcome Processing is executed after each item
 is submitted because the qti-test-part has submission-mode="individual".
 The execution flow is as follows:
 
 1.  All outcome variables are reset to their default values. In the
-  example snippet, SCORE_TOTAL is reinitialized to a float value of 0
-  every time an item is submitted, according to the SCORE_TOTAL
-  outcome variable definition:
+    example snippet, SCORE_TOTAL is reinitialized to a float value of 0
+    every time an item is submitted, according to the SCORE_TOTAL
+    outcome variable definition:
 
-  <qti-outcome-declaration
+<qti-outcome-declaration
   base-type="float"
   cardinality="single"
   identifier="SCORE_TOTAL">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
 
 2.  Outcome Processing expression
-  `<``qti-test-variables`` ``variable-identifier``="``SCORE``">`
-  is used to extract the built-in SCORE variable value from every item
-  submitted by the candidate thus far. A qti-test-variables expression
-  is used to extract any single cardinality, non-NULL, variable value
-  in an item. qti-test-variables produces a multiple cardinality
-  result. In the example below, after two items are submitted - when
-  the first item has a SCORE of 1, and when the second item has a
-  SCORE of 0 -
-  `<``qti-test-variables`` ``variable-identifier``="``SCORE``">`
-  produces an array (because it is a multiple cardinality expression)
-  of values \[1, 0\]
+    `<``qti-test-variables`` ``variable-identifier``="``SCORE``">`
+    is used to extract the built-in SCORE variable value from every item
+    submitted by the candidate thus far. A qti-test-variables expression
+    is used to extract any single cardinality, non-NULL, variable value
+    in an item. qti-test-variables produces a multiple cardinality
+    result. In the example below, after two items are submitted - when
+    the first item has a SCORE of 1, and when the second item has a
+    SCORE of 0 -
+    `<``qti-test-variables`` ``variable-identifier``="``SCORE``">`
+    produces an array (because it is a multiple cardinality expression)
+    of values \[1, 0\]
 3.  The Outcome Processing expression `qti-sum` can consume arguments
-  with multiple cardinality, and will add together all of the elements
-  of each multiple cardinality argument. In this example where the
-  first item has a SCORE of 1, and a second item SCORE of 0, this
-  produces of sum of 1 (sum(\[1, 0\]) =\> 1) for the first argument.
-  This sum is then added to the value of the second argument which is
-  the value of SCORE_TOTAL (initialized to its default value of 0 in
-  Step 1 above.
+    with multiple cardinality, and will add together all of the elements
+    of each multiple cardinality argument. In this example where the
+    first item has a SCORE of 1, and a second item SCORE of 0, this
+    produces of sum of 1 (sum(\[1, 0\]) =\> 1) for the first argument.
+    This sum is then added to the value of the second argument which is
+    the value of SCORE_TOTAL (initialized to its default value of 0 in
+    Step 1 above.
 4.  The computed value of SCORE_TOTAL is saved by the
-  `<``qti-set-outcome-value`` ``identifier``="``SCORE_TOTAL``">`
-  Outcome Processing rule. This execution flow repeats each time an
-  item is submitted until the Test Part is complete.
+    `<``qti-set-outcome-value`` ``identifier``="``SCORE_TOTAL``">`
+    Outcome Processing rule. This execution flow repeats each time an
+    item is submitted until the Test Part is complete.
 
 The full example:
 
@@ -11440,7 +11547,7 @@ processing.
 
 #### 4.7.1 Context Declarations
 
-Context declarations are permitted in Assessment tests  allowing context
+Context declarations are permitted in Assessment tests allowing context
 variables to be declared at test level in the same way as in Assessment
 Items. Test-level context variables are a means for delivery systems to
 make delivery system-dependent built-in context variables, including the
@@ -11519,6 +11626,7 @@ single linear Test Part, containing a single Assessment Section with 3
 items referenced.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-test xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -11542,59 +11650,61 @@ The first one is linear, and the second one is non linear.
 
 The Assessment Section contained in the first Test Part describes a
 selection of 5 items within the set of 10 items referenced in the
-section. As the *with-replacement* attribute of the
-*qti-selection* element is set to false, the items contained in the
+section. As the _with-replacement_ attribute of the
+_qti-selection_ element is set to false, the items contained in the
 Assessment Section can be selected only once. In addition, as the
-shuffle attribute of the *qti-ordering* element is set to *true*,
+shuffle attribute of the _qti-ordering_ element is set to _true_,
 selected items will be shuffled.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-test xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
 identifier="qti3-mparts-selection-test" title="QTI 3 Multiple Test Parts and Selection">
-  <qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
-  <qti-assessment-section identifier="section-1" title="Section 1" visible="true">
-  <qti-selection select="5" with-replacement="false"/>
-  <qti-ordering shuffle="true"/>
-  <qti-assessment-item-ref identifier="item-1" href="qti-1.xml"/>
-  <qti-assessment-item-ref identifier="item-2" href="qti-2.xml"/>
-  <qti-assessment-item-ref identifier="item-3" href="qti-3.xml"/>
-  <qti-assessment-item-ref identifier="item-4" href="qti-4.xml"/>
-  <qti-assessment-item-ref identifier="item-5" href="qti-5.xml"/>
-  <qti-assessment-item-ref identifier="item-6" href="qti-6.xml"/>
-  <qti-assessment-item-ref identifier="item-7" href="qti-7.xml"/>
-  <qti-assessment-item-ref identifier="item-8" href="qti-8.xml"/>
-  <qti-assessment-item-ref identifier="item-9" href="qti-9.xml"/>
-  <qti-assessment-item-ref identifier="item-10" href="qti-10.xml"/>
-  </qti-assessment-section>
-  </qti-test-part>
-  <qti-test-part navigation-mode="nonlinear" submission-mode="individual" identifier="test-part-2">
-  <qti-assessment-section identifier="section-2" title="Section 2" visible="true">
-  <qti-item-session-control max-attempts="0"/>
-  <qti-assessment-item-ref identifier="item-11" href="qti-1.xml"/>
-  <qti-assessment-item-ref identifier="item-12" href="qti-12.xml"/>
-  <qti-assessment-item-ref identifier="item-13" href="qti-13.xml"/>
-  </qti-assessment-section>
-  </qti-test-part>
+<qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
+<qti-assessment-section identifier="section-1" title="Section 1" visible="true">
+<qti-selection select="5" with-replacement="false"/>
+<qti-ordering shuffle="true"/>
+<qti-assessment-item-ref identifier="item-1" href="qti-1.xml"/>
+<qti-assessment-item-ref identifier="item-2" href="qti-2.xml"/>
+<qti-assessment-item-ref identifier="item-3" href="qti-3.xml"/>
+<qti-assessment-item-ref identifier="item-4" href="qti-4.xml"/>
+<qti-assessment-item-ref identifier="item-5" href="qti-5.xml"/>
+<qti-assessment-item-ref identifier="item-6" href="qti-6.xml"/>
+<qti-assessment-item-ref identifier="item-7" href="qti-7.xml"/>
+<qti-assessment-item-ref identifier="item-8" href="qti-8.xml"/>
+<qti-assessment-item-ref identifier="item-9" href="qti-9.xml"/>
+<qti-assessment-item-ref identifier="item-10" href="qti-10.xml"/>
+</qti-assessment-section>
+</qti-test-part>
+<qti-test-part navigation-mode="nonlinear" submission-mode="individual" identifier="test-part-2">
+<qti-assessment-section identifier="section-2" title="Section 2" visible="true">
+<qti-item-session-control max-attempts="0"/>
+<qti-assessment-item-ref identifier="item-11" href="qti-1.xml"/>
+<qti-assessment-item-ref identifier="item-12" href="qti-12.xml"/>
+<qti-assessment-item-ref identifier="item-13" href="qti-13.xml"/>
+</qti-assessment-section>
+</qti-test-part>
 </qti-assessment-test>
 
 #### 4.8.3 Example 3: section references
 
 This example describes how to make a reference to an external Assessment
-Section definition, in file *section-ref-1.xml*, using the
-*qti-assessment-section-ref* element.
+Section definition, in file _section-ref-1.xml_, using the
+_qti-assessment-section-ref_ element.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-test xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
   identifier="qti3-assessment-section-refs-test" title="QTI 3 Assessment Section References Test">
-  <qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
-  <qti-assessment-section-ref identifier="section-ref-1" href="section-ref-1.xml"/>
-  </qti-test-part>
+<qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
+<qti-assessment-section-ref identifier="section-ref-1" href="section-ref-1.xml"/>
+</qti-test-part>
 </qti-assessment-test>
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -11604,42 +11714,44 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
 identifier="section-1" title="Section Reference 1" visible="true" required="true">
-  <qti-assessment-item-ref identifier="item-1" href="qti-1.xml"/>
-  <qti-assessment-item-ref identifier="item-2" href="qti-2.xml"/>
-  <qti-assessment-item-ref identifier="item-3" href="qti-3.xml"/>
+<qti-assessment-item-ref identifier="item-1" href="qti-1.xml"/>
+<qti-assessment-item-ref identifier="item-2" href="qti-2.xml"/>
+<qti-assessment-item-ref identifier="item-3" href="qti-3.xml"/>
 </qti-assessment-section>
 
 #### 4.8.4 Example 4: outcomes processing, rubric block, printed variable
 
 The example below aims at showing to the candidate its current score
-while taking the Assessment Test. The *qti-rubric-block* element
-contains a *qti-printed-variable* element that prints the current value
-of the *SCORE_TOTAL* Outcome Variable.  The *%d* value of the
-*format* attribute from the *qti-printed-variable*element will make the
-value of the *SCORE_TOTAL* variable to be displayed as an integer.
+while taking the Assessment Test. The _qti-rubric-block_ element
+contains a _qti-printed-variable_ element that prints the current value
+of the _SCORE_TOTAL_ Outcome Variable. The _%d_ value of the
+_format_ attribute from the *qti-printed-variable*element will make the
+value of the _SCORE_TOTAL_ variable to be displayed as an integer.
 
 Since submission mode is set to "individual", each attempt to an item
 will trigger the Outcome Processing rules described within the
-*qti-outcome-processing* element. As a result, the
-*SCORE_TOTAL* variable will be set an updated value each time the
-candidate responds to an item. The value of *SCORE_TOTAL* will be the
-sum of all item Outcome Variables having *SCORE* identifiers.
+_qti-outcome-processing_ element. As a result, the
+_SCORE_TOTAL_ variable will be set an updated value each time the
+candidate responds to an item. The value of _SCORE_TOTAL_ will be the
+sum of all item Outcome Variables having _SCORE_ identifiers.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-test xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_testv3p0p1_v1p0.xsd"
   identifier="qti3-printed-variable" title="QTI 3 Rubric Block Printed Variable">
-  <qti-outcome-declaration identifier="SCORE_TOTAL" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
-  <qti-assessment-section identifier="section-1" title="Section 1" visible="true" required="true">
-  <qti-rubric-block use="instructions" view="candidate">
-  <qti-content-body>
+<qti-outcome-declaration identifier="SCORE_TOTAL" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-test-part navigation-mode="linear" submission-mode="individual" identifier="test-part-1">
+<qti-assessment-section identifier="section-1" title="Section 1" visible="true" required="true">
+<qti-rubric-block use="instructions" view="candidate">
+<qti-content-body>
+
   <p>Your score is <qti-printed-variable identifier="SCORE_TOTAL" format="%d"/>.</p>
   </qti-content-body>
   </qti-rubric-block>
@@ -11695,6 +11807,7 @@ Below is an example of a complete Personal Needs and Preferences 3.0 QTI
 3 profile PNP instance.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -11722,6 +11835,7 @@ and magnification (where the zoom preferences are supplied within the
 attributes of child nodes, lines 11 and 12).
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -11804,8 +11918,8 @@ proper use of these W3C standards, use the documentation provided by the
 W3C. QTI implementers may not support the full range of accessibility
 related markup defined by W3C, but it is recommended to use a subset of
 ARIA 1.0
-\[wai-aria-primer\](aria-describedby,
-aria-hidden, aria-label, aria-labelledby, aria-live, role) as a
+\`aria-describedby,
+aria-hidden, aria-label, aria-labelledby, aria-live, role` as a
 baseline.
 
 All of the specific supports listed within this Accessibility section
@@ -11916,6 +12030,7 @@ markup in the candidate's PNP:
 **Alternative Text PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -11948,6 +12063,7 @@ candidates.
 <qti-assessment-item ... >
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <img src="graphics/water_cycle.svg" alt="Picture of the water cycle."
   height="300" width="400">
@@ -11981,6 +12097,7 @@ support, use the following markup in the candidate's PNP:
 **Long Description PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -11999,7 +12116,7 @@ to assistive technology. If a candidate wanted the long description
 content to be presented visually, their PNP should include the
 hide-visually attribute with a false value, as shown below:
 
-``` hljs
+```hljs
 <long-description hide-visually="false"/>
 ```
 
@@ -12025,6 +12142,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en">
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <img src="graphics/water_cycle.svg" height="300" width="400" alt="Picture of the water
   cycle." aria-describedby="water_cycle_long">
@@ -12066,6 +12184,7 @@ for candidates who require captions.
 **Captions PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12088,6 +12207,7 @@ video content.
 **Audio Description PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12109,6 +12229,7 @@ substantially improve the candidate's assessment experience.
 **Transcript PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12157,6 +12278,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en">
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <video width="320" height="240" data-catalog-idref="video1">
   <source src="gnatgeovideo.ogv" type="video/ogg" />
@@ -12206,7 +12328,7 @@ abbreviations (iso-639:2023).
 For example, an item might have an opening element stating that the
 content of the item is in Dutch (Nederlands), as shown below.
 
-``` hljs
+```hljs
 
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -12288,7 +12410,7 @@ be exchanged with the xml:lang attribute declared in the
 language declaration is assumed to be the language of the delivery page
 for the content provided in the page. For example:
 
-``` hljs
+```hljs
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -12299,7 +12421,7 @@ identifier="language-of-page" xml:lang="en-US">
 ...would be transformed into an html header that included the language
 declaration, as in:
 
-``` hljs
+```hljs
 <html lang="en-US">
 ```
 
@@ -12307,7 +12429,7 @@ If portions of the content include languages different than the language
 of the page, those portions should include language declarations for
 that portion of the content. For example:
 
-``` hljs
+```hljs
 <p lang="es-MX">Este texto esta en espanol.</p>
 ```
 
@@ -12316,13 +12438,13 @@ by default expected to be read aloud to spoken candidates. There are 3
 basic ways to author content that is specific for "spoken" candidates.
 
 1.  Suppress reading aloud portions of content using the special
-  attribute "data-qti-suppress-tts" (see the Text-to-Speech
-  Pronunciation sub-section below).
+    attribute "data-qti-suppress-tts" (see the Text-to-Speech
+    Pronunciation sub-section below).
 2.  Substitute the content or provide pronunciation guidance using
-  inline SSML (see the Pronunciation Guidance for Spoken Candidates
-  sub-section below).
+    inline SSML (see the Pronunciation Guidance for Spoken Candidates
+    sub-section below).
 3.  Add supplemental content to be read aloud by referencing a catalog
-  (see Section 5.2.3.6 Spoken Supplemental Content).
+    (see Section 5.2.3.6 Spoken Supplemental Content).
 
 For the Spoken support, the reading-type is the only required parameter
 for the spoken support in a PNP. The example below uses the
@@ -12332,13 +12454,14 @@ reading-type section below.
 **Spoken PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xsd">
-  <spoken>
-  <reading-type>screen-reader</reading-type>
-  </spoken>
+<spoken>
+<reading-type>screen-reader</reading-type>
+</spoken>
 
 </access-for-all-pnp>
 
@@ -12407,6 +12530,7 @@ spoken access to all content.
 **Spoken Restriction-Type Extension PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12472,6 +12596,7 @@ understood by the program that uses this specific vocabulary.
 **Spoken Restriction-Type Extension PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12516,6 +12641,7 @@ spoken parameter, as shown in the example below.
 **Spoken, Typing Echo PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12563,6 +12689,7 @@ technology.
 **Spoken, Preferences PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -12577,7 +12704,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
   <link-indication>different-voice</link-indication>
   </spoken>
 
-  <additional-testing-time><unlimited/></additional-testing-time>
+<additional-testing-time><unlimited/></additional-testing-time>
 </access-for-all-pnp>
 
 ##### 5.2.1.8 Pronunciation Guidance for Spoken Candidates
@@ -12590,9 +12717,9 @@ standards that allow the control of pronunciation of text-based content.
 The QTI 3 standard allows for 2 different standards, including:
 
 1.  SSML 1.1 (Speech Synthesis Markup Language)
-  \[speech-synthesis11\]
+    \[speech-synthesis11\]
 2.  PLS (Pronunciation Lexicon Specification)
-  \[pronunciation-lexicon\]
+    \[pronunciation-lexicon\]
 
 SSML markup can be used directly into the default content markup, and
 the pronunciation is specific to the exact location of the markup in the
@@ -12635,6 +12762,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en-US">
 ...
 <qti-item-body>
+
   <p id="content2">Answer the following question.
   <span data-ssml='{"break":{"time":"2s"}}'></span></p>
   <qti-choice-interaction maxChoices="1" min-choices="0" id="content1"
@@ -12674,6 +12802,7 @@ http://www.w3.org/2001/10/synthesis https://purl.imsglobal.org/spec/ssml/v1p1/sc
   xml:lang="en-US">
 ...
 <qti-item-body>
+
   <p id="content2">Answer the following question.</p>
   <qti-choice-interaction maxChoices="1" min-choices="0" id="content1"
   response-identifier="RESPONSE">
@@ -12796,10 +12925,10 @@ data-qti-suppress-tts="computer-read-aloud">12</span> boxes.</p>
   Rectangle ABCD divided into 12 equal area boxes. 4 of the boxes are shaded."
   aria-describedby="long-description-figure-1" />
 
-  <span id="labelA" data-qti-suppress-tts="screen-reader">Point A</span>
-  <span id="labelB" data-qti-suppress-tts="screen-reader">Point B</span>
-  <span id="labelC" data-qti-suppress-tts="screen-reader">Point C</span>
-  <span id="labelD" data-qti-suppress-tts="screen-reader">Point D</span>
+<span id="labelA" data-qti-suppress-tts="screen-reader">Point A</span>
+<span id="labelB" data-qti-suppress-tts="screen-reader">Point B</span>
+<span id="labelC" data-qti-suppress-tts="screen-reader">Point C</span>
+<span id="labelD" data-qti-suppress-tts="screen-reader">Point D</span>
 
   <div id= "long-description-figure-1" class="qti-visually-hidden long-description"
   data-qti-suppress-tts="computer-read-aloud">
@@ -12905,6 +13034,7 @@ files for the entire content of an item is shown below
 <qti-assessment-item ...>
 ...
 <qti-item-body data-catalog-idref="thx113eight">
+
 <p>Some content...</>
 </qti-item-body>
 
@@ -12984,6 +13114,7 @@ completed the assessment.
 **Additional Testing Time (unlimited) PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13009,6 +13140,7 @@ minutes to complete the test.
 **Additional Testing Time (time-multiplier) PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13032,6 +13164,7 @@ minutes to complete the test.
 **Additional Testing Time (fixed-minutes) PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13076,12 +13209,13 @@ be exposed to content that contains that particular kind of stimuli.
 **Hazard Avoidance PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xsd">
 
-  <hazard-avoidance>flashing</hazard-avoidance>
+<hazard-avoidance>flashing</hazard-avoidance>
 
 </access-for-all-pnp>
 
@@ -13115,6 +13249,7 @@ the required lang attribute.
 **Item Translation PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13141,6 +13276,7 @@ valid [BCP
 **Keyword Translation PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13150,8 +13286,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 
 </access-for-all-pnp>
 
-The content example below shows the support for the word accurate (line
-6) with two different translations. Because there are likely a
+The content example below shows the support for the word accurate (line 6) with two different translations. Because there are likely a
 multiplicity of languages to be provided, you don't put the translation
 content directly in the keyword-translation card, rather, the different
 languages are stored in different qti-card-entry nodes within card that
@@ -13170,7 +13305,7 @@ data-catalog-idref="ae029">accurate.</span></qti-prompt>
 ...
 </qti-item-body>
 <qti-catalog-info>
-  <qti-catalog identifier="ae029">
+<qti-catalog identifier="ae029">
 
 <qti-card support="keyword-translation">
   <qti-card-entry xml:lang="es">
@@ -13219,6 +13354,7 @@ system interface.
 **Language of Interface PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13247,6 +13383,7 @@ their assessment, and has specifically requested American Sign Language
 **Sign Language PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13274,6 +13411,7 @@ multiple file formats supplied.
 **Sign Language Item Example**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
@@ -13283,13 +13421,14 @@ title="Class Vote on Colors"
 adaptive="false"
 time-dependent="false"
 xml:lang="en">
-  <qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>ChoiceA</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
+<qti-response-declaration identifier="RESPONSE" cardinality="multiple" base-type="identifier">
+<qti-correct-response>
+<qti-value>ChoiceA</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float"/>
 <qti-item-body data-catalog-idref="cat17249">
+
   <div class="stem">
   <p>Grace walks 2 kilometres from her house on Maple Dr. to harmonica
   lessons on Chestnut St.</p> </div>
@@ -13336,10 +13475,10 @@ so in the event that the PNP did not supply the required language, the
 ASL video would be delivered to the candidate (lines 29 and 41).
 
 Each of the ASL qti-card-entry's in this example contain an optional
-"data-video-label" attribute  which may be used by authoring systems and
+"data-video-label" attribute which may be used by authoring systems and
 delivery platforms to indicate to the candidate which portion of the
 item is relevant - similar to a video chapter track - to the video being
-played.  Displaying a list of possible videos - and their associated
+played. Displaying a list of possible videos - and their associated
 video labels - can help candidates better understand the context or
 scope of each ASL video in an item containing multiple ASL videos or
 video segments.
@@ -13428,6 +13567,7 @@ additional-directions support.
 **Additional Directions PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13442,6 +13582,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 <qti-assessment-item ...>
 ...
 <qti-item-body>
+
 <p>Grace walks to and from her house on Maple Drive each week. Her house on Maple Drive is a 2
 kilometre walk to her teacher's house on Chestnut Street.</p>
 <qti-choice-interaction response-identifier="RESPONSE" shuffle="false" max-choices="1"
@@ -13480,6 +13621,7 @@ supplemental content.
 **Braille PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13498,6 +13640,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 <qti-assessment-item ...>
 ...
 <qti-item-body>
+
 <div data-catalog-idref="cat626">
 <p>Some content...</p>
 </qti-item-body>
@@ -13571,6 +13714,7 @@ a PNP, as shown below.
 **Glossary-on-screen PNP Assignment**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13598,6 +13742,7 @@ PNP and catalog support are provided below.
 **Keyboard Directions PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13612,6 +13757,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 <qti-assessment-item ...>
 ...
 <qti-item-body>
+
 <p>Grace walks to and from her house on Maple Drive each week. Her house on Maple Drive is a 2
 kilometre walk to her teacher's house on Chestnut Street.</p>
 <qti-choice-interaction response-identifier="RESPONSE" max-choices="1"
@@ -13656,6 +13802,7 @@ support, as shown below.
 **Linguistic Guidance PNP Assignment**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13713,6 +13860,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en">
 ...
 <qti-item-body>
+
 <p>Canada and the United States share 4 out of the 5 Great Lakes in central North
 America.</p>
 <p>Which lake is entirely within the boundaries of the United States?</p>
@@ -13748,6 +13896,7 @@ support with different reading-types"
   xml:lang="en">
 ...
 <qti-item-body>
+
 <p>Canada and the United States share 4 out of the 5 Great Lakes in central North
 America.</p>
 <p>Which lake is entirely within the boundaries of the United States?</p>
@@ -13799,6 +13948,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   time-dependent="false" xml:lang="en">
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <img src="graphics/water_cycle.svg" height="300" width="400"
   alt="Picture of the water cycle." data-catalog-idref="thx938">
@@ -13872,6 +14022,7 @@ when available.
 **Simplified Graphics PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -13923,6 +14074,7 @@ the accommodation.
 **Simplified Language Portions PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14006,6 +14158,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en">
 ...
 <qti-item-body>
+
   <p data-catalog-idref="stem_1">Canada and the United States share 4 out of the 5 Great
 Lakes in central North America.</p>
   <qti-prompt data-catalog-idref="prompt_1">Which lake is entirely within the boundaries of
@@ -14097,6 +14250,7 @@ receives the tactiles with their braille preferences.
 **Tactile PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14130,6 +14284,7 @@ support with different reading-types"
   xml:lang="en">
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <img src="graphics/water_cycle.svg" height="300" width="400" alt="Picture of the water
   cycle." data-catalog-idref="thx1138">
@@ -14156,8 +14311,8 @@ support with different reading-types"
 <qti-card support="long-description"><qti-html-content>These sorts of complicated
 images usually have long descriptions.</qti-html-content>
 </qti-card>
-  </qti-catalog>
- </qti-catalog-info>
+</qti-catalog>
+</qti-catalog-info>
 
 </qti-assessment-item>
 
@@ -14179,6 +14334,7 @@ are often good reasons for choosing one way over the other.
 
 ...
 <qti-item-body data-catalog-idref="thx1137">
+
 <p>Some content...</>
 </qti-item-body>
 
@@ -14215,6 +14371,7 @@ below.
 **High Contrast PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14244,6 +14401,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   xml:lang="en">
 ...
 <qti-item-body>
+
   <p>The water cycle ...</p>
   <img src="graphics/water_cycle.svg" height="300" width="400" alt="Picture of the water
   cycle." data-catalog-idref="b747">
@@ -14261,7 +14419,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
 <qti-card support="long-description"><qti-html-content>These sorts of complicated
 images usually have long descriptions. Put description here...</qti-html-content>
 </qti-card>
-  </qti-catalog>
+</qti-catalog>
 
  </qti-catalog-info>
 </qti-assessment-item>
@@ -14291,12 +14449,13 @@ the interface using the method provided in their PNP.
 **Input Requirements PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xsd">
 
-  <input-requirements>full-keyboard-control</input-requirements>
+<input-requirements>full-keyboard-control</input-requirements>
 
 </access-for-all-pnp>
 
@@ -14313,6 +14472,7 @@ PNP.
 **Keyword Emphasis in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14357,6 +14517,7 @@ candidates.
 **Answer Masking in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14366,16 +14527,16 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 
 </access-for-all-pnp>
 
-For the answer-masking tool to be effective, the choices *MUST* be
+For the answer-masking tool to be effective, the choices _MUST_ be
 wholly visually and programmatically unavailable when the candidate is
 presented the item. For candidates who are assigned the answer-masking
-support, the answer-masking tool *MUST* be turned on by default for the
+support, the answer-masking tool _MUST_ be turned on by default for the
 candidate as they begin their testing session (these mask(s) are only
 required for choice interactions).
 
-The candidate *MUST* be made aware that a mask is in place, both through
+The candidate _MUST_ be made aware that a mask is in place, both through
 visual indicators and programmatic markup (content for assistive
-technology). The candidate *MUST* be able to remove the mask at a time
+technology). The candidate _MUST_ be able to remove the mask at a time
 of their choosing.
 
 Answer-masking may be provided either as a single mask covering all the
@@ -14409,6 +14570,7 @@ they wish to view assessment content in a single column.
 **Layout Single Column in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14436,7 +14598,7 @@ The QTI 3 standard has three ways (magnification types) to indicate a
 candidate's preference for the "magnification" support, namely "text",
 "non-text", and "all-content". In either case, an optional, specific
 amount of magnification can be indicated as a number in the
-"zoom-amount" attribute in the respective options. Candidates *MUST*
+"zoom-amount" attribute in the respective options. Candidates _MUST_
 have the option to change the amount of magnification (at least up to
 400 percent) at any time during an assessment session. If the PNP
 supplies a specific zoom-amount in their preference, that amount should
@@ -14444,7 +14606,7 @@ be the amount of magnification when the candidate begins their
 assessment session.
 
 If a candidate is not assigned to a specific type of magnification, a
-general magnification mechanism *MUST* be provided for the candidate
+general magnification mechanism _MUST_ be provided for the candidate
 (the all-content magnification type), where at least the text is
 magnified up to 400 percent.
 
@@ -14475,7 +14637,7 @@ delivery systems may choose to do so).
 
 For this type of magnification, all images within the main content (see
 above for a description of "main content") are expected to be able to be
-magnified up to 400%. Any text within these images *MUST* also be
+magnified up to 400%. Any text within these images _MUST_ also be
 magnified at the same proportional magnification.
 
 Magnification of other aspects of the test interface is not required or
@@ -14521,6 +14683,7 @@ PNP without adding any of the preferences.
 **Text Appearance in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -14536,11 +14699,11 @@ Color-theme allows a candidate to specify their preferred foreground
 (text) color and background color combination for the presentation of
 assessment content.
 
-If a candidate's PNP contains the color-theme support, they *MUST* be
+If a candidate's PNP contains the color-theme support, they _MUST_ be
 able to change the color-theme at any time after logging into the test
 session.
 
-Additionally, the candidate *MUST* be able to return the default
+Additionally, the candidate _MUST_ be able to return the default
 interface color at any time during the testing session. Images and
 graphics can be negatively impacted by interface color choices, enabling
 the candidate to return to the default rendering where the candidate can
@@ -14551,7 +14714,7 @@ graphics, including adding a white background to SVG formatted images.
 Within a PNP, a candidate can request the ability to request their
 preferred color-theme by stating:
 
-``` hljs
+```hljs
 <text-appearance>
             <color-theme />
           </text-appearance>
@@ -14593,7 +14756,7 @@ The full color-theme vocabulary:
 The enumerated sample colors provided below are for guidance only, and
 not required to be followed exactly. However, the delivery system is
 expected to stay within the color family requested (when using named
-color pair themes) and *MUST* meet the contrast requirements for the
+color pair themes) and _MUST_ meet the contrast requirements for the
 color-theme. The delivery system determines which exact colors are used
 for a named theme, and which colors to use as secondary colors for the
 other various aspects of the user interface (links, highlights, buttons,
@@ -14626,22 +14789,18 @@ Sample text colors: yellow
 - \#FFCC00
 - \#FBEB5B
 
-![swatch for yellow
-FFCC00](/sites/default/files/specs/images/qti/3p0/impl5_FFCC00.png)![swatch
-for yellow
-FBEB5B](/sites/default/files/specs/images/qti/3p0/impl5_FBEB5B.png)
+!`impl5_FFCC00.png`!`impl5_FBEB5B.png`
 
 Sample background colors: blue
 
 - \#003398
 - \#000080 (navy)
 
-![swatch for blue
-003398](/sites/default/files/specs/images/qti/3p0/impl5_003398.png)
+!`impl5_003398.png`
 
 Contrast Guidelines:
 
-- The contrast *MUST* be at least 7:1 between the text and background
+- The contrast _MUST_ be at least 7:1 between the text and background
   colors (meets WCAG acceptance criteria 1.4.6 for Contrast Minimum).
 - It is recommended to also follow the WCAG acceptance criteria 1.4.11
   for Non-Text Contrast (contrast ratio of 3:1) for the remaining color
@@ -14671,14 +14830,11 @@ Sample background colors: rose
 - \#FFD0FF
 - \#F3D9F7
 
-![swatch for rose
-FFD0FF](/sites/default/files/specs/images/qti/3p0/impl5_FFD0FF.png)![swatch
-for rose
-\#F3D9F7](/sites/default/files/specs/images/qti/3p0/impl5_F3D9F7.png)
+!`impl5_FFD0FF.png`!`impl5_F3D9F7.png`
 
 Contrast Guidelines:
 
-- The contrast *MUST* be at least 7:1 between the text and background
+- The contrast _MUST_ be at least 7:1 between the text and background
   colors (meets WCAG acceptance criteria 1.4.6 for Contrast Enhanced).
 - It is recommended to also follow the WCAG acceptance criteria 1.4.11
   for Non-Text Contrast (contrast ratio of 3:1) for the remaining color
@@ -14707,14 +14863,11 @@ Sample background colors: cyan
 - \#ADD8E6
 - \#DEECF2
 
-![swatch for cyan
-ADD8E6](/sites/default/files/specs/images/qti/3p0/impl5_ADD8E6.png)![swatch
-for cyan
-DEECF2](/sites/default/files/specs/images/qti/3p0/impl5_DEECF2.png)
+!`impl5_ADD8E6.png`!`impl5_DEECF2.png`
 
 Contrast Guidelines:
 
-- The contrast *MUST* be at least 7:1 between the text and background
+- The contrast _MUST_ be at least 7:1 between the text and background
   colors (meets WCAG acceptance criteria 1.4.6 for Contrast Enhanced).
 - It is recommended to also follow the WCAG acceptance criteria 1.4.11
   for Non-Text Contrast (contrast ratio of 3:1) for the remaining color
@@ -14743,14 +14896,11 @@ Sample background colors: cream
 - \#FFFACD (LemonChiffon)
 - \#FBF7D5
 
-![swatch for cream
-FFFACD](/sites/default/files/specs/images/qti/3p0/impl5_FFFACD.png)![swatch
-for cream
-FBF7D5](/sites/default/files/specs/images/qti/3p0/impl5_FBF7D5.png)
+!`impl5_FFFACD.png`!`impl5_FBF7D5.png`
 
 Contrast Guidelines:
 
-- The contrast *MUST* be at least 7:1 between the text and background
+- The contrast _MUST_ be at least 7:1 between the text and background
   colors (meets WCAG acceptance criteria 1.4.6 for Contrast Enhanced).
 - It is recommended to also follow the WCAG acceptance criteria 1.4.11
   for Non-Text Contrast (contrast ratio of 3:1) for the remaining color
@@ -14777,20 +14927,14 @@ Sample text colors: Medium Gray
 - \#B1B8AD
 - \#ACB3A7
 
-![swatch for medium gray
-E0E0E0](/sites/default/files/specs/images/qti/3p0/impl5_E0E0E0.png)![swatch
-for medium gray
-ACB3A7](/sites/default/files/specs/images/qti/3p0/impl5_ACB3A7.png)
+!`impl5_E0E0E0.png`!`impl5_ACB3A7.png`
 
 Sample background colors: Dark Gray
 
 - \#606060
 - \#616161
 
-![swatch for dark gray
-606060](/sites/default/files/specs/images/qti/3p0/impl5_606060.png)![swatch
-for dark gray
-616161](/sites/default/files/specs/images/qti/3p0/impl5_616161.png)
+!`impl5_606060.png`!`impl5_616161.png`
 
 Contrast Guidelines:
 
@@ -14807,13 +14951,13 @@ background.
 
 ###### 5.2.9.7.2 font-color
 
-*Font-color (along with background-color) is no longer recommended to
+_Font-color (along with background-color) is no longer recommended to
 address a candidate's preferences for assessment content presentation.
 If candidates provide their preferred specific font and background
 color, it may conflict with other colors used in the delivery system's
 user interface, which may make the interface more difficult or
 impossible to use in an assessment context. Best practice is to use the
-text-appearance:color-theme support.*
+text-appearance:color-theme support._
 
 Font-color allows candidates to choose alternatives for the font color
 (corresponds with the CSS color property). The PNP may optionally
@@ -14821,15 +14965,15 @@ include a hexadecimal color for the candidate's preferred font color,
 which should be used in the assessment interface for the candidate after
 they log into the test session.
 
-The candidate *MUST* be able to change the color of the font at any time
-after logging into the test session. Additionally, the candidate *MUST*
+The candidate _MUST_ be able to change the color of the font at any time
+after logging into the test session. Additionally, the candidate _MUST_
 be able to return the original text color at any time during the testing
 session.
 
 Within a PNP, a candidate can request the ability to choose text color
 alternative by stating:
 
-``` hljs
+```hljs
 <text-appearance>
 
 </text-appearance>
@@ -14842,13 +14986,13 @@ font-color:
 
 ###### 5.2.9.7.3 background-color
 
-*Background-color (along with font-color) is no longer recommended to
+_Background-color (along with font-color) is no longer recommended to
 address a candidate's preferences for assessment content presentation.
 If candidates provide their preferred specific font and background
 color, it may conflict with other colors used in the delivery system's
 user interface, which may make the interface more difficult or
 impossible to use in an assessment context. Best practice is to use the
-text-appearance:color-theme support.*
+text-appearance:color-theme support._
 
 Background-color allows candidates to choose alternatives for the
 background color (behind the text - it often corresponds with the CSS
@@ -14857,15 +15001,15 @@ color for the candidate's preferred background color, which should be
 used in the assessment interface for the candidate after they log into
 the test session.
 
-The candidate *MUST* be able to change the color of the background at
+The candidate _MUST_ be able to change the color of the background at
 any time after logging into the test session. Additionally, the
-candidate *MUST* be able to return the original background color at any
+candidate _MUST_ be able to return the original background color at any
 time during the testing session.
 
 Within a PNP, a candidate can request the ability to choose background
 color alternative by stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <background-color />
 </text-appearance>
@@ -14874,7 +15018,7 @@ color alternative by stating:
 To add a specific color preference, add the hexadecimal color in the
 node:
 
-``` hljs
+```hljs
 <background-color>#00008B</background-color>
 ```
 
@@ -14886,13 +15030,13 @@ PNP may optionally include a specific setting for the candidate's
 preferred font size, which should be used in the assessment interface
 for the candidate after they log into the test session.
 
-The candidate *MUST* be able to change the font size at any time after
+The candidate _MUST_ be able to change the font size at any time after
 logging into the test session.
 
 Within a PNP, a candidate can request the ability to choose a font size
 alternative by stating:
 
-``` hljs
+```hljs
 <text-appearance>
 
 </text-appearance>
@@ -14901,7 +15045,7 @@ alternative by stating:
 To add a specific size preference, add the font size as a number,
 relative to the base font size,
 
-``` hljs
+```hljs
 1.6
 ```
 
@@ -14918,7 +15062,7 @@ specified in the generic font face preference (if available).
 Within a PNP, a candidate can request the ability to choose font-face
 alternative by stating:
 
-``` hljs
+```hljs
 <text-appearance>
 
 </text-appearance>
@@ -14927,7 +15071,7 @@ alternative by stating:
 To add a specific font face and a generic fallback, add the font name
 and generic category to the PNP within the font-face node.
 
-``` hljs
+```hljs
 
   Times New Roman
   <generic-font-face>serif</generic-font-face>
@@ -14944,7 +15088,7 @@ interface for the candidate after they log into the test session.
 Within a PNP, a candidate can request the ability to choose line spacing
 options by stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <line-spacing/>
 </text-appearance>
@@ -14953,7 +15097,7 @@ options by stating:
 To add a specific spacing preference, add the size in ems, relative to
 the base line spacing.
 
-``` hljs
+```hljs
 <line-spacing>1.5</line-spacing>
 ```
 
@@ -14964,14 +15108,14 @@ line-height, which corresponds to the CSS line-height property. A
 specific number can be assigned to a candidate's PNP that will multiply
 that number by the line-height specified in the default style of the
 text. If a specific number is supplied in a candidate's PNP, that
-preference should be rendered in the assessment content text.  Delivery
+preference should be rendered in the assessment content text. Delivery
 systems are not required to use this line-spacing in non-assessment
 content like buttons and other interface objects.
 
 Within a PNP, a candidate can request the ability to choose line-height
 preferences:
 
-``` hljs
+```hljs
 <text-appearance>
   <line-height/>
 </text-appearance>
@@ -14980,7 +15124,7 @@ preferences:
 To add a specific spacing preference, add the size in a number that will
 be multiplied with the base line spacing.
 
-``` hljs
+```hljs
 <line-height>1.5</line-height>
 ```
 
@@ -14998,7 +15142,7 @@ other interface objects.
 Within a PNP, a candidate can request the ability to choose letter
 spacing options by stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <letter-spacing/>
 </text-appearance>
@@ -15007,7 +15151,7 @@ spacing options by stating:
 To add a specific spacing preference, add the size in pixels, which will
 be added to the space between the characters in the text.
 
-``` hljs
+```hljs
 <letter-spacing>2</letter-spacing>
 ```
 
@@ -15023,7 +15167,7 @@ preferred body text size.
 Within a PNP, a candidate can request the ability to choose text display
 option of uniform font spacing by stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <uniform-font-sizing/>
 </text-appearance>
@@ -15042,7 +15186,7 @@ session.
 Within a PNP, a candidate can request the ability to choose word-spacing
 options by stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <word-spacing/>
 </text-appearance>
@@ -15051,13 +15195,13 @@ options by stating:
 To add a specific spacing preference, add the size in proportion to 1
 em, the "normal" word spacing of the font face.
 
-``` hljs
+```hljs
 <word-spacing>1.4</word-spacing>
 ```
 
 ###### 5.2.9.7.11 Word-wrapping
 
-Allows the candidate to indicate that any text-appearance changes *MUST*
+Allows the candidate to indicate that any text-appearance changes _MUST_
 allow text to wrap to the next line (i.e. text reflow). This will help
 prevent the need for horizontal scrolling. This is NOT the same as CSS
 word-wrap which allows long words to be hyphenated.
@@ -15065,7 +15209,7 @@ word-wrap which allows long words to be hyphenated.
 Within a PNP, a candidate can request the ability to wrap text by
 stating:
 
-``` hljs
+```hljs
 <text-appearance>
   <word-wrapping/>
 </text-appearance>
@@ -15112,6 +15256,7 @@ have access to these tools during their assessment session.
 **On-screen Tool Assignment in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -15135,13 +15280,13 @@ the QTI 3 specification.
 calculator that is allowed/recommended for use with any particular item
 by using the companion materials feature, and specifying the calculator
 type (see Section 3.7.7.1). By referencing a calculator in the companion
-materials, the intention is to convey that the assessment item *SHOULD*
+materials, the intention is to convey that the assessment item _SHOULD_
 have a calculator available when answering the item. Some assessment
 programs may prefer to reference a specific calculator interface for an
 item by referencing a "widget" using the information control feature
 (see Section 3.7.8) instead of the companion materials reference.
 
-By using the calculator-on-screen in a candidate's PNP,  you could
+By using the calculator-on-screen in a candidate's PNP, you could
 indicate that the candidate should ALWAYS have access to an on-screen
 calculator, regardless of whether the item is expected to be answered
 with a calculator or not. In other words, it is a method for assigning
@@ -15229,6 +15374,7 @@ environmental needs.
 **Environment Supports in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -15268,6 +15414,7 @@ example below.
 **Support Inclusion in the Activate as Option Set in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -15301,6 +15448,7 @@ logging into a content presentation system).
 PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -15329,8 +15477,8 @@ Within a candidate PNP, a set of supports that are specifically NOT
 available to the candidate. The prohibition of supports should be made
 carefully to avoid denying a user a necessary support.
 
-For the prohibit-set, the support *SHOULD NOT* be included in the PNP as
-assigned to the candidate. The only listing of the support *MUST* be in
+For the prohibit-set, the support _SHOULD NOT_ be included in the PNP as
+assigned to the candidate. The only listing of the support _MUST_ be in
 the prohibit-set. In the example below, the example is assigned to
 additional testing time (line 0007), but should not have access to the
 magnification capabilities of the interface (line 0010), the
@@ -15340,12 +15488,13 @@ appearance of the text in any way (line 0012).
 **Support Listing in the Prohibit Set in a Candidate PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xsd">
 
-  <additional-testing-time><unlimited/><additional-testing-time>
+<additional-testing-time><unlimited/><additional-testing-time>
 
   <prohibit-set>
   <magnification/>
@@ -15366,6 +15515,7 @@ namespace extension methods, as shown in the example below.
 **Custom PNP**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xmlns:kxz="http://www.kxztesting.com/2019/pnp-extensions"
@@ -15374,7 +15524,7 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0pnp_v1p0.xs
 http://www.kxztesting.com/2019/pnp-extensions
 http://www.kxztesting.com/2019/pnp-extension/pnp.xsd">
 
-  <kxz:kxztesting-illustrated-glossary-on-screen/>
+<kxz:kxztesting-illustrated-glossary-on-screen/>
 
 </access-for-all-pnp>
 
@@ -15393,6 +15543,7 @@ bulk.
 **Example of a Bulk PNP File**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp-records xmlns="http://www.imsglobal.org/xsd//qti/qti3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qti/qtiv3p0/imsafa3p0_v1p0
@@ -15428,7 +15579,7 @@ can be supplied within a bulk records file. Individual PNP profiles are
 separated by including each profile within its own
 access-for-all-pnp-record node.
 
-Within each access-for-all-pnp-record node, you *MUST* include a
+Within each access-for-all-pnp-record node, you _MUST_ include a
 person-sourced-id node. The source-system attribute within the
 person-sourced-id element is required, and it represents the system that
 generated the id value.
@@ -15469,6 +15620,7 @@ profiles assigned to specific assessment assignments.
 **Example of a Bulk PNP File with appointment-id**
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <access-for-all-pnp-records xmlns="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qtiv3p0/imsafa3p0pnp_v1p0
@@ -15569,10 +15721,10 @@ Content Packages:
 
 - A content package is a ZIP file containing all of the resources needed
   to ingest or access the assessment content
-- Manifest - a single manifest called imsmanifest.xml *MUST* be present
-  at the root of the content package and child manifests *MUST NOT* be
+- Manifest - a single manifest called imsmanifest.xml _MUST_ be present
+  at the root of the content package and child manifests _MUST NOT_ be
   used.
-- Resources - the individual files, which *MUST* all be referenced in
+- Resources - the individual files, which _MUST_ all be referenced in
   the Manifest which provide or support the use of the assessment
   content
 
@@ -15580,7 +15732,7 @@ Content Packages:
 
 The manifest object may not contain child Manifest objects. In the CP
 metadata the schema would normally be set to "QTI Package" and the
-schema version *MUST* be set to "3.0.0". Other values for schema are
+schema version _MUST_ be set to "3.0.0". Other values for schema are
 allowed (e.g. you could use a value of "QTI Item" if you were packaging
 a single item) but are seldom seen in practice as a value of "QTI
 Package" can generally cover all of the use cases.
@@ -15607,28 +15759,28 @@ The QTI Content Packaging Profile can be used to package a range of
 different types of resources. Each will be identified in a resource
 element in the manifest with one of the following resource types.
 
-| **Resource Type** | **Description** | **See also (section reference)** |
-|----|----|----|
-| imsqti_test_xmlv3p0 | QTI 3 AssessmentTest | 6.2.6 |
-| imsqti_section_xmlv3p0 | QTI 3 AssessmentSection | 6.2.8 |
-| imsqti_item_xmlv3p0 | QTI 3 AssessmentItem | 6.2.6 |
-| imsqti_outcomes_xmlv3p0 | QTI 3 OutcomeDeclaration | 6.4 |
-| imsqti_responseprocessing_xmlv3p0 | QTI 3 ResponseProcessing | 6.2.4 |
-| imsqti_stimulus_xmlv3p0 | QTI 3 AssessmentStimulus | 6.2.7 |
-| imsqti_fragment_xmlv3p0 | QTI 3 inclusion (XInclude) | Example tests/rtest01-set01 |
-| imsqti_rptemplate_xmlv3p0 | QTI 3 Response Processing Template | 6.2.4 |
-| associatedcontent/learning-application-resource | A collection of files used exclusively by an individual Learning Application Object. A Learning Application Object is a directory structure used to group together all the files (or file references) that are used to deliver a single instance of one of the following resource types: web content, web link, discussion topic, assessment or intra-package reference. | - |
-| webcontent | Web Content files include any files that are widely supported for delivery over the web. These could include HTML files, images, audio, video, MS Office, PDF, Flash etc. | 6.2.2 |
-| imslti_xmlv1p1 | 1EdTech LTI 1.1 resource | 6.2.9 |
-| imsltia_xmlv1p0 | 1EdTech LTI 1.3 resource | 6.2.9 |
-| controlfile | Schema (XSD). Allows for packaging the XSD files needed to validate the files in the package as part of the package. |  |
-| resourcemetadata/xml | External IMS metadata | 6.3 |
-| resourceextmetadata/xml | External non-IMS metadata | 6.3 |
-| qtiusagedata/xml | QTI 3 Usage Data (may need to pass to a CAT engine) | 6.2.14 & 6.5 |
-| pls | W3C Pronunciation Lexicon Specification files (for content accessibility) | 5.2.1.6 |
-| css2 | CSS Stylesheet 2.0 | - |
-| css3 | CSS Stylesheet 3.0 | - |
-| extension | Proprietary file (enables extension) | - |
+| **Resource Type**                               | **Description**                                                                                                                                                                                                                                                                                                                                                          | **See also (section reference)** |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------- |
+| imsqti_test_xmlv3p0                             | QTI 3 AssessmentTest                                                                                                                                                                                                                                                                                                                                                     | 6.2.6                            |
+| imsqti_section_xmlv3p0                          | QTI 3 AssessmentSection                                                                                                                                                                                                                                                                                                                                                  | 6.2.8                            |
+| imsqti_item_xmlv3p0                             | QTI 3 AssessmentItem                                                                                                                                                                                                                                                                                                                                                     | 6.2.6                            |
+| imsqti_outcomes_xmlv3p0                         | QTI 3 OutcomeDeclaration                                                                                                                                                                                                                                                                                                                                                 | 6.4                              |
+| imsqti_responseprocessing_xmlv3p0               | QTI 3 ResponseProcessing                                                                                                                                                                                                                                                                                                                                                 | 6.2.4                            |
+| imsqti_stimulus_xmlv3p0                         | QTI 3 AssessmentStimulus                                                                                                                                                                                                                                                                                                                                                 | 6.2.7                            |
+| imsqti_fragment_xmlv3p0                         | QTI 3 inclusion (XInclude)                                                                                                                                                                                                                                                                                                                                               | Example tests/rtest01-set01      |
+| imsqti_rptemplate_xmlv3p0                       | QTI 3 Response Processing Template                                                                                                                                                                                                                                                                                                                                       | 6.2.4                            |
+| associatedcontent/learning-application-resource | A collection of files used exclusively by an individual Learning Application Object. A Learning Application Object is a directory structure used to group together all the files (or file references) that are used to deliver a single instance of one of the following resource types: web content, web link, discussion topic, assessment or intra-package reference. | -                                |
+| webcontent                                      | Web Content files include any files that are widely supported for delivery over the web. These could include HTML files, images, audio, video, MS Office, PDF, Flash etc.                                                                                                                                                                                                | 6.2.2                            |
+| imslti_xmlv1p1                                  | 1EdTech LTI 1.1 resource                                                                                                                                                                                                                                                                                                                                                 | 6.2.9                            |
+| imsltia_xmlv1p0                                 | 1EdTech LTI 1.3 resource                                                                                                                                                                                                                                                                                                                                                 | 6.2.9                            |
+| controlfile                                     | Schema (XSD). Allows for packaging the XSD files needed to validate the files in the package as part of the package.                                                                                                                                                                                                                                                     |                                  |
+| resourcemetadata/xml                            | External IMS metadata                                                                                                                                                                                                                                                                                                                                                    | 6.3                              |
+| resourceextmetadata/xml                         | External non-IMS metadata                                                                                                                                                                                                                                                                                                                                                | 6.3                              |
+| qtiusagedata/xml                                | QTI 3 Usage Data (may need to pass to a CAT engine)                                                                                                                                                                                                                                                                                                                      | 6.2.14 & 6.5                     |
+| pls                                             | W3C Pronunciation Lexicon Specification files (for content accessibility)                                                                                                                                                                                                                                                                                                | 5.2.1.6                          |
+| css2                                            | CSS Stylesheet 2.0                                                                                                                                                                                                                                                                                                                                                       | -                                |
+| css3                                            | CSS Stylesheet 3.0                                                                                                                                                                                                                                                                                                                                                       | -                                |
+| extension                                       | Proprietary file (enables extension)                                                                                                                                                                                                                                                                                                                                     | -                                |
 
 #### 6.2.1 Simple Packaging Example
 
@@ -15641,7 +15793,7 @@ at the root of the content package) demonstrates the use of a resource
 element to associate metadata (both Learning Object Metadata (LOM) and
 QTI) with an item and the file element to reference the
 [assessmentItem](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootAttribute_qti-assessment-item)
- XML file and the associated image file.
+XML file and the associated image file.
 
 See below for the imsmanifest.xml file for this package.
 
@@ -15657,95 +15809,95 @@ http://ltsc.ieee.org/xsd/LOM
 https://purl.imsglobal.org/spec/md/v1p3/schema/xsd/imsmd_loose_v1p3p2.xsd
 http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_imscpv1p2_v1p0.xsd">
-  <metadata>
-  <schema>QTI Package</schema>
-  <schemaversion>3.0.0</schemaversion>
-  <imsmd:lom>
-  <imsmd:general>
-  <imsmd:title>
-  <imsmd:string>Example Package</imsmd:string>
-  </imsmd:title>
-  <imsmd:language>en</imsmd:language>
-  <imsmd:description>
-  <imsmd:string>This is an example Contentpackage containing a
-  single QTI v3.0 item</imsmd:string>
-  </imsmd:description>
-  </imsmd:general>
-  <imsmd:lifeCycle>
-  <imsmd:version>
-  <imsmd:string>3.0</imsmd:string>
-  </imsmd:version>
-  <imsmd:status>
-  <imsmd:source>LOMv1.0</imsmd:source>
-  <imsmd:value>Final</imsmd:value>
-  </imsmd:status>
-  </imsmd:lifeCycle>
-  <imsmd:metaMetadata>
-  <imsmd:metadataschema>LOMv1.0</imsmd:metadataschema>
-  <imsmd:metadataschema>QTIv3.0</imsmd:metadataschema>
-  <imsmd:language>en</imsmd:language>
-  </imsmd:metaMetadata>
-  <imsmd:technical>
-  <imsmd:format>text/x-imsqti-item-xml</imsmd:format>
-  <imsmd:format>image/png</imsmd:format>
-  </imsmd:technical>
-  <imsmd:rights>
-  <imsmd:description>
-  <imsmd:string>(c) 2005, 2019 IMS Global Learning Consortium;
-  individual items may have their own copyright statements.</imsmd:string>
-  </imsmd:description>
-  </imsmd:rights>
-  </imsmd:lom>
-  </metadata>
-  <organizations/>
-  <resources>
-  <resource identifier="RES-B38DF83F-A291-86DA-4EC3-B2CEBD1515A4"
+<metadata>
+<schema>QTI Package</schema>
+<schemaversion>3.0.0</schemaversion>
+<imsmd:lom>
+<imsmd:general>
+<imsmd:title>
+<imsmd:string>Example Package</imsmd:string>
+</imsmd:title>
+<imsmd:language>en</imsmd:language>
+<imsmd:description>
+<imsmd:string>This is an example Contentpackage containing a
+single QTI v3.0 item</imsmd:string>
+</imsmd:description>
+</imsmd:general>
+<imsmd:lifeCycle>
+<imsmd:version>
+<imsmd:string>3.0</imsmd:string>
+</imsmd:version>
+<imsmd:status>
+<imsmd:source>LOMv1.0</imsmd:source>
+<imsmd:value>Final</imsmd:value>
+</imsmd:status>
+</imsmd:lifeCycle>
+<imsmd:metaMetadata>
+<imsmd:metadataschema>LOMv1.0</imsmd:metadataschema>
+<imsmd:metadataschema>QTIv3.0</imsmd:metadataschema>
+<imsmd:language>en</imsmd:language>
+</imsmd:metaMetadata>
+<imsmd:technical>
+<imsmd:format>text/x-imsqti-item-xml</imsmd:format>
+<imsmd:format>image/png</imsmd:format>
+</imsmd:technical>
+<imsmd:rights>
+<imsmd:description>
+<imsmd:string>(c) 2005, 2019 IMS Global Learning Consortium;
+individual items may have their own copyright statements.</imsmd:string>
+</imsmd:description>
+</imsmd:rights>
+</imsmd:lom>
+</metadata>
+<organizations/>
+<resources>
+<resource identifier="RES-B38DF83F-A291-86DA-4EC3-B2CEBD1515A4"
 type="imsqti_item_xmlv3p0" href="choice.xml">
-  <metadata>
-  <imsqti:qtiMetadata>
-  <imsqti:timeDependent>false</imsqti:timeDependent>
-  <imsqti:interactionType>choiceInteraction</imsqti:interactionType>
-  <imsqti:feedbackType>none</imsqti:feedbackType>
-  <imsqti:solutionAvailable>true</imsqti:solutionAvailable>
-  </imsqti:qtiMetadata>
-  <imsmd:lom>
-  <imsmd:general>
-  <imsmd:identifier>
-  <imsmd:entry>choice</imsmd:entry>
-  </imsmd:identifier>
-  <imsmd:title>
-  <imsmd:string>Unattended Luggage</imsmd:string>
-  </imsmd:title>
-  <imsmd:description>
-  <imsmd:string>This example illustrates the choiceInteraction
+<metadata>
+<imsqti:qtiMetadata>
+<imsqti:timeDependent>false</imsqti:timeDependent>
+<imsqti:interactionType>choiceInteraction</imsqti:interactionType>
+<imsqti:feedbackType>none</imsqti:feedbackType>
+<imsqti:solutionAvailable>true</imsqti:solutionAvailable>
+</imsqti:qtiMetadata>
+<imsmd:lom>
+<imsmd:general>
+<imsmd:identifier>
+<imsmd:entry>choice</imsmd:entry>
+</imsmd:identifier>
+<imsmd:title>
+<imsmd:string>Unattended Luggage</imsmd:string>
+</imsmd:title>
+<imsmd:description>
+<imsmd:string>This example illustrates the choiceInteraction
 being used to obtain a single response from the candidate.</imsmd:string>
-  </imsmd:description>
-  </imsmd:general>
-  <imsmd:lifeCycle>
-  <imsmd:version>
-  <imsmd:string>3.0</imsmd:string>
-  </imsmd:version>
-  <imsmd:status>
-  <imsmd:source>LOMv1.0</imsmd:source>
-  <imsmd:value>Final</imsmd:value>
-  </imsmd:status>
-  </imsmd:lifeCycle>
-  <imsmd:technical>
-  <imsmd:format>text/x-imsqti-item-xml</imsmd:format>
-  <imsmd:format>image/png</imsmd:format>
-  </imsmd:technical>
-  <imsmd:rights>
-  <imsmd:description>
-  <imsmd:string>This example has been adapted from the PET
+</imsmd:description>
+</imsmd:general>
+<imsmd:lifeCycle>
+<imsmd:version>
+<imsmd:string>3.0</imsmd:string>
+</imsmd:version>
+<imsmd:status>
+<imsmd:source>LOMv1.0</imsmd:source>
+<imsmd:value>Final</imsmd:value>
+</imsmd:status>
+</imsmd:lifeCycle>
+<imsmd:technical>
+<imsmd:format>text/x-imsqti-item-xml</imsmd:format>
+<imsmd:format>image/png</imsmd:format>
+</imsmd:technical>
+<imsmd:rights>
+<imsmd:description>
+<imsmd:string>This example has been adapted from the PET
 Handbook, copyright University of Cambridge ESOL Examinations.</imsmd:string>
-  </imsmd:description>
-  </imsmd:rights>
-  </imsmd:lom>
-  </metadata>
-  <file href="choice.xml"/>
-  <file href="images/sign.png"/>
-  </resource>
-  </resources>
+</imsmd:description>
+</imsmd:rights>
+</imsmd:lom>
+</metadata>
+<file href="choice.xml"/>
+<file href="images/sign.png"/>
+</resource>
+</resources>
 </manifest>
 
 The manifest element defines all of the required XML namespaces and
@@ -15858,7 +16010,7 @@ match, the match basic template will set the FEEDBACKBASIC variable to
 variable will never be set to the 'true' or 'false' value, which means
 that the inline feedback won't ever be shown to the learner.
 
-The *match_basic* template should only be used by systems that cannot
+The _match_basic_ template should only be used by systems that cannot
 support inline feedback instead of the CC2_match.xml template that is
 referenced in the items.
 
@@ -15871,14 +16023,14 @@ response processing rules to be documented in separate XML documents and
 simply referred to by the items that make use of them. The mechanism for
 identifying the template to use is the
 [template](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#Data_TemplateBlock)
- attribute on the
+attribute on the
 [qti-response-processing](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootAttribute_qti-response-processing)
- element. This attribute is a URI, but it is not required to be a URL
+element. This attribute is a URI, but it is not required to be a URL
 that resolves directly to the appropriate XML document. To help systems
 that support general response processing find the rule definitions
 required to support new templates an additional
 [template-location](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootCharacteristic_ResponseProcessing.Attr_template-location)
- attribute is provided which may be used to provide a URL that resolves
+attribute is provided which may be used to provide a URL that resolves
 to the template's XML document. If this URL is given relative to the
 location of the item then the template should be included in the same
 content package and listed as a dependency for each of the items that
@@ -16058,7 +16210,7 @@ This example is the same as the one above (Package with Response
 Processing Templates) except that response processing templates are not
 included. The
 [template-location](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootCharacteristic_ResponseProcessing.Attr_template-location)
- attribute is used with absolute URLs of the templates. While this is a
+attribute is used with absolute URLs of the templates. While this is a
 supported capability, the best practice recommendation is to always
 include custom response processing templates in the content package.
 
@@ -16080,36 +16232,36 @@ qti-assessment-test:
 
 <resource identifier="RES-BCA84FC0-53F9-ABBD-C3FE-BDB5B825CA9E" type="imsqti_test_xmlv3p0"
 href="example/rtest.xml">
-  <metadata>...</metadata>
-  <file href="example/rtest.xml"/>
-  <dependency identifierref="RES-BCA84FC0-53F9-ABBD-C3FE-BDB5B825CA9E"/>
-  <dependency identifierref="RES-B38DF83F-A291-86DA-4EC3-B2CEBD1515A4"/>
-  <dependency identifierref="RES-3E07BB74-648D-1705-AB43-FC02920B1EAD"/>
-  <dependency identifierref="RES-1CDACE46-DD7B-719F-0D4D-BDA579A862AB"/></resource>
+<metadata>...</metadata>
+<file href="example/rtest.xml"/>
+<dependency identifierref="RES-BCA84FC0-53F9-ABBD-C3FE-BDB5B825CA9E"/>
+<dependency identifierref="RES-B38DF83F-A291-86DA-4EC3-B2CEBD1515A4"/>
+<dependency identifierref="RES-3E07BB74-648D-1705-AB43-FC02920B1EAD"/>
+<dependency identifierref="RES-1CDACE46-DD7B-719F-0D4D-BDA579A862AB"/></resource>
 <resource identifier="RES-BCA84FC0-53F9-ABBD-C3FE-BDB5B825CA9F" type="imsqti_item_xmlv3p0"
 href="example/adaptive.xml">
-  <metadata>...</metadata>
-  <file href="example/adaptive.xml"/>
-  <file href="example/green_door.png"/>
-  <file href="example/open_car.png"/>
-  <file href="example/red_door.png"/>
-  <file href="example/blue_door.png"/>
-  <file href="example/open_goat.png"/></resource><resource
+<metadata>...</metadata>
+<file href="example/adaptive.xml"/>
+<file href="example/green_door.png"/>
+<file href="example/open_car.png"/>
+<file href="example/red_door.png"/>
+<file href="example/blue_door.png"/>
+<file href="example/open_goat.png"/></resource><resource
 identifier="RES-B38DF83F-A291-86DA-4EC3-B2CEBD1515A4" type="imsqti_item_xmlv3p0"
 href="example/choice.xml">
-  <metadata>...</metadata>
-  <file href="example/choice.xml"/>
-  <file href="example/sign.png"/>
+<metadata>...</metadata>
+<file href="example/choice.xml"/>
+<file href="example/sign.png"/>
 </resource>
 <resource identifier="RES-3E07BB74-648D-1705-AB43-FC02920B1EAD" type="imsqti_item_xmlv3p0"
 href="example/choice_multiple.xml">
-  <metadata>...</metadata>
-  <file href="example/choice_multiple.xml"/>
+<metadata>...</metadata>
+<file href="example/choice_multiple.xml"/>
 </resource><resource identifier="RES-1CDACE46-DD7B-719F-0D4D-BDA579A862AB" type="imsqti_item_xmlv3p0"
 href="example/hotspot.xml">
-  <metadata>...</metadata>
-  <file href="example/hotspot.xml"/>
-  <file href="example/ukair.png"/>
+<metadata>...</metadata>
+<file href="example/hotspot.xml"/>
+<file href="example/ukair.png"/>
 </resource>
 
 Here, the resource for the qti-assessment-test is of type
@@ -16122,7 +16274,7 @@ dependencies.
 
 This example demonstrates how to package an
 [qti-assessment-test](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#TabRootAttribute_qti-assessment-test)
- together with the  qti-assessment-stimulus and
+together with the qti-assessment-stimulus and
 [qti-assessment-item](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#TabRootAttribute_qti-assessment-item)
 s referenced by the test. The qti-assesment-test,
 [qti-assessment-stimulus](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#TabRootAttribute_qti-assessment-stimulus)
@@ -16179,7 +16331,7 @@ qti-assessment-test and the individual qti-assessment-items.
 
 ##### 6.2.9.1 IMS Learning Tool Interoperability (LTI)
 
-A Basic LTI link is a simplified and self-contained LTI link.  The
+A Basic LTI link is a simplified and self-contained LTI link. The
 approach for defining an LTI link in QTI, using a resource type, is
 identical to that recommended for Common Cartridge (see Section 4.10 in
 \[CC-13\]). The LTI specification \[LTI-13\] is used to allow remote
@@ -16342,12 +16494,13 @@ an LTI resource in an IMS Common Cartridge
 See below for one of the LTI resources in this package.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <cartridge_basiclti_link
-  xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
-  xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
-  xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0"
-  xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
+xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
+xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0"
+xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imslticc_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0p1.xsd
 http://www.imsglobal.org/xsd/imsbasiclti_v1p0
@@ -16356,20 +16509,20 @@ http://www.imsglobal.org/xsd/imslticm_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd
 http://www.imsglobal.org/xsd/imslticp_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
-  <blti:title>Unattended Luggage</blti:title>
-  <blti:description>Luggage sample choice interaction</blti:description>
-  <blti:custom>
-  <lticm:property name="item_id">item1</lticm:property>
-  </blti:custom>
- <blti:extensions platform="QuizcoQUIZZES">
-  <lticm:property name="ext_outcome_data_values_accepted">text,url</lticm:property>
- </blti:extensions>
-  <blti:launch_url>https://items.example.com/provider</blti:launch_url>
-  <blti:secure_launch_url>https://items.example.com/provider</blti:secure_launch_url>
-  <blti:vendor>
-  <lticp:code>IMSRefImpl</lticp:code>
-  <lticp:name>IMS</lticp:name>
-  </blti:vendor>
+<blti:title>Unattended Luggage</blti:title>
+<blti:description>Luggage sample choice interaction</blti:description>
+<blti:custom>
+<lticm:property name="item_id">item1</lticm:property>
+</blti:custom>
+<blti:extensions platform="QuizcoQUIZZES">
+<lticm:property name="ext_outcome_data_values_accepted">text,url</lticm:property>
+</blti:extensions>
+<blti:launch_url>https://items.example.com/provider</blti:launch_url>
+<blti:secure_launch_url>https://items.example.com/provider</blti:secure_launch_url>
+<blti:vendor>
+<lticp:code>IMSRefImpl</lticp:code>
+<lticp:name>IMS</lticp:name>
+</blti:vendor>
 </cartridge_basiclti_link>
 
 The first 14 lines are concerned with providing the expected namespace
@@ -16435,7 +16588,7 @@ can be presented in the context of the delivery engine UI.
 
 The above is a brief introduction to LTI in the context of an assessment
 delivery engine. It is not normative, and when implementing LTI
-implementers *MUST* follow the LTI and related specifications when
+implementers _MUST_ follow the LTI and related specifications when
 implementing LTI support for an assessment delivery engine.
 
 Assuming that the LTI resource link above is being launched in the
@@ -16456,83 +16609,83 @@ context of a candidate with the following details:
 The LTI 1.3 launch body could be:
 
 {
-  "iss": "https://assessment.quizzco.com",
-  "sub": "320171",
-  "aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
-  "exp": 1510185728,
-  "iat": 1510185228,
-  "azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
-  "nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
-  "name": "Ms Jane Marie Doe",
-  "given_name": "Jane",
-  "family_name": "Doe",
-  "middle_name": "Marie",
-  "picture": "https://riverrun.edu/jane.jpg",
-  "email": "jane@riverrun.edu",
-  "locale": "en-GB",
-  "https://purl.imsglobal.org/spec/lti/claim/deployment_id":
-  "a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
-  "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
-  "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
-  "https://purl.imsglobal.org/spec/lti/claim/roles": [
-  "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
-  "fad5fb29-a91c-770-3c110-1e687120efd9",
-  "5d7373de-c76c-e2b-01214-69e487e2bd33",
-  "d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/context": {
-  "id": "TestSession108181909",
-  "label": "ELA102",
-  "title": "ELA 102 Test Administration",
-  "type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-  "id": "item1",
-  "description": "Luggage sample choice interaction",
-  "title": "Unattended Luggage"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
-  "guid": "ex/48bbb541-ce55-456e-8b7d-ebc59a38d435",
-  "contact_email": "tool_support@quizzco.com",
-  "description": "An Example QTI Platform",
-  "name": "Quizzco QTI Platform",
-  "url": "https://riverrun.assessment.quizzco.com",
-  "product_family_code": "QuizcoQUIZZES",
-  "version": "9.7.1"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
-  "https://tool.example.com/lti/48320/ruix8782rs",
-  "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
-  "document_target": "iframe",
-  "height": 720,
-  "width": 940,
-  "return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1",
-  "locale": "en-GB"
-  },
-  "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-  "scope": [
-  "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-  "https://purl.imsglobal.org/spec/lti-ags/scope/score"
-  ],
-  "lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/custom": {
-  "xstart": "2021-04-21T01:00:00Z",
-  "test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe",
-  "case_item_uri": "https://riverrun.edu/ims/case/v1p0/CFItemTypes/e657aa91-c8ad-5f0b-8eb2-2f8e9f66ff20"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/lis": {
-  "person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
-  "course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
-  "course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
-  },
-  "http://www.quizzco.com": {
-  "session": "89023sj890dju080"
-  }
+"iss": "https://assessment.quizzco.com",
+"sub": "320171",
+"aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
+"exp": 1510185728,
+"iat": 1510185228,
+"azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
+"nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
+"name": "Ms Jane Marie Doe",
+"given_name": "Jane",
+"family_name": "Doe",
+"middle_name": "Marie",
+"picture": "https://riverrun.edu/jane.jpg",
+"email": "jane@riverrun.edu",
+"locale": "en-GB",
+"https://purl.imsglobal.org/spec/lti/claim/deployment_id":
+"a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
+"https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+"https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+"https://purl.imsglobal.org/spec/lti/claim/roles": [
+"http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
+],
+"https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
+"fad5fb29-a91c-770-3c110-1e687120efd9",
+"5d7373de-c76c-e2b-01214-69e487e2bd33",
+"d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
+],
+"https://purl.imsglobal.org/spec/lti/claim/context": {
+"id": "TestSession108181909",
+"label": "ELA102",
+"title": "ELA 102 Test Administration",
+"type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
+},
+"https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+"id": "item1",
+"description": "Luggage sample choice interaction",
+"title": "Unattended Luggage"
+},
+"https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+"guid": "ex/48bbb541-ce55-456e-8b7d-ebc59a38d435",
+"contact_email": "tool_support@quizzco.com",
+"description": "An Example QTI Platform",
+"name": "Quizzco QTI Platform",
+"url": "https://riverrun.assessment.quizzco.com",
+"product_family_code": "QuizcoQUIZZES",
+"version": "9.7.1"
+},
+"https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
+"https://tool.example.com/lti/48320/ruix8782rs",
+"https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+"document_target": "iframe",
+"height": 720,
+"width": 940,
+"return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1",
+"locale": "en-GB"
+},
+"https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
+"scope": [
+"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+"https://purl.imsglobal.org/spec/lti-ags/scope/score"
+],
+"lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
+},
+"https://purl.imsglobal.org/spec/lti/claim/custom": {
+"xstart": "2021-04-21T01:00:00Z",
+"test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe",
+"case_item_uri": "https://riverrun.edu/ims/case/v1p0/CFItemTypes/e657aa91-c8ad-5f0b-8eb2-2f8e9f66ff20"
+},
+"https://purl.imsglobal.org/spec/lti/claim/lis": {
+"person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
+"course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
+"course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
+},
+"http://www.quizzco.com": {
+"session": "89023sj890dju080"
+}
 }
 
 ###### 6.2.9.3.2 Sample LTI 1.1 Launch Parameters
@@ -16578,10 +16731,10 @@ return a score to the launch platform (via a pair of fields `scoreGiven`
 and `scoreMaximum`).
 
 If the response has a QTI response variable named "SCORE" then its value
-*MUST* be used as the value of `scoreGiven` in the AGS score payload.
+_MUST_ be used as the value of `scoreGiven` in the AGS score payload.
 
 If the response has a QTI response variable named "MAXSCORE" then its
-value *MUST* be used as the value of `scoreMaximum` in the AGS score
+value _MUST_ be used as the value of `scoreMaximum` in the AGS score
 payload.
 
 QTI would typically return more information as the outcome of an item
@@ -16597,29 +16750,29 @@ is constructed by appending "/scores" to the lineitem endpoint).
 An example of the lineitem endpointExample of the lineitem endpoint:
 
 "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-  "scope": [
-  "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-  "https://purl.imsglobal.org/spec/lti-ags/scope/score"
-  ],
-  "lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
- }
+"scope": [
+"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+"https://purl.imsglobal.org/spec/lti-ags/scope/score"
+],
+"lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
+}
 
 An example of POSTing item results with score information:
 
 POST http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results/scores
- Content-Type: application/vnd.ims.lis.v1.score+json
- Authorization: Bearer {OAuth bearer token}
- {
-  "timestamp": "2022-01-08T35:27:12.910+00:00",
-  "scoreGiven" : 3,
-  "scoreMaximum" : 5,
-  "comment" : "This is exceptional work.",
-  "activityProgress" : "Completed",
-  "gradingProgress": "FullyGraded",
-  "userId" : "320171"
- }
+Content-Type: application/vnd.ims.lis.v1.score+json
+Authorization: Bearer {OAuth bearer token}
+{
+"timestamp": "2022-01-08T35:27:12.910+00:00",
+"scoreGiven" : 3,
+"scoreMaximum" : 5,
+"comment" : "This is exceptional work.",
+"activityProgress" : "Completed",
+"gradingProgress": "FullyGraded",
+"userId" : "320171"
+}
 
-If it wishes the Tool *MAY* return interim results using an
+If it wishes the Tool _MAY_ return interim results using an
 `activityProgress` other than "Completed" and/or `gradingProgress` other
 than FullyGraded.
 
@@ -16658,7 +16811,7 @@ which it will later associate the returned score.
 
 In the example LTI launch parameters above we can see that the delivery
 engine has passed an Outcomes service endpoint of
-` http://items.example.com/test/scores.php`  via the
+` http://items.example.com/test/scores.php` via the
 `lis_outcome_service_url`parameter and created a result with an id of
 37472bad-7de7-426f-a6d5-3469dce3b107 which it passed in the
 `lis_result_sourcedid`parameter.
@@ -16669,7 +16822,7 @@ request to update the result to the endpoint.
 
 POST /test/scores.php HTTP/1.1
 Host: items.example.com
-Accept: */*
+Accept: _/_
 Authorization: OAuth
 oauth_version="1.0",oauth_nonce="6163523d512cd9cfced27974d014e1af",oauth_timestamp="1551187820",
 oauth_consumer_key="integrationForExampleTool",oauth_body_hash="C%2BGR6heCjtK%2BzN75hQU1Ef0x%2BJw%3D",
@@ -16678,28 +16831,29 @@ Content-Type: application/xml
 Content-Length: 815
 
 <?xml version = "1.0" encoding = "UTF-8"?>
+
 <imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
- <imsx_POXHeader>
-  <imsx_POXRequestHeaderInfo>
-  <imsx_version>V1.0</imsx_version>
-  <imsx_messageIdentifier>5c753f6ca2866</imsx_messageIdentifier>
-  </imsx_POXRequestHeaderInfo>
- </imsx_POXHeader>
- <imsx_POXBody>
-  <replaceResultRequest>
-  <resultRecord>
-  <sourcedGUID>
-  <sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
-  </sourcedGUID>
-  <result>
-  <resultScore>
-  <language>en-US</language>
-  <textString>1</textString>
-  </resultScore>
-  </result>
-  </resultRecord>
-  </replaceResultRequest>
- </imsx_POXBody></imsx_POXEnvelopeRequest>
+<imsx_POXHeader>
+<imsx_POXRequestHeaderInfo>
+<imsx_version>V1.0</imsx_version>
+<imsx_messageIdentifier>5c753f6ca2866</imsx_messageIdentifier>
+</imsx_POXRequestHeaderInfo>
+</imsx_POXHeader>
+<imsx_POXBody>
+<replaceResultRequest>
+<resultRecord>
+<sourcedGUID>
+<sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
+</sourcedGUID>
+<result>
+<resultScore>
+<language>en-US</language>
+<textString>1</textString>
+</resultScore>
+</result>
+</resultRecord>
+</replaceResultRequest>
+</imsx_POXBody></imsx_POXEnvelopeRequest>
 
 The delivery engine can then use the value returned for that result for
 the candidate to derive a value for the SCORE outcome variable. Basic
@@ -16723,10 +16877,10 @@ additional information using a JSON binding of the QTI Results Reporting
 information model.
 
 If the response has a QTI response variable named "SCORE" then its value
-*MUST* be used as the value of 'scoreGiven' in the AGS score payload.
+_MUST_ be used as the value of 'scoreGiven' in the AGS score payload.
 
 If the response has a QTI response variable named "MAXSCORE" then its
-value *MUST* be used as the value of 'scoreMaximum' in the AGS score
+value _MUST_ be used as the value of 'scoreMaximum' in the AGS score
 payload.
 
 If the results reporting data includes a `candidateComment` property
@@ -16743,72 +16897,72 @@ is constructed by appending "/scores" to the lineitem endpoint).
 An example of the lineitem endpoint:
 
 "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-  "scope": [
-  "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-  "https://purl.imsglobal.org/spec/lti-ags/scope/score"
-  ],
-  "lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
+"scope": [
+"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+"https://purl.imsglobal.org/spec/lti-ags/scope/score"
+],
+"lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results"
 
 An example of POSTing item results with additional QTI results reporting
 data:
 
 POST http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results/scores
- Content-Type: application/vnd.ims.lis.v1.score+json
- Authorization: Bearer {OAuth bearer token}
+Content-Type: application/vnd.ims.lis.v1.score+json
+Authorization: Bearer {OAuth bearer token}
 
- {
-  "timestamp": "2022-01-08T35:27:12.910+00:00",
-  "scoreGiven" : 3,
-  "scoreMaximum" : 5,
-  "comment" : "This is exceptional work.",
-  "activityProgress" : "Completed",
-  "gradingProgress": "FullyGraded",
-  "userId" : "320171",
-  "https://purl.1edtech.org/spec/qti/results": {
-  {
-  "identifier":"item1",
-  "sequenceIndex":0,
-  "datestamp":"2022-01-08T35:27:12.910+00:00",
-  "sessionStatus":"interacting",
-  "responseVariables":[ {
-  "itemVariableType":"responseVariable",
-  "identifier":"RESPONSE",
-  "cardinality":"single",
-  "base-type":"integer",
-  "correctResponse":5,
-  "candidateResponse":[ {
-  "fieldIdentifier":"string",
-  "base-type":"integer",
-  "valueString":"string"
-  } ],
-  } ],
-  "outcomeVariables":[
-  {
-  "itemVariableType":"templateVariable",
-  "identifier":"string",
-  "cardinality":"single",
-  "base-type":"identifier",
-  "views":[
-  "author"
-  ],
-  "interpretation":"string",
-  "longInterpretation":"string",
-  "normalMaximum":1.0,
-  "normalMinimum":0,
-  "masteryValue":0,
-  "values":[
-  {
-  "fieldIdentifier":"string",
-  "base-type":"identifier",
-  "valueString":"1.0"
-  }
-  ]
-  }
-  ],
-  "candidateComment":"Too Easy!"
-  }
+{
+"timestamp": "2022-01-08T35:27:12.910+00:00",
+"scoreGiven" : 3,
+"scoreMaximum" : 5,
+"comment" : "This is exceptional work.",
+"activityProgress" : "Completed",
+"gradingProgress": "FullyGraded",
+"userId" : "320171",
+"https://purl.1edtech.org/spec/qti/results": {
+{
+"identifier":"item1",
+"sequenceIndex":0,
+"datestamp":"2022-01-08T35:27:12.910+00:00",
+"sessionStatus":"interacting",
+"responseVariables":[ {
+"itemVariableType":"responseVariable",
+"identifier":"RESPONSE",
+"cardinality":"single",
+"base-type":"integer",
+"correctResponse":5,
+"candidateResponse":[ {
+"fieldIdentifier":"string",
+"base-type":"integer",
+"valueString":"string"
+} ],
+} ],
+"outcomeVariables":[
+{
+"itemVariableType":"templateVariable",
+"identifier":"string",
+"cardinality":"single",
+"base-type":"identifier",
+"views":[
+"author"
+],
+"interpretation":"string",
+"longInterpretation":"string",
+"normalMaximum":1.0,
+"normalMinimum":0,
+"masteryValue":0,
+"values":[
+{
+"fieldIdentifier":"string",
+"base-type":"identifier",
+"valueString":"1.0"
+}
+]
+}
+],
+"candidateComment":"Too Easy!"
+}
 
-If it wishes the Tool *MAY* return interim results using an
+If it wishes the Tool _MAY_ return interim results using an
 `activityProgress` other than "Completed" and/or `gradingProgress` other
 than FullyGraded.
 
@@ -16831,13 +16985,13 @@ parameter: `ext_outcome_data_values_accepted=url,text`
 
 An Assessment Tool Provider which supports that extension can then
 return an extra node (a `resultData`element) which can contain free text
-(in a `text`element), it is *RECOMMENDED* that this text be a
+(in a `text`element), it is _RECOMMENDED_ that this text be a
 serialization of a response variable in the JSON format used by the CAT
 API for item variables.
 
 POST /test/scores.php HTTP/1.1
 Host: items.example.com
-Accept: */*
+Accept: _/_
 Authorization: OAuth
 oauth_version="1.0",oauth_nonce="6163523d512cd9cfced27974d014e1af",oauth_timestamp="1551187820",
 oauth_consumer_key="integrationForExampleTool",oauth_body_hash="C%2BGR6heCjtK%2BzN75hQU1Ef0x%2BJw%3D",
@@ -16846,34 +17000,35 @@ Content-Type: application/xml
 Content-Length: 3215
 
 <?xml version = "1.0" encoding = "UTF-8"?>
+
 <imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
- <imsx_POXHeader>
-  <imsx_POXRequestHeaderInfo>
-  <imsx_version>V1.0</imsx_version>
-  <imsx_messageIdentifier>9c261e2cf3098</imsx_messageIdentifier>
-  </imsx_POXRequestHeaderInfo>
- </imsx_POXHeader>
- <imsx_POXBody>
-  <replaceResultRequest>
-  <resultRecord>
-  <sourcedGUID>
-  <sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
-  </sourcedGUID>
-  <result>
-  <resultScore>
-  <language>en-US</language>
-  <textString>1</textString>
-  </resultScore>
-  <resultData>
-  <text>{"itemVariableType":"responseVariable","identifier":"RESPONSE","cardinality":
+<imsx_POXHeader>
+<imsx_POXRequestHeaderInfo>
+<imsx_version>V1.0</imsx_version>
+<imsx_messageIdentifier>9c261e2cf3098</imsx_messageIdentifier>
+</imsx_POXRequestHeaderInfo>
+</imsx_POXHeader>
+<imsx_POXBody>
+<replaceResultRequest>
+<resultRecord>
+<sourcedGUID>
+<sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
+</sourcedGUID>
+<result>
+<resultScore>
+<language>en-US</language>
+<textString>1</textString>
+</resultScore>
+<resultData>
+<text>{"itemVariableType":"responseVariable","identifier":"RESPONSE","cardinality":
 "single","base-type":"integer","correctResponse":5,"candidateResponse":[{"fieldIdentifier":
 "string","base-type":"integer","valueString":"5"}]}
-  </text>
-  </resultData>
-  </result>
-  </resultRecord>
-  </replaceResultRequest>
- </imsx_POXBody>
+</text>
+</resultData>
+</result>
+</resultRecord>
+</replaceResultRequest>
+</imsx_POXBody>
 </imsx_POXEnvelopeRequest>
 
 Alternatively it can instead return a url (in a `url`element) and it is
@@ -16883,13 +17038,13 @@ representation as used by the CAT standard. If the delivery engine
 wishes to use this URL it should do so immediately the URL is made
 available as the Learning Tool may only make it available for a short
 time (e.g. potentially for the lifetime of a test session). The URL
-*MUST* be a https url and may need to be self-authenticating as the
+_MUST_ be a https url and may need to be self-authenticating as the
 delivery engine won't have an access token to provide for that endpoint
 unless this is established by an out of band mechanism.
 
 POST /test/scores.php HTTP/1.1
 Host: items.example.com
-Accept: */*
+Accept: _/_
 Authorization: OAuth
 oauth_version="1.0",oauth_nonce="6163523d512cd9cfced27974d014e1af",oauth_timestamp="1551187820",
 oauth_consumer_key="integrationForExampleTool",oauth_body_hash="C%2BGR6heCjtK%2BzN75hQU1Ef0x%2BJw%3D",
@@ -16898,80 +17053,81 @@ Content-Type: application/xml
 Content-Length: 3215
 
 <?xml version = "1.0" encoding = "UTF-8"?>
+
 <imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
- <imsx_POXHeader>
-  <imsx_POXRequestHeaderInfo>
-  <imsx_version>V1.0</imsx_version>
-  <imsx_messageIdentifier>5c753f6ca2866</imsx_messageIdentifier>
-  </imsx_POXRequestHeaderInfo>
- </imsx_POXHeader>  <imsx_POXBody>
-  <replaceResultRequest>
-  <resultRecord>
-  <sourcedGUID>
-  <sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
-  </sourcedGUID>
-  <result>
-  <resultScore>
-  <language>en-US</language>
-  <textString>1</textString>
-  </resultScore>
-  <resultData>
-  <url>
+<imsx_POXHeader>
+<imsx_POXRequestHeaderInfo>
+<imsx_version>V1.0</imsx_version>
+<imsx_messageIdentifier>5c753f6ca2866</imsx_messageIdentifier>
+</imsx_POXRequestHeaderInfo>
+</imsx_POXHeader> <imsx_POXBody>
+<replaceResultRequest>
+<resultRecord>
+<sourcedGUID>
+<sourcedId>37472bad-7de7-426f-a6d5-3469dce3b107</sourcedId>
+</sourcedGUID>
+<result>
+<resultScore>
+<language>en-US</language>
+<textString>1</textString>
+</resultScore>
+<resultData>
+<url>
 https://tool.example.com/lti/item/results?access=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3M
 iOiJodHRwczovL3Rvb2wuZXhhbXBsZS5jb20iLCJzdWIiOiIzMjAxNzEiLCJuYW1lIjoiSm9obiBEb2UiLCJhdWQiOiJU
 ZXN0U2Vzc2lvbjEwODE4MTkwOSIsImlhdCI6MTUxNjIzOTAyMn0.ctDqw9fO39WaTvFv2-W-kOiwikylMi0wZ6ri4CK4oz8
-  </url>
-  </resultData>
-  </result>
-  </resultRecord>
-  </replaceResultRequest>
- </imsx_POXBody></imsx_POXEnvelopeRequest>
+</url>
+</resultData>
+</result>
+</resultRecord>
+</replaceResultRequest>
+</imsx_POXBody></imsx_POXEnvelopeRequest>
 
 The URL would then return a response similar to the following:
 
 {
-  "identifier":"item1",
-  "sequenceIndex":0,
-  "datestamp":"2019-04-09T11:39:57.157Z",
-  "sessionStatus":"interacting",
-  "responseVariables":[
-  "itemVariableType":"responseVariable",
-  "identifier":"RESPONSE",
-  "cardinality":"single",
-  "base-type":"integer",
-  "correctResponse":5,
-  "candidateResponse":[
-  {
-  "fieldIdentifier":"string",
-  "base-type":"integer",
-  "valueString":"string"
-  }
-  ],
-  "outcomeVariables":[
-  {
-  "itemVariableType":"templateVariable",
-  "identifier":"string",
-  "cardinality":"single",
-  "base-type":"identifier",
-  "views":[
-  "author"
-  ],
-  "interpretation":"string",
-  "longInterpretation":"string",
-  "normalMaximum":1.0,
-  "normalMinimum":0,
-  "masteryValue":0,
-  "values":[
-  {
-  "fieldIdentifier":"string",
-  "base-type":"identifier",
-  "valueString":"1.0"
-  }
-  ]
-  }
-  ],
-  "candidateComment":"Too Easy!"
- }
+"identifier":"item1",
+"sequenceIndex":0,
+"datestamp":"2019-04-09T11:39:57.157Z",
+"sessionStatus":"interacting",
+"responseVariables":[
+"itemVariableType":"responseVariable",
+"identifier":"RESPONSE",
+"cardinality":"single",
+"base-type":"integer",
+"correctResponse":5,
+"candidateResponse":[
+{
+"fieldIdentifier":"string",
+"base-type":"integer",
+"valueString":"string"
+}
+],
+"outcomeVariables":[
+{
+"itemVariableType":"templateVariable",
+"identifier":"string",
+"cardinality":"single",
+"base-type":"identifier",
+"views":[
+"author"
+],
+"interpretation":"string",
+"longInterpretation":"string",
+"normalMaximum":1.0,
+"normalMinimum":0,
+"masteryValue":0,
+"values":[
+{
+"fieldIdentifier":"string",
+"base-type":"identifier",
+"valueString":"1.0"
+}
+]
+}
+],
+"candidateComment":"Too Easy!"
+}
 
 So if the Assessment Tool supports only returning a single variable it
 returns that in a text field, but if it supports returning a full QTI
@@ -16983,7 +17139,7 @@ For more information see
 
 ##### 6.2.9.6 Discovery by the Tool of the Candidates to which the item has been Administered
 
-To support this the Assessment Delivery Engine Platform *MAY* implement
+To support this the Assessment Delivery Engine Platform _MAY_ implement
 the [IMS LTI Names and Roles Provisioning Resource Link Membership
 Service](http://www.imsglobal.org/spec/lti-nrps/v2p0#resource-link-membership-service)
 (NRPS) which allows the Tool to discover the users who may access the
@@ -16996,10 +17152,10 @@ LTI launch.
 
 An example `namesroleservice` claim:
 
- "https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
-  "context_memberships_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/membership",
-  "service_versions": ["2.0"]
-  }
+"https://purl.imsglobal.org/spec/lti-nrps/claim/namesroleservice": {
+"context_memberships_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/membership",
+"service_versions": ["2.0"]
+}
 
 The Tool after launch can then follow the NRPS specification to make a
 NRPS Resource Link Membership request by appending a `rlid` query string
@@ -17009,78 +17165,78 @@ parameter. The `rlid` query parameter would be given the value of the
 
 An example `resource_link` claim:
 
- "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-  "id": "item1",
-  "description": "Luggage sample choice interaction",
-  "title": "Unattended Luggage"
-  }
+"https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+"id": "item1",
+"description": "Luggage sample choice interaction",
+"title": "Unattended Luggage"
+}
 
 An example NRPS Resource Link Memberships Request:
 
- GET  http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/membership?rlid=item1role=Learner
- Accept: application/vnd.ims.lti-nrps.v2.membershipcontainer+json
- Authorization: Bearer {OAuth2 bearer token}
+GET http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/membership?rlid=item1role=Learner
+Accept: application/vnd.ims.lti-nrps.v2.membershipcontainer+json
+Authorization: Bearer {OAuth2 bearer token}
 
 An example response:
 
- {
- "id" : "https://lms.example.com/sections/2923/memberships?rlid=49566-rkk96",
- "context": {
-  "id": "2923-abc",
-  "label": "CPS 435",
-  "title": "CPS 435 Learning Analytics",
+{
+"id" : "https://lms.example.com/sections/2923/memberships?rlid=49566-rkk96",
+"context": {
+"id": "2923-abc",
+"label": "CPS 435",
+"title": "CPS 435 Learning Analytics",
 },
 "members" : [
-  {
-  "status" : "Active",
-  "name": "Ms Jane Marie Doe",
-  "picture" : "https://riverrun.edu/jane.jpg",
-  "given_name" : "Jane",
-  "family_name" : "Doe",
-  "middle_name" : "Marie",
-  "email": "jane@riverrun.edu",
-  "user_id" : "320171",
-  "lis_person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
-  "roles": [
-  "Learner"
-  ]
-  },
-  {
-  "status" : "Active",
-  "name": "Bob Dolan",
-  "picture" : "https://riverrun.edu/bobd.jpg",
-  "given_name" : "Bob",
-  "family_name" : "Dolan",
-  "email": "bobd@riverrun.edu",
-  "user_id" : "29571",
-  "lis_person_sourcedid": "1b402312-cc00-475a-b4f4-0a6a404a11e2",
-  "roles": [
-  "Learner"
-  ]
-  }
- ]
+{
+"status" : "Active",
+"name": "Ms Jane Marie Doe",
+"picture" : "https://riverrun.edu/jane.jpg",
+"given_name" : "Jane",
+"family_name" : "Doe",
+"middle_name" : "Marie",
+"email": "jane@riverrun.edu",
+"user_id" : "320171",
+"lis_person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
+"roles": [
+"Learner"
+]
+},
+{
+"status" : "Active",
+"name": "Bob Dolan",
+"picture" : "https://riverrun.edu/bobd.jpg",
+"given_name" : "Bob",
+"family_name" : "Dolan",
+"email": "bobd@riverrun.edu",
+"user_id" : "29571",
+"lis_person_sourcedid": "1b402312-cc00-475a-b4f4-0a6a404a11e2",
+"roles": [
+"Learner"
+]
+}
+]
 }
 
 ##### 6.2.9.7 Returning to the Delivery Engine
 
 If the candidate has indicated to the LTI launched item that they have
-finished interacting with the item the Tool Provider *MAY* return the
+finished interacting with the item the Tool Provider _MAY_ return the
 candidate to the delivery engine by redirecting the user's browser to
 the URL provided in the `return_url`launch parameter. As defined in the
 LTI specification, two standard query string parameters are supported
 for this url in a non-error flow, these are:
 
-|  |  |
-|---------|---------------------------------------------------------------|
-| Param  | Purpose  |
-| lti_msg | A human readable message to display to the end user  |
+|         |                                                               |
+| ------- | ------------------------------------------------------------- |
+| Param   | Purpose                                                       |
+| lti_msg | A human readable message to display to the end user           |
 | lti_log | The audience for this parameter is the delivery engine itself |
 
 The format of the `return_url` is determined by the delivery engine. The
 Tool should allow for each launch of an item to provide a different
 value for the `return_url.`
 
-The delivery engine *MUST* allow for the Tool adding query string
+The delivery engine _MUST_ allow for the Tool adding query string
 parameters to the URL. The presence of an lti_log or an lti_msg query
 string parameter should signal to the delivery engine that the candidate
 has finished interacting with the item and it may e.g. navigate to the
@@ -17091,12 +17247,12 @@ of the "https://purl.imsglobal.org/spec/lti/claim/launch_presentation"
 claim, e.g.
 
 "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
-  "document_target": "iframe",
-  "height": 720,
-  "width": 940,
-  "return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1",
-  "locale": "en-GB"
-  }
+"document_target": "iframe",
+"height": 720,
+"width": 940,
+"return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1",
+"locale": "en-GB"
+}
 
 For LTI 1.1 the `return_url` is the value of the
 `launch_presentation_return_url` launch parameter
@@ -17112,33 +17268,33 @@ delivery engine to pass this information to the Tool as custom
 parameters. Where a delivery engine does this it is recommended that the
 following custom parameters be used.
 
-|  |  |  |
-|---------------------------|--------------------|--------------------------|
-| QTI Concept  | Attribute/name  | Custom param  |
-| Item Session Control  | max-attempts  | max_attempts  |
-|  | show-feedback  | show_feedback  |
-|  | allow-review  | allow_review  |
-|  | show-solution  | show_solution  |
-|  | allow-comment  | allow_comment  |
-|  | allow-skipping  | allow_skipping  |
-|  | validate-responses | validate_responses  |
-| Item State  |  | item_state  |
-| Context Variable  | variable1  | context_variable1  |
-| Context Variable (record) | variable1/field1  | context_variable1_field1 |
+|                           |                    |                          |
+| ------------------------- | ------------------ | ------------------------ |
+| QTI Concept               | Attribute/name     | Custom param             |
+| Item Session Control      | max-attempts       | max_attempts             |
+|                           | show-feedback      | show_feedback            |
+|                           | allow-review       | allow_review             |
+|                           | show-solution      | show_solution            |
+|                           | allow-comment      | allow_comment            |
+|                           | allow-skipping     | allow_skipping           |
+|                           | validate-responses | validate_responses       |
+| Item State                |                    | item_state               |
+| Context Variable          | variable1          | context_variable1        |
+| Context Variable (record) | variable1/field1   | context_variable1_field1 |
 
 When these custom params are used in an LTI 1.3 launch they would be
 properties of the "https://purl.imsglobal.org/spec/lti/claim/custom"
 claim, e.g.
 
 "https://purl.imsglobal.org/spec/lti/claim/custom": {
-  "xstart": "2017-04-21T01:00:00Z",
-  "max_attempts": "1",
-  "show_feedback": "true",
-  "context_QTI_CONTEXT_environmentIdentifier": "2",
-  "context_QTI_CONTEXT_testIdentifier": "essay-test",
-  "item_state": "interacting",
-  "pci_state": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjAxNzEiLCJuYW1lIjoiTXMgSmFuZSBNYXJpZSBEb2UiLCJodHRwczovL3F1aXp6Y28uY29tL3Jlc3BvbnNlcyI6eyJSRVNQT05TRSI6IlRoZSBRdWljIn0sImlhdCI6MTUxNjIzOTAyMn0.V6IV2PM6L63f5MDV-vgYKQlztl5OGIq2kvhLTX-QpRs"
-  },
+"xstart": "2017-04-21T01:00:00Z",
+"max_attempts": "1",
+"show_feedback": "true",
+"context_QTI_CONTEXT_environmentIdentifier": "2",
+"context_QTI_CONTEXT_testIdentifier": "essay-test",
+"item_state": "interacting",
+"pci_state": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzMjAxNzEiLCJuYW1lIjoiTXMgSmFuZSBNYXJpZSBEb2UiLCJodHRwczovL3F1aXp6Y28uY29tL3Jlc3BvbnNlcyI6eyJSRVNQT05TRSI6IlRoZSBRdWljIn0sImlhdCI6MTUxNjIzOTAyMn0.V6IV2PM6L63f5MDV-vgYKQlztl5OGIq2kvhLTX-QpRs"
+},
 
 When these custom params are used in an LTI 1.1 launch they would be
 prefixed with `custom_`
@@ -17212,75 +17368,75 @@ when launching this display only content.
 ###### 6.2.9.9.1 Sample LTI 1.3 JWT Body
 
 {
-  "iss": "https://assessment.quizzco.com",
-  "sub": "320171",
-  "aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
-  "exp": 1510185728,
-  "iat": 1510185228,
-  "azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
-  "nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
-  "name": "Ms Jane Marie Doe",
-  "given_name": "Jane",
-  "family_name": "Doe",
-  "middle_name": "Marie",
-  "picture": "https://riverrun.edu/jane.jpg",
-  "email": "jane@riverrun.edu",
-  "locale": "en-GB",
-  "https://purl.imsglobal.org/spec/lti/claim/deployment_id":
-  "a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
-  "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
-  "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
-  "https://purl.imsglobal.org/spec/lti/claim/roles": [
-  "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
-  "fad5fb29-a91c-770-3c110-1e687120efd9",
-  "5d7373de-c76c-e2b-01214-69e487e2bd33",
-  "d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/context": {
-  "id": "TestSession108181909",
-  "label": "ELA102",
-  "title": "ELA 102 Test Administration",
-  "type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-  "id": "elements",
-  "description": "The Periodic Table of the Elements",
-  "title": "The Periodic Table"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
-  "guid": "ex/48bbb541-ce55-456e-8b7d-ebc59a38d435",
-  "contact_email": "tool_support@quizzco.com",
-  "description": "An Example QTI Platform",
-  "name": "Quizzco QTI Platform",
-  "url": "https://riverrun.assessment.quizzco.com",
-  "product_family_code": "QuizcoQUIZZES",
-  "version": "9.7.1"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
-  "https://tool.example.com/lti/48320/elements",
-  "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
-  "document_target": "iframe",
-  "height": 720,
-  "width": 940,
-  "return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/elements",
-  "locale": "en-GB"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/custom": {
-  "xstart": "2021-04-21T01:00:00Z",
-  "test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/lis": {
-  "person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
-  "course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
-  "course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
-  },
-  "http://www.quizzco.com": {
-  "session": "89023sj890dju080"
-  }
+"iss": "https://assessment.quizzco.com",
+"sub": "320171",
+"aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
+"exp": 1510185728,
+"iat": 1510185228,
+"azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
+"nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
+"name": "Ms Jane Marie Doe",
+"given_name": "Jane",
+"family_name": "Doe",
+"middle_name": "Marie",
+"picture": "https://riverrun.edu/jane.jpg",
+"email": "jane@riverrun.edu",
+"locale": "en-GB",
+"https://purl.imsglobal.org/spec/lti/claim/deployment_id":
+"a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
+"https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+"https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+"https://purl.imsglobal.org/spec/lti/claim/roles": [
+"http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
+],
+"https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
+"fad5fb29-a91c-770-3c110-1e687120efd9",
+"5d7373de-c76c-e2b-01214-69e487e2bd33",
+"d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
+],
+"https://purl.imsglobal.org/spec/lti/claim/context": {
+"id": "TestSession108181909",
+"label": "ELA102",
+"title": "ELA 102 Test Administration",
+"type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
+},
+"https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+"id": "elements",
+"description": "The Periodic Table of the Elements",
+"title": "The Periodic Table"
+},
+"https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+"guid": "ex/48bbb541-ce55-456e-8b7d-ebc59a38d435",
+"contact_email": "tool_support@quizzco.com",
+"description": "An Example QTI Platform",
+"name": "Quizzco QTI Platform",
+"url": "https://riverrun.assessment.quizzco.com",
+"product_family_code": "QuizcoQUIZZES",
+"version": "9.7.1"
+},
+"https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
+"https://tool.example.com/lti/48320/elements",
+"https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+"document_target": "iframe",
+"height": 720,
+"width": 940,
+"return_url": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/elements",
+"locale": "en-GB"
+},
+"https://purl.imsglobal.org/spec/lti/claim/custom": {
+"xstart": "2021-04-21T01:00:00Z",
+"test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe"
+},
+"https://purl.imsglobal.org/spec/lti/claim/lis": {
+"person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
+"course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
+"course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
+},
+"http://www.quizzco.com": {
+"session": "89023sj890dju080"
+}
 }
 
 ###### 6.2.9.9.2 Sample LTI 1.1 Launch Parameters
@@ -17324,19 +17480,19 @@ For LTI Advantage the Assignment and Grades Service (AGS) can be used to
 return the required data from the custom interaction to the delivery
 platform. Where the response variable is not a numeric type then an
 extension to the Assignment And Grades Service needs to be added to pass
-these values back to the delivery platform. The delivery engine *MAY*
+these values back to the delivery platform. The delivery engine _MAY_
 pass an AGS claim (
 "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint" ) with a
 lineitem endpoint which is prepared to accept the outcome of the custom
 interaction, e.g.
 
 "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-  "scope": [
-  "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-  "https://purl.imsglobal.org/spec/lti-ags/scope/score"
-  ],
-  "lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results/RESPONSE"
-  }
+"scope": [
+"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+"https://purl.imsglobal.org/spec/lti-ags/scope/score"
+],
+"lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results/RESPONSE"
+}
 
 When the Tool updates the assessment delivery platform with the current
 state of the interaction it posts a Score to that lineitem endpoint
@@ -17345,19 +17501,19 @@ additional details for the response, e.g.
 
 POST http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/results/RESPONSE
 {
-  "timestamp": "2021-09-11T23:32:34.917+00:00",
-  "activityProgress" : "InProgress",
-  "gradingProgress" : "Pending",
-  "userId" : "320171",
-  "scoreMaximum" : 100,
-  "comment": "Great work",
-  "https://purl.imsglobal.org/spec/qti/ags/response": {
-  "identifier": "RESPONSE",
-  "cardinality": "single",
-  "base-type": "identifier",
-  "candidateResponse": [{"base-type":"identifier","valueString":"Isolated"}],
-  "submissionUrl": "https://www.toolexample.com/lti/score/54/5893/essay.pdf"
-  }
+"timestamp": "2021-09-11T23:32:34.917+00:00",
+"activityProgress" : "InProgress",
+"gradingProgress" : "Pending",
+"userId" : "320171",
+"scoreMaximum" : 100,
+"comment": "Great work",
+"https://purl.imsglobal.org/spec/qti/ags/response": {
+"identifier": "RESPONSE",
+"cardinality": "single",
+"base-type": "identifier",
+"candidateResponse": [{"base-type":"identifier","valueString":"Isolated"}],
+"submissionUrl": "https://www.toolexample.com/lti/score/54/5893/essay.pdf"
+}
 }
 
 When Using LTI 1.1 this fits the standard Basic Outcome service contract
@@ -17453,12 +17609,13 @@ The LTI resource is defined in lines 61-64.
 Example LTI resource
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <cartridge_basiclti_link
-  xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
-  xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
-  xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0"
-  xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns="http://www.imsglobal.org/xsd/imslticc_v1p0"
+xmlns:blti="http://www.imsglobal.org/xsd/imsbasiclti_v1p0"
+xmlns:lticm="http://www.imsglobal.org/xsd/imslticm_v1p0"
+xmlns:lticp="http://www.imsglobal.org/xsd/imslticp_v1p0"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imslticc_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticc_v1p0p1.xsd
 http://www.imsglobal.org/xsd/imsbasiclti_v1p0
@@ -17467,23 +17624,23 @@ http://www.imsglobal.org/xsd/imslticm_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticm_v1p0.xsd
 http://www.imsglobal.org/xsd/imslticp_v1p0
 http://www.imsglobal.org/xsd/lti/ltiv1p0/imslticp_v1p0.xsd">
-  <blti:title>Estimating Cloud Cover</blti:title>
-  <blti:description>Custom weather interaction</blti:description>
-  <blti:custom>
-  <lticm:property name="interaction_type">WeatherMapper</lticm:property>
-  <lticm:property name="data_source">NOAACloudmap</lticm:property>
-  <lticm:property name="latitude">48.119936</lticm:property>
-  <lticm:property name="longitude">-124.6419558</lticm:property>
-  <lticm:property name="diameter">10000</lticm:property>
-  </blti:custom>  <blti:extensions platform="QuizcoQUIZZES">
-  <lticm:property name="ext_outcome_data_values_accepted">text</lticm:property>
- </blti:extensions>
-  <blti:launch_url>https://interactions.example.com/provider</blti:launch_url>
-  <blti:secure_launch_url>https://interactions.example.com/provider</blti:secure_launch_url>
-  <blti:vendor>
-  <lticp:code>IMSRefImpl</lticp:code>
-  <lticp:name>IMS</lticp:name>
-  </blti:vendor>
+<blti:title>Estimating Cloud Cover</blti:title>
+<blti:description>Custom weather interaction</blti:description>
+<blti:custom>
+<lticm:property name="interaction_type">WeatherMapper</lticm:property>
+<lticm:property name="data_source">NOAACloudmap</lticm:property>
+<lticm:property name="latitude">48.119936</lticm:property>
+<lticm:property name="longitude">-124.6419558</lticm:property>
+<lticm:property name="diameter">10000</lticm:property>
+</blti:custom> <blti:extensions platform="QuizcoQUIZZES">
+<lticm:property name="ext_outcome_data_values_accepted">text</lticm:property>
+</blti:extensions>
+<blti:launch_url>https://interactions.example.com/provider</blti:launch_url>
+<blti:secure_launch_url>https://interactions.example.com/provider</blti:secure_launch_url>
+<blti:vendor>
+<lticp:code>IMSRefImpl</lticp:code>
+<lticp:name>IMS</lticp:name>
+</blti:vendor>
 </cartridge_basiclti_link>
 
 The LTI resource defines a series of custom parameters to be sent on
@@ -17495,23 +17652,25 @@ resultData in a BasicOutcome response (line 26).
 Example QTI item
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <qti-assessment-item xmlns="http://www.imsglobal.org/xsd/imsqtiasi_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqtiasi_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_asiv3p0p1_v1p0.xsd"
   identifier="qti3LTICustomInteraction" title="Estimation of cloud cover"
   adaptive="false" time-dependent="false">
-  <qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
-  <qti-correct-response>
-  <qti-value>Isolated</qti-value>
-  </qti-correct-response>
-  </qti-response-declaration>
-  <qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
-  <qti-default-value>
-  <qti-value>0</qti-value>
-  </qti-default-value>
-  </qti-outcome-declaration>
-  <qti-item-body>
+<qti-response-declaration identifier="RESPONSE" cardinality="single" base-type="identifier">
+<qti-correct-response>
+<qti-value>Isolated</qti-value>
+</qti-correct-response>
+</qti-response-declaration>
+<qti-outcome-declaration identifier="SCORE" cardinality="single" base-type="float">
+<qti-default-value>
+<qti-value>0</qti-value>
+</qti-default-value>
+</qti-outcome-declaration>
+<qti-item-body>
+
   <p>Estimate the cloud coverage by looking at the meteorological satellite
 photo of the area, estimate each quadrant independently and then average to get an
 estimate for the whole sky. Finally categorize the level of cloud cover.</p>
@@ -17575,93 +17734,93 @@ value `custom_` on launch.
 Example LTI 1.3 launch parameters:
 
 {
-  "iss": "https://assessment.quizzco.com",
-  "sub": "918190",
-  "aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
-  "exp": 1510185728,
-  "iat": 1510185228,
-  "azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
-  "nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
-  "name": "Ms Jane Marie Doe",
-  "given_name": "Jane",
-  "family_name": "Doe",
-  "middle_name": "Marie",
-  "picture": "https://riverrun.edu/jane.jpg",
-  "email": "jane@riverrun.edu",
-  "locale": "en-GB",
-  "https://purl.imsglobal.org/spec/lti/claim/deployment_id":
-  "a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
-  "https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
-  "https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
-  "https://purl.imsglobal.org/spec/lti/claim/roles": [
-  "http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
-  "http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
-  "fad5fb29-a91c-770-3c110-1e687120efd9",
-  "5d7373de-c76c-e2b-01214-69e487e2bd33",
-  "d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
-  ],
-  "https://purl.imsglobal.org/spec/lti/claim/context": {
-  "id": "TestSession108181909",
-  "label": "ELA102",
-  "title": "ELA 102 Test Administration",
-  "type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/resource_link": {
-  "id": "TestSession019310214501_cloud_cover_981234",
-  "description": "Custom weather interaction",
-  "title": "Estimating Cloud Cover"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
-  "guid": "a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
-  "contact_email": "tool_support@quizzco.com",
-  "description": "An Example QTI Platform",
-  "name": "Quizzco QTI Platform",
-  "url": "https://riverrun.assessment.quizzco.com",
-  "product_family_code": "QuizcoQUIZZES",
-  "version": "9.7.1"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
-  "https://tool.example.com/lti/117722/weather",
-  "https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
-  "scope": [
-  "https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
-  "https://purl.imsglobal.org/spec/lti-ags/scope/score"
-  ],
-  "lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/interaction/cloud_cover_981234/RESPONSE"
-  }
-  "https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
-  "document_target": "iframe",
-  "height": 720,
-  "width": 940,
-  "return_url": "http://items.example.com/return/test/session/TestSession019310214501/
+"iss": "https://assessment.quizzco.com",
+"sub": "918190",
+"aud": ["962fa4d8-bcbf-49a0-94b2-2de05ad274af"],
+"exp": 1510185728,
+"iat": 1510185228,
+"azp": "962fa4d8-bcbf-49a0-94b2-2de05ad274af",
+"nonce": "fc5fdc6d-5dd6-47f4-b2c9-5d1216e9b771",
+"name": "Ms Jane Marie Doe",
+"given_name": "Jane",
+"family_name": "Doe",
+"middle_name": "Marie",
+"picture": "https://riverrun.edu/jane.jpg",
+"email": "jane@riverrun.edu",
+"locale": "en-GB",
+"https://purl.imsglobal.org/spec/lti/claim/deployment_id":
+"a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
+"https://purl.imsglobal.org/spec/lti/claim/message_type": "LtiResourceLinkRequest",
+"https://purl.imsglobal.org/spec/lti/claim/version": "1.3.0",
+"https://purl.imsglobal.org/spec/lti/claim/roles": [
+"http://purl.imsglobal.org/vocab/lis/v2/institution/person#Student",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Learner",
+"http://purl.imsglobal.org/vocab/lis/v2/membership#Mentor"
+],
+"https://purl.imsglobal.org/spec/lti/claim/role_scope_mentor": [
+"fad5fb29-a91c-770-3c110-1e687120efd9",
+"5d7373de-c76c-e2b-01214-69e487e2bd33",
+"d779cfd4-bc7b-019-9bf1a-04bf1915d4d0"
+],
+"https://purl.imsglobal.org/spec/lti/claim/context": {
+"id": "TestSession108181909",
+"label": "ELA102",
+"title": "ELA 102 Test Administration",
+"type": ["http://purl.imsglobal.org/vocab/lis/v2/course#Group"]
+},
+"https://purl.imsglobal.org/spec/lti/claim/resource_link": {
+"id": "TestSession019310214501_cloud_cover_981234",
+"description": "Custom weather interaction",
+"title": "Estimating Cloud Cover"
+},
+"https://purl.imsglobal.org/spec/lti/claim/tool_platform": {
+"guid": "a9e34b71-2d35-41b9-9f99-4aa34fdbc9fa",
+"contact_email": "tool_support@quizzco.com",
+"description": "An Example QTI Platform",
+"name": "Quizzco QTI Platform",
+"url": "https://riverrun.assessment.quizzco.com",
+"product_family_code": "QuizcoQUIZZES",
+"version": "9.7.1"
+},
+"https://purl.imsglobal.org/spec/lti/claim/target_link_uri":
+"https://tool.example.com/lti/117722/weather",
+"https://purl.imsglobal.org/spec/lti-ags/claim/endpoint": {
+"scope": [
+"https://purl.imsglobal.org/spec/lti-ags/scope/result.readonly",
+"https://purl.imsglobal.org/spec/lti-ags/scope/score"
+],
+"lineitem": "http://riverrun.assessment.quizzco.com/lti/return/test/session/TestSession108181909/item1/interaction/cloud_cover_981234/RESPONSE"
+}
+"https://purl.imsglobal.org/spec/lti/claim/launch_presentation": {
+"document_target": "iframe",
+"height": 720,
+"width": 940,
+"return_url": "http://items.example.com/return/test/session/TestSession019310214501/
 qti3LTICustomInteraction/interactions/cloud_cover_981234",
-  "locale": "en-GB"
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/custom": {
-  "test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe",
-  "interaction_type": "WeatherMapper",
-  "data_source": "NOAACloudmap",
-  "latitude": "48.119936",
-  "longitude": "-124.6419558",
-  "diameter": "10000",
-  "qti_data_attribute_type_identifier": "noaa-weather-map",
-  "qti_data_attribute_title": "Cloud coverage 4/16/2019",
-  "qti_data_attribute_datetime": "1555416898378",
-  "qti_data_attribute_lti-resource": "cloud_cover_981234",
-  "qti_interaction_body": "CiAgICAgICAgICAgICAgICAgICAgPGxhYmVsPkNsb3VkIENvdmVy
+"locale": "en-GB"
+},
+"https://purl.imsglobal.org/spec/lti/claim/custom": {
+"test_bank_id": "8a8104af-69b0-455d-bca8-e62af916defe",
+"interaction_type": "WeatherMapper",
+"data_source": "NOAACloudmap",
+"latitude": "48.119936",
+"longitude": "-124.6419558",
+"diameter": "10000",
+"qti_data_attribute_type_identifier": "noaa-weather-map",
+"qti_data_attribute_title": "Cloud coverage 4/16/2019",
+"qti_data_attribute_datetime": "1555416898378",
+"qti_data_attribute_lti-resource": "cloud_cover_981234",
+"qti_interaction_body": "CiAgICAgICAgICAgICAgICAgICAgPGxhYmVsPkNsb3VkIENvdmVy
 IE96ZXR0ZSwgV0EsIFVTQTwvbGFiZWw+CgkJ",
-  },
-  "https://purl.imsglobal.org/spec/lti/claim/lis": {
-  "person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
-  "course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
-  "course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
-  },
-  "http://www.quizzco.com": {
-  "session": "89023sj890dju080"
-  }
+},
+"https://purl.imsglobal.org/spec/lti/claim/lis": {
+"person_sourcedid": "e6a3441a-ee74-4bbc-81f9-f6825a147bd6",
+"course_offering_sourcedid": "8c4a0faf-5f41-4ce9-9ff3-0bfcc0f22099",
+"course_section_sourcedid": "febdfccc-31ac-40a6-bfc8-d3de79557e02"
+},
+"http://www.quizzco.com": {
+"session": "89023sj890dju080"
+}
 }
 
 Example LTI 1.1 launch parameters:
@@ -17716,7 +17875,7 @@ Example Outcomes call
 
 POST /test/scores.php HTTP/1.1
 Host: items.example.com
-Accept: */*
+Accept: _/_
 Authorization: OAuth
 oauth_version="1.0",oauth_nonce="6163523d512cd9cfced27974d014e1af",oauth_timestamp="1551187820",
 oauth_consumer_key="integrationForExampleTool",oauth_body_hash="C%2BGR6heCjtK%2BzN75hQU1Ef0x%2BJw%3D",
@@ -17725,34 +17884,35 @@ Content-Type: application/xml
 Content-Length: 3215
 
 <?xml version = "1.0" encoding = "UTF-8"?>
+
 <imsx_POXEnvelopeRequest xmlns = "http://www.imsglobal.org/services/ltiv1p1/xsd/imsoms_v1p0">
- <imsx_POXHeader>
-  <imsx_POXRequestHeaderInfo>
-  <imsx_version>V1.0</imsx_version>
-  <imsx_messageIdentifier>baga614516</imsx_messageIdentifier>
-  </imsx_POXRequestHeaderInfo>
- </imsx_POXHeader>
- <imsx_POXBody>
-  <replaceResultRequest>
-  <resultRecord>
-  <sourcedGUID>
-  <sourcedId>704cc657-c0db-431f-8865-4a569d4d7976</sourcedId>
-  </sourcedGUID>
-  <result>
-  <resultScore>
-  <language>en-US</language>
-  <textString>1</textString>
-  </resultScore>
-  <resultData>
-  <text>
+<imsx_POXHeader>
+<imsx_POXRequestHeaderInfo>
+<imsx_version>V1.0</imsx_version>
+<imsx_messageIdentifier>baga614516</imsx_messageIdentifier>
+</imsx_POXRequestHeaderInfo>
+</imsx_POXHeader>
+<imsx_POXBody>
+<replaceResultRequest>
+<resultRecord>
+<sourcedGUID>
+<sourcedId>704cc657-c0db-431f-8865-4a569d4d7976</sourcedId>
+</sourcedGUID>
+<result>
+<resultScore>
+<language>en-US</language>
+<textString>1</textString>
+</resultScore>
+<resultData>
+<text>
 {"itemVariableType":"responseVariable","identifier":"RESPONSE","cardinality":"single","base-type":
 "identifier","candidateResponse":[{"base-type":"identifier","valueString":"Isolated"}]}
-  </text>
-  </resultData>
-  </result>
-  </resultRecord>
-  </replaceResultRequest>
- </imsx_POXBody>
+</text>
+</resultData>
+</result>
+</resultRecord>
+</replaceResultRequest>
+</imsx_POXBody>
 </imsx_POXEnvelopeRequest>
 
 The LTI launched custom interaction can indicate to the delivery engine
@@ -17792,6 +17952,7 @@ One item is included (measuring_ph.xml) which uses three images
 See below for the imsmanifest.xml file for this package.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <manifest
   xmlns="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
   xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM"
@@ -17804,72 +17965,72 @@ https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_imscpv1p2_v1p0.xs
   http://www.imsglobal.org/xsd/imsqti_metadata_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_metadatav3p0_v1p0.xsd"
   identifier="PCI_Example">
-  <metadata>
-  <schema>QTI Package</schema>
-  <schemaversion>3.0.0</schemaversion>
-  <imsmd:lom xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM">
-  <imsmd:general>
-  <imsmd:identifier>
-  <imsmd:catalog>
-  urn:fdc:hmhco.com:contentPackage:tapToRevealExample
-  </imsmd:catalog>
-  </imsmd:identifier>
-  <imsmd:title>
-  <imsmd:string language="en">
-  Example of Packaging a PCI in QTI 3.0
-  </imsmd:string>
-  </imsmd:title>
-  <imsmd:language>en</imsmd:language>
-  <imsmd:description>
-  <imsmd:string language="en">This package contains a single item
-  containing a PCI and shows how the PCI AMD module and module resolution
-  configuration may be packaged.
-  </imsmd:string>
-  </imsmd:description>
-  </imsmd:general>
-  <imsmd:lifeCycle>
-  <imsmd:version>
-  <imsmd:string language="en">1.0</imsmd:string>
-  </imsmd:version>
-  <imsmd:status>
-  <imsmd:source>LOMv1.0</imsmd:source>
-  <imsmd:value>Final</imsmd:value>
-  </imsmd:status>
-  </imsmd:lifeCycle>
-  <imsmd:metaMetadata>
-  <imsmd:metadataschema>LOMv1.0</imsmd:metadataschema>
-  <imsmd:metadataschema>QTIv3.0</imsmd:metadataschema>
-  <imsmd:language>en</imsmd:language>
-  </imsmd:metaMetadata>
-  <imsmd:technical>
-  <imsmd:format>text/x-imsqti-item-xml</imsmd:format>
-  </imsmd:technical>
-  <imsmd:rights>
-  <imsmd:description>
-  <imsmd:string language="en">(c) 2017,2018 Houghton Mifflin Harcourt.
+<metadata>
+<schema>QTI Package</schema>
+<schemaversion>3.0.0</schemaversion>
+<imsmd:lom xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM">
+<imsmd:general>
+<imsmd:identifier>
+<imsmd:catalog>
+urn:fdc:hmhco.com:contentPackage:tapToRevealExample
+</imsmd:catalog>
+</imsmd:identifier>
+<imsmd:title>
+<imsmd:string language="en">
+Example of Packaging a PCI in QTI 3.0
+</imsmd:string>
+</imsmd:title>
+<imsmd:language>en</imsmd:language>
+<imsmd:description>
+<imsmd:string language="en">This package contains a single item
+containing a PCI and shows how the PCI AMD module and module resolution
+configuration may be packaged.
+</imsmd:string>
+</imsmd:description>
+</imsmd:general>
+<imsmd:lifeCycle>
+<imsmd:version>
+<imsmd:string language="en">1.0</imsmd:string>
+</imsmd:version>
+<imsmd:status>
+<imsmd:source>LOMv1.0</imsmd:source>
+<imsmd:value>Final</imsmd:value>
+</imsmd:status>
+</imsmd:lifeCycle>
+<imsmd:metaMetadata>
+<imsmd:metadataschema>LOMv1.0</imsmd:metadataschema>
+<imsmd:metadataschema>QTIv3.0</imsmd:metadataschema>
+<imsmd:language>en</imsmd:language>
+</imsmd:metaMetadata>
+<imsmd:technical>
+<imsmd:format>text/x-imsqti-item-xml</imsmd:format>
+</imsmd:technical>
+<imsmd:rights>
+<imsmd:description>
+<imsmd:string language="en">(c) 2017,2018 Houghton Mifflin Harcourt.
 (9780544727984)</imsmd:string>
-  </imsmd:description>
-  </imsmd:rights>
-  </imsmd:lom>
-  </metadata>
-  <organizations />
-  <resources>
-  <resource type="imsqti_item_xmlv3p0" identifier="measuringPh" href="measuring_ph.xml">
-  <file href="measuring_ph.xml" />
-  <file href="ammonia.svg" />
-  <file href="baking_soda.svg" />
-  <file href="vinegar.svg" />
-  <dependency identifierref="pci_module_tap" />
-  <dependency identifierref="pci_module_resolution" />
+</imsmd:description>
+</imsmd:rights>
+</imsmd:lom>
+</metadata>
+<organizations />
+<resources>
+<resource type="imsqti_item_xmlv3p0" identifier="measuringPh" href="measuring_ph.xml">
+<file href="measuring_ph.xml" />
+<file href="ammonia.svg" />
+<file href="baking_soda.svg" />
+<file href="vinegar.svg" />
+<dependency identifierref="pci_module_tap" />
+<dependency identifierref="pci_module_resolution" />
 </resource>
 <resource type="webcontent" identifier="pci_module_tap" href="modules/tap.js">
-  <file href="modules/tap.js" />
+<file href="modules/tap.js" />
 </resource>
-  <resource type="webcontent" identifier="pci_module_resolution"
+<resource type="webcontent" identifier="pci_module_resolution"
   href="modules/module_resolution.js">
-  <file href="modules/module_resolution.js" />
+<file href="modules/module_resolution.js" />
 </resource>
-  </resources>
+</resources>
 </manifest>
 
 For a more complex example which includes multiple items, multiple PCIs,
@@ -17898,9 +18059,9 @@ language learning. Partially in German.
 
 A more advanced language learning test that demonstrates the use of
 [qti-rubric-block](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#RootAttribute_AssessmentSection_qti-rubric-block)
- to provide a stimulus and
+to provide a stimulus and
 [qti-extended-text-interaction](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#AbstractAttribute_BlockGroup_qti-extended-text-interaction)
- for reading comprehension.  Note that as of QTI 2.2,
+for reading comprehension. Note that as of QTI 2.2,
 qti-assessment-stimulus is the preferred method to provide stimulus
 material especially when the stimulus is to be shared by multiple items.
 
@@ -17944,38 +18105,38 @@ creating a resource of type `resourcemetadata/xml`which is added as a
 dependency on the items that metadata is being associated with.
 
 <manifest ...>
-  <resources>
-  <resource identifier="res_-TX_G06SAMP_000" href="testitems/-TX_G06SAMP_000.xml"
+<resources>
+<resource identifier="res_-TX_G06SAMP_000" href="testitems/-TX_G06SAMP_000.xml"
 type="imsqti_test_xmlv3p0">
-  <file href="testitems/-TX_G06SAMP_000.xml"/>
-  <dependency identifierref="res_-TX_G06SAMP_001"/>
-  <dependency identifierref="res_-TX_G06SAMP_004"/>
-  <dependency identifierref="res_-TX_G06SAMP_005"/>
-  </resource>
-  <resource identifier="res_-TX_G06SAMP_001" href="testitems/-TX_G06SAMP_001.xml"
+<file href="testitems/-TX_G06SAMP_000.xml"/>
+<dependency identifierref="res_-TX_G06SAMP_001"/>
+<dependency identifierref="res_-TX_G06SAMP_004"/>
+<dependency identifierref="res_-TX_G06SAMP_005"/>
+</resource>
+<resource identifier="res_-TX_G06SAMP_001" href="testitems/-TX_G06SAMP_001.xml"
 type="imsqti_item_xmlv3p0">
-  <file href="testitems/-TX_G06SAMP_001.xml"/>
-  <dependency identifierref="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"/>
-  </resource>
-  <resource identifier="res_-TX_G06SAMP_004" href="testitems/-TX_G06SAMP_004.xml"
+<file href="testitems/-TX_G06SAMP_001.xml"/>
+<dependency identifierref="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"/>
+</resource>
+<resource identifier="res_-TX_G06SAMP_004" href="testitems/-TX_G06SAMP_004.xml"
 type="imsqti_item_xmlv3p0">
-  <file href="testitems/-TX_G06SAMP_004.xml"/>
-  <dependency identifierref="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"/>
-  </resource>
-  <resource identifier="res_-TX_G06SAMP_005" href="testitems/-TX_G06SAMP_005.xml"
+<file href="testitems/-TX_G06SAMP_004.xml"/>
+<dependency identifierref="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"/>
+</resource>
+<resource identifier="res_-TX_G06SAMP_005" href="testitems/-TX_G06SAMP_005.xml"
 type="imsqti_item_xmlv3p0">
-  <file href="testitems/-TX_G06SAMP_005.xml"/>
-  <dependency identifierref="metadata_747eee11-848c-597a-8c9c-a71c5399798d"/>
-  </resource>
-  <resource identifier="metadata_747eee11-848c-597a-8c9c-a71c5399798d"
+<file href="testitems/-TX_G06SAMP_005.xml"/>
+<dependency identifierref="metadata_747eee11-848c-597a-8c9c-a71c5399798d"/>
+</resource>
+<resource identifier="metadata_747eee11-848c-597a-8c9c-a71c5399798d"
 href="testitems/metadata_747eee11-848c-597a-8c9c-a71c5399798d.xml" type="resourcemetadata/xml">
-  <file href="testitems/metadata_747eee11-848c-597a-8c9c-a71c5399798d.xml" />
-  </resource>
-  <resource identifier="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"
+<file href="testitems/metadata_747eee11-848c-597a-8c9c-a71c5399798d.xml" />
+</resource>
+<resource identifier="metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69"
 href="testitems/metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69.xml" type="resourcemetadata/xml">
-  <file href="testitems/metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69.xml" />
-  </resource>
-  </resources>
+<file href="testitems/metadata_6abfaa45-644b-52e8-891e-4fa4045a6c69.xml" />
+</resource>
+</resources>
 </manifest>
 
 The external metadata file consists on the LOM metadata. One difference
@@ -17986,6 +18147,7 @@ LOM lom element.
 E.g.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <lom xmlns="http://ltsc.ieee.org/xsd/LOM"
   xmlns:csm="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscsmd_v1p1"
   xmlns:imsqti="http://www.imsglobal.org/xsd/imsqti_metadata_v3p0"
@@ -18000,8 +18162,9 @@ http://www.imsglobal.org/xsd/qti/qtiv3p0/imscsmd_v1p1
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_csmv1p1_v1p0.xsd
 http://www.imsglobal.org/xsd/imsqti_metadata_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_metadatav3p0_v1p0.xsd">
-  <educational>
-  <intendedEndUserRole>
+<educational>
+<intendedEndUserRole>
+
   <source>IMSGLC_CC_Rolesv1p3</source>
   <value>Learner</value>
   </intendedEndUserRole>
@@ -18080,68 +18243,68 @@ separate resource so that it can have curriculum standards metadata,
 which include CASE identifiers, attached.
 
 <imscp:manifest xmlns:imscp="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
-  xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM"
-  xmlns:csmd="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscsmd_v1p1"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM"
+xmlns:csmd="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscsmd_v1p1"
+xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xmlns="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
-  xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_metadata_v3p0
+xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_metadata_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_metadatav3p0_v1p0.xsd
 http://ltsc.ieee.org/xsd/LOM https://purl.imsglobal.org/spec/md/v1p3/schema/xsd/imsmd_loose_v1p3p2.xsd
 http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_imscpv1p2_v1p0.xsd
 http://www.imsglobal.org/xsd/qti/qtiv3p0/imscsmd_v1p1
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_csmv1p1_v1p0.xsd"
-  identifier="manifestID">
+identifier="manifestID">
 <imscp:resources>
 
-  <imscp:resource identifier="Outcome_01" type="imsqti_outcomes_xmlv3p0"
+<imscp:resource identifier="Outcome_01" type="imsqti_outcomes_xmlv3p0"
 href="testoutcome01.xml">
-  <imscp:metadata>
-  <csmd:curriculumStandardsMetadataSet resourceLabel="Outcome (QTI 3.0)"
+<imscp:metadata>
+<csmd:curriculumStandardsMetadataSet resourceLabel="Outcome (QTI 3.0)"
 resourcePartId="SCORE">
-  <csmd:curriculumStandardsMetadata providerId="IMS_CASE_REGISTER">
-  <csmd:setOfGUIDs region="Texas" version="1.0">
+<csmd:curriculumStandardsMetadata providerId="IMS_CASE_REGISTER">
+<csmd:setOfGUIDs region="Texas" version="1.0">
 
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a top-level Learning Standard Item definition
+<csmd:labelledGUID>
+<csmd:label>GUID for a top-level Learning Standard Item definition
 addressed by this Outcome variable.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/e57e4172-44ae-11e9-b210-d663bd873d93</csmd:caseItemURI>
-  <csmd:GUID>e57e4172-44ae-11e9-b210-d663bd873d93</csmd:GUID>
-  </csmd:labelledGUID>
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a top-level Learning Standard Item definition
+<csmd:GUID>e57e4172-44ae-11e9-b210-d663bd873d93</csmd:GUID>
+</csmd:labelledGUID>
+<csmd:labelledGUID>
+<csmd:label>GUID for a top-level Learning Standard Item definition
 addressed by this Outcome variable.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/2759e09c-44af-11e9-b210-d663bd873d93</csmd:caseItemURI>
-  <csmd:GUID>2759e09c-44af-11e9-b210-d663bd873d93</csmd:GUID>
-  </csmd:labelledGUID>
-  </csmd:setOfGUIDs>
-  <csmd:setOfGUIDs region="Florida" version="1.0">
+<csmd:GUID>2759e09c-44af-11e9-b210-d663bd873d93</csmd:GUID>
+</csmd:labelledGUID>
+</csmd:setOfGUIDs>
+<csmd:setOfGUIDs region="Florida" version="1.0">
 
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a top-level Learning Standard Item definition
+<csmd:labelledGUID>
+<csmd:label>GUID for a top-level Learning Standard Item definition
 addressed by this Outcome variable.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/0c06bc21-c83a-4635-a90a-b55e3b1added</csmd:caseItemURI>
-  <csmd:GUID>0c06bc21-c83a-4635-a90a-b55e3b1added</csmd:GUID>
-  </csmd:labelledGUID>
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a top-level Learning Standard Item definition
+<csmd:GUID>0c06bc21-c83a-4635-a90a-b55e3b1added</csmd:GUID>
+</csmd:labelledGUID>
+<csmd:labelledGUID>
+<csmd:label>GUID for a top-level Learning Standard Item definition
 addressed by this Outcome variable.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/fd4412d1-0687-4f2b-b610-8a9161dad42d</csmd:caseItemURI>
-  <csmd:GUID>fd4412d1-0687-4f2b-b610-8a9161dad42d</csmd:GUID>
-  </csmd:labelledGUID>
-  </csmd:setOfGUIDs>
-  </csmd:curriculumStandardsMetadata>
-  </csmd:curriculumStandardsMetadataSet>
-  <imsmd:lom>
-  <imsmd:general>
-  <imsmd:title>
-  <imsmd:string>Mapping between an Outcome variable for a test and the CSM</imsmd:string>
-  </imsmd:title>
-  </imsmd:general>
-  </imsmd:lom>
-  </imscp:metadata>
-  <imscp:file href="testoutcome01.xml"></imscp:file>
-  </imscp:resource>
+<csmd:GUID>fd4412d1-0687-4f2b-b610-8a9161dad42d</csmd:GUID>
+</csmd:labelledGUID>
+</csmd:setOfGUIDs>
+</csmd:curriculumStandardsMetadata>
+</csmd:curriculumStandardsMetadataSet>
+<imsmd:lom>
+<imsmd:general>
+<imsmd:title>
+<imsmd:string>Mapping between an Outcome variable for a test and the CSM</imsmd:string>
+</imsmd:title>
+</imsmd:general>
+</imsmd:lom>
+</imscp:metadata>
+<imscp:file href="testoutcome01.xml"></imscp:file>
+</imscp:resource>
 
 Here an outcome declaration (indicated by the resource having a type of
 imsqti_outcomes_xmlv3p0) with an identifier of Outcome_01 has curriculum
@@ -18168,57 +18331,57 @@ manifest.
 
 <imscp:resource identifier="A_403910368" type="imsqti_item_xmlv3p0" href="A_403910368.xml">
 
-  <imscp:metadata>
-  <csmd:curriculumStandardsMetadataSet resourceLabel="Item (QTI 3.0)"
+<imscp:metadata>
+<csmd:curriculumStandardsMetadataSet resourceLabel="Item (QTI 3.0)"
 resourcePartId="A_403910368">
-  <csmd:curriculumStandardsMetadata providerId="IMS_CASE_REGISTER">
-  <csmd:setOfGUIDs region="Texas" version="1.0">
+<csmd:curriculumStandardsMetadata providerId="IMS_CASE_REGISTER">
+<csmd:setOfGUIDs region="Texas" version="1.0">
 
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a Learning Standard Item definition addressed by
+<csmd:labelledGUID>
+<csmd:label>GUID for a Learning Standard Item definition addressed by
 this item.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/a3d6bbda-44b0-11e9-b210-d663bd873d93
 </csmd:caseItemURI>
-  <csmd:GUID>a3d6bbda-44b0-11e9-b210-d663bd873d93</csmd:GUID>
-  </csmd:labelledGUID>
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a Learning Standard Item definition addressed by
+<csmd:GUID>a3d6bbda-44b0-11e9-b210-d663bd873d93</csmd:GUID>
+</csmd:labelledGUID>
+<csmd:labelledGUID>
+<csmd:label>GUID for a Learning Standard Item definition addressed by
 this item.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/b1ffaba4-44b0-11e9-b210-d663bd873d93
 </csmd:caseItemURI>
-  <csmd:GUID>b1ffaba4-44b0-11e9-b210-d663bd873d93</csmd:GUID>
-  </csmd:labelledGUID>
-  </csmd:setOfGUIDs>
-  <csmd:setOfGUIDs region="Florida" version="1.0">
+<csmd:GUID>b1ffaba4-44b0-11e9-b210-d663bd873d93</csmd:GUID>
+</csmd:labelledGUID>
+</csmd:setOfGUIDs>
+<csmd:setOfGUIDs region="Florida" version="1.0">
 
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a Learning Standard Item definition addressed by
+<csmd:labelledGUID>
+<csmd:label>GUID for a Learning Standard Item definition addressed by
 this item.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/7a1a83f8-a371-46e8-96ab-2af89223af79
 </csmd:caseItemURI>
-  <csmd:GUID>7a1a83f8-a371-46e8-96ab-2af89223af79</csmd:GUID>
-  </csmd:labelledGUID>
-  <csmd:labelledGUID>
-  <csmd:label>GUID for a Learning Standard Item definition addressed by
+<csmd:GUID>7a1a83f8-a371-46e8-96ab-2af89223af79</csmd:GUID>
+</csmd:labelledGUID>
+<csmd:labelledGUID>
+<csmd:label>GUID for a Learning Standard Item definition addressed by
 this item.</csmd:label>
 <csmd:caseItemURI>http://www.imsglobal.org/caseregistry/ce496478-235a-4d85-abee-805475838cf0
 </csmd:caseItemURI>
-  <csmd:GUID>ce496478-235a-4d85-abee-805475838cf0</csmd:GUID>
-  </csmd:labelledGUID>
-  </csmd:setOfGUIDs>
-  </csmd:curriculumStandardsMetadata>
-  </csmd:curriculumStandardsMetadataSet>
-  <imsmd:lom>
-  <imsmd:general>
-  <imsmd:title>
-  <imsmd:string>Item Using Curriculum Metadata Standards
+<csmd:GUID>ce496478-235a-4d85-abee-805475838cf0</csmd:GUID>
+</csmd:labelledGUID>
+</csmd:setOfGUIDs>
+</csmd:curriculumStandardsMetadata>
+</csmd:curriculumStandardsMetadataSet>
+<imsmd:lom>
+<imsmd:general>
+<imsmd:title>
+<imsmd:string>Item Using Curriculum Metadata Standards
 Anotation</imsmd:string>
-  </imsmd:title>
-  </imsmd:general>
-  </imsmd:lom>
-  </imscp:metadata>
+</imsmd:title>
+</imsmd:general>
+</imsmd:lom>
+</imscp:metadata>
 
-  <imscp:file href="A_403910368.xml"/>
+<imscp:file href="A_403910368.xml"/>
 </imscp:resource>
 
 This follows the same pattern as in the outcome declaration, except that
@@ -18244,155 +18407,156 @@ resource. The resource type for usage-data files is
 imsqti_usagedata_xmlv3p0.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <usageData xmlns="http://www.imsglobal.org/xsd/imsqti_usagedata_v3p0"
 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_usagedata_v3p0
 https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqti_usagedatav3p0_v1p0.xsd">
-  <ordinaryStatistic name="AIS" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<ordinaryStatistic name="AIS" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.87</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="P-value" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.87</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="P-value" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.647</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="PHI" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.647</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="PHI" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.3687</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="rbis" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.3687</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="rbis" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.2837</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="PTbis" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.2837</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="PTbis" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.3122</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Polyserial" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.3122</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Polyserial" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.15556</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="A-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.15556</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="A-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.02083</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="B-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.02083</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="B-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>384.3477</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="C-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>384.3477</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="C-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <value>0.2275</value>
-  </ordinaryStatistic>
-  <categorizedStatistic name="D-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456"/>
+<value>0.2275</value>
+</ordinaryStatistic>
+<categorizedStatistic name="D-Parm" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456"/>
-  <mapping lowerBound="1" upperBound="4" defaultValue="0">
-  <mapEntry mapKey="d1" mappedValue="412.5267"/>
-  <mapEntry mapKey="d2" mappedValue="426.5699"/>
-  <mapEntry mapKey="d3" mappedValue="451.8811"/>
-  <mapEntry mapKey="d4" mappedValue="441.8085"/>
-  </mapping>
-  </categorizedStatistic>
-  <ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
+<targetObject identifier="Item_VB123456"/>
+<mapping lowerBound="1" upperBound="4" defaultValue="0">
+<mapEntry mapKey="d1" mappedValue="412.5267"/>
+<mapEntry mapKey="d2" mappedValue="426.5699"/>
+<mapEntry mapKey="d3" mappedValue="451.8811"/>
+<mapEntry mapKey="d4" mappedValue="441.8085"/>
+</mapping>
+</categorizedStatistic>
+<ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
   context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325" stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>0.21</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>0.21</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
   context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325" stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>0.17</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>0.17</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
   context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325" stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="C"/>
-  <value>0.05</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
+<targetObject identifier="Item_VB123456" partIdentifier="C"/>
+<value>0.05</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
   context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325" stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="D"/>
-  <value>0.92</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
+<targetObject identifier="Item_VB123456" partIdentifier="D"/>
+<value>0.92</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="AIS-Response" glossary="http://www.imsglobal.org/question/qti_2p0/glossaries/distractor_statistics"
   context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325" stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="E"/>
-  <value>0.46</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="E"/>
+<value>0.46</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>0</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Second_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>0</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Second_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>465</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Middle" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>465</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Middle" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>2077</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Second_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>2077</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Second_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>101101</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>101101</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="A"/>
-  <value>585678</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="A"/>
+<value>585678</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>100200</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Second_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>100200</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Second_Lowest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>100300</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Middle" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>100300</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Middle" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>100400</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Second_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>100400</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Second_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>100500</value>
-  </ordinaryStatistic>
-  <ordinaryStatistic name="Fifths_Table_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>100500</value>
+</ordinaryStatistic>
+<ordinaryStatistic name="Fifths_Table_Highest" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Item_VB123456" partIdentifier="B"/>
-  <value>200222</value>
-  </ordinaryStatistic>
-  <categorizedStatistic name="Score_Conversion" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
+<targetObject identifier="Item_VB123456" partIdentifier="B"/>
+<value>200222</value>
+</ordinaryStatistic>
+<categorizedStatistic name="Score_Conversion" context="http://ntweb.ets.org/itemStats/Context/XVZ2004_J1B" caseCount="689325"
   stdError="0.0022" lastUpdated="2004-07-04">
-  <targetObject identifier="Test_VB"/>
-  <mapping lowerBound="1" upperBound="9" defaultValue="0">
-  <mapEntry mapKey="0" mappedValue="0.0"/>
-  <mapEntry mapKey="1" mappedValue="0.5"/>
-  <mapEntry mapKey="2" mappedValue="1.0"/>
-  <mapEntry mapKey="3" mappedValue="1.5"/>
-  <mapEntry mapKey="4" mappedValue="2.0"/>
-  <mapEntry mapKey="5" mappedValue="2.5"/>
-  <mapEntry mapKey="6" mappedValue="3.0"/>
-  <mapEntry mapKey="7" mappedValue="3.5"/>
-  <mapEntry mapKey="8" mappedValue="4.0"/>
-  </mapping>
-  </categorizedStatistic>
+<targetObject identifier="Test_VB"/>
+<mapping lowerBound="1" upperBound="9" defaultValue="0">
+<mapEntry mapKey="0" mappedValue="0.0"/>
+<mapEntry mapKey="1" mappedValue="0.5"/>
+<mapEntry mapKey="2" mappedValue="1.0"/>
+<mapEntry mapKey="3" mappedValue="1.5"/>
+<mapEntry mapKey="4" mappedValue="2.0"/>
+<mapEntry mapKey="5" mappedValue="2.5"/>
+<mapEntry mapKey="6" mappedValue="3.0"/>
+<mapEntry mapKey="7" mappedValue="3.5"/>
+<mapEntry mapKey="8" mappedValue="4.0"/>
+</mapping>
+</categorizedStatistic>
 </usageData>
 
 For more information on QTI Usage Data, see the [QTI Usage Data & Item
@@ -18498,6 +18662,7 @@ languages should be listed as the languageOfAdaption. This is the
 recommended approach for the exchange of this type of content.
 
 <?xml version="1.0" encoding="UTF-8"?>
+
 <manifest xmlns="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1"
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" identifier="MANIFEST-QTI30-1"
   xsi:schemaLocation="http://www.imsglobal.org/xsd/qti/qtiv3p0/imscp_v1p1
@@ -18506,30 +18671,31 @@ recommended approach for the exchange of this type of content.
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_cpextv1p2_v1p0.xsd
   http://www.imsglobal.org/xsd/qti/qtiv3p0/imsafa3p0drd_v1p0
   https://purl.imsglobal.org/spec/qti/v3p0/schema/xsd/imsqtiv3p0_afa3p0drd_v1p0.xsd">
-  <metadata>
-  <schema>QTI Package</schema>
-  <schemaversion>3.0.0</schemaversion>
-  </metadata>
-  <organizations/>
-  <resources>
-  <resource href="Items/item-JL519280/v1/JL519280.E1.xml" identifier="JL519280-E1"
+<metadata>
+<schema>QTI Package</schema>
+<schemaversion>3.0.0</schemaversion>
+</metadata>
+<organizations/>
+<resources>
+<resource href="Items/item-JL519280/v1/JL519280.E1.xml" identifier="JL519280-E1"
   type="imsqti_item_xmlv3p0">
-  <metadata>
-  <lom xmlns="http://ltsc.ieee.org/xsd/LOM">
-  <general>
-  <identifier>
-  <catalog>ETS</catalog>
-  <entry>JL519280</entry>
-  </identifier>
-  <language>en-us</language>
-  </general>
-  <lifeCycle>
-  <version>
-  <string>1</string>
-  </version>
-  </lifeCycle>
-  <classification>
-  <taxonPath>
+<metadata>
+<lom xmlns="http://ltsc.ieee.org/xsd/LOM">
+<general>
+<identifier>
+<catalog>ETS</catalog>
+<entry>JL519280</entry>
+</identifier>
+<language>en-us</language>
+</general>
+<lifeCycle>
+<version>
+<string>1</string>
+</version>
+</lifeCycle>
+<classification>
+<taxonPath>
+
   <source>
   <string>maxScore</string>
   </source>
@@ -18602,7 +18768,7 @@ content should use the above "recommended" approach.
 
 The California Stacked Spanish approach (partial manifest shown below)
 
-<manifest ...  identifier="stackedSpanish">
+<manifest ... identifier="stackedSpanish">
 
 . . .
 
@@ -18610,25 +18776,25 @@ The California Stacked Spanish approach (partial manifest shown below)
   <resource identifier="item-1402" type="imsqti_item_xmlv3p0">
   <file href="sbac/item_1402.xml"/>
 
-  <cpx:variant identifier="itemVariantRelationship-es-sbac-200-1402" identifierref="es-sbac-200-1402">
-  <cpx:metadata>
-  <drd:accessForAllResource>
-  <languageOfAdaptation>es</languageOfAdaptation>
-  </drd:accessForAllResource>
-  </cpx:metadata>
-  </cpx:variant>
+<cpx:variant identifier="itemVariantRelationship-es-sbac-200-1402" identifierref="es-sbac-200-1402">
+<cpx:metadata>
+<drd:accessForAllResource>
+<languageOfAdaptation>es</languageOfAdaptation>
+</drd:accessForAllResource>
+</cpx:metadata>
+</cpx:variant>
 
-  <cpx:variant identifier="itemVariantRelationship-os-sbac-200-1402" identifierref="os-sbac-200-1402">
-  <cpx:metadata>
-  <drd:accessForAllResource>
-  <languageOfAdaptation>es</languageOfAdaptation>
-  </drd:accessForAllResource>
-  </cpx:metadata>
-  </cpx:variant>
-  </resource>
+<cpx:variant identifier="itemVariantRelationship-os-sbac-200-1402" identifierref="os-sbac-200-1402">
+<cpx:metadata>
+<drd:accessForAllResource>
+<languageOfAdaptation>es</languageOfAdaptation>
+</drd:accessForAllResource>
+</cpx:metadata>
+</cpx:variant>
+</resource>
 
-  ...
- </resources>
+...
+</resources>
 
 . . .
 
@@ -18642,7 +18808,7 @@ doing so that implementers should consider:
   containing an XML External Entity may result in injection of XML,
   resulting in disclosure of confidential data, denial of service,
   Server Side Request Forgery, port scanning from the perspective of the
-  XML-parsing system, and other system impacts.  Systems which import
+  XML-parsing system, and other system impacts. Systems which import
   QTI and related XML documents should validate XML document instances
   against the QTI and other applicable XML schemas to ensure the
   validity of those document instances. However care should be taken to
@@ -18667,7 +18833,7 @@ There are more detailed discussions of many of these issues at
   care in handling relative paths to ensure that a malicious content
   package can not execute a Path Traversal attack and manage to
   reference files outside of the package content. See [OWASP Path
-  Traversal](https://www.owasp.org/index.php/Path_Traversal)  for more
+  Traversal](https://www.owasp.org/index.php/Path_Traversal) for more
   details.
 
 ## A. The QTI 3 Profile of Personal Needs and Preferences 3.0 Features
@@ -18682,10 +18848,10 @@ below.
 <strong>Modifier Statements</strong>
 
 <strong>activate-as-option-set</strong>
-[0..*] #name-of-support#*
+[0..*] #name-of-support#\*
 
 <strong>activate-at-initiation-set</strong>
-[0..*] #name-of-support#*
+[0..*] #name-of-support#\*
 
 <strong>additional-directions</strong>
 
@@ -18717,12 +18883,12 @@ braille-type:
 [0..1]ebae, ueb, ext:#any-text#
 math-type:
 [0..1] nemeth, ueb, ext:#any-text#
-lang attribute*
+lang attribute\*
 [0..1]BCP 47
 
 <strong>calculator-on-screen</strong>
 Optional attribute of calculator-type
- (basic, standard, scientific, graphing)
+(basic, standard, scientific, graphing)
 
 <strong>captions</strong>
 
@@ -18737,11 +18903,11 @@ description:
 medical:
 #human readable text#
 software:
- #human readable text#
+#human readable text#
 hardware:
- #human readable text#
+#human readable text#
 breaks:
- boolean
+boolean
 
 <strong>glossary-on-screen</strong>
 
@@ -18760,14 +18926,14 @@ full-keyboard-control
 full-mouse-control
 
 <strong>item-translation</strong>
-lang attribute*: BCP 47
+lang attribute\*: BCP 47
 
 <strong>keyboard-directions</strong>
 
 <strong>keyword-emphasis</strong>
 
 <strong>keyword-translation</strong>
-lang attribute* BCP 47
+lang attribute\* BCP 47
 
 <strong>language-of-interface</strong>
 
@@ -18780,22 +18946,22 @@ highlight-color: (hex)
 
 <strong>long-description</strong>
 Optional attribute of hide-visually
- [1]: true  (default), false
+[1]: true (default), false
 
 <strong>magnification</strong>
 
 text
 Optional attribute
- zoom-amount
- (value is a number as multiplier, i.e. 1.5)
+zoom-amount
+(value is a number as multiplier, i.e. 1.5)
 non-text
 Optional attribute
- zoom-amount
- (value is a number as multiplier, i.e. 1.5)
+zoom-amount
+(value is a number as multiplier, i.e. 1.5)
 all-content
 Optional attribute
- zoom-amount
- (value is a number as multiplier, i.e. 1.5)
+zoom-amount
+(value is a number as multiplier, i.e. 1.5)
 
 <strong>note-taking-on-screen</strong>
 
@@ -18804,10 +18970,10 @@ Optional attribute
 <strong>peer-interaction-on-screen</strong>
 
 <strong>prohibit-set</strong>
-[0..*] #name-of-support#*
+[0..*] #name-of-support#\*
 
 <strong>sign-language</strong>
-lang attribute* :BCP 47
+lang attribute\* :BCP 47
 
 <strong>simplified-language-portions</strong>
 
@@ -18826,11 +18992,15 @@ restriction-type
 unrestricted,
 word-by-word, directions-only,
 skip-math-equations,skip-chemistry-equations,ext:
+
 #
+
 any-name
+
 #
+
 typing-echo:
- [0..1] characters, words, characters-and-words, none
+[0..1] characters, words, characters-and-words, none
 speech-rate:
 [0..1]PT:Integer default value= "180" (to indicate words-per-minute)
 pitch:
@@ -18905,7 +19075,7 @@ the complete documentation including examples.
 
 ### B.1 Classes and Attributes in Interactions
 
-Classes or attributes in *italics* are used in more than a single
+Classes or attributes in _italics_ are used in more than a single
 interaction type.
 
 <strong>Interaction</strong>
@@ -18913,19 +19083,23 @@ interaction type.
 <strong>Custom Attributes</strong>
 
 qti-choice-interaction
+
 <p><em>qti-labels-none
 
 qti-labels-decimal</em> <em>qti-labels-lower-alpha</em>
 
 <em>qti-labels-upper-alpha</em></p>
+
 <p>qti-labels-suffix-none
 
 qti-labels-suffix-period
 
 qti-labels-suffix-parenthesis</p>
+
 <p><em>qti-orientation-horizontal
 
 qti-orientation-vertical</em></p>
+
 <p><em>qti-input-control-hidden</em></p>
 <p>qti-choices-stacking-1
 
@@ -18936,6 +19110,7 @@ qti-choices-stacking-3
 qti-choices-stacking-4
 
 qti-choices-stacking-5</p>
+
 <p><em>data-max-selections-message</em>  ="any text"</p>
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
@@ -18969,9 +19144,10 @@ qti-input-width-45
 qti-input-width-50
 
 qti-input-width-72</em>
-<em>data-patternmask-message</em>  ="any text"
+<em>data-patternmask-message</em> ="any text"
 
 qti-extended-text-interaction
+
 <p>qti-height-lines-3</p>
 <p>qti-height-lines-6</p>
 <p>qti-height-lines-15</p>
@@ -19009,9 +19185,10 @@ qti-input-width-45
 qti-input-width-50
 
 qti-input-width-72</em>
-data-prompt  ="any text"
+data-prompt ="any text"
 
 qti-match-interaction
+
 <p>qti-match-tabular</p>
 <p>qti-header-hidden (only relevant when qti-match-tabular)</p>
 <p><em>qti-choices-top
@@ -19021,11 +19198,13 @@ qti-choices-bottom
 qti-choices-left</em>
 
 <em>qti-choices-right</em></p>
+
 <p><em>data-first-column-header</em>  = "any text"</p>
 <p><em>data-max-selections-message</em>  ="any text"</p>
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
 qti-gap-match-interaction
+
 <p>qti-gap-placement</p>
 <p><em>qti-choices-top
 
@@ -19034,6 +19213,7 @@ qti-choices-bottom
 qti-choices-left</em>
 
 <em>qti-choices-right</em></p>
+
 <p><em>qti-input-width-1
 
 qti-input-width-2
@@ -19063,12 +19243,14 @@ qti-input-width-45
 qti-input-width-50
 
 qti-input-width-72</em></p>
+
 <p><em>data-choices-container-width</em>  = " <em>x</em>"
 (pixels)</p>
 <p><em>data-max-selections-message</em>  ="any text"</p>
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
 qti-graphic-gap-match-interaction
+
 <p><em>qti-selections-light</em></p>
 <p><em>qti-selections-dark</em></p>
 <p><em>qti-unselected-hidden</em></p>
@@ -19079,16 +19261,19 @@ qti-choices-bottom
 qti-choices-left</em>
 
 <em>qti-choices-right</em></p>
+
 <p><em>data-choices-container-width  </em>="x" (pixels)</p>
 <p><em>data-max-selections-message</em>  ="any text"</p>
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
 qti-hottext-interaction
 <em>qti-input-control-hidden</em>
+
 <p><em>data-max-selections-message</em>  ="any text"</p>
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
 qti-hotspot-interaction
+
 <p><em>qti-selections-light</em></p>
 <p><em>qti-selections-dark</em></p>
 <p><em>qti-unselected-hidden</em></p>
@@ -19096,9 +19281,11 @@ qti-hotspot-interaction
 <p><em>data-min-selections-message</em>  ="any text"</p>
 
 qti-order-interaction
+
 <p><em>qti-orientation-horizontal
 
 qti-orientation-vertical</em></p>
+
 <p>Level 3 Conformance(when implementing min/max) <em>:</em></p>
 <p><em>qti-choices-top
 
@@ -19107,6 +19294,7 @@ qti-choices-bottom
 qti-choices-left</em>
 
 <em>qti-choices-right</em></p>
+
 <p><em>data-choices-container-width  </em>="x" (pixels)</p>
 <p>Level 3 Conformance (when implementing min/max):</p>
 <p><em>data-max-selections-message</em>  ="any text"</p>
@@ -19121,7 +19309,7 @@ To emphasize words or phrases for candidates who have a
 class="qti-keyword-emphasis" in elements that surround the text that
 should be emphasized. Example:
 
-``` hljs
+```hljs
 <p>Pick the word or words you wish to emphasize.</p>
 ```
 
@@ -19139,10 +19327,10 @@ and use one of the following strings:
 
 To explicitly visually hide content, but keep that content
 programmatically available for assistive technology, use the
-"qti-visually-hidden" class.  Typically, content that is
+"qti-visually-hidden" class. Typically, content that is
 qti-visually-hidden has symmetrical content that is aria-hidden (content
 that is visually presented but NOT programmatically available to
-assistive technology).  The following example demonstrates this common
+assistive technology). The following example demonstrates this common
 pattern.
 
 **Example: Demonstrates class="qti-visually-hidden" with aria-hidden
@@ -19151,25 +19339,25 @@ content**
 <span class="qti-visually-hidden">32 dollars and fifty cents</span><span
 aria-hidden="true">$32.50</span>
 
-Expected Rendering:  The text "32 dollars and fifty cents" is not
+Expected Rendering: The text "32 dollars and fifty cents" is not
 visually displayed but is visible to assistive technology; i.e., it is
-in the DOM.  The text "$32.50" is visually displayed but is invisible to
+in the DOM. The text "$32.50" is visually displayed but is invisible to
 assistive technology.
 
 The following is an example of an implementation of the
-qti-visually-hidden class.  There are valid alternative implementations
+qti-visually-hidden class. There are valid alternative implementations
 as well.
 
 **Example: css implementation of the .qti-visually-hidden class**
 
 .qti-visually-hidden {
-  position:fixed !important;
-  overflow:hidden;
-  clip:rect(1px 1px 1px 1px);
-  height:1px;
-  width:1px;
-  border:0;
-  margin:-1px;
+position:fixed !important;
+overflow:hidden;
+clip:rect(1px 1px 1px 1px);
+height:1px;
+width:1px;
+border:0;
+margin:-1px;
 }
 
 Expected Rendering: The class visually hides content in the
@@ -19215,6 +19403,7 @@ Duration
 { "base" : {"duration" : "P10Y3M20DT4H30M25S" } }
 
 File
+
 <p>{ "base" : {"file" : {"data":"cGxlYXN1cmUu",</p>
 <p>  "mime":"text/plain",
   "name": "helloworld.txt" }</p>
@@ -19227,29 +19416,29 @@ IntOrIdentifier
 { "base" : {"intOrIdentifier" : 123456 } }
 
 Identifier
-{ "base" : {"identifier" : "_identifier" } }
+{ "base" : {"identifier" : "\_identifier" } }
 
 Duration expresses the value using ISO 8601 durations to comply with
 JSON schema
 
 ### C.2 QTI Multiple and Ordered Cardinality to JSON Representation
 
-|  |  |
-|----|----|
-| QTI Multiple / Ordered Cardinality | JSON Representation |
-| NULL | { "list" : null } |
-| Boolean | { "list": { "boolean" : \[true, false, true, true\] } } |
-| Integer | { "list" : {"integer" : \[2, 3, 5, 7, 11, 13\] } } |
-| Float | { "list" : {"float" : \[3.1415926, 12.34, 98.76\] } } |
-| String | { "list" : {"string" : \["Another", "And Another"\] } } |
-| Point | { "list" : {"point" : \[ \[123, 456\], \[640, 480\] \] } } |
-| Pair | { "list" : {"pair" : \[ \["A", "B"\], \["D", "C"\] \] } } |
-| Directed Pair | { "list" : {"directedPair": \[ \["A", "B"\], \["C", "D"\] \] } } |
-| Duration | { "list" : {"duration" : \["P10Y3M20DT4H30M25S"\] } } |
-| File | { "list" : {"file":\[{"data":"cGxlYXN1cmUu","mime":"text/plain"}\]}} |
-| URI | { "list" : {"uri" : \["file:///aFile.txt", "file:///abc.txt"\] } } |
-| IntOrIdentifier | { "list" : {"intOrIdentifier" : \[2, "\_id"\] } } |
-| Identifier | { "list" : {"identifier" : \["\_id1", "id2", "ID3"\] } } |
+|                                    |                                                                      |
+| ---------------------------------- | -------------------------------------------------------------------- |
+| QTI Multiple / Ordered Cardinality | JSON Representation                                                  |
+| NULL                               | { "list" : null }                                                    |
+| Boolean                            | { "list": { "boolean" : \[true, false, true, true\] } }              |
+| Integer                            | { "list" : {"integer" : \[2, 3, 5, 7, 11, 13\] } }                   |
+| Float                              | { "list" : {"float" : \[3.1415926, 12.34, 98.76\] } }                |
+| String                             | { "list" : {"string" : \["Another", "And Another"\] } }              |
+| Point                              | { "list" : {"point" : \[ \[123, 456\], \[640, 480\] \] } }           |
+| Pair                               | { "list" : {"pair" : \[ \["A", "B"\], \["D", "C"\] \] } }            |
+| Directed Pair                      | { "list" : {"directedPair": \[ \["A", "B"\], \["C", "D"\] \] } }     |
+| Duration                           | { "list" : {"duration" : \["P10Y3M20DT4H30M25S"\] } }                |
+| File                               | { "list" : {"file":\[{"data":"cGxlYXN1cmUu","mime":"text/plain"}\]}} |
+| URI                                | { "list" : {"uri" : \["file:///aFile.txt", "file:///abc.txt"\] } }   |
+| IntOrIdentifier                    | { "list" : {"intOrIdentifier" : \[2, "\_id"\] } }                    |
+| Identifier                         | { "list" : {"identifier" : \["\_id1", "id2", "ID3"\] } }             |
 
 ### C.3 QTI Record Cardinality to JSON Representation
 
@@ -19260,53 +19449,54 @@ NULL
 { "record" : null }
 
 Record
+
 <p>{"record": [
 
-  {
+{
 
-  "name": "rock",
+"name": "rock",
 
-  "base": {
+"base": {
 
-  "boolean": true
+"boolean": true
 
-  }
+}
 
-  },
+},
 
-  {
+{
 
-  "name": "paper",
+"name": "paper",
 
-  "base": {
+"base": {
 
-  "string": "Four score and seven years ago..."
+"string": "Four score and seven years ago..."
 
-  }
+}
 
-  },
+},
 
-  {
+{
 
-  "name": "scissors",
+"name": "scissors",
 
-  "base": {
+"base": {
 
-  "integer": 4
+"integer": 4
 
-  }
+}
 
-  },
+},
 
-  {
+{
 
-  "name": "foo",
+"name": "foo",
 
-  "base": null
+"base": null
 
-  }
+}
 
-  ]
+]
 
 }</p>
 
@@ -19315,10 +19505,10 @@ Record
 This config file is a JSON document like the following example
 
 { "waitSeconds": 15,\
-  "paths": {\
-  "graph": "https://example.com/js/modules/graph1.01/graph",\
-  "foo": "https://foobar.com/foo/bar1.2/foo"\
-  }\
+ "paths": {\
+ "graph": "https://example.com/js/modules/graph1.01/graph",\
+"foo": "https://foobar.com/foo/bar1.2/foo"\
+}\
 }
 
 The waitSeconds property determines how long the delivery engine should
@@ -19337,53 +19527,53 @@ should not include the file extension, '.js' will be assumed.
 
 The
 [format](http://www.imsglobal.org/spec/qti/v3p0/info/index.html#DerivedCharacteristic_PrintedVariable.Attr_format)
- attribute of qti-printed-variable profiles the formatting rules
+attribute of qti-printed-variable profiles the formatting rules
 described by the C standard. The following table illustrates the main
 features. Spaces are shown as the '\_' (underscore) character to improve
 readability.
 
-| **Format specification** | **Input** | **Formatted output** | **Notes** |
-|----|----|----|----|
-| %i | -987 | -987 | Simple signed decimal format. |
-| %.4i | -987 | -0987 | Precision specifies the minimum number of digits in i, o, x and X formats and defaults to no minimum. |
-| %.0i | 0 | When formatting zero with a precision of 0 no digits are output (i, o, x and X formats only). |  |
-| %8i | 987 | \_\_\_\_\_987 | Field-width set manually to 8 results in five leading spaces. |
-| %2i | 987 | 987 | Field-width set manually to 2 is insufficient so ignored. |
-| %-8i | 987 | 987\_\_\_\_\_ | Hyphen flag forces left field alignment resulting in five trailing spaces. |
-| %08i | 987 | 00000987 | Zero flag forces zero-padding resulting in five leading zeros. |
-| %+i | 987 | +987 | Plus flag leads positive numbers with plus sign (excluding o, x and X formats). |
-| %\_i | 987 | \_987 | Space flag leads positive numbers with space (excluding o, x and X formats). |
-| %o | 987 | 1733 | Octal format, number must be positive |
-| %#o | 987 | 01733 | \# flag ensures at least one leading 0 for o format. |
-| %x | 987 | 3db | Hex format (lower case), number must be positive |
-| %#x | 987 | 0x3db | \# flag always displays leading 0x for x format. |
-| %X | 987 | 3DB | Hex format (upper case), number must be positive |
-| %#X | 987 | 0X3DB | \# flag always displays leading 0X for X format. |
-| %f | 987.654 | 987.654000 | The precision specifies number of decimal places to display for f format and defaults to 6. |
-| %.2f | 987.654 | 987.65 | Precision set manually to 2. |
-| %#.0f | 987 | 987\. | \# flag forces trailing point for f, e, E, g, G, r and R formats. |
-| %e | 987.654 | 9.876540e+02 | Forces use of scientific notation. The precision specifies number of figures to the right of the point for e and E formats and defaults to 6. |
-| %.2e | 987.654 | 9.88e+02 | Precision set manually to 2. |
-| %E | 987.654 | 9.876540E+02 | Forces use of scientific notation (upper case form). |
-| %g | 987654.321 | 987654 | Rounded to *precision* significant figures (default 6) and displayed in normal form when precision is greater than or equal to the number of digits to the left of the point. |
-| %g | 987 | 987 | Trailing zeros to the right of the point are removed. |
-| %g | 987654321 | 9.87654e+08 | Scientific form used when required. |
-| %g | 0.0000987654321 | 9.87654e-05 | Scientific form also used when 4 or more leading zeros are required to the right of the point. |
-| %#g | 987 | 987.000 | \# flag also forces display of trailing zeros (up to *precision* significant figures) in g and G formats. |
-| %G | 0.0000987654321 | 9.87654E-05 | As for *g* but uses upper case form. |
-| %r | 0.0000987654321 | 0.0000987654 | The same as *g* except that leading zeros to the right of the point are not limited. |
-| %R | 0.0000987654321 | 0.0000987654 | The same as *G* except that leading zeros to the right of the point are not limited. |
+| **Format specification** | **Input**       | **Formatted output**                                                                          | **Notes**                                                                                                                                                                     |
+| ------------------------ | --------------- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| %i                       | -987            | -987                                                                                          | Simple signed decimal format.                                                                                                                                                 |
+| %.4i                     | -987            | -0987                                                                                         | Precision specifies the minimum number of digits in i, o, x and X formats and defaults to no minimum.                                                                         |
+| %.0i                     | 0               | When formatting zero with a precision of 0 no digits are output (i, o, x and X formats only). |                                                                                                                                                                               |
+| %8i                      | 987             | \_\_\_\_\_987                                                                                 | Field-width set manually to 8 results in five leading spaces.                                                                                                                 |
+| %2i                      | 987             | 987                                                                                           | Field-width set manually to 2 is insufficient so ignored.                                                                                                                     |
+| %-8i                     | 987             | 987\_\_\_\_\_                                                                                 | Hyphen flag forces left field alignment resulting in five trailing spaces.                                                                                                    |
+| %08i                     | 987             | 00000987                                                                                      | Zero flag forces zero-padding resulting in five leading zeros.                                                                                                                |
+| %+i                      | 987             | +987                                                                                          | Plus flag leads positive numbers with plus sign (excluding o, x and X formats).                                                                                               |
+| %\_i                     | 987             | \_987                                                                                         | Space flag leads positive numbers with space (excluding o, x and X formats).                                                                                                  |
+| %o                       | 987             | 1733                                                                                          | Octal format, number must be positive                                                                                                                                         |
+| %#o                      | 987             | 01733                                                                                         | \# flag ensures at least one leading 0 for o format.                                                                                                                          |
+| %x                       | 987             | 3db                                                                                           | Hex format (lower case), number must be positive                                                                                                                              |
+| %#x                      | 987             | 0x3db                                                                                         | \# flag always displays leading 0x for x format.                                                                                                                              |
+| %X                       | 987             | 3DB                                                                                           | Hex format (upper case), number must be positive                                                                                                                              |
+| %#X                      | 987             | 0X3DB                                                                                         | \# flag always displays leading 0X for X format.                                                                                                                              |
+| %f                       | 987.654         | 987.654000                                                                                    | The precision specifies number of decimal places to display for f format and defaults to 6.                                                                                   |
+| %.2f                     | 987.654         | 987.65                                                                                        | Precision set manually to 2.                                                                                                                                                  |
+| %#.0f                    | 987             | 987\.                                                                                         | \# flag forces trailing point for f, e, E, g, G, r and R formats.                                                                                                             |
+| %e                       | 987.654         | 9.876540e+02                                                                                  | Forces use of scientific notation. The precision specifies number of figures to the right of the point for e and E formats and defaults to 6.                                 |
+| %.2e                     | 987.654         | 9.88e+02                                                                                      | Precision set manually to 2.                                                                                                                                                  |
+| %E                       | 987.654         | 9.876540E+02                                                                                  | Forces use of scientific notation (upper case form).                                                                                                                          |
+| %g                       | 987654.321      | 987654                                                                                        | Rounded to _precision_ significant figures (default 6) and displayed in normal form when precision is greater than or equal to the number of digits to the left of the point. |
+| %g                       | 987             | 987                                                                                           | Trailing zeros to the right of the point are removed.                                                                                                                         |
+| %g                       | 987654321       | 9.87654e+08                                                                                   | Scientific form used when required.                                                                                                                                           |
+| %g                       | 0.0000987654321 | 9.87654e-05                                                                                   | Scientific form also used when 4 or more leading zeros are required to the right of the point.                                                                                |
+| %#g                      | 987             | 987.000                                                                                       | \# flag also forces display of trailing zeros (up to _precision_ significant figures) in g and G formats.                                                                     |
+| %G                       | 0.0000987654321 | 9.87654E-05                                                                                   | As for _g_ but uses upper case form.                                                                                                                                          |
+| %r                       | 0.0000987654321 | 0.0000987654                                                                                  | The same as _g_ except that leading zeros to the right of the point are not limited.                                                                                          |
+| %R                       | 0.0000987654321 | 0.0000987654                                                                                  | The same as _G_ except that leading zeros to the right of the point are not limited.                                                                                          |
 
 ## F. Revision History
 
-*This section is non-normative.*
+_This section is non-normative._
 
 ### F.1 Version History
 
-| Version No. | Release Date | Comments |
-|----|----|----|
+| Version No.       | Release Date   | Comments                                                                                                                |
+| ----------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Final Release 2.0 | 1 October 2024 | The first final release of this document as part of the QTI version 3.0.1. This is the second version of this document. |
-| Final Release 1.0 | 1 May 2022 | The first final release of this document as part of the QTI 3.0 specification set. |
+| Final Release 1.0 | 1 May 2022     | The first final release of this document as part of the QTI 3.0 specification set.                                      |
 
 ### Changes in this Document Version
 
@@ -19607,31 +19797,31 @@ IMS Global Learning Consortium. May 2022. IMS Final Release. URL:
 The following individuals contributed to the development of this
 document:
 
-| Name  | Organization  | Role  |
-|----------------------|------------------------------|------------------|
-| Arjan Aarnink  | Cito  |  |
-| Vijay Ambati  | ACT, Inc.  |  |
-| Jerome Bogaerts  | Open Assessment Technologies |  |
-| Shiva Bojjawar  | McGraw-Hill Education  |  |
-| Catriona Buhayar  | NWEA  |  |
-| Jason Carlson  | ACT, Inc.  |  |
-| Michael Finger  | Cognia  |  |
-| Paul Grudnitski  | amp-up.io  | Editor  |
-| Mark Hakkinen  | ETS  | Co-Chair  |
-| Thomas Hoffmann  | IMS Global  | Editor  |
-| Rob Howard  | NWEA  |  |
-| Stephen Kacsmark  | Instructure  |  |
-| Justin Marks  | NWEA  | Editor  |
-| Mark McKell  | pearson  |  |
-| Mark Molenaar  | Apenutmize  | Editor  |
-| Padraig O'hiceadha  | Houghton Mifflin Harcourt  | Editor, Co-Chair |
-| Mike Powell  | Pearson  | Co-chair  |
-| Julien Sebire  | Open Assessment Technologies |  |
-| Colin Smythe  | IMS Global  |  |
-| Tjeerd Hans Terpstra | Cito  |  |
-| Travis Thompson  | Data Recognition Corporation |  |
-| Wyatt Vanderstucken  | ETS  |  |
-| Jason White  | ETS  |  |
+| Name                 | Organization                 | Role             |
+| -------------------- | ---------------------------- | ---------------- |
+| Arjan Aarnink        | Cito                         |                  |
+| Vijay Ambati         | ACT, Inc.                    |                  |
+| Jerome Bogaerts      | Open Assessment Technologies |                  |
+| Shiva Bojjawar       | McGraw-Hill Education        |                  |
+| Catriona Buhayar     | NWEA                         |                  |
+| Jason Carlson        | ACT, Inc.                    |                  |
+| Michael Finger       | Cognia                       |                  |
+| Paul Grudnitski      | amp-up.io                    | Editor           |
+| Mark Hakkinen        | ETS                          | Co-Chair         |
+| Thomas Hoffmann      | IMS Global                   | Editor           |
+| Rob Howard           | NWEA                         |                  |
+| Stephen Kacsmark     | Instructure                  |                  |
+| Justin Marks         | NWEA                         | Editor           |
+| Mark McKell          | pearson                      |                  |
+| Mark Molenaar        | Apenutmize                   | Editor           |
+| Padraig O'hiceadha   | Houghton Mifflin Harcourt    | Editor, Co-Chair |
+| Mike Powell          | Pearson                      | Co-chair         |
+| Julien Sebire        | Open Assessment Technologies |                  |
+| Colin Smythe         | IMS Global                   |                  |
+| Tjeerd Hans Terpstra | Cito                         |                  |
+| Travis Thompson      | Data Recognition Corporation |                  |
+| Wyatt Vanderstucken  | ETS                          |                  |
+| Jason White          | ETS                          |                  |
 
 IMS Global Learning Consortium, Inc. ("IMS Global") is publishing the
 information contained in this document ("Specification") for purposes of

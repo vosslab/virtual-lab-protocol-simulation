@@ -14,14 +14,17 @@ Mini-protocol `tutorial_plate_reader` is complete and passes YAML validation. Ho
 **File:** `src/scenes/bench.ts`, **Lines:** 393-401
 
 ```typescript
-if (itemId === 'plate_reader') {
-    const currentStep = getCurrentStep();
-    if (currentStep && (currentStep.id === 'plate_read' || currentStep.id === 'results')) {
-        switchScene('plate_reader');
-        return;
-    }
-    showNotification('The plate reader is ready for the readout step.');
+if (itemId === "plate_reader") {
+  const currentStep = getCurrentStep();
+  if (
+    currentStep &&
+    (currentStep.id === "plate_read" || currentStep.id === "results")
+  ) {
+    switchScene("plate_reader");
     return;
+  }
+  showNotification("The plate reader is ready for the readout step.");
+  return;
 }
 ```
 
@@ -32,6 +35,7 @@ The handler checks `currentStep.id === 'plate_read' || currentStep.id === 'resul
 Replace hardcoded step ID checks with dispatch via `completionPath.kind === 'modal' && completionPath.openClick === itemId'`. This pattern already works for other modal instruments (e.g., cell_counter, which routes through `switchScene('microscope')`; see lines 438-449).
 
 **Proposed change:**
+
 - Check if the current step's `completionPath.kind === 'modal'` and `openClick === 'plate_reader'`
 - If true, switch to the appropriate scene (extracted from step metadata or inferred)
 - Fall back to the notification if the step does not use a plate_reader modal
@@ -41,6 +45,7 @@ This makes bench modal dispatch generic (one handler per openClick value, not pe
 ## Blast Radius
 
 **Small:** Only affects:
+
 - `plate_read` step (cell_culture protocol)
 - `results` step (cell_culture protocol)
 - New mini-protocols or walkthroughs using `openClick: plate_reader` with custom step IDs
@@ -50,10 +55,11 @@ No other instruments on the bench have hardcoded step ID checks; they use direct
 ## Affected Steps
 
 All bench steps that use `openClick: plate_reader` with step ID != 'plate_read' and != 'results':
+
 - `tutorial_plate_read` (new mini-protocol)
 - Any future test or training protocol using the plate_reader modal
 
-Existing cell_culture and tutorial_* protocols are unaffected.
+Existing cell*culture and tutorial*\* protocols are unaffected.
 
 ## Test Plan
 

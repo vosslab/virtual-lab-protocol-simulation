@@ -190,13 +190,13 @@ Default: `hood_basic`. Manager confirms before WP-PROTO-1 dispatches.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Mitigation |
-| --- | --- | --- | --- |
-| Engine refactor creeps into the prototype | high | WP-PROTO-3 starts rewriting layout_engine.ts | Additive-only rule; reviewer rejects any deletion or modification of existing zone code paths |
-| Comparison is cosmetic, not structural | medium | gallery shows minor pixel differences; verdict unclear | Compare bounding boxes + occupancy + label collisions, not pixel hashes; record numeric diffs |
-| Hood policy chosen arbitrarily | medium | workspace policy for hood embedded in engine without doc | Record the policy in the WP-PROTO-3 acceptance + comparison doc; do not promote to spec until rollout plan ratifies |
-| Sdspage plan resumed prematurely | medium | someone re-opens sdspage contracts before prototype verdict | Sdspage plan stays parked; resumption follows prototype verdict |
-| YAML gates fail because validator does not know row+slot | medium | validation/validate.py rejects the new shape | If validator rejects, surface as a gap; do NOT silently relax the validator; record in WP-PROTO-1 handoff |
+| Risk                                                     | Impact | Trigger                                                     | Mitigation                                                                                                          |
+| -------------------------------------------------------- | ------ | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Engine refactor creeps into the prototype                | high   | WP-PROTO-3 starts rewriting layout_engine.ts                | Additive-only rule; reviewer rejects any deletion or modification of existing zone code paths                       |
+| Comparison is cosmetic, not structural                   | medium | gallery shows minor pixel differences; verdict unclear      | Compare bounding boxes + occupancy + label collisions, not pixel hashes; record numeric diffs                       |
+| Hood policy chosen arbitrarily                           | medium | workspace policy for hood embedded in engine without doc    | Record the policy in the WP-PROTO-3 acceptance + comparison doc; do not promote to spec until rollout plan ratifies |
+| Sdspage plan resumed prematurely                         | medium | someone re-opens sdspage contracts before prototype verdict | Sdspage plan stays parked; resumption follows prototype verdict                                                     |
+| YAML gates fail because validator does not know row+slot | medium | validation/validate.py rejects the new shape                | If validator rejects, surface as a gap; do NOT silently relax the validator; record in WP-PROTO-1 handoff           |
 
 ## Open questions and decisions needed
 

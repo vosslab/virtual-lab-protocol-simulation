@@ -5,7 +5,7 @@
  * Used by bundle/entry.ts and tests to inject and manage the generated-data catalogs.
  */
 
-export { setProtocolCatalog } from './protocol';
-export { setSceneCatalog } from './scene';
-export { setObjectCatalog } from './object';
-export { loadWorld } from './world';
+export { setProtocolCatalog } from "./protocol";
+export { setSceneCatalog } from "./scene";
+export { setObjectCatalog } from "./object";
+export { loadWorld } from "./world";

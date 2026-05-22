@@ -2,7 +2,7 @@
 
 ## Context
 
-The stepper plan [../archive/protocol_stepper_tool.md](../archive/protocol_stepper_tool.md) WP-C2 includes a `TimedWait` scene-operation handler. The handler currently checks only that the host step exists and that a duration field is present and positive. It cannot check **whether `TimedWait` is firing in a step that should have a wait** (incubation, treatment, centrifugation) versus a step where a wait is meaningless (pure aspiration, scene change, modal answer), because the protocol schema has no field that names the pedagogical kind of a step.
+The stepper plan `protocol_stepper_tool.md` WP-C2 includes a `TimedWait` scene-operation handler. The handler currently checks only that the host step exists and that a duration field is present and positive. It cannot check **whether `TimedWait` is firing in a step that should have a wait** (incubation, treatment, centrifugation) versus a step where a wait is meaningless (pure aspiration, scene change, modal answer), because the protocol schema has no field that names the pedagogical kind of a step.
 
 The Resolved decisions block of the stepper plan explicitly defers this check: "no prompt-text or step-name inference. When the spec lands the field, the stepper enforces; until then, the check does not exist." Without this spec RFC, the WP-C2 deferred check never lands.
 

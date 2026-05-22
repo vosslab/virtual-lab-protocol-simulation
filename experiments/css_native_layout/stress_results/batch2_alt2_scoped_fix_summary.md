@@ -17,18 +17,18 @@ However, implementation revealed a fundamental issue: without also addressing `o
 ```css
 /* Work surface: single row, no wrap (vertical stack via order) */
 .region--work_surface {
-	flex-wrap: nowrap;
-	flex-direction: column;
-	min-height: 120px;
-	max-height: 100%;
-	overflow: hidden;  /* << KEPT AS-IS per task instruction */
-	justify-content: flex-end;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  min-height: 120px;
+  max-height: 100%;
+  overflow: hidden; /* << KEPT AS-IS per task instruction */
+  justify-content: flex-end;
 }
 
-/* Scoped max-height drop: only work_surface placements */  /* NEW RULE */
+/* Scoped max-height drop: only work_surface placements */ /* NEW RULE */
 .region--work_surface .placement {
-	max-height: none;
-	overflow: visible;  /* << ADDED to prevent clipping by .placement overflow:hidden */
+  max-height: none;
+  overflow: visible; /* << ADDED to prevent clipping by .placement overflow:hidden */
 }
 ```
 
@@ -46,24 +46,28 @@ The CSS cascade walks: `IMG -> .object-graphic -> .placement -> .region--work_su
 **Solution required**: Drop max-height + explicitly set `overflow: visible` on scoped placements. But the task says "keep the existing `.placement { overflow: hidden }` rule UNTOUCHED."
 
 This is a contradiction that cannot be resolved without either:
+
 1. Modifying the base `.placement` rule (violates task instruction), OR
 2. Adding overflow:visible to the scoped rule (done, but diagnostics still show issues)
 
 ## Test Results (baseline vs. patched)
 
 ### Test 1: Max-height drop only (no overflow change on .placement)
+
 - Output: `experiments/css_native_layout/stress_results/precheck_batch2_alt2_scoped_test/`
 - Verdict: FAIL (8/10 scenes)
 - Hard fails: 0 (clipped_artwork, off_page, svg_svg_overlap, region_overflow)
 - Artwork integrity hard fails: YES - "SVG Clipped by Parent Overflow" on placement-level overflow:hidden
 
 ### Test 2: Max-height + overflow:visible on .region--work_surface
+
 - Output: `experiments/css_native_layout/stress_results/precheck_batch2_alt2_scoped_test2/`
 - Verdict: FAIL (8/10 scenes)
 - Hard fails: 0
 - Artwork integrity hard fails: YES - same clipping issues
 
 ### Test 3: Max-height + overflow:visible on .region--work_surface .placement
+
 - Output: `experiments/css_native_layout/stress_results/precheck_batch2_alt2_scoped_test3/`
 - Verdict: FAIL (8/10 scenes)
 - Hard fails: 0
@@ -71,18 +75,18 @@ This is a contradiction that cannot be resolved without either:
 
 ## Per-Scene Analysis (Test 3, most complete attempt)
 
-| Scene | Verdict | Hard Fails | Clipping Issues | Aspect Distortion |
-| --- | --- | --- | --- | --- |
-| bench_basic | FAIL | 0 | right_tool_p200_micropipette (front_tools) | yes |
-| cell_counter_basic | PASS_TEMPLATE | 0 | none | no |
-| crowded_bench_dense | FAIL | 0 | multiple | yes |
-| drug_dilution_plate_workspace | FAIL | 0 | multiple | yes |
-| drug_dilution_workspace_dense | FAIL | 0 | multiple | yes |
-| electrophoresis_bench | FAIL | 0 | multiple | yes |
-| hood_basic | FAIL | 0 | none (Hood region doesn't have overflow:hidden) | yes |
-| microscope_basic | PASS_TEMPLATE | 0 | none | no |
-| staining_bench | FAIL | 0 | multiple | yes |
-| well_plate_96_zoom | FAIL | 0 | none | yes |
+| Scene                         | Verdict       | Hard Fails | Clipping Issues                                 | Aspect Distortion |
+| ----------------------------- | ------------- | ---------- | ----------------------------------------------- | ----------------- |
+| bench_basic                   | FAIL          | 0          | right_tool_p200_micropipette (front_tools)      | yes               |
+| cell_counter_basic            | PASS_TEMPLATE | 0          | none                                            | no                |
+| crowded_bench_dense           | FAIL          | 0          | multiple                                        | yes               |
+| drug_dilution_plate_workspace | FAIL          | 0          | multiple                                        | yes               |
+| drug_dilution_workspace_dense | FAIL          | 0          | multiple                                        | yes               |
+| electrophoresis_bench         | FAIL          | 0          | multiple                                        | yes               |
+| hood_basic                    | FAIL          | 0          | none (Hood region doesn't have overflow:hidden) | yes               |
+| microscope_basic              | PASS_TEMPLATE | 0          | none                                            | no                |
+| staining_bench                | FAIL          | 0          | multiple                                        | yes               |
+| well_plate_96_zoom            | FAIL          | 0          | none                                            | yes               |
 
 ## Key Findings
 

@@ -10,11 +10,11 @@
  *   const gamePath = await ensureGameBuilt(__repoRoot);
  */
 
-import path from 'node:path';
-import fs from 'node:fs';
-import { execFileSync } from 'node:child_process';
+import path from "node:path";
+import fs from "node:fs";
+import { execFileSync } from "node:child_process";
 
-const PORTABLE_HTML_REL = path.join('dist-single', 'game.html');
+const PORTABLE_HTML_REL = path.join("dist-single", "game.html");
 
 /**
  * Ensures the portable HTML exists at <repoRoot>/dist-single/game.html.
@@ -25,32 +25,32 @@ const PORTABLE_HTML_REL = path.join('dist-single', 'game.html');
  * @returns {Promise<string>} - Absolute path to dist-single/game.html
  */
 export async function ensureGameBuilt(repoRoot) {
-	const gamePath = path.resolve(repoRoot, PORTABLE_HTML_REL);
+  const gamePath = path.resolve(repoRoot, PORTABLE_HTML_REL);
 
-	if (fs.existsSync(gamePath)) {
-		return gamePath;
-	}
+  if (fs.existsSync(gamePath)) {
+    return gamePath;
+  }
 
-	// File missing; rebuild it
-	try {
-		execFileSync('bash', ['export_single_file.sh'], {
-			cwd: repoRoot,
-			stdio: 'inherit',
-		});
-	} catch (err) {
-		throw new Error(
-			`Failed to build ${PORTABLE_HTML_REL} via export_single_file.sh: ${err.message}`
-		);
-	}
+  // File missing; rebuild it
+  try {
+    execFileSync("bash", ["export_single_file.sh"], {
+      cwd: repoRoot,
+      stdio: "inherit",
+    });
+  } catch (err) {
+    throw new Error(
+      `Failed to build ${PORTABLE_HTML_REL} via export_single_file.sh: ${err.message}`,
+    );
+  }
 
-	// Verify file now exists after the build
-	if (!fs.existsSync(gamePath)) {
-		throw new Error(
-			`export_single_file.sh completed but ${PORTABLE_HTML_REL} still missing at ${gamePath}`
-		);
-	}
+  // Verify file now exists after the build
+  if (!fs.existsSync(gamePath)) {
+    throw new Error(
+      `export_single_file.sh completed but ${PORTABLE_HTML_REL} still missing at ${gamePath}`,
+    );
+  }
 
-	return gamePath;
+  return gamePath;
 }
 
 /**
@@ -61,5 +61,5 @@ export async function ensureGameBuilt(repoRoot) {
  * @returns {Promise<string>} - Absolute path to dist-single/game.html
  */
 export async function gameFilePath(repoRoot) {
-	return await ensureGameBuilt(repoRoot);
+  return await ensureGameBuilt(repoRoot);
 }

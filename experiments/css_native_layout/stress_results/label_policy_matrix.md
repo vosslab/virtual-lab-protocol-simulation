@@ -1,8 +1,8 @@
 # Label policy comparison matrix
 
 NEW3 Batch 2 Workstream F. CSS-only label policy stress test across 12
-scenes: 6 dense_clutter (stress_dense_clutter_001..006), 3 composition
-gold (gold_drug_dilution_workspace, gold_staining_bench, gold_heat_block_
+scenes: 6 dense*clutter (stress_dense_clutter_001..006), 3 composition
+gold (gold_drug_dilution_workspace, gold_staining_bench, gold_heat_block*
 sample_prep), 3 mixed (gold_mixed_bench, stress_long_label_scene_001,
 stress_long_label_scene_002).
 
@@ -38,14 +38,14 @@ hard-fail count) and does not modify `precheck.mjs` or `score_layout.mjs`.
 
 ## Totals matrix (12-scene aggregate)
 
-| Policy | Name                              | label_label_overlap | svg_label_overlap | artwork_integrity_HF | visible_labels | readability (1-5) | score_proxy |
-| ------ | --------------------------------- | ------------------: | ----------------: | -------------------: | -------------: | ----------------: | ----------: |
-| 1      | always visible (baseline)         |                  12 |                22 |                   98 |            147 |                 2 |          66 |
-| 2      | hidden in dense scenes            |                   5 |                13 |                   98 |            147 |                 3 |          82 |
-| 3      | hover/focus reveal                |                  12 |                22 |                   98 |            147 |                 1 |          66 |
-| 4      | abbreviated (12 char + ellipsis)  |                   0 |                 0 |                   98 |             20 |                 2 |         100 |
-| 5      | numbered objects + legend hint    |                   6 |                10 |                   98 |            147 |                 3 |          84 |
-| 6      | region-level group labels         |                   0 |                 0 |                   98 |            147 |                 4 |         100 |
+| Policy | Name                             | label_label_overlap | svg_label_overlap | artwork_integrity_HF | visible_labels | readability (1-5) | score_proxy |
+| ------ | -------------------------------- | ------------------: | ----------------: | -------------------: | -------------: | ----------------: | ----------: |
+| 1      | always visible (baseline)        |                  12 |                22 |                   98 |            147 |                 2 |          66 |
+| 2      | hidden in dense scenes           |                   5 |                13 |                   98 |            147 |                 3 |          82 |
+| 3      | hover/focus reveal               |                  12 |                22 |                   98 |            147 |                 1 |          66 |
+| 4      | abbreviated (12 char + ellipsis) |                   0 |                 0 |                   98 |             20 |                 2 |         100 |
+| 5      | numbered objects + legend hint   |                   6 |                10 |                   98 |            147 |                 3 |          84 |
+| 6      | region-level group labels        |                   0 |                 0 |                   98 |            147 |                 4 |         100 |
 
 Notes on the visible_labels column: Policy 1, 2, 3, 5, 6 keep the full
 placement-label DOM and the bench layout governs visibility; many labels
@@ -104,11 +104,11 @@ instead.
 For full per-scene detail see each `policy<N>/summary.json`. The matrix
 below shows the three sample scenes used for the readability rating.
 
-| Scene                              | P1 LL/SL | P2 LL/SL | P3 LL/SL | P4 LL/SL | P5 LL/SL | P6 LL/SL |
-| ---------------------------------- | -------: | -------: | -------: | -------: | -------: | -------: |
-| gold_drug_dilution_workspace       | 0 / 0    | 0 / 0    | 0 / 0    | 0 / 0    | 0 / 0    | 0 / 0    |
-| stress_dense_clutter_003           | 2 / 2    | 0 / 0    | 2 / 2    | 0 / 0    | 1 / 0    | 0 / 0    |
-| stress_long_label_scene_002        | 3 / 6    | 3 / 6    | 3 / 6    | 0 / 0    | 0 / 2    | 0 / 0    |
+| Scene                        | P1 LL/SL | P2 LL/SL | P3 LL/SL | P4 LL/SL | P5 LL/SL | P6 LL/SL |
+| ---------------------------- | -------: | -------: | -------: | -------: | -------: | -------: |
+| gold_drug_dilution_workspace |    0 / 0 |    0 / 0 |    0 / 0 |    0 / 0 |    0 / 0 |    0 / 0 |
+| stress_dense_clutter_003     |    2 / 2 |    0 / 0 |    2 / 2 |    0 / 0 |    1 / 0 |    0 / 0 |
+| stress_long_label_scene_002  |    3 / 6 |    3 / 6 |    3 / 6 |    0 / 0 |    0 / 2 |    0 / 0 |
 
 Policy 2 only fires on `data-scene-density` in ("crowded", "high"); the
 gold composition scenes carry density "medium" and the long-label stress

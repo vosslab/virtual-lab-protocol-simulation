@@ -134,7 +134,11 @@
             "reason": "Temperature visual state deferred to material rendering."
           }
         },
-        "capabilities": ["clickable", "material_container", "cursor_attachable"],
+        "capabilities": [
+          "clickable",
+          "material_container",
+          "cursor_attachable"
+        ],
         "layout": {
           "default_width": 3,
           "label_width": 4

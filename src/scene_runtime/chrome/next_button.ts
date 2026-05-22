@@ -6,8 +6,8 @@
  */
 
 interface NextButtonOptions {
-	visible: boolean;
-	onClick: () => void;
+  visible: boolean;
+  onClick: () => void;
 }
 
 /**
@@ -18,31 +18,31 @@ interface NextButtonOptions {
  * @param options Configuration: visible flag and onClick handler.
  */
 export function renderNextButton(
-	button: HTMLElement,
-	options: NextButtonOptions,
+  button: HTMLElement,
+  options: NextButtonOptions,
 ): void {
-	// Clear existing content
-	button.innerHTML = '';
+  // Clear existing content
+  button.innerHTML = "";
 
-	// If not visible, hide the container and return
-	if (!options.visible) {
-		button.style.display = 'none';
-		return;
-	}
+  // If not visible, hide the container and return
+  if (!options.visible) {
+    button.style.display = "none";
+    return;
+  }
 
-	// Show the container
-	button.style.display = 'flex';
+  // Show the container
+  button.style.display = "flex";
 
-	// Create the button element
-	const nextBtn = document.createElement('button');
-	nextBtn.className = 'next-button';
-	nextBtn.setAttribute('data-testid', 'next-button');
-	nextBtn.textContent = 'Next';
-	nextBtn.style.display = 'block'; // Override the CSS default of display: none
+  // Create the button element
+  const nextBtn = document.createElement("button");
+  nextBtn.className = "next-button";
+  nextBtn.setAttribute("data-testid", "next-button");
+  nextBtn.textContent = "Next";
+  nextBtn.style.display = "block"; // Override the CSS default of display: none
 
-	// Attach click handler
-	nextBtn.addEventListener('click', options.onClick);
+  // Attach click handler
+  nextBtn.addEventListener("click", options.onClick);
 
-	// Append button to container
-	button.appendChild(nextBtn);
+  // Append button to container
+  button.appendChild(nextBtn);
 }

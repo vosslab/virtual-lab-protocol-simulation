@@ -18,39 +18,39 @@ documents and are not cited here as canonical vocabulary sources.
 
 The canonical vocabulary docs are:
 
-- [docs/specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md)
-- [docs/specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md)
-- [docs/specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md)
-- [docs/specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md)
-- [docs/specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md)
-- [docs/specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md)
-- [docs/specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md)
-- [docs/specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md)
-- [docs/specs/SCALING_MODEL.md](specs/SCALING_MODEL.md)
-- [docs/specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md)
-- [docs/specs/SCENE_INHERITANCE.md](specs/SCENE_INHERITANCE.md)
-- [docs/specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md)
-- [docs/specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md)
-- [docs/specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md)
-- [docs/specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md)
-- [docs/specs/TARGET_FILE_STRUCTURE.md](specs/TARGET_FILE_STRUCTURE.md)
-- [docs/specs/WALKTHROUGH_GUIDE.md](specs/WALKTHROUGH_GUIDE.md)
+- [LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md)
+- [MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md)
+- [OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md)
+- [OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md)
+- [PROTOCOL_AUTHORING_GUIDE.md](../specs/PROTOCOL_AUTHORING_GUIDE.md)
+- [PROTOCOL_STEPS.md](../specs/PROTOCOL_STEPS.md)
+- [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md)
+- [PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md)
+- [SCALING_MODEL.md](../specs/SCALING_MODEL.md)
+- [SCENE_ARCHITECTURE.md](../specs/SCENE_ARCHITECTURE.md)
+- [SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md)
+- [SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md)
+- [SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md)
+- [SPEC_DESIGN_CHECKLIST.md](../specs/SPEC_DESIGN_CHECKLIST.md)
+- [SVG_PIPELINE.md](../specs/SVG_PIPELINE.md)
+- [TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md)
+- [WALKTHROUGH_GUIDE.md](../specs/WALKTHROUGH_GUIDE.md)
 
 None of the canonical specs above carry a "region" schema construct.
 The closest canonical construct (a named placement area inside a
 scene) is `zone`, declared by the scene YAML `zones[]` array and
 referenced from placements via `placement.zone`. See
-[docs/specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) sections
+[SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md) sections
 "What a scene is" and "zone".
 
 ## Repo-wide evidence (verified at HEAD 8795d25)
 
-| Quantity | Count | Notes |
-| --- | --- | --- |
-| Total YAML files in repo | 416 | matches user snapshot |
-| YAML files mentioning "scene" | 86 | user snapshot listed 263; actual is 86 |
-| YAML files mentioning "region" | 8 | user snapshot listed 4 |
-| YAML files under `experiments/css_native_layout/regions/` | 4 | `bench.yaml`, `bench_e.yaml`, `hood.yaml`, `instrument.yaml` |
+| Quantity                                                  | Count | Notes                                                        |
+| --------------------------------------------------------- | ----- | ------------------------------------------------------------ |
+| Total YAML files in repo                                  | 416   | matches user snapshot                                        |
+| YAML files mentioning "scene"                             | 86    | user snapshot listed 263; actual is 86                       |
+| YAML files mentioning "region"                            | 8     | user snapshot listed 4                                       |
+| YAML files under `experiments/css_native_layout/regions/` | 4     | `bench.yaml`, `bench_e.yaml`, `hood.yaml`, `instrument.yaml` |
 
 The eight YAML files that mention "region" at all are:
 
@@ -82,7 +82,7 @@ ratio (8 / 416 = ~2% region; 86 / 416 = ~21% scene) confirms
 "Scene" is the durable, canonical authoring concept for "where
 things appear and how the space is arranged". The canonical
 definition lives in
-[docs/specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md):
+[SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md):
 
 > A scene is the unit of authoring for "where things appear and how
 > the space is arranged". One scene declares one workspace surface,
@@ -92,13 +92,13 @@ definition lives in
 > spatial-arrangement rules that the layout engine consumes.
 
 The hard contract item that anchors this is
-[docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) item 1 (scene and
+[PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 1 (scene and
 protocol configuration live in YAML) and item 3 (clickable objects
 are SVG-backed scene objects laid out by the layout engine). The
 scene YAML schema is closed and lives in
-[docs/specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md). The
+[SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md). The
 scene runtime model lives in
-[docs/specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md).
+[SCENE_ARCHITECTURE.md](../specs/SCENE_ARCHITECTURE.md).
 
 Scene-side durable terms (from SCENE_VOCABULARY.md):
 
@@ -128,7 +128,7 @@ These files are not scene YAML. They do not declare a scene, a
 backdrop, zones, placements, scene bounds, or layout rules. They
 declare a mapping table consumed (or intended to be consumed) by an
 experiment-local renderer. The canonical schema for scenes lives in
-[docs/specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md) and is
+[SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md) and is
 unrelated to the `regions/*.yaml` shape.
 
 The word "region" in the folder name predates the canonical "zone"
@@ -137,10 +137,10 @@ the sense of PRIMARY_DESIGN's "one canonical term per concept" rule
 (see PRIMARY_DESIGN "Vocabulary closure and anti-drift"). The fix is
 language, not deletion. See "Recommendation" below.
 
-## Is regions/*.yaml consumed by any current render path?
+## Is regions/\*.yaml consumed by any current render path?
 
 No production path consumes it. The WS-D audit
-([docs/active_plans/workstreams/no_crop_render_harness_audit.md](workstreams/no_crop_render_harness_audit.md))
+([no_crop_render_harness_audit.md](workstreams/no_crop_render_harness_audit.md))
 established that none of the three render paths
 (production runtime, static template, stress static-HTML) reads
 `kind_to_footprint` from `regions/*.yaml` at HEAD 8795d25:
@@ -171,7 +171,7 @@ Treating `regions/*.yaml` as durable project architecture confuses
 these two facts. It is the input shape that a missing experimental
 renderer was meant to read.
 
-## Should regions/*.yaml remain, be renamed, or be replaced?
+## Should regions/\*.yaml remain, be renamed, or be replaced?
 
 Recommendation for the current Round 3 work: keep the files in
 place. Do not delete them. Do not rename them in this session.
@@ -196,15 +196,15 @@ as a separate plan, not executed here.
 
 ## Vocabulary table for future reports
 
-| Concept | Durable canonical term | Where it lives | Notes |
-| --- | --- | --- | --- |
-| Authoring unit for "where things appear" | scene | docs/specs/SCENE_VOCABULARY.md; docs/specs/SCENE_YAML_FORMAT.md | the contract-anchored term |
-| Scene declaration data | scene YAML / scene manifest | content/scenes/*.yaml (and equivalents) | not regions/*.yaml |
-| A clickable lab thing | scene object | docs/specs/OBJECT_VOCABULARY.md; PRIMARY_CONTRACT item 3 | SVG-backed, declared in scene YAML |
-| Visible artwork for a scene object | SVG asset | docs/specs/SVG_PIPELINE.md; assets/ | normalized SVGs only |
-| Named placement area inside a scene | zone | docs/specs/SCENE_VOCABULARY.md "zone" section | the schema construct; "region" in spec text is descriptive English for a zone |
-| Aspect/sizing class for visual-test layout | footprint class | docs/active_plans/workstreams/no_crop_footprint_vocab_proposal.md (proposal-only) | experimental until promoted; not in docs/specs/ |
-| Experiment-local mapping artifact | region YAML (legacy filename); future: object_footprints YAML | experiments/css_native_layout/regions/*.yaml today | not project architecture; not scene YAML |
+| Concept                                    | Durable canonical term                                        | Where it lives                                                                    | Notes                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------- | --------------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Authoring unit for "where things appear"   | scene                                                         | docs/specs/SCENE_VOCABULARY.md; docs/specs/SCENE_YAML_FORMAT.md                   | the contract-anchored term                                                    |
+| Scene declaration data                     | scene YAML / scene manifest                                   | content/scenes/\*.yaml (and equivalents)                                          | not regions/\*.yaml                                                           |
+| A clickable lab thing                      | scene object                                                  | docs/specs/OBJECT_VOCABULARY.md; PRIMARY_CONTRACT item 3                          | SVG-backed, declared in scene YAML                                            |
+| Visible artwork for a scene object         | SVG asset                                                     | docs/specs/SVG_PIPELINE.md; assets/                                               | normalized SVGs only                                                          |
+| Named placement area inside a scene        | zone                                                          | docs/specs/SCENE_VOCABULARY.md "zone" section                                     | the schema construct; "region" in spec text is descriptive English for a zone |
+| Aspect/sizing class for visual-test layout | footprint class                                               | docs/active_plans/workstreams/no_crop_footprint_vocab_proposal.md (proposal-only) | experimental until promoted; not in docs/specs/                               |
+| Experiment-local mapping artifact          | region YAML (legacy filename); future: object_footprints YAML | experiments/css_native_layout/regions/\*.yaml today                               | not project architecture; not scene YAML                                      |
 
 Going-forward language rules for workstream reports:
 

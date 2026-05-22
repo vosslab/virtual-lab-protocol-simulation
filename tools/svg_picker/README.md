@@ -17,6 +17,7 @@ All three emit JSON files under `tools/svg_picker/`: `candidates.json`, `missing
 ### 2. Open the picker
 
 **Firefox (supports `file://` fetch):**
+
 ```bash
 open tools/svg_picker/index.html
 ```
@@ -58,6 +59,7 @@ source source_me.sh && python3 tools/svg_picker/apply_decisions.py decisions.jso
 ```
 
 The applier validates every decision before writing to disk:
+
 - All required fields are present (asset_name, state, candidate_id for assigned).
 - Assigned decisions reference existing candidates from the current `candidates.json`.
 - Source files (from OTHER_REPOS or assets/equipment) still exist on disk.
@@ -66,6 +68,7 @@ The applier validates every decision before writing to disk:
 - In-repo sources (source_repo == "assets/equipment") require `--rename-existing` flag.
 
 On success, the applier:
+
 - Copies or moves SVGs into `assets/equipment/<asset_name>.svg`.
 - Runs normalization via `tools/normalize_svg_v2.py`.
 - Appends attribution rows to `docs/SVG_ATTRIBUTION.md` for CC BY sources.
@@ -137,23 +140,27 @@ Below the target context in the middle pane, the currently highlighted candidate
 ## Examples
 
 ### Assign a strong name match
+
 1. Select a target in the left pane (auto-focuses first unassigned).
 2. Ranked candidates appear in the right pane (best match at top).
 3. Press `Enter` to assign the highlighted (first) candidate.
 4. Picker jumps to next unassigned.
 
 ### Batch defer all variant-looking in a family
+
 1. Click a group header in the left pane to multi-select the whole family.
 2. Click "Defer all X selected" in the action bar.
 3. All targets in that family are marked defer.
 
 ### Search for a specific candidate
+
 1. Press `/` to focus the search box.
 2. Type a name or token (e.g., "pipette" or "p300").
 3. Ranked list is replaced with search results.
 4. Press `Escape` to clear focus, or clear the search box to return to ranked view.
 
 ### Hide a candidate from a family
+
 1. Highlight a candidate that appears in many targets.
 2. Press `X` to hide it from every target in the current state family.
 3. The decision's `hidden_candidates` list is persisted; re-import restores the filter.

@@ -298,11 +298,11 @@ right.
 
 ## See also
 
-- [docs/PLAYFUL_TRAINING_GAME_STYLE.md](PLAYFUL_TRAINING_GAME_STYLE.md):
+- [PLAYFUL_TRAINING_GAME_STYLE.md](PLAYFUL_TRAINING_GAME_STYLE.md):
   sibling doc tuned for older learners (lab students, technical apprentices).
   Same engine, calmer tone. Use that doc when the target is competence
   building rather than kid-arcade replay.
-- [docs/REPO_STYLE.md](REPO_STYLE.md): repo-wide conventions, including
+- [REPO_STYLE.md](REPO_STYLE.md): repo-wide conventions, including
   the five core philosophies that underpin the engineering side.
-- [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md): writing conventions for this
+- [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md): writing conventions for this
   doc.

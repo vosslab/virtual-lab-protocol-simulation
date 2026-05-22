@@ -61,7 +61,7 @@ Output: `test-results/new0_css_native/scorecard/scorecard.json` and `scorecard.m
 
 ## Case study: Batch 2 Workstream O regression
 
-The regression root cause report ([stress_results/batch2_o_regression_root_cause.md](../../experiments/css_native_layout/stress_results/batch2_o_regression_root_cause.md)) documents how Batch 2 Close violated this rule:
+The regression root cause report (`batch2_o_regression_root_cause.md`) documents how Batch 2 Close violated this rule:
 
 - **batch1 scorecard**: produced by `score_layout.mjs`, full DOM measurement, all metrics computed.
 - **batch2_n scorecard**: produced by `/tmp/_generate_scorecard_batch2_n.py`, hardcoded 4 of 9 metrics, stale input data.
@@ -69,6 +69,7 @@ The regression root cause report ([stress_results/batch2_o_regression_root_cause
 Result: Apparent 12-16 point regressions across five scenes were artifacts of scorecard methodology mismatch, not layout failures. The precheck hard failures (clipped_artwork, off_page) were actually fixed by Workstream N; the regression signals were false.
 
 Key evidence:
+
 - `support_distance` calculated from stale field name (`mean_norm` vs `mean_normalized_distance`)
 - `primary_prominence` hardcoded to 100 in batch2_n (where batch1 scored 0-100)
 - `region_filling` hardcoded to 50 (where batch1 values ranged 14.2-30.3)
@@ -92,12 +93,12 @@ Every scorecard citation must include:
 Layout scorecard: Batch 3 baseline (2026-05-21)
 
 Precheck run:
-  node experiments/css_native_layout/precheck.mjs \
-    'experiments/css_native_layout/templates/*.html' \
-    --out test-results/new3_batch3/precheck
+node experiments/css_native_layout/precheck.mjs \
+ 'experiments/css_native_layout/templates/\*.html' \
+ --out test-results/new3_batch3/precheck
 
 Scorecard generation:
-  node experiments/css_native_layout/score_layout.mjs
+node experiments/css_native_layout/score_layout.mjs
 
 Output: test-results/new0_css_native/scorecard/scorecard.json
 ```
@@ -118,6 +119,7 @@ Scripts that aggregate or filter precheck INPUT (not reimplementing scores) are 
 - Helpers that format precheck paths for `score_layout.mjs --compare`
 
 Such helpers must:
+
 - Document that they pass inputs to `score_layout.mjs`, not produce scores directly
 - Include the downstream `score_layout.mjs` command in their output
 - NOT hardcode any metric values
@@ -131,7 +133,7 @@ Such helpers must:
 
 ## Related references
 
-- [experiments/css_native_layout/score_layout.mjs](../../experiments/css_native_layout/score_layout.mjs) - authoritative scorer
-- [experiments/css_native_layout/precheck.mjs](../../experiments/css_native_layout/precheck.mjs) - visual diagnostic (input source)
-- [stress_results/batch2_o_regression_root_cause.md](../../experiments/css_native_layout/stress_results/batch2_o_regression_root_cause.md) - case study
-- [PRECHECK_USAGE.md](../../experiments/css_native_layout/PRECHECK_USAGE.md) - precheck operational guide
+- `score_layout.mjs` - authoritative scorer
+- `precheck.mjs` - visual diagnostic (input source)
+- `batch2_o_regression_root_cause.md` - case study
+- `PRECHECK_USAGE.md` - precheck operational guide

@@ -41,16 +41,16 @@ Every object file is a single YAML mapping with the following top-level
 keys. The "Required" column is the schema rule; the "Section" column links
 to the per-section detail below.
 
-| Field | Type | Required | Section |
-| --- | --- | --- | --- |
-| `object_name` | string | yes | [Object identity](#object-identity) |
-| `kind` | enum string | yes | [Object identity](#object-identity) |
-| `label` | string | yes | [Object identity](#object-identity) |
-| `structure` | mapping | no | [Structure](#structure) |
-| `state_fields` | list of mapping | yes (may be empty) | [state_fields](#state_fields) |
-| `visual_states` | mapping | yes (may be empty) | [Visual states](#visual-states) |
-| `capabilities` | list of enum string | yes (may be empty) | [Capabilities](#capabilities) |
-| `layout` | mapping | yes | [Layout hints](#layout-hints) |
+| Field           | Type                | Required           | Section                             |
+| --------------- | ------------------- | ------------------ | ----------------------------------- |
+| `object_name`   | string              | yes                | [Object identity](#object-identity) |
+| `kind`          | enum string         | yes                | [Object identity](#object-identity) |
+| `label`         | string              | yes                | [Object identity](#object-identity) |
+| `structure`     | mapping             | no                 | [Structure](#structure)             |
+| `state_fields`  | list of mapping     | yes (may be empty) | [state_fields](#state_fields)       |
+| `visual_states` | mapping             | yes (may be empty) | [Visual states](#visual-states)     |
+| `capabilities`  | list of enum string | yes (may be empty) | [Capabilities](#capabilities)       |
+| `layout`        | mapping             | yes                | [Layout hints](#layout-hints)       |
 
 `state_fields`, `visual_states`, and `capabilities` are required even when
 empty (the empty list and empty mapping forms). This is deliberate: an
@@ -64,11 +64,11 @@ are written `state_fields: []`, `visual_states: {}`, `capabilities: []`.
 Identity fields name the object and classify it. They are stable across
 scenes; a scene placement may not override identity.
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `object_name` | string | yes | snake_case, unique across the object library | none (must be set) |
-| `kind` | enum string | yes | one of `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration` | none (must be set) |
-| `label` | string | yes | any non-empty string | none (must be set) |
+| Field         | Type        | Required | Allowed                                                                                  | Default            |
+| ------------- | ----------- | -------- | ---------------------------------------------------------------------------------------- | ------------------ |
+| `object_name` | string      | yes      | snake_case, unique across the object library                                             | none (must be set) |
+| `kind`        | enum string | yes      | one of `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration` | none (must be set) |
+| `label`       | string      | yes      | any non-empty string                                                                     | none (must be set) |
 
 The `object_name` value must equal the filename without the `.yaml` extension. The
 build pipeline rejects a mismatch.
@@ -86,16 +86,16 @@ flask, a single-tube vial). An object with a `structure` block is a
 structured surface; its subparts are first-class addressable units inside
 the object's namespace.
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `structure.subpart_kind` | enum string | yes (if `structure` present) | one of `well`, `tube`, `lane`, `slot`, `channel` | none |
-| `structure.layout` | enum string | yes (if `structure` present) | one of `grid`, `list`, `custom` | none |
-| `structure.rows` | int | yes (if `layout: grid`) | positive integer | none |
-| `structure.cols` | int | yes (if `layout: grid`) | positive integer | none |
-| `structure.count` | int | yes (if `layout: list`) | positive integer | none |
-| `structure.name_pattern` | string | yes (if `structure` present) | a string with one or more bracketed tokens drawn from the closed token set below | none |
-| `structure.subpart_state_fields` | list of mapping | no | same shape as [state_fields](#state_fields) entries; applied per subpart | unset |
-| `structure.subpart_groups` | mapping | no | see [Subpart groups](#subpart-groups) section below | unset |
+| Field                            | Type            | Required                     | Allowed                                                                          | Default |
+| -------------------------------- | --------------- | ---------------------------- | -------------------------------------------------------------------------------- | ------- |
+| `structure.subpart_kind`         | enum string     | yes (if `structure` present) | one of `well`, `tube`, `lane`, `slot`, `channel`                                 | none    |
+| `structure.layout`               | enum string     | yes (if `structure` present) | one of `grid`, `list`, `custom`                                                  | none    |
+| `structure.rows`                 | int             | yes (if `layout: grid`)      | positive integer                                                                 | none    |
+| `structure.cols`                 | int             | yes (if `layout: grid`)      | positive integer                                                                 | none    |
+| `structure.count`                | int             | yes (if `layout: list`)      | positive integer                                                                 | none    |
+| `structure.name_pattern`         | string          | yes (if `structure` present) | a string with one or more bracketed tokens drawn from the closed token set below | none    |
+| `structure.subpart_state_fields` | list of mapping | no                           | same shape as [state_fields](#state_fields) entries; applied per subpart         | unset   |
+| `structure.subpart_groups`       | mapping         | no                           | see [Subpart groups](#subpart-groups) section below                              | unset   |
 
 `structure.layout` accepts only `grid` or `list`; any other value is
 rejected by the build pipeline.
@@ -105,13 +105,13 @@ rejected by the build pipeline.
 `structure.name_pattern` is a small templating string. The closed token set
 fixed by this format is:
 
-| Token | Meaning | Valid in |
-| --- | --- | --- |
-| `{row_letter}` | The row index `0..rows-1` mapped to letters `A..Z` | `layout: grid` only |
-| `{row}` | The row index `1..rows` (1-based numeric) | `layout: grid` only |
-| `{col}` | The column index `1..cols` (1-based numeric) | `layout: grid` only |
+| Token          | Meaning                                               | Valid in            |
+| -------------- | ----------------------------------------------------- | ------------------- |
+| `{row_letter}` | The row index `0..rows-1` mapped to letters `A..Z`    | `layout: grid` only |
+| `{row}`        | The row index `1..rows` (1-based numeric)             | `layout: grid` only |
+| `{col}`        | The column index `1..cols` (1-based numeric)          | `layout: grid` only |
 | `{col_letter}` | The column index `0..cols-1` mapped to letters `A..Z` | `layout: grid` only |
-| `{index}` | The subpart index `0..count-1` (0-based numeric) | `layout: list` only |
+| `{index}`      | The subpart index `0..count-1` (0-based numeric)      | `layout: list` only |
 
 A token is written exactly as shown above, including the braces. Literal
 characters between tokens are preserved verbatim. No other tokens are
@@ -146,17 +146,17 @@ remain the primary namespace; subpart groups are additional overlays.
 snake_case label and each value is a group-kind mapping. Each group-kind
 mapping carries:
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `group_kind` | enum string | yes | one of `row`, `column`, `region` | none |
-| `members` | list of mapping | yes | non-empty list; see below | none |
+| Field        | Type            | Required | Allowed                          | Default |
+| ------------ | --------------- | -------- | -------------------------------- | ------- |
+| `group_kind` | enum string     | yes      | one of `row`, `column`, `region` | none    |
+| `members`    | list of mapping | yes      | non-empty list; see below        | none    |
 
 Each member in the `members` list is a mapping with:
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `name` | string | yes | snake_case, unique within this object's all groups | none |
-| `contains` | list of string | yes | non-empty list of canonical cell names generated by `name_pattern` | none |
+| Field      | Type           | Required | Allowed                                                            | Default |
+| ---------- | -------------- | -------- | ------------------------------------------------------------------ | ------- |
+| `name`     | string         | yes      | snake_case, unique within this object's all groups                 | none    |
+| `contains` | list of string | yes      | non-empty list of canonical cell names generated by `name_pattern` | none    |
 
 Authoring rules:
 
@@ -201,13 +201,13 @@ Every entry is a mapping with the required keys `field_name`, `type`,
 `default`, plus per-type metadata and the optional `applies_to` and
 `description`.
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `field_name` | string | yes | snake_case, unique within this object's `state_fields` | none |
-| `type` | enum string | yes | one of `enum`, `int`, `float`, `bool` | none |
-| `default` | matches `type` | yes | must satisfy `type` and the per-type metadata below | none |
-| `applies_to` | enum string | no | one of `object`, `subpart` | `object` |
-| `description` | string | no | one-line author-facing string | unset |
+| Field         | Type           | Required | Allowed                                                | Default  |
+| ------------- | -------------- | -------- | ------------------------------------------------------ | -------- |
+| `field_name`  | string         | yes      | snake_case, unique within this object's `state_fields` | none     |
+| `type`        | enum string    | yes      | one of `enum`, `int`, `float`, `bool`                  | none     |
+| `default`     | matches `type` | yes      | must satisfy `type` and the per-type metadata below    | none     |
+| `applies_to`  | enum string    | no       | one of `object`, `subpart`                             | `object` |
+| `description` | string         | no       | one-line author-facing string                          | unset    |
 
 `applies_to: subpart` is only valid when this object has a `structure`
 block. Declaring `applies_to: subpart` on a flat object is a build-time
@@ -220,12 +220,12 @@ Constraint metadata is a closed per-type set. Only the keys listed
 below are allowed on a `state_field` entry; an unknown metadata key is
 a build-time error. There is no open-ended `constraints:` object.
 
-| `type` | Allowed metadata keys (alongside `field_name`, `type`, `default`, `applies_to`, `description`) |
-| --- | --- |
-| `enum` | `allowed` (non-empty list of strings, required); `default` is one value from `allowed` |
-| `int` | `unit` (string), `min` (int), `max` (int), `step` (int); `default` is an int satisfying `min`/`max`/`step` when present |
+| `type`  | Allowed metadata keys (alongside `field_name`, `type`, `default`, `applies_to`, `description`)                                 |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `enum`  | `allowed` (non-empty list of strings, required); `default` is one value from `allowed`                                         |
+| `int`   | `unit` (string), `min` (int), `max` (int), `step` (int); `default` is an int satisfying `min`/`max`/`step` when present        |
 | `float` | `unit` (string), `min` (float), `max` (float), `step` (float); `default` is a float satisfying `min`/`max`/`step` when present |
-| `bool` | none beyond `default` (one of `true`, `false`) |
+| `bool`  | none beyond `default` (one of `true`, `false`)                                                                                 |
 
 Unit strings for numeric fields are ASCII-only per
 [../MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md). Standard runtime units include
@@ -257,16 +257,16 @@ The choice between `material_name` (vessel semantics) and `held_material_name`
 each kind enum value. Authors must select one of these field-name pairs for
 each kind; no kind permits both in the same file.
 
-| `kind` | Material field | Semantics |
-| --- | --- | --- |
-| `pipette` | `held_material_name`, `held_material_volume` | Tool that carries material between containers; held by cursor or in hand |
-| `bottle` | `material_name`, `material_volume` | Stationary container; sits in scene and holds material |
-| `flask` | `material_name`, `material_volume` | Stationary container; sits in scene and holds material |
-| `waste` | `material_name`, `material_volume` | Stationary container; collects discarded material |
-| `rack` | `material_name`, `material_volume` (per subpart) | Structured container; subparts hold material in `structure.subpart_state_fields` |
-| `plate` | `material_name`, `material_volume` (per subpart) | Structured container; subparts (wells) hold material in `structure.subpart_state_fields` |
-| `equipment` | `material_name`, `material_volume` or `held_material_name`, `held_material_volume` | Equipment with internal chambers or containers. Case-by-case per equipment function: vessel-like equipment (staining tray, tank) uses `material_name` and MUST also declare `material_container` capability to affirm vessel semantics; tool-like equipment (aspirating head) uses `held_material_name` |
-| `decoration` | N/A | Static visual; no material state; `state_fields` must be empty |
+| `kind`       | Material field                                                                     | Semantics                                                                                                                                                                                                                                                                                               |
+| ------------ | ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pipette`    | `held_material_name`, `held_material_volume`                                       | Tool that carries material between containers; held by cursor or in hand                                                                                                                                                                                                                                |
+| `bottle`     | `material_name`, `material_volume`                                                 | Stationary container; sits in scene and holds material                                                                                                                                                                                                                                                  |
+| `flask`      | `material_name`, `material_volume`                                                 | Stationary container; sits in scene and holds material                                                                                                                                                                                                                                                  |
+| `waste`      | `material_name`, `material_volume`                                                 | Stationary container; collects discarded material                                                                                                                                                                                                                                                       |
+| `rack`       | `material_name`, `material_volume` (per subpart)                                   | Structured container; subparts hold material in `structure.subpart_state_fields`                                                                                                                                                                                                                        |
+| `plate`      | `material_name`, `material_volume` (per subpart)                                   | Structured container; subparts (wells) hold material in `structure.subpart_state_fields`                                                                                                                                                                                                                |
+| `equipment`  | `material_name`, `material_volume` or `held_material_name`, `held_material_volume` | Equipment with internal chambers or containers. Case-by-case per equipment function: vessel-like equipment (staining tray, tank) uses `material_name` and MUST also declare `material_container` capability to affirm vessel semantics; tool-like equipment (aspirating head) uses `held_material_name` |
+| `decoration` | N/A                                                                                | Static visual; no material state; `state_fields` must be empty                                                                                                                                                                                                                                          |
 
 Material field naming is closed: these are the only two allowed field names across
 all objects. An object declares material through either pair, never both together,
@@ -287,12 +287,12 @@ The `visual_states` is the only authoring surface in this format that names
 SVG asset names or overlay names. An identity field, a `state_field`, a
 capability, or a layout hint never names an asset name.
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `visual_states.<field>.kind` | enum string | yes | one of `svg`, `overlay`, `composite` | none |
-| `visual_states.<field>.cases` | list of case mappings | required for `state_field.type` of `enum` or `bool`; forbidden for `int` or `float` | see [Cases schema](#cases-schema) below | none |
-| `visual_states.<field>.formula` | string | required for `state_field.type` of `int` or `float`; forbidden for `enum` or `bool` | a string drawn from the closed [formula mini-language](#formula-mini-language) | none |
-| `visual_states.<field>.applies_to` | enum string | no | one of `object`, `subpart` | `object` |
+| Field                              | Type                  | Required                                                                            | Allowed                                                                        | Default  |
+| ---------------------------------- | --------------------- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ | -------- |
+| `visual_states.<field>.kind`       | enum string           | yes                                                                                 | one of `svg`, `overlay`, `composite`                                           | none     |
+| `visual_states.<field>.cases`      | list of case mappings | required for `state_field.type` of `enum` or `bool`; forbidden for `int` or `float` | see [Cases schema](#cases-schema) below                                        | none     |
+| `visual_states.<field>.formula`    | string                | required for `state_field.type` of `int` or `float`; forbidden for `enum` or `bool` | a string drawn from the closed [formula mini-language](#formula-mini-language) | none     |
+| `visual_states.<field>.applies_to` | enum string           | no                                                                                  | one of `object`, `subpart`                                                     | `object` |
 
 Every key in `visual_states` must name a declared `state_field` on this
 object. A `visual_states` key with no matching `state_field` is a build-time
@@ -314,18 +314,18 @@ list must appear as a `when` value in exactly one case (for `bool`, both
 
 Every case mapping has the shape:
 
-| Field | Type | Required | Allowed |
-| --- | --- | --- | --- |
-| `when` | matches `state_field.type` | yes | a value from the field's `allowed` list |
-| `output` | mapping | yes | one of the four output shapes below |
+| Field    | Type                       | Required | Allowed                                 |
+| -------- | -------------------------- | -------- | --------------------------------------- |
+| `when`   | matches `state_field.type` | yes      | a value from the field's `allowed` list |
+| `output` | mapping                    | yes      | one of the four output shapes below     |
 
 The `output` mapping takes one of three shapes, matching the
 `visual_states.<field>.kind`:
 
-| `kind` | `output` shape |
-| --- | --- |
-| `svg` | `{asset_name: <asset_name>}` -- one asset name resolved by the SVG pipeline |
-| `overlay` | `{overlay_name: <overlay_name>}` -- one SVG fragment name composited over the base |
+| `kind`      | `output` shape                                                                                    |
+| ----------- | ------------------------------------------------------------------------------------------------- |
+| `svg`       | `{asset_name: <asset_name>}` -- one asset name resolved by the SVG pipeline                       |
+| `overlay`   | `{overlay_name: <overlay_name>}` -- one SVG fragment name composited over the base                |
 | `composite` | `{composite: [<output mapping>, ...]}` -- a non-empty ordered list of any of the two shapes above |
 
 A composite list is rendered top to bottom; the first entry is the base
@@ -342,17 +342,17 @@ this doc, not to embed code in an object file.
 
 The closed token set is:
 
-| Token | Operand types | Meaning |
-| --- | --- | --- |
-| `state(<field_name>)` | any `int` or `float` `state_field` declared on this object | the current numeric value of the named field |
-| `const(<number>)` | numeric literal | a literal number (decimal or integer) |
-| `const(<string>)` | string literal | a literal string in double quotes |
-| `+` `-` `*` `/` | numeric operands | basic arithmetic, left-associative |
-| `min(a, b)` `max(a, b)` | numeric operands | bounded arithmetic |
-| `clamp(value, lo, hi)` | numeric operands | clamp `value` to `[lo, hi]` |
+| Token                                                      | Operand types                                                                                              | Meaning                                                                                                                                                                          |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `state(<field_name>)`                                      | any `int` or `float` `state_field` declared on this object                                                 | the current numeric value of the named field                                                                                                                                     |
+| `const(<number>)`                                          | numeric literal                                                                                            | a literal number (decimal or integer)                                                                                                                                            |
+| `const(<string>)`                                          | string literal                                                                                             | a literal string in double quotes                                                                                                                                                |
+| `+` `-` `*` `/`                                            | numeric operands                                                                                           | basic arithmetic, left-associative                                                                                                                                               |
+| `min(a, b)` `max(a, b)`                                    | numeric operands                                                                                           | bounded arithmetic                                                                                                                                                               |
+| `clamp(value, lo, hi)`                                     | numeric operands                                                                                           | clamp `value` to `[lo, hi]`                                                                                                                                                      |
 | `fill_height(state(<volume_field>), capacity_ml=<number>)` | a numeric volume `state_field` (typically a `float` named `material_volume`, `held_material_volume`, etc.) | resolve the field to a fill height proportional to the volume divided by `capacity_ml` (or `capacity_ul` when units match); the runtime applies it to the rendered SVG container |
-| `label(state(<numeric_field>), format=<string>)` | a numeric `state_field` (typically a set-point `float`) | render the value as an overlay text label, using the format string with `{value}` placeholder; the format string supplies the unit text |
-| `compose(<token>, <token>, ...)` | any of the above | compose multiple effects (for example a fill plus a label) into one render output; ordered top to bottom |
+| `label(state(<numeric_field>), format=<string>)`           | a numeric `state_field` (typically a set-point `float`)                                                    | render the value as an overlay text label, using the format string with `{value}` placeholder; the format string supplies the unit text                                          |
+| `compose(<token>, <token>, ...)`                           | any of the above                                                                                           | compose multiple effects (for example a fill plus a label) into one render output; ordered top to bottom                                                                         |
 
 A formula is one expression. Multiple expressions are composed through
 `compose(...)`, not by concatenation or by multi-line strings.
@@ -374,14 +374,14 @@ capability value requires an explicit edit to the vocabulary doc.
 The closed list (with the meaning summary; the vocabulary doc is the
 authority):
 
-| Capability | Summary |
-| --- | --- |
-| `clickable` | accepts a `click` gesture |
-| `material_container` | holds tracked material; expects flat material `state_fields` such as `material_name` and `material_volume` and matching `visual_states` entries |
-| `instrument_with_setpoint` | exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture |
-| `structured_surface` | has a `structure` block with subparts |
-| `cursor_attachable` | may be attached to the cursor by a `CursorAttach` `scene_operation` |
-| `decoration_only` | rendered as a static visual; accepts no gestures and no state mutation |
+| Capability                 | Summary                                                                                                                                         |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clickable`                | accepts a `click` gesture                                                                                                                       |
+| `material_container`       | holds tracked material; expects flat material `state_fields` such as `material_name` and `material_volume` and matching `visual_states` entries |
+| `instrument_with_setpoint` | exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture                 |
+| `structured_surface`       | has a `structure` block with subparts                                                                                                           |
+| `cursor_attachable`        | may be attached to the cursor by a `CursorAttach` `scene_operation`                                                                             |
+| `decoration_only`          | rendered as a static visual; accepts no gestures and no state mutation                                                                          |
 
 ### Mutual-exclusion rule
 
@@ -403,14 +403,14 @@ instrument_with_setpoint, cursor_attachable]`; a benchtop label is
 When a capability is declared, the rest of the object schema must support
 it. The dependencies are:
 
-| Capability | Required schema |
-| --- | --- |
-| `material_container` | at least one material `state_field` (typically a `material_name` `enum` and a `material_volume` `float`) and matching `visual_states` entries |
-| `instrument_with_setpoint` | at least one numeric set-point `state_field` (a `float` with `unit`, `min`, `max`) and a matching `visual_states` entry |
-| `structured_surface` | a `structure` block with `subpart_kind`, `layout`, and `name_pattern` |
-| `cursor_attachable` | no schema dependency (an object that is cursor-attachable simply declares it; the protocol-level `CursorAttach` `scene_operation` consumes the capability) |
-| `clickable` | no schema dependency (every object that is clickable simply declares it) |
-| `decoration_only` | the object's `state_fields` list is empty and the `visual_states` mapping is empty (a decoration carries no declared state and no state-driven rendering) |
+| Capability                 | Required schema                                                                                                                                            |
+| -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `material_container`       | at least one material `state_field` (typically a `material_name` `enum` and a `material_volume` `float`) and matching `visual_states` entries              |
+| `instrument_with_setpoint` | at least one numeric set-point `state_field` (a `float` with `unit`, `min`, `max`) and a matching `visual_states` entry                                    |
+| `structured_surface`       | a `structure` block with `subpart_kind`, `layout`, and `name_pattern`                                                                                      |
+| `cursor_attachable`        | no schema dependency (an object that is cursor-attachable simply declares it; the protocol-level `CursorAttach` `scene_operation` consumes the capability) |
+| `clickable`                | no schema dependency (every object that is clickable simply declares it)                                                                                   |
+| `decoration_only`          | the object's `state_fields` list is empty and the `visual_states` mapping is empty (a decoration carries no declared state and no state-driven rendering)  |
 
 A capability declared without its required schema is a build-time error.
 
@@ -423,10 +423,10 @@ configuration and which subpart group kinds it can address.
 
 `channel_addressing` is a mapping with the following fields:
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `channels` | int | yes | positive integer (typically 1, 8, or 12) | none |
-| `addressable_subpart_kinds` | list of enum string | yes | non-empty subset of `[well, row, column]` | none |
+| Field                       | Type                | Required | Allowed                                   | Default |
+| --------------------------- | ------------------- | -------- | ----------------------------------------- | ------- |
+| `channels`                  | int                 | yes      | positive integer (typically 1, 8, or 12)  | none    |
+| `addressable_subpart_kinds` | list of enum string | yes      | non-empty subset of `[well, row, column]` | none    |
 
 Authoring rules:
 
@@ -459,13 +459,13 @@ for design rationale and usage patterns. The worked example below demonstrates
 ([LAYOUT_ENGINE.md](LAYOUT_ENGINE.md)) consumes when a scene places the
 object. A scene placement may override every field in the `layout` block.
 
-| Field | Type | Required | Allowed | Default |
-| --- | --- | --- | --- | --- |
-| `layout.default_width` | float | yes | positive number, in layout units | none |
-| `layout.label_width` | float | no | positive number, in layout units | unset; layout engine falls back to `default_width` |
-| `layout.anchor_y_offset` | float | no | any number (positive or negative) | `0` |
-| `layout.width_scale` | float | no | positive number | `1.0` |
-| `layout.anchor_y` | enum string | no | one of `bottom`, `tip` | `bottom` |
+| Field                    | Type        | Required | Allowed                           | Default                                            |
+| ------------------------ | ----------- | -------- | --------------------------------- | -------------------------------------------------- |
+| `layout.default_width`   | float       | yes      | positive number, in layout units  | none                                               |
+| `layout.label_width`     | float       | no       | positive number, in layout units  | unset; layout engine falls back to `default_width` |
+| `layout.anchor_y_offset` | float       | no       | any number (positive or negative) | `0`                                                |
+| `layout.width_scale`     | float       | no       | positive number                   | `1.0`                                              |
+| `layout.anchor_y`        | enum string | no       | one of `bottom`, `tip`            | `bottom`                                           |
 
 `layout` itself is required; `layout.default_width` is the only required
 sub-field. The other sub-fields are optional and fall through to the
@@ -539,14 +539,105 @@ structure:
       group_kind: region
       members:
         - name: all_wells
-          contains: [A1, A2, A3, A4, A5, A6, A7, A8, A9, A10, A11, A12,
-                     B1, B2, B3, B4, B5, B6, B7, B8, B9, B10, B11, B12,
-                     C1, C2, C3, C4, C5, C6, C7, C8, C9, C10, C11, C12,
-                     D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12,
-                     E1, E2, E3, E4, E5, E6, E7, E8, E9, E10, E11, E12,
-                     F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12,
-                     G1, G2, G3, G4, G5, G6, G7, G8, G9, G10, G11, G12,
-                     H1, H2, H3, H4, H5, H6, H7, H8, H9, H10, H11, H12]
+          contains:
+            [
+              A1,
+              A2,
+              A3,
+              A4,
+              A5,
+              A6,
+              A7,
+              A8,
+              A9,
+              A10,
+              A11,
+              A12,
+              B1,
+              B2,
+              B3,
+              B4,
+              B5,
+              B6,
+              B7,
+              B8,
+              B9,
+              B10,
+              B11,
+              B12,
+              C1,
+              C2,
+              C3,
+              C4,
+              C5,
+              C6,
+              C7,
+              C8,
+              C9,
+              C10,
+              C11,
+              C12,
+              D1,
+              D2,
+              D3,
+              D4,
+              D5,
+              D6,
+              D7,
+              D8,
+              D9,
+              D10,
+              D11,
+              D12,
+              E1,
+              E2,
+              E3,
+              E4,
+              E5,
+              E6,
+              E7,
+              E8,
+              E9,
+              E10,
+              E11,
+              E12,
+              F1,
+              F2,
+              F3,
+              F4,
+              F5,
+              F6,
+              F7,
+              F8,
+              F9,
+              F10,
+              F11,
+              F12,
+              G1,
+              G2,
+              G3,
+              G4,
+              G5,
+              G6,
+              G7,
+              G8,
+              G9,
+              G10,
+              G11,
+              G12,
+              H1,
+              H2,
+              H3,
+              H4,
+              H5,
+              H6,
+              H7,
+              H8,
+              H9,
+              H10,
+              H11,
+              H12,
+            ]
 
 state_fields:
   - field_name: material_name
@@ -663,7 +754,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ml=25.0)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3
@@ -736,7 +828,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=200)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 channel_addressing:
   channels: 8

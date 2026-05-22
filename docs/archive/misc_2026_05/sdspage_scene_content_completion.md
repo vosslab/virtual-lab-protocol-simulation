@@ -266,7 +266,7 @@ that ratifies the halfway-fix pattern the pause note documents.
 - Hard: `pytest tests/ -q` exits 0 after every WP that touches `tests/` or
   `content/`.
 - Hard: `validation/validate.py` and `validation/manual/protocol_manual.py
-  --all` green after every WP that touches `content/`.
+--all` green after every WP that touches `content/`.
 - Hard: scene YAML files authored in M6 contain ZERO entries from the
   Experiment 1 forbidden-geometry list (`bounds`/`scene_bounds`/`x`/`y`/
   `left`/`right`/`top`/`bottom`/`width`/`height`/`align`/etc.).
@@ -286,16 +286,16 @@ that ratifies the halfway-fix pattern the pause note documents.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Mitigation |
-| --- | --- | --- | --- |
-| Halfway-fix recurrence | high | content authoring in M6 surfaces a contract gap; WP tries to patch contract mid-flight | Each contract is its own milestone with its own gate; M6 cannot start until M5 closes; contract changes after M5 close invalidate the contract and require a new WP |
-| Contract debate stalls M2/M3/M4 | high | reviewers disagree on region taxonomy, dispatch shape, or visual primitive | Each contract WP carries ONE proposed shape + one example; user decides via approval, not via subagent debate; max one revision per WP before manager escalates |
-| Content drifts into protocol behavior | medium | a scene YAML carries step-like fields | M6 WPs cite the protocol/scene boundary documented in `docs/specs/SCENE_VOCABULARY.md`; reviewer rejects any scene YAML carrying interaction or response fields |
-| Screenshot gate brittle | medium | gate fails on cosmetic pixel differences | Gate asserts structure (region presence, target attributes, class membership) not pixel hashes; WP-GATE-1 acceptance includes tolerance rules |
-| Scope creep into adjacent scenes | high | a contract change implies updating non-sdspage scenes | Non-goals are hard; reviewer rejects any non-sdspage content edit; surfaces as a follow-up plan if real |
-| Runtime change required to satisfy a contract | high | WP-GATE-1 cannot assert the visual contract without new CSS / runtime code | Pause the affected WP; surface as a spec-gap; manager re-scopes or escalates; do NOT silently edit runtime |
-| Adapter gap surfaces (e.g. gel cassette adapter missing) | high | M6 content WP cannot place an object because no adapter exists | Adapter authoring is OUT of scope per Non-goals; if a real gap surfaces, stop and open a separate adapter-authoring plan; do NOT inline-author an adapter |
-| User unavailable for contract approvals | medium | M2/M3/M4 stall waiting for user input | M1 surfaces every open question for user resolution before M2 dispatches; plan reports BLOCKED rather than guessing |
+| Risk                                                     | Impact | Trigger                                                                                | Mitigation                                                                                                                                                          |
+| -------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Halfway-fix recurrence                                   | high   | content authoring in M6 surfaces a contract gap; WP tries to patch contract mid-flight | Each contract is its own milestone with its own gate; M6 cannot start until M5 closes; contract changes after M5 close invalidate the contract and require a new WP |
+| Contract debate stalls M2/M3/M4                          | high   | reviewers disagree on region taxonomy, dispatch shape, or visual primitive             | Each contract WP carries ONE proposed shape + one example; user decides via approval, not via subagent debate; max one revision per WP before manager escalates     |
+| Content drifts into protocol behavior                    | medium | a scene YAML carries step-like fields                                                  | M6 WPs cite the protocol/scene boundary documented in `docs/specs/SCENE_VOCABULARY.md`; reviewer rejects any scene YAML carrying interaction or response fields     |
+| Screenshot gate brittle                                  | medium | gate fails on cosmetic pixel differences                                               | Gate asserts structure (region presence, target attributes, class membership) not pixel hashes; WP-GATE-1 acceptance includes tolerance rules                       |
+| Scope creep into adjacent scenes                         | high   | a contract change implies updating non-sdspage scenes                                  | Non-goals are hard; reviewer rejects any non-sdspage content edit; surfaces as a follow-up plan if real                                                             |
+| Runtime change required to satisfy a contract            | high   | WP-GATE-1 cannot assert the visual contract without new CSS / runtime code             | Pause the affected WP; surface as a spec-gap; manager re-scopes or escalates; do NOT silently edit runtime                                                          |
+| Adapter gap surfaces (e.g. gel cassette adapter missing) | high   | M6 content WP cannot place an object because no adapter exists                         | Adapter authoring is OUT of scope per Non-goals; if a real gap surfaces, stop and open a separate adapter-authoring plan; do NOT inline-author an adapter           |
+| User unavailable for contract approvals                  | medium | M2/M3/M4 stall waiting for user input                                                  | M1 surfaces every open question for user resolution before M2 dispatches; plan reports BLOCKED rather than guessing                                                 |
 
 ## Open questions and decisions needed
 

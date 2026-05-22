@@ -2,101 +2,108 @@ protocol_type: mini_protocol
 protocol_name: sdspage_assemble_electrode_module
 entry_step: open_wing_clamps
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with
+  objectives:
+    Students completing this mini-protocol will have achieved fluency with
     assembling the electrode module -- the mechanical frame that holds the gel cassette
     and mounts into the electrophoresis tank.
-  outcomes: Students completing this mini-protocol will be able to open the module's
+  outcomes:
+    Students completing this mini-protocol will be able to open the module's
     wing clamps, insert the gel cassette into the module's slot, close the wing clamps
     to secure the cassette, and lower the assembled module into the electrophoresis
     tank.
-  goals: Overall, this mini-protocol aims to accomplish mounting the gel cassette
+  goals:
+    Overall, this mini-protocol aims to accomplish mounting the gel cassette
     into the electrode module and docking the module in the electrophoresis tank --
     the critical assembly step that establishes the electrical circuit path through
     the gel.
 steps:
-- step_name: open_wing_clamps
-  prompt: Open the wing clamps on the electrode module. These clamps will hold the
-    gel cassette in place.
-  sequence:
-  - target: electrode_module
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: SceneChange
-        to_scene: electrophoresis_bench
-      - type: ObjectStateChange
-        target: electrode_module
-        state:
-          wing_clamps_open: true
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: insert_cassette
-- step_name: insert_cassette
-  prompt: Insert the prepared gel cassette into the module slot. The cassette's short
-    glass plate faces inward toward the module.
-  sequence:
-  - target: electrode_module
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: electrode_module
-        state:
-          cassette_mounted: true
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: close_wing_clamps
-- step_name: close_wing_clamps
-  prompt: Close the wing clamps firmly to secure the gel cassette in the module. The
-    clamps hold the cassette in electrical contact with the electrode leads.
-  sequence:
-  - target: electrode_module
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: electrode_module
-        state:
-          wing_clamps_open: false
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: dock_module_in_tank
-- step_name: dock_module_in_tank
-  prompt: Lower the assembled electrode module (with cassette mounted) into the electrophoresis
-    tank. The module slides down into the tank chamber and seats at the bottom.
-  sequence:
-  - target: electrophoresis_tank
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: electrode_module
-        state:
-          mounted: true
-      - type: ObjectStateChange
-        target: electrophoresis_tank
-        state:
-          module_present: true
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: null
+  - step_name: open_wing_clamps
+    prompt:
+      Open the wing clamps on the electrode module. These clamps will hold the
+      gel cassette in place.
+    sequence:
+      - target: electrode_module
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: electrophoresis_bench
+            - type: ObjectStateChange
+              target: electrode_module
+              state:
+                wing_clamps_open: true
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: insert_cassette
+  - step_name: insert_cassette
+    prompt:
+      Insert the prepared gel cassette into the module slot. The cassette's short
+      glass plate faces inward toward the module.
+    sequence:
+      - target: electrode_module
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrode_module
+              state:
+                cassette_mounted: true
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: close_wing_clamps
+  - step_name: close_wing_clamps
+    prompt:
+      Close the wing clamps firmly to secure the gel cassette in the module. The
+      clamps hold the cassette in electrical contact with the electrode leads.
+    sequence:
+      - target: electrode_module
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrode_module
+              state:
+                wing_clamps_open: false
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: dock_module_in_tank
+  - step_name: dock_module_in_tank
+    prompt:
+      Lower the assembled electrode module (with cassette mounted) into the electrophoresis
+      tank. The module slides down into the tank chamber and seats at the bottom.
+    sequence:
+      - target: electrophoresis_tank
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: electrode_module
+              state:
+                mounted: true
+            - type: ObjectStateChange
+              target: electrophoresis_tank
+              state:
+                module_present: true
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

@@ -31,8 +31,8 @@ side effects, and DOM behavior. The object library
 the state-to-visual map.
 
 Scene YAML is engine-facing configuration consumed by the scene driver
-([../../src/scenes/scene_driver.ts](../../src/scenes/scene_driver.ts)) and by mounted
-capabilities under [../../src/scenes/capabilities/](../../src/scenes/capabilities/).
+(`scene_driver.ts`) and by mounted
+capabilities under `capabilities`.
 It is distinct from protocol YAML and from object YAML.
 
 ## File location
@@ -70,8 +70,8 @@ src/scenes/capabilities/*   (each capability validates its slice of config)
 The generated `scene_data.ts` file carries an auto-generated header naming
 its YAML sources under `content/base_scenes/` and `content/protocols/`.
 
-The build is invoked by [build_github_pages.sh](../../build_github_pages.sh)
-and [export_single_file.sh](../../export_single_file.sh). `check_codebase.sh`
+The build is invoked by [build_github_pages.sh](../../build_github_pages.sh).
+`check_codebase.sh`
 does not regenerate `scene_data.ts`; if YAML edits are pending,
 run `source source_me.sh && python3 pipeline/build_scene_data.py` before the
 type-check pass.
@@ -81,18 +81,18 @@ type-check pass.
 Every scene file is a single YAML mapping with the following top-level
 keys. The "Section" column links to the per-section detail below.
 
-| Field | Type | Required | Section |
-| --- | --- | --- | --- |
-| `scene_name` | string | yes | [Scene identity](#scene-identity) |
-| `workspace` | string | yes | [Scene identity](#scene-identity) |
-| `capabilities` | list of string | yes | [Capability names](#capability-names) |
-| `background` | mapping | no | [Background](#background) |
-| `scene_bounds` | mapping | yes | [Scene bounds](#scene-bounds) |
-| `zones` | list of mapping | yes (may be empty) | [Zones](#zones) |
-| `placements` | list of mapping | yes (may be empty) | [Placements](#placements) |
-| `layout_rules` | mapping | no | [Layout rules](#layout-rules) |
-| `accent_rules` | mapping | no | [Accent rules](#accent-rules) |
-| `wrong_order_message` | mapping | no | [Wrong-order messages](#wrong-order-messages) |
+| Field                 | Type            | Required           | Section                                       |
+| --------------------- | --------------- | ------------------ | --------------------------------------------- |
+| `scene_name`          | string          | yes                | [Scene identity](#scene-identity)             |
+| `workspace`           | string          | yes                | [Scene identity](#scene-identity)             |
+| `capabilities`        | list of string  | yes                | [Capability names](#capability-names)         |
+| `background`          | mapping         | no                 | [Background](#background)                     |
+| `scene_bounds`        | mapping         | yes                | [Scene bounds](#scene-bounds)                 |
+| `zones`               | list of mapping | yes (may be empty) | [Zones](#zones)                               |
+| `placements`          | list of mapping | yes (may be empty) | [Placements](#placements)                     |
+| `layout_rules`        | mapping         | no                 | [Layout rules](#layout-rules)                 |
+| `accent_rules`        | mapping         | no                 | [Accent rules](#accent-rules)                 |
+| `wrong_order_message` | mapping         | no                 | [Wrong-order messages](#wrong-order-messages) |
 
 The cleaned scene-YAML top-level keys cover scene identity, the static
 background, scene-side spatial arrangement (`scene_bounds`, `zones`,
@@ -107,10 +107,10 @@ every key and sub-field that moved off the scene side.
 The scene identity block names the scene and the workspace it targets.
 These are scene-side fields; they are not object identity.
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `scene_name` | string | yes | Stable scene name. Must match the scene directory name and the adapter `sceneId`. |
-| `workspace` | string | yes | Workspace family this scene targets (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, `dedicated_plate`). Today advisory; the field is required so future selectors and telemetry have a stable name. |
+| Field        | Type   | Required | Meaning                                                                                                                                                                                                  |
+| ------------ | ------ | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `scene_name` | string | yes      | Stable scene name. Must match the scene directory name and the adapter `sceneId`.                                                                                                                        |
+| `workspace`  | string | yes      | Workspace family this scene targets (`equipment_bench`, `wet_lab_hood`, `modal_overlay`, `dedicated_plate`). Today advisory; the field is required so future selectors and telemetry have a stable name. |
 
 At runtime, the scene driver derives the DOM mount element id as `${scene_name}-scene`. This is an internal runtime handle, not an authored YAML field. Scenes that use a custom DOM id (such as the `cell_culture_hood` scene using `hood-scene`) override this mapping through a separate, non-YAML configuration path.
 
@@ -124,10 +124,10 @@ zone) is not a background sub-field. It is an object placed over the
 backdrop through `placements[]`; the object library declares what the
 region is (identity, capabilities such as `clickable`, `visual_states`).
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `background.asset` | string | yes (if `background` present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file. |
-| `background.bounds` | mapping (rect) | no | Optional explicit bounds (`left`, `right`, `top`, `bottom`, percent of scene). Defaults to the scene's `scene_bounds`. |
+| Field               | Type           | Required                      | Meaning                                                                                                                |
+| ------------------- | -------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `background.asset`  | string         | yes (if `background` present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file.                              |
+| `background.bounds` | mapping (rect) | no                            | Optional explicit bounds (`left`, `right`, `top`, `bottom`, percent of scene). Defaults to the scene's `scene_bounds`. |
 
 The cleaned scene YAML never declares clickable behavior on the background
 and never attaches state, capabilities, or visual_states to it. State and
@@ -139,12 +139,12 @@ behavior live on objects; see
 The `scene_bounds` block defines the active rendering bounds for the scene
 in normalized percent units. All four fields are required.
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `left` | number (float or int) | yes | Left bound (0-100, percent of scene width). |
-| `right` | number (float or int) | yes | Right bound (0-100, percent of scene width). |
-| `top` | number (float or int) | yes | Top bound (0-100, percent of scene height). |
-| `bottom` | number (float or int) | yes | Bottom bound (0-100, percent of scene height). |
+| Field    | Type                  | Required | Meaning                                        |
+| -------- | --------------------- | -------- | ---------------------------------------------- |
+| `left`   | number (float or int) | yes      | Left bound (0-100, percent of scene width).    |
+| `right`  | number (float or int) | yes      | Right bound (0-100, percent of scene width).   |
+| `top`    | number (float or int) | yes      | Top bound (0-100, percent of scene height).    |
+| `bottom` | number (float or int) | yes      | Bottom bound (0-100, percent of scene height). |
 
 Example:
 
@@ -167,12 +167,12 @@ carries geometry and arrangement; it never carries identity, state, or
 rendering. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) for how the layout
 engine consumes zones.
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `id` | string | yes | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`. Zone ids must be unique within the scene. |
-| `bounds` | mapping (rect) | yes | Zone bounds inside the scene (`left`, `right`, `top`, `bottom`, percent units). The layout engine uses these to size and position the zone. |
-| `align` | enum | no | Arrangement rule for placements inside the zone. Includes `tab-stops` (paired with per-placement `align_stop`) and `center`. |
-| `label` | string | no | Optional human-readable label for authoring and debugging. |
+| Field    | Type           | Required | Meaning                                                                                                                                     |
+| -------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`     | string         | yes      | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`. Zone ids must be unique within the scene.               |
+| `bounds` | mapping (rect) | yes      | Zone bounds inside the scene (`left`, `right`, `top`, `bottom`, percent units). The layout engine uses these to size and position the zone. |
+| `align`  | enum           | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (paired with per-placement `align_stop`) and `center`.                |
+| `label`  | string         | no       | Optional human-readable label for authoring and debugging.                                                                                  |
 
 Example:
 
@@ -205,15 +205,15 @@ boundary rule is authoritative; see
 [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) for the full
 object-side field list and which fields may be overridden.
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `placement_name` | string | yes | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name (for example two `dilution_tube_rack` instances). |
-| `object_name` | string | yes | Name of the object in the object library. The object resolves identity, structure, `state_fields`, `visual_states`, and `capabilities`. |
-| `zone` | string | yes | Zone id this placement belongs to. Must match a declared `zones[].id`. |
-| `depth_tier` | int | no | Numeric layering hint within the zone (front-to-back ordering). |
-| `align_stop` | enum | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. |
-| `baseline_override` | number (float or int) | no | Per-placement baseline override (rare; one observed use). |
-| `layout` | mapping | no | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
+| Field               | Type                  | Required | Meaning                                                                                                                                                                                                                                              |
+| ------------------- | --------------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `placement_name`    | string                | yes      | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name (for example two `dilution_tube_rack` instances).                        |
+| `object_name`       | string                | yes      | Name of the object in the object library. The object resolves identity, structure, `state_fields`, `visual_states`, and `capabilities`.                                                                                                              |
+| `zone`              | string                | yes      | Zone id this placement belongs to. Must match a declared `zones[].id`.                                                                                                                                                                               |
+| `depth_tier`        | int                   | no       | Numeric layering hint within the zone (front-to-back ordering).                                                                                                                                                                                      |
+| `align_stop`        | enum                  | no       | One of `left`, `center`, `right`. Tab-stop group for the layout engine.                                                                                                                                                                              |
+| `baseline_override` | number (float or int) | no       | Per-placement baseline override (rare; one observed use).                                                                                                                                                                                            |
+| `layout`            | mapping               | no       | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
 
 Notes:
 
@@ -283,16 +283,16 @@ The optional `layout_rules` block carries scene-wide hints the layout
 engine needs to resolve placements. Per-placement overrides go on the
 placement, not here. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md).
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `cluster_spacing_px` | int | no | Spacing between placement clusters (in pixels). |
-| `tier_brightness_factor` | mapping (tier -> number) | no | Per-tier brightness multiplier for rendered placements. |
-| `tier_opacity` | mapping (tier -> number) | no | Per-tier opacity (0..1) for rendered placements. |
-| `default_align_stop` | enum | no | Default alignment for placements that do not specify `align_stop` (`left`, `center`, `right`). |
-| `label_font_size` | number (float or int) | no | Font size for placement labels (in pixels; must be positive). |
-| `label_line_height` | number (float or int) | no | Line height for placement labels (must be positive). |
-| `label_offset_y` | number (float or int) | no | Vertical offset for placement labels from the placement baseline (in pixels). |
-| `zone_gap` | number (float or int) | no | Inter-placement gap inside a zone (in scene units). Replaces today's per-zone `gap` field. |
+| Field                    | Type                     | Required | Meaning                                                                                        |
+| ------------------------ | ------------------------ | -------- | ---------------------------------------------------------------------------------------------- |
+| `cluster_spacing_px`     | int                      | no       | Spacing between placement clusters (in pixels).                                                |
+| `tier_brightness_factor` | mapping (tier -> number) | no       | Per-tier brightness multiplier for rendered placements.                                        |
+| `tier_opacity`           | mapping (tier -> number) | no       | Per-tier opacity (0..1) for rendered placements.                                               |
+| `default_align_stop`     | enum                     | no       | Default alignment for placements that do not specify `align_stop` (`left`, `center`, `right`). |
+| `label_font_size`        | number (float or int)    | no       | Font size for placement labels (in pixels; must be positive).                                  |
+| `label_line_height`      | number (float or int)    | no       | Line height for placement labels (must be positive).                                           |
+| `label_offset_y`         | number (float or int)    | no       | Vertical offset for placement labels from the placement baseline (in pixels).                  |
+| `zone_gap`               | number (float or int)    | no       | Inter-placement gap inside a zone (in scene units). Replaces today's per-zone `gap` field.     |
 
 Example:
 
@@ -316,8 +316,8 @@ The optional `accent_rules` block defines styling overrides for placements
 keyed by an accent key. Each key maps to an object with optional stroke,
 fill, and pattern fields.
 
-| Field | Type | Meaning |
-| --- | --- | --- |
+| Field   | Type    | Meaning                                                                                                                         |
+| ------- | ------- | ------------------------------------------------------------------------------------------------------------------------------- |
 | `<key>` | mapping | Styling rules for placements that reference this key. Contains optional `stroke` (string), `fill` (string), `pattern` (string). |
 
 Example:
@@ -334,10 +334,10 @@ accent_rules:
 
 ## Wrong-order messages
 
-| Field | Type | Required | Meaning |
-| --- | --- | --- | --- |
-| `template` | string | yes (if block present) | Toast text with `{expected_label}` placeholder. |
-| `toast_duration_ms` | number (float or int) | no | Toast lifetime in milliseconds. |
+| Field               | Type                  | Required               | Meaning                                         |
+| ------------------- | --------------------- | ---------------------- | ----------------------------------------------- |
+| `template`          | string                | yes (if block present) | Toast text with `{expected_label}` placeholder. |
+| `toast_duration_ms` | number (float or int) | no                     | Toast lifetime in milliseconds.                 |
 
 `wrong_order_message` is scene-side because it is a property of how this
 scene gives feedback, not of any one object's identity or state.
@@ -345,21 +345,21 @@ scene gives feedback, not of any one object's identity or state.
 ## Capability names
 
 Six capability ids are registered in
-[../../src/scenes/capabilities/](../../src/scenes/capabilities/) and mounted at
+`capabilities` and mounted at
 module load via `src/init.ts`. The cleaned scene YAML declares the
 capabilities a scene mounts; object capabilities (`clickable`,
 `material_container`, `instrument_with_setpoint`, `structured_surface`,
 `cursor_attachable`, `decoration_only`) are object-side and live in
 object YAML. This is the closed six-capability set.
 
-| Capability id | Purpose | Status |
-| --- | --- | --- |
-| `item_workspace` | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | Consumes `placements` and `zones`. |
-| `modal_workspace` | Modal-screen scenes (microscope, plate, plate_reader). | Validates `scene_name` only. |
-| `instrument_workspace` | Instrument workspace (microscope automated counter). | Validates `scene_name` only. |
-| `grid_counting_workspace` | Grid-quadrant counting (manual hemocytometer). | Validates `scene_name` and an optional `quadrants` array; dispatches click routing. |
-| `incubator_workspace` | Incubator overlay flow. | Validates `scene_name` only. |
-| `plate_reader_workspace` | Plate-reader modal (results table). | Validates `scene_name` only. |
+| Capability id             | Purpose                                                                                     | Status                                                                              |
+| ------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `item_workspace`          | Click routing for object placements; dispatches `data-item-id` clicks to the scene adapter. | Consumes `placements` and `zones`.                                                  |
+| `modal_workspace`         | Modal-screen scenes (microscope, plate, plate_reader).                                      | Validates `scene_name` only.                                                        |
+| `instrument_workspace`    | Instrument workspace (microscope automated counter).                                        | Validates `scene_name` only.                                                        |
+| `grid_counting_workspace` | Grid-quadrant counting (manual hemocytometer).                                              | Validates `scene_name` and an optional `quadrants` array; dispatches click routing. |
+| `incubator_workspace`     | Incubator overlay flow.                                                                     | Validates `scene_name` only.                                                        |
+| `plate_reader_workspace`  | Plate-reader modal (results table).                                                         | Validates `scene_name` only.                                                        |
 
 ## Validation rules
 

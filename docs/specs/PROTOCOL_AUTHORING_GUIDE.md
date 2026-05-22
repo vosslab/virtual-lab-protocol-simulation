@@ -366,18 +366,19 @@ Run through this checklist for every step you write.
 - **Referenced materials exist.** Every material name written by an
   `ObjectStateChange` into a flat material `state_field` (`material_name`,
   `held_material_name`) exists in `materials.yaml`.
+
 ## Build and walk loop
 
 Iterate on a protocol with a short loop: audit, validate, build, walk. Stop
 at the first failure and read the message. The builder runs all schema and
 cross-file rules; the walker plays the protocol through the real DOM.
 
-| Stage | Purpose |
-| --- | --- |
-| Audit | Quick per-step completeness report. |
-| Validate | Run all schema and cross-file rules without writing output. |
-| Build | Validate and emit the generated TypeScript modules. |
-| Walk | Rebuild the bundle, launch Playwright, and play the protocol through the real DOM. |
+| Stage            | Purpose                                                                                     |
+| ---------------- | ------------------------------------------------------------------------------------------- |
+| Audit            | Quick per-step completeness report.                                                         |
+| Validate         | Run all schema and cross-file rules without writing output.                                 |
+| Build            | Validate and emit the generated TypeScript modules.                                         |
+| Walk             | Rebuild the bundle, launch Playwright, and play the protocol through the real DOM.          |
 | Wrong-order walk | Inject a wrong-order interaction before each correct one and assert the soft-fail behavior. |
 
 Run Python tooling through the repo environment: `source source_me.sh && python3 ...`.

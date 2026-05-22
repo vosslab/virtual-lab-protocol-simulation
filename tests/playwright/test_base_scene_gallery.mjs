@@ -13,10 +13,10 @@
  * all screenshots for human visual review.
  */
 
-import { chromium } from 'playwright';
-import path from 'node:path';
-import fs from 'node:fs';
-import { REPO_ROOT } from './repo_root.mjs';
+import { chromium } from "playwright";
+import path from "node:path";
+import fs from "node:fs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 //============================================
 // CONSTANTS
@@ -24,51 +24,55 @@ import { REPO_ROOT } from './repo_root.mjs';
 
 // Auto-discover base scenes from generated catalog.
 // A base scene has extends_base === null or absent.
-let BASE_SCENE_NAMES = [];
+const BASE_SCENE_NAMES = [];
 
 // Lazy load: will populate on first test run.
 async function discoverBaseScenes() {
-	if (BASE_SCENE_NAMES.length > 0) {
-		return BASE_SCENE_NAMES;
-	}
+  if (BASE_SCENE_NAMES.length > 0) {
+    return BASE_SCENE_NAMES;
+  }
 
-	const mod = await import(path.join(REPO_ROOT, 'generated', 'scene_data.ts'));
-	const { SCENE_CATALOG } = mod;
+  const mod = await import(path.join(REPO_ROOT, "generated", "scene_data.ts"));
+  const { SCENE_CATALOG } = mod;
 
-	for (const sceneName in SCENE_CATALOG) {
-		const sceneData = SCENE_CATALOG[sceneName];
-		if (!sceneData.extends_base || sceneData.extends_base === null) {
-			BASE_SCENE_NAMES.push(sceneName);
-		}
-	}
+  for (const sceneName in SCENE_CATALOG) {
+    const sceneData = SCENE_CATALOG[sceneName];
+    if (!sceneData.extends_base || sceneData.extends_base === null) {
+      BASE_SCENE_NAMES.push(sceneName);
+    }
+  }
 
-	BASE_SCENE_NAMES.sort();
-	return BASE_SCENE_NAMES;
+  BASE_SCENE_NAMES.sort();
+  return BASE_SCENE_NAMES;
 }
 
-const GALLERY_DIR = path.join(REPO_ROOT, 'test-results', '_base_scenes_gallery');
+const GALLERY_DIR = path.join(
+  REPO_ROOT,
+  "test-results",
+  "_base_scenes_gallery",
+);
 
 //============================================
 // Helper: Load scene data from generated catalog
 //============================================
 
 async function loadSceneData(sceneName) {
-	// Import the compiled generated scene data.
-	const mod = await import(path.join(REPO_ROOT, 'generated', 'scene_data.ts'));
-	const { SCENE_CATALOG } = mod;
+  // Import the compiled generated scene data.
+  const mod = await import(path.join(REPO_ROOT, "generated", "scene_data.ts"));
+  const { SCENE_CATALOG } = mod;
 
-	if (!(sceneName in SCENE_CATALOG)) {
-		throw new Error(`Scene '${sceneName}' not found in SCENE_CATALOG`);
-	}
+  if (!(sceneName in SCENE_CATALOG)) {
+    throw new Error(`Scene '${sceneName}' not found in SCENE_CATALOG`);
+  }
 
-	const sceneData = SCENE_CATALOG[sceneName];
+  const sceneData = SCENE_CATALOG[sceneName];
 
-	// Verify it's a base scene (no extends_base).
-	if (sceneData.extends_base && sceneData.extends_base !== null) {
-		throw new Error(`Scene '${sceneName}' extends base; not a base scene`);
-	}
+  // Verify it's a base scene (no extends_base).
+  if (sceneData.extends_base && sceneData.extends_base !== null) {
+    throw new Error(`Scene '${sceneName}' extends base; not a base scene`);
+  }
 
-	return sceneData;
+  return sceneData;
 }
 
 //============================================
@@ -76,7 +80,7 @@ async function loadSceneData(sceneName) {
 //============================================
 
 function generateHtmlShell(sceneName) {
-	return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -154,233 +158,272 @@ function generateHtmlShell(sceneName) {
 //============================================
 
 async function renderSingleScene(sceneName, browser) {
-	console.log(`\n[${sceneName}] Starting render...`);
+  console.log(`\n[${sceneName}] Starting render...`);
 
-	// Load scene data.
-	let sceneData;
-	try {
-		sceneData = await loadSceneData(sceneName);
-	} catch (err) {
-		console.error(`[${sceneName}] Failed to load scene data: ${err.message}`);
-		throw err;
-	}
+  // Load scene data.
+  let sceneData;
+  try {
+    sceneData = await loadSceneData(sceneName);
+  } catch (err) {
+    console.error(`[${sceneName}] Failed to load scene data: ${err.message}`);
+    throw err;
+  }
 
-	// Create gallery directory if needed.
-	fs.mkdirSync(GALLERY_DIR, { recursive: true });
+  // Create gallery directory if needed.
+  fs.mkdirSync(GALLERY_DIR, { recursive: true });
 
-	// Write HTML shell.
-	const htmlPath = path.join(GALLERY_DIR, `${sceneName}_temp.html`);
-	const htmlContent = generateHtmlShell(sceneName);
-	fs.writeFileSync(htmlPath, htmlContent);
+  // Write HTML shell.
+  const htmlPath = path.join(GALLERY_DIR, `${sceneName}_temp.html`);
+  const htmlContent = generateHtmlShell(sceneName);
+  fs.writeFileSync(htmlPath, htmlContent);
 
-	// Create page and load HTML.
-	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
-	const fileUrl = `file://${htmlPath}`;
-	await page.goto(fileUrl);
+  // Create page and load HTML.
+  const page = await browser.newPage({
+    viewport: { width: 1200, height: 900 },
+  });
+  const fileUrl = `file://${htmlPath}`;
+  await page.goto(fileUrl);
 
-	// Render the scene into the container.
-	console.log(`[${sceneName}] Rendering scene...`);
+  // Render the scene into the container.
+  console.log(`[${sceneName}] Rendering scene...`);
 
-	// Detect if this is a row+slot scene (has 'rows' instead of 'zones').
-	const isRowSlotScene = sceneData.rows && !sceneData.zones;
-	let zones = sceneData.zones || [];
-	let placements = sceneData.placements || [];
+  // Detect if this is a row+slot scene (has 'rows' instead of 'zones').
+  const isRowSlotScene = sceneData.rows && !sceneData.zones;
+  let zones = sceneData.zones || [];
+  let placements = sceneData.placements || [];
 
-	// If row+slot, convert rows+slots to zones and build placements on-the-fly.
-	if (isRowSlotScene && sceneData.rows) {
-		console.log(`[${sceneName}] Converting row+slot layout to zones...`);
-		const numRows = sceneData.rows.length;
-		zones = [];
-		placements = [];
+  // If row+slot, convert rows+slots to zones and build placements on-the-fly.
+  if (isRowSlotScene && sceneData.rows) {
+    console.log(`[${sceneName}] Converting row+slot layout to zones...`);
+    const numRows = sceneData.rows.length;
+    zones = [];
+    placements = [];
 
-		for (let ri = 0; ri < sceneData.rows.length; ri++) {
-			const row = sceneData.rows[ri];
-			// Row band y-positions: 25%, 50%, 75% for 3 rows.
-			let bandY;
-			if (numRows === 1) {
-				bandY = 50;
-			} else {
-				const minY = 25;
-				const maxY = 75;
-				bandY = minY + (ri / (numRows - 1)) * (maxY - minY);
-			}
+    for (let ri = 0; ri < sceneData.rows.length; ri++) {
+      const row = sceneData.rows[ri];
+      // Row band y-positions: 25%, 50%, 75% for 3 rows.
+      let bandY;
+      if (numRows === 1) {
+        bandY = 50;
+      } else {
+        const minY = 25;
+        const maxY = 75;
+        bandY = minY + (ri / (numRows - 1)) * (maxY - minY);
+      }
 
-			const numSlots = row.slots.length;
-			const slotWidth = numSlots > 0 ? 100 / numSlots : 100;
+      const numSlots = row.slots.length;
+      const slotWidth = numSlots > 0 ? 100 / numSlots : 100;
 
-			for (let si = 0; si < row.slots.length; si++) {
-				const slot = row.slots[si];
-				const x0 = si * slotWidth;
-				const x1 = (si + 1) * slotWidth;
+      for (let si = 0; si < row.slots.length; si++) {
+        const slot = row.slots[si];
+        const x0 = si * slotWidth;
+        const x1 = (si + 1) * slotWidth;
 
-				zones.push({
-					id: slot.placement_name,
-					bounds: {
-						left: x0,
-						right: x1,
-						top: bandY - 12,
-						bottom: bandY + 12,
-					},
-					align: 'center',
-					label: slot.placement_name,
-				});
+        zones.push({
+          id: slot.placement_name,
+          bounds: {
+            left: x0,
+            right: x1,
+            top: bandY - 12,
+            bottom: bandY + 12,
+          },
+          align: "center",
+          label: slot.placement_name,
+        });
 
-				// Build placement entry
-				placements.push({
-					placement_name: slot.placement_name,
-					object_name: slot.object_name,
-					zone: slot.placement_name,
-					depth_tier: 1,
-				});
-			}
-		}
-	}
+        // Build placement entry
+        placements.push({
+          placement_name: slot.placement_name,
+          object_name: slot.object_name,
+          zone: slot.placement_name,
+          depth_tier: 1,
+        });
+      }
+    }
+  }
 
-	// Ensure scene has bounds
-	if (!sceneData.scene_bounds) {
-		sceneData.scene_bounds = { left: 0, top: 0, right: 100, bottom: 100 };
-	}
+  // Ensure scene has bounds
+  if (!sceneData.scene_bounds) {
+    sceneData.scene_bounds = { left: 0, top: 0, right: 100, bottom: 100 };
+  }
 
-	const renderResult = await page.evaluate(async ({ scene, zonesData, placementData, isRowSlot }) => {
-		// Update the metadata display.
-		document.getElementById('workspace-label').textContent = scene.workspace + (isRowSlot ? ' (row+slot)' : '');
-		document.getElementById('placement-count').textContent = placementData.length;
+  const renderResult = await page.evaluate(
+    async ({ scene, zonesData, placementData, isRowSlot }) => {
+      // Update the metadata display.
+      document.getElementById("workspace-label").textContent =
+        scene.workspace + (isRowSlot ? " (row+slot)" : "");
+      document.getElementById("placement-count").textContent =
+        placementData.length;
 
-		const container = document.getElementById('scene-container');
-		if (!container) throw new Error('Container not found');
+      const container = document.getElementById("scene-container");
+      if (!container) throw new Error("Container not found");
 
-		// Create SVG with resolved scene geometry.
-		const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-		const bounds = scene.scene_bounds || { left: 0, top: 0, right: 100, bottom: 100 };
-		svg.setAttribute('viewBox', `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`);
-		svg.setAttribute('width', '100%');
-		svg.setAttribute('height', '100%');
-		svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-		svg.style.border = '1px solid #999';
+      // Create SVG with resolved scene geometry.
+      const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+      const bounds = scene.scene_bounds || {
+        left: 0,
+        top: 0,
+        right: 100,
+        bottom: 100,
+      };
+      svg.setAttribute(
+        "viewBox",
+        `${bounds.left} ${bounds.top} ${bounds.right - bounds.left} ${bounds.bottom - bounds.top}`,
+      );
+      svg.setAttribute("width", "100%");
+      svg.setAttribute("height", "100%");
+      svg.setAttribute("preserveAspectRatio", "xMidYMid meet");
+      svg.style.border = "1px solid #999";
 
-		// Background rect.
-		const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-		bgRect.setAttribute('x', String(bounds.left));
-		bgRect.setAttribute('y', String(bounds.top));
-		bgRect.setAttribute('width', String(bounds.right - bounds.left));
-		bgRect.setAttribute('height', String(bounds.bottom - bounds.top));
-		bgRect.setAttribute('fill', '#fafafa');
-		bgRect.setAttribute('stroke', 'none');
-		svg.appendChild(bgRect);
+      // Background rect.
+      const bgRect = document.createElementNS(
+        "http://www.w3.org/2000/svg",
+        "rect",
+      );
+      bgRect.setAttribute("x", String(bounds.left));
+      bgRect.setAttribute("y", String(bounds.top));
+      bgRect.setAttribute("width", String(bounds.right - bounds.left));
+      bgRect.setAttribute("height", String(bounds.bottom - bounds.top));
+      bgRect.setAttribute("fill", "#fafafa");
+      bgRect.setAttribute("stroke", "none");
+      svg.appendChild(bgRect);
 
-		// Render each placement.
-		const placementIds = [];
-		for (const placement of placementData) {
-			// Find the zone.
-			const zone = zonesData.find(z => z.id === placement.zone);
-			if (!zone) continue;
+      // Render each placement.
+      const placementIds = [];
+      for (const placement of placementData) {
+        // Find the zone.
+        const zone = zonesData.find((z) => z.id === placement.zone);
+        if (!zone) continue;
 
-			// Position at zone center.
-			const x = zone.bounds.left + (zone.bounds.right - zone.bounds.left) / 2;
-			const y = zone.bounds.top + (zone.bounds.bottom - zone.bounds.top) / 2;
-			const width = 22;
-			const height = 32;
+        // Position at zone center.
+        const x = zone.bounds.left + (zone.bounds.right - zone.bounds.left) / 2;
+        const y = zone.bounds.top + (zone.bounds.bottom - zone.bounds.top) / 2;
+        const width = 22;
+        const height = 32;
 
-			// Create group.
-			const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-			group.setAttribute('data-placement-name', placement.placement_name);
-			group.setAttribute('data-object-name', placement.object_name);
-			group.setAttribute('data-target-id', placement.object_name);
+        // Create group.
+        const group = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "g",
+        );
+        group.setAttribute("data-placement-name", placement.placement_name);
+        group.setAttribute("data-object-name", placement.object_name);
+        group.setAttribute("data-target-id", placement.object_name);
 
-			// Create rect.
-			const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-			rect.setAttribute('x', String(x - width / 2));
-			rect.setAttribute('y', String(y - height / 2));
-			rect.setAttribute('width', String(width));
-			rect.setAttribute('height', String(height));
-			rect.setAttribute('fill', '#c8e6c9');
-			rect.setAttribute('stroke', '#2e7d32');
-			rect.setAttribute('stroke-width', '2');
-			rect.setAttribute('rx', '4');
+        // Create rect.
+        const rect = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "rect",
+        );
+        rect.setAttribute("x", String(x - width / 2));
+        rect.setAttribute("y", String(y - height / 2));
+        rect.setAttribute("width", String(width));
+        rect.setAttribute("height", String(height));
+        rect.setAttribute("fill", "#c8e6c9");
+        rect.setAttribute("stroke", "#2e7d32");
+        rect.setAttribute("stroke-width", "2");
+        rect.setAttribute("rx", "4");
 
-			// Create label.
-			const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-			text.setAttribute('x', String(x));
-			text.setAttribute('y', String(y + 6));
-			text.setAttribute('text-anchor', 'middle');
-			text.setAttribute('font-size', '11');
-			text.setAttribute('font-family', 'monospace');
-			text.setAttribute('font-weight', 'bold');
-			text.setAttribute('fill', '#1b5e20');
-			text.textContent = placement.object_name.substring(0, 14);
+        // Create label.
+        const text = document.createElementNS(
+          "http://www.w3.org/2000/svg",
+          "text",
+        );
+        text.setAttribute("x", String(x));
+        text.setAttribute("y", String(y + 6));
+        text.setAttribute("text-anchor", "middle");
+        text.setAttribute("font-size", "11");
+        text.setAttribute("font-family", "monospace");
+        text.setAttribute("font-weight", "bold");
+        text.setAttribute("fill", "#1b5e20");
+        text.textContent = placement.object_name.substring(0, 14);
 
-			group.appendChild(rect);
-			group.appendChild(text);
-			svg.appendChild(group);
+        group.appendChild(rect);
+        group.appendChild(text);
+        svg.appendChild(group);
 
-			placementIds.push({
-				placement: placement.placement_name,
-				targetId: placement.object_name,
-			});
-		}
+        placementIds.push({
+          placement: placement.placement_name,
+          targetId: placement.object_name,
+        });
+      }
 
-		container.innerHTML = '';
-		container.appendChild(svg);
+      container.innerHTML = "";
+      container.appendChild(svg);
 
-		return {
-			rendered: true,
-			placementIds,
-		};
-	}, { scene: sceneData, zonesData: zones, placementData: placements, isRowSlot: isRowSlotScene });
+      return {
+        rendered: true,
+        placementIds,
+      };
+    },
+    {
+      scene: sceneData,
+      zonesData: zones,
+      placementData: placements,
+      isRowSlot: isRowSlotScene,
+    },
+  );
 
-	console.log(`[${sceneName}] Rendered ${renderResult.placementIds.length} placements`);
+  console.log(
+    `[${sceneName}] Rendered ${renderResult.placementIds.length} placements`,
+  );
 
-	// Collect bounding boxes.
-	const boundingBoxResult = await page.evaluate(async () => {
-		const container = document.getElementById('scene-container');
-		const groups = container.querySelectorAll('[data-target-id]');
+  // Collect bounding boxes.
+  const boundingBoxResult = await page.evaluate(async () => {
+    const container = document.getElementById("scene-container");
+    const groups = container.querySelectorAll("[data-target-id]");
 
-		const boxes = [];
-		for (const group of groups) {
-			const box = group.getBoundingClientRect();
-			boxes.push({
-				targetId: group.getAttribute('data-target-id'),
-				x: Math.round(box.x * 100) / 100,
-				y: Math.round(box.y * 100) / 100,
-				width: Math.round(box.width * 100) / 100,
-				height: Math.round(box.height * 100) / 100,
-			});
-		}
+    const boxes = [];
+    for (const group of groups) {
+      const box = group.getBoundingClientRect();
+      boxes.push({
+        targetId: group.getAttribute("data-target-id"),
+        x: Math.round(box.x * 100) / 100,
+        y: Math.round(box.y * 100) / 100,
+        width: Math.round(box.width * 100) / 100,
+        height: Math.round(box.height * 100) / 100,
+      });
+    }
 
-		return boxes;
-	});
+    return boxes;
+  });
 
-	// Display stats in the page.
-	const statsText = boundingBoxResult.map(box =>
-		`${box.targetId.padEnd(20)} (${String(box.width).padStart(6)}x${String(box.height).padStart(6)}) at (${String(box.x).padStart(8)}, ${String(box.y).padStart(8)})`
-	).join('\n');
+  // Display stats in the page.
+  const statsText = boundingBoxResult
+    .map(
+      (box) =>
+        `${box.targetId.padEnd(20)} (${String(box.width).padStart(6)}x${String(box.height).padStart(6)}) at (${String(box.x).padStart(8)}, ${String(box.y).padStart(8)})`,
+    )
+    .join("\n");
 
-	await page.evaluate((stats) => {
-		document.getElementById('bbox-stats').textContent = stats;
-	}, statsText);
+  await page.evaluate((stats) => {
+    document.getElementById("bbox-stats").textContent = stats;
+  }, statsText);
 
-	// Capture screenshot.
-	const screenshotPath = path.join(GALLERY_DIR, `${sceneName}.png`);
-	await page.screenshot({ path: screenshotPath });
-	console.log(`[${sceneName}] Screenshot saved: ${screenshotPath}`);
+  // Capture screenshot.
+  const screenshotPath = path.join(GALLERY_DIR, `${sceneName}.png`);
+  await page.screenshot({ path: screenshotPath });
+  console.log(`[${sceneName}] Screenshot saved: ${screenshotPath}`);
 
-	// Log bbox stats.
-	console.log(`[${sceneName}] Placement bbox stats:`);
-	boundingBoxResult.forEach(box => {
-		console.log(`  ${box.targetId.padEnd(20)} (${box.width.toFixed(1)}x${box.height.toFixed(1)}) at (${box.x.toFixed(1)}, ${box.y.toFixed(1)})`);
-	});
+  // Log bbox stats.
+  console.log(`[${sceneName}] Placement bbox stats:`);
+  boundingBoxResult.forEach((box) => {
+    console.log(
+      `  ${box.targetId.padEnd(20)} (${box.width.toFixed(1)}x${box.height.toFixed(1)}) at (${box.x.toFixed(1)}, ${box.y.toFixed(1)})`,
+    );
+  });
 
-	// Close page.
-	await page.close();
+  // Close page.
+  await page.close();
 
-	// Clean up temp HTML.
-	fs.unlinkSync(htmlPath);
+  // Clean up temp HTML.
+  fs.unlinkSync(htmlPath);
 
-	return {
-		sceneName,
-		placementCount: renderResult.placementIds.length,
-		screenshotPath,
-	};
+  return {
+    sceneName,
+    placementCount: renderResult.placementIds.length,
+    screenshotPath,
+  };
 }
 
 //============================================
@@ -388,11 +431,9 @@ async function renderSingleScene(sceneName, browser) {
 //============================================
 
 function generateGalleryIndex(results) {
-	const scenes = results
-		.map(r => r.sceneName)
-		.sort();
+  const scenes = results.map((r) => r.sceneName).sort();
 
-	let html = `<!DOCTYPE html>
+  let html = `<!DOCTYPE html>
 <html>
 <head>
 	<meta charset="utf-8">
@@ -469,15 +510,15 @@ function generateGalleryIndex(results) {
 		<div class="scene-grid">
 `;
 
-	for (const sceneName of scenes) {
-		html += `			<div class="scene-card">
+  for (const sceneName of scenes) {
+    html += `			<div class="scene-card">
 				<h2>${sceneName}</h2>
 				<img src="${sceneName}.png" alt="Scene: ${sceneName}">
 			</div>
 `;
-	}
+  }
 
-	html += `		</div>
+  html += `		</div>
 		<div class="footer">
 			<p>Generated by test_base_scene_gallery.mjs</p>
 			<p>Artifacts: test-results/_base_scenes_gallery/</p>
@@ -487,7 +528,7 @@ function generateGalleryIndex(results) {
 </html>
 `;
 
-	return html;
+  return html;
 }
 
 //============================================
@@ -495,84 +536,87 @@ function generateGalleryIndex(results) {
 //============================================
 
 async function runTest() {
-	// Discover base scenes from generated catalog.
-	await discoverBaseScenes();
+  // Discover base scenes from generated catalog.
+  await discoverBaseScenes();
 
-	console.log('='.repeat(60));
-	console.log(`WP-BASE-SCENE-GALLERY: Render all ${BASE_SCENE_NAMES.length} base scenes`);
-	console.log('='.repeat(60));
+  console.log("=".repeat(60));
+  console.log(
+    `WP-BASE-SCENE-GALLERY: Render all ${BASE_SCENE_NAMES.length} base scenes`,
+  );
+  console.log("=".repeat(60));
 
-	// Create gallery directory.
-	fs.mkdirSync(GALLERY_DIR, { recursive: true });
+  // Create gallery directory.
+  fs.mkdirSync(GALLERY_DIR, { recursive: true });
 
-	// Launch browser once.
-	console.log('\nLaunching browser...');
-	const browser = await chromium.launch({ headless: true });
+  // Launch browser once.
+  console.log("\nLaunching browser...");
+  const browser = await chromium.launch({ headless: true });
 
-	const results = [];
-	let failedScenes = [];
+  const results = [];
+  const failedScenes = [];
 
-	try {
-		// Render each base scene.
-		for (const sceneName of BASE_SCENE_NAMES) {
-			try {
-				const result = await renderSingleScene(sceneName, browser);
-				results.push(result);
-			} catch (err) {
-				console.error(`[${sceneName}] FAILED: ${err.message}`);
-				failedScenes.push(sceneName);
-			}
-		}
-	} finally {
-		// Close browser.
-		await browser.close();
-	}
+  try {
+    // Render each base scene.
+    for (const sceneName of BASE_SCENE_NAMES) {
+      try {
+        const result = await renderSingleScene(sceneName, browser);
+        results.push(result);
+      } catch (err) {
+        console.error(`[${sceneName}] FAILED: ${err.message}`);
+        failedScenes.push(sceneName);
+      }
+    }
+  } finally {
+    // Close browser.
+    await browser.close();
+  }
 
-	// Report results.
-	console.log('\n' + '='.repeat(60));
-	console.log('RENDER SUMMARY');
-	console.log('='.repeat(60));
-	console.log(`Discovered base scenes: ${BASE_SCENE_NAMES.length}`);
-	console.log(`Successfully rendered: ${results.length}`);
-	console.log(`Failed: ${failedScenes.length}`);
+  // Report results.
+  console.log("\n" + "=".repeat(60));
+  console.log("RENDER SUMMARY");
+  console.log("=".repeat(60));
+  console.log(`Discovered base scenes: ${BASE_SCENE_NAMES.length}`);
+  console.log(`Successfully rendered: ${results.length}`);
+  console.log(`Failed: ${failedScenes.length}`);
 
-	if (failedScenes.length > 0) {
-		console.log(`\nFailed scenes: ${failedScenes.join(', ')}`);
-	}
+  if (failedScenes.length > 0) {
+    console.log(`\nFailed scenes: ${failedScenes.join(", ")}`);
+  }
 
-	// Generate gallery index.
-	console.log('\nGenerating gallery index...');
-	const indexHtml = generateGalleryIndex(results);
-	const indexPath = path.join(GALLERY_DIR, 'index.html');
-	fs.writeFileSync(indexPath, indexHtml);
-	console.log(`Index saved: ${indexPath}`);
+  // Generate gallery index.
+  console.log("\nGenerating gallery index...");
+  const indexHtml = generateGalleryIndex(results);
+  const indexPath = path.join(GALLERY_DIR, "index.html");
+  fs.writeFileSync(indexPath, indexHtml);
+  console.log(`Index saved: ${indexPath}`);
 
-	// Report file list.
-	console.log('\nGenerated files:');
-	const files = fs.readdirSync(GALLERY_DIR).sort();
-	files.forEach(f => {
-		const filePath = path.join(GALLERY_DIR, f);
-		const stat = fs.statSync(filePath);
-		const size = stat.size > 1024
-			? `${(stat.size / 1024).toFixed(1)}K`
-			: `${stat.size}B`;
-		console.log(`  ${f.padEnd(30)} ${size.padStart(10)}`);
-	});
+  // Report file list.
+  console.log("\nGenerated files:");
+  const files = fs.readdirSync(GALLERY_DIR).sort();
+  files.forEach((f) => {
+    const filePath = path.join(GALLERY_DIR, f);
+    const stat = fs.statSync(filePath);
+    const size =
+      stat.size > 1024 ? `${(stat.size / 1024).toFixed(1)}K` : `${stat.size}B`;
+    console.log(`  ${f.padEnd(30)} ${size.padStart(10)}`);
+  });
 
-	// Exit code.
-	if (failedScenes.length > 0) {
-		console.log('\nFAILURE: Some scenes failed to render');
-		return 1;
-	}
+  // Exit code.
+  if (failedScenes.length > 0) {
+    console.log("\nFAILURE: Some scenes failed to render");
+    return 1;
+  }
 
-	console.log(`\nSUCCESS: All ${BASE_SCENE_NAMES.length} base scenes rendered and gallery created`);
-	return 0;
+  console.log(
+    `\nSUCCESS: All ${BASE_SCENE_NAMES.length} base scenes rendered and gallery created`,
+  );
+  return 0;
 }
 
 // Run the test.
 runTest()
-	.then(code => process.exit(code))
-	.catch(err => {
-		console.error('TEST ERROR:', err);
-		process.exit(1);
-	});
+  .then((code) => process.exit(code))
+  .catch((err) => {
+    console.error("TEST ERROR:", err);
+    process.exit(1);
+  });

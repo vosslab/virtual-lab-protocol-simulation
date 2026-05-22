@@ -31,10 +31,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "bench_basic__right_tool_p200_micropipette.png"
@@ -139,10 +136,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_coomassie_stain.png"
@@ -173,10 +167,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_destain.png"
@@ -207,9 +198,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_ddh2o.png"
@@ -240,10 +229,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_coomassie_recycle.png"
@@ -274,10 +260,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_destain_waste.png"
@@ -308,10 +291,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_laemmli_buffer.png"
@@ -342,10 +322,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "crowded_bench_dense__rear_bme_bottle.png"
@@ -413,10 +390,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_plate_workspace__rear_dmso_bottle.png"
@@ -447,9 +421,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "drug_dilution_plate_workspace__rear_pbs_bottle.png"
@@ -480,10 +452,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_plate_workspace__rear_drug_bottle.png"
@@ -545,10 +514,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_plate_workspace__tool_p200.png"
@@ -585,10 +551,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_dmso_bottle.png"
@@ -619,9 +582,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_pbs_bottle.png"
@@ -652,10 +613,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_1.png"
@@ -686,10 +644,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_2.png"
@@ -720,10 +675,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_drug_bottle_3.png"
@@ -754,9 +706,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__rear_ethanol_bottle.png"
@@ -818,10 +768,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "drug_dilution_workspace_dense__tool_p200_micropipette.png"
@@ -920,10 +867,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "electrophoresis_bench__rear_left_running_buffer_10x.png"
@@ -954,10 +898,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "electrophoresis_bench__center_running_buffer_1x_carboy.png"
@@ -988,9 +929,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "electrophoresis_bench__center_ddh2o_bottle.png"
@@ -1021,10 +960,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "electrophoresis_bench__rear_left_recycle_buffer_bottle.png"
@@ -1055,10 +991,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "electrophoresis_bench__right_tool_area_p200_micropipette.png"
@@ -1120,9 +1053,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "electrophoresis_bench__rear_left_protein_ladder_tube.png"
@@ -1221,10 +1152,7 @@
           "issues": [
             {
               "type": "cropped",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "hood_basic__rear_left_ethanol_bottle.png"
@@ -1255,10 +1183,7 @@
           "issues": [
             {
               "type": "cropped",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "hood_basic__rear_center_ddh2o_spray.png"
@@ -1289,10 +1214,7 @@
           "issues": [
             {
               "type": "cropped",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "hood_basic__center_p1000_pipette.png"
@@ -1366,10 +1288,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "staining_bench__rear_left_coomassie_stain.png"
@@ -1400,10 +1319,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "staining_bench__rear_center_destain.png"
@@ -1434,9 +1350,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top"
-              ]
+              "sides": ["top"]
             }
           ],
           "screenshot": "staining_bench__rear_right_ddh2o.png"
@@ -1467,10 +1381,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "staining_bench__rear_left_coomassie_recycle.png"
@@ -1501,10 +1412,7 @@
           "issues": [
             {
               "type": "off-card",
-              "sides": [
-                "top",
-                "bottom"
-              ]
+              "sides": ["top", "bottom"]
             }
           ],
           "screenshot": "staining_bench__rear_center_destain_waste.png"

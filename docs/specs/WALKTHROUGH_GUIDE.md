@@ -24,12 +24,12 @@ interactions, not merely schema-valid.
 
 The walkthrough has four layers:
 
-| Layer | File | Responsibility |
-| --- | --- | --- |
-| Built app | `dist/` | Browser-rendered game output produced by the build |
-| Node walker | [protocol_walkthrough_yaml.mjs](../../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
-| Helper library | [walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs) | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers |
-| Python wrapper | [run_protocol_walkthrough.py](../../tools/run_protocol_walkthrough.py) | Optional build-and-run convenience around the Node walker |
+| Layer          | File                                                                                      | Responsibility                                                                           |
+| -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Built app      | `dist/`                                                                                   | Browser-rendered game output produced by the build                                       |
+| Node walker    | [protocol_walkthrough_yaml.mjs](../../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
+| Helper library | [walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs)                       | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers          |
+| Python wrapper | [run_protocol_walkthrough.py](../../tools/run_protocol_walkthrough.py)                    | Optional build-and-run convenience around the Node walker                                |
 
 The core loop is:
 
@@ -141,11 +141,11 @@ The wrapper also supports:
 
 The three workflows are:
 
-| Workflow | Use | Command |
-| --- | --- | --- |
-| Normal walkthrough | Default real-browser protocol walkthrough | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <id>` |
-| Python wrapper | Optional convenience around the same headless walker | `python3 tools/run_protocol_walkthrough.py --protocol <id>` |
-| Codex-only fallback | UI review only when local browser launch fails in Codex macOS sandbox | `tools/run_ui_review_podman.sh` |
+| Workflow            | Use                                                                   | Command                                                                   |
+| ------------------- | --------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Normal walkthrough  | Default real-browser protocol walkthrough                             | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <id>` |
+| Python wrapper      | Optional convenience around the same headless walker                  | `python3 tools/run_protocol_walkthrough.py --protocol <id>`               |
+| Codex-only fallback | UI review only when local browser launch fails in Codex macOS sandbox | `tools/run_ui_review_podman.sh`                                           |
 
 The Podman path is not the default walkthrough path. It is only for Codex macOS
 sandbox browser-launch failures during screenshot-oriented UI review. It is not
@@ -251,12 +251,12 @@ click_did_not_advance: click on <object_name> produced no state change after <ms
 Scene scoping is important because the same `data-item-id` can exist in more
 than one scene. `resolveScopedSelector()` maps scene names to scene containers:
 
-| Scene | Container |
-| --- | --- |
+| Scene                  | Container                     |
+| ---------------------- | ----------------------------- |
 | `well_plate_workspace` | `#well_plate_workspace-scene` |
-| `bench` | `#bench-scene` |
-| `plate_reader` | `#bench-scene` |
-| default/hood | `#hood-scene` |
+| `bench`                | `#bench-scene`                |
+| `plate_reader`         | `#bench-scene`                |
+| default/hood           | `#hood-scene`                 |
 
 The walker switches scenes through visible UI paths where possible:
 
@@ -336,17 +336,17 @@ because the browser logged application errors or same-origin asset failures.
 When a new protocol or scene fails in the walker, check these cases before
 adding special-case code.
 
-| Symptom | Likely cause | Better fix |
-| --- | --- | --- |
-| `Element ... does not exist in DOM` | Item id is missing from scene YAML, render output, or modal markup | Add the item to the scene/render path or fix the id |
-| `Element ... is not visible` | Wrong scene is active, hidden duplicate was selected, or overlay state blocks the target | Fix scene switching or pass a scoped scene selector |
-| `click_did_not_advance` | Click handler is missing, handler changes only CSS, or state signal is delayed beyond budget | Add the runtime handler or expose an observable state change |
-| Active step advances to the wrong `step_name` | Step completes but the runtime resolves `next_step` to a wrong or missing step | Fix protocol YAML `next_step` value or completion dispatch |
-| Final result screen missing | Terminal step completed without rendering the scoring/results screen | Fix terminal UI flow, not the walker |
-| Wrong-order injection advances the step | Runtime accepts a non-required interaction as valid progress | Tighten interaction-validator dispatch and active-target checks |
-| Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol | Fix the `SceneChange` `scene_operation` chain in the affected step's `response` |
-| Modal advance control missing | Modal scene's advance affordance is not rendered or not clickable | Fix modal scene rendering and the step's interaction `target` |
-| `select`-gesture step cannot click answer | Choice id is not rendered as a scene-scoped click target | Fix choice rendering and the interaction `target` |
+| Symptom                                         | Likely cause                                                                                 | Better fix                                                                      |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `Element ... does not exist in DOM`             | Item id is missing from scene YAML, render output, or modal markup                           | Add the item to the scene/render path or fix the id                             |
+| `Element ... is not visible`                    | Wrong scene is active, hidden duplicate was selected, or overlay state blocks the target     | Fix scene switching or pass a scoped scene selector                             |
+| `click_did_not_advance`                         | Click handler is missing, handler changes only CSS, or state signal is delayed beyond budget | Add the runtime handler or expose an observable state change                    |
+| Active step advances to the wrong `step_name`   | Step completes but the runtime resolves `next_step` to a wrong or missing step               | Fix protocol YAML `next_step` value or completion dispatch                      |
+| Final result screen missing                     | Terminal step completed without rendering the scoring/results screen                         | Fix terminal UI flow, not the walker                                            |
+| Wrong-order injection advances the step         | Runtime accepts a non-required interaction as valid progress                                 | Tighten interaction-validator dispatch and active-target checks                 |
+| Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol                                      | Fix the `SceneChange` `scene_operation` chain in the affected step's `response` |
+| Modal advance control missing                   | Modal scene's advance affordance is not rendered or not clickable                            | Fix modal scene rendering and the step's interaction `target`                   |
+| `select`-gesture step cannot click answer       | Choice id is not rendered as a scene-scoped click target                                     | Fix choice rendering and the interaction `target`                               |
 
 Prefer fixing runtime schema, YAML, render output, or dispatch behavior before
 adding walker branches. The walker is most valuable when it remains a generic
@@ -455,11 +455,11 @@ failure cases include:
 
 Current budgets:
 
-| Budget | Value | Failure |
-| --- | --- | --- |
-| Per click | `3000ms` | `click_did_not_advance` |
-| Per step | `30000ms` | `step_stalled` |
-| Whole run | `600000ms` | `run_stalled` |
+| Budget    | Value      | Failure                 |
+| --------- | ---------- | ----------------------- |
+| Per click | `3000ms`   | `click_did_not_advance` |
+| Per step  | `30000ms`  | `step_stalled`          |
+| Whole run | `600000ms` | `run_stalled`           |
 
 ## Wrong-order mode
 

@@ -14,7 +14,7 @@
 Pattern used for per-well / per-row / per-column targets:
 
 ```text
-well_plate_96\.([A-H](1[0-2]|[1-9])|row_[A-H]|col_(1[0-2]|[1-9]))
+well_plate_96\.(`1[0-2]|[1-9]`|row_[A-H]|col_(1[0-2]|[1-9]))
 ```
 
 Counted separately:
@@ -25,13 +25,13 @@ well_plate_96\.all_wells
 
 Run across `content/protocols/*/protocol.yaml` (31 files).
 
-| File                                                                  | enumerated | all_wells |
-| --------------------------------------------------------------------- | ---------: | --------: |
-| `mtt_plate_reaction/protocol.yaml`                                    |        192 |         0 |
-| `mtt_solubilization_readout/protocol.yaml`                            |          0 |         6 |
-| `plate_drug_treatment_drug_addition/protocol.yaml`                    |        252 |         0 |
-| `plate_drug_treatment_media_adjustment/protocol.yaml`                 |        192 |         0 |
-| (every other protocol)                                                |          0 |         0 |
+| File                                                  | enumerated | all_wells |
+| ----------------------------------------------------- | ---------: | --------: |
+| `mtt_plate_reaction/protocol.yaml`                    |        192 |         0 |
+| `mtt_solubilization_readout/protocol.yaml`            |          0 |         6 |
+| `plate_drug_treatment_drug_addition/protocol.yaml`    |        252 |         0 |
+| `plate_drug_treatment_media_adjustment/protocol.yaml` |        192 |         0 |
+| (every other protocol)                                |          0 |         0 |
 
 Totals: 636 enumerated hits across 3 files; 6 `all_wells` hits in
 1 file.
@@ -43,14 +43,14 @@ mutates the same plate object for one pedagogical action. The
 table has one row per site, not per raw hit (see plan
 `## Audit site definition`).
 
-| Protocol                                | Step                            | Lines       | Raw hits | Current shape | Case bucket                          | Intended target shape                       | New object groups needed |
-| --------------------------------------- | ------------------------------- | ----------- | -------: | ------------- | ------------------------------------ | ------------------------------------------- | ------------------------ |
-| `mtt_plate_reaction`                    | `add_mtt_to_wells`              | 64-1046     |       96 | per-well      | case 1 (uniform plate action)        | `well_plate_96.all_wells` (1 interaction)   | no                       |
-| `plate_drug_treatment_media_adjustment` | `adjust_media_quadrant_a1_h6`   | 20-528 (*)  |       48 | per-well      | case 3 (variation IS the skill)      | 2 block-group interactions: 100 uL + 95 uL  | YES (block_A_1_6 + block_B_H_1_6) |
-| `plate_drug_treatment_media_adjustment` | `adjust_media_quadrant_a7_h12`  | 529-1053 (*)|       48 | per-well      | case 3 (variation IS the skill)      | 2 block-group interactions: 95 uL + 90 uL   | YES (block_A_7_12 + block_B_H_7_12) |
-| `plate_drug_treatment_drug_addition`    | (out of scope, see TODO below)  | n/a         |      252 | per-well      | likely case 3                        | deferred                                    | TBD                      |
+| Protocol                                | Step                           | Lines         | Raw hits | Current shape | Case bucket                     | Intended target shape                      | New object groups needed            |
+| --------------------------------------- | ------------------------------ | ------------- | -------: | ------------- | ------------------------------- | ------------------------------------------ | ----------------------------------- |
+| `mtt_plate_reaction`                    | `add_mtt_to_wells`             | 64-1046       |       96 | per-well      | case 1 (uniform plate action)   | `well_plate_96.all_wells` (1 interaction)  | no                                  |
+| `plate_drug_treatment_media_adjustment` | `adjust_media_quadrant_a1_h6`  | 20-528 (\*)   |       48 | per-well      | case 3 (variation IS the skill) | 2 block-group interactions: 100 uL + 95 uL | YES (block_A_1_6 + block_B_H_1_6)   |
+| `plate_drug_treatment_media_adjustment` | `adjust_media_quadrant_a7_h12` | 529-1053 (\*) |       48 | per-well      | case 3 (variation IS the skill) | 2 block-group interactions: 95 uL + 90 uL  | YES (block_A_7_12 + block_B_H_7_12) |
+| `plate_drug_treatment_drug_addition`    | (out of scope, see TODO below) | n/a           |      252 | per-well      | likely case 3                   | deferred                                   | TBD                                 |
 
-(*) approximate; the two PDTMA quadrant steps each carry one
+(\*) approximate; the two PDTMA quadrant steps each carry one
 volume-set adjust, one media-bottle click, then the per-well
 dispense block.
 
@@ -101,12 +101,12 @@ these without per-well writes.
 
 Recommended additive geometric block groups:
 
-| Name              | Members                                   | Member count |
-| ----------------- | ----------------------------------------- | ------------ |
-| `block_A_1_6`     | A1..A6                                    |            6 |
-| `block_A_7_12`    | A7..A12                                   |            6 |
-| `block_B_H_1_6`   | {B,C,D,E,F,G,H} x {1..6}                  |           42 |
-| `block_B_H_7_12`  | {B,C,D,E,F,G,H} x {7..12}                 |           42 |
+| Name             | Members                   | Member count |
+| ---------------- | ------------------------- | ------------ |
+| `block_A_1_6`    | A1..A6                    | 6            |
+| `block_A_7_12`   | A7..A12                   | 6            |
+| `block_B_H_1_6`  | {B,C,D,E,F,G,H} x {1..6}  | 42           |
+| `block_B_H_7_12` | {B,C,D,E,F,G,H} x {7..12} | 42           |
 
 Total new wells covered: 96 (one per well, no overlap).
 Names are purely geometric. No protocol-specific meaning baked
@@ -146,12 +146,12 @@ conflicts with the schema description.
 Recommendation for WP-MTT-FIX-1:
 
 - `add_mtt_to_wells` writes `{material_name: mtt, material_volume:
-  125}` to `well_plate_96.all_wells`. The 125 stays (it is the
+125}` to `well_plate_96.all_wells`. The 125 stays (it is the
   correct post-dispense well total). The bug being fixed is the
   `material_name` (was `formazan`, now `mtt`), not the volume.
 - `incubate_formazan_conversion` adds an `ObjectStateChange` to
   `well_plate_96.all_wells` writing `{material_name: formazan,
-  material_volume: 125}`. The biology transition writes
+material_volume: 125}`. The biology transition writes
   `formazan` and preserves the 125 well total (no liquid leaves
   during incubation).
 
@@ -176,7 +176,7 @@ the dispensed action; the state-field write is the well-total
 125 uL.
 
 Cross-reference:
-[material_volume_conservation_spec.md](material_volume_conservation_spec.md)
+`material_volume_conservation_spec.md`
 is a live RFC that resolves the `material_volume` rule scope
 (per-response, per-step, per-mini) and disposal semantics. The
 audit's MTT recommendation (well-total semantics) is consistent
@@ -291,9 +291,10 @@ audits may reopen if downstream protocols surface new conflicts.)
 ### Cross-references
 
 The MTT volume cascade (Q6) and PDTMA well-total writes (per Q5
-+ Q3) depend on the volume model in
-[../protocols/OVCAR8_MATH_REVIEW.md](../protocols/OVCAR8_MATH_REVIEW.md)
-(Summary decision table: 200 uL final well volume; carboplatin
-40x multiplier; metformin 200 mM working stock fixed at 5 mM in
-columns 7-12). If that math review is later revised, Q6 and the
-PDTMA post-state table must be re-derived.
+
+- Q3) depend on the volume model in
+  `OVCAR8_MATH_REVIEW.md`
+  (Summary decision table: 200 uL final well volume; carboplatin
+  40x multiplier; metformin 200 mM working stock fixed at 5 mM in
+  columns 7-12). If that math review is later revised, Q6 and the
+  PDTMA post-state table must be re-derived.

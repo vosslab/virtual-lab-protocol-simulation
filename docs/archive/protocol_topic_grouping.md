@@ -54,48 +54,48 @@ Two-step migration: code change first (make discovery layout-agnostic), folder m
 
 ## Architecture boundaries and ownership
 
-| Boundary | Owner | Touch rule |
-| --- | --- | --- |
+| Boundary                                         | Owner          | Touch rule                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Discovery code (marker-based protocol detection) | tooling author | Edits `validation/shared_toolkit/discovery.py`, `validation/shared_toolkit/protocols.py`, `validation/stepper/loader.py`, `validation/stepper/runner.py`, `validation/stepper/state.py`, `validation/stepper/scene_ops.py`, `validation/yaml/content_lint.py`, `pipeline/build_protocol_data.py`, `tools/run_protocol_walkthrough.py` |
-| Folder reorganization | content author | `git mv` only; no YAML edits |
-| Enforcement test | tester | New file `tests/test_protocol_folder_layout.py` |
-| Spec docs (canonical rule) | spec author | Edits `docs/specs/TARGET_FILE_STRUCTURE.md` |
-| Author docs (cross-link only) | maintainer | Edits `content/README.md`, `docs/FILE_STRUCTURE.md`, `docs/USAGE.md`, `docs/CHANGELOG.md` |
+| Folder reorganization                            | content author | `git mv` only; no YAML edits                                                                                                                                                                                                                                                                                                          |
+| Enforcement test                                 | tester         | New file `tests/test_protocol_folder_layout.py`                                                                                                                                                                                                                                                                                       |
+| Spec docs (canonical rule)                       | spec author    | Edits `docs/specs/TARGET_FILE_STRUCTURE.md`                                                                                                                                                                                                                                                                                           |
+| Author docs (cross-link only)                    | maintainer     | Edits `content/README.md`, `docs/FILE_STRUCTURE.md`, `docs/USAGE.md`, `docs/CHANGELOG.md`                                                                                                                                                                                                                                             |
 
 ### Documentation surface split (where the rule lives)
 
-| Doc | Role | What it carries |
-| --- | --- | --- |
+| Doc                                   | Role                                 | What it carries                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
+| ------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `docs/specs/TARGET_FILE_STRUCTURE.md` | **Canonical spec; rule lives here.** | Full rule statement, with each rule stated as a design constraint, not as a test artifact. Required clauses: three-cluster closed set; exact-depth-one shape declared permanent and intentional; one `protocol.yaml` per leaf; `protocol_type` per cluster; folder-name equals `protocol_name`; `protocol_name` unique across the tree; exactly one `materials.yaml` per protocol; exactly one `scenes/` directory per protocol; no nested scene sub-directories; discovery round-trip (filesystem set equals discovered set). The enforcement test cites this document in every assertion-failure message. |
-| `content/README.md` | Author-facing folder guide | One-paragraph summary of the three-cluster layout, cluster purpose, and a pointer to `docs/specs/TARGET_FILE_STRUCTURE.md` for the binding rule. No rule restatement (avoid drift). |
-| `docs/FILE_STRUCTURE.md` | Repo map | Show the three-cluster shape under `content/protocols/`; link to the spec for the rule. |
-| `docs/USAGE.md` | Run commands | Updated only if it currently demonstrates a flat-layout path; otherwise untouched. |
-| `docs/PRIMARY_SPEC.md` | Hard invariants | **Not touched.** Layout grouping is a structural rule, not an invariant. If the rule needs invariant promotion later (per the same trigger pattern as the no-schema-version rule), open a separate plan. |
+| `content/README.md`                   | Author-facing folder guide           | One-paragraph summary of the three-cluster layout, cluster purpose, and a pointer to `docs/specs/TARGET_FILE_STRUCTURE.md` for the binding rule. No rule restatement (avoid drift).                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| `docs/FILE_STRUCTURE.md`              | Repo map                             | Show the three-cluster shape under `content/protocols/`; link to the spec for the rule.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| `docs/USAGE.md`                       | Run commands                         | Updated only if it currently demonstrates a flat-layout path; otherwise untouched.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| `docs/PRIMARY_SPEC.md`                | Hard invariants                      | **Not touched.** Layout grouping is a structural rule, not an invariant. If the rule needs invariant promotion later (per the same trigger pattern as the no-schema-version rule), open a separate plan.                                                                                                                                                                                                                                                                                                                                                                                                    |
 
 Single source of truth: `docs/specs/TARGET_FILE_STRUCTURE.md`. Every other doc links to it; none repeat the rule body. Per `docs/PRIMARY_DESIGN.md` vocabulary-closure ("One canonical term per concept"), this prevents shadow rule statements.
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-DISCOVERY | layout-agnostic discovery in validation/, pipeline/, tools/ | 1 |
-| M1.5 / WS-BASESCENES | rename `content/scenes/` -> `content/base_scenes/` atomically with audit + code + spec + docs + regen | 1 |
-| M2 / WS-PRECHECK | folder-name vs `protocol_name` alignment audit (and rename precursor patch if needed) | 0 to 1 |
-| M2 / WS-MOVE | `git mv` every protocol folder under `content/protocols/` into one of the three clusters | 1 |
-| M2 / WS-REGEN | regenerate `generated/` artifacts; tsc check | 1 |
-| M3 / WS-ENFORCE | pytest enforcement of cluster layout | 1 |
-| M3 / WS-SPEC | canonical rule in `docs/specs/TARGET_FILE_STRUCTURE.md` | 1 |
-| M3 / WS-DOCS | author-facing cross-links + changelog close-out | 1 |
+| Milestone / Workstream | Component                                                                                             | Expected patches |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- | ---------------- |
+| M1 / WS-DISCOVERY      | layout-agnostic discovery in validation/, pipeline/, tools/                                           | 1                |
+| M1.5 / WS-BASESCENES   | rename `content/scenes/` -> `content/base_scenes/` atomically with audit + code + spec + docs + regen | 1                |
+| M2 / WS-PRECHECK       | folder-name vs `protocol_name` alignment audit (and rename precursor patch if needed)                 | 0 to 1           |
+| M2 / WS-MOVE           | `git mv` every protocol folder under `content/protocols/` into one of the three clusters              | 1                |
+| M2 / WS-REGEN          | regenerate `generated/` artifacts; tsc check                                                          | 1                |
+| M3 / WS-ENFORCE        | pytest enforcement of cluster layout                                                                  | 1                |
+| M3 / WS-SPEC           | canonical rule in `docs/specs/TARGET_FILE_STRUCTURE.md`                                               | 1                |
+| M3 / WS-DOCS           | author-facing cross-links + changelog close-out                                                       | 1                |
 
 ## Cluster membership (closed set of cluster names)
 
 The closed set is the three cluster names, not the protocol membership. Membership inside each cluster is open: new minis may be added freely as long as they land under the correct cluster.
 
-| Cluster | Membership rule |
-| --- | --- |
+| Cluster         | Membership rule                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `cell_culture/` | Every current mini-protocol in the OVCAR8 cell-culture / MTT workflow (passage, seeding, drug dilution, plate treatment, MTT prep / reaction / readout, trypan blue counting). |
-| `sdspage/` | Every current mini-protocol with the `sdspage_` prefix. |
-| `runners/` | Every protocol with `protocol_type: sequence_runner`. |
+| `sdspage/`      | Every current mini-protocol with the `sdspage_` prefix.                                                                                                                        |
+| `runners/`      | Every protocol with `protocol_type: sequence_runner`.                                                                                                                          |
 
 Cluster membership is reviewer-verified at M2 entry against the live tree, not against a hardcoded snapshot in this plan.
 
@@ -207,15 +207,15 @@ Inserted between M1 and M2. Independent of the protocol grouping work; same atom
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| `discovery.py` marker walk misses a depth assumption elsewhere | High | New cluster added later breaks `iter_focus()` | tooling author | M1 helper is one function (`_protocol_name_for_path`) reused by all 9 touchpoints; future depth changes need only that helper to be correct. |
-| `git mv` partial application | Low | Concurrent agent edits during the move sweep | content author | Single patch ordering keeps the move atomic; an aborted sweep leaves a half-moved tree that the M3 enforcement test will flag. Index-lock contention is not a concern: only humans commit, so no commit-time lock is held during the move. |
-| `generated/` artifacts drift from regeneration | Medium | Cached pre-move generated files survive into the new layout | tooling | WS-REGEN explicitly reruns `bootstrap_generated.sh`; `git diff generated/` reviewed before patch close. |
-| Cross-protocol reference uses path not name (Explore says no, but) | High | Hidden path-based ref breaks runner | tester | Enforcement test's planted-failure step exercises a runner load after move; if a runner cannot resolve a mini, surface the path-based ref. |
-| Walker tool produces wrong protocol catalog | High | `tools/run_protocol_walkthrough.py` discovery still depth-based | tooling | M1 touchpoint list includes `tools/run_protocol_walkthrough.py`; M2 exit gate runs `--list-protocols` and counts minis. |
-| Enforcement test brittleness (snapshot-style assertions) | Low | New mini added in future | tester | Test enumerates **cluster names** (closed set), not mini names or counts. Adding a mini under an existing cluster passes; adding a fourth cluster fails until the enum and spec are updated. |
-| Rule duplicated across docs (drift) | Medium | Author copies rule text from spec into `content/README.md` and edits one but not the other | spec author | Author-facing docs carry a one-paragraph summary plus a link; they never restate the binding rule. Reviewer rejects any patch that duplicates the rule body. |
+| Risk                                                               | Impact | Trigger                                                                                    | Owner          | Mitigation                                                                                                                                                                                                                                 |
+| ------------------------------------------------------------------ | ------ | ------------------------------------------------------------------------------------------ | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `discovery.py` marker walk misses a depth assumption elsewhere     | High   | New cluster added later breaks `iter_focus()`                                              | tooling author | M1 helper is one function (`_protocol_name_for_path`) reused by all 9 touchpoints; future depth changes need only that helper to be correct.                                                                                               |
+| `git mv` partial application                                       | Low    | Concurrent agent edits during the move sweep                                               | content author | Single patch ordering keeps the move atomic; an aborted sweep leaves a half-moved tree that the M3 enforcement test will flag. Index-lock contention is not a concern: only humans commit, so no commit-time lock is held during the move. |
+| `generated/` artifacts drift from regeneration                     | Medium | Cached pre-move generated files survive into the new layout                                | tooling        | WS-REGEN explicitly reruns `bootstrap_generated.sh`; `git diff generated/` reviewed before patch close.                                                                                                                                    |
+| Cross-protocol reference uses path not name (Explore says no, but) | High   | Hidden path-based ref breaks runner                                                        | tester         | Enforcement test's planted-failure step exercises a runner load after move; if a runner cannot resolve a mini, surface the path-based ref.                                                                                                 |
+| Walker tool produces wrong protocol catalog                        | High   | `tools/run_protocol_walkthrough.py` discovery still depth-based                            | tooling        | M1 touchpoint list includes `tools/run_protocol_walkthrough.py`; M2 exit gate runs `--list-protocols` and counts minis.                                                                                                                    |
+| Enforcement test brittleness (snapshot-style assertions)           | Low    | New mini added in future                                                                   | tester         | Test enumerates **cluster names** (closed set), not mini names or counts. Adding a mini under an existing cluster passes; adding a fourth cluster fails until the enum and spec are updated.                                               |
+| Rule duplicated across docs (drift)                                | Medium | Author copies rule text from spec into `content/README.md` and edits one but not the other | spec author    | Author-facing docs carry a one-paragraph summary plus a link; they never restate the binding rule. Reviewer rejects any patch that duplicates the rule body.                                                                               |
 
 ## Rollout and release checklist
 
@@ -255,14 +255,17 @@ Inserted between M1 and M2. Independent of the protocol grouping work; same atom
 ## Patch plan
 
 M1:
+
 - Patch 1: WS-DISCOVERY -- introduce `_protocol_name_for_path()` helper in `validation/shared_toolkit/discovery.py`; update all 9 touchpoints to use it; switch all `*/protocol.yaml` globs to `**/protocol.yaml`. Stays green on flat layout.
 
 M2:
+
 - Patch 2a (only if WS-PRECHECK flags a misalignment): rename any folder whose basename does not match its inner `protocol_name` so WS-MOVE can stay purely mechanical. If WS-PRECHECK is clean, this patch is skipped.
 - Patch 2: WS-MOVE -- `git mv` every existing protocol folder under `content/protocols/` into the matching cluster (`cell_culture/`, `sdspage/`, or `runners/`). No other edits.
 - Patch 3: WS-REGEN -- `bash pipeline/bootstrap_generated.sh`; commit regenerated artifacts; `tsc --noEmit` clean.
 
 M3 (parallel-ready):
+
 - Patch 4: WS-ENFORCE -- new `tests/test_protocol_folder_layout.py` with cluster enum, depth check, type-vs-cluster check, citing the spec doc in failure messages.
 - Patch 5: WS-SPEC -- new "Protocol cluster layout" section in `docs/specs/TARGET_FILE_STRUCTURE.md` carrying the canonical rule body.
 - Patch 6: WS-DOCS -- update `content/README.md` (summary + spec link), `docs/FILE_STRUCTURE.md`, `docs/USAGE.md`; archive this plan to `docs/archive/protocol_topic_grouping.md`.

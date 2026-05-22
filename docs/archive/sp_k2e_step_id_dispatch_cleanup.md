@@ -38,16 +38,16 @@ walker drives the same UI gestures correctly.
 
 ```ts
 // Centrifuge: complete the centrifuge step when clicked
-if (itemId === 'centrifuge') {
-    const currentStep = getCurrentStep();
-    // TODO: replace activeStepId peek with completion trigger lookup
-    if (currentStep && currentStep.id === 'centrifuge') {
-        triggerStep('centrifuge');
-        gameState.flaskMediaMl = 0;
-        gameState.flaskMediaAge = 'old';
-    }
-    showNotification('Cells centrifuged.');
-    return;
+if (itemId === "centrifuge") {
+  const currentStep = getCurrentStep();
+  // TODO: replace activeStepId peek with completion trigger lookup
+  if (currentStep && currentStep.id === "centrifuge") {
+    triggerStep("centrifuge");
+    gameState.flaskMediaMl = 0;
+    gameState.flaskMediaAge = "old";
+  }
+  showNotification("Cells centrifuged.");
+  return;
 }
 ```
 
@@ -72,14 +72,21 @@ if (itemId === 'centrifuge') {
 
 ```ts
 function captureCellCount(): void {
-    gameState.cellCount = gameState.actualCellCount;
-    const cellState = getCellState();
-    const viabilityPct = Math.round(cellState.viability * 100);
-    showNotification('Captured: ~' + gameState.cellCount.toLocaleString() + ' cells/mL at ' + viabilityPct + '% viability.', 'success');
-    triggerStep('count_cells');           // hardcoded id
-    const overlay = document.getElementById('microscope-overlay');
-    if (overlay) overlay.classList.remove('active');
-    switchScene('hood');
+  gameState.cellCount = gameState.actualCellCount;
+  const cellState = getCellState();
+  const viabilityPct = Math.round(cellState.viability * 100);
+  showNotification(
+    "Captured: ~" +
+      gameState.cellCount.toLocaleString() +
+      " cells/mL at " +
+      viabilityPct +
+      "% viability.",
+    "success",
+  );
+  triggerStep("count_cells"); // hardcoded id
+  const overlay = document.getElementById("microscope-overlay");
+  if (overlay) overlay.classList.remove("active");
+  switchScene("hood");
 }
 ```
 
@@ -89,16 +96,16 @@ The same shape recurs at `microscope.ts:386` (legacy quadrant submit ->
 
 ## Inventory of step.id branches in scene/dispatch code
 
-| file:line | step.id checked | branch behavior | derivable from completionEvent? |
-| --- | --- | --- | --- |
-| `src/scenes/bench.ts:395` | `'plate_read'`, `'results'` | route plate_reader click to plate_reader scene | yes (directTool tool=`plate_reader`) |
-| `src/scenes/bench.ts:406` | `'centrifuge'` | `triggerStep('centrifuge')` + zero flask volume | yes (directTool completionEvent=`centrifuge`) |
-| `src/scenes/bench.ts:423` | `'prewarm_media'` | `triggerStep('prewarm_media')` | yes (directTool completionEvent=`prewarm`) |
-| `src/scenes/microscope.ts:120` | (implicit) hardcoded `triggerStep('count_cells')` in capture handler | advance count_cells | yes (modal completionEvent) |
-| `src/scenes/microscope.ts:386` | (implicit) hardcoded `triggerStep('count_cells')` in legacy submit | advance count_cells | yes (modal completionEvent) |
-| `src/scenes/microscope.ts:494` | (implicit) hardcoded `triggerStep('plate_read')` | advance plate_read | yes (modal completionEvent) |
-| `src/scenes/microscope.ts:508` | `gameState.activeStepId === 'results'` | `triggerStep('results')` on close | yes (separate modal step or close-event mapping) |
-| `src/steps/drug_treatment.ts:144,162,276` | active id keyed dict `DRUG_MODAL_SCREENS[active]` | per-step modal screen + `triggerStep(stepId)` | partial (already passes active id; safe -- not a literal id check) |
+| file:line                                 | step.id checked                                                      | branch behavior                                 | derivable from completionEvent?                                    |
+| ----------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------- | ------------------------------------------------------------------ |
+| `src/scenes/bench.ts:395`                 | `'plate_read'`, `'results'`                                          | route plate_reader click to plate_reader scene  | yes (directTool tool=`plate_reader`)                               |
+| `src/scenes/bench.ts:406`                 | `'centrifuge'`                                                       | `triggerStep('centrifuge')` + zero flask volume | yes (directTool completionEvent=`centrifuge`)                      |
+| `src/scenes/bench.ts:423`                 | `'prewarm_media'`                                                    | `triggerStep('prewarm_media')`                  | yes (directTool completionEvent=`prewarm`)                         |
+| `src/scenes/microscope.ts:120`            | (implicit) hardcoded `triggerStep('count_cells')` in capture handler | advance count_cells                             | yes (modal completionEvent)                                        |
+| `src/scenes/microscope.ts:386`            | (implicit) hardcoded `triggerStep('count_cells')` in legacy submit   | advance count_cells                             | yes (modal completionEvent)                                        |
+| `src/scenes/microscope.ts:494`            | (implicit) hardcoded `triggerStep('plate_read')`                     | advance plate_read                              | yes (modal completionEvent)                                        |
+| `src/scenes/microscope.ts:508`            | `gameState.activeStepId === 'results'`                               | `triggerStep('results')` on close               | yes (separate modal step or close-event mapping)                   |
+| `src/steps/drug_treatment.ts:144,162,276` | active id keyed dict `DRUG_MODAL_SCREENS[active]`                    | per-step modal screen + `triggerStep(stepId)`   | partial (already passes active id; safe -- not a literal id check) |
 
 `src/scenes/bench.ts:241,255,326,333` already use `result.completionEvent`
 strings (`'centrifuge'`, `'prewarm'`) instead of step.id and call
@@ -113,9 +120,9 @@ Make scene click handlers and modal advance handlers id-agnostic:
    `getCurrentStep().completionPath` and dispatches when:
    - `completionPath.kind === 'directTool'` AND
    - `completionPath.tool === itemId`
-   Then call `triggerStep(currentStep.id)` (the active id) instead of a literal.
-   Per-tool side effects (zero flask volume on centrifuge, etc.) move into a
-   small map keyed by `completionPath.tool` or `completionEvent`, not step id.
+     Then call `triggerStep(currentStep.id)` (the active id) instead of a literal.
+     Per-tool side effects (zero flask volume on centrifuge, etc.) move into a
+     small map keyed by `completionPath.tool` or `completionEvent`, not step id.
 
 2. For `modal` steps, the modal advance button handler calls
    `triggerStep(gameState.activeStepId)` instead of a literal id. Modal

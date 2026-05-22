@@ -15,6 +15,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 **File:** `assets/equipment/t75_flask.svg`
 
 **Characteristics:**
+
 - Flat rectangular body, typical T-75 footprint
 - Angled neck connecting body to screw cap
 - Screw cap with ridge grip
@@ -22,6 +23,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 - Anatomically simplified but recognizable design
 
 **Anchors implemented:**
+
 - `anchor_liquid_clip`: clipping path for liquid fill
 - `anchor_liquid_bounds`: bounds of the fillable interior
 - `anchor_label`: label frame position
@@ -34,6 +36,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 **File:** `assets/equipment/t75_flask_v2.svg`
 
 **Characteristics:**
+
 - Flat rectangular body (similar proportions to v1)
 - Slanted neck with more anatomically correct angled top
 - Vented cap with two small vent holes visible on the cap surface
@@ -42,6 +45,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 - Enhanced visual depth with neck slant
 
 **Anchors implemented:**
+
 - `anchor_liquid_clip`: clipping path for liquid fill
 - `anchor_liquid_bounds`: bounds of the fillable interior
 - `anchor_label`: label frame position
@@ -54,6 +58,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 **File:** `assets/equipment/t75_flask_v3.svg`
 
 **Characteristics:**
+
 - Tall, slightly tapered rectangular body (classic Corning flask profile)
 - Straight cylindrical neck (simpler, less angular design)
 - Straight screw cap with ridge grip
@@ -62,6 +67,7 @@ Three T-75 tissue culture flask design variants have been created and are availa
 - More traditional appearance matching classic tissue culture flasks
 
 **Anchors implemented:**
+
 - `anchor_liquid_clip`: clipping path for liquid fill
 - `anchor_liquid_bounds`: bounds of the fillable interior
 - `anchor_label`: label frame position
@@ -94,8 +100,8 @@ The tapered body required adjusting the liquid clipping path to follow the sligh
 
 ```typescript
 function getFlaskSvg(mediaLevel: number, mediaColor: string): string {
-	// ... (unchanged from current implementation)
-	return composeSvg(SVG_T75_FLASK, "t75_flask", overlays);
+  // ... (unchanged from current implementation)
+  return composeSvg(SVG_T75_FLASK, "t75_flask", overlays);
 }
 ```
 
@@ -104,6 +110,7 @@ A TODO comment has been added noting that variant selection (OQ-5) is pending.
 ## Next Steps
 
 **OQ-5 Decision Required:**
+
 1. Professor reviews the three variants above and the rendered game scenes
 2. Selects preferred variant based on:
    - Visual alignment with protocol scope (educational vs. research)
@@ -113,6 +120,7 @@ A TODO comment has been added noting that variant selection (OQ-5) is pending.
 
 **Integration:**
 Once the variant is selected, the change is minimal and localized:
+
 - Update the `getFlaskSvg()` function to return the chosen SVG
 - All existing liquid-fill and label-rendering code works unchanged
 - Backward compatibility is maintained (old SVG remains on disk)
@@ -120,6 +128,7 @@ Once the variant is selected, the change is minimal and localized:
 ## Testing
 
 All three variants have been tested for:
+
 - SVG validity and rendering
 - Anchor presence and correct element IDs
 - Integration with existing overlay system

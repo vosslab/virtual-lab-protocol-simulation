@@ -17,21 +17,21 @@ AB v2 re-targeted `.scene--bench .footprint--container` and its `[data-scene-den
 
 `.scene--bench .footprint--container` (canonical):
 
-| property | value |
-| --- | --- |
-| min-width | 220px |
-| max-width | 320px |
-| min-height | 240px |
-| max-height | 360px |
-| flex-shrink | 1 |
-| flex-grow | 0 |
+| property    | value |
+| ----------- | ----- |
+| min-width   | 220px |
+| max-width   | 320px |
+| min-height  | 240px |
+| max-height  | 360px |
+| flex-shrink | 1     |
+| flex-grow   | 0     |
 
 `.scene-container[data-scene-density="crowded"] .scene--bench .footprint--container`:
 
-| property | value |
-| --- | --- |
-| min-width | 154px |
-| max-width | 224px |
+| property   | value |
+| ---------- | ----- |
+| min-width  | 154px |
+| max-width  | 224px |
 | min-height | 168px |
 | max-height | 252px |
 
@@ -39,24 +39,24 @@ AB v2 re-targeted `.scene--bench .footprint--container` and its `[data-scene-den
 
 Only `max-height` (canonical and crowded) was changed. min-width / max-width / min-height left at canonical values.
 
-| candidate | canonical max-h | crowded max-h | cbp | ad_HF | r_ovf | off | total_HF |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| baseline_canonical | 360 | 252 | 186 | 171 | 2 | 0 | 359 |
-| container_C1_380_272 | 380 | 272 | 186 | 171 | 2 | 0 | 359 |
-| container_C2_400_292 | 400 | 292 | 186 | 171 | 2 | 0 | 359 |
-| container_C3_440_332 | 440 | 332 | 186 | 171 | 2 | 0 | 359 |
+| candidate            | canonical max-h | crowded max-h | cbp | ad_HF | r_ovf | off | total_HF |
+| -------------------- | --------------- | ------------- | --- | ----- | ----- | --- | -------- |
+| baseline_canonical   | 360             | 252           | 186 | 171   | 2     | 0   | 359      |
+| container_C1_380_272 | 380             | 272           | 186 | 171   | 2     | 0   | 359      |
+| container_C2_400_292 | 400             | 292           | 186 | 171   | 2     | 0   | 359      |
+| container_C3_440_332 | 440             | 332           | 186 | 171   | 2     | 0   | 359      |
 
 All three candidates produced **bit-identical** metrics to baseline. No improvement, no regression.
 
 ### Per-scene clipped_by_parent (worst 5 in subset)
 
-| scene | baseline | C1 (380/272) | C2 (400/292) | C3 (440/332) |
-| --- | --- | --- | --- | --- |
-| stress_many_bottles_scene_002 | 17 | 17 | 17 | 17 |
-| stress_many_bottles_scene_001 | 16 | 16 | 16 | 16 |
-| stress_dense_clutter_010 | 13 | 13 | 13 | 13 |
-| stress_dense_clutter_009 | 12 | 12 | 12 | 12 |
-| gold_staining_bench | 10 | 10 | 10 | 10 |
+| scene                         | baseline | C1 (380/272) | C2 (400/292) | C3 (440/332) |
+| ----------------------------- | -------- | ------------ | ------------ | ------------ |
+| stress_many_bottles_scene_002 | 17       | 17           | 17           | 17           |
+| stress_many_bottles_scene_001 | 16       | 16           | 16           | 16           |
+| stress_dense_clutter_010      | 13       | 13           | 13           | 13           |
+| stress_dense_clutter_009      | 12       | 12           | 12           | 12           |
+| gold_staining_bench           | 10       | 10           | 10           | 10           |
 
 ## Why container max-height has no effect (binding-constraint analysis)
 
@@ -76,13 +76,13 @@ on these scenes; the binding constraint is the placement wrapper:
 
 ```css
 .placement {
-    flex-shrink: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-    max-height: 100%;   /* <- binding */
-    overflow: hidden;   /* <- binding */
+  flex-shrink: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  align-items: center;
+  max-height: 100%; /* <- binding */
+  overflow: hidden; /* <- binding */
 }
 ```
 

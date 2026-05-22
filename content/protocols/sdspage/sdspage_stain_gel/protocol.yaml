@@ -2,199 +2,206 @@ protocol_type: mini_protocol
 protocol_name: sdspage_stain_gel
 entry_step: rinse_tray
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with
+  objectives:
+    Students completing this mini-protocol will have achieved fluency with
     staining tray handling, pouring and discarding rinses, adding Coomassie stain
     solution, microwave heating for fixed duration, rocking shaker operation for timed
     incubation, and recovery of used stain for recycling.
-  outcomes: Students completing this mini-protocol will be able to rinse a staining
+  outcomes:
+    Students completing this mini-protocol will be able to rinse a staining
     tray with ddH2O, pour Coomassie stain into the tray, heat the stain-loaded tray
     in a microwave for 50 seconds, transfer the tray to a rocking shaker for 7-minute
     incubation, and recover the used stain into a recycle bottle.
-  goals: 'Overall, this mini-protocol aims to accomplish the Coomassie staining phase
+  goals:
+    "Overall, this mini-protocol aims to accomplish the Coomassie staining phase
     of SDS-PAGE protein visualization: coating the gel with stain, heating to accelerate
     dye binding, and agitated incubation to distribute stain evenly while collecting
-    spent stain for reuse.'
+    spent stain for reuse."
 steps:
-- step_name: rinse_tray
-  prompt: Rinse the staining tray with ddH2O. Pour water into the tray, then discard
-    the rinse to the waste container.
-  sequence:
-  - target: staining_tray
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: SceneChange
-        to_scene: staining_bench
-  - target: ddh2o_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: staining_tray
-        state:
-          material_name: ddh2o
-          material_volume: 200
-  - target: waste_container
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: staining_tray
-        state:
-          material_name: empty
-          material_volume: 0
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: add_stain
-- step_name: add_stain
-  prompt: Pour Coomassie stain solution into the rinsed staining tray.
-  sequence:
-  - target: coomassie_stain_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: staining_tray
-        state:
-          material_name: coomassie_stain
-          material_volume: 250
-      - type: ObjectStateChange
-        target: coomassie_stain_bottle
-        state:
-          material_name: empty
-          material_volume: 0
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: microwave_stain
-- step_name: microwave_stain
-  prompt: Place the staining tray in the microwave. Set the timer for 50 seconds and
-    start the heating to accelerate stain binding to the protein. When removing the
-    tray from the microwave, avoid breathing deeply - heated Coomassie emits strong
-    fumes.
-  sequence:
-  - target: microwave
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: microwave
-        state:
-          set_time_s: 50
-  - target: microwave
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: microwave
-        state:
-          running: true
-  - target: microwave
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: TimedWait
-        target: microwave
-        duration_min: 0.833
-        display: Heating stain
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: transfer_to_rocker
-- step_name: transfer_to_rocker
-  prompt: Transfer the staining tray to the rocking shaker. Set the time for 7 minutes
-    and start the shaker for agitated incubation.
-  sequence:
-  - target: staining_tray
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: rocking_shaker
-        state:
-          tray_present: true
-  - target: rocking_shaker
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: rocking_shaker
-        state:
-          set_time_min: 7
-  - target: rocking_shaker
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: rocking_shaker
-        state:
-          running: true
-  - target: rocking_shaker
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: TimedWait
-        target: rocking_shaker
-        duration_min: 7
-        display: Rocking stain
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: recover_stain
-- step_name: recover_stain
-  prompt: Pour the used stain from the tray into the Coomassie recycle bottle for
-    reuse.
-  sequence:
-  - target: coomassie_recycle_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: coomassie_recycle_bottle
-        state:
-          material_name: coomassie_stain_used
-          material_volume: 250
-      - type: ObjectStateChange
-        target: staining_tray
-        state:
-          material_name: empty
-          material_volume: 0
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: null
+  - step_name: rinse_tray
+    prompt:
+      Rinse the staining tray with ddH2O. Pour water into the tray, then discard
+      the rinse to the waste container.
+    sequence:
+      - target: staining_tray
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: staining_bench
+      - target: ddh2o_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: staining_tray
+              state:
+                material_name: ddh2o
+                material_volume: 200
+      - target: waste_container
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: staining_tray
+              state:
+                material_name: empty
+                material_volume: 0
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_stain
+  - step_name: add_stain
+    prompt: Pour Coomassie stain solution into the rinsed staining tray.
+    sequence:
+      - target: coomassie_stain_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: staining_tray
+              state:
+                material_name: coomassie_stain
+                material_volume: 250
+            - type: ObjectStateChange
+              target: coomassie_stain_bottle
+              state:
+                material_name: empty
+                material_volume: 0
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: microwave_stain
+  - step_name: microwave_stain
+    prompt:
+      Place the staining tray in the microwave. Set the timer for 50 seconds and
+      start the heating to accelerate stain binding to the protein. When removing the
+      tray from the microwave, avoid breathing deeply - heated Coomassie emits strong
+      fumes.
+    sequence:
+      - target: microwave
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: microwave
+              state:
+                set_time_s: 50
+      - target: microwave
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: microwave
+              state:
+                running: true
+      - target: microwave
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: microwave
+              duration_min: 0.833
+              display: Heating stain
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: transfer_to_rocker
+  - step_name: transfer_to_rocker
+    prompt:
+      Transfer the staining tray to the rocking shaker. Set the time for 7 minutes
+      and start the shaker for agitated incubation.
+    sequence:
+      - target: staining_tray
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: rocking_shaker
+              state:
+                tray_present: true
+      - target: rocking_shaker
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: rocking_shaker
+              state:
+                set_time_min: 7
+      - target: rocking_shaker
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: rocking_shaker
+              state:
+                running: true
+      - target: rocking_shaker
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: rocking_shaker
+              duration_min: 7
+              display: Rocking stain
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: recover_stain
+  - step_name: recover_stain
+    prompt:
+      Pour the used stain from the tray into the Coomassie recycle bottle for
+      reuse.
+    sequence:
+      - target: coomassie_recycle_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: coomassie_recycle_bottle
+              state:
+                material_name: coomassie_stain_used
+                material_volume: 250
+            - type: ObjectStateChange
+              target: staining_tray
+              state:
+                material_name: empty
+                material_volume: 0
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

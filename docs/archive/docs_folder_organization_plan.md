@@ -138,4 +138,4 @@ plan picks the destination (likely `docs/specs/` or `docs/archive/`).
   (the "Follow-on plans" subsection is the source of the target
   structure copied above).
 - Related: [content_yaml_migration_plan.md](content_yaml_migration_plan.md) (archived after M3 close-out),
-  [../active_plans/typescript_migration_plan.md](../active_plans/typescript_migration_plan.md).
+  `typescript_migration_plan.md`.

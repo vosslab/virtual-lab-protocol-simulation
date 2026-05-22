@@ -8,6 +8,7 @@ Authority: Adds HARD_FAIL categories to artwork_integrity in precheck.mjs. Per r
 
 Workstream A (no_cropped_svg_screenshot_audit.md) flagged 52 visible crop failures.
 Workstream C (no_cropped_svg_diagnostic_gap_audit.md) showed precheck catches ~20/52 in AFTER state. Two root causes account for ~30-38 misses:
+
 - RC1: overflow:visible region spillage (~10-14 misses)
 - RC2: PLACEHOLDER asset loading failures (~20-24 misses)
 
@@ -28,27 +29,27 @@ Note for implementer: use parameter name `el` not `img` to match existing sub-ch
 ```javascript
 // In checkArtworkIntegrity, after sub-check f (around line 660)
 const spillResult = await artworkElem.evaluate((el, tolerancePx) => {
-    const imgRect = el.getBoundingClientRect();
-    if (imgRect.width === 0 || imgRect.height === 0) return null;
-    const region = el.closest('.region');
-    if (!region) return null;
-    const regionRect = region.getBoundingClientRect();
-    const spillTop = Math.max(0, regionRect.top - imgRect.top);
-    const spillBottom = Math.max(0, imgRect.bottom - regionRect.bottom);
-    const spillLeft = Math.max(0, regionRect.left - imgRect.left);
-    const spillRight = Math.max(0, imgRect.right - regionRect.right);
-    const totalSpill = spillTop + spillBottom + spillLeft + spillRight;
-    if (totalSpill < tolerancePx) return null;
-    return {
-        is_overflow_visible_spillage: true,
-        spill_top: spillTop,
-        spill_bottom: spillBottom,
-        spill_left: spillLeft,
-        spill_right: spillRight,
-        total_spill: totalSpill,
-        region_class: region.className,
-        severity: 'HARD_FAIL'
-    };
+  const imgRect = el.getBoundingClientRect();
+  if (imgRect.width === 0 || imgRect.height === 0) return null;
+  const region = el.closest(".region");
+  if (!region) return null;
+  const regionRect = region.getBoundingClientRect();
+  const spillTop = Math.max(0, regionRect.top - imgRect.top);
+  const spillBottom = Math.max(0, imgRect.bottom - regionRect.bottom);
+  const spillLeft = Math.max(0, regionRect.left - imgRect.left);
+  const spillRight = Math.max(0, imgRect.right - regionRect.right);
+  const totalSpill = spillTop + spillBottom + spillLeft + spillRight;
+  if (totalSpill < tolerancePx) return null;
+  return {
+    is_overflow_visible_spillage: true,
+    spill_top: spillTop,
+    spill_bottom: spillBottom,
+    spill_left: spillLeft,
+    spill_right: spillRight,
+    total_spill: totalSpill,
+    region_class: region.className,
+    severity: "HARD_FAIL",
+  };
 }, CLIP_TOLERANCE_PX);
 ```
 
@@ -135,11 +136,11 @@ Add to checks output: placeholder_assets array. Append to hardFails.
 
 ## Expected catch rate improvement
 
-| State | Caught | Total visible failures | Catch rate |
-| --- | --- | --- | --- |
-| Current AFTER (sub-check e + f) | 20 | 52 | 38% |
-| + D2 PLACEHOLDER (Phase 1A) | ~40-44 | 52 | ~77-85% |
-| + D1 overflow:visible (Phase 1B) | ~50-54 | 52 | ~96-104% |
+| State                            | Caught | Total visible failures | Catch rate |
+| -------------------------------- | ------ | ---------------------- | ---------- |
+| Current AFTER (sub-check e + f)  | 20     | 52                     | 38%        |
+| + D2 PLACEHOLDER (Phase 1A)      | ~40-44 | 52                     | ~77-85%    |
+| + D1 overflow:visible (Phase 1B) | ~50-54 | 52                     | ~96-104%   |
 
 Note: >100% indicates same object flagged by multiple sub-checks; not double-counted in summary.
 
@@ -152,6 +153,7 @@ Note: >100% indicates same object flagged by multiple sub-checks; not double-cou
 ## Implementer notes (for when user approves)
 
 ### D1 implementation
+
 - Use `(el, tolerancePx)` parameter naming, NOT `(img, tolerancePx)`, to match existing sub-check e convention at precheck.mjs lines 534-610.
 - Insert AFTER sub-check f, before final return.
 - CLIP_TOLERANCE_PX constant already defined at precheck.mjs line 294. Reuse.
@@ -159,6 +161,7 @@ Note: >100% indicates same object flagged by multiple sub-checks; not double-cou
 - Append to hardFails array using existing pattern (see integrityClippedByParent at lines 1086-1096).
 
 ### D2 implementation
+
 - DO NOT add a second imgElem.evaluate call.
 - Reuse the existing naturalDims read at precheck.mjs lines 352-359 (`img.naturalWidth || img.width` with fallback).
 - Insert HARD_FAIL branch immediately AFTER that read, before existing skip.

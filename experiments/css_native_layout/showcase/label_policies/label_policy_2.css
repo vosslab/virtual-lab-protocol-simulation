@@ -14,13 +14,13 @@ data-object-name as a secondary affordance. No <img> alt text is touched.
 /* Visually hide labels in dense scenes without removing them from a11y. */
 .scene-container[data-scene-density="crowded"] .placement-label,
 .scene-container[data-scene-density="high"] .placement-label {
-	position: absolute;
-	width: 1px;
-	height: 1px;
-	padding: 0;
-	margin: -1px;
-	overflow: hidden;
-	clip: rect(0, 0, 0, 0);
-	white-space: nowrap;
-	border: 0;
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

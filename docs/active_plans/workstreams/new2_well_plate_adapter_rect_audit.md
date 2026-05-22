@@ -12,6 +12,7 @@ root cause and propose a minimal patch. No file edits in this lane.
 File: `src/scene_runtime/adapters/well_plate/render.ts` lines 37-233.
 
 Render flow:
+
 - Creates the parent SVG group container.
 - Builds row group containers (`row_A` through `row_H`) at lines 127-152.
   Each row group carries `data-target-id="well_plate_96.row_<letter>"`.
@@ -47,6 +48,7 @@ route through `isTargetSatisfied`. It performs strict string equality
 between `expected_target_id` and the click's emitted `data-target-id`.
 
 Evidence:
+
 - Lane D blocker (`docs/active_plans/lane_d_state_change_blocker.md`):
   validator emitted "Wrong target: expected 'well_plate_96.E7', got
   'well_plate_96.E7'" only after `currentInteractionIndex` was already
@@ -70,8 +72,8 @@ prior briefs.
 
 ## Cross-references
 
-- [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md)
-- [lane_r_rerender_probe_summary.md](lane_r_rerender_probe_summary.md)
+- `lane_d_state_change_blocker.md`
+- `lane_r_rerender_probe_summary.md`
 - Lane B precheck JSON: `test-results/new0_css_native/audit/visual_audit.json`
 - Production renderer entry: `src/scene_runtime/bundle/entry.ts` (isTargetSatisfied
   at lines 443-491; preset dispatch around line 761).
@@ -131,7 +133,6 @@ User must approve the forbidden-boundary edit OR accept that Lane R
 re-render proof remains BLOCKED indefinitely. No third option preserves
 both the no-touch boundary and the re-render proof.
 
-
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
 ### Output files
@@ -142,20 +143,24 @@ both the no-touch boundary and the re-render proof.
 ### Per-target rect summary
 
 Parent (well_plate_96):
+
 - Width: 0 px
 - Height: 0 px
 
 Sub-target A1:
+
 - Width: 160 px
 - Height: 0 px
 - Offset from parent: (20, 98)
 
 Sub-target E7:
+
 - Width: 160 px
 - Height: 0 px
 - Offset from parent: (979, 98)
 
 Sub-target H12:
+
 - Width: 160 px
 - Height: 0 px
 - Offset from parent: (1778, 98)
@@ -168,7 +173,6 @@ Sub-target H12:
 - All positive dimensions: false
 - Sub-targets inside parent bounds: false
 
-
 ### Summary
 
 One or more validations failed. See details above.
@@ -178,7 +182,6 @@ One or more validations failed. See details above.
 - Probe script: `experiments/css_native_layout/well_plate_rect_probe/probe.mjs`
 - Well-plate adapter (READ ONLY): `src/scene_runtime/adapters/well_plate/render.ts`
 - Spike protocol: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
-
 
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
@@ -190,20 +193,24 @@ One or more validations failed. See details above.
 ### Per-target rect summary
 
 Parent (well_plate_96):
+
 - Width: 0 px
 - Height: 0 px
 
 Sub-target A1:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (1, 5)
 
 Sub-target E7:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (50, 5)
 
 Sub-target H12:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (91, 5)
@@ -216,7 +223,6 @@ Sub-target H12:
 - All positive dimensions: false
 - Sub-targets inside parent bounds: false
 
-
 ### Summary
 
 One or more validations failed. See details above.
@@ -226,7 +232,6 @@ One or more validations failed. See details above.
 - Probe script: `experiments/css_native_layout/well_plate_rect_probe/probe.mjs`
 - Well-plate adapter (READ ONLY): `src/scene_runtime/adapters/well_plate/render.ts`
 - Spike protocol: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
-
 
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
@@ -238,20 +243,24 @@ One or more validations failed. See details above.
 ### Per-target rect summary
 
 Parent (well_plate_96):
+
 - Width: 98 px
 - Height: 0 px
 
 Sub-target A1:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (0, 0)
 
 Sub-target E7:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (49, 0)
 
 Sub-target H12:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (90, 0)
@@ -264,7 +273,6 @@ Sub-target H12:
 - All positive dimensions: false
 - Sub-targets inside parent bounds: true
 
-
 ### Summary
 
 One or more validations failed. See details above.
@@ -274,7 +282,6 @@ One or more validations failed. See details above.
 - Probe script: `experiments/css_native_layout/well_plate_rect_probe/probe.mjs`
 - Well-plate adapter (READ ONLY): `src/scene_runtime/adapters/well_plate/render.ts`
 - Spike protocol: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
-
 
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
@@ -286,20 +293,24 @@ One or more validations failed. See details above.
 ### Per-target rect summary
 
 Parent (well_plate_96):
+
 - Width: 98 px
 - Height: 0 px
 
 Sub-target A1:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (0, 0)
 
 Sub-target E7:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (49, 0)
 
 Sub-target H12:
+
 - Width: 8 px
 - Height: 0 px
 - Offset from parent: (90, 0)
@@ -312,7 +323,6 @@ Sub-target H12:
 - All positive dimensions: false
 - Sub-targets inside parent bounds: true
 
-
 ### Summary
 
 One or more validations failed. See details above.
@@ -322,7 +332,6 @@ One or more validations failed. See details above.
 - Probe script: `experiments/css_native_layout/well_plate_rect_probe/probe.mjs`
 - Well-plate adapter (READ ONLY): `src/scene_runtime/adapters/well_plate/render.ts`
 - Spike protocol: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
-
 
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
@@ -334,24 +343,28 @@ One or more validations failed. See details above.
 ### Per-target rect summary (coordinate space values)
 
 Parent (well_plate_96):
+
 - X: 1
 - Y: 5
 - Width: 98
 - Height: 0 (note: may be 0 in SVG)
 
 Sub-target A1:
+
 - X: 1
 - Y: 5
 - Width: 8.17
 - Offset from parent: (0, 0)
 
 Sub-target E7:
+
 - X: 50
 - Y: 5
 - Width: 8.17
 - Offset from parent: (49, 0)
 
 Sub-target H12:
+
 - X: 90.83333333333333
 - Y: 5
 - Width: 8.17
@@ -365,7 +378,6 @@ Sub-target H12:
 - No NaN in offsets: true
 - Widths positive: true
 - Offsets valid (non-negative): true
-
 
 ### Summary
 
@@ -377,7 +389,6 @@ All validations passed. Parent plate and three sub-target cells rendered with va
 - Well-plate adapter (READ ONLY): `src/scene_runtime/adapters/well_plate/render.ts`
 - Spike protocol: `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml`
 
-
 ## Well-plate rect probe (Lane W-prototype, 2026-05-20)
 
 ### Output files
@@ -388,24 +399,28 @@ All validations passed. Parent plate and three sub-target cells rendered with va
 ### Per-target rect summary (coordinate space values)
 
 Parent (well_plate_96):
+
 - X: 1
 - Y: 5
 - Width: 98
 - Height: 0 (note: may be 0 in SVG)
 
 Sub-target A1:
+
 - X: 1
 - Y: 5
 - Width: 8.17
 - Offset from parent: (0, 0)
 
 Sub-target E7:
+
 - X: 50
 - Y: 5
 - Width: 8.17
 - Offset from parent: (49, 0)
 
 Sub-target H12:
+
 - X: 90.83333333333333
 - Y: 5
 - Width: 8.17
@@ -419,7 +434,6 @@ Sub-target H12:
 - No NaN in offsets: true
 - Widths positive: true
 - Offsets valid (non-negative): true
-
 
 ### Summary
 

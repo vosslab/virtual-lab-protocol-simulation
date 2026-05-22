@@ -6,85 +6,80 @@ Link to SDS-PAGE Protocol 2026: [https://docs.google.com/document/d/1gvpdl-2Sd4P
 
 ## **Previous Versions of the Protocol**
 
-* Sarah/Irena 2019: [https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit](https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit)
-* Greg 2021: [https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit](https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit)
-* Extraction 2023: [https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O\_ZcBd3k9PFYmWh9ACCeCM9kHf\_U/edit](https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O_ZcBd3k9PFYmWh9ACCeCM9kHf_U/edit)
-* Tania 2023: [https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit](https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit)
-* Manan 2025: [https://docs.google.com/document/d/1mMz19yBT\_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit](https://docs.google.com/document/d/1mMz19yBT_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit)
+- Sarah/Irena 2019: [https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit](https://docs.google.com/document/d/1Hmxb-4bliGg4KCOhJv8otHoKqPb1sqV3EyBx4D2Yfeg/edit)
+- Greg 2021: [https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit](https://docs.google.com/document/d/1eB17bH-R2PVZCvpXDmO0lhqCcZEcixKY39Gtw-HSli8/edit)
+- Extraction 2023: [https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O_ZcBd3k9PFYmWh9ACCeCM9kHf_U/edit](https://docs.google.com/document/d/1PnfdM4kn8Jlusv3O_ZcBd3k9PFYmWh9ACCeCM9kHf_U/edit)
+- Tania 2023: [https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit](https://docs.google.com/document/d/1f16cVplcM-8kup-GlIW5LjurEzNZLByrZFh5cKljohM/edit)
+- Manan 2025: [https://docs.google.com/document/d/1mMz19yBT_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit](https://docs.google.com/document/d/1mMz19yBT_1IQS7mT3-wj7ceB3jGzE0vvMOcdhtCi858/edit)
 
 ## **Required materials provided by the students**
 
-* Safety 	Glasses
-* Lab Coat - no paper lab coats
-* Safety gloves
-* Lab Notebook and a Sharpie marker
-* Long pants and closed shoes
-* Written out procedures in a lab notebook
-* Device timer
-* Copy of this lab manual (at least one per group)
+- Safety Glasses
+- Lab Coat - no paper lab coats
+- Safety gloves
+- Lab Notebook and a Sharpie marker
+- Long pants and closed shoes
+- Written out procedures in a lab notebook
+- Device timer
+- Copy of this lab manual (at least one per group)
 
 ## **Provided Materials**
 
-* Freeze-dried miracle berries (Synsepalum dulcificum).
-* Coffee grinder or blender.
-* Pestle and mortar.
-* Deionized water.
-* 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).
-* 1 M NaOH and 1 M HCl
-* 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.
-* 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.
-* Ammonium sulfate (solid) for protein precipitation (salting out).
-* Parafilm to seal test tubes during mechanical shaking.
-* Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.
-* Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.
-* SDS-PAGE:
-* \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
-* \-1X Tris/Glycine/SDS (TGS) running buffer.
-* 4x Laemmli sample buffer (BioRad #1610747) and beta-mercaptoethanol (BME) or DTT.
-* \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
-* \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
-* Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).
-* Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.
-* Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.
-* Micropipettes (P10, P20, P100, P1000) and tips.
-* Homogenizer for uniform mixing of powder and buffers.
+- Freeze-dried miracle berries (Synsepalum dulcificum).
+- Coffee grinder or blender.
+- Pestle and mortar.
+- Deionized water.
+- 0.5 M NaCl (sometimes adjusted to pH 4.0 or pH 6.8).
+- 1 M NaOH and 1 M HCl
+- 0.1 M AOT (bis(2-ethylhexyl) sulfosuccinate sodium) in isooctane for the reverse micelle forward extraction.
+- 0.02 M Phosphate buffer at pH 11 for the backward stripping stage.
+- Ammonium sulfate (solid) for protein precipitation (salting out).
+- Parafilm to seal test tubes during mechanical shaking.
+- Tris-HCl binding buffer: Typically 20 mM Tris-HCl containing 300-500 mM NaCl at pH 7.0-7.2.
+- Bradford Assay: Bradford dye reagent and Bovine Serum Albumin (BSA) for creating the standard curve.
+- SDS-PAGE:
+- \-Mini-PROTEAN TGX Precast Gels and electrophoresis tank.
+- \-1X Tris/Glycine/SDS (TGS) running buffer.
+- 4x Laemmli sample buffer (BioRad #1610747) and beta-mercaptoethanol (BME) or DTT.
+- \-Protein molecular weight ladder (covering the 24-28 kDa and 50 kDa ranges).
+- \-Staining and destaining solutions (Coomassie Brilliant Blue or Silver Stain).
+- Spectrometer: Capable of reading absorbance at 595 nm (Bradford) and 280 nm (protein concentration).
+- Ultrafiltration units: 10 kDa MWCO filters (e.g., Amicon Ultra-15) for desalting and sample concentration.
+- Centrifuge capable of speeds between 4,000 x g and 13,000 rpm.
+- Micropipettes (P10, P20, P100, P1000) and tips.
+- Homogenizer for uniform mixing of powder and buffers.
 
 Specific Steps: IMAC Column Setup and Nickel Charging
 
-* Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.
-* Chromatography Column: 6 mL capacity, 15 cm in length
-* Ring stand and two clamps to secure the column vertically
-* One stopcock valve and a waste container.
-* Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.
-* Glassware: 250 mL beaker for mixing the nickel solution and a pipette for rinsing the beaker walls.
-* Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding
-* Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).
-* Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.
-* Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.
-* Size-Exclusion/Desalting: Sephadex G-75 (for dimer/monomer separation) and Sephadex G-25 (for removing salts or imidazole).
+- Resin: Iminodiacetic Acid (IDA) Sepharose or Ni-NTA agarose.
+- Chromatography Column: 6 mL capacity, 15 cm in length
+- Ring stand and two clamps to secure the column vertically
+- One stopcock valve and a waste container.
+- Charging Reagents: Nickel (II) acetate tetrahydrate (1.24 g) and a 100 mL graduated cylinder for measuring DI water.
+- Glassware: 250 mL beaker for mixing the nickel solution and a pipette for rinsing the beaker walls.
+- Buffers: 100 mM Phosphate (PO4) buffer (pH 7.0) for washing and 20 mM Tris-HCl (pH 7.0-7.2) for binding
+- Elution: 300 mM Imidazole (in 20 mM disodium phosphate and 300 mM NaCl).
+- Cation Exchange: CM-Sepharose CL-4B or CM Sephadex C-50 resin.
+- Affinity Chromatography: ConA-Sepharose 4B resin and methyl-&alpha;-D-glucoside for elution.
+- Size-Exclusion/Desalting: Sephadex G-75 (for dimer/monomer separation) and Sephadex G-25 (for removing salts or imidazole).
 
 **Additional Equipment**
 
-* Bio-Rad Laboratories electrophoresis apparatus
-* DC power supply
-* Heating block set to 95°C
-* Gel opening tool
-* Microwave
-* Staining tray
-* Shaker
+- Bio-Rad Laboratories electrophoresis apparatus
+- DC power supply
+- Heating block set to 95°C
+- Gel opening tool
+- Microwave
+- Staining tray
+- Shaker
 
 **Additional Materials**
 
-* SDS buffer
-* 10X running buffer
-* Kimwipe
+- SDS buffer
+- 10X running buffer
+- Kimwipe
 
   Pictures of equipment used:
-
-
-
-
-
 
 ## **Laboratory Learning Objectives**
 
@@ -103,19 +98,20 @@ Students completing this lab protocol will be able to:
 
 Students completing this lab protocol will be able to:
 
-* Perform protein extraction from freeze-dried miracle berries using homogenization and centrifugation techniques.
-* Apply protein purification methods including salting out, desalting, reverse micelle extraction, size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography.
-* Prepare and operate chromatography columns for protein separation and purification.
-* Measure protein concentration using the Bradford assay and spectrophotometry at 595 nm.
-* Analyze protein purity and approximate molecular weight using SDS-PAGE.
-* Explain how pH, salt concentration, charge, and molecular size will influence protein purification and separation techniques.
-* Properly handle laboratory equipments, biological samples, and chemical reagents while following laboratory safety procedures.
+- Perform protein extraction from freeze-dried miracle berries using homogenization and centrifugation techniques.
+- Apply protein purification methods including salting out, desalting, reverse micelle extraction, size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography.
+- Prepare and operate chromatography columns for protein separation and purification.
+- Measure protein concentration using the Bradford assay and spectrophotometry at 595 nm.
+- Analyze protein purity and approximate molecular weight using SDS-PAGE.
+- Explain how pH, salt concentration, charge, and molecular size will influence protein purification and separation techniques.
+- Properly handle laboratory equipments, biological samples, and chemical reagents while following laboratory safety procedures.
 
 ## **Potential Hazards and Waste Disposal**
 
 ### Personal protective equipment
 
 All students must wear the following throughout the experiment:
+
 - Safety glasses
 - Lab coat
 - Nitrile gloves
@@ -185,19 +181,19 @@ People in West Africa have used this fruit for many years. They ate the berries 
 
 ### Characteristics
 
-* It is a small evergreen shrub.
-* The plant grows around 5-10 feet tall.
-* The leaves are dark green and smooth.
-* It produces small red berries called miracle fruits.
-* The berries can make sour foods taste sweet for a short time.
+- It is a small evergreen shrub.
+- The plant grows around 5-10 feet tall.
+- The leaves are dark green and smooth.
+- It produces small red berries called miracle fruits.
+- The berries can make sour foods taste sweet for a short time.
 
 ### Cultivation
 
-* The plant grows best in warm and humid conditions.
-* It needs acidic and well-drained soil.
-* Regular watering and indirect sunlight are important.
-* It can be grown from seeds or cuttings.
-* The plant usually starts producing fruits after 2-3 years.
+- The plant grows best in warm and humid conditions.
+- It needs acidic and well-drained soil.
+- Regular watering and indirect sunlight are important.
+- It can be grown from seeds or cuttings.
+- The plant usually starts producing fruits after 2-3 years.
 
 ### Can It Grow in Chicago?
 
@@ -215,7 +211,7 @@ The structure of miraculin is important for its function because it helps the pr
 
 Protein purification uses differences in protein properties such as solubility, charge, size, and binding affinity to isolate a target protein from a complex mixture. In this experiment, miraculin is extracted from freeze-dried miracle berries using homogenization, centrifugation, and NaCl extraction.
 
-Ammonium sulfate precipitation (salting out) is used to concentrate the protein, followed by desalting to remove  any excess salt. Additional purification techniques include size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography separate proteins based on molecular size, charge, and affinity interactions.
+Ammonium sulfate precipitation (salting out) is used to concentrate the protein, followed by desalting to remove any excess salt. Additional purification techniques include size exclusion chromatography, ion exchange chromatography, and immobilized metal affinity chromatography separate proteins based on molecular size, charge, and affinity interactions.
 
 Protein concentration is measured using the Bradford assay, and different purified fractions are analyzed using SDS-PAGE to evaluate protein purity and estimate molecular weight Miraculin is expected to appear near 24-28 kDa under the reducing conditions.
 
@@ -259,15 +255,15 @@ One week before the lab, confirm that all reagents and equipment listed in Provi
 
 Use this table as the canonical reference for buffer concentrations and pH throughout Parts 1-7. When a procedure step mentions a buffer, confirm the pH and concentration here.
 
-| Reagent | Concentration | pH | Used in parts |
-| --- | --- | --- | --- |
-| Deionized water | - | ~5.5-6.5 | Part 1 (initial wash) |
-| NaCl (extraction buffer) | 0.5 M | 4.0-6.8 (variable) | Part 2 |
-| Ammonium sulfate | 50-80% saturation | - | Part 3 |
-| Phosphate buffer | 0.02 M | 11.0 | Part 4 (backward stripping) |
-| Tris-HCl binding buffer | 20 mM Tris-HCl, 300-500 mM NaCl | 7.0-7.2 | Parts 5-7 (ion exchange, IMAC) |
-| Size exclusion buffer | Per column specs (typically Tris or phosphate) | 7.0-7.2 | Part 5 (SEC) |
-| IMAC charging solution | 1 M NiCl2 or Ni(CH3COO)2 | - | IMAC setup |
+| Reagent                  | Concentration                                  | pH                 | Used in parts                  |
+| ------------------------ | ---------------------------------------------- | ------------------ | ------------------------------ |
+| Deionized water          | -                                              | ~5.5-6.5           | Part 1 (initial wash)          |
+| NaCl (extraction buffer) | 0.5 M                                          | 4.0-6.8 (variable) | Part 2                         |
+| Ammonium sulfate         | 50-80% saturation                              | -                  | Part 3                         |
+| Phosphate buffer         | 0.02 M                                         | 11.0               | Part 4 (backward stripping)    |
+| Tris-HCl binding buffer  | 20 mM Tris-HCl, 300-500 mM NaCl                | 7.0-7.2            | Parts 5-7 (ion exchange, IMAC) |
+| Size exclusion buffer    | Per column specs (typically Tris or phosphate) | 7.0-7.2            | Part 5 (SEC)                   |
+| IMAC charging solution   | 1 M NiCl2 or Ni(CH3COO)2                       | -                  | IMAC setup                     |
 
 ### Overview
 
@@ -283,15 +279,15 @@ Use this table as the canonical reference for buffer concentrations and pH throu
 
 ### Part 1: Breaking the Cells
 
-* Obtain freeze-dried miracle berries.
-* Remove the seeds and skin if possible.
-* Grind the berry pulp into a fine powder using a coffee grinder.
-* If needed, use a mortar and pestle to crush any large pieces.
-* Mix the berry powder with deionized water.
-* Homogenize the mixture until the powder is evenly suspended.
-* Centrifuge the sample to separate the liquid from the solid material.
-* Discard the pink supernatant.
-* Keep the sediment/pellet for the next extraction step.
+- Obtain freeze-dried miracle berries.
+- Remove the seeds and skin if possible.
+- Grind the berry pulp into a fine powder using a coffee grinder.
+- If needed, use a mortar and pestle to crush any large pieces.
+- Mix the berry powder with deionized water.
+- Homogenize the mixture until the powder is evenly suspended.
+- Centrifuge the sample to separate the liquid from the solid material.
+- Discard the pink supernatant.
+- Keep the sediment/pellet for the next extraction step.
 
 ### Part 2: First Centrifugation
 
@@ -309,73 +305,66 @@ Use this table as the canonical reference for buffer concentrations and pH throu
 7. Keep the protein pellet, because it may contain the miraculin protein.
 8. Resuspend the pellet in 0.01 M phosphate buffer at pH 6.8.
 
-> TODO: instructor decision -- Part 3 uses 0.01 M phosphate buffer at pH 6.8 for resuspension, but Part 4 Backward Stripping produces a pH 11.0 solution, and Part 5 uses pH 7.0 buffer. Clarify which pH buffer should be used after salting out to maintain workflow continuity. Consult the reference protocol version to resolve.
-9. Label the resuspended sample and keep it cold for the next step.
-10. Since some ammonium sulfate may still remain in the sample, dilute the resuspended sample back to the original volume using buffer or deionized water.
-11. Centrifuge the sample again to continue reducing the remaining salt concentration.
-12. Record the remaining sample volume after centrifugation.
-13. Use the dilution equation C1V1 \= C2V2 to estimate the new salt concentration.
-14. In this equation, C1 is the salt concentration before dilution, V1 is the remaining volume after centrifugation, C2 is the salt concentration after dilution, and V2 is the final volume after dilution.
-15. Repeat the dilution and centrifugation process three times to lower the salt concentration step by step.
-16. After the final round, keep the protein-containing sample cold and use it for the next purification step or SDS-PAGE analysis.
+> TODO: instructor decision -- Part 3 uses 0.01 M phosphate buffer at pH 6.8 for resuspension, but Part 4 Backward Stripping produces a pH 11.0 solution, and Part 5 uses pH 7.0 buffer. Clarify which pH buffer should be used after salting out to maintain workflow continuity. Consult the reference protocol version to resolve. 9. Label the resuspended sample and keep it cold for the next step. 10. Since some ammonium sulfate may still remain in the sample, dilute the resuspended sample back to the original volume using buffer or deionized water. 11. Centrifuge the sample again to continue reducing the remaining salt concentration. 12. Record the remaining sample volume after centrifugation. 13. Use the dilution equation C1V1 \= C2V2 to estimate the new salt concentration. 14. In this equation, C1 is the salt concentration before dilution, V1 is the remaining volume after centrifugation, C2 is the salt concentration after dilution, and V2 is the final volume after dilution. 15. Repeat the dilution and centrifugation process three times to lower the salt concentration step by step. 16. After the final round, keep the protein-containing sample cold and use it for the next purification step or SDS-PAGE analysis.
 
 ### Part 4: Reverse Micelle Extraction
 
 #### Forward Extraction Protocol:
 
-* Discard the supernatant into the aqueous chemical waste container (berry and water mixture, no organic solvents).
-* Resuspend pellet using 0.5M NaCl solution that has a pH of 6.8
-  * For every 1g of powder add 6mL of NaCl
-* If the lab session ends here, close and label the tube and refrigerate until the next session.
+- Discard the supernatant into the aqueous chemical waste container (berry and water mixture, no organic solvents).
+- Resuspend pellet using 0.5M NaCl solution that has a pH of 6.8
+  - For every 1g of powder add 6mL of NaCl
+- If the lab session ends here, close and label the tube and refrigerate until the next session.
 
-* If sample was refrigerated: vortex for 3-5 seconds to mix proteins that have settled
-* In a cuvette add 20&micro;L of sample to 2mL of Bradford dye
-  * Be sure to have a blank containing purely 2mL of Bradford Dye
-* Measure and record absorbance at 595nm and place 100&micro;L of sample into a separate, labeled microcentrifuge tube
-  * Label should define when in the procedure the sample was collected
-* Filter the mixture to remove any large particles using 1 of 2 methods
-  * 1- Glass Wool
-    * Set up a beaker with a funnel containing glass wool.
-    * Pour NaCl-protein mixture into the funnel and add 0.5M NaCl as needed to collect flowthrough
-    * \*This method risks having liquid absorbed into the wool resulting in a loss of proteins\*
-  * 2- Buchner Funnel
-    * Set up a ceramic buchner funnel along with a rubber adaptor and place into a 125mL filtering flask
-    * Cut a 90mm Whatman 2 Qualitative circle filter paper to size and place it inside the funnel
-    * Create a vacuum using a vacuum tube connected to the flask and sink
-    * Pour in your liquid sample and allow the setup to run until there appears to be no liquid remaining in the funnel and large particles are left behind
-* After filtration is complete record the absorbance of the filtered liquid as done before and collect 100&micro;L into a new separate, labeled microcentrifuge tube
-* Transfer the liquid to an appropriately sized beaker according to the available volume of your sample
-* Adjust pH level of crude mixture to **8** using NaOH and HCl (miraculin becomes positively charged at pH 8\).
+- If sample was refrigerated: vortex for 3-5 seconds to mix proteins that have settled
+- In a cuvette add 20&micro;L of sample to 2mL of Bradford dye
+  - Be sure to have a blank containing purely 2mL of Bradford Dye
+- Measure and record absorbance at 595nm and place 100&micro;L of sample into a separate, labeled microcentrifuge tube
+  - Label should define when in the procedure the sample was collected
+- Filter the mixture to remove any large particles using 1 of 2 methods
+  - 1- Glass Wool
+    - Set up a beaker with a funnel containing glass wool.
+    - Pour NaCl-protein mixture into the funnel and add 0.5M NaCl as needed to collect flowthrough
+    - \*This method risks having liquid absorbed into the wool resulting in a loss of proteins\*
+  - 2- Buchner Funnel
+    - Set up a ceramic buchner funnel along with a rubber adaptor and place into a 125mL filtering flask
+    - Cut a 90mm Whatman 2 Qualitative circle filter paper to size and place it inside the funnel
+    - Create a vacuum using a vacuum tube connected to the flask and sink
+    - Pour in your liquid sample and allow the setup to run until there appears to be no liquid remaining in the funnel and large particles are left behind
+- After filtration is complete record the absorbance of the filtered liquid as done before and collect 100&micro;L into a new separate, labeled microcentrifuge tube
+- Transfer the liquid to an appropriately sized beaker according to the available volume of your sample
+- Adjust pH level of crude mixture to **8** using NaOH and HCl (miraculin becomes positively charged at pH 8\).
 
 > TODO: instructor decision -- the procedure as written uses 2.5 M NaOH and 0.1 M HCl, but Provided Materials lists 1 M NaOH and 1 M HCl. Confirm which concentrations to stock and use.
-* Create 0.1M AOT solution in isooctane
-  * molecular weight of AOT ~ 444.56 g/mol so:
-    * Measure out 4.45g of AOT
-    * Add to a 100mL volumetric flask
-    * Pour in roughly 70mL of isooctane (eyeball it) and gently swirl until AOT dissolves
-    * Add in isooctane to achieve final volume of 100mL
-    * Cap and invert several times to ensure thorough mixing
-  * If creating a 50mL solution, reduce amounts by half
-* Mix equal volumes of your protein mixture with 0.1M AOT solution gently in a centrifuge tube then shake mechanically for 10 min
-  * Remainder of protein solution can be stored in 50mL centrifuge tube for refrigeration
-* Centrifuge mixture in a balanced centrifuge at 4,000 x g for 5 min
-  * (AOT is (-) so AOT and miraculin bind) proteins are now in top organic phase with AOT
-* Extract the top phase and place into a separate tube
-  * Save 100&micro;L of bottom phase into a new separate labelled microcentrifuge tube
+
+- Create 0.1M AOT solution in isooctane
+  - molecular weight of AOT ~ 444.56 g/mol so:
+    - Measure out 4.45g of AOT
+    - Add to a 100mL volumetric flask
+    - Pour in roughly 70mL of isooctane (eyeball it) and gently swirl until AOT dissolves
+    - Add in isooctane to achieve final volume of 100mL
+    - Cap and invert several times to ensure thorough mixing
+  - If creating a 50mL solution, reduce amounts by half
+- Mix equal volumes of your protein mixture with 0.1M AOT solution gently in a centrifuge tube then shake mechanically for 10 min
+  - Remainder of protein solution can be stored in 50mL centrifuge tube for refrigeration
+- Centrifuge mixture in a balanced centrifuge at 4,000 x g for 5 min
+  - (AOT is (-) so AOT and miraculin bind) proteins are now in top organic phase with AOT
+- Extract the top phase and place into a separate tube
+  - Save 100&micro;L of bottom phase into a new separate labelled microcentrifuge tube
 
 #### Backward Stripping Protocol:
 
 Refer to the Reagent reference table for the exact pH and concentration of the phosphate buffer and NaCl to use in this step.
 
-* Create or obtain aqueous solutions of 1.) 0.02M phosphate buffer with a pH of 11 and 2.) 0.5M concentration of NaCl (these will unbind AOT from proteins)
-* Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.
-  * Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl
-* Centrifuge in a balanced centrifuge at 4,000 x g for 5 min
-* Proteins will now be in the bottom layer so extract and transfer the top layer (AOT in isooctane organic phase) to the organic non-halogenated waste container.
-  * Save 100&micro;L of top phase into a new separate labelled microcentrifuge tube
-* Record the absorbance level of the bottom phase liquid before labelling the centrifuge tube for storage to use next session.
+- Create or obtain aqueous solutions of 1.) 0.02M phosphate buffer with a pH of 11 and 2.) 0.5M concentration of NaCl (these will unbind AOT from proteins)
+- Mix equal volumes of buffer mixture (1:1 of phosphate buffer and NaCl) with crude miraculin (the extracted organic layer) and shake mechanically for 20 min.
+  - Ex. 800&micro;L of crude \+ 400&micro;L of phosphate buffer \+ 400&micro;L of NaCl
+- Centrifuge in a balanced centrifuge at 4,000 x g for 5 min
+- Proteins will now be in the bottom layer so extract and transfer the top layer (AOT in isooctane organic phase) to the organic non-halogenated waste container.
+  - Save 100&micro;L of top phase into a new separate labelled microcentrifuge tube
+- Record the absorbance level of the bottom phase liquid before labelling the centrifuge tube for storage to use next session.
 
-* Concentrate the proteins using a 10,000 MWCO tube and centrifuge at 4000 x g for 30 min adding ddH2O as needed to balance the samples
+- Concentrate the proteins using a 10,000 MWCO tube and centrifuge at 4000 x g for 30 min adding ddH2O as needed to balance the samples
 
 ### Part 5: Size Exclusion Chromatography
 
@@ -383,21 +372,21 @@ Refer to the Reagent reference table for the exact pH and concentration of the p
 
 Refer to the Reagent reference table for the exact buffer specifications.
 
-* Prepare the size exclusion chromatography column using Sephadex G-75 resin.
-* Add phosphate buffer at pH 7.00 to the column and allow the resin to settle evenly.
-* Make sure the resin bed stays wet during the entire procedure. Do not let the column dry.
-* Equilibrate the column by running a phosphate buffer at pH 7.00 through the Sephadex G-75 resin before loading the sample.
-* Place clean, labeled collection tubes under the column to collect the fractions.
-* Take the resuspended miraculin-containing protein sample from the salting out step.
-* Carefully load the protein sample onto the top of the resin bed without disturbing the column.
-* Allow the sample to fully enter the resin before adding more buffers.
-* Slowly add phosphate buffer at pH 7.00 to the column to move the protein sample through the resin.
-* Begin collecting fractions as the liquid starts coming out of the column.
-* Collect each fraction in a separate labeled tube.
-* Keep the collected fractions cold until they are tested.
-* Test the fractions using Bradford assay or SDS-PAGE to identify which fractions contain the most protein.
-* Compare the SDS-PAGE bands with the protein ladder to check whether the expected miraculin band is present.
-* Save the fractions that show the strongest protein signal or bands near the expected miraculin size.
+- Prepare the size exclusion chromatography column using Sephadex G-75 resin.
+- Add phosphate buffer at pH 7.00 to the column and allow the resin to settle evenly.
+- Make sure the resin bed stays wet during the entire procedure. Do not let the column dry.
+- Equilibrate the column by running a phosphate buffer at pH 7.00 through the Sephadex G-75 resin before loading the sample.
+- Place clean, labeled collection tubes under the column to collect the fractions.
+- Take the resuspended miraculin-containing protein sample from the salting out step.
+- Carefully load the protein sample onto the top of the resin bed without disturbing the column.
+- Allow the sample to fully enter the resin before adding more buffers.
+- Slowly add phosphate buffer at pH 7.00 to the column to move the protein sample through the resin.
+- Begin collecting fractions as the liquid starts coming out of the column.
+- Collect each fraction in a separate labeled tube.
+- Keep the collected fractions cold until they are tested.
+- Test the fractions using Bradford assay or SDS-PAGE to identify which fractions contain the most protein.
+- Compare the SDS-PAGE bands with the protein ladder to check whether the expected miraculin band is present.
+- Save the fractions that show the strongest protein signal or bands near the expected miraculin size.
 
 ### Part 6: Ion Exchange Chromatography
 
@@ -405,27 +394,28 @@ Refer to the Reagent reference table.
 
 > TODO: instructor decision -- Part 6 uses pH 6.0 or pH 5.5 phosphate buffer (100 mM) for CM-Cellulose, but samples from Part 5 SEC are at pH 7.0 and Part 7 IMAC expects pH 7.0-7.2. Confirm the intended pH for the ion-exchange stage and whether pH adjustment is needed before or after this step.
 
-* While the MWCO tube centrifuging, set up a chromatography column containing CM-Cellulose (this is preferred over CM-Sephadex C-50 because C-50 is recommended for much larger proteins):
-  * Rinse column using ddH2O to ensure flowthrough occurs
-  * Prepare beads by mixing 10g of CM-Cellulose with 200mL of pH6.0 or 5.5 100mM Phosphate Buffer
-  * Close the stopcock and use a serological pipette to add beads to the column until the column is 80% full of seemingly cloudy beads
-    * Beads WILL condense and that is okay, DO NOT add more
-* After concentration via centrifugation is complete, measure the absorbance once more and save 100&micro;L into a new separate labelled microcentrifuge tube
-* Run the concentrated proteins through the column using the pH6.0 or pH5.5 Phosphate Buffer used to prepare the beads
-  * When liquid level starts to reach the beads, add more buffer, DO NOT let the column dry out
-  * CM-Cellulose is (-) at pH levels above 5.0, so the (+)miraculin will bind to the beads and flowthrough can be collected in a beaker for discarding
-* After 5 minutes, allow buffer volume to lower until near bead level and close the stopcock valve
-  * During this, set up 20-30 2mL microcentrifuge tubes with caps in a tube rack to collect proteins that will be pushed out by salt ions
-    * Label the tubes according to a pattern for collection 1 \-\> 2 \-\> 3 \-\> etc.
-* Remove proteins from the column by adding buffers with increasing salt concentrations starting with the lowest concentration solution
-  * As proteins drip, be careful to pay attention and move on to the next chronological tube before the previous is full (being full could cause flowing over into nearby tubes)
+- While the MWCO tube centrifuging, set up a chromatography column containing CM-Cellulose (this is preferred over CM-Sephadex C-50 because C-50 is recommended for much larger proteins):
+  - Rinse column using ddH2O to ensure flowthrough occurs
+  - Prepare beads by mixing 10g of CM-Cellulose with 200mL of pH6.0 or 5.5 100mM Phosphate Buffer
+  - Close the stopcock and use a serological pipette to add beads to the column until the column is 80% full of seemingly cloudy beads
+    - Beads WILL condense and that is okay, DO NOT add more
+- After concentration via centrifugation is complete, measure the absorbance once more and save 100&micro;L into a new separate labelled microcentrifuge tube
+- Run the concentrated proteins through the column using the pH6.0 or pH5.5 Phosphate Buffer used to prepare the beads
+  - When liquid level starts to reach the beads, add more buffer, DO NOT let the column dry out
+  - CM-Cellulose is (-) at pH levels above 5.0, so the (+)miraculin will bind to the beads and flowthrough can be collected in a beaker for discarding
+- After 5 minutes, allow buffer volume to lower until near bead level and close the stopcock valve
+  - During this, set up 20-30 2mL microcentrifuge tubes with caps in a tube rack to collect proteins that will be pushed out by salt ions
+    - Label the tubes according to a pattern for collection 1 \-\> 2 \-\> 3 \-\> etc.
+- Remove proteins from the column by adding buffers with increasing salt concentrations starting with the lowest concentration solution
+  - As proteins drip, be careful to pay attention and move on to the next chronological tube before the previous is full (being full could cause flowing over into nearby tubes)
 
-  * First, add 10mL of a low salt concentration that is 10-50mM to the column
-    * Allow liquid volume to lower until near bead level before adding next concentration
-  * Secondly, add 10mL of a medium salt concentration that is 100-500mM to the column
-    * Allow liquid volume to lower until near bead level before adding next concentration
-  * Lastly, add 10mL of a high salt concentration that is around 1M to the column
-* Depending on time at this point, close the caps and place tube rack into the refrigerator to obtain absorbance values and combine samples during the next session
+  - First, add 10mL of a low salt concentration that is 10-50mM to the column
+    - Allow liquid volume to lower until near bead level before adding next concentration
+  - Secondly, add 10mL of a medium salt concentration that is 100-500mM to the column
+    - Allow liquid volume to lower until near bead level before adding next concentration
+  - Lastly, add 10mL of a high salt concentration that is around 1M to the column
+
+- Depending on time at this point, close the caps and place tube rack into the refrigerator to obtain absorbance values and combine samples during the next session
 
 ### Part 7: Immobilized-metal affinity chromatography (IMAC)
 
@@ -433,65 +423,68 @@ Refer to the Reagent reference table.
 
 **Phase 1: Reagent and Material Preparation**
 
-* \*\*Binding Buffer:\*\* Prepare a 20 mM Tris-HCl solution containing 0.5 M NaCl, adjusted to pH 7.2.
-* \*\*Elution Buffer:\*\* Prepare a solution consisting of 300 mM imidazole, 20 mM disodium phosphate, and 300 mM NaCl, with a pH of 8.0.
-* \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni2+ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.
-  * Weigh 1.24 g of  Nickel (II) acetate tetrahydrate and measure 100 mL of Deionized water, and add them to a 150 mL beaker
-  * In a standard laboratory setting, you would typically stir the solution until the salt is completely dissolved and the liquid is clear and uniform.
-* \*\*Chromatography Resin:\*\* Utilize Iminodiacetic Acid (IDA) Sepharose from your laboratory inventory.
+- \*\*Binding Buffer:\*\* Prepare a 20 mM Tris-HCl solution containing 0.5 M NaCl, adjusted to pH 7.2.
+- \*\*Elution Buffer:\*\* Prepare a solution consisting of 300 mM imidazole, 20 mM disodium phosphate, and 300 mM NaCl, with a pH of 8.0.
+- \*\*Charging Solution:\*\* Prepare a nickel sulfate (NiSO4) solution to supply the Ni2+ ions required to activate the resin. Note that nickel(II) acetate tetrahydrate was used in place of nickel sulfate due to unavailability.
+  - Weigh 1.24 g of Nickel (II) acetate tetrahydrate and measure 100 mL of Deionized water, and add them to a 150 mL beaker
+  - In a standard laboratory setting, you would typically stir the solution until the salt is completely dissolved and the liquid is clear and uniform.
+- \*\*Chromatography Resin:\*\* Utilize Iminodiacetic Acid (IDA) Sepharose from your laboratory inventory.
 
 **Phase 2: Column Setup and Charging**
 
-* \*\*Mounting:\*\* Securely attach the chromatography column vertically and carefully add approximately 500 µL to 1 mL of IDA Sepharose resin to the column.
-  * Gather a stand, 2 clamps, 1 column, 1 stop cock valve, and a waste container.
-* \*\*Charging:\*\* Introduce the nickel(II) acetate tetrahydrate solution into the resin bed to effectively saturate the chelating sites with nickel ions.
-* \*\*Rinsing:\*\* Rinse the column thoroughly with deionized water to eliminate any unbound nickel ions that may interfere with your sample.
-  * Wash the column down with the 100 mM PO4 buffer at pH 7, and wash the sides as well
-  * Mark 2 cm from the bottom for the resin to settle at
-* \*\*Equilibration:\*\* Pass 5 to 10 column volumes of the Tris-HCl binding buffer through the column to prepare the environment for optimal protein binding.
+- \*\*Mounting:\*\* Securely attach the chromatography column vertically and carefully add approximately 500 µL to 1 mL of IDA Sepharose resin to the column.
+  - Gather a stand, 2 clamps, 1 column, 1 stop cock valve, and a waste container.
+- \*\*Charging:\*\* Introduce the nickel(II) acetate tetrahydrate solution into the resin bed to effectively saturate the chelating sites with nickel ions.
+- \*\*Rinsing:\*\* Rinse the column thoroughly with deionized water to eliminate any unbound nickel ions that may interfere with your sample.
+  - Wash the column down with the 100 mM PO4 buffer at pH 7, and wash the sides as well
+  - Mark 2 cm from the bottom for the resin to settle at
+- \*\*Equilibration:\*\* Pass 5 to 10 column volumes of the Tris-HCl binding buffer through the column to prepare the environment for optimal protein binding.
 
 **Phase 3: Critical Sample Preparation**
 
-* \*\*pH Adjustment:\*\* Miraculin will only interact with the nickel sites when the pH is neutral.
-- Before loading your reverse micelle product, which starts at pH 11.0, adjust the pH to 7.0-7.2 using 1 M NaOH or HCl.
-* \*\*Urgency:\*\* It is crucial to apply the sample to the column immediately after this adjustment. If the neutralized extract is allowed to sit for too long, polyphenols will undergo dehydrogenation, resulting in a darkened sample that can bind irreversibly to the resin and compromise the column's usability for future applications.
+- \*\*pH Adjustment:\*\* Miraculin will only interact with the nickel sites when the pH is neutral.
+
+* Before loading your reverse micelle product, which starts at pH 11.0, adjust the pH to 7.0-7.2 using 1 M NaOH or HCl.
+
+- \*\*Urgency:\*\* It is crucial to apply the sample to the column immediately after this adjustment. If the neutralized extract is allowed to sit for too long, polyphenols will undergo dehydrogenation, resulting in a darkened sample that can bind irreversibly to the resin and compromise the column's usability for future applications.
 
 **Phase 4: Loading and Binding**
 
-* Application: Load the pH-adjusted sample onto the equilibrated column.
-* Maximizing Yield: Collect the flow-through.
-- It is important not to let the resin dry; the buffer must be added continually.
+- Application: Load the pH-adjusted sample onto the equilibrated column.
+- Maximizing Yield: Collect the flow-through.
+
+* It is important not to let the resin dry; the buffer must be added continually.
 
 **Phase 5: Washing and Elution**
 
-* \*\*Washing:\*\* Rinse the column with several volumes of the binding buffer to eliminate weakly bound impurities and contaminating proteins.
-* \*\*Elution:\*\* Apply the elution buffer containing 300 mM imidazole. Imidazole functions as a competitive ligand, displacing miraculin from the nickel sites.
-* \*\*Collection:\*\* Collect the fractions that are eluted.
+- \*\*Washing:\*\* Rinse the column with several volumes of the binding buffer to eliminate weakly bound impurities and contaminating proteins.
+- \*\*Elution:\*\* Apply the elution buffer containing 300 mM imidazole. Imidazole functions as a competitive ligand, displacing miraculin from the nickel sites.
+- \*\*Collection:\*\* Collect the fractions that are eluted.
 
 ## **Timing Estimates**
 
 > TODO: instructor decision -- provide per-part timing estimates for Parts 1-6 in addition to the IMAC Phase 1-4 estimates below.
 
-* Phase 1: 30-40min
-* Phase 2: 20min
-* Phase 3: 10min
-* Phase 4: 20min
+- Phase 1: 30-40min
+- Phase 2: 20min
+- Phase 3: 10min
+- Phase 4: 20min
 
 Estimated time of IMAC steps: 90min
 
 ## **Post-Experiment Analysis**
 
- Electrophoretic Profile (SDS-PAGE Analysis)
+Electrophoretic Profile (SDS-PAGE Analysis)
 
-* Monomer Band: A distinct band should appear between 24 and 28 kDa.
-* Dimer Band: Under non-reducing conditions, the experimenter should look for a band at approximately 50 kDa, which represents the active homodimer.
-* Glycosylation Signature: The bands may appear slightly broad rather than sharp lines. This is a normal result caused by the various N-linked oligosaccharides attached to the protein.
-* Failed Results: If the lanes appear empty or the marks are faded, the protein was likely too dilute or lost during staining/destaining.
+- Monomer Band: A distinct band should appear between 24 and 28 kDa.
+- Dimer Band: Under non-reducing conditions, the experimenter should look for a band at approximately 50 kDa, which represents the active homodimer.
+- Glycosylation Signature: The bands may appear slightly broad rather than sharp lines. This is a normal result caused by the various N-linked oligosaccharides attached to the protein.
+- Failed Results: If the lanes appear empty or the marks are faded, the protein was likely too dilute or lost during staining/destaining.
 
 ## **Expected Results**
 
-* Upon completing the optimized Nickel-IMAC purification process for miraculin, you can anticipate a high-efficiency yield. The final purified product should resemble a colorless solution. If the sample was not applied immediately after adjusting the pH to 7.0, or if the column was not thoroughly washed, you may observe darkening of the resin. This darkening results from polyphenol dehydrogenation, which can contaminate the results and impede column performance.
-  * In the SDS-PAGE results under reducing conditions (using B-mercaptoethanol), you should expect to see a single sharp band at 24-28 kDa, indicating the presence of the miraculin monomer.
+- Upon completing the optimized Nickel-IMAC purification process for miraculin, you can anticipate a high-efficiency yield. The final purified product should resemble a colorless solution. If the sample was not applied immediately after adjusting the pH to 7.0, or if the column was not thoroughly washed, you may observe darkening of the resin. This darkening results from polyphenol dehydrogenation, which can contaminate the results and impede column performance.
+  - In the SDS-PAGE results under reducing conditions (using B-mercaptoethanol), you should expect to see a single sharp band at 24-28 kDa, indicating the presence of the miraculin monomer.
 
 ## **TA Material Preparation**
 
@@ -503,18 +496,17 @@ Estimated time of IMAC steps: 90min
 
 ## **References**
 
-**Duhita, N., Hiwasa-Tanase, K., Yoshida, S., & Ezura, H. (2009).** Single-Step Purification of Native Miraculin Using Immobilized Metal-Affinity Chromatography. **Journal of Agricultural and Food Chemistry**, *57*(12), 5148-5151.
+**Duhita, N., Hiwasa-Tanase, K., Yoshida, S., & Ezura, H. (2009).** Single-Step Purification of Native Miraculin Using Immobilized Metal-Affinity Chromatography. **Journal of Agricultural and Food Chemistry**, _57_(12), 5148-5151.
 
-**He, Z., Tan, J. S., Lai, O. M., & Ariff, A. B. (2015).** Optimization of conditions for the single step IMAC purification of miraculin from *Synsepalum dulcificum*. **Food Chemistry**, *181*, 19-24.
+**He, Z., Tan, J. S., Lai, O. M., & Ariff, A. B. (2015).** Optimization of conditions for the single step IMAC purification of miraculin from _Synsepalum dulcificum_. **Food Chemistry**, _181_, 19-24.
 
-**He, Z., Tan, J. S., Abbasiliasi, S., Lai, O. M., Tam, Y. J., Halim, M., & Ariff, A. B. (2015).** Primary recovery of miraculin from miracle fruit, *Synsepalum dulcificum* by AOT reverse micellar system. **LWT \- Food**
-**Science and Technology**, *64*(2), 1243-1250.
+**He, Z., Tan, J. S., Abbasiliasi, S., Lai, O. M., Tam, Y. J., Halim, M., & Ariff, A. B. (2015).** Primary recovery of miraculin from miracle fruit, _Synsepalum dulcificum_ by AOT reverse micellar system. **LWT \- Food**
+**Science and Technology**, _64_(2), 1243-1250.
 
-**Kajiura, H., Hiwasa-Tanase, K., Ezura, H., & Fujiyama, K. (2018).** Comparison of the N-glycosylation on recombinant miraculin expressed in tomato plants with native miraculin. **Plant Biotechnology**, *35*(4), 337-342.
+**Kajiura, H., Hiwasa-Tanase, K., Ezura, H., & Fujiyama, K. (2018).** Comparison of the N-glycosylation on recombinant miraculin expressed in tomato plants with native miraculin. **Plant Biotechnology**, _35_(4), 337-342.
 
-**Ohkura, S., Hori, M., Saitoh, K., Okuzawa, T., Okamoto, I., Furukawa, N., & Shimizu-Ibuka, A. (2018).** Structural and functional analysis of miraculin-like protein from *Vitis vinifera*. **BBA \- Proteins and Proteomics**, *1866*(11), 1125-1130.
+**Ohkura, S., Hori, M., Saitoh, K., Okuzawa, T., Okamoto, I., Furukawa, N., & Shimizu-Ibuka, A. (2018).** Structural and functional analysis of miraculin-like protein from _Vitis vinifera_. **BBA \- Proteins and Proteomics**, _1866_(11), 1125-1130.
 
-**Theerasilp, S., & Kurihara, Y. (1988).** Complete Purification and Characterization of the Taste-modifying Protein, Miraculin, from Miracle Fruit. **The Journal of Biological Chemistry**, *263*(23), 11536-11539.
+**Theerasilp, S., & Kurihara, Y. (1988).** Complete Purification and Characterization of the Taste-modifying Protein, Miraculin, from Miracle Fruit. **The Journal of Biological Chemistry**, _263_(23), 11536-11539.
 
 **Guarneros Martinez, Tania. (Summer 2023).** **Miraculin Research**. \[Student Research Project Report and Laboratory Documentation\].
-

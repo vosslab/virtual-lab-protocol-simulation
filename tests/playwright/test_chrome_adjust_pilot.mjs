@@ -13,205 +13,226 @@
  * Screenshots saved to test-results/_chrome/
  */
 
-import { chromium } from 'playwright';
-import fs from 'node:fs';
-import path from 'node:path';
+import { chromium } from "playwright";
+import fs from "node:fs";
+import path from "node:path";
 
 // ============================================
 // Setup
 
-const TEST_OUTPUT_DIR = path.resolve('test-results', '_chrome');
+const TEST_OUTPUT_DIR = path.resolve("test-results", "_chrome");
 
 // Create test output directory
 if (!fs.existsSync(TEST_OUTPUT_DIR)) {
-	fs.mkdirSync(TEST_OUTPUT_DIR, { recursive: true });
+  fs.mkdirSync(TEST_OUTPUT_DIR, { recursive: true });
 }
 
 // ============================================
 // Test runner
 
 async function runTests() {
-	const browser = await chromium.launch();
-	const page = await browser.newPage({ viewport: { width: 1200, height: 900 } });
+  const browser = await chromium.launch();
+  const page = await browser.newPage({
+    viewport: { width: 1200, height: 900 },
+  });
 
-	console.log('Testing renderAdjustPanel for Pilot 1 bindings...');
+  console.log("Testing renderAdjustPanel for Pilot 1 bindings...");
 
-	try {
-		// Create and navigate to test HTML
-		const testFile = path.join(TEST_OUTPUT_DIR, '_test.html');
-		const testHtml = createTestHtml();
-		fs.writeFileSync(testFile, testHtml, 'utf-8');
+  try {
+    // Create and navigate to test HTML
+    const testFile = path.join(TEST_OUTPUT_DIR, "_test.html");
+    const testHtml = createTestHtml();
+    fs.writeFileSync(testFile, testHtml, "utf-8");
 
-		// Navigate to the test HTML
-		const fileUrl = `file://${testFile}`;
-		await page.goto(fileUrl);
-		await page.waitForTimeout(500);
+    // Navigate to the test HTML
+    const fileUrl = `file://${testFile}`;
+    await page.goto(fileUrl);
+    await page.waitForTimeout(500);
 
-		// ============================================
-		// Test 1: set_volume binding (micropipette)
+    // ============================================
+    // Test 1: set_volume binding (micropipette)
 
-		console.log('Test 1: set_volume binding (micropipette)...');
+    console.log("Test 1: set_volume binding (micropipette)...");
 
-		// Check page content before clicking
-		const pageContent = await page.content();
-		if (!pageContent.includes('render-set-volume')) {
-			throw new Error('render-set-volume button not found in page');
-		}
+    // Check page content before clicking
+    const pageContent = await page.content();
+    if (!pageContent.includes("render-set-volume")) {
+      throw new Error("render-set-volume button not found in page");
+    }
 
-		// Click button to render set_volume panel
-		console.log('Clicking render-set-volume button...');
-		await page.click('button#render-set-volume');
+    // Click button to render set_volume panel
+    console.log("Clicking render-set-volume button...");
+    await page.click("button#render-set-volume");
 
-		// Check if button click triggered any errors
-		const pageErrors = await page.evaluate(() => {
-			return window.__errors || [];
-		});
-		if (pageErrors.length > 0) {
-			console.warn('Page errors:', pageErrors);
-		}
+    // Check if button click triggered any errors
+    const pageErrors = await page.evaluate(() => {
+      return window.__errors || [];
+    });
+    if (pageErrors.length > 0) {
+      console.warn("Page errors:", pageErrors);
+    }
 
-		// Log current HTML to debug
-		const testAreaHtml = await page.evaluate(() => {
-			return document.getElementById('test-area').innerHTML;
-		});
-		console.log('test-area HTML after click:', testAreaHtml.substring(0, 200));
+    // Log current HTML to debug
+    const testAreaHtml = await page.evaluate(() => {
+      return document.getElementById("test-area").innerHTML;
+    });
+    console.log("test-area HTML after click:", testAreaHtml.substring(0, 200));
 
-		// Wait for the input element to appear (testid uses underscore: set_volume)
-		await page.waitForSelector('[data-testid="adjust-input-set_volume"]', { timeout: 5000 });
-		await page.waitForTimeout(300);
+    // Wait for the input element to appear (testid uses underscore: set_volume)
+    await page.waitForSelector('[data-testid="adjust-input-set_volume"]', {
+      timeout: 5000,
+    });
+    await page.waitForTimeout(300);
 
-		// Assert panel is present
-		const panelSetVol = await page.locator('[data-testid="adjust-panel"]').first();
-		if (!await panelSetVol.isVisible()) {
-			throw new Error('adjust-panel not visible for set_volume');
-		}
+    // Assert panel is present
+    const panelSetVol = await page
+      .locator('[data-testid="adjust-panel"]')
+      .first();
+    if (!(await panelSetVol.isVisible())) {
+      throw new Error("adjust-panel not visible for set_volume");
+    }
 
-		// Assert input element is present with correct data-testid
-		const inputSetVol = await page.locator('[data-testid="adjust-input-set_volume"]');
-		if (!await inputSetVol.isVisible()) {
-			throw new Error('adjust-input-set-volume not found');
-		}
+    // Assert input element is present with correct data-testid
+    const inputSetVol = await page.locator(
+      '[data-testid="adjust-input-set_volume"]',
+    );
+    if (!(await inputSetVol.isVisible())) {
+      throw new Error("adjust-input-set-volume not found");
+    }
 
-		// Verify initial value
-		const initialValue = await inputSetVol.inputValue();
-		console.log(`  set_volume initial value: ${initialValue}`);
-		if (initialValue !== '100') {
-			throw new Error(`Expected initial set_volume 100, got ${initialValue}`);
-		}
+    // Verify initial value
+    const initialValue = await inputSetVol.inputValue();
+    console.log(`  set_volume initial value: ${initialValue}`);
+    if (initialValue !== "100") {
+      throw new Error(`Expected initial set_volume 100, got ${initialValue}`);
+    }
 
-		// Take screenshot before edit
-		await page.screenshot({ path: path.join(TEST_OUTPUT_DIR, '01_set_volume_initial.png') });
+    // Take screenshot before edit
+    await page.screenshot({
+      path: path.join(TEST_OUTPUT_DIR, "01_set_volume_initial.png"),
+    });
 
-		// Type a new value
-		await inputSetVol.clear();
-		await inputSetVol.type('150');
-		await page.waitForTimeout(100);
+    // Type a new value
+    await inputSetVol.clear();
+    await inputSetVol.type("150");
+    await page.waitForTimeout(100);
 
-		// Blur to trigger commit
-		await inputSetVol.blur();
-		await page.waitForTimeout(300);
+    // Blur to trigger commit
+    await inputSetVol.blur();
+    await page.waitForTimeout(300);
 
-		// Take screenshot after edit
-		await page.screenshot({ path: path.join(TEST_OUTPUT_DIR, '02_set_volume_edited.png') });
+    // Take screenshot after edit
+    await page.screenshot({
+      path: path.join(TEST_OUTPUT_DIR, "02_set_volume_edited.png"),
+    });
 
-		// Check that commit was fired (verify via a result element on the page)
-		const resultSetVol = await page.locator('#result-set-volume').textContent();
-		console.log(`  set_volume commit result: ${resultSetVol}`);
-		if (resultSetVol !== '150') {
-			throw new Error(`Expected set_volume commit 150, got ${resultSetVol}`);
-		}
+    // Check that commit was fired (verify via a result element on the page)
+    const resultSetVol = await page.locator("#result-set-volume").textContent();
+    console.log(`  set_volume commit result: ${resultSetVol}`);
+    if (resultSetVol !== "150") {
+      throw new Error(`Expected set_volume commit 150, got ${resultSetVol}`);
+    }
 
-		console.log('  ✓ set_volume binding passed');
+    console.log("  ✓ set_volume binding passed");
 
-		// ============================================
-		// Test 2: wavelength_nm binding (plate reader)
+    // ============================================
+    // Test 2: wavelength_nm binding (plate reader)
 
-		console.log('Test 2: wavelength_nm binding (plate reader)...');
+    console.log("Test 2: wavelength_nm binding (plate reader)...");
 
-		// Click button to render wavelength_nm panel
-		await page.click('button#render-wavelength');
+    // Click button to render wavelength_nm panel
+    await page.click("button#render-wavelength");
 
-		// Wait for the input element to appear (testid uses underscore: wavelength_nm)
-		await page.waitForSelector('[data-testid="adjust-input-wavelength_nm"]', { timeout: 5000 });
-		await page.waitForTimeout(300);
+    // Wait for the input element to appear (testid uses underscore: wavelength_nm)
+    await page.waitForSelector('[data-testid="adjust-input-wavelength_nm"]', {
+      timeout: 5000,
+    });
+    await page.waitForTimeout(300);
 
-		// Assert input element is present with correct data-testid
-		const inputWave = await page.locator('[data-testid="adjust-input-wavelength_nm"]');
-		if (!await inputWave.isVisible()) {
-			throw new Error('adjust-input-wavelength_nm not found');
-		}
+    // Assert input element is present with correct data-testid
+    const inputWave = await page.locator(
+      '[data-testid="adjust-input-wavelength_nm"]',
+    );
+    if (!(await inputWave.isVisible())) {
+      throw new Error("adjust-input-wavelength_nm not found");
+    }
 
-		// Verify initial value
-		const initialWave = await inputWave.inputValue();
-		console.log(`  wavelength_nm initial value: ${initialWave}`);
-		if (initialWave !== '570') {
-			throw new Error(`Expected initial wavelength_nm 570, got ${initialWave}`);
-		}
+    // Verify initial value
+    const initialWave = await inputWave.inputValue();
+    console.log(`  wavelength_nm initial value: ${initialWave}`);
+    if (initialWave !== "570") {
+      throw new Error(`Expected initial wavelength_nm 570, got ${initialWave}`);
+    }
 
-		// Take screenshot before edit
-		await page.screenshot({ path: path.join(TEST_OUTPUT_DIR, '03_wavelength_initial.png') });
+    // Take screenshot before edit
+    await page.screenshot({
+      path: path.join(TEST_OUTPUT_DIR, "03_wavelength_initial.png"),
+    });
 
-		// Type a new value
-		await inputWave.clear();
-		await inputWave.type('560');
-		await page.waitForTimeout(100);
+    // Type a new value
+    await inputWave.clear();
+    await inputWave.type("560");
+    await page.waitForTimeout(100);
 
-		// Blur to trigger commit
-		await inputWave.blur();
-		await page.waitForTimeout(300);
+    // Blur to trigger commit
+    await inputWave.blur();
+    await page.waitForTimeout(300);
 
-		// Take screenshot after edit
-		await page.screenshot({ path: path.join(TEST_OUTPUT_DIR, '04_wavelength_edited.png') });
+    // Take screenshot after edit
+    await page.screenshot({
+      path: path.join(TEST_OUTPUT_DIR, "04_wavelength_edited.png"),
+    });
 
-		// Check that commit was fired
-		const resultWave = await page.locator('#result-wavelength').textContent();
-		console.log(`  wavelength_nm commit result: ${resultWave}`);
-		if (resultWave !== '560') {
-			throw new Error(`Expected wavelength_nm commit 560, got ${resultWave}`);
-		}
+    // Check that commit was fired
+    const resultWave = await page.locator("#result-wavelength").textContent();
+    console.log(`  wavelength_nm commit result: ${resultWave}`);
+    if (resultWave !== "560") {
+      throw new Error(`Expected wavelength_nm commit 560, got ${resultWave}`);
+    }
 
-		console.log('  ✓ wavelength_nm binding passed');
+    console.log("  ✓ wavelength_nm binding passed");
 
-		// ============================================
-		// Test 3: Negative test - set_temperature throws loudly
+    // ============================================
+    // Test 3: Negative test - set_temperature throws loudly
 
-		console.log('Test 3: set_temperature throws (not in Pilot 1 closed set)...');
+    console.log(
+      "Test 3: set_temperature throws (not in Pilot 1 closed set)...",
+    );
 
-		// Click button that attempts to render set_temperature
-		await page.click('button#render-bad-field');
-		await page.waitForTimeout(300);
+    // Click button that attempts to render set_temperature
+    await page.click("button#render-bad-field");
+    await page.waitForTimeout(300);
 
-		// Check for error message
-		const errorMsg = await page.locator('#error-message').textContent();
-		console.log(`  error message: ${errorMsg}`);
-		if (!errorMsg.includes('not a Pilot 1 binding')) {
-			throw new Error('Expected error about field not being in Pilot 1 set');
-		}
+    // Check for error message
+    const errorMsg = await page.locator("#error-message").textContent();
+    console.log(`  error message: ${errorMsg}`);
+    if (!errorMsg.includes("not a Pilot 1 binding")) {
+      throw new Error("Expected error about field not being in Pilot 1 set");
+    }
 
-		console.log('  ✓ set_temperature rejection passed');
+    console.log("  ✓ set_temperature rejection passed");
 
-		// Take screenshot of error state
-		await page.screenshot({ path: path.join(TEST_OUTPUT_DIR, '05_error_closed_set.png') });
+    // Take screenshot of error state
+    await page.screenshot({
+      path: path.join(TEST_OUTPUT_DIR, "05_error_closed_set.png"),
+    });
 
-		// ============================================
-		// Summary
+    // ============================================
+    // Summary
 
-		console.log('\n✓ All Pilot 1 adjust panel tests passed!');
-		console.log(`Screenshots saved to ${TEST_OUTPUT_DIR}`);
-
-	} finally {
-		await browser.close();
-	}
+    console.log("\n✓ All Pilot 1 adjust panel tests passed!");
+    console.log(`Screenshots saved to ${TEST_OUTPUT_DIR}`);
+  } finally {
+    await browser.close();
+  }
 }
 
 // ============================================
 // Test HTML generator
 
 function createTestHtml() {
-	const repoRoot = path.resolve();
-
-	// Create inline implementation to avoid bundling complexity
-	const testCode = `
+  // Create inline implementation to avoid bundling complexity
+  const testCode = `
 // Inline copy of renderAdjustPanel and attachAdjustDispatchToElement
 const FIELD_METADATA = {
 	set_volume: { label: 'Pipette Volume', unit: 'uL' },
@@ -343,7 +364,7 @@ function renderAdjustPanel(container, options) {
 window.renderAdjustPanel = renderAdjustPanel;
 	`;
 
-	return `
+  return `
 <!DOCTYPE html>
 <html>
 <head>
@@ -538,6 +559,6 @@ ${testCode}
 // Main
 
 runTests().catch((error) => {
-	console.error('Test failed:', error);
-	process.exit(1);
+  console.error("Test failed:", error);
+  process.exit(1);
 });

@@ -2,8 +2,8 @@
 
 Status snapshot of the scene_runtime spine refactor at the point work was
 paused. This is a snapshot, not a plan. The plan being executed is in
-[scene_runtime_spine_plan.md](../archive/scene_runtime_spine_plan.md) and
-[2026_May_13-Fresh_Refactor_Plan.md](2026_May_13-Fresh_Refactor_Plan.md).
+`scene_runtime_spine_plan.md` and
+`2026_May_13-Fresh_Refactor_Plan.md`.
 
 ## Summary
 
@@ -21,7 +21,7 @@ started.
 
 - M0 doc conflict table: complete.
 - M1 curriculum decomposition: complete.
-- M2 protocol `entry_step` fields: complete. (Originally tracked as `entry:` blocks; the multi-key `entry: { scene:, step: }` shape was retired in the 2026-05-15 Class I spec sweep in favour of a flat top-level `entry_step:` field referencing a `step_name`. See [../specs/PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md).)
+- M2 protocol `entry_step` fields: complete. (Originally tracked as `entry:` blocks; the multi-key `entry: { scene:, step: }` shape was retired in the 2026-05-15 Class I spec sweep in favour of a flat top-level `entry_step:` field referencing a `step_name`. See `PROTOCOL_YAML_FORMAT.md`.)
 - M3 runtime spine (`contract.ts`, `types.ts`, loader): complete.
 - M4 generic walker engine: complete.
 - M5 vertical proof: complete.
@@ -74,7 +74,7 @@ protocol-vocabulary design decision is made.
 An architect design for the backend was produced and REJECTED by the user.
 The user's position: "plateTargets and tubeTargets are bad design, this is a
 major regression on the vocab." Per
-[../specs/PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md), `interactions` is the
+`PROTOCOL_VOCABULARY.md`, `interactions` is the
 canonical vocabulary primitive. `plateTargets` and `tubeTargets` are
 "optional metadata" bolted on parallel to `interactions`, and that parallel
 structure is the regression the user wants eliminated.

@@ -53,27 +53,27 @@ summary record (see below).
 
 Every `<finding>` object has this structure:
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `severity` | string | yes | One of `ERROR`, `WARNING`, or `INFO`. |
-| `tool` | string | yes | Name of the validation tool: `validator`, `stepper`, `svg_check`, `svg_audit`, etc. |
-| `code` | string | yes | Stable short identifier for this error class (e.g., `invalid_field`, `unknown_material`, `state_type_mismatch`). |
-| `message` | string | yes | Human-readable description of the finding. |
-| `path` | string | optional | Repo-relative path to the offending file (e.g., `content/protocols/example/protocol.yaml`). |
-| `line` | integer | optional | 1-based line number in the file where the issue occurs. |
-| `protocol` | string | optional | Protocol name when the finding belongs to a specific protocol. |
-| `scene` | string | optional | Scene name when the finding belongs to a specific scene. |
-| `step` | string | optional | Step name when the finding belongs to a specific step. |
-| `target` | string | optional | Target object or control name when the finding refers to a specific interaction target. |
-| `extras` | object | optional | Tool-specific metadata that does not fit the flat schema. Structure varies by tool. |
+| Field      | Type    | Required | Description                                                                                                      |
+| ---------- | ------- | -------- | ---------------------------------------------------------------------------------------------------------------- |
+| `severity` | string  | yes      | One of `ERROR`, `WARNING`, or `INFO`.                                                                            |
+| `tool`     | string  | yes      | Name of the validation tool: `validator`, `stepper`, `svg_check`, `svg_audit`, etc.                              |
+| `code`     | string  | yes      | Stable short identifier for this error class (e.g., `invalid_field`, `unknown_material`, `state_type_mismatch`). |
+| `message`  | string  | yes      | Human-readable description of the finding.                                                                       |
+| `path`     | string  | optional | Repo-relative path to the offending file (e.g., `content/protocols/example/protocol.yaml`).                      |
+| `line`     | integer | optional | 1-based line number in the file where the issue occurs.                                                          |
+| `protocol` | string  | optional | Protocol name when the finding belongs to a specific protocol.                                                   |
+| `scene`    | string  | optional | Scene name when the finding belongs to a specific scene.                                                         |
+| `step`     | string  | optional | Step name when the finding belongs to a specific step.                                                           |
+| `target`   | string  | optional | Target object or control name when the finding refers to a specific interaction target.                          |
+| `extras`   | object  | optional | Tool-specific metadata that does not fit the flat schema. Structure varies by tool.                              |
 
 ## Severity values
 
-| Value | Meaning |
-| --- | --- |
-| `ERROR` | A structural or correctness violation that prevents the protocol from running. |
+| Value     | Meaning                                                                          |
+| --------- | -------------------------------------------------------------------------------- |
+| `ERROR`   | A structural or correctness violation that prevents the protocol from running.   |
 | `WARNING` | A potential issue or deviation from best practice that the author should review. |
-| `INFO` | Informational message, audit trail, or low-priority note. |
+| `INFO`    | Informational message, audit trail, or low-priority note.                        |
 
 ## Code identifiers
 
@@ -121,15 +121,15 @@ The final line in NDJSON output is a summary record (not a finding):
 }
 ```
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `summary` | boolean | Always `true`. Presence of this field distinguishes summary records from findings. |
-| `tool` | string | Name of the validation tool that generated the summary. |
-| `errors` | integer | Total count of ERROR-level findings. |
-| `warnings` | integer | Total count of WARNING-level findings. |
-| `files_checked` | integer | Number of files inspected. |
-| `elapsed_seconds` | float | Wall-clock time (seconds) taken by the tool. |
-| `exit_code` | integer | Exit code (0 on success, 1 on any errors). |
+| Field             | Type    | Description                                                                        |
+| ----------------- | ------- | ---------------------------------------------------------------------------------- |
+| `summary`         | boolean | Always `true`. Presence of this field distinguishes summary records from findings. |
+| `tool`            | string  | Name of the validation tool that generated the summary.                            |
+| `errors`          | integer | Total count of ERROR-level findings.                                               |
+| `warnings`        | integer | Total count of WARNING-level findings.                                             |
+| `files_checked`   | integer | Number of files inspected.                                                         |
+| `elapsed_seconds` | float   | Wall-clock time (seconds) taken by the tool.                                       |
+| `exit_code`       | integer | Exit code (0 on success, 1 on any errors).                                         |
 
 ## Filter and parse examples
 

@@ -17,84 +17,84 @@
  * 5. Screenshot captured into test-results/_well_plate/.
  */
 
-import { chromium } from 'playwright';
-import path from 'node:path';
-import fs from 'node:fs';
-import { REPO_ROOT } from './repo_root.mjs';
+import { chromium } from "playwright";
+import path from "node:path";
+import fs from "node:fs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 async function runTest() {
-	console.log('Starting WP-WELLPLATE-ADAPTER-1A test...');
+  console.log("Starting WP-WELLPLATE-ADAPTER-1A test...");
 
-	// Minimal scene data with a well_plate_96 placement.
-	const sceneData = {
-		scene_name: 'well_plate_test',
-		workspace: 'test',
-		capabilities: ['item_workspace'],
-		scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
-		background: { asset: 'test_bg' },
-		zones: [
-			{
-				id: 'plate_zone',
-				bounds: { left: 10, right: 90, top: 10, bottom: 90 },
-				align: 'center',
-			},
-		],
-		placements: [
-			{
-				placement_name: 'test_plate',
-				object_name: 'well_plate_96',
-				zone: 'plate_zone',
-				depth_tier: 1,
-			},
-		],
-	};
+  // Minimal scene data with a well_plate_96 placement.
+  const sceneData = {
+    scene_name: "well_plate_test",
+    workspace: "test",
+    capabilities: ["item_workspace"],
+    scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
+    background: { asset: "test_bg" },
+    zones: [
+      {
+        id: "plate_zone",
+        bounds: { left: 10, right: 90, top: 10, bottom: 90 },
+        align: "center",
+      },
+    ],
+    placements: [
+      {
+        placement_name: "test_plate",
+        object_name: "well_plate_96",
+        zone: "plate_zone",
+        depth_tier: 1,
+      },
+    ],
+  };
 
-	// Minimal object config for well_plate_96.
-	const objectConfig = {
-		object_name: 'well_plate_96',
-		kind: 'plate',
-		label: '96-well plate',
-		state_fields: [],
-		visual_states: {},
-		capabilities: [],
-		structure: {
-			subpart_kind: 'well',
-			layout: 'grid',
-			rows: 8,
-			cols: 12,
-			name_pattern: '{row_letter}{col}',
-			subpart_groups: {},
-		},
-		layout: {
-			default_width: 80,
-		},
-	};
+  // Minimal object config for well_plate_96.
+  const objectConfig = {
+    object_name: "well_plate_96",
+    kind: "plate",
+    label: "96-well plate",
+    state_fields: [],
+    visual_states: {},
+    capabilities: [],
+    structure: {
+      subpart_kind: "well",
+      layout: "grid",
+      rows: 8,
+      cols: 12,
+      name_pattern: "{row_letter}{col}",
+      subpart_groups: {},
+    },
+    layout: {
+      default_width: 80,
+    },
+  };
 
-	// Minimal protocol config.
-	const protocolConfig = {
-		protocol_type: 'dev_smoke',
-		protocol_name: 'well_plate_render_test',
-		entry_step: 'test_step',
-		steps: [
-			{
-				step_name: 'test_step',
-				prompt: 'Test step',
-				sequence: [],
-				step_validator: { preset: 'sequence_complete' },
-				outcome: { on_success: 'complete', on_failure: 'retry' },
-				next_step: null,
-			},
-		],
-		materials: {},
-	};
+  // Minimal protocol config.
+  const protocolConfig = {
+    protocol_type: "dev_smoke",
+    protocol_name: "well_plate_render_test",
+    entry_step: "test_step",
+    steps: [
+      {
+        step_name: "test_step",
+        prompt: "Test step",
+        sequence: [],
+        step_validator: { preset: "sequence_complete" },
+        outcome: { on_success: "complete", on_failure: "retry" },
+        next_step: null,
+      },
+    ],
+    materials: {},
+  };
 
-	// Create a minimal HTML shell that:
-	// 1. Includes the scene runtime bundle
-	// 2. Injects test data
-	// 3. Calls renderScene
-	// 4. Captures and asserts results
+  // Create a minimal HTML shell that:
+  // 1. Includes the scene runtime bundle
+  // 2. Injects test data
+  // 3. Calls renderScene
+  // 4. Captures and asserts results
 
-	const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -255,53 +255,65 @@ async function runTest() {
 </html>
 	`;
 
-	// Create test-results directory if needed.
-	const testResultsDir = path.join(REPO_ROOT, 'test-results', '_well_plate');
-	if (!fs.existsSync(testResultsDir)) {
-		fs.mkdirSync(testResultsDir, { recursive: true });
-	}
+  // Create test-results directory if needed.
+  const testResultsDir = path.join(REPO_ROOT, "test-results", "_well_plate");
+  if (!fs.existsSync(testResultsDir)) {
+    fs.mkdirSync(testResultsDir, { recursive: true });
+  }
 
-	// Write HTML to a temp file.
-	const htmlPath = path.join(testResultsDir, '_test_well_plate_static.html');
-	fs.writeFileSync(htmlPath, htmlContent);
+  // Write HTML to a temp file.
+  const htmlPath = path.join(testResultsDir, "_test_well_plate_static.html");
+  fs.writeFileSync(htmlPath, htmlContent);
 
-	// Open in Playwright and run assertions.
-	const browser = await chromium.launch({ headless: true });
-	try {
-		const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } });
-		const fileUrl = `file://${htmlPath}`;
-		await page.goto(fileUrl, { waitUntil: 'domcontentloaded' });
+  // Open in Playwright and run assertions.
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1200, height: 1000 },
+    });
+    const fileUrl = `file://${htmlPath}`;
+    await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
 
-		// Allow page JS to run fully.
-		await page.waitForTimeout(500);
+    // Allow page JS to run fully.
+    await page.waitForTimeout(500);
 
-		// Get test results from the page.
-		const results = await page.evaluate(() => window.TEST_RESULTS);
+    // Get test results from the page.
+    const results = await page.evaluate(() => window.TEST_RESULTS);
 
-		console.log('\n=== Well Plate Static Render Test Results ===');
-		console.log(`Cell count: ${results.cellCount}/${results.expectedCount} ${results.cellCountOk ? 'OK' : 'FAIL'}`);
-		console.log(`Unique well names: ${results.uniqueNamesCount}/96 ${results.missingNamesCount === 0 ? 'OK' : 'FAIL'}`);
-		console.log(`Failed cells (zero bbox): ${results.failedCellCount} ${results.failedCellCount === 0 ? 'OK' : 'FAIL'}`);
-		console.log(`Overall: ${results.allTestsPass ? 'PASS' : 'FAIL'}`);
+    console.log("\n=== Well Plate Static Render Test Results ===");
+    console.log(
+      `Cell count: ${results.cellCount}/${results.expectedCount} ${results.cellCountOk ? "OK" : "FAIL"}`,
+    );
+    console.log(
+      `Unique well names: ${results.uniqueNamesCount}/96 ${results.missingNamesCount === 0 ? "OK" : "FAIL"}`,
+    );
+    console.log(
+      `Failed cells (zero bbox): ${results.failedCellCount} ${results.failedCellCount === 0 ? "OK" : "FAIL"}`,
+    );
+    console.log(`Overall: ${results.allTestsPass ? "PASS" : "FAIL"}`);
 
-		// Take screenshots.
-		await page.screenshot({ path: path.join(testResultsDir, 'well_plate_render.png') });
+    // Take screenshots.
+    await page.screenshot({
+      path: path.join(testResultsDir, "well_plate_render.png"),
+    });
 
-		await page.close();
+    await page.close();
 
-		// Assert overall pass/fail.
-		if (!results.allTestsPass) {
-			console.error('\nTest FAILED');
-			process.exit(1);
-		}
+    // Assert overall pass/fail.
+    if (!results.allTestsPass) {
+      console.error("\nTest FAILED");
+      process.exit(1);
+    }
 
-		console.log('\nTest PASSED: 96 well cells rendered with correct data-target-id attributes');
-	} finally {
-		await browser.close();
-	}
+    console.log(
+      "\nTest PASSED: 96 well cells rendered with correct data-target-id attributes",
+    );
+  } finally {
+    await browser.close();
+  }
 }
 
 runTest().catch((error) => {
-	console.error('Test error:', error);
-	process.exit(1);
+  console.error("Test error:", error);
+  process.exit(1);
 });

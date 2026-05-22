@@ -3,6 +3,7 @@
 ## Overview
 
 This plan covers migration of the remaining 4 steps from `kind: modal` to `kind: interactionSequence`:
+
 - `carb_high_range` - 2 high-range stocks (5 µM, 25 µM) from 10 mM stock
 - `metformin_stock` - 10 mM working stock (10 µL + 990 µL)
 - `add_carboplatin` - Add carboplatin to rows B-H of plate
@@ -15,17 +16,20 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 ## 1. carb_high_range
 
 **Wet-lab action:** Prepare 2 high-range working stocks from the 10 mM carboplatin stock:
+
 - 5 µM stock: 10 µL carboplatin + 990 µL media (row G)
 - 25 µM stock: 50 µL carboplatin + 950 µL media (row H)
 
 **Tool:** Micropipette (one tool for both stocks).
 
 **Sources and destinations:**
+
 - Source: `carboplatin_stock`
 - Diluent: `media_bottle`
 - Destinations: NEW items `dilution_tube_carb_g`, `dilution_tube_carb_h`
 
 **New items needed:**
+
 - `dilution_tube_carb_g`: label "Carb row G", role culture_vessel, asset dilution_tube_rack, scene hood, capacityMl 1, allowedLiquids [carboplatin, media]
 - `dilution_tube_carb_h`: label "Carb row H", role culture_vessel, asset dilution_tube_rack, scene hood, capacityMl 1, allowedLiquids [carboplatin, media]
 
@@ -34,6 +38,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [carboplatin_stock, dilution_tube_carb_g, dilution_tube_carb_h, media_bottle, micropipette]
 
 **Side-effect handoff:**
+
 - Current: `advanceDrugModalStep(carb_high_range)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: carb-high-range-confirm`.
 - Landing: Event-keyed handler (no per-step side effects).
@@ -43,16 +48,19 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 ## 2. metformin_stock
 
 **Wet-lab action:** Prepare 10 mM metformin working stock from 1 M stock:
+
 - 10 µL metformin stock + 990 µL sterile water.
 
 **Tool:** Micropipette.
 
 **Sources and destinations:**
+
 - Source: `metformin_stock` (existing)
 - Diluent: `sterile_water`
 - Destination: NEW item `dilution_tube_metformin`
 
 **New items needed:**
+
 - `dilution_tube_metformin`: label "Metformin 10 mM", role culture_vessel, asset dilution_tube_rack, scene hood, capacityMl 1, allowedLiquids [metformin, water]
 
 **Interaction list (4 interactions):** Load 10 µL metformin, discharge to tube; load 990 µL water, discharge. Final interaction carries `completionEvent: metformin-stock-prepare`.
@@ -60,6 +68,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [metformin_stock, sterile_water, dilution_tube_metformin, micropipette]
 
 **Side-effect handoff:**
+
 - Current: `advanceDrugModalStep(metformin_stock)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: metformin-stock-prepare`.
 
@@ -68,13 +77,15 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 ## 3. add_carboplatin
 
 **Wet-lab action:** Transfer 5 µL carboplatin from 7 working-stock tubes (rows B-H) into the plate.
+
 - 7 tubes (carb_b through carb_h)
 - One load+discharge cycle per tube
 
 **Tool:** Multichannel pipette.
 
 **Sources and destinations:**
-- Sources: 7 dilution tubes (carb_b, _c, _d, _e, _f, _g, _h)
+
+- Sources: 7 dilution tubes (carb_b, \_c, \_d, \_e, \_f, \_g, \_h)
 - Destination: `well_plate`
 - Volume: 5 µL per well per row
 
@@ -85,6 +96,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [well_plate, multichannel_pipette, dilution_tube_carb_b, _c, _d, _e, _f, _g, _h]
 
 **Side-effect handoff:**
+
 - Current: `advanceDrugModalStep(add_carboplatin)` calls `applyPlateDoseMap()`, sets `gameState.drugsAdded = true`, then `triggerStep()`.
 - After: Dispatch on `completionEvent: carb-add-confirm`. Dose-map call must move to event handler.
 - Landing: Event-keyed handler must call `applyPlateDoseMap()` and set `gameState.drugsAdded = true`.
@@ -98,6 +110,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Tool:** Multichannel pipette.
 
 **Sources and destinations:**
+
 - Source: `dilution_tube_metformin`
 - Destination: `well_plate` (columns 7-12)
 - Volume: 5 µL per well
@@ -109,6 +122,7 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 **Required items:** [well_plate, multichannel_pipette, dilution_tube_metformin]
 
 **Side-effect handoff:**
+
 - Current: `advanceDrugModalStep(add_metformin)` -> `triggerStep()`.
 - After: Dispatch on `completionEvent: metformin-add-confirm`.
 
@@ -117,12 +131,14 @@ All follow the `carb_intermediate` reference template. The `carb_low_range` step
 ## drug_treatment.ts Edits Required
 
 **Remove lines 116-119:**
+
 - `registeredEmitters.add(carb_high_range);`
 - `registeredEmitters.add(metformin_stock);`
 - `registeredEmitters.add(add_carboplatin);`
 - `registeredEmitters.add(add_metformin);`
 
 **Dead code after migration:**
+
 - `renderDilutionChoiceScreen()` - no caller (carb_low_range already migrated)
 - `selectLowRangeDilution()` - no caller
 - `DILUTION_OPTIONS` - no caller
@@ -143,7 +159,7 @@ const EVENT_SIDE_EFFECTS: Record<string, (state: GameState) => void> = {
 // Wire in completeStep() after triggerStep():
 const completionEvent = activeStep.completionPath?.completionEvent;
 if (completionEvent && EVENT_SIDE_EFFECTS[completionEvent]) {
-  EVENT_SIDE_EFFECTS[completionEvent](gameState);
+  EVENT_SIDE_EFFECTS`gameState`;
 }
 ```
 

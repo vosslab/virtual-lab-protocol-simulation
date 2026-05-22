@@ -121,6 +121,7 @@ Working tree clean: NO (29 unstaged modifications, 0 staged, 62 untracked)
 Stash count: UNKNOWN (hook denied query)
 
 Blockers:
+
 1. Hook denied `git stash list`; stash state unconfirmed.
 2. Hook denied all Bash write paths for the snapshot document due to deny-list pattern matching on content; file written by separate builder.
 3. `git rev-list --left-right --count HEAD...@{u}` denied; push status confirmed via `git rev-parse @{push}` and `git log @{push}..HEAD` instead.

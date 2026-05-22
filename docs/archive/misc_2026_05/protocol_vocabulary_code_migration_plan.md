@@ -14,13 +14,13 @@ interaction vocabulary plan (WP-DOC-C1).
 
 The ratified vocabulary is the input to this plan:
 
-- [../specs/PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md) - the ratified
+- `PROTOCOL_VOCABULARY.md` - the ratified
   two-level `protocol -> step -> interaction -> response` model.
-- [../specs/SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md) - the ratified scene-side
+- `SCENE_VOCABULARY.md` - the ratified scene-side
   vocabulary, including the adapter registry and `target_groups`.
-- [docs/archive/unified_interaction_vocabulary_design.md](../archive/unified_interaction_vocabulary_design.md)
+- `unified_interaction_vocabulary_design.md`
   - the M2 design doc with the full slot definitions, the eight
-  `scene_operation` primitives, and the named-preset validators.
+    `scene_operation` primitives, and the named-preset validators.
 
 The vocabulary is documentation-complete and ratified against 120 steps. No
 code has moved yet; that is this plan's job.
@@ -42,10 +42,10 @@ code has moved yet; that is this plan's job.
   `stateChange.heldLiquid`, `consumesVolumeMl`, the per-interaction
   `completionEvent`, and `requiredItems`.
 - **Primary-doc reconcile already done**: the vocabulary plan already
-  reconciled [docs/PRIMARY_SPEC.md](../PRIMARY_SPEC.md) and
-  [docs/PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) to the ratified two-level
+  reconciled `PRIMARY_SPEC.md` and
+  `PRIMARY_DESIGN.md` to the ratified two-level
   model (with clearly-labeled current-code notes for the legacy fields). Only
-  the *code* migration off the legacy `completionPath.kind` schema remains,
+  the _code_ migration off the legacy `completionPath.kind` schema remains,
   which is what this migration plan covers.
 
 ## Out of scope for this stub

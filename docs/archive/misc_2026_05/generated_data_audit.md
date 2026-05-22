@@ -9,15 +9,15 @@ Status: COMPLETE
 Three new Python builders are required. Two existing builders must be retired.
 One new generated-data file must be added.
 
-| Action | File | Reason |
-| --- | --- | --- |
-| RETIRE | pipeline/build_protocol_data.py | Reads old vocabulary (items.yaml, reagents.yaml, completionPath, interactionSequence). Produces empty PROTOCOL_CATALOG. Cannot be extended. |
-| RETIRE | pipeline/build_scene_data.py | Reads src/scenes/*/*.yaml (frozen legacy tree). No content/base_scenes/ or protocol-local scene consumption. No inheritance resolution. Cannot be extended. |
-| NEW | pipeline/build_new_protocol_data.py | Reads content/protocols/cluster/name/protocol.yaml + materials.yaml. Emits new-vocabulary ProtocolConfig records with materials inlined. |
-| NEW | pipeline/build_new_scene_data.py | Reads content/base_scenes/*.yaml + content/protocols/cluster/name/scenes/*.yaml. Resolves inheritance Python-side. Emits ResolvedSceneConfig records. |
-| NEW | pipeline/build_object_data.py | Reads content/objects/kind/name.yaml. Emits ObjectConfig records with state_fields, visual_states, subpart_groups, capabilities. |
-| KEEP | pipeline/generate_svg_globals.py | Reads assets/ for SVG discovery. Format-agnostic. No generated-data gaps. |
-| KEEP | pipeline/bootstrap_generated.sh | Orchestration shell script. Must be updated to invoke new builders instead of retired ones. |
+| Action | File                                | Reason                                                                                                                                                      |
+| ------ | ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RETIRE | pipeline/build_protocol_data.py     | Reads old vocabulary (items.yaml, reagents.yaml, completionPath, interactionSequence). Produces empty PROTOCOL_CATALOG. Cannot be extended.                 |
+| RETIRE | pipeline/build_scene_data.py        | Reads src/scenes/_/_.yaml (frozen legacy tree). No content/base_scenes/ or protocol-local scene consumption. No inheritance resolution. Cannot be extended. |
+| NEW    | pipeline/build_new_protocol_data.py | Reads content/protocols/cluster/name/protocol.yaml + materials.yaml. Emits new-vocabulary ProtocolConfig records with materials inlined.                    |
+| NEW    | pipeline/build_new_scene_data.py    | Reads content/base*scenes/*.yaml + content/protocols/cluster/name/scenes/\_.yaml. Resolves inheritance Python-side. Emits ResolvedSceneConfig records.      |
+| NEW    | pipeline/build_object_data.py       | Reads content/objects/kind/name.yaml. Emits ObjectConfig records with state_fields, visual_states, subpart_groups, capabilities.                            |
+| KEEP   | pipeline/generate_svg_globals.py    | Reads assets/ for SVG discovery. Format-agnostic. No generated-data gaps.                                                                                   |
+| KEEP   | pipeline/bootstrap_generated.sh     | Orchestration shell script. Must be updated to invoke new builders instead of retired ones.                                                                 |
 
 generated/inventory_data.ts (empty scaffold, 35 lines) is not needed by the new runtime.
 It will become a dead artifact once the retired builder is replaced. Flag for removal in WP-CONTRACT-1.
@@ -98,24 +98,24 @@ The loader reads one module, not two.
 
 Each protocol record must carry these fields, all BLOCKER (zero currently emitted):
 
-| Field | Source | Notes |
-| --- | --- | --- |
-| protocol_type | protocol.yaml top-level | enum: mini_protocol, sequence_runner, dev_smoke |
-| protocol_name | protocol.yaml top-level | snake_case identifier |
-| entry_step | protocol.yaml top-level | step_name of first step |
-| learning.objectives | protocol.yaml learning block | required for mini_protocol |
-| learning.outcomes | protocol.yaml learning block | required for mini_protocol |
-| learning.goals | protocol.yaml learning block | required for mini_protocol |
-| steps[].step_name | protocol.yaml steps | stable identifier |
-| steps[].prompt | protocol.yaml steps | student-facing prompt text |
-| steps[].sequence[].target | protocol.yaml interactions | semantic scene object name |
-| steps[].sequence[].gesture | protocol.yaml interactions | enum: click, drag, adjust, select, type |
-| steps[].sequence[].validator | protocol.yaml interactions | preset name + params |
-| steps[].sequence[].response.scene_operations | protocol.yaml interactions | discriminated union list |
-| steps[].step_validator | protocol.yaml steps | preset name |
-| steps[].outcome | protocol.yaml steps | {on_success, on_failure} |
-| steps[].next_step | protocol.yaml steps | step_name or null |
-| materials | materials.yaml | inlined per-protocol; keyed by material_id |
+| Field                                        | Source                       | Notes                                           |
+| -------------------------------------------- | ---------------------------- | ----------------------------------------------- |
+| protocol_type                                | protocol.yaml top-level      | enum: mini_protocol, sequence_runner, dev_smoke |
+| protocol_name                                | protocol.yaml top-level      | snake_case identifier                           |
+| entry_step                                   | protocol.yaml top-level      | step_name of first step                         |
+| learning.objectives                          | protocol.yaml learning block | required for mini_protocol                      |
+| learning.outcomes                            | protocol.yaml learning block | required for mini_protocol                      |
+| learning.goals                               | protocol.yaml learning block | required for mini_protocol                      |
+| steps[].step_name                            | protocol.yaml steps          | stable identifier                               |
+| steps[].prompt                               | protocol.yaml steps          | student-facing prompt text                      |
+| steps[].sequence[].target                    | protocol.yaml interactions   | semantic scene object name                      |
+| steps[].sequence[].gesture                   | protocol.yaml interactions   | enum: click, drag, adjust, select, type         |
+| steps[].sequence[].validator                 | protocol.yaml interactions   | preset name + params                            |
+| steps[].sequence[].response.scene_operations | protocol.yaml interactions   | discriminated union list                        |
+| steps[].step_validator                       | protocol.yaml steps          | preset name                                     |
+| steps[].outcome                              | protocol.yaml steps          | {on_success, on_failure}                        |
+| steps[].next_step                            | protocol.yaml steps          | step_name or null                               |
+| materials                                    | materials.yaml               | inlined per-protocol; keyed by material_id      |
 
 ### 3.4 Builder patch path
 
@@ -125,6 +125,7 @@ Discovery: `rglob` under `content/protocols/` (reuse
 `validation/shared_toolkit/discovery.py::find_protocol_yaml_files()`).
 
 Per protocol:
+
 1. Load `protocol.yaml` from the protocol directory.
 2. Load `materials.yaml` from the same directory (optional; emit empty dict if absent).
 3. Validate against new vocabulary (protocol_type, entry_step, learning, steps[].sequence[]).
@@ -138,7 +139,7 @@ Output: `generated/protocol_data.ts` with `PROTOCOL_CATALOG` keyed by `protocol_
 
 `generated/scene_data.ts` (710 lines):
 
-- Discovery comment on line 1: "from src/scenes/*/*.yaml" -- frozen legacy tree.
+- Discovery comment on line 1: "from src/scenes/_/_.yaml" -- frozen legacy tree.
 - `discover_scene_yamls()` in `pipeline/build_scene_data.py` globs `src/scenes/*/*yaml`.
 - `src/scenes/` contains 6 YAML files (34 total files). These are frozen legacy configs.
 - The builder validates against old scene vocabulary: `sceneId`, `workspace`, `capabilities`,
@@ -153,16 +154,16 @@ Output: `generated/protocol_data.ts` with `PROTOCOL_CATALOG` keyed by `protocol_
 
 Content available but not consumed:
 
-| Source | File count | Consumed by builder |
-| --- | --- | --- |
-| content/base_scenes/*.yaml | 9 | NO |
-| content/protocols/cluster/name/scenes/*.yaml | 25 | NO |
-| src/scenes/*/*.yaml (frozen) | 6 | YES (wrong source) |
+| Source                                        | File count | Consumed by builder |
+| --------------------------------------------- | ---------- | ------------------- |
+| content/base_scenes/\*.yaml                   | 9          | NO                  |
+| content/protocols/cluster/name/scenes/\*.yaml | 25         | NO                  |
+| src/scenes/_/_.yaml (frozen)                  | 6          | YES (wrong source)  |
 
 ### 4.2 Inheritance resolution requirement
 
 Scene inheritance MUST be resolved Python-side before emission. The spec
-([docs/specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md)) states:
+(`SCENE_INHERITANCE.md`) states:
 "The scene graph resolves statically before runtime. Build errors include cycles,
 multi-level chains, unknown base names, unknown placement_name references."
 
@@ -184,23 +185,24 @@ Any cycle, unknown base, or unknown placement_name reference is a build error
 
 Each resolved scene record must carry:
 
-| Field | Source | Notes |
-| --- | --- | --- |
-| scene_name | base or protocol scene YAML | unique identifier |
-| workspace | base scene YAML (locked) | workspace identity |
-| capabilities | base scene YAML (locked) | list of capability strings |
-| scene_bounds | base scene YAML (locked) | {left, right, top, bottom} |
-| background | base scene YAML (locked) | {asset: string} |
-| zones | base scene YAML (locked) | list of zone defs with id, bounds, align, label |
-| placements | resolved merge of base + ops | list with placement_name, object_name, zone, depth_tier; deactivated flag |
-| layout_rules | base scene YAML (locked) | optional |
-| wrong_order_message | base scene YAML (locked) | optional |
+| Field               | Source                       | Notes                                                                     |
+| ------------------- | ---------------------------- | ------------------------------------------------------------------------- |
+| scene_name          | base or protocol scene YAML  | unique identifier                                                         |
+| workspace           | base scene YAML (locked)     | workspace identity                                                        |
+| capabilities        | base scene YAML (locked)     | list of capability strings                                                |
+| scene_bounds        | base scene YAML (locked)     | {left, right, top, bottom}                                                |
+| background          | base scene YAML (locked)     | {asset: string}                                                           |
+| zones               | base scene YAML (locked)     | list of zone defs with id, bounds, align, label                           |
+| placements          | resolved merge of base + ops | list with placement_name, object_name, zone, depth_tier; deactivated flag |
+| layout_rules        | base scene YAML (locked)     | optional                                                                  |
+| wrong_order_message | base scene YAML (locked)     | optional                                                                  |
 
 ### 4.4 Builder patch path
 
 New builder: `pipeline/build_new_scene_data.py`
 
 Steps:
+
 1. Load all 9 base scenes from `content/base_scenes/`.
 2. Load all 25 protocol-local scenes from `content/protocols/.../scenes/`.
 3. Resolve inheritance for each protocol-local scene (apply 4 ops in spec order).
@@ -220,32 +222,32 @@ The runtime has no programmatic access to object definitions.
 
 Object files: 78 YAML files across 8 kinds under `content/objects/`.
 
-| Kind | Count |
-| --- | --- |
-| bottle | 31 |
-| equipment | 22 |
-| decoration | 7 |
-| pipette | 7 |
-| flask | 2 |
-| rack | 4 |
-| plate | 1 |
-| waste | 4 |
-| TOTAL | 78 |
+| Kind       | Count |
+| ---------- | ----- |
+| bottle     | 31    |
+| equipment  | 22    |
+| decoration | 7     |
+| pipette    | 7     |
+| flask      | 2     |
+| rack       | 4     |
+| plate      | 1     |
+| waste      | 4     |
+| TOTAL      | 78    |
 
 ### 5.2 Fields that must be emitted
 
 Each object record must carry:
 
-| Field | Required | Notes |
-| --- | --- | --- |
-| object_name | yes | snake_case identifier |
-| kind | yes | enum: bottle, equipment, decoration, pipette, flask, rack, plate, waste |
-| label | yes | display label |
-| state_fields | yes | list of field defs; each has field_name, type, allowed/min/max, default, unit, applies_to |
-| visual_states | yes | map of field_name -> mechanism record; see section 7 |
-| capabilities | yes | list of capability strings |
-| layout | no | {default_width, label_width} |
-| structure | no | subpart_kind, layout, rows, cols, name_pattern, subpart_groups |
+| Field         | Required | Notes                                                                                     |
+| ------------- | -------- | ----------------------------------------------------------------------------------------- |
+| object_name   | yes      | snake_case identifier                                                                     |
+| kind          | yes      | enum: bottle, equipment, decoration, pipette, flask, rack, plate, waste                   |
+| label         | yes      | display label                                                                             |
+| state_fields  | yes      | list of field defs; each has field_name, type, allowed/min/max, default, unit, applies_to |
+| visual_states | yes      | map of field_name -> mechanism record; see section 7                                      |
+| capabilities  | yes      | list of capability strings                                                                |
+| layout        | no       | {default_width, label_width}                                                              |
+| structure     | no       | subpart_kind, layout, rows, cols, name_pattern, subpart_groups                            |
 
 ### 5.3 Builder patch path
 
@@ -254,6 +256,7 @@ New builder: `pipeline/build_object_data.py`
 Discovery: `rglob` under `content/objects/`, grouped by kind subfolder name.
 
 Per object:
+
 1. Load YAML.
 2. Validate required fields (object_name, kind, label, state_fields, visual_states, capabilities).
 3. Classify each visual_states entry by mechanism (see section 7).
@@ -269,6 +272,7 @@ Output: `generated/object_data.ts` with `OBJECT_CATALOG` keyed by `object_name`.
 Each file has a top-level `materials:` dict keyed by material_id.
 
 Each material entry carries:
+
 - `label`: display string.
 - `display_color.light`: hex color for light mode.
 - `display_color.dark`: hex color for dark mode.
@@ -287,12 +291,12 @@ sharing does not exist in the current content set.
 
 Four mechanisms appear in the authored `content/objects/` YAML.
 
-| Mechanism | Count | Pilot 0 eligible | Spec note |
-| --- | --- | --- | --- |
-| svg_swap (kind: svg) | Many | YES | Swap SVG asset based on enum state value. Already implemented in legacy src/. Well-understood. |
-| composite + fill_height | Many | NO (defer M2/WS-LIQUID) | Animated liquid-level fill. Requires anchor-based overlay render path. |
-| composite + empty (no composite entries) | Several | NO (no-op at render) | Bool state fields (tape_present, comb_present, etc.) with empty composite list. Render-time: no visual change. Emit as deferred. |
-| overlay (kind: overlay) | 1 instance | NO (defer M3+) | Label text rendered over SVG. Only authored instance: micropipette set_volume. Requires text-layer render path not yet implemented. |
+| Mechanism                                | Count      | Pilot 0 eligible        | Spec note                                                                                                                           |
+| ---------------------------------------- | ---------- | ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| svg_swap (kind: svg)                     | Many       | YES                     | Swap SVG asset based on enum state value. Already implemented in legacy src/. Well-understood.                                      |
+| composite + fill_height                  | Many       | NO (defer M2/WS-LIQUID) | Animated liquid-level fill. Requires anchor-based overlay render path.                                                              |
+| composite + empty (no composite entries) | Several    | NO (no-op at render)    | Bool state fields (tape_present, comb_present, etc.) with empty composite list. Render-time: no visual change. Emit as deferred.    |
+| overlay (kind: overlay)                  | 1 instance | NO (defer M3+)          | Label text rendered over SVG. Only authored instance: micropipette set_volume. Requires text-layer render path not yet implemented. |
 
 Notes:
 
@@ -318,7 +322,7 @@ Avoid `micropipette` in Pilot 0: `set_volume` uses `overlay` (deferred M3+).
 ## 8. Concrete sample records
 
 These are the intended post-builder shapes. They show exactly what each
-generated/*.ts file should contain after the three new builders run.
+generated/\*.ts file should contain after the three new builders run.
 
 ### 8.1 ProtocolConfig (from trypan_blue_counting)
 
@@ -330,9 +334,10 @@ export const PROTOCOL_CATALOG: Record<string, ProtocolConfig> = {
     protocol_name: "trypan_blue_counting",
     entry_step: "add_trypan_blue_to_chamber",
     learning: {
-      objectives: "Students completing this mini-protocol will have achieved...",
+      objectives:
+        "Students completing this mini-protocol will have achieved...",
       outcomes: "Students completing this mini-protocol will be able to...",
-      goals: "Overall, this mini-protocol aims to accomplish..."
+      goals: "Overall, this mini-protocol aims to accomplish...",
     },
     steps: [
       {
@@ -345,42 +350,52 @@ export const PROTOCOL_CATALOG: Record<string, ProtocolConfig> = {
             validator: { preset: "correct_target" },
             response: {
               scene_operations: [
-                { type: "CursorAttach", target: "micropipette", operation: "attach" }
-              ]
-            }
+                {
+                  type: "CursorAttach",
+                  target: "micropipette",
+                  operation: "attach",
+                },
+              ],
+            },
           },
           {
             target: "micropipette",
             gesture: "adjust",
-            validator: { preset: "target_with_value", value: { set_volume: 10 } },
+            validator: {
+              preset: "target_with_value",
+              value: { set_volume: 10 },
+            },
             response: {
               scene_operations: [
-                { type: "ObjectStateChange", target: "micropipette",
-                  state: { set_volume: 10 } }
-              ]
-            }
-          }
+                {
+                  type: "ObjectStateChange",
+                  target: "micropipette",
+                  state: { set_volume: 10 },
+                },
+              ],
+            },
+          },
         ],
         step_validator: { preset: "sequence_complete" },
         outcome: { on_success: "complete", on_failure: "retry" },
-        next_step: "add_cell_suspension_to_chamber"
-      }
+        next_step: "add_cell_suspension_to_chamber",
+      },
     ],
     materials: {
       trypan_blue: {
         label: "Trypan Blue",
-        display_color: { light: "#0067cc", dark: "#0067cc" }
+        display_color: { light: "#0067cc", dark: "#0067cc" },
       },
       cell_suspension: {
         label: "Cell suspension",
-        display_color: { light: "#cc0066", dark: "#cc0066" }
+        display_color: { light: "#cc0066", dark: "#cc0066" },
       },
       trypan_blue_mixture: {
         label: "Trypan Blue + cell suspension (mixed)",
-        display_color: { light: "#cc0066", dark: "#cc0066" }
-      }
-    }
-  }
+        display_color: { light: "#cc0066", dark: "#cc0066" },
+      },
+    },
+  },
 };
 ```
 
@@ -401,14 +416,14 @@ export const SCENE_CATALOG: Record<string, ResolvedSceneConfig> = {
         id: "instrument_area",
         bounds: { left: 15, right: 85, top: 20, bottom: 70 },
         align: "center",
-        label: "Cell counter display and controls"
+        label: "Cell counter display and controls",
       },
       {
         id: "right_accessory_area",
         bounds: { left: 80, right: 95, top: 50, bottom: 80 },
         align: "center",
-        label: "Accessory area"
-      }
+        label: "Accessory area",
+      },
     ],
     placements: [
       // inherited from cell_counter_basic (base placements)
@@ -417,7 +432,7 @@ export const SCENE_CATALOG: Record<string, ResolvedSceneConfig> = {
         object_name: "cell_counter",
         zone: "instrument_area",
         depth_tier: 1,
-        deactivated: false
+        deactivated: false,
       },
       // added by cell_counter_workspace protocol scene
       {
@@ -425,24 +440,24 @@ export const SCENE_CATALOG: Record<string, ResolvedSceneConfig> = {
         object_name: "micropipette",
         zone: "right_accessory_area",
         depth_tier: 2,
-        deactivated: false
+        deactivated: false,
       },
       {
         placement_name: "right_hemocytometer_slide",
         object_name: "hemocytometer_slide",
         zone: "right_accessory_area",
         depth_tier: 1,
-        deactivated: false
+        deactivated: false,
       },
       {
         placement_name: "instrument_lens_tissue",
         object_name: "lens_tissue",
         zone: "instrument_area",
         depth_tier: 1,
-        deactivated: false
-      }
-    ]
-  }
+        deactivated: false,
+      },
+    ],
+  },
 };
 ```
 
@@ -461,7 +476,7 @@ export const OBJECT_CATALOG: Record<string, ObjectConfig> = {
         type: "enum",
         allowed: ["empty", "media"],
         default: "empty",
-        description: "Contents currently in the bottle."
+        description: "Contents currently in the bottle.",
       },
       {
         field_name: "material_volume",
@@ -470,15 +485,15 @@ export const OBJECT_CATALOG: Record<string, ObjectConfig> = {
         min: 0,
         max: 500,
         default: 500,
-        description: "Volume of media remaining, in milliliters."
+        description: "Volume of media remaining, in milliliters.",
       },
       {
         field_name: "temperature_status",
         type: "enum",
         allowed: ["cold", "warmed"],
         default: "cold",
-        description: "Whether the media has been warmed in the water bath."
-      }
+        description: "Whether the media has been warmed in the water bath.",
+      },
     ],
     visual_states: {
       material_name: {
@@ -486,23 +501,23 @@ export const OBJECT_CATALOG: Record<string, ObjectConfig> = {
         pilot_0_eligible: true,
         cases: [
           { when: "empty", asset_name: "media_bottle_empty" },
-          { when: "media", asset_name: "media_bottle_filled" }
-        ]
+          { when: "media", asset_name: "media_bottle_filled" },
+        ],
       },
       material_volume: {
         kind: "composite_fill_height",
         pilot_0_eligible: false,
-        deferred_milestone: "M2/WS-LIQUID"
+        deferred_milestone: "M2/WS-LIQUID",
       },
       temperature_status: {
         kind: "composite_empty",
         pilot_0_eligible: false,
-        deferred_milestone: "no-op"
-      }
+        deferred_milestone: "no-op",
+      },
     },
     capabilities: ["clickable", "material_container", "cursor_attachable"],
-    layout: { default_width: 3, label_width: 4 }
-  }
+    layout: { default_width: 3, label_width: 4 },
+  },
 };
 ```
 
@@ -540,7 +555,10 @@ export type GestureKind = "click" | "drag" | "adjust" | "select" | "type";
 export type ValidatorPreset =
   | { preset: "correct_target" }
   | { preset: "correct_choice" }
-  | { preset: "target_with_value"; value: Record<string, number | string | boolean> };
+  | {
+      preset: "target_with_value";
+      value: Record<string, number | string | boolean>;
+    };
 
 export type StepValidatorPreset =
   | { preset: "sequence_complete" }
@@ -685,22 +703,22 @@ export interface ObjectConfig {
 
 All gaps are generated-data gaps. No spec gaps. No content gaps.
 
-| Gap | Severity | Kind | Builder path |
-| --- | --- | --- | --- |
-| PROTOCOL_CATALOG is empty | BLOCKER | generated-data | pipeline/build_new_protocol_data.py |
-| materials not emitted | BLOCKER | generated-data | inline into build_new_protocol_data.py |
-| learning block not emitted | BLOCKER | generated-data | inline into build_new_protocol_data.py |
-| steps[].sequence[] not emitted | BLOCKER | generated-data | inline into build_new_protocol_data.py |
-| SCENE_CATALOG reads wrong source | BLOCKER | generated-data | pipeline/build_new_scene_data.py |
-| scene inheritance not resolved | BLOCKER | generated-data | pipeline/build_new_scene_data.py |
-| placements not emitted (uses items) | BLOCKER | generated-data | pipeline/build_new_scene_data.py |
-| object_data.ts does not exist | BLOCKER | generated-data | pipeline/build_object_data.py |
-| state_fields not emitted | BLOCKER | generated-data | pipeline/build_object_data.py |
-| visual_states not emitted | BLOCKER | generated-data | pipeline/build_object_data.py |
-| capabilities not emitted | BLOCKER | generated-data | pipeline/build_object_data.py |
-| browser helpers in generated data | HIGH | layering violation | remove in build_new_protocol_data.py |
-| contract.ts uses old vocabulary | HIGH | layering violation | WP-CONTRACT-1 |
-| inventory_data.ts dead scaffold | LOW | cleanup | remove in WP-CONTRACT-1 |
+| Gap                                 | Severity | Kind               | Builder path                           |
+| ----------------------------------- | -------- | ------------------ | -------------------------------------- |
+| PROTOCOL_CATALOG is empty           | BLOCKER  | generated-data     | pipeline/build_new_protocol_data.py    |
+| materials not emitted               | BLOCKER  | generated-data     | inline into build_new_protocol_data.py |
+| learning block not emitted          | BLOCKER  | generated-data     | inline into build_new_protocol_data.py |
+| steps[].sequence[] not emitted      | BLOCKER  | generated-data     | inline into build_new_protocol_data.py |
+| SCENE_CATALOG reads wrong source    | BLOCKER  | generated-data     | pipeline/build_new_scene_data.py       |
+| scene inheritance not resolved      | BLOCKER  | generated-data     | pipeline/build_new_scene_data.py       |
+| placements not emitted (uses items) | BLOCKER  | generated-data     | pipeline/build_new_scene_data.py       |
+| object_data.ts does not exist       | BLOCKER  | generated-data     | pipeline/build_object_data.py          |
+| state_fields not emitted            | BLOCKER  | generated-data     | pipeline/build_object_data.py          |
+| visual_states not emitted           | BLOCKER  | generated-data     | pipeline/build_object_data.py          |
+| capabilities not emitted            | BLOCKER  | generated-data     | pipeline/build_object_data.py          |
+| browser helpers in generated data   | HIGH     | layering violation | remove in build_new_protocol_data.py   |
+| contract.ts uses old vocabulary     | HIGH     | layering violation | WP-CONTRACT-1                          |
+| inventory_data.ts dead scaffold     | LOW      | cleanup            | remove in WP-CONTRACT-1                |
 
 ## 11. Builder retirement plan and base-scenes coverage
 
@@ -739,9 +757,9 @@ All 25 must be resolved by the new scene builder.
 
 ### Spec references
 
-- Scene inheritance algorithm: [docs/specs/SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md)
-- Scene YAML format: [docs/specs/SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md)
-- Protocol YAML format: [docs/specs/PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md)
-- Object YAML format: [docs/specs/OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md)
-- Material convention: [docs/specs/MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md)
-- Object vocabulary: [docs/specs/OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md)
+- Scene inheritance algorithm: `SCENE_INHERITANCE.md`
+- Scene YAML format: `SCENE_YAML_FORMAT.md`
+- Protocol YAML format: `PROTOCOL_YAML_FORMAT.md`
+- Object YAML format: `OBJECT_YAML_FORMAT.md`
+- Material convention: `MATERIAL_CONVENTION.md`
+- Object vocabulary: `OBJECT_VOCABULARY.md`

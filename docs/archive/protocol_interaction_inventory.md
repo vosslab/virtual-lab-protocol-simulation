@@ -34,34 +34,34 @@ Seven `content/*/protocol.yaml` files, 54 steps total
 
 ### completionPath.kind distribution
 
-| kind | steps |
-| --- | --- |
-| interactionSequence | 34 |
-| multipleChoice | 8 |
-| modal | 6 |
-| directTool | 6 |
+| kind                | steps |
+| ------------------- | ----- |
+| interactionSequence | 34    |
+| multipleChoice      | 8     |
+| modal               | 6     |
+| directTool          | 6     |
 
 ### Distinct click-target fields
 
-| Field | Appears under | Rough usage |
-| --- | --- | --- |
-| `tool` | `directTool`, `interactionSequence.interactions[]` | ~45 steps |
-| `source` | `interactionSequence.interactions[]` | ~30 steps |
-| `destination` | `interactionSequence.interactions[]` | ~30 steps |
-| `openClick` | `modal` | 6 steps |
-| `advanceClick` | `modal` | 6 steps |
-| `choices[].id` | `multipleChoice` | 8 steps |
-| `plateTargets` | `interactionSequence` | 3 files, ~6 steps |
-| `tubeTargets` | `interactionSequence` | 1 file, 3 steps (BROKEN) |
+| Field          | Appears under                                      | Rough usage              |
+| -------------- | -------------------------------------------------- | ------------------------ |
+| `tool`         | `directTool`, `interactionSequence.interactions[]` | ~45 steps                |
+| `source`       | `interactionSequence.interactions[]`               | ~30 steps                |
+| `destination`  | `interactionSequence.interactions[]`               | ~30 steps                |
+| `openClick`    | `modal`                                            | 6 steps                  |
+| `advanceClick` | `modal`                                            | 6 steps                  |
+| `choices[].id` | `multipleChoice`                                   | 8 steps                  |
+| `plateTargets` | `interactionSequence`                              | 3 files, ~6 steps        |
+| `tubeTargets`  | `interactionSequence`                              | 1 file, 3 steps (BROKEN) |
 
 ### Event and state fields
 
-| Field | Level | Notes |
-| --- | --- | --- |
-| `completionEvent` | step and interaction | one per step, on the final interaction |
+| Field                    | Level                   | Notes                                                  |
+| ------------------------ | ----------------------- | ------------------------------------------------------ |
+| `completionEvent`        | step and interaction    | one per step, on the final interaction                 |
 | `stateChange.heldLiquid` | interaction (load only) | ~30 interactions; `{tool, liquid, volumeMl, colorKey}` |
-| `consumesVolumeMl` | interaction (discharge) | ~30 interactions |
-| `isIncubation` | step | 5 steps; inconsistently applied |
+| `consumesVolumeMl`       | interaction (discharge) | ~30 interactions                                       |
+| `isIncubation`           | step                    | 5 steps; inconsistently applied                        |
 
 ### interactionSequence.interactions[] object fields
 
@@ -79,44 +79,44 @@ M2, not a ratified vocabulary.
 
 ### cell_counting_and_seeding (8 steps)
 
-| Step id | kind | clicks: (target, action) | new-model mode | completion |
-| --- | --- | --- | --- | --- |
-| count_cells | modal | (cell_counter, popup/open), (capture-count, popup/confirm) | click | capture-count |
-| load_hemocytometer | modal | (microscope, popup/open), (confirm-viability, popup/confirm) | click | confirm-viability |
-| count_hemocytometer_quadrants | modal | (hemocytometer, popup/open), (submit-cell-count, popup/confirm) | click | submit-cell-count |
-| calculate_dilution | multipleChoice | (choice, question/answer) | click | dilution-factor-calculated |
-| calculate_seeding_volume | multipleChoice | (choice, question/answer) | click | seeding-volume-calculated |
-| seed_plate | interactionSequence | (serological_pipette, liquid/take), (flask, liquid/draw), (well_plate, liquid/dispense) | dial (volume) | pipette_to_plate |
-| incubate_day1 | directTool | (incubator, equipment/use) | click | place_in_incubator |
+| Step id                       | kind                | clicks: (target, action)                                                                | new-model mode | completion                 |
+| ----------------------------- | ------------------- | --------------------------------------------------------------------------------------- | -------------- | -------------------------- |
+| count_cells                   | modal               | (cell_counter, popup/open), (capture-count, popup/confirm)                              | click          | capture-count              |
+| load_hemocytometer            | modal               | (microscope, popup/open), (confirm-viability, popup/confirm)                            | click          | confirm-viability          |
+| count_hemocytometer_quadrants | modal               | (hemocytometer, popup/open), (submit-cell-count, popup/confirm)                         | click          | submit-cell-count          |
+| calculate_dilution            | multipleChoice      | (choice, question/answer)                                                               | click          | dilution-factor-calculated |
+| calculate_seeding_volume      | multipleChoice      | (choice, question/answer)                                                               | click          | seeding-volume-calculated  |
+| seed_plate                    | interactionSequence | (serological_pipette, liquid/take), (flask, liquid/draw), (well_plate, liquid/dispense) | dial (volume)  | pipette_to_plate           |
+| incubate_day1                 | directTool          | (incubator, equipment/use)                                                              | click          | place_in_incubator         |
 
 ### cell_culture (24 steps)
 
-| Step id | kind | clicks: (target, action) | new-model mode | completion |
-| --- | --- | --- | --- | --- |
-| spray_hood | directTool | (ethanol_bottle, liquid/spray) | click | spray_ethanol |
-| aspirate_old_media | interactionSequence | (aspirating_pipette, liquid/take), (flask, liquid/aspirate -> waste_container) | click | aspirate |
-| pbs_wash | interactionSequence | take, draw(pbs_bottle), dispense(flask) | dial (volume) | pbs_wash |
-| add_trypsin | interactionSequence | take, draw(trypsin_bottle), dispense(flask) | dial (volume) | pipette_trypsin |
-| neutralize_trypsin | interactionSequence | take, draw(media_bottle), dispense(flask) | dial (volume) | pipette_media |
-| centrifuge | directTool | (centrifuge, equipment/use) | click | centrifuge |
-| resuspend | interactionSequence | take, draw(media_bottle), dispense(flask) | dial (volume) | resuspend |
-| count_cells | modal | (cell_counter, popup/open), (capture-count, popup/confirm) | click | count-cells-capture |
-| seed_plate | interactionSequence | take, draw(flask), dispense(well_plate) | dial (volume) | pipette_to_plate |
-| incubate_day1 | directTool | (incubator, equipment/use) | click | place_in_incubator |
-| carb_intermediate | interactionSequence | take, draw(carboplatin_stock), dispense(tube), draw(sterile_water), dispense(tube) | dial (volume) | carb_intermediate_complete |
-| carb_low_range | interactionSequence | fan-out: 7 tubes, each draw+dispense pair x2 | dial (volume) | carb-low-range-confirm |
-| metformin_stock | interactionSequence | take, draw(metformin_stock_bottle), dispense(tube), draw(media_bottle), dispense(tube) | dial (volume) | metformin-stock-prepare |
-| prewarm_media | directTool | (water_bath, equipment/use) | click | prewarm |
-| media_adjust | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out via plateTargets | dial (volume) | media_adjust |
-| add_carboplatin | interactionSequence | fan-out: 7 rows, each draw(carb tube)+dispense(well_plate) | dial (volume) | carb-add-confirm |
-| add_metformin | interactionSequence | take, draw(metformin tube), dispense(well_plate) -- fan-out via plateTargets | dial (volume) | metformin-add-confirm |
-| incubate_48h | directTool | (incubator, equipment/use) | click | place_in_incubator_48h |
-| add_mtt | interactionSequence | take, draw(mtt_vial), dispense(well_plate) | dial (volume) | add_mtt |
-| incubate_mtt | directTool | (incubator, equipment/use) | click | place_in_incubator_mtt |
-| decant_mtt | interactionSequence | (well_plate, liquid/pour -> biohazard_decant) | click | decant_mtt |
-| add_dmso | interactionSequence | take, draw(dmso_bottle), dispense(well_plate) | dial (volume) | add_dmso |
-| plate_read | modal | (plate_reader, popup/open), (complete-plate-read, popup/confirm) | click | plate-read-complete |
-| results | modal | (plate_reader, popup/open), (modal-close, popup/confirm) | click | results-finalize |
+| Step id            | kind                | clicks: (target, action)                                                               | new-model mode | completion                 |
+| ------------------ | ------------------- | -------------------------------------------------------------------------------------- | -------------- | -------------------------- |
+| spray_hood         | directTool          | (ethanol_bottle, liquid/spray)                                                         | click          | spray_ethanol              |
+| aspirate_old_media | interactionSequence | (aspirating_pipette, liquid/take), (flask, liquid/aspirate -> waste_container)         | click          | aspirate                   |
+| pbs_wash           | interactionSequence | take, draw(pbs_bottle), dispense(flask)                                                | dial (volume)  | pbs_wash                   |
+| add_trypsin        | interactionSequence | take, draw(trypsin_bottle), dispense(flask)                                            | dial (volume)  | pipette_trypsin            |
+| neutralize_trypsin | interactionSequence | take, draw(media_bottle), dispense(flask)                                              | dial (volume)  | pipette_media              |
+| centrifuge         | directTool          | (centrifuge, equipment/use)                                                            | click          | centrifuge                 |
+| resuspend          | interactionSequence | take, draw(media_bottle), dispense(flask)                                              | dial (volume)  | resuspend                  |
+| count_cells        | modal               | (cell_counter, popup/open), (capture-count, popup/confirm)                             | click          | count-cells-capture        |
+| seed_plate         | interactionSequence | take, draw(flask), dispense(well_plate)                                                | dial (volume)  | pipette_to_plate           |
+| incubate_day1      | directTool          | (incubator, equipment/use)                                                             | click          | place_in_incubator         |
+| carb_intermediate  | interactionSequence | take, draw(carboplatin_stock), dispense(tube), draw(sterile_water), dispense(tube)     | dial (volume)  | carb_intermediate_complete |
+| carb_low_range     | interactionSequence | fan-out: 7 tubes, each draw+dispense pair x2                                           | dial (volume)  | carb-low-range-confirm     |
+| metformin_stock    | interactionSequence | take, draw(metformin_stock_bottle), dispense(tube), draw(media_bottle), dispense(tube) | dial (volume)  | metformin-stock-prepare    |
+| prewarm_media      | directTool          | (water_bath, equipment/use)                                                            | click          | prewarm                    |
+| media_adjust       | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out via plateTargets             | dial (volume)  | media_adjust               |
+| add_carboplatin    | interactionSequence | fan-out: 7 rows, each draw(carb tube)+dispense(well_plate)                             | dial (volume)  | carb-add-confirm           |
+| add_metformin      | interactionSequence | take, draw(metformin tube), dispense(well_plate) -- fan-out via plateTargets           | dial (volume)  | metformin-add-confirm      |
+| incubate_48h       | directTool          | (incubator, equipment/use)                                                             | click          | place_in_incubator_48h     |
+| add_mtt            | interactionSequence | take, draw(mtt_vial), dispense(well_plate)                                             | dial (volume)  | add_mtt                    |
+| incubate_mtt       | directTool          | (incubator, equipment/use)                                                             | click          | place_in_incubator_mtt     |
+| decant_mtt         | interactionSequence | (well_plate, liquid/pour -> biohazard_decant)                                          | click          | decant_mtt                 |
+| add_dmso           | interactionSequence | take, draw(dmso_bottle), dispense(well_plate)                                          | dial (volume)  | add_dmso                   |
+| plate_read         | modal               | (plate_reader, popup/open), (complete-plate-read, popup/confirm)                       | click          | plate-read-complete        |
+| results            | modal               | (plate_reader, popup/open), (modal-close, popup/confirm)                               | click          | results-finalize           |
 
 ### cell_culture_full (sequence_runner)
 
@@ -133,40 +133,40 @@ events: `<step_id>_done`.
 
 ### hood_flask_prep (7 steps)
 
-| Step id | kind | clicks: (target, action) | new-model mode | completion |
-| --- | --- | --- | --- | --- |
-| spray_hood | directTool | (ethanol_bottle, liquid/spray) | click | spray_ethanol |
-| aspirate_old_media | interactionSequence | take(aspirating_pipette), aspirate(flask -> waste_container) | click | aspirate |
-| pbs_wash | interactionSequence | take, draw(pbs_bottle), dispense(flask) | dial (volume) | pbs_wash |
-| add_trypsin | interactionSequence | take, draw(trypsin_bottle), dispense(flask) | dial (volume) | pipette_trypsin |
-| neutralize_trypsin | interactionSequence | take, draw(media_bottle), dispense(flask) | dial (volume) | pipette_media |
-| centrifuge | directTool | (centrifuge, equipment/use) | click | centrifuge |
-| resuspend | interactionSequence | take, draw(media_bottle), dispense(flask) | dial (volume) | resuspend |
+| Step id            | kind                | clicks: (target, action)                                     | new-model mode | completion      |
+| ------------------ | ------------------- | ------------------------------------------------------------ | -------------- | --------------- |
+| spray_hood         | directTool          | (ethanol_bottle, liquid/spray)                               | click          | spray_ethanol   |
+| aspirate_old_media | interactionSequence | take(aspirating_pipette), aspirate(flask -> waste_container) | click          | aspirate        |
+| pbs_wash           | interactionSequence | take, draw(pbs_bottle), dispense(flask)                      | dial (volume)  | pbs_wash        |
+| add_trypsin        | interactionSequence | take, draw(trypsin_bottle), dispense(flask)                  | dial (volume)  | pipette_trypsin |
+| neutralize_trypsin | interactionSequence | take, draw(media_bottle), dispense(flask)                    | dial (volume)  | pipette_media   |
+| centrifuge         | directTool          | (centrifuge, equipment/use)                                  | click          | centrifuge      |
+| resuspend          | interactionSequence | take, draw(media_bottle), dispense(flask)                    | dial (volume)  | resuspend       |
 
 ### mtt_assay_readout (5-6 steps)
 
-| Step id | kind | clicks: (target, action) | new-model mode | completion |
-| --- | --- | --- | --- | --- |
-| add_mtt | interactionSequence | take, draw(mtt_vial), dispense(well_plate) | dial (volume) | add_mtt |
-| incubate_mtt | directTool | (incubator, equipment/use) | click | place_in_incubator_mtt |
-| decant_mtt | interactionSequence | take(multichannel_pipette), aspirate(well_plate -> biohazard_decant) | click | decant_mtt |
-| add_dmso | interactionSequence | take, draw(dmso_bottle), dispense(well_plate) | dial (volume) | add_dmso |
-| plate_read | modal | (plate_reader, popup/open), (complete-plate-read, popup/confirm) | click | plate-read-complete |
-| review_results | multipleChoice | (choice, question/answer) | click | results_interpreted |
+| Step id        | kind                | clicks: (target, action)                                             | new-model mode | completion             |
+| -------------- | ------------------- | -------------------------------------------------------------------- | -------------- | ---------------------- |
+| add_mtt        | interactionSequence | take, draw(mtt_vial), dispense(well_plate)                           | dial (volume)  | add_mtt                |
+| incubate_mtt   | directTool          | (incubator, equipment/use)                                           | click          | place_in_incubator_mtt |
+| decant_mtt     | interactionSequence | take(multichannel_pipette), aspirate(well_plate -> biohazard_decant) | click          | decant_mtt             |
+| add_dmso       | interactionSequence | take, draw(dmso_bottle), dispense(well_plate)                        | dial (volume)  | add_dmso               |
+| plate_read     | modal               | (plate_reader, popup/open), (complete-plate-read, popup/confirm)     | click          | plate-read-complete    |
+| review_results | multipleChoice      | (choice, question/answer)                                            | click          | results_interpreted    |
 
 ### plate_drug_treatment (9 steps)
 
-| Step id | kind | clicks: (target, action) | new-model mode | completion |
-| --- | --- | --- | --- | --- |
-| open_plate_workspace | modal | (well_plate, popup/open), (confirm-plate-intro, popup/confirm) | click | plate-workspace-opened |
-| prep_carb_first_dilution | interactionSequence | take, draw(carboplatin_stock_solution), dispense(dilution_tube_carb_b), draw(media_bottle), dispense(dilution_tube_carb_b) | dial (volume) | carb_first_dilution_done |
-| prep_carb_last_dilution | interactionSequence | take, draw(carboplatin_stock_solution), dispense(dilution_tube_carb_h), draw(media_bottle), dispense(dilution_tube_carb_h) | dial (volume) | carb_last_dilution_done |
-| prep_metformin_dilution | interactionSequence | take, draw(metformin_stock_solution), dispense(dilution_tube_metformin_working), draw(media_bottle), dispense(dilution_tube_metformin_working) | dial (volume) | metformin_dilution_done |
-| add_media_cols_1_6 | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out plateTargets rows B-H cols 1-6 | dial (volume) | media-cols-1-6-confirm |
-| add_media_cols_7_12 | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out plateTargets rows B-H cols 7-12 | dial (volume) | media-cols-7-12-confirm |
-| add_carboplatin | interactionSequence | fan-out: 7 rows, each draw(carb tube)+dispense(well_plate) | dial (volume) | carb-add-confirm |
-| add_metformin | interactionSequence | take, draw(metformin tube), dispense(well_plate) -- fan-out plateTargets rows B-H cols 7-12 | dial (volume) | metformin-add-confirm |
-| review_loaded_plate | modal | (well_plate, popup/open), (confirm-loaded-plate, popup/confirm) | click | review-loaded-plate |
+| Step id                  | kind                | clicks: (target, action)                                                                                                                       | new-model mode | completion               |
+| ------------------------ | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | -------------- | ------------------------ |
+| open_plate_workspace     | modal               | (well_plate, popup/open), (confirm-plate-intro, popup/confirm)                                                                                 | click          | plate-workspace-opened   |
+| prep_carb_first_dilution | interactionSequence | take, draw(carboplatin_stock_solution), dispense(dilution_tube_carb_b), draw(media_bottle), dispense(dilution_tube_carb_b)                     | dial (volume)  | carb_first_dilution_done |
+| prep_carb_last_dilution  | interactionSequence | take, draw(carboplatin_stock_solution), dispense(dilution_tube_carb_h), draw(media_bottle), dispense(dilution_tube_carb_h)                     | dial (volume)  | carb_last_dilution_done  |
+| prep_metformin_dilution  | interactionSequence | take, draw(metformin_stock_solution), dispense(dilution_tube_metformin_working), draw(media_bottle), dispense(dilution_tube_metformin_working) | dial (volume)  | metformin_dilution_done  |
+| add_media_cols_1_6       | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out plateTargets rows B-H cols 1-6                                                       | dial (volume)  | media-cols-1-6-confirm   |
+| add_media_cols_7_12      | interactionSequence | take, draw(media_bottle), dispense(well_plate) -- fan-out plateTargets rows B-H cols 7-12                                                      | dial (volume)  | media-cols-7-12-confirm  |
+| add_carboplatin          | interactionSequence | fan-out: 7 rows, each draw(carb tube)+dispense(well_plate)                                                                                     | dial (volume)  | carb-add-confirm         |
+| add_metformin            | interactionSequence | take, draw(metformin tube), dispense(well_plate) -- fan-out plateTargets rows B-H cols 7-12                                                    | dial (volume)  | metformin-add-confirm    |
+| review_loaded_plate      | modal               | (well_plate, popup/open), (confirm-loaded-plate, popup/confirm)                                                                                | click          | review-loaded-plate      |
 
 ### Fan-out steps
 
@@ -291,13 +291,13 @@ Base primitive actions are the smallest protocol-visible interaction effects.
 This is the candidate set the investigation surfaced; M2 (WP-ACT1) ratifies
 the initial set.
 
-| Candidate primitive | What it does |
-| --- | --- |
-| `SvgSwap` | swap one SVG asset for another (berries -> powder, gel -> stained gel) |
-| `ColorChange` | change a fill or color (liquid color in a well, an indicator) |
-| `CursorAttach` | a picked-up tool follows the cursor; attach or detach cursor state |
-| `SceneChange` | transition the scene context |
-| `LayoutMove` | move or re-layout a scene object (assembly: cassette into tank) |
+| Candidate primitive | What it does                                                           |
+| ------------------- | ---------------------------------------------------------------------- |
+| `SvgSwap`           | swap one SVG asset for another (berries -> powder, gel -> stained gel) |
+| `ColorChange`       | change a fill or color (liquid color in a well, an indicator)          |
+| `CursorAttach`      | a picked-up tool follows the cursor; attach or detach cursor state     |
+| `SceneChange`       | transition the scene context                                           |
+| `LayoutMove`        | move or re-layout a scene object (assembly: cassette into tank)        |
 
 Open question for M2: whether the duration of a timed `equipment` action and
 the recorded output of a `read` action are base primitives, properties, or
@@ -309,15 +309,15 @@ Composed actions are built from base primitives and grouped into author-facing
 categories. These categories are provisional input to M2 (WP-ACT1), not a
 ratified vocabulary.
 
-| Category | Composed actions seen across the four protocols |
-| --- | --- |
-| `liquid` | take, draw, dispense, aspirate, mix, pour, spray |
-| `equipment` | run / use, incubate, shake, heat, read |
-| `object` | place, attach, remove, move, pry |
-| `choose` | pick a phase, pick a fraction |
-| `popup` | open, confirm |
-| `question` | answer a knowledge question (not parameter-setting) |
-| `navigate` | enter a scene |
+| Category    | Composed actions seen across the four protocols     |
+| ----------- | --------------------------------------------------- |
+| `liquid`    | take, draw, dispense, aspirate, mix, pour, spray    |
+| `equipment` | run / use, incubate, shake, heat, read              |
+| `object`    | place, attach, remove, move, pry                    |
+| `choose`    | pick a phase, pick a fraction                       |
+| `popup`     | open, confirm                                       |
+| `question`  | answer a knowledge question (not parameter-setting) |
+| `navigate`  | enter a scene                                       |
 
 The earlier `solid` category was dropped: grinding berries to powder appears
 to reduce mainly to an `equipment` action with an `SvgSwap` effect. M2 should
@@ -326,10 +326,10 @@ confirm whether any solid-handling case needs a base primitive beyond
 
 ## Part 7: Candidate mode set
 
-| Mode | Meaning |
-| --- | --- |
-| `click` | the simple mode -- click a target. All 54 shipped content steps use it. |
-| `dial` | the continuous, skill-based set-point mode -- volume, voltage, pH-to-target. Does not exist in the runtime yet; required by OVCAR8 pipetting volumes, SDS-PAGE voltage, Miraculin pH titration. |
+| Mode    | Meaning                                                                                                                                                                                         |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `click` | the simple mode -- click a target. All 54 shipped content steps use it.                                                                                                                         |
+| `dial`  | the continuous, skill-based set-point mode -- volume, voltage, pH-to-target. Does not exist in the runtime yet; required by OVCAR8 pipetting volumes, SDS-PAGE voltage, Miraculin pH titration. |
 
 `dial` resolves the three coverage gaps the investigation flagged (continuous
 voltage, volume set-point, pH titration); they are not `question`-family
@@ -419,18 +419,18 @@ by the derived `<step_name>_complete` event and is not a slot in the M2 model.
 
 ### Step counts for this slice
 
-| Source | Mappable steps |
-| --- | --- |
-| OVCAR8 source protocol | 24 |
-| cell_counting_and_seeding | 7 |
-| cell_culture | 24 |
-| cell_culture_full | 0 (sequence_runner, empty `steps`) |
-| drug_dilution_setup | 8 |
-| hood_flask_prep | 7 |
-| mtt_assay_readout | 6 |
-| plate_drug_treatment | 9 |
-| Content total | 61 |
-| Slice total | 85 |
+| Source                    | Mappable steps                     |
+| ------------------------- | ---------------------------------- |
+| OVCAR8 source protocol    | 24                                 |
+| cell_counting_and_seeding | 7                                  |
+| cell_culture              | 24                                 |
+| cell_culture_full         | 0 (sequence_runner, empty `steps`) |
+| drug_dilution_setup       | 8                                  |
+| hood_flask_prep           | 7                                  |
+| mtt_assay_readout         | 6                                  |
+| plate_drug_treatment      | 9                                  |
+| Content total             | 61                                 |
+| Slice total               | 85                                 |
 
 Note on the count: Part 2 of this inventory reported 54 content steps. The
 actual shipped files total 61 mappable steps. The earlier figure undercounted
@@ -452,32 +452,32 @@ destination). `step_validator` is `final_state_matches` for liquid steps and
 on_failure: retry}` for every step. `next_step` is the next row; the last row is
 `null`.
 
-| OVCAR8 step | gesture set | SO primitives used | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- |
-| aspirate_old_media | click, click | CursorAttach, LiquidDisplayChange (set 0) | aspirate | tool selection, removing spent media to waste |
-| pbs_wash | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash | volume set-point, rinsing residual serum |
-| add_trypsin | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | volume set-point, enzymatic dissociation |
-| confirm_detachment | click, click | (none; feedback only) | use (microscope) | visual confirmation under microscope |
-| neutralize_trypsin | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | 3x-volume neutralization calculation and transfer |
-| transfer_to_conical | click, click | CursorAttach, LayoutMove | move | transferring suspension to a labeled conical tube |
-| centrifuge | click | TimedWait | use (equipment) | pelleting cells |
-| aspirate_supernatant | click, click | CursorAttach, LiquidDisplayChange (set 0) | aspirate | removing supernatant without disturbing the pellet |
-| resuspend | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | resuspension at a known volume |
-| add_media_new_plate | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | plating media at the split ratio |
-| add_trypan_blue | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | viability-dye addition to the counting chamber |
-| add_cell_suspension | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | loading the counting-chamber sample |
-| mix_by_pipetting | click | LiquidDisplayChange (mix) | mix | pipette-mixing a sample |
-| load_counting_slide | click, click | CursorAttach, LayoutMove | move | loading the counting-chamber slide |
-| capture_count | click, click | (none; feedback only; data recorded) | use (cell counter) | reading an instrument count and viability |
-| seed_plate | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | seeding a 96-well plate at target density |
-| incubate_day1 | click | TimedWait | use (equipment) | timed incubation for attachment |
-| prepare_carb_intermediate | click, adjust, click, click (x2) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | first dilution-cascade step (200 uM intermediate) |
-| prepare_carb_working_stocks | click, adjust, click, click (fan-out) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | the carboplatin working-stock dilution table |
-| prepare_metformin_working | click, adjust, click, click | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | metformin working-stock dilution |
-| media_adjust_plate | click, adjust, click (fan-out) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | per-well media adjustment to target volume |
-| add_carboplatin_plate | click, adjust, click (fan-out) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | dosing the carboplatin series into the plate |
-| add_metformin_plate | click, adjust, click (fan-out) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | fixed-dose modifier into the combination columns |
-| incubate_48h | click | TimedWait | use (equipment) | 48 h drug-exposure incubation |
+| OVCAR8 step                 | gesture set                           | SO primitives used                                       | domain verb          | lab skill taught                                   |
+| --------------------------- | ------------------------------------- | -------------------------------------------------------- | -------------------- | -------------------------------------------------- |
+| aspirate_old_media          | click, click                          | CursorAttach, LiquidDisplayChange (set 0)                | aspirate             | tool selection, removing spent media to waste      |
+| pbs_wash                    | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash                 | volume set-point, rinsing residual serum           |
+| add_trypsin                 | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | volume set-point, enzymatic dissociation           |
+| confirm_detachment          | click, click                          | (none; feedback only)                                    | use (microscope)     | visual confirmation under microscope               |
+| neutralize_trypsin          | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | 3x-volume neutralization calculation and transfer  |
+| transfer_to_conical         | click, click                          | CursorAttach, LayoutMove                                 | move                 | transferring suspension to a labeled conical tube  |
+| centrifuge                  | click                                 | TimedWait                                                | use (equipment)      | pelleting cells                                    |
+| aspirate_supernatant        | click, click                          | CursorAttach, LiquidDisplayChange (set 0)                | aspirate             | removing supernatant without disturbing the pellet |
+| resuspend                   | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | resuspension at a known volume                     |
+| add_media_new_plate         | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | plating media at the split ratio                   |
+| add_trypan_blue             | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | viability-dye addition to the counting chamber     |
+| add_cell_suspension         | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | loading the counting-chamber sample                |
+| mix_by_pipetting            | click                                 | LiquidDisplayChange (mix)                                | mix                  | pipette-mixing a sample                            |
+| load_counting_slide         | click, click                          | CursorAttach, LayoutMove                                 | move                 | loading the counting-chamber slide                 |
+| capture_count               | click, click                          | (none; feedback only; data recorded)                     | use (cell counter)   | reading an instrument count and viability          |
+| seed_plate                  | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | wash (draw+dispense) | seeding a 96-well plate at target density          |
+| incubate_day1               | click                                 | TimedWait                                                | use (equipment)      | timed incubation for attachment                    |
+| prepare_carb_intermediate   | click, adjust, click, click (x2)      | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | first dilution-cascade step (200 uM intermediate)  |
+| prepare_carb_working_stocks | click, adjust, click, click (fan-out) | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | the carboplatin working-stock dilution table       |
+| prepare_metformin_working   | click, adjust, click, click           | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | metformin working-stock dilution                   |
+| media_adjust_plate          | click, adjust, click (fan-out)        | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | per-well media adjustment to target volume         |
+| add_carboplatin_plate       | click, adjust, click (fan-out)        | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | dosing the carboplatin series into the plate       |
+| add_metformin_plate         | click, adjust, click (fan-out)        | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense       | fixed-dose modifier into the combination columns   |
+| incubate_48h                | click                                 | TimedWait                                                | use (equipment)      | 48 h drug-exposure incubation                      |
 
 OVCAR8 Part 3 Day 4 (MTT readout) and Part 5 (plate map) also map; the Day 4
 steps are the same shapes already shown in the `mtt_assay_readout` matrix below
@@ -494,15 +494,15 @@ solid-handling shape and it maps with no new primitive.
 7 steps. `entry_step: count_cells`. `outcome` is
 `{on_success: complete, on_failure: retry}` on every step.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| count_cells | click, click | correct_target / sequence_complete | SceneChange or feedback-only (modal open/confirm) | use (cell counter) | reading an automated count |
-| load_hemocytometer | click, click | correct_target / sequence_complete | SceneChange or feedback-only | use, move | preparing and loading a hemocytometer slide |
-| count_hemocytometer_quadrants | click, click | correct_target / sequence_complete | SceneChange or feedback-only | use | manual quadrant counting |
-| calculate_dilution | select | correct_choice / sequence_complete | feedback-only | select (answer) | dilution-factor calculation |
-| calculate_seeding_volume | select | correct_choice / sequence_complete | feedback-only | select (answer) | seeding-volume calculation |
-| seed_plate | click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange | wash (draw+dispense) | seeding the plate at target density |
-| incubate_day1 | click | correct_target / sequence_complete | TimedWait | use (equipment) | timed incubation |
+| Step `name`                   | gesture(s)   | validator / step_validator           | SO primitives                                     | domain verb          | lab skill taught                            |
+| ----------------------------- | ------------ | ------------------------------------ | ------------------------------------------------- | -------------------- | ------------------------------------------- |
+| count_cells                   | click, click | correct_target / sequence_complete   | SceneChange or feedback-only (modal open/confirm) | use (cell counter)   | reading an automated count                  |
+| load_hemocytometer            | click, click | correct_target / sequence_complete   | SceneChange or feedback-only                      | use, move            | preparing and loading a hemocytometer slide |
+| count_hemocytometer_quadrants | click, click | correct_target / sequence_complete   | SceneChange or feedback-only                      | use                  | manual quadrant counting                    |
+| calculate_dilution            | select       | correct_choice / sequence_complete   | feedback-only                                     | select (answer)      | dilution-factor calculation                 |
+| calculate_seeding_volume      | select       | correct_choice / sequence_complete   | feedback-only                                     | select (answer)      | seeding-volume calculation                  |
+| seed_plate                    | click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange                 | wash (draw+dispense) | seeding the plate at target density         |
+| incubate_day1                 | click        | correct_target / sequence_complete   | TimedWait                                         | use (equipment)      | timed incubation                            |
 
 ### cell_culture coverage matrix
 
@@ -511,32 +511,32 @@ whole pipeline. Step shapes by `completionPath.kind`: `directTool` -> one
 `click`; `modal` -> two `click`; `multipleChoice` -> one `select`;
 `interactionSequence` -> ordered `click` sequence.
 
-| Step `name` | kind | gesture(s) | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| spray_hood | directTool | click | feedback-only (or SvgSwap/ColorChange) | spray | aseptic hood prep |
-| aspirate_old_media | interactionSequence | click | CursorAttach, LiquidDisplayChange (set 0) | aspirate | removing spent media to waste |
-| pbs_wash | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | wash | rinsing residual serum |
-| add_trypsin | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | enzymatic dissociation |
-| neutralize_trypsin | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | trypsin neutralization |
-| centrifuge | directTool | click | TimedWait | use (equipment) | pelleting cells |
-| resuspend | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | resuspension at known volume |
-| count_cells | modal | click, click | SceneChange or feedback-only | use (cell counter) | reading a count |
-| seed_plate | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | wash (draw+dispense) | seeding at target density |
-| incubate_day1 | directTool | click | TimedWait | use (equipment) | timed incubation |
-| carb_intermediate | interactionSequence | click x4 | CursorAttach, LiquidDisplayChange | draw, dispense | first dilution-cascade step |
-| carb_low_range | interactionSequence | click (fan-out, 7 tubes) | CursorAttach, LiquidDisplayChange | draw, dispense | the carboplatin dilution table |
-| metformin_stock | interactionSequence | click x4 | CursorAttach, LiquidDisplayChange | draw, dispense | metformin working-stock dilution |
-| prewarm_media | directTool | click | TimedWait or feedback-only | use (equipment) | pre-warming media to avoid cold shock |
-| media_adjust | interactionSequence | click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | per-well media adjustment |
-| add_carboplatin | interactionSequence | click (fan-out, 7 rows) | CursorAttach, LiquidDisplayChange | draw, dispense | dosing the carboplatin series |
-| add_metformin | interactionSequence | click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | fixed-dose modifier |
-| incubate_48h | directTool | click | TimedWait | use (equipment) | 48 h drug-exposure incubation |
-| add_mtt | interactionSequence | click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | MTT reagent addition |
-| incubate_mtt | directTool | click | TimedWait | use (equipment) | 1.5 h formazan-conversion incubation |
-| decant_mtt | interactionSequence | click | LiquidDisplayChange (set 0) | aspirate or pour | toxic-waste decant to biohazard |
-| add_dmso | interactionSequence | click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | formazan solubilization |
-| plate_read | modal | click, click | SceneChange or feedback-only | use (plate reader) | absorbance reading at 560 nm |
-| results | modal | click, click | SceneChange or feedback-only | use (plate reader) | reading dose-response curves |
+| Step `name`        | kind                | gesture(s)               | SO primitives                             | domain verb          | lab skill taught                      |
+| ------------------ | ------------------- | ------------------------ | ----------------------------------------- | -------------------- | ------------------------------------- |
+| spray_hood         | directTool          | click                    | feedback-only (or SvgSwap/ColorChange)    | spray                | aseptic hood prep                     |
+| aspirate_old_media | interactionSequence | click                    | CursorAttach, LiquidDisplayChange (set 0) | aspirate             | removing spent media to waste         |
+| pbs_wash           | interactionSequence | click, click             | CursorAttach, LiquidDisplayChange         | wash                 | rinsing residual serum                |
+| add_trypsin        | interactionSequence | click, click             | CursorAttach, LiquidDisplayChange         | draw, dispense       | enzymatic dissociation                |
+| neutralize_trypsin | interactionSequence | click, click             | CursorAttach, LiquidDisplayChange         | draw, dispense       | trypsin neutralization                |
+| centrifuge         | directTool          | click                    | TimedWait                                 | use (equipment)      | pelleting cells                       |
+| resuspend          | interactionSequence | click, click             | CursorAttach, LiquidDisplayChange         | draw, dispense       | resuspension at known volume          |
+| count_cells        | modal               | click, click             | SceneChange or feedback-only              | use (cell counter)   | reading a count                       |
+| seed_plate         | interactionSequence | click, click             | CursorAttach, LiquidDisplayChange         | wash (draw+dispense) | seeding at target density             |
+| incubate_day1      | directTool          | click                    | TimedWait                                 | use (equipment)      | timed incubation                      |
+| carb_intermediate  | interactionSequence | click x4                 | CursorAttach, LiquidDisplayChange         | draw, dispense       | first dilution-cascade step           |
+| carb_low_range     | interactionSequence | click (fan-out, 7 tubes) | CursorAttach, LiquidDisplayChange         | draw, dispense       | the carboplatin dilution table        |
+| metformin_stock    | interactionSequence | click x4                 | CursorAttach, LiquidDisplayChange         | draw, dispense       | metformin working-stock dilution      |
+| prewarm_media      | directTool          | click                    | TimedWait or feedback-only                | use (equipment)      | pre-warming media to avoid cold shock |
+| media_adjust       | interactionSequence | click (fan-out)          | CursorAttach, LiquidDisplayChange         | draw, dispense       | per-well media adjustment             |
+| add_carboplatin    | interactionSequence | click (fan-out, 7 rows)  | CursorAttach, LiquidDisplayChange         | draw, dispense       | dosing the carboplatin series         |
+| add_metformin      | interactionSequence | click (fan-out)          | CursorAttach, LiquidDisplayChange         | draw, dispense       | fixed-dose modifier                   |
+| incubate_48h       | directTool          | click                    | TimedWait                                 | use (equipment)      | 48 h drug-exposure incubation         |
+| add_mtt            | interactionSequence | click (fan-out)          | CursorAttach, LiquidDisplayChange         | draw, dispense       | MTT reagent addition                  |
+| incubate_mtt       | directTool          | click                    | TimedWait                                 | use (equipment)      | 1.5 h formazan-conversion incubation  |
+| decant_mtt         | interactionSequence | click                    | LiquidDisplayChange (set 0)               | aspirate or pour     | toxic-waste decant to biohazard       |
+| add_dmso           | interactionSequence | click (fan-out)          | CursorAttach, LiquidDisplayChange         | draw, dispense       | formazan solubilization               |
+| plate_read         | modal               | click, click             | SceneChange or feedback-only              | use (plate reader)   | absorbance reading at 560 nm          |
+| results            | modal               | click, click             | SceneChange or feedback-only              | use (plate reader)   | reading dose-response curves          |
 
 Note: `cell_culture` `pbs_wash`, `add_trypsin`, etc. do not currently carry an
 `adjust` interaction for the volume set-point -- they encode the volume as a
@@ -553,16 +553,16 @@ which is the ratified target, not the regressed shipped shape.
 `feedback`-only with an empty `scene_operations` list; domain verb is
 `select` (answer); `outcome` is `{on_success: complete, on_failure: retry}`.
 
-| Step `name` | lab skill taught |
-| --- | --- |
-| calc_carb_stock | C1V1=C2V2 stock-to-intermediate calculation |
-| calc_carb_working_b | intermediate-to-working-to-final concentration chain |
-| calc_carb_series | recognizing the 1-2-5 dose-series pattern |
-| calc_carb_low_range | intermediate-to-working dilution recipe |
-| calc_metformin_stock_prep | metformin stock-to-working calculation |
-| calc_metformin_final | volume-adjusted final-concentration calculation |
-| prewarm_media_check | reasoning about cold-shock and dose-response kinetics |
-| planning_summary | synthesizing the full dilution cascade |
+| Step `name`               | lab skill taught                                      |
+| ------------------------- | ----------------------------------------------------- |
+| calc_carb_stock           | C1V1=C2V2 stock-to-intermediate calculation           |
+| calc_carb_working_b       | intermediate-to-working-to-final concentration chain  |
+| calc_carb_series          | recognizing the 1-2-5 dose-series pattern             |
+| calc_carb_low_range       | intermediate-to-working dilution recipe               |
+| calc_metformin_stock_prep | metformin stock-to-working calculation                |
+| calc_metformin_final      | volume-adjusted final-concentration calculation       |
+| prewarm_media_check       | reasoning about cold-shock and dose-response kinetics |
+| planning_summary          | synthesizing the full dilution cascade                |
 
 This file also carries a `plateMap.annotations` block with `row`, `colRange`
 geometry on every step. That is a scene/protocol boundary violation by the
@@ -576,44 +576,44 @@ identifies. Recorded in the gap list as a rough-protocol / boundary-cleanup item
 7 steps. `entry_step: spray_hood`. Same shapes as the first seven `cell_culture`
 steps; this is the extracted mini-protocol for that span.
 
-| Step `name` | kind | gesture(s) | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| spray_hood | directTool | click | feedback-only (or SvgSwap/ColorChange) | spray | aseptic hood prep |
-| aspirate_old_media | interactionSequence | click | CursorAttach, LiquidDisplayChange (set 0) | aspirate | removing spent media to waste |
-| pbs_wash | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | wash | rinsing residual serum |
-| add_trypsin | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | enzymatic dissociation |
-| neutralize_trypsin | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | trypsin neutralization |
-| centrifuge | directTool | click | TimedWait | use (equipment) | pelleting cells |
-| resuspend | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | resuspension at known volume |
+| Step `name`        | kind                | gesture(s)   | SO primitives                             | domain verb     | lab skill taught              |
+| ------------------ | ------------------- | ------------ | ----------------------------------------- | --------------- | ----------------------------- |
+| spray_hood         | directTool          | click        | feedback-only (or SvgSwap/ColorChange)    | spray           | aseptic hood prep             |
+| aspirate_old_media | interactionSequence | click        | CursorAttach, LiquidDisplayChange (set 0) | aspirate        | removing spent media to waste |
+| pbs_wash           | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | wash            | rinsing residual serum        |
+| add_trypsin        | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | draw, dispense  | enzymatic dissociation        |
+| neutralize_trypsin | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | draw, dispense  | trypsin neutralization        |
+| centrifuge         | directTool          | click        | TimedWait                                 | use (equipment) | pelleting cells               |
+| resuspend          | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | draw, dispense  | resuspension at known volume  |
 
 ### mtt_assay_readout coverage matrix
 
 6 steps. `entry_step: add_mtt`. The extracted MTT readout mini-protocol.
 
-| Step `name` | kind | gesture(s) | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| add_mtt | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | MTT reagent addition |
-| incubate_mtt | directTool | click | TimedWait | use (equipment) | 1.5 h formazan-conversion incubation |
-| decant_mtt | interactionSequence | click, click | CursorAttach, LiquidDisplayChange (set 0) | aspirate | toxic-waste removal to biohazard |
-| add_dmso | interactionSequence | click, click | CursorAttach, LiquidDisplayChange | draw, dispense | formazan solubilization and mix |
-| plate_read | modal | click, click | SceneChange or feedback-only | use (plate reader) | absorbance reading at 560 nm |
-| review_results | multipleChoice | select | feedback-only | select (answer) | interpreting viability absorbance data |
+| Step `name`    | kind                | gesture(s)   | SO primitives                             | domain verb        | lab skill taught                       |
+| -------------- | ------------------- | ------------ | ----------------------------------------- | ------------------ | -------------------------------------- |
+| add_mtt        | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | draw, dispense     | MTT reagent addition                   |
+| incubate_mtt   | directTool          | click        | TimedWait                                 | use (equipment)    | 1.5 h formazan-conversion incubation   |
+| decant_mtt     | interactionSequence | click, click | CursorAttach, LiquidDisplayChange (set 0) | aspirate           | toxic-waste removal to biohazard       |
+| add_dmso       | interactionSequence | click, click | CursorAttach, LiquidDisplayChange         | draw, dispense     | formazan solubilization and mix        |
+| plate_read     | modal               | click, click | SceneChange or feedback-only              | use (plate reader) | absorbance reading at 560 nm           |
+| review_results | multipleChoice      | select       | feedback-only                             | select (answer)    | interpreting viability absorbance data |
 
 ### plate_drug_treatment coverage matrix
 
 9 steps. `entry_step: open_plate_workspace`.
 
-| Step `name` | kind | gesture(s) | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| open_plate_workspace | modal | click, click | SceneChange | navigate, use | entering the plate workspace scene |
-| prep_carb_first_dilution | interactionSequence | click x4 | CursorAttach, LiquidDisplayChange | draw, dispense | lowest-dose working solution |
-| prep_carb_last_dilution | interactionSequence | click x4 | CursorAttach, LiquidDisplayChange | draw, dispense | highest-dose working solution |
-| prep_metformin_dilution | interactionSequence | click x4 | CursorAttach, LiquidDisplayChange | draw, dispense | metformin working solution |
-| add_media_cols_1_6 | interactionSequence | click, click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | media adjustment, columns 1-6 |
-| add_media_cols_7_12 | interactionSequence | click, click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | media adjustment, columns 7-12 |
-| add_carboplatin | interactionSequence | click (fan-out, 7 rows) | CursorAttach, LiquidDisplayChange | draw, dispense | dosing the carboplatin series |
-| add_metformin | interactionSequence | click, click (fan-out) | CursorAttach, LiquidDisplayChange | draw, dispense | fixed-dose modifier |
-| review_loaded_plate | modal | click, click | SceneChange or feedback-only | use | confirming the loaded plate |
+| Step `name`              | kind                | gesture(s)              | SO primitives                     | domain verb    | lab skill taught                   |
+| ------------------------ | ------------------- | ----------------------- | --------------------------------- | -------------- | ---------------------------------- |
+| open_plate_workspace     | modal               | click, click            | SceneChange                       | navigate, use  | entering the plate workspace scene |
+| prep_carb_first_dilution | interactionSequence | click x4                | CursorAttach, LiquidDisplayChange | draw, dispense | lowest-dose working solution       |
+| prep_carb_last_dilution  | interactionSequence | click x4                | CursorAttach, LiquidDisplayChange | draw, dispense | highest-dose working solution      |
+| prep_metformin_dilution  | interactionSequence | click x4                | CursorAttach, LiquidDisplayChange | draw, dispense | metformin working solution         |
+| add_media_cols_1_6       | interactionSequence | click, click (fan-out)  | CursorAttach, LiquidDisplayChange | draw, dispense | media adjustment, columns 1-6      |
+| add_media_cols_7_12      | interactionSequence | click, click (fan-out)  | CursorAttach, LiquidDisplayChange | draw, dispense | media adjustment, columns 7-12     |
+| add_carboplatin          | interactionSequence | click (fan-out, 7 rows) | CursorAttach, LiquidDisplayChange | draw, dispense | dosing the carboplatin series      |
+| add_metformin            | interactionSequence | click, click (fan-out)  | CursorAttach, LiquidDisplayChange | draw, dispense | fixed-dose modifier                |
+| review_loaded_plate      | modal               | click, click            | SceneChange or feedback-only      | use            | confirming the loaded plate        |
 
 This file carries both `plateTargets` (`rows`, `cols` geometry) and
 `tubeTargets` blocks. Both are scene/protocol boundary violations under WP-BND1
@@ -756,15 +756,15 @@ Each entry is classified: new domain verb (cheap), new `gesture` value
 to be merged with the Miraculin (WP-RAT-B1) and SDS-PAGE (WP-RAT-C1) gap lists
 by the downstream consolidation task.
 
-| Gap ID | Description | Classification |
-| --- | --- | --- |
-| RAT-A-G1 | `cell_culture_full` is a `sequence_runner` chaining five mini-protocols; the M2 model is a single linear protocol with no protocol-of-protocols level. No `cell_culture_full` step fails to map (it has none), but the runner artifact itself has no home in the M2 model. | design revision -- but scoped: it is a protocol-composition scope question, NOT an interaction-vocabulary failure. Does not force an M2 interaction-vocabulary revision. Escalate as a plan-scope decision. |
-| RAT-A-G2 | Instrument-reading steps (`capture_count`, `plate_read`, `count_cells`) produce recorded data (a cell count, an absorbance value). No `scene_operation` writes "instrument produced a data value" as runtime state; it currently maps as a `feedback`-only response. | possible new `scene_operation` primitive (expensive) -- NOT yet required: the interaction maps. This is the Part 5 / Part 8 open question (recorded output of a `read` action). Hold for the Miraculin and SDS-PAGE slices to test recurrence against the cost guardrail. |
-| RAT-A-G3 | Shipped liquid-handling steps encode volume as a `volumeMl` field on a `click` interaction with no `adjust` set-point gesture (the documented timed-click regression). | rough-protocol gap -- NOT a vocabulary gap. The M2 model expresses the correct `adjust` + `target_with_value` shape; the content must be updated to use it. Content fidelity finding. |
-| RAT-A-G4 | `drug_dilution_setup` carries `plateMap.annotations` (`row`, `colRange`); `plate_drug_treatment` carries `plateTargets` (`rows`, `cols`) and `tubeTargets`. These are geometric nouns and coordinates in protocol YAML -- boundary violations under the WP-BND1 rule. | rough-protocol gap / boundary cleanup -- NOT a vocabulary gap. The M2 model maps every step; the geometry belongs on the scene side via semantic targets. Content-side cleanup. |
-| RAT-A-G5 | `tubeTargets` is the broken field from Part 9 (typed `{tubeId}` in `contract.ts`, authored as `{source, diluent, destination, ...}`). | rough-protocol gap -- NOT a vocabulary gap. Broken legacy field; superseded entirely by the M2 model. Content-side removal. |
-| RAT-A-G6 | `decant_mtt` has two interaction shapes across files (`well_plate` pour vs `multichannel_pipette` aspirate); `completionEvent` naming has no convention (kebab-case, snake_case mixed); `resuspend` volume mismatch; `metformin_stock` tool choice differs. | rough-protocol gap -- NOT a vocabulary gap. The M2 model expresses every variant cleanly and the WP-STA1 derived-event rule already replaces `completionEvent`. Content canonicalization. |
-| RAT-A-G7 | `prewarm_media` is modeled as an instant `directTool` step; pre-warming in a water bath is plausibly a `TimedWait` phase. | rough-protocol gap -- NOT a vocabulary gap. `TimedWait` already exists; this is an authoring choice about whether to model the duration. |
+| Gap ID   | Description                                                                                                                                                                                                                                                                | Classification                                                                                                                                                                                                                                                            |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RAT-A-G1 | `cell_culture_full` is a `sequence_runner` chaining five mini-protocols; the M2 model is a single linear protocol with no protocol-of-protocols level. No `cell_culture_full` step fails to map (it has none), but the runner artifact itself has no home in the M2 model. | design revision -- but scoped: it is a protocol-composition scope question, NOT an interaction-vocabulary failure. Does not force an M2 interaction-vocabulary revision. Escalate as a plan-scope decision.                                                               |
+| RAT-A-G2 | Instrument-reading steps (`capture_count`, `plate_read`, `count_cells`) produce recorded data (a cell count, an absorbance value). No `scene_operation` writes "instrument produced a data value" as runtime state; it currently maps as a `feedback`-only response.       | possible new `scene_operation` primitive (expensive) -- NOT yet required: the interaction maps. This is the Part 5 / Part 8 open question (recorded output of a `read` action). Hold for the Miraculin and SDS-PAGE slices to test recurrence against the cost guardrail. |
+| RAT-A-G3 | Shipped liquid-handling steps encode volume as a `volumeMl` field on a `click` interaction with no `adjust` set-point gesture (the documented timed-click regression).                                                                                                     | rough-protocol gap -- NOT a vocabulary gap. The M2 model expresses the correct `adjust` + `target_with_value` shape; the content must be updated to use it. Content fidelity finding.                                                                                     |
+| RAT-A-G4 | `drug_dilution_setup` carries `plateMap.annotations` (`row`, `colRange`); `plate_drug_treatment` carries `plateTargets` (`rows`, `cols`) and `tubeTargets`. These are geometric nouns and coordinates in protocol YAML -- boundary violations under the WP-BND1 rule.      | rough-protocol gap / boundary cleanup -- NOT a vocabulary gap. The M2 model maps every step; the geometry belongs on the scene side via semantic targets. Content-side cleanup.                                                                                           |
+| RAT-A-G5 | `tubeTargets` is the broken field from Part 9 (typed `{tubeId}` in `contract.ts`, authored as `{source, diluent, destination, ...}`).                                                                                                                                      | rough-protocol gap -- NOT a vocabulary gap. Broken legacy field; superseded entirely by the M2 model. Content-side removal.                                                                                                                                               |
+| RAT-A-G6 | `decant_mtt` has two interaction shapes across files (`well_plate` pour vs `multichannel_pipette` aspirate); `completionEvent` naming has no convention (kebab-case, snake_case mixed); `resuspend` volume mismatch; `metformin_stock` tool choice differs.                | rough-protocol gap -- NOT a vocabulary gap. The M2 model expresses every variant cleanly and the WP-STA1 derived-event rule already replaces `completionEvent`. Content canonicalization.                                                                                 |
+| RAT-A-G7 | `prewarm_media` is modeled as an instant `directTool` step; pre-warming in a water bath is plausibly a `TimedWait` phase.                                                                                                                                                  | rough-protocol gap -- NOT a vocabulary gap. `TimedWait` already exists; this is an authoring choice about whether to model the duration.                                                                                                                                  |
 
 No gap in this slice is a real design gap that forces a revision of the M2
 **interaction vocabulary**. RAT-A-G1 is a design-scope question one level up
@@ -830,19 +830,19 @@ meaning; they are mapping conveniences, not authored YAML.
 
 ### Step counts for this slice
 
-| Source | Mappable steps |
-| --- | --- |
-| Preparing Miraculin Berry Extract | 7 |
-| Stage 1: Forward Extraction | 6 |
-| Stage 2: Backward Extraction | 5 |
-| Part 1 (breaking the cells) | 0 (heading-only stub) |
-| Part 2 (first centrifugation) | 0 (duplicates Overview steps) |
-| Part 3 (salting out) | 0 (heading-only stub) |
-| Part 4 (reverse micelle extraction) | 0 (empty sub-stubs; duplicates stages) |
-| Part 5 (size exclusion chromatography) | 0 (pure stub) |
-| Part 6 (ion exchange chromatography) | 0 (pure stub) |
-| Part 7 (IMAC) | 0 (pure stub) |
-| Slice total | 18 |
+| Source                                 | Mappable steps                         |
+| -------------------------------------- | -------------------------------------- |
+| Preparing Miraculin Berry Extract      | 7                                      |
+| Stage 1: Forward Extraction            | 6                                      |
+| Stage 2: Backward Extraction           | 5                                      |
+| Part 1 (breaking the cells)            | 0 (heading-only stub)                  |
+| Part 2 (first centrifugation)          | 0 (duplicates Overview steps)          |
+| Part 3 (salting out)                   | 0 (heading-only stub)                  |
+| Part 4 (reverse micelle extraction)    | 0 (empty sub-stubs; duplicates stages) |
+| Part 5 (size exclusion chromatography) | 0 (pure stub)                          |
+| Part 6 (ion exchange chromatography)   | 0 (pure stub)                          |
+| Part 7 (IMAC)                          | 0 (pure stub)                          |
+| Slice total                            | 18                                     |
 
 `outcome` is `{on_success: complete, on_failure: retry}` on every mapped step.
 `next_step` is the next row in reading order; the final mapped step
@@ -854,15 +854,15 @@ chromatography Parts are written.
 7 steps. `entry_step: obtain_berries`. This is the sample-prep phase: berries to
 crude salt extract.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| obtain_berries | click | correct_target / sequence_complete | feedback-only | use | retrieving freeze-dried starting material |
-| remove_skin_seed | click | correct_target / sequence_complete | SvgSwap | dissect | preparing berries by removing skin and seed |
-| grind_berries | click | correct_target / final_state_matches | SvgSwap | grind | reducing prepared berries to a powder |
-| homogenize_water | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense, mix | homogenizing powder in DI water at a set ratio |
-| centrifuge_crude | click | correct_target / final_state_matches | TimedWait | use (equipment) | pelleting solids by centrifugation |
-| discard_pink_supernatant | select | correct_choice / final_state_matches | feedback-only (optionally LiquidDisplayChange set 0) | select (phase) | identifying and discarding the inactive phase |
-| resuspend_nacl | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense, mix | resuspending the sediment in 0.5 M NaCl |
+| Step `name`              | gesture(s)                  | validator / step_validator                              | SO primitives                                            | domain verb         | lab skill taught                               |
+| ------------------------ | --------------------------- | ------------------------------------------------------- | -------------------------------------------------------- | ------------------- | ---------------------------------------------- |
+| obtain_berries           | click                       | correct_target / sequence_complete                      | feedback-only                                            | use                 | retrieving freeze-dried starting material      |
+| remove_skin_seed         | click                       | correct_target / sequence_complete                      | SvgSwap                                                  | dissect             | preparing berries by removing skin and seed    |
+| grind_berries            | click                       | correct_target / final_state_matches                    | SvgSwap                                                  | grind               | reducing prepared berries to a powder          |
+| homogenize_water         | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense, mix | homogenizing powder in DI water at a set ratio |
+| centrifuge_crude         | click                       | correct_target / final_state_matches                    | TimedWait                                                | use (equipment)     | pelleting solids by centrifugation             |
+| discard_pink_supernatant | select                      | correct_choice / final_state_matches                    | feedback-only (optionally LiquidDisplayChange set 0)     | select (phase)      | identifying and discarding the inactive phase  |
+| resuspend_nacl           | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense, mix | resuspending the sediment in 0.5 M NaCl        |
 
 Notes on this matrix:
 
@@ -895,14 +895,14 @@ Notes on this matrix:
 `resuspend_nacl` via `next_step`. This phase moves the protein into the organic
 reverse-micelle phase.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| adjust_ph_forward | click, adjust | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange | titrate | titrating the crude extract to pH 8.0 |
-| prepare_aot_solution | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | preparing the 0.1 M AOT in isooctane organic solution |
-| mix_phases_forward | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | combining equal volumes of aqueous and organic phases |
-| agitate_forward | click | correct_target / sequence_complete | TimedWait | use (equipment) | timed gentle agitation (10 min) |
-| centrifuge_forward | click | correct_target / final_state_matches | TimedWait | use (equipment) | phase separation by centrifugation (4000 x g, 5 min) |
-| collect_organic_phase | select | correct_choice / final_state_matches | feedback-only (optionally LiquidDisplayChange set 0 on the aqueous phase) | select (phase) | discarding the aqueous phase, retaining the protein-bearing organic layer |
+| Step `name`           | gesture(s)                  | validator / step_validator                              | SO primitives                                                             | domain verb     | lab skill taught                                                          |
+| --------------------- | --------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- | --------------- | ------------------------------------------------------------------------- |
+| adjust_ph_forward     | click, adjust               | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange                                       | titrate         | titrating the crude extract to pH 8.0                                     |
+| prepare_aot_solution  | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange                  | draw, dispense  | preparing the 0.1 M AOT in isooctane organic solution                     |
+| mix_phases_forward    | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange                  | draw, dispense  | combining equal volumes of aqueous and organic phases                     |
+| agitate_forward       | click                       | correct_target / sequence_complete                      | TimedWait                                                                 | use (equipment) | timed gentle agitation (10 min)                                           |
+| centrifuge_forward    | click                       | correct_target / final_state_matches                    | TimedWait                                                                 | use (equipment) | phase separation by centrifugation (4000 x g, 5 min)                      |
+| collect_organic_phase | select                      | correct_choice / final_state_matches                    | feedback-only (optionally LiquidDisplayChange set 0 on the aqueous phase) | select (phase)  | discarding the aqueous phase, retaining the protein-bearing organic layer |
 
 Notes on this matrix:
 
@@ -927,13 +927,13 @@ Notes on this matrix:
 it from `collect_organic_phase` via `next_step`. This phase strips the protein
 back into a clean aqueous buffer.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| prepare_stripping_buffer | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | preparing the 0.02 M phosphate / 0.5 M NaCl stripping buffer at pH 11.0 |
-| mix_phases_backward | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | combining the retained organic phase with equal-volume stripping buffer |
-| agitate_backward | click | correct_target / sequence_complete | TimedWait | use (equipment) | timed agitation (20 min) to drive back-transfer |
-| centrifuge_backward | click | correct_target / final_state_matches | TimedWait | use (equipment) | phase separation by centrifugation (4000 x g, 5 min) |
-| collect_aqueous_phase | select | correct_choice / final_state_matches | feedback-only (optionally LiquidDisplayChange set 0 on the organic phase) | select (phase) | retaining the bottom aqueous phase holding partially purified miraculin |
+| Step `name`              | gesture(s)                  | validator / step_validator                              | SO primitives                                                             | domain verb     | lab skill taught                                                        |
+| ------------------------ | --------------------------- | ------------------------------------------------------- | ------------------------------------------------------------------------- | --------------- | ----------------------------------------------------------------------- |
+| prepare_stripping_buffer | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange                  | draw, dispense  | preparing the 0.02 M phosphate / 0.5 M NaCl stripping buffer at pH 11.0 |
+| mix_phases_backward      | click, adjust, click, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange                  | draw, dispense  | combining the retained organic phase with equal-volume stripping buffer |
+| agitate_backward         | click                       | correct_target / sequence_complete                      | TimedWait                                                                 | use (equipment) | timed agitation (20 min) to drive back-transfer                         |
+| centrifuge_backward      | click                       | correct_target / final_state_matches                    | TimedWait                                                                 | use (equipment) | phase separation by centrifugation (4000 x g, 5 min)                    |
+| collect_aqueous_phase    | select                      | correct_choice / final_state_matches                    | feedback-only (optionally LiquidDisplayChange set 0 on the organic phase) | select (phase)  | retaining the bottom aqueous phase holding partially purified miraculin |
 
 Notes on this matrix:
 
@@ -1102,14 +1102,14 @@ Each entry is classified: new domain verb (cheap), new `gesture` value
 to be merged with the OVCAR8 (WP-RAT-A1) and SDS-PAGE (WP-RAT-C1) gap lists by
 the downstream consolidation task.
 
-| Gap ID | Description | Classification |
-| --- | --- | --- |
-| RAT-B-G1 | Parts 5, 6, and 7 (size exclusion, ion exchange, and IMAC chromatography) are pure stubs -- a student-assignment line and nothing else. There is no procedure text to map. | rough-protocol gap -- NOT a vocabulary gap. The protocol needs polishing: these sections must be written before they can be ratified. No M2 model change implied. |
-| RAT-B-G2 | Parts 1 and 3 (breaking the cells, salting out) are heading-only stubs; Part 2 duplicates two Overview steps; Part 4 has empty `Forward Extraction Protocol` and `Backward Stripping Protocol` sub-stubs that duplicate Stages 1-2. The `Part 1`-`Part 7` outline and the `Overview` recipe are two un-reconciled drafts of the same procedure. | rough-protocol gap -- NOT a vocabulary gap. The 18 real steps are mapped from the `Overview` recipe; the `Part N` outline needs to be reconciled with or removed in favor of the `Overview`. Content-side cleanup. |
-| RAT-B-G3 | The `titrate` domain verb (pH-to-target via `adjust` + `SetPointDisplayChange`) and the `dissect` domain verb (remove skin and seed via one `SvgSwap`) are used by this slice but not in the WP-RAT-A1 verb set. | new domain verb (cheap) x2. Each has a documented expansion to existing slots and adds no new runtime concept; this is the cheap, expected layer. Not a design gap. |
-| RAT-B-G4 | Solid-mass metering: `homogenize_water` and `resuspend_nacl` specify a solid quantity (1 g powder) alongside a liquid volume. `LiquidDisplayChange` tracks liquid; there is no primitive that tracks a weighed solid mass as runtime state. The slice maps the solid mass as preset target state or a `select` of a pre-portioned amount. | rough-protocol / authoring choice -- NOT a confirmed vocabulary gap. The interaction maps (the liquid half uses `adjust` + `LiquidDisplayChange`; the solid is preset or selected). A weighed-mass set-point is a possible future `adjust` case if solid weighing recurs as a taught skill across protocols, but Miraculin alone does not clear the cost-guardrail bar. Watch item, not a requirement. |
-| RAT-B-G5 | `prepare_stripping_buffer` specifies a buffer "at pH 11.0" but the Overview does not say the student titrates it; it reads as a pre-made recipe like the pH 6.8 NaCl solution. The authored intent (pre-made versus student-titrated) is ambiguous. | rough-protocol gap -- NOT a vocabulary gap. Either reading maps: pre-made is preset target state, student-titrated is the same `titrate` shape as `adjust_ph_forward`. The draft needs to state which. Content-side clarification. |
-| RAT-B-G6 | `adjust_ph_forward` titrates with two reagents (2.5 M NaOH up, 0.1 M HCl down) converging on pH 8.0. The M2 model abstracts titration-to-a-target as a single `adjust` set-point gesture, which does not represent the two-reagent convergence. | rough-protocol / pedagogy-depth watch item -- NOT a vocabulary gap. The design doc deliberately models titration-to-a-target as an `adjust` set-point, and that abstraction holds for ratification. Modeling the two-reagent convergence as distinct gestures is a future pedagogy-depth question, not an M2 expressiveness failure. Does not force an M2 revision. |
+| Gap ID   | Description                                                                                                                                                                                                                                                                                                                                     | Classification                                                                                                                                                                                                                                                                                                                                                                                         |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| RAT-B-G1 | Parts 5, 6, and 7 (size exclusion, ion exchange, and IMAC chromatography) are pure stubs -- a student-assignment line and nothing else. There is no procedure text to map.                                                                                                                                                                      | rough-protocol gap -- NOT a vocabulary gap. The protocol needs polishing: these sections must be written before they can be ratified. No M2 model change implied.                                                                                                                                                                                                                                      |
+| RAT-B-G2 | Parts 1 and 3 (breaking the cells, salting out) are heading-only stubs; Part 2 duplicates two Overview steps; Part 4 has empty `Forward Extraction Protocol` and `Backward Stripping Protocol` sub-stubs that duplicate Stages 1-2. The `Part 1`-`Part 7` outline and the `Overview` recipe are two un-reconciled drafts of the same procedure. | rough-protocol gap -- NOT a vocabulary gap. The 18 real steps are mapped from the `Overview` recipe; the `Part N` outline needs to be reconciled with or removed in favor of the `Overview`. Content-side cleanup.                                                                                                                                                                                     |
+| RAT-B-G3 | The `titrate` domain verb (pH-to-target via `adjust` + `SetPointDisplayChange`) and the `dissect` domain verb (remove skin and seed via one `SvgSwap`) are used by this slice but not in the WP-RAT-A1 verb set.                                                                                                                                | new domain verb (cheap) x2. Each has a documented expansion to existing slots and adds no new runtime concept; this is the cheap, expected layer. Not a design gap.                                                                                                                                                                                                                                    |
+| RAT-B-G4 | Solid-mass metering: `homogenize_water` and `resuspend_nacl` specify a solid quantity (1 g powder) alongside a liquid volume. `LiquidDisplayChange` tracks liquid; there is no primitive that tracks a weighed solid mass as runtime state. The slice maps the solid mass as preset target state or a `select` of a pre-portioned amount.       | rough-protocol / authoring choice -- NOT a confirmed vocabulary gap. The interaction maps (the liquid half uses `adjust` + `LiquidDisplayChange`; the solid is preset or selected). A weighed-mass set-point is a possible future `adjust` case if solid weighing recurs as a taught skill across protocols, but Miraculin alone does not clear the cost-guardrail bar. Watch item, not a requirement. |
+| RAT-B-G5 | `prepare_stripping_buffer` specifies a buffer "at pH 11.0" but the Overview does not say the student titrates it; it reads as a pre-made recipe like the pH 6.8 NaCl solution. The authored intent (pre-made versus student-titrated) is ambiguous.                                                                                             | rough-protocol gap -- NOT a vocabulary gap. Either reading maps: pre-made is preset target state, student-titrated is the same `titrate` shape as `adjust_ph_forward`. The draft needs to state which. Content-side clarification.                                                                                                                                                                     |
+| RAT-B-G6 | `adjust_ph_forward` titrates with two reagents (2.5 M NaOH up, 0.1 M HCl down) converging on pH 8.0. The M2 model abstracts titration-to-a-target as a single `adjust` set-point gesture, which does not represent the two-reagent convergence.                                                                                                 | rough-protocol / pedagogy-depth watch item -- NOT a vocabulary gap. The design doc deliberately models titration-to-a-target as an `adjust` set-point, and that abstraction holds for ratification. Modeling the two-reagent convergence as distinct gestures is a future pedagogy-depth question, not an M2 expressiveness failure. Does not force an M2 revision.                                    |
 
 No gap in this slice is a real design gap that forces a revision of the M2
 **interaction vocabulary**. RAT-B-G1, RAT-B-G2, and RAT-B-G5 are rough-protocol
@@ -1196,20 +1196,20 @@ authored YAML.
 
 ### Step counts for this slice
 
-| Source | Mappable steps |
-| --- | --- |
-| Part 1 (prepare protein sample and MW ladder) | 1 (half-written; coarse-grain map) |
-| Part 2 (prepare running buffer) | 1 |
-| Part 3 (prepare the BioRad gel cassette) | 6 |
-| Part 4 (assemble the electrophoresis apparatus) | 0 (heading-plus-fragment stub) |
-| Part 5 (sample loading in the well) | 3 |
-| Part 6 (connect power supply and run the gel) | 2 |
-| Part 7 (recycle the SDS buffer and store) | 0 (heading-only stub) |
-| Part 8 (separate the gel from its cassette) | 1 (one-line stub; coarse-grain map) |
-| Part 9 (staining the gel) | 2 (one-line stub; coarse-grain map) |
-| Part 10 (imaging the gel) | 1 (one-line stub; coarse-grain map) |
+| Source                                                | Mappable steps                                   |
+| ----------------------------------------------------- | ------------------------------------------------ |
+| Part 1 (prepare protein sample and MW ladder)         | 1 (half-written; coarse-grain map)               |
+| Part 2 (prepare running buffer)                       | 1                                                |
+| Part 3 (prepare the BioRad gel cassette)              | 6                                                |
+| Part 4 (assemble the electrophoresis apparatus)       | 0 (heading-plus-fragment stub)                   |
+| Part 5 (sample loading in the well)                   | 3                                                |
+| Part 6 (connect power supply and run the gel)         | 2                                                |
+| Part 7 (recycle the SDS buffer and store)             | 0 (heading-only stub)                            |
+| Part 8 (separate the gel from its cassette)           | 1 (one-line stub; coarse-grain map)              |
+| Part 9 (staining the gel)                             | 2 (one-line stub; coarse-grain map)              |
+| Part 10 (imaging the gel)                             | 1 (one-line stub; coarse-grain map)              |
 | Pre-Lab Parts 1-4 (Bradford, range, MWCO, stain prep) | 0 (pre-lab; calculation or stub, not a run step) |
-| Slice total | 17 |
+| Slice total                                           | 17                                               |
 
 `outcome` is `{on_success: complete, on_failure: retry}` on every mapped step.
 `next_step` is the next row in reading order; the final mapped step
@@ -1220,10 +1220,10 @@ authored YAML.
 Sample and buffer preparation. `entry_step: prepare_sample`. Part 1 is
 half-written; it is mapped at the coarsest grain its text supports.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| prepare_sample | click, click, click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange, TimedWait | draw, dispense, mix, use (equipment) | preparing a reduced, denatured protein sample with Laemmli buffer and BME, then heating at 95 C |
-| prepare_running_buffer | click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange | draw, dispense | diluting 10X running buffer stock to 1X working buffer |
+| Step `name`            | gesture(s)                 | validator / step_validator           | SO primitives                                | domain verb                          | lab skill taught                                                                                |
+| ---------------------- | -------------------------- | ------------------------------------ | -------------------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| prepare_sample         | click, click, click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange, TimedWait | draw, dispense, mix, use (equipment) | preparing a reduced, denatured protein sample with Laemmli buffer and BME, then heating at 95 C |
+| prepare_running_buffer | click, click               | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange            | draw, dispense                       | diluting 10X running buffer stock to 1X working buffer                                          |
 
 Notes on this matrix:
 
@@ -1250,14 +1250,14 @@ Notes on this matrix:
 the explicitly tested ordered-assembly shape; see the tested shapes section
 below.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| open_precast_gel | click | correct_target / sequence_complete | SvgSwap | unwrap | unpacking a precast gel and removing the protective tape |
-| orient_cassette | drag | correct_target / final_state_matches | LayoutMove | place | orienting the cassette so the wells face inward |
-| seat_cassette_in_tank | drag | correct_target / final_state_matches | LayoutMove | place | replacing a glass wall with the gel cassette in the tank |
-| clamp_cassette | drag, drag | correct_target / sequence_complete | LayoutMove | clamp | securing the side clamps for a watertight seal |
-| leak_check_remove_comb | click, click | correct_target / final_state_matches | TimedWait, SvgSwap | use (equipment), remove | leak-checking the assembled tank and removing the comb |
-| fill_running_buffer | click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange | draw, dispense | filling the inner chamber and outer tank with 1X running buffer to the well line |
+| Step `name`            | gesture(s)   | validator / step_validator           | SO primitives                     | domain verb             | lab skill taught                                                                 |
+| ---------------------- | ------------ | ------------------------------------ | --------------------------------- | ----------------------- | -------------------------------------------------------------------------------- |
+| open_precast_gel       | click        | correct_target / sequence_complete   | SvgSwap                           | unwrap                  | unpacking a precast gel and removing the protective tape                         |
+| orient_cassette        | drag         | correct_target / final_state_matches | LayoutMove                        | place                   | orienting the cassette so the wells face inward                                  |
+| seat_cassette_in_tank  | drag         | correct_target / final_state_matches | LayoutMove                        | place                   | replacing a glass wall with the gel cassette in the tank                         |
+| clamp_cassette         | drag, drag   | correct_target / sequence_complete   | LayoutMove                        | clamp                   | securing the side clamps for a watertight seal                                   |
+| leak_check_remove_comb | click, click | correct_target / final_state_matches | TimedWait, SvgSwap                | use (equipment), remove | leak-checking the assembled tank and removing the comb                           |
+| fill_running_buffer    | click, click | correct_target / final_state_matches | CursorAttach, LiquidDisplayChange | draw, dispense          | filling the inner chamber and outer tank with 1X running buffer to the well line |
 
 Notes on this matrix:
 
@@ -1298,11 +1298,11 @@ Notes on this matrix:
 it from `fill_running_buffer` via `next_step`. This phase loads the ladder and
 the samples into the gel lanes.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| determine_loading_volume | select | correct_choice / sequence_complete | feedback-only | select (answer) | calculating the protein volume needed to load 2 ug per well |
-| load_ladder | click, adjust, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | loading the molecular weight ladder into the middle well as a size reference |
-| load_samples | click, adjust, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense | loading prepared protein samples into the gel wells without cross-contamination |
+| Step `name`              | gesture(s)           | validator / step_validator                              | SO primitives                                            | domain verb     | lab skill taught                                                                |
+| ------------------------ | -------------------- | ------------------------------------------------------- | -------------------------------------------------------- | --------------- | ------------------------------------------------------------------------------- |
+| determine_loading_volume | select               | correct_choice / sequence_complete                      | feedback-only                                            | select (answer) | calculating the protein volume needed to load 2 ug per well                     |
+| load_ladder              | click, adjust, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense  | loading the molecular weight ladder into the middle well as a size reference    |
+| load_samples             | click, adjust, click | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange, LiquidDisplayChange | draw, dispense  | loading prepared protein samples into the gel wells without cross-contamination |
 
 Notes on this matrix:
 
@@ -1335,10 +1335,10 @@ Notes on this matrix:
 2 steps. `entry_step` of this phase is `set_power_supply`; flow reaches it from
 `load_samples` via `next_step`. This phase runs the electrophoresis.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| set_power_supply | click, adjust | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange | connect, set | connecting the power supply leads and setting the run voltage |
-| run_gel | click | correct_target / final_state_matches | TimedWait | use (equipment) | running the gel until the dye front reaches the bottom |
+| Step `name`      | gesture(s)    | validator / step_validator                              | SO primitives                       | domain verb     | lab skill taught                                              |
+| ---------------- | ------------- | ------------------------------------------------------- | ----------------------------------- | --------------- | ------------------------------------------------------------- |
+| set_power_supply | click, adjust | correct_target, target_with_value / final_state_matches | CursorAttach, SetPointDisplayChange | connect, set    | connecting the power supply leads and setting the run voltage |
+| run_gel          | click         | correct_target / final_state_matches                    | TimedWait                           | use (equipment) | running the gel until the dye front reaches the bottom        |
 
 Notes on this matrix:
 
@@ -1366,12 +1366,12 @@ Notes on this matrix:
 each is mapped at the coarsest grain its single line supports, and the missing
 step-by-step text is recorded as a rough-protocol gap.
 
-| Step `name` | gesture(s) | validator / step_validator | SO primitives | domain verb | lab skill taught |
-| --- | --- | --- | --- | --- | --- |
-| separate_gel | click | correct_target / final_state_matches | SvgSwap | open | freeing the gel from its cassette with the gel opening tool |
-| stain_gel | click, click | correct_target / final_state_matches | LiquidDisplayChange, SvgSwap, TimedWait | stain, use (equipment) | submerging the gel in Coomassie stain and agitating on the shaker |
-| destain_gel | click, click | correct_target / final_state_matches | LiquidDisplayChange, TimedWait | destain, use (equipment) | destaining the gel on the shaker until the background runs clear |
-| image_gel | click | correct_target / final_state_matches | feedback-only (optionally SvgSwap) | image | imaging the stained gel on a light box to read the protein bands |
+| Step `name`  | gesture(s)   | validator / step_validator           | SO primitives                           | domain verb              | lab skill taught                                                  |
+| ------------ | ------------ | ------------------------------------ | --------------------------------------- | ------------------------ | ----------------------------------------------------------------- |
+| separate_gel | click        | correct_target / final_state_matches | SvgSwap                                 | open                     | freeing the gel from its cassette with the gel opening tool       |
+| stain_gel    | click, click | correct_target / final_state_matches | LiquidDisplayChange, SvgSwap, TimedWait | stain, use (equipment)   | submerging the gel in Coomassie stain and agitating on the shaker |
+| destain_gel  | click, click | correct_target / final_state_matches | LiquidDisplayChange, TimedWait          | destain, use (equipment) | destaining the gel on the shaker until the background runs clear  |
+| image_gel    | click        | correct_target / final_state_matches | feedback-only (optionally SvgSwap)      | image                    | imaging the stained gel on a light box to read the protein bands  |
 
 Notes on this matrix:
 
@@ -1553,14 +1553,14 @@ Each entry is classified: new domain verb (cheap), new `gesture` value
 to be merged with the OVCAR8 (WP-RAT-A1) and Miraculin (WP-RAT-B1) gap lists by
 the downstream consolidation task.
 
-| Gap ID | Description | Classification |
-| --- | --- | --- |
-| RAT-C-G1 | Part 4 (assemble the electrophoresis apparatus) and Part 7 (recycle the SDS buffer and store) are heading-plus-fragment stubs with no procedure text -- Part 4 reads only "Spacers, SDS buffer (volume), check for leaks" and Part 7 has no body. The `Pre-Laboratory Procedure` Parts 2-4 (sample concentration range, 10k MWCO filter, stain and destain preparation) are likewise pre-lab stubs. There is no procedure text to map. | rough-protocol gap -- NOT a vocabulary gap. The protocol needs polishing: these sections must be written before they can be ratified. No M2 model change implied. |
-| RAT-C-G2 | Parts 1, 8, 9, and 10 are half-written or one-line stubs. Part 1 ("Mix BME, Laemmli, and protein sample (provide more details), heat, etc.") explicitly flags missing detail; Part 8 is "Use the tool"; Part 9 is "Stain and destain, microwave, shake"; Part 10 is "Light box, smartphone camera." Each maps at a coarse grain, but the exact interaction count and per-step detail are provisional. | rough-protocol gap -- NOT a vocabulary gap. The coarse-grain map holds and uses only existing slots and primitives; the steps need step-by-step text written before the mapping can be finalized. Content-side authoring work. |
-| RAT-C-G3 | The new domain verbs this slice uses -- `place` and `clamp` (over `LayoutMove`), `unwrap`, `remove`, and `open` (over `SvgSwap`), `connect` and `image` (`click` interactions), `set` (over `SetPointDisplayChange`), and `stain` and `destain` (over `LiquidDisplayChange` plus `TimedWait`) -- are used by this slice but not in the WP-RAT-A1 or WP-RAT-B1 verb sets. | new domain verb (cheap), multiple. Each has a documented expansion to existing slots and adds no new runtime concept; this is the cheap, expected layer. `assemble` was already anticipated by the design doc with SDS-PAGE as its named source case. Not a design gap. |
-| RAT-C-G4 | The Part 10 gel-image read (`image_gel`) is an instrument read: the student images the stained gel on a light box and reads the protein bands. As in OVCAR8's `capture_count` and `plate_read`, no `scene_operation` writes "instrument produced a data value" (here, the band pattern / molecular weight read) as runtime state; it maps as a `feedback`-only response. This recurs RAT-A-G2. | possible new `scene_operation` primitive (expensive) -- NOT yet required: the interaction maps. This is RAT-A-G2's second slice hit (see the recurrence note below). It crosses the cost-guardrail recurrence bar and should be escalated to the consolidation task as a confirmed new-primitive proposal to evaluate -- but it is still not a step that fails to map. |
-| RAT-C-G5 | Part 1's volume formulas (total volume y = x/0.7, BME = y/20, Laemmli = y/4) and Part 5's loading-volume calculation are relational and calculated volumes rather than fixed authored set-points. The slice maps them as concrete `volume_ml` set-points resolved once the scene supplies the input volume, and the calculation itself as a `select` decision. | rough-protocol / authoring choice -- NOT a vocabulary gap. The same relational-volume pattern was mapped cleanly in Miraculin ("combine equal volumes"); each resolves to a concrete `volume_ml` per `draw`. The draft would benefit from stating worked example volumes, but the mapping holds. |
-| RAT-C-G6 | Part 9 mentions "microwave" as a stain or destain acceleration step with no procedure text -- it is named in the one-line stub but never described. Whether it is a `TimedWait` on a microwave target or a technique note is unspecified. | rough-protocol gap -- NOT a vocabulary gap. If it is a timed acceleration phase, `TimedWait` already expresses it (a `use` (equipment) interaction on a microwave target); if it is a technique note, it belongs in `prompt` or `feedback`. The draft needs to state which. Content-side clarification. |
+| Gap ID   | Description                                                                                                                                                                                                                                                                                                                                                                                                                            | Classification                                                                                                                                                                                                                                                                                                                                                         |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RAT-C-G1 | Part 4 (assemble the electrophoresis apparatus) and Part 7 (recycle the SDS buffer and store) are heading-plus-fragment stubs with no procedure text -- Part 4 reads only "Spacers, SDS buffer (volume), check for leaks" and Part 7 has no body. The `Pre-Laboratory Procedure` Parts 2-4 (sample concentration range, 10k MWCO filter, stain and destain preparation) are likewise pre-lab stubs. There is no procedure text to map. | rough-protocol gap -- NOT a vocabulary gap. The protocol needs polishing: these sections must be written before they can be ratified. No M2 model change implied.                                                                                                                                                                                                      |
+| RAT-C-G2 | Parts 1, 8, 9, and 10 are half-written or one-line stubs. Part 1 ("Mix BME, Laemmli, and protein sample (provide more details), heat, etc.") explicitly flags missing detail; Part 8 is "Use the tool"; Part 9 is "Stain and destain, microwave, shake"; Part 10 is "Light box, smartphone camera." Each maps at a coarse grain, but the exact interaction count and per-step detail are provisional.                                  | rough-protocol gap -- NOT a vocabulary gap. The coarse-grain map holds and uses only existing slots and primitives; the steps need step-by-step text written before the mapping can be finalized. Content-side authoring work.                                                                                                                                         |
+| RAT-C-G3 | The new domain verbs this slice uses -- `place` and `clamp` (over `LayoutMove`), `unwrap`, `remove`, and `open` (over `SvgSwap`), `connect` and `image` (`click` interactions), `set` (over `SetPointDisplayChange`), and `stain` and `destain` (over `LiquidDisplayChange` plus `TimedWait`) -- are used by this slice but not in the WP-RAT-A1 or WP-RAT-B1 verb sets.                                                               | new domain verb (cheap), multiple. Each has a documented expansion to existing slots and adds no new runtime concept; this is the cheap, expected layer. `assemble` was already anticipated by the design doc with SDS-PAGE as its named source case. Not a design gap.                                                                                                |
+| RAT-C-G4 | The Part 10 gel-image read (`image_gel`) is an instrument read: the student images the stained gel on a light box and reads the protein bands. As in OVCAR8's `capture_count` and `plate_read`, no `scene_operation` writes "instrument produced a data value" (here, the band pattern / molecular weight read) as runtime state; it maps as a `feedback`-only response. This recurs RAT-A-G2.                                         | possible new `scene_operation` primitive (expensive) -- NOT yet required: the interaction maps. This is RAT-A-G2's second slice hit (see the recurrence note below). It crosses the cost-guardrail recurrence bar and should be escalated to the consolidation task as a confirmed new-primitive proposal to evaluate -- but it is still not a step that fails to map. |
+| RAT-C-G5 | Part 1's volume formulas (total volume y = x/0.7, BME = y/20, Laemmli = y/4) and Part 5's loading-volume calculation are relational and calculated volumes rather than fixed authored set-points. The slice maps them as concrete `volume_ml` set-points resolved once the scene supplies the input volume, and the calculation itself as a `select` decision.                                                                         | rough-protocol / authoring choice -- NOT a vocabulary gap. The same relational-volume pattern was mapped cleanly in Miraculin ("combine equal volumes"); each resolves to a concrete `volume_ml` per `draw`. The draft would benefit from stating worked example volumes, but the mapping holds.                                                                       |
+| RAT-C-G6 | Part 9 mentions "microwave" as a stain or destain acceleration step with no procedure text -- it is named in the one-line stub but never described. Whether it is a `TimedWait` on a microwave target or a technique note is unspecified.                                                                                                                                                                                              | rough-protocol gap -- NOT a vocabulary gap. If it is a timed acceleration phase, `TimedWait` already expresses it (a `use` (equipment) interaction on a microwave target); if it is a technique note, it belongs in `prompt` or `feedback`. The draft needs to state which. Content-side clarification.                                                                |
 
 No gap in this slice is a real design gap that forces a revision of the M2
 **interaction vocabulary**. RAT-C-G1, RAT-C-G2, RAT-C-G5, and RAT-C-G6 are
@@ -1675,20 +1675,20 @@ model change, no new `gesture`, and no new `scene_operation`. Authors add them
 with documented expansions as their protocols read naturally; adding a domain
 verb is authoring work, not vocabulary work.
 
-| Verb | From slice | Expands to |
-| --- | --- | --- |
-| `titrate` | RAT-B-G3 | `adjust` interaction over `SetPointDisplayChange` (pH-to-target) |
-| `dissect` | RAT-B-G3 | `click` interaction over one `SvgSwap` |
-| `place` | RAT-C-G3 | `drag` interaction over one `LayoutMove` |
-| `clamp` | RAT-C-G3 | `drag` interaction over one `LayoutMove` |
-| `unwrap` | RAT-C-G3 | `click` interaction over one `SvgSwap` |
-| `remove` | RAT-C-G3 | `click` interaction over one `SvgSwap` |
-| `open` | RAT-C-G3 | `click` interaction over one `SvgSwap` |
-| `connect` | RAT-C-G3 | `click` interaction (lead connection) |
-| `image` | RAT-C-G3 | `click` interaction, `feedback`-only response |
-| `set` | RAT-C-G3 | `adjust` interaction over `SetPointDisplayChange` |
-| `stain` | RAT-C-G3 | `click` interaction over `LiquidDisplayChange` plus `TimedWait` |
-| `destain` | RAT-C-G3 | `click` interaction over `LiquidDisplayChange` plus `TimedWait` |
+| Verb      | From slice | Expands to                                                       |
+| --------- | ---------- | ---------------------------------------------------------------- |
+| `titrate` | RAT-B-G3   | `adjust` interaction over `SetPointDisplayChange` (pH-to-target) |
+| `dissect` | RAT-B-G3   | `click` interaction over one `SvgSwap`                           |
+| `place`   | RAT-C-G3   | `drag` interaction over one `LayoutMove`                         |
+| `clamp`   | RAT-C-G3   | `drag` interaction over one `LayoutMove`                         |
+| `unwrap`  | RAT-C-G3   | `click` interaction over one `SvgSwap`                           |
+| `remove`  | RAT-C-G3   | `click` interaction over one `SvgSwap`                           |
+| `open`    | RAT-C-G3   | `click` interaction over one `SvgSwap`                           |
+| `connect` | RAT-C-G3   | `click` interaction (lead connection)                            |
+| `image`   | RAT-C-G3   | `click` interaction, `feedback`-only response                    |
+| `set`     | RAT-C-G3   | `adjust` interaction over `SetPointDisplayChange`                |
+| `stain`   | RAT-C-G3   | `click` interaction over `LiquidDisplayChange` plus `TimedWait`  |
+| `destain` | RAT-C-G3   | `click` interaction over `LiquidDisplayChange` plus `TimedWait`  |
 
 Notes on this class:
 
@@ -1815,27 +1815,27 @@ content" is separate from "unwritten draft."
 Sub-class 3a -- wrong shape in finished content (the WP-RAT-A1 findings). The
 content is written; it uses a shape the M2 model already expresses better.
 
-| Gap ID | Rolled-up finding |
-| --- | --- |
+| Gap ID   | Rolled-up finding                                                                                                                                                                                                                                                                                                                                                                                                 |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RAT-A-G3 | Timed-click pipetting regression: every `interactionSequence` liquid step in five of the seven shipped files encodes volume as a `volumeMl` field on a `click` with no `adjust` set-point gesture. Highest-volume content-fidelity finding; kept as one rolled-up entry, not one row per step. The M2 model expresses the correct `adjust` plus `target_with_value` shape; the content must be updated to use it. |
-| RAT-A-G4 | Scene/protocol boundary violations in content YAML: `drug_dilution_setup` carries `plateMap.annotations` (`row`, `colRange`); `plate_drug_treatment` carries `plateTargets` (`rows`, `cols`). Geometric nouns and coordinates belong on the scene side via semantic targets per the WP-BND1 rule. The M2 model maps every step. |
-| RAT-A-G5 | `tubeTargets` is the broken legacy field (typed `{tubeId}` in `contract.ts`, authored as `{source, diluent, destination, ...}`). Superseded entirely by the M2 model; content-side removal. |
-| RAT-A-G6 | Content canonicalization: `decant_mtt` has two interaction shapes across files (`well_plate` pour vs `multichannel_pipette` aspirate); `completionEvent` naming has no convention; `resuspend` volume mismatch; `metformin_stock` tool choice differs. The M2 model expresses every variant cleanly and the WP-STA1 derived-event rule already replaces `completionEvent`. |
-| RAT-A-G7 | `prewarm_media` is modeled as an instant `directTool` step; pre-warming in a water bath is plausibly a `TimedWait` phase. `TimedWait` already exists; this is an authoring choice about whether to model the duration. |
+| RAT-A-G4 | Scene/protocol boundary violations in content YAML: `drug_dilution_setup` carries `plateMap.annotations` (`row`, `colRange`); `plate_drug_treatment` carries `plateTargets` (`rows`, `cols`). Geometric nouns and coordinates belong on the scene side via semantic targets per the WP-BND1 rule. The M2 model maps every step.                                                                                   |
+| RAT-A-G5 | `tubeTargets` is the broken legacy field (typed `{tubeId}` in `contract.ts`, authored as `{source, diluent, destination, ...}`). Superseded entirely by the M2 model; content-side removal.                                                                                                                                                                                                                       |
+| RAT-A-G6 | Content canonicalization: `decant_mtt` has two interaction shapes across files (`well_plate` pour vs `multichannel_pipette` aspirate); `completionEvent` naming has no convention; `resuspend` volume mismatch; `metformin_stock` tool choice differs. The M2 model expresses every variant cleanly and the WP-STA1 derived-event rule already replaces `completionEvent`.                                        |
+| RAT-A-G7 | `prewarm_media` is modeled as an instant `directTool` step; pre-warming in a water bath is plausibly a `TimedWait` phase. `TimedWait` already exists; this is an authoring choice about whether to model the duration.                                                                                                                                                                                            |
 
 Sub-class 3b -- unwritten or under-written draft (the WP-RAT-B1 and WP-RAT-C1
 findings). The source protocols are rough drafts; these sections need procedure
 text written before they can be finalized.
 
-| Gap ID | Rolled-up finding |
-| --- | --- |
-| RAT-B-G1 | Miraculin Parts 5, 6, 7 (size exclusion, ion exchange, IMAC chromatography) are pure stubs -- a student-assignment line and nothing else. No procedure text to map. |
-| RAT-B-G2 | Miraculin Parts 1 and 3 are heading-only stubs; Part 2 duplicates Overview steps; Part 4 has empty sub-stubs duplicating Stages 1-2. The `Part N` outline and the `Overview` recipe are two un-reconciled drafts; the `Part N` outline should be reconciled with or removed in favor of the `Overview`. |
-| RAT-B-G5 | Miraculin `prepare_stripping_buffer` specifies a buffer "at pH 11.0" but the Overview does not say the student titrates it; pre-made vs student-titrated intent is ambiguous. Either reading maps; the draft must state which. |
-| RAT-C-G1 | SDS-PAGE Part 4 (assemble the apparatus) and Part 7 (recycle the buffer) are heading-plus-fragment stubs with no procedure text; `Pre-Laboratory Procedure` Parts 2-4 are likewise pre-lab stubs. No procedure text to map. |
-| RAT-C-G2 | SDS-PAGE Parts 1, 8, 9, 10 are half-written or one-line stubs. Each maps at a coarse grain, but the exact interaction count and per-step detail are provisional; step-by-step text is needed before the mapping is finalized. |
+| Gap ID   | Rolled-up finding                                                                                                                                                                                                                                                                                                                                             |
+| -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| RAT-B-G1 | Miraculin Parts 5, 6, 7 (size exclusion, ion exchange, IMAC chromatography) are pure stubs -- a student-assignment line and nothing else. No procedure text to map.                                                                                                                                                                                           |
+| RAT-B-G2 | Miraculin Parts 1 and 3 are heading-only stubs; Part 2 duplicates Overview steps; Part 4 has empty sub-stubs duplicating Stages 1-2. The `Part N` outline and the `Overview` recipe are two un-reconciled drafts; the `Part N` outline should be reconciled with or removed in favor of the `Overview`.                                                       |
+| RAT-B-G5 | Miraculin `prepare_stripping_buffer` specifies a buffer "at pH 11.0" but the Overview does not say the student titrates it; pre-made vs student-titrated intent is ambiguous. Either reading maps; the draft must state which.                                                                                                                                |
+| RAT-C-G1 | SDS-PAGE Part 4 (assemble the apparatus) and Part 7 (recycle the buffer) are heading-plus-fragment stubs with no procedure text; `Pre-Laboratory Procedure` Parts 2-4 are likewise pre-lab stubs. No procedure text to map.                                                                                                                                   |
+| RAT-C-G2 | SDS-PAGE Parts 1, 8, 9, 10 are half-written or one-line stubs. Each maps at a coarse grain, but the exact interaction count and per-step detail are provisional; step-by-step text is needed before the mapping is finalized.                                                                                                                                 |
 | RAT-C-G5 | SDS-PAGE Part 1 volume formulas and Part 5 loading-volume calculation are relational and calculated volumes rather than fixed authored set-points. The same relational-volume pattern mapped cleanly in Miraculin ("combine equal volumes"); each resolves to a concrete `volume_ml` per `draw`. The draft would benefit from stating worked example volumes. |
-| RAT-C-G6 | SDS-PAGE Part 9 mentions "microwave" as a stain/destain acceleration step with no procedure text. If it is a timed acceleration phase, `TimedWait` already expresses it; if it is a technique note, it belongs in `prompt` or `feedback`. The draft must state which. |
+| RAT-C-G6 | SDS-PAGE Part 9 mentions "microwave" as a stain/destain acceleration step with no procedure text. If it is a timed acceleration phase, `TimedWait` already expresses it; if it is a technique note, it belongs in `prompt` or `feedback`. The draft must state which.                                                                                         |
 
 Plain statement: every Class 3 entry is content-side work. Sub-class 3a is
 wrong-shape-in-finished-content; sub-class 3b is unwritten-draft. Neither is a
@@ -1864,10 +1864,10 @@ Miraculin nor SDS-PAGE re-raised it.
 These are not confirmed gaps. Each maps today; each is a hold-for-evidence item
 for a future evidence pass, not a requirement.
 
-| Gap ID | Watch item |
-| --- | --- |
+| Gap ID   | Watch item                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | RAT-B-G4 | Solid-mass metering: Miraculin `homogenize_water` and `resuspend_nacl` specify a solid quantity (1 g powder) alongside a liquid volume. `LiquidDisplayChange` tracks liquid; no primitive tracks a weighed solid mass as runtime state. The interaction maps -- the liquid half uses `adjust` plus `LiquidDisplayChange`, the solid is preset target state or a `select` of a pre-portioned amount. A weighed-mass set-point is a possible future `adjust` case IF solid weighing recurs as a taught skill across protocols; Miraculin alone does not clear the cost-guardrail bar. |
-| RAT-B-G6 | Two-reagent titration depth: Miraculin `adjust_ph_forward` titrates with two reagents (2.5 M NaOH up, 0.1 M HCl down) converging on pH 8.0. The M2 model abstracts titration-to-a-target as a single `adjust` set-point, which holds for ratification. Modeling the two-reagent convergence as distinct gestures is a future pedagogy-depth question, not an M2 expressiveness failure. |
+| RAT-B-G6 | Two-reagent titration depth: Miraculin `adjust_ph_forward` titrates with two reagents (2.5 M NaOH up, 0.1 M HCl down) converging on pH 8.0. The M2 model abstracts titration-to-a-target as a single `adjust` set-point, which holds for ratification. Modeling the two-reagent convergence as distinct gestures is a future pedagogy-depth question, not an M2 expressiveness failure.                                                                                                                                                                                             |
 
 Plain statement: neither watch item forces an M2 revision. Both map under the
 current model. They are recorded so a future evidence pass can re-check them if
@@ -1875,13 +1875,13 @@ solid-mass metering or two-reagent titration recurs across more protocols.
 
 ### Consolidated gap count by class
 
-| Class | Count | Gap IDs |
-| --- | --- | --- |
-| Class 1 -- new domain verb (cheap) | 12 verbs (2 gap entries) | RAT-B-G3, RAT-C-G3 |
-| Class 2 -- new `scene_operation` primitive (evidence-gated) | 1 | RAT-A-G2 = RAT-C-G4 |
-| Class 3 -- rough-protocol gaps | 12 | RAT-A-G3, RAT-A-G4, RAT-A-G5, RAT-A-G6, RAT-A-G7, RAT-B-G1, RAT-B-G2, RAT-B-G5, RAT-C-G1, RAT-C-G2, RAT-C-G5, RAT-C-G6 |
-| Class 4 -- design-scope questions | 1 | RAT-A-G1 |
-| Class 5 -- watch items | 2 | RAT-B-G4, RAT-B-G6 |
+| Class                                                       | Count                    | Gap IDs                                                                                                                |
+| ----------------------------------------------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| Class 1 -- new domain verb (cheap)                          | 12 verbs (2 gap entries) | RAT-B-G3, RAT-C-G3                                                                                                     |
+| Class 2 -- new `scene_operation` primitive (evidence-gated) | 1                        | RAT-A-G2 = RAT-C-G4                                                                                                    |
+| Class 3 -- rough-protocol gaps                              | 12                       | RAT-A-G3, RAT-A-G4, RAT-A-G5, RAT-A-G6, RAT-A-G7, RAT-B-G1, RAT-B-G2, RAT-B-G5, RAT-C-G1, RAT-C-G2, RAT-C-G5, RAT-C-G6 |
+| Class 4 -- design-scope questions                           | 1                        | RAT-A-G1                                                                                                               |
+| Class 5 -- watch items                                      | 2                        | RAT-B-G4, RAT-B-G6                                                                                                     |
 
 The 19 slice gap entries (RAT-A-G1..G7, RAT-B-G1..G6, RAT-C-G1..G6) consolidate
 into 18 distinct items, because RAT-A-G2 and RAT-C-G4 are the same gap counted
@@ -1951,13 +1951,13 @@ SDS-PAGE 17).
 
 ### Coverage summary
 
-| Metric | Value |
-| --- | --- |
-| OVCAR8 mapped steps | 24 |
-| Shipped content mapped steps | 61 |
-| Miraculin mapped steps | 18 |
-| SDS-PAGE mapped steps | 17 |
-| Total mapped steps across all three slices | 120 |
+| Metric                                     | Value |
+| ------------------------------------------ | ----- |
+| OVCAR8 mapped steps                        | 24    |
+| Shipped content mapped steps               | 61    |
+| Miraculin mapped steps                     | 18    |
+| SDS-PAGE mapped steps                      | 17    |
+| Total mapped steps across all three slices | 120   |
 
 `gesture` values exercised: `click`, `drag`, `adjust`, and `select` are all
 exercised across the three slices -- `click` everywhere, `adjust` on every

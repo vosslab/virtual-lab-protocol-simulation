@@ -18,149 +18,519 @@
  * 3. Screenshot captured into test-results/_well_plate_groups/.
  */
 
-import { chromium } from 'playwright';
-import path from 'node:path';
-import fs from 'node:fs';
-import { REPO_ROOT } from './repo_root.mjs';
+import { chromium } from "playwright";
+import path from "node:path";
+import fs from "node:fs";
+import { REPO_ROOT } from "./repo_root.mjs";
 
 async function runTest() {
-	console.log('Starting WP-WELLPLATE-ADAPTER-1B test (group containers)...');
+  console.log("Starting WP-WELLPLATE-ADAPTER-1B test (group containers)...");
 
-	// Minimal scene data with a well_plate_96 placement.
-	const sceneData = {
-		scene_name: 'well_plate_test',
-		workspace: 'test',
-		capabilities: ['item_workspace'],
-		scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
-		background: { asset: 'test_bg' },
-		zones: [
-			{
-				id: 'plate_zone',
-				bounds: { left: 10, right: 90, top: 10, bottom: 90 },
-				align: 'center',
-			},
-		],
-		placements: [
-			{
-				placement_name: 'test_plate',
-				object_name: 'well_plate_96',
-				zone: 'plate_zone',
-				depth_tier: 1,
-			},
-		],
-	};
+  // Minimal scene data with a well_plate_96 placement.
+  const sceneData = {
+    scene_name: "well_plate_test",
+    workspace: "test",
+    capabilities: ["item_workspace"],
+    scene_bounds: { left: 0, right: 100, top: 0, bottom: 100 },
+    background: { asset: "test_bg" },
+    zones: [
+      {
+        id: "plate_zone",
+        bounds: { left: 10, right: 90, top: 10, bottom: 90 },
+        align: "center",
+      },
+    ],
+    placements: [
+      {
+        placement_name: "test_plate",
+        object_name: "well_plate_96",
+        zone: "plate_zone",
+        depth_tier: 1,
+      },
+    ],
+  };
 
-	// Object config for well_plate_96 with full subpart_groups declaration.
-	const objectConfig = {
-		object_name: 'well_plate_96',
-		kind: 'plate',
-		label: '96-well plate',
-		state_fields: [],
-		visual_states: {},
-		capabilities: [],
-		structure: {
-			subpart_kind: 'well',
-			layout: 'grid',
-			rows: 8,
-			cols: 12,
-			name_pattern: '{row_letter}{col}',
-			subpart_groups: {
-				rows: {
-					group_kind: 'row',
-					members: [
-						{ name: 'row_A', contains: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12'] },
-						{ name: 'row_B', contains: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12'] },
-						{ name: 'row_C', contains: ['C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12'] },
-						{ name: 'row_D', contains: ['D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12'] },
-						{ name: 'row_E', contains: ['E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12'] },
-						{ name: 'row_F', contains: ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'] },
-						{ name: 'row_G', contains: ['G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12'] },
-						{ name: 'row_H', contains: ['H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'] },
-					],
-				},
-				columns: {
-					group_kind: 'column',
-					members: [
-						{ name: 'col_1', contains: ['A1', 'B1', 'C1', 'D1', 'E1', 'F1', 'G1', 'H1'] },
-						{ name: 'col_2', contains: ['A2', 'B2', 'C2', 'D2', 'E2', 'F2', 'G2', 'H2'] },
-						{ name: 'col_3', contains: ['A3', 'B3', 'C3', 'D3', 'E3', 'F3', 'G3', 'H3'] },
-						{ name: 'col_4', contains: ['A4', 'B4', 'C4', 'D4', 'E4', 'F4', 'G4', 'H4'] },
-						{ name: 'col_5', contains: ['A5', 'B5', 'C5', 'D5', 'E5', 'F5', 'G5', 'H5'] },
-						{ name: 'col_6', contains: ['A6', 'B6', 'C6', 'D6', 'E6', 'F6', 'G6', 'H6'] },
-						{ name: 'col_7', contains: ['A7', 'B7', 'C7', 'D7', 'E7', 'F7', 'G7', 'H7'] },
-						{ name: 'col_8', contains: ['A8', 'B8', 'C8', 'D8', 'E8', 'F8', 'G8', 'H8'] },
-						{ name: 'col_9', contains: ['A9', 'B9', 'C9', 'D9', 'E9', 'F9', 'G9', 'H9'] },
-						{ name: 'col_10', contains: ['A10', 'B10', 'C10', 'D10', 'E10', 'F10', 'G10', 'H10'] },
-						{ name: 'col_11', contains: ['A11', 'B11', 'C11', 'D11', 'E11', 'F11', 'G11', 'H11'] },
-						{ name: 'col_12', contains: ['A12', 'B12', 'C12', 'D12', 'E12', 'F12', 'G12', 'H12'] },
-					],
-				},
-				plate_region: {
-					group_kind: 'region',
-					members: [
-						{ name: 'all_wells', contains: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6', 'A7', 'A8', 'A9', 'A10', 'A11', 'A12',
-							'B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7', 'B8', 'B9', 'B10', 'B11', 'B12',
-							'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9', 'C10', 'C11', 'C12',
-							'D1', 'D2', 'D3', 'D4', 'D5', 'D6', 'D7', 'D8', 'D9', 'D10', 'D11', 'D12',
-							'E1', 'E2', 'E3', 'E4', 'E5', 'E6', 'E7', 'E8', 'E9', 'E10', 'E11', 'E12',
-							'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-							'G1', 'G2', 'G3', 'G4', 'G5', 'G6', 'G7', 'G8', 'G9', 'G10', 'G11', 'G12',
-							'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'H7', 'H8', 'H9', 'H10', 'H11', 'H12'] },
-					],
-				},
-				blocks: {
-					group_kind: 'region',
-					members: [
-						{ name: 'block_A_1_6', contains: ['A1', 'A2', 'A3', 'A4', 'A5', 'A6'] },
-						{ name: 'block_A_7_12', contains: ['A7', 'A8', 'A9', 'A10', 'A11', 'A12'] },
-						{ name: 'block_B_H_1_6', contains: ['B1', 'B2', 'B3', 'B4', 'B5', 'B6',
-							'C1', 'C2', 'C3', 'C4', 'C5', 'C6',
-							'D1', 'D2', 'D3', 'D4', 'D5', 'D6',
-							'E1', 'E2', 'E3', 'E4', 'E5', 'E6',
-							'F1', 'F2', 'F3', 'F4', 'F5', 'F6',
-							'G1', 'G2', 'G3', 'G4', 'G5', 'G6',
-							'H1', 'H2', 'H3', 'H4', 'H5', 'H6'] },
-						{ name: 'block_B_H_7_12', contains: ['B7', 'B8', 'B9', 'B10', 'B11', 'B12',
-							'C7', 'C8', 'C9', 'C10', 'C11', 'C12',
-							'D7', 'D8', 'D9', 'D10', 'D11', 'D12',
-							'E7', 'E8', 'E9', 'E10', 'E11', 'E12',
-							'F7', 'F8', 'F9', 'F10', 'F11', 'F12',
-							'G7', 'G8', 'G9', 'G10', 'G11', 'G12',
-							'H7', 'H8', 'H9', 'H10', 'H11', 'H12'] },
-					],
-				},
-			},
-		},
-		layout: {
-			default_width: 80,
-		},
-	};
+  // Object config for well_plate_96 with full subpart_groups declaration.
+  const objectConfig = {
+    object_name: "well_plate_96",
+    kind: "plate",
+    label: "96-well plate",
+    state_fields: [],
+    visual_states: {},
+    capabilities: [],
+    structure: {
+      subpart_kind: "well",
+      layout: "grid",
+      rows: 8,
+      cols: 12,
+      name_pattern: "{row_letter}{col}",
+      subpart_groups: {
+        rows: {
+          group_kind: "row",
+          members: [
+            {
+              name: "row_A",
+              contains: [
+                "A1",
+                "A2",
+                "A3",
+                "A4",
+                "A5",
+                "A6",
+                "A7",
+                "A8",
+                "A9",
+                "A10",
+                "A11",
+                "A12",
+              ],
+            },
+            {
+              name: "row_B",
+              contains: [
+                "B1",
+                "B2",
+                "B3",
+                "B4",
+                "B5",
+                "B6",
+                "B7",
+                "B8",
+                "B9",
+                "B10",
+                "B11",
+                "B12",
+              ],
+            },
+            {
+              name: "row_C",
+              contains: [
+                "C1",
+                "C2",
+                "C3",
+                "C4",
+                "C5",
+                "C6",
+                "C7",
+                "C8",
+                "C9",
+                "C10",
+                "C11",
+                "C12",
+              ],
+            },
+            {
+              name: "row_D",
+              contains: [
+                "D1",
+                "D2",
+                "D3",
+                "D4",
+                "D5",
+                "D6",
+                "D7",
+                "D8",
+                "D9",
+                "D10",
+                "D11",
+                "D12",
+              ],
+            },
+            {
+              name: "row_E",
+              contains: [
+                "E1",
+                "E2",
+                "E3",
+                "E4",
+                "E5",
+                "E6",
+                "E7",
+                "E8",
+                "E9",
+                "E10",
+                "E11",
+                "E12",
+              ],
+            },
+            {
+              name: "row_F",
+              contains: [
+                "F1",
+                "F2",
+                "F3",
+                "F4",
+                "F5",
+                "F6",
+                "F7",
+                "F8",
+                "F9",
+                "F10",
+                "F11",
+                "F12",
+              ],
+            },
+            {
+              name: "row_G",
+              contains: [
+                "G1",
+                "G2",
+                "G3",
+                "G4",
+                "G5",
+                "G6",
+                "G7",
+                "G8",
+                "G9",
+                "G10",
+                "G11",
+                "G12",
+              ],
+            },
+            {
+              name: "row_H",
+              contains: [
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H5",
+                "H6",
+                "H7",
+                "H8",
+                "H9",
+                "H10",
+                "H11",
+                "H12",
+              ],
+            },
+          ],
+        },
+        columns: {
+          group_kind: "column",
+          members: [
+            {
+              name: "col_1",
+              contains: ["A1", "B1", "C1", "D1", "E1", "F1", "G1", "H1"],
+            },
+            {
+              name: "col_2",
+              contains: ["A2", "B2", "C2", "D2", "E2", "F2", "G2", "H2"],
+            },
+            {
+              name: "col_3",
+              contains: ["A3", "B3", "C3", "D3", "E3", "F3", "G3", "H3"],
+            },
+            {
+              name: "col_4",
+              contains: ["A4", "B4", "C4", "D4", "E4", "F4", "G4", "H4"],
+            },
+            {
+              name: "col_5",
+              contains: ["A5", "B5", "C5", "D5", "E5", "F5", "G5", "H5"],
+            },
+            {
+              name: "col_6",
+              contains: ["A6", "B6", "C6", "D6", "E6", "F6", "G6", "H6"],
+            },
+            {
+              name: "col_7",
+              contains: ["A7", "B7", "C7", "D7", "E7", "F7", "G7", "H7"],
+            },
+            {
+              name: "col_8",
+              contains: ["A8", "B8", "C8", "D8", "E8", "F8", "G8", "H8"],
+            },
+            {
+              name: "col_9",
+              contains: ["A9", "B9", "C9", "D9", "E9", "F9", "G9", "H9"],
+            },
+            {
+              name: "col_10",
+              contains: [
+                "A10",
+                "B10",
+                "C10",
+                "D10",
+                "E10",
+                "F10",
+                "G10",
+                "H10",
+              ],
+            },
+            {
+              name: "col_11",
+              contains: [
+                "A11",
+                "B11",
+                "C11",
+                "D11",
+                "E11",
+                "F11",
+                "G11",
+                "H11",
+              ],
+            },
+            {
+              name: "col_12",
+              contains: [
+                "A12",
+                "B12",
+                "C12",
+                "D12",
+                "E12",
+                "F12",
+                "G12",
+                "H12",
+              ],
+            },
+          ],
+        },
+        plate_region: {
+          group_kind: "region",
+          members: [
+            {
+              name: "all_wells",
+              contains: [
+                "A1",
+                "A2",
+                "A3",
+                "A4",
+                "A5",
+                "A6",
+                "A7",
+                "A8",
+                "A9",
+                "A10",
+                "A11",
+                "A12",
+                "B1",
+                "B2",
+                "B3",
+                "B4",
+                "B5",
+                "B6",
+                "B7",
+                "B8",
+                "B9",
+                "B10",
+                "B11",
+                "B12",
+                "C1",
+                "C2",
+                "C3",
+                "C4",
+                "C5",
+                "C6",
+                "C7",
+                "C8",
+                "C9",
+                "C10",
+                "C11",
+                "C12",
+                "D1",
+                "D2",
+                "D3",
+                "D4",
+                "D5",
+                "D6",
+                "D7",
+                "D8",
+                "D9",
+                "D10",
+                "D11",
+                "D12",
+                "E1",
+                "E2",
+                "E3",
+                "E4",
+                "E5",
+                "E6",
+                "E7",
+                "E8",
+                "E9",
+                "E10",
+                "E11",
+                "E12",
+                "F1",
+                "F2",
+                "F3",
+                "F4",
+                "F5",
+                "F6",
+                "F7",
+                "F8",
+                "F9",
+                "F10",
+                "F11",
+                "F12",
+                "G1",
+                "G2",
+                "G3",
+                "G4",
+                "G5",
+                "G6",
+                "G7",
+                "G8",
+                "G9",
+                "G10",
+                "G11",
+                "G12",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H5",
+                "H6",
+                "H7",
+                "H8",
+                "H9",
+                "H10",
+                "H11",
+                "H12",
+              ],
+            },
+          ],
+        },
+        blocks: {
+          group_kind: "region",
+          members: [
+            {
+              name: "block_A_1_6",
+              contains: ["A1", "A2", "A3", "A4", "A5", "A6"],
+            },
+            {
+              name: "block_A_7_12",
+              contains: ["A7", "A8", "A9", "A10", "A11", "A12"],
+            },
+            {
+              name: "block_B_H_1_6",
+              contains: [
+                "B1",
+                "B2",
+                "B3",
+                "B4",
+                "B5",
+                "B6",
+                "C1",
+                "C2",
+                "C3",
+                "C4",
+                "C5",
+                "C6",
+                "D1",
+                "D2",
+                "D3",
+                "D4",
+                "D5",
+                "D6",
+                "E1",
+                "E2",
+                "E3",
+                "E4",
+                "E5",
+                "E6",
+                "F1",
+                "F2",
+                "F3",
+                "F4",
+                "F5",
+                "F6",
+                "G1",
+                "G2",
+                "G3",
+                "G4",
+                "G5",
+                "G6",
+                "H1",
+                "H2",
+                "H3",
+                "H4",
+                "H5",
+                "H6",
+              ],
+            },
+            {
+              name: "block_B_H_7_12",
+              contains: [
+                "B7",
+                "B8",
+                "B9",
+                "B10",
+                "B11",
+                "B12",
+                "C7",
+                "C8",
+                "C9",
+                "C10",
+                "C11",
+                "C12",
+                "D7",
+                "D8",
+                "D9",
+                "D10",
+                "D11",
+                "D12",
+                "E7",
+                "E8",
+                "E9",
+                "E10",
+                "E11",
+                "E12",
+                "F7",
+                "F8",
+                "F9",
+                "F10",
+                "F11",
+                "F12",
+                "G7",
+                "G8",
+                "G9",
+                "G10",
+                "G11",
+                "G12",
+                "H7",
+                "H8",
+                "H9",
+                "H10",
+                "H11",
+                "H12",
+              ],
+            },
+          ],
+        },
+      },
+    },
+    layout: {
+      default_width: 80,
+    },
+  };
 
-	// Minimal protocol config.
-	const protocolConfig = {
-		protocol_type: 'dev_smoke',
-		protocol_name: 'well_plate_groups_test',
-		entry_step: 'test_step',
-		steps: [
-			{
-				step_name: 'test_step',
-				prompt: 'Test step',
-				sequence: [],
-				step_validator: { preset: 'sequence_complete' },
-				outcome: { on_success: 'complete', on_failure: 'retry' },
-				next_step: null,
-			},
-		],
-		materials: {},
-	};
+  // Minimal protocol config.
+  const protocolConfig = {
+    protocol_type: "dev_smoke",
+    protocol_name: "well_plate_groups_test",
+    entry_step: "test_step",
+    steps: [
+      {
+        step_name: "test_step",
+        prompt: "Test step",
+        sequence: [],
+        step_validator: { preset: "sequence_complete" },
+        outcome: { on_success: "complete", on_failure: "retry" },
+        next_step: null,
+      },
+    ],
+    materials: {},
+  };
 
-	// Create a minimal HTML shell that:
-	// 1. Includes the scene runtime bundle
-	// 2. Injects test data
-	// 3. Calls renderScene
-	// 4. Captures and asserts results
+  // Create a minimal HTML shell that:
+  // 1. Includes the scene runtime bundle
+  // 2. Injects test data
+  // 3. Calls renderScene
+  // 4. Captures and asserts results
 
-	const htmlContent = `
+  const htmlContent = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -446,63 +816,71 @@ async function runTest() {
 </html>
 	`;
 
-	// Create test-results directory if needed.
-	const testResultsDir = path.join(REPO_ROOT, 'test-results', '_well_plate');
-	if (!fs.existsSync(testResultsDir)) {
-		fs.mkdirSync(testResultsDir, { recursive: true });
-	}
+  // Create test-results directory if needed.
+  const testResultsDir = path.join(REPO_ROOT, "test-results", "_well_plate");
+  if (!fs.existsSync(testResultsDir)) {
+    fs.mkdirSync(testResultsDir, { recursive: true });
+  }
 
-	// Write HTML to a temp file.
-	const htmlPath = path.join(testResultsDir, '_test_well_plate_groups.html');
-	fs.writeFileSync(htmlPath, htmlContent);
+  // Write HTML to a temp file.
+  const htmlPath = path.join(testResultsDir, "_test_well_plate_groups.html");
+  fs.writeFileSync(htmlPath, htmlContent);
 
-	// Open in Playwright and run assertions.
-	const browser = await chromium.launch({ headless: true });
-	try {
-		const page = await browser.newPage({ viewport: { width: 1200, height: 1000 } });
-		const fileUrl = `file://${htmlPath}`;
-		await page.goto(fileUrl, { waitUntil: 'domcontentloaded' });
+  // Open in Playwright and run assertions.
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({
+      viewport: { width: 1200, height: 1000 },
+    });
+    const fileUrl = `file://${htmlPath}`;
+    await page.goto(fileUrl, { waitUntil: "domcontentloaded" });
 
-		// Allow page JS to run fully.
-		await page.waitForTimeout(500);
+    // Allow page JS to run fully.
+    await page.waitForTimeout(500);
 
-		// Get test results from the page.
-		const results = await page.evaluate(() => window.TEST_RESULTS);
+    // Get test results from the page.
+    const results = await page.evaluate(() => window.TEST_RESULTS);
 
-		console.log('\n=== Well Plate Groups Test Results ===');
-		console.log(`Declared groups: ${results.declaredGroups}`);
-		console.log(`Rendered groups: ${results.renderedGroups}`);
-		console.log(`Groups match: ${results.groupsMatch ? 'OK' : 'FAIL'}`);
+    console.log("\n=== Well Plate Groups Test Results ===");
+    console.log(`Declared groups: ${results.declaredGroups}`);
+    console.log(`Rendered groups: ${results.renderedGroups}`);
+    console.log(`Groups match: ${results.groupsMatch ? "OK" : "FAIL"}`);
 
-		if (results.missingGroups.length > 0) {
-			console.log(`Missing groups: ${results.missingGroups.join(', ')}`);
-		}
+    if (results.missingGroups.length > 0) {
+      console.log(`Missing groups: ${results.missingGroups.join(", ")}`);
+    }
 
-		console.log('\nGroup containment:');
-		for (const assertion of results.groupAssertions) {
-			console.log(`  ${assertion.groupName}: ${assertion.foundCells}/${assertion.expectedCells} cells ${assertion.status}`);
-		}
+    console.log("\nGroup containment:");
+    for (const assertion of results.groupAssertions) {
+      console.log(
+        `  ${assertion.groupName}: ${assertion.foundCells}/${assertion.expectedCells} cells ${assertion.status}`,
+      );
+    }
 
-		console.log(`\nOverall: ${results.allTestsPass ? 'PASS' : 'FAIL'}`);
+    console.log(`\nOverall: ${results.allTestsPass ? "PASS" : "FAIL"}`);
 
-		// Take screenshots.
-		await page.screenshot({ path: path.join(testResultsDir, 'well_plate_groups.png') });
+    // Take screenshots.
+    await page.screenshot({
+      path: path.join(testResultsDir, "well_plate_groups.png"),
+    });
 
-		await page.close();
+    await page.close();
 
-		// Assert overall pass/fail.
-		if (!results.allTestsPass) {
-			console.error('\nTest FAILED');
-			process.exit(1);
-		}
+    // Assert overall pass/fail.
+    if (!results.allTestsPass) {
+      console.error("\nTest FAILED");
+      process.exit(1);
+    }
 
-		console.log('\nTest PASSED: all group containers present with correct cell membership');
-	} finally {
-		await browser.close();
-	}
+    console.log(
+      "\nTest PASSED: all group containers present with correct cell membership",
+    );
+  } finally {
+    await browser.close();
+  }
 }
 
 runTest().catch((error) => {
-	console.error('Test error:', error);
-	process.exit(1);
+  console.error("Test error:", error);
+  process.exit(1);
 });

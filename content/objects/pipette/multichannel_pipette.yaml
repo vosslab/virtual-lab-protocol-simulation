@@ -47,7 +47,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ul=300)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 channel_addressing:
   channels: 8

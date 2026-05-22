@@ -29,7 +29,7 @@ Report includes the exact bash invocation that produced the scorecard:
 ## Scorecard Generation
 
 Command:
-  node experiments/css_native_layout/score_layout.mjs
+node experiments/css_native_layout/score_layout.mjs
 Output: test-results/new0_css_native/scorecard/scorecard.json
 ```
 
@@ -59,24 +59,29 @@ Reference: stress_results/scorecard_batch1_summary.md
 ## Non-Compliant Patterns (Forbidden)
 
 1. **Scorecard report with no provenance**
+
    ```markdown
    # Layout Scorecard Report
+
    Generated: ...
    Total scenes: 110
    (No mention of score_layout.mjs or source batch)
    ```
+
    **Fix**: Add generation command or source citation in report header.
 
 2. **Scorecard values inferred from other data**
+
    ```markdown
    Batch 2 vs Batch 3 shows 12-point improvement.
    (No citation of how improvement was calculated)
    ```
+
    **Fix**: Run `score_layout.mjs` explicitly and cite the command.
 
 3. **Scorecard metrics from deprecated helper script**
    ```markdown
-   Scorecard generated via custom _generate_scorecard.py
+   Scorecard generated via custom \_generate_scorecard.py
    ```
    **Fix**: Regenerate using `score_layout.mjs`, replace helper with canonical invocation.
 
@@ -94,16 +99,17 @@ Workstream analysis documents and CSS fix summaries that merely MENTION metric t
 
 As of 2026-05-21, the following files violate the guardrail:
 
-| File | Issue | Fix Path |
-| --- | --- | --- |
-| `scorecard_batch3_b.md` | Empty scorecard (0 scenes) claims Layout Scorecard Report header but no source citation | Add comment: "Generated via score_layout.mjs on 2026-05-21" or remove empty report |
-| `scorecard_batch2_alt2/scorecard.md` | 110-scene report with no canonical invocation cited | Add section: "## Generation Command" with `node experiments/css_native_layout/score_layout.mjs` |
+| File                                 | Issue                                                                                   | Fix Path                                                                                        |
+| ------------------------------------ | --------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| `scorecard_batch3_b.md`              | Empty scorecard (0 scenes) claims Layout Scorecard Report header but no source citation | Add comment: "Generated via score_layout.mjs on 2026-05-21" or remove empty report              |
+| `scorecard_batch2_alt2/scorecard.md` | 110-scene report with no canonical invocation cited                                     | Add section: "## Generation Command" with `node experiments/css_native_layout/score_layout.mjs` |
 
 ### Recommended Remediation
 
 Both files are machine-generated scorecard outputs. Add header comment to each:
 
 **scorecard_batch3_b.md**:
+
 ```markdown
 # Layout Scorecard Report
 
@@ -115,6 +121,7 @@ Generated: 2026-05-21T12:05:00.512Z
 ```
 
 **scorecard_batch2_alt2/scorecard.md**:
+
 ```markdown
 # Layout Scorecard Report
 
@@ -132,12 +139,14 @@ These minimal additions satisfy the guardrail by documenting the canonical comma
 **Hygiene test**: `tests/test_canonical_scorecard_rule.py::test_scorecard_claims_require_canonical_command`
 
 The test:
+
 - Scans `experiments/css_native_layout/stress_results/` for `.md` files
 - Identifies scorecard reports by header patterns and table structure
 - Requires each report to cite `score_layout.mjs` or a known canonical source
 - Fails with list of non-compliant files if any violation detected
 
 Run with:
+
 ```bash
 pytest tests/test_canonical_scorecard_rule.py::test_scorecard_claims_require_canonical_command -v
 ```
@@ -159,10 +168,10 @@ Notify workstream leads when updating the allowlist.
 
 ## Related References
 
-- [docs/active_plans/new3_batch3_canonical_scorecard_rule.md](new3_batch3_canonical_scorecard_rule.md) - Original canonical scorecard rule (forbidden helper patterns)
-- [experiments/css_native_layout/score_layout.mjs](../../experiments/css_native_layout/score_layout.mjs) - Authoritative scorecard generator
-- [experiments/css_native_layout/precheck.mjs](../../experiments/css_native_layout/precheck.mjs) - Visual diagnostic (input source)
-- [PRECHECK_USAGE.md](../../experiments/css_native_layout/PRECHECK_USAGE.md) - Precheck operational guide
+- [new3_batch3_canonical_scorecard_rule.md](new3_batch3_canonical_scorecard_rule.md) - Original canonical scorecard rule (forbidden helper patterns)
+- `score_layout.mjs` - Authoritative scorecard generator
+- `precheck.mjs` - Visual diagnostic (input source)
+- `PRECHECK_USAGE.md` - Precheck operational guide
 
 ## Blockers
 

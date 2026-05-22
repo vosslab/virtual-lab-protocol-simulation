@@ -4,19 +4,19 @@
 
 NEW0 is an experiment under `experiments/` (gitignored scratch). It is **not** a candidate for promotion to production at this time.
 
-[docs/PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md) item 3 vests scene-object layout in the layout engine. NEW0 proposes to replace that engine. The contract has not been amended. Promotion requires either (a) an approved contract amendment scoping the new layout system, or (b) explicit user decision to rescope NEW0.
+[PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md) item 3 vests scene-object layout in the layout engine. NEW0 proposes to replace that engine. The contract has not been amended. Promotion requires either (a) an approved contract amendment scoping the new layout system, or (b) explicit user decision to rescope NEW0.
 
 Until then, every artifact under this folder is exploratory. Verdicts, screenshots, audits, and CSS variants are evidence for a future decision, not commitments.
 
 See `docs/active_plans/new0_outside_review_handoff.md` for the outside-review concerns this status note responds to.
 
-See plan: [../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../docs/active_plans/new1_css_native_layout_integration_plan.md).
+See plan: [new1_css_native_layout_integration_plan.md](../../docs/archive/css_native_layout/new1_css_native_layout_integration_plan.md).
 
 ## Operational entry points
 
 - [PRECHECK_USAGE.md](PRECHECK_USAGE.md) - one-command precheck run, troubleshooting, verdict ladder.
 - [run_precheck.sh](run_precheck.sh) - thin wrapper script for the precheck runner.
-- [spike_fixtures/](spike_fixtures/) - pinned DOM contract, manifest, expected precheck command, expected screenshot paths for the NEW1 well_plate_96_zoom integration spike.
+- `spike_fixtures` - pinned DOM contract, manifest, expected precheck command, expected screenshot paths for the NEW1 well_plate_96_zoom integration spike.
 
 ## Overview
 

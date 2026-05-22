@@ -11,11 +11,11 @@ satisfy the production runtime contract for clickable, interactive scenes
 without recreating a coordinate-based layout engine under another name. The
 production runtime contract includes hit-testable click targets, cursor-attach
 and drag behavior, `ObjectStateChange` re-layout, and scene-adapter outputs as
-defined in [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) and
-[../specs/SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md).
+defined in `PRIMARY_SPEC.md` and
+`SCENE_VOCABULARY.md`.
 
 NEW1 must NOT: implement production code, amend
-[../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md), begin broad migration of
+`PRIMARY_CONTRACT.md`, begin broad migration of
 scenes, or continue NEW0 visual tuning. NEW0 evidence is input; it is not
 production proof. NEW1 reaches its first decision gate through a single,
 narrow integration spike (section 3); only after the spike does the contract
@@ -23,7 +23,7 @@ path become a real choice.
 
 ## 1. Contract decision
 
-Contract item 3 from [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) reads
+Contract item 3 from `PRIMARY_CONTRACT.md` reads
 verbatim:
 
 > "Scene object layout is handled by the layout engine. Scenes must use the
@@ -43,7 +43,7 @@ exist:
   today.
 - **Path B - Keep CSS-native as an experimental renderer.** Do not promote.
   Production retains
-  [../../src/scene_runtime/layout/layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts)
+  `layout_engine.ts`
   as the authoritative layout pathway. NEW0 stays under `experiments/` as
   historical evidence only.
 
@@ -53,7 +53,7 @@ success and failure gates in section 9. The decision is made after the spike
 result, not now.
 
 This plan does NOT amend the contract. No edits to
-[../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) are made or proposed in NEW1
+`PRIMARY_CONTRACT.md` are made or proposed in NEW1
 planning.
 
 ## 2. Production integration surface
@@ -63,16 +63,16 @@ CSS-native path, and the open question NEW1 must answer. NEW0 demonstrated
 static rendering and precheck gates only; everything tied to runtime
 interaction is still unknown.
 
-| Production need | Current layout engine path | NEW1 CSS-native path | Open question |
-| --- | --- | --- | --- |
-| Clickable object hit targets | Layout engine emits pixel rects; click handler consults rects | CSS Grid cell holds DOM node; click hits DOM node directly | Do hover/focus/click targets remain hit-stable across viewport sizes and reflow? |
-| Rendered object positions | Layout engine computes (x, y, w, h) per object | CSS Grid + flexbox derive position from region + footprint class | Demonstrated statically in NEW0; not yet demonstrated under interaction |
-| Label positions | Layout engine assigns label anchor points | CSS sibling or pseudo-element next to placement node | Can labels avoid collision without a coordinate solver? |
-| Cursor-attach / drag-to-pipette | Layout engine reports object center; runtime attaches cursor sprite there | CSS-native path must report a stable attach anchor without computing coords | UNKNOWN - no NEW0 evidence; first risk of "rebuilding the engine under another name" |
-| ObjectStateChange re-layout | Layout engine recomputes affected placements | DOM re-render with new region/footprint/visual-state classes | Does re-render preserve identity and avoid layout flicker for in-flight gestures? |
-| Structured object interiors (wells, tubes, lanes) | Custom geometry inside the structured object; contract-permitted | Unchanged - subpart geometry stays inside object SVG | None at NEW1 scope; subparts are out of layout-engine surface by contract |
-| Scene adapter outputs | Adapter maps semantic target names to placed objects with coordinates | Adapter maps semantic target names to DOM nodes by region + placement_name | Can adapter resolve targets without coordinate lookups? |
-| Screenshot / precheck gates | Production currently has no equivalent gate | NEW0 `precheck.mjs` diagnostics already running | Demonstrated in NEW0 (10 scenes, 0 hard fails); promotion to production gate is a section-5 question |
+| Production need                                   | Current layout engine path                                                | NEW1 CSS-native path                                                        | Open question                                                                                        |
+| ------------------------------------------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Clickable object hit targets                      | Layout engine emits pixel rects; click handler consults rects             | CSS Grid cell holds DOM node; click hits DOM node directly                  | Do hover/focus/click targets remain hit-stable across viewport sizes and reflow?                     |
+| Rendered object positions                         | Layout engine computes (x, y, w, h) per object                            | CSS Grid + flexbox derive position from region + footprint class            | Demonstrated statically in NEW0; not yet demonstrated under interaction                              |
+| Label positions                                   | Layout engine assigns label anchor points                                 | CSS sibling or pseudo-element next to placement node                        | Can labels avoid collision without a coordinate solver?                                              |
+| Cursor-attach / drag-to-pipette                   | Layout engine reports object center; runtime attaches cursor sprite there | CSS-native path must report a stable attach anchor without computing coords | UNKNOWN - no NEW0 evidence; first risk of "rebuilding the engine under another name"                 |
+| ObjectStateChange re-layout                       | Layout engine recomputes affected placements                              | DOM re-render with new region/footprint/visual-state classes                | Does re-render preserve identity and avoid layout flicker for in-flight gestures?                    |
+| Structured object interiors (wells, tubes, lanes) | Custom geometry inside the structured object; contract-permitted          | Unchanged - subpart geometry stays inside object SVG                        | None at NEW1 scope; subparts are out of layout-engine surface by contract                            |
+| Scene adapter outputs                             | Adapter maps semantic target names to placed objects with coordinates     | Adapter maps semantic target names to DOM nodes by region + placement_name  | Can adapter resolve targets without coordinate lookups?                                              |
+| Screenshot / precheck gates                       | Production currently has no equivalent gate                               | NEW0 `precheck.mjs` diagnostics already running                             | Demonstrated in NEW0 (10 scenes, 0 hard fails); promotion to production gate is a section-5 question |
 
 Already demonstrated by NEW0: static rendering, precheck gates, region
 overflow / off-page / svg-svg / clipping diagnostics. Not yet demonstrated:
@@ -120,16 +120,16 @@ success gates.
 The NEW1 CSS-native layout consumes a closed data shape from the scene
 adapter. Schema:
 
-| Field | Type | Required | Notes |
-| --- | --- | --- | --- |
-| `scene_name` | string | yes | snake_case scene identifier |
-| `workspace` | enum string | yes | One of the closed workspace values (`bench`, `hood`, `instrument`, ...) |
-| `placements[]` | list | yes | Ordered placement entries |
-| `placements[].placement_name` | string | yes | snake_case stable identifier within the scene |
-| `placements[].object_name` | string | yes | semantic scene-object name; adapter resolves to SVG/DOM |
-| `placements[].region` | enum string | yes | Closed region vocabulary (e.g., `rear_shelf`, `work_surface`, `front_tools`, `instrument_station`) |
-| `placements[].label` | string | optional | Visible label text; absent means no label |
-| `placements[].primary` | bool | optional | Marks the pedagogical primary placement; one true per scene maximum |
+| Field                         | Type        | Required | Notes                                                                                              |
+| ----------------------------- | ----------- | -------- | -------------------------------------------------------------------------------------------------- |
+| `scene_name`                  | string      | yes      | snake_case scene identifier                                                                        |
+| `workspace`                   | enum string | yes      | One of the closed workspace values (`bench`, `hood`, `instrument`, ...)                            |
+| `placements[]`                | list        | yes      | Ordered placement entries                                                                          |
+| `placements[].placement_name` | string      | yes      | snake_case stable identifier within the scene                                                      |
+| `placements[].object_name`    | string      | yes      | semantic scene-object name; adapter resolves to SVG/DOM                                            |
+| `placements[].region`         | enum string | yes      | Closed region vocabulary (e.g., `rear_shelf`, `work_surface`, `front_tools`, `instrument_station`) |
+| `placements[].label`          | string      | optional | Visible label text; absent means no label                                                          |
+| `placements[].primary`        | bool        | optional | Marks the pedagogical primary placement; one true per scene maximum                                |
 
 The `role` alternative is dropped in favor of a `primary` boolean. Rationale
 (one sentence): a single boolean flag captures the only role distinction
@@ -152,12 +152,12 @@ coordinate model and must be rejected at schema-validation time:
 - `transform`
 
 The schema is closed for the same reason laid out in
-[../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) under "Vocabulary closure and
+`PRIMARY_DESIGN.md` under "Vocabulary closure and
 anti-drift": authors compose existing terms, they do not invent new ones by
 editing YAML alone, and open maps or `metadata`/`extras`/`config` blobs
 permit uncontrolled vocabulary growth. The vocabulary-closure audit
 checklist that NEW1 schema review uses is
-[../specs/SPEC_DESIGN_CHECKLIST.md](../specs/SPEC_DESIGN_CHECKLIST.md).
+`SPEC_DESIGN_CHECKLIST.md`.
 
 ## 5. Diagnostics as production gates
 
@@ -165,16 +165,16 @@ NEW0 precheck diagnostics are carried into NEW1 as production gates. Hard
 fails block scene promotion; advisories surface in CI/precheck reports but
 do not block.
 
-| Diagnostic | Hard fail / Advisory | Source | Rationale |
-| --- | --- | --- | --- |
-| `clipped_artwork` | Hard fail | NEW0 `precheck.mjs` | Clipped object SVG indicates a layout containment failure; not acceptable in production |
-| `off_page` | Hard fail | NEW0 `precheck.mjs` | An object outside the viewport is unclickable and breaks the visible-UI contract |
-| `svg_svg_overlap` | Hard fail | NEW0 `precheck.mjs` | Overlapping artwork creates ambiguous hit targets; pedagogically and mechanically wrong |
-| `region_overflow` | Hard fail | NEW0 `precheck.mjs` | A placement exceeding its region invalidates the closed region taxonomy |
-| `label_label_overlap` | Hard fail | NEW0 `precheck.mjs` | Two overlapping labels are unreadable; promoted to hard fail because labels carry semantic identity for students |
-| `svg_label_overlap` | Advisory | NEW0 `precheck.mjs` | A label can sit on top of decorative SVG fill without harming readability; promote only if spike shows real misreads |
-| `region_whitespace` | Advisory | NEW0 `precheck.mjs` | Sparse template scenes legitimately trip this; advisory until calibrated |
-| `primary_object_ratio` | Advisory (scene-class) | NEW0 stabilized scene-class checklist | Scene-class thresholds are heuristic; ratio remains advisory until validated against interactive scenes |
+| Diagnostic             | Hard fail / Advisory   | Source                                | Rationale                                                                                                            |
+| ---------------------- | ---------------------- | ------------------------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `clipped_artwork`      | Hard fail              | NEW0 `precheck.mjs`                   | Clipped object SVG indicates a layout containment failure; not acceptable in production                              |
+| `off_page`             | Hard fail              | NEW0 `precheck.mjs`                   | An object outside the viewport is unclickable and breaks the visible-UI contract                                     |
+| `svg_svg_overlap`      | Hard fail              | NEW0 `precheck.mjs`                   | Overlapping artwork creates ambiguous hit targets; pedagogically and mechanically wrong                              |
+| `region_overflow`      | Hard fail              | NEW0 `precheck.mjs`                   | A placement exceeding its region invalidates the closed region taxonomy                                              |
+| `label_label_overlap`  | Hard fail              | NEW0 `precheck.mjs`                   | Two overlapping labels are unreadable; promoted to hard fail because labels carry semantic identity for students     |
+| `svg_label_overlap`    | Advisory               | NEW0 `precheck.mjs`                   | A label can sit on top of decorative SVG fill without harming readability; promote only if spike shows real misreads |
+| `region_whitespace`    | Advisory               | NEW0 `precheck.mjs`                   | Sparse template scenes legitimately trip this; advisory until calibrated                                             |
+| `primary_object_ratio` | Advisory (scene-class) | NEW0 stabilized scene-class checklist | Scene-class thresholds are heuristic; ratio remains advisory until validated against interactive scenes              |
 
 NEW0 visual-checklist booleans (`labels_readable`, `supporting_nearby`,
 `primary_obvious`) remain advisory until calibrated against real interactive
@@ -220,7 +220,7 @@ abandon at that gate.
    Choose the smallest mini-protocol whose scenes are already in the NEW0
    set. Gate: zero hard fails across every scene in the mini-protocol; the
    walker completes every step through the visible UI per the contract item
-   4 walker rules in [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md).
+   4 walker rules in `PRIMARY_SPEC.md`.
 3. **Stage 3 - Three-scene-class coverage.** Composition (e.g.,
    `drug_dilution_plate_workspace`), zoom (`well_plate_96_zoom`), and
    instrument-heavy (`electrophoresis_bench`) all rendered through
@@ -232,7 +232,7 @@ abandon at that gate.
 
 ## 8. Old layout manager boundary
 
-[../../src/scene_runtime/layout/layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts)
+`layout_engine.ts`
 and related production layout code remain in place during NEW1 planning and
 the integration spike. CSS-native rendering during spike runs alongside the
 layout engine in a scoped path; nothing in the layout engine is removed,
@@ -264,8 +264,8 @@ triggers re-evaluation under the failure gates.
   CSS-native layout in the production runtime path.
 - One click target works through the visible UI path; a Playwright
   walkthrough confirms the click registers per
-  [../E2E_TESTS.md](../E2E_TESTS.md) and
-  [../PLAYWRIGHT_USAGE.md](../PLAYWRIGHT_USAGE.md).
+  `E2E_TESTS.md` and
+  `PLAYWRIGHT_USAGE.md`.
 - One interaction completes end-to-end: click -> validator -> response ->
   `ObjectStateChange` causes the expected re-render.
 - Precheck hard-fail count = 0 on the rendered scene. Hard fails defined in
@@ -293,7 +293,7 @@ triggers re-evaluation under the failure gates.
 ## Boundaries
 
 - No edits to production code yet.
-- No amendments to [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) yet.
+- No amendments to `PRIMARY_CONTRACT.md` yet.
 - No broad migration.
 - No continuation of NEW0 visual tuning unless required by this plan.
 - Keep NEW0 evidence as input, not as production proof.

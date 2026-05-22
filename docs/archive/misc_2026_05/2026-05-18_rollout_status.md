@@ -9,50 +9,50 @@ Real Playwright DOM measurements of all 18 base scenes (9 zone variants + 9 row+
 
 **Precheck Results Summary**
 
-| Metric | Count |
-|--------|-------|
-| Total scenes measured | 18 |
-| Scenes with failures | 13 |
-| C1 failures (object-object overlap) | 212 |
-| C2 failures (label-object overlap) | 328 |
-| C3 failures (label-label overlap) | 224 |
-| C4 failures (zero-dimension bbox) | 0 |
-| C5 warnings (row width overflow) | 7 |
-| Total failures by category | 547 + 7 warnings |
+| Metric                              | Count            |
+| ----------------------------------- | ---------------- |
+| Total scenes measured               | 18               |
+| Scenes with failures                | 13               |
+| C1 failures (object-object overlap) | 212              |
+| C2 failures (label-object overlap)  | 328              |
+| C3 failures (label-label overlap)   | 224              |
+| C4 failures (zero-dimension bbox)   | 0                |
+| C5 warnings (row width overflow)    | 7                |
+| Total failures by category          | 547 + 7 warnings |
 
 **Pass/Fail by Scene**
 
-| Scene | Type | Objects | C1 | C2 | C3 | C4 | C5 | Status |
-| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| bench_basic | zone | 2 | 0 | 0 | 1 | 0 | 0 | FAIL |
-| bench_basic_row_slot | row+slot | 2 | 1 | 0 | 1 | 0 | 0 | FAIL |
-| cell_counter_basic | zone | 2 | 1 | 0 | 0 | 0 | 0 | FAIL |
-| cell_counter_basic_row_slot | row+slot | 2 | 0 | 0 | 0 | 0 | 1 | PASS (C5 warn) |
-| electrophoresis_bench | zone | 16 | 60 | 74 | 44 | 0 | 0 | FAIL |
-| electrophoresis_bench_row_slot | row+slot | 16 | 81 | 69 | 32 | 0 | 1 | FAIL |
-| heat_block_bench | zone | 3 | 1 | 0 | 1 | 0 | 0 | FAIL |
-| heat_block_bench_row_slot | row+slot | 3 | 1 | 0 | 1 | 0 | 1 | FAIL |
-| hood_basic | zone | 4 | 2 | 4 | 2 | 0 | 0 | FAIL |
-| hood_basic_row_slot | row+slot | 4 | 4 | 0 | 1 | 0 | 1 | FAIL |
-| imaging_bench | zone | 2 | 0 | 0 | 0 | 0 | 0 | PASS |
-| imaging_bench_row_slot | row+slot | 2 | 0 | 0 | 0 | 0 | 1 | PASS (C5 warn) |
-| microscope_basic | zone | 1 | 0 | 0 | 0 | 0 | 0 | PASS |
-| microscope_basic_row_slot | row+slot | 1 | 0 | 0 | 0 | 0 | 0 | PASS |
-| sample_prep_bench | zone | 5 | 4 | 6 | 4 | 0 | 0 | FAIL |
-| sample_prep_bench_row_slot | row+slot | 5 | 4 | 3 | 4 | 0 | 1 | FAIL |
-| staining_bench | zone | 10 | 20 | 31 | 20 | 0 | 0 | FAIL |
-| staining_bench_row_slot | row+slot | 10 | 33 | 16 | 14 | 0 | 1 | FAIL |
+| Scene                          | Type     | Objects |  C1 |  C2 |  C3 |  C4 |  C5 | Status         |
+| ------------------------------ | -------- | ------: | --: | --: | --: | --: | --: | -------------- |
+| bench_basic                    | zone     |       2 |   0 |   0 |   1 |   0 |   0 | FAIL           |
+| bench_basic_row_slot           | row+slot |       2 |   1 |   0 |   1 |   0 |   0 | FAIL           |
+| cell_counter_basic             | zone     |       2 |   1 |   0 |   0 |   0 |   0 | FAIL           |
+| cell_counter_basic_row_slot    | row+slot |       2 |   0 |   0 |   0 |   0 |   1 | PASS (C5 warn) |
+| electrophoresis_bench          | zone     |      16 |  60 |  74 |  44 |   0 |   0 | FAIL           |
+| electrophoresis_bench_row_slot | row+slot |      16 |  81 |  69 |  32 |   0 |   1 | FAIL           |
+| heat_block_bench               | zone     |       3 |   1 |   0 |   1 |   0 |   0 | FAIL           |
+| heat_block_bench_row_slot      | row+slot |       3 |   1 |   0 |   1 |   0 |   1 | FAIL           |
+| hood_basic                     | zone     |       4 |   2 |   4 |   2 |   0 |   0 | FAIL           |
+| hood_basic_row_slot            | row+slot |       4 |   4 |   0 |   1 |   0 |   1 | FAIL           |
+| imaging_bench                  | zone     |       2 |   0 |   0 |   0 |   0 |   0 | PASS           |
+| imaging_bench_row_slot         | row+slot |       2 |   0 |   0 |   0 |   0 |   1 | PASS (C5 warn) |
+| microscope_basic               | zone     |       1 |   0 |   0 |   0 |   0 |   0 | PASS           |
+| microscope_basic_row_slot      | row+slot |       1 |   0 |   0 |   0 |   0 |   0 | PASS           |
+| sample_prep_bench              | zone     |       5 |   4 |   6 |   4 |   0 |   0 | FAIL           |
+| sample_prep_bench_row_slot     | row+slot |       5 |   4 |   3 |   4 |   0 |   1 | FAIL           |
+| staining_bench                 | zone     |      10 |  20 |  31 |  20 |   0 |   0 | FAIL           |
+| staining_bench_row_slot        | row+slot |      10 |  33 |  16 |  14 |   0 |   1 | FAIL           |
 
 ## Failure Categories
 
 Failures classified by root cause (from 547 total):
 
-| Category | Count | Examples | Remedy |
-|----------|-------|----------|--------|
-| **layout-engine-gap** | 212 | Object-object overlaps; row+slot packing produces collisions | Debug/fix layout engine spacing rules; review row height/slot distribution |
-| **label-placement-gap** | 328 + 224 | Labels overlap objects and each other; text obscures targets | Adjust label offset/anchor; add anti-collision algorithm for labels |
-| **model-insufficiency** | 0 | (none identified yet) | Expand row+slot YAML model if needed |
-| **content-overload** | 7 (warnings) | Row+slot width exceeds viewport (up to 32% overflow) | Reduce object count or increase row width; redesign YAML object sizing |
+| Category                | Count        | Examples                                                     | Remedy                                                                     |
+| ----------------------- | ------------ | ------------------------------------------------------------ | -------------------------------------------------------------------------- |
+| **layout-engine-gap**   | 212          | Object-object overlaps; row+slot packing produces collisions | Debug/fix layout engine spacing rules; review row height/slot distribution |
+| **label-placement-gap** | 328 + 224    | Labels overlap objects and each other; text obscures targets | Adjust label offset/anchor; add anti-collision algorithm for labels        |
+| **model-insufficiency** | 0            | (none identified yet)                                        | Expand row+slot YAML model if needed                                       |
+| **content-overload**    | 7 (warnings) | Row+slot width exceeds viewport (up to 32% overflow)         | Reduce object count or increase row width; redesign YAML object sizing     |
 
 ## Root Cause Analysis
 
@@ -83,11 +83,11 @@ Real Playwright DOM measurements confirm row+slot layout is **fundamentally brok
 
 ### Recommended Fix Lanes
 
-| Category | Count | Remedy | Owner |
-|----------|-------|--------|-------|
-| **Layout-engine gap** | 212 | Row+slot conversion (lines 193-236 in test_base_scene_gallery.mjs) produces wrong zone geometry. Review zone.bounds calculation. Likely: slot widths are fixed (100/N) but object minimum width is not respected. | architect |
-| **Label-placement gap** | 552 | Label offset/anchor rules are zone-specific (label at center of zone). In dense row+slot, labels need anti-collision or external positioning. Build label-label/label-object avoid-algorithm or use SVG text-anchor=start/end. | layout-author |
-| **Content overload** | 7 | Some scenes (electrophoresis_bench with 16 objects) cannot fit in row+slot. Either: (a) split into multiple rows in YAML, (b) increase row width, or (c) reduce object count. Architectural decision needed. | pedagogy |
+| Category                | Count | Remedy                                                                                                                                                                                                                         | Owner         |
+| ----------------------- | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| **Layout-engine gap**   | 212   | Row+slot conversion (lines 193-236 in test_base_scene_gallery.mjs) produces wrong zone geometry. Review zone.bounds calculation. Likely: slot widths are fixed (100/N) but object minimum width is not respected.              | architect     |
+| **Label-placement gap** | 552   | Label offset/anchor rules are zone-specific (label at center of zone). In dense row+slot, labels need anti-collision or external positioning. Build label-label/label-object avoid-algorithm or use SVG text-anchor=start/end. | layout-author |
+| **Content overload**    | 7     | Some scenes (electrophoresis_bench with 16 objects) cannot fit in row+slot. Either: (a) split into multiple rows in YAML, (b) increase row width, or (c) reduce object count. Architectural decision needed.                   | pedagogy      |
 
 ## Boundaries (HARD)
 
@@ -134,6 +134,7 @@ To maintain rollout integrity:
 ### 3. Updated Rollout Dashboard
 
 This document:
+
 - **Status:** `row_slot_blocked_by_prechecks` (verdict confirmed by real DOM data)
 - **Adds** precheck results table at the top with actual measurements
 - **Classifies** all failures by root cause and recommended fix lane

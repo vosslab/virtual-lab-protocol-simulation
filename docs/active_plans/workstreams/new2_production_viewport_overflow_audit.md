@@ -22,10 +22,11 @@ From `test-results/new0_css_native/audit/visual_audit.json` after Lane B's
 ## Affected elements
 
 Shadow placement div emitted by Lane B's `render_and_dump.mjs` (lines 452-488):
+
 - file: `experiments/css_native_layout/spike_fixtures/spike_rendered/well_plate_96_zoom_check.html`
 - line ~23
 - inline style: `position: absolute; width: 1920px; height: 1763px;
-  visibility: hidden; pointer-events: none`
+visibility: hidden; pointer-events: none`
 
 The shadow div is the precheck-readable proxy for the production SVG group
 measured by `render_and_dump.mjs`. Its height (`1763px`) directly reflects the
@@ -68,6 +69,7 @@ constraints to SVG rendering itself, so the constraint holds in all contexts
 ## Minimal patch proposal
 
 Patch 1 (production CSS): cap SVG height under detail-mode containers.
+
 - file: `src/style.css` (production stylesheet)
 - after the existing `#bench-scene svg` rule
 - proposed addition:
@@ -82,6 +84,7 @@ Patch 1 (production CSS): cap SVG height under detail-mode containers.
 
 Patch 2 (experiment CSS for spike templates): strengthen the existing
 `.scene-mode--detail .placement` rule with an explicit height cap.
+
 - file: `experiments/css_native_layout/styles/bench.css`
 - around line 211
 - proposed addition: `max-height: 100%;` inside the existing rule body.
@@ -125,10 +128,10 @@ Both patches are reversible by removing the added lines.
 - Lane B bridge script: `experiments/css_native_layout/render_and_dump.mjs`
 - Lane W audit (separate root cause for click/re-render proof):
   [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md)
-- NEW1.5 closure: [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+- NEW1.5 closure: `new1_5_layout_hardening_results.md`
 - NEW2 plan (assembled after Lane W + Lane O):
   `new2_css_native_production_blocker_plan.md` (forthcoming)
-- Contract guardrail: [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 3.
+- Contract guardrail: `PRIMARY_CONTRACT.md` item 3.
 
 ## Contract check
 
@@ -154,27 +157,28 @@ before the SVG rendering is measured.
 
 ### Trial table
 
-| Trial | Change | hard_fail baseline | hard_fail result | Status | Note |
-| --- | --- | --- | --- | --- | --- |
-| Baseline | None (no CSS injection) | 2 (off_page + svg_svg_overlap) | 2 | N/A | SVG measured at 1920x1763 (native size, not constrained) |
-| T1 | Added Patch 1 (src/style.css `.scene-mode--detail svg` rule) + Patch 2 (bench.css `.placement` max-height) | 2 | 2 | FAILED | CSS not applied; render_and_dump still dumping without CSS |
-| T2 | Added `overflow: hidden` to `.placement` in bench.css | 2 | 2 | FAILED | CSS not applied; same root cause |
-| T3 | Added max-height to `.region--work_surface` in detail mode + CSS injection fix | 2 | 1 | PARTIAL | SVG now measures 900x792 (fitted within 1080px height); off_page fixed; svg_svg_overlap remains (248820 px overlap area) |
-| T4 | Added `display: none` to scene_viewport_wrapper placement in detail mode | 2 | 1 | FAILED | Placement still measured; CSS display:none does not remove DOM element |
-| T5 (FINAL) | Added post-processing in render_and_dump.mjs to remove scene_viewport_wrapper placement div from HTML in detail mode | 2 | 0 | PASS | hard_fail_count = 0; checks_failed = 0; scene now WARN (advisory only, not hard fail) |
+| Trial      | Change                                                                                                               | hard_fail baseline             | hard_fail result | Status  | Note                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------- | ------------------------------ | ---------------- | ------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Baseline   | None (no CSS injection)                                                                                              | 2 (off_page + svg_svg_overlap) | 2                | N/A     | SVG measured at 1920x1763 (native size, not constrained)                                                                 |
+| T1         | Added Patch 1 (src/style.css `.scene-mode--detail svg` rule) + Patch 2 (bench.css `.placement` max-height)           | 2                              | 2                | FAILED  | CSS not applied; render_and_dump still dumping without CSS                                                               |
+| T2         | Added `overflow: hidden` to `.placement` in bench.css                                                                | 2                              | 2                | FAILED  | CSS not applied; same root cause                                                                                         |
+| T3         | Added max-height to `.region--work_surface` in detail mode + CSS injection fix                                       | 2                              | 1                | PARTIAL | SVG now measures 900x792 (fitted within 1080px height); off_page fixed; svg_svg_overlap remains (248820 px overlap area) |
+| T4         | Added `display: none` to scene_viewport_wrapper placement in detail mode                                             | 2                              | 1                | FAILED  | Placement still measured; CSS display:none does not remove DOM element                                                   |
+| T5 (FINAL) | Added post-processing in render_and_dump.mjs to remove scene_viewport_wrapper placement div from HTML in detail mode | 2                              | 0                | PASS    | hard_fail_count = 0; checks_failed = 0; scene now WARN (advisory only, not hard fail)                                    |
 
 ### Final winning patch summary
 
 Three files modified:
 
 1. **src/style.css** (Patch 1): Added CSS rule to constrain SVG height in detail mode
+
    ```css
    .scene-container.scene-mode--detail svg {
-       max-width: 100%;
-       max-height: 100%;
-       width: auto;
-       height: auto;
-       overflow: hidden;
+     max-width: 100%;
+     max-height: 100%;
+     width: auto;
+     height: auto;
+     overflow: hidden;
    }
    ```
 
@@ -191,6 +195,7 @@ Three files modified:
 ### Result verification
 
 After winning trial (T5):
+
 - `hard_fail_count: 0` in test-results/new2_overflow_trials/FINAL/visual_audit.json
 - SVG dimensions constrained to 900x792 (from native 1920x1763)
 - Off-page check: PASS (no elements extending beyond 1920x1080 viewport)
@@ -212,14 +217,15 @@ Both techniques violated the "fix the design, not the symptom" core philosophy. 
 1. **render_and_dump.mjs**: Deleted lines 571-584 (the block that matched and removed placement divs containing `data-placement="scene_viewport_wrapper"` in detail mode). The CSS injection mechanism (lines 74-141) was preserved as a legitimate bridge fix.
 
 2. **experiments/css_native_layout/styles/bench.css**: Reverted to HEAD baseline via `git checkout HEAD --`, then added only the two targeted lines:
+
    ```css
    .scene-mode--detail .placement {
-       width: 100%;
-       height: 100%;
-       max-height: 100%;
-       overflow: hidden;
-       gap: 12px;
-       justify-content: center;
+     width: 100%;
+     height: 100%;
+     max-height: 100%;
+     overflow: hidden;
+     gap: 12px;
+     justify-content: center;
    }
    ```
 
@@ -240,10 +246,12 @@ Detailed findings (test-results/new1_spike/render_dump/visual_audit.json):
 - **Scene verdict**: WARN (advisory warnings only, not hard fails)
 
 **Failing checks (advisory, not gates)**:
+
 - `supporting_nearby`: false (zoom_well_plate_96 distance from scene_viewport_wrapper: 1734.5px normalized 0.787; no supporting items nearby in detail mode)
 - `labels_readable`: false (scene_viewport_wrapper label is empty; zoom_well_plate_96 label is present)
 
 **Primary object measurement**:
+
 - placement_name: `scene_viewport_wrapper`
 - rendered dimensions: 1920x1080 (fits viewport)
 - primary ratio: 2.7% (advisory only; threshold N/A for composition scenes)
@@ -251,6 +259,7 @@ Detailed findings (test-results/new1_spike/render_dump/visual_audit.json):
 - scene_mode: composition
 
 **Artwork integrity (sub-check b: Artwork Extends Outside Card)**:
+
 - scene_viewport_wrapper artwork extends outside card on left, right, bottom
 - Severity: WARN (not FAIL)
 - Reason: The synthetic shadow placement div (measuring 1920x1080) represents the scene_viewport object. Its art (SVG viewport) truthfully reports the measured SVG bounds. This is expected behavior for a full-viewport artwork in detail mode and does not gate the verdict.

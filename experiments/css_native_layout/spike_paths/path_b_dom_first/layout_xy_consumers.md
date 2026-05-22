@@ -13,11 +13,11 @@ or aliased reads.
 
 ## External consumers of ComputedItemLayout (outside the layout module)
 
-| File | Lines | Kind of read |
-| --- | --- | --- |
-| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 235-238 | `const x = layout.x; const y = layout.y; const width = layout.width; const height = layout.height;` |
-| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 253 | forwards x, y, width, height to `tryRenderWellPlate(...)` |
-| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 278 onward | forwards x, y, width, height to `insertSvgAsset(...)` for non-well-plate placements |
+| File                                                                                           | Lines      | Kind of read                                                                                        |
+| ---------------------------------------------------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 235-238    | `const x = layout.x; const y = layout.y; const width = layout.width; const height = layout.height;` |
+| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 253        | forwards x, y, width, height to `tryRenderWellPlate(...)`                                           |
+| [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts) | 278 onward | forwards x, y, width, height to `insertSvgAsset(...)` for non-well-plate placements                 |
 
 Count: 1 file, 1 logical consumer block. All four fields read together.
 
@@ -30,8 +30,8 @@ are NOT downstream consumers; Path B does not need to migrate them
 because the spike replaces (not extends) the legacy solver for one
 scene.
 
-| File | Notes |
-| --- | --- |
+| File                                                                                                           | Notes                                                                                 |
+| -------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
 | [../../../../src/scene_runtime/layout/layout_engine.ts](../../../../src/scene_runtime/layout/layout_engine.ts) | Internal solver math: cluster centering, scene-bounds containment, label positioning. |
 
 ## Downstream of render/scene.ts

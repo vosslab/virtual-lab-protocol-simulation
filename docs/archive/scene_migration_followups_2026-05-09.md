@@ -9,12 +9,12 @@ Both `bench.yaml` and `cell_culture_hood.yaml` carry these top-level keys after
 the layout migration, but they pass through `SceneConfig`'s
 `[key: string]: unknown` index signature without formal typing or validation:
 
-| YAML key | Value shape | Source | Status |
-| --- | --- | --- | --- |
-| `sceneBounds` | `{left:number, right:number, top:number, bottom:number}` | `bench.yaml`, `cell_culture_hood.yaml` | undocumented; no validator coverage |
-| `layoutRules.labelFontSize` | `number` | both layout-engine YAMLs | undocumented; no validator coverage |
-| `layoutRules.labelLineHeight` | `number` | both layout-engine YAMLs | undocumented; no validator coverage |
-| `layoutRules.labelOffsetY` | `number` | both layout-engine YAMLs | undocumented; no validator coverage |
+| YAML key                      | Value shape                                              | Source                                 | Status                              |
+| ----------------------------- | -------------------------------------------------------- | -------------------------------------- | ----------------------------------- |
+| `sceneBounds`                 | `{left:number, right:number, top:number, bottom:number}` | `bench.yaml`, `cell_culture_hood.yaml` | undocumented; no validator coverage |
+| `layoutRules.labelFontSize`   | `number`                                                 | both layout-engine YAMLs               | undocumented; no validator coverage |
+| `layoutRules.labelLineHeight` | `number`                                                 | both layout-engine YAMLs               | undocumented; no validator coverage |
+| `layoutRules.labelOffsetY`    | `number`                                                 | both layout-engine YAMLs               | undocumented; no validator coverage |
 
 The reviewer's note was that "permissive but coherent" was wrong: the plan
 promised explicit, validator-backed schema, not silent pass-through via the

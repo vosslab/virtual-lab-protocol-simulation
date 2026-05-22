@@ -60,11 +60,11 @@ node experiments/css_native_layout/precheck.mjs \
 
 All artifacts land under `--out` (default `test-results/new0_css_native/audit/`):
 
-| File | Purpose |
-| --- | --- |
-| `visual_audit.json` | Machine-readable per-scene report plus summary keys. |
-| `visual_audit.md` | Human-readable report with ASCII `[x]` / `[ ]` checklist. |
-| `sizing_manifest.json` | Per-placement natural vs rendered measurements. |
+| File                    | Purpose                                                                                    |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `visual_audit.json`     | Machine-readable per-scene report plus summary keys.                                       |
+| `visual_audit.md`       | Human-readable report with ASCII `[x]` / `[ ]` checklist.                                  |
+| `sizing_manifest.json`  | Per-placement natural vs rendered measurements.                                            |
 | `<scene>_annotated.png` | Per-scene overlay PNG. Skipped (non-blocking warning) when `_temp_annotate.py` is missing. |
 
 Summary keys emitted at the top of `visual_audit.json`:
@@ -78,13 +78,13 @@ Summary keys emitted at the top of `visual_audit.json`:
 
 ## Verdict ladder
 
-| Mode | Hard fails | Warn flags | Verdict |
-| --- | --- | --- | --- |
-| composition | 0 | 0 | PASS |
-| composition | 0 | >=1 | WARN |
-| composition | >=1 | any | FAIL |
-| template | 0 | any | PASS_TEMPLATE |
-| template | >=1 | any | FAIL |
+| Mode        | Hard fails | Warn flags | Verdict       |
+| ----------- | ---------- | ---------- | ------------- |
+| composition | 0          | 0          | PASS          |
+| composition | 0          | >=1        | WARN          |
+| composition | >=1        | any        | FAIL          |
+| template    | 0          | any        | PASS_TEMPLATE |
+| template    | >=1        | any        | FAIL          |
 
 Mode is detected from the template's `data-scene-mode` attribute on
 `.scene-container`. `PASS_TEMPLATE` exists so sparse skeleton templates
@@ -286,12 +286,12 @@ node experiments/css_native_layout/score_layout.mjs \
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-| --- | --- | --- |
-| `Cannot find module 'playwright'` | Ran the script from outside the repo root. | `cd` to the repo root, then re-run. See [../../docs/PLAYWRIGHT_USAGE.md](../../docs/PLAYWRIGHT_USAGE.md). |
-| `Executable doesn't exist` (Chromium) | Browser binaries not installed. | `npx playwright install` from the repo root. |
-| `_temp_annotate.py: not found` warning | Pillow annotation helper absent from working tree. | Non-blocking; per-scene PNG is skipped. JSON/MD reports still write. |
-| Empty `visual_audit.json` (`scenes: []`) | Positional pattern matched zero files (often a quoting bug). | Quote the glob, or pass an explicit `.html` path. |
-| `WARN` on `labels_readable` only | Label collision in tight composition scenes. | Composition-class concern, not a precheck bug. Adjust template / CSS, not the audit. |
-| Hard fail `off_page` after CSS edit | Placement was pushed outside the 1920x1080 viewport. | Revert or constrain via `max-width` / `flex-basis` on the parent region. |
-| `region_overflow` after density bump | Region `scrollHeight` exceeded `clientHeight`. | Lower placement count or relax region height; do not add `overflow: hidden` (it would mask the fail). |
+| Symptom                                  | Likely cause                                                 | Fix                                                                                                       |
+| ---------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `Cannot find module 'playwright'`        | Ran the script from outside the repo root.                   | `cd` to the repo root, then re-run. See [../../docs/PLAYWRIGHT_USAGE.md](../../docs/PLAYWRIGHT_USAGE.md). |
+| `Executable doesn't exist` (Chromium)    | Browser binaries not installed.                              | `npx playwright install` from the repo root.                                                              |
+| `_temp_annotate.py: not found` warning   | Pillow annotation helper absent from working tree.           | Non-blocking; per-scene PNG is skipped. JSON/MD reports still write.                                      |
+| Empty `visual_audit.json` (`scenes: []`) | Positional pattern matched zero files (often a quoting bug). | Quote the glob, or pass an explicit `.html` path.                                                         |
+| `WARN` on `labels_readable` only         | Label collision in tight composition scenes.                 | Composition-class concern, not a precheck bug. Adjust template / CSS, not the audit.                      |
+| Hard fail `off_page` after CSS edit      | Placement was pushed outside the 1920x1080 viewport.         | Revert or constrain via `max-width` / `flex-basis` on the parent region.                                  |
+| `region_overflow` after density bump     | Region `scrollHeight` exceeded `clientHeight`.               | Lower placement count or relax region height; do not add `overflow: hidden` (it would mask the fail).     |

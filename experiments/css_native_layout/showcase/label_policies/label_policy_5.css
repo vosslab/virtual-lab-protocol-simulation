@@ -16,37 +16,37 @@ numeric badge. A DOM-aware follow-up should inject a legend region.
 */
 
 .scene-container {
-	counter-reset: placement-counter;
+  counter-reset: placement-counter;
 }
 
 .placement {
-	counter-increment: placement-counter;
-	position: relative;
+  counter-increment: placement-counter;
+  position: relative;
 }
 
 .placement-label {
-	font-size: 0;
-	line-height: 0;
-	color: transparent;
+  font-size: 0;
+  line-height: 0;
+  color: transparent;
 }
 
 .placement-label::before {
-	content: "[" counter(placement-counter) "]";
-	font-size: 14px;
-	line-height: 1.2;
-	color: var(--color-text);
-	font-weight: 600;
-	display: inline-block;
+  content: "[" counter(placement-counter) "]";
+  font-size: 14px;
+  line-height: 1.2;
+  color: var(--color-text);
+  font-weight: 600;
+  display: inline-block;
 }
 
 /* Repurpose region-label as a static "Legend" hint (no per-scene content). */
 .region-label {
-	display: block;
-	font-size: 10px;
-	color: rgba(90, 108, 125, 0.6);
+  display: block;
+  font-size: 10px;
+  color: rgba(90, 108, 125, 0.6);
 }
 
 .region-label::after {
-	content: " (numbered)";
-	font-style: italic;
+  content: " (numbered)";
+  font-style: italic;
 }

@@ -10,212 +10,221 @@ protocol_type: mini_protocol
 protocol_name: mtt_plate_reaction
 entry_step: gather_mtt_materials
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with
+  objectives:
+    Students completing this mini-protocol will have achieved fluency with
     uniform whole-plate reagent dispensing using a multichannel pipette, timed incubation
     scheduling for metabolic conversion, biohazard waste handling for cytotoxic dye,
     and critical plate-preparation steps (drying) before downstream solubilization.
-  outcomes: Students completing this mini-protocol will be able to add MTT reagent
+  outcomes:
+    Students completing this mini-protocol will be able to add MTT reagent
     uniformly across a 96-well plate at a fixed concentration, manage an incubation
     timer for the MTT-to-formazan reduction, safely decant cytotoxic waste into a
     biohazard container, and dry a plate without dislodging formazan crystals.
-  goals: 'Overall, this mini-protocol aims to accomplish the MTT colorimetric assay
+  goals:
+    "Overall, this mini-protocol aims to accomplish the MTT colorimetric assay
     readiness phase: loading MTT dye across treated wells, allowing formazan crystal
     formation under aerobic incubation, removing excess MTT/media/drug mixture, and
     preparing the dry plate for DMSO solubilization and absorbance measurement. This
     step bridges post-treatment cell samples (from Day 2 drug incubation; wells at
-    200 uL each) to the quantitative viability readout (Day 4 absorbance).'
+    200 uL each) to the quantitative viability readout (Day 4 absorbance)."
 steps:
-- step_name: gather_mtt_materials
-  prompt: Obtain the treated 96-well plate from the previous step (every well already
-    holds 200 uL of cells in treated media after Day 2 drug additions) and the prepared
-    12 mM MTT solution. Ensure the MTT has been freshly prepared and stored at room
-    temperature. Place both on the incubator workspace.
-  sequence:
-  - target: mtt_solution_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: well_plate_96
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: prepare_pipette_for_mtt
-- step_name: prepare_pipette_for_mtt
-  prompt: Obtain a multichannel pipette and set the volume to 25 microL. Each well
-    will receive exactly 25 microL of 12 mM MTT. Per docs/protocols/OVCAR8_MATH_REVIEW.md,
-    adding 25 microL into the 200 microL pre-MTT well brings well total to 225 microL
-    with a final MTT concentration of approximately 1.33 mM (NOT 1.5 mM, which assumed
-    an incorrect 100 microL pre-MTT well).
-  sequence:
-  - target: multichannel_pipette
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: multichannel_pipette
-    gesture: adjust
-    validator:
-      preset: target_with_value
-      value:
-        set_volume: 25
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          set_volume: 25
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: add_mtt_to_wells
-- step_name: add_mtt_to_wells
-  prompt: 'Using the multichannel pipette set to 25 microL per channel, draw 12 mM
-    MTT from the solution bottle and dispense 25 microL into every well of the 96-well
-    plate. Each well receives the same 25 microL volume; in wet-lab practice the 8-channel
-    pipette walks across the 12 columns (each stroke loads 200 microL across 8 tips
-    and dispenses one column). Note: 25 microL per channel sits near the low-precision
-    edge of a P200 multichannel (20-200 microL range); use freshly-calibrated tips
-    for accurate dosing. After this step every well holds 225 microL total (200 microL
-    pre-MTT + 25 microL MTT dispensed).'
-  sequence:
-  - target: multichannel_pipette
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: mtt_solution_bottle
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: multichannel_pipette
-        state:
-          held_material_name: mtt
-          held_material_volume: 25
-  - target: well_plate_96.all_wells
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.all_wells
-        state:
-          material_name: mtt
-          material_volume: 225
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: incubate_formazan_conversion
-- step_name: incubate_formazan_conversion
-  prompt: Place the MTT-loaded plate into the incubator and set it for 1.5 hours at
-    37 degrees Celsius. Aerobic incubation allows viable cells to reduce the yellow
-    MTT dye into purple formazan crystals. Well volume is preserved at 225 microL
-    across the incubation; only the material identity changes from MTT to formazan.
-    After the timer completes, proceed to decant the spent MTT/media/drug mixture.
-  sequence:
-  - target: well_plate_96
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: incubator
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: TimedWait
-        target: incubator
-        duration_min: 90
-        display: formazan conversion (1.5 hours)
-      - type: ObjectStateChange
-        target: well_plate_96.all_wells
-        state:
-          material_name: formazan
-          material_volume: 225
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: decant_mtt_to_waste
-- step_name: decant_mtt_to_waste
-  prompt: Remove the plate from the incubator. Hold the plate over the biohazard waste
-    container and carefully pour the spent well contents (cells + media + Day 2 drug
-    residue + reduced MTT) into the waste bin. Do not lose any wells or spill on the
-    work surface. The plate wells should be emptied to zero volume but retain the
-    insoluble formazan crystals at the bottom for the downstream DMSO solubilization
-    step.
-  sequence:
-  - target: well_plate_96
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: biohazard_decant_bin
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations:
-      - type: ObjectStateChange
-        target: well_plate_96.all_wells
-        state:
-          material_name: empty
-          material_volume: 0
-      - type: ObjectStateChange
-        target: biohazard_decant_bin
-        state:
-          material_name: waste_mtt
-          material_volume: 21.6
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: pat_plate_dry
-- step_name: pat_plate_dry
-  prompt: Place the plate on a stack of paper towels. Using a gentle pressing motion,
-    pat the bottom and top surfaces of the plate to absorb residual liquid without
-    dislodging the formazan crystals. The plate should be completely dry and ready
-    for DMSO solubilization. Ensure no liquid remains on the exterior of the plate
-    that could obscure the absorbance measurement.
-  sequence:
-  - target: well_plate_96
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  - target: paper_towel_pad
-    gesture: click
-    validator:
-      preset: correct_target
-    response:
-      scene_operations: []
-  step_validator:
-    preset: sequence_complete
-  outcome:
-    on_success: complete
-    on_failure: retry
-  next_step: null
+  - step_name: gather_mtt_materials
+    prompt:
+      Obtain the treated 96-well plate from the previous step (every well already
+      holds 200 uL of cells in treated media after Day 2 drug additions) and the prepared
+      12 mM MTT solution. Ensure the MTT has been freshly prepared and stored at room
+      temperature. Place both on the incubator workspace.
+    sequence:
+      - target: mtt_solution_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: well_plate_96
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: prepare_pipette_for_mtt
+  - step_name: prepare_pipette_for_mtt
+    prompt:
+      Obtain a multichannel pipette and set the volume to 25 microL. Each well
+      will receive exactly 25 microL of 12 mM MTT. Per docs/protocols/OVCAR8_MATH_REVIEW.md,
+      adding 25 microL into the 200 microL pre-MTT well brings well total to 225 microL
+      with a final MTT concentration of approximately 1.33 mM (NOT 1.5 mM, which assumed
+      an incorrect 100 microL pre-MTT well).
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: multichannel_pipette
+        gesture: adjust
+        validator:
+          preset: target_with_value
+          value:
+            set_volume: 25
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                set_volume: 25
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: add_mtt_to_wells
+  - step_name: add_mtt_to_wells
+    prompt:
+      "Using the multichannel pipette set to 25 microL per channel, draw 12 mM
+      MTT from the solution bottle and dispense 25 microL into every well of the 96-well
+      plate. Each well receives the same 25 microL volume; in wet-lab practice the 8-channel
+      pipette walks across the 12 columns (each stroke loads 200 microL across 8 tips
+      and dispenses one column). Note: 25 microL per channel sits near the low-precision
+      edge of a P200 multichannel (20-200 microL range); use freshly-calibrated tips
+      for accurate dosing. After this step every well holds 225 microL total (200 microL
+      pre-MTT + 25 microL MTT dispensed)."
+    sequence:
+      - target: multichannel_pipette
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: mtt_solution_bottle
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: multichannel_pipette
+              state:
+                held_material_name: mtt
+                held_material_volume: 25
+      - target: well_plate_96.all_wells
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.all_wells
+              state:
+                material_name: mtt
+                material_volume: 225
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: incubate_formazan_conversion
+  - step_name: incubate_formazan_conversion
+    prompt:
+      Place the MTT-loaded plate into the incubator and set it for 1.5 hours at
+      37 degrees Celsius. Aerobic incubation allows viable cells to reduce the yellow
+      MTT dye into purple formazan crystals. Well volume is preserved at 225 microL
+      across the incubation; only the material identity changes from MTT to formazan.
+      After the timer completes, proceed to decant the spent MTT/media/drug mixture.
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: incubator
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: TimedWait
+              target: incubator
+              duration_min: 90
+              display: formazan conversion (1.5 hours)
+            - type: ObjectStateChange
+              target: well_plate_96.all_wells
+              state:
+                material_name: formazan
+                material_volume: 225
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: decant_mtt_to_waste
+  - step_name: decant_mtt_to_waste
+    prompt:
+      Remove the plate from the incubator. Hold the plate over the biohazard waste
+      container and carefully pour the spent well contents (cells + media + Day 2 drug
+      residue + reduced MTT) into the waste bin. Do not lose any wells or spill on the
+      work surface. The plate wells should be emptied to zero volume but retain the
+      insoluble formazan crystals at the bottom for the downstream DMSO solubilization
+      step.
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: biohazard_decant_bin
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: ObjectStateChange
+              target: well_plate_96.all_wells
+              state:
+                material_name: empty
+                material_volume: 0
+            - type: ObjectStateChange
+              target: biohazard_decant_bin
+              state:
+                material_name: waste_mtt
+                material_volume: 21.6
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: pat_plate_dry
+  - step_name: pat_plate_dry
+    prompt:
+      Place the plate on a stack of paper towels. Using a gentle pressing motion,
+      pat the bottom and top surfaces of the plate to absorb residual liquid without
+      dislodging the formazan crystals. The plate should be completely dry and ready
+      for DMSO solubilization. Ensure no liquid remains on the exterior of the plate
+      that could obscure the absorbance measurement.
+    sequence:
+      - target: well_plate_96
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+      - target: paper_towel_pad
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations: []
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

@@ -2,5 +2,5 @@ materials:
   ddh2o:
     label: Deionized water
     display_color:
-      light: '#f0f9ff'
-      dark: '#f0f9ff'
+      light: "#f0f9ff"
+      dark: "#f0f9ff"

@@ -14,28 +14,28 @@ Function: computeSceneMetrics, lines 332-339.
 
 ```javascript
 const hardFailCount =
-    (checks.clipped_artwork || []).length +
-    (checks.off_page || []).length +
-    (checks.svg_svg_overlap || []).length +
-    (checks.region_overflow || []).length;
+  (checks.clipped_artwork || []).length +
+  (checks.off_page || []).length +
+  (checks.svg_svg_overlap || []).length +
+  (checks.region_overflow || []).length;
 ```
 
 The hardFailCount value is returned at line 386 and consumed at line 453:
 
 ```javascript
 if (hardFailCount > 0) {
-    totalScore = 0;
+  totalScore = 0;
 }
 ```
 
 ### Current count categories
 
-| Category | Source in visual_audit.json | Description |
-| --- | --- | --- |
-| clipped_artwork | checks.clipped_artwork | Placement bbox exceeds parent region bbox |
-| off_page | checks.off_page | Placement center or corners outside viewport |
-| svg_svg_overlap | checks.svg_svg_overlap | Placement-bbox intersection between two placements |
-| region_overflow | checks.region_overflow | Region scrollHeight > clientHeight |
+| Category        | Source in visual_audit.json | Description                                        |
+| --------------- | --------------------------- | -------------------------------------------------- |
+| clipped_artwork | checks.clipped_artwork      | Placement bbox exceeds parent region bbox          |
+| off_page        | checks.off_page             | Placement center or corners outside viewport       |
+| svg_svg_overlap | checks.svg_svg_overlap      | Placement-bbox intersection between two placements |
+| region_overflow | checks.region_overflow      | Region scrollHeight > clientHeight                 |
 
 ### Why this set was originally chosen
 
@@ -48,20 +48,22 @@ The clipped_by_parent and aspect_distorted sub-checks were added later as part o
 precheck.mjs lines 1083-1099 show the current hasHardFail logic:
 
 ```javascript
-const integrityClippedByParent = checks.artwork_integrity?.clipped_by_parent || [];
-const integrityAspectHardFails = (checks.artwork_integrity?.aspect_distorted || [])
-    .filter(item => item.severity === 'HARD_FAIL');
+const integrityClippedByParent =
+  checks.artwork_integrity?.clipped_by_parent || [];
+const integrityAspectHardFails = (
+  checks.artwork_integrity?.aspect_distorted || []
+).filter((item) => item.severity === "HARD_FAIL");
 
 const hardFails = [
-    checks.clipped_artwork.length > 0,
-    checks.off_page.length > 0,
-    checks.svg_svg_overlap.length > 0,
-    checks.region_overflow.length > 0,
-    integrityClippedByParent.length > 0,
-    integrityAspectHardFails.length > 0
+  checks.clipped_artwork.length > 0,
+  checks.off_page.length > 0,
+  checks.svg_svg_overlap.length > 0,
+  checks.region_overflow.length > 0,
+  integrityClippedByParent.length > 0,
+  integrityAspectHardFails.length > 0,
 ];
 
-const hasHardFail = hardFails.some(x => x);
+const hasHardFail = hardFails.some((x) => x);
 ```
 
 The precheck already treats clipped_by_parent and aspect_distorted_HF as hard fails for the PASS/FAIL verdict. The scorecard does not. This is the semantic gap this proposal closes.
@@ -89,9 +91,9 @@ function scoreScene(sceneData):
 
 ### Extend hardFailCount to include crop and distortion violations
 
-| New category | Source in visual_audit.json | Severity in precheck | Description |
-| --- | --- | --- | --- |
-| clipped_by_parent | checks.artwork_integrity.clipped_by_parent | HARD_FAIL (always) | SVG img bbox clipped by ancestor with overflow != visible |
+| New category        | Source in visual_audit.json                                                    | Severity in precheck                                | Description                                                                     |
+| ------------------- | ------------------------------------------------------------------------------ | --------------------------------------------------- | ------------------------------------------------------------------------------- |
+| clipped_by_parent   | checks.artwork_integrity.clipped_by_parent                                     | HARD_FAIL (always)                                  | SVG img bbox clipped by ancestor with overflow != visible                       |
 | aspect_distorted_HF | checks.artwork_integrity.aspect_distorted filtered by severity === 'HARD_FAIL' | HARD_FAIL for glassware, pipette, plate, instrument | Rendered aspect ratio differs from natural by >5% on high-priority object class |
 
 ### Pseudocode of proposed scoring formula
@@ -140,41 +142,44 @@ Phase 3: retire hard_fails_legacy.
 
 From precheck_batch1_summary.md:
 
-| Failure type | Total count (110 scenes) |
-| --- | --- |
-| clipped_by_parent | 631 |
-| aspect_distorted_HF | 570 |
-| region_overflow | 2 |
-| clipped_artwork | 0 |
-| off_page | 0 |
-| svg_svg_overlap | 0 |
+| Failure type        | Total count (110 scenes) |
+| ------------------- | ------------------------ |
+| clipped_by_parent   | 631                      |
+| aspect_distorted_HF | 570                      |
+| region_overflow     | 2                        |
+| clipped_artwork     | 0                        |
+| off_page            | 0                        |
+| svg_svg_overlap     | 0                        |
 
 Hard-fail distribution:
 
 | hard_fail_count | scenes |
-| --- | --- |
-| 1 | 7 |
-| 2 | 101 |
-| 3 | 2 |
+| --------------- | ------ |
+| 1               | 7      |
+| 2               | 101    |
+| 3               | 2      |
 
 All 110 scenes had at least one clipped_by_parent or aspect_distorted_HF. Every scene had hard_fail_count >= 1 in precheck verdict. Under aligned scoring: extendedHardFailCount > 0 for all 110.
 
 Expected effect:
+
 - Current Batch 1 median: 41, mean: 38.6
 - Expected post-alignment median: 0, mean: 0 (all 110 scenes zeroed)
-- Exception: stress_many_bottles_scene_001/_002 already 0 under legacy (region_overflow). Stay at 0.
+- Exception: stress_many_bottles_scene_001/\_002 already 0 under legacy (region_overflow). Stay at 0.
 - Net change: 108 scenes move from nonzero to 0.
 
 ### Batch 2-N canonical (post-Workstream-N, legacy scoring)
 
 From scorecard_batch2_n_canonical_summary.md:
+
 - Current median: 41, mean: 37.8
-- 2 scenes already 0: stress_many_bottles_scene_001/_002 (region_overflow)
+- 2 scenes already 0: stress_many_bottles_scene_001/\_002 (region_overflow)
 - Remaining 108: had 0 clipped_by_parent and 0 aspect_distorted_HF post-N
 
 Under aligned scoring: 108 scenes unchanged (extended = 0). 2 many_bottles stay at 0.
 
 Expected effect:
+
 - Median: 41 (unchanged)
 - Mean: ~37 (marginal)
 - Per-scene delta: all 110 essentially unchanged
@@ -182,10 +187,12 @@ Expected effect:
 ### dense_clutter_014 (Workstream-D finding)
 
 From batch3_d_dense_clutter_014_analysis.md:
+
 - Pre-fix (batch1): 10 clipped_by_parent HARD_FAILs + 8 aspect_distorted HARD_FAILs; scorecard reported hard_fails=0 and total=49
 - Post-fix (batch2_n_canonical): 0 clipped_by_parent, score 30
 
 Under aligned scoring:
+
 - Pre-fix aligned: 0 (extendedHardFailCount >= 10, zeroing fires)
 - Post-fix aligned: 30 (unchanged)
 - The 49->30 "regression" is reframed: true trajectory is 0->30, an IMPROVEMENT. The regression was measurement artifact.
@@ -195,6 +202,7 @@ Under aligned scoring:
 Under legacy scoring, Workstream-N appeared neutral on scorecard (Batch 1 median 41, Batch 2-N median 41).
 
 Under aligned scoring, Workstream-N win is much larger:
+
 - N moved 108 scenes from "would-be zero" (active crop violations legacy scoring ignored) to measured composition scores (range 15-53, median ~41)
 - Mean uplift: ~37-40 points across 108 scenes
 - N did not preserve scores. It LIFTED 108 scenes from hard-fail-zeroed state into valid scoring territory.
@@ -226,6 +234,7 @@ Phase 2 switches zeroing. Pipelines reading cached Batch 1 scorecard total_layou
 ### Phase 1: Additive fields, no score change (low risk)
 
 Change computeSceneMetrics to compute both counts. Add hard_fails_legacy + hard_fails_extended to scorecard JSON. Do NOT change hard_fails or zeroing formula. Re-run on Batch 1 and Batch 2-N canonical to confirm:
+
 - Batch 1: all 110 scenes show hard_fails_extended >= 1
 - Batch 2-N canonical: 108 scenes show hard_fails_extended = 0; 2 show >= 1 (many_bottles)
 

@@ -57,13 +57,13 @@ two languages) is resolved by giving the object a single authoring surface.
 Identity fields name the object and classify it. They are stable across
 scenes; a scene placement may not override them (RD-2, encoded by WP-BND1).
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| id | string | yes | Stable object id. Unique across the object library. |
-| kind | enum | yes | Coarse classification: plate, bottle, flask, pipette, rack, waste, equipment, decoration. Mirrors today's `kind` sub-field; the inventory observed all eight values. |
-| label | string | yes | Default human-readable name. A scene placement may override per RD-2; the object owns the default. |
-| short_label | string | no | Optional shorter label for tight zones. Object-owned default; scene may override per RD-2. |
-| inventory_ref | string | no | Reference into a curriculum-level inventory entry. Plan-listed identity field; not observed in current YAML (inventory note 6). Reserved on the object side so the cleaned scene YAML never carries it. |
+| Field         | Type   | Required | Purpose                                                                                                                                                                                                 |
+| ------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| id            | string | yes      | Stable object id. Unique across the object library.                                                                                                                                                     |
+| kind          | enum   | yes      | Coarse classification: plate, bottle, flask, pipette, rack, waste, equipment, decoration. Mirrors today's `kind` sub-field; the inventory observed all eight values.                                    |
+| label         | string | yes      | Default human-readable name. A scene placement may override per RD-2; the object owns the default.                                                                                                      |
+| short_label   | string | no       | Optional shorter label for tight zones. Object-owned default; scene may override per RD-2.                                                                                                              |
+| inventory_ref | string | no       | Reference into a curriculum-level inventory entry. Plan-listed identity field; not observed in current YAML (inventory note 6). Reserved on the object side so the cleaned scene YAML never carries it. |
 
 Notes:
 
@@ -88,15 +88,15 @@ object (a bottle, a flask, a single-tube vial). An object with a structure
 block is a structured surface, and its subparts are first-class addressable
 units inside that object's namespace.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| structure.subpart_kind | string | yes (if structure present) | What each subpart is (well, tube, lane, slot, channel). |
-| structure.layout | enum | yes (if structure present) | grid, list, or custom. A grid declares rows and cols; a list declares an ordered count; custom is reserved for future use. |
-| structure.rows | int | grid only | Row count. |
-| structure.cols | int | grid only | Column count. |
-| structure.count | int | list only | Subpart count. |
-| structure.id_pattern | string | yes (if structure present) | How a subpart id is built from its row / col / index (for example A1..H12 for a 96-well plate, slot_0..slot_7 for a rack). |
-| structure.subpart_state_fields | list of state_field | no | A schema of state variables that every subpart carries (for example `held_liquid` per well). Same shape as the object-level `state_fields` schema below; applied per subpart. |
+| Field                          | Type                | Required                   | Purpose                                                                                                                                                                       |
+| ------------------------------ | ------------------- | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| structure.subpart_kind         | string              | yes (if structure present) | What each subpart is (well, tube, lane, slot, channel).                                                                                                                       |
+| structure.layout               | enum                | yes (if structure present) | grid, list, or custom. A grid declares rows and cols; a list declares an ordered count; custom is reserved for future use.                                                    |
+| structure.rows                 | int                 | grid only                  | Row count.                                                                                                                                                                    |
+| structure.cols                 | int                 | grid only                  | Column count.                                                                                                                                                                 |
+| structure.count                | int                 | list only                  | Subpart count.                                                                                                                                                                |
+| structure.id_pattern           | string              | yes (if structure present) | How a subpart id is built from its row / col / index (for example A1..H12 for a 96-well plate, slot_0..slot_7 for a rack).                                                    |
+| structure.subpart_state_fields | list of state_field | no                         | A schema of state variables that every subpart carries (for example `held_liquid` per well). Same shape as the object-level `state_fields` schema below; applied per subpart. |
 
 Subpart state is not a separate vocabulary; it is the same `state_fields`
 schema applied at subpart granularity. A 96-well plate has zero or few
@@ -147,14 +147,14 @@ inventory's runtime liquid-state model (`LiquidEntry`, `ContainerLiquid`,
 `LiquidState`) is the test case: every runtime state value must be
 expressible as a declared `state_field` (WP-RAT-C1 will check this).
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| name | string | yes | Field name, snake_case, scoped to this object. |
-| type | enum | yes | One of: enum, int, float, bool, string, liquid, set_point. The non-primitive types (liquid, set_point) are named because the inventory's candidate state_fields require them. |
-| allowed | list or range | yes | For enum: list of allowed string values. For int / float: a {min, max} range or `unbounded`. For liquid / set_point: a structured constraint (see below). For bool / string: omitted or `any`. |
-| default | matches type | yes | Initial value when the object is instantiated. Required so an object's start state is never undefined. |
-| applies_to | enum | no | object (default) or subpart. When `subpart`, the field is declared per subpart instead of per object. Equivalent to listing the same field under `structure.subpart_state_fields`. |
-| description | string | no | One-line author-facing description. |
+| Field       | Type          | Required | Purpose                                                                                                                                                                                        |
+| ----------- | ------------- | -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name        | string        | yes      | Field name, snake_case, scoped to this object.                                                                                                                                                 |
+| type        | enum          | yes      | One of: enum, int, float, bool, string, liquid, set_point. The non-primitive types (liquid, set_point) are named because the inventory's candidate state_fields require them.                  |
+| allowed     | list or range | yes      | For enum: list of allowed string values. For int / float: a {min, max} range or `unbounded`. For liquid / set_point: a structured constraint (see below). For bool / string: omitted or `any`. |
+| default     | matches type  | yes      | Initial value when the object is instantiated. Required so an object's start state is never undefined.                                                                                         |
+| applies_to  | enum          | no       | object (default) or subpart. When `subpart`, the field is declared per subpart instead of per object. Equivalent to listing the same field under `structure.subpart_state_fields`.             |
+| description | string        | no       | One-line author-facing description.                                                                                                                                                            |
 
 Type-specific constraints:
 
@@ -190,12 +190,12 @@ visual.
 The render_map is keyed by `state_field` name. For each named state_field,
 it maps state values to visual outputs.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| render_map.<field>.kind | enum | yes | One of: svg, color, overlay, composite. svg names a base SVG asset id. color names a color key (matching the inventory's `LiquidEntry.colorKey`). overlay names an SVG fragment composited over the base. composite is a list of any of the above. |
-| render_map.<field>.cases | list of case | yes for enum / bool | One case per allowed value of the state_field. Each case has a `when` (the state value) and an output (svg id, color, overlay, or composite list). |
-| render_map.<field>.formula | string | yes for int / float / liquid / set_point | A declarative recipe (for example "fill the container SVG to height proportional to total_volume_ml / capacity"). For numeric and liquid types where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The formula vocabulary is intentionally small and is fixed by the object vocabulary, not by per-object code. |
-| render_map.<field>.applies_to | enum | no | object (default) or subpart. When `subpart`, the render_map applies per subpart (for example one fill per well). |
+| Field                         | Type         | Required                                 | Purpose                                                                                                                                                                                                                                                                                                                                                            |
+| ----------------------------- | ------------ | ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| render_map.<field>.kind       | enum         | yes                                      | One of: svg, color, overlay, composite. svg names a base SVG asset id. color names a color key (matching the inventory's `LiquidEntry.colorKey`). overlay names an SVG fragment composited over the base. composite is a list of any of the above.                                                                                                                 |
+| render_map.<field>.cases      | list of case | yes for enum / bool                      | One case per allowed value of the state_field. Each case has a `when` (the state value) and an output (svg id, color, overlay, or composite list).                                                                                                                                                                                                                 |
+| render_map.<field>.formula    | string       | yes for int / float / liquid / set_point | A declarative recipe (for example "fill the container SVG to height proportional to total_volume_ml / capacity"). For numeric and liquid types where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The formula vocabulary is intentionally small and is fixed by the object vocabulary, not by per-object code. |
+| render_map.<field>.applies_to | enum         | no                                       | object (default) or subpart. When `subpart`, the render_map applies per subpart (for example one fill per well).                                                                                                                                                                                                                                                   |
 
 Rules:
 
@@ -218,8 +218,8 @@ current scene files (per RD-5, exact counts live in the inventory
 artifact); in the cleaned vocabulary it moves to the object (a capability
 is a property of what the thing is, not where it is placed).
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
+| Field        | Type           | Required           | Purpose                                                                                                                                     |
+| ------------ | -------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | capabilities | list of string | yes (may be empty) | Coarse affordance tags. The vocabulary itself defines the closed list of allowed capability strings; an object may not invent capabilities. |
 
 Per RD-2, a scene placement may not override capabilities. An object that is
@@ -234,13 +234,13 @@ which are visual metrics of the object itself, not of any one scene.
 Per RD-2, a scene placement may override layout hints (this is the only
 override category besides `label`).
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| layout.default_width | float | yes | Default visual width in layout units. Today's `defaultWidth`. |
-| layout.label_width | float | no | Width budget for the label. Today's `labelWidth`. |
-| layout.anchor_y_offset | float | no | Vertical anchor adjustment. Today's `anchorYOffset`; observed only on pipette assets (per RD-5, exact counts live in the inventory artifact). |
-| layout.width_scale | float | no | Per-object width multiplier. Today's `widthScale`; observed mainly on equipment. |
-| layout.anchor_y | enum | no | bottom or tip. Today's `anchorY` placement sub-field; reclassified as an object default per the rule that a serological pipette is anchored at its tip wherever it is placed. A scene may override per RD-2. |
+| Field                  | Type  | Required | Purpose                                                                                                                                                                                                      |
+| ---------------------- | ----- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| layout.default_width   | float | yes      | Default visual width in layout units. Today's `defaultWidth`.                                                                                                                                                |
+| layout.label_width     | float | no       | Width budget for the label. Today's `labelWidth`.                                                                                                                                                            |
+| layout.anchor_y_offset | float | no       | Vertical anchor adjustment. Today's `anchorYOffset`; observed only on pipette assets (per RD-5, exact counts live in the inventory artifact).                                                                |
+| layout.width_scale     | float | no       | Per-object width multiplier. Today's `widthScale`; observed mainly on equipment.                                                                                                                             |
+| layout.anchor_y        | enum  | no       | bottom or tip. Today's `anchorY` placement sub-field; reclassified as an object default per the rule that a serological pipette is anchored at its tip wherever it is placed. A scene may override per RD-2. |
 
 ### Object ownership of SVG manipulation (rule statement)
 
@@ -284,7 +284,7 @@ structure:
   layout: grid
   rows: 8
   cols: 12
-  id_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
+  id_pattern: "{row_letter}{col}" # A1..H12; row_letter is A..H, col is 1..12
   target_groups:
     - name: row_A
       label: Row A
@@ -321,7 +321,7 @@ layout:
 ```
 
 Reading: the plate has no plate-level state, 96 wells (A1..H12) each
-carrying a `held_liquid` state_field, four named groups (a row, a column,
+carrying a `held_liquid` state*field, four named groups (a row, a column,
 a control set, a treatment set) that a protocol may address as
 `treatment_plate.row_A` or `treatment_plate.control_wells`, and a single
 render_map entry that resolves any well's `held_liquid` value to a fill
@@ -329,7 +329,7 @@ height and tint. No SVG asset id appears in any state_field. The
 `row_letter` and `col` tokens in `id_pattern` are object-vocabulary
 literals (the row index 0..7 maps to A..H; the col index 1..12 maps to
 itself); the same pattern would express `slot_0..slot_7` for a list-layout
-rack via `id_pattern: "slot_{index}"`.
+rack via `id_pattern: "slot*{index}"`.
 
 ### Worked example: serological pipette
 
@@ -359,7 +359,7 @@ state_fields:
     description: Aspirated liquid currently in the pipette barrel.
   - name: set_point
     type: set_point
-    allowed: {min: 0.1, max: 25.0, unit: mL}
+    allowed: { min: 0.1, max: 25.0, unit: mL }
     default: 1.0
     description: Volume the pipette is set to dispense.
 
@@ -509,10 +509,10 @@ Consequence for the cleaned scene YAML: the scene declares one optional
 covers; it never declares clickable behavior on the background and never
 attaches state, capabilities, or a render_map to it.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| background.asset | string | yes (if background present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file. |
-| background.bounds | rect | no | Optional explicit bounds. Defaults to the scene's `scene_bounds`. |
+| Field             | Type   | Required                    | Purpose                                                                                   |
+| ----------------- | ------ | --------------------------- | ----------------------------------------------------------------------------------------- |
+| background.asset  | string | yes (if background present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file. |
+| background.bounds | rect   | no                          | Optional explicit bounds. Defaults to the scene's `scene_bounds`.                         |
 
 ### Object reference (object-by-id placement)
 
@@ -530,16 +530,16 @@ placement may not override identity, `state_fields`, `render_map`, or
 authoritative list; the scene side simply consumes the override surface
 the boundary defines.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| placement.placement_id | string | yes | Stable per-scene id for this placement. Distinct from `object_id`: a scene may place the same object more than once, and each placement needs its own scene-scoped id (for example two `dilution_tube_rack` instances). |
-| placement.object_id | string | yes | The id of the object in the object library. The object resolves identity, structure, state_fields, render_map, and capabilities. |
-| placement.zone | string | yes | The zone (named region) this placement belongs to. See "Zones" below. The fused-format `scene:` spelling observed in `content/plate_drug_treatment/scene.yaml` (inventory inconsistency 5) is replaced by `zone:` everywhere; `scene:` is removed from the cleaned vocabulary. |
-| placement.depth_tier | int | no | Numeric layering hint within the zone. Today's `depthTier`. |
-| placement.align_stop | enum | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. Today's `alignStop`. |
-| placement.baseline_override | float | no | Per-instance baseline override. Today's `baselineOverride` (rare; one observed use). |
-| placement.label | string | no | Per-RD-2 instance override of the object's default label. |
-| placement.layout | object | no | Per-RD-2 instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
+| Field                       | Type   | Required | Purpose                                                                                                                                                                                                                                                                        |
+| --------------------------- | ------ | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| placement.placement_id      | string | yes      | Stable per-scene id for this placement. Distinct from `object_id`: a scene may place the same object more than once, and each placement needs its own scene-scoped id (for example two `dilution_tube_rack` instances).                                                        |
+| placement.object_id         | string | yes      | The id of the object in the object library. The object resolves identity, structure, state_fields, render_map, and capabilities.                                                                                                                                               |
+| placement.zone              | string | yes      | The zone (named region) this placement belongs to. See "Zones" below. The fused-format `scene:` spelling observed in `content/plate_drug_treatment/scene.yaml` (inventory inconsistency 5) is replaced by `zone:` everywhere; `scene:` is removed from the cleaned vocabulary. |
+| placement.depth_tier        | int    | no       | Numeric layering hint within the zone. Today's `depthTier`.                                                                                                                                                                                                                    |
+| placement.align_stop        | enum   | no       | One of `left`, `center`, `right`. Tab-stop group for the layout engine. Today's `alignStop`.                                                                                                                                                                                   |
+| placement.baseline_override | float  | no       | Per-instance baseline override. Today's `baselineOverride` (rare; one observed use).                                                                                                                                                                                           |
+| placement.label             | string | no       | Per-RD-2 instance override of the object's default label.                                                                                                                                                                                                                      |
+| placement.layout            | object | no       | Per-RD-2 instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default.              |
 
 Notes:
 
@@ -565,12 +565,12 @@ A zone is scene-side because it is a property of where things go, not of
 what any thing is. Zones do not carry identity, state, or rendering;
 they carry geometry and arrangement.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| zone.id | string | yes | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`. |
-| zone.bounds | rect | yes | Zone bounds inside the scene. The layout engine uses these to size and position the zone. |
-| zone.align | enum | no | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
-| zone.label | string | no | Optional human-readable label for authoring and debugging. |
+| Field       | Type   | Required | Purpose                                                                                                                           |
+| ----------- | ------ | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| zone.id     | string | yes      | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`.                                               |
+| zone.bounds | rect   | yes      | Zone bounds inside the scene. The layout engine uses these to size and position the zone.                                         |
+| zone.align  | enum   | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
+| zone.label  | string | no       | Optional human-readable label for authoring and debugging.                                                                        |
 
 ### Spatial arrangement (scene_bounds, layout_rules)
 
@@ -578,10 +578,10 @@ The scene declares the outer bounds of its own surface and the
 scene-wide layout rules the layout engine consumes when arranging
 zones and placements.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| scene_bounds | rect | yes | Outer bounds of the scene surface. Today's `sceneBounds`. |
-| layout_rules | object | no | Scene-wide arrangement rules (label sizing, offset hints, tab-stop budgets). Today's `layoutRules`. |
+| Field        | Type   | Required | Purpose                                                                                             |
+| ------------ | ------ | -------- | --------------------------------------------------------------------------------------------------- |
+| scene_bounds | rect   | yes      | Outer bounds of the scene surface. Today's `sceneBounds`.                                           |
+| layout_rules | object | no       | Scene-wide arrangement rules (label sizing, offset hints, tab-stop budgets). Today's `layoutRules`. |
 
 `layout_rules` is intentionally narrow: it carries scene-wide hints the
 layout engine needs to resolve placements; it does not carry object
@@ -605,20 +605,20 @@ clicks placements in an order the protocol rejects. It is a property of
 how this scene gives feedback, not of any one object's identity or
 state. The cleaned scene vocabulary keeps it scene-side.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| wrong_order_message | string | no | UI toast text for wrong-order interactions. Today's `wrongOrderMessage`. |
+| Field               | Type   | Required | Purpose                                                                  |
+| ------------------- | ------ | -------- | ------------------------------------------------------------------------ |
+| wrong_order_message | string | no       | UI toast text for wrong-order interactions. Today's `wrongOrderMessage`. |
 
 ### Scene identity
 
 The scene itself carries a small identity block. These fields name the
 scene and the workspace it targets; they are not object identity.
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| scene_id | string | yes | Stable scene id. Today's `sceneId`. |
-| workspace | string | yes | Workspace this scene targets. Today's `workspace`. |
-| element_id | string | no | DOM mount point for the scene. Today's `elementId`. |
+| Field      | Type   | Required | Purpose                                             |
+| ---------- | ------ | -------- | --------------------------------------------------- |
+| scene_id   | string | yes      | Stable scene id. Today's `sceneId`.                 |
+| workspace  | string | yes      | Workspace this scene targets. Today's `workspace`.  |
+| element_id | string | no       | DOM mount point for the scene. Today's `elementId`. |
 
 ### Keys and item sub-fields that move out of scene YAML into object YAML
 
@@ -638,54 +638,54 @@ versus scene).
 
 #### items[] sub-fields that move into object YAML
 
-| Today's sub-field | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
-| --- | --- | --- | --- |
-| id | object-identity | 5 | Object YAML: object identity. Scene placement instead names the object via `object_id`. |
-| label | object-identity | 5 | Object YAML: object identity. Per RD-2, a scene placement may override per-instance. |
-| shortLabel | object-identity | 2 | Object YAML: object identity (`short_label`). Per RD-2, a scene placement may override. |
-| kind | object-identity | 3 | Object YAML: object identity (closed enum: plate, bottle, flask, pipette, rack, waste, equipment, decoration). |
-| svgAsset | object-identity | 3 | Object YAML: resolved through `render_map`, not declared as a literal field. The object owns SVG manipulation. |
-| inventoryRef | object-identity | 0 | Object YAML: object identity (`inventory_ref`). Plan-listed; not observed in any current scene file (inventory note 6). |
+| Today's sub-field | Inventory tag   | Files using it (out of 7) | Cleaned-vocabulary home                                                                                                 |
+| ----------------- | --------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| id                | object-identity | 5                         | Object YAML: object identity. Scene placement instead names the object via `object_id`.                                 |
+| label             | object-identity | 5                         | Object YAML: object identity. Per RD-2, a scene placement may override per-instance.                                    |
+| shortLabel        | object-identity | 2                         | Object YAML: object identity (`short_label`). Per RD-2, a scene placement may override.                                 |
+| kind              | object-identity | 3                         | Object YAML: object identity (closed enum: plate, bottle, flask, pipette, rack, waste, equipment, decoration).          |
+| svgAsset          | object-identity | 3                         | Object YAML: resolved through `render_map`, not declared as a literal field. The object owns SVG manipulation.          |
+| inventoryRef      | object-identity | 0                         | Object YAML: object identity (`inventory_ref`). Plan-listed; not observed in any current scene file (inventory note 6). |
 
 #### items[] sub-field reclassified to object layout hints
 
-| Today's sub-field | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
-| --- | --- | --- | --- |
-| anchorY | placement | 3 | Object YAML: layout hint (`layout.anchor_y`). Reclassified by WP-OBJ1 because a serological pipette is anchored at its tip wherever it is placed. Per RD-2, a scene placement may override. |
+| Today's sub-field | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home                                                                                                                                                                     |
+| ----------------- | ------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| anchorY           | placement     | 3                         | Object YAML: layout hint (`layout.anchor_y`). Reclassified by WP-OBJ1 because a serological pipette is anchored at its tip wherever it is placed. Per RD-2, a scene placement may override. |
 
 #### items[] sub-fields that stay scene-side
 
-| Today's sub-field | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
-| --- | --- | --- | --- |
-| zone | placement | 3 | Scene YAML: `placement.zone`. |
-| scene | placement | 1 | Removed. The single `content/plate_drug_treatment/scene.yaml` use is renamed to `zone` (inventory inconsistency 5). |
-| depthTier | placement | 3 | Scene YAML: `placement.depth_tier`. |
-| widthScale | placement | 3 | Scene YAML override only when the placement overrides the object default; the underlying field is the object's `layout.width_scale`. Per RD-2 a placement may override. |
-| alignStop | placement | 3 | Scene YAML: `placement.align_stop`. |
-| baselineOverride | placement | 1 | Scene YAML: `placement.baseline_override`. |
-| depth | placement | 0 | Scene YAML: reserved on the placement side; plan-listed but not observed (inventory note 6). |
+| Today's sub-field | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home                                                                                                                                                 |
+| ----------------- | ------------- | ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| zone              | placement     | 3                         | Scene YAML: `placement.zone`.                                                                                                                                           |
+| scene             | placement     | 1                         | Removed. The single `content/plate_drug_treatment/scene.yaml` use is renamed to `zone` (inventory inconsistency 5).                                                     |
+| depthTier         | placement     | 3                         | Scene YAML: `placement.depth_tier`.                                                                                                                                     |
+| widthScale        | placement     | 3                         | Scene YAML override only when the placement overrides the object default; the underlying field is the object's `layout.width_scale`. Per RD-2 a placement may override. |
+| alignStop         | placement     | 3                         | Scene YAML: `placement.align_stop`.                                                                                                                                     |
+| baselineOverride  | placement     | 1                         | Scene YAML: `placement.baseline_override`.                                                                                                                              |
+| depth             | placement     | 0                         | Scene YAML: reserved on the placement side; plan-listed but not observed (inventory note 6).                                                                            |
 
 #### Top-level scene-YAML keys that move into object YAML
 
-| Today's top-level key | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
-| --- | --- | --- | --- |
-| capabilities | object-identity | 6 | Object YAML: object capabilities. Per RD-2 a scene placement may not override. |
-| target_groups | object-identity | 0 | Retired per RD-9: named groups are deferred from the initial vocabulary. Plan-listed; not observed in any current scene file. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. |
-| items (identity half) | object-identity + placement | 5 | Split: identity sub-fields above move into object YAML; placement sub-fields above stay scene-side as `placements[]`. |
+| Today's top-level key | Inventory tag               | Files using it (out of 7) | Cleaned-vocabulary home                                                                                                                                                                                                  |
+| --------------------- | --------------------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| capabilities          | object-identity             | 6                         | Object YAML: object capabilities. Per RD-2 a scene placement may not override.                                                                                                                                           |
+| target_groups         | object-identity             | 0                         | Retired per RD-9: named groups are deferred from the initial vocabulary. Plan-listed; not observed in any current scene file. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. |
+| items (identity half) | object-identity + placement | 5                         | Split: identity sub-fields above move into object YAML; placement sub-fields above stay scene-side as `placements[]`.                                                                                                    |
 
 #### Top-level scene-YAML keys that stay scene-side
 
-| Today's top-level key | Inventory tag | Files using it (out of 7) | Cleaned-vocabulary home |
-| --- | --- | --- | --- |
-| sceneId | object-identity | 7 | Scene YAML: scene identity (`scene_id`). Object-identity in the inventory only in the sense of naming the scene itself. |
-| workspace | object-identity | 7 | Scene YAML: scene identity. |
-| elementId | object-identity | 3 | Scene YAML: scene identity (`element_id`). |
-| zones | placement | 5 | Scene YAML: `zones[]`. |
-| sceneBounds | placement | 2 | Scene YAML: `scene_bounds`. |
-| layoutRules | placement | 3 | Scene YAML: `layout_rules`. |
-| accentRules | placement | 0 | Scene YAML: reserved; plan-listed but not observed (inventory note 4). |
-| tabStops | placement | 0 | Scene YAML: reserved; plan-listed but not observed. Today expressed via `zone.align: tab-stops` plus per-placement `align_stop`. |
-| wrongOrderMessage | placement | 5 | Scene YAML: `wrong_order_message`. |
+| Today's top-level key | Inventory tag   | Files using it (out of 7) | Cleaned-vocabulary home                                                                                                          |
+| --------------------- | --------------- | ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| sceneId               | object-identity | 7                         | Scene YAML: scene identity (`scene_id`). Object-identity in the inventory only in the sense of naming the scene itself.          |
+| workspace             | object-identity | 7                         | Scene YAML: scene identity.                                                                                                      |
+| elementId             | object-identity | 3                         | Scene YAML: scene identity (`element_id`).                                                                                       |
+| zones                 | placement       | 5                         | Scene YAML: `zones[]`.                                                                                                           |
+| sceneBounds           | placement       | 2                         | Scene YAML: `scene_bounds`.                                                                                                      |
+| layoutRules           | placement       | 3                         | Scene YAML: `layout_rules`.                                                                                                      |
+| accentRules           | placement       | 0                         | Scene YAML: reserved; plan-listed but not observed (inventory note 4).                                                           |
+| tabStops              | placement       | 0                         | Scene YAML: reserved; plan-listed but not observed. Today expressed via `zone.align: tab-stops` plus per-placement `align_stop`. |
+| wrongOrderMessage     | placement       | 5                         | Scene YAML: `wrong_order_message`.                                                                                               |
 
 Boundary calls deferred to WP-BND1: the cross-vocabulary placement of
 `SvgSwap` and `ColorChange` (RD-3) is WP-PROTO1's; the per-key,
@@ -778,20 +778,20 @@ to exactly one vocabulary. The "Override" column states whether a scene
 placement may override the object-side value per RD-2; for scene-side keys it
 records "n/a" (the key has no object-side counterpart).
 
-| Today's top-level key | Vocabulary | Cleaned-vocabulary home | Override (RD-2) |
-| --- | --- | --- | --- |
-| sceneId | scene | `scene_id` (scene identity) | n/a |
-| workspace | scene | `workspace` (scene identity) | n/a |
-| elementId | scene | `element_id` (scene identity) | n/a |
-| capabilities | object | object `capabilities` (closed list) | no -- identity-class, scene may not override |
-| items | object + scene (split) | identity sub-fields move to object YAML; placement sub-fields stay scene-side as `placements[]` | per sub-field row below |
-| zones | scene | `zones[]` (named placement regions) | n/a |
-| sceneBounds | scene | `scene_bounds` (outer surface) | n/a |
-| layoutRules | scene | `layout_rules` (scene-wide arrangement hints) | n/a |
-| accentRules | scene | `accent_rules` (reserved; not observed) | n/a |
-| tabStops | scene | reserved; expressed today as `zone.align: tab-stops` plus per-placement `align_stop` | n/a |
-| target_groups | retired (RD-9) | per RD-9, named groups are deferred from the initial vocabulary; the scene side never carried this key in any current scene YAML, and the object side defers it. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. | n/a |
-| wrongOrderMessage | scene | `wrong_order_message` (scene-level UI feedback) | n/a |
+| Today's top-level key | Vocabulary             | Cleaned-vocabulary home                                                                                                                                                                                                                                     | Override (RD-2)                              |
+| --------------------- | ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| sceneId               | scene                  | `scene_id` (scene identity)                                                                                                                                                                                                                                 | n/a                                          |
+| workspace             | scene                  | `workspace` (scene identity)                                                                                                                                                                                                                                | n/a                                          |
+| elementId             | scene                  | `element_id` (scene identity)                                                                                                                                                                                                                               | n/a                                          |
+| capabilities          | object                 | object `capabilities` (closed list)                                                                                                                                                                                                                         | no -- identity-class, scene may not override |
+| items                 | object + scene (split) | identity sub-fields move to object YAML; placement sub-fields stay scene-side as `placements[]`                                                                                                                                                             | per sub-field row below                      |
+| zones                 | scene                  | `zones[]` (named placement regions)                                                                                                                                                                                                                         | n/a                                          |
+| sceneBounds           | scene                  | `scene_bounds` (outer surface)                                                                                                                                                                                                                              | n/a                                          |
+| layoutRules           | scene                  | `layout_rules` (scene-wide arrangement hints)                                                                                                                                                                                                               | n/a                                          |
+| accentRules           | scene                  | `accent_rules` (reserved; not observed)                                                                                                                                                                                                                     | n/a                                          |
+| tabStops              | scene                  | reserved; expressed today as `zone.align: tab-stops` plus per-placement `align_stop`                                                                                                                                                                        | n/a                                          |
+| target_groups         | retired (RD-9)         | per RD-9, named groups are deferred from the initial vocabulary; the scene side never carried this key in any current scene YAML, and the object side defers it. RD-4's "subparts belong to the object" rule still holds; protocols list explicit subparts. | n/a                                          |
+| wrongOrderMessage     | scene                  | `wrong_order_message` (scene-level UI feedback)                                                                                                                                                                                                             | n/a                                          |
 
 Coverage: 12 keys, each assigned to exactly one vocabulary. The `items` row
 straddles object and scene because every `items[]` entry today fuses identity
@@ -807,22 +807,22 @@ assigned to exactly one vocabulary. The "Override (RD-2)" column states
 whether a scene placement may override the object-side default; placement
 sub-fields are scene-native and the column reads "n/a".
 
-| Today's items[] sub-field | Vocabulary | Cleaned-vocabulary home | Override (RD-2) |
-| --- | --- | --- | --- |
-| id | object | object `id` (identity) | no -- identity, scene may not override |
-| label | object | object `label` (identity) | yes -- placement may override per RD-2 |
-| shortLabel | object | object `short_label` (identity) | yes -- placement may override per RD-2 |
-| kind | object | object `kind` (identity, closed enum) | no -- identity, scene may not override |
-| svgAsset | object | resolved through object `render_map`; not authored as a literal field | no -- render_map is object-owned |
-| inventoryRef | object | object `inventory_ref` (identity) | no -- identity, scene may not override |
-| anchorY | object | object `layout.anchor_y` (layout hint) | yes -- placement may override per RD-2 |
-| zone | scene | `placement.zone` | n/a |
-| scene | scene | removed -- single use renamed to `placement.zone` (inventory inconsistency 5) | n/a |
-| depthTier | scene | `placement.depth_tier` | n/a |
-| widthScale | scene + object | object `layout.width_scale` default; placement may override per RD-2 | yes -- placement override surface |
-| alignStop | scene | `placement.align_stop` | n/a |
-| baselineOverride | scene | `placement.baseline_override` | n/a |
-| depth | scene | `placement.depth` (reserved; plan-listed but not observed) | n/a |
+| Today's items[] sub-field | Vocabulary     | Cleaned-vocabulary home                                                       | Override (RD-2)                        |
+| ------------------------- | -------------- | ----------------------------------------------------------------------------- | -------------------------------------- |
+| id                        | object         | object `id` (identity)                                                        | no -- identity, scene may not override |
+| label                     | object         | object `label` (identity)                                                     | yes -- placement may override per RD-2 |
+| shortLabel                | object         | object `short_label` (identity)                                               | yes -- placement may override per RD-2 |
+| kind                      | object         | object `kind` (identity, closed enum)                                         | no -- identity, scene may not override |
+| svgAsset                  | object         | resolved through object `render_map`; not authored as a literal field         | no -- render_map is object-owned       |
+| inventoryRef              | object         | object `inventory_ref` (identity)                                             | no -- identity, scene may not override |
+| anchorY                   | object         | object `layout.anchor_y` (layout hint)                                        | yes -- placement may override per RD-2 |
+| zone                      | scene          | `placement.zone`                                                              | n/a                                    |
+| scene                     | scene          | removed -- single use renamed to `placement.zone` (inventory inconsistency 5) | n/a                                    |
+| depthTier                 | scene          | `placement.depth_tier`                                                        | n/a                                    |
+| widthScale                | scene + object | object `layout.width_scale` default; placement may override per RD-2          | yes -- placement override surface      |
+| alignStop                 | scene          | `placement.align_stop`                                                        | n/a                                    |
+| baselineOverride          | scene          | `placement.baseline_override`                                                 | n/a                                    |
+| depth                     | scene          | `placement.depth` (reserved; plan-listed but not observed)                    | n/a                                    |
 
 Coverage: 14 sub-fields, each assigned to exactly one vocabulary. The
 `widthScale` row notes that the object owns the default layout hint and the
@@ -840,15 +840,15 @@ to `placement.zone` and the alternate spelling is dropped.
 A scene placement carries at most the following overrides; every other
 object-side field is fixed by the object definition.
 
-| Override field on `placement` | Object-side default it overrides | Vocabulary section |
-| --- | --- | --- |
-| placement.label | object `label` | object identity |
-| placement.short_label | object `short_label` | object identity |
-| placement.layout.default_width | object `layout.default_width` | object layout hints |
-| placement.layout.label_width | object `layout.label_width` | object layout hints |
-| placement.layout.anchor_y_offset | object `layout.anchor_y_offset` | object layout hints |
-| placement.layout.width_scale | object `layout.width_scale` | object layout hints |
-| placement.layout.anchor_y | object `layout.anchor_y` | object layout hints |
+| Override field on `placement`    | Object-side default it overrides | Vocabulary section  |
+| -------------------------------- | -------------------------------- | ------------------- |
+| placement.label                  | object `label`                   | object identity     |
+| placement.short_label            | object `short_label`             | object identity     |
+| placement.layout.default_width   | object `layout.default_width`    | object layout hints |
+| placement.layout.label_width     | object `layout.label_width`      | object layout hints |
+| placement.layout.anchor_y_offset | object `layout.anchor_y_offset`  | object layout hints |
+| placement.layout.width_scale     | object `layout.width_scale`      | object layout hints |
+| placement.layout.anchor_y        | object `layout.anchor_y`         | object layout hints |
 
 Per RD-2, a placement may not override `id`, `kind`, `inventory_ref`,
 `state_fields`, `render_map`, `target_groups`, or `capabilities`. An attempt
@@ -912,12 +912,12 @@ a color value.
 
 Typed fields:
 
-| Field | Type | Required | Purpose |
-| --- | --- | --- | --- |
-| op | const string | yes | Literal `ObjectStateChange`. Discriminates this primitive in the `scene_operation` union. |
-| target | object_ref | yes | Reference to the object or subpart whose state is being set. Forms: `<object_id>` (whole object) or `<object_id>.<subpart_id>` (one subpart, for example `treatment_plate.A1`). Per RD-9, named groups are deferred; emit one `ObjectStateChange` per subpart. |
-| state | flat map of state_field name to primitive value | yes | One or more `<state_field_name>: <value>` entries. Per RD-8, the map is flat-field-only: each name must exist in the target object's declared `state_fields` and each value must match that field's primitive type (`enum`, `int`, `float`, or `bool` per RD-11) and per-type metadata (per RD-12). Nested writes are not allowed. The validator rejects unknown field names and type-mismatched values. A multi-entry map sets fields atomically. |
-| transition | enum | no | One of: `instant`, `animated`. Default `instant`. Animation timing is an object/render-layer detail; the protocol only declares intent. |
+| Field      | Type                                            | Required | Purpose                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| ---------- | ----------------------------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| op         | const string                                    | yes      | Literal `ObjectStateChange`. Discriminates this primitive in the `scene_operation` union.                                                                                                                                                                                                                                                                                                                                                          |
+| target     | object_ref                                      | yes      | Reference to the object or subpart whose state is being set. Forms: `<object_id>` (whole object) or `<object_id>.<subpart_id>` (one subpart, for example `treatment_plate.A1`). Per RD-9, named groups are deferred; emit one `ObjectStateChange` per subpart.                                                                                                                                                                                     |
+| state      | flat map of state_field name to primitive value | yes      | One or more `<state_field_name>: <value>` entries. Per RD-8, the map is flat-field-only: each name must exist in the target object's declared `state_fields` and each value must match that field's primitive type (`enum`, `int`, `float`, or `bool` per RD-11) and per-type metadata (per RD-12). Nested writes are not allowed. The validator rejects unknown field names and type-mismatched values. A multi-entry map sets fields atomically. |
+| transition | enum                                            | no       | One of: `instant`, `animated`. Default `instant`. Animation timing is an object/render-layer detail; the protocol only declares intent.                                                                                                                                                                                                                                                                                                            |
 
 Rules:
 
@@ -988,16 +988,16 @@ invoked by the object's `render_map`). The fourth column names the
 protocol-level primitive that supersedes a render-layer mechanism, where
 applicable.
 
-| Primitive               | Layer         | Reason                                                                                                  | Protocol-level superseder         |
-| ----------------------- | ------------- | ------------------------------------------------------------------------------------------------------- | --------------------------------- |
-| SvgSwap                 | object/render | Names an SVG asset id; visual mechanism resolved by the object's render_map.                            | ObjectStateChange                 |
-| ColorChange             | object/render | Names a color value; visual mechanism resolved by the object's render_map. Reclassified per RD-3.        | ObjectStateChange                 |
-| CursorAttach            | protocol      | Names a semantic interaction (the cursor carries a referenced object). No SVG id or color is named.      | n/a (already protocol-level)      |
-| SceneChange             | protocol      | Names a scene-level transition. Outside any single object's render_map; belongs to scene-level intent.   | n/a (already protocol-level)      |
-| LayoutMove              | protocol      | Names a semantic placement change. Per RD-10, scope is narrow: move an existing placement only -- (a) reposition within the current scene (the layout engine handles row-to-row moves) or (b) cross-scene transition (remove the placement from one scene, add it to another, e.g., a pipette moving from hood to bench). The layout engine owns the visible motion; `LayoutMove` names what moves and where. | n/a (already protocol-level)      |
-| LiquidDisplayChange     | object/render | Reclassified to the object/render layer per RD-13: it named a display result (a fill height, a tint) instead of the semantic state change, the same drift `SvgSwap` and `ColorChange` carried (RD-3). The protocol sets the object's flat declared liquid `state_fields` (per RD-11: `liquid_id`, `liquid_volume`, `liquid_color` for vessels and wells; `held_liquid_id` and `held_liquid_volume` for tools) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the visual. | ObjectStateChange                 |
-| SetPointDisplayChange   | object/render | Reclassified to the object/render layer per RD-14: it named a display result (a numeric overlay label) instead of the semantic state change, the same drift `SvgSwap`, `ColorChange`, and `LiquidDisplayChange` carried (RD-3, RD-13). The protocol sets the object's flat declared set-point `state_fields` (per RD-11: `set_volume`, `set_temperature`, `set_rpm`, etc. as flat numeric fields) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the digit overlay or display visual. | ObjectStateChange                 |
-| TimedWait               | protocol      | Names a semantic pause in protocol flow; no object state and no visual identifier are named.             | n/a (already protocol-level)      |
+| Primitive             | Layer         | Reason                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Protocol-level superseder    |
+| --------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| SvgSwap               | object/render | Names an SVG asset id; visual mechanism resolved by the object's render_map.                                                                                                                                                                                                                                                                                                                                                                                                                                  | ObjectStateChange            |
+| ColorChange           | object/render | Names a color value; visual mechanism resolved by the object's render_map. Reclassified per RD-3.                                                                                                                                                                                                                                                                                                                                                                                                             | ObjectStateChange            |
+| CursorAttach          | protocol      | Names a semantic interaction (the cursor carries a referenced object). No SVG id or color is named.                                                                                                                                                                                                                                                                                                                                                                                                           | n/a (already protocol-level) |
+| SceneChange           | protocol      | Names a scene-level transition. Outside any single object's render_map; belongs to scene-level intent.                                                                                                                                                                                                                                                                                                                                                                                                        | n/a (already protocol-level) |
+| LayoutMove            | protocol      | Names a semantic placement change. Per RD-10, scope is narrow: move an existing placement only -- (a) reposition within the current scene (the layout engine handles row-to-row moves) or (b) cross-scene transition (remove the placement from one scene, add it to another, e.g., a pipette moving from hood to bench). The layout engine owns the visible motion; `LayoutMove` names what moves and where.                                                                                                 | n/a (already protocol-level) |
+| LiquidDisplayChange   | object/render | Reclassified to the object/render layer per RD-13: it named a display result (a fill height, a tint) instead of the semantic state change, the same drift `SvgSwap` and `ColorChange` carried (RD-3). The protocol sets the object's flat declared liquid `state_fields` (per RD-11: `liquid_id`, `liquid_volume`, `liquid_color` for vessels and wells; `held_liquid_id` and `held_liquid_volume` for tools) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the visual.              | ObjectStateChange            |
+| SetPointDisplayChange | object/render | Reclassified to the object/render layer per RD-14: it named a display result (a numeric overlay label) instead of the semantic state change, the same drift `SvgSwap`, `ColorChange`, and `LiquidDisplayChange` carried (RD-3, RD-13). The protocol sets the object's flat declared set-point `state_fields` (per RD-11: `set_volume`, `set_temperature`, `set_rpm`, etc. as flat numeric fields) via `ObjectStateChange` (per RD-8); the object's `render_map` resolves the digit overlay or display visual. | ObjectStateChange            |
+| TimedWait             | protocol      | Names a semantic pause in protocol flow; no object state and no visual identifier are named.                                                                                                                                                                                                                                                                                                                                                                                                                  | n/a (already protocol-level) |
 
 Reading: half of the ratified primitives (`CursorAttach`, `SceneChange`,
 `LayoutMove`, `TimedWait`) stay at the protocol level because they name

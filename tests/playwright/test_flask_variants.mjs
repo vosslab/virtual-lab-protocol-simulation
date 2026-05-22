@@ -5,25 +5,25 @@
  * Captures screenshots for docs/FLASK_DESIGN_REVIEW.md
  */
 
-import { chromium } from 'playwright';
-import path from 'path';
-import fs from 'fs';
+import { chromium } from "playwright";
+import path from "path";
+import fs from "fs";
 
-const screenshotDir = path.resolve('docs/images/flask_review');
+const screenshotDir = path.resolve("docs/images/flask_review");
 
 // Create screenshot directory if it doesn't exist
 if (!fs.existsSync(screenshotDir)) {
-	fs.mkdirSync(screenshotDir, { recursive: true });
+  fs.mkdirSync(screenshotDir, { recursive: true });
 }
 
 async function captureFlaskVariant(page, variant, filepath) {
-	console.log(`Capturing ${variant} variant...`);
+  console.log(`Capturing ${variant} variant...`);
 
-	// Read the SVG file
-	const svgContent = fs.readFileSync(filepath, 'utf-8');
+  // Read the SVG file
+  const svgContent = fs.readFileSync(filepath, "utf-8");
 
-	// Create a test page with the flask SVG
-	await page.setContent(`
+  // Create a test page with the flask SVG
+  await page.setContent(`
 		<!DOCTYPE html>
 		<html>
 		<head>
@@ -74,46 +74,45 @@ async function captureFlaskVariant(page, variant, filepath) {
 		</html>
 	`);
 
-	await page.waitForTimeout(300);
+  await page.waitForTimeout(300);
 
-	const screenshot = path.join(screenshotDir, `t75_flask_${variant}.png`);
-	await page.screenshot({ path: screenshot, fullPage: false });
-	console.log(`  -> ${screenshot}`);
+  const screenshot = path.join(screenshotDir, `t75_flask_${variant}.png`);
+  await page.screenshot({ path: screenshot, fullPage: false });
+  console.log(`  -> ${screenshot}`);
 }
 
 async function main() {
-	const browser = await chromium.launch({ headless: true });
-	const context = await browser.newContext({
-		viewport: { width: 600, height: 500 }
-	});
-	const page = await context.newPage();
+  const browser = await chromium.launch({ headless: true });
+  const context = await browser.newContext({
+    viewport: { width: 600, height: 500 },
+  });
+  const page = await context.newPage();
 
-	try {
-		// Define variant paths: v1 is the current default, v2 and v3 are new
-		const variants = [
-			{ name: 'v1', path: 'assets/equipment/t75_flask.svg' },
-			{ name: 'v2', path: 'assets/equipment/t75_flask_v2.svg' },
-			{ name: 'v3', path: 'assets/equipment/t75_flask_v3.svg' }
-		];
+  try {
+    // Define variant paths: v1 is the current default, v2 and v3 are new
+    const variants = [
+      { name: "v1", path: "assets/equipment/t75_flask.svg" },
+      { name: "v2", path: "assets/equipment/t75_flask_v2.svg" },
+      { name: "v3", path: "assets/equipment/t75_flask_v3.svg" },
+    ];
 
-		for (const variant of variants) {
-			const fullPath = path.resolve(variant.path);
-			await captureFlaskVariant(page, variant.name, fullPath);
-		}
+    for (const variant of variants) {
+      const fullPath = path.resolve(variant.path);
+      await captureFlaskVariant(page, variant.name, fullPath);
+    }
 
-		console.log('\nFlask variant screenshots captured successfully.');
-		console.log(`Screenshots saved to: ${screenshotDir}`);
-		console.log('\nVariant descriptions:');
-		console.log('  v1: Current default - flat rectangular body, angled neck');
-		console.log('  v2: Refined design - slanted neck, vented cap, modern');
-		console.log('  v3: Classic design - straight-neck Corning style, compact');
-
-	} catch (error) {
-		console.error('Error capturing flask variants:', error);
-		process.exit(1);
-	} finally {
-		await browser.close();
-	}
+    console.log("\nFlask variant screenshots captured successfully.");
+    console.log(`Screenshots saved to: ${screenshotDir}`);
+    console.log("\nVariant descriptions:");
+    console.log("  v1: Current default - flat rectangular body, angled neck");
+    console.log("  v2: Refined design - slanted neck, vented cap, modern");
+    console.log("  v3: Classic design - straight-neck Corning style, compact");
+  } catch (error) {
+    console.error("Error capturing flask variants:", error);
+    process.exit(1);
+  } finally {
+    await browser.close();
+  }
 }
 
 main();

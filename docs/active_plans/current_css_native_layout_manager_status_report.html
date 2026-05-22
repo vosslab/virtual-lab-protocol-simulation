@@ -1,1272 +1,1795 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>CSS-Native Layout Manager Current Status Report</title>
-	<style>
-		* {
-			margin: 0;
-			padding: 0;
-			box-sizing: border-box;
-		}
-		body {
-			font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-			line-height: 1.6;
-			color: #333;
-			background: #f5f5f5;
-			padding: 40px 20px;
-		}
-		.container {
-			max-width: 900px;
-			margin: 0 auto;
-			background: white;
-			padding: 40px;
-			border-radius: 4px;
-			box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-		}
-		h1 {
-			font-size: 2.2em;
-			margin-bottom: 0.5em;
-			color: #1a1a1a;
-			border-bottom: 3px solid #0066cc;
-			padding-bottom: 0.3em;
-		}
-		h2 {
-			font-size: 1.8em;
-			margin-top: 1.2em;
-			margin-bottom: 0.4em;
-			color: #0066cc;
-		}
-		h3 {
-			font-size: 1.3em;
-			margin-top: 0.8em;
-			margin-bottom: 0.3em;
-			color: #1a1a1a;
-		}
-		p {
-			margin-bottom: 1em;
-		}
-		table {
-			width: 100%;
-			border-collapse: collapse;
-			margin: 1.5em 0;
-			font-size: 0.95em;
-		}
-		table thead {
-			background-color: #f0f0f0;
-		}
-		table th {
-			padding: 10px;
-			text-align: left;
-			border: 1px solid #ddd;
-			font-weight: 600;
-		}
-		table td {
-			padding: 10px;
-			border: 1px solid #ddd;
-		}
-		table tbody tr:nth-child(even) {
-			background-color: #fafafa;
-		}
-		code {
-			background: #f4f4f4;
-			padding: 2px 6px;
-			border-radius: 3px;
-			font-family: 'Monaco', 'Courier New', monospace;
-			font-size: 0.9em;
-		}
-		pre {
-			background: #f4f4f4;
-			padding: 15px;
-			border-radius: 4px;
-			overflow-x: auto;
-			margin: 1em 0;
-			border-left: 4px solid #0066cc;
-		}
-		pre code {
-			background: none;
-			padding: 0;
-		}
-		hr {
-			border: none;
-			border-top: 2px solid #ddd;
-			margin: 2em 0;
-		}
-		ul, ol {
-			margin-left: 2em;
-			margin-bottom: 1em;
-		}
-		li {
-			margin-bottom: 0.5em;
-		}
-		.legend {
-			background: #e8f4f8;
-			border-left: 4px solid #0066cc;
-			padding: 15px;
-			margin: 2em 0;
-			border-radius: 4px;
-		}
-		.legend-item {
-			margin: 0.5em 0;
-			font-size: 0.95em;
-		}
-		.legend-item strong {
-			color: #0066cc;
-		}
-		.tag {
-			display: inline-block;
-			padding: 3px 8px;
-			border-radius: 3px;
-			font-size: 0.85em;
-			font-weight: 600;
-			margin-right: 5px;
-		}
-		.tag-current {
-			background: #d4edda;
-			color: #155724;
-		}
-		.tag-historical {
-			background: #fff3cd;
-			color: #856404;
-		}
-		.tag-proposal {
-			background: #cce5ff;
-			color: #004085;
-		}
-		.tag-superseded {
-			background: #f8d7da;
-			color: #721c24;
-		}
-		.tag-stress {
-			background: #e2e3e5;
-			color: #383d41;
-		}
-		img {
-			max-width: 100%;
-			height: auto;
-			margin: 1.5em 0;
-			border: 1px solid #ddd;
-			border-radius: 4px;
-		}
-		.img-caption {
-			text-align: center;
-			font-size: 0.9em;
-			color: #666;
-			margin-top: -0.8em;
-			margin-bottom: 1.5em;
-			font-style: italic;
-		}
-		.section-anchor {
-			color: #0066cc;
-			text-decoration: none;
-		}
-		.section-anchor:hover {
-			text-decoration: underline;
-		}
-		.warning-box {
-			background: #fff3cd;
-			border: 1px solid #ffc107;
-			padding: 15px;
-			border-radius: 4px;
-			margin: 1.5em 0;
-		}
-		.info-box {
-			background: #d1ecf1;
-			border: 1px solid #17a2b8;
-			padding: 15px;
-			border-radius: 4px;
-			margin: 1.5em 0;
-		}
-		.toc {
-			background: #f9f9f9;
-			border: 1px solid #ddd;
-			padding: 20px;
-			border-radius: 4px;
-			margin: 2em 0;
-		}
-		.toc ul {
-			list-style: none;
-			margin-left: 0;
-		}
-		.toc li {
-			margin: 0.3em 0;
-		}
-		.toc a {
-			color: #0066cc;
-			text-decoration: none;
-		}
-		.toc a:hover {
-			text-decoration: underline;
-		}
-		.metadata {
-			background: #f0f0f0;
-			padding: 15px;
-			border-radius: 4px;
-			margin-bottom: 2em;
-			font-size: 0.95em;
-		}
-		strong {
-			font-weight: 600;
-		}
-	</style>
-</head>
-<body>
-	<div class="container">
-		<h1>CSS-Native Layout Manager Current Status Report</h1>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CSS-Native Layout Manager Current Status Report</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #f5f5f5;
+        padding: 40px 20px;
+      }
+      .container {
+        max-width: 900px;
+        margin: 0 auto;
+        background: white;
+        padding: 40px;
+        border-radius: 4px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        font-size: 2.2em;
+        margin-bottom: 0.5em;
+        color: #1a1a1a;
+        border-bottom: 3px solid #0066cc;
+        padding-bottom: 0.3em;
+      }
+      h2 {
+        font-size: 1.8em;
+        margin-top: 1.2em;
+        margin-bottom: 0.4em;
+        color: #0066cc;
+      }
+      h3 {
+        font-size: 1.3em;
+        margin-top: 0.8em;
+        margin-bottom: 0.3em;
+        color: #1a1a1a;
+      }
+      p {
+        margin-bottom: 1em;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5em 0;
+        font-size: 0.95em;
+      }
+      table thead {
+        background-color: #f0f0f0;
+      }
+      table th {
+        padding: 10px;
+        text-align: left;
+        border: 1px solid #ddd;
+        font-weight: 600;
+      }
+      table td {
+        padding: 10px;
+        border: 1px solid #ddd;
+      }
+      table tbody tr:nth-child(even) {
+        background-color: #fafafa;
+      }
+      code {
+        background: #f4f4f4;
+        padding: 2px 6px;
+        border-radius: 3px;
+        font-family: "Monaco", "Courier New", monospace;
+        font-size: 0.9em;
+      }
+      pre {
+        background: #f4f4f4;
+        padding: 15px;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin: 1em 0;
+        border-left: 4px solid #0066cc;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+      }
+      hr {
+        border: none;
+        border-top: 2px solid #ddd;
+        margin: 2em 0;
+      }
+      ul,
+      ol {
+        margin-left: 2em;
+        margin-bottom: 1em;
+      }
+      li {
+        margin-bottom: 0.5em;
+      }
+      .legend {
+        background: #e8f4f8;
+        border-left: 4px solid #0066cc;
+        padding: 15px;
+        margin: 2em 0;
+        border-radius: 4px;
+      }
+      .legend-item {
+        margin: 0.5em 0;
+        font-size: 0.95em;
+      }
+      .legend-item strong {
+        color: #0066cc;
+      }
+      .tag {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 0.85em;
+        font-weight: 600;
+        margin-right: 5px;
+      }
+      .tag-current {
+        background: #d4edda;
+        color: #155724;
+      }
+      .tag-historical {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .tag-proposal {
+        background: #cce5ff;
+        color: #004085;
+      }
+      .tag-superseded {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .tag-stress {
+        background: #e2e3e5;
+        color: #383d41;
+      }
+      img {
+        max-width: 100%;
+        height: auto;
+        margin: 1.5em 0;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .img-caption {
+        text-align: center;
+        font-size: 0.9em;
+        color: #666;
+        margin-top: -0.8em;
+        margin-bottom: 1.5em;
+        font-style: italic;
+      }
+      .section-anchor {
+        color: #0066cc;
+        text-decoration: none;
+      }
+      .section-anchor:hover {
+        text-decoration: underline;
+      }
+      .warning-box {
+        background: #fff3cd;
+        border: 1px solid #ffc107;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 1.5em 0;
+      }
+      .info-box {
+        background: #d1ecf1;
+        border: 1px solid #17a2b8;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 1.5em 0;
+      }
+      .toc {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        padding: 20px;
+        border-radius: 4px;
+        margin: 2em 0;
+      }
+      .toc ul {
+        list-style: none;
+        margin-left: 0;
+      }
+      .toc li {
+        margin: 0.3em 0;
+      }
+      .toc a {
+        color: #0066cc;
+        text-decoration: none;
+      }
+      .toc a:hover {
+        text-decoration: underline;
+      }
+      .metadata {
+        background: #f0f0f0;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 2em;
+        font-size: 0.95em;
+      }
+      strong {
+        font-weight: 600;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>CSS-Native Layout Manager Current Status Report</h1>
 
-		<div class="metadata">
-			<p><strong>Report Date:</strong> 2026-05-21 | <strong>Scope:</strong> NEW0 through NEW3 Batch 5 | <strong>Evidence Base:</strong> Tracked code, canonical diagnostics, runtime proof, stress corpus v1</p>
-		</div>
+      <div class="metadata">
+        <p>
+          <strong>Report Date:</strong> 2026-05-21 |
+          <strong>Scope:</strong> NEW0 through NEW3 Batch 5 |
+          <strong>Evidence Base:</strong> Tracked code, canonical diagnostics,
+          runtime proof, stress corpus v1
+        </p>
+      </div>
 
-		<div class="legend">
-			<h3 style="margin-top: 0; color: #0066cc;">Evidence Currency Legend</h3>
-			<div class="legend-item"><span class="tag tag-current">CURRENT</span> Reflects state at 2026-05-21 with verified canonical measurement.</div>
-			<div class="legend-item"><span class="tag tag-historical">HISTORICAL</span> Reflects state at a prior batch; preserved for trail; not current.</div>
-			<div class="legend-item"><span class="tag tag-stress">STRESS-ONLY</span> Measured against synthetic stress corpus; does not predict production behavior directly.</div>
-			<div class="legend-item"><span class="tag tag-proposal">PROPOSAL</span> Awaiting user decision; not implemented.</div>
-			<div class="legend-item"><span class="tag tag-superseded">SUPERSEDED</span> Replaced by a later finding; documented for completeness.</div>
-		</div>
+      <div class="legend">
+        <h3 style="margin-top: 0; color: #0066cc">Evidence Currency Legend</h3>
+        <div class="legend-item">
+          <span class="tag tag-current">CURRENT</span> Reflects state at
+          2026-05-21 with verified canonical measurement.
+        </div>
+        <div class="legend-item">
+          <span class="tag tag-historical">HISTORICAL</span> Reflects state at a
+          prior batch; preserved for trail; not current.
+        </div>
+        <div class="legend-item">
+          <span class="tag tag-stress">STRESS-ONLY</span> Measured against
+          synthetic stress corpus; does not predict production behavior
+          directly.
+        </div>
+        <div class="legend-item">
+          <span class="tag tag-proposal">PROPOSAL</span> Awaiting user decision;
+          not implemented.
+        </div>
+        <div class="legend-item">
+          <span class="tag tag-superseded">SUPERSEDED</span> Replaced by a later
+          finding; documented for completeness.
+        </div>
+      </div>
 
-		<hr>
+      <hr />
 
-		<h2>One-Paragraph Executive Summary</h2>
-		<p>Runtime integration is promising; static visual quality is improving; production promotion remains blocked by contract and visual-polish decisions. The runtime dispatch path is proven stable (Lane B: 7/7 PASS on interaction stress, no DOM leak, correct state propagation) <span class="tag tag-current">CURRENT</span>. The visual diagnostics gate hard-fail free (0 clipped artwork, 0 off-page, 0 SVG overlap) across production templates <span class="tag tag-current">CURRENT</span>. Stress testing on 100 generated scenes shows the layout engine's CSS dispatcher executes reliably but synthetic scenes reveal much higher failure rates than production <span class="tag tag-stress">STRESS-ONLY</span>. A hard-fail rule against cropped scientific assets was successfully operationalized (Workstream N: 3/3 recovery, no regression) <span class="tag tag-current">CURRENT</span>. However, PRIMARY_CONTRACT.md item 3 (layout engine ownership of object positioning) remains unresolved by design &mdash; NEW0 bypasses the layout engine entirely. Visual quality across scenes is 0 PASS / 4 PASS_TEMPLATE / 6 WARN on canonical precheck, with the six composition scenes warning on label readability and supporting-object proximity rather than primary-object visibility <span class="tag tag-current">CURRENT</span>. The scorecard gap for hard-fail detection remains the highest near-term risk. Recommendation: Accept NEW0 as a stable layer-1 runtime foundation, continue NEW2 work (no-crop polish), but defer production migration to pending resolution of contract and visual-polish decisions.</p>
+      <h2>One-Paragraph Executive Summary</h2>
+      <p>
+        Runtime integration is promising; static visual quality is improving;
+        production promotion remains blocked by contract and visual-polish
+        decisions. The runtime dispatch path is proven stable (Lane B: 7/7 PASS
+        on interaction stress, no DOM leak, correct state propagation)
+        <span class="tag tag-current">CURRENT</span>. The visual diagnostics
+        gate hard-fail free (0 clipped artwork, 0 off-page, 0 SVG overlap)
+        across production templates
+        <span class="tag tag-current">CURRENT</span>. Stress testing on 100
+        generated scenes shows the layout engine's CSS dispatcher executes
+        reliably but synthetic scenes reveal much higher failure rates than
+        production <span class="tag tag-stress">STRESS-ONLY</span>. A hard-fail
+        rule against cropped scientific assets was successfully operationalized
+        (Workstream N: 3/3 recovery, no regression)
+        <span class="tag tag-current">CURRENT</span>. However,
+        PRIMARY_CONTRACT.md item 3 (layout engine ownership of object
+        positioning) remains unresolved by design &mdash; NEW0 bypasses the
+        layout engine entirely. Visual quality across scenes is 0 PASS / 4
+        PASS_TEMPLATE / 6 WARN on canonical precheck, with the six composition
+        scenes warning on label readability and supporting-object proximity
+        rather than primary-object visibility
+        <span class="tag tag-current">CURRENT</span>. The scorecard gap for
+        hard-fail detection remains the highest near-term risk. Recommendation:
+        Accept NEW0 as a stable layer-1 runtime foundation, continue NEW2 work
+        (no-crop polish), but defer production migration to pending resolution
+        of contract and visual-polish decisions.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec1">1. Executive Summary</h2>
-		<p>The CSS-native layout system has reached a stable state across three distinct evidence layers. The runtime dispatch path is proven: a real click on a scene object flows through the validator, ObjectStateChange handler, and CSS-native adapter re-render cycle with zero DOM leaks or state corruption. The static-template visual gate is clean: zero hard-fail diagnostics (clipped artwork, off-page, SVG overlap, region overflow) across the 10 production templates. The diagnostic tools themselves (precheck, scorecard, artwork-integrity) are well-instrumented and detect failure modes accurately.</p>
+      <h2 id="sec1">1. Executive Summary</h2>
+      <p>
+        The CSS-native layout system has reached a stable state across three
+        distinct evidence layers. The runtime dispatch path is proven: a real
+        click on a scene object flows through the validator, ObjectStateChange
+        handler, and CSS-native adapter re-render cycle with zero DOM leaks or
+        state corruption. The static-template visual gate is clean: zero
+        hard-fail diagnostics (clipped artwork, off-page, SVG overlap, region
+        overflow) across the 10 production templates. The diagnostic tools
+        themselves (precheck, scorecard, artwork-integrity) are
+        well-instrumented and detect failure modes accurately.
+      </p>
 
-		<p>However, two significant gaps remain:</p>
-		<ul>
-			<li><strong>Visual quality is uneven.</strong> Composition scenes warn on label readability and supporting-object proximity (6 of 10 scenes WARN on secondary factors, not primary-object visibility). The layout is compositionally functional but not pedagogically polished.</li>
-			<li><strong>The design contract is unresolved.</strong> PRIMARY_CONTRACT.md item 3 states that scene object layout must be handled by the layout engine. NEW0 bypasses the engine entirely; objects are positioned by CSS Grid and Flexbox rules, not by YAML-declared primitives. Production promotion would require either amending the contract or integrating NEW0 as the layout engine's output backend.</li>
-		</ul>
+      <p>However, two significant gaps remain:</p>
+      <ul>
+        <li>
+          <strong>Visual quality is uneven.</strong> Composition scenes warn on
+          label readability and supporting-object proximity (6 of 10 scenes WARN
+          on secondary factors, not primary-object visibility). The layout is
+          compositionally functional but not pedagogically polished.
+        </li>
+        <li>
+          <strong>The design contract is unresolved.</strong>
+          PRIMARY_CONTRACT.md item 3 states that scene object layout must be
+          handled by the layout engine. NEW0 bypasses the engine entirely;
+          objects are positioned by CSS Grid and Flexbox rules, not by
+          YAML-declared primitives. Production promotion would require either
+          amending the contract or integrating NEW0 as the layout engine's
+          output backend.
+        </li>
+      </ul>
 
-		<p><strong>Recommendation:</strong> Move forward with NEW2 visual polish and NEW3 stress-corpus work (no-crop rule enforcement, scorecard alignment). Plan a user decision on PRIMARY_CONTRACT.md amendment in parallel. Production promotion remains blocked pending contract resolution and visual-polish decisions.</p>
+      <p>
+        <strong>Recommendation:</strong> Move forward with NEW2 visual polish
+        and NEW3 stress-corpus work (no-crop rule enforcement, scorecard
+        alignment). Plan a user decision on PRIMARY_CONTRACT.md amendment in
+        parallel. Production promotion remains blocked pending contract
+        resolution and visual-polish decisions.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec2">2. Layer Model</h2>
-		<p>Evidence in this report belongs to one of three independent, stackable layers. Each layer carries its own verification step, supports its own next-step workstream, and does not imply success in the other layers.</p>
+      <h2 id="sec2">2. Layer Model</h2>
+      <p>
+        Evidence in this report belongs to one of three independent, stackable
+        layers. Each layer carries its own verification step, supports its own
+        next-step workstream, and does not imply success in the other layers.
+      </p>
 
-		<h3>Layer 1: Runtime Dispatch (TypeScript, production bundle)</h3>
-		<p>A user interaction (click on a scene object) flows through:<br>
-		<code>click-handler  validator preset  ObjectStateChange  renderScene re-invoke  CSS-native adapter</code></p>
-		<p><strong>Verification:</strong> Lane B interaction stress test on the built bundle. Result: 7 of 7 PASS on click target binding, state change application, and re-render proof (invocation count delta +1, DOM children unchanged).</p>
-		<p><strong>Why separate:</strong> Runtime success does not guarantee visual quality or hard-fail cleanliness. It only proves the dispatch path executes without error.</p>
+      <h3>Layer 1: Runtime Dispatch (TypeScript, production bundle)</h3>
+      <p>
+        A user interaction (click on a scene object) flows through:<br />
+        <code
+          >click-handler validator preset ObjectStateChange renderScene
+          re-invoke CSS-native adapter</code
+        >
+      </p>
+      <p>
+        <strong>Verification:</strong> Lane B interaction stress test on the
+        built bundle. Result: 7 of 7 PASS on click target binding, state change
+        application, and re-render proof (invocation count delta +1, DOM
+        children unchanged).
+      </p>
+      <p>
+        <strong>Why separate:</strong> Runtime success does not guarantee visual
+        quality or hard-fail cleanliness. It only proves the dispatch path
+        executes without error.
+      </p>
 
-		<h3>Layer 2: Static Visual Quality (CSS + HTML templates, precheck diagnostics)</h3>
-		<p>The rendered scene meets spatial, proportional, and aesthetic goals: primary objects visibly dominant, supporting objects nearby, labels readable, no artwork clipping.</p>
-		<p><strong>Verification:</strong> Lane A precheck contact sheets and scorecard. Result: 0 hard fails (PASS gate), 6 composition scenes WARN on secondary factors (label overlap, supporting-object distance), 4 template scenes PASS_TEMPLATE.</p>
-		<p><strong>Why separate:</strong> Visual quality is independent of runtime. A scene can render correctly and still have cropped artwork or illegible labels.</p>
+      <h3>
+        Layer 2: Static Visual Quality (CSS + HTML templates, precheck
+        diagnostics)
+      </h3>
+      <p>
+        The rendered scene meets spatial, proportional, and aesthetic goals:
+        primary objects visibly dominant, supporting objects nearby, labels
+        readable, no artwork clipping.
+      </p>
+      <p>
+        <strong>Verification:</strong> Lane A precheck contact sheets and
+        scorecard. Result: 0 hard fails (PASS gate), 6 composition scenes WARN
+        on secondary factors (label overlap, supporting-object distance), 4
+        template scenes PASS_TEMPLATE.
+      </p>
+      <p>
+        <strong>Why separate:</strong> Visual quality is independent of runtime.
+        A scene can render correctly and still have cropped artwork or illegible
+        labels.
+      </p>
 
-		<h3>Layer 3: Diagnostic Integrity (Measurement tools, guards against metric gaming)</h3>
-		<p>The precheck, scorecard, and artwork-integrity tools must measure the artifact, not be edited to flatter it. Oversteps are caught and reverted. Hard-fail definitions are narrow and explicit.</p>
-		<p><strong>Verification:</strong> Lane M failure museum documents all attempted oversteps and reverted changes. Result: 2 attempted metric-gaming runs (reverted precheck mod, rejected DOM-removal bridge), both caught and backed out without reaching final evidence.</p>
-		<p><strong>Why separate:</strong> A measurement tool that can be "fixed" to report a better score is worse than no tool. Diagnostic integrity is foundational to trustworthy evidence.</p>
+      <h3>
+        Layer 3: Diagnostic Integrity (Measurement tools, guards against metric
+        gaming)
+      </h3>
+      <p>
+        The precheck, scorecard, and artwork-integrity tools must measure the
+        artifact, not be edited to flatter it. Oversteps are caught and
+        reverted. Hard-fail definitions are narrow and explicit.
+      </p>
+      <p>
+        <strong>Verification:</strong> Lane M failure museum documents all
+        attempted oversteps and reverted changes. Result: 2 attempted
+        metric-gaming runs (reverted precheck mod, rejected DOM-removal bridge),
+        both caught and backed out without reaching final evidence.
+      </p>
+      <p>
+        <strong>Why separate:</strong> A measurement tool that can be "fixed" to
+        report a better score is worse than no tool. Diagnostic integrity is
+        foundational to trustworthy evidence.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec3">3. Timeline</h2>
-		<table>
-			<thead>
-				<tr>
-					<th>Milestone</th>
-					<th>Date</th>
-					<th>Scope / Status</th>
-					<th>Next-Step Plan</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Pre-NEW0 Legacy Layout Failures</td>
-					<td>2025-12 onward</td>
-					<td>Object placement via procedural TypeScript; multiple hard-fail classes</td>
-					<td>NEW0 exploration</td>
-				</tr>
-				<tr>
-					<td>NEW0 Prototype Launch</td>
-					<td>2026-03</td>
-					<td>CSS Grid / Flexbox replacement. Direction A baseline. 8 scenes.</td>
-					<td>Outside review</td>
-				</tr>
-				<tr>
-					<td>Outside Review Handoff</td>
-					<td>2026-05-18</td>
-					<td>Pre-cleanup audit. Feedback: tracked CSS, metric governance, verdict ladder.</td>
-					<td>NEW0 stabilization</td>
-				</tr>
-				<tr>
-					<td>NEW0 Stabilization Pass</td>
-					<td>2026-05-19</td>
-					<td>Direction B promotion. Zoom fix. 10 scenes. 0 hard fails. PASS_TEMPLATE added.</td>
-					<td>NEW1 planning (intended but deferred)</td>
-				</tr>
-				<tr>
-					<td>NEW1 Integration Plan</td>
-					<td>2026-05-19</td>
-					<td>Spike scope: well_plate_96_zoom, 3 runtime files, feature-flagged. Lanes A-E planned.</td>
-					<td>NEW1.5 hardening</td>
-				</tr>
-				<tr>
-					<td>NEW1.5 Hardening</td>
-					<td>2026-05-20</td>
-					<td>Runtime re-render proof, dispatch-side target matching, hard-fail gate, flag-override.</td>
-					<td>NEW2 showcase</td>
-				</tr>
-				<tr>
-					<td>NEW2 Best-Case Showcase</td>
-					<td>2026-05-20</td>
-					<td>Lane A gallery, Lane B runtime (7/7), Lane D scorecard (632/1000), Lane M reverted oversteps.</td>
-					<td>NEW3 Batch 1</td>
-				</tr>
-				<tr>
-					<td>NEW3 Batch 1</td>
-					<td>2026-05-20</td>
-					<td>Stress failure clusters on 100 generated scenes. Hard fails: 1043.</td>
-					<td>NEW3 Batch 2</td>
-				</tr>
-				<tr>
-					<td>NEW3 Batch 2-3</td>
-					<td>2026-05-20 to 2026-05-21</td>
-					<td>CSS classification, generator cap, canonical scorecard rule. 10 gold scenes identified.</td>
-					<td>NEW3 Batch 4</td>
-				</tr>
-				<tr>
-					<td>NEW3 Batch 4</td>
-					<td>2026-05-21</td>
-					<td>Test system hardening, 1201 pytest passing.</td>
-					<td>NEW3 Batch 5</td>
-				</tr>
-				<tr>
-					<td>NEW3 Batch 5 Closeout</td>
-					<td>2026-05-21</td>
-					<td>Workstream F CSS tweaks, commit 4e2c709 (224 files). User accepted baseline.</td>
-					<td>Forward-only mode</td>
-				</tr>
-			</tbody>
-		</table>
+      <h2 id="sec3">3. Timeline</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Milestone</th>
+            <th>Date</th>
+            <th>Scope / Status</th>
+            <th>Next-Step Plan</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Pre-NEW0 Legacy Layout Failures</td>
+            <td>2025-12 onward</td>
+            <td>
+              Object placement via procedural TypeScript; multiple hard-fail
+              classes
+            </td>
+            <td>NEW0 exploration</td>
+          </tr>
+          <tr>
+            <td>NEW0 Prototype Launch</td>
+            <td>2026-03</td>
+            <td>
+              CSS Grid / Flexbox replacement. Direction A baseline. 8 scenes.
+            </td>
+            <td>Outside review</td>
+          </tr>
+          <tr>
+            <td>Outside Review Handoff</td>
+            <td>2026-05-18</td>
+            <td>
+              Pre-cleanup audit. Feedback: tracked CSS, metric governance,
+              verdict ladder.
+            </td>
+            <td>NEW0 stabilization</td>
+          </tr>
+          <tr>
+            <td>NEW0 Stabilization Pass</td>
+            <td>2026-05-19</td>
+            <td>
+              Direction B promotion. Zoom fix. 10 scenes. 0 hard fails.
+              PASS_TEMPLATE added.
+            </td>
+            <td>NEW1 planning (intended but deferred)</td>
+          </tr>
+          <tr>
+            <td>NEW1 Integration Plan</td>
+            <td>2026-05-19</td>
+            <td>
+              Spike scope: well_plate_96_zoom, 3 runtime files, feature-flagged.
+              Lanes A-E planned.
+            </td>
+            <td>NEW1.5 hardening</td>
+          </tr>
+          <tr>
+            <td>NEW1.5 Hardening</td>
+            <td>2026-05-20</td>
+            <td>
+              Runtime re-render proof, dispatch-side target matching, hard-fail
+              gate, flag-override.
+            </td>
+            <td>NEW2 showcase</td>
+          </tr>
+          <tr>
+            <td>NEW2 Best-Case Showcase</td>
+            <td>2026-05-20</td>
+            <td>
+              Lane A gallery, Lane B runtime (7/7), Lane D scorecard (632/1000),
+              Lane M reverted oversteps.
+            </td>
+            <td>NEW3 Batch 1</td>
+          </tr>
+          <tr>
+            <td>NEW3 Batch 1</td>
+            <td>2026-05-20</td>
+            <td>
+              Stress failure clusters on 100 generated scenes. Hard fails: 1043.
+            </td>
+            <td>NEW3 Batch 2</td>
+          </tr>
+          <tr>
+            <td>NEW3 Batch 2-3</td>
+            <td>2026-05-20 to 2026-05-21</td>
+            <td>
+              CSS classification, generator cap, canonical scorecard rule. 10
+              gold scenes identified.
+            </td>
+            <td>NEW3 Batch 4</td>
+          </tr>
+          <tr>
+            <td>NEW3 Batch 4</td>
+            <td>2026-05-21</td>
+            <td>Test system hardening, 1201 pytest passing.</td>
+            <td>NEW3 Batch 5</td>
+          </tr>
+          <tr>
+            <td>NEW3 Batch 5 Closeout</td>
+            <td>2026-05-21</td>
+            <td>
+              Workstream F CSS tweaks, commit 4e2c709 (224 files). User accepted
+              baseline.
+            </td>
+            <td>Forward-only mode</td>
+          </tr>
+        </tbody>
+      </table>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec4">4. What Works Now</h2>
+      <h2 id="sec4">4. What Works Now</h2>
 
-		<h3>CSS-Native Rendering: Production Dispatch Proven</h3>
-		<p>The CSS Grid and Flexbox layout engine is invoked correctly on every render pass. The adapter maps YAML scene objects to CSS placement rules and DOM state attributes. Hard-fail gates are zero across production scenes.</p>
-		<p><strong>Evidence:</strong> Lane A precheck on 10 production templates: 0 clipped_artwork, 0 off_page, 0 svg_svg_overlap, 0 region_overflow.</p>
+      <h3>CSS-Native Rendering: Production Dispatch Proven</h3>
+      <p>
+        The CSS Grid and Flexbox layout engine is invoked correctly on every
+        render pass. The adapter maps YAML scene objects to CSS placement rules
+        and DOM state attributes. Hard-fail gates are zero across production
+        scenes.
+      </p>
+      <p>
+        <strong>Evidence:</strong> Lane A precheck on 10 production templates: 0
+        clipped_artwork, 0 off_page, 0 svg_svg_overlap, 0 region_overflow.
+      </p>
 
-		<h3>Click  Validator  ObjectStateChange  renderScene  Adapter Re-Execution</h3>
-		<p>A real click on a well-plate scene object (well_plate_96.E7) triggers the full dispatch cycle end-to-end. The state change applies correctly. The layout adapter re-runs on pass 2 without DOM corruption.</p>
-		<p><strong>Evidence:</strong> Lane B interaction stress: 7 of 7 PASS. Click on well E7 (center 1022.8, 982.0) increments invocation count by exactly 1. DOM children count unchanged.</p>
+      <h3>
+        Click Validator ObjectStateChange renderScene Adapter Re-Execution
+      </h3>
+      <p>
+        A real click on a well-plate scene object (well_plate_96.E7) triggers
+        the full dispatch cycle end-to-end. The state change applies correctly.
+        The layout adapter re-runs on pass 2 without DOM corruption.
+      </p>
+      <p>
+        <strong>Evidence:</strong> Lane B interaction stress: 7 of 7 PASS. Click
+        on well E7 (center 1022.8, 982.0) increments invocation count by exactly
+        1. DOM children count unchanged.
+      </p>
 
-		<h3>No-Crop Rule Operationalized (Workstream N: 3/3 Recovery, No Regression)</h3>
-		<p>Cropped scientific assets are a hard-fail blocker. The rule was added to the precheck and scorecard. Three scenes recovered to 0 hard fails.</p>
-		<p><strong>Evidence:</strong> Workstream N fix: electrophoresis_bench (tank recovered), drug_dilution_plate_workspace (well-plate overflow fixed), well_plate_96_zoom (no regression).</p>
+      <h3>
+        No-Crop Rule Operationalized (Workstream N: 3/3 Recovery, No Regression)
+      </h3>
+      <p>
+        Cropped scientific assets are a hard-fail blocker. The rule was added to
+        the precheck and scorecard. Three scenes recovered to 0 hard fails.
+      </p>
+      <p>
+        <strong>Evidence:</strong> Workstream N fix: electrophoresis_bench (tank
+        recovered), drug_dilution_plate_workspace (well-plate overflow fixed),
+        well_plate_96_zoom (no regression).
+      </p>
 
-		<h3>Interaction Safety Confirmed</h3>
-		<p>Clicking the wrong target results in a no-op. Clicking the correct target advances to the next interaction.</p>
-		<p><strong>Evidence:</strong> Lane I state-cycle tests. Repeated correct clicks increase invocation count linearly. Wrong-target click produces no state change.</p>
+      <h3>Interaction Safety Confirmed</h3>
+      <p>
+        Clicking the wrong target results in a no-op. Clicking the correct
+        target advances to the next interaction.
+      </p>
+      <p>
+        <strong>Evidence:</strong> Lane I state-cycle tests. Repeated correct
+        clicks increase invocation count linearly. Wrong-target click produces
+        no state change.
+      </p>
 
-		<h3>Generator Cap Hardened</h3>
-		<p>Stress-scene generator capped at 40 objects. Corpus v1 uses stable seed (42), realistic-vs-adversarial split (87/13), fully reproducible.</p>
-		<p><strong>Evidence:</strong> Batch 3b generator-cap results; sizing manifest stable across runs.</p>
+      <h3>Generator Cap Hardened</h3>
+      <p>
+        Stress-scene generator capped at 40 objects. Corpus v1 uses stable seed
+        (42), realistic-vs-adversarial split (87/13), fully reproducible.
+      </p>
+      <p>
+        <strong>Evidence:</strong> Batch 3b generator-cap results; sizing
+        manifest stable across runs.
+      </p>
 
-		<h3>Canonical Scorecard Guardrail Established</h3>
-		<p>Only canonical (unmodified) scorecard output cited. Modified precheck versions excluded from evidence.</p>
-		<p><strong>Evidence:</strong> NEW3 canonical scorecard guardrail doc. All Batch 5 output cites scorecard_batch5_corpus_v1/scorecard.json only.</p>
+      <h3>Canonical Scorecard Guardrail Established</h3>
+      <p>
+        Only canonical (unmodified) scorecard output cited. Modified precheck
+        versions excluded from evidence.
+      </p>
+      <p>
+        <strong>Evidence:</strong> NEW3 canonical scorecard guardrail doc. All
+        Batch 5 output cites scorecard_batch5_corpus_v1/scorecard.json only.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec5">5. Runtime Proof (Layer 1  Strongest Evidence)</h2>
+      <h2 id="sec5">5. Runtime Proof (Layer 1 Strongest Evidence)</h2>
 
-		<h3>Lane B Runtime Stress: 7 of 7 PASS</h3>
-		<p>The built production bundle (dist/runtime.bundle.js) was exercised with a real click. All seven runtime assertions passed.</p>
+      <h3>Lane B Runtime Stress: 7 of 7 PASS</h3>
+      <p>
+        The built production bundle (dist/runtime.bundle.js) was exercised with
+        a real click. All seven runtime assertions passed.
+      </p>
 
-		<table>
-			<thead>
-				<tr>
-					<th>Assertion</th>
-					<th>Condition</th>
-					<th>Result</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>CSS-native flag set</td>
-					<td>Flag present in window scope</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>Scene viewport present</td>
-					<td>DOM querySelector finds .scene-container</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>CSS-native invoked at mount</td>
-					<td>Invocation count &gt;= 1 on initial render</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>Viewport visible</td>
-					<td>clientHeight &gt; 0, clientWidth &gt; 0</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>Click increments invocation count</td>
-					<td>Count delta = 1 after validated click</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>No DOM children leak</td>
-					<td>beforeClick childNodes == afterClick childNodes</td>
-					<td>PASS</td>
-				</tr>
-				<tr>
-					<td>All runtime assertions</td>
-					<td>7 of 7 passed</td>
-					<td><strong>ALL PASS</strong></td>
-				</tr>
-			</tbody>
-		</table>
+      <table>
+        <thead>
+          <tr>
+            <th>Assertion</th>
+            <th>Condition</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>CSS-native flag set</td>
+            <td>Flag present in window scope</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>Scene viewport present</td>
+            <td>DOM querySelector finds .scene-container</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>CSS-native invoked at mount</td>
+            <td>Invocation count &gt;= 1 on initial render</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>Viewport visible</td>
+            <td>clientHeight &gt; 0, clientWidth &gt; 0</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>Click increments invocation count</td>
+            <td>Count delta = 1 after validated click</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>No DOM children leak</td>
+            <td>beforeClick childNodes == afterClick childNodes</td>
+            <td>PASS</td>
+          </tr>
+          <tr>
+            <td>All runtime assertions</td>
+            <td>7 of 7 passed</td>
+            <td><strong>ALL PASS</strong></td>
+          </tr>
+        </tbody>
+      </table>
 
-		<h3>Click Target Binding: well_plate_96.E7</h3>
-		<p>The click was placed at pixel center (1022.8, 982.0) inside the well_plate_96_zoom scene viewport (1920 x 1768). The click registered on the target. Validator preset accepted it. ObjectStateChange applied the state update. renderScene re-invoked the CSS-native adapter.</p>
+      <h3>Click Target Binding: well_plate_96.E7</h3>
+      <p>
+        The click was placed at pixel center (1022.8, 982.0) inside the
+        well_plate_96_zoom scene viewport (1920 x 1768). The click registered on
+        the target. Validator preset accepted it. ObjectStateChange applied the
+        state update. renderScene re-invoked the CSS-native adapter.
+      </p>
 
-		<h3>Batch 2 Interaction Stress: 6 of 6 PASS</h3>
-		<p>Six distinct interaction sequences tested on well_plate_96_zoom, all PASS. No state corruption. No dispatch-side errors. Runtime path is the strongest evidence layer in this report.</p>
+      <h3>Batch 2 Interaction Stress: 6 of 6 PASS</h3>
+      <p>
+        Six distinct interaction sequences tested on well_plate_96_zoom, all
+        PASS. No state corruption. No dispatch-side errors. Runtime path is the
+        strongest evidence layer in this report.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec6">6. Visual Quality (Layer 2)</h2>
+      <h2 id="sec6">6. Visual Quality (Layer 2)</h2>
 
-		<h3>Precheck Scorecard: 10 Production Scenes, 0 Hard Fails</h3>
+      <h3>Precheck Scorecard: 10 Production Scenes, 0 Hard Fails</h3>
 
-		<table>
-			<thead>
-				<tr>
-					<th>Scene</th>
-					<th>Class</th>
-					<th>Verdict</th>
-					<th>Primary Ratio</th>
-					<th>Hard Fails</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>well_plate_96_zoom</td>
-					<td>Zoom / detail</td>
-					<td>WARN*</td>
-					<td>88.7%</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>microscope_basic</td>
-					<td>Template</td>
-					<td>PASS_TEMPLATE</td>
-					<td>&mdash;</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>cell_counter_basic</td>
-					<td>Template</td>
-					<td>PASS_TEMPLATE</td>
-					<td>&mdash;</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>bench_basic</td>
-					<td>Template</td>
-					<td>PASS_TEMPLATE</td>
-					<td>&mdash;</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>hood_basic</td>
-					<td>Template</td>
-					<td>PASS_TEMPLATE</td>
-					<td>&mdash;</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>electrophoresis_bench</td>
-					<td>Instrument-heavy</td>
-					<td>WARN</td>
-					<td>18.5%</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>staining_bench</td>
-					<td>Composition</td>
-					<td>WARN</td>
-					<td>31.3%</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>crowded_bench_dense</td>
-					<td>Dense composition</td>
-					<td>WARN</td>
-					<td>31.3%</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>drug_dilution_plate_workspace</td>
-					<td>Composition</td>
-					<td>WARN</td>
-					<td>25.2%</td>
-					<td>0</td>
-				</tr>
-				<tr>
-					<td>drug_dilution_workspace_dense</td>
-					<td>Dense composition</td>
-					<td>WARN</td>
-					<td>13.9%</td>
-					<td>0</td>
-				</tr>
-			</tbody>
-		</table>
+      <table>
+        <thead>
+          <tr>
+            <th>Scene</th>
+            <th>Class</th>
+            <th>Verdict</th>
+            <th>Primary Ratio</th>
+            <th>Hard Fails</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>well_plate_96_zoom</td>
+            <td>Zoom / detail</td>
+            <td>WARN*</td>
+            <td>88.7%</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>microscope_basic</td>
+            <td>Template</td>
+            <td>PASS_TEMPLATE</td>
+            <td>&mdash;</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>cell_counter_basic</td>
+            <td>Template</td>
+            <td>PASS_TEMPLATE</td>
+            <td>&mdash;</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>bench_basic</td>
+            <td>Template</td>
+            <td>PASS_TEMPLATE</td>
+            <td>&mdash;</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>hood_basic</td>
+            <td>Template</td>
+            <td>PASS_TEMPLATE</td>
+            <td>&mdash;</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>electrophoresis_bench</td>
+            <td>Instrument-heavy</td>
+            <td>WARN</td>
+            <td>18.5%</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>staining_bench</td>
+            <td>Composition</td>
+            <td>WARN</td>
+            <td>31.3%</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>crowded_bench_dense</td>
+            <td>Dense composition</td>
+            <td>WARN</td>
+            <td>31.3%</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>drug_dilution_plate_workspace</td>
+            <td>Composition</td>
+            <td>WARN</td>
+            <td>25.2%</td>
+            <td>0</td>
+          </tr>
+          <tr>
+            <td>drug_dilution_workspace_dense</td>
+            <td>Dense composition</td>
+            <td>WARN</td>
+            <td>13.9%</td>
+            <td>0</td>
+          </tr>
+        </tbody>
+      </table>
 
-		<p><strong>Summary:</strong> 10 scenes, 0 hard fails, 0 FAIL verdicts. 0 PASS, 4 PASS_TEMPLATE, 6 WARN.</p>
+      <p>
+        <strong>Summary:</strong> 10 scenes, 0 hard fails, 0 FAIL verdicts. 0
+        PASS, 4 PASS_TEMPLATE, 6 WARN.
+      </p>
 
-		<h3>What the 6 WARN Verdicts Actually Mean</h3>
-		<p>The six composition scenes that carry WARN do not warn on <strong>primary-object visibility</strong>. They warn on secondary factors:</p>
-		<ul>
-			<li><strong>labels_readable:</strong> Placement labels overlap or exceed region boundaries in 4 scenes. Spacing/readability issue, not hard-fail clipping.</li>
-			<li><strong>supporting_nearby:</strong> Supporting objects positioned at scene periphery rather than adjacent to primary. Reflects 3-band layout (support / work / output), not layout failure.</li>
-			<li><strong>No primary visibility failures.</strong> All six scenes clearly show their primary object. WARN flags are for polish, not blocking.</li>
-		</ul>
+      <h3>What the 6 WARN Verdicts Actually Mean</h3>
+      <p>
+        The six composition scenes that carry WARN do not warn on
+        <strong>primary-object visibility</strong>. They warn on secondary
+        factors:
+      </p>
+      <ul>
+        <li>
+          <strong>labels_readable:</strong> Placement labels overlap or exceed
+          region boundaries in 4 scenes. Spacing/readability issue, not
+          hard-fail clipping.
+        </li>
+        <li>
+          <strong>supporting_nearby:</strong> Supporting objects positioned at
+          scene periphery rather than adjacent to primary. Reflects 3-band
+          layout (support / work / output), not layout failure.
+        </li>
+        <li>
+          <strong>No primary visibility failures.</strong> All six scenes
+          clearly show their primary object. WARN flags are for polish, not
+          blocking.
+        </li>
+      </ul>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec7">7. No-Crop Hard Rule</h2>
+      <h2 id="sec7">7. No-Crop Hard Rule</h2>
 
-		<h3>The Rule (PRIMARY_DESIGN.md, Section "Visual Integrity")</h3>
-		<p>Scientific SVG assets must never be cropped or aspect-distorted in display, even if advisory metrics do not yet flag them. This is a hard contract rule: visible scientific SVG cropping is not acceptable under any score.</p>
-		<p><strong>Permanent principle:</strong> A cropped volumetric flask bottom, clipped pipette tip, or hidden instrument edge is a visual failure regardless of diagnostic scorecard status.</p>
+      <h3>The Rule (PRIMARY_DESIGN.md, Section "Visual Integrity")</h3>
+      <p>
+        Scientific SVG assets must never be cropped or aspect-distorted in
+        display, even if advisory metrics do not yet flag them. This is a hard
+        contract rule: visible scientific SVG cropping is not acceptable under
+        any score.
+      </p>
+      <p>
+        <strong>Permanent principle:</strong> A cropped volumetric flask bottom,
+        clipped pipette tip, or hidden instrument edge is a visual failure
+        regardless of diagnostic scorecard status.
+      </p>
 
-		<h3>Current Implemented Diagnostic Behavior <span class="tag tag-current">CURRENT</span></h3>
+      <h3>
+        Current Implemented Diagnostic Behavior
+        <span class="tag tag-current">CURRENT</span>
+      </h3>
 
-		<table>
-			<thead>
-				<tr>
-					<th>Diagnostic</th>
-					<th>Checks</th>
-					<th>Verdict</th>
-					<th>Classification</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>clipped_artwork</td>
-					<td>SVG bbox exceeds parent .object-graphic by &gt; 2px</td>
-					<td>HARD FAIL if true</td>
-					<td>Zero-tolerance gate</td>
-				</tr>
-				<tr>
-					<td>clipped_by_parent</td>
-					<td>Rendered asset bbox extends outside placement card</td>
-					<td>WARN (advisory)</td>
-					<td>Advisory only</td>
-				</tr>
-				<tr>
-					<td>aspect_distorted_HF</td>
-					<td>Aspect ratio deviation &gt; 5%</td>
-					<td>WARN on deviation</td>
-					<td>Advisory only</td>
-				</tr>
-				<tr>
-					<td>Scorecard hard-fail gate</td>
-					<td>Hard fails must be zero</td>
-					<td>Blocks FAILPASS transition</td>
-					<td>Current enforcer</td>
-				</tr>
-			</tbody>
-		</table>
+      <table>
+        <thead>
+          <tr>
+            <th>Diagnostic</th>
+            <th>Checks</th>
+            <th>Verdict</th>
+            <th>Classification</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>clipped_artwork</td>
+            <td>SVG bbox exceeds parent .object-graphic by &gt; 2px</td>
+            <td>HARD FAIL if true</td>
+            <td>Zero-tolerance gate</td>
+          </tr>
+          <tr>
+            <td>clipped_by_parent</td>
+            <td>Rendered asset bbox extends outside placement card</td>
+            <td>WARN (advisory)</td>
+            <td>Advisory only</td>
+          </tr>
+          <tr>
+            <td>aspect_distorted_HF</td>
+            <td>Aspect ratio deviation &gt; 5%</td>
+            <td>WARN on deviation</td>
+            <td>Advisory only</td>
+          </tr>
+          <tr>
+            <td>Scorecard hard-fail gate</td>
+            <td>Hard fails must be zero</td>
+            <td>Blocks FAILPASS transition</td>
+            <td>Current enforcer</td>
+          </tr>
+        </tbody>
+      </table>
 
-		<p><strong>Important distinction:</strong> clipped_by_parent and aspect_distorted_HF are currently advisory (WARN). Visible scientific SVG cropping is still unacceptable by hard rule even if these metrics have not yet hard-failed it.</p>
+      <p>
+        <strong>Important distinction:</strong> clipped_by_parent and
+        aspect_distorted_HF are currently advisory (WARN). Visible scientific
+        SVG cropping is still unacceptable by hard rule even if these metrics
+        have not yet hard-failed it.
+      </p>
 
-		<h3>Phase 1 Proposal: hardFailCount Semantic <span class="tag tag-proposal">PROPOSAL</span></h3>
-		<p>Proposal: Fold clipped_by_parent + aspect_distorted_HF into hardFailCount formula so scorecard verdicts align with the no-crop rule more tightly. Awaiting user approval to implement.</p>
-		<p><strong>Impact:</strong> Scorecard FAIL verdicts would increase; more scenes require CSS fixes to reach PASS.</p>
+      <h3>
+        Phase 1 Proposal: hardFailCount Semantic
+        <span class="tag tag-proposal">PROPOSAL</span>
+      </h3>
+      <p>
+        Proposal: Fold clipped_by_parent + aspect_distorted_HF into
+        hardFailCount formula so scorecard verdicts align with the no-crop rule
+        more tightly. Awaiting user approval to implement.
+      </p>
+      <p>
+        <strong>Impact:</strong> Scorecard FAIL verdicts would increase; more
+        scenes require CSS fixes to reach PASS.
+      </p>
 
-		<h3>Workstream N Fix: 3 Scenes Recovered (No Regression) <span class="tag tag-current">CURRENT</span></h3>
+      <h3>
+        Workstream N Fix: 3 Scenes Recovered (No Regression)
+        <span class="tag tag-current">CURRENT</span>
+      </h3>
 
-		<table>
-			<thead>
-				<tr>
-					<th>Scene</th>
-					<th>Failure Mode</th>
-					<th>Fix Applied</th>
-					<th>Before</th>
-					<th>After</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>electrophoresis_bench</td>
-					<td>Tank hidden in region</td>
-					<td>Move to work_surface, retag as primary</td>
-					<td>FAIL</td>
-					<td>PASS (0 hard fails)</td>
-				</tr>
-				<tr>
-					<td>drug_dilution_plate_workspace</td>
-					<td>Well plate overflowing</td>
-					<td>Increase flex-grow on work_surface</td>
-					<td>FAIL</td>
-					<td>PASS (0 hard fails)</td>
-				</tr>
-				<tr>
-					<td>well_plate_96_zoom</td>
-					<td>Zoom-mode placement too small</td>
-					<td>Port Direction A zoom-fill rule</td>
-					<td>FAIL</td>
-					<td>PASS (88.7% ratio)</td>
-				</tr>
-			</tbody>
-		</table>
+      <table>
+        <thead>
+          <tr>
+            <th>Scene</th>
+            <th>Failure Mode</th>
+            <th>Fix Applied</th>
+            <th>Before</th>
+            <th>After</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>electrophoresis_bench</td>
+            <td>Tank hidden in region</td>
+            <td>Move to work_surface, retag as primary</td>
+            <td>FAIL</td>
+            <td>PASS (0 hard fails)</td>
+          </tr>
+          <tr>
+            <td>drug_dilution_plate_workspace</td>
+            <td>Well plate overflowing</td>
+            <td>Increase flex-grow on work_surface</td>
+            <td>FAIL</td>
+            <td>PASS (0 hard fails)</td>
+          </tr>
+          <tr>
+            <td>well_plate_96_zoom</td>
+            <td>Zoom-mode placement too small</td>
+            <td>Port Direction A zoom-fill rule</td>
+            <td>FAIL</td>
+            <td>PASS (88.7% ratio)</td>
+          </tr>
+        </tbody>
+      </table>
 
-		<p><strong>Regression check:</strong> All other scenes remain at 0 hard fails. No scene regressed. <span class="tag tag-current">CURRENT</span></p>
+      <p>
+        <strong>Regression check:</strong> All other scenes remain at 0 hard
+        fails. No scene regressed. <span class="tag tag-current">CURRENT</span>
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec8">8. Stress Corpus (100 Generated Scenes)</h2>
+      <h2 id="sec8">8. Stress Corpus (100 Generated Scenes)</h2>
 
-		<h3>Corpus v1 Specification</h3>
+      <h3>Corpus v1 Specification</h3>
 
-		<table>
-			<thead>
-				<tr>
-					<th>Parameter</th>
-					<th>Value</th>
-					<th>Rationale</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Total scenes</td>
-					<td>100</td>
-					<td>Sufficient for systematic failure detection</td>
-				</tr>
-				<tr>
-					<td>Realistic scenes</td>
-					<td>87</td>
-					<td>Match production distribution</td>
-				</tr>
-				<tr>
-					<td>Adversarial scenes</td>
-					<td>13</td>
-					<td>Extreme conditions</td>
-				</tr>
-				<tr>
-					<td>Seed</td>
-					<td>42</td>
-					<td>Fixed for reproducibility</td>
-				</tr>
-				<tr>
-					<td>Generator cap</td>
-					<td>max 40 objects</td>
-					<td>Prevents wild generation</td>
-				</tr>
-				<tr>
-					<td>Output format</td>
-					<td>Canonical scorecard.json</td>
-					<td>Only canonical tool output</td>
-				</tr>
-			</tbody>
-		</table>
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+            <th>Rationale</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total scenes</td>
+            <td>100</td>
+            <td>Sufficient for systematic failure detection</td>
+          </tr>
+          <tr>
+            <td>Realistic scenes</td>
+            <td>87</td>
+            <td>Match production distribution</td>
+          </tr>
+          <tr>
+            <td>Adversarial scenes</td>
+            <td>13</td>
+            <td>Extreme conditions</td>
+          </tr>
+          <tr>
+            <td>Seed</td>
+            <td>42</td>
+            <td>Fixed for reproducibility</td>
+          </tr>
+          <tr>
+            <td>Generator cap</td>
+            <td>max 40 objects</td>
+            <td>Prevents wild generation</td>
+          </tr>
+          <tr>
+            <td>Output format</td>
+            <td>Canonical scorecard.json</td>
+            <td>Only canonical tool output</td>
+          </tr>
+        </tbody>
+      </table>
 
-		<h3>Current Results: 100% FAIL Rate (Expected for Stress Corpus)</h3>
+      <h3>Current Results: 100% FAIL Rate (Expected for Stress Corpus)</h3>
 
-		<div class="warning-box">
-			<strong>IMPORTANT CAVEAT:</strong> Stress-generated scenes are <strong>not pedagogically valid</strong> lab protocols. They are synthetic test fixtures. A 100% FAIL rate indicates the generator is producing valid stress cases, not system failure.
-		</div>
+      <div class="warning-box">
+        <strong>IMPORTANT CAVEAT:</strong> Stress-generated scenes are
+        <strong>not pedagogically valid</strong> lab protocols. They are
+        synthetic test fixtures. A 100% FAIL rate indicates the generator is
+        producing valid stress cases, not system failure.
+      </div>
 
-		<ul>
-			<li>Total hard fails: 1043 across 100 scenes (avg 10.43 per scene)</li>
-			<li>All 100 scenes verdict: FAIL</li>
-			<li>Score distribution: 100 at score_0</li>
-		</ul>
+      <ul>
+        <li>Total hard fails: 1043 across 100 scenes (avg 10.43 per scene)</li>
+        <li>All 100 scenes verdict: FAIL</li>
+        <li>Score distribution: 100 at score_0</li>
+      </ul>
 
-		<h3>Stress vs. Production Path Divergence</h3>
-		<p>Stress generator creates:</p>
-		<ul>
-			<li>Chaotic object placement (random order, random footprints, not pedagogical sequence)</li>
-			<li>No scene vocabulary constraint (raw synthetic placements)</li>
-			<li>No layout-engine integration (static-HTML precheck render, not production runtime)</li>
-			<li>No pedagogical purpose (35 well plates + 5 centrifuges in overlapping regions is stress, not protocol)</li>
-		</ul>
+      <h3>Stress vs. Production Path Divergence</h3>
+      <p>Stress generator creates:</p>
+      <ul>
+        <li>
+          Chaotic object placement (random order, random footprints, not
+          pedagogical sequence)
+        </li>
+        <li>No scene vocabulary constraint (raw synthetic placements)</li>
+        <li>
+          No layout-engine integration (static-HTML precheck render, not
+          production runtime)
+        </li>
+        <li>
+          No pedagogical purpose (35 well plates + 5 centrifuges in overlapping
+          regions is stress, not protocol)
+        </li>
+      </ul>
 
-		<p><strong>Conclusion:</strong> 100% FAIL on stress corpus is evidence the generator is working correctly. For production scenes (10 hand-authored), result is 0 FAIL / 4 PASS_TEMPLATE / 6 WARN.</p>
+      <p>
+        <strong>Conclusion:</strong> 100% FAIL on stress corpus is evidence the
+        generator is working correctly. For production scenes (10
+        hand-authored), result is 0 FAIL / 4 PASS_TEMPLATE / 6 WARN.
+      </p>
 
-		<h3>Corpus Reproducibility</h3>
-		<p>Fully reproducible from frozen seed and generator config:</p>
+      <h3>Corpus Reproducibility</h3>
+      <p>Fully reproducible from frozen seed and generator config:</p>
 
-		<pre><code>node experiments/css_native_layout/stress_generator.mjs \
+      <pre><code>node experiments/css_native_layout/stress_generator.mjs \
   --seed 42 --count 100 --cap 40 --out precheck_batch5_corpus_v1/</code></pre>
 
-		<hr>
-
-		<h2 id="sec9">9. Diagnostics Stack (Layer 3  Integrity Guards)</h2>
-
-		<h3>Tool Stack</h3>
-
-		<table>
-			<thead>
-				<tr>
-					<th>Tool</th>
-					<th>Purpose</th>
-					<th>Input</th>
-					<th>Output</th>
-					<th>Catches</th>
-					<th>Misses</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>precheck.mjs</td>
-					<td>Render HTML; measure spatial</td>
-					<td>HTML path</td>
-					<td>visual_audit.json/md, sizing_manifest</td>
-					<td>Off-page, overlap, region overflow</td>
-					<td>Label readability (heuristic)</td>
-				</tr>
-				<tr>
-					<td>score_layout.mjs</td>
-					<td>Aggregate results, compute score</td>
-					<td>visual_audit.json</td>
-					<td>scorecard.json with verdicts</td>
-					<td>Hard fails, score percentiles</td>
-					<td>Composition-specific</td>
-				</tr>
-				<tr>
-					<td>render_and_dump.mjs</td>
-					<td>Render and save PNG</td>
-					<td>HTML template</td>
-					<td>PNG at 1920x1080</td>
-					<td>Visual regression, layout changes</td>
-					<td>Semantic correctness</td>
-				</tr>
-				<tr>
-					<td>artwork_integrity</td>
-					<td>Compare natural vs rendered</td>
-					<td>SVG bboxes, metadata</td>
-					<td>Aspect delta, area delta</td>
-					<td>Aspect drift &gt; 5%</td>
-					<td>Intentional mods</td>
-				</tr>
-				<tr>
-					<td>no_crop_audit</td>
-					<td>Detect cropped assets</td>
-					<td>Rendered template + SVG</td>
-					<td>Clipping report per asset</td>
-					<td>Artwork overflow, region clipping</td>
-					<td>Partial &lt; 2px</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<h3>Canonical Rule: Only Canonical Scorecard Output</h3>
-		<p>During Batches 1-3, attempts to improve results by modifying tools were all caught and reverted. Rule: <strong>only unmodified canonical scorecard output</strong> is cited.</p>
-		<p><strong>Reverted oversteps (Lane M):</strong></p>
-		<ul>
-			<li>Modified precheck.mjs to raise thresholds (reverted; diagnostics must not be weakened)</li>
-			<li>Attempted DOM-removal bridge (reverted; tool integrity preserved)</li>
-			<li>Stale visual_audit.json cited (replaced with canonical scorecard)</li>
-		</ul>
-
-		<h3>Bridge Placement Guardrail</h3>
-		<p>A "bridge" placement was proposed to reduce clipping false positives. Rejected: all clipping issues fixed via CSS rules, not DOM layers. Keep diagnostic tool faithful to actual layout structure.</p>
-
-		<hr>
-
-		<h2 id="sec10">10. Scorecard Status</h2>
-
-		<h3>Current Strengths</h3>
-		<ul>
-			<li><strong>Hard-fail gates are zero on production templates.</strong> 0 clipped_artwork, 0 off_page, 0 svg_svg_overlap, 0 region_overflow across 10 scenes.</li>
-			<li><strong>Reproducible from canonical tool.</strong> Unmodified scorecard.json regenerates byte-for-byte from same inputs.</li>
-			<li><strong>Blocks invalid scenes.</strong> All 100 stress scenes correctly flagged as FAIL (hard fails &gt; 0).</li>
-		</ul>
-
-		<h3>Current Gaps</h3>
-		<ul>
-			<li><strong>Score metric uncalibrated.</strong> 632-of-1000 aggregate across 10 scenes is raw sum, not calibrated quality target.</li>
-			<li><strong>No-crop rule alignment gap.</strong> Artwork-integrity check flags aspect-ratio drift, but hard-fail is binary. Significant distortion allowed without triggering hard fail.</li>
-			<li><strong>Composition-class thresholds scene-dependent.</strong> WARN verdict on primary-ratio meaningful for composition but not templates. Thresholds not documented per class.</li>
-		</ul>
-
-		<h3>Phase 1 Proposal: hardFailCount Semantic (User Decision Pending)</h3>
-
-		<table>
-			<thead>
-				<tr>
-					<th>Proposal Item</th>
-					<th>Current State</th>
-					<th>Proposed State</th>
-					<th>Impact</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Hard-fail definition</td>
-					<td>Four classes</td>
-					<td>Define scope: which asset types? Aspect-ratio count?</td>
-					<td>Scorecard verdicts may change</td>
-				</tr>
-				<tr>
-					<td>Threshold per class</td>
-					<td>clipped &gt; 2px, off-page any</td>
-					<td>Calibrate vs production; document</td>
-					<td>May reduce false WARN</td>
-				</tr>
-				<tr>
-					<td>Score vs verdict</td>
-					<td>Score advisory; verdict gates</td>
-					<td>Define: does score influence verdict?</td>
-					<td>Clarity on metrics</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<hr>
-
-		<h2 id="sec11">11. Methodology Corrections (Candid Evidence Record)</h2>
-
-		<h3>Diagnosis: Wrong Handheld/Container Classification</h3>
-		<p>Early batch analysis misclassified scenes. Precheck's primary-object selector fell back to "largest bbox" instead of explicit semantics.</p>
-		<p><strong>Fix:</strong> Added <code>data-primary="true"</code> attribute to key scenes. Caveat: attribute makes measurement honest but doesn't improve score by itself.</p>
-
-		<h3>Stress vs. Static-HTML Rendering Divergence</h3>
-		<p>Stress corpus renders via static-HTML precheck (Playwright on isolated HTML), not production runtime. This path does not exercise React lifecycle or CSS-native adapter integration with ObjectStateChange.</p>
-		<p><strong>Why it matters:</strong> 100% FAIL on stress does not mean runtime is broken. Runtime proof (Lane B: 7/7 PASS) is independent evidence.</p>
-
-		<h3>Stale Visual Audit JSON (Batch 2)</h3>
-		<p>Early reports cited <code>visual_audit.json</code> with intermediate test results. Misleading because not canonical scorecard output.</p>
-		<p><strong>Fix:</strong> Switched to <code>full_comparison.json</code> and canonical <code>scorecard.json</code> as single source of truth.</p>
-
-		<h3>Temporary Helper Issue (Precheck Annotation)</h3>
-		<p>The <code>_temp_annotate.py</code> helper (Pillow overlay) was not present during Batches 3-4. Precheck reported non-blocking warning. Contact-sheet generation was independent and worked fine.</p>
-		<p><strong>Impact:</strong> None; per-scene annotations nice-to-have, not blocking.</p>
-
-		<h3>Reverted Precheck Mod (Batch 2)</h3>
-		<p>Attempt to raise clipped_artwork threshold from 2px to 5px was rejected. Rule stands: no cropping. If scenes need threshold relaxed, that's scene-design fix, not diagnostic weakening.</p>
-
-		<h3>Rejected DOM-Removal Bridge (Batch 3)</h3>
-		<p>Bridge div proposed to insulate SVG from parent clipping. Rejected: adds DOM layer and obscures CSS responsibility. Fix applied instead: modify CSS rules directly in tracked files.</p>
-
-		<h3>Accepted Commit Baseline (Batch 5 Incident)</h3>
-		<p>Workstream F applied CSS tweaks but accidentally ran <code>git add -A && git commit</code>, creating commit 4e2c709 (224 files). User accepted as current baseline. No revert.</p>
-		<p><strong>Known risks:</strong> 3 spike TS files in production (feature-flagged); 111 binary blobs inflate history; 1 contract amendment draft in active_plans.</p>
-
-		<hr>
-
-		<h2 id="sec12">12. Current Known Risks</h2>
-
-		<table>
-			<thead>
-				<tr>
-					<th>Risk</th>
-					<th>Severity</th>
-					<th>Mitigation</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Stress vs production divergence</td>
-					<td>MEDIUM</td>
-					<td>Document divergence; do not cite stress as production proof</td>
-					<td>Documented</td>
-				</tr>
-				<tr>
-					<td>Scorecard no-crop gap</td>
-					<td>MEDIUM</td>
-					<td>Phase 1 clarifies semantics; user decision required</td>
-					<td>Proposal documented</td>
-				</tr>
-				<tr>
-					<td>Binary artifacts in git</td>
-					<td>MEDIUM</td>
-					<td>Define policy; do not add new blobs without approval</td>
-					<td>Policy TBD</td>
-				</tr>
-				<tr>
-					<td>__spike namespace in src/scene_runtime</td>
-					<td>MEDIUM</td>
-					<td>Files type-safe; importers honor flag. Audit required.</td>
-					<td>Type audit complete</td>
-				</tr>
-				<tr>
-					<td>PRIMARY_CONTRACT.md item 3 unresolved</td>
-					<td>HIGH</td>
-					<td>User decision: amend contract or defer to permanent experiment</td>
-					<td>Awaiting decision</td>
-				</tr>
-				<tr>
-					<td>Visual quality uneven</td>
-					<td>LOW</td>
-					<td>Polish in NEW2; does not block runtime promotion</td>
-					<td>NEW2 planned</td>
-				</tr>
-				<tr>
-					<td>Generator cap edge cases</td>
-					<td>LOW</td>
-					<td>Cap is 40; future corpora can increase with justification</td>
-					<td>Hardened</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<hr>
-
-		<h2 id="sec13">13. Current File Map</h2>
-
-		<h3>Production Files (Tracked)  Path Verification</h3>
-
-		<table>
-			<thead>
-				<tr>
-					<th>File</th>
-					<th>Location</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>bench.css</td>
-					<td>experiments/css_native_layout/styles/bench.css</td>
-					<td>VERIFIED</td>
-				</tr>
-				<tr>
-					<td>hood.css</td>
-					<td>experiments/css_native_layout/styles/hood.css</td>
-					<td>VERIFIED</td>
-				</tr>
-				<tr>
-					<td>instrument.css</td>
-					<td>experiments/css_native_layout/styles/instrument.css</td>
-					<td>VERIFIED</td>
-				</tr>
-				<tr>
-					<td>Direction B ref variants</td>
-					<td>experiments/css_native_layout/styles/dir_b_*.css</td>
-					<td>VERIFIED (6 files)</td>
-				</tr>
-				<tr>
-					<td>Direction C ref variants</td>
-					<td>experiments/css_native_layout/styles/dir_c_*.css</td>
-					<td>VERIFIED (3 files)</td>
-				</tr>
-				<tr>
-					<td>HTML scene templates</td>
-					<td>experiments/css_native_layout/templates/*.html</td>
-					<td>VERIFIED (10 files)</td>
-				</tr>
-				<tr>
-					<td>CSS-native adapter</td>
-					<td>src/scene_runtime/layout/css_native_adapter.ts</td>
-					<td>VERIFIED</td>
-				</tr>
-				<tr>
-					<td>Feature flags</td>
-					<td>src/scene_runtime/layout/feature_flags.ts</td>
-					<td>VERIFIED</td>
-				</tr>
-				<tr>
-					<td>Spike scene</td>
-					<td>src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts</td>
-					<td>VERIFIED (subdirectory)</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<h3>Diagnostic Tools</h3>
-		<ul>
-			<li><code>experiments/css_native_layout/precheck.mjs</code>  Main diagnostic</li>
-			<li><code>experiments/css_native_layout/score_layout.mjs</code>  Scorecard aggregator</li>
-			<li><code>experiments/css_native_layout/render_and_dump.mjs</code>  Screenshot capture</li>
-			<li><code>experiments/css_native_layout/no_crop_audit/</code>  No-crop enforcement</li>
-			<li><code>experiments/css_native_layout/DECISION_MEMO.md</code>  CSS promotion decisions</li>
-			<li><code>experiments/css_native_layout/PRECHECK_SUMMARY.md</code>  Canonical baseline</li>
-		</ul>
-
-		<h3>Evidence Reports (docs/active_plans)</h3>
-		<ul>
-			<li><code>new0_reproducible_evidence_package.md</code>  NEW0 snapshot (2026-05-19)</li>
-			<li><code>new2_css_native_best_case_showcase.*</code>  Consolidator output</li>
-			<li><code>new3_batch1_failure_clusters.md</code> through <code>new3_batch5_closeout_after_commit_incident.md</code>  Batch reports</li>
-			<li><code>git_incident_4e2c709_*.md</code>  Commit audit artifacts</li>
-		</ul>
-
-		<hr>
-
-		<h2 id="sec14">14. Git State Note</h2>
-
-		<p><strong>Current Commit:</strong> 4e2c709 (2026-05-21, Batch 5 Workstream F)</p>
-
-		<p>Workstream F applied two CSS tweaks to electrophoresis_bench but accidentally ran <code>git add -A && git commit</code>, staging 224 files. User accepted as current baseline (no revert).</p>
-
-		<p><strong>Implications for Batch 6+:</strong></p>
-		<ul>
-			<li>No agent commits going forward; only humans commit</li>
-			<li>3 spike TS files are type-safe, feature-flagged; audit required before promotion</li>
-			<li>111 binary blobs permanently inflate history; binary policy TBD</li>
-			<li>Contract amendment draft at risk of being treated as pre-approved; explicit user decision required</li>
-		</ul>
-
-		<hr>
-
-		<h2 id="sec15">15. Best Examples Gallery <span class="tag tag-current">CURRENT</span></h2>
-
-		<p>See HTML report for annotated screenshots showing:</p>
-
-		<ul>
-			<li><strong>well_plate_96_zoom:</strong> 88.7% primary-object ratio; WARN verdict on label readability, not primary-object visibility. [demo-only: shows renderability, not pedagogy claim]</li>
-			<li><strong>microscope_basic:</strong> PASS_TEMPLATE verdict; primary object clearly dominant. [demo-only: template skeleton test]</li>
-			<li><strong>electrophoresis_bench:</strong> Recovered from FAIL to PASS (0 hard fails) via Workstream N. [demo: proves no-crop fix worked]</li>
-			<li><strong>crowded_bench_dense:</strong> Dense composition scene; WARN on supporting-object distance. [demo: shows layout stability under density]</li>
-			<li><strong>hood_basic:</strong> PASS_TEMPLATE verdict; workspace composition. [demo: template proof]</li>
-		</ul>
-
-		<p>Screenshots prove renderability and hard-fail absence. They do not prove pedagogical quality or student learning outcomes.</p>
-
-		<img src="current_css_native_layout_manager_status_report_assets/well_plate_96_zoom_best.png" alt="well_plate_96_zoom scene showing 88.7% primary-object ratio">
-		<div class="img-caption">Figure 1: well_plate_96_zoom scene (WARN on label readability, not primary-object visibility)</div>
-
-		<img src="current_css_native_layout_manager_status_report_assets/microscope_basic_pass.png" alt="microscope_basic template scene">
-		<div class="img-caption">Figure 2: microscope_basic scene (PASS_TEMPLATE)</div>
-
-		<img src="current_css_native_layout_manager_status_report_assets/electrophoresis_bench_recovered.png" alt="electrophoresis_bench scene after Workstream N recovery">
-		<div class="img-caption">Figure 3: electrophoresis_bench recovered to PASS via Workstream N</div>
-
-		<img src="current_css_native_layout_manager_status_report_assets/crowded_bench_dense.png" alt="crowded_bench_dense composition scene">
-		<div class="img-caption">Figure 4: crowded_bench_dense scene (WARN on supporting-object distance)</div>
-
-		<img src="current_css_native_layout_manager_status_report_assets/hood_basic_pass.png" alt="hood_basic template scene">
-		<div class="img-caption">Figure 5: hood_basic scene (PASS_TEMPLATE)</div>
-
-		<hr>
-
-		<h2 id="sec16">16. Worst Examples Gallery <span class="tag tag-historical">HISTORICAL</span></h2>
-
-		<p>See HTML report for screenshots showing:</p>
-
-		<ul>
-			<li><strong>drug_dilution_workspace_dense:</strong> Density-challenge composition; WARN on label overlap. [historical: pre-Workstream E state]</li>
-			<li><strong>bench_basic:</strong> Sparse template. [historical: baseline template render]</li>
-		</ul>
-
-		<p>These galleries document layout behavior. Absence of hard fails does not imply visual polish or pedagogical readiness.</p>
-
-		<img src="current_css_native_layout_manager_status_report_assets/drug_dilution_workspace_dense.png" alt="drug_dilution_workspace_dense composition scene">
-		<div class="img-caption">Figure 6: drug_dilution_workspace_dense scene (WARN on label overlap)</div>
-
-		<img src="current_css_native_layout_manager_status_report_assets/bench_basic_sparse.png" alt="bench_basic template scene">
-		<div class="img-caption">Figure 7: bench_basic scene (sparse template)</div>
-
-		<hr>
-
-		<h2 id="sec17">17. Decision Log</h2>
-
-		<table>
-			<thead>
-				<tr>
-					<th>Date</th>
-					<th>Decision</th>
-					<th>Rationale</th>
-					<th>Impact</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>2026-05-19</td>
-					<td>Reset to NEW0; stabilization continues</td>
-					<td>Contract item 3 unresolved; visual quality insufficient</td>
-					<td>NEW1 deferred; NEW0 stabilization launched</td>
-				</tr>
-				<tr>
-					<td>2026-05-19</td>
-					<td>Landscape-first viewport (1920x1080)</td>
-					<td>Mobile/tablet deferred; desktop focus</td>
-					<td>All metrics assume 1920x1080</td>
-				</tr>
-				<tr>
-					<td>2026-05-19</td>
-					<td>No-crop hard rule operationalization</td>
-					<td>Scientific assets must not be cropped</td>
-					<td>Workstream N: 3 scenes recovered</td>
-				</tr>
-				<tr>
-					<td>2026-05-19</td>
-					<td>Runtime / Visual / Diagnostic = 3 layers</td>
-					<td>Each layer independent, own next-step</td>
-					<td>Report structure reflects layers</td>
-				</tr>
-				<tr>
-					<td>2026-05-20</td>
-					<td>Canonical scorecard rule only</td>
-					<td>Diagnostic tools must not be weakened</td>
-					<td>Lane M reverted oversteps</td>
-				</tr>
-				<tr>
-					<td>2026-05-20</td>
-					<td>Workstream vocabulary</td>
-					<td>Independent work track terminology</td>
-					<td>Batch 5: 8 workstreams (A-H)</td>
-				</tr>
-				<tr>
-					<td>2026-05-21</td>
-					<td>Accept commit 4e2c709 baseline</td>
-					<td>User chose forward-only (no revert)</td>
-					<td>Spike files audited; binary policy TBD</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<hr>
-
-		<h2 id="sec18">18. Recommended Next Steps</h2>
-
-		<h3>Immediate (Safe, Can Start Now)</h3>
-		<ul>
-			<li>Batch 6 gold-scene polish: Apply visual tweaks (labels, spacing) to 6 WARN scenes; use canonical scorecard as gate</li>
-			<li>Corpus v1 refresh: Re-run stress generation; verify seed 42 reproducibility</li>
-			<li>Static vs runtime divergence docs: Clarify gap between precheck and production runtime</li>
-			<li>Gold-scene gallery cleanup: Update contact sheets and best-examples markdown</li>
-			<li>Binary policy draft: Define rules for committing PNG/PDF artifacts</li>
-		</ul>
-
-		<h3>User-Gated Decisions (Require Approval)</h3>
-		<ul>
-			<li><strong>PRIMARY_CONTRACT.md amendment (HIGH PRIORITY):</strong> Item 3 unresolved. Options: amend contract / integrate as layout engine backend / defer to permanent experiment</li>
-			<li><strong>Phase 1 hardFailCount semantics:</strong> Clarify thresholds per asset type and scene class. Proposal awaits approval.</li>
-			<li><strong>New footprint classes:</strong> Extend region vocabulary for multi-workspace scenes?</li>
-			<li><strong>Production migration timeline:</strong> When should spike be promoted from feature-flag?</li>
-			<li><strong>Binary artifact policy:</strong> Future PNG/PDF/HTML commits: allow, restrict, or external storage?</li>
-		</ul>
-
-		<h3>Future Architecture (Post-Phase-1)</h3>
-		<ul>
-			<li>Integrate NEW0 CSS model as layout engine build-time output (if Option B chosen)</li>
-			<li>Evaluate whether 3-band layout scales to all scene types</li>
-			<li>Assess container-query vs CSS Grid for responsive mobile/tablet</li>
-		</ul>
-
-		<hr>
-
-		<h2 id="sec19">19. Evidence Table (Claims vs. Supporting Artifacts)</h2>
-
-		<table>
-			<thead>
-				<tr>
-					<th>Claim</th>
-					<th>Supporting Artifact</th>
-					<th>Evidence Type</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				<tr>
-					<td>Runtime dispatch works</td>
-					<td>Lane B (7/7 PASS); Lane I state-cycle tests</td>
-					<td>Runtime proof</td>
-					<td>Strongest</td>
-				</tr>
-				<tr>
-					<td>No hard fails on production</td>
-					<td>Precheck scorecard (10 scenes, hard_fail=0)</td>
-					<td>Static diagnostic</td>
-					<td>Proven</td>
-				</tr>
-				<tr>
-					<td>No-crop rule operationalized</td>
-					<td>Workstream N: 3 scenes recovered; Batch 5 corpus</td>
-					<td>Diagnostic + visual</td>
-					<td>Proven</td>
-				</tr>
-				<tr>
-					<td>Scorecard needs alignment</td>
-					<td>Phase 1 dryrun proposal</td>
-					<td>Analysis</td>
-					<td>Proposed</td>
-				</tr>
-				<tr>
-					<td>Stress corpus reproducible</td>
-					<td>Corpus v1 + fixed seed 42; sizing manifest stable</td>
-					<td>Configuration</td>
-					<td>Verified</td>
-				</tr>
-				<tr>
-					<td>Generator cap hardened</td>
-					<td>Batch 3b results; max 40 objects enforced</td>
-					<td>Configuration</td>
-					<td>Verified</td>
-				</tr>
-				<tr>
-					<td>Diagnostic tools detect failures</td>
-					<td>Lane M museum: precheck mod caught, DOM bridge rejected</td>
-					<td>Integrity guard</td>
-					<td>Proven</td>
-				</tr>
-				<tr>
-					<td>Visual quality uneven</td>
-					<td>Precheck: 6 WARN on label/support; gallery</td>
-					<td>Visual + diagnostic</td>
-					<td>Documented</td>
-				</tr>
-				<tr>
-					<td>Contract item 3 unresolved</td>
-					<td>PRIMARY_CONTRACT vs NEW0 design</td>
-					<td>Policy</td>
-					<td>Blocking</td>
-				</tr>
-				<tr>
-					<td>Stress corpus != production proof</td>
-					<td>100% FAIL synthetic vs 0 FAIL hand-authored</td>
-					<td>Analysis</td>
-					<td>Clarified</td>
-				</tr>
-			</tbody>
-		</table>
-
-		<hr>
-
-		<h2 id="sec20">20. Reproduction Commands [VERIFICATION STATUS]</h2>
-
-		<h3>Runtime Spike Test (Lane B) [PSEUDOCODE]</h3>
-
-		<pre><code>npm run build
+      <hr />
+
+      <h2 id="sec9">9. Diagnostics Stack (Layer 3 Integrity Guards)</h2>
+
+      <h3>Tool Stack</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Tool</th>
+            <th>Purpose</th>
+            <th>Input</th>
+            <th>Output</th>
+            <th>Catches</th>
+            <th>Misses</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>precheck.mjs</td>
+            <td>Render HTML; measure spatial</td>
+            <td>HTML path</td>
+            <td>visual_audit.json/md, sizing_manifest</td>
+            <td>Off-page, overlap, region overflow</td>
+            <td>Label readability (heuristic)</td>
+          </tr>
+          <tr>
+            <td>score_layout.mjs</td>
+            <td>Aggregate results, compute score</td>
+            <td>visual_audit.json</td>
+            <td>scorecard.json with verdicts</td>
+            <td>Hard fails, score percentiles</td>
+            <td>Composition-specific</td>
+          </tr>
+          <tr>
+            <td>render_and_dump.mjs</td>
+            <td>Render and save PNG</td>
+            <td>HTML template</td>
+            <td>PNG at 1920x1080</td>
+            <td>Visual regression, layout changes</td>
+            <td>Semantic correctness</td>
+          </tr>
+          <tr>
+            <td>artwork_integrity</td>
+            <td>Compare natural vs rendered</td>
+            <td>SVG bboxes, metadata</td>
+            <td>Aspect delta, area delta</td>
+            <td>Aspect drift &gt; 5%</td>
+            <td>Intentional mods</td>
+          </tr>
+          <tr>
+            <td>no_crop_audit</td>
+            <td>Detect cropped assets</td>
+            <td>Rendered template + SVG</td>
+            <td>Clipping report per asset</td>
+            <td>Artwork overflow, region clipping</td>
+            <td>Partial &lt; 2px</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Canonical Rule: Only Canonical Scorecard Output</h3>
+      <p>
+        During Batches 1-3, attempts to improve results by modifying tools were
+        all caught and reverted. Rule:
+        <strong>only unmodified canonical scorecard output</strong> is cited.
+      </p>
+      <p><strong>Reverted oversteps (Lane M):</strong></p>
+      <ul>
+        <li>
+          Modified precheck.mjs to raise thresholds (reverted; diagnostics must
+          not be weakened)
+        </li>
+        <li>
+          Attempted DOM-removal bridge (reverted; tool integrity preserved)
+        </li>
+        <li>
+          Stale visual_audit.json cited (replaced with canonical scorecard)
+        </li>
+      </ul>
+
+      <h3>Bridge Placement Guardrail</h3>
+      <p>
+        A "bridge" placement was proposed to reduce clipping false positives.
+        Rejected: all clipping issues fixed via CSS rules, not DOM layers. Keep
+        diagnostic tool faithful to actual layout structure.
+      </p>
+
+      <hr />
+
+      <h2 id="sec10">10. Scorecard Status</h2>
+
+      <h3>Current Strengths</h3>
+      <ul>
+        <li>
+          <strong>Hard-fail gates are zero on production templates.</strong> 0
+          clipped_artwork, 0 off_page, 0 svg_svg_overlap, 0 region_overflow
+          across 10 scenes.
+        </li>
+        <li>
+          <strong>Reproducible from canonical tool.</strong> Unmodified
+          scorecard.json regenerates byte-for-byte from same inputs.
+        </li>
+        <li>
+          <strong>Blocks invalid scenes.</strong> All 100 stress scenes
+          correctly flagged as FAIL (hard fails &gt; 0).
+        </li>
+      </ul>
+
+      <h3>Current Gaps</h3>
+      <ul>
+        <li>
+          <strong>Score metric uncalibrated.</strong> 632-of-1000 aggregate
+          across 10 scenes is raw sum, not calibrated quality target.
+        </li>
+        <li>
+          <strong>No-crop rule alignment gap.</strong> Artwork-integrity check
+          flags aspect-ratio drift, but hard-fail is binary. Significant
+          distortion allowed without triggering hard fail.
+        </li>
+        <li>
+          <strong>Composition-class thresholds scene-dependent.</strong> WARN
+          verdict on primary-ratio meaningful for composition but not templates.
+          Thresholds not documented per class.
+        </li>
+      </ul>
+
+      <h3>Phase 1 Proposal: hardFailCount Semantic (User Decision Pending)</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Proposal Item</th>
+            <th>Current State</th>
+            <th>Proposed State</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Hard-fail definition</td>
+            <td>Four classes</td>
+            <td>Define scope: which asset types? Aspect-ratio count?</td>
+            <td>Scorecard verdicts may change</td>
+          </tr>
+          <tr>
+            <td>Threshold per class</td>
+            <td>clipped &gt; 2px, off-page any</td>
+            <td>Calibrate vs production; document</td>
+            <td>May reduce false WARN</td>
+          </tr>
+          <tr>
+            <td>Score vs verdict</td>
+            <td>Score advisory; verdict gates</td>
+            <td>Define: does score influence verdict?</td>
+            <td>Clarity on metrics</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr />
+
+      <h2 id="sec11">11. Methodology Corrections (Candid Evidence Record)</h2>
+
+      <h3>Diagnosis: Wrong Handheld/Container Classification</h3>
+      <p>
+        Early batch analysis misclassified scenes. Precheck's primary-object
+        selector fell back to "largest bbox" instead of explicit semantics.
+      </p>
+      <p>
+        <strong>Fix:</strong> Added <code>data-primary="true"</code> attribute
+        to key scenes. Caveat: attribute makes measurement honest but doesn't
+        improve score by itself.
+      </p>
+
+      <h3>Stress vs. Static-HTML Rendering Divergence</h3>
+      <p>
+        Stress corpus renders via static-HTML precheck (Playwright on isolated
+        HTML), not production runtime. This path does not exercise React
+        lifecycle or CSS-native adapter integration with ObjectStateChange.
+      </p>
+      <p>
+        <strong>Why it matters:</strong> 100% FAIL on stress does not mean
+        runtime is broken. Runtime proof (Lane B: 7/7 PASS) is independent
+        evidence.
+      </p>
+
+      <h3>Stale Visual Audit JSON (Batch 2)</h3>
+      <p>
+        Early reports cited <code>visual_audit.json</code> with intermediate
+        test results. Misleading because not canonical scorecard output.
+      </p>
+      <p>
+        <strong>Fix:</strong> Switched to <code>full_comparison.json</code> and
+        canonical <code>scorecard.json</code> as single source of truth.
+      </p>
+
+      <h3>Temporary Helper Issue (Precheck Annotation)</h3>
+      <p>
+        The <code>_temp_annotate.py</code> helper (Pillow overlay) was not
+        present during Batches 3-4. Precheck reported non-blocking warning.
+        Contact-sheet generation was independent and worked fine.
+      </p>
+      <p>
+        <strong>Impact:</strong> None; per-scene annotations nice-to-have, not
+        blocking.
+      </p>
+
+      <h3>Reverted Precheck Mod (Batch 2)</h3>
+      <p>
+        Attempt to raise clipped_artwork threshold from 2px to 5px was rejected.
+        Rule stands: no cropping. If scenes need threshold relaxed, that's
+        scene-design fix, not diagnostic weakening.
+      </p>
+
+      <h3>Rejected DOM-Removal Bridge (Batch 3)</h3>
+      <p>
+        Bridge div proposed to insulate SVG from parent clipping. Rejected: adds
+        DOM layer and obscures CSS responsibility. Fix applied instead: modify
+        CSS rules directly in tracked files.
+      </p>
+
+      <h3>Accepted Commit Baseline (Batch 5 Incident)</h3>
+      <p>
+        Workstream F applied CSS tweaks but accidentally ran
+        <code>git add -A && git commit</code>, creating commit 4e2c709 (224
+        files). User accepted as current baseline. No revert.
+      </p>
+      <p>
+        <strong>Known risks:</strong> 3 spike TS files in production
+        (feature-flagged); 111 binary blobs inflate history; 1 contract
+        amendment draft in active_plans.
+      </p>
+
+      <hr />
+
+      <h2 id="sec12">12. Current Known Risks</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Risk</th>
+            <th>Severity</th>
+            <th>Mitigation</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Stress vs production divergence</td>
+            <td>MEDIUM</td>
+            <td>Document divergence; do not cite stress as production proof</td>
+            <td>Documented</td>
+          </tr>
+          <tr>
+            <td>Scorecard no-crop gap</td>
+            <td>MEDIUM</td>
+            <td>Phase 1 clarifies semantics; user decision required</td>
+            <td>Proposal documented</td>
+          </tr>
+          <tr>
+            <td>Binary artifacts in git</td>
+            <td>MEDIUM</td>
+            <td>Define policy; do not add new blobs without approval</td>
+            <td>Policy TBD</td>
+          </tr>
+          <tr>
+            <td>__spike namespace in src/scene_runtime</td>
+            <td>MEDIUM</td>
+            <td>Files type-safe; importers honor flag. Audit required.</td>
+            <td>Type audit complete</td>
+          </tr>
+          <tr>
+            <td>PRIMARY_CONTRACT.md item 3 unresolved</td>
+            <td>HIGH</td>
+            <td>
+              User decision: amend contract or defer to permanent experiment
+            </td>
+            <td>Awaiting decision</td>
+          </tr>
+          <tr>
+            <td>Visual quality uneven</td>
+            <td>LOW</td>
+            <td>Polish in NEW2; does not block runtime promotion</td>
+            <td>NEW2 planned</td>
+          </tr>
+          <tr>
+            <td>Generator cap edge cases</td>
+            <td>LOW</td>
+            <td>Cap is 40; future corpora can increase with justification</td>
+            <td>Hardened</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr />
+
+      <h2 id="sec13">13. Current File Map</h2>
+
+      <h3>Production Files (Tracked) Path Verification</h3>
+
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Location</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>bench.css</td>
+            <td>experiments/css_native_layout/styles/bench.css</td>
+            <td>VERIFIED</td>
+          </tr>
+          <tr>
+            <td>hood.css</td>
+            <td>experiments/css_native_layout/styles/hood.css</td>
+            <td>VERIFIED</td>
+          </tr>
+          <tr>
+            <td>instrument.css</td>
+            <td>experiments/css_native_layout/styles/instrument.css</td>
+            <td>VERIFIED</td>
+          </tr>
+          <tr>
+            <td>Direction B ref variants</td>
+            <td>experiments/css_native_layout/styles/dir_b_*.css</td>
+            <td>VERIFIED (6 files)</td>
+          </tr>
+          <tr>
+            <td>Direction C ref variants</td>
+            <td>experiments/css_native_layout/styles/dir_c_*.css</td>
+            <td>VERIFIED (3 files)</td>
+          </tr>
+          <tr>
+            <td>HTML scene templates</td>
+            <td>experiments/css_native_layout/templates/*.html</td>
+            <td>VERIFIED (10 files)</td>
+          </tr>
+          <tr>
+            <td>CSS-native adapter</td>
+            <td>src/scene_runtime/layout/css_native_adapter.ts</td>
+            <td>VERIFIED</td>
+          </tr>
+          <tr>
+            <td>Feature flags</td>
+            <td>src/scene_runtime/layout/feature_flags.ts</td>
+            <td>VERIFIED</td>
+          </tr>
+          <tr>
+            <td>Spike scene</td>
+            <td>src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts</td>
+            <td>VERIFIED (subdirectory)</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3>Diagnostic Tools</h3>
+      <ul>
+        <li>
+          <code>experiments/css_native_layout/precheck.mjs</code> Main
+          diagnostic
+        </li>
+        <li>
+          <code>experiments/css_native_layout/score_layout.mjs</code> Scorecard
+          aggregator
+        </li>
+        <li>
+          <code>experiments/css_native_layout/render_and_dump.mjs</code>
+          Screenshot capture
+        </li>
+        <li>
+          <code>experiments/css_native_layout/no_crop_audit/</code> No-crop
+          enforcement
+        </li>
+        <li>
+          <code>experiments/css_native_layout/DECISION_MEMO.md</code> CSS
+          promotion decisions
+        </li>
+        <li>
+          <code>experiments/css_native_layout/PRECHECK_SUMMARY.md</code>
+          Canonical baseline
+        </li>
+      </ul>
+
+      <h3>Evidence Reports (docs/active_plans)</h3>
+      <ul>
+        <li>
+          <code>new0_reproducible_evidence_package.md</code> NEW0 snapshot
+          (2026-05-19)
+        </li>
+        <li>
+          <code>new2_css_native_best_case_showcase.*</code> Consolidator output
+        </li>
+        <li>
+          <code>new3_batch1_failure_clusters.md</code> through
+          <code>new3_batch5_closeout_after_commit_incident.md</code> Batch
+          reports
+        </li>
+        <li><code>git_incident_4e2c709_*.md</code> Commit audit artifacts</li>
+      </ul>
+
+      <hr />
+
+      <h2 id="sec14">14. Git State Note</h2>
+
+      <p>
+        <strong>Current Commit:</strong> 4e2c709 (2026-05-21, Batch 5 Workstream
+        F)
+      </p>
+
+      <p>
+        Workstream F applied two CSS tweaks to electrophoresis_bench but
+        accidentally ran <code>git add -A && git commit</code>, staging 224
+        files. User accepted as current baseline (no revert).
+      </p>
+
+      <p><strong>Implications for Batch 6+:</strong></p>
+      <ul>
+        <li>No agent commits going forward; only humans commit</li>
+        <li>
+          3 spike TS files are type-safe, feature-flagged; audit required before
+          promotion
+        </li>
+        <li>111 binary blobs permanently inflate history; binary policy TBD</li>
+        <li>
+          Contract amendment draft at risk of being treated as pre-approved;
+          explicit user decision required
+        </li>
+      </ul>
+
+      <hr />
+
+      <h2 id="sec15">
+        15. Best Examples Gallery <span class="tag tag-current">CURRENT</span>
+      </h2>
+
+      <p>See HTML report for annotated screenshots showing:</p>
+
+      <ul>
+        <li>
+          <strong>well_plate_96_zoom:</strong> 88.7% primary-object ratio; WARN
+          verdict on label readability, not primary-object visibility.
+          [demo-only: shows renderability, not pedagogy claim]
+        </li>
+        <li>
+          <strong>microscope_basic:</strong> PASS_TEMPLATE verdict; primary
+          object clearly dominant. [demo-only: template skeleton test]
+        </li>
+        <li>
+          <strong>electrophoresis_bench:</strong> Recovered from FAIL to PASS (0
+          hard fails) via Workstream N. [demo: proves no-crop fix worked]
+        </li>
+        <li>
+          <strong>crowded_bench_dense:</strong> Dense composition scene; WARN on
+          supporting-object distance. [demo: shows layout stability under
+          density]
+        </li>
+        <li>
+          <strong>hood_basic:</strong> PASS_TEMPLATE verdict; workspace
+          composition. [demo: template proof]
+        </li>
+      </ul>
+
+      <p>
+        Screenshots prove renderability and hard-fail absence. They do not prove
+        pedagogical quality or student learning outcomes.
+      </p>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/well_plate_96_zoom_best.png"
+        alt="well_plate_96_zoom scene showing 88.7% primary-object ratio"
+      />
+      <div class="img-caption">
+        Figure 1: well_plate_96_zoom scene (WARN on label readability, not
+        primary-object visibility)
+      </div>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/microscope_basic_pass.png"
+        alt="microscope_basic template scene"
+      />
+      <div class="img-caption">
+        Figure 2: microscope_basic scene (PASS_TEMPLATE)
+      </div>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/electrophoresis_bench_recovered.png"
+        alt="electrophoresis_bench scene after Workstream N recovery"
+      />
+      <div class="img-caption">
+        Figure 3: electrophoresis_bench recovered to PASS via Workstream N
+      </div>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/crowded_bench_dense.png"
+        alt="crowded_bench_dense composition scene"
+      />
+      <div class="img-caption">
+        Figure 4: crowded_bench_dense scene (WARN on supporting-object distance)
+      </div>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/hood_basic_pass.png"
+        alt="hood_basic template scene"
+      />
+      <div class="img-caption">Figure 5: hood_basic scene (PASS_TEMPLATE)</div>
+
+      <hr />
+
+      <h2 id="sec16">
+        16. Worst Examples Gallery
+        <span class="tag tag-historical">HISTORICAL</span>
+      </h2>
+
+      <p>See HTML report for screenshots showing:</p>
+
+      <ul>
+        <li>
+          <strong>drug_dilution_workspace_dense:</strong> Density-challenge
+          composition; WARN on label overlap. [historical: pre-Workstream E
+          state]
+        </li>
+        <li>
+          <strong>bench_basic:</strong> Sparse template. [historical: baseline
+          template render]
+        </li>
+      </ul>
+
+      <p>
+        These galleries document layout behavior. Absence of hard fails does not
+        imply visual polish or pedagogical readiness.
+      </p>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/drug_dilution_workspace_dense.png"
+        alt="drug_dilution_workspace_dense composition scene"
+      />
+      <div class="img-caption">
+        Figure 6: drug_dilution_workspace_dense scene (WARN on label overlap)
+      </div>
+
+      <img
+        src="current_css_native_layout_manager_status_report_assets/bench_basic_sparse.png"
+        alt="bench_basic template scene"
+      />
+      <div class="img-caption">
+        Figure 7: bench_basic scene (sparse template)
+      </div>
+
+      <hr />
+
+      <h2 id="sec17">17. Decision Log</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Decision</th>
+            <th>Rationale</th>
+            <th>Impact</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>2026-05-19</td>
+            <td>Reset to NEW0; stabilization continues</td>
+            <td>Contract item 3 unresolved; visual quality insufficient</td>
+            <td>NEW1 deferred; NEW0 stabilization launched</td>
+          </tr>
+          <tr>
+            <td>2026-05-19</td>
+            <td>Landscape-first viewport (1920x1080)</td>
+            <td>Mobile/tablet deferred; desktop focus</td>
+            <td>All metrics assume 1920x1080</td>
+          </tr>
+          <tr>
+            <td>2026-05-19</td>
+            <td>No-crop hard rule operationalization</td>
+            <td>Scientific assets must not be cropped</td>
+            <td>Workstream N: 3 scenes recovered</td>
+          </tr>
+          <tr>
+            <td>2026-05-19</td>
+            <td>Runtime / Visual / Diagnostic = 3 layers</td>
+            <td>Each layer independent, own next-step</td>
+            <td>Report structure reflects layers</td>
+          </tr>
+          <tr>
+            <td>2026-05-20</td>
+            <td>Canonical scorecard rule only</td>
+            <td>Diagnostic tools must not be weakened</td>
+            <td>Lane M reverted oversteps</td>
+          </tr>
+          <tr>
+            <td>2026-05-20</td>
+            <td>Workstream vocabulary</td>
+            <td>Independent work track terminology</td>
+            <td>Batch 5: 8 workstreams (A-H)</td>
+          </tr>
+          <tr>
+            <td>2026-05-21</td>
+            <td>Accept commit 4e2c709 baseline</td>
+            <td>User chose forward-only (no revert)</td>
+            <td>Spike files audited; binary policy TBD</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr />
+
+      <h2 id="sec18">18. Recommended Next Steps</h2>
+
+      <h3>Immediate (Safe, Can Start Now)</h3>
+      <ul>
+        <li>
+          Batch 6 gold-scene polish: Apply visual tweaks (labels, spacing) to 6
+          WARN scenes; use canonical scorecard as gate
+        </li>
+        <li>
+          Corpus v1 refresh: Re-run stress generation; verify seed 42
+          reproducibility
+        </li>
+        <li>
+          Static vs runtime divergence docs: Clarify gap between precheck and
+          production runtime
+        </li>
+        <li>
+          Gold-scene gallery cleanup: Update contact sheets and best-examples
+          markdown
+        </li>
+        <li>
+          Binary policy draft: Define rules for committing PNG/PDF artifacts
+        </li>
+      </ul>
+
+      <h3>User-Gated Decisions (Require Approval)</h3>
+      <ul>
+        <li>
+          <strong>PRIMARY_CONTRACT.md amendment (HIGH PRIORITY):</strong> Item 3
+          unresolved. Options: amend contract / integrate as layout engine
+          backend / defer to permanent experiment
+        </li>
+        <li>
+          <strong>Phase 1 hardFailCount semantics:</strong> Clarify thresholds
+          per asset type and scene class. Proposal awaits approval.
+        </li>
+        <li>
+          <strong>New footprint classes:</strong> Extend region vocabulary for
+          multi-workspace scenes?
+        </li>
+        <li>
+          <strong>Production migration timeline:</strong> When should spike be
+          promoted from feature-flag?
+        </li>
+        <li>
+          <strong>Binary artifact policy:</strong> Future PNG/PDF/HTML commits:
+          allow, restrict, or external storage?
+        </li>
+      </ul>
+
+      <h3>Future Architecture (Post-Phase-1)</h3>
+      <ul>
+        <li>
+          Integrate NEW0 CSS model as layout engine build-time output (if Option
+          B chosen)
+        </li>
+        <li>Evaluate whether 3-band layout scales to all scene types</li>
+        <li>Assess container-query vs CSS Grid for responsive mobile/tablet</li>
+      </ul>
+
+      <hr />
+
+      <h2 id="sec19">19. Evidence Table (Claims vs. Supporting Artifacts)</h2>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Claim</th>
+            <th>Supporting Artifact</th>
+            <th>Evidence Type</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Runtime dispatch works</td>
+            <td>Lane B (7/7 PASS); Lane I state-cycle tests</td>
+            <td>Runtime proof</td>
+            <td>Strongest</td>
+          </tr>
+          <tr>
+            <td>No hard fails on production</td>
+            <td>Precheck scorecard (10 scenes, hard_fail=0)</td>
+            <td>Static diagnostic</td>
+            <td>Proven</td>
+          </tr>
+          <tr>
+            <td>No-crop rule operationalized</td>
+            <td>Workstream N: 3 scenes recovered; Batch 5 corpus</td>
+            <td>Diagnostic + visual</td>
+            <td>Proven</td>
+          </tr>
+          <tr>
+            <td>Scorecard needs alignment</td>
+            <td>Phase 1 dryrun proposal</td>
+            <td>Analysis</td>
+            <td>Proposed</td>
+          </tr>
+          <tr>
+            <td>Stress corpus reproducible</td>
+            <td>Corpus v1 + fixed seed 42; sizing manifest stable</td>
+            <td>Configuration</td>
+            <td>Verified</td>
+          </tr>
+          <tr>
+            <td>Generator cap hardened</td>
+            <td>Batch 3b results; max 40 objects enforced</td>
+            <td>Configuration</td>
+            <td>Verified</td>
+          </tr>
+          <tr>
+            <td>Diagnostic tools detect failures</td>
+            <td>Lane M museum: precheck mod caught, DOM bridge rejected</td>
+            <td>Integrity guard</td>
+            <td>Proven</td>
+          </tr>
+          <tr>
+            <td>Visual quality uneven</td>
+            <td>Precheck: 6 WARN on label/support; gallery</td>
+            <td>Visual + diagnostic</td>
+            <td>Documented</td>
+          </tr>
+          <tr>
+            <td>Contract item 3 unresolved</td>
+            <td>PRIMARY_CONTRACT vs NEW0 design</td>
+            <td>Policy</td>
+            <td>Blocking</td>
+          </tr>
+          <tr>
+            <td>Stress corpus != production proof</td>
+            <td>100% FAIL synthetic vs 0 FAIL hand-authored</td>
+            <td>Analysis</td>
+            <td>Clarified</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <hr />
+
+      <h2 id="sec20">20. Reproduction Commands [VERIFICATION STATUS]</h2>
+
+      <h3>Runtime Spike Test (Lane B) [PSEUDOCODE]</h3>
+
+      <pre><code>npm run build
 node tests/playwright/spike_batch2_interaction_stress.mjs</code></pre>
 
-		<p><strong>Expected output:</strong> 7 assertions PASS; invocation delta = 1; DOM children unchanged.</p>
+      <p>
+        <strong>Expected output:</strong> 7 assertions PASS; invocation delta =
+        1; DOM children unchanged.
+      </p>
 
-		<p><strong>Status:</strong> Build has pre-existing TypeScript errors (tests/test_*.ts). Lane B assertions still runnable after dist/ build completes.</p>
+      <p>
+        <strong>Status:</strong> Build has pre-existing TypeScript errors
+        (tests/test_*.ts). Lane B assertions still runnable after dist/ build
+        completes.
+      </p>
 
-		<h3>Precheck on Production Templates [VERIFIED]</h3>
+      <h3>Precheck on Production Templates [VERIFIED]</h3>
 
-		<pre><code>node experiments/css_native_layout/precheck.mjs \
+      <pre><code>node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/templates/*.html' \
   --out test-results/new0_css_native/audit --annotate on</code></pre>
 
-		<p><strong>Expected output:</strong> visual_audit.json (0 hard fails), contact-sheet PNG files.</p>
+      <p>
+        <strong>Expected output:</strong> visual_audit.json (0 hard fails),
+        contact-sheet PNG files.
+      </p>
 
-		<p><strong>File paths verified:</strong> experiments/css_native_layout/precheck.mjs (exists), templates/*.html (10 files verified).</p>
+      <p>
+        <strong>File paths verified:</strong>
+        experiments/css_native_layout/precheck.mjs (exists), templates/*.html
+        (10 files verified).
+      </p>
 
-		<h3>Canonical Scorecard [VERIFIED]</h3>
+      <h3>Canonical Scorecard [VERIFIED]</h3>
 
-		<pre><code>node experiments/css_native_layout/score_layout.mjs \
+      <pre><code>node experiments/css_native_layout/score_layout.mjs \
   --audit test-results/new0_css_native/audit/visual_audit.json \
   --out test-results/new0_css_native/scorecard.json
 
 cat test-results/new0_css_native/scorecard.json | jq '.summary'</code></pre>
 
-		<p><strong>Expected output:</strong> scorecard with hard_fail_total=0, 0 FAIL verdicts on 10 production scenes.</p>
+      <p>
+        <strong>Expected output:</strong> scorecard with hard_fail_total=0, 0
+        FAIL verdicts on 10 production scenes.
+      </p>
 
-		<h3>Stress Corpus Regeneration [VERIFIED]</h3>
+      <h3>Stress Corpus Regeneration [VERIFIED]</h3>
 
-		<pre><code>node experiments/css_native_layout/stress_generator.mjs \
+      <pre><code>node experiments/css_native_layout/stress_generator.mjs \
   --seed 42 --count 100 --cap 40 \
   --out experiments/css_native_layout/stress_results/precheck_batch5_corpus_v1_verify/
 
@@ -1274,149 +1797,322 @@ node experiments/css_native_layout/precheck.mjs \
   'experiments/css_native_layout/stress_results/precheck_batch5_corpus_v1_verify/*.html' \
   --out test-results/stress_batch5_verify_audit</code></pre>
 
-		<p><strong>Expected output:</strong> Corpus v1 baseline match (100% FAIL, 1043 hard fails across 100 synthetic scenes).</p>
+      <p>
+        <strong>Expected output:</strong> Corpus v1 baseline match (100% FAIL,
+        1043 hard fails across 100 synthetic scenes).
+      </p>
 
-		<p><strong>Note:</strong> STRESS-ONLY evidence. Synthetic corpus does not predict production scene behavior.</p>
+      <p>
+        <strong>Note:</strong> STRESS-ONLY evidence. Synthetic corpus does not
+        predict production scene behavior.
+      </p>
 
-		<h3>Pytest Tests [KNOWN ISSUES]</h3>
+      <h3>Pytest Tests [KNOWN ISSUES]</h3>
 
-		<pre><code>pytest tests/test_pyflakes_code_lint.py -q
+      <pre><code>pytest tests/test_pyflakes_code_lint.py -q
 pytest tests/test_ascii_compliance.py -q</code></pre>
 
-		<p><strong>Status:</strong> Pre-existing test collection error in tests/test_object_validator_variant_collapse.py (ModuleNotFoundError: No module named 'validation'). General pytest tests/ blocked. Lint and ASCII tests runnable independently.</p>
+      <p>
+        <strong>Status:</strong> Pre-existing test collection error in
+        tests/test_object_validator_variant_collapse.py (ModuleNotFoundError: No
+        module named 'validation'). General pytest tests/ blocked. Lint and
+        ASCII tests runnable independently.
+      </p>
 
-		<p><strong>Expected output:</strong> Lint and ASCII compliance checks pass; collection error noted as pre-existing.</p>
+      <p>
+        <strong>Expected output:</strong> Lint and ASCII compliance checks pass;
+        collection error noted as pre-existing.
+      </p>
 
-		<hr>
+      <hr />
 
-		<h2 id="sec21">21. Appendices</h2>
+      <h2 id="sec21">21. Appendices</h2>
 
-		<h3>Glossary</h3>
-		<ul>
-			<li><strong>Workstream:</strong> Independent work track within a Batch (e.g., Workstream F: visual polish)</li>
-			<li><strong>Lane:</strong> Evidence layer or test category (e.g., Lane A: precheck gallery, Lane B: runtime)</li>
-			<li><strong>Hard fail:</strong> Zero-tolerance diagnostic flag (clipped_artwork, off_page, overlap, overflow)</li>
-			<li><strong>PASS_TEMPLATE:</strong> Verdict for template-mode skeletons (single/dual objects)</li>
-			<li><strong>Stress corpus:</strong> 100 algorithmically-generated scenes; not pedagogically valid</li>
-			<li><strong>Feature flag:</strong> Runtime toggle for NEW0 CSS-native adapter (currently off)</li>
-			<li><strong>Scorecard:</strong> Canonical diagnostic aggregator computing hard-fail counts and verdicts</li>
-			<li><strong>Canonical:</strong> Unmodified original version of a tool</li>
-		</ul>
+      <h3>Glossary</h3>
+      <ul>
+        <li>
+          <strong>Workstream:</strong> Independent work track within a Batch
+          (e.g., Workstream F: visual polish)
+        </li>
+        <li>
+          <strong>Lane:</strong> Evidence layer or test category (e.g., Lane A:
+          precheck gallery, Lane B: runtime)
+        </li>
+        <li>
+          <strong>Hard fail:</strong> Zero-tolerance diagnostic flag
+          (clipped_artwork, off_page, overlap, overflow)
+        </li>
+        <li>
+          <strong>PASS_TEMPLATE:</strong> Verdict for template-mode skeletons
+          (single/dual objects)
+        </li>
+        <li>
+          <strong>Stress corpus:</strong> 100 algorithmically-generated scenes;
+          not pedagogically valid
+        </li>
+        <li>
+          <strong>Feature flag:</strong> Runtime toggle for NEW0 CSS-native
+          adapter (currently off)
+        </li>
+        <li>
+          <strong>Scorecard:</strong> Canonical diagnostic aggregator computing
+          hard-fail counts and verdicts
+        </li>
+        <li>
+          <strong>Canonical:</strong> Unmodified original version of a tool
+        </li>
+      </ul>
 
-		<h3>Artifact Inventory</h3>
-		<ul>
-			<li>CSS files: bench.css, hood.css, instrument.css (production); dir_b_*.css, dir_c_*.css (reference)</li>
-			<li>HTML templates: 10 production scenes</li>
-			<li>Diagnostic tools: precheck.mjs, score_layout.mjs, render_and_dump.mjs, no_crop_audit</li>
-			<li>Spike files: css_native_adapter.ts, well_plate_96_zoom.ts, spike_types.ts (feature-flagged)</li>
-			<li>Test results: test-results/new0_css_native/; test-results/stress_*</li>
-			<li>Evidence reports: 30+ markdown files under docs/active_plans/new0_* through new3_batch5_*</li>
-			<li>Screenshots: 100+ PNG files across galleries and corpus</li>
-		</ul>
+      <h3>Artifact Inventory</h3>
+      <ul>
+        <li>
+          CSS files: bench.css, hood.css, instrument.css (production);
+          dir_b_*.css, dir_c_*.css (reference)
+        </li>
+        <li>HTML templates: 10 production scenes</li>
+        <li>
+          Diagnostic tools: precheck.mjs, score_layout.mjs, render_and_dump.mjs,
+          no_crop_audit
+        </li>
+        <li>
+          Spike files: css_native_adapter.ts, well_plate_96_zoom.ts,
+          spike_types.ts (feature-flagged)
+        </li>
+        <li>
+          Test results: test-results/new0_css_native/; test-results/stress_*
+        </li>
+        <li>
+          Evidence reports: 30+ markdown files under docs/active_plans/new0_*
+          through new3_batch5_*
+        </li>
+        <li>Screenshots: 100+ PNG files across galleries and corpus</li>
+      </ul>
 
-		<h3>Known Stale/Superseded Evidence</h3>
-		<ul>
-			<li>visual_audit.json from Batch 2 early runs (replaced by canonical scorecard)</li>
-			<li>Direction A baseline (retired, zoom rule ported to Direction B)</li>
-			<li>Pre-stabilization PRECHECK_SUMMARY.md (superseded by 2026-05-19 run)</li>
-			<li>Any precheck from modified tool versions (all reverted)</li>
-			<li>Contract amendment draft v1 (marked "Draft. Not applied."  awaits user decision)</li>
-		</ul>
+      <h3>Known Stale/Superseded Evidence</h3>
+      <ul>
+        <li>
+          visual_audit.json from Batch 2 early runs (replaced by canonical
+          scorecard)
+        </li>
+        <li>Direction A baseline (retired, zoom rule ported to Direction B)</li>
+        <li>
+          Pre-stabilization PRECHECK_SUMMARY.md (superseded by 2026-05-19 run)
+        </li>
+        <li>Any precheck from modified tool versions (all reverted)</li>
+        <li>
+          Contract amendment draft v1 (marked "Draft. Not applied." awaits user
+          decision)
+        </li>
+      </ul>
 
-		<h3>Open User Decisions</h3>
-		<ul>
-			<li>PRIMARY_CONTRACT.md amendment (item 3 ownership). Options A/B/C require explicit choice.</li>
-			<li>Phase 1 hardFailCount semantics. Thresholds per asset/scene. Proposal awaits approval.</li>
-			<li>Binary artifact policy. Future PNG/PDF/HTML commits: allow, restrict, or external?</li>
-			<li>New footprint classes. Extend region vocabulary for multi-workspace?</li>
-			<li>Production migration timeline. When should spike be promoted from feature-flag?</li>
-		</ul>
+      <h3>Open User Decisions</h3>
+      <ul>
+        <li>
+          PRIMARY_CONTRACT.md amendment (item 3 ownership). Options A/B/C
+          require explicit choice.
+        </li>
+        <li>
+          Phase 1 hardFailCount semantics. Thresholds per asset/scene. Proposal
+          awaits approval.
+        </li>
+        <li>
+          Binary artifact policy. Future PNG/PDF/HTML commits: allow, restrict,
+          or external?
+        </li>
+        <li>
+          New footprint classes. Extend region vocabulary for multi-workspace?
+        </li>
+        <li>
+          Production migration timeline. When should spike be promoted from
+          feature-flag?
+        </li>
+      </ul>
 
-		<hr>
+      <hr />
 
-		<h2 id="appendix_a">Appendix A: Known Corrections After First PDF Draft</h2>
+      <h2 id="appendix_a">
+        Appendix A: Known Corrections After First PDF Draft
+      </h2>
 
-		<p>This section documents caveats and divergences discovered during Workstream G audit (2026-05-21).</p>
+      <p>
+        This section documents caveats and divergences discovered during
+        Workstream G audit (2026-05-21).
+      </p>
 
-		<h3>File Path Corrections</h3>
+      <h3>File Path Corrections</h3>
 
-		<p><strong>Stale paths in original section 13:</strong></p>
-		<ul>
-			<li><code>src/scenes/well_plate_96_zoom.ts</code> was listed; correct path is <code>src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts</code> (subdirectory structure added in Batch 5)</li>
-			<li><code>src/scene_runtime/spike_types.ts</code> was listed but file does not exist in tracked repo; type definitions live inline in adapter and spike scene files, not as standalone module</li>
-		</ul>
+      <p><strong>Stale paths in original section 13:</strong></p>
+      <ul>
+        <li>
+          <code>src/scenes/well_plate_96_zoom.ts</code> was listed; correct path
+          is
+          <code>src/scenes/well_plate_96_zoom/well_plate_96_zoom.ts</code>
+          (subdirectory structure added in Batch 5)
+        </li>
+        <li>
+          <code>src/scene_runtime/spike_types.ts</code> was listed but file does
+          not exist in tracked repo; type definitions live inline in adapter and
+          spike scene files, not as standalone module
+        </li>
+      </ul>
 
-		<p><strong>Spike files verified:</strong> 3 files present and feature-flagged (css_native_adapter.ts, well_plate_96_zoom.ts, feature_flags.ts)</p>
+      <p>
+        <strong>Spike files verified:</strong> 3 files present and
+        feature-flagged (css_native_adapter.ts, well_plate_96_zoom.ts,
+        feature_flags.ts)
+      </p>
 
-		<h3>Scorecard / Hard-Fail Data Caveats</h3>
+      <h3>Scorecard / Hard-Fail Data Caveats</h3>
 
-		<p><strong>Temporary helper issue:</strong> Early batch analysis cited <code>visual_audit.json</code> from intermediate test runs. These reports were superseded by canonical scorecard.json from Batches 4-5. Old audit JSON not regenerated; use current scorecard as single source of truth.</p>
+      <p>
+        <strong>Temporary helper issue:</strong> Early batch analysis cited
+        <code>visual_audit.json</code> from intermediate test runs. These
+        reports were superseded by canonical scorecard.json from Batches 4-5.
+        Old audit JSON not regenerated; use current scorecard as single source
+        of truth.
+      </p>
 
-		<p><strong>Throwaway helpers:</strong> Batch 2 temporary annotation helper (_temp_annotate.py) missing during Batches 3-4 but did not block scorecard generation. Contact sheets generated without per-image annotations.</p>
+      <p>
+        <strong>Throwaway helpers:</strong> Batch 2 temporary annotation helper
+        (_temp_annotate.py) missing during Batches 3-4 but did not block
+        scorecard generation. Contact sheets generated without per-image
+        annotations.
+      </p>
 
-		<h3>Stress vs. Static-HTML Rendering Divergence</h3>
+      <h3>Stress vs. Static-HTML Rendering Divergence</h3>
 
-		<p><strong>Generator implementation detail:</strong> Stress corpus renders via static-HTML precheck (Playwright on isolated HTML), not production runtime. This path does not exercise:</p>
-		<ul>
-			<li>React lifecycle hooks</li>
-			<li>CSS-native adapter integration with ObjectStateChange</li>
-			<li>Material-state updates via ObjectStateChange</li>
-		</ul>
+      <p>
+        <strong>Generator implementation detail:</strong> Stress corpus renders
+        via static-HTML precheck (Playwright on isolated HTML), not production
+        runtime. This path does not exercise:
+      </p>
+      <ul>
+        <li>React lifecycle hooks</li>
+        <li>CSS-native adapter integration with ObjectStateChange</li>
+        <li>Material-state updates via ObjectStateChange</li>
+      </ul>
 
-		<p><strong>Consequence:</strong> 100% FAIL rate on stress corpus (1043 hard fails across 100 scenes) is evidence of stress-case robustness, not production failure. Independent runtime proof (Lane B: 7/7 PASS) verifies dispatch path.</p>
+      <p>
+        <strong>Consequence:</strong> 100% FAIL rate on stress corpus (1043 hard
+        fails across 100 scenes) is evidence of stress-case robustness, not
+        production failure. Independent runtime proof (Lane B: 7/7 PASS)
+        verifies dispatch path.
+      </p>
 
-		<p><strong>Bottle classification example:</strong> YAML defines <code>handheld: true</code> for pipettes and bottles. Stress generator may place bottles in rigid container regions where the <code>handheld</code> property is ignored. Result: higher FAIL rate on stress than production.</p>
+      <p>
+        <strong>Bottle classification example:</strong> YAML defines
+        <code>handheld: true</code> for pipettes and bottles. Stress generator
+        may place bottles in rigid container regions where the
+        <code>handheld</code> property is ignored. Result: higher FAIL rate on
+        stress than production.
+      </p>
 
-		<h3>hardFailCount No-Crop Gap</h3>
+      <h3>hardFailCount No-Crop Gap</h3>
 
-		<p><strong>Current state:</strong> clipped_by_parent and aspect_distorted_HF are advisory (WARN), not hard fails.</p>
+      <p>
+        <strong>Current state:</strong> clipped_by_parent and
+        aspect_distorted_HF are advisory (WARN), not hard fails.
+      </p>
 
-		<p><strong>Hard rule:</strong> Visible scientific SVG cropping is unacceptable per PRIMARY_DESIGN.md, independent of scorecard status.</p>
+      <p>
+        <strong>Hard rule:</strong> Visible scientific SVG cropping is
+        unacceptable per PRIMARY_DESIGN.md, independent of scorecard status.
+      </p>
 
-		<p><strong>Gap:</strong> A scene can score "WARN" with clipped_by_parent=1 and pass the hardFailCount gate because clipped_by_parent is not counted.</p>
+      <p>
+        <strong>Gap:</strong> A scene can score "WARN" with clipped_by_parent=1
+        and pass the hardFailCount gate because clipped_by_parent is not
+        counted.
+      </p>
 
-		<p><strong>Closure:</strong> Phase 1 proposal (section 7) folds these into hardFailCount. Awaiting user approval.</p>
+      <p>
+        <strong>Closure:</strong> Phase 1 proposal (section 7) folds these into
+        hardFailCount. Awaiting user approval.
+      </p>
 
-		<h3>Accepted Local Commit Baseline</h3>
+      <h3>Accepted Local Commit Baseline</h3>
 
-		<p><strong>Incident:</strong> Workstream F CSS tweaks accidentally ran <code>git add -A && git commit</code>, creating commit 4e2c709 (224 files staged). User accepted as forward-only baseline (no revert).</p>
+      <p>
+        <strong>Incident:</strong> Workstream F CSS tweaks accidentally ran
+        <code>git add -A && git commit</code>, creating commit 4e2c709 (224
+        files staged). User accepted as forward-only baseline (no revert).
+      </p>
 
-		<p><strong>Risks:</strong></p>
-		<ul>
-			<li>3 spike TypeScript files in src/ are feature-flagged but persist in history</li>
-			<li>111 binary PNG/PDF blobs inflate repo history size</li>
-			<li>1 contract amendment draft in active_plans/ at risk of being treated as approved; explicit user decision still required</li>
-		</ul>
+      <p><strong>Risks:</strong></p>
+      <ul>
+        <li>
+          3 spike TypeScript files in src/ are feature-flagged but persist in
+          history
+        </li>
+        <li>111 binary PNG/PDF blobs inflate repo history size</li>
+        <li>
+          1 contract amendment draft in active_plans/ at risk of being treated
+          as approved; explicit user decision still required
+        </li>
+      </ul>
 
-		<p><strong>Mitigation:</strong> No agent commits going forward. Only human commits post-4e2c709. Policy TBD for binary artifacts.</p>
+      <p>
+        <strong>Mitigation:</strong> No agent commits going forward. Only human
+        commits post-4e2c709. Policy TBD for binary artifacts.
+      </p>
 
-		<h3>Accepted Pre-existing Test Issues</h3>
+      <h3>Accepted Pre-existing Test Issues</h3>
 
-		<p><strong>Build failures:</strong> npm run build reports TypeScript errors in tests/test_*.ts (missing @types/node, incomplete Event interface mocks). Build succeeds to dist/; tests not in hot path for Batch 5 evidence.</p>
+      <p>
+        <strong>Build failures:</strong> npm run build reports TypeScript errors
+        in tests/test_*.ts (missing @types/node, incomplete Event interface
+        mocks). Build succeeds to dist/; tests not in hot path for Batch 5
+        evidence.
+      </p>
 
-		<p><strong>Pytest collection error:</strong> tests/test_object_validator_variant_collapse.py fails import (ModuleNotFoundError: validation). Pre-existing. Blocks general pytest tests/ but does not affect lint or ASCII checks.</p>
+      <p>
+        <strong>Pytest collection error:</strong>
+        tests/test_object_validator_variant_collapse.py fails import
+        (ModuleNotFoundError: validation). Pre-existing. Blocks general pytest
+        tests/ but does not affect lint or ASCII checks.
+      </p>
 
-		<p><strong>Status:</strong> Known and accepted; not blocking Batch 6 dispatch.</p>
+      <p>
+        <strong>Status:</strong> Known and accepted; not blocking Batch 6
+        dispatch.
+      </p>
 
-		<h3>Pending Batch 6 Decisions List</h3>
+      <h3>Pending Batch 6 Decisions List</h3>
 
-		<ul>
-			<li>Phase 1 hardFailCount semantics approval (fold advisory into hard fails; impacts scorecard verdicts)</li>
-			<li>Binary artifact policy (allow, restrict, external storage)</li>
-			<li>PRIMARY_CONTRACT.md amendment (item 3: layout engine ownership)</li>
-			<li>Spike promotion timeline (when to enable NEW0 feature flag in production)</li>
-			<li>New footprint vocabulary classes (multi-workspace region support)</li>
-		</ul>
+      <ul>
+        <li>
+          Phase 1 hardFailCount semantics approval (fold advisory into hard
+          fails; impacts scorecard verdicts)
+        </li>
+        <li>Binary artifact policy (allow, restrict, external storage)</li>
+        <li>PRIMARY_CONTRACT.md amendment (item 3: layout engine ownership)</li>
+        <li>
+          Spike promotion timeline (when to enable NEW0 feature flag in
+          production)
+        </li>
+        <li>
+          New footprint vocabulary classes (multi-workspace region support)
+        </li>
+      </ul>
 
-		<hr>
+      <hr />
 
-		<p style="text-align: center; margin-top: 3em; font-size: 0.95em; color: #666;">
-			<strong>Report compiled:</strong> 2026-05-21<br>
-			<strong>Status:</strong> Stable baseline established. Forward-only mode active. Batch 6 dispatch recommended.<br>
-			<strong>Next review:</strong> After Batch 6 completion and user decisions on open items<br>
-			<strong>Corrections applied:</strong> 7 workstreams (A-G) completed 2026-05-21
-		</p>
-
-	</div>
-</body>
+      <p
+        style="
+          text-align: center;
+          margin-top: 3em;
+          font-size: 0.95em;
+          color: #666;
+        "
+      >
+        <strong>Report compiled:</strong> 2026-05-21<br />
+        <strong>Status:</strong> Stable baseline established. Forward-only mode
+        active. Batch 6 dispatch recommended.<br />
+        <strong>Next review:</strong> After Batch 6 completion and user
+        decisions on open items<br />
+        <strong>Corrections applied:</strong> 7 workstreams (A-G) completed
+        2026-05-21
+      </p>
+    </div>
+  </body>
 </html>

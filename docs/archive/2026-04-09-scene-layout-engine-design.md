@@ -26,15 +26,22 @@ What an item IS. No coordinates.
 ```typescript
 type SceneItem = {
   id: string;
-  asset: string;              // SVG asset key
-  kind: 'flask' | 'plate' | 'bottle' | 'pipette' | 'rack' | 'waste' | 'equipment';
-  zone: string;               // scene-specific zone name
-  priority: number;           // 1 = most important
-  widthScale: number;         // multiplier on asset default width (1.0 = normal)
-  label: string;              // full semantic name (used for tooltips)
-  shortLabel?: string;        // fallback if full label collides
-  anchorY: 'bottom' | 'tip' | 'center';
-  baselineOverride?: number;  // rare override for items not on zone baseline
+  asset: string; // SVG asset key
+  kind:
+    | "flask"
+    | "plate"
+    | "bottle"
+    | "pipette"
+    | "rack"
+    | "waste"
+    | "equipment";
+  zone: string; // scene-specific zone name
+  priority: number; // 1 = most important
+  widthScale: number; // multiplier on asset default width (1.0 = normal)
+  label: string; // full semantic name (used for tooltips)
+  shortLabel?: string; // fallback if full label collides
+  anchorY: "bottom" | "tip" | "center";
+  baselineOverride?: number; // rare override for items not on zone baseline
 };
 ```
 
@@ -44,10 +51,10 @@ How an asset looks. Derived from normalized SVGs.
 
 ```typescript
 type AssetSpec = {
-  defaultWidth: number;       // baseline width in scene %
-  aspectRatio: number;        // height/width from viewBox
-  labelWidth: number;         // estimated label width in % at base scale
-  anchorYOffset?: number;     // tip adjustment in % points
+  defaultWidth: number; // baseline width in scene %
+  aspectRatio: number; // height/width from viewBox
+  labelWidth: number; // estimated label width in % at base scale
+  anchorYOffset?: number; // tip adjustment in % points
 };
 ```
 
@@ -57,11 +64,11 @@ How a scene organizes horizontal space.
 
 ```typescript
 type ZoneDef = {
-  x0: number;                 // left bound (%)
-  x1: number;                 // right bound (%)
-  baseline: number;           // Y reference line (%)
-  gap: number;                // minimum gap between items (%)
-  align?: 'center' | 'left' | 'right';  // default: 'center'
+  x0: number; // left bound (%)
+  x1: number; // right bound (%)
+  baseline: number; // Y reference line (%)
+  gap: number; // minimum gap between items (%)
+  align?: "center" | "left" | "right"; // default: 'center'
 };
 ```
 
@@ -72,9 +79,9 @@ Per-scene configuration.
 ```typescript
 type SceneLayoutRules = {
   zones: Record<string, ZoneDef>;
-  labelFontSize: number;      // px
-  labelLineHeight: number;    // unitless
-  labelOffsetY: number;       // % below item bottom
+  labelFontSize: number; // px
+  labelLineHeight: number; // unitless
+  labelOffsetY: number; // % below item bottom
 };
 ```
 
@@ -85,15 +92,15 @@ What the renderer consumes. No layout logic needed.
 ```typescript
 type ComputedItemLayout = {
   id: string;
-  x: number;                  // left (%)
-  y: number;                  // top (%)
-  width: number;              // (%)
-  height: number;             // (%)
-  tooltip: string;            // full label for title attribute
-  labelLines: string[];       // rendered text lines
-  labelX: number;             // label center (%)
-  labelY: number;             // label top (%)
-  labelWidth: number;         // computed label width (%)
+  x: number; // left (%)
+  y: number; // top (%)
+  width: number; // (%)
+  height: number; // (%)
+  tooltip: string; // full label for title attribute
+  labelLines: string[]; // rendered text lines
+  labelX: number; // label center (%)
+  labelY: number; // label top (%)
+  labelWidth: number; // computed label width (%)
   labelMultiline: boolean;
 };
 ```
@@ -141,7 +148,7 @@ For each item:
 Separate pass, using item bounds from steps 2-3:
 
 ```typescript
-const AVG_CHAR_WIDTH_PCT = 0.55;  // % per character at 9px font; tune as needed
+const AVG_CHAR_WIDTH_PCT = 0.55; // % per character at 9px font; tune as needed
 ```
 
 1. Estimate label width: `max(charCount * AVG_CHAR_WIDTH_PCT, assetSpec.labelWidth * item.widthScale)` -- label width scales with item size
@@ -176,20 +183,20 @@ outside:   x[78-92],  baseline 68   -- microscope, incubator
 
 ### Items
 
-| id | zone | priority | widthScale | shortLabel |
-| --- | --- | --- | --- | --- |
-| flask | primary | 1 | 1.2 | -- |
-| well_plate | secondary | 2 | 1.0 | -- |
-| media_bottle | secondary | 3 | 1.0 | -- |
-| trypsin_bottle | secondary | 4 | 1.0 | -- |
-| ethanol_bottle | tools | 5 | 1.0 | -- |
-| serological_pipette | tools | 6 | 1.0 | Sero Pipette |
-| aspirating_pipette | tools | 7 | 1.0 | Aspirating |
-| multichannel_pipette | tools | 8 | 1.0 | Multi Pipette |
-| drug_vials | dirty | 9 | 1.0 | -- |
-| waste_container | dirty | 10 | 1.0 | -- |
-| microscope | outside | 11 | 1.0 | -- |
-| incubator | outside | 12 | 1.0 | -- |
+| id                   | zone      | priority | widthScale | shortLabel    |
+| -------------------- | --------- | -------- | ---------- | ------------- |
+| flask                | primary   | 1        | 1.2        | --            |
+| well_plate           | secondary | 2        | 1.0        | --            |
+| media_bottle         | secondary | 3        | 1.0        | --            |
+| trypsin_bottle       | secondary | 4        | 1.0        | --            |
+| ethanol_bottle       | tools     | 5        | 1.0        | --            |
+| serological_pipette  | tools     | 6        | 1.0        | Sero Pipette  |
+| aspirating_pipette   | tools     | 7        | 1.0        | Aspirating    |
+| multichannel_pipette | tools     | 8        | 1.0        | Multi Pipette |
+| drug_vials           | dirty     | 9        | 1.0        | --            |
+| waste_container      | dirty     | 10       | 1.0        | --            |
+| microscope           | outside   | 11       | 1.0        | --            |
+| incubator            | outside   | 12       | 1.0        | --            |
 
 ### Layout rules
 
@@ -215,18 +222,23 @@ Aspect ratios will be extracted from the actual SVG files during implementation.
 <div id="hood-scene">
   <div id="hood-bg"><!-- background SVG --></div>
   <div id="hood-items-layer">
-    <div class="hood-item" data-item-id="flask"
-         style="left:6%;top:28%;width:14%;height:22%;"
-         role="button" tabindex="0" aria-label="T-75 Flask"
-         data-x="6" data-y="28">
+    <div
+      class="hood-item"
+      data-item-id="flask"
+      style="left:6%;top:28%;width:14%;height:22%;"
+      role="button"
+      tabindex="0"
+      aria-label="T-75 Flask"
+      data-x="6"
+      data-y="28"
+    >
       <!-- SVG content -->
     </div>
     <!-- ... more items ... -->
   </div>
   <div id="hood-labels-layer">
-    <div class="hood-item-label multiline"
-         style="left:13%;top:52%;width:12%;">
-      T-75<br>Flask
+    <div class="hood-item-label multiline" style="left:13%;top:52%;width:12%;">
+      T-75<br />Flask
     </div>
     <!-- ... more labels ... -->
   </div>
@@ -236,8 +248,17 @@ Aspect ratios will be extracted from the actual SVG files during implementation.
 ### Layer styling
 
 ```css
-#hood-items-layer  { position: absolute; inset: 0; z-index: 1; }
-#hood-labels-layer { position: absolute; inset: 0; z-index: 2; pointer-events: none; }
+#hood-items-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+#hood-labels-layer {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
 ```
 
 ### Rendering approach
@@ -259,27 +280,27 @@ Aspect ratios will be extracted from the actual SVG files during implementation.
 
 ### New files
 
-| File | Purpose |
-| --- | --- |
-| `parts/scene_types.ts` | Type definitions |
-| `parts/asset_specs.ts` | Per-asset metrics table |
+| File                     | Purpose                               |
+| ------------------------ | ------------------------------------- |
+| `parts/scene_types.ts`   | Type definitions                      |
+| `parts/asset_specs.ts`   | Per-asset metrics table               |
 | `parts/layout_engine.ts` | `computeSceneLayout()` + label layout |
-| `parts/hood_config.ts` | Hood items, zones, layout rules |
+| `parts/hood_config.ts`   | Hood items, zones, layout rules       |
 
 ### Modified files
 
-| File | Changes |
-| --- | --- |
-| `parts/hood_scene.ts` | Consume `ComputedItemLayout[]`, remove inline layout math |
-| `parts/constants.ts` | Remove `HOOD_ITEMS`, `HoodItemConfig`, `TIP_OFFSET`, row constants |
-| `parts/style.css` | Updated label CSS, layer CSS, SVG scaling |
+| File                  | Changes                                                            |
+| --------------------- | ------------------------------------------------------------------ |
+| `parts/hood_scene.ts` | Consume `ComputedItemLayout[]`, remove inline layout math          |
+| `parts/constants.ts`  | Remove `HOOD_ITEMS`, `HoodItemConfig`, `TIP_OFFSET`, row constants |
+| `parts/style.css`     | Updated label CSS, layer CSS, SVG scaling                          |
 
 ### Deleted files
 
-| File | Reason |
-| --- | --- |
+| File                   | Reason                                     |
+| ---------------------- | ------------------------------------------ |
 | `content/tc_scenes.ts` | Dead code, superseded by new layout system |
-| `ui/hood_scene.ts` | Dead code, superseded by new layout system |
+| `ui/hood_scene.ts`     | Dead code, superseded by new layout system |
 
 ## Units convention
 

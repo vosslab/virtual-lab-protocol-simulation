@@ -3,9 +3,9 @@
 ## Context
 
 Today a single scene YAML file does two unrelated jobs at once. It declares
-*what each thing is* (`items[]` with `svgAsset`, `kind`, `inventoryRef`, plus
+_what each thing is_ (`items[]` with `svgAsset`, `kind`, `inventoryRef`, plus
 the per-asset visual metrics that actually live in `src/asset_specs.ts`) and
-*where each thing goes* (`zones`, `layoutRules`, `sceneBounds`, and the
+_where each thing goes_ (`zones`, `layoutRules`, `sceneBounds`, and the
 placement sub-fields on each item). Object identity and spatial placement are
 fused in one file, and object property data is split between the YAML and a
 hand-maintained TypeScript table. This is the same failure mode
@@ -215,23 +215,23 @@ authors is the plan's central deliverable.
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-EV | `docs/active_plans/scene_object_split_inventory.md` | 1 to 2 |
-| M2 / WS-OBJ | design doc -- object vocabulary section | 1 |
-| M2 / WS-SCN | design doc -- cleaned scene vocabulary section | 1 |
-| M2 / WS-BND | design doc -- three-way boundary + per-key assignment | 1 |
-| M2 / WS-PROTO | design doc -- ObjectStateChange + SvgSwap reclassification | 1 |
-| M3 / WS-RAT-A | ratification: the current scene YAML files decomposed | 1 |
-| M3 / WS-RAT-B | ratification: every asset_specs.ts entry to object defs | 1 |
-| M3 / WS-RAT-C | ratification: runtime state model + scene_operation re-partition | 1 |
-| M4 / WS-DOC-OV | `docs/OBJECT_VOCABULARY.md` (new) | 1 to 2 |
-| M4 / WS-DOC-OY | `docs/OBJECT_YAML_FORMAT.md` (new) | 1 to 2 |
-| M4 / WS-DOC-SV | `docs/SCENE_VOCABULARY.md` rewrite | 1 to 2 |
-| M4 / WS-DOC-SY | `docs/SCENE_YAML_FORMAT.md` rewrite | 1 to 2 |
-| M4 / WS-DOC-PV | `docs/PROTOCOL_VOCABULARY.md` re-touch | 1 |
-| M4 / WS-DOC-DEP | dependent-doc alignment | 2 to 3 |
-| M4 / WS-DOC-C | changelog + close-out + follow-on stub | 1 |
+| Milestone / Workstream | Component                                                        | Expected patches |
+| ---------------------- | ---------------------------------------------------------------- | ---------------- |
+| M1 / WS-EV             | `docs/active_plans/scene_object_split_inventory.md`              | 1 to 2           |
+| M2 / WS-OBJ            | design doc -- object vocabulary section                          | 1                |
+| M2 / WS-SCN            | design doc -- cleaned scene vocabulary section                   | 1                |
+| M2 / WS-BND            | design doc -- three-way boundary + per-key assignment            | 1                |
+| M2 / WS-PROTO          | design doc -- ObjectStateChange + SvgSwap reclassification       | 1                |
+| M3 / WS-RAT-A          | ratification: the current scene YAML files decomposed            | 1                |
+| M3 / WS-RAT-B          | ratification: every asset_specs.ts entry to object defs          | 1                |
+| M3 / WS-RAT-C          | ratification: runtime state model + scene_operation re-partition | 1                |
+| M4 / WS-DOC-OV         | `docs/OBJECT_VOCABULARY.md` (new)                                | 1 to 2           |
+| M4 / WS-DOC-OY         | `docs/OBJECT_YAML_FORMAT.md` (new)                               | 1 to 2           |
+| M4 / WS-DOC-SV         | `docs/SCENE_VOCABULARY.md` rewrite                               | 1 to 2           |
+| M4 / WS-DOC-SY         | `docs/SCENE_YAML_FORMAT.md` rewrite                              | 1 to 2           |
+| M4 / WS-DOC-PV         | `docs/PROTOCOL_VOCABULARY.md` re-touch                           | 1                |
+| M4 / WS-DOC-DEP        | dependent-doc alignment                                          | 2 to 3           |
+| M4 / WS-DOC-C          | changelog + close-out + follow-on stub                           | 1                |
 
 Patch counts are deliberately below the `CAPACITY_AND_SIZING.md` code-plan
 ranges: this is a documentation-design plan, and each doc artifact is sized
@@ -403,7 +403,7 @@ for one owner and one reviewable patch.
 - Interfaces:
   - Needs: WS-OBJ and WS-SCN definitions; M1 evidence on the current key set.
   - Provides: the boundary rule and the per-key / per-sub-field assignment
-    table to WS-DOC-* in M4.
+    table to WS-DOC-\* in M4.
 - Expected patches: 1.
 
 ### Workstream WS-PROTO: ObjectStateChange and SvgSwap reclassification design
@@ -861,41 +861,41 @@ for one owner and one reviewable patch.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Object / scene boundary is ambiguous for some keys | High | M3 finds a scene-YAML key or item sub-field that fits neither vocabulary cleanly | architect (WS-BND) | WP-BND1 produces an explicit per-key table, not prose; M3 ratifies all current scenes in parallel to surface ambiguity early; hard calls (background, instance overrides, `ColorChange`, `target_groups`, capability list, formula language, ObjectStateChange scope, LayoutMove scope, state_field types, constraint metadata) are pre-resolved in the Resolved decisions section (RD-1 through RD-12). |
-| `state_fields` schema cannot express a real object's state | High | M3 finds runtime state (liquid, set-point, contents) that does not fit the declared schema | architect (WS-OBJ) | WP-OBJ1 must work the 96-well plate and the pipette as worked examples before M3; WP-RAT-C1 maps every runtime state value explicitly. |
-| Reopening the just-closed PROTOCOL_VOCABULARY.md introduces drift | Medium | The `SvgSwap` reclassification contradicts another part of the M4-closed protocol model | planner (WS-DOC-PV) | WP-DOC-PV1 is a narrow edit scoped to the primitive list and retired-terms sections only; WP-RAT-C1 confirms the re-partition before the doc edit; the changelog records the deliberate reopen. |
-| Object data split across YAML and asset_specs.ts is hard to reconcile | Medium | WP-RAT-B1 finds `asset_specs.ts` properties with no clean object-vocabulary home | reviewer (WS-RAT-B) | WP-RAT-B1 maps every entry explicitly; properties with no home become residual-gap entries that force a WP-OBJ1 revision, not a silent drop. |
-| Three docs drift from each other | Medium | A reader finds `OBJECT_VOCABULARY.md` and `SCENE_VOCABULARY.md` defining the same concept differently | planner (WS-DOC-*) | Shared concepts are cross-referenced, not restated; the M4 manual review gate checks internal consistency across all five docs. |
-| Scope creep into code or YAML migration | Low | A doer edits a scene YAML file, `asset_specs.ts`, or TypeScript | planner | Non-goals are explicit; the two follow-on plans own those changes; reviewers reject any non-doc change. |
+| Risk                                                                  | Impact | Trigger                                                                                               | Owner               | Mitigation                                                                                                                                                                                                                                                                                                                                                                                               |
+| --------------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Object / scene boundary is ambiguous for some keys                    | High   | M3 finds a scene-YAML key or item sub-field that fits neither vocabulary cleanly                      | architect (WS-BND)  | WP-BND1 produces an explicit per-key table, not prose; M3 ratifies all current scenes in parallel to surface ambiguity early; hard calls (background, instance overrides, `ColorChange`, `target_groups`, capability list, formula language, ObjectStateChange scope, LayoutMove scope, state_field types, constraint metadata) are pre-resolved in the Resolved decisions section (RD-1 through RD-12). |
+| `state_fields` schema cannot express a real object's state            | High   | M3 finds runtime state (liquid, set-point, contents) that does not fit the declared schema            | architect (WS-OBJ)  | WP-OBJ1 must work the 96-well plate and the pipette as worked examples before M3; WP-RAT-C1 maps every runtime state value explicitly.                                                                                                                                                                                                                                                                   |
+| Reopening the just-closed PROTOCOL_VOCABULARY.md introduces drift     | Medium | The `SvgSwap` reclassification contradicts another part of the M4-closed protocol model               | planner (WS-DOC-PV) | WP-DOC-PV1 is a narrow edit scoped to the primitive list and retired-terms sections only; WP-RAT-C1 confirms the re-partition before the doc edit; the changelog records the deliberate reopen.                                                                                                                                                                                                          |
+| Object data split across YAML and asset_specs.ts is hard to reconcile | Medium | WP-RAT-B1 finds `asset_specs.ts` properties with no clean object-vocabulary home                      | reviewer (WS-RAT-B) | WP-RAT-B1 maps every entry explicitly; properties with no home become residual-gap entries that force a WP-OBJ1 revision, not a silent drop.                                                                                                                                                                                                                                                             |
+| Three docs drift from each other                                      | Medium | A reader finds `OBJECT_VOCABULARY.md` and `SCENE_VOCABULARY.md` defining the same concept differently | planner (WS-DOC-\*) | Shared concepts are cross-referenced, not restated; the M4 manual review gate checks internal consistency across all five docs.                                                                                                                                                                                                                                                                          |
+| Scope creep into code or YAML migration                               | Low    | A doer edits a scene YAML file, `asset_specs.ts`, or TypeScript                                       | planner             | Non-goals are explicit; the two follow-on plans own those changes; reviewers reject any non-doc change.                                                                                                                                                                                                                                                                                                  |
 
 ## Rollout and release checklist
 
 - [x] M1 evidence artifact committed.
 - [x] M2 design doc complete; integration gate passed (no TBD; object
-  vocabulary, cleaned scene vocabulary, boundary table, and protocol
-  re-partition all present).
+      vocabulary, cleaned scene vocabulary, boundary table, and protocol
+      re-partition all present).
 - [x] M3 ratification matrices complete for every current scene YAML file and every current `asset_specs.ts` entries; state model and `scene_operation` re-partition
-  checked; residual-gap list dispositioned.
+      checked; residual-gap list dispositioned.
 - [x] M2 design doc revised if M3 surfaced gaps; affected items re-ratified.
 - [x] `docs/OBJECT_VOCABULARY.md` created; target-state sections labeled.
 - [x] `docs/OBJECT_YAML_FORMAT.md` created; schema typed; examples worked.
 - [x] `docs/SCENE_VOCABULARY.md` rewritten; scene-side terms defined;
-  object-identity terms point to `OBJECT_VOCABULARY.md`.
+      object-identity terms point to `OBJECT_VOCABULARY.md`.
 - [x] `docs/SCENE_YAML_FORMAT.md` rewritten; scene-side schema documented;
-  migration note added for keys now owned by object YAML.
+      migration note added for keys now owned by object YAML.
 - [x] `docs/PROTOCOL_VOCABULARY.md` re-touched; `SvgSwap` reclassified;
-  `ObjectStateChange` added.
+      `ObjectStateChange` added.
 - [x] Dependent docs aligned (rewritten, deleted, or archived -- no
-  transitional notes).
+      transitional notes).
 - [x] `docs/CHANGELOG.md` entry finalized.
 - [x] Follow-on content/scene-YAML-migration plan stubbed.
 - [x] Follow-on TypeScript-migration plan stubbed.
 - [x] Follow-on docs/ folder organization plan stubbed (per the
-  "Follow-on plans" section).
+      "Follow-on plans" section).
 - [ ] Human review of the five canonical docs for internal consistency, a
-  usable three-way boundary, and author-applicability.
+      usable three-way boundary, and author-applicability.
 
 ## Documentation close-out requirements
 
@@ -1150,16 +1150,16 @@ each rule directly; the design doc cites this section and does not relitigate.
     `liquid_color` (enum).
   - Pipette: `set_volume` (float, unit=ml, min=0.1, max=25), and a
     separate `held_liquid_id` + `held_liquid_volume` if it carries liquid.
-  Owner: WS-OBJ; sweep OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md,
-  PROTOCOL_VOCABULARY.md (`ObjectStateChange` examples), and
-  LIQUID_CONVENTION.md (touched by WP-DOC-DEP1).
+    Owner: WS-OBJ; sweep OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md,
+    PROTOCOL_VOCABULARY.md (`ObjectStateChange` examples), and
+    LIQUID_CONVENTION.md (touched by WP-DOC-DEP1).
 - RD-12: **Per-type constraint metadata is closed.** No open-ended
   `constraints:` object. Allowed metadata keys per primitive type:
   - `enum`: `allowed`, `default`.
   - `int` / `float`: `unit`, `min`, `max`, `step`, `default`.
   - `bool`: `default`.
-  Unknown metadata keys = build error. Owner: WS-DOC-OY; encoded in
-  OBJECT_YAML_FORMAT.md.
+    Unknown metadata keys = build error. Owner: WS-DOC-OY; encoded in
+    OBJECT_YAML_FORMAT.md.
 - RD-13: **`LiquidDisplayChange` is reclassified to the object/render
   layer alongside `SvgSwap` and `ColorChange`.** Rationale (user,
   verbatim): "LiquidDisplayChange is the same kind of drift as SvgSwap

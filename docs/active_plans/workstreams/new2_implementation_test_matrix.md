@@ -26,24 +26,24 @@ cross-reference from the originating plan.
 
 ## Test matrix
 
-| Test | Tool | Target | Pass criteria | Workstream |
-| --- | --- | --- | --- | --- |
-| Adapter rect math for 96-well plate | pytest | adapter rect output for known plate geometry | rect width, height, x, y match expected values within 0.5 px tolerance | W2 |
-| Adapter rect math for 24-well plate | pytest | adapter rect output for 24-well plate geometry | rect dimensions match expected within 0.5 px tolerance | W2 |
-| Adapter rect rejects scene-side geometry | pytest | adapter input boundary | adapter rejects inputs that carry scene-side x or y offsets | W2 |
-| Well enumeration order stable across runs | pytest | well order for 96-well and 24-well plates | enumerated well order is deterministic and matches documented row-major order | W2 |
-| Viewport overflow guard for hood scene | playwright | dist hood scene at 1280x800 and 1920x1080 | no horizontal scrollbar appears; scene content fits inside viewport | W1 |
-| Viewport overflow guard for bench scene | playwright | dist bench scene at 1280x800 and 1920x1080 | no horizontal scrollbar appears; scene content fits inside viewport | W1 |
-| Viewport overflow guard for instrument scene | playwright | dist instrument scene at 1280x800 and 1920x1080 | no horizontal scrollbar appears; scene content fits inside viewport | W1 |
-| CSS-native layout class presence | playwright | dist hood, bench, instrument scenes | required CSS layout classes are present on the expected scene root nodes | W1 |
-| CSS bundle contains no hard-coded pixel scene widths | pytest | dist css bundle text | no rule sets scene root width to a fixed pixel value above the documented breakpoint | W1 |
-| Adapter rect integrates with well-plate scene render | playwright | well-plate scene rendered from current adapter output | wells render in row-major order with no overlap and no gaps wider than tolerance | W2 |
-| Markdown link integrity for NEW2 plans | pytest | docs/active_plans/new2_*.md | every local markdown link resolves to a tracked file | W1, W2 |
-| ASCII compliance for NEW2 plans | pytest | docs/active_plans/new2_*.md | every NEW2 plan file is pure ASCII or ISO-8859-1 | W1, W2 |
-| TypeScript typecheck on changed files | tsc | src/ files touched by NEW2 | tsc reports zero new errors relative to the pre-implementation baseline | W1, W2 |
-| ESLint on changed files | eslint | src/ files touched by NEW2 | eslint reports zero new errors relative to the pre-implementation baseline | W1, W2 |
-| Walker smoke for a representative mini-protocol | playwright | one mini-protocol covering hood and bench scenes | walker completes the full visible click path with required screenshots saved | W1 |
-| Walker smoke for well-plate workspace | playwright | well-plate workspace mini-protocol | walker reaches the well-plate scene and clicks a documented well sequence | W2 |
+| Test                                                 | Tool       | Target                                                | Pass criteria                                                                        | Workstream |
+| ---------------------------------------------------- | ---------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| Adapter rect math for 96-well plate                  | pytest     | adapter rect output for known plate geometry          | rect width, height, x, y match expected values within 0.5 px tolerance               | W2         |
+| Adapter rect math for 24-well plate                  | pytest     | adapter rect output for 24-well plate geometry        | rect dimensions match expected within 0.5 px tolerance                               | W2         |
+| Adapter rect rejects scene-side geometry             | pytest     | adapter input boundary                                | adapter rejects inputs that carry scene-side x or y offsets                          | W2         |
+| Well enumeration order stable across runs            | pytest     | well order for 96-well and 24-well plates             | enumerated well order is deterministic and matches documented row-major order        | W2         |
+| Viewport overflow guard for hood scene               | playwright | dist hood scene at 1280x800 and 1920x1080             | no horizontal scrollbar appears; scene content fits inside viewport                  | W1         |
+| Viewport overflow guard for bench scene              | playwright | dist bench scene at 1280x800 and 1920x1080            | no horizontal scrollbar appears; scene content fits inside viewport                  | W1         |
+| Viewport overflow guard for instrument scene         | playwright | dist instrument scene at 1280x800 and 1920x1080       | no horizontal scrollbar appears; scene content fits inside viewport                  | W1         |
+| CSS-native layout class presence                     | playwright | dist hood, bench, instrument scenes                   | required CSS layout classes are present on the expected scene root nodes             | W1         |
+| CSS bundle contains no hard-coded pixel scene widths | pytest     | dist css bundle text                                  | no rule sets scene root width to a fixed pixel value above the documented breakpoint | W1         |
+| Adapter rect integrates with well-plate scene render | playwright | well-plate scene rendered from current adapter output | wells render in row-major order with no overlap and no gaps wider than tolerance     | W2         |
+| Markdown link integrity for NEW2 plans               | pytest     | docs/active*plans/new2*\*.md                          | every local markdown link resolves to a tracked file                                 | W1, W2     |
+| ASCII compliance for NEW2 plans                      | pytest     | docs/active*plans/new2*\*.md                          | every NEW2 plan file is pure ASCII or ISO-8859-1                                     | W1, W2     |
+| TypeScript typecheck on changed files                | tsc        | src/ files touched by NEW2                            | tsc reports zero new errors relative to the pre-implementation baseline              | W1, W2     |
+| ESLint on changed files                              | eslint     | src/ files touched by NEW2                            | eslint reports zero new errors relative to the pre-implementation baseline           | W1, W2     |
+| Walker smoke for a representative mini-protocol      | playwright | one mini-protocol covering hood and bench scenes      | walker completes the full visible click path with required screenshots saved         | W1         |
+| Walker smoke for well-plate workspace                | playwright | well-plate workspace mini-protocol                    | walker reaches the well-plate scene and clicks a documented well sequence            | W2         |
 
 ## Pre-implementation gate
 
@@ -160,4 +160,4 @@ tests must not do, regardless of which row they implement.
 - [new2_test_strategy.md](new2_test_strategy.md)
 - [new2_well_plate_adapter_rect_audit.md](new2_well_plate_adapter_rect_audit.md)
 - [new2_production_viewport_overflow_audit.md](new2_production_viewport_overflow_audit.md)
-- [new2_css_native_production_blocker_plan.md](new2_css_native_production_blocker_plan.md)
+- `new2_css_native_production_blocker_plan.md`

@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document records alternatives to the per-render scaffold attach/detach pattern used by the Path A CSS-native measurement spike in [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts). It exists to capture design options uncovered while reviewing the spike's perf risk in [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md) and the spike path notes in [../../experiments/css_native_layout/spike_paths/path_a_adapter_compat/README.md](../../experiments/css_native_layout/spike_paths/path_a_adapter_compat/README.md). It is documentation only; no implementation is proposed in this round, and no production code changes follow from this file.
+This document records alternatives to the per-render scaffold attach/detach pattern used by the Path A CSS-native measurement spike in `css_native_adapter.ts`. It exists to capture design options uncovered while reviewing the spike's perf risk in `new1_well_plate_96_zoom_spike_result.md` and the spike path notes in `README.md`. It is documentation only; no implementation is proposed in this round, and no production code changes follow from this file.
 
 ## Baseline cost (current implementation)
 
@@ -62,13 +62,13 @@ This document records alternatives to the per-render scaffold attach/detach patt
 
 ## Decision matrix
 
-| Option | Reinvents engine | Touches forbidden files | Changes contract | Recommendation |
-| --- | --- | --- | --- | --- |
-| Per-render scaffold (current) | No | No | No | KEEP (default) |
-| Persistent measurement root | Borderline | No | No | Consider only if measured cost dominates |
-| State-keyed cache | Yes (back door) | No | No | REJECT unless empirical proof forces it |
-| Lazy measurement | No | No | YES | REJECT (breaks consumer contract) |
-| Bypass adapter entirely | No | YES | YES | NOT FOR THIS ROUND |
+| Option                        | Reinvents engine | Touches forbidden files | Changes contract | Recommendation                           |
+| ----------------------------- | ---------------- | ----------------------- | ---------------- | ---------------------------------------- |
+| Per-render scaffold (current) | No               | No                      | No               | KEEP (default)                           |
+| Persistent measurement root   | Borderline       | No                      | No               | Consider only if measured cost dominates |
+| State-keyed cache             | Yes (back door)  | No                      | No               | REJECT unless empirical proof forces it  |
+| Lazy measurement              | No               | No                      | YES              | REJECT (breaks consumer contract)        |
+| Bypass adapter entirely       | No               | YES                     | YES              | NOT FOR THIS ROUND                       |
 
 ## Conclusion
 

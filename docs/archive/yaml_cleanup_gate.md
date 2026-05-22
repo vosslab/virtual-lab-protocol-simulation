@@ -110,10 +110,10 @@ over short-term and fix-the-design-not-the-symptom.
 
 Source: stepper + validator dry-runs as of today.
 
-| Gate | Status | Findings to close |
-| --- | --- | --- |
-| Static YAML validator | 0 failures across 88 files | 0 |
-| Stepper semantic | 12/12 exit 0; 478 WARNINGs | 478 to triage |
+| Gate                  | Status                     | Findings to close |
+| --------------------- | -------------------------- | ----------------- |
+| Static YAML validator | 0 failures across 88 files | 0                 |
+| Stepper semantic      | 12/12 exit 0; 478 WARNINGs | 478 to triage     |
 
 Warning class distribution (single class):
 
@@ -121,20 +121,20 @@ Warning class distribution (single class):
 
 Per-protocol warning counts (descending):
 
-| Protocol | Warnings | Status |
-| --- | --- | --- |
-| `cell_culture_full` (sequence runner) | 234 | dirty |
-| `mtt_solubilization_readout` | 193 | dirty |
-| `trypan_blue_counting` | 18 | dirty |
-| `mtt_plate_reaction` | 12 | dirty |
-| `cell_seeding_plate_setup` | 10 | dirty |
-| `plate_drug_treatment_drug_addition` | 8 | dirty |
-| `passage_pellet_reseed` | 2 | dirty |
-| `drug_dilution_setup` | 1 | dirty |
-| `mtt_reagent_prep` | 0 | clean |
-| `plate_drug_treatment_media_adjustment` | 0 | clean |
-| `passage_hood_detachment` | 0 | clean |
-| `routine_passage` (sequence runner) | 0 | clean |
+| Protocol                                | Warnings | Status |
+| --------------------------------------- | -------- | ------ |
+| `cell_culture_full` (sequence runner)   | 234      | dirty  |
+| `mtt_solubilization_readout`            | 193      | dirty  |
+| `trypan_blue_counting`                  | 18       | dirty  |
+| `mtt_plate_reaction`                    | 12       | dirty  |
+| `cell_seeding_plate_setup`              | 10       | dirty  |
+| `plate_drug_treatment_drug_addition`    | 8        | dirty  |
+| `passage_pellet_reseed`                 | 2        | dirty  |
+| `drug_dilution_setup`                   | 1        | dirty  |
+| `mtt_reagent_prep`                      | 0        | clean  |
+| `plate_drug_treatment_media_adjustment` | 0        | clean  |
+| `passage_hood_detachment`               | 0        | clean  |
+| `routine_passage` (sequence runner)     | 0        | clean  |
 
 Note: `cell_culture_full` stitches 10 minis, so its 234 likely double-counts
 warnings from constituent minis after they fire in stepped runner context.
@@ -142,27 +142,27 @@ Triage must dedupe.
 
 ## Architecture boundaries and ownership
 
-| Boundary | Owner | Touch rule |
-| --- | --- | --- |
-| Spec ratification (scene-adapter resolution algorithm) | architect (WS-SPEC-SCENE) | Edits `docs/specs/SCENE_VOCABULARY.md` + `docs/specs/PROTOCOL_YAML_FORMAT.md` only |
-| Spec ratification (subpart addressing, structured grids only) | architect (WS-SPEC-SUBPART) | Edits `docs/specs/OBJECT_YAML_FORMAT.md` only |
-| Stepper code (demote -&gt; promote check level) | tooling author | Edits `tools/stepper/state.py` per WS-STEPPER |
-| Content authoring fixes | protocol author | Edits `content/protocols/<name>/protocol.yaml` and `content/protocols/<name>/scenes/<scene>.yaml` per residual S1 and S0b fix list |
-| Triage report | planner | Writes `docs/active_plans/yaml_cleanup_triage.md` with bucket counts; Patch 2e re-classifies per S0a/S0b split |
+| Boundary                                                      | Owner                       | Touch rule                                                                                                                         |
+| ------------------------------------------------------------- | --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| Spec ratification (scene-adapter resolution algorithm)        | architect (WS-SPEC-SCENE)   | Edits `docs/specs/SCENE_VOCABULARY.md` + `docs/specs/PROTOCOL_YAML_FORMAT.md` only                                                 |
+| Spec ratification (subpart addressing, structured grids only) | architect (WS-SPEC-SUBPART) | Edits `docs/specs/OBJECT_YAML_FORMAT.md` only                                                                                      |
+| Stepper code (demote -&gt; promote check level)               | tooling author              | Edits `tools/stepper/state.py` per WS-STEPPER                                                                                      |
+| Content authoring fixes                                       | protocol author             | Edits `content/protocols/<name>/protocol.yaml` and `content/protocols/<name>/scenes/<scene>.yaml` per residual S1 and S0b fix list |
+| Triage report                                                 | planner                     | Writes `docs/active_plans/yaml_cleanup_triage.md` with bucket counts; Patch 2e re-classifies per S0a/S0b split                     |
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-INIT | promote draft to repo-tracked plan | 1 (Patch 0) |
-| M1 / WS-TRIAGE | triage report at `docs/active_plans/yaml_cleanup_triage.md` | 1 |
-| M1 / WS-SPEC-SCENE | scene-adapter spec amendment (architect plan close-out) | 1 to 2 (Patch 2 memo + Patch 2a amend) |
-| M1 / WS-SPEC-SUBPART | subpart-addressing spec amendment (structured grids only) | 1 to 2 (Patch 2b memo + Patch 2d amend) |
-| M1 / (plan revision) | plan revision folding WS-SPEC-SUBPART into M1; triage re-classification | 2 (Patch 2c plan revise + Patch 2e re-triage) |
-| M2 / WS-STEPPER | stepper check re-promotion (folded into this plan) | 1 |
-| M2 / WS-AUTHOR-CONTENT | scene-related + subpart-related authoring fixes (post-triage) | 1 to 3 |
-| M3 / WS-VERIFY | full-tree stepper sweep | 1 |
-| M3 / WS-DOCS | changelog, plan close-out, gate-passed marker | 1 |
+| Milestone / Workstream | Component                                                               | Expected patches                              |
+| ---------------------- | ----------------------------------------------------------------------- | --------------------------------------------- |
+| M1 / WS-INIT           | promote draft to repo-tracked plan                                      | 1 (Patch 0)                                   |
+| M1 / WS-TRIAGE         | triage report at `docs/active_plans/yaml_cleanup_triage.md`             | 1                                             |
+| M1 / WS-SPEC-SCENE     | scene-adapter spec amendment (architect plan close-out)                 | 1 to 2 (Patch 2 memo + Patch 2a amend)        |
+| M1 / WS-SPEC-SUBPART   | subpart-addressing spec amendment (structured grids only)               | 1 to 2 (Patch 2b memo + Patch 2d amend)       |
+| M1 / (plan revision)   | plan revision folding WS-SPEC-SUBPART into M1; triage re-classification | 2 (Patch 2c plan revise + Patch 2e re-triage) |
+| M2 / WS-STEPPER        | stepper check re-promotion (folded into this plan)                      | 1                                             |
+| M2 / WS-AUTHOR-CONTENT | scene-related + subpart-related authoring fixes (post-triage)           | 1 to 3                                        |
+| M3 / WS-VERIFY         | full-tree stepper sweep                                                 | 1                                             |
+| M3 / WS-DOCS           | changelog, plan close-out, gate-passed marker                           | 1                                             |
 
 ## Severity tiering of the 478 warnings
 
@@ -324,8 +324,7 @@ protocols or different steps.
 - Workstreams: WS-VERIFY (any), WS-DOCS (maintainer).
 - Entry criteria: M2 exit met.
 - Exit criteria:
-  - `source source_me.sh && python3 tools/validate_content_yaml.py` exits
-    0.
+  - `source source_me.sh && python3 tools/validate_content_yaml.py` exits 0.
   - `source source_me.sh && python3 tools/protocol_stepper.py` exits 0
     with 0 ERRORs and 0 unresolved WARNINGs on all 12 protocols. A
     "resolved" WARNING is one that has been promoted to ERROR, demoted
@@ -355,7 +354,7 @@ protocols or different steps.
   - **Unique-signature classification (mandatory).** Dedupe the 478
     raw warnings to a unique-signature set per the signature
     definition above (`protocol_name + step_name + warning class +
-    target name + active scene name`). Every unique signature is
+target name + active scene name`). Every unique signature is
     categorized S0/S1/S2 with a one-line rationale. This is the
     primary classification artifact; raw 478 is appendix.
   - bucket table (S0/S1/S2 counts per protocol, both raw and unique).
@@ -485,28 +484,28 @@ Static-only (no runtime tests required; runtime not built yet).
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Triage misclassifies S0 vs S1; real bugs hide in spec-gap bucket | high | Reviewer disagrees with bucket assignment | planner | Unique-signature classification covers every distinct pattern; reviewer signs off on triage before M2 starts. |
-| Architect spec ratification stalls | high | Open question in `scene_adapter_resolution_design.md` cannot be resolved | architect | Plan trigger says "before next scene-introducing protocol expansion" -- this plan IS that trigger; escalate to user for decision at M1 close. |
-| Sequence runner double-count obscures true count | medium | `cell_culture_full` 234 collapses to single-digit unique | planner | WS-TRIAGE explicitly dedupes runner findings against constituent minis. |
-| Stepper re-promotion exposes additional warnings the M1 triage missed | medium | M2 final stepper run shows new warnings | tooling author | Re-triage any survivor in M2 close-out; do not ship M3 until count is 0. |
-| Scene-resolution YAML fix accidentally changes pedagogy | medium | Author rewrites a step while fixing a scene issue | protocol author | Patch-stream separation rule + reviewer check; pedagogy reviewer not in scope for this plan but any prose drift is flagged for the separate pedagogy gate. |
+| Risk                                                                  | Impact | Trigger                                                                  | Owner           | Mitigation                                                                                                                                                 |
+| --------------------------------------------------------------------- | ------ | ------------------------------------------------------------------------ | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Triage misclassifies S0 vs S1; real bugs hide in spec-gap bucket      | high   | Reviewer disagrees with bucket assignment                                | planner         | Unique-signature classification covers every distinct pattern; reviewer signs off on triage before M2 starts.                                              |
+| Architect spec ratification stalls                                    | high   | Open question in `scene_adapter_resolution_design.md` cannot be resolved | architect       | Plan trigger says "before next scene-introducing protocol expansion" -- this plan IS that trigger; escalate to user for decision at M1 close.              |
+| Sequence runner double-count obscures true count                      | medium | `cell_culture_full` 234 collapses to single-digit unique                 | planner         | WS-TRIAGE explicitly dedupes runner findings against constituent minis.                                                                                    |
+| Stepper re-promotion exposes additional warnings the M1 triage missed | medium | M2 final stepper run shows new warnings                                  | tooling author  | Re-triage any survivor in M2 close-out; do not ship M3 until count is 0.                                                                                   |
+| Scene-resolution YAML fix accidentally changes pedagogy               | medium | Author rewrites a step while fixing a scene issue                        | protocol author | Patch-stream separation rule + reviewer check; pedagogy reviewer not in scope for this plan but any prose drift is flagged for the separate pedagogy gate. |
 
 ## Rollout and release checklist
 
 - [ ] M1 exit met (Patch 0 landed, triage published with unique-signature
-  classification, BOTH scene-adapter and subpart-addressing specs
-  ratified and landed, architect plan + memo archived, stepper
-  re-promotion folded into this plan, triage re-classified per
-  S0a/S0b split via Patch 2e).
+      classification, BOTH scene-adapter and subpart-addressing specs
+      ratified and landed, architect plan + memo archived, stepper
+      re-promotion folded into this plan, triage re-classified per
+      S0a/S0b split via Patch 2e).
 - [ ] M2 exit met (stepper re-promoted, S1 + S2 warnings closed).
 - [ ] M3 exit met (full sweep clean, triage archived, gate-passed
-  marker recorded).
+      marker recorded).
 - [ ] `docs/CHANGELOG.md` carries one entry per milestone close.
 - [ ] No file under `src/` modified.
 - [ ] Next-step planning (SDS-PAGE expansion or TS runtime pilot) is now
-  unblocked.
+      unblocked.
 
 ## Documentation close-out requirements
 
@@ -528,6 +527,7 @@ Static-only (no runtime tests required; runtime not built yet).
 ## Patch plan and reporting format
 
 M1:
+
 - Patch 0: WS-INIT -- create `docs/active_plans/yaml_cleanup_gate.md`
   (repo-tracked plan with predecessor cross-reference). Done.
 - Patch 1: WS-TRIAGE -- `yaml_cleanup_triage.md` with every unique
@@ -552,12 +552,14 @@ M1:
   S0a/S0b/S1/S2 with reconciled counts.
 
 M2:
+
 - Patch 3: WS-STEPPER -- re-promote check level.
 - Patches 4 to 6: WS-AUTHOR-CONTENT -- residual S1 fixes clustered by
   protocol PLUS S0b subpart-rewrite of
   `mtt_solubilization_readout.read_absorbance`.
 
 M3:
+
 - Patch 7: WS-VERIFY -- only if residual drift surfaces.
 - Patch 8: WS-DOCS -- close-out.
 
@@ -596,7 +598,7 @@ pytest remain the only gates.
   "some warnings more concerning than just warnings." Triage report
   separates the buckets explicitly.
 - Existing architect plan owns the spec ratification; this plan consumes
-  + closes it. No re-litigation of the four candidate algorithms here.
+  - closes it. No re-litigation of the four candidate algorithms here.
 - Manual-renderer / pedagogy gate is out of scope per user direction.
   Tracked separately; not blocking this gate.
 - Plan file lives at `docs/active_plans/yaml_cleanup_gate.md` after
@@ -607,9 +609,8 @@ pytest remain the only gates.
 - Stepper re-promotion (WS-STEPPER) is folded into this plan rather
   than spawning a separate alignment plan. Per user feedback: anti-
   sprawl, same ownership, one-file scope.
-- Triage classifies every unique warning signature (deduped from raw
-  478) using the signature `protocol_name + step_name + warning class
-  + target name + active scene name`. Samples are illustration.
+- Triage classifies every unique warning signature (deduped from raw 478) using the signature `protocol_name + step_name + warning class
+  - target name + active scene name`. Samples are illustration.
 - Patch-stream separation: a single patch must not mix scene-adapter /
   scene-boundary fixes with unrelated content edits. Exception: one
   cohesive S1 fix may touch both `protocol.yaml` and the sibling

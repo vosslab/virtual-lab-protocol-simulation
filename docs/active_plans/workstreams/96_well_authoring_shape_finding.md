@@ -79,13 +79,13 @@ fixture authoring.
 
 ## Comparison table
 
-| Fixture                              | protocol.yaml lines | Cells covered | Snapshot equivalence vs. baseline | Validator (spike branch) | Stepper (spike branch) |
-| ------------------------------------ | ------------------- | ------------- | --------------------------------- | ------------------------ | ---------------------- |
-| mtt_uniform_expanded_check           | 160                 | 96            | match                             | pass                     | pass                   |
-| mtt_uniform_region_check             | 173                 | 96            | match                             | pass                     | pass                   |
-| mtt_uniform_region_sidecar_check     | 65 + 113 sidecar    | 96            | match                             | pass                     | pass                   |
-| mtt_uniform_whole_plate_check        | 42                  | 96            | match                             | pass                     | pass                   |
-| dose_response_explicit_check         | 145                 | 96            | 12 distinct material_volumes      | pass                     | pass                   |
+| Fixture                          | protocol.yaml lines | Cells covered | Snapshot equivalence vs. baseline | Validator (spike branch) | Stepper (spike branch) |
+| -------------------------------- | ------------------- | ------------- | --------------------------------- | ------------------------ | ---------------------- |
+| mtt_uniform_expanded_check       | 160                 | 96            | match                             | pass                     | pass                   |
+| mtt_uniform_region_check         | 173                 | 96            | match                             | pass                     | pass                   |
+| mtt_uniform_region_sidecar_check | 65 + 113 sidecar    | 96            | match                             | pass                     | pass                   |
+| mtt_uniform_whole_plate_check    | 42                  | 96            | match                             | pass                     | pass                   |
+| dose_response_explicit_check     | 145                 | 96            | 12 distinct material_volumes      | pass                     | pass                   |
 
 Notes:
 
@@ -95,7 +95,7 @@ Notes:
   `material_volume`).
 - "12 distinct material_volumes" for dose-response means the 12 column
   interactions produced 12 different values: `[0.0, 0.01, 0.02, 0.05,
-  0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]`. No collapse.
+0.1, 0.2, 0.5, 1.0, 2.0, 5.0, 10.0, 20.0]`. No collapse.
 
 ### Pedagogy score
 
@@ -103,13 +103,13 @@ Resolved decision in the plan: user + one curriculum / science reader
 score independently; both scores recorded separately, no averaging.
 Scores not yet collected. Placeholder rows below.
 
-| Fixture                              | User score (1-3) | Curriculum score (1-3) | Notes |
-| ------------------------------------ | ---------------- | ---------------------- | ----- |
-| mtt_uniform_expanded_check           | (pending)        | (pending)              | Technique-faithful: 12 column clicks model multichannel walk. |
-| mtt_uniform_region_check             | (pending)        | (pending)              | Carries experimental meaning via region name `treated_wells`. |
-| mtt_uniform_region_sidecar_check     | (pending)        | (pending)              | Same meaning as inline; navigation differs (regions in separate file). |
-| mtt_uniform_whole_plate_check        | (pending)        | (pending)              | Geometric-only; `all_wells` carries no experimental meaning. |
-| dose_response_explicit_check         | (pending)        | (pending)              | Variation is the skill; explicit form preserves it. |
+| Fixture                          | User score (1-3) | Curriculum score (1-3) | Notes                                                                  |
+| -------------------------------- | ---------------- | ---------------------- | ---------------------------------------------------------------------- |
+| mtt_uniform_expanded_check       | (pending)        | (pending)              | Technique-faithful: 12 column clicks model multichannel walk.          |
+| mtt_uniform_region_check         | (pending)        | (pending)              | Carries experimental meaning via region name `treated_wells`.          |
+| mtt_uniform_region_sidecar_check | (pending)        | (pending)              | Same meaning as inline; navigation differs (regions in separate file). |
+| mtt_uniform_whole_plate_check    | (pending)        | (pending)              | Geometric-only; `all_wells` carries no experimental meaning.           |
+| dose_response_explicit_check     | (pending)        | (pending)              | Variation is the skill; explicit form preserves it.                    |
 
 ## Hypothesis resolution
 
@@ -118,7 +118,7 @@ Scores not yet collected. Placeholder rows below.
   ranking was named-region > whole-plate > expanded. Actual line-count
   ranking is whole-plate (42) > region sidecar (65 + 113 = 178) >
   expanded (160) > region inline (173). The explicit 96-member list in
-  the regions block makes the named-region inline form *longer* than
+  the regions block makes the named-region inline form _longer_ than
   the expanded enumeration, which contradicts the prediction. Whole-
   plate using the existing `well_plate_96.all_wells` geometric group
   is dramatically shorter than every other shape and requires no new
@@ -158,7 +158,7 @@ Scores not yet collected. Placeholder rows below.
    shape is the LONGEST authoring form for whole-plate actions, not
    the shortest. The prediction assumed members would be implicit or
    inherit from the target object's geometric subparts. A `members:
-   all` (or equivalent inferred-member) shorthand would invert the
+all` (or equivalent inferred-member) shorthand would invert the
    ranking. Without it, the region shape only earns its keep when
    members is a small explicit subset (e.g., a single row, a 2x2
    block, a control group of 4 wells).

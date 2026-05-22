@@ -15,17 +15,20 @@ The HTML file is a generated artifact and is not committed to git.
 ## Install steps
 
 1. Clone the repository:
+
    ```bash
    git clone <repo-url>
    cd cell-culture-game-claude
    ```
 
 2. Verify Node.js is available:
+
    ```bash
    node --version
    ```
 
 3. Install Python dev dependencies (for tests and linting):
+
    ```bash
    pip3 install -r pip_requirements-dev.txt
    ```
@@ -38,7 +41,7 @@ The HTML file is a generated artifact and is not committed to git.
 ## SVG asset pipeline (fresh clone)
 
 The `generated/` tree at the repo root holds SVG asset modules emitted by
-[pipeline/generate_svg_globals.py](../pipeline/generate_svg_globals.py) from
+[generate_svg_globals.py](../pipeline/generate_svg_globals.py) from
 `assets/equipment/*.svg`. The whole tree is gitignored, so a fresh clone has
 no `generated/` directory. Most workflows regenerate it transparently, but it
 must exist before `tsc`, the bundler, or any test that imports from
@@ -55,7 +58,7 @@ Three ways to make `generated/` exist on a fresh clone:
    bash export_single_file.sh
    ```
 2. Run the test suite. The `pytest_sessionstart` hook in
-   [tests/conftest.py](../tests/conftest.py) regenerates once per session if
+   [conftest.py](../tests/conftest.py) regenerates once per session if
    `generated/svg_manifest.ts` is missing:
    ```bash
    source source_me.sh && pytest tests/

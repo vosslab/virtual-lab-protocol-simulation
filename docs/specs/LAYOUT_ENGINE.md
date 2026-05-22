@@ -14,10 +14,9 @@ subparts) is documented in [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) and
 placement method itself: how object placements, zones, asset metrics, depth,
 labels, and scene bounds become positioned DOM elements.
 
-The core implementation lives in [../../src/layout_engine.ts](../../src/layout_engine.ts).
-The public types live in [../../src/scene_types.ts](../../src/scene_types.ts), and the
-asset metrics live in [../../src/asset_specs.ts](../../src/asset_specs.ts).
-
+The core implementation lives in [layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts).
+The public types live in `scene_types.ts`, and the
+asset metrics live in `asset_specs.ts`.
 
 ## Mental model
 
@@ -85,9 +84,9 @@ not mutate the source scene config and does not install click handlers.
 Bench and hood are the main layout-engine examples:
 
 - [../../src/scenes/bench/bench.yaml](../../src/scenes/bench/bench.yaml)
-- [../../src/scenes/bench/render.ts](../../src/scenes/bench/render.ts)
+- [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
 - [../../src/scenes/cell_culture_hood/cell_culture_hood.yaml](../../src/scenes/cell_culture_hood/cell_culture_hood.yaml)
-- [../../src/scenes/cell_culture_hood/render.ts](../../src/scenes/cell_culture_hood/render.ts)
+- [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
 
 ## When to use it
 
@@ -126,7 +125,7 @@ Poor fits:
 - Instrument control panel.
 
 Dedicated SVG-coordinate workspaces such as
-[../../src/scenes/well_plate_workspace/render.ts](../../src/scenes/well_plate_workspace/render.ts)
+[render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
 do not use the general layout engine for their internal plate or tube grid.
 They own a custom geometric layout because their primary objects are structured
 scientific grids, not row-and-zone bench objects.
@@ -160,23 +159,23 @@ pre-subtract that padding in YAML.
 
 A layout item is a semantic object that needs a rendered visual box. The
 required fields are defined by `SceneItem` in
-[../../src/scene_types.ts](../../src/scene_types.ts).
+`scene_types.ts`.
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `id` | Stable item id. Also becomes the `data-item-id` click-dispatch attribute in renderers. |
-| `asset_name` | Key into [../../src/asset_specs.ts](../../src/asset_specs.ts) and the SVG facade. |
-| `zone` | Name of the zone that owns the item. |
-| `depth_tier` | Sort order inside the zone. Lower numbers are placed first. |
-| `width_scale` | Per-scene multiplier on the asset's base width. |
-| `label` | Full label used for tooltip and label layout. |
-| `anchor_y` | Vertical anchor mode: `bottom`, `tip`, or `top`. |
-| `align_stop` | Left, center, or right stop inside `tab-stops` zones. |
+| Field               | Meaning                                                                                           |
+| ------------------- | ------------------------------------------------------------------------------------------------- |
+| `id`                | Stable item id. Also becomes the `data-item-id` click-dispatch attribute in renderers.            |
+| `asset_name`        | Key into `asset_specs.ts` and the SVG facade.                                                     |
+| `zone`              | Name of the zone that owns the item.                                                              |
+| `depth_tier`        | Sort order inside the zone. Lower numbers are placed first.                                       |
+| `width_scale`       | Per-scene multiplier on the asset's base width.                                                   |
+| `label`             | Full label used for tooltip and label layout.                                                     |
+| `anchor_y`          | Vertical anchor mode: `bottom`, `tip`, or `top`.                                                  |
+| `align_stop`        | Left, center, or right stop inside `tab-stops` zones.                                             |
 | `baseline_override` | Rare per-item baseline override. Used when one object should not sit on the shared zone baseline. |
-| `group` | Optional functional group for automatic depth resolution. |
-| `depth` | Optional manual depth override: `back`, `mid`, or `front`. |
+| `group`             | Optional functional group for automatic depth resolution.                                         |
+| `depth`             | Optional manual depth override: `back`, `mid`, or `front`.                                        |
 
 Use `depth_tier` for deterministic ordering, not for visual scale. The engine
 sorts by `depth_tier` before placing a zone. It does not infer scale or
@@ -188,13 +187,13 @@ asset larger or smaller without changing global asset metrics.
 
 ## Asset specs
 
-[../../src/asset_specs.ts](../../src/asset_specs.ts) defines the default metrics that
+`asset_specs.ts` defines the default metrics that
 make a visual asset usable by the layout engine:
 
-| Field | Meaning |
-| --- | --- |
-| `default_width` | Baseline object width in scene-percent units. |
-| `label_width` | Minimum estimated label width in scene-percent units. |
+| Field             | Meaning                                               |
+| ----------------- | ----------------------------------------------------- |
+| `default_width`   | Baseline object width in scene-percent units.         |
+| `label_width`     | Minimum estimated label width in scene-percent units. |
 | `anchor_y_offset` | Optional vertical adjustment for tip-anchored assets. |
 
 The engine derives actual height from the SVG viewBox aspect ratio through
@@ -215,14 +214,14 @@ baseline, a gap, and an alignment policy.
 
 Important fields:
 
-| Field | Meaning |
-| --- | --- |
-| `id` | Stable zone id referenced by `items[].zone`. |
-| `x0` | Left zone edge, in percent of scene width. |
-| `x1` | Right zone edge, in percent of scene width. |
+| Field      | Meaning                                        |
+| ---------- | ---------------------------------------------- |
+| `id`       | Stable zone id referenced by `items[].zone`.   |
+| `x0`       | Left zone edge, in percent of scene width.     |
+| `x1`       | Right zone edge, in percent of scene width.    |
 | `baseline` | Vertical baseline, in percent of scene height. |
-| `gap` | Minimum inter-item gap in scene units. |
-| `align` | Horizontal placement mode. |
+| `gap`      | Minimum inter-item gap in scene units.         |
+| `align`    | Horizontal placement mode.                     |
 
 Zones should represent meaningful physical regions: a bench shelf, a hood back
 row, a front work row, or an instrument row. Avoid creating a new zone for
@@ -236,12 +235,12 @@ the exact `x0` and `x1` edges.
 
 The engine supports these zone alignment modes:
 
-| Mode | Placement rule |
-| --- | --- |
-| `left` | First item visual left edge is flush with the padded left edge. |
-| `right` | Last item visual right edge is flush with the padded right edge. |
-| `center` | Cluster visual midpoint is centered in the padded zone. |
-| `justify` | First and last visual edges are pushed to both padded edges. |
+| Mode        | Placement rule                                                                   |
+| ----------- | -------------------------------------------------------------------------------- |
+| `left`      | First item visual left edge is flush with the padded left edge.                  |
+| `right`     | Last item visual right edge is flush with the padded right edge.                 |
+| `center`    | Cluster visual midpoint is centered in the padded zone.                          |
+| `justify`   | First and last visual edges are pushed to both padded edges.                     |
 | `tab-stops` | Items are partitioned by `align_stop` into left, center, and right sub-clusters. |
 
 `tab-stops` is the preferred mode for lab scenes with visually distinct
@@ -326,11 +325,11 @@ Baseline precedence:
 
 Anchor behavior:
 
-| `anchor_y` | Placement rule |
-| --- | --- |
-| `bottom` | Object bottom sits on the baseline. |
-| `tip` | Object tip sits on the baseline, adjusted by `anchor_y_offset`. |
-| `top` | Current engine fallback centers the object vertically around the baseline. |
+| `anchor_y` | Placement rule                                                             |
+| ---------- | -------------------------------------------------------------------------- |
+| `bottom`   | Object bottom sits on the baseline.                                        |
+| `tip`      | Object tip sits on the baseline, adjusted by `anchor_y_offset`.            |
+| `top`      | Current engine fallback centers the object vertically around the baseline. |
 
 Use `baseline_override` sparingly. It is appropriate when one object in a row
 has a different visual contact point, such as the hood flask sitting slightly
@@ -345,17 +344,17 @@ different from the row baseline.
 
 The layout engine supports three visual depth states:
 
-| Depth | Scale | Baseline offset | Meaning |
-| --- | --- | --- | --- |
-| `back` | 0.80 | -4 | Parked farther back, smaller and higher. |
-| `mid` | 1.00 | 0 | Normal working position. |
-| `front` | 1.10 | +4 | Active or pulled forward. |
+| Depth   | Scale | Baseline offset | Meaning                                  |
+| ------- | ----- | --------------- | ---------------------------------------- |
+| `back`  | 0.80  | -4              | Parked farther back, smaller and higher. |
+| `mid`   | 1.00  | 0               | Normal working position.                 |
+| `front` | 1.10  | +4              | Active or pulled forward.                |
 
 The engine only applies the final `depth` value. It does not decide which
 items should be front, mid, or back.
 
 That decision happens in
-`resolveSceneItemsWithDepth()` in [../../src/game_state.ts](../../src/game_state.ts).
+`resolveSceneItemsWithDepth()` in `game_state.ts`.
 The resolver promotes active protocol targets to `front`, keeps related grouped
 items at `mid`, and parks unrelated grouped items at `back`. Items without a
 `group` stay `mid`, which keeps layouts visually stable.
@@ -454,26 +453,26 @@ Minimal adapter pattern:
 ```ts
 const zonesRecord: Record<string, ZoneDef> = {};
 for (const zone of SCENE_CONFIG.zones || []) {
-	if (zone && zone.id) {
-		zonesRecord[zone.id] = zone;
-	}
+  if (zone && zone.id) {
+    zonesRecord[zone.id] = zone;
+  }
 }
 
 const layoutRules: SceneLayoutRules = {
-	...(SCENE_CONFIG.layoutRules || {}),
-	zones: zonesRecord,
-	sceneBounds: SCENE_CONFIG.sceneBounds,
-	labelFontSize: SCENE_CONFIG.layoutRules?.labelFontSize || 14,
-	labelLineHeight: SCENE_CONFIG.layoutRules?.labelLineHeight || 1.4,
-	labelOffsetY: SCENE_CONFIG.layoutRules?.labelOffsetY || 0,
+  ...(SCENE_CONFIG.layoutRules || {}),
+  zones: zonesRecord,
+  sceneBounds: SCENE_CONFIG.sceneBounds,
+  labelFontSize: SCENE_CONFIG.layoutRules?.labelFontSize || 14,
+  labelLineHeight: SCENE_CONFIG.layoutRules?.labelLineHeight || 1.4,
+  labelOffsetY: SCENE_CONFIG.layoutRules?.labelOffsetY || 0,
 };
 
 const layout = computeSceneLayout(
-	items,
-	ASSET_SPECS,
-	layoutRules,
-	sceneElement.clientWidth || 800,
-	sceneElement.clientHeight || 600,
+  items,
+  ASSET_SPECS,
+  layoutRules,
+  sceneElement.clientWidth || 800,
+  sceneElement.clientHeight || 600,
 );
 ```
 
@@ -482,12 +481,12 @@ Then render each `ComputedItemLayout` as an absolutely positioned element:
 ```ts
 html += '<div class="hood-item"';
 html += ' data-item-id="' + item.id + '"';
-html += ' style="left:' + item.x.toFixed(1) + '%;';
-html += 'top:' + item.y.toFixed(1) + '%;';
-html += 'width:' + item.width.toFixed(1) + '%;';
-html += 'height:' + item.height.toFixed(1) + '%;">';
+html += ' style="left:' + item.x.toFixed(1) + "%;";
+html += "top:" + item.y.toFixed(1) + "%;";
+html += "width:" + item.width.toFixed(1) + "%;";
+html += "height:" + item.height.toFixed(1) + '%;">';
 html += svgHtml;
-html += '</div>';
+html += "</div>";
 ```
 
 Use the computed values directly. Do not add independent positioning math in
@@ -510,7 +509,7 @@ Use this workflow when laying out a new row-and-zone scene:
 3. Use `tab-stops` when a row has left, center, and right clusters.
 4. Add items with stable ids, `asset_name`, `kind`, `zone`, `depth_tier`,
    `width_scale`, `label`, `anchor_y`, and `align_stop`.
-5. Add missing asset specs in [../../src/asset_specs.ts](../../src/asset_specs.ts).
+5. Add missing asset specs in `asset_specs.ts`.
 6. Build the adapter render path by copying the bench or hood conversion
    pattern from generated zones to `SceneLayoutRules`.
 7. Render the scene and inspect at several viewport sizes.
@@ -530,7 +529,7 @@ To make a new scene use the layout engine:
 4. Use `tab-stops` when one row has left, center, and right object clusters.
 5. Add missing SVG facade entries if the asset is new.
 6. Add missing `ASSET_SPECS` entries in
-   [../../src/asset_specs.ts](../../src/asset_specs.ts).
+   `asset_specs.ts`.
 7. Create or update the scene adapter render path.
 8. Convert generated `zones` arrays into a `Record<string, ZoneDef>`.
 9. Call `computeSceneLayout()` with scene items, `ASSET_SPECS`, layout rules,
@@ -629,7 +628,7 @@ Use the visual symptom to choose the fix:
 - Click target exists but visual is elsewhere: the renderer probably added its
   own offsets after layout. Use the computed box directly.
 
-Console warnings from [../../src/layout_engine.ts](../../src/layout_engine.ts) are
+Console warnings from [layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts) are
 specific:
 
 - `alignment anchor violated` means the visual-edge invariant failed for a

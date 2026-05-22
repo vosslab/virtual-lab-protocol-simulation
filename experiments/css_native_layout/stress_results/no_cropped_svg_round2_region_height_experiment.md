@@ -22,6 +22,7 @@ Three candidates tested in isolation, each reverted before next test:
 3. Candidate B3: class-specific (skipped - B1 already achieved optimal)
 
 Each candidate:
+
 - CSS edits to bench.css, hood.css, instrument.css
 - Render via precheck.mjs on 10 production templates
 - Count clipped_artwork list length per scene
@@ -29,26 +30,26 @@ Each candidate:
 
 ## Candidate Results Table
 
-| Candidate | rear_shelf | front_tools | Visible Crops Before | Visible Crops After | Fixed | Score | Complexity | Keep/Reject | Reason |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| Trial 5 (baseline) | 280px | 240px | 58 | 28 | 30 | 28 | - | BASELINE | prior work |
-| B1 | 320px | 260px | 28 | 0 | 28 | 0 | low | KEEP | min +40px; eliminates all |
-| B2 | 360px | 300px | 28 | 0 | 28 | 0 | high | REJECT | aggressive; B1 simpler |
+| Candidate          | rear_shelf | front_tools | Visible Crops Before | Visible Crops After | Fixed | Score | Complexity | Keep/Reject | Reason                    |
+| ------------------ | ---------- | ----------- | -------------------- | ------------------- | ----- | ----- | ---------- | ----------- | ------------------------- |
+| Trial 5 (baseline) | 280px      | 240px       | 58                   | 28                  | 30    | 28    | -          | BASELINE    | prior work                |
+| B1                 | 320px      | 260px       | 28                   | 0                   | 28    | 0     | low        | KEEP        | min +40px; eliminates all |
+| B2                 | 360px      | 300px       | 28                   | 0                   | 28    | 0     | high       | REJECT      | aggressive; B1 simpler    |
 
 ## Per-Scene Results (Candidate B1 Final)
 
-| Scene | Clipped Before | Clipped After | Delta | Status |
-| --- | --- | --- | --- | --- |
-| bench_basic | 0 | 0 | 0 | PASS |
-| cell_counter_basic | 1 | 0 | -1 | FIXED |
-| crowded_bench_dense | 4 | 0 | -4 | FIXED |
-| drug_dilution_plate_workspace | 3 | 0 | -3 | FIXED |
-| drug_dilution_workspace_dense | 4 | 0 | -4 | FIXED |
-| electrophoresis_bench | 7 | 0 | -7 | FIXED |
-| hood_basic | 1 | 0 | -1 | FIXED |
-| microscope_basic | 1 | 0 | -1 | FIXED |
-| staining_bench | 6 | 0 | -6 | FIXED |
-| well_plate_96_zoom | 0 | 0 | 0 | PASS |
+| Scene                         | Clipped Before | Clipped After | Delta | Status |
+| ----------------------------- | -------------- | ------------- | ----- | ------ |
+| bench_basic                   | 0              | 0             | 0     | PASS   |
+| cell_counter_basic            | 1              | 0             | -1    | FIXED  |
+| crowded_bench_dense           | 4              | 0             | -4    | FIXED  |
+| drug_dilution_plate_workspace | 3              | 0             | -3    | FIXED  |
+| drug_dilution_workspace_dense | 4              | 0             | -4    | FIXED  |
+| electrophoresis_bench         | 7              | 0             | -7    | FIXED  |
+| hood_basic                    | 1              | 0             | -1    | FIXED  |
+| microscope_basic              | 1              | 0             | -1    | FIXED  |
+| staining_bench                | 6              | 0             | -6    | FIXED  |
+| well_plate_96_zoom            | 0              | 0             | 0     | PASS   |
 
 TOTAL: 28 -> 0 (100% reduction)
 
@@ -74,21 +75,23 @@ TOTAL: 28 -> 0 (100% reduction)
 ```css
 /* Line 99: Rear shelf min-height */
 .region--rear_shelf {
-	flex-wrap: wrap;
-	min-height: 320px;
+  flex-wrap: wrap;
+  min-height: 320px;
 }
 
 /* Line 115: Front tools min-height */
 .region--front_tools {
-	flex-wrap: wrap;
-	min-height: 260px;
+  flex-wrap: wrap;
+  min-height: 260px;
 }
 ```
 
 ### hood.css
+
 Same edits as bench.css (lines 99, 115)
 
 ### instrument.css
+
 Same edits as bench.css (lines 99, 115)
 
 ## Artifact Paths

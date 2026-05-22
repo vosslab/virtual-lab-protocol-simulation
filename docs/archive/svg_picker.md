@@ -79,8 +79,8 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
 - `tools/svg_picker/build_candidate_manifest.py` (new): walk `assets/equipment/`,
   `OTHER_REPOS/bioicons/`, `OTHER_REPOS/scienceicons/`. Emit `tools/svg_picker/candidates.json`
   with one record per SVG: `{id, source_repo, rel_path (repo-relative), filename,
-  search_tokens, license_tag, license_url, license_confidence (exact|inferred|unknown),
-  attribution_required (bool)}`. No `abs_path`; applier resolves against repo root. License
+search_tokens, license_tag, license_url, license_confidence (exact|inferred|unknown),
+attribution_required (bool)}`. No `abs_path`; applier resolves against repo root. License
   tags read from each source repo's license file or per-folder metadata; conservative default
   `CC BY` with `license_confidence: inferred` when unclear.
 - `tools/svg_picker/build_missing_targets.py` (new): walk `content/objects/<kind>/*.yaml`,
@@ -90,14 +90,14 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
   `content/objects/equipment/electrophoresis_tank.yaml:21-31`). Diff against
   `assets/equipment/*.svg`. Emit `tools/svg_picker/missing_targets.json` with one record per
   missing slot: `{asset_name, referenced_by: [object_yaml_paths...], kind, object_label,
-  state_family (e.g. "electrophoresis_tank" stripped of variant suffix), variant_suffix
-  (e.g. "_filled"|""), variant_looking (bool, true when suffix matches a known variant token
-  set), expected_path}`. Records grouped under `state_family` so picker can render coherent
+state_family (e.g. "electrophoresis_tank" stripped of variant suffix), variant_suffix
+(e.g. "_filled"|""), variant_looking (bool, true when suffix matches a known variant token
+set), expected_path}`. Records grouped under `state_family` so picker can render coherent
   variant clusters.
 - `tools/svg_picker/build_ranked_suggestions.py` (new): join `candidates.json` and
   `missing_targets.json`. For each target emit top-50 candidate ids with score breakdown:
   `{target_asset_name, ranked: [{candidate_id, score, signals: {filename_token_overlap,
-  parent_folder_overlap, source_trust_boost}}, ...]}`. Source trust order:
+parent_folder_overlap, source_trust_boost}}, ...]}`. Source trust order:
   `assets/equipment/` > `bioicons/` > `scienceicons/` (existing assets are stylistically
   consistent with the repo, ranked higher even on tied token scores). Emit
   `tools/svg_picker/suggestions.json`.
@@ -114,9 +114,9 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
     preview tiles: fixed square, transparent checkerboard background, filename below image,
     light/dark toggle for the panel. Each tile shows a plain-language match label derived
     client-side from `suggestions.json` signals: "strong name match" (filename token overlap
-    >=0.7), "partial name match" (0.3-0.7), "same parent folder", "trusted existing asset"
-    (in-repo source), "weak match" (otherwise). Score number shown as tooltip; label is the
-    headline.
+    > =0.7), "partial name match" (0.3-0.7), "same parent folder", "trusted existing asset"
+    > (in-repo source), "weak match" (otherwise). Score number shown as tooltip; label is the
+    > headline.
   - **Large preview**: highlighted candidate renders at full size in a panel adjacent to the
     middle context pane so the user can compare the candidate against the target context
     side-by-side without leaving the keyboard flow.
@@ -146,8 +146,8 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
     actions.
   - "Export decisions" button downloads `decisions.json`:
     `[{asset_name, state: assigned|defer|ignore_intentional, candidate_id?, source_repo?,
-    source_path?, license_tag?, license_confidence?, notes?, reason?, hidden_candidates?:
-    [candidate_id, ...]}, ...]`. Applier ignores `hidden_candidates` (UI-only state) but
+source_path?, license_tag?, license_confidence?, notes?, reason?, hidden_candidates?:
+[candidate_id, ...]}, ...]`. Applier ignores `hidden_candidates` (UI-only state) but
     preserves it on round-trip so re-importing a decisions file restores hide state.
   - Loads JSON via relative `fetch()`. Works under `file://` in Firefox; Chrome may block
     cross-origin local fetches -- README documents fallback:
@@ -167,17 +167,17 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
   6. `--rename-existing` is required for any decision whose `source_repo == "assets/equipment"`
      (i.e. reassigning an in-repo asset to a new name); default mode rejects this. Default
      mode for in-repo sources is `copy` only.
-  After checks pass: `cp` + `git add` for `OTHER_REPOS/` sources, optional `cp` (default) or
-  `git mv` (with `--rename-existing`) for in-repo sources, run `tools/normalize_svg_v2.py`,
-  append rows to `docs/SVG_ATTRIBUTION.md` for `attribution_required: true` decisions, print
-  per-slot summary + reminder to run `python3 pipeline/generate_svg_globals.py`. Supports
-  `--dry-run`.
+     After checks pass: `cp` + `git add` for `OTHER_REPOS/` sources, optional `cp` (default) or
+     `git mv` (with `--rename-existing`) for in-repo sources, run `tools/normalize_svg_v2.py`,
+     append rows to `docs/SVG_ATTRIBUTION.md` for `attribution_required: true` decisions, print
+     per-slot summary + reminder to run `python3 pipeline/generate_svg_globals.py`. Supports
+     `--dry-run`.
 - `tests/test_object_asset_refs.py` (new): for every object YAML under `content/objects/`,
   assert every `asset_name` it references corresponds to an existing
   `assets/equipment/<asset_name>.svg`. Single per-rule test function; cites the design rule
   in the assertion message. Soft-reporter mode on day one (see Acceptance gates).
 - `docs/SVG_ATTRIBUTION.md` (new): table of `(asset_name, source_repo, original_rel_path,
-  license_tag, license_confidence, license_url)`. Created by applier on first run; appended
+license_tag, license_confidence, license_url)`. Created by applier on first run; appended
   thereafter.
 - `tools/svg_picker/README.md` (new): one-page workflow doc -- build manifests, open picker
   (with file:// vs http.server fallback note), apply decisions (`--dry-run` first), regen,
@@ -200,28 +200,28 @@ The picker fills today's 74 gaps; the gate prevents tomorrow's silent regression
 
 ## Architecture boundaries and ownership
 
-| Boundary | Owner | Touch rule |
-| --- | --- | --- |
-| Candidate indexing | tooling author | `tools/svg_picker/build_candidate_manifest.py` only |
-| Missing-target computation | tooling author | `tools/svg_picker/build_missing_targets.py` only |
-| Ranker | tooling author | `tools/svg_picker/build_ranked_suggestions.py` only (reads both manifests) |
-| Picker UI | tooling author | `tools/svg_picker/{index.html,picker.js,picker.css}` only |
-| Applier | tooling author | `tools/svg_picker/apply_decisions.py` only; calls existing `tools/normalize_svg_v2.py`; never edits object YAML |
-| Gate test | tester | `tests/test_object_asset_refs.py` only |
-| Workflow docs | maintainer | `tools/svg_picker/README.md`, `docs/CHANGELOG.md` |
-| Existing SVG pipeline | other manager | Untouched -- `pipeline/generate_svg_globals.py`, `docs/specs/SVG_PIPELINE.md` are read-only inputs |
+| Boundary                   | Owner          | Touch rule                                                                                                      |
+| -------------------------- | -------------- | --------------------------------------------------------------------------------------------------------------- |
+| Candidate indexing         | tooling author | `tools/svg_picker/build_candidate_manifest.py` only                                                             |
+| Missing-target computation | tooling author | `tools/svg_picker/build_missing_targets.py` only                                                                |
+| Ranker                     | tooling author | `tools/svg_picker/build_ranked_suggestions.py` only (reads both manifests)                                      |
+| Picker UI                  | tooling author | `tools/svg_picker/{index.html,picker.js,picker.css}` only                                                       |
+| Applier                    | tooling author | `tools/svg_picker/apply_decisions.py` only; calls existing `tools/normalize_svg_v2.py`; never edits object YAML |
+| Gate test                  | tester         | `tests/test_object_asset_refs.py` only                                                                          |
+| Workflow docs              | maintainer     | `tools/svg_picker/README.md`, `docs/CHANGELOG.md`                                                               |
+| Existing SVG pipeline      | other manager  | Untouched -- `pipeline/generate_svg_globals.py`, `docs/specs/SVG_PIPELINE.md` are read-only inputs              |
 
 ### Mapping (milestones -> components -> patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-INDEX | Candidate manifest builder | 1 |
-| M1 / WS-TARGETS | Missing-target list builder | 1 |
-| M1.5 / WS-RANK | Ranked-suggestions builder | 1 |
-| M2 / WS-PICKER | Static HTML review-queue picker | 1 |
-| M3 / WS-APPLY | Apply-decisions script + attribution doc | 1 |
-| M3 / WS-GATE | Pytest gate (soft-reporter) | 1 |
-| M4 / WS-DOCS | README + plan archive + changelog close-out | 1 |
+| Milestone / Workstream | Component                                   | Expected patches |
+| ---------------------- | ------------------------------------------- | ---------------- |
+| M1 / WS-INDEX          | Candidate manifest builder                  | 1                |
+| M1 / WS-TARGETS        | Missing-target list builder                 | 1                |
+| M1.5 / WS-RANK         | Ranked-suggestions builder                  | 1                |
+| M2 / WS-PICKER         | Static HTML review-queue picker             | 1                |
+| M3 / WS-APPLY          | Apply-decisions script + attribution doc    | 1                |
+| M3 / WS-GATE           | Pytest gate (soft-reporter)                 | 1                |
+| M4 / WS-DOCS           | README + plan archive + changelog close-out | 1                |
 
 M1 patches are independent (disjoint inputs, disjoint outputs) -- dispatch in parallel.
 M1.5 depends on both M1 outputs. M3 patches are independent of each other.
@@ -354,17 +354,17 @@ M1.5 depends on both M1 outputs. M3 patches are independent of each other.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| License confusion (CC BY vs CC0) | Medium | Applier mis-tags a bioicons SVG | applier author | Per-file license read where bioicons provides metadata; conservative default `CC BY` with `license_confidence: inferred`; picker shows inferred badge; user can override before export |
-| Picker performance on 2984 candidates | Low | Render or filter chokes | UI author | Virtualize candidate grid; index search tokens flat at load; ranked default keeps initial render small; target <100 ms keystroke-to-filter |
-| Preview inconsistency across libraries (viewBox, stroke widths) | Medium | Tiny raw SVG thumbnails look chaotic | UI author | Fixed-square tile + transparent checkerboard background + uniform CSS `object-fit: contain`; hover/click expands; light/dark toggle |
-| Existing 110 SVGs accidentally renamed/destroyed | High | User reassigns an existing asset, applier `git mv`s it | applier author | Default mode for in-repo sources is `copy`, never `git mv`; `--rename-existing` opt-in required; `--force` required to overwrite existing target name |
-| Source file moved between manifest build and apply | Medium | OTHER_REPOS updated mid-session | applier author | Applier re-reads `candidates.json` + stats every `source_path` at apply time; mismatch fails with "rebuild manifest" instruction |
-| Decision-state-without-reason for ignore-intentional | Low | User accidentally exports ignore without reason | UI + applier | UI requires non-empty reason on ignore-intentional; applier rejects ignore decisions with empty reason |
-| State-variant slots dominate the gap and no candidates match | Medium | Many `_filled`/`_empty`/`_spinning` slots stay unfilled | user | Picker tags `variant_looking: true`; user batch-defers them; follow-up plan addresses variant derivation |
-| Chrome blocks `file://` fetch() of sibling JSON | Medium | User opens `index.html` directly in Chrome | UI author | README documents `python3 -m http.server` fallback; picker shows clear error banner if fetch fails |
-| Manifest stale between sessions | Low | New OTHER_REPOS clones | tooling author | Builders fast (<1 s each); README workflow says rebuild before picking |
+| Risk                                                            | Impact | Trigger                                                 | Owner          | Mitigation                                                                                                                                                                             |
+| --------------------------------------------------------------- | ------ | ------------------------------------------------------- | -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| License confusion (CC BY vs CC0)                                | Medium | Applier mis-tags a bioicons SVG                         | applier author | Per-file license read where bioicons provides metadata; conservative default `CC BY` with `license_confidence: inferred`; picker shows inferred badge; user can override before export |
+| Picker performance on 2984 candidates                           | Low    | Render or filter chokes                                 | UI author      | Virtualize candidate grid; index search tokens flat at load; ranked default keeps initial render small; target <100 ms keystroke-to-filter                                             |
+| Preview inconsistency across libraries (viewBox, stroke widths) | Medium | Tiny raw SVG thumbnails look chaotic                    | UI author      | Fixed-square tile + transparent checkerboard background + uniform CSS `object-fit: contain`; hover/click expands; light/dark toggle                                                    |
+| Existing 110 SVGs accidentally renamed/destroyed                | High   | User reassigns an existing asset, applier `git mv`s it  | applier author | Default mode for in-repo sources is `copy`, never `git mv`; `--rename-existing` opt-in required; `--force` required to overwrite existing target name                                  |
+| Source file moved between manifest build and apply              | Medium | OTHER_REPOS updated mid-session                         | applier author | Applier re-reads `candidates.json` + stats every `source_path` at apply time; mismatch fails with "rebuild manifest" instruction                                                       |
+| Decision-state-without-reason for ignore-intentional            | Low    | User accidentally exports ignore without reason         | UI + applier   | UI requires non-empty reason on ignore-intentional; applier rejects ignore decisions with empty reason                                                                                 |
+| State-variant slots dominate the gap and no candidates match    | Medium | Many `_filled`/`_empty`/`_spinning` slots stay unfilled | user           | Picker tags `variant_looking: true`; user batch-defers them; follow-up plan addresses variant derivation                                                                               |
+| Chrome blocks `file://` fetch() of sibling JSON                 | Medium | User opens `index.html` directly in Chrome              | UI author      | README documents `python3 -m http.server` fallback; picker shows clear error banner if fetch fails                                                                                     |
+| Manifest stale between sessions                                 | Low    | New OTHER_REPOS clones                                  | tooling author | Builders fast (<1 s each); README workflow says rebuild before picking                                                                                                                 |
 
 ## Rollout and release checklist
 
@@ -392,8 +392,8 @@ M1.5 depends on both M1 outputs. M3 patches are independent of each other.
 - `pipeline/generate_svg_globals.py` (existing; user runs after applier)
 - `docs/specs/SVG_PIPELINE.md` (read-only; normalization + naming rules)
 - New: `tools/svg_picker/{build_candidate_manifest.py, build_missing_targets.py,
-  build_ranked_suggestions.py, index.html, picker.js, picker.css, apply_decisions.py,
-  README.md}`
+build_ranked_suggestions.py, index.html, picker.js, picker.css, apply_decisions.py,
+README.md}`
 - New: `tests/test_object_asset_refs.py`
 - New: `tests/test_apply_decisions_preflight.py`
 - New: `docs/SVG_ATTRIBUTION.md`
@@ -401,26 +401,32 @@ M1.5 depends on both M1 outputs. M3 patches are independent of each other.
 ## Patch plan
 
 M1 (parallel-ready):
+
 - Patch 1 (WS-INDEX): `build_candidate_manifest.py` + `.gitignore` rule for
   `tools/svg_picker/*.json` + changelog.
 - Patch 2 (WS-TARGETS): `build_missing_targets.py` + changelog.
 
 M1.5:
+
 - Patch 3 (WS-RANK): `build_ranked_suggestions.py` + changelog.
 
 M2:
+
 - Patch 4 (WS-PICKER): `index.html`, `picker.js`, `picker.css` + manual-smoke notes in
   changelog.
 
 M3 (parallel-ready):
+
 - Patch 5 (WS-APPLY): `apply_decisions.py` + `docs/SVG_ATTRIBUTION.md` scaffold +
   `tests/test_apply_decisions_preflight.py` + changelog.
 - Patch 6 (WS-GATE): `tests/test_object_asset_refs.py` (soft-reporter) + changelog.
 
 M4:
+
 - Patch 7 (WS-DOCS): `tools/svg_picker/README.md` + plan archive + changelog close-out.
 
 Follow-ups (separate plans):
+
 - Harden gate test from soft reporter to hard `assert`.
 - Colormap-based state-variant derivation for unfilled `variant_looking: true` slots.
 

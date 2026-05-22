@@ -6,7 +6,7 @@ Everything here is target-state: it describes the designed vocabulary, not the
 code today. The evidence base is
 [protocol_interaction_inventory.md](protocol_interaction_inventory.md).
 Architectural philosophy: see "Semantic inheritance and composition" in
-[../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition).
+[PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition).
 
 The model is a tight linear protocol spec. WP-SLOT1 defined the two-level
 model: the `step`, its ordered `sequence` of interactions, and the `target` and
@@ -122,21 +122,21 @@ The tight spec fixes which slots are required:
 
 Each slot owns one concern. The one-line charter for each:
 
-| Level | Slot | Charter |
-| --- | --- | --- |
-| protocol | `name` | The stable snake_case identifier for the protocol. |
-| protocol | `entry_step` | Names the first step by its `name`; flow starts here. |
-| protocol | `steps` | The list of steps; list order is not protocol flow. |
-| step | `name` | The stable snake_case identifier for the step, used for flow, tests, and debugging. |
-| step | `prompt` | States what the student is asked to accomplish in this step. |
-| step | `sequence` | The ordered list of interactions that make up the step; order always matters. |
-| step | `step_validator` | Named preset that checks whole-step completion, not one gesture. |
-| step | `outcome` | A mapping that says how the step resolves: `on_success` and `on_failure`. |
-| step | `next_step` | Names the next step by its `name`, or `null` for a terminal step; this controls protocol flow. |
-| interaction | `target` | Names the addressable scene object or control acted on. |
-| interaction | `gesture` | Names how the student acts on the target. |
-| interaction | `validator` | Named preset that checks this one gesture on this one target. |
-| interaction | `response` | Container for post-validation system behavior: `scene_operations` and optional structured `feedback`. |
+| Level       | Slot             | Charter                                                                                               |
+| ----------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| protocol    | `name`           | The stable snake_case identifier for the protocol.                                                    |
+| protocol    | `entry_step`     | Names the first step by its `name`; flow starts here.                                                 |
+| protocol    | `steps`          | The list of steps; list order is not protocol flow.                                                   |
+| step        | `name`           | The stable snake_case identifier for the step, used for flow, tests, and debugging.                   |
+| step        | `prompt`         | States what the student is asked to accomplish in this step.                                          |
+| step        | `sequence`       | The ordered list of interactions that make up the step; order always matters.                         |
+| step        | `step_validator` | Named preset that checks whole-step completion, not one gesture.                                      |
+| step        | `outcome`        | A mapping that says how the step resolves: `on_success` and `on_failure`.                             |
+| step        | `next_step`      | Names the next step by its `name`, or `null` for a terminal step; this controls protocol flow.        |
+| interaction | `target`         | Names the addressable scene object or control acted on.                                               |
+| interaction | `gesture`        | Names how the student acts on the target.                                                             |
+| interaction | `validator`      | Named preset that checks this one gesture on this one target.                                         |
+| interaction | `response`       | Container for post-validation system behavior: `scene_operations` and optional structured `feedback`. |
 
 `name`, `prompt`, `sequence`, `step_validator`, `outcome`, and `next_step` are
 the six step slots -- all required. `target`, `gesture`, `validator`, and
@@ -370,7 +370,7 @@ QTI's interaction names (Choice, Hot Spot, Slider, Position Object, Order)
 informed how target kinds are typed: they are a checklist of the interaction
 shapes a learning system needs to express. But those names are not adopted as
 formal terms here. QTI's interaction-type enum is a typed list of
-*interactions*; this model puts the type on the *target*, not the interaction.
+_interactions_; this model puts the type on the _target_, not the interaction.
 The runtime tracks named scene objects, not QTI's coordinate regions
 (Hot Spot, Position Object) or response variables. The QTI names are
 background reading, not vocabulary.
@@ -380,13 +380,13 @@ background reading, not vocabulary.
 A `gesture` is how the student acts on a target. It is the physical input the
 student performs. The gesture value set is:
 
-| Gesture | What the student does |
-| --- | --- |
-| `click` | Clicks the target. The simple, discrete gesture. |
-| `drag` | Drags the target, or drags from the target to another target. |
+| Gesture  | What the student does                                                     |
+| -------- | ------------------------------------------------------------------------- |
+| `click`  | Clicks the target. The simple, discrete gesture.                          |
+| `drag`   | Drags the target, or drags from the target to another target.             |
 | `adjust` | Moves a continuous control to a set-point value. The skill-based gesture. |
-| `select` | Picks one option from a presented set of choices. |
-| `type` | Enters a value or text. |
+| `select` | Picks one option from a presented set of choices.                         |
+| `type`   | Enters a value or text.                                                   |
 
 This value set is settled.
 
@@ -435,7 +435,7 @@ The gesture value set is closed but extensible. A new gesture may be added
 only when the evidence shows a student input that none of `click`, `drag`,
 `adjust`, `select`, or `type` expresses, that the input recurs across more
 than one protocol, and that it is a stable, reusable input shape -- the same
-bar [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition)
+bar [PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition)
 sets for a new primitive. A new gesture is a vocabulary addition, not a casual
 one; adding one requires the same justification as adding a base primitive.
 
@@ -570,10 +570,10 @@ post-validation system behavior -- what the system does after an interaction is
 validated. It is not itself a primitive: it holds primitives. In the tight spec
 a `response` has exactly two fields:
 
-| Field | Required | What it holds |
-| --- | --- | --- |
-| `scene_operations` | yes (may be empty) | An ordered list of typed `scene_operation` primitives. |
-| `feedback` | no | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
+| Field              | Required           | What it holds                                                                 |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------- |
+| `scene_operations` | yes (may be empty) | An ordered list of typed `scene_operation` primitives.                        |
+| `feedback`         | no                 | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
 
 The earlier draft carried a third `state_update` field for non-visual
 bookkeeping. It is dropped. In the tight spec, **state change is explicit in a
@@ -662,16 +662,16 @@ the two are deliberately separate slots.
 
 Eight `scene_operation` primitives are ratified for the initial vocabulary:
 
-| Primitive | What the scene does |
-| --- | --- |
-| `SvgSwap` | Replaces one SVG asset on a target with another. |
-| `ColorChange` | Changes a fill or stroke color on a target. |
-| `CursorAttach` | Attaches a target to the cursor, or detaches it. |
-| `SceneChange` | Transitions the scene context to another scene. |
-| `LayoutMove` | Moves or re-lays-out a scene object via the layout engine. |
-| `LiquidDisplayChange` | Updates a tracked liquid: appears, volume changes, or well contents update. |
-| `SetPointDisplayChange` | Updates an adjustable set-point shown on a configured display target. |
-| `TimedWait` | Runs a timed phase on a piece of equipment, with a visible progress display. |
+| Primitive               | What the scene does                                                          |
+| ----------------------- | ---------------------------------------------------------------------------- |
+| `SvgSwap`               | Replaces one SVG asset on a target with another.                             |
+| `ColorChange`           | Changes a fill or stroke color on a target.                                  |
+| `CursorAttach`          | Attaches a target to the cursor, or detaches it.                             |
+| `SceneChange`           | Transitions the scene context to another scene.                              |
+| `LayoutMove`            | Moves or re-lays-out a scene object via the layout engine.                   |
+| `LiquidDisplayChange`   | Updates a tracked liquid: appears, volume changes, or well contents update.  |
+| `SetPointDisplayChange` | Updates an adjustable set-point shown on a configured display target.        |
+| `TimedWait`             | Runs a timed phase on a piece of equipment, with a visible progress display. |
 
 The first five are the first pass's mis-named "base actions".
 `LiquidDisplayChange` was forced by the M2 fit check (see below). `TimedWait`
@@ -1158,17 +1158,17 @@ code around.
 The three layers have different costs to extend, and the difference is
 deliberate.
 
-| Layer | Cost to add | Bar to clear |
-| --- | --- | --- |
-| Domain verb | Cheap | A documented expansion to existing slots. |
-| `gesture` value | Expensive | Evidence: a recurring input shape no current gesture expresses. |
-| `scene_operation` primitive | Expensive | Evidence: a recurring scene effect no composition of existing primitives expresses. |
+| Layer                       | Cost to add | Bar to clear                                                                        |
+| --------------------------- | ----------- | ----------------------------------------------------------------------------------- |
+| Domain verb                 | Cheap       | A documented expansion to existing slots.                                           |
+| `gesture` value             | Expensive   | Evidence: a recurring input shape no current gesture expresses.                     |
+| `scene_operation` primitive | Expensive   | Evidence: a recurring scene effect no composition of existing primitives expresses. |
 
 New domain verbs are cheap and expected -- they are just named compositions,
 and authors should add the verbs their protocols read naturally with. New
 `gesture` values and new `scene_operation` primitives are expensive: each is a
 permanent addition to the base vocabulary and requires the same evidence bar
-[../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition)
+[PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md#semantic-inheritance-and-composition)
 sets -- a recurring shape, across more than one protocol, that no existing
 primitive or composition expresses. `LiquidDisplayChange`, `TimedWait`, and
 `SetPointDisplayChange` are the three primitives that have already cleared this
@@ -1367,9 +1367,9 @@ outcome:
   on_failure: retry
 ```
 
-| Key | Meaning |
-| --- | --- |
-| `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`. |
+| Key          | Meaning                                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`.                                                                                                                    |
 | `on_failure` | What happens when the `step_validator` does not pass, or an interaction `validator` returned false. `retry` restarts the whole step -- the entire `sequence` resets and the student redoes the step from its first interaction. |
 
 `outcome` is a mapping, not a bare scalar, so a later plan can grow it without
@@ -1395,14 +1395,14 @@ The vocabulary assumes a small, named runtime state. Every `validator` preset
 and every `step_validator` preset reads this state; every state change is
 written by a `response`. The state the model assumes:
 
-| State | What it tracks | Example |
-| --- | --- | --- |
-| held material | Which tool, if any, is attached to the cursor, and what liquid it carries. | `held_tool: serological_pipette`, the pipette holding 4 mL PBS. |
-| target contents | The tracked liquid identity and volume on each vessel and tool. | `flask` contains 4 mL PBS. |
-| set-point values | The current value of a continuous control. | A pipette set to 4 mL, a power supply set to 150 V, a titration at pH 8.0. |
-| equipment state | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. | The centrifuge has run; the incubator's 48 h phase is elapsed. |
-| phase state | A multi-phase result the student must resolve. | A centrifuged tube holding an aqueous phase and an organic phase. |
-| object appearance | The current asset id, color, and layout slot of each scene object. | The grinder shows the `berry_powder` asset; the gel cassette is in the `tank` slot. |
+| State             | What it tracks                                                                                                       | Example                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| held material     | Which tool, if any, is attached to the cursor, and what liquid it carries.                                           | `held_tool: serological_pipette`, the pipette holding 4 mL PBS.                     |
+| target contents   | The tracked liquid identity and volume on each vessel and tool.                                                      | `flask` contains 4 mL PBS.                                                          |
+| set-point values  | The current value of a continuous control.                                                                           | A pipette set to 4 mL, a power supply set to 150 V, a titration at pH 8.0.          |
+| equipment state   | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. | The centrifuge has run; the incubator's 48 h phase is elapsed.                      |
+| phase state       | A multi-phase result the student must resolve.                                                                       | A centrifuged tube holding an aqueous phase and an organic phase.                   |
+| object appearance | The current asset id, color, and layout slot of each scene object.                                                   | The grinder shows the `berry_powder` asset; the gel cassette is in the `tank` slot. |
 
 This state is named and non-positional, the same as `target`: the runtime
 tracks it by name. The scene adapter renders it -- a liquid level, a dial
@@ -1426,16 +1426,16 @@ spec does not assume one.
 Each of the eight `scene_operation` primitives maps to the runtime state it
 changes:
 
-| Primitive | Runtime state it changes |
-| --- | --- |
-| `SvgSwap` | object appearance -- the target's asset id. |
-| `ColorChange` | object appearance -- the target's named color property. |
-| `CursorAttach` | held material -- the cursor-attachment state of the target. |
-| `SceneChange` | the active scene id (a scene-context state, not a per-object state). |
-| `LayoutMove` | object appearance -- the target's layout slot. |
-| `LiquidDisplayChange` | held material and target contents -- the tracked liquid identity and volume on the target. |
+| Primitive               | Runtime state it changes                                                                   |
+| ----------------------- | ------------------------------------------------------------------------------------------ |
+| `SvgSwap`               | object appearance -- the target's asset id.                                                |
+| `ColorChange`           | object appearance -- the target's named color property.                                    |
+| `CursorAttach`          | held material -- the cursor-attachment state of the target.                                |
+| `SceneChange`           | the active scene id (a scene-context state, not a per-object state).                       |
+| `LayoutMove`            | object appearance -- the target's layout slot.                                             |
+| `LiquidDisplayChange`   | held material and target contents -- the tracked liquid identity and volume on the target. |
 | `SetPointDisplayChange` | set-point values -- the current value of a continuous control shown on the display target. |
-| `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
+| `TimedWait`             | equipment state -- the target equipment's timed phase, started and then elapsed.           |
 
 Every "set-point values" row in the runtime state model now has a primitive
 that writes it: `SetPointDisplayChange`.
@@ -1563,21 +1563,21 @@ Every slot in the model sits on one side of the boundary, or is shared with a
 clean split. The table is the full map; the notes below it cover the slots that
 need more than a line.
 
-| Level | Slot | Side | What each side owns |
-| --- | --- | --- | --- |
-| protocol | `name` | protocol | The protocol's stable snake_case identifier. |
-| protocol | `entry_step` | protocol | Names the first step; pure protocol flow. |
-| protocol | `steps` | protocol | The list of steps; pure protocol flow. |
-| step | `name` | protocol | The step's stable snake_case identifier. |
-| step | `prompt` | protocol | The student-facing instruction text. |
-| step | `sequence` | protocol | The ordered list of interactions; order is protocol-owned. |
-| step | `step_validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
-| step | `outcome` | protocol | The `on_success` / `on_failure` mapping; pure protocol flow. |
-| step | `next_step` | protocol | Names the next step; pure protocol flow. |
-| interaction | `target` | shared | Protocol names a semantic target; scene resolves it to geometry. |
-| interaction | `gesture` | shared | Protocol names the gesture; scene owns how it is rendered and input. |
-| interaction | `validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
-| interaction | `response` | shared | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
+| Level       | Slot             | Side     | What each side owns                                                         |
+| ----------- | ---------------- | -------- | --------------------------------------------------------------------------- |
+| protocol    | `name`           | protocol | The protocol's stable snake_case identifier.                                |
+| protocol    | `entry_step`     | protocol | Names the first step; pure protocol flow.                                   |
+| protocol    | `steps`          | protocol | The list of steps; pure protocol flow.                                      |
+| step        | `name`           | protocol | The step's stable snake_case identifier.                                    |
+| step        | `prompt`         | protocol | The student-facing instruction text.                                        |
+| step        | `sequence`       | protocol | The ordered list of interactions; order is protocol-owned.                  |
+| step        | `step_validator` | shared   | Protocol selects the preset; scene/runtime supplies the state it checks.    |
+| step        | `outcome`        | protocol | The `on_success` / `on_failure` mapping; pure protocol flow.                |
+| step        | `next_step`      | protocol | Names the next step; pure protocol flow.                                    |
+| interaction | `target`         | shared   | Protocol names a semantic target; scene resolves it to geometry.            |
+| interaction | `gesture`        | shared   | Protocol names the gesture; scene owns how it is rendered and input.        |
+| interaction | `validator`      | shared   | Protocol selects the preset; scene/runtime supplies the state it checks.    |
+| interaction | `response`       | shared   | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
 
 Notes on the shared slots:
 
@@ -1700,8 +1700,21 @@ Worked example -- which file owns which:
 ```yaml
 # scene YAML -- defines the named group; owns the geometry
 target_groups:
-  row_b: [well_b1, well_b2, well_b3, well_b4, well_b5, well_b6,
-          well_b7, well_b8, well_b9, well_b10, well_b11, well_b12]
+  row_b:
+    [
+      well_b1,
+      well_b2,
+      well_b3,
+      well_b4,
+      well_b5,
+      well_b6,
+      well_b7,
+      well_b8,
+      well_b9,
+      well_b10,
+      well_b11,
+      well_b12,
+    ]
 ```
 
 The protocol YAML writes `target: row_b` and never lists a well or a
@@ -1795,9 +1808,9 @@ model to the linear spec and lands its content:
   drops the optional interaction `name` (deferred); drops `state_update` from
   `response` (`response` is `scene_operations` plus optional `feedback`); and
   defers complex branching (`outcome` stays the simple `{on_success,
-  on_failure}` mapping). The tight model is `protocol -> step(name, prompt,
-  sequence, step_validator, outcome, next_step) -> interaction(target, gesture,
-  validator, response) -> response(scene_operations[], feedback?)`.
+on_failure}` mapping). The tight model is `protocol -> step(name, prompt,
+sequence, step_validator, outcome, next_step) -> interaction(target, gesture,
+validator, response) -> response(scene_operations[], feedback?)`.
 - The interaction `validator` and the `step_validator` are named presets with
   typed parameters; the validator preset library has `correct_target`,
   `correct_choice`, `target_with_value` (interaction presets) and

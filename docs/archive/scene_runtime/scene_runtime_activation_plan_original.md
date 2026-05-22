@@ -320,17 +320,17 @@ The mirror of `## Forbidden-pattern catalog`. These patterns are pre-approved; c
 copy them without asking. Reviewer endorses without debate. The library starts small
 and grows from worked exemplars (next subsection).
 
-| Need | Pre-approved pattern |
-| --- | --- |
-| Missing required YAML field | `throw new Error(\`missing required field <path> on <object>: <id>\`);` -- loud, named, no fallback. |
-| Optional YAML field | Destructure with explicit `undefined` typing; never `??`. Caller branches on `=== undefined`. |
-| Discriminated union dispatch on `scene_operation` | `switch (op.type) { case 'ObjectStateChange': ... }` with exhaustive `default: assertNever(op);` |
-| Brand / opaque type for semantic id | One-liner brand: `type StepName = string & { readonly __brand: 'StepName' };` + a `StepName(raw)` constructor that validates. |
-| Immutable runtime-world update | `return { ...world, scenes: { ...world.scenes, [id]: nextScene } };` -- spread at the changed branch only; no `Object.assign`. |
-| DOM target id encoding | `data-target-id="<object_id>"` and `data-target-id="<object_id>.<subpart_id>"`. No other encoding. |
-| Walker selector | `await page.locator('[data-target-id="..."][data-gesture="..."]').click();` Same shape every WP. |
-| Per-frame layout cache | Adapter-internal `Map<ObjectId, ComputedBox>` invalidated on each `requestRedraw`. Never escapes the adapter. |
-| Test fixture path | Hand-authored under `tests/playwright/fixtures/` or `tests/_fixtures/`. Generated under `tests/_generated/` (gitignored). |
+| Need                                              | Pre-approved pattern                                                                                                           |
+| ------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| Missing required YAML field                       | `throw new Error(\`missing required field <path> on <object>: <id>\`);` -- loud, named, no fallback.                           |
+| Optional YAML field                               | Destructure with explicit `undefined` typing; never `??`. Caller branches on `=== undefined`.                                  |
+| Discriminated union dispatch on `scene_operation` | `switch (op.type) { case 'ObjectStateChange': ... }` with exhaustive `default: assertNever(op);`                               |
+| Brand / opaque type for semantic id               | One-liner brand: `type StepName = string & { readonly __brand: 'StepName' };` + a `StepName(raw)` constructor that validates.  |
+| Immutable runtime-world update                    | `return { ...world, scenes: { ...world.scenes, [id]: nextScene } };` -- spread at the changed branch only; no `Object.assign`. |
+| DOM target id encoding                            | `data-target-id="<object_id>"` and `data-target-id="<object_id>.<subpart_id>"`. No other encoding.                             |
+| Walker selector                                   | `await page.locator('[data-target-id="..."][data-gesture="..."]').click();` Same shape every WP.                               |
+| Per-frame layout cache                            | Adapter-internal `Map<ObjectId, ComputedBox>` invalidated on each `requestRedraw`. Never escapes the adapter.                  |
+| Test fixture path                                 | Hand-authored under `tests/playwright/fixtures/` or `tests/_fixtures/`. Generated under `tests/_generated/` (gitignored).      |
 
 A coder who needs a pattern not in this table either uses an existing exemplar (next
 subsection) or asks the manager to add the pattern + worked example. New patterns
@@ -343,17 +343,17 @@ the exemplar for subsequent WPs of the same kind. Once shipped, the file path be
 the canonical reference; later WPs cite "copy the shape of `<file>`" instead of
 re-deriving from rules.
 
-| WP kind | First WP (exemplar) | Subsequent WPs cite |
-| --- | --- | --- |
-| Contract realignment | WP-CONTRACT-1 | "Brand-type + discriminated-union shape per `src/scene_runtime/contract.ts`." |
-| Loader | WP-LOADER-1 | "Missing-field error pattern + real-generated-data test shape per `loader/protocol.ts`." |
-| Scene-operation primitive | WP-RENDER-1 first primitive (`applyObjectStateChange`) | "Pure-function + immutable-update shape per `render/apply.ts`." |
-| Dispatch resolver | WP-DISPATCH-1 | "Capture-phase listener + ambiguity-rejection shape per `dispatch/click.ts`." |
-| Render adapter (first one) | WP-WELLPLATE-ADAPTER-1A | "Static-cell render + `data-target-id` shape per `adapters/well_plate/render.ts`." |
-| Render adapter (groups) | WP-WELLPLATE-ADAPTER-1B | "Group-container wrapping per subpart-group declaration." |
-| Render adapter (visual state) | WP-WELLPLATE-ADAPTER-1C | "Per-cell `visual_states` resolution from `material_name` + `material_volume`." |
-| Chrome surface | WP-CHROME-MINIMAL-1 | "Scene-frame mount + `data-testid` shape per `chrome/scene_frame.ts`." |
-| Walker scale lane | WP-SCALE-A-1 | "Per-protocol invocation + screenshot capture shape per the first scale lane." |
+| WP kind                       | First WP (exemplar)                                    | Subsequent WPs cite                                                                      |
+| ----------------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------------- |
+| Contract realignment          | WP-CONTRACT-1                                          | "Brand-type + discriminated-union shape per `src/scene_runtime/contract.ts`."            |
+| Loader                        | WP-LOADER-1                                            | "Missing-field error pattern + real-generated-data test shape per `loader/protocol.ts`." |
+| Scene-operation primitive     | WP-RENDER-1 first primitive (`applyObjectStateChange`) | "Pure-function + immutable-update shape per `render/apply.ts`."                          |
+| Dispatch resolver             | WP-DISPATCH-1                                          | "Capture-phase listener + ambiguity-rejection shape per `dispatch/click.ts`."            |
+| Render adapter (first one)    | WP-WELLPLATE-ADAPTER-1A                                | "Static-cell render + `data-target-id` shape per `adapters/well_plate/render.ts`."       |
+| Render adapter (groups)       | WP-WELLPLATE-ADAPTER-1B                                | "Group-container wrapping per subpart-group declaration."                                |
+| Render adapter (visual state) | WP-WELLPLATE-ADAPTER-1C                                | "Per-cell `visual_states` resolution from `material_name` + `material_volume`."          |
+| Chrome surface                | WP-CHROME-MINIMAL-1                                    | "Scene-frame mount + `data-testid` shape per `chrome/scene_frame.ts`."                   |
+| Walker scale lane             | WP-SCALE-A-1                                           | "Per-protocol invocation + screenshot capture shape per the first scale lane."           |
 
 The exemplar WP's handoff names the shape worth copying. Subsequent WPs of the same
 kind get a shorter brief; the bulk is "copy `<file>`, change `<X>`, keep `<Y>`."
@@ -477,22 +477,22 @@ changes a downstream WP's contract, or user-initiated re-prioritization.
 Rough sizing for the manager when deciding whether to split a WP. Not a deadline
 for the coder.
 
-| WP kind | Advisory budget |
-| --- | --- |
-| Audit / spec-index | 1-2 hours |
-| Contract realignment | 2-4 hours each |
-| Loader (one slice) | 2-3 hours |
-| Render primitive | 1-2 hours each |
-| Dispatch (one gesture) | 1-2 hours |
-| Layout integrate | 3-5 hours |
-| Adapter (first one) | 4-8 hours |
-| Adapter (subsequent) | 2-4 hours each |
-| Chrome surface (one) | 2-3 hours |
-| HTML builder | 2-3 hours |
-| Walker engine | 3-5 hours |
-| Walker scale lane (first three) | 2-3 hours each |
-| Walker scale lane (after stabilization) | 1-2 hours each |
-| Content / renderer fix | 1-3 hours each |
+| WP kind                                 | Advisory budget |
+| --------------------------------------- | --------------- |
+| Audit / spec-index                      | 1-2 hours       |
+| Contract realignment                    | 2-4 hours each  |
+| Loader (one slice)                      | 2-3 hours       |
+| Render primitive                        | 1-2 hours each  |
+| Dispatch (one gesture)                  | 1-2 hours       |
+| Layout integrate                        | 3-5 hours       |
+| Adapter (first one)                     | 4-8 hours       |
+| Adapter (subsequent)                    | 2-4 hours each  |
+| Chrome surface (one)                    | 2-3 hours       |
+| HTML builder                            | 2-3 hours       |
+| Walker engine                           | 3-5 hours       |
+| Walker scale lane (first three)         | 2-3 hours each  |
+| Walker scale lane (after stabilization) | 1-2 hours each  |
+| Content / renderer fix                  | 1-3 hours each  |
 
 A WP that runs 2x its advisory budget is a signal - coder reports BLOCKED for
 re-scoping, manager splits the WP. Not a punitive deadline; an early-warning
@@ -903,32 +903,32 @@ message.
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M0 / WS-AUDIT | `docs/active_plans/yaml_to_browser_audit.md` + read-only inventory of `src/` salvage | 1 |
-| M0 / WS-SPEC-CONSOLIDATION | `docs/active_plans/scene_runtime_spec_index.md` (no spec edits) | 1 |
-| M0.5 / WS-GENERATED-DATA | `docs/active_plans/generated_data_audit.md` + builder patches if needed | 1 to 3 |
-| M1 / WS-CONTRACT | `src/scene_runtime/contract.ts`, `src/scene_runtime/types.ts` | 1 to 2 |
-| M1 / WS-LOADER | `src/scene_runtime/loader/` (split: 1A protocol, 1B scene+object, 1C material+world) | 3 |
-| M1 / WS-RENDER-CORE | `src/scene_runtime/render/` (split: 1A state+scene, 1B cursor+layout, 1C TimedWait+clock, 1D request queue) | 4 |
-| M1 / WS-DISPATCH | `src/scene_runtime/dispatch/` (click only) | 1 |
-| M1 / WS-NO-LEGACY-IMPORTS | `tests/test_scene_runtime_no_legacy_imports.py` | 1 |
-| M1.5 / WS-BASE-SCENE-RENDER | `src/scene_runtime/render/scene.ts`, `tests/playwright/test_base_scene_render.mjs` | 1 |
-| M1.5 / WS-VISIBLE-SLICE | `src/scene_runtime/bundle/entry.ts`, `pipeline/build_runtime_bundle.sh`, `tests/playwright/fixtures/_smoke_one_object.html.template`, `tests/playwright/test_visible_slice.mjs` (built `dist/_smoke_one_object.html` is generated-only, gitignored) | 1 to 2 |
-| M2 / WS-LAYOUT-AUDIT | `docs/active_plans/layout_engine_audit.md` (read-only) | 1 |
-| M2 / WS-LAYOUT-INTEGRATE | `src/scene_runtime/layout/` | 1 |
-| M2 / WS-WELLPLATE-ADAPTER | `src/scene_runtime/adapters/well_plate/` (split: 1A static cells, 1B group targets, 1C per-cell material visual state) | 3 |
-| M2 / WS-LIQUID | `src/scene_runtime/liquid/`, `src/scene_runtime/highlight/` | 1 |
-| M3 / WS-CHROME-MINIMAL | `src/scene_runtime/chrome/` (split: 1A scene-frame+prompt, 1B feedback+next+validator) | 2 |
-| M3 / WS-CHROME-ADJUST | `src/scene_runtime/dispatch/adjust.ts` + chrome adjust surface | 1 |
-| M4 / WS-HTML-BUILDER | `pipeline/build_protocol_html.py` + `dist/<protocol_name>.html` template + .gitignore | 1 |
-| M4 / WS-PILOT1 | `<PILOT1>` wired end-to-end (default `mtt_solubilization_readout`) | 1 to 2 |
-| M5 / WS-WALKER-ENGINE | `tests/playwright/walker/` engine refresh against realigned contract; clock control | 1 |
-| M5 / WS-WALKER-PILOT | walker run on pilot protocol | 1 |
-| M6 / WS-SCALE-A...K | remaining 11 mini-protocols, one workstream per protocol initially | 11 |
-| M6 / WS-CONTENT | YAML / renderer fixes surfaced during walk-throughs | 2 to 4 |
-| M6 / WS-GESTURE-EXPAND | `select` / `type` / `drag` dispatch + chrome surfaces, gated by content need | 1 to 3 |
-| M-Deferred / WS-LAUNCHER | welcome screen + mini-protocol launcher (separate plan candidate) | 0 in this plan |
+| Milestone / Workstream      | Component                                                                                                                                                                                                                                           | Expected patches |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- |
+| M0 / WS-AUDIT               | `docs/active_plans/yaml_to_browser_audit.md` + read-only inventory of `src/` salvage                                                                                                                                                                | 1                |
+| M0 / WS-SPEC-CONSOLIDATION  | `docs/active_plans/scene_runtime_spec_index.md` (no spec edits)                                                                                                                                                                                     | 1                |
+| M0.5 / WS-GENERATED-DATA    | `docs/active_plans/generated_data_audit.md` + builder patches if needed                                                                                                                                                                             | 1 to 3           |
+| M1 / WS-CONTRACT            | `src/scene_runtime/contract.ts`, `src/scene_runtime/types.ts`                                                                                                                                                                                       | 1 to 2           |
+| M1 / WS-LOADER              | `src/scene_runtime/loader/` (split: 1A protocol, 1B scene+object, 1C material+world)                                                                                                                                                                | 3                |
+| M1 / WS-RENDER-CORE         | `src/scene_runtime/render/` (split: 1A state+scene, 1B cursor+layout, 1C TimedWait+clock, 1D request queue)                                                                                                                                         | 4                |
+| M1 / WS-DISPATCH            | `src/scene_runtime/dispatch/` (click only)                                                                                                                                                                                                          | 1                |
+| M1 / WS-NO-LEGACY-IMPORTS   | `tests/test_scene_runtime_no_legacy_imports.py`                                                                                                                                                                                                     | 1                |
+| M1.5 / WS-BASE-SCENE-RENDER | `src/scene_runtime/render/scene.ts`, `tests/playwright/test_base_scene_render.mjs`                                                                                                                                                                  | 1                |
+| M1.5 / WS-VISIBLE-SLICE     | `src/scene_runtime/bundle/entry.ts`, `pipeline/build_runtime_bundle.sh`, `tests/playwright/fixtures/_smoke_one_object.html.template`, `tests/playwright/test_visible_slice.mjs` (built `dist/_smoke_one_object.html` is generated-only, gitignored) | 1 to 2           |
+| M2 / WS-LAYOUT-AUDIT        | `docs/active_plans/layout_engine_audit.md` (read-only)                                                                                                                                                                                              | 1                |
+| M2 / WS-LAYOUT-INTEGRATE    | `src/scene_runtime/layout/`                                                                                                                                                                                                                         | 1                |
+| M2 / WS-WELLPLATE-ADAPTER   | `src/scene_runtime/adapters/well_plate/` (split: 1A static cells, 1B group targets, 1C per-cell material visual state)                                                                                                                              | 3                |
+| M2 / WS-LIQUID              | `src/scene_runtime/liquid/`, `src/scene_runtime/highlight/`                                                                                                                                                                                         | 1                |
+| M3 / WS-CHROME-MINIMAL      | `src/scene_runtime/chrome/` (split: 1A scene-frame+prompt, 1B feedback+next+validator)                                                                                                                                                              | 2                |
+| M3 / WS-CHROME-ADJUST       | `src/scene_runtime/dispatch/adjust.ts` + chrome adjust surface                                                                                                                                                                                      | 1                |
+| M4 / WS-HTML-BUILDER        | `pipeline/build_protocol_html.py` + `dist/<protocol_name>.html` template + .gitignore                                                                                                                                                               | 1                |
+| M4 / WS-PILOT1              | `<PILOT1>` wired end-to-end (default `mtt_solubilization_readout`)                                                                                                                                                                                  | 1 to 2           |
+| M5 / WS-WALKER-ENGINE       | `tests/playwright/walker/` engine refresh against realigned contract; clock control                                                                                                                                                                 | 1                |
+| M5 / WS-WALKER-PILOT        | walker run on pilot protocol                                                                                                                                                                                                                        | 1                |
+| M6 / WS-SCALE-A...K         | remaining 11 mini-protocols, one workstream per protocol initially                                                                                                                                                                                  | 11               |
+| M6 / WS-CONTENT             | YAML / renderer fixes surfaced during walk-throughs                                                                                                                                                                                                 | 2 to 4           |
+| M6 / WS-GESTURE-EXPAND      | `select` / `type` / `drag` dispatch + chrome surfaces, gated by content need                                                                                                                                                                        | 1 to 3           |
+| M-Deferred / WS-LAUNCHER    | welcome screen + mini-protocol launcher (separate plan candidate)                                                                                                                                                                                   | 0 in this plan   |
 
 ## Milestone plan
 
@@ -1023,10 +1023,10 @@ message.
   2. WP-VISIBLE-SLICE-1 lands SECOND. Proves render-then-mutate path
      (one object, one click, one state delta).
   3. WP-VISIBLE-SLICE-2 optional last.
-  Rationale: base-scene catches a different failure class than the click smoke
-  (unresolved inheritance, ignored placement coords, all-at-origin stacking, scene
-  root viewport bugs, missing `data-target-id` propagation). Failing the base-scene
-  proof BEFORE the click smoke isolates layout-truth bugs from dispatch bugs.
+     Rationale: base-scene catches a different failure class than the click smoke
+     (unresolved inheritance, ignored placement coords, all-at-origin stacking, scene
+     root viewport bugs, missing `data-target-id` propagation). Failing the base-scene
+     proof BEFORE the click smoke isolates layout-truth bugs from dispatch bugs.
 - Entry criteria: M1 exit met.
 - Exit criteria:
   - WP-BASE-SCENE-RENDER-1 green: one real resolved scene renders, every placement
@@ -1379,7 +1379,7 @@ message.
 
 - Owner: `coder` + `tester` via TaskCreate handoffs.
 - Interfaces:
-  - Needs: walker failure reports from WS-SCALE-*.
+  - Needs: walker failure reports from WS-SCALE-\*.
   - Provides: triaged fixes (renderer-gap or content-gap; spec-gap pauses for user).
 - Expected patches: 2 to 4.
 
@@ -1680,7 +1680,7 @@ message.
     there. The assertion reads the GENERATED resolved scene placement coordinates
     and only permits origin for objects whose generated placement places them at
     origin (NOT raw YAML; runtime never reads raw YAML per `## Generated-data
-    boundary`).
+boundary`).
   - Asserts no two placed objects have identical bounding boxes unless the scene
     explicitly overlaps them (same read-from-generated-scene-data reconciliation
     rule).
@@ -1998,11 +1998,11 @@ the selection rule above. **Downgrade affects future handoffs only**: past
   - `node tests/playwright/walker/run.mjs --protocol <name>` per protocol.
   - `node tests/playwright/walker/run_all.mjs` after all 11 land.
 
-### WP-CONTENT-*: triaged YAML / renderer fixes
+### WP-CONTENT-\*: triaged YAML / renderer fixes
 
 - Owner: `coder`.
 - Touch points: per-protocol YAML, materials, or runtime module per triage.
-- Depends on: any open WP-SCALE-* that surfaced the fix.
+- Depends on: any open WP-SCALE-\* that surfaced the fix.
 - Acceptance criteria:
   - Fix is renderer-gap or content-gap; never per-protocol walker branch; spec-gap
     pauses for user.
@@ -2010,12 +2010,12 @@ the selection rule above. **Downgrade affects future handoffs only**: past
 - Verification commands:
   - YAML gates as appropriate; affected walker run.
 
-### WP-GESTURE-EXPAND-*: per-gesture dispatch + chrome
+### WP-GESTURE-EXPAND-\*: per-gesture dispatch + chrome
 
 - Owner: `coder`.
 - Touch points: `src/scene_runtime/dispatch/<gesture>.ts`,
   `src/scene_runtime/chrome/<gesture>_surface.ts`.
-- Depends on: a WP-SCALE-* that exercises that gesture.
+- Depends on: a WP-SCALE-\* that exercises that gesture.
 - Acceptance criteria:
   - One gesture per WP; lands only when content actually requires it.
 - Verification commands:
@@ -2036,13 +2036,13 @@ Every subagent dispatch brief MUST cite `docs/REPO_STYLE.md` `## Core philosophi
 verbatim and call out the philosophy the WP leans on. The reviewer subagent rejects
 diffs whose handoff report does not cite a philosophy when the WP makes a judgment call.
 
-| Philosophy | How it applies in this plan |
-| --- | --- |
-| **Long-term over short-term** | No "temporary" types, no `// TODO: revisit` shortcuts in `contract.ts`, no quick `any` to silence tsc. If the durable fix takes one more patch, take the patch. |
+| Philosophy                          | How it applies in this plan                                                                                                                                                               |
+| ----------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Long-term over short-term**       | No "temporary" types, no `// TODO: revisit` shortcuts in `contract.ts`, no quick `any` to silence tsc. If the durable fix takes one more patch, take the patch.                           |
 | **Fix the design, not the symptom** | Walker fails to advance -> triage (renderer-gap / content-gap / spec-gap) -> fix the right layer. Never patch the walker to skip. Never widen the contract to swallow YAML inconsistency. |
-| **Fresh subagent per task** | Every WP dispatches a new subagent. No SendMessage chains across WPs. Each subagent reads `docs/REPO_STYLE.md` + relevant specs from a clean context. |
-| **Atomic task decomposition** | One WP = one owner = one verification step = one patch (or a tight 2-patch pair for contract / types). WPs that look bigger get split before dispatch. |
-| **Finish the obvious** | A WP whose tsc passes but whose `docs/CHANGELOG.md` entry is missing is NOT done. A WP that fixes a bug but leaves the same bug in the next listed file is NOT done. |
+| **Fresh subagent per task**         | Every WP dispatches a new subagent. No SendMessage chains across WPs. Each subagent reads `docs/REPO_STYLE.md` + relevant specs from a clean context.                                     |
+| **Atomic task decomposition**       | One WP = one owner = one verification step = one patch (or a tight 2-patch pair for contract / types). WPs that look bigger get split before dispatch.                                    |
+| **Finish the obvious**              | A WP whose tsc passes but whose `docs/CHANGELOG.md` entry is missing is NOT done. A WP that fixes a bug but leaves the same bug in the next listed file is NOT done.                      |
 
 ### Forbidden-pattern catalog (hard rejects for the reviewer)
 
@@ -2087,7 +2087,7 @@ re-dispatches with the rejection cited verbatim.
     state write flows through a typed `scene_operation` primitive applied by the
     render core. Direct property assignment on a runtime object is a hard reject.
 12. **`Object.assign` / spread to widen contract types.** No `{ ...contractField,
-    extraField }` that adds fields not declared in the contract. Contract is closed
+extraField }` that adds fields not declared in the contract. Contract is closed
     per the design philosophy.
 13. **Silent fallback values for materials.** A missing material in
     `generated/materials_data.ts` throws at load. The renderer does not default to
@@ -2204,9 +2204,9 @@ At every milestone exit, the manager runs a 5-minute drift audit:
   -- expect zero hits outside the negative-type-test directory.
 - `grep -rn 'try {' src/scene_runtime/` -- review every hit against the YAML-mismatch
   rule. Exactly one `try` is permitted at the runtime entry per `## Top-level UI error
-  boundary exception`.
+boundary exception`.
 - `grep -rn 'if.*=== .*protocol\|switch.*step_name\|switch.*sceneId'
-  src/scene_runtime/ tests/playwright/walker/` -- expect zero per-protocol branches.
+src/scene_runtime/ tests/playwright/walker/` -- expect zero per-protocol branches.
 - Narrow YAML-read check (preferred, low-noise):
   `grep -rnE "from .*yaml|require\(.*yaml|content/.*\.yaml|readFile.*\.yaml" src/scene_runtime/`
   -- expect zero hits; any hit is a blocker.
@@ -2306,52 +2306,52 @@ ultimate anti-drift rule: when uncertain, stop and ask.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Generated data missing fields the runtime needs | high | loader fails to construct `RuntimeWorld`; runtime imports a field that is undefined | reviewer | WP-GENERATED-DATA-1 is a hard gate before any loader work; builder patches under WP-GENERATED-DATA-2+ land before WP-LOADER-1. |
-| Scene inheritance accidentally reimplemented TypeScript-side | high | TS loader reads `extends` / `add_placements` / `remove_placements` | reviewer | WP-GENERATED-DATA-1 asserts inheritance is resolved Python-side; if not, fix the builder. Boundary lint catches drift in review. |
-| Visual-state rendering ambiguity stalls the pilot | high | `ObjectStateChange` writes a field but no `visual_state` matches | coder | Pilot 1 minimalism: one visible delta per `material_name` is sufficient; per-volume fill detail deferred to WS-CONTENT. |
-| Well-plate adapter is the first real render target and stalls | high | M2 cannot ship a green well-plate snapshot | coder | Pilot 0 (WP-VISIBLE-SLICE-1) renders a simple bottle, NOT the well-plate; well-plate enters at M2 with the runtime spine already proven. |
-| Bundling decision left ambiguous, M4 stalls | high | HTML builder cannot decide bundling | coder | esbuild locked in `## Architecture boundaries and ownership / Bundling decision`; WP-VISIBLE-SLICE-1 proves the bundle path. |
-| `TimedWait` real timers cause Playwright flake | medium | walker waits real minutes; tests time out or flake | tester | Clock abstraction (`render/clock.ts`); test clock advances on Playwright command; required for WP-WALKER-ENGINE-1. |
-| Vocabulary drift returns inside a new runtime module | high | a new module ships fields not in `docs/specs/` | reviewer | WP-CONTRACT-1 / -2 own the closed vocabulary; every downstream WP cites the contract; reviewer reads every diff. |
-| Walker surfaces affordance gaps that tempt a per-protocol branch | high | walker run cannot advance through visible DOM | tester | Three-way triage; `tests/test_walker_no_step_branches.py` is the hard enforcement. |
-| Per-mini-protocol HTML bloats with shared chrome inlined | medium | each `dist/<name>.html` carries chrome inline | coder | Chrome ships as one shared bundle referenced per HTML; HTML builder verifies bundle dedup. |
-| Mobile breakpoint becomes a blocking concern at WS-CHROME-MINIMAL | low | manual narrow-viewport review surfaces broken layout | ui-ux-engineer | Mobile is tier 2; failures log to `docs/TODO.md`, do not gate. |
-| Legacy `src/*.ts` accidentally re-linked into the runtime | high | import from any legacy `src/*.ts` appears in a runtime module | reviewer | `tests/test_scene_runtime_no_legacy_imports.py` is the lint; lands at M1 entry. |
-| Spec gap pauses execution; user is offline | medium | walker surfaces a YAML-inexpressible affordance | reviewer | Spec gap pauses the affected WP only; other lanes continue. Spec gap surfaces in `docs/TODO.md` with a one-line proposal. |
-| Pilot 1 chosen too aggressively (well-plate-first); slip cascades | medium | WP-PILOT1-1 cannot complete; M5 blocked | coder | Pilot 0 (smoke, simple object) ships first and proves the runtime. Pilot 1 downgrades to `mtt_reagent_prep` only if WP-WELLPLATE-ADAPTER-1C (visual-state, the semantic gate) slips; 1A / 1B stalls do not trigger downgrade. |
-| Screenshots accidentally committed | low | `git add` picks up `test-results/` | reviewer | `.gitignore` enforced; WP-HTML-BUILDER-1 acceptance asserts `git status --porcelain` empty for `dist/` and `test-results/`. |
+| Risk                                                              | Impact | Trigger                                                                             | Owner          | Mitigation                                                                                                                                                                                                                    |
+| ----------------------------------------------------------------- | ------ | ----------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Generated data missing fields the runtime needs                   | high   | loader fails to construct `RuntimeWorld`; runtime imports a field that is undefined | reviewer       | WP-GENERATED-DATA-1 is a hard gate before any loader work; builder patches under WP-GENERATED-DATA-2+ land before WP-LOADER-1.                                                                                                |
+| Scene inheritance accidentally reimplemented TypeScript-side      | high   | TS loader reads `extends` / `add_placements` / `remove_placements`                  | reviewer       | WP-GENERATED-DATA-1 asserts inheritance is resolved Python-side; if not, fix the builder. Boundary lint catches drift in review.                                                                                              |
+| Visual-state rendering ambiguity stalls the pilot                 | high   | `ObjectStateChange` writes a field but no `visual_state` matches                    | coder          | Pilot 1 minimalism: one visible delta per `material_name` is sufficient; per-volume fill detail deferred to WS-CONTENT.                                                                                                       |
+| Well-plate adapter is the first real render target and stalls     | high   | M2 cannot ship a green well-plate snapshot                                          | coder          | Pilot 0 (WP-VISIBLE-SLICE-1) renders a simple bottle, NOT the well-plate; well-plate enters at M2 with the runtime spine already proven.                                                                                      |
+| Bundling decision left ambiguous, M4 stalls                       | high   | HTML builder cannot decide bundling                                                 | coder          | esbuild locked in `## Architecture boundaries and ownership / Bundling decision`; WP-VISIBLE-SLICE-1 proves the bundle path.                                                                                                  |
+| `TimedWait` real timers cause Playwright flake                    | medium | walker waits real minutes; tests time out or flake                                  | tester         | Clock abstraction (`render/clock.ts`); test clock advances on Playwright command; required for WP-WALKER-ENGINE-1.                                                                                                            |
+| Vocabulary drift returns inside a new runtime module              | high   | a new module ships fields not in `docs/specs/`                                      | reviewer       | WP-CONTRACT-1 / -2 own the closed vocabulary; every downstream WP cites the contract; reviewer reads every diff.                                                                                                              |
+| Walker surfaces affordance gaps that tempt a per-protocol branch  | high   | walker run cannot advance through visible DOM                                       | tester         | Three-way triage; `tests/test_walker_no_step_branches.py` is the hard enforcement.                                                                                                                                            |
+| Per-mini-protocol HTML bloats with shared chrome inlined          | medium | each `dist/<name>.html` carries chrome inline                                       | coder          | Chrome ships as one shared bundle referenced per HTML; HTML builder verifies bundle dedup.                                                                                                                                    |
+| Mobile breakpoint becomes a blocking concern at WS-CHROME-MINIMAL | low    | manual narrow-viewport review surfaces broken layout                                | ui-ux-engineer | Mobile is tier 2; failures log to `docs/TODO.md`, do not gate.                                                                                                                                                                |
+| Legacy `src/*.ts` accidentally re-linked into the runtime         | high   | import from any legacy `src/*.ts` appears in a runtime module                       | reviewer       | `tests/test_scene_runtime_no_legacy_imports.py` is the lint; lands at M1 entry.                                                                                                                                               |
+| Spec gap pauses execution; user is offline                        | medium | walker surfaces a YAML-inexpressible affordance                                     | reviewer       | Spec gap pauses the affected WP only; other lanes continue. Spec gap surfaces in `docs/TODO.md` with a one-line proposal.                                                                                                     |
+| Pilot 1 chosen too aggressively (well-plate-first); slip cascades | medium | WP-PILOT1-1 cannot complete; M5 blocked                                             | coder          | Pilot 0 (smoke, simple object) ships first and proves the runtime. Pilot 1 downgrades to `mtt_reagent_prep` only if WP-WELLPLATE-ADAPTER-1C (visual-state, the semantic gate) slips; 1A / 1B stalls do not trigger downgrade. |
+| Screenshots accidentally committed                                | low    | `git add` picks up `test-results/`                                                  | reviewer       | `.gitignore` enforced; WP-HTML-BUILDER-1 acceptance asserts `git status --porcelain` empty for `dist/` and `test-results/`.                                                                                                   |
 
 ## Rollout and release checklist
 
 - [ ] M0 exit: WP-AUDIT-1 + WP-SPEC-INDEX-1 committed; markdown links green.
 - [ ] M0.5 exit: WP-GENERATED-DATA-1 + any -N builder patches committed; YAML gates
-  green; generated data carries every field the runtime needs.
+      green; generated data carries every field the runtime needs.
 - [ ] M1 exit: WP-CONTRACT-1 + WP-CONTRACT-2 + WP-LOADER-1A + WP-LOADER-1B +
-  WP-LOADER-1C + WP-RENDER-1A + WP-RENDER-1B + WP-RENDER-1C + WP-RENDER-1D +
-  WP-DISPATCH-1 + WP-NO-LEGACY-IMPORTS-1 committed; tsc clean; pytest green; legacy-
-  import lint green.
+      WP-LOADER-1C + WP-RENDER-1A + WP-RENDER-1B + WP-RENDER-1C + WP-RENDER-1D +
+      WP-DISPATCH-1 + WP-NO-LEGACY-IMPORTS-1 committed; tsc clean; pytest green; legacy-
+      import lint green.
 - [ ] M1.5 exit: WP-BASE-SCENE-RENDER-1 committed and green (real scene renders,
-  bounding boxes nonzero, no unintended origin stacking); WP-VISIBLE-SLICE-1
-  (and optionally -2) committed; smoke HTML loads in
-  Playwright; one object renders; one click updates one state; one visible DOM delta
-  asserted; `dist/` + `test-results/` gitignored.
+      bounding boxes nonzero, no unintended origin stacking); WP-VISIBLE-SLICE-1
+      (and optionally -2) committed; smoke HTML loads in
+      Playwright; one object renders; one click updates one state; one visible DOM delta
+      asserted; `dist/` + `test-results/` gitignored.
 - [ ] M2 exit: WP-LAYOUT-AUDIT-1 + WP-LAYOUT-INTEGRATE-1 + WP-WELLPLATE-ADAPTER-1A +
-  WP-WELLPLATE-ADAPTER-1B + WP-WELLPLATE-ADAPTER-1C + WP-LIQUID-1 committed;
-  well-plate snapshot green at all three levels (static cells, group targets,
-  per-cell visual state).
+      WP-WELLPLATE-ADAPTER-1B + WP-WELLPLATE-ADAPTER-1C + WP-LIQUID-1 committed;
+      well-plate snapshot green at all three levels (static cells, group targets,
+      per-cell visual state).
 - [ ] M3 exit: WP-CHROME-MINIMAL-1A + WP-CHROME-MINIMAL-1B + WP-CHROME-ADJUST-1A +
-  WP-CHROME-ADJUST-1B committed; `ui-ux-engineer` review pass at M3 exit.
+      WP-CHROME-ADJUST-1B committed; `ui-ux-engineer` review pass at M3 exit.
 - [ ] M4 exit: WP-HTML-BUILDER-1 + WP-PILOT1-1 committed; pilot loads end-to-end in a
-  real browser; no monolith.
+      real browser; no monolith.
 - [ ] M5 exit: WP-WALKER-ENGINE-1 + WP-WALKER-PILOT-1 committed; `<PILOT1>` walker
-  exits 0; test-clock controls `TimedWait`; no per-step branches.
-- [ ] M6 exit: WP-SCALE-A-1 ... WP-SCALE-K-1 + WP-CONTENT-* + WP-GESTURE-EXPAND-*
-  committed; `run_all.mjs` exits 0 across all 12 mini-protocols; YAML gates green; freeze
-  gates green.
+      exits 0; test-clock controls `TimedWait`; no per-step branches.
+- [ ] M6 exit: WP-SCALE-A-1 ... WP-SCALE-K-1 + WP-CONTENT-_ + WP-GESTURE-EXPAND-_
+      committed; `run_all.mjs` exits 0 across all 12 mini-protocols; YAML gates green; freeze
+      gates green.
 - [ ] After M6: `docs/CHANGELOG.md` summary; `docs/TODO.md` opens for launcher /
-  welcome polish, mobile polish, legacy `src/` retirement.
+      welcome polish, mobile polish, legacy `src/` retirement.
 
 ## Documentation close-out requirements
 
@@ -2383,7 +2383,7 @@ ultimate anti-drift rule: when uncertain, stop and ask.
 - Patch N+3a: WS-LOADER-1A protocol loader + test + `docs/CHANGELOG.md`.
 - Patch N+3b: WS-LOADER-1B scene+object loader + test + `docs/CHANGELOG.md`.
 - Patch N+3c: WS-LOADER-1C material loader + RuntimeWorld + real-generated-data test
-  + `docs/CHANGELOG.md`.
+  - `docs/CHANGELOG.md`.
 - Patch N+4a: WS-RENDER-1A ObjectStateChange + SceneChange + test +
   `docs/CHANGELOG.md`.
 - Patch N+4b: WS-RENDER-1B CursorAttach + LayoutMove + test + `docs/CHANGELOG.md`.
@@ -2395,7 +2395,7 @@ ultimate anti-drift rule: when uncertain, stop and ask.
 - Patch N+6: WS-NO-LEGACY-IMPORTS `tests/test_scene_runtime_no_legacy_imports.py` +
   `docs/CHANGELOG.md`.
 - Patch N+7: WS-BASE-SCENE-RENDER `render/scene.ts` + `test_base_scene_render.mjs`
-  + `docs/CHANGELOG.md`.
+  - `docs/CHANGELOG.md`.
 - Patch N+8: WS-VISIBLE-SLICE `bundle/entry.ts` + `pipeline/build_runtime_bundle.sh` +
   `tests/playwright/fixtures/_smoke_one_object.html.template` + smoke fixture +
   Playwright test + `.gitignore` + `docs/CHANGELOG.md`. Built `dist/` outputs
@@ -2438,13 +2438,13 @@ the directory is named `pipeline/`.
 Candidate renames (post-move, not part of `tools_split_and_consolidate.md` scope unless
 that manager picks them up):
 
-| Current path | Action it performs | Suggested rename |
-| --- | --- | --- |
-| `pipeline/build_protocol_data.py` | compile protocol YAML to TS exports | `compile_protocols_to_ts.py` |
-| `pipeline/build_scene_data.py` | compile scene YAML to TS exports | `compile_scenes_to_ts.py` |
-| `pipeline/generate_svg_globals.py` | extract + namespace SVG assets to TS modules | `compile_svg_assets_to_ts.py` |
-| `pipeline/normalize_svg.py` + `normalize_svg_v2.py` | canonicalize raw SVG assets in place | merge into one `normalize_svg_assets.py` |
-| `pipeline/check_svg_pipeline.py` | validate SVG pipeline output | `validate_svg_pipeline.py` |
+| Current path                                        | Action it performs                           | Suggested rename                         |
+| --------------------------------------------------- | -------------------------------------------- | ---------------------------------------- |
+| `pipeline/build_protocol_data.py`                   | compile protocol YAML to TS exports          | `compile_protocols_to_ts.py`             |
+| `pipeline/build_scene_data.py`                      | compile scene YAML to TS exports             | `compile_scenes_to_ts.py`                |
+| `pipeline/generate_svg_globals.py`                  | extract + namespace SVG assets to TS modules | `compile_svg_assets_to_ts.py`            |
+| `pipeline/normalize_svg.py` + `normalize_svg_v2.py` | canonicalize raw SVG assets in place         | merge into one `normalize_svg_assets.py` |
+| `pipeline/check_svg_pipeline.py`                    | validate SVG pipeline output                 | `validate_svg_pipeline.py`               |
 
 Convention proposed for every `pipeline/` script: `<verb>_<object>[_to_<output>].py`.
 Verbs from a closed set: `compile`, `normalize`, `validate`, `extract`, `bundle`.

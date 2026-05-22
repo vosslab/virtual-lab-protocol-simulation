@@ -22,7 +22,7 @@ gate the scene set must pass before NEW2.
 ## Status
 
 Pre-work. Plan authored 2026-05-20. Companion finishing doc
-[new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+`new1_5_layout_hardening_results.md`
 will record empirical evidence and gate verdicts on closure.
 
 ## Background and prior evidence
@@ -31,7 +31,7 @@ NEW1 closed with the following posture:
 
 - The CSS-native adapter scaffold landed and TypeScript compiled clean for
   the three spike files. See
-  [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md).
+  `new1_well_plate_96_zoom_spike_result.md`.
 - Lanes A (click target proof), B (built-app render), and C (click target
   reaches production validator) passed.
 - Lane D (ObjectStateChange + re-render) is PARTIAL. The dispatch layer
@@ -42,9 +42,9 @@ NEW1 closed with the following posture:
 - Lane E (precheck on built output) is BLOCKED and deferred to a Lane P
   follow-up.
 - The cross-cutting progress snapshot lives in
-  [new0_new1_layout_rebuild_progress_report.md](new0_new1_layout_rebuild_progress_report.md).
+  `new0_new1_layout_rebuild_progress_report.md`.
 - The numeric layout quality target is defined in
-  [../../experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md).
+  `LAYOUT_SCORECARD.md`.
   Hard-fail gates (clipped artwork, off-page placement, SVG overlap, region
   overflow) must remain clean for every scene in scope.
 
@@ -133,7 +133,7 @@ scope. Record the per-scene numeric score as the regression floor.
 
 Verification: scorecard run committed as a referenced artifact, with the
 per-scene numeric floor stated in
-[new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md).
+`new1_5_layout_hardening_results.md`.
 
 ### Workstream 4: Flag posture decision
 
@@ -145,7 +145,7 @@ seam, default-on for `well_plate_96_zoom`) with reviewer disposition.
 Record the chosen option and the rationale.
 
 Verification: decision recorded in the results companion. The flag file
-[../../src/scene_runtime/layout/feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts)
+`feature_flags.ts`
 reflects the chosen posture before NEW1.5 closes.
 
 ## Acceptance gates
@@ -160,7 +160,7 @@ NEW1.5 closes when all of the following hold:
   for every in-scope scene; numeric floor recorded).
 - Workstream 4 decision documented and applied to the flag file.
 - Companion doc
-  [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+  `new1_5_layout_hardening_results.md`
   exists and records evidence for each gate above.
 - No regressions in pre-existing pytest markdown and ASCII compliance
   gates beyond the known pre-existing failure count.
@@ -179,9 +179,9 @@ to NEW2:
 
 ## Cross-references
 
-- [new1_well_plate_96_zoom_spike_result.md](new1_well_plate_96_zoom_spike_result.md)
+- `new1_well_plate_96_zoom_spike_result.md`
 - [lane_d_state_change_blocker.md](lane_d_state_change_blocker.md)
-- [new0_new1_layout_rebuild_progress_report.md](new0_new1_layout_rebuild_progress_report.md)
-- [../../experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md)
+- `new0_new1_layout_rebuild_progress_report.md`
+- `LAYOUT_SCORECARD.md`
 - Future deliverable:
-  [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
+  `new1_5_layout_hardening_results.md`

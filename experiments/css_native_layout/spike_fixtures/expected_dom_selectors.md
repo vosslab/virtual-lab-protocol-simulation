@@ -2,7 +2,7 @@
 
 CSS selectors the spike-rendered `well_plate_96_zoom` DOM must expose. The
 Playwright walkthrough in the NEW1 spike (see
-[../../../docs/active_plans/new1_css_native_layout_integration_plan.md](../../../docs/active_plans/new1_css_native_layout_integration_plan.md)
+[new1_css_native_layout_integration_plan.md](../../../docs/archive/css_native_layout/new1_css_native_layout_integration_plan.md)
 section 3) asserts against this list.
 
 DOM shape is derived from the NEW0 reference template at
@@ -14,9 +14,9 @@ promoted.
 
 ## Root scene container
 
-| Selector | Data attributes | Purpose |
-| --- | --- | --- |
-| `.scene-container` | (none required by schema) | Outermost scene root |
+| Selector                        | Data attributes           | Purpose                                                   |
+| ------------------------------- | ------------------------- | --------------------------------------------------------- |
+| `.scene-container`              | (none required by schema) | Outermost scene root                                      |
 | `.scene-container.scene--bench` | (none required by schema) | Workspace marker class (`workspace: bench` from manifest) |
 
 ## Per-region selectors
@@ -30,13 +30,13 @@ Rows marked `(*)` are empty in this scene: the manifest's `placements[]`
 contains no entry whose `region` field names them. Only `work_surface` is
 required by the manifest's actual placement data.
 
-| Selector | Data attributes | Purpose |
-| --- | --- | --- |
-| `.region[data-region="rear_shelf"]` (*) | `data-region="rear_shelf"` | Rear shelf region container (empty in this scene) |
-| `.region[data-region="work_surface"]` | `data-region="work_surface"` | Work surface region; holds the primary placement (required) |
-| `.region[data-region="front_tools"]` (*) | `data-region="front_tools"` | Front tools region (empty in this scene) |
-| `.region[data-region="instrument_station"]` (*) | `data-region="instrument_station"` | Instrument station region (empty in this scene) |
-| `.region[data-region="popup_layer"]` (*) | `data-region="popup_layer"` | Popup layer region (empty in this scene) |
+| Selector                                         | Data attributes                    | Purpose                                                     |
+| ------------------------------------------------ | ---------------------------------- | ----------------------------------------------------------- |
+| `.region[data-region="rear_shelf"]` (\*)         | `data-region="rear_shelf"`         | Rear shelf region container (empty in this scene)           |
+| `.region[data-region="work_surface"]`            | `data-region="work_surface"`       | Work surface region; holds the primary placement (required) |
+| `.region[data-region="front_tools"]` (\*)        | `data-region="front_tools"`        | Front tools region (empty in this scene)                    |
+| `.region[data-region="instrument_station"]` (\*) | `data-region="instrument_station"` | Instrument station region (empty in this scene)             |
+| `.region[data-region="popup_layer"]` (\*)        | `data-region="popup_layer"`        | Popup layer region (empty in this scene)                    |
 
 ### Region scaffold: spike-time implementation question
 
@@ -67,17 +67,17 @@ placement data for this scene.
 One selector per entry in `placements[]` from
 [well_plate_96_zoom_manifest.yaml](well_plate_96_zoom_manifest.yaml).
 
-| Selector | Data attributes | Purpose |
-| --- | --- | --- |
-| `.placement[data-placement-name="zoom_well_plate_96"]` | `data-placement-name="zoom_well_plate_96"`, `data-object-name="well_plate_96"`, `data-primary="true"` | Primary placement node; hit target for spike click step |
-| `.placement[data-object-name="well_plate_96"]` | `data-object-name="well_plate_96"` | Object-name lookup; scene adapter resolves semantic target name to this node |
-| `.placement[data-primary="true"]` | `data-primary="true"` | Primary-placement marker; at most one per scene per NEW1 schema |
+| Selector                                               | Data attributes                                                                                       | Purpose                                                                      |
+| ------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| `.placement[data-placement-name="zoom_well_plate_96"]` | `data-placement-name="zoom_well_plate_96"`, `data-object-name="well_plate_96"`, `data-primary="true"` | Primary placement node; hit target for spike click step                      |
+| `.placement[data-object-name="well_plate_96"]`         | `data-object-name="well_plate_96"`                                                                    | Object-name lookup; scene adapter resolves semantic target name to this node |
+| `.placement[data-primary="true"]`                      | `data-primary="true"`                                                                                 | Primary-placement marker; at most one per scene per NEW1 schema              |
 
 ## Region-to-placement scoping
 
 The primary placement must live inside the `work_surface` region. The spike
 asserts this composite selector resolves to exactly one node:
 
-| Selector | Data attributes | Purpose |
-| --- | --- | --- |
+| Selector                                                                                   | Data attributes                   | Purpose                                                                   |
+| ------------------------------------------------------------------------------------------ | --------------------------------- | ------------------------------------------------------------------------- |
 | `.region[data-region="work_surface"] .placement[data-placement-name="zoom_well_plate_96"]` | combined region + placement attrs | Verifies the manifest's `region: work_surface` was honored at render time |

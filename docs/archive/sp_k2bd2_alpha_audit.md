@@ -14,15 +14,15 @@ This audit traces the YAML definitions and UI implementations of 7 candidate ste
 
 ## Classification Summary
 
-| Step | Current Kind | Recommendation | Notes |
-|------|--------------|-----------------|-------|
-| count_cells | modal | **ESCALATE** -- multi-stage modal (viability + 4 quadrants + submit); current single-modal kind cannot drive the walker through the gates without back-doors | See section 1 below for three options |
-| plate_read | modal | Keep as single modal | Complete with data-walker-advance; modal ownership is clean |
-| add_carboplatin | modal | Keep as single modal | Standard drug modal; advance via drug_treatment.ts handler |
-| add_metformin | modal | Keep as single modal | Standard drug modal; same flow as add_carboplatin |
-| add_mtt | interactionSequence | Keep as single step | Load + discharge pair; interactionSequence handles it naturally |
-| add_dmso | interactionSequence | Keep as single step | Load + discharge pair; identical to add_mtt pattern |
-| media_adjust | interactionSequence | Keep as single step | Load + discharge pair; completed via hood.ts click chain |
+| Step            | Current Kind        | Recommendation                                                                                                                                               | Notes                                                           |
+| --------------- | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| count_cells     | modal               | **ESCALATE** -- multi-stage modal (viability + 4 quadrants + submit); current single-modal kind cannot drive the walker through the gates without back-doors | See section 1 below for three options                           |
+| plate_read      | modal               | Keep as single modal                                                                                                                                         | Complete with data-walker-advance; modal ownership is clean     |
+| add_carboplatin | modal               | Keep as single modal                                                                                                                                         | Standard drug modal; advance via drug_treatment.ts handler      |
+| add_metformin   | modal               | Keep as single modal                                                                                                                                         | Standard drug modal; same flow as add_carboplatin               |
+| add_mtt         | interactionSequence | Keep as single step                                                                                                                                          | Load + discharge pair; interactionSequence handles it naturally |
+| add_dmso        | interactionSequence | Keep as single step                                                                                                                                          | Load + discharge pair; identical to add_mtt pattern             |
+| media_adjust    | interactionSequence | Keep as single step                                                                                                                                          | Load + discharge pair; completed via hood.ts click chain        |
 
 **Recommendation (corrected):** 6 of 7 steps are well-served by existing K2
 kinds and need no migration. **count_cells requires a maintainer design
@@ -35,6 +35,7 @@ decision** (see section 1) before any beta/gamma/delta work begins.
 ### 1. count_cells -- CORRECTION (initial audit was wrong)
 
 **YAML Shape:**
+
 ```
 kind: modal
 openClick: cell_counter
@@ -112,6 +113,7 @@ refactor potential). Pause WP-B1/G1/D1 pending decision.
 ### 2. plate_read
 
 **YAML Shape (lines 524-540):**
+
 ```
 kind: modal
 openClick: plate_reader
@@ -120,6 +122,7 @@ completionEvent: plate-read-complete
 ```
 
 **UI Flow:**
+
 - src/scenes/bench.ts:393-401 -- plate_reader item click routes to plate reader scene via switchScene("plate_reader").
 - src/scenes/microscope.ts:421-539 -- renderPlateReaderScene() renders the 8x12 plate grid with absorbance values.
 - src/scenes/microscope.ts:510-511 -- "Complete Experiment" button carries data-walker-advance="complete-plate-read" (correct).
@@ -134,6 +137,7 @@ Justification: The plate reader modal is a single, well-defined readout view wit
 ### 3. add_carboplatin
 
 **YAML Shape (lines 393-409):**
+
 ```
 kind: modal
 openClick: multichannel_pipette
@@ -142,6 +146,7 @@ completionEvent: carb-add-confirm
 ```
 
 **UI Flow:**
+
 - src/steps/drug_treatment.ts:129-135 -- startDrugAddition() opens overlay and renders current step.
 - src/steps/drug_treatment.ts:140-175 -- renderDrugModalStep() dispatches to renderSingleButtonScreen().
 - src/steps/drug_treatment.ts:192 -- Button carries data-walker-advance="drug-modal-advance" (correct).
@@ -156,6 +161,7 @@ Justification: Add_carboplatin is a standalone drug addition modal with a fixed,
 ### 4. add_metformin
 
 **YAML Shape (lines 411-427):**
+
 ```
 kind: modal
 openClick: multichannel_pipette
@@ -164,6 +170,7 @@ completionEvent: metformin-add-confirm
 ```
 
 **UI Flow:**
+
 - Same as add_carboplatin: src/steps/drug_treatment.ts renders via renderSingleButtonScreen().
 - Button carries data-walker-advance="drug-modal-advance" (correct).
 - src/steps/drug_treatment.ts:275-288 -- advanceDrugModalStep() fires triggerStep(stepId) and rerenders.
@@ -177,6 +184,7 @@ Justification: Identical structure to add_carboplatin. Single advance button, no
 ### 5. add_mtt
 
 **YAML Shape (lines 447-465):**
+
 ```
 kind: interactionSequence
 interactions:
@@ -187,6 +195,7 @@ interactions:
 ```
 
 **UI Flow:**
+
 - src/scenes/hood.ts:1213-1221 -- Click multichannel_pipette + mtt_vial (if activeStepId === "add_mtt"). Sets selectedTool. Shows notification.
 - src/scenes/hood.ts:1223-1234 -- Click multichannel_pipette_with_mtt + well_plate. Clears selectedTool. Fires triggerStep("add_mtt"). Shows success notification.
 
@@ -199,6 +208,7 @@ Justification: The interactionSequence naturally captures the two-part flow: loa
 ### 6. add_dmso
 
 **YAML Shape (lines 504-522):**
+
 ```
 kind: interactionSequence
 interactions:
@@ -209,6 +219,7 @@ interactions:
 ```
 
 **UI Flow:**
+
 - src/scenes/hood.ts:1249-1257 -- Click multichannel_pipette + dmso_bottle (if activeStepId === "add_dmso"). Sets selectedTool. Shows notification.
 - src/scenes/hood.ts:1259-1270 -- Click multichannel_pipette_with_dmso + well_plate. Clears selectedTool. Fires triggerStep("add_dmso"). Shows success notification.
 
@@ -221,6 +232,7 @@ Justification: Identical pattern to add_mtt. InteractionSequence captures load +
 ### 7. media_adjust
 
 **YAML Shape (lines 373-391):**
+
 ```
 kind: interactionSequence
 interactions:
@@ -231,6 +243,7 @@ interactions:
 ```
 
 **UI Flow:**
+
 - src/scenes/hood.ts:1190-1198 -- Click multichannel_pipette + media_bottle (if activeStepId === "media_adjust"). Sets selectedTool. Shows notification.
 - src/scenes/hood.ts:1200-1211 -- Click multichannel_pipette_with_media + well_plate. Clears selectedTool. Fires triggerStep("media_adjust"). Shows success notification.
 

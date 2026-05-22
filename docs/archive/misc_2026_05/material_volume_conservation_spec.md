@@ -2,7 +2,7 @@
 
 ## Context
 
-The stepper plan [../archive/protocol_stepper_tool.md](../archive/protocol_stepper_tool.md) originally included WP-C3, a within-response physical-volume balance rule on `material_container` objects. A pre-M1 dry-run (PRE-V, CHANGELOG 2026-05-16) loaded the three transfer-heavy mini-protocols (MP-1 hood detachment, MP-5 carboplatin dilution, MP-7 plate drug treatment) and found that **every authored protocol splits source-decrement and sink-increment across separate `interaction.response` blocks**. The within-response balance rule false-fires on every liquid transfer in the current shipped tree, so the rule cannot ship as written.
+The stepper plan `protocol_stepper_tool.md` originally included WP-C3, a within-response physical-volume balance rule on `material_container` objects. A pre-M1 dry-run (PRE-V, CHANGELOG 2026-05-16) loaded the three transfer-heavy mini-protocols (MP-1 hood detachment, MP-5 carboplatin dilution, MP-7 plate drug treatment) and found that **every authored protocol splits source-decrement and sink-increment across separate `interaction.response` blocks**. The within-response balance rule false-fires on every liquid transfer in the current shipped tree, so the rule cannot ship as written.
 
 Conservation is still pedagogically valuable: the F2 bug class (5 ul aspirated from a stock without the stock losing 5 ul, or without the destination gaining 5 ul) is exactly what a balance check should catch. The problem is rule **scope** and **disposal semantics**, not the goal.
 

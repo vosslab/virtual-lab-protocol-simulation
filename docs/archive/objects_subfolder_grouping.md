@@ -5,22 +5,22 @@
 `content/objects/` holds 77 flat YAML files. Discovery degrades as the
 catalog grows. Every object already declares a required `kind` field whose
 value comes from the closed enum ratified in
-[docs/specs/OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md):
+[OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md):
 `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`,
 `decoration`. The systematic move is to mirror the filesystem to that
 enum: filesystem matches vocabulary, no parallel taxonomy. Tally across
 the 77 current objects:
 
-| kind | count |
-| --- | --- |
-| bottle | 31 |
-| equipment | 22 |
-| decoration | 8 |
-| pipette | 6 |
-| waste | 4 |
-| rack | 3 |
-| flask | 2 |
-| plate | 1 |
+| kind       | count |
+| ---------- | ----- |
+| bottle     | 31    |
+| equipment  | 22    |
+| decoration | 8     |
+| pipette    | 6     |
+| waste      | 4     |
+| rack       | 3     |
+| flask      | 2     |
+| plate      | 1     |
 
 Object references are by `object_name`, not by path. Filesystem moves do
 not change cross-file references. Two tools list `content/objects/` with
@@ -90,15 +90,15 @@ true.
 
 ## Current state summary
 
-| Surface | Count | Listing pattern | Recursive ready |
-| --- | --- | --- | --- |
-| `content/objects/*.yaml` | 77 files | flat directory | n/a (source) |
-| `tools/validate_content_yaml.py` | line 98 | `glob('content/objects/**/*.yaml')` | YES |
-| `tools/validators/database.py` | line 32 | `objects_dir.glob('**/*.yaml')` | YES |
-| `tools/shared_toolkit/objects.py` | line 19 | `glob('*.yaml')` | NO -- needs fix |
-| `tools/svg_asset_audit.py` | line 548 | `os.listdir(OBJECTS_DIR)` | NO -- needs fix |
-| `tools/protocol_manual.py` | line 1227 | comment only | n/a |
-| Spec doc citations | ~10 files | hard-coded paths | n/a -- needs sweep |
+| Surface                           | Count     | Listing pattern                     | Recursive ready    |
+| --------------------------------- | --------- | ----------------------------------- | ------------------ |
+| `content/objects/*.yaml`          | 77 files  | flat directory                      | n/a (source)       |
+| `tools/validate_content_yaml.py`  | line 98   | `glob('content/objects/**/*.yaml')` | YES                |
+| `tools/validators/database.py`    | line 32   | `objects_dir.glob('**/*.yaml')`     | YES                |
+| `tools/shared_toolkit/objects.py` | line 19   | `glob('*.yaml')`                    | NO -- needs fix    |
+| `tools/svg_asset_audit.py`        | line 548  | `os.listdir(OBJECTS_DIR)`           | NO -- needs fix    |
+| `tools/protocol_manual.py`        | line 1227 | comment only                        | n/a                |
+| Spec doc citations                | ~10 files | hard-coded paths                    | n/a -- needs sweep |
 
 ## Target layout
 
@@ -120,26 +120,26 @@ after WS-VALIDATOR lands.
 
 ## Architecture boundaries and ownership
 
-| Boundary | Owner | Touch rule |
-| --- | --- | --- |
-| Pre-move content fix | content author | Edits `content/objects/microtube_rack_24.yaml` `kind` field |
-| Tool glob promotion | tooling author | Edits `tools/shared_toolkit/objects.py`, `tools/svg_asset_audit.py` |
-| Validator path-kind check | validator author | Adds check in `tools/validators/object_validator.py` (or new module) |
-| File moves | maintainer | Runs `git mv` per the kind tally |
-| Spec doc path updates | docs author | Edits every active spec under `docs/specs/` that cites a `content/objects/<name>.yaml` path |
-| Verification | any | Runs validator + stepper + svg audit + pytest |
+| Boundary                  | Owner            | Touch rule                                                                                  |
+| ------------------------- | ---------------- | ------------------------------------------------------------------------------------------- |
+| Pre-move content fix      | content author   | Edits `content/objects/microtube_rack_24.yaml` `kind` field                                 |
+| Tool glob promotion       | tooling author   | Edits `tools/shared_toolkit/objects.py`, `tools/svg_asset_audit.py`                         |
+| Validator path-kind check | validator author | Adds check in `tools/validators/object_validator.py` (or new module)                        |
+| File moves                | maintainer       | Runs `git mv` per the kind tally                                                            |
+| Spec doc path updates     | docs author      | Edits every active spec under `docs/specs/` that cites a `content/objects/<name>.yaml` path |
+| Verification              | any              | Runs validator + stepper + svg audit + pytest                                               |
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-KIND-FIX | `microtube_rack_24` kind correction | 1 |
-| M1 / WS-TOOLS | tool glob promotion | 1 |
-| M1 / WS-VALIDATOR | path-kind consistency check | 1 |
-| M2 / WS-MOVE | `git mv` 77 files | 1 |
-| M2 / WS-DOCS-PATHS | spec doc path updates | 1 |
-| M3 / WS-VERIFY | full validator + stepper + audit + pytest sweep | 1 |
-| M3 / WS-CLOSE | changelog + archive | 1 |
+| Milestone / Workstream | Component                                       | Expected patches |
+| ---------------------- | ----------------------------------------------- | ---------------- |
+| M1 / WS-KIND-FIX       | `microtube_rack_24` kind correction             | 1                |
+| M1 / WS-TOOLS          | tool glob promotion                             | 1                |
+| M1 / WS-VALIDATOR      | path-kind consistency check                     | 1                |
+| M2 / WS-MOVE           | `git mv` 77 files                               | 1                |
+| M2 / WS-DOCS-PATHS     | spec doc path updates                           | 1                |
+| M3 / WS-VERIFY         | full validator + stepper + audit + pytest sweep | 1                |
+| M3 / WS-CLOSE          | changelog + archive                             | 1                |
 
 ## Milestone plan
 
@@ -178,7 +178,7 @@ after WS-VALIDATOR lands.
   - WS-DOCS-PATHS: every active `content/objects/<name>.yaml`
     citation under `docs/specs/` updated to the new path. Markdown
     link text matches the URL per
-    [docs/MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md). Archive docs and
+    [MARKDOWN_STYLE.md](../MARKDOWN_STYLE.md). Archive docs and
     CHANGELOG entries are not rewritten.
   - `docs/CHANGELOG.md` entry per workstream.
 - Parallel-plan ready: yes -- max parallel doers 2 (file moves and
@@ -251,7 +251,7 @@ after WS-VALIDATOR lands.
 
 - Owner: maintainer.
 - Reads: kind tally (`git ls-files 'content/objects/*.yaml' | xargs
-  grep -l '^kind: <kind>'`).
+grep -l '^kind: <kind>'`).
 - Provides: 77 `git mv` operations grouped by target subfolder:
   ```
   git mv content/objects/<name>.yaml content/objects/<kind>/<name>.yaml
@@ -260,7 +260,7 @@ after WS-VALIDATOR lands.
   batches. Pre-flight per `docs/REPO_STYLE.md` (verify `.git/index.lock`
   absent, `.git` writable).
 - Verify: `git status` clean between batches. Final `find content/objects
-  -maxdepth 1 -type f -name '*.yaml'` returns no files.
+-maxdepth 1 -type f -name '*.yaml'` returns no files.
 - Expected patches: 1.
 
 ### WS-DOCS-PATHS: spec citation sweep
@@ -273,7 +273,7 @@ after WS-VALIDATOR lands.
   `content/objects/<kind>/<name>.yaml`. Archive docs and CHANGELOG
   entries are not touched (historical record).
 - Verify: `git ls-files docs/specs/ | xargs grep -E
-  'content/objects/[a-z_]+\.yaml'` returns zero lines after the patch
+'content/objects/[a-z_]+\.yaml'` returns zero lines after the patch
   (no flat citations remain).
 - Expected patches: 1.
 
@@ -320,21 +320,21 @@ Static-only. No runtime changes.
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| A tool elsewhere globs `content/objects/*.yaml` non-recursively and was missed in the survey | high | Validator green but a downstream tool silently sees zero objects | tooling author | M1 publishes a "non-recursive listings of content/objects/" grep audit; any unlisted caller is added before M2 starts |
-| The `kind` enum has a stale value somewhere | medium | A file declares a value not in the closed enum and the move script picks an undefined folder | tooling author | Pre-move guard: `grep -E '^kind:' | grep -v -E 'plate|bottle|flask|pipette|rack|waste|equipment|decoration'` returns zero lines |
-| `git mv` partial run leaves orphans | medium | Crew interrupts mid-WS-MOVE | maintainer | One subfolder per `git mv` batch; `git status` clean between batches |
-| Spec doc citations remain stale | low | Reviewer spots an old `content/objects/<name>.yaml` path | docs author | Final M3 grep pass: `git ls-files docs/specs/ \| xargs grep -E 'content/objects/[a-z_]+\.yaml'` returns zero lines |
-| Hooks block `git mv` due to permissions | low | `.git/index.lock` or permission error | maintainer | Pre-flight per `docs/REPO_STYLE.md` |
-| Validator path-kind check fires on a content authoring bug we did not anticipate | low | Another object beyond `microtube_rack_24` has a misclassified `kind` | content author | Run a dry validator pass after WS-VALIDATOR lands (on the flat layout with check active for any nested fixtures); fix any surfaced bug before WS-MOVE |
+| Risk                                                                                         | Impact | Trigger                                                                                      | Owner          | Mitigation                                                                                                                                            |
+| -------------------------------------------------------------------------------------------- | ------ | -------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------- | ------ | ----- | ------- | ---- | ----- | --------- | ------------------------------- |
+| A tool elsewhere globs `content/objects/*.yaml` non-recursively and was missed in the survey | high   | Validator green but a downstream tool silently sees zero objects                             | tooling author | M1 publishes a "non-recursive listings of content/objects/" grep audit; any unlisted caller is added before M2 starts                                 |
+| The `kind` enum has a stale value somewhere                                                  | medium | A file declares a value not in the closed enum and the move script picks an undefined folder | tooling author | Pre-move guard: `grep -E '^kind:'                                                                                                                     | grep -v -E 'plate | bottle | flask | pipette | rack | waste | equipment | decoration'` returns zero lines |
+| `git mv` partial run leaves orphans                                                          | medium | Crew interrupts mid-WS-MOVE                                                                  | maintainer     | One subfolder per `git mv` batch; `git status` clean between batches                                                                                  |
+| Spec doc citations remain stale                                                              | low    | Reviewer spots an old `content/objects/<name>.yaml` path                                     | docs author    | Final M3 grep pass: `git ls-files docs/specs/ \| xargs grep -E 'content/objects/[a-z_]+\.yaml'` returns zero lines                                    |
+| Hooks block `git mv` due to permissions                                                      | low    | `.git/index.lock` or permission error                                                        | maintainer     | Pre-flight per `docs/REPO_STYLE.md`                                                                                                                   |
+| Validator path-kind check fires on a content authoring bug we did not anticipate             | low    | Another object beyond `microtube_rack_24` has a misclassified `kind`                         | content author | Run a dry validator pass after WS-VALIDATOR lands (on the flat layout with check active for any nested fixtures); fix any surfaced bug before WS-MOVE |
 
 ## Rollout and release checklist
 
 - [ ] M1 exit: kind fix landed, tools recursive, validator check live.
 - [ ] M2 exit: 77 files moved, specs updated.
 - [ ] M3 exit: validator + stepper + audit + pytest clean; plan
-  archived.
+      archived.
 - [ ] `docs/CHANGELOG.md` carries one entry per workstream close.
 - [ ] No file under `src/` modified.
 - [ ] No `object_name` field renamed.
@@ -350,15 +350,18 @@ Static-only. No runtime changes.
 ## Patch plan and reporting format
 
 M1 (parallel-plan ready, 3 lanes):
+
 - Patch 1: WS-KIND-FIX -- one-field content edit.
 - Patch 2: WS-TOOLS -- recursive glob in 2 tools.
 - Patch 3: WS-VALIDATOR -- path-kind consistency check.
 
 M2 (parallel-plan ready, 2 lanes):
+
 - Patch 4: WS-MOVE -- 77 `git mv` operations.
 - Patch 5: WS-DOCS-PATHS -- spec doc citation updates.
 
 M3:
+
 - Patch 6: WS-VERIFY -- only if residual drift surfaces.
 - Patch 7: WS-CLOSE -- changelog + archive.
 

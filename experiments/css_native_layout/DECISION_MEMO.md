@@ -2,7 +2,7 @@
 
 ## Reference variants (historical)
 
-- Files: experiments/css_native_layout/styles/dir_b_*.css and dir_c_*.css
+- Files: experiments/css*native_layout/styles/dir_b*_.css and dir*c*_.css
   (three each: bench, hood, instrument).
 - Role: historical comparison/reference only. Not selected by NEW1.
 - Retention reason: keep visible for contact-sheet "Forward vs best-prior
@@ -38,12 +38,12 @@ choice with scene-class assignments. All forward candidates live in the
 existing tracked CSS surface (`bench.css` / `hood.css` /
 `instrument.css`); no new tracked CSS files were introduced.
 
-| Scene class | Members | Forward candidate |
-| --- | --- | --- |
-| General bench / template | bench_basic, hood_basic, cell_counter_basic, microscope_basic, staining_bench, drug_dilution_plate_workspace | Tracked `bench.css` / `hood.css` / `instrument.css` (Direction B base + zoom port + scene-class rules) |
-| Instrument-heavy | electrophoresis_bench | Tracked `bench.css` with crowded-`work_surface` rule (tank gets 2x flex-grow, primary retagged from serological_pipette to center_electrophoresis_tank). `dir_c_*.css` retained as reference only. |
-| Zoom / detail | well_plate_96_zoom | Tracked `bench.css` with strengthened `.scene-mode--detail .placement { width: calc(100% - 20px); height: calc(100% - 20px); }` rule |
-| Dense composition | crowded_bench_dense, drug_dilution_workspace_dense | Tracked `bench.css` (unchanged); stable at 31.3% / 13.9% primary ratios |
+| Scene class              | Members                                                                                                      | Forward candidate                                                                                                                                                                                   |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| General bench / template | bench_basic, hood_basic, cell_counter_basic, microscope_basic, staining_bench, drug_dilution_plate_workspace | Tracked `bench.css` / `hood.css` / `instrument.css` (Direction B base + zoom port + scene-class rules)                                                                                              |
+| Instrument-heavy         | electrophoresis_bench                                                                                        | Tracked `bench.css` with crowded-`work_surface` rule (tank gets 2x flex-grow, primary retagged from serological*pipette to center_electrophoresis_tank). `dir_c*\*.css` retained as reference only. |
+| Zoom / detail            | well_plate_96_zoom                                                                                           | Tracked `bench.css` with strengthened `.scene-mode--detail .placement { width: calc(100% - 20px); height: calc(100% - 20px); }` rule                                                                |
+| Dense composition        | crowded_bench_dense, drug_dilution_workspace_dense                                                           | Tracked `bench.css` (unchanged); stable at 31.3% / 13.9% primary ratios                                                                                                                             |
 
 Drug-dilution recovery: the useful tuning previously gated to the
 gitignored `bench_e.css` (the Direction E "primary-workspace-tuned"
@@ -69,7 +69,7 @@ reference for instrument-heavy comparison; it is not promoted.
 The reviewer brief 2026-05-19 retracts the "ready for NEW1" implication
 that this memo previously carried. NEW1 is not opened in this pass; NEW0
 stabilization continues. The controlling plan is now
-[../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md).
+[new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md).
 Historical decision content below (the bench/hood/instrument promotion,
 Direction A/C/E disposition, mid-flight amendment dispositions, and the
 "actions not taken" list) remains accurate as the record of how
@@ -111,14 +111,14 @@ referred to the forward-candidate trio only.
 
 **Forward candidate: Direction B for all scene classes.**
 
-| Scene class | Examples | Candidate | Rationale |
-| --- | --- | --- | --- |
-| Template / skeleton | bench_basic, hood_basic, cell_counter_basic, microscope_basic | Dir B | PASS_TEMPLATE; clean 3-band stage layout |
-| Bench composition | staining_bench, crowded_bench_dense | Dir B | 31% primary ratio; meets 25% threshold |
-| Stress/dense composition | drug_dilution_workspace_dense | Dir B | 13.9% (best of 3 directions) |
-| Drug dilution / multi-primary | drug_dilution_plate_workspace | Dir B | 1.5% (all directions < 25%; B is best at 13.9% for dense variant) |
-| Instrument-heavy | electrophoresis_bench | Dir B | C is 1.1pp better (21.9% vs 20.8%); not worth 2-column architecture cost |
-| Zoom / detail | well_plate_96_zoom | Dir B + zoom fix | 44.4% after fix (up from 31.9%); zoom fix ported from Dir A |
+| Scene class                   | Examples                                                      | Candidate        | Rationale                                                                |
+| ----------------------------- | ------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------ |
+| Template / skeleton           | bench_basic, hood_basic, cell_counter_basic, microscope_basic | Dir B            | PASS_TEMPLATE; clean 3-band stage layout                                 |
+| Bench composition             | staining_bench, crowded_bench_dense                           | Dir B            | 31% primary ratio; meets 25% threshold                                   |
+| Stress/dense composition      | drug_dilution_workspace_dense                                 | Dir B            | 13.9% (best of 3 directions)                                             |
+| Drug dilution / multi-primary | drug_dilution_plate_workspace                                 | Dir B            | 1.5% (all directions < 25%; B is best at 13.9% for dense variant)        |
+| Instrument-heavy              | electrophoresis_bench                                         | Dir B            | C is 1.1pp better (21.9% vs 20.8%); not worth 2-column architecture cost |
+| Zoom / detail                 | well_plate_96_zoom                                            | Dir B + zoom fix | 44.4% after fix (up from 31.9%); zoom fix ported from Dir A              |
 
 **Direction C disposition:** Remains tracked as `dir_c_*.css` for reference.
 Not promoted. The 2-column architecture produces blank left columns on non-instrument
@@ -134,14 +134,16 @@ Dir A's zoom-view placement fill rule (`.scene-mode--detail .placement
 Still below 70% threshold. Root cause: placement `max-width: 900px` caps the
 rendered area at 900x850 = 39.7% of 1920x1080 viewport. To hit 70% the threshold
 must be recalibrated (likely 40-50% for this layout) or the max-width cap removed.
-Threshold recalibration is in scope for the continued stabilization pass (see [../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md)).
+Threshold recalibration is in scope for the continued stabilization pass (see [new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md)).
 
 **CSS files promoted:**
+
 - `bench.css` <- `dir_b_bench.css` + zoom fix (2026-05-19)
 - `hood.css` <- `dir_b_hood.css` + zoom fix (2026-05-19)
 - `instrument.css` <- `dir_b_instrument.css` + zoom fix (2026-05-19)
 
 **Verification gates passed:**
+
 - `pytest tests/test_markdown_links.py -q` PASS
 - `pytest tests/test_no_old_layout_imports.py -q` PASS
 - `node experiments/css_native_layout/precheck.mjs` ran 10 scenes; 0 FAIL
@@ -155,7 +157,7 @@ Threshold recalibration is in scope for the continued stabilization pass (see [.
 
 This memo documents the manager-side decisions made while executing the
 outside-review handoff
-([docs/active_plans/new0_outside_review_handoff.md](../../docs/active_plans/new0_outside_review_handoff.md)).
+([new0_outside_review_handoff.md](../../docs/archive/css_native_layout/new0_outside_review_handoff.md)).
 It exists so the user can read one short artifact and understand:
 
 - which CSS variant was promoted to tracked per workspace family,
@@ -178,11 +180,11 @@ existed but were not under test.
 
 The pick:
 
-| Workspace | Variants present | Promoted to tracked | Rationale |
-| --- | --- | --- | --- |
-| bench | bench_a, bench_b, bench_c, bench_d, bench_e, bench_diorama, bench_focusedstage, bench_gameboard | bench_c | Linked by 5 of 6 bench templates pre-cleanup. Highest in-tree use; closest to broad-applicability baseline. |
-| hood | hood_b, hood_c, hood_d, hood_diorama, hood_e, hood_focusedstage, hood_gameboard | hood_c | Linked by hood_basic (the only hood template). Same numbering convention as bench_c. |
-| instrument | instrument_b, instrument_c, instrument_d, instrument_diorama, instrument_e, instrument_focusedstage, instrument_gameboard | instrument_c | Linked by both instrument templates (cell_counter_basic, microscope_basic). |
+| Workspace  | Variants present                                                                                                          | Promoted to tracked | Rationale                                                                                                   |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------- | ------------------- | ----------------------------------------------------------------------------------------------------------- |
+| bench      | bench_a, bench_b, bench_c, bench_d, bench_e, bench_diorama, bench_focusedstage, bench_gameboard                           | bench_c             | Linked by 5 of 6 bench templates pre-cleanup. Highest in-tree use; closest to broad-applicability baseline. |
+| hood       | hood_b, hood_c, hood_d, hood_diorama, hood_e, hood_focusedstage, hood_gameboard                                           | hood_c              | Linked by hood_basic (the only hood template). Same numbering convention as bench_c.                        |
+| instrument | instrument_b, instrument_c, instrument_d, instrument_diorama, instrument_e, instrument_focusedstage, instrument_gameboard | instrument_c        | Linked by both instrument templates (cell_counter_basic, microscope_basic).                                 |
 
 The unchosen scratch variants remain in place under `experiments/`. They
 are gitignored, so the repo is unaffected. They can be deleted later
@@ -324,13 +326,13 @@ question for verdict scoring.
 
 - Whether NEW0 is `css_native_better / comparable / worse` (deferred
   until the user picks a primary-ratio resolution).
-- Whether to open a production-integration plan at all (the reviewer brief 2026-05-19 defers this; see [../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md)).
-- Whether to amend [docs/PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md)
+- Whether to open a production-integration plan at all (the reviewer brief 2026-05-19 defers this; see [new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md)).
+- Whether to amend [PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md)
   item 3 or treat NEW0 as a permanent experiment.
 - Whether to re-promote Direction E for drug_dilution (either by merging
   into `bench.css` or by adopting per-scene CSS).
 - Whether to delete the gitignored `_a/_b/_d/_diorama/_focusedstage/
-  _gameboard/_e` scratch variants.
+_gameboard/_e` scratch variants.
 - Whether the closed five-region taxonomy is the right shape or whether
   scenes should pick from a wider controlled vocabulary
   (drug_dilution effectively invented its own five).
@@ -341,22 +343,22 @@ benefit from user review rather than manager judgment.
 ## Actions completed (this memo's work)
 
 - [x] Added experimental-status banner to
-  [experiments/css_native_layout/README.md](README.md).
+      [README.md](README.md).
 - [x] Promoted `bench_c.css / hood_c.css / instrument_c.css` to tracked
-  `bench.css / hood.css / instrument.css`.
+      `bench.css / hood.css / instrument.css`.
 - [x] Relinked all 8 templates to tracked CSS (no `_*` variant
-  references remain).
+      references remain).
 - [x] Re-ran `node experiments/css_native_layout/precheck.mjs` against
-  the cleaned templates.
+      the cleaned templates.
 - [x] Replaced [PRECHECK_SUMMARY.md](PRECHECK_SUMMARY.md) with the
-  tracked-code audit.
+      tracked-code audit.
 - [x] Wrote this decision memo.
 
 ## Actions not taken (deferred to user)
 
 - [ ] Score NEW0 against the verdict ladder.
-- [ ] Open any production-integration plan (deferred; stabilization continues per [../../docs/active_plans/new0_stabilization_continuation.md](../../docs/active_plans/new0_stabilization_continuation.md)).
-- [ ] Amend [docs/PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md).
+- [ ] Open any production-integration plan (deferred; stabilization continues per [new0_stabilization_continuation.md](../../docs/archive/css_native_layout/new0_stabilization_continuation.md)).
+- [ ] Amend [PRIMARY_CONTRACT.md](../../docs/PRIMARY_CONTRACT.md).
 - [ ] Restart M3 onward.
 - [ ] Source or replace primary-ratio thresholds.
 - [ ] Decide PASS_TEMPLATE and data-primary acceptance.

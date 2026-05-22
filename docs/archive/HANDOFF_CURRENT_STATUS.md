@@ -78,7 +78,7 @@ Items in this section were directly observed during this session.
 - Subpatches that landed: SP-K1 (vocab/docs), SP-K1b (locked decisions),
   SP-K2a (additive types/parser), SP-K2b (YAML migration), SP-K2c
   (Validator Rule 8), SP-K2d (walker dispatch by `completionPath.kind`).
-- SP-K2bd2 attempted YAML hybrid splits (count_cells_setup/_confirm,
+- SP-K2bd2 attempted YAML hybrid splits (count_cells_setup/\_confirm,
   six drug-step pairs) plus a `setQuadrantCountsForWalker` window
   back-door. It was reverted in full (task #76).
 
@@ -125,18 +125,18 @@ Last known status was captured during this session. None of these have
 been re-verified at the moment of writing. **Treat any "green" entry as
 provisional until you rerun the command yourself.**
 
-| Gate | Command | Last status | Caveat |
-|---|---|---|---|
-| Build + bundle | `bash build_github_pages.sh` | green | rerun to refresh dist/ |
-| Pytest | `pytest tests/` | 264 passed | rerun |
-| TypeScript | `npx tsc --noEmit -p src/tsconfig.json` | clean | rerun |
-| Game UI smoke | `node tests/playwright/e2e/test_game_ui.mjs` | 9/9 | currently lives under e2e/; per layout policy it may belong in `tests/playwright/`. Confirm path before treating as canonical. |
-| Resolver unit | `node tests/playwright/test_interaction_resolver.mjs` | 9/9 | rerun |
-| Index unit | `node tests/playwright/test_interaction_index.mjs` | 5/5 | rerun |
-| Coverage policy | `node tests/playwright/test_completion_event_coverage.mjs` | 7/7 | rerun |
-| Graph reachability | `node tests/playwright/protocol_graph_smoke.mjs` | 25/25 | rerun |
-| YAML walker | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs` | **3/25, fails at add_trypsin** | open |
-| Smoke wrapper | `python3 tools/run_smoke.py` | green | rerun |
+| Gate               | Command                                                    | Last status                    | Caveat                                                                                                                         |
+| ------------------ | ---------------------------------------------------------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| Build + bundle     | `bash build_github_pages.sh`                               | green                          | rerun to refresh dist/                                                                                                         |
+| Pytest             | `pytest tests/`                                            | 264 passed                     | rerun                                                                                                                          |
+| TypeScript         | `npx tsc --noEmit -p src/tsconfig.json`                    | clean                          | rerun                                                                                                                          |
+| Game UI smoke      | `node tests/playwright/e2e/test_game_ui.mjs`               | 9/9                            | currently lives under e2e/; per layout policy it may belong in `tests/playwright/`. Confirm path before treating as canonical. |
+| Resolver unit      | `node tests/playwright/test_interaction_resolver.mjs`      | 9/9                            | rerun                                                                                                                          |
+| Index unit         | `node tests/playwright/test_interaction_index.mjs`         | 5/5                            | rerun                                                                                                                          |
+| Coverage policy    | `node tests/playwright/test_completion_event_coverage.mjs` | 7/7                            | rerun                                                                                                                          |
+| Graph reachability | `node tests/playwright/protocol_graph_smoke.mjs`           | 25/25                          | rerun                                                                                                                          |
+| YAML walker        | `node tests/playwright/e2e/protocol_walkthrough_yaml.mjs`  | **3/25, fails at add_trypsin** | open                                                                                                                           |
+| Smoke wrapper      | `python3 tools/run_smoke.py`                               | green                          | rerun                                                                                                                          |
 
 Notes:
 
@@ -285,15 +285,15 @@ SP-K2bd2-alpha (task #77) is paused. When it resumes it should produce
 this table from direct UI observation, not from memory. The rows below
 list likely-suspect steps and are not authoritative.
 
-| Step id | Current kind | Actual UI behavior | Hybrid? | Proposed action | Notes |
-|---|---|---|---|---|---|
-| count_cells | modal | microscope overlay + quadrant UI | TBD | TBD | Do not use `setQuadrantCountsForWalker`. |
-| plate_read | modal | plate-reader UI button | TBD | TBD | Confirm whether single modal step suffices. |
-| add_carboplatin | modal | drug modal flow | TBD | TBD | No step-id walker branch. |
-| add_metformin | modal | drug modal flow | TBD | TBD | No step-id walker branch. |
-| add_mtt | modal | likely pipette + modal | TBD | TBD | Verify actual UI path. |
-| add_dmso | modal or directTool | DMSO addition flow | TBD | TBD | Verify actual UI path. |
-| media_adjust | modal or directTool | media adjustment flow | TBD | TBD | Verify actual UI path. |
+| Step id         | Current kind        | Actual UI behavior               | Hybrid? | Proposed action | Notes                                       |
+| --------------- | ------------------- | -------------------------------- | ------- | --------------- | ------------------------------------------- |
+| count_cells     | modal               | microscope overlay + quadrant UI | TBD     | TBD             | Do not use `setQuadrantCountsForWalker`.    |
+| plate_read      | modal               | plate-reader UI button           | TBD     | TBD             | Confirm whether single modal step suffices. |
+| add_carboplatin | modal               | drug modal flow                  | TBD     | TBD             | No step-id walker branch.                   |
+| add_metformin   | modal               | drug modal flow                  | TBD     | TBD             | No step-id walker branch.                   |
+| add_mtt         | modal               | likely pipette + modal           | TBD     | TBD             | Verify actual UI path.                      |
+| add_dmso        | modal or directTool | DMSO addition flow               | TBD     | TBD             | Verify actual UI path.                      |
+| media_adjust    | modal or directTool | media adjustment flow            | TBD     | TBD             | Verify actual UI path.                      |
 
 Alpha must fill TBDs based on observed UI behavior. The audit is
 read-only; no YAML or code edits.
@@ -307,7 +307,7 @@ which is one of the open hypotheses for the walker regression.
 1. Walker clicks DOM only.
 2. Scene receives the DOM click and identifies the clicked item.
 3. Scene calls the resolver only for `completionPath.kind:
-   interactionSequence`.
+interactionSequence`.
 4. Resolver returns the semantic result: load, discharge, wrong-order,
    no-op.
 5. Scene applies the resolver result exactly once.
@@ -360,15 +360,15 @@ file.
 
 ## Open tasks at pause
 
-| # | Status | Task |
-|---|---|---|
-| 72 | pending | SP-K2e: Cleanup |
-| 76 | in_progress | SP-K2bd2-revert (work complete; closure gated on walker fix) |
-| 77 | pending | SP-K2bd2-alpha: Read-only classification audit |
-| 78 | pending | SP-K2bd2-beta: YAML splits only |
-| 79 | pending | SP-K2bd2-gamma: Walker rewrite only |
-| 80 | pending | SP-K2bd2-delta: Gates plus docs/changelog wrap-up |
-| 81 | in_progress | SP-K2bd2-resolver-compat (work complete; closure gated on walker fix) |
+| #   | Status      | Task                                                                  |
+| --- | ----------- | --------------------------------------------------------------------- |
+| 72  | pending     | SP-K2e: Cleanup                                                       |
+| 76  | in_progress | SP-K2bd2-revert (work complete; closure gated on walker fix)          |
+| 77  | pending     | SP-K2bd2-alpha: Read-only classification audit                        |
+| 78  | pending     | SP-K2bd2-beta: YAML splits only                                       |
+| 79  | pending     | SP-K2bd2-gamma: Walker rewrite only                                   |
+| 80  | pending     | SP-K2bd2-delta: Gates plus docs/changelog wrap-up                     |
+| 81  | in_progress | SP-K2bd2-resolver-compat (work complete; closure gated on walker fix) |
 
 A new task should be created when work resumes, after the trace
 investigation:

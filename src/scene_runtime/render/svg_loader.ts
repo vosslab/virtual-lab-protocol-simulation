@@ -10,7 +10,7 @@
 
 // Dynamically import SVG assets from generated/svg_assets/index.ts
 // The barrel export provides all SVG_* constants.
-import * as allAssets from '../../../generated/svg_assets/index';
+import * as allAssets from "../../../generated/svg_assets/index";
 
 // Type for any SVG constant export (SVG_BOTTLE, SVG_T75_FLASK, etc.)
 type SvgExport = string;
@@ -23,16 +23,16 @@ type SvgExport = string;
  * @returns The SCREAMING_SNAKE_CASE export name, or undefined if no mapping.
  */
 function mapAssetNameToExportName(assetName: string): string | undefined {
-	// Convert snake_case to SCREAMING_SNAKE_CASE.
-	const exportName = 'SVG_' + assetName.toUpperCase();
+  // Convert snake_case to SCREAMING_SNAKE_CASE.
+  const exportName = "SVG_" + assetName.toUpperCase();
 
-	// Check if the export exists in the allAssets barrel.
-	if (exportName in allAssets) {
-		return exportName;
-	}
+  // Check if the export exists in the allAssets barrel.
+  if (exportName in allAssets) {
+    return exportName;
+  }
 
-	// No matching export found.
-	return undefined;
+  // No matching export found.
+  return undefined;
 }
 
 /**
@@ -43,16 +43,16 @@ function mapAssetNameToExportName(assetName: string): string | undefined {
  * @throws If the export name mapping fails or asset retrieval fails.
  */
 export function getAssetSvgString(assetName: string): string | undefined {
-	const exportName = mapAssetNameToExportName(assetName);
-	if (!exportName) {
-		return undefined;
-	}
+  const exportName = mapAssetNameToExportName(assetName);
+  if (!exportName) {
+    return undefined;
+  }
 
-	// Retrieve the SVG constant from the barrel export.
-	const svgConstant = (allAssets as Record<string, SvgExport>)[exportName];
-	if (typeof svgConstant !== 'string') {
-		return undefined;
-	}
+  // Retrieve the SVG constant from the barrel export.
+  const svgConstant = (allAssets as Record<string, SvgExport>)[exportName];
+  if (typeof svgConstant !== "string") {
+    return undefined;
+  }
 
-	return svgConstant;
+  return svgConstant;
 }

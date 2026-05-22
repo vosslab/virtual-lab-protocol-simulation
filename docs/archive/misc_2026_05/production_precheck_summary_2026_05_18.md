@@ -9,6 +9,7 @@
 ## Scope
 
 **Scenes measured**: 18 total
+
 - 9 base scenes from `content/base_scenes/` (zone-based layout engine)
 - 9 row+slot variant scenes (row+slot-capacity-wrap algorithm)
 
@@ -19,6 +20,7 @@ Base scene names: bench_basic, cell_counter_basic, electrophoresis_bench, heat_b
 **Measurement type**: Real HTML DOM via Playwright `element.getBoundingClientRect()`. No synthetic estimates.
 
 **Checks performed**:
+
 - C1: object-object overlap (>5% area intersection)
 - C2: label overlaps non-owner object (>50% area intersection)
 - C3: label-label overlap (>50% area intersection)
@@ -27,32 +29,33 @@ Base scene names: bench_basic, cell_counter_basic, electrophoresis_bench, heat_b
 
 ## Per-scene pass/fail grid
 
-| Scene | Objects | C1 obj-obj | C2 lbl-obj | C3 lbl-lbl | C4 zero | C5 row-overflow | Status |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| bench_basic | 2 | 0 | 0 | 1 | 0 | n/a | FAIL |
-| bench_basic_row_slot | 2 | 1 | 0 | 1 | 0 | 0 | FAIL |
-| cell_counter_basic | 2 | 1 | 0 | 0 | 0 | n/a | FAIL |
-| cell_counter_basic_row_slot | 2 | 0 | 0 | 0 | 0 | 1 | PASS |
-| electrophoresis_bench | 16 | 0 | 0 | 0 | 0 | n/a | FAIL |
-| electrophoresis_bench_row_slot | 16 | 0 | 0 | 0 | 0 | 0 | FAIL |
-| heat_block_bench | 3 | 0 | 0 | 0 | 0 | n/a | FAIL |
-| heat_block_bench_row_slot | 3 | 0 | 0 | 0 | 0 | 0 | FAIL |
-| hood_basic | 4 | 0 | 0 | 0 | 0 | n/a | FAIL |
-| hood_basic_row_slot | 4 | 0 | 0 | 0 | 0 | 0 | FAIL |
-| imaging_bench | 2 | 0 | 0 | 0 | 0 | n/a | PASS |
-| imaging_bench_row_slot | 2 | 0 | 0 | 0 | 0 | 0 | PASS |
-| microscope_basic | 1 | 0 | 0 | 0 | 0 | n/a | PASS |
-| microscope_basic_row_slot | 1 | 0 | 0 | 0 | 0 | 0 | PASS |
-| sample_prep_bench | 5 | 0 | 0 | 0 | 0 | n/a | FAIL |
-| sample_prep_bench_row_slot | 5 | 0 | 0 | 0 | 0 | 0 | FAIL |
-| staining_bench | 10 | 0 | 0 | 0 | 0 | n/a | FAIL |
-| staining_bench_row_slot | 10 | 0 | 0 | 0 | 0 | 0 | FAIL |
+| Scene                          | Objects | C1 obj-obj | C2 lbl-obj | C3 lbl-lbl | C4 zero | C5 row-overflow | Status |
+| ------------------------------ | ------- | ---------- | ---------- | ---------- | ------- | --------------- | ------ |
+| bench_basic                    | 2       | 0          | 0          | 1          | 0       | n/a             | FAIL   |
+| bench_basic_row_slot           | 2       | 1          | 0          | 1          | 0       | 0               | FAIL   |
+| cell_counter_basic             | 2       | 1          | 0          | 0          | 0       | n/a             | FAIL   |
+| cell_counter_basic_row_slot    | 2       | 0          | 0          | 0          | 0       | 1               | PASS   |
+| electrophoresis_bench          | 16      | 0          | 0          | 0          | 0       | n/a             | FAIL   |
+| electrophoresis_bench_row_slot | 16      | 0          | 0          | 0          | 0       | 0               | FAIL   |
+| heat_block_bench               | 3       | 0          | 0          | 0          | 0       | n/a             | FAIL   |
+| heat_block_bench_row_slot      | 3       | 0          | 0          | 0          | 0       | 0               | FAIL   |
+| hood_basic                     | 4       | 0          | 0          | 0          | 0       | n/a             | FAIL   |
+| hood_basic_row_slot            | 4       | 0          | 0          | 0          | 0       | 0               | FAIL   |
+| imaging_bench                  | 2       | 0          | 0          | 0          | 0       | n/a             | PASS   |
+| imaging_bench_row_slot         | 2       | 0          | 0          | 0          | 0       | 0               | PASS   |
+| microscope_basic               | 1       | 0          | 0          | 0          | 0       | n/a             | PASS   |
+| microscope_basic_row_slot      | 1       | 0          | 0          | 0          | 0       | 0               | PASS   |
+| sample_prep_bench              | 5       | 0          | 0          | 0          | 0       | n/a             | FAIL   |
+| sample_prep_bench_row_slot     | 5       | 0          | 0          | 0          | 0       | 0               | FAIL   |
+| staining_bench                 | 10      | 0          | 0          | 0          | 0       | n/a             | FAIL   |
+| staining_bench_row_slot        | 10      | 0          | 0          | 0          | 0       | 0               | FAIL   |
 
 **Summary**: 5 PASS, 13 FAIL.
 
 ## Category aggregate
 
 **Failure distribution** (545 total failures):
+
 - C1 object-object overlap: **212 failures** (39%)
 - C2 label overlaps non-owner object: **203 failures** (37%)
 - C3 label-label overlap: **125 failures** (23%)
@@ -73,12 +76,14 @@ Base scene names: bench_basic, cell_counter_basic, electrophoresis_bench, heat_b
 
 ## Evidence-backed vs speculative
 
-### Evidence-backed (proven by _temp_layout_prechecks.mjs)
+### Evidence-backed (proven by \_temp_layout_prechecks.mjs)
+
 1. **545 real failures measured** across 18 scenes in live HTML DOM via Playwright (not synthetic estimates).
 2. **Label-related failures dominate**: 328 instances (C2: 203, C3: 125) vs. object overlaps (C1: 212). Label placement is the larger problem.
 3. **5 PASS scenes**: cell_counter_basic_row_slot, imaging_bench, imaging_bench_row_slot, microscope_basic, microscope_basic_row_slot. These have 1-2 objects and pass all checks.
 
 ### Speculative (hypotheses, not yet measured)
+
 1. **Simple Y-axis offsets (+/-10px) would resolve 80%+ of label collisions** - unverified. See Task 4 label-solver experiment.
 2. **Row-slot-capacity-wrap with label solver would reduce failures from 545 to <50** - unverified. Depends on Task 4 result.
 3. **Object placement requires redesign** if label offsets cannot resolve label-label collisions. Unverified; only know label solver failure count post-Task-4.

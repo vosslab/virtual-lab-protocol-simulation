@@ -2,36 +2,36 @@ object_name: sharps_container
 kind: waste
 label: Sharps container
 state_fields:
-- field_name: material_name
-  type: enum
-  allowed:
-  - empty
-  - sharps
-  default: empty
-  description: Contents of the sharps container.
-- field_name: material_volume
-  type: float
-  unit: ml
-  min: 0
-  max: 500
-  default: 0
-  description: Volume of sharps waste accumulated, in milliliters.
+  - field_name: material_name
+    type: enum
+    allowed:
+      - empty
+      - sharps
+    default: empty
+    description: Contents of the sharps container.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 500
+    default: 0
+    description: Volume of sharps waste accumulated, in milliliters.
 visual_states:
   material_name:
     kind: svg
     cases:
-    - when: empty
-      output:
-        asset_name: waste_container
-    - when: sharps
-      output:
-        asset_name: waste_container
+      - when: empty
+        output:
+          asset_name: waste_container
+      - when: sharps
+        output:
+          asset_name: waste_container
   material_volume:
     kind: composite
     composite: []
 capabilities:
-- clickable
-- material_container
+  - clickable
+  - material_container
 layout:
   default_width: 4
   label_width: 6

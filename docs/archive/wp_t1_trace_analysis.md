@@ -92,7 +92,7 @@ Walker clicks 2-4 ping-pong similarly: clickedItem gets picked up as
 `selectedTool` (line 1002), then either has no matching tool+itemId branch
 or hits `registerWarning`. None of the four clicks reaches a path that calls
 `triggerStep('add_trypsin')`. The trypsin discharge handler at line 876 is
-in the *legacy block* (lines 841-947) but is only entered when
+in the _legacy block_ (lines 841-947) but is only entered when
 `resolveInteraction` returns `discharge`, which it does not because
 `selectedTool='flask'` blocks every match.
 
@@ -106,14 +106,14 @@ left by pbs_wash's "ghost clicks" 2-4 against the wrong active step.
 
 ## Mapping to handoff hypothesis list
 
-| # | Hypothesis | Verdict |
-|---|---|---|
-| 1 | Per-event branch bug in `dispatchInteractionClick` 600-800 | **Not the cause.** That function is dead code. |
-| 2 | `completeStep` defensive backstop misfires | Not the cause. The backstop reads the same stale field and never fires. |
-| 3 | `selectedTool` not cleared between steps | **Confirmed contributing factor.** Carryover from pbs_wash's ghost clicks pollutes add_trypsin. |
-| 4 | `heldLiquid` issue | Not the cause; heldLiquid is null throughout. |
-| 5 | Dispatch ownership: resolver-first path incomplete | **Confirmed root cause.** Resolver-first path is dead-coded by the stale field-name guard at line 791. |
-| 6 | Walker assumption bug | Not the cause. The walker's "wait for completedSteps" check is correct; the runtime is what fails to populate it. |
+| #   | Hypothesis                                                 | Verdict                                                                                                           |
+| --- | ---------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 1   | Per-event branch bug in `dispatchInteractionClick` 600-800 | **Not the cause.** That function is dead code.                                                                    |
+| 2   | `completeStep` defensive backstop misfires                 | Not the cause. The backstop reads the same stale field and never fires.                                           |
+| 3   | `selectedTool` not cleared between steps                   | **Confirmed contributing factor.** Carryover from pbs_wash's ghost clicks pollutes add_trypsin.                   |
+| 4   | `heldLiquid` issue                                         | Not the cause; heldLiquid is null throughout.                                                                     |
+| 5   | Dispatch ownership: resolver-first path incomplete         | **Confirmed root cause.** Resolver-first path is dead-coded by the stale field-name guard at line 791.            |
+| 6   | Walker assumption bug                                      | Not the cause. The walker's "wait for completedSteps" check is correct; the runtime is what fails to populate it. |
 
 The dominant cause is hypothesis #5: the resolver-first dispatch is gated on
 an obsolete property name. Hypothesis #3 (selectedTool carryover) is the
@@ -130,8 +130,7 @@ Mechanical migration of stale property reads, not a per-branch alignment.
    `activeStep && activeStep.completionPath && activeStep.completionPath.kind === 'interactionSequence'`.
 2. Inside `dispatchInteractionClick` (`src/scenes/hood.ts:521-785`): replace
    every `activeStep.interactionSequence` read with the K2 path. The hot
-   sites are 553, 587, 606, 622, 637, 653, 669, 686, 706, 721, 732, 745,
-   760. Read interactions via a local
+   sites are 553, 587, 606, 622, 637, 653, 669, 686, 706, 721, 732, 745, 760. Read interactions via a local
    `const interactions = activeStep.completionPath.kind === 'interactionSequence' ? activeStep.completionPath.interactions : null` near the top of the function and use `interactions.length` /
    `interactions[idx]` thereafter.
 3. `src/game_state.ts:236` - same migration in the defensive backstop.

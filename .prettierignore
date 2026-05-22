@@ -1,0 +1,22 @@
+# HTML fragments concatenated at build time (not valid standalone HTML)
+src/head.html
+src/body.html
+src/tail.html
+
+# Generated artifacts
+generated/
+dist/
+dist-single/
+
+# Build / browser caches
+.cache/
+node_modules/
+
+# Test results
+test-results/
+
+# Archive (frozen docs, do not reformat)
+docs/archive/
+
+# Changelog history files
+docs/CHANGELOG*.md

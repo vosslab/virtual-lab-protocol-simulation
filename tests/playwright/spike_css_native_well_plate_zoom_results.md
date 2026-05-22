@@ -13,16 +13,16 @@ Lane 4 perf measurement).
 
 ## Lane 3 (browser proof) assertions
 
-| Assertion | Status | Detail |
-| --- | --- | --- |
-| flag_enabled | PASS | `is_enabled()` returned true after `set_enabled(true)` |
-| result_is_array_of_length_1 | PASS | one placement in fixture, one layout returned |
-| width_positive | PASS | width=1800 px |
-| height_positive | PASS | height=968 px |
-| x_is_number | PASS | x=-300 (placement spans wider than scaffold; expected from CSS rule) |
-| y_is_number | PASS | y=28 |
-| id_matches_placement_name | PASS | id=`zoom_well_plate_96` |
-| screenshot_saved | PASS | `test-results/new1_spike/lane3_browser_proof.png` |
+| Assertion                   | Status | Detail                                                               |
+| --------------------------- | ------ | -------------------------------------------------------------------- |
+| flag_enabled                | PASS   | `is_enabled()` returned true after `set_enabled(true)`               |
+| result_is_array_of_length_1 | PASS   | one placement in fixture, one layout returned                        |
+| width_positive              | PASS   | width=1800 px                                                        |
+| height_positive             | PASS   | height=968 px                                                        |
+| x_is_number                 | PASS   | x=-300 (placement spans wider than scaffold; expected from CSS rule) |
+| y_is_number                 | PASS   | y=28                                                                 |
+| id_matches_placement_name   | PASS   | id=`zoom_well_plate_96`                                              |
+| screenshot_saved            | PASS   | `test-results/new1_spike/lane3_browser_proof.png`                    |
 
 The non-zero width and height confirm the scaffold was actually mounted, the
 browser CSS engine ran layout, and `getBoundingClientRect()` returned real

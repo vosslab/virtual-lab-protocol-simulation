@@ -37,7 +37,7 @@ Curriculum-first rule. Mini-protocol decomposition (M1) happens before any new r
 - Migrate `cell_culture_hood`, `bench`, `microscope`, and capability workspaces as peer adapters.
 - Delete or archive legacy `src/scenes/` once all adapters migrated.
 - Build `tests/playwright/walker/` schema-driven walker engine plus a single `tests/playwright/walker.mjs` entry point that runs against any protocol id. Walker engine lives in the test tree, not the production runtime tree, so production APIs are not shaped for the test harness.
-- Rewrite the seven SCENE_*/PROTOCOL_* docs against the locked runtime APIs.
+- Rewrite the seven SCENE*\*/PROTOCOL*\* docs against the locked runtime APIs.
 
 ## Non-goals
 
@@ -62,15 +62,15 @@ Curriculum-first rule. Mini-protocol decomposition (M1) happens before any new r
 
 Ownership layers (grouped by content, runtime, test, and build concerns):
 
-| Layer | Owns |
-| --- | --- |
-| Protocol YAML | `learning` block, `entry:` block, `protocol_type`, steps, completion paths, sequencing |
-| Scene YAML | SVG object declarations, layout zones, static scene config |
-| Build-time loader (`tools/build_protocol_data.py`) | parses YAML, validates schema, emits typed generated TypeScript / JSON |
-| `src/scene_runtime/` shared TypeScript | layout engine, click routing, highlight derivation, completion dispatch, liquid state. Consumes generated typed data; no YAML parser in browser |
-| `src/scene_runtime/adapters/<scene>/` | scene-specific rendering and structured-object behavior only |
-| `tests/playwright/walker/` | schema-driven E2E walker; lives in test tree |
-| Build pipeline | per-mini-protocol HTML, shared library bundle, launcher index |
+| Layer                                              | Owns                                                                                                                                            |
+| -------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Protocol YAML                                      | `learning` block, `entry:` block, `protocol_type`, steps, completion paths, sequencing                                                          |
+| Scene YAML                                         | SVG object declarations, layout zones, static scene config                                                                                      |
+| Build-time loader (`tools/build_protocol_data.py`) | parses YAML, validates schema, emits typed generated TypeScript / JSON                                                                          |
+| `src/scene_runtime/` shared TypeScript             | layout engine, click routing, highlight derivation, completion dispatch, liquid state. Consumes generated typed data; no YAML parser in browser |
+| `src/scene_runtime/adapters/<scene>/`              | scene-specific rendering and structured-object behavior only                                                                                    |
+| `tests/playwright/walker/`                         | schema-driven E2E walker; lives in test tree                                                                                                    |
+| Build pipeline                                     | per-mini-protocol HTML, shared library bundle, launcher index                                                                                   |
 
 Shared physical items (micropipette, media_bottle, well_plate when it appears in multiple scenes, etc.) are declared as scene objects per scene where they appear. If a shared identity is needed across scenes (e.g., a single bottle whose state persists), it is represented by a shared inventory identity referenced from each scene's declaration. Items must not be faked into a single global scene to dodge the per-scene declaration rule.
 
@@ -89,27 +89,27 @@ Ownership rules:
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M0 / WS-DOC | `docs/SCENE_*`, `docs/PROTOCOL_*`, `docs/active_plans/scene_runtime_doc_conflicts.md` | 2-4 |
-| M1 / WS-DECOMP | curriculum decomposition: new `content/<mini_protocol>/` folders for the proposed mini-protocol set; reclassify tiny tutorials; rescope scene placements per scene | 4-7 |
-| M2 / WS-ENTRY | protocol YAML `entry:` block schema, loader validation, `src/init.ts` startup routing, per-protocol audit | 2-3 |
-| M3 / WS-SPINE | `src/scene_runtime/contract.ts`, `types.ts`, build-time `loader.ts` | 3-5 |
-| M4 / WS-WALKER-ENGINE | `tests/playwright/walker/`, `tests/playwright/walker.mjs` | 2-3 |
-| M5 / WS-WP-VERTICAL | one well_plate step end-to-end (minimal adapter + YAML + walker run) | 1-2 |
-| M6 / WS-WP-SCENE | `src/scene_runtime/adapters/well_plate/` complete | 2-3 |
-| M6 / WS-WP-CONTENT | `content/<plate_addition_mini_protocols>/` YAML | 2-3 |
-| M6 / WS-WP-WALKER | walker proof run for each plate-addition mini-protocol | 2-3 |
-| M6 / WS-LAYOUT | `src/scene_runtime/layout/` | 2-3 |
-| M6 / WS-DISPATCH | `src/scene_runtime/dispatch/`, `src/scene_runtime/highlight/` | 2-3 |
-| M6 / WS-LIQUID | `src/scene_runtime/liquid/` | 1-2 |
-| M7 / WS-BUILD | `tools/build_protocol_data.py`, npm build config | 2-4 |
-| M7 / WS-LAUNCHER | `src/launcher/`, `dist/index.html` generator | 1-2 |
-| M8 / WS-HOOD | `src/scene_runtime/adapters/cell_culture_hood/` | 3-5 |
-| M8 / WS-BENCH | `src/scene_runtime/adapters/bench/` | 1-2 |
-| M8 / WS-MICRO | `src/scene_runtime/adapters/microscope/` plus capability workspaces | 1-2 |
-| M9 / WS-CLEAN | `src/scenes/` archive/delete, `src/init.ts` cleanup | 2-3 |
-| M9 / WS-DOCS-FINAL | full rewrite of seven SCENE_*/PROTOCOL_* docs | 1-2 |
+| Milestone / Workstream | Component                                                                                                                                                          | Expected patches |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| M0 / WS-DOC            | `docs/SCENE_*`, `docs/PROTOCOL_*`, `docs/active_plans/scene_runtime_doc_conflicts.md`                                                                              | 2-4              |
+| M1 / WS-DECOMP         | curriculum decomposition: new `content/<mini_protocol>/` folders for the proposed mini-protocol set; reclassify tiny tutorials; rescope scene placements per scene | 4-7              |
+| M2 / WS-ENTRY          | protocol YAML `entry:` block schema, loader validation, `src/init.ts` startup routing, per-protocol audit                                                          | 2-3              |
+| M3 / WS-SPINE          | `src/scene_runtime/contract.ts`, `types.ts`, build-time `loader.ts`                                                                                                | 3-5              |
+| M4 / WS-WALKER-ENGINE  | `tests/playwright/walker/`, `tests/playwright/walker.mjs`                                                                                                          | 2-3              |
+| M5 / WS-WP-VERTICAL    | one well_plate step end-to-end (minimal adapter + YAML + walker run)                                                                                               | 1-2              |
+| M6 / WS-WP-SCENE       | `src/scene_runtime/adapters/well_plate/` complete                                                                                                                  | 2-3              |
+| M6 / WS-WP-CONTENT     | `content/<plate_addition_mini_protocols>/` YAML                                                                                                                    | 2-3              |
+| M6 / WS-WP-WALKER      | walker proof run for each plate-addition mini-protocol                                                                                                             | 2-3              |
+| M6 / WS-LAYOUT         | `src/scene_runtime/layout/`                                                                                                                                        | 2-3              |
+| M6 / WS-DISPATCH       | `src/scene_runtime/dispatch/`, `src/scene_runtime/highlight/`                                                                                                      | 2-3              |
+| M6 / WS-LIQUID         | `src/scene_runtime/liquid/`                                                                                                                                        | 1-2              |
+| M7 / WS-BUILD          | `tools/build_protocol_data.py`, npm build config                                                                                                                   | 2-4              |
+| M7 / WS-LAUNCHER       | `src/launcher/`, `dist/index.html` generator                                                                                                                       | 1-2              |
+| M8 / WS-HOOD           | `src/scene_runtime/adapters/cell_culture_hood/`                                                                                                                    | 3-5              |
+| M8 / WS-BENCH          | `src/scene_runtime/adapters/bench/`                                                                                                                                | 1-2              |
+| M8 / WS-MICRO          | `src/scene_runtime/adapters/microscope/` plus capability workspaces                                                                                                | 1-2              |
+| M9 / WS-CLEAN          | `src/scenes/` archive/delete, `src/init.ts` cleanup                                                                                                                | 2-3              |
+| M9 / WS-DOCS-FINAL     | full rewrite of seven SCENE*\*/PROTOCOL*\* docs                                                                                                                    | 1-2              |
 
 ## Walker contract
 
@@ -157,7 +157,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Workstreams: WS-DOC.
 - Entry criteria: `docs/PRIMARY_CONTRACT.md` published and stable (true).
 - Exit criteria:
-  - `docs/active_plans/scene_runtime_doc_conflicts.md` exists with rows for all seven SCENE_*/PROTOCOL_* docs.
+  - `docs/active_plans/scene_runtime_doc_conflicts.md` exists with rows for all seven SCENE*\*/PROTOCOL*\* docs.
   - Each row classified as `matches-contract`, `stale-sections`, or `must-rewrite` with line refs and required action.
   - Stale sections receive an inline `> CONTRACT MIGRATION:` margin note (no full rewrites yet).
   - `docs/CHANGELOG.md` entry under `### Documentation`.
@@ -306,7 +306,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Exit criteria:
   - `src/scenes/` archived under `archive/code/scenes_legacy_<YYYY_MM>/` for one release cycle (default; delete deferred to a follow-up patch).
   - `npm run build` clean, `pytest tests/` baseline holds.
-  - All seven SCENE_*/PROTOCOL_* docs rewritten to match runtime APIs; `entry:` block and walker contract documented.
+  - All seven SCENE*\*/PROTOCOL*\* docs rewritten to match runtime APIs; `entry:` block and walker contract documented.
   - PRIMARY_CONTRACT.md cross-refs added in each canonical doc.
   - `docs/active_plans/scene_runtime_doc_conflicts.md`, `docs/active_plans/protocol_entry_audit.md`, and `docs/active_plans/curriculum_decomposition.md` archived.
   - `git tag scene-runtime-v1` recommended.
@@ -319,7 +319,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 
 - Owner: planner.
 - Interfaces:
-  - Needs: `docs/PRIMARY_CONTRACT.md`, all SCENE_*/PROTOCOL_* docs.
+  - Needs: `docs/PRIMARY_CONTRACT.md`, all SCENE*\*/PROTOCOL*\* docs.
   - Provides: conflict table and margin notes; signals contract-compliant API shape constraints to WS-SPINE.
 - Expected patches: 2-4.
 
@@ -464,7 +464,7 @@ Entry-scene gate: no mini-protocol may rely on `cell_culture_hood` as its entry 
 - Owner: docset-updater.
 - Interfaces:
   - Needs: M8 exit (final API shapes locked).
-  - Provides: contract-aligned SCENE_*/PROTOCOL_* docs.
+  - Provides: contract-aligned SCENE*\*/PROTOCOL*\* docs.
 - Expected patches: 1-2.
 
 ## Work packages
@@ -974,7 +974,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Acceptance criteria:
   - `node tests/playwright/walker.mjs plate_drug_treatment` exits zero across all 8-10 steps.
   - Per-action before/after screenshots produced; `WP-C1-VISUAL` and `WP-G1` visual gates pass.
-  - Zero new walker source code (any walker change escalates to WP-WALKER-* work).
+  - Zero new walker source code (any walker change escalates to WP-WALKER-\* work).
 - Verification commands: `node tests/playwright/walker.mjs plate_drug_treatment`.
 - Obvious follow-ons: archive `docs/active_plans/well_plate_workspace_pause_note.md`; `docs/CHANGELOG.md` entry.
 
@@ -1125,7 +1125,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Verification commands: `npm run build`; `source source_me.sh && pytest tests/`.
 - Obvious follow-ons: `docs/CHANGELOG.md` entry.
 
-### Work package WP-CLEAN-3: No legacy_*.ts files under src/ at M9 exit
+### Work package WP-CLEAN-3: No legacy\_\*.ts files under src/ at M9 exit
 
 - Owner: tester.
 - Touch points: `tests/test_no_legacy_prefix_src.py` (new).
@@ -1217,7 +1217,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Entry-scene gate: no protocol declares `entry.scene === 'cell_culture_hood'` unless its first authored step is in the hood.
 - Integration gate: the `cell_culture_full` linked sequence walker-passes end-to-end on the new runtime before M8 closes.
 - Per-HTML size gate: each mini-protocol HTML stays under the bundle target (see Open questions).
-- Release gate: `dist/index.html` lists every curriculum mini-protocol plus the full-sequence runner, each standalone runnable; legacy `src/scenes/` archived or deleted; all SCENE_*/PROTOCOL_* docs aligned; PRIMARY_CONTRACT cross-refs in place.
+- Release gate: `dist/index.html` lists every curriculum mini-protocol plus the full-sequence runner, each standalone runnable; legacy `src/scenes/` archived or deleted; all SCENE*\*/PROTOCOL*\* docs aligned; PRIMARY_CONTRACT cross-refs in place.
 - Zero `src/legacy_*.ts` files remain at M9 exit. The `legacy_` prefix is reserved for temporary residents during the refactor; persistent helpers either lose the prefix or move into `src/scene_runtime/`.
 
 ## Test and verification strategy
@@ -1251,7 +1251,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Additive rollout: `src/scene_runtime/` ships alongside `src/scenes/` from M3 through M8. Both trees compile.
 - Backward compatibility: during M2 through M8, the existing `?protocol=<protocol_name>` URL parameter routes to whichever runtime owns the protocol. M7 launcher continues to honor this URL parameter for direct linking.
 - Legacy extension policy: after M3, no new feature work in `src/scenes/`. Compatibility shims required to keep existing tests green are allowed, must be flagged with a `// COMPAT SHIM:` comment, and must be removed by M9 (WP-CLEAN-2).
-- `src/scenes/` is now **FROZEN**, not just under a "no new feature work" guideline. The freeze is actively gated by `tests/test_scenes_freeze_baseline.py`, which records per-file line counts in `tests/data/scenes_freeze_baseline.json` and fails when a file grows past its baseline plus a small drift allowance. Allowed edits are limited to mechanical renames, type-union updates, the WP-SPINE-6 legacy banner header, and small `// COMPAT SHIM:` blocks marked for M9 removal. Forbidden edits include any new scene-specific behavior, any new hardcoded dispatch branch, and any new feature logic. New work lives in `src/scene_runtime/` (TypeScript) plus `content/<protocol_name>/protocol.yaml`, `content/<protocol_name>/contents.yaml`, and `content/scenes/<scene_name>.yaml` (declarative). The full policy, including replacement direction and pointers to the enforcing tests, lives in [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md).
+- `src/scenes/` is now **FROZEN**, not just under a "no new feature work" guideline. The freeze is actively gated by `tests/test_scenes_freeze_baseline.py`, which records per-file line counts in `tests/data/scenes_freeze_baseline.json` and fails when a file grows past its baseline plus a small drift allowance. Allowed edits are limited to mechanical renames, type-union updates, the WP-SPINE-6 legacy banner header, and small `// COMPAT SHIM:` blocks marked for M9 removal. Forbidden edits include any new scene-specific behavior, any new hardcoded dispatch branch, and any new feature logic. New work lives in `src/scene_runtime/` (TypeScript) plus `content/<protocol_name>/protocol.yaml`, `content/<protocol_name>/contents.yaml`, and `content/scenes/<scene_name>.yaml` (declarative). The full policy, including replacement direction and pointers to the enforcing tests, lives in [SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md).
 - Legacy banner: every file under `src/scenes/` gets a `// LEGACY: superseded by src/scene_runtime/*. Do not extend.` header at the top of M3 (WP-SPINE-6).
 - Deletion criteria: M8 exit met and zero imports remain from `src/scenes/` (grep-enforced gate in WP-CLEAN-1).
 - Rollback strategy:
@@ -1261,27 +1261,27 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Curriculum decomposition stalls plan | high | WP-DECOMP-* drags past 2 weeks; runtime work waits | bptools-writer | WP-DECOMP-0 (map) is the only sequential gate. WP-DECOMP-1..6 run in parallel by mini-protocol; tiny-stub triage (WP-DECOMP-7) runs concurrently |
-| Spine over-designs before proof scene works | high | M3 exit before M5 vertical proof started | planner | Walking-skeleton rule: M3 ships only contract types and loader; subsystems wait until M6 driven by well_plate needs |
-| well_plate proof reveals spine gaps mid-M6 | high | walker fails on a step beyond the vertical proof | typescript-engineer | M3 contract allows additive API; spine adds, not breaks. Hot-patch back to M3 in same milestone |
-| Per-HTML bundle balloons | medium | bundle exceeds size budget | coder | Shared library bundle plus code splitting; budget gate enforced in WP-BUILD-2 |
-| Hood migration uncovers latent hood-only assumptions | medium | WS-HOOD walker fail at M8 | typescript-engineer | Hood is migrated after M6/M7 so spine is locked; failures become adapter bugs, not spine bugs |
-| Doc audit creates churn that conflicts with code shape | low | doc rewrites in M0 contradict M3 APIs | planner | M0 emits conflict table plus margin notes only; full rewrites deferred to M9 (WS-DOCS-FINAL) |
-| Parallel doers collide on shared walker fixtures | medium | fixture conflicts between WS-WP-WALKER and WS-HOOD/WS-BENCH walkers at M8 | tester | Per-mini-protocol fixture isolation under `tests/playwright/fixtures/<protocol_name>/`; one fixture owner per protocol |
-| Architecture astronautics relapse | high | M3 adds more than types and loader, or M6 grows beyond four subsystems, or any milestone proposes folder renames | planner | Hard cap. Any addition requires user approval |
-| Legacy archive breaks unmigrated content paths | medium | WP-CLEAN-2 patch fails `npm run build` | maintainer | Pre-archive grep sweep (WP-CLEAN-1) is M9 entry gate; M8 exit confirms zero legacy refs |
-| Loader strictness blocks valid YAML | medium | WP-DECOMP or WP-WP-3 fails validation despite contract-clean YAML | typescript-engineer | Loader emits a structured error with line refs and an opt-in escape hatch documented in `docs/scene_runtime/CONTRACT.md` |
-| Walker temptation to add step.id branch | high | WP-WP-4 fails on a step the walker cannot resolve; doer reaches for a quick branch in walker source | tester | Static no-branch enforcement test (WP-WALKER-5) is part of `pytest tests/`. Any walker source change requires escalation through WP-WALKER-1; YAML or runtime gets fixed instead |
-| Walker mutates state to make progress | high | walker passes only when `gameState.<prop>` or `selectedTool` written; UI affordance never wired | tester | Same static enforcement test bans state-write patterns. Hard gate: walker failure = adapter or YAML gap, not walker scope |
-| YAML schema gap blocks generic walker | medium | walker engine cannot resolve a click target from declared YAML fields for a protocol step | typescript-engineer | Extend the protocol/scene YAML schema in `src/scene_runtime/contract.ts`; doc the new field in CONTRACT.md; never extend walker dispatch logic |
-| Tiny-stub triage drops important developer smoke coverage | low | retiring a stub removes a useful affordance check | bptools-writer | Retired stubs move to `tests/content/dev_smoke/` rather than deleted; remain runnable for dev diagnostics |
-| Entry-routing patch breaks existing scenes mid-plan | medium | WP-ENTRY-5 alters `src/init.ts` and an existing scene fails to load | typescript-engineer | M2 audit covers every existing protocol; entry block must match the first authored step before routing patch lands |
+| Risk                                                      | Impact | Trigger                                                                                                          | Owner               | Mitigation                                                                                                                                                                       |
+| --------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Curriculum decomposition stalls plan                      | high   | WP-DECOMP-\* drags past 2 weeks; runtime work waits                                                              | bptools-writer      | WP-DECOMP-0 (map) is the only sequential gate. WP-DECOMP-1..6 run in parallel by mini-protocol; tiny-stub triage (WP-DECOMP-7) runs concurrently                                 |
+| Spine over-designs before proof scene works               | high   | M3 exit before M5 vertical proof started                                                                         | planner             | Walking-skeleton rule: M3 ships only contract types and loader; subsystems wait until M6 driven by well_plate needs                                                              |
+| well_plate proof reveals spine gaps mid-M6                | high   | walker fails on a step beyond the vertical proof                                                                 | typescript-engineer | M3 contract allows additive API; spine adds, not breaks. Hot-patch back to M3 in same milestone                                                                                  |
+| Per-HTML bundle balloons                                  | medium | bundle exceeds size budget                                                                                       | coder               | Shared library bundle plus code splitting; budget gate enforced in WP-BUILD-2                                                                                                    |
+| Hood migration uncovers latent hood-only assumptions      | medium | WS-HOOD walker fail at M8                                                                                        | typescript-engineer | Hood is migrated after M6/M7 so spine is locked; failures become adapter bugs, not spine bugs                                                                                    |
+| Doc audit creates churn that conflicts with code shape    | low    | doc rewrites in M0 contradict M3 APIs                                                                            | planner             | M0 emits conflict table plus margin notes only; full rewrites deferred to M9 (WS-DOCS-FINAL)                                                                                     |
+| Parallel doers collide on shared walker fixtures          | medium | fixture conflicts between WS-WP-WALKER and WS-HOOD/WS-BENCH walkers at M8                                        | tester              | Per-mini-protocol fixture isolation under `tests/playwright/fixtures/<protocol_name>/`; one fixture owner per protocol                                                           |
+| Architecture astronautics relapse                         | high   | M3 adds more than types and loader, or M6 grows beyond four subsystems, or any milestone proposes folder renames | planner             | Hard cap. Any addition requires user approval                                                                                                                                    |
+| Legacy archive breaks unmigrated content paths            | medium | WP-CLEAN-2 patch fails `npm run build`                                                                           | maintainer          | Pre-archive grep sweep (WP-CLEAN-1) is M9 entry gate; M8 exit confirms zero legacy refs                                                                                          |
+| Loader strictness blocks valid YAML                       | medium | WP-DECOMP or WP-WP-3 fails validation despite contract-clean YAML                                                | typescript-engineer | Loader emits a structured error with line refs and an opt-in escape hatch documented in `docs/scene_runtime/CONTRACT.md`                                                         |
+| Walker temptation to add step.id branch                   | high   | WP-WP-4 fails on a step the walker cannot resolve; doer reaches for a quick branch in walker source              | tester              | Static no-branch enforcement test (WP-WALKER-5) is part of `pytest tests/`. Any walker source change requires escalation through WP-WALKER-1; YAML or runtime gets fixed instead |
+| Walker mutates state to make progress                     | high   | walker passes only when `gameState.<prop>` or `selectedTool` written; UI affordance never wired                  | tester              | Same static enforcement test bans state-write patterns. Hard gate: walker failure = adapter or YAML gap, not walker scope                                                        |
+| YAML schema gap blocks generic walker                     | medium | walker engine cannot resolve a click target from declared YAML fields for a protocol step                        | typescript-engineer | Extend the protocol/scene YAML schema in `src/scene_runtime/contract.ts`; doc the new field in CONTRACT.md; never extend walker dispatch logic                                   |
+| Tiny-stub triage drops important developer smoke coverage | low    | retiring a stub removes a useful affordance check                                                                | bptools-writer      | Retired stubs move to `tests/content/dev_smoke/` rather than deleted; remain runnable for dev diagnostics                                                                        |
+| Entry-routing patch breaks existing scenes mid-plan       | medium | WP-ENTRY-5 alters `src/init.ts` and an existing scene fails to load                                              | typescript-engineer | M2 audit covers every existing protocol; entry block must match the first authored step before routing patch lands                                                               |
 
 ## Rollout and release checklist
 
-- [ ] M0 conflict table merged; margin notes added to all seven SCENE_*/PROTOCOL_* docs.
+- [ ] M0 conflict table merged; margin notes added to all seven SCENE*\*/PROTOCOL*\* docs.
 - [ ] M1 curriculum decomposition map published; new mini-protocol set authored; tiny stubs triaged; `tests/test_mini_protocol_size_and_learning.py` green.
 - [ ] M2 every `protocol.yaml` has an `entry:` block; `src/init.ts` honors it; `tests/test_protocol_entry_no_hood_default.py` green.
 - [ ] M3 `src/scene_runtime/` compiles; contract types and loader documented in `docs/scene_runtime/CONTRACT.md`; legacy banner header on every `src/scenes/` file.
@@ -1290,7 +1290,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - [ ] M6 decomposed `plate_drug_treatment` walker green on all 8-10 steps; layout, dispatch, highlight, liquid subsystems unit-tested; `well_plate_workspace_pause_note.md` archived.
 - [ ] M7 per-mini-protocol HTML emission working; size budget met; launcher `dist/index.html` lists every curriculum mini-protocol plus the full-sequence runner.
 - [ ] M8 hood, bench, microscope adapters walker green for every migrated mini-protocol via the generic walker; `cell_culture_full` linked sequence passes; zero new walker source.
-- [ ] M9 legacy `src/scenes/` archived or deleted; `src/init.ts` aliases removed; all seven SCENE_*/PROTOCOL_* docs rewritten and cross-referenced with PRIMARY_CONTRACT.md; active-plan trackers archived.
+- [ ] M9 legacy `src/scenes/` archived or deleted; `src/init.ts` aliases removed; all seven SCENE*\*/PROTOCOL*\* docs rewritten and cross-referenced with PRIMARY_CONTRACT.md; active-plan trackers archived.
 - [ ] M9 zero `src/legacy_*.ts` files remain; `tests/test_no_legacy_prefix_src.py` green.
 - [ ] `docs/CHANGELOG.md` entry per milestone exit.
 - [ ] `docs/INSTALL.md` and `docs/USAGE.md` updated for launcher and per-HTML outputs.
@@ -1303,7 +1303,7 @@ Work packages are file-scoped where practical so multiple doers can run concurre
 - Archive / closure notes:
   - `docs/active_plans/well_plate_workspace_pause_note.md` archived to `docs/archive/` at M6 exit.
   - `docs/active_plans/curriculum_decomposition.md`, `docs/active_plans/protocol_entry_audit.md`, and `docs/active_plans/scene_runtime_doc_conflicts.md` archived to `docs/archive/` at M9 exit.
-- Final doc rewrite owner: WS-DOCS-FINAL for the seven SCENE_*/PROTOCOL_* docs.
+- Final doc rewrite owner: WS-DOCS-FINAL for the seven SCENE*\*/PROTOCOL*\* docs.
 - PRIMARY_CONTRACT.md cross-refs added in each canonical doc at M9.
 
 ## Patch plan and reporting format
@@ -1381,7 +1381,7 @@ Each work package closes with one patch. Patches are listed by milestone in appr
 - Patch 53: pre-archive grep sweep test (WP-CLEAN-1).
 - Patch 53b: no-legacy-prefix-src test (WP-CLEAN-3).
 - Patch 54: archive legacy `src/scenes/` (WP-CLEAN-2).
-- Patches 55a-55g: rewrite each SCENE_*/PROTOCOL_* doc (WP-DOCS-1a..1g, parallel).
+- Patches 55a-55g: rewrite each SCENE*\*/PROTOCOL*\* doc (WP-DOCS-1a..1g, parallel).
 - Patch 56: archive active-plan trackers (WP-DOCS-2).
 
 Cadence target: 1 to 2 patches per coder per week. Each patch closes one work package and ships a `docs/CHANGELOG.md` entry.
@@ -1390,10 +1390,10 @@ Cadence target: 1 to 2 patches per coder per week. Each patch closes one work pa
 
 Resolved decisions:
 
-- Proposed mini-protocol set: confirmed as hood_flask_prep, cell_counting_and_seeding, drug_dilution_setup, plate_drug_treatment, mtt_assay_readout, plus cell_culture_full as the full protocol runner. The tutorial_ prefix is dropped; readable curriculum names are used.
+- Proposed mini-protocol set: confirmed as hood*flask_prep, cell_counting_and_seeding, drug_dilution_setup, plate_drug_treatment, mtt_assay_readout, plus cell_culture_full as the full protocol runner. The tutorial* prefix is dropped; readable curriculum names are used.
 - Disposition of legacy tiny tutorials: confirmed per WP-DECOMP-7. Six tutorials (cell_counter, drug_dilution, hemocytometer_count, hood_transfer, pbs, split) absorbed into new mini-protocols and deleted. Two tutorials (bench_direct, plate_reader) retained as developer smoke fixtures and renamed (bench_direct_check, plate_reader_check). Smoke fixtures live under tests/content/dev_smoke/, not content/.
 - Source-code home for shared scene runtime modules: src/scene_runtime/ for authored TypeScript source only. Generated protocol, scene, inventory, and registry data emits under generated/ at the repo root. Generated files do not live under src/.
-- Legacy tree at M9: archive under archive/code/scenes_legacy_<YYYY_MM>/ at the repo root, not under src/. Archiving inside src/ muddies source ownership and risks accidental imports. Default: archive only; delete deferred to a follow-up patch.
+- Legacy tree at M9: archive under archive/code/scenes*legacy*<YYYY_MM>/ at the repo root, not under src/. Archiving inside src/ muddies source ownership and risks accidental imports. Default: archive only; delete deferred to a follow-up patch.
 - Mini-protocol HTML filename convention: <protocol_name>.html. Use the readable protocol name, not an opaque id. Examples: hood_flask_prep.html, plate_drug_treatment.html, cell_culture_full.html.
 - Protocol type hierarchy and friendly terminology: protocol is the complete student-facing pathway. mini_protocol is a focused workflow component, usually one scene or a short scene transition. sequence_runner is the schema-level protocol_type value; in docs and student-facing content it is referred to as the "full protocol runner". dev_smoke is a developer diagnostic protocol, not curriculum, and lives under tests/content/dev_smoke/.
 - Dev/test content root: builder and walker support tests/content/ as an explicit dev/test content root for smoke fixtures. content/ stays reserved for curriculum mini-protocols and full protocol runners. Smoke fixtures are excluded from the student launcher, full-protocol sequencing, and the 6-to-10 step curriculum gate, while remaining validatable and runnable in dev/test mode.

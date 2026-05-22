@@ -14,23 +14,24 @@ Use "workstream" not "lane".
 
 ## Batch 3 workstream outcomes
 
-| Workstream | Status | Headline | Artifact |
-| --- | --- | --- | --- |
-| A | DONE_WITH_CONCERNS | 2 r_ovf root cause: generator overstuffing + footprint miscategorization (bottles render as container, not handheld) | batch3_a_remaining_hard_fails.md |
-| B (generator) | DONE | Placement cap added; 100 scenes regenerated (75 realistic + 25 adversarial); enforce_placement_caps still passes over-cap through | batch3_b_generator_cap_results.md |
-| B-verify | DONE_WITH_CONCERNS | Realistic 75: 624 hard_fails (target 0). Different scene set than batch2_n; numerics not directly comparable | batch3_b_verify_summary.md |
-| C | DONE | 4 YAML reclassifications kept (cell_counter, well_plate_96, tube_rack_24, tube_rack_15ml). Trials 5-6 deferred (need new CSS classes, user-gated). Stress templates are static HTML; YAML edits semantically correct but no visible stress effect | batch3_c_reclassification_trials.md |
-| D | DONE | dense_clutter_014 -19pt verdict: KEEP. Pre-fix score 49 was false-high (10 unscored clipped_by_parent HARD_FAILs invisible to scorecard formula). Honest post-fix score 30 | batch3_d_dense_clutter_014_analysis.md |
-| E | DONE | Canonical scorecard rule + hygiene test PASSING. /tmp helper anti-pattern banned | new3_batch3_canonical_scorecard_rule.md + tests/test_canonical_scorecard_rule.py |
-| F | DONE | 6 contact sheets + INDEX, 52 scenes, 130 PNG refs. Verdict BATCH3_VISUAL_OK | batch3_f_gallery/INDEX.html |
-| G | this report | synthesis | docs/active_plans/new3_batch3_remaining_failures_report.md |
-| H | DONE | NEW2 showcase addendum recording cumulative Batch 2+3 outcomes | new2_showcase_batch2_addendum.md |
+| Workstream    | Status             | Headline                                                                                                                                                                                                                                          | Artifact                                                                         |
+| ------------- | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| A             | DONE_WITH_CONCERNS | 2 r_ovf root cause: generator overstuffing + footprint miscategorization (bottles render as container, not handheld)                                                                                                                              | batch3_a_remaining_hard_fails.md                                                 |
+| B (generator) | DONE               | Placement cap added; 100 scenes regenerated (75 realistic + 25 adversarial); enforce_placement_caps still passes over-cap through                                                                                                                 | batch3_b_generator_cap_results.md                                                |
+| B-verify      | DONE_WITH_CONCERNS | Realistic 75: 624 hard_fails (target 0). Different scene set than batch2_n; numerics not directly comparable                                                                                                                                      | batch3_b_verify_summary.md                                                       |
+| C             | DONE               | 4 YAML reclassifications kept (cell_counter, well_plate_96, tube_rack_24, tube_rack_15ml). Trials 5-6 deferred (need new CSS classes, user-gated). Stress templates are static HTML; YAML edits semantically correct but no visible stress effect | batch3_c_reclassification_trials.md                                              |
+| D             | DONE               | dense_clutter_014 -19pt verdict: KEEP. Pre-fix score 49 was false-high (10 unscored clipped_by_parent HARD_FAILs invisible to scorecard formula). Honest post-fix score 30                                                                        | batch3_d_dense_clutter_014_analysis.md                                           |
+| E             | DONE               | Canonical scorecard rule + hygiene test PASSING. /tmp helper anti-pattern banned                                                                                                                                                                  | new3_batch3_canonical_scorecard_rule.md + tests/test_canonical_scorecard_rule.py |
+| F             | DONE               | 6 contact sheets + INDEX, 52 scenes, 130 PNG refs. Verdict BATCH3_VISUAL_OK                                                                                                                                                                       | batch3_f_gallery/INDEX.html                                                      |
+| G             | this report        | synthesis                                                                                                                                                                                                                                         | docs/active_plans/new3_batch3_remaining_failures_report.md                       |
+| H             | DONE               | NEW2 showcase addendum recording cumulative Batch 2+3 outcomes                                                                                                                                                                                    | new2_showcase_batch2_addendum.md                                                 |
 
 ## Remaining 2 hard failures (post-Batch-2)
 
-Both on stress_many_bottles_scene_001 and _002. r_ovf only. Both `intended_difficulty: adversarial`. Workstream-A verdict: ADVERSARIAL (synthetic stress, not curriculum content).
+Both on stress_many_bottles_scene_001 and \_002. r_ovf only. Both `intended_difficulty: adversarial`. Workstream-A verdict: ADVERSARIAL (synthetic stress, not curriculum content).
 
 Cause hierarchy:
+
 1. Generator over-stuffs rear_shelf with 16-17 bottles (rng.randint(15, 20))
 2. enforce_placement_caps has comment "Over-cap; mark as adversarial and still add (for now)" -- does NOT truncate
 3. Bottles render as footprint--container (220x240 minimum) despite bench.yaml saying bottle: handheld (90x110)
@@ -47,11 +48,13 @@ Caps set: rear_shelf 12, work_surface 6, front_tools 12, instrument_station 5, p
 Status: code added, scenes regenerated. enforce_placement_caps does NOT actually reject over-cap placements -- it marks scenes as adversarial and adds them anyway. This is a soft cap, not a hard cap.
 
 B-verify result on regenerated 100 scenes:
+
 - Realistic 75: 624 hard_fails (8.3 per scene)
 - Adversarial 25: 436 hard_fails (17.4 per scene)
 - Realistic median 32, mean 34.7 (batch2_n median was 41)
 
 Why realistic subset still has hard_fails:
+
 - Generator cap addresses r_ovf (region overflow) only
 - CBP and AD_HF come from CSS footprint sizing, NOT generator placement count
 - Per Workstream-C, stress templates have hardcoded footprint classes; YAML kind_to_footprint changes do not change static template rendering
@@ -78,6 +81,7 @@ Stress-scene precheck impact: zero (templates static-HTML, ignore YAML). Product
 Verdict: KEEP. Recommendation: no revert.
 
 Pre-fix score 49 was a measurement artifact. Pre-fix scene had 10 unscored clipped_by_parent HARD_FAILs:
+
 - ethanol_bottle 107px cropped
 - dmso_bottle x2 107px cropped each
 - dilution_rack 116px cropped
@@ -96,6 +100,7 @@ Optional mitigation: data-scene-density="crowded" YAML field. Reduces card heigh
 ## Canonical scorecard enforcement
 
 Workstream-E delivered:
+
 - docs/active_plans/new3_batch3_canonical_scorecard_rule.md (137 lines)
 - tests/test_canonical_scorecard_rule.py (67 lines, PASSING)
 - experiments/css_native_layout/PRECHECK_USAGE.md (Scorecard generation section added)
@@ -104,7 +109,7 @@ Rule statement: scorecard claims must come from canonical score_layout.mjs. Help
 
 Banned patterns: hardcoded metric values, Python reimplementations of score_layout.mjs, stale visual_audit.json input.
 
-Case study: /tmp/_generate_scorecard_batch2_n.py that produced false "5 regressions" in Batch 2. Workstream O caught it; E codified the prevention rule.
+Case study: /tmp/\_generate_scorecard_batch2_n.py that produced false "5 regressions" in Batch 2. Workstream O caught it; E codified the prevention rule.
 
 Hygiene test scans experiments/css_native_layout/ for forbidden helper patterns. Currently PASSING.
 
@@ -113,12 +118,14 @@ Hygiene test scans experiments/css_native_layout/ for forbidden helper patterns.
 ### 1. Scorecard hardFailCount gap
 
 Discovered via Workstream D. score_layout.mjs hardFailCount counts only:
+
 - clipped_artwork
 - off_page
 - svg_svg_overlap
 - region_overflow
 
 It does NOT count:
+
 - clipped_by_parent (the actual no-crop hard rule violation)
 - aspect_distorted_HF
 
@@ -128,9 +135,10 @@ Recommendation: extend hardFailCount to include clipped_by_parent and aspect_dis
 
 ### 2. Stress templates are static HTML, not YAML-driven
 
-Discovered via Workstream C. stress_scenes/rendered/*.html have hardcoded footprint classes from the render_stress_to_html.py generator. YAML kind_to_footprint edits in regions/*.yaml do not change static template rendering.
+Discovered via Workstream C. stress*scenes/rendered/*.html have hardcoded footprint classes from the render*stress_to_html.py generator. YAML kind_to_footprint edits in regions/*.yaml do not change static template rendering.
 
 This explains:
+
 - Workstream K source audit found no footprint assignment in css_native_adapter.ts or layout_engine.ts (correct -- they don't, for production)
 - Workstream A HTML inspection found footprint--container on bottles (correct -- static template uses hardcoded class)
 - Both audits true; just measuring different layers
@@ -150,6 +158,7 @@ Recommendation: change enforce_placement_caps to truncate. OR change build_many_
 YES, with caveats.
 
 Pro:
+
 - Hard rule compliance (no crop) achieved at artwork-integrity level for the original 110-scene batch2_n_canonical corpus
 - 7 of 9 Batch 1 failure clusters collapsed
 - Visual gallery confirms real fix
@@ -157,12 +166,14 @@ Pro:
 - Diagnostic methodology gaps identified and either fixed (canonical rule) or documented (hardFailCount gap)
 
 Caveats:
+
 - 2 adversarial scenes still hard-fail (acceptable, marked adversarial)
 - enforce_placement_caps soft-cap should be hardened (small fix)
 - Scorecard hardFailCount gap should be addressed (diagnostic semantic change; user approval needed)
 - B-verify on regenerated 100-scene set shows higher hard_fails than batch2_n's 110-scene set; investigate before claiming new set is canonical
 
 User-gated decisions still queued:
+
 - New CSS classes for landscape containers/racks (trials 5-6 from Workstream-C)
 - Diagnostic semantic change: extend hardFailCount to include clipped_by_parent + aspect_distorted_HF
 - Game viewport contract (4:3, deferred from Batch 1)
@@ -170,13 +181,13 @@ User-gated decisions still queued:
 
 ## Suggested Batch 4 candidates (if pursued)
 
-| Candidate | Type | Estimated impact | User approval needed |
-| --- | --- | --- | --- |
-| Harden enforce_placement_caps (truncate not soft-mark) | Generator | Clears 2 remaining adversarial r_ovf if cap respected | No |
-| Extend hardFailCount in score_layout.mjs | Diagnostic semantic | Honest score baselines; reveals pre-fix scenes were broken | YES (diagnostic semantic) |
-| Investigate render_stress_to_html.py footprint hardcoding | Render pipeline audit | Document why static templates assign footprint--container to bottles; align with bench.yaml | Bounded read-only |
-| Landscape footprint classes (Trials 5-6 from C) | New CSS classes | Resolves t75_flask + drug_vial_rack latent issues | YES (new vocabulary) |
-| Visual polish pass on gold scenes | Curriculum-content focus | Move from stress to pedagogy quality | No |
+| Candidate                                                 | Type                     | Estimated impact                                                                            | User approval needed      |
+| --------------------------------------------------------- | ------------------------ | ------------------------------------------------------------------------------------------- | ------------------------- |
+| Harden enforce_placement_caps (truncate not soft-mark)    | Generator                | Clears 2 remaining adversarial r_ovf if cap respected                                       | No                        |
+| Extend hardFailCount in score_layout.mjs                  | Diagnostic semantic      | Honest score baselines; reveals pre-fix scenes were broken                                  | YES (diagnostic semantic) |
+| Investigate render_stress_to_html.py footprint hardcoding | Render pipeline audit    | Document why static templates assign footprint--container to bottles; align with bench.yaml | Bounded read-only         |
+| Landscape footprint classes (Trials 5-6 from C)           | New CSS classes          | Resolves t75_flask + drug_vial_rack latent issues                                           | YES (new vocabulary)      |
+| Visual polish pass on gold scenes                         | Curriculum-content focus | Move from stress to pedagogy quality                                                        | No                        |
 
 ## Boundaries preserved
 

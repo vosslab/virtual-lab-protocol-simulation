@@ -1,116 +1,116 @@
 {
-	"path_id": "path_c_hybrid",
-	"path_name": "Hybrid bridge",
-	"description": "CSS-native DOM for visual layout plus a minimal anchor API that reports live DOM bounds for cursor-attach. Browser computes layout; API only reports. ObjectStateChange remains state-only and does not call the anchor API.",
-	"production_files_touched": [
-		{
-			"file": "src/scene_runtime/layout/adapter.ts",
-			"lines": "32-90",
-			"change": "one conditional gate scoped to well_plate_96_zoom plus feature flag; returns empty ComputedItemLayout[] for the spike scene"
-		},
-		{
-			"file": "src/scene_runtime/layout/dom_anchors.ts",
-			"lines": "new",
-			"change": "new module exposing 2-3 anchor read functions over the live DOM"
-		}
-	],
-	"production_files_not_touched": [
-		"src/scene_runtime/render/apply.ts",
-		"src/scene_runtime/dispatch/click.ts",
-		"src/scene_runtime/adapters/well_plate/render.ts",
-		"src/scene_runtime/loader/scene.ts",
-		"docs/PRIMARY_CONTRACT.md",
-		"docs/specs/",
-		"pipeline/",
-		"validation/",
-		"content/protocols/"
-	],
-	"anchor_api": {
-		"function_count": 3,
-		"function_count_floor": 2,
-		"functions": [
-			{
-				"name": "getAnchorForObject",
-				"input": "name: string",
-				"output": "{x:int, y:int} | null",
-				"mechanism": "document.querySelector('[data-object-name=NAME]').getBoundingClientRect()"
-			},
-			{
-				"name": "getAnchorForTarget",
-				"input": "targetId: string",
-				"output": "{x:int, y:int} | null",
-				"mechanism": "document.querySelector('[data-target-id=ID]').getBoundingClientRect()"
-			},
-			{
-				"name": "getAnchorBoundsForObject",
-				"input": "name: string",
-				"output": "{x:int, y:int, width:int, height:int} | null",
-				"mechanism": "document.querySelector('[data-object-name=NAME]').getBoundingClientRect()",
-				"droppable": true
-			}
-		],
-		"bail_threshold": "more than 3 functions, OR any input other than a string name/id, OR any read outside the live DOM, OR any per-frame invocation"
-	},
-	"features": {
-		"cursor_attach": {
-			"approach": "state-only mutation unchanged; cursor-follower chrome calls getAnchorForObject once at attach time to pin ghost; per-frame position from native pointermove",
-			"production_changes": "none in apply.ts; chrome layer reads new anchor module",
-			"invocation_frequency": "one call per attach"
-		},
-		"object_state_change": {
-			"approach": "no anchor API call; existing apply.ts state swap unchanged; re-render updates DOM class/style; browser re-runs CSS layout",
-			"production_changes": "none in apply.ts",
-			"invocation_frequency": "zero"
-		},
-		"adapter_return": {
-			"preferred": "empty ComputedItemLayout[]",
-			"fallback": "synthetic single-entry layout populated by one-shot getAnchorBoundsForObject call",
-			"populated_at_all": false
-		}
-	},
-	"rollback": {
-		"strategy": "single PR revert",
-		"complexity": "low",
-		"command_sketch": "git revert <spike-PR-commit-sha>",
-		"removes": [
-			"ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE flag",
-			"conditional gate in adapter.ts",
-			"dom_anchors.ts module",
-			"optional css_native_adapter.ts shim"
-		]
-	},
-	"precheck": {
-		"command_reference": "experiments/css_native_layout/spike_fixtures/expected_precheck_command.md",
-		"affected_by_path_c": false,
-		"notes": "precheck inspects rendered DOM; anchor API does not perturb precheck output"
-	},
-	"screenshot": {
-		"path_reference": "experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md",
-		"before_after_contract_preserved": true
-	},
-	"risks": [
-		{
-			"risk": "anchor API grows beyond a read-only DOM bridge",
-			"threshold": "more than 3 functions, OR a 4th function whose name encodes intent (getAnchorBetween, placeAnchorRelativeTo, solveAnchorChain), OR any input other than a name/id string, OR any read outside the live DOM",
-			"action_on_breach": "stop; document; bail per packet failure conditions"
-		},
-		{
-			"risk": "per-frame anchor reads turn the module into a tracker",
-			"threshold": "any caller invokes the anchor API inside an animation frame, scroll handler, or pointermove handler",
-			"action_on_breach": "stop; route follow-up via native pointer events, not anchor reads"
-		},
-		{
-			"risk": "synthetic ComputedItemLayout coordinates start being consumed for layout intent",
-			"threshold": "a consumer outside render/scene.ts or well_plate/render.ts reads layout.x or layout.y",
-			"action_on_breach": "stop; consumer either no-ops for the spike scene or is rerouted to the anchor API directly"
-		}
-	],
-	"compatibility_notes": [
-		"click dispatch already reads data-target-id from the live DOM via closest() at src/scene_runtime/dispatch/click.ts lines 29-79; CSS-native DOM emitting the same attributes inherits the existing pipeline with zero changes",
-		"CursorAttach applier at src/scene_runtime/render/apply.ts lines 149-198 is state-only and is not changed by Path C",
-		"ObjectStateChange applier at src/scene_runtime/render/apply.ts lines 31-111 is state-only and is not changed by Path C"
-	],
-	"recommendation": "keep",
-	"recommendation_rationale": "lowest TS-side complexity among the three paths because no layout math runs in TypeScript and no render-side code is touched; the only spike question is whether a one-shot anchor read at attach time is enough for cursor-attach, which is answerable by the existing walker without rebuilding any subsystem",
-	"one_sentence_risk_summary": "Path C silently becomes a layout engine if the anchor API grows past 3 read-only DOM functions or starts taking layout intent (zone, region, align, offset) as input."
+  "path_id": "path_c_hybrid",
+  "path_name": "Hybrid bridge",
+  "description": "CSS-native DOM for visual layout plus a minimal anchor API that reports live DOM bounds for cursor-attach. Browser computes layout; API only reports. ObjectStateChange remains state-only and does not call the anchor API.",
+  "production_files_touched": [
+    {
+      "file": "src/scene_runtime/layout/adapter.ts",
+      "lines": "32-90",
+      "change": "one conditional gate scoped to well_plate_96_zoom plus feature flag; returns empty ComputedItemLayout[] for the spike scene"
+    },
+    {
+      "file": "src/scene_runtime/layout/dom_anchors.ts",
+      "lines": "new",
+      "change": "new module exposing 2-3 anchor read functions over the live DOM"
+    }
+  ],
+  "production_files_not_touched": [
+    "src/scene_runtime/render/apply.ts",
+    "src/scene_runtime/dispatch/click.ts",
+    "src/scene_runtime/adapters/well_plate/render.ts",
+    "src/scene_runtime/loader/scene.ts",
+    "docs/PRIMARY_CONTRACT.md",
+    "docs/specs/",
+    "pipeline/",
+    "validation/",
+    "content/protocols/"
+  ],
+  "anchor_api": {
+    "function_count": 3,
+    "function_count_floor": 2,
+    "functions": [
+      {
+        "name": "getAnchorForObject",
+        "input": "name: string",
+        "output": "{x:int, y:int} | null",
+        "mechanism": "document.querySelector('[data-object-name=NAME]').getBoundingClientRect()"
+      },
+      {
+        "name": "getAnchorForTarget",
+        "input": "targetId: string",
+        "output": "{x:int, y:int} | null",
+        "mechanism": "document.querySelector('[data-target-id=ID]').getBoundingClientRect()"
+      },
+      {
+        "name": "getAnchorBoundsForObject",
+        "input": "name: string",
+        "output": "{x:int, y:int, width:int, height:int} | null",
+        "mechanism": "document.querySelector('[data-object-name=NAME]').getBoundingClientRect()",
+        "droppable": true
+      }
+    ],
+    "bail_threshold": "more than 3 functions, OR any input other than a string name/id, OR any read outside the live DOM, OR any per-frame invocation"
+  },
+  "features": {
+    "cursor_attach": {
+      "approach": "state-only mutation unchanged; cursor-follower chrome calls getAnchorForObject once at attach time to pin ghost; per-frame position from native pointermove",
+      "production_changes": "none in apply.ts; chrome layer reads new anchor module",
+      "invocation_frequency": "one call per attach"
+    },
+    "object_state_change": {
+      "approach": "no anchor API call; existing apply.ts state swap unchanged; re-render updates DOM class/style; browser re-runs CSS layout",
+      "production_changes": "none in apply.ts",
+      "invocation_frequency": "zero"
+    },
+    "adapter_return": {
+      "preferred": "empty ComputedItemLayout[]",
+      "fallback": "synthetic single-entry layout populated by one-shot getAnchorBoundsForObject call",
+      "populated_at_all": false
+    }
+  },
+  "rollback": {
+    "strategy": "single PR revert",
+    "complexity": "low",
+    "command_sketch": "git revert <spike-PR-commit-sha>",
+    "removes": [
+      "ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE flag",
+      "conditional gate in adapter.ts",
+      "dom_anchors.ts module",
+      "optional css_native_adapter.ts shim"
+    ]
+  },
+  "precheck": {
+    "command_reference": "experiments/css_native_layout/spike_fixtures/expected_precheck_command.md",
+    "affected_by_path_c": false,
+    "notes": "precheck inspects rendered DOM; anchor API does not perturb precheck output"
+  },
+  "screenshot": {
+    "path_reference": "experiments/css_native_layout/spike_fixtures/expected_screenshot_paths.md",
+    "before_after_contract_preserved": true
+  },
+  "risks": [
+    {
+      "risk": "anchor API grows beyond a read-only DOM bridge",
+      "threshold": "more than 3 functions, OR a 4th function whose name encodes intent (getAnchorBetween, placeAnchorRelativeTo, solveAnchorChain), OR any input other than a name/id string, OR any read outside the live DOM",
+      "action_on_breach": "stop; document; bail per packet failure conditions"
+    },
+    {
+      "risk": "per-frame anchor reads turn the module into a tracker",
+      "threshold": "any caller invokes the anchor API inside an animation frame, scroll handler, or pointermove handler",
+      "action_on_breach": "stop; route follow-up via native pointer events, not anchor reads"
+    },
+    {
+      "risk": "synthetic ComputedItemLayout coordinates start being consumed for layout intent",
+      "threshold": "a consumer outside render/scene.ts or well_plate/render.ts reads layout.x or layout.y",
+      "action_on_breach": "stop; consumer either no-ops for the spike scene or is rerouted to the anchor API directly"
+    }
+  ],
+  "compatibility_notes": [
+    "click dispatch already reads data-target-id from the live DOM via closest() at src/scene_runtime/dispatch/click.ts lines 29-79; CSS-native DOM emitting the same attributes inherits the existing pipeline with zero changes",
+    "CursorAttach applier at src/scene_runtime/render/apply.ts lines 149-198 is state-only and is not changed by Path C",
+    "ObjectStateChange applier at src/scene_runtime/render/apply.ts lines 31-111 is state-only and is not changed by Path C"
+  ],
+  "recommendation": "keep",
+  "recommendation_rationale": "lowest TS-side complexity among the three paths because no layout math runs in TypeScript and no render-side code is touched; the only spike question is whether a one-shot anchor read at attach time is enough for cursor-attach, which is answerable by the existing walker without rebuilding any subsystem",
+  "one_sentence_risk_summary": "Path C silently becomes a layout engine if the anchor API grows past 3 read-only DOM functions or starts taking layout intent (zone, region, align, offset) as input."
 }

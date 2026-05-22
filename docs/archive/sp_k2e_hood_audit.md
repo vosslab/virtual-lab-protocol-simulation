@@ -7,17 +7,17 @@
 
 ## Inventory: 9 literal-id calls in hood.ts
 
-| # | Line | Literal id              | Surrounding item branch                                  |
-| - | ---- | ----------------------- | -------------------------------------------------------- |
-| 1 | 1005 | `'spray_hood'`          | ethanol_bottle click                                     |
-| 2 | 1094 | `'add_trypsin'`         | trypsin_bottle + flask                                   |
-| 3 | 1138 | `'pbs_wash'`            | pbs_bottle + flask                                       |
-| 4 | 1151 | `'pbs_wash'`            | pbs_bottle + flask shortcut                              |
-| 5 | 1202 | `'seed_plate'`          | serological_pipette_with_cells + well_plate              |
-| 6 | 1245 | `'media_adjust'`        | multichannel + media_bottle + well_plate                 |
-| 7 | 1268 | `'add_mtt'`             | multichannel_pipette_with_mtt + well_plate               |
-| 8 | 1281 | `'decant_mtt'`          | well_plate + biohazard_decant                            |
-| 9 | 1304 | `'add_dmso'`            | multichannel_pipette_with_dmso + well_plate              |
+| #   | Line | Literal id       | Surrounding item branch                     |
+| --- | ---- | ---------------- | ------------------------------------------- |
+| 1   | 1005 | `'spray_hood'`   | ethanol_bottle click                        |
+| 2   | 1094 | `'add_trypsin'`  | trypsin_bottle + flask                      |
+| 3   | 1138 | `'pbs_wash'`     | pbs_bottle + flask                          |
+| 4   | 1151 | `'pbs_wash'`     | pbs_bottle + flask shortcut                 |
+| 5   | 1202 | `'seed_plate'`   | serological_pipette_with_cells + well_plate |
+| 6   | 1245 | `'media_adjust'` | multichannel + media_bottle + well_plate    |
+| 7   | 1268 | `'add_mtt'`      | multichannel_pipette_with_mtt + well_plate  |
+| 8   | 1281 | `'decant_mtt'`   | well_plate + biohazard_decant               |
+| 9   | 1304 | `'add_dmso'`     | multichannel_pipette_with_dmso + well_plate |
 
 All live in the legacy `onItemClick` fallback (starts ~line 997).
 
@@ -39,15 +39,17 @@ For each literal-id callsite, the conversion is:
 
 ```ts
 const currentStep = getCurrentStep();
-if (currentStep?.completionPath?.kind === 'directTool'
-    && currentStep.completionPath.tool === '<item-id-or-tool-id>'
-    && gameState.activeStepId) {
-    // existing side effects (state mutations, notifications, renders)
-    triggerStep(gameState.activeStepId);
-    renderHoodScene();
-    renderProtocolPanel();
-    renderScoreDisplay();
-    return;
+if (
+  currentStep?.completionPath?.kind === "directTool" &&
+  currentStep.completionPath.tool === "<item-id-or-tool-id>" &&
+  gameState.activeStepId
+) {
+  // existing side effects (state mutations, notifications, renders)
+  triggerStep(gameState.activeStepId);
+  renderHoodScene();
+  renderProtocolPanel();
+  renderScoreDisplay();
+  return;
 }
 ```
 

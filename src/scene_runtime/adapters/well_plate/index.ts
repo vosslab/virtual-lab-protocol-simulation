@@ -5,8 +5,8 @@
  * a plate-kind placement.
  */
 
-import type { PlacementConfig, ObjectConfig, RuntimeWorld } from '../../types';
-import { renderWellPlate } from './render';
+import type { PlacementConfig, ObjectConfig, RuntimeWorld } from "../../types";
+import { renderWellPlate } from "./render";
 
 /**
  * Try to render a well-plate object. Returns true if this adapter handled the placement.
@@ -22,29 +22,38 @@ import { renderWellPlate } from './render';
  * @returns true if the placement was handled by this adapter; false otherwise.
  */
 export function tryRenderWellPlate(
-	placement: PlacementConfig,
-	objectConfig: ObjectConfig,
-	container: SVGElement,
-	x: number,
-	y: number,
-	width: number,
-	height: number,
-	world?: RuntimeWorld,
+  placement: PlacementConfig,
+  objectConfig: ObjectConfig,
+  container: SVGElement,
+  x: number,
+  y: number,
+  width: number,
+  height: number,
+  world?: RuntimeWorld,
 ): boolean {
-	// Check if this is a plate-kind object.
-	if (objectConfig.kind !== 'plate') {
-		return false;
-	}
+  // Check if this is a plate-kind object.
+  if (objectConfig.kind !== "plate") {
+    return false;
+  }
 
-	// Render the well plate.
-	renderWellPlate(placement, objectConfig, container, x, y, width, height, world);
+  // Render the well plate.
+  renderWellPlate(
+    placement,
+    objectConfig,
+    container,
+    x,
+    y,
+    width,
+    height,
+    world,
+  );
 
-	return true;
+  return true;
 }
 
 /**
  * Well-plate adapter: handles plate-kind objects and renders their cells as a grid.
  */
 export const wellPlateAdapter = {
-	tryRender: tryRenderWellPlate,
+  tryRender: tryRenderWellPlate,
 };

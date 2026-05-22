@@ -19,7 +19,7 @@ at that viewport.
 
 ## Hard rule: NEVER crop SVG assets in display
 
-Canonical home: [docs/PRIMARY_DESIGN.md](../../docs/PRIMARY_DESIGN.md). See also [docs/specs/SVG_PIPELINE.md](../../docs/specs/SVG_PIPELINE.md) and [docs/specs/LAYOUT_ENGINE.md](../../docs/specs/LAYOUT_ENGINE.md).
+Canonical home: [PRIMARY_DESIGN.md](../../docs/PRIMARY_DESIGN.md). See also [SVG_PIPELINE.md](../../docs/specs/SVG_PIPELINE.md) and [LAYOUT_ENGINE.md](../../docs/specs/LAYOUT_ENGINE.md).
 
 A scene cannot pass visual review if any scientific SVG asset is cropped or
 aspect-distorted enough to change what the object is.
@@ -67,7 +67,7 @@ Anti-patterns (forbidden):
 
 See also: [DIAGNOSTICS_REFERENCE.md](DIAGNOSTICS_REFERENCE.md),
 [../../docs/active_plans/new2_css_native_production_blocker_plan.md](../../docs/active_plans/new2_css_native_production_blocker_plan.md),
-[../../docs/active_plans/new2_css_native_best_case_showcase_no_crop_addendum.md](../../docs/active_plans/new2_css_native_best_case_showcase_no_crop_addendum.md).
+[new2_css_native_best_case_showcase_no_crop_addendum.md](../../docs/archive/css_native_layout/new2_css_native_best_case_showcase_no_crop_addendum.md).
 
 ## Bench
 

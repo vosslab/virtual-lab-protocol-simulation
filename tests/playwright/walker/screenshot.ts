@@ -1,16 +1,14 @@
 // Screenshot pipeline for walker: captures before/after and summary screenshots.
 // Organizes screenshots by protocol, step, and action for easy review.
 
-import type { Page } from 'playwright';
-// @ts-ignore: Node module types require @types/node
-import fs from 'node:fs';
-// @ts-ignore: Node module types require @types/node
-import path from 'node:path';
+import type { Page } from "playwright";
+import fs from "node:fs";
+import path from "node:path";
 
 export interface ScreenshotContext {
-	protocolId: string;
-	stepIndex: number;       // step number, 1-based
-	actionIndex: number;     // click index within step, 1-based
+  protocolId: string;
+  stepIndex: number; // step number, 1-based
+  actionIndex: number; // click index within step, 1-based
 }
 
 //============================================
@@ -22,7 +20,7 @@ export interface ScreenshotContext {
  * Format: test-results/walker/<protocolId>
  */
 function getProtocolScreenshotRoot(protocolId: string): string {
-	return path.join('test-results', 'walker', protocolId);
+  return path.join("test-results", "walker", protocolId);
 }
 
 /**
@@ -30,8 +28,8 @@ function getProtocolScreenshotRoot(protocolId: string): string {
  * Format: step_<NN> where NN is zero-padded to width 2.
  */
 function getStepDirname(stepIndex: number): string {
-	const paddedIndex = String(stepIndex).padStart(2, '0');
-	return `step_${paddedIndex}`;
+  const paddedIndex = String(stepIndex).padStart(2, "0");
+  return `step_${paddedIndex}`;
 }
 
 /**
@@ -40,23 +38,23 @@ function getStepDirname(stepIndex: number): string {
  * Phase is one of "before", "after", or "summary".
  */
 function getScreenshotFilename(actionIndex: number, phase: string): string {
-	const paddedIndex = String(actionIndex).padStart(2, '0');
-	return `action_${paddedIndex}_${phase}.png`;
+  const paddedIndex = String(actionIndex).padStart(2, "0");
+  return `action_${paddedIndex}_${phase}.png`;
 }
 
 /**
  * Compute the full path to a screenshot file.
  */
 function getScreenshotPath(
-	protocolId: string,
-	stepIndex: number,
-	actionIndex: number,
-	phase: string
+  protocolId: string,
+  stepIndex: number,
+  actionIndex: number,
+  phase: string,
 ): string {
-	const root = getProtocolScreenshotRoot(protocolId);
-	const stepDir = getStepDirname(stepIndex);
-	const filename = getScreenshotFilename(actionIndex, phase);
-	return path.join(root, stepDir, filename);
+  const root = getProtocolScreenshotRoot(protocolId);
+  const stepDir = getStepDirname(stepIndex);
+  const filename = getScreenshotFilename(actionIndex, phase);
+  return path.join(root, stepDir, filename);
 }
 
 //============================================
@@ -68,11 +66,11 @@ function getScreenshotPath(
  * Creates it if missing. Idempotent.
  */
 export function ensureScreenshotDir(protocolId: string): string {
-	const root = getProtocolScreenshotRoot(protocolId);
-	if (!fs.existsSync(root)) {
-		fs.mkdirSync(root, { recursive: true });
-	}
-	return root;
+  const root = getProtocolScreenshotRoot(protocolId);
+  if (!fs.existsSync(root)) {
+    fs.mkdirSync(root, { recursive: true });
+  }
+  return root;
 }
 
 /**
@@ -84,24 +82,24 @@ export function ensureScreenshotDir(protocolId: string): string {
  * Returns the full path to the written file.
  */
 export async function captureBefore(
-	page: Page,
-	ctx: ScreenshotContext
+  page: Page,
+  ctx: ScreenshotContext,
 ): Promise<string> {
-	const fullPath = getScreenshotPath(
-		ctx.protocolId,
-		ctx.stepIndex,
-		ctx.actionIndex,
-		'before'
-	);
+  const fullPath = getScreenshotPath(
+    ctx.protocolId,
+    ctx.stepIndex,
+    ctx.actionIndex,
+    "before",
+  );
 
-	// Ensure parent directory exists.
-	const parentDir = path.dirname(fullPath);
-	if (!fs.existsSync(parentDir)) {
-		fs.mkdirSync(parentDir, { recursive: true });
-	}
+  // Ensure parent directory exists.
+  const parentDir = path.dirname(fullPath);
+  if (!fs.existsSync(parentDir)) {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
 
-	await page.screenshot({ path: fullPath });
-	return fullPath;
+  await page.screenshot({ path: fullPath });
+  return fullPath;
 }
 
 /**
@@ -113,24 +111,24 @@ export async function captureBefore(
  * Returns the full path to the written file.
  */
 export async function captureAfter(
-	page: Page,
-	ctx: ScreenshotContext
+  page: Page,
+  ctx: ScreenshotContext,
 ): Promise<string> {
-	const fullPath = getScreenshotPath(
-		ctx.protocolId,
-		ctx.stepIndex,
-		ctx.actionIndex,
-		'after'
-	);
+  const fullPath = getScreenshotPath(
+    ctx.protocolId,
+    ctx.stepIndex,
+    ctx.actionIndex,
+    "after",
+  );
 
-	// Ensure parent directory exists.
-	const parentDir = path.dirname(fullPath);
-	if (!fs.existsSync(parentDir)) {
-		fs.mkdirSync(parentDir, { recursive: true });
-	}
+  // Ensure parent directory exists.
+  const parentDir = path.dirname(fullPath);
+  if (!fs.existsSync(parentDir)) {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
 
-	await page.screenshot({ path: fullPath });
-	return fullPath;
+  await page.screenshot({ path: fullPath });
+  return fullPath;
 }
 
 /**
@@ -142,22 +140,22 @@ export async function captureAfter(
  * Returns the full path to the written file.
  */
 export async function captureStepSummary(
-	page: Page,
-	ctx: ScreenshotContext
+  page: Page,
+  ctx: ScreenshotContext,
 ): Promise<string> {
-	const fullPath = getScreenshotPath(
-		ctx.protocolId,
-		ctx.stepIndex,
-		99,  // Fixed summary action index
-		'summary'
-	);
+  const fullPath = getScreenshotPath(
+    ctx.protocolId,
+    ctx.stepIndex,
+    99, // Fixed summary action index
+    "summary",
+  );
 
-	// Ensure parent directory exists.
-	const parentDir = path.dirname(fullPath);
-	if (!fs.existsSync(parentDir)) {
-		fs.mkdirSync(parentDir, { recursive: true });
-	}
+  // Ensure parent directory exists.
+  const parentDir = path.dirname(fullPath);
+  if (!fs.existsSync(parentDir)) {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
 
-	await page.screenshot({ path: fullPath });
-	return fullPath;
+  await page.screenshot({ path: fullPath });
+  return fullPath;
 }

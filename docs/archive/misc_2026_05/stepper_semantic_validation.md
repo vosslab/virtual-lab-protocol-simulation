@@ -98,27 +98,27 @@ Out of scope for Part 1:
 - `validation/shared_toolkit/findings.py` already defines the Finding shape
   and severity enum; this plan reuses it without modification.
 - `validation/manual/protocol_manual.py` renders a soft `*(cycle detected
-  ...)*` line in prose around line 1413 when a `next_step` loop is hit.
+...)*` line in prose around line 1413 when a `next_step` loop is hit.
   The hard gate moves into the stepper as S-CYCLE; the manual prose line
   stays for human readability.
 
 ## Architecture boundaries and ownership
 
-| Layer            | Owns                                              | Does not own                          |
-|------------------|---------------------------------------------------|---------------------------------------|
-| YAML validator   | structure, schema, bounds                         | execution semantics, prose            |
-| Stepper          | execution truth, S-* checks                       | prose alignment, narrative wording    |
-| Manual renderer  | human interpretation, L-* checks                  | execution truth, state simulation     |
+| Layer           | Owns                              | Does not own                       |
+| --------------- | --------------------------------- | ---------------------------------- |
+| YAML validator  | structure, schema, bounds         | execution semantics, prose         |
+| Stepper         | execution truth, S-\* checks      | prose alignment, narrative wording |
+| Manual renderer | human interpretation, L-\* checks | execution truth, state simulation  |
 
 ### Mapping: checks to files
 
-| Check          | Primary file                            | Supporting file                                   |
-|----------------|-----------------------------------------|---------------------------------------------------|
-| S-STATE-JUMP   | `validation/stepper/state.py`           | `validation/stepper/scene_ops.py` (emit during op)|
-| S-UNREACHABLE  | `validation/stepper/step_check.py`      | (post-walk diff over visited set)                 |
-| S-CYCLE        | `validation/stepper/step_check.py`      | (same traversal as S-UNREACHABLE)                 |
-| S-UNREGISTERED | `validation/stepper/scene_ops.py`       | (membership check at ObjectStateChange)           |
-| S-UNUSED       | `validation/stepper/step_check.py`      | (post-walk set diff)                              |
+| Check          | Primary file                       | Supporting file                                    |
+| -------------- | ---------------------------------- | -------------------------------------------------- |
+| S-STATE-JUMP   | `validation/stepper/state.py`      | `validation/stepper/scene_ops.py` (emit during op) |
+| S-UNREACHABLE  | `validation/stepper/step_check.py` | (post-walk diff over visited set)                  |
+| S-CYCLE        | `validation/stepper/step_check.py` | (same traversal as S-UNREACHABLE)                  |
+| S-UNREGISTERED | `validation/stepper/scene_ops.py`  | (membership check at ObjectStateChange)            |
+| S-UNUSED       | `validation/stepper/step_check.py` | (post-walk set diff)                               |
 
 Shared support:
 
@@ -375,13 +375,13 @@ flow through the existing gate. The fourth runs the unit tests.
 
 ## Risk register
 
-| Risk                                                 | Likelihood | Mitigation                                                                 |
-|------------------------------------------------------|------------|-----------------------------------------------------------------------------|
-| S-STATE-JUMP false-fires on legitimate authoring     | medium     | Ship as WARNING; tune suppressions; promote only after two clean runs.      |
-| Sentinel allowlist drifts via glob creep             | low        | Explicit list, no globs; doer expands by adding entries, not patterns.      |
-| S-CYCLE re-emits S-UNREACHABLE noise                 | medium     | Halt traversal on cycle; do not emit S-UNREACHABLE for that protocol.      |
-| External graph library creeps in during Part 1       | low        | Anti-drift guardrail; revisit only if and when S-CONSERVATION lands.        |
-| Per-op hooks fragment the interaction-atomic rule    | medium     | Evaluate S-STATE-JUMP only at the interaction boundary; reviewer enforced. |
+| Risk                                              | Likelihood | Mitigation                                                                 |
+| ------------------------------------------------- | ---------- | -------------------------------------------------------------------------- |
+| S-STATE-JUMP false-fires on legitimate authoring  | medium     | Ship as WARNING; tune suppressions; promote only after two clean runs.     |
+| Sentinel allowlist drifts via glob creep          | low        | Explicit list, no globs; doer expands by adding entries, not patterns.     |
+| S-CYCLE re-emits S-UNREACHABLE noise              | medium     | Halt traversal on cycle; do not emit S-UNREACHABLE for that protocol.      |
+| External graph library creeps in during Part 1    | low        | Anti-drift guardrail; revisit only if and when S-CONSERVATION lands.       |
+| Per-op hooks fragment the interaction-atomic rule | medium     | Evaluate S-STATE-JUMP only at the interaction boundary; reviewer enforced. |
 
 ## Anti-drift guardrails
 

@@ -172,4 +172,4 @@ COMPUTE layout. Browser computes layout; API only reports. The moment a
 function in this module takes a parameter that is not a name (no `zone`,
 no `region`, no `align`, no `offset`, no `viewport`), Path C has stopped
 being a bridge and started being a layout engine. Bail at that point,
-per the failure conditions at [../../../../docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md](../../../../docs/active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md).
+per the failure conditions at [new1_well_plate_96_zoom_spike_implementation_packet.md](../../../../docs/archive/css_native_layout/new1_well_plate_96_zoom_spike_implementation_packet.md).

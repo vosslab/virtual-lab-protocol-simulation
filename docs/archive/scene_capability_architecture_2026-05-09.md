@@ -3,8 +3,8 @@
 - Archive date: 2026-05-09
 - Status: PARTIAL COMPLETION (Patches 1-16 landed; Patches 17-19 deferred)
 - Source plan: `~/.claude/plans/sharded-imagining-diffie.md`
-- Follow-up: see [docs/ROADMAP.md](../ROADMAP.md), section "Future work: scene rendering migration"
-- Current-state writeup: see [docs/CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md), section
+- Follow-up: see [ROADMAP.md](../ROADMAP.md), section "Future work: scene rendering migration"
+- Current-state writeup: see [CODE_ARCHITECTURE.md](../CODE_ARCHITECTURE.md), section
   "Capability-based scene architecture (current state, 2026-05-09)"
 
 ## Preface
@@ -78,20 +78,20 @@ so this archive remains useful even if the source path is rotated:
 
 ### Execution outcome by milestone
 
-| Milestone | Patch range | Outcome |
-| --- | --- | --- |
-| MS-ROADMAP | 1 | Landed. Five deferred items recorded in `docs/ROADMAP.md`. |
-| MS-FOUNDATION | 2-5 | Landed. Scene-YAML compiler, registry, shared helpers, `itemWorkspace`. |
-| MS-MINI-BENCH | 6 | Landed. `tutorial_bench_direct` green through driver. |
-| MS-MINI-HOOD | 7 | Landed. Four hood mini-protocols green through driver. |
-| MS-MINI-PLATE | 8-9 | Landed. `modalWorkspace` + `plateReaderWorkspace` + plate adapter; two plate mini-protocols green through driver. |
-| MS-MINI-CELL-COUNTER | 10-11 | Landed. `instrumentWorkspace` + microscope automated path; `tutorial_cell_counter` green through driver. |
-| MS-MINI-INCUBATOR | 12-13 | Landed. `incubatorWorkspace` + incubator adapter. |
-| MS-FULL-CELL-CULTURE | 14 | Landed. `cell_culture` 25/25 green through driver. Critical gate met. |
-| MS-MICROSCOPE-HEMOCYTOMETER | 15-16 | Landed. `gridCountingWorkspace` + microscope manual path; `tutorial_hemocytometer_count` green through driver. |
-| MS-CLEANUP / Patch 17 | 17 | DEFERRED. `git rm` of legacy scene files reverted; rendering still load-bearing. |
-| MS-CLEANUP / Patch 18 | 18 | DEFERRED. `sceneRouter` flag still required while legacy renderers live. |
-| MS-CLEANUP / Patch 19 | revised as this archive | LANDED in revised form. Documentation updated to reflect honest current state; plan archived; rendering migration captured in ROADMAP. |
+| Milestone                   | Patch range             | Outcome                                                                                                                                |
+| --------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| MS-ROADMAP                  | 1                       | Landed. Five deferred items recorded in `docs/ROADMAP.md`.                                                                             |
+| MS-FOUNDATION               | 2-5                     | Landed. Scene-YAML compiler, registry, shared helpers, `itemWorkspace`.                                                                |
+| MS-MINI-BENCH               | 6                       | Landed. `tutorial_bench_direct` green through driver.                                                                                  |
+| MS-MINI-HOOD                | 7                       | Landed. Four hood mini-protocols green through driver.                                                                                 |
+| MS-MINI-PLATE               | 8-9                     | Landed. `modalWorkspace` + `plateReaderWorkspace` + plate adapter; two plate mini-protocols green through driver.                      |
+| MS-MINI-CELL-COUNTER        | 10-11                   | Landed. `instrumentWorkspace` + microscope automated path; `tutorial_cell_counter` green through driver.                               |
+| MS-MINI-INCUBATOR           | 12-13                   | Landed. `incubatorWorkspace` + incubator adapter.                                                                                      |
+| MS-FULL-CELL-CULTURE        | 14                      | Landed. `cell_culture` 25/25 green through driver. Critical gate met.                                                                  |
+| MS-MICROSCOPE-HEMOCYTOMETER | 15-16                   | Landed. `gridCountingWorkspace` + microscope manual path; `tutorial_hemocytometer_count` green through driver.                         |
+| MS-CLEANUP / Patch 17       | 17                      | DEFERRED. `git rm` of legacy scene files reverted; rendering still load-bearing.                                                       |
+| MS-CLEANUP / Patch 18       | 18                      | DEFERRED. `sceneRouter` flag still required while legacy renderers live.                                                               |
+| MS-CLEANUP / Patch 19       | revised as this archive | LANDED in revised form. Documentation updated to reflect honest current state; plan archived; rendering migration captured in ROADMAP. |
 
 ### Evidence trail
 

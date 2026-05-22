@@ -25,12 +25,13 @@
  * Run: node tests/test_target_handlers.mjs
  */
 
-import { chromium } from 'playwright';
-import path from 'path';
-import process from 'node:process';
+/* global PROTOCOL_STEPS, gameState, switchScene */
+import { chromium } from "playwright";
+import __path from "path";
+import process from "node:process";
 
-import { REPO_ROOT } from './repo_root.mjs';
-import { gameFilePath } from './build_game_if_missing.mjs';
+import { REPO_ROOT } from "./repo_root.mjs";
+import { gameFilePath } from "./build_game_if_missing.mjs";
 
 const gamePath = await gameFilePath(REPO_ROOT);
 const gameUrl = `file://${gamePath}`;
@@ -42,189 +43,193 @@ const gameUrl = `file://${gamePath}`;
 // handler coverage but makes the test noisy. The items below are
 // the ones whose silent-no-op case is the real stuck-point risk.
 const STANDALONE_CLICKABLE = new Set([
-	'ethanol_bottle',
-	'aspirating_pipette',
-	'serological_pipette',
-	'multichannel_pipette',
-	'pbs_bottle',
-	'trypsin_bottle',
-	'media_bottle',
-	'waste_container',
-	'biohazard_decant',
-	'dmso_bottle',
-	'mtt_vial',
-	'drug_vials',
-	'carboplatin_stock',
-	'metformin_stock',
-	'sterile_water',
-	'dilution_tube_rack',
-	'centrifuge',
-	'water_bath',
-	'cell_counter',
-	'microscope',
-	'vortex',
-	'incubator',
+  "ethanol_bottle",
+  "aspirating_pipette",
+  "serological_pipette",
+  "multichannel_pipette",
+  "pbs_bottle",
+  "trypsin_bottle",
+  "media_bottle",
+  "waste_container",
+  "biohazard_decant",
+  "dmso_bottle",
+  "mtt_vial",
+  "drug_vials",
+  "carboplatin_stock",
+  "metformin_stock",
+  "sterile_water",
+  "dilution_tube_rack",
+  "centrifuge",
+  "water_bath",
+  "cell_counter",
+  "microscope",
+  "vortex",
+  "incubator",
 ]);
 
 async function runAudit(page) {
-	const results = [];
-	const stepsInfo = await page.evaluate(() => {
-		function deriveUsedItems(step) {
-			const seen = new Set();
-			const used = [];
-			if (!step || !step.interactionSequence) return [];
-			for (const interaction of step.interactionSequence) {
-				if (interaction.tool && !seen.has(interaction.tool)) {
-					seen.add(interaction.tool);
-					used.push(interaction.tool);
-				}
-				if (interaction.source && !seen.has(interaction.source)) {
-					seen.add(interaction.source);
-					used.push(interaction.source);
-				}
-				if (interaction.destination && !seen.has(interaction.destination)) {
-					seen.add(interaction.destination);
-					used.push(interaction.destination);
-				}
-			}
-			return used;
-		}
-		return PROTOCOL_STEPS.map((s) => ({
-			id: s.id,
-			scene: s.scene,
-			usedItems: deriveUsedItems(s),
-		})).filter((s) => s.scene === 'hood' || s.scene === 'bench');
-	});
+  const results = [];
+  const stepsInfo = await page.evaluate(() => {
+    function deriveUsedItems(step) {
+      const seen = new Set();
+      const used = [];
+      if (!step || !step.interactionSequence) return [];
+      for (const interaction of step.interactionSequence) {
+        if (interaction.tool && !seen.has(interaction.tool)) {
+          seen.add(interaction.tool);
+          used.push(interaction.tool);
+        }
+        if (interaction.source && !seen.has(interaction.source)) {
+          seen.add(interaction.source);
+          used.push(interaction.source);
+        }
+        if (interaction.destination && !seen.has(interaction.destination)) {
+          seen.add(interaction.destination);
+          used.push(interaction.destination);
+        }
+      }
+      return used;
+    }
+    return PROTOCOL_STEPS.map((s) => ({
+      id: s.id,
+      scene: s.scene,
+      usedItems: deriveUsedItems(s),
+    })).filter((s) => s.scene === "hood" || s.scene === "bench");
+  });
 
-	for (const step of stepsInfo) {
-		for (const itemId of step.usedItems) {
-			if (!STANDALONE_CLICKABLE.has(itemId)) continue;
+  for (const step of stepsInfo) {
+    for (const itemId of step.usedItems) {
+      if (!STANDALONE_CLICKABLE.has(itemId)) continue;
 
-			// Fresh probe: reset active step, switch scene, clear any
-			// previous tool, install a notification counter, click the
-			// item, and check if anything changed.
-			const observed = await page.evaluate(
-				async ({ stepId, scene, itemId }) => {
-					// Capture showNotification calls for this probe.
-					if (!window.__probeNotifyCount) {
-						window.__probeNotifyCount = 0;
-						const orig = window.showNotification;
-						window.showNotification = function (...args) {
-							window.__probeNotifyCount++;
-							return orig.apply(this, args);
-						};
-					}
-					const startNotify = window.__probeNotifyCount;
+      // Fresh probe: reset active step, switch scene, clear any
+      // previous tool, install a notification counter, click the
+      // item, and check if anything changed.
+      const observed = await page.evaluate(
+        async ({ stepId, scene, itemId }) => {
+          // Capture showNotification calls for this probe.
+          if (!window.__probeNotifyCount) {
+            window.__probeNotifyCount = 0;
+            const orig = window.showNotification;
+            window.showNotification = function (...args) {
+              window.__probeNotifyCount++;
+              return orig.apply(this, args);
+            };
+          }
+          const startNotify = window.__probeNotifyCount;
 
-					gameState.activeStepId = stepId;
-					gameState.selectedTool = null;
-					switchScene(scene);
-					await new Promise((r) => setTimeout(r, 80));
+          gameState.activeStepId = stepId;
+          gameState.selectedTool = null;
+          switchScene(scene);
+          await new Promise((r) => setTimeout(r, 80));
 
-					const before = {
-						tool: gameState.selectedTool,
-						active: gameState.activeStepId,
-						hemoLoaded: gameState.hemocytometerLoaded,
-						drugsAdded: gameState.drugsAdded,
-						flaskAge: gameState.flaskMediaAge,
-						scene: gameState.activeScene,
-						completed: gameState.completedSteps.length,
-					};
+          const before = {
+            tool: gameState.selectedTool,
+            active: gameState.activeStepId,
+            hemoLoaded: gameState.hemocytometerLoaded,
+            drugsAdded: gameState.drugsAdded,
+            flaskAge: gameState.flaskMediaAge,
+            scene: gameState.activeScene,
+            completed: gameState.completedSteps.length,
+          };
 
-					const containerId = scene === 'hood' ? 'hood-scene' : 'bench-scene';
-					const container = document.getElementById(containerId);
-					if (!container) return { error: `scene container #${containerId} missing` };
-					const el = container.querySelector(`[data-item-id="${itemId}"]`);
-					if (!el) return { error: `item [data-item-id="${itemId}"] not found in ${containerId}` };
+          const containerId = scene === "hood" ? "hood-scene" : "bench-scene";
+          const container = document.getElementById(containerId);
+          if (!container)
+            return { error: `scene container #${containerId} missing` };
+          const el = container.querySelector(`[data-item-id="${itemId}"]`);
+          if (!el)
+            return {
+              error: `item [data-item-id="${itemId}"] not found in ${containerId}`,
+            };
 
-					el.click();
-					await new Promise((r) => setTimeout(r, 120));
+          el.click();
+          await new Promise((r) => setTimeout(r, 120));
 
-					const after = {
-						tool: gameState.selectedTool,
-						active: gameState.activeStepId,
-						hemoLoaded: gameState.hemocytometerLoaded,
-						drugsAdded: gameState.drugsAdded,
-						flaskAge: gameState.flaskMediaAge,
-						scene: gameState.activeScene,
-						completed: gameState.completedSteps.length,
-					};
-					const notifyDelta = window.__probeNotifyCount - startNotify;
+          const after = {
+            tool: gameState.selectedTool,
+            active: gameState.activeStepId,
+            hemoLoaded: gameState.hemocytometerLoaded,
+            drugsAdded: gameState.drugsAdded,
+            flaskAge: gameState.flaskMediaAge,
+            scene: gameState.activeScene,
+            completed: gameState.completedSteps.length,
+          };
+          const notifyDelta = window.__probeNotifyCount - startNotify;
 
-					return { before, after, notifyDelta };
-				},
-				{ stepId: step.id, scene: step.scene, itemId },
-			);
+          return { before, after, notifyDelta };
+        },
+        { stepId: step.id, scene: step.scene, itemId },
+      );
 
-			if (observed.error) {
-				results.push({
-					name: `${step.id}: click ${itemId}`,
-					pass: false,
-					detail: observed.error,
-				});
-				continue;
-			}
+      if (observed.error) {
+        results.push({
+          name: `${step.id}: click ${itemId}`,
+          pass: false,
+          detail: observed.error,
+        });
+        continue;
+      }
 
-			// Something observable must change.
-			const stateChanged =
-				observed.before.tool !== observed.after.tool ||
-				observed.before.active !== observed.after.active ||
-				observed.before.hemoLoaded !== observed.after.hemoLoaded ||
-				observed.before.drugsAdded !== observed.after.drugsAdded ||
-				observed.before.flaskAge !== observed.after.flaskAge ||
-				observed.before.scene !== observed.after.scene ||
-				observed.before.completed !== observed.after.completed;
-			const notified = observed.notifyDelta > 0;
-			const pass = stateChanged || notified;
-			results.push({
-				name: `${step.id}: click ${itemId} produces observable response`,
-				pass,
-				detail: pass
-					? `ok (${stateChanged ? 'state' : ''}${stateChanged && notified ? '+' : ''}${notified ? 'notify' : ''})`
-					: `silent handler: no state change, no notification. This is the cell_counter class of bug.`,
-			});
-		}
-	}
+      // Something observable must change.
+      const stateChanged =
+        observed.before.tool !== observed.after.tool ||
+        observed.before.active !== observed.after.active ||
+        observed.before.hemoLoaded !== observed.after.hemoLoaded ||
+        observed.before.drugsAdded !== observed.after.drugsAdded ||
+        observed.before.flaskAge !== observed.after.flaskAge ||
+        observed.before.scene !== observed.after.scene ||
+        observed.before.completed !== observed.after.completed;
+      const notified = observed.notifyDelta > 0;
+      const pass = stateChanged || notified;
+      results.push({
+        name: `${step.id}: click ${itemId} produces observable response`,
+        pass,
+        detail: pass
+          ? `ok (${stateChanged ? "state" : ""}${stateChanged && notified ? "+" : ""}${notified ? "notify" : ""})`
+          : `silent handler: no state change, no notification. This is the cell_counter class of bug.`,
+      });
+    }
+  }
 
-	return results;
+  return results;
 }
 
 // ============================================
 async function main() {
-	console.log('Starting target-handler audit...\n');
+  console.log("Starting target-handler audit...\n");
 
-	const browser = await chromium.launch({ headless: true });
-	try {
-		const page = await browser.newPage();
-		await page.goto(gameUrl, { waitUntil: 'domcontentloaded' });
-		await page.waitForTimeout(500);
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage();
+    await page.goto(gameUrl, { waitUntil: "domcontentloaded" });
+    await page.waitForTimeout(500);
 
-		// Dismiss welcome overlay
-		const startBtn = await page.$('#welcome-start-btn');
-		if (startBtn) {
-			await startBtn.click();
-			await page.waitForTimeout(300);
-		}
+    // Dismiss welcome overlay
+    const startBtn = await page.$("#welcome-start-btn");
+    if (startBtn) {
+      await startBtn.click();
+      await page.waitForTimeout(300);
+    }
 
-		const results = await runAudit(page);
+    const results = await runAudit(page);
 
-		let passed = 0;
-		let failed = 0;
-		for (const r of results) {
-			const icon = r.pass ? '[PASS]' : '[FAIL]';
-			console.log(`${icon} ${r.name} -- ${r.detail}`);
-			if (r.pass) passed++;
-			else failed++;
-		}
+    let passed = 0;
+    let failed = 0;
+    for (const r of results) {
+      const icon = r.pass ? "[PASS]" : "[FAIL]";
+      console.log(`${icon} ${r.name} -- ${r.detail}`);
+      if (r.pass) passed++;
+      else failed++;
+    }
 
-		console.log(`\n${passed}/${passed + failed} audits passed`);
-		if (failed > 0) process.exit(1);
-	} finally {
-		await browser.close();
-	}
+    console.log(`\n${passed}/${passed + failed} audits passed`);
+    if (failed > 0) process.exit(1);
+  } finally {
+    await browser.close();
+  }
 }
 
 main().catch((err) => {
-	console.error(err);
-	process.exit(1);
+  console.error(err);
+  process.exit(1);
 });

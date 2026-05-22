@@ -13,10 +13,12 @@ Regenerated scorecard metrics for all 110 stress scenes post-Workstream N CSS pa
 ## Artifact Paths
 
 ### Primary Output
+
 - **Scorecard directory**: `experiments/css_native_layout/stress_results/scorecard_batch2_n/`
 - **Summary report**: `experiments/css_native_layout/stress_results/scorecard_batch2_n_summary.md`
 
 ### Supporting Input
+
 - **Precheck output**: `experiments/css_native_layout/stress_results/precheck_batch2_n/`
   - `visual_audit.json` (diagnostic data, 110 scenes)
   - `sizing_manifest.json` (aspect ratio measurements)
@@ -25,29 +27,33 @@ Regenerated scorecard metrics for all 110 stress scenes post-Workstream N CSS pa
 
 ## File Counts
 
-- **scorecard_batch2_n/*.json**: 110 files (one per scene)
+- **scorecard_batch2_n/\*.json**: 110 files (one per scene)
 - **precheck_batch2_n/**: complete with diagnostics and screenshots
 
 ## Key Metrics
 
 ### Batch1 (Baseline, pre-Workstream N)
+
 - Median score: **41**
 - Mean score: **38.6**
 - P95 score: **50**
 - Score range: 0-53
 
 ### Batch2_N (Post-Workstream N)
+
 - Median score: **40** (-1 point)
 - Mean score: **39.5** (+0.9 points)
 - P95 score: **70** (+20 points, significant improvement in tail)
 - Score range: 0-70
 
 ### Deltas Summary
+
 - Median change: **-1.0** (slight regression)
 - Mean change: **+0.9** (marginal improvement overall)
 - P95 change: **+20** (strong improvement at high end)
 
 ### Score Distribution Shift
+
 - **Batch1**: 51.8% of scenes in 40-50 range
 - **Batch2_N**: distribution broadens upward
   - 7.3% now reach 70-80 range (Batch1: 0%)
@@ -56,25 +62,25 @@ Regenerated scorecard metrics for all 110 stress scenes post-Workstream N CSS pa
 
 ## Top 5 Most-Improved Scenes
 
-| Rank | Scene | Batch1 | Batch2_N | Delta | Type |
-| --- | --- | --- | --- | --- | --- |
-| 1 | stress_template_015 | 46 | 70 | +24 | template |
-| 2 | stress_template_002 | 49 | 70 | +21 | template |
-| 3 | stress_template_007 | 50 | 70 | +20 | template |
-| 4 | stress_template_006 | 50 | 70 | +20 | template |
-| 5 | stress_template_019 | 50 | 70 | +20 | template |
+| Rank | Scene               | Batch1 | Batch2_N | Delta | Type     |
+| ---- | ------------------- | ------ | -------- | ----- | -------- |
+| 1    | stress_template_015 | 46     | 70       | +24   | template |
+| 2    | stress_template_002 | 49     | 70       | +21   | template |
+| 3    | stress_template_007 | 50     | 70       | +20   | template |
+| 4    | stress_template_006 | 50     | 70       | +20   | template |
+| 5    | stress_template_019 | 50     | 70       | +20   | template |
 
 **Pattern**: All top improvements are template scenes (sparse by design). CSS changes benefit secondary/support object proportions where space was available.
 
 ## Top 5 Most-Degraded Scenes
 
-| Rank | Scene | Batch1 | Batch2_N | Delta | Type |
-| --- | --- | --- | --- | --- | --- |
-| 1 | stress_dense_clutter_014 | 49 | 33 | -16 | dense |
-| 2 | gold_staining_bench | 53 | 38 | -15 | gold |
-| 3 | gold_drug_dilution_workspace | 53 | 39 | -14 | gold |
-| 4 | stress_long_label_scene_002 | 40 | 27 | -13 | label |
-| 5 | stress_composition_001 | 43 | 31 | -12 | composition |
+| Rank | Scene                        | Batch1 | Batch2_N | Delta | Type        |
+| ---- | ---------------------------- | ------ | -------- | ----- | ----------- |
+| 1    | stress_dense_clutter_014     | 49     | 33       | -16   | dense       |
+| 2    | gold_staining_bench          | 53     | 38       | -15   | gold        |
+| 3    | gold_drug_dilution_workspace | 53     | 39       | -14   | gold        |
+| 4    | stress_long_label_scene_002  | 40     | 27       | -13   | label       |
+| 5    | stress_composition_001       | 43     | 31       | -12   | composition |
 
 **Pattern**: Regressions occur in dense, label-heavy, and dense-clutter scenes. The Workstream N max-height increases may have introduced label overlap or regional crowding in tightly-packed layouts.
 
@@ -131,4 +137,3 @@ The scorecard metrics (layout quality scores, balance, support distance, etc.) a
 - [x] CSS files preserved (Workstream N patches intact)
 - [x] HTML re-render: NO (used existing rendered/ templates with N-patched CSS links)
 - [x] Handoff documentation prepared
-

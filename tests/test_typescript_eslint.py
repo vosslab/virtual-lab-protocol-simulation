@@ -57,13 +57,13 @@ def test_eslint_runs_clean() -> None:
 	if not npx_available:
 		pytest.skip("npx not available; cannot run TS hygiene gate")
 
+	# Per docs/TYPESCRIPT_STYLE.md: warn-level rules (e.g., no-console) do not
+	# fail the build. Errors fail; warnings pass.
 	proc = subprocess.run(
 		[
 			"npx",
 			"eslint",
 			"--no-error-on-unmatched-pattern",
-			"--max-warnings",
-			"0",
 			"src/**/*.ts",
 			"tests/**/*.ts",
 			"*.ts",

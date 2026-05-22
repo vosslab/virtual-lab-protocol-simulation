@@ -114,7 +114,7 @@ with zero new authoring surface and the smallest runtime addition. The
 registry is a derived view over data the scene-inheritance validator
 already resolves, so no new vocabulary term is introduced at the
 authoring layer and the closure principle from
-[docs/PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) is preserved. Authors continue
+[PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) is preserved. Authors continue
 to use only `entry_step`, `next_step`, and `SceneChange` to express flow
 between workspaces; cross-scene target resolution becomes a runtime
 concern, not an authoring concern. Option 3 would expand the closed

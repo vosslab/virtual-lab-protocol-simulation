@@ -15,6 +15,7 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 ## Contact Sheet Inventory
 
 ### 1. Gold Scenes (10 scenes)
+
 - **File**: `contact_sheet_gold.html`
 - **Description**: All 10 canonical gold scenes showing final post-Batch 2 layout quality
 - **Score range**: 20-53 (average 36.3)
@@ -23,6 +24,7 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 - **Verdict**: Gold scenes render with integrity. No cropping, aspect distortion, or overflow visible.
 
 ### 2. Remaining Hard-Fail Scenes (2 scenes)
+
 - **File**: `contact_sheet_remaining_hard_fails.html`
 - **Description**: Adversarial stress scenes (Batch 3 Workstream B cap-violating labels)
   - stress_many_bottles_scene_001: 16 bottles in rear_shelf (cap 12)
@@ -32,6 +34,7 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 - **Verdict**: Remain as designed. No fix required.
 
 ### 3. Best 20 Scenes by Layout Score (20 scenes)
+
 - **File**: `contact_sheet_best.html`
 - **Score range**: 53-40 (average 49.0)
 - **Top 5**:
@@ -44,6 +47,7 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 - **Verdict**: Best performers show clean layout, no overlap, balanced spacing.
 
 ### 4. Worst 20 Scenes by Layout Score (20 scenes)
+
 - **File**: `contact_sheet_worst.html`
 - **Score range**: 0-22 (average 20.4)
 - **Bottom 5**:
@@ -56,6 +60,7 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 - **Verdict**: Worst performers show intentional visual stress. Layout challenges in high-density and extreme-aspect scenarios expected.
 
 ### 5. Bottle & Glassware Recovery Examples (10 before/after pairs)
+
 - **File**: `contact_sheet_bottle_glassware_recovery.html`
 - **Source**: batch2_d_gallery before/after PNG pairs (20 PNGs total)
 - **Coverage**: 10 representative scenes including gold scenes and high-complexity compositions
@@ -65,15 +70,15 @@ Cumulative visual gallery showing Batch 2 + Batch 3 improvements across all scen
 
 ## Scene Count Summary
 
-| Sheet | Scene Count | Source |
-| --- | --- | --- |
-| Gold | 10 | precheck_batch2_n_canonical |
-| Hard-fails | 2 | precheck_batch2_n_canonical (adversarial stress) |
-| Best 20 | 20 | scorecard_batch2_n_canonical (top scores) |
-| Worst 20 | 20 | scorecard_batch2_n_canonical (bottom scores) |
-| Recovery pairs | 10 scenes (20 PNGs) | batch2_d_gallery before/after |
-| **Total unique scenes** | **52** | Cross-sheet deduplication |
-| **Total contact sheets** | **5** | (+ 1 INDEX.html) |
+| Sheet                    | Scene Count         | Source                                           |
+| ------------------------ | ------------------- | ------------------------------------------------ |
+| Gold                     | 10                  | precheck_batch2_n_canonical                      |
+| Hard-fails               | 2                   | precheck_batch2_n_canonical (adversarial stress) |
+| Best 20                  | 20                  | scorecard_batch2_n_canonical (top scores)        |
+| Worst 20                 | 20                  | scorecard_batch2_n_canonical (bottom scores)     |
+| Recovery pairs           | 10 scenes (20 PNGs) | batch2_d_gallery before/after                    |
+| **Total unique scenes**  | **52**              | Cross-sheet deduplication                        |
+| **Total contact sheets** | **5**               | (+ 1 INDEX.html)                                 |
 
 Note: Best and Worst galleries include some gold scenes (5 gold in best, 0 in worst), so unique count is lower than sum.
 
@@ -82,32 +87,40 @@ Note: Best and Worst galleries include some gold scenes (5 gold in best, 0 in wo
 ## Verdict: BATCH3_VISUAL_OK
 
 ### Gold Scenes Status
+
 All 10 gold scenes visually pass post-Batch 2 improvements:
+
 - No cropping visible on volumetric flasks, bottles, pipettes
 - Aspect ratios preserved (5% deviation threshold exceeded only in decorative items)
 - Object artwork fully contained within placement cards
 - No overflow hidden by `overflow: hidden` or dom clipping
 
 ### Bottle/Glassware Recovery Evidence
+
 10 representative before/after pairs confirm:
+
 - Batch 2 Workstream D fixes hold across recovery examples
 - Glassware bottoms no longer cropped
 - Bottle necks and caps fully visible
 - Pipette tips not clipped
 
 ### Hard-Fail Scenes Status
-Two adversarial stress scenes (stress_many_bottles_scene_001, _002):
+
+Two adversarial stress scenes (stress_many_bottles_scene_001, \_002):
+
 - Correctly labeled `realistic: false` by Batch 3 Workstream B cap enforcement
 - Remain at score 0 (expected hard_fails due to cap violation)
 - Serve as stress testing targets, not failures
 - No fix required
 
 ### Layout Score Distribution
+
 - Top 20 average: 49.0 (healthy tail)
 - Gold average: 36.3 (moderate; gold scenes prioritize pedagogy over perfection)
 - Bottom 20 average: 20.4 (expected stress; includes 2 intentional overflow scenes at 0)
 
 ### Spot-Check Observations
+
 1. **Scene occupancy**: Gold scenes show 5-10% viewport occupancy (clean, uncluttered)
 2. **Label readability**: Gold scenes with text labels show no overlap in recovery examples
 3. **Object integrity**: No decorative items cropped; no glassware aspect distortion > 5%
@@ -126,6 +139,7 @@ Two adversarial stress scenes (stress_many_bottles_scene_001, _002):
 ## Files Generated
 
 ### HTML Contact Sheets (5 files)
+
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/contact_sheet_gold.html`
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/contact_sheet_remaining_hard_fails.html`
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/contact_sheet_best.html`
@@ -133,11 +147,13 @@ Two adversarial stress scenes (stress_many_bottles_scene_001, _002):
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/contact_sheet_bottle_glassware_recovery.html`
 
 ### Index & Supporting Files
+
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/INDEX.html` (navigation hub)
 - `experiments/css_native_layout/stress_results/batch3_f_gallery/gallery_data.json` (metadata)
 - `experiments/css_native_layout/stress_results/batch3_f_gallery_summary.md` (this file)
 
 ### Image References (relative links, no copies)
+
 - 110 PNGs from `precheck_batch2_n_canonical/` (via relative path)
 - 20 PNGs from `batch2_d_gallery/before/` and `after/` (via relative path)
 
@@ -159,6 +175,7 @@ Two adversarial stress scenes (stress_many_bottles_scene_001, _002):
 **Batch 3 Workstream F Status**: COMPLETE
 
 All deliverables produced:
+
 - 5 contact sheet HTML pages [OK]
 - 1 index navigation page [OK]
 - 1 summary markdown (this file) [OK]
@@ -167,6 +184,7 @@ All deliverables produced:
 - 20 recovery example PNGs linked [OK]
 
 **Boundaries respected**:
+
 - No CSS edits to source files [OK]
 - No YAML regeneration [OK]
 - No diagnostic tool modifications [OK]

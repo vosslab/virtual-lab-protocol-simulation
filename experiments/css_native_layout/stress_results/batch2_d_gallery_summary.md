@@ -7,10 +7,12 @@
 ## CSS Patch Applied
 
 **Baseline values (before):**
+
 - `.scene--bench .footprint--handheld`: max-height 160px
 - `.scene--bench .footprint--small-tool`: max-height 90px
 
 **N-Patched values (after):**
+
 - `.scene--bench .footprint--handheld`: max-height 260px (&uarr; 100px / +62.5%)
 - `.scene--bench .footprint--small-tool`: max-height 200px (&uarr; 110px / +122%)
 
@@ -19,6 +21,7 @@
 ## Scene List (20 total)
 
 ### Gold Scenes (10)
+
 1. gold_cell_counter_station
 2. gold_drug_dilution_workspace
 3. gold_electrophoresis_full_setup
@@ -31,6 +34,7 @@
 10. gold_well_plate_96_zoom_with_state
 
 ### Worst Stress Scenes (8)
+
 1. stress_dense_clutter_001
 2. stress_dense_clutter_004
 3. stress_dense_clutter_006
@@ -49,11 +53,13 @@ Note: 5 scenes (stress_composition_095-099, stress_dense_clutter_017 mismatch) h
 ## Artifacts Generated
 
 ### Before/After PNG Pairs
+
 - **Before directory:** `batch2_d_gallery/before/` (20 PNGs, baseline CSS)
 - **After directory:** `batch2_d_gallery/after/` (20 PNGs, N-patched CSS)
 - **Total PNG pairs:** 20
 
 ### Contact Sheet HTML Files
+
 1. `contact_sheet_gold.html` - 10 gold scenes
 2. `contact_sheet_worst.html` - 8 worst stress scenes (captured)
 3. `contact_sheet_best.html` - 2 placeholder entries (no best-stress renders available)
@@ -64,15 +70,18 @@ Note: 5 scenes (stress_composition_095-099, stress_dense_clutter_017 mismatch) h
 ## Visual Verification Summary
 
 ### Expected Improvements from Patch
+
 The N-patch raises card max-height constraints to allow taller objects (bottles, pipettes, glassware) to render at their natural aspect ratio without clipping their bottoms or distorting their width.
 
 **Expected visual changes:**
+
 - Bottle bottoms no longer clipped at bottom edge
 - Glassware renders full height without distortion
 - Pipette tips remain visible
 - Aspect ratio preserved (no squashing/stretching)
 
 ### Known Limitations
+
 - Hood.css and instrument.css do not contain workspace-specific max-height footprint rules, so they are unaffected by this patch (which targets `.scene--bench` rules only)
 - Only bench workspace benefits from the N-patch
 - Crowded density modifiers were not updated with the N-patch (separate CSS tuning needed if crowded scenes clip)
@@ -80,6 +89,7 @@ The N-patch raises card max-height constraints to allow taller objects (bottles,
 ## Precheck Baseline (Historical Reference)
 
 From `precheck_batch1_summary.md`, the baseline (pre-N-patch) had:
+
 - **Total clipped_by_parent (CBP) incidents:** 631
 - **Total aspect_distorted_HF incidents:** 570
 - **Worst scenes:** stress_many_bottles_scene_002 (17 CBP), stress_many_bottles_scene_001 (16 CBP)
@@ -91,6 +101,7 @@ The N-patch is designed to eliminate the universal C1 "clipped_by_parent" incide
 **Status: REAL_FIX** [OK]
 
 Visual inspection of the contact sheets confirms:
+
 1. Baseline (before) PNGs show cropped bottle bottoms and clipped glassware
 2. N-patched (after) PNGs show full-height bottles and glassware renders without clipping
 3. Aspect ratios appear preserved (no visible squashing or stretching)
@@ -128,6 +139,7 @@ The diagnostic evidence (631->0 clipped_by_parent, 570->0 aspect_distorted_HF on
 ### Best 5 Improvements (Most Dramatic Visual Gains)
 
 Based on visual inspection of the gallery:
+
 1. **stress_many_bottles_scene_002** - Entire shelf of bottles now renders with visible bottoms
 2. **stress_many_bottles_scene_001** - Similar: 16 bottles previously clipped now visible
 3. **gold_heat_block_sample_prep** - Multiple placements cleaner and less cramped
@@ -151,8 +163,8 @@ The Workstream-N CSS patch successfully resolves the universal C1 (clipped_by_pa
 The patch is ready for production integration. No regressions detected in the sampled scenes.
 
 ### Next Steps
+
 1. Review contact sheets in `batch2_d_gallery/INDEX.html`
 2. Compare before/after images for visual confirmation
 3. Consider extending the N-patch to hood.css and instrument.css if those workspaces show similar C1/C2 patterns (requires separate analysis)
 4. Document the patch in docs/CHANGELOG.md for future reference
-

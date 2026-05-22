@@ -78,13 +78,13 @@ Missing or incorrect work:
 
 Processes are step-level behavior descriptions, not scene modes:
 
-| Process | Purpose |
-| --- | --- |
-| `calculation_popup` | Show a multiple-choice math card over the scene. |
-| `dilution_prep` | Prepare a representative dilution tube using pipette, source solution, distilled water, and microtube. |
-| `plate_transfer` | Transfer prepared solution or media into highlighted plate wells. |
-| `transition` | Explain a skipped repetitive section and visibly update tube state. |
-| `review` | Show the final loaded plate and summary. |
+| Process             | Purpose                                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------------------------ |
+| `calculation_popup` | Show a multiple-choice math card over the scene.                                                       |
+| `dilution_prep`     | Prepare a representative dilution tube using pipette, source solution, distilled water, and microtube. |
+| `plate_transfer`    | Transfer prepared solution or media into highlighted plate wells.                                      |
+| `transition`        | Explain a skipped repetitive section and visibly update tube state.                                    |
+| `review`            | Show the final loaded plate and summary.                                                               |
 
 Scene code should import SVGs only through `src/svg_assets.ts`. Generic renderers must not hardcode OVCAR8 step ids, carboplatin, metformin, or row B-H logic. YAML authors the tutorial content and targets.
 
@@ -92,17 +92,17 @@ Scene code should import SVGs only through `src/svg_assets.ts`. Generic renderer
 
 `well_plate_workspace` is one stable scene. The layout does not switch between separate modes. The current step changes the active process and highlighted objects.
 
-The current scene YAML is too sparse. It declares only `well_plate` as a scene item, so it does not yet describe the source liquids, pipettes, microtube rack, or transfer objects needed for the tutorial.  `oai_citation:0?well_plate_workspace.yaml`
+The current scene YAML is too sparse. It declares only `well_plate` as a scene item, so it does not yet describe the source liquids, pipettes, microtube rack, or transfer objects needed for the tutorial. `oai_citation:0?well_plate_workspace.yaml`
 
 The scene must render the same major spatial regions throughout the tutorial:
 
-| Region | Position | Purpose |
-|---|---|---|
-| Tool area | left side | pipettes and tip box |
-| Source area | upper center | stock solution, distilled water, media, active working solution |
-| Microtube rack area | lower center | dilution tubes and prepared working solutions |
-| Plate area | right side, largest object | 96-well plate and well liquid state |
-| Popup layer | centered overlay | multiple-choice math questions |
+| Region              | Position                   | Purpose                                                         |
+| ------------------- | -------------------------- | --------------------------------------------------------------- |
+| Tool area           | left side                  | pipettes and tip box                                            |
+| Source area         | upper center               | stock solution, distilled water, media, active working solution |
+| Microtube rack area | lower center               | dilution tubes and prepared working solutions                   |
+| Plate area          | right side, largest object | 96-well plate and well liquid state                             |
+| Popup layer         | centered overlay           | multiple-choice math questions                                  |
 
 The layout stays stable. Each step only changes which objects are active, highlighted, clickable, or dimmed.
 
@@ -110,21 +110,21 @@ The layout stays stable. Each step only changes which objects are active, highli
 
 Use existing local assets first. Use Bioicons/Servier assets only when the local `assets/equipment/` set does not contain the needed object. Do not render source items as snake_case text buttons. All SVG access goes through `src/svg_assets.ts`.
 
-| Object | Preferred SVG asset | Notes |
-|---|---|---|
-| 96-well plate | `assets/equipment/96well_pcr_plate.svg` or procedural 96-well grid | Use procedural grid if per-well liquid layers cannot be applied cleanly to the asset. |
-| Multichannel pipette | `assets/equipment/multichannel_pipette.svg` or `assets/equipment/multichannel_pipette_new.svg` | Always visible during plate-transfer steps. |
-| Single-channel pipette | `assets/equipment/aspirating_pipette.svg` | Use for dilution-prep clicks unless a true micropipette asset is added later. |
-| Pipette rack | `assets/equipment/micropipette_rack.svg` | Tool area, left side. |
-| Tip box | `assets/equipment/tip_box.svg` or `assets/equipment/tip_box_new.svg` | Tool area, optional if layout becomes crowded. |
-| Media bottle | `assets/equipment/bottle.svg` or Bioicons `bottle-medium-pink.svg` | Prefer Bioicons pink for media color identity. |
-| Distilled water bottle | `assets/equipment/bottle.svg` | Label as distilled water. |
-| Carboplatin stock solution | `assets/equipment/bottle.svg` or `assets/equipment/drug_vial_rack.svg` | Label as "10 mM carboplatin stock solution". |
-| Metformin stock solution | `assets/equipment/bottle.svg` or `assets/equipment/drug_vial_rack.svg` | Label as "1 M metformin stock solution". |
-| Microtube rack | `assets/equipment/dilution_tube_rack.svg` | Holds carboplatin and metformin working-solution tubes. |
-| Individual microtube | Bioicons `microtube-open-translucent.svg` | Best default for empty/active tubes. |
-| Filled microtube | Dynamic reagent-color overlay on translucent tube | Prefer dynamic overlay so reagent colors come from `reagents.yaml`. |
-| Incubator | none | Excluded from this mini-tutorial. |
+| Object                     | Preferred SVG asset                                                                            | Notes                                                                                 |
+| -------------------------- | ---------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| 96-well plate              | `assets/equipment/96well_pcr_plate.svg` or procedural 96-well grid                             | Use procedural grid if per-well liquid layers cannot be applied cleanly to the asset. |
+| Multichannel pipette       | `assets/equipment/multichannel_pipette.svg` or `assets/equipment/multichannel_pipette_new.svg` | Always visible during plate-transfer steps.                                           |
+| Single-channel pipette     | `assets/equipment/aspirating_pipette.svg`                                                      | Use for dilution-prep clicks unless a true micropipette asset is added later.         |
+| Pipette rack               | `assets/equipment/micropipette_rack.svg`                                                       | Tool area, left side.                                                                 |
+| Tip box                    | `assets/equipment/tip_box.svg` or `assets/equipment/tip_box_new.svg`                           | Tool area, optional if layout becomes crowded.                                        |
+| Media bottle               | `assets/equipment/bottle.svg` or Bioicons `bottle-medium-pink.svg`                             | Prefer Bioicons pink for media color identity.                                        |
+| Distilled water bottle     | `assets/equipment/bottle.svg`                                                                  | Label as distilled water.                                                             |
+| Carboplatin stock solution | `assets/equipment/bottle.svg` or `assets/equipment/drug_vial_rack.svg`                         | Label as "10 mM carboplatin stock solution".                                          |
+| Metformin stock solution   | `assets/equipment/bottle.svg` or `assets/equipment/drug_vial_rack.svg`                         | Label as "1 M metformin stock solution".                                              |
+| Microtube rack             | `assets/equipment/dilution_tube_rack.svg`                                                      | Holds carboplatin and metformin working-solution tubes.                               |
+| Individual microtube       | Bioicons `microtube-open-translucent.svg`                                                      | Best default for empty/active tubes.                                                  |
+| Filled microtube           | Dynamic reagent-color overlay on translucent tube                                              | Prefer dynamic overlay so reagent colors come from `reagents.yaml`.                   |
+| Incubator                  | none                                                                                           | Excluded from this mini-tutorial.                                                     |
 
 ### Microtube decision
 
@@ -184,7 +184,7 @@ Remove `incubator` from items.yaml. Replace every `&micro;` with literal Unicode
 
 Use this layout target:
 
-```text
+````text
 +--------------------------------------------------------------------------------+
 |                                                                                |
 |  TOOL AREA             SOURCE AREA                     PLATE AREA              |
@@ -472,7 +472,7 @@ bash tools/bootstrap_generated.sh
 npx tsc --noEmit -p src/tsconfig.json
 pytest tests/
 bash build_github_pages.sh
-```
+````
 
 Run walker checks:
 
@@ -504,13 +504,13 @@ Failure semantics:
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Scope drifts back to full protocol | High | Incubator, bench, hood, or pre-incubation appears | integrator | Add explicit walker and visual assertions. |
-| Scene naming causes confusion | Medium | Code creates separate dilution scene or mode-only layouts | architect | Use `well_plate_workspace` with step-driven active process. |
-| Visuals pass tests but fail pedagogy | High | Screenshots do not show source -> pipette -> destination | reviewer | Require visual review before closure. |
-| Reagent identity confused with progress state | Medium | Generic green/yellow fills appear | coder | Separate fill color from outline/progress state. |
-| Schema changes become tutorial-specific | Medium | Renderer branches on OVCAR8 ids | reviewer | Require generic metadata and grep for hardcoded drug strings. |
+| Risk                                          | Impact | Trigger                                                   | Owner      | Mitigation                                                    |
+| --------------------------------------------- | ------ | --------------------------------------------------------- | ---------- | ------------------------------------------------------------- |
+| Scope drifts back to full protocol            | High   | Incubator, bench, hood, or pre-incubation appears         | integrator | Add explicit walker and visual assertions.                    |
+| Scene naming causes confusion                 | Medium | Code creates separate dilution scene or mode-only layouts | architect  | Use `well_plate_workspace` with step-driven active process.   |
+| Visuals pass tests but fail pedagogy          | High   | Screenshots do not show source -> pipette -> destination  | reviewer   | Require visual review before closure.                         |
+| Reagent identity confused with progress state | Medium | Generic green/yellow fills appear                         | coder      | Separate fill color from outline/progress state.              |
+| Schema changes become tutorial-specific       | Medium | Renderer branches on OVCAR8 ids                           | reviewer   | Require generic metadata and grep for hardcoded drug strings. |
 
 ## Rollout and release checklist
 

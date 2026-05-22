@@ -18,17 +18,20 @@ Both scenes now render successfully:
 - `hood_basic_row_slot`: row+slot-based with 3 rows and 4 placements (new, working)
 
 Placement names preserved between versions:
+
 - `rear_left_ethanol` (ethanol_bottle)
 - `rear_center_waste` (waste_container)
 - `center_hood_surface` (hood_surface)
 - `right_aspirating_pipette` (aspirating_pipette)
 
 Gallery test output:
+
 ```
 SUCCESS: All 9 base scenes rendered and gallery created
 ```
 
 Both screenshots exist in `test-results/_base_scenes_gallery/`:
+
 - `hood_basic.png` (69K)
 - `hood_basic_row_slot.png` (71K)
 
@@ -37,14 +40,15 @@ Both screenshots exist in `test-results/_base_scenes_gallery/`:
 The row+slot prototype uses the layout engine's `computeRowSlotSceneLayout` function, which was implemented in WP-PROTO-3 at `src/scene_runtime/layout/layout_engine.ts` line 688.
 
 Function signature (verified):
+
 ```typescript
 export function computeRowSlotSceneLayout(
   items: SceneItem[],
   specs: Record<string, AssetSpec>,
   input: RowSlotSceneInput,
   viewportW: number,
-  viewportH: number
-): ComputedItemLayout[]
+  viewportH: number,
+): ComputedItemLayout[];
 ```
 
 Function is correctly exported from `src/scene_runtime/layout/index.ts` line 12.
@@ -59,10 +63,10 @@ Since the gallery test renders both scenes in browser context without access to 
 
 ### Screenshot dimensions and placement counts
 
-| Scene | File size | Placement count | Layout type |
-| --- | --- | --- | --- |
-| hood_basic | 69K | 4 placements | zone-based |
-| hood_basic_row_slot | 71K | 3 placements | row+slot |
+| Scene               | File size | Placement count | Layout type |
+| ------------------- | --------- | --------------- | ----------- |
+| hood_basic          | 69K       | 4 placements    | zone-based  |
+| hood_basic_row_slot | 71K       | 3 placements    | row+slot    |
 
 Note: `hood_basic_row_slot` has 3 placements rendered (rear_left_ethanol, rear_center_waste, right_aspirating_pipette visible); center_hood_surface may be rendered but not captured or located by bounding box logic.
 
@@ -97,4 +101,4 @@ No additional engine work is required. The implementation in WP-PROTO-3 is corre
 
 ---
 
-*Corrected 2026-05-18: Previous WP-PROTO-4 verdict (`prototype_blocked_engine`) was based on false blocker. Function is implemented and working.*
+_Corrected 2026-05-18: Previous WP-PROTO-4 verdict (`prototype_blocked_engine`) was based on false blocker. Function is implemented and working._

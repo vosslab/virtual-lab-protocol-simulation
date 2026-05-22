@@ -1,47 +1,69 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>Bench Basic - NEW0 Direction B (Stage/Composition)</title>
-	<link rel="stylesheet" href="../../styles/dir_b_bench.css">
-</head>
-<body>
-	<div class="scene-container scene--bench" data-scene-mode="template">
-		<!-- Rear shelf: empty in basic bench -->
-		<div class="region region--rear_shelf" data-region="rear_shelf">
-			<span class="region-label">Rear Shelf</span>
-		</div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bench Basic - NEW0 Direction B (Stage/Composition)</title>
+    <link rel="stylesheet" href="../../styles/dir_b_bench.css" />
+  </head>
+  <body>
+    <div class="scene-container scene--bench" data-scene-mode="template">
+      <!-- Rear shelf: empty in basic bench -->
+      <div class="region region--rear_shelf" data-region="rear_shelf">
+        <span class="region-label">Rear Shelf</span>
+      </div>
 
-		<!-- Center stage: primary object dominates -->
-		<div class="region region--work_surface" data-region="work_surface">
-			<span class="region-label">Work Surface</span>
+      <!-- Center stage: primary object dominates -->
+      <div class="region region--work_surface" data-region="work_surface">
+        <span class="region-label">Work Surface</span>
 
-			<div class="placement" data-placement="center_well_plate" data-placement-name="center_well_plate" data-object-name="well_plate_96" data-primary="true">
-				<div class="object-graphic footprint--container">
-					<img src="../../../../assets/equipment/96well_pcr_plate.svg" alt="Well Plate">
-				</div>
-				<span class="placement-label">Well Plate 96</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="center_well_plate"
+          data-placement-name="center_well_plate"
+          data-object-name="well_plate_96"
+          data-primary="true"
+        >
+          <div class="object-graphic footprint--container">
+            <img
+              src="../../../../assets/equipment/96well_pcr_plate.svg"
+              alt="Well Plate"
+            />
+          </div>
+          <span class="placement-label">Well Plate 96</span>
+        </div>
+      </div>
 
-		<!-- Front tools: pipette in narrow strip -->
-		<div class="region region--front_tools" data-region="front_tools">
-			<span class="region-label">Front Tools</span>
+      <!-- Front tools: pipette in narrow strip -->
+      <div class="region region--front_tools" data-region="front_tools">
+        <span class="region-label">Front Tools</span>
 
-			<div class="placement" data-placement="right_tool_p200_micropipette" data-placement-name="right_tool_p200_micropipette" data-object-name="p200_micropipette">
-				<div class="object-graphic footprint--small-tool">
-					<img src="../../../../assets/equipment/p200_micropipette_filled.svg" alt="p200 Micropipette">
-				</div>
-				<span class="placement-label">p200</span>
-			</div>
-		</div>
+        <div
+          class="placement"
+          data-placement="right_tool_p200_micropipette"
+          data-placement-name="right_tool_p200_micropipette"
+          data-object-name="p200_micropipette"
+        >
+          <div class="object-graphic footprint--small-tool">
+            <img
+              src="../../../../assets/equipment/p200_micropipette_filled.svg"
+              alt="p200 Micropipette"
+            />
+          </div>
+          <span class="placement-label">p200</span>
+        </div>
+      </div>
 
-		<!-- Popup layer: overlay (unused) -->
-		<div class="region region--popup_layer" data-region="popup_layer"></div>
-	</div>
-	<script>
-		window.sceneData = { sceneName: 'bench_basic', direction: 'B', workspace: 'bench', totalPlacements: 2 };
-	</script>
-</body>
+      <!-- Popup layer: overlay (unused) -->
+      <div class="region region--popup_layer" data-region="popup_layer"></div>
+    </div>
+    <script>
+      window.sceneData = {
+        sceneName: "bench_basic",
+        direction: "B",
+        workspace: "bench",
+        totalPlacements: 2,
+      };
+    </script>
+  </body>
 </html>

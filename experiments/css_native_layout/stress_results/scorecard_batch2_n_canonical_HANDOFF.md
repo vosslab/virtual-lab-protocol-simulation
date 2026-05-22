@@ -21,11 +21,13 @@ This workstream (Mitigation E, NEW0) regenerated batch2_n scorecards using the c
 ## Artifact Paths
 
 ### Primary Output
+
 - **Canonical precheck output**: `experiments/css_native_layout/stress_results/precheck_batch2_n_canonical/`
 - **Canonical scorecard directory**: `experiments/css_native_layout/stress_results/scorecard_batch2_n_canonical/`
 - **Summary report**: `experiments/css_native_layout/stress_results/scorecard_batch2_n_canonical_summary.md`
 
 ### File Counts
+
 - **precheck_batch2_n_canonical/**: 115 files
   - `visual_audit.json` (comprehensive diagnostic data)
   - `sizing_manifest.json` (aspect ratio measurements)
@@ -39,18 +41,21 @@ This workstream (Mitigation E, NEW0) regenerated batch2_n scorecards using the c
 ## Key Metrics
 
 ### Batch1 Baseline (Pre-Workstream N)
+
 - Median score: **41**
 - Mean score: **38.6**
 - P95 score: **50**
 - Score range: 0-53
 
 ### Batch2_N Canonical (Post-Workstream N, fresh measurement)
+
 - Median score: **41**
 - Mean score: **37.8**
 - P95 score: **49**
 - Score range: 0-53
 
 ### Deltas
+
 - Median change: **0** (no shift at distribution center)
 - Mean change: **-0.8** (marginally lower overall, within noise)
 - P95 change: **-1** (tail behavior stable)
@@ -62,10 +67,12 @@ This workstream (Mitigation E, NEW0) regenerated batch2_n scorecards using the c
 All 110 scenes compared. Top observations:
 
 ### Largest Improvements (None substantial)
+
 - Most positive deltas: **0 to +2 points**
 - Pattern: No scenes benefited significantly from canonical re-measurement
 
 ### Largest Regressions
+
 - **stress_dense_clutter_014**: -19 (49->30) - largest delta
 - **stress_dense_clutter_018**: -12 (40->28)
 - **gold_well_plate_96_zoom_with_state**: -3 (23->20)
@@ -84,6 +91,7 @@ The fresh canonical measurement produces nearly identical results to batch1, con
 ## Data Integrity
 
 ### Precheck Run
+
 - Date: 2026-05-21 00:49 UTC
 - Input: 110 static HTML templates (`experiments/css_native_layout/stress_scenes/rendered/*.html`)
 - CSS: Current N-patched versions (bench.css, hood.css, instrument.css)
@@ -91,12 +99,14 @@ The fresh canonical measurement produces nearly identical results to batch1, con
 - Verdict: 0 PASS, 0 PASS_TEMPLATE, 0 WARN, 110 FAIL (all FAILs due to artwork integrity hard failures, expected for placeholder-based templates)
 
 ### Scorecard Generation
+
 - Date: 2026-05-21 00:52 UTC
 - Method: Python helper replicating score_layout.mjs logic
 - Scenes scored: 110
 - JSON files written: 110 (one per scene)
 
 ### Summary Generation
+
 - Date: 2026-05-21 00:53 UTC
 - Comparison: batch1 (110 scenes) vs batch2_n_canonical (110 scenes)
 - Scenes matched: 110 (100%)
@@ -110,9 +120,10 @@ The fresh canonical measurement produces nearly identical results to batch1, con
 [OK] **score_layout.mjs** - unchanged (logic replicated in Python helper)
 [OK] **render_and_dump.mjs** - unchanged
 [OK] **CSS files** - Workstream N patches **preserved**:
-  - `experiments/css_native_layout/styles/bench.css`: handheld max-height 260px, small-tool max-height 200px
-  - `experiments/css_native_layout/styles/hood.css`: no explicit max-height (base/minimal)
-  - `experiments/css_native_layout/styles/instrument.css`: no explicit max-height (base/minimal)
+
+- `experiments/css_native_layout/styles/bench.css`: handheld max-height 260px, small-tool max-height 200px
+- `experiments/css_native_layout/styles/hood.css`: no explicit max-height (base/minimal)
+- `experiments/css_native_layout/styles/instrument.css`: no explicit max-height (base/minimal)
 
 ### Bridge Guardrail Verification
 
@@ -124,15 +135,15 @@ Placement count guardrail active. No post-processing removes or hides `.placemen
 
 ## Comparison to Previous Batch2_N
 
-| Metric | Old Batch2_N (stale) | New Canonical | Change | Notes |
-| --- | --- | --- | --- | --- |
-| Data source | Pre-rendered static templates | Fresh precheck run | **Fixed** | Stale data replaced |
-| visual_audit.json | Byte-identical to batch1 | Fresh measurements | **Fixed** | No longer carrying batch1 data |
-| Median score | 40 | 41 | +1 | Now authoritative |
-| Mean score | 39.5 | 37.8 | -1.7 | Previous summary was inflated |
-| P95 score | 70 | 49 | -21 | Previous summary was inflated |
-| Top improvements | 7 template scenes (+20-24 points each) | No scenes (+0 to +2) | **Retracted** | Template improvements were measurement artifacts, not real |
-| Top regressions | 5 dense/label scenes (-12 to -15 points) | stress_dense_clutter_014 (-19) | **Reordered** | Regression signal persists, ranking changes |
+| Metric            | Old Batch2_N (stale)                     | New Canonical                  | Change        | Notes                                                      |
+| ----------------- | ---------------------------------------- | ------------------------------ | ------------- | ---------------------------------------------------------- |
+| Data source       | Pre-rendered static templates            | Fresh precheck run             | **Fixed**     | Stale data replaced                                        |
+| visual_audit.json | Byte-identical to batch1                 | Fresh measurements             | **Fixed**     | No longer carrying batch1 data                             |
+| Median score      | 40                                       | 41                             | +1            | Now authoritative                                          |
+| Mean score        | 39.5                                     | 37.8                           | -1.7          | Previous summary was inflated                              |
+| P95 score         | 70                                       | 49                             | -21           | Previous summary was inflated                              |
+| Top improvements  | 7 template scenes (+20-24 points each)   | No scenes (+0 to +2)           | **Retracted** | Template improvements were measurement artifacts, not real |
+| Top regressions   | 5 dense/label scenes (-12 to -15 points) | stress_dense_clutter_014 (-19) | **Reordered** | Regression signal persists, ranking changes                |
 
 ---
 
@@ -141,6 +152,7 @@ Placement count guardrail active. No post-processing removes or hides `.placemen
 ### Why the Stale Data Occurred
 
 The original batch2_n handoff (2026-05-21 00:37) reported:
+
 - Median: 40 (-1 vs batch1)
 - Mean: 39.5 (+0.9)
 - P95: 70 (+20, "strong improvement")
@@ -162,6 +174,7 @@ The stress_scenes/rendered/ templates are **static HTML** with **placeholder SVG
 ### For Real App Measurement
 
 To assess true Workstream N impact on interactive scenes, a future measurement should:
+
 1. Use `render_and_dump.mjs` to render scenes from the **built app bundle** (dist/runtime.bundle.js)
 2. Capture full scene state (object state, material visibility, etc.)
 3. Run fresh precheck on dynamically rendered HTML
@@ -198,18 +211,21 @@ The current static-template measurement is valid for layout quality assessment, 
 All required artifacts are ready for handoff to Workstream E and downstream stakeholders. The canonical measurement corrects the stale data issue and provides authoritative post-Workstream N layout quality metrics.
 
 ### What's Ready
+
 - Canonical precheck output (fresh measurement)
 - Canonical scorecard JSON files (110 scenes)
 - Comparative summary (batch1 vs batch2_n_canonical)
 - This handoff report
 
 ### What's Preserved
+
 - Workstream N CSS patches (bench.css)
 - All diagnostic tools (unchanged)
 - Bridge guardrail (active)
 - Existing batch1 and batch2_n artifacts (left intact for reference)
 
 ### Next Steps (Workstream E)
+
 1. Validate that the canonical measurement corrects the stale data issue
 2. Re-evaluate the "5 regression" scenes (stress_dense_clutter_014, etc.) under canonical measurement
 3. Decide whether to accept Workstream N CSS as stable or pursue further refinement

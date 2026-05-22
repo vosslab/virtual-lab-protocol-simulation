@@ -147,22 +147,22 @@ Within a step, the chain runs:
 
 Each slot owns one concern.
 
-| Level | Slot | Charter |
-| --- | --- | --- |
-| protocol | `protocol_type` | The kind of protocol authored: one of `mini_protocol`, `sequence_runner`, `dev_smoke`. Closed enum. |
-| protocol | `protocol_name` | The stable snake_case identifier for the protocol. |
-| protocol | `entry_step` | Names the first step by its `step_name`; flow starts here. |
-| protocol | `steps` | The list of steps; list order is not protocol flow. |
-| step | `step_name` | The stable snake_case identifier for the step, used for flow, tests, and debugging. |
-| step | `prompt` | States what the student is asked to accomplish in this step. |
-| step | `sequence` | The ordered list of interactions that make up the step; order always matters. |
-| step | `step_validator` | Named preset that checks whole-step completion, not one gesture. |
-| step | `outcome` | A mapping that says how the step resolves: `on_success` and `on_failure`. |
-| step | `next_step` | Names the next step by its `step_name`, or `null` for a terminal step; this controls protocol flow. |
-| interaction | `target` | Names the addressable scene object or control acted on. |
-| interaction | `gesture` | Names how the student acts on the target. |
-| interaction | `validator` | Named preset that checks this one gesture on this one target. |
-| interaction | `response` | Container for post-validation system behavior: `scene_operations` and optional structured `feedback`. |
+| Level       | Slot             | Charter                                                                                               |
+| ----------- | ---------------- | ----------------------------------------------------------------------------------------------------- |
+| protocol    | `protocol_type`  | The kind of protocol authored: one of `mini_protocol`, `sequence_runner`, `dev_smoke`. Closed enum.   |
+| protocol    | `protocol_name`  | The stable snake_case identifier for the protocol.                                                    |
+| protocol    | `entry_step`     | Names the first step by its `step_name`; flow starts here.                                            |
+| protocol    | `steps`          | The list of steps; list order is not protocol flow.                                                   |
+| step        | `step_name`      | The stable snake_case identifier for the step, used for flow, tests, and debugging.                   |
+| step        | `prompt`         | States what the student is asked to accomplish in this step.                                          |
+| step        | `sequence`       | The ordered list of interactions that make up the step; order always matters.                         |
+| step        | `step_validator` | Named preset that checks whole-step completion, not one gesture.                                      |
+| step        | `outcome`        | A mapping that says how the step resolves: `on_success` and `on_failure`.                             |
+| step        | `next_step`      | Names the next step by its `step_name`, or `null` for a terminal step; this controls protocol flow.   |
+| interaction | `target`         | Names the addressable scene object or control acted on.                                               |
+| interaction | `gesture`        | Names how the student acts on the target.                                                             |
+| interaction | `validator`      | Named preset that checks this one gesture on this one target.                                         |
+| interaction | `response`       | Container for post-validation system behavior: `scene_operations` and optional structured `feedback`. |
 
 ## Step naming and protocol flow
 
@@ -242,13 +242,13 @@ tube-shaped slot.
 A `gesture` is how the student acts on a target. It is the physical
 input the student performs. The gesture value set is closed:
 
-| Gesture | What the student does |
-| --- | --- |
-| `click` | Clicks the target. The simple, discrete gesture. |
-| `drag` | Drags the target, or drags from the target to another target. |
+| Gesture  | What the student does                                                     |
+| -------- | ------------------------------------------------------------------------- |
+| `click`  | Clicks the target. The simple, discrete gesture.                          |
+| `drag`   | Drags the target, or drags from the target to another target.             |
 | `adjust` | Moves a continuous control to a set-point value. The skill-based gesture. |
-| `select` | Picks one option from a presented set of choices. |
-| `type` | Enters a value or text. |
+| `select` | Picks one option from a presented set of choices.                         |
+| `type`   | Enters a value or text.                                                   |
 
 ### `adjust` is the skill-based set-point gesture
 
@@ -325,10 +325,10 @@ for post-validation system behavior -- what the system does after
 an interaction is validated. It is not itself a primitive: it holds
 primitives. A `response` has exactly two fields:
 
-| Field | Required | What it holds |
-| --- | --- | --- |
-| `scene_operations` | yes (may be empty) | An ordered list of typed `scene_operation` primitives. |
-| `feedback` | no | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
+| Field              | Required           | What it holds                                                                 |
+| ------------------ | ------------------ | ----------------------------------------------------------------------------- |
+| `scene_operations` | yes (may be empty) | An ordered list of typed `scene_operation` primitives.                        |
+| `feedback`         | no                 | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
 
 The canonical shape of a `response`:
 
@@ -412,13 +412,13 @@ The semantic primitive that supersedes all four at the protocol level is
 declared set-point fields (`set_volume`, `set_temperature`,
 `set_rpm`, etc.).
 
-| Primitive | Typed fields | One-line meaning |
-| --- | --- | --- |
-| `ObjectStateChange` | `type`, `target`, `state` (a flat mapping of `state_field` name to primitive value), optional `transition` (`instant` or `animated`) | Semantic state change: sets one or more declared `state_fields` on a target object or subpart. The object's `visual_states` resolves the new state to a visual; the protocol does not name the visual. A protocol that acts on several subparts emits one `ObjectStateChange` per subpart. This is the sole protocol primitive for liquid state mutation; write the flat declared liquid fields and let the object's `visual_states` resolve the visual. This primitive changes what the simulation IS (declared state), not how it LOOKS. |
-| `CursorAttach` | `type`, `target`, `operation` (`attach` or `detach`) | Semantic state change: sets the runtime's held-material state -- "the learner is now holding this object instance" (`attach`) or "the learner is no longer holding it" (`detach`). It must not be read as "draw the object under the cursor"; the cursor-follow visual is rendered by the scene / object-render layer in response to the held-material state change. This primitive changes what the simulation IS (held material), not how it LOOKS. |
-| `SceneChange` | `type`, `to_scene` | Semantic state change: transitions the runtime's active scene id to another scene. The protocol names which scene; the scene-runtime renders the transition. This primitive changes what the simulation IS (the active scene), not how it LOOKS. |
-| `LayoutMove` | `type`, `target`, `to_slot` (and optional `to_scene` for cross-scene transitions) | Semantic placement change: moves an existing placement only. Two valid uses: (a) reposition within the current scene (the layout engine handles row-to-row moves); (b) cross-scene transition (remove the placement from one scene and add it to another, e.g., a pipette moving from hood to bench, or a protocol with two bench areas). The protocol names what moves and where; it must not encode animation timing, pixel coordinates, layout rules, or visual motion. The layout engine owns the visible motion. |
-| `TimedWait` | `type`, `target`, `duration_min`, `display` | Semantic state change: advances the runtime's equipment-state for the named target -- the timed phase starts and then elapses. It must not be read as "show a spinner" or "render a progress bar"; the visible progress display is owned by the object's `visual_states` over the equipment's declared timed-phase state. The protocol names what equipment, for how long, and what timed condition is satisfied; the object / render layer renders the display. The `display` field is an authoring hint to the render layer about display style, not a protocol-side appearance knob and never an SVG asset id. This primitive changes what the simulation IS (the equipment's timed phase), not how it LOOKS. |
+| Primitive           | Typed fields                                                                                                                         | One-line meaning                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ObjectStateChange` | `type`, `target`, `state` (a flat mapping of `state_field` name to primitive value), optional `transition` (`instant` or `animated`) | Semantic state change: sets one or more declared `state_fields` on a target object or subpart. The object's `visual_states` resolves the new state to a visual; the protocol does not name the visual. A protocol that acts on several subparts emits one `ObjectStateChange` per subpart. This is the sole protocol primitive for liquid state mutation; write the flat declared liquid fields and let the object's `visual_states` resolve the visual. This primitive changes what the simulation IS (declared state), not how it LOOKS.                                                                                                                                                                       |
+| `CursorAttach`      | `type`, `target`, `operation` (`attach` or `detach`)                                                                                 | Semantic state change: sets the runtime's held-material state -- "the learner is now holding this object instance" (`attach`) or "the learner is no longer holding it" (`detach`). It must not be read as "draw the object under the cursor"; the cursor-follow visual is rendered by the scene / object-render layer in response to the held-material state change. This primitive changes what the simulation IS (held material), not how it LOOKS.                                                                                                                                                                                                                                                            |
+| `SceneChange`       | `type`, `to_scene`                                                                                                                   | Semantic state change: transitions the runtime's active scene id to another scene. The protocol names which scene; the scene-runtime renders the transition. This primitive changes what the simulation IS (the active scene), not how it LOOKS.                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `LayoutMove`        | `type`, `target`, `to_slot` (and optional `to_scene` for cross-scene transitions)                                                    | Semantic placement change: moves an existing placement only. Two valid uses: (a) reposition within the current scene (the layout engine handles row-to-row moves); (b) cross-scene transition (remove the placement from one scene and add it to another, e.g., a pipette moving from hood to bench, or a protocol with two bench areas). The protocol names what moves and where; it must not encode animation timing, pixel coordinates, layout rules, or visual motion. The layout engine owns the visible motion.                                                                                                                                                                                            |
+| `TimedWait`         | `type`, `target`, `duration_min`, `display`                                                                                          | Semantic state change: advances the runtime's equipment-state for the named target -- the timed phase starts and then elapses. It must not be read as "show a spinner" or "render a progress bar"; the visible progress display is owned by the object's `visual_states` over the equipment's declared timed-phase state. The protocol names what equipment, for how long, and what timed condition is satisfied; the object / render layer renders the display. The `display` field is an authoring hint to the render layer about display style, not a protocol-side appearance knob and never an SVG asset id. This primitive changes what the simulation IS (the equipment's timed phase), not how it LOOKS. |
 
 The liquid display path and the set-point display path both moved to the
 object's `visual_states`; there is no longer a display-change family at the
@@ -534,13 +534,13 @@ add them with documented expansions as their protocols read naturally.
 The three layers have different costs to extend, and the difference
 is deliberate.
 
-| Layer | Cost to add | Bar to clear |
-| --- | --- | --- |
-| Domain verb | Cheap | A documented expansion to existing slots. |
-| `gesture` value | Expensive | Evidence: a recurring input shape no current gesture expresses. |
-| `scene_operation` primitive | Expensive | Evidence: a recurring scene effect no composition of existing primitives expresses. |
-| Validator preset | Expensive | Evidence: a recurring validation shape no existing preset expresses. |
-| `protocol_type` value | Expensive | Evidence: a recurring authoring shape no existing kind expresses. Closed enum; same bar as a new `scene_operation` primitive. |
+| Layer                       | Cost to add | Bar to clear                                                                                                                  |
+| --------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| Domain verb                 | Cheap       | A documented expansion to existing slots.                                                                                     |
+| `gesture` value             | Expensive   | Evidence: a recurring input shape no current gesture expresses.                                                               |
+| `scene_operation` primitive | Expensive   | Evidence: a recurring scene effect no composition of existing primitives expresses.                                           |
+| Validator preset            | Expensive   | Evidence: a recurring validation shape no existing preset expresses.                                                          |
+| `protocol_type` value       | Expensive   | Evidence: a recurring authoring shape no existing kind expresses. Closed enum; same bar as a new `scene_operation` primitive. |
 
 New domain verbs are cheap and expected. New `gesture` values, new
 `scene_operation` primitives, and new validator presets are
@@ -616,13 +616,13 @@ The two scopes are deliberate and separate: the interaction
 The initial preset library has five presets: three interaction
 presets and two step presets.
 
-| Preset | Scope | Required fields | What it checks |
-| --- | --- | --- | --- |
-| `correct_target` | interaction `validator` only | `preset` | The student performed the interaction's `gesture` on the interaction's `target`. |
-| `correct_choice` | interaction `validator` only | `preset` | The student selected the correct answer-choice target from a presented set (a `select`-gesture interaction). |
-| `target_with_value` | interaction `validator` only | `preset`, `value` (a mapping of typed value keys) | The student performed the `gesture` on the `target` and the target reached the named `value` -- the preset an `adjust`-gesture interaction uses. |
-| `sequence_complete` | `step_validator` only | `preset` | Every interaction in the step's `sequence` validated, in order. |
-| `final_state_matches` | `step_validator` only | `preset`, `target`, `contains` (a mapping of expected target state) | After the sequence runs, the named `target` is in the state described by `contains`, regardless of the exact path. |
+| Preset                | Scope                        | Required fields                                                     | What it checks                                                                                                                                   |
+| --------------------- | ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `correct_target`      | interaction `validator` only | `preset`                                                            | The student performed the interaction's `gesture` on the interaction's `target`.                                                                 |
+| `correct_choice`      | interaction `validator` only | `preset`                                                            | The student selected the correct answer-choice target from a presented set (a `select`-gesture interaction).                                     |
+| `target_with_value`   | interaction `validator` only | `preset`, `value` (a mapping of typed value keys)                   | The student performed the `gesture` on the `target` and the target reached the named `value` -- the preset an `adjust`-gesture interaction uses. |
+| `sequence_complete`   | `step_validator` only        | `preset`                                                            | Every interaction in the step's `sequence` validated, in order.                                                                                  |
+| `final_state_matches` | `step_validator` only        | `preset`, `target`, `contains` (a mapping of expected target state) | After the sequence runs, the named `target` is in the state described by `contains`, regardless of the exact path.                               |
 
 Preset shapes in YAML:
 
@@ -652,9 +652,9 @@ outcome:
   on_failure: retry
 ```
 
-| Key | Meaning |
-| --- | --- |
-| `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`. |
+| Key          | Meaning                                                                                                                                                                                                                         |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `on_success` | What happens when the `step_validator` passes. `complete` resolves the step; flow then moves to `next_step`.                                                                                                                    |
 | `on_failure` | What happens when the `step_validator` does not pass, or an interaction `validator` returned false. `retry` restarts the whole step -- the entire `sequence` resets and the student redoes the step from its first interaction. |
 
 `outcome` is a mapping. The bare-scalar form `outcome: complete` is
@@ -676,13 +676,13 @@ The vocabulary assumes a small, named runtime state. Every
 `validator` preset and every `step_validator` preset reads this
 state; every state change is written by a `response`.
 
-| State | What it tracks |
-| --- | --- |
-| held material | Which tool, if any, is attached to the cursor, and what liquid it carries. |
-| target material | The tracked liquid identity and volume on each vessel and tool. |
-| set-point values | The current value of a continuous control (a pipette volume, a power-supply voltage, a titration pH). |
-| equipment state | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed. |
-| phase state | A multi-phase result the student must resolve (a centrifuged tube holding an aqueous and an organic phase). |
+| State             | What it tracks                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| held material     | Which tool, if any, is attached to the cursor, and what liquid it carries.                                                                                                                                                                                                                                                                                                                                                                                         |
+| target material   | The tracked liquid identity and volume on each vessel and tool.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| set-point values  | The current value of a continuous control (a pipette volume, a power-supply voltage, a titration pH).                                                                                                                                                                                                                                                                                                                                                              |
+| equipment state   | Whether a piece of equipment has run, and -- for timed equipment -- whether its timed phase has started and elapsed.                                                                                                                                                                                                                                                                                                                                               |
+| phase state       | A multi-phase result the student must resolve (a centrifuged tube holding an aqueous and an organic phase).                                                                                                                                                                                                                                                                                                                                                        |
 | object appearance | Decomposed by the object-render-layer split: the asset id and color shown for each object are render-layer outputs of the object's `visual_states` over its declared `state_fields` (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)); the layout slot of each scene object stays scene-level placement. The protocol writes declared `state_fields` (via `ObjectStateChange`) and writes layout slots (via `LayoutMove`); it never names an asset id or a color. |
 
 This state is named and non-positional, the same as `target`: the
@@ -692,13 +692,13 @@ protocol vocabulary names the state, not the rendering.
 Each `scene_operation` primitive maps to the runtime state it
 changes:
 
-| Primitive | Runtime state it changes |
-| --- | --- |
+| Primitive           | Runtime state it changes                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
 | `ObjectStateChange` | declared object `state_fields` -- the named, typed state variables an object owns; the object's `visual_states` resolves the value to a visual. |
-| `CursorAttach` | held material -- the cursor-attachment state of the target. |
-| `SceneChange` | the active scene id. |
-| `LayoutMove` | object appearance -- the target's layout slot. |
-| `TimedWait` | equipment state -- the target equipment's timed phase, started and then elapsed. |
+| `CursorAttach`      | held material -- the cursor-attachment state of the target.                                                                                     |
+| `SceneChange`       | the active scene id.                                                                                                                            |
+| `LayoutMove`        | object appearance -- the target's layout slot.                                                                                                  |
+| `TimedWait`         | equipment state -- the target equipment's timed phase, started and then elapsed.                                                                |
 
 The object's `visual_states` resolves declared `state_fields` to a
 visual; see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).
@@ -762,21 +762,21 @@ Two consequences follow:
 
 ### Slot-by-slot ownership
 
-| Level | Slot | Side | What each side owns |
-| --- | --- | --- | --- |
-| protocol | `protocol_name` | protocol | The protocol's stable snake_case identifier. |
-| protocol | `entry_step` | protocol | Names the first step; pure protocol flow. |
-| protocol | `steps` | protocol | The list of steps; pure protocol flow. |
-| step | `step_name` | protocol | The step's stable snake_case identifier. |
-| step | `prompt` | protocol | The student-facing instruction text. |
-| step | `sequence` | protocol | The ordered list of interactions; order is protocol-owned. |
-| step | `step_validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
-| step | `outcome` | protocol | The `on_success` / `on_failure` mapping; pure protocol flow. |
-| step | `next_step` | protocol | Names the next step; pure protocol flow. |
-| interaction | `target` | shared | Protocol names a semantic target; scene resolves it to geometry. |
-| interaction | `gesture` | shared | Protocol names the gesture; scene owns how it is rendered and input. |
-| interaction | `validator` | shared | Protocol selects the preset; scene/runtime supplies the state it checks. |
-| interaction | `response` | shared | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
+| Level       | Slot             | Side     | What each side owns                                                         |
+| ----------- | ---------------- | -------- | --------------------------------------------------------------------------- |
+| protocol    | `protocol_name`  | protocol | The protocol's stable snake_case identifier.                                |
+| protocol    | `entry_step`     | protocol | Names the first step; pure protocol flow.                                   |
+| protocol    | `steps`          | protocol | The list of steps; pure protocol flow.                                      |
+| step        | `step_name`      | protocol | The step's stable snake_case identifier.                                    |
+| step        | `prompt`         | protocol | The student-facing instruction text.                                        |
+| step        | `sequence`       | protocol | The ordered list of interactions; order is protocol-owned.                  |
+| step        | `step_validator` | shared   | Protocol selects the preset; scene/runtime supplies the state it checks.    |
+| step        | `outcome`        | protocol | The `on_success` / `on_failure` mapping; pure protocol flow.                |
+| step        | `next_step`      | protocol | Names the next step; pure protocol flow.                                    |
+| interaction | `target`         | shared   | Protocol names a semantic target; scene resolves it to geometry.            |
+| interaction | `gesture`        | shared   | Protocol names the gesture; scene owns how it is rendered and input.        |
+| interaction | `validator`      | shared   | Protocol selects the preset; scene/runtime supplies the state it checks.    |
+| interaction | `response`       | shared   | Protocol names `scene_operations` and `feedback`; scene renders the effect. |
 
 ### Target resolution: adapter registry plus explicit subparts
 
@@ -975,46 +975,46 @@ Reading the chain:
 
 ## Container terms
 
-| Term | Definition | Where it surfaces |
-| --- | --- | --- |
-| **Protocol package** | The folder under `content/protocols/<cluster>/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value. | `content/protocols/<cluster>/<name>/` |
-| **Protocol type** | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`. | `protocol.protocol_type` field |
-| **Mini-protocol** | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Step count is determined by pedagogy. | `protocol_type: mini_protocol` |
-| **Sequence runner** | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner` |
-| **Developer smoke** | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher. | `protocol_type: dev_smoke` |
-| **Protocol** | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value. | `protocol` block in `protocol.yaml` |
-| **Step** | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture. | one entry in `protocol.steps` |
-| **Sequence** | The ordered list of interactions inside a step; order always matters. | `step.sequence` |
-| **Interaction** | One `gesture` on one `target`, with its own `validator` and `response`. | one entry in `step.sequence` |
-| **Target** | The addressable, semantic scene object or control the student acts on. Named, not positional. | `interaction.target` |
-| **Gesture** | How the student acts on the target. One of `click`, `drag`, `adjust`, `select`, `type`. | `interaction.gesture` |
-| **Validator** | A named preset that checks one gesture on one target. | `interaction.validator` |
-| **Step validator** | A named preset that checks whole-step completion. | `step.step_validator` |
-| **Response** | The container for post-validation system behavior: `scene_operations` and optional `feedback`. | `interaction.response` |
-| **Scene operation** | One of the five ratified typed primitives describing how the scene changes. | `response.scene_operations[]` |
-| **Outcome** | The `{on_success, on_failure}` mapping that says how the step resolves. | `step.outcome` |
-| **Domain verb** | An author-facing named composition over the two-level model. Expands to existing slots. | authoring shorthand; expands to `step`/`interaction` slots |
+| Term                 | Definition                                                                                                                                                                   | Where it surfaces                                          |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| **Protocol package** | The folder under `content/protocols/<cluster>/<name>/` that holds `protocol.yaml`, `materials.yaml`, and `scenes/`. A structural unit, not a `protocol_type` value.          | `content/protocols/<cluster>/<name>/`                      |
+| **Protocol type**    | The kind of protocol authored. Closed enum: `mini_protocol`, `sequence_runner`, `dev_smoke`.                                                                                 | `protocol.protocol_type` field                             |
+| **Mini-protocol**    | One authored student-facing workflow with normal steps, a `learning` block, scenes, materials, and referenced objects. Step count is determined by pedagogy.                 | `protocol_type: mini_protocol`                             |
+| **Sequence runner**  | An ordered pathway that connects mini-protocols into a larger student-facing sequence. Declares its sequence in place of authored steps. May be rendered as "full protocol". | `protocol_type: sequence_runner`                           |
+| **Developer smoke**  | A diagnostic protocol used to verify a scene or object works. Excluded from the student launcher.                                                                            | `protocol_type: dev_smoke`                                 |
+| **Protocol**         | The top-level YAML block and the three-nested-level model (`protocol -> step -> interaction`). Structural umbrella; not a `protocol_type` value.                             | `protocol` block in `protocol.yaml`                        |
+| **Step**             | One pedagogical unit -- one thing the student is asked to accomplish. Often multi-gesture.                                                                                   | one entry in `protocol.steps`                              |
+| **Sequence**         | The ordered list of interactions inside a step; order always matters.                                                                                                        | `step.sequence`                                            |
+| **Interaction**      | One `gesture` on one `target`, with its own `validator` and `response`.                                                                                                      | one entry in `step.sequence`                               |
+| **Target**           | The addressable, semantic scene object or control the student acts on. Named, not positional.                                                                                | `interaction.target`                                       |
+| **Gesture**          | How the student acts on the target. One of `click`, `drag`, `adjust`, `select`, `type`.                                                                                      | `interaction.gesture`                                      |
+| **Validator**        | A named preset that checks one gesture on one target.                                                                                                                        | `interaction.validator`                                    |
+| **Step validator**   | A named preset that checks whole-step completion.                                                                                                                            | `step.step_validator`                                      |
+| **Response**         | The container for post-validation system behavior: `scene_operations` and optional `feedback`.                                                                               | `interaction.response`                                     |
+| **Scene operation**  | One of the five ratified typed primitives describing how the scene changes.                                                                                                  | `response.scene_operations[]`                              |
+| **Outcome**          | The `{on_success, on_failure}` mapping that says how the step resolves.                                                                                                      | `step.outcome`                                             |
+| **Domain verb**      | An author-facing named composition over the two-level model. Expands to existing slots.                                                                                      | authoring shorthand; expands to `step`/`interaction` slots |
 
 ## Reagent and material terms
 
 These lab-domain terms are kept; they describe substances, not
 model structure.
 
-| Term | Definition |
-| --- | --- |
-| **Reagent** | A substance defined in the protocol's reagent data. |
-| **Liquid** | A reagent currently being moved, held, or tracked. Named in an `ObjectStateChange` writing the object's flat declared liquid fields (for example `material_name` / `held_material_name`). |
-| **Stock solution** | The highest-concentration reagent supplied in a bottle or vial at the start of the protocol. Never used directly on cells; diluted first. |
-| **Intermediate dilution** | A temporary tube of solution prepared by diluting a stock solution down toward a usable working concentration. |
-| **Working solution** | The final, ready-to-dose dilution delivered into a vessel at the protocol-specified volume. |
+| Term                      | Definition                                                                                                                                                                                |
+| ------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Reagent**               | A substance defined in the protocol's reagent data.                                                                                                                                       |
+| **Liquid**                | A reagent currently being moved, held, or tracked. Named in an `ObjectStateChange` writing the object's flat declared liquid fields (for example `material_name` / `held_material_name`). |
+| **Stock solution**        | The highest-concentration reagent supplied in a bottle or vial at the start of the protocol. Never used directly on cells; diluted first.                                                 |
+| **Intermediate dilution** | A temporary tube of solution prepared by diluting a stock solution down toward a usable working concentration.                                                                            |
+| **Working solution**      | The final, ready-to-dose dilution delivered into a vessel at the protocol-specified volume.                                                                                               |
 
 ## Test-tier terms
 
 These describe the test tooling the repo runs today. They are
 unchanged by the vocabulary redesign.
 
-| Term | Definition |
-| --- | --- |
-| **Walker** | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test. |
+| Term                    | Definition                                                                                                          |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Walker**              | YAML-driven UI playthrough that clicks the real DOM. Canonical real-UI regression test.                             |
 | **Wrong-order UI pass** | Variant of the walker that injects a wrong-order click before each correct sequence and asserts soft-fail behavior. |
-| **Human playtest** | A human plays the game. The only thing that judges UX clarity. |
+| **Human playtest**      | A human plays the game. The only thing that judges UX clarity.                                                      |

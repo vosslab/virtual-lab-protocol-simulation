@@ -33,6 +33,7 @@
 >
 > **Validator inventory (user 2026-05-16).** These move into
 > `validation/` in M2 and consume `validation.shared_toolkit`:
+>
 > - `tools/validate_content_yaml.py` -> `validation/yaml/`
 > - `tools/protocol_stepper.py` -> `validation/stepper/` (stepper
 >   is a validator)
@@ -47,22 +48,25 @@
 > **Pipeline inventory (user 2026-05-16).** Core codegen scripts
 > -- TS runtime cannot start without their output -- move to a
 > new top-level `pipeline/`:
+>
 > - `tools/build_protocol_data.py` -> `pipeline/build_protocol_data.py`
 > - `tools/build_scene_data.py` -> `pipeline/build_scene_data.py`
 > - `tools/generate_svg_globals.py` -> `pipeline/generate_svg_globals.py`
 > - `tools/bootstrap_generated.sh` -> `pipeline/bootstrap_generated.sh`
-> Filenames preserved (no rename) to minimize caller churn.
-> Pipeline scripts may import from `validation.shared_toolkit`
-> (`load_yaml`, `REPO_ROOT`) -- honest dep, lowest LOC.
+>   Filenames preserved (no rename) to minimize caller churn.
+>   Pipeline scripts may import from `validation.shared_toolkit`
+>   (`load_yaml`, `REPO_ROOT`) -- honest dep, lowest LOC.
 >
 > **Salvage inventory (user 2026-05-16).** Retired one-offs go to
 > `salvage/`:
+>
 > - `tools/purge_inline_images.py` -> `salvage/` (one-off, zero
 >   callers, work already done)
 > - `tools/normalize_svg.py` -> `salvage/` (superseded by
 >   normalize_svg_v2.py)
 >
 > **`tools/` final inventory.** Genuine dev/smoke runners only:
+>
 > - `tools/normalize_svg_v2.py` (asset-time SVG normalization;
 >   author runs at SVG check-in, NOT runtime pipeline)
 > - `tools/run_smoke.py`
@@ -120,11 +124,11 @@ CLI / output / feature-parity audit also surfaced:
 Three-mode model. Same backend, same `Finding` records, different
 surface per audience.
 
-| Mode | Audience | Trigger | Output |
-| --- | --- | --- | --- |
-| **overview** | human (95% of runs) | default, tty stdout | rich one-screen summary, errors-first, warnings collapsed |
-| **focused** | author mid-edit | `--focus` (git-scoped) or `-p` / `-o` / `--scene` | same summary, scoped subset |
-| **agent** | tool consumer | `--json` / `--ndjson` | flat, append-only, one finding per record |
+| Mode         | Audience            | Trigger                                           | Output                                                    |
+| ------------ | ------------------- | ------------------------------------------------- | --------------------------------------------------------- |
+| **overview** | human (95% of runs) | default, tty stdout                               | rich one-screen summary, errors-first, warnings collapsed |
+| **focused**  | author mid-edit     | `--focus` (git-scoped) or `-p` / `-o` / `--scene` | same summary, scoped subset                               |
+| **agent**    | tool consumer       | `--json` / `--ndjson`                             | flat, append-only, one finding per record                 |
 
 **Scope vs stage.** Scope selectors choose WHAT to validate
 (which protocols/objects/scenes). Stage filters choose WHICH
@@ -273,7 +277,7 @@ bikeshed traceback path diffs.
   preserved verbatim in the relocated `main()`. No wrappers.
 - `protocol_manual.py` stays in `tools/` (renderer, not
   validator).
-**Unified UX (M3):**
+  **Unified UX (M3):**
 
 - `validation/validate.py` aggregate entry.
 - `shared_toolkit/cli.py` + `shared_toolkit/console.py` +
@@ -301,52 +305,52 @@ Update `docs/CHANGELOG.md` per milestone close. Update
 
 ### `tools/shared_toolkit/` (5 files) -- ALL MOVE to `REPO_ROOT/shared_toolkit/`
 
-| File | From | To | Action |
-| --- | --- | --- | --- |
-| `__init__.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `paths.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `objects.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `protocols.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `interactive.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `reporter.py` | `tools/shared_toolkit/` | `shared_toolkit/` | `git mv` |
-| `repo_root.py` | new | `shared_toolkit/` | new file (M1) |
-| `yaml_io.py` | new (lifted from `tools/validators/yaml_io.py`) | `shared_toolkit/` | new file (M1) |
-| `findings.py` | new (unified `Severity` + `Finding`) | `shared_toolkit/` | new file (M1) |
-| `discovery.py` | new | `shared_toolkit/` | new file (M1) |
+| File             | From                                            | To                | Action        |
+| ---------------- | ----------------------------------------------- | ----------------- | ------------- |
+| `__init__.py`    | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `paths.py`       | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `objects.py`     | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `protocols.py`   | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `interactive.py` | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `reporter.py`    | `tools/shared_toolkit/`                         | `shared_toolkit/` | `git mv`      |
+| `repo_root.py`   | new                                             | `shared_toolkit/` | new file (M1) |
+| `yaml_io.py`     | new (lifted from `tools/validators/yaml_io.py`) | `shared_toolkit/` | new file (M1) |
+| `findings.py`    | new (unified `Severity` + `Finding`)            | `shared_toolkit/` | new file (M1) |
+| `discovery.py`   | new                                             | `shared_toolkit/` | new file (M1) |
 
 ### `tools/validators/` (12 files) -- ALL MOVE to `REPO_ROOT/validation/yaml/`
 
-| File | From | To | Action |
-| --- | --- | --- | --- |
-| `__init__.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `yaml_io.py` | `tools/validators/` | `shared_toolkit/yaml_io.py` | `git mv` + lift to toolkit (M1) |
-| `findings.py` | `tools/validators/` | `shared_toolkit/findings.py` | absorbed into unified model (M1); shim re-export until M2 |
-| `constants.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `database.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `summary.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `compiled_summary.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `cross_protocol.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `object_validator.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `material_validator.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `protocol_validator.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `scene_base_validator.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
-| `scene_protocol_validator.py` | `tools/validators/` | `validation/yaml/` | `git mv` |
+| File                          | From                | To                           | Action                                                    |
+| ----------------------------- | ------------------- | ---------------------------- | --------------------------------------------------------- |
+| `__init__.py`                 | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `yaml_io.py`                  | `tools/validators/` | `shared_toolkit/yaml_io.py`  | `git mv` + lift to toolkit (M1)                           |
+| `findings.py`                 | `tools/validators/` | `shared_toolkit/findings.py` | absorbed into unified model (M1); shim re-export until M2 |
+| `constants.py`                | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `database.py`                 | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `summary.py`                  | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `compiled_summary.py`         | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `cross_protocol.py`           | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `object_validator.py`         | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `material_validator.py`       | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `protocol_validator.py`       | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `scene_base_validator.py`     | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
+| `scene_protocol_validator.py` | `tools/validators/` | `validation/yaml/`           | `git mv`                                                  |
 
 After M2: `tools/validators/` directory deleted.
 
 ### `tools/stepper/` (8 files) -- ALL MOVE to `REPO_ROOT/validation/stepper/`
 
-| File | From | To | Action |
-| --- | --- | --- | --- |
-| `__init__.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `loader.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `runner.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `state.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `flow.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `scene_ops.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `cross_mini.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `dashboard.py` | `tools/stepper/` | `validation/stepper/` | `git mv` |
-| `findings.py` | `tools/stepper/` | `shared_toolkit/findings.py` | absorbed into unified model (M1); shim re-export until M2 |
+| File            | From             | To                           | Action                                                    |
+| --------------- | ---------------- | ---------------------------- | --------------------------------------------------------- |
+| `__init__.py`   | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `loader.py`     | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `runner.py`     | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `state.py`      | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `flow.py`       | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `scene_ops.py`  | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `cross_mini.py` | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `dashboard.py`  | `tools/stepper/` | `validation/stepper/`        | `git mv`                                                  |
+| `findings.py`   | `tools/stepper/` | `shared_toolkit/findings.py` | absorbed into unified model (M1); shim re-export until M2 |
 
 After M2: `tools/stepper/` directory deleted.
 
@@ -355,22 +359,22 @@ After M2: `tools/stepper/` directory deleted.
 Validation scripts MOVE (M2 lifts logic, M4 deletes the `tools/`
 file). One-shot tools STAY.
 
-| File | Action | Notes |
-| --- | --- | --- |
-| `validate_content_yaml.py` | MOVE in M2 (logic to `validation/yaml/`, `tools/validate_content_yaml.py` deleted same patch) | New invocation: `validation/validate.py --only yaml` or `python3 -m validation.yaml` |
-| `protocol_stepper.py` | MOVE in M2 (logic to `validation/stepper/`, file deleted same patch) | New invocation: `validation/validate.py --only stepper` or `python3 -m validation.stepper` |
-| `check_svg_pipeline.py` | MOVE in M2 (logic to `validation/svg/pipeline_check.py`, file deleted same patch) | New invocation: `python3 -m validation.svg.pipeline_check` |
-| `svg_asset_audit.py` | MOVE in M2 (logic to `validation/svg/asset_audit.py`, file deleted same patch) | New invocation: `python3 -m validation.svg.asset_audit` |
-| `purge_inline_images.py` | MOVE in M2 (logic to `validation/svg/inline_image_purge.py`, file deleted same patch) | New invocation: `python3 -m validation.svg.inline_image_purge` |
-| `analyze_protocol_audit.py` | MOVE in M2 (logic to `validation/yaml/protocol_audit.py`, file deleted same patch) | New invocation: `python3 -m validation.yaml.protocol_audit` |
-| `protocol_manual.py` | STAY unchanged | Renderer, not validator. |
-| `build_protocol_data.py` | STAY in place | Switches to `shared_toolkit` helpers; CLI unchanged. |
-| `build_scene_data.py` | STAY in place | Switches to `shared_toolkit` helpers; CLI unchanged. |
-| `generate_svg_globals.py` | STAY unchanged | Codegen, not validator. |
-| `normalize_svg.py` | STAY unchanged | Dev tool. |
-| `normalize_svg_v2.py` | STAY unchanged | Dev tool. |
-| `run_smoke.py` | STAY unchanged | Smoke runner. |
-| `run_protocol_walkthrough.py` | STAY unchanged | Smoke runner. |
+| File                          | Action                                                                                        | Notes                                                                                      |
+| ----------------------------- | --------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------ |
+| `validate_content_yaml.py`    | MOVE in M2 (logic to `validation/yaml/`, `tools/validate_content_yaml.py` deleted same patch) | New invocation: `validation/validate.py --only yaml` or `python3 -m validation.yaml`       |
+| `protocol_stepper.py`         | MOVE in M2 (logic to `validation/stepper/`, file deleted same patch)                          | New invocation: `validation/validate.py --only stepper` or `python3 -m validation.stepper` |
+| `check_svg_pipeline.py`       | MOVE in M2 (logic to `validation/svg/pipeline_check.py`, file deleted same patch)             | New invocation: `python3 -m validation.svg.pipeline_check`                                 |
+| `svg_asset_audit.py`          | MOVE in M2 (logic to `validation/svg/asset_audit.py`, file deleted same patch)                | New invocation: `python3 -m validation.svg.asset_audit`                                    |
+| `purge_inline_images.py`      | MOVE in M2 (logic to `validation/svg/inline_image_purge.py`, file deleted same patch)         | New invocation: `python3 -m validation.svg.inline_image_purge`                             |
+| `analyze_protocol_audit.py`   | MOVE in M2 (logic to `validation/yaml/protocol_audit.py`, file deleted same patch)            | New invocation: `python3 -m validation.yaml.protocol_audit`                                |
+| `protocol_manual.py`          | STAY unchanged                                                                                | Renderer, not validator.                                                                   |
+| `build_protocol_data.py`      | STAY in place                                                                                 | Switches to `shared_toolkit` helpers; CLI unchanged.                                       |
+| `build_scene_data.py`         | STAY in place                                                                                 | Switches to `shared_toolkit` helpers; CLI unchanged.                                       |
+| `generate_svg_globals.py`     | STAY unchanged                                                                                | Codegen, not validator.                                                                    |
+| `normalize_svg.py`            | STAY unchanged                                                                                | Dev tool.                                                                                  |
+| `normalize_svg_v2.py`         | STAY unchanged                                                                                | Dev tool.                                                                                  |
+| `run_smoke.py`                | STAY unchanged                                                                                | Smoke runner.                                                                              |
+| `run_protocol_walkthrough.py` | STAY unchanged                                                                                | Smoke runner.                                                                              |
 
 **M2 move is final and complete -- no wrappers, even temporary.**
 `git mv` (or move-and-delete) takes every validation script out of
@@ -383,34 +387,34 @@ invocation path changes.
 
 ### SVG validator code -- EXTRACTED into `validation/svg/`
 
-| New file | Source |
-| --- | --- |
-| `validation/svg/__init__.py` | new |
-| `validation/svg/pipeline_check.py` | logic from `tools/check_svg_pipeline.py` |
-| `validation/svg/asset_audit.py` | logic from `tools/svg_asset_audit.py` |
+| New file                               | Source                                    |
+| -------------------------------------- | ----------------------------------------- |
+| `validation/svg/__init__.py`           | new                                       |
+| `validation/svg/pipeline_check.py`     | logic from `tools/check_svg_pipeline.py`  |
+| `validation/svg/asset_audit.py`        | logic from `tools/svg_asset_audit.py`     |
 | `validation/svg/inline_image_purge.py` | logic from `tools/purge_inline_images.py` |
 
 ### `tools/*.sh` (3 files) -- STAY unchanged
 
-| File | Action |
-| --- | --- |
-| `bootstrap_generated.sh` | STAY |
-| `build_test_fixture.sh` | STAY |
-| `run_ui_review_podman.sh` | STAY |
+| File                      | Action |
+| ------------------------- | ------ |
+| `bootstrap_generated.sh`  | STAY   |
+| `build_test_fixture.sh`   | STAY   |
+| `run_ui_review_podman.sh` | STAY   |
 
 ### Summary counts
 
-| Bucket | Files | Destination |
-| --- | --- | --- |
-| Move to `shared_toolkit/` | 6 existing + 7 new (`repo_root`, `yaml_io`, `findings`, `discovery`, `cli`, `console`, `emit`) | `REPO_ROOT/shared_toolkit/` |
-| Move to `validation/yaml/` | 10 (12 minus `yaml_io.py` lifted to toolkit, minus `findings.py` absorbed) + `protocol_audit.py` from `analyze_protocol_audit.py` | `REPO_ROOT/validation/yaml/` |
-| Move to `validation/stepper/` | 8 (9 minus `findings.py` absorbed; no shim re-export file) | `REPO_ROOT/validation/stepper/` |
-| Extract to `validation/svg/` | 3 logic files + `__init__.py` | `REPO_ROOT/validation/svg/` |
-| New aggregate entry | 1 (`validate.py`) | `REPO_ROOT/validation/` |
-| Stay in `tools/` unchanged | 9 (.py + .sh) | `tools/` |
-| Stay in `tools/` w/ toolkit refactor | 2 (`build_protocol_data`, `build_scene_data`) | `tools/` |
-| Deleted from `tools/` at M2 close (no wrappers) | 6 validation scripts | -- |
-| Directory deleted | `tools/validators/`, `tools/stepper/`, `tools/shared_toolkit/` | -- |
+| Bucket                                          | Files                                                                                                                             | Destination                     |
+| ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Move to `shared_toolkit/`                       | 6 existing + 7 new (`repo_root`, `yaml_io`, `findings`, `discovery`, `cli`, `console`, `emit`)                                    | `REPO_ROOT/shared_toolkit/`     |
+| Move to `validation/yaml/`                      | 10 (12 minus `yaml_io.py` lifted to toolkit, minus `findings.py` absorbed) + `protocol_audit.py` from `analyze_protocol_audit.py` | `REPO_ROOT/validation/yaml/`    |
+| Move to `validation/stepper/`                   | 8 (9 minus `findings.py` absorbed; no shim re-export file)                                                                        | `REPO_ROOT/validation/stepper/` |
+| Extract to `validation/svg/`                    | 3 logic files + `__init__.py`                                                                                                     | `REPO_ROOT/validation/svg/`     |
+| New aggregate entry                             | 1 (`validate.py`)                                                                                                                 | `REPO_ROOT/validation/`         |
+| Stay in `tools/` unchanged                      | 9 (.py + .sh)                                                                                                                     | `tools/`                        |
+| Stay in `tools/` w/ toolkit refactor            | 2 (`build_protocol_data`, `build_scene_data`)                                                                                     | `tools/`                        |
+| Deleted from `tools/` at M2 close (no wrappers) | 6 validation scripts                                                                                                              | --                              |
+| Directory deleted                               | `tools/validators/`, `tools/stepper/`, `tools/shared_toolkit/`                                                                    | --                              |
 
 ## Target layout (M4 exit -- final state)
 
@@ -546,12 +550,12 @@ landed in M1.
 
 ## Current state summary
 
-| Layer | File count | LOC | Status |
-| --- | --- | --- | --- |
-| `tools/*.py` top-level | 14 | ~8500 | mixed validator + one-shot |
-| `tools/validators/` | 12 | ~2500 | YAML-only |
-| `tools/stepper/` | 8 | ~2700 | parallel `Finding` model |
-| `tools/shared_toolkit/` | 5 | ~225 | undersized |
+| Layer                   | File count | LOC   | Status                     |
+| ----------------------- | ---------- | ----- | -------------------------- |
+| `tools/*.py` top-level  | 14         | ~8500 | mixed validator + one-shot |
+| `tools/validators/`     | 12         | ~2500 | YAML-only                  |
+| `tools/stepper/`        | 8          | ~2700 | parallel `Finding` model   |
+| `tools/shared_toolkit/` | 5          | ~225  | undersized                 |
 
 Duplication inventory (from audit):
 
@@ -621,11 +625,11 @@ exit 1
 
 **Selection -- three layers**:
 
-| Layer | Flag | Use case |
-| --- | --- | --- |
-| everything | none | CI gate, "is repo green" |
-| focused | `--protocol NAME` / `--object NAME` / `--scene NAME` | author working on one mini |
-| changed | `--focus` (git-aware) | mid-edit feedback loop |
+| Layer      | Flag                                                 | Use case                   |
+| ---------- | ---------------------------------------------------- | -------------------------- |
+| everything | none                                                 | CI gate, "is repo green"   |
+| focused    | `--protocol NAME` / `--object NAME` / `--scene NAME` | author working on one mini |
+| changed    | `--focus` (git-aware)                                | mid-edit feedback loop     |
 
 `--focus`: derive scope from
 `git diff --name-only HEAD` + `--cached` + untracked-modified.
@@ -674,11 +678,11 @@ Same backend, same JSON, either surface.
 
 **Three-mode UX synthesis**:
 
-| Mode | Audience | Trigger | Output |
-| --- | --- | --- | --- |
-| **overview** | human, 95% of runs | default (no flag) | one-screen rich summary, errors first, warnings collapsed |
-| **focused** | author mid-edit | `--focus` / `--protocol` / `--object` / `--scene` | same summary, scoped subset |
-| **agent** | tool consumers | `--format json` / `--format ndjson` | flat, append-only, one finding per record |
+| Mode         | Audience           | Trigger                                           | Output                                                    |
+| ------------ | ------------------ | ------------------------------------------------- | --------------------------------------------------------- |
+| **overview** | human, 95% of runs | default (no flag)                                 | one-screen rich summary, errors first, warnings collapsed |
+| **focused**  | author mid-edit    | `--focus` / `--protocol` / `--object` / `--scene` | same summary, scoped subset                               |
+| **agent**    | tool consumers     | `--format json` / `--format ndjson`               | flat, append-only, one finding per record                 |
 
 `--focus` is the killer feature, not JSON. Suite already runs
 fast enough that humans run it constantly; making it run on the
@@ -687,7 +691,15 @@ right subset of files matters more than making it faster.
 **JSON shape (flat, agent-grepable, no nesting)**:
 
 ```json
-{"severity": "ERROR", "tool": "stepper", "protocol": "sdspage_full", "code": "ambiguous_target_active_scene", "message": "...", "path": "...", "line": 82}
+{
+  "severity": "ERROR",
+  "tool": "stepper",
+  "protocol": "sdspage_full",
+  "code": "ambiguous_target_active_scene",
+  "message": "...",
+  "path": "...",
+  "line": 82
+}
 ```
 
 NDJSON variant emits one such record per line; agents `jq`-filter
@@ -695,7 +707,15 @@ without parsing a whole document. Aggregate summary emitted as a
 final separate record:
 
 ```json
-{"summary": true, "tool": "validate_content", "errors": 2, "warnings": 3, "files_checked": 168, "elapsed_seconds": 7.8, "exit_code": 1}
+{
+  "summary": true,
+  "tool": "validate_content",
+  "errors": 2,
+  "warnings": 3,
+  "files_checked": 168,
+  "elapsed_seconds": 7.8,
+  "exit_code": 1
+}
 ```
 
 Avoid nested-tool dashboards (`{"tools": {"stepper": {"results": ...}}}`).
@@ -703,11 +723,11 @@ Agents want streams.
 
 **Selection model (ratified)**:
 
-| Scope | UX |
-| --- | --- |
-| everything | no args |
-| focused | `-p/--protocol`, `-o/--object`, `--scene` |
-| active work | `--focus` |
+| Scope       | UX                                        |
+| ----------- | ----------------------------------------- |
+| everything  | no args                                   |
+| focused     | `-p/--protocol`, `-o/--object`, `--scene` |
+| active work | `--focus`                                 |
 
 Out of scope (do not design until repo size forces it): glob,
 regex, tags, profiles, pipelines.
@@ -738,36 +758,36 @@ first.
 
 ## Architecture boundaries and ownership
 
-| Boundary | Owner | Touch rule |
-| --- | --- | --- |
-| `REPO_ROOT/shared_toolkit/` | toolkit author | Lift from `tools/shared_toolkit/`; add `repo_root.py`, `yaml_io.py`, `findings.py`, `discovery.py`; no domain logic |
-| `REPO_ROOT/validation/` package | validator author | YAML + SVG + stepper; consumes `shared_toolkit` only |
-| Stepper relocation | stepper author | `git mv tools/stepper validation/stepper`; output text unchanged |
-| `tools/` top-level scripts | tool author | Wrappers around `validation/*`; CLI surface unchanged. `build_*`, `analyze_*` switch to toolkit helpers |
-| Naming-rule test | toolkit author | `tests/test_no_file_folder_name_collision.py` enforces no `foo.py` next to `foo/` |
-| Documentation | maintainer | `docs/FILE_STRUCTURE.md`, `docs/CHANGELOG.md` |
+| Boundary                        | Owner            | Touch rule                                                                                                          |
+| ------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `REPO_ROOT/shared_toolkit/`     | toolkit author   | Lift from `tools/shared_toolkit/`; add `repo_root.py`, `yaml_io.py`, `findings.py`, `discovery.py`; no domain logic |
+| `REPO_ROOT/validation/` package | validator author | YAML + SVG + stepper; consumes `shared_toolkit` only                                                                |
+| Stepper relocation              | stepper author   | `git mv tools/stepper validation/stepper`; output text unchanged                                                    |
+| `tools/` top-level scripts      | tool author      | Wrappers around `validation/*`; CLI surface unchanged. `build_*`, `analyze_*` switch to toolkit helpers             |
+| Naming-rule test                | toolkit author   | `tests/test_no_file_folder_name_collision.py` enforces no `foo.py` next to `foo/`                                   |
+| Documentation                   | maintainer       | `docs/FILE_STRUCTURE.md`, `docs/CHANGELOG.md`                                                                       |
 
 ### Mapping (milestones / workstreams -> components / patches)
 
-| Milestone / Workstream | Component | Expected patches |
-| --- | --- | --- |
-| M1 / WS-TOOLKIT-LIFT | `git mv tools/shared_toolkit REPO_ROOT/shared_toolkit`; update every importer | 1 |
-| M1 / WS-TOOLKIT-HELPERS | add `shared_toolkit/{repo_root,yaml_io,findings,discovery}.py` | 1 |
-| M1 / WS-CALLERS | switch `build_*`, `analyze_*`, `check_svg_pipeline`, `svg_asset_audit` to toolkit helpers | 1 to 2 |
-| M1 / WS-NAMING-TEST | `tests/test_no_file_folder_name_collision.py` enforces naming rule | 1 |
-| M2 / WS-PACKAGE | create `REPO_ROOT/validation/`; `git mv tools/validators validation/yaml`; `git mv tools/stepper validation/stepper` | 1 |
-| M2 / WS-SVG-LIFT | extract SVG validation logic from `tools/check_svg_pipeline.py`, `tools/svg_asset_audit.py`, `tools/purge_inline_images.py` into `validation/svg/`; delete top-level files (`git rm`) -- no wrappers | 1 to 2 |
-| M2 / WS-TOPLEVEL-DELETE | delete `tools/validate_content_yaml.py`, `tools/protocol_stepper.py`, `tools/analyze_protocol_audit.py` after content moved (`git mv` or move+rm); add `validation/{,yaml,svg,stepper}/__main__.py` so `python3 -m validation.<sub>` works | 1 |
-| M2 / WS-FINDINGS | unify `validators.Severity` + `stepper.Level` on `shared_toolkit.findings`; `validation/stepper/` imports `shared_toolkit.findings` directly (no local `findings.py`); output text byte-identical | 1 |
-| M2 / WS-FILE-STRUCTURE | `docs/FILE_STRUCTURE.md` refresh | 1 |
-| M3 / WS-TOOLKIT-CLI | `shared_toolkit/cli.py` (argparse builder) + `shared_toolkit/console.py` (rich Console factory) + `shared_toolkit/emit.py` (text/JSON/NDJSON renderer) | 1 |
-| M3 / WS-ENTRY | `validation/validate.py` aggregate entry; overview-mode rich summary | 1 |
-| M3 / WS-FOCUS | `shared_toolkit/discovery.py` git-scoping; `--focus` selector | 1 |
-| M3 / WS-CLI-ADOPT | every validation CLI adopts unified flag set + exit codes 0/1/2; backward-compat aliases | 2 to 3 |
-| M3 / WS-SCHEMA | JSON schema spec + `tests/test_validation_json_schema.py` snapshot test | 1 |
-| M3 / WS-USAGE-DOCS | `docs/USAGE.md` flag table + overview + agent examples + schema reference | 1 |
-| M4 / WS-CLEANUP | delete deprecated flag aliases; drop `check_svg_pipeline` legacy exit codes; verify no lingering shims | 1 |
-| M4 / WS-CLOSE | `docs/FILE_STRUCTURE.md` final pass; changelog close entry; archive plan | 1 |
+| Milestone / Workstream  | Component                                                                                                                                                                                                                                  | Expected patches |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------- |
+| M1 / WS-TOOLKIT-LIFT    | `git mv tools/shared_toolkit REPO_ROOT/shared_toolkit`; update every importer                                                                                                                                                              | 1                |
+| M1 / WS-TOOLKIT-HELPERS | add `shared_toolkit/{repo_root,yaml_io,findings,discovery}.py`                                                                                                                                                                             | 1                |
+| M1 / WS-CALLERS         | switch `build_*`, `analyze_*`, `check_svg_pipeline`, `svg_asset_audit` to toolkit helpers                                                                                                                                                  | 1 to 2           |
+| M1 / WS-NAMING-TEST     | `tests/test_no_file_folder_name_collision.py` enforces naming rule                                                                                                                                                                         | 1                |
+| M2 / WS-PACKAGE         | create `REPO_ROOT/validation/`; `git mv tools/validators validation/yaml`; `git mv tools/stepper validation/stepper`                                                                                                                       | 1                |
+| M2 / WS-SVG-LIFT        | extract SVG validation logic from `tools/check_svg_pipeline.py`, `tools/svg_asset_audit.py`, `tools/purge_inline_images.py` into `validation/svg/`; delete top-level files (`git rm`) -- no wrappers                                       | 1 to 2           |
+| M2 / WS-TOPLEVEL-DELETE | delete `tools/validate_content_yaml.py`, `tools/protocol_stepper.py`, `tools/analyze_protocol_audit.py` after content moved (`git mv` or move+rm); add `validation/{,yaml,svg,stepper}/__main__.py` so `python3 -m validation.<sub>` works | 1                |
+| M2 / WS-FINDINGS        | unify `validators.Severity` + `stepper.Level` on `shared_toolkit.findings`; `validation/stepper/` imports `shared_toolkit.findings` directly (no local `findings.py`); output text byte-identical                                          | 1                |
+| M2 / WS-FILE-STRUCTURE  | `docs/FILE_STRUCTURE.md` refresh                                                                                                                                                                                                           | 1                |
+| M3 / WS-TOOLKIT-CLI     | `shared_toolkit/cli.py` (argparse builder) + `shared_toolkit/console.py` (rich Console factory) + `shared_toolkit/emit.py` (text/JSON/NDJSON renderer)                                                                                     | 1                |
+| M3 / WS-ENTRY           | `validation/validate.py` aggregate entry; overview-mode rich summary                                                                                                                                                                       | 1                |
+| M3 / WS-FOCUS           | `shared_toolkit/discovery.py` git-scoping; `--focus` selector                                                                                                                                                                              | 1                |
+| M3 / WS-CLI-ADOPT       | every validation CLI adopts unified flag set + exit codes 0/1/2; backward-compat aliases                                                                                                                                                   | 2 to 3           |
+| M3 / WS-SCHEMA          | JSON schema spec + `tests/test_validation_json_schema.py` snapshot test                                                                                                                                                                    | 1                |
+| M3 / WS-USAGE-DOCS      | `docs/USAGE.md` flag table + overview + agent examples + schema reference                                                                                                                                                                  | 1                |
+| M4 / WS-CLEANUP         | delete deprecated flag aliases; drop `check_svg_pipeline` legacy exit codes; verify no lingering shims                                                                                                                                     | 1                |
+| M4 / WS-CLOSE           | `docs/FILE_STRUCTURE.md` final pass; changelog close entry; archive plan                                                                                                                                                                   | 1                |
 
 ## Milestone plan
 
@@ -903,7 +923,7 @@ first.
   - `docs/FILE_STRUCTURE.md` final pass.
   - `docs/CHANGELOG.md` close entry.
   - Plan archived (`git mv docs/active_plans/tools_split_and_consolidate.md
-    docs/archive/`).
+docs/archive/`).
   - **Obvious follow-ons**: pytest green; smoke
     `validation/validate.py`; append final CHANGELOG line.
 - Parallel-plan ready: no -- final sequential cleanup.
@@ -921,22 +941,22 @@ every flag where conflict-free; capital letters used when the
 lowercase is already taken (e.g., `-S` for `--scene` because
 `-s` is `--strict`).
 
-| Long | Short | Dest | Type | Default | Notes |
-| --- | --- | --- | --- | --- | --- |
-| `--focus` | `-f` | `focus` | `store_true` | `False` | Run on protocols/objects/scenes touched by `git diff HEAD` + `--cached` + untracked-modified, plus transitive dependents (unchanged protocols that reference a changed object/scene). Mutually exclusive with other selectors. |
-| `--protocol` | `-p` | `protocols` | `nargs='+'` | `None` | One or more protocol names. |
-| `--object` | `-o` | `objects` | `nargs='+'` | `None` | One or more object names. Alias `--asset` / `-A`. |
-| `--scene` | `-S` | `scenes` | `nargs='+'` | `None` | One or more scene names. |
-| `--list` | `-l` | `list_only` | `store_true` | `False` | List selectable entities for the tool's primary scope and exit (protocols / objects / assets per tool). |
-| `--interactive` | `-i` | `interactive` | `store_true` | `False` | Numbered picker; falls back to `None` when stdin not a tty. |
-| `--quiet` | `-q` | `quiet` | `store_true` | `False` | Findings + summary only; suppress per-stage rows. |
-| `--verbose` | `-v` | `verbose` | `store_true` | `False` | Per-item state + inline warnings. Mutually exclusive with `--quiet`. |
-| `--errors-only` | `-e` | `errors_only` | `store_true` | `False` | Suppress WARNINGs from output (does not change exit code unless `--strict`). |
-| `--strict` | `-s` | `strict` | `store_true` | `False` | Exit non-zero on WARNING in addition to ERROR. |
-| `--no-color` | -- | `no_color` | `store_true` | `False` | No short flag (avoid clash; rarely used interactively). Also honors `NO_COLOR` env. |
-| `--json` | `-j` | `output_format` | `store_const(json)` | `text` | Emit unified JSON document. |
-| `--ndjson` | `-J` | `output_format` | `store_const(ndjson)` | `text` | Stream one finding per line + final summary. Mutually exclusive with `--json`. |
-| `--only` | `-O` | `stages` | `nargs='+'` choices `{yaml,svg,stepper}` | every stage | Stage filter (aggregate entry only; per-stage `python3 -m validation.<sub>` ignores). |
+| Long            | Short | Dest            | Type                                     | Default     | Notes                                                                                                                                                                                                                          |
+| --------------- | ----- | --------------- | ---------------------------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--focus`       | `-f`  | `focus`         | `store_true`                             | `False`     | Run on protocols/objects/scenes touched by `git diff HEAD` + `--cached` + untracked-modified, plus transitive dependents (unchanged protocols that reference a changed object/scene). Mutually exclusive with other selectors. |
+| `--protocol`    | `-p`  | `protocols`     | `nargs='+'`                              | `None`      | One or more protocol names.                                                                                                                                                                                                    |
+| `--object`      | `-o`  | `objects`       | `nargs='+'`                              | `None`      | One or more object names. Alias `--asset` / `-A`.                                                                                                                                                                              |
+| `--scene`       | `-S`  | `scenes`        | `nargs='+'`                              | `None`      | One or more scene names.                                                                                                                                                                                                       |
+| `--list`        | `-l`  | `list_only`     | `store_true`                             | `False`     | List selectable entities for the tool's primary scope and exit (protocols / objects / assets per tool).                                                                                                                        |
+| `--interactive` | `-i`  | `interactive`   | `store_true`                             | `False`     | Numbered picker; falls back to `None` when stdin not a tty.                                                                                                                                                                    |
+| `--quiet`       | `-q`  | `quiet`         | `store_true`                             | `False`     | Findings + summary only; suppress per-stage rows.                                                                                                                                                                              |
+| `--verbose`     | `-v`  | `verbose`       | `store_true`                             | `False`     | Per-item state + inline warnings. Mutually exclusive with `--quiet`.                                                                                                                                                           |
+| `--errors-only` | `-e`  | `errors_only`   | `store_true`                             | `False`     | Suppress WARNINGs from output (does not change exit code unless `--strict`).                                                                                                                                                   |
+| `--strict`      | `-s`  | `strict`        | `store_true`                             | `False`     | Exit non-zero on WARNING in addition to ERROR.                                                                                                                                                                                 |
+| `--no-color`    | --    | `no_color`      | `store_true`                             | `False`     | No short flag (avoid clash; rarely used interactively). Also honors `NO_COLOR` env.                                                                                                                                            |
+| `--json`        | `-j`  | `output_format` | `store_const(json)`                      | `text`      | Emit unified JSON document.                                                                                                                                                                                                    |
+| `--ndjson`      | `-J`  | `output_format` | `store_const(ndjson)`                    | `text`      | Stream one finding per line + final summary. Mutually exclusive with `--json`.                                                                                                                                                 |
+| `--only`        | `-O`  | `stages`        | `nargs='+'` choices `{yaml,svg,stepper}` | every stage | Stage filter (aggregate entry only; per-stage `python3 -m validation.<sub>` ignores).                                                                                                                                          |
 
 Short-flag map summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`,
 plus alias `-A` for `--asset`. Capitals reserved for collisions
@@ -971,24 +991,24 @@ plus alias `-A` for `--asset`. Capitals reserved for collisions
 **Per-tool extensions** (added via `extras` callback to
 `build_parser`, must NOT rename shared flags):
 
-| Tool | Extras |
-| --- | --- |
-| `validate_content.py` | `--only` (shared above) |
-| `validate_content_yaml.py` | none |
-| `protocol_stepper.py` | none |
-| `check_svg_pipeline.py` | none |
-| `svg_asset_audit.py` | none beyond `-o/--object` |
-| `analyze_protocol_audit.py` | none beyond `-p/--protocol` |
-| `purge_inline_images.py` | `--dry-run` (read-only confirmation; fixer tool only) |
+| Tool                        | Extras                                                |
+| --------------------------- | ----------------------------------------------------- |
+| `validate_content.py`       | `--only` (shared above)                               |
+| `validate_content_yaml.py`  | none                                                  |
+| `protocol_stepper.py`       | none                                                  |
+| `check_svg_pipeline.py`     | none                                                  |
+| `svg_asset_audit.py`        | none beyond `-o/--object`                             |
+| `analyze_protocol_audit.py` | none beyond `-p/--protocol`                           |
+| `purge_inline_images.py`    | `--dry-run` (read-only confirmation; fixer tool only) |
 
 **Backward-compat aliases retained through M3, removed in M4:**
 
-| Old | New | Tool |
-| --- | --- | --- |
-| `--list-protocols` | `--list` | validate_content_yaml, protocol_stepper, analyze_protocol_audit |
-| `--list-objects` | `--list` | svg_asset_audit |
-| `--format json` (svg_asset_audit existing) | `--json` | svg_asset_audit |
-| `--format table` (svg_asset_audit existing) | default (text) | svg_asset_audit |
+| Old                                         | New            | Tool                                                            |
+| ------------------------------------------- | -------------- | --------------------------------------------------------------- |
+| `--list-protocols`                          | `--list`       | validate_content_yaml, protocol_stepper, analyze_protocol_audit |
+| `--list-objects`                            | `--list`       | svg_asset_audit                                                 |
+| `--format json` (svg_asset_audit existing)  | `--json`       | svg_asset_audit                                                 |
+| `--format table` (svg_asset_audit existing) | default (text) | svg_asset_audit                                                 |
 
 ## Acceptance criteria and gates
 
@@ -1002,7 +1022,7 @@ plus alias `-A` for `--asset`. Capitals reserved for collisions
 - Per-patch: `pyflakes tools/ shared_toolkit/ validation/ pipeline/ salvage/` clean,
   `pytest tests/` green.
 - M1/M2 per-patch: `validate_content_yaml.py` + `protocol_stepper.py`
-  + `svg_asset_audit.py` stdout byte-identical to pre-plan baseline.
+  - `svg_asset_audit.py` stdout byte-identical to pre-plan baseline.
 - M2 integration: snapshot diffs empty. No REPO_ROOT
   reimplementations remain. No parallel `Severity` enums remain.
   Every preserved CLI entry-point reports identical `--help` text
@@ -1079,19 +1099,19 @@ python3 tests/test_no_file_folder_name_collision.py            # passes
 
 ## Risk register
 
-| Risk | Impact | Trigger | Owner | Mitigation |
-| --- | --- | --- | --- | --- |
-| Stepper Finding model shift breaks emitter output text | high | stepper output text differs from baseline | stepper author | Snapshot pre-M1, diff per patch; adjust formatter, not check logic |
-| `git mv` of `validators/` collides with other-manager branch | medium | parallel branch touches `tools/validators/` | maintainer | Coordinate; do WS-PACKAGE in one patch, fast |
-| SVG-lift introduces silent SVG behavior drift | medium | check_svg_pipeline / svg_asset_audit output differs | validator author | Snapshot pre-M1; diff every patch |
-| External script / doc still calls `python3 tools/validate_content_yaml.py` after M2 delete | medium | broken external invocation | maintainer | Grep `docs/`, `tests/`, `OTHER_REPOS/`, `salvage/`, `servier/`, root `.sh` files before M2 patch lands; update or warn |
-| Scope creep -- CLI work bleeds into M1+M2 | high | patch touches argparse semantics during structural milestones | manager | M1+M2 = byte-identical baseline diff; reject CLI changes until M3 entry |
-| JSON schema churn after M3 | medium | schema_version bumps mid-plan | toolkit author | Freeze schema in WS-SCHEMA spec patch; bump only via documented RFC |
-| Deprecated alias removed before consumers migrate | medium | M4 lands while external docs still cite old flag | maintainer | Grep `docs/`, `tests/`, `OTHER_REPOS/` before M4; sweep references |
-| `rich` truecolor breaks CI log aggregators | low | log aggregator garbles ANSI | toolkit author | `NO_COLOR` env + `--no-color` honored; CI sets `NO_COLOR=1` |
-| Import path churn after `shared_toolkit/` + `validation/` lift breaks unrelated callers | high | `tools.shared_toolkit` import still used somewhere | toolkit author | Grep full repo (`tools/`, `tests/`, `src/`, `devel/`, `salvage/`, `servier/`, root `.py`) before Patch 1 lands; sweep every hit in same patch |
-| `source_me.sh` PYTHONPATH does not cover new top-level packages | medium | `import validation` fails at runtime | maintainer | Verify in Patch 1; extend if needed |
-| File/folder name collision sneaks back later | low | future coder adds `validation.py` next to `validation/` | toolkit author | `tests/test_no_file_folder_name_collision.py` runs in pytest suite |
+| Risk                                                                                       | Impact | Trigger                                                       | Owner            | Mitigation                                                                                                                                    |
+| ------------------------------------------------------------------------------------------ | ------ | ------------------------------------------------------------- | ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| Stepper Finding model shift breaks emitter output text                                     | high   | stepper output text differs from baseline                     | stepper author   | Snapshot pre-M1, diff per patch; adjust formatter, not check logic                                                                            |
+| `git mv` of `validators/` collides with other-manager branch                               | medium | parallel branch touches `tools/validators/`                   | maintainer       | Coordinate; do WS-PACKAGE in one patch, fast                                                                                                  |
+| SVG-lift introduces silent SVG behavior drift                                              | medium | check_svg_pipeline / svg_asset_audit output differs           | validator author | Snapshot pre-M1; diff every patch                                                                                                             |
+| External script / doc still calls `python3 tools/validate_content_yaml.py` after M2 delete | medium | broken external invocation                                    | maintainer       | Grep `docs/`, `tests/`, `OTHER_REPOS/`, `salvage/`, `servier/`, root `.sh` files before M2 patch lands; update or warn                        |
+| Scope creep -- CLI work bleeds into M1+M2                                                  | high   | patch touches argparse semantics during structural milestones | manager          | M1+M2 = byte-identical baseline diff; reject CLI changes until M3 entry                                                                       |
+| JSON schema churn after M3                                                                 | medium | schema_version bumps mid-plan                                 | toolkit author   | Freeze schema in WS-SCHEMA spec patch; bump only via documented RFC                                                                           |
+| Deprecated alias removed before consumers migrate                                          | medium | M4 lands while external docs still cite old flag              | maintainer       | Grep `docs/`, `tests/`, `OTHER_REPOS/` before M4; sweep references                                                                            |
+| `rich` truecolor breaks CI log aggregators                                                 | low    | log aggregator garbles ANSI                                   | toolkit author   | `NO_COLOR` env + `--no-color` honored; CI sets `NO_COLOR=1`                                                                                   |
+| Import path churn after `shared_toolkit/` + `validation/` lift breaks unrelated callers    | high   | `tools.shared_toolkit` import still used somewhere            | toolkit author   | Grep full repo (`tools/`, `tests/`, `src/`, `devel/`, `salvage/`, `servier/`, root `.py`) before Patch 1 lands; sweep every hit in same patch |
+| `source_me.sh` PYTHONPATH does not cover new top-level packages                            | medium | `import validation` fails at runtime                          | maintainer       | Verify in Patch 1; extend if needed                                                                                                           |
+| File/folder name collision sneaks back later                                               | low    | future coder adds `validation.py` next to `validation/`       | toolkit author   | `tests/test_no_file_folder_name_collision.py` runs in pytest suite                                                                            |
 
 ## Rollout and release checklist
 
@@ -1116,8 +1136,9 @@ python3 tests/test_no_file_folder_name_collision.py            # passes
 ## Patch plan and reporting format
 
 M1:
+
 - Patch 1: WS-TOOLKIT-LIFT -- `git mv tools/shared_toolkit
-  REPO_ROOT/shared_toolkit`; rewrite imports across repo.
+REPO_ROOT/shared_toolkit`; rewrite imports across repo.
 - Patch 2: WS-TOOLKIT-HELPERS -- grow `shared_toolkit/`
   (`repo_root.py`, `yaml_io.py`, `findings.py`, `discovery.py`).
 - Patch 3: WS-CALLERS -- switch `build_*`, `analyze_*`, SVG
@@ -1126,6 +1147,7 @@ M1:
   `tests/test_no_file_folder_name_collision.py`.
 
 M2:
+
 - Patch 5: WS-PACKAGE -- `git mv tools/validators validation/yaml`;
   `git mv tools/stepper validation/stepper`; add
   `validation/__init__.py`, `validation/__main__.py`,
@@ -1144,8 +1166,9 @@ M2:
   pass + CHANGELOG entry.
 
 M3:
+
 - Patch 10: WS-TOOLKIT-CLI -- `shared_toolkit/{cli,console,emit}.py`
-  + ratified flag spec.
+  - ratified flag spec.
 - Patch 11: WS-ENTRY + WS-FOCUS -- `validation/validate.py`
   aggregate entry + `shared_toolkit/discovery.iter_focus()`.
 - Patch 12: WS-CLI-ADOPT (YAML side) -- `validation/yaml/` +
@@ -1160,6 +1183,7 @@ M3:
   overview + agent examples + schema reference.
 
 M4:
+
 - Patch 16: WS-CLEANUP -- delete deprecated flag aliases,
   legacy exit codes; verify no lingering shims.
 - Patch 17: WS-CLOSE -- final `docs/FILE_STRUCTURE.md`,
@@ -1193,7 +1217,7 @@ Sizing: each patch right-sized for one coder. Total: 17 patches.
 - Stepper `Finding` + validator `Severity` collapse to single
   `shared_toolkit.findings` definition.
 - Every NON-validation top-level script keeps its filename
-  through M4 (build_*, normalize_*, protocol_manual, run_*,
+  through M4 (build*\*, normalize*_, protocol*manual, run*_,
   .sh). Every validation script DELETED from `tools/` in M2.
   Clean break, no wrappers. Users invoke validation via
   `validation/validate.py` or `python3 -m validation.<sub>`.

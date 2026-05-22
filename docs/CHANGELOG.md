@@ -5,12 +5,12 @@
 ### Additions and New Features
 
 - **M1 no-crop reconciliation bundle: 6 new workstream artifacts added under `docs/active_plans/workstreams/`.**
-  - [docs/active_plans/workstreams/no_crop_current_render_sanity.md](active_plans/workstreams/no_crop_current_render_sanity.md): WS-G re-baseline of current-render no-crop metrics tied to HEAD 8795d25.
-  - [docs/active_plans/workstreams/no_crop_render_harness_audit.md](active_plans/workstreams/no_crop_render_harness_audit.md): WS-D audit of the three render paths the no-crop work depends on (footprint class assignment, YAML consumption).
-  - [docs/active_plans/workstreams/no_crop_missing_asset_audit.md](active_plans/workstreams/no_crop_missing_asset_audit.md): WS-C re-execution that re-derives missing-asset state from current filesystem and `git ls-files`.
-  - [docs/active_plans/workstreams/no_crop_round3_static_template_repair_report.md](active_plans/workstreams/no_crop_round3_static_template_repair_report.md): WS-A retry comparing Strategies A, B, C and hybrid against the static-template baseline.
-  - [docs/active_plans/workstreams/no_crop_footprint_vocab_proposal.md](active_plans/workstreams/no_crop_footprint_vocab_proposal.md): WS-E proposal naming candidate `footprint--*` classes, capped at 4 permanent additions.
-  - [docs/active_plans/workstreams/no_crop_round3_plan.md](active_plans/workstreams/no_crop_round3_plan.md): WS-F synthesis tying the M1 deliverables into a priority-ordered Round 3 experiment list.
+  - [no_crop_current_render_sanity.md](active_plans/workstreams/no_crop_current_render_sanity.md): WS-G re-baseline of current-render no-crop metrics tied to HEAD 8795d25.
+  - [no_crop_render_harness_audit.md](active_plans/workstreams/no_crop_render_harness_audit.md): WS-D audit of the three render paths the no-crop work depends on (footprint class assignment, YAML consumption).
+  - [no_crop_missing_asset_audit.md](active_plans/workstreams/no_crop_missing_asset_audit.md): WS-C re-execution that re-derives missing-asset state from current filesystem and `git ls-files`.
+  - [no_crop_round3_static_template_repair_report.md](active_plans/workstreams/no_crop_round3_static_template_repair_report.md): WS-A retry comparing Strategies A, B, C and hybrid against the static-template baseline.
+  - `no_crop_footprint_vocab_proposal.md`: WS-E proposal naming candidate `footprint--*` classes, capped at 4 permanent additions.
+  - [no_crop_round3_plan.md](active_plans/workstreams/no_crop_round3_plan.md): WS-F synthesis tying the M1 deliverables into a priority-ordered Round 3 experiment list.
 
 ### Behavior or Interface Changes
 
@@ -20,7 +20,7 @@
 
 - **Status report correction workstream: 7 audit passes applied to CSS-native layout manager status report.**
   Workstreams A-G completed: (A) evidence currency legend added with [CURRENT], [HISTORICAL], [STRESS-ONLY], [PROPOSAL], [SUPERSEDED] tags applied throughout; (B) file path verification pass corrected stale paths (well_plate_96_zoom moved to src/scenes/well_plate_96_zoom/); (C) no-crop hard rule restructured to separate current diagnostics from intended rule from Phase 1 proposal; (D) production-readiness language softened ("runtime integration is promising" replaces "approaching production maturity"); (E) screenshot captions revised with evidence tags [demo-only], [stress-evidence], [historical] to avoid pedagogy quality implications; (F) reproduction commands verified with expected output and known issues noted; (G) correction appendix added documenting stale data caveats, divergences (stress vs. static-HTML), hardFailCount gap, accepted commit baseline (4e2c709), and pending Batch 6 decisions.
-  
+
   Artifacts revised: markdown source (`docs/active_plans/current_css_native_layout_manager_status_report.md`), regenerated HTML summary (`docs/active_plans/current_css_native_layout_manager_status_report.html`), regenerated PDF (`docs/active_plans/current_css_native_layout_manager_status_report.pdf`).
 
 ### Removals and Deprecations
@@ -64,7 +64,7 @@
 - **NEW1 Round 2 bundle integration: render-and-dump bridge added, compatibility shim guardrails locked in, progress report published.**
   Round 2 ran four lanes against the built-app integration of the CSS-native
   layout work. Lane outcomes are captured in
-  [docs/active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  [new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
   under "Bundle integration round 2 (2026-05-20)".
 
   Additions:
@@ -86,13 +86,14 @@
     not captured (Lane D step never completed).
   - `PRECHECK_USAGE.md` "Spike usage: built-app precheck" section
     documents how to invoke `render_and_dump.mjs` against the built app.
+
 - NEW2 prep package: four audit/plan/strategy docs added under
   `docs/active_plans/`:
   `new2_well_plate_adapter_rect_audit.md`,
   `new2_production_viewport_overflow_audit.md`,
   `new2_css_native_production_blocker_plan.md`,
   `new2_test_strategy.md`.
-- NEW2 prep-and-prototype round closure: `src/scene_runtime/bundle/entry.ts` __spike namespace export added (+12 lines) via Task #104; `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml` target retargeted to `well_plate_96.E7` (Lane R-retarget); `tests/playwright/spike_built_app_rerender.mjs` updated with full 7-assertion re-render proof; `tests/playwright/spike_validator_preset_hierarchy.mjs` created (Lane W-fix); `experiments/css_native_layout/well_plate_rect_probe/probe.mjs` created (Lane W-prototype); `experiments/css_native_layout/run_built_app_precheck.sh` chain wrapper created (Lane P-guardrail); `docs/active_plans/new2_validator_preset_regression_audit.md` (395 instances classified) and `docs/active_plans/new2_implementation_test_matrix.md` created.
+- NEW2 prep-and-prototype round closure: `src/scene_runtime/bundle/entry.ts` \_\_spike namespace export added (+12 lines) via Task #104; `tests/content/dev_smoke/well_plate_96_zoom_check/protocol.yaml` target retargeted to `well_plate_96.E7` (Lane R-retarget); `tests/playwright/spike_built_app_rerender.mjs` updated with full 7-assertion re-render proof; `tests/playwright/spike_validator_preset_hierarchy.mjs` created (Lane W-fix); `experiments/css_native_layout/well_plate_rect_probe/probe.mjs` created (Lane W-prototype); `experiments/css_native_layout/run_built_app_precheck.sh` chain wrapper created (Lane P-guardrail); `docs/active_plans/new2_validator_preset_regression_audit.md` (395 instances classified) and `docs/active_plans/new2_implementation_test_matrix.md` created.
 
 ### Behavior or Interface Changes
 
@@ -100,7 +101,7 @@
   `src/scene_runtime/layout/css_native_adapter.ts`. Comment block added at
   lines 112-116 marking the pixel-to-SVG scaling shim as a contained
   compatibility layer, not a layout engine. Audit subsection added to
-  [docs/active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  [new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
   lines 206-276 with all 6 guardrails marked [x].
 
 ### Fixes and Maintenance
@@ -117,7 +118,7 @@
   flipped pointer-events on `.scene-viewport` outside the lane's allowed
   scope. Manager rolled back via `git checkout`; bundle rebuilt; tsc
   baseline restored to 175 errors (matches Task #69 floor).
-- __spike namespace regression repaired (Task #104): `src/scene_runtime/bundle/entry.ts` was missing the __spike export Playwright tests use; import block + export object restored (+12 lines).
+- **spike namespace regression repaired (Task #104): `src/scene_runtime/bundle/entry.ts` was missing the **spike export Playwright tests use; import block + export object restored (+12 lines).
 - Lane O-clean revert (Task #100): metric-gaming logic that synthesized fake placement divs in `experiments/css_native_layout/render_and_dump.mjs` reverted; bridge guardrail assertion added (Lane P-guardrail) preventing future placement-removal from precheck input.
 
 ### Decisions and Failures
@@ -214,7 +215,7 @@
   contact sheets in a two-column "Forward vs best-prior per scene" layout,
   and updated four tracked docs. No new tracked CSS files were created;
   no `src/`, `pipeline/`, `validation/`, `docs/specs/`,
-  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production YAML
+  [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production YAML
   was touched.
 
   Scope changes:
@@ -230,7 +231,7 @@
     `.scene--drug-dilution` rules so `well_plate_96` dominates
     `work_surface` (2x flex-grow); strengthened
     `.scene-mode--detail .placement { width: calc(100% - 20px); height:
-    calc(100% - 20px); }` zoom rule.
+calc(100% - 20px); }` zoom rule.
   - `experiments/css_native_layout/templates/electrophoresis_bench.html`:
     tank moved out of hidden `region--instrument_station` into
     `work_surface`; `data-primary` retagged from `serological_pipette` to
@@ -314,20 +315,20 @@
   replaced with ASCII `--`.** Lines around 152, 158, and 170 (the
   "no primary tag" cells in the per-scene results and deltas tables)
   were Unicode em-dashes that violate
-  [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md). Now ASCII-clean.
+  [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md). Now ASCII-clean.
 - **Three pre-existing U+2190 left-arrows in
   `experiments/css_native_layout/DECISION_MEMO.md` "CSS files promoted"
   block replaced with ASCII `<-`.** Lines around 76-78 carried Unicode
   arrows from the prior stabilization pass; now ASCII per
-  [docs/MARKDOWN_STYLE.md](MARKDOWN_STYLE.md).
+  [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md).
 
 ### Decisions and Failures
 
 - **NEW0 stabilization continues; NEW1 is not opened.** Reviewer brief
   2026-05-19 controls. The prior `continue-to-NEW1` verdict (recorded
-  in [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md))
+  in `new0_reproducible_evidence_package.md`)
   was retracted in this pass by planner-canonical. The new controlling
-  plan is [active_plans/new0_stabilization_continuation.md](active_plans/new0_stabilization_continuation.md).
+  plan is `new0_stabilization_continuation.md`.
   Verdict for this pass: `continue-stabilization`.
 - **Global "Direction B is best" choice retired.** Replaced with
   scene-class assignments: general bench (Direction B base + scene-class
@@ -375,7 +376,7 @@
   for reviewer disposition next round.
 - **NEW1 measurement-fallback alternatives analyzed (documentation
   only).** New doc
-  [active_plans/new1_path_a_measurement_fallback_analysis.md](active_plans/new1_path_a_measurement_fallback_analysis.md)
+  `new1_path_a_measurement_fallback_analysis.md`
   covers per-render scaffold (current), persistent measurement root,
   state-keyed cache, lazy measurement, and bypass-adapter-entirely.
   Conclusion: keep per-render scaffold unless empirical perf forces
@@ -385,7 +386,7 @@
   - `pytest tests/test_markdown_links.py -q` PASS
   - `pytest tests/test_ascii_compliance.py -q` PASS
 - **Tracked docs updated in this pass (four files only):**
-  - [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md)
+  - `new0_reproducible_evidence_package.md`
     -- section 5 per-scene checklist table added; sections 7/8 rewritten
     to "what improved" and "what still fails"; historic Direction A/B/C
     content preserved as section 7-historic.
@@ -397,7 +398,7 @@
     -- new section "Scene-class candidates (2026-05-19)"; drug-dilution
     recovery and electrophoresis recovery documented; three left-arrow
     fixes.
-  - [docs/CHANGELOG.md](CHANGELOG.md) -- this entry.
+  - [CHANGELOG.md](CHANGELOG.md) -- this entry.
 - **Contact sheets regenerated and precheck rerun after hardening
   edit.** `node experiments/css_native_layout/precheck.mjs`
   re-confirmed 0 PASS / 4 PASS_TEMPLATE / 6 WARN / 0 FAIL across 10
@@ -406,7 +407,7 @@
   `gallery.html` index under
   `test-results/new0_css_native/contact_sheets/`. Hardening closeout
   edits land only in four tracked docs:
-  [active_plans/new0_reproducible_evidence_package.md](active_plans/new0_reproducible_evidence_package.md),
+  `new0_reproducible_evidence_package.md`,
   [../experiments/css_native_layout/PRECHECK_SUMMARY.md](../experiments/css_native_layout/PRECHECK_SUMMARY.md),
   [../experiments/css_native_layout/DECISION_MEMO.md](../experiments/css_native_layout/DECISION_MEMO.md),
   and this file.
@@ -431,11 +432,11 @@
     stabilized baseline at `test-results/new0_css_native/stabilized/`
     byte-for-byte at the JSON-summary level (no drift).
   - Contact sheets regenerated (`_temp_contact_sheets.py`): 10 base sheets
-    + 6 annotated sheets (one per WARN scene) at
-    `test-results/new0_css_native/contact_sheets/`. New 3-up column layout:
-    Forward (B + zoom fix) | B legacy (dir_b) | C (dir_c). Gallery at
-    `test-results/new0_css_native/gallery.html` groups scenes by forward
-    verdict.
+    - 6 annotated sheets (one per WARN scene) at
+      `test-results/new0_css_native/contact_sheets/`. New 3-up column layout:
+      Forward (B + zoom fix) | B legacy (dir_b) | C (dir_c). Gallery at
+      `test-results/new0_css_native/gallery.html` groups scenes by forward
+      verdict.
 
   Files updated in this pass:
   - `experiments/css_native_layout/PRECHECK_SUMMARY.md`: added Template-CSS
@@ -468,7 +469,7 @@
   approval. No production code, spec, contract, or production-YAML edits.
 
   Files created:
-  - [active_plans/new1_spike_readiness_audit.md](active_plans/new1_spike_readiness_audit.md):
+  - `new1_spike_readiness_audit.md`:
     read-only audit of production code paths the spike must touch;
     proposes a single-conditional seam at
     `src/scene_runtime/layout/adapter.ts` gated on
@@ -477,10 +478,10 @@
     scene loading, click dispatch, cursor-attach, ObjectStateChange,
     and adapter output. Central risk: CSS region bounds vs legacy
     coordinates / floating-point precision across 96 wells.
-  - [active_plans/new1_well_plate_96_zoom_spike_checklist.md](active_plans/new1_well_plate_96_zoom_spike_checklist.md):
+  - `new1_well_plate_96_zoom_spike_checklist.md`:
     9-step implementation checklist with gates, rollback, and
     post-spike decision matrix.
-  - [active_plans/new1_primary_contract_item3_amendment_draft.md](active_plans/new1_primary_contract_item3_amendment_draft.md):
+  - `new1_primary_contract_item3_amendment_draft.md`:
     draft only, not applied. Two versions: minimal (CSS-native
     semantic-region = layout engine) and conservative (CSS-native
     experimental until spike passes). Reviewer picks post-spike.
@@ -495,7 +496,7 @@
     precheck.mjs default invocation.
 
   Files updated:
-  - [active_plans/new1_css_native_layout_integration_plan.md](active_plans/new1_css_native_layout_integration_plan.md):
+  - `new1_css_native_layout_integration_plan.md`:
     appended "Ready to implement spike" section linking the prep
     artifacts and listing remaining blockers before implementation
     (reviewer approval of audit + seam; contract-decision posture
@@ -536,9 +537,9 @@
     invocation and no runtime override was added. Cursor-attach audit
     concluded the Path C anchor API is not needed; Path A rects
     suffice.
-  - [active_plans/new1_spike_path_comparison.md](active_plans/new1_spike_path_comparison.md):
+  - `new1_spike_path_comparison.md`:
     appended "Implementation outcome" section.
-  - [active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md](active_plans/new1_well_plate_96_zoom_spike_implementation_packet.md):
+  - `new1_well_plate_96_zoom_spike_implementation_packet.md`:
     appended "Implementation result" section.
 
   Spike-path trial bundle artifacts (NEW from prior round, now staged
@@ -552,7 +553,7 @@
 - **NEW0 stabilization pass declared decision-ready, not declared production-ready**
   The pass produced a single forward candidate, reproducible evidence, and a
   decision-ready recommendation. It did not amend
-  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) item 3 (which still vests
+  [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) item 3 (which still vests
   scene-object layout in the layout engine), did not open NEW1, did not
   modify `src/`, `pipeline/`, `validation/`, `docs/specs/`, or any
   production YAML, and did not regenerate any Direction A evidence (its
@@ -620,7 +621,7 @@
   `pytest tests/test_markdown_links.py tests/test_ascii_compliance.py -q`
   returned `2 passed`. `git status --porcelain` confirms no `src/`,
   `pipeline/`, `validation/`, `docs/specs/`,
-  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production
+  [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md), or production
   scene YAML touched. Only `.gitignore`,
   `docs/active_plans/new1_*.md`, `docs/CHANGELOG.md`, and
   `experiments/css_native_layout/` non-asset files changed.
@@ -634,7 +635,7 @@
   no edits to `dispatch/`, `render/apply.ts`, `render/scene.ts`,
   `adapters/well_plate/`, `loader/`, `content/`, `pipeline/`,
   `validation/`, `docs/specs/`, or
-  [docs/PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md).
+  [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md).
 
 ### Additions and New Features
 
@@ -704,7 +705,7 @@
   `src/scene_runtime/bundle/entry.ts:761` rejects the well-sub-target
   click; the step resets instead of completing, no re-render fires,
   and spike invocation count remains 1. Documented at
-  [active_plans/lane_d_state_change_blocker.md](active_plans/lane_d_state_change_blocker.md).
+  `lane_d_state_change_blocker.md`.
 
 - **Lane E precheck-on-built-output BLOCKED by static-template assumption**
   `experiments/css_native_layout/precheck.mjs:1047` uses a
@@ -749,9 +750,8 @@
   driven from `material_name` + `material_volume` (or `held_material_name` +
   `held_material_volume`) via the bare-id `anchor_liquid_clip` /
   `anchor_liquid_bounds` rects. Arc summary:
-
   - M1 (WP-AUDIT-1): per-object base-asset + anchor-gap audit landed at
-    [active_plans/material_overlay_audit_2026_05_18.md](active_plans/material_overlay_audit_2026_05_18.md).
+    `material_overlay_audit_2026_05_18.md`.
   - M2 (WP-YAML-1, WP-YAML-2, WP-YAML-3): 40 object YAMLs collapsed across
     bottles, plates, waste, pipettes, flasks, and equipment chambers (22 +
     9 + 9). M2 (WP-ANCHORS-1, WP-ANCHORS-2): 13 new base SVGs authored
@@ -780,7 +780,6 @@
   Produced a reproducible decision-ready evidence package for the NEW0 CSS-native layout experiment.
   All work confined to `experiments/css_native_layout/` and `test-results/new0_css_native/`;
   no production files modified.
-
   - Direction A (baseline 3-band horizontal) produced 1 PASS, 4 PASS_TEMPLATE, 5 WARN, 0 FAIL.
     Primary-object ratios on composition scenes: 0.6-2.7% (well_plate_96_zoom 92% PASS).
   - Direction B (stage/composition, primary gets flex-grow:1) produced 0 PASS, 4 PASS_TEMPLATE,
@@ -859,7 +858,6 @@
   Executed label anti-collision analysis on 328 measured label failures from precheck.
   Strategy: For each label collision, assess whether +/-10/20/30px Y-axis offset could
   resolve it. Result:
-
   - C2 (label-object overlaps): 173 / 203 resolvable (85%)
   - C3 (label-label overlaps): 84 / 125 resolvable (67%)
   - **TOTAL: 257 / 328 (78%) estimated resolvable by Y-axis offset alone**
@@ -938,7 +936,6 @@
   Playwright-based script at `_temp_layout_prechecks.mjs` (repo root, gitignored).
   Script measures actual DOM bounding boxes for all 18 base scenes (9 zone + 9
   row+slot) via `page.evaluate()` and `getBoundingClientRect()`. Results:
-
   - **4 scenes PASS** (microscope_basic, imaging_bench, their row+slot variants, and cell_counter_basic_row_slot)
   - **13 scenes FAIL** with 547 total failures + 7 C5 warnings
 
@@ -1163,7 +1160,7 @@
   All 830 tests pass; no regression on zone-based path.
 
 - **Row+slot prototype for hood_basic (WP-PROTO-1)**: authored
-  [`content/base_scenes/hood_basic_row_slot.yaml`](../content/base_scenes/hood_basic_row_slot.yaml)
+  [hood_basic_row_slot.yaml](../content/base_scenes/hood_basic_row_slot.yaml)
   as the first Model B (row+slot) prototype per the plan reference
   `docs/active_plans/row_slot_base_scene_prototype.md#WP-PROTO-1`. Used
   hood_basic as the target scene per user-locked defaults. Preserved all
@@ -1177,9 +1174,9 @@
   follow-on work.
 - **sdspage scene content completion - WP-IDENT-1 identify deliverable**:
   created
-  [active_plans/sdspage_scene_content_completion_identify.md](active_plans/sdspage_scene_content_completion_identify.md)
+  `sdspage_scene_content_completion_identify.md`
   per the WP-IDENT-1 work package of
-  [active_plans/sdspage_scene_content_completion.md](active_plans/sdspage_scene_content_completion.md).
+  `sdspage_scene_content_completion.md`.
   Confirmed 7 of 7 sdspage workspace scenes carry zero placements at the
   override layer (all inherit through `extends:` from
   `electrophoresis_bench`, `staining_bench`, or `heat_block_bench`).
@@ -1226,7 +1223,7 @@
   sketch surface limits, structured-object boundary handling,
   scene-content incompleteness flagging), Section 3 (34-row corpus
   matching `git ls-files content/base_scenes/*.yaml
-  content/protocols/*/scenes/*.yaml`), Section 6 (structured-object
+content/protocols/*/scenes/*.yaml`), Section 6 (structured-object
   inventory: 13 objects classified `structured` out of 69 referenced
   object_names, classification rule documented, uncertain cases listed as
   `workspace` per the conservative rule), and Section 10 (roadmap for
@@ -1262,7 +1259,7 @@
   (4) S-UNREGISTERED (WARNING) flags `material_name` /
   `held_material_name` writes whose value is absent from the protocol's
   `materials.yaml`, with module-level `MATERIAL_SENTINEL_ALLOWLIST`
-  excluding empty/mixed/cells/formazan/waste_*; dedup per (protocol,
+  excluding empty/mixed/cells/formazan/waste\_\*; dedup per (protocol,
   material_name) preserving first occurrence step + interaction index.
   (5) S-UNUSED (INFO) flags `materials.yaml` entries never referenced by
   any ObjectStateChange. Baseline on shipped tree: 0 S-CYCLE, 0
@@ -1275,7 +1272,7 @@
   interaction completes, not per-op. Wiring: stepper findings flow
   through `validation/validate.py` aggregate via existing
   `'stepper': ['validation/stepper/step_check.py']` mapping in
-  _stage_scripts; no new pipeline code required. Philosophy:
+  \_stage_scripts; no new pipeline code required. Philosophy:
   "Long-term over short-term" (structured findings enable downstream QTI
   integration, report generation, CI gates); "Fix the design, not the
   symptom" (checks target vocabulary closure, not workflow symptom).
@@ -1288,23 +1285,23 @@
   `validation/stepper/scene_ops.py`, `validation/stepper/step_check.py`,
   `validation/stepper/findings.py` (all existing, Part 1 integrated five checks
   into existing architecture); `tests/test_stepper_semantic.py` (new, 6 passing
-  + 4 await fixture fix; production verified via shipped-tree baseline).
-  Verification: `source source_me.sh && python3 validation/stepper/step_check.py`
-  exits 0 with "Checked 31 protocols. 0 failures. 36 warnings." (exact match
-  on S-STATE-JUMP count); `source source_me.sh && python3 validation/validate.py
-  -q` includes line "STEPPER: Checked 31 protocols. 0 failures. 36 warnings."
-  in aggregate summary (stepper findings integrated into pipeline); `pytest
-  tests/test_stepper_semantic.py tests/test_manual_lint.py -v` shows 6 stepper
-  tests passing + 4 failing (known follow-up #121) + 6 manual tests passing
-  (12/18 total expected for this session); `git status` shows no contamination
-  in `content/protocols/` (test fixtures under `tests/` only, not shipped tree).
-  Decisions: `MATERIAL_SENTINEL_ALLOWLIST` duplicated in step_check.py and
-  scene_ops.py to avoid import cycles - future housekeeping should consolidate
-  into shared stepper helper module. The 4-test fixture-activation gap (where
-  ObjectStateChange positive tests fail on scene-setup side, not stepper logic)
-  is tracked separately as issue #121; production code is verified functional
-  via shipped-tree finding counts; promotion to gate tests when fixture issue
-  resolves. No commits per Part 1 task boundaries (separate session per plan).
+  - 4 await fixture fix; production verified via shipped-tree baseline).
+    Verification: `source source_me.sh && python3 validation/stepper/step_check.py`
+    exits 0 with "Checked 31 protocols. 0 failures. 36 warnings." (exact match
+    on S-STATE-JUMP count); `source source_me.sh && python3 validation/validate.py
+-q` includes line "STEPPER: Checked 31 protocols. 0 failures. 36 warnings."
+    in aggregate summary (stepper findings integrated into pipeline); `pytest
+tests/test_stepper_semantic.py tests/test_manual_lint.py -v` shows 6 stepper
+    tests passing + 4 failing (known follow-up #121) + 6 manual tests passing
+    (12/18 total expected for this session); `git status` shows no contamination
+    in `content/protocols/` (test fixtures under `tests/` only, not shipped tree).
+    Decisions: `MATERIAL_SENTINEL_ALLOWLIST` duplicated in step_check.py and
+    scene_ops.py to avoid import cycles - future housekeeping should consolidate
+    into shared stepper helper module. The 4-test fixture-activation gap (where
+    ObjectStateChange positive tests fail on scene-setup side, not stepper logic)
+    is tracked separately as issue #121; production code is verified functional
+    via shipped-tree finding counts; promotion to gate tests when fixture issue
+    resolves. No commits per Part 1 task boundaries (separate session per plan).
 
 - **Structure validation stage promotion (M3 / WS-ENFORCE follow-up)**: promoted protocol folder layout enforcement from pytest-only (`tests/test_protocol_folder_layout.py`) into a new validation stage `validation/structure/layout_check.py` that runs under `validation/validate.py -q`. The eight layout rule helper functions (`check_cluster_set_closed`, `check_relative_depth_shape`, `check_exactly_one_protocol_yaml_per_leaf`, `check_type_matches_cluster`, `check_folder_name_equals_protocol_name`, `check_protocol_name_unique`, `check_sidecar_ownership`, `check_discovery_round_trip`) were extracted to reusable validator module and emit `Finding` objects compatible with the shared toolkit format. Pytest tests now import and use the same helper functions instead of duplicating logic, ensuring layout enforcement is identical in both validation/validate.py and pytest. Added `structure` to aggregate stage list and CLI choices; `validation/validate.py -q` now emits four lines (YAML, SVG, STEPPER, STRUCTURE). Updated `docs/USAGE.md` to document the new stage and added `-O structure` to example invocations. Verification: all 8 pytest tests pass, full pytest suite 746 pass, `validation/validate.py -q` shows structure stage, `validation/validate.py -q -O structure` filters to structure only.
 
@@ -1322,7 +1319,7 @@
   (regex `\baspirate(s|d|ing)?\b` case-insensitive; deliberate non-matches:
   reaspirate, aspirator, aspirational). Suppression: vacuum-removal-to-waste
   steps (dest material -> "empty"). Baseline on shipped tree: 35 hits across
-  3 protocols (drug_dilution_setup, plate_drug_treatment_drug_addition,
+  3 protocols (drug*dilution_setup, plate_drug_treatment_drug_addition,
   sdspage_load_sample_single_lane); remediation backlog in `docs/TODO.md`.
   Upgraded `LintCollector`: `record(step_name, check_class, message)`
   unchanged; added `emit_text(stderr_stream)` (legacy `emit()` alias removed
@@ -1332,12 +1329,9 @@
   maps each check class to severity (L-ASPIRATE/L-MATDRIFT/L-VOLMISMATCH ->
   WARNING; L-PROMPT -> INFO). Added `--validate` operating mode (skips
   markdown render; emits structured findings; accepts --json/--ndjson; exit
-  1 on ERROR; exit 1 on WARNING with `--strict`; else 0). Added `manual_`
-  filename prefix on every generated `.md` (single-mode CWD + bulk-mode
-  `output_manuals/`) so a single `.gitignore` line `manual_*.md` catches
-  both. Wired MANUAL as the 5th stage in `validation/validate.py` aggregate;
-  `validate.py -q` MANUAL line now reads `Checked 31 manuals. 0 failures.
-  80 warnings.` (80 = total across all L-* check classes - L-ASPIRATE
+  1 on ERROR; exit 1 on WARNING with `--strict`; else 0). Added `manual*`filename prefix on every generated`.md`(single-mode CWD + bulk-mode`output*manuals/`) so a single `.gitignore`line`manual*_.md`catches
+both. Wired MANUAL as the 5th stage in`validation/validate.py`aggregate;`validate.py -q`MANUAL line now reads`Checked 31 manuals. 0 failures.
+  80 warnings.` (80 = total across all L-_ check classes - L-ASPIRATE
   35, plus pre-existing L-MATDRIFT / L-VOLMISMATCH / L-PROMPT counts that
   the gate now surfaces). Added `manual` to `-O` choices in
   `validation/shared_toolkit/cli.py`. Rich-colored failure/warning counts
@@ -1512,7 +1506,7 @@
 - `docs/USAGE.md` validation documentation: all existing scattered validation
   references consolidated into single "Validation" section. Stepper documentation
   moved from secondary headings into subsection of stepper details. Archive links
-  updated to relative paths (e.g., `[archive/scene_adapter_resolution_design.md](../archive/...)`).
+  updated to relative paths (e.g., `...`).
 
 ### Fixes and Maintenance
 
@@ -1625,23 +1619,21 @@
   - Step 3 (`add_mtt_to_wells`) collapsed from 96 per-well
     interactions to one `well_plate_96.all_wells`
     `ObjectStateChange` writing `{material_name: mtt,
-    material_volume: 225}` (Q5 resolution: material_volume is
-    well total, not dispensed; Q6 resolution: 225 = 200 pre-MTT
-    + 25 dispensed). Prompt rewritten to drop confused
+material_volume: 225}` (Q5 resolution: material_volume is
+    well total, not dispensed; Q6 resolution: 225 = 200 pre-MTT - 25 dispensed). Prompt rewritten to drop confused
     "first row (column A)" wording and state the 200 -> 225
     microL well-total transition explicitly.
   - Step 4 (`incubate_formazan_conversion`) adds explicit
     `ObjectStateChange` writing `{material_name: formazan,
-    material_volume: 225}` to `well_plate_96.all_wells` during
+material_volume: 225}` to `well_plate_96.all_wells` during
     the TimedWait response. Closes the Q2 gap (incubation step
     previously had zero state writes; biology transition was
     invisible). Hard MTT semantics gate honored: dispense step
     writes `mtt`, NOT `formazan`.
   - Step 5 (`decant_mtt_to_waste`) prompt + state corrected:
-    well prose now reads "cells + media + Day 2 drug residue
-    + reduced MTT" (was "MTT/media mixture", hiding the drug
+    well prose now reads "cells + media + Day 2 drug residue - reduced MTT" (was "MTT/media mixture", hiding the drug
     contents). Plate post-decant state writes `material_volume:
-    0` (was missing; left wells at 225 forever). Biohazard bin
+0` (was missing; left wells at 225 forever). Biohazard bin
     receives `material_volume: 21600` (96 wells x 225 microL),
     not the stale 1200 figure. These three step-5 edits are co-
     bundled into WP-MTT-FIX-1 under the plan's "fix the design,
@@ -1773,7 +1765,7 @@
 ### Developer Tests and Notes
 
 - Audit grep pattern (stronger than the previous one):
-  `well_plate_96\.([A-H](1[0-2]|[1-9])|row_[A-H]|col_(1[0-2]|[1-9]))`.
+  `well_plate_96\.(`1[0-2]|[1-9]`|row_[A-H]|col_(1[0-2]|[1-9]))`.
   636 enumerated hits across 3 files; 6 `all_wells` hits in 1 file.
 - PDTMA volume derivation method (ephemeral helper, not committed):
   YAML walk over both quadrant steps' per-well `ObjectStateChange`
@@ -1804,7 +1796,7 @@
 
 ### Fixes and Maintenance
 
-- WS-DOCS-PATHS + audit cleanup: updated 4 spec docs (OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md, SCALING_MODEL.md, TARGET_FILE_STRUCTURE.md) to require the kind-subfolder layout enforced by the validator. Narrowed broad `except Exception` in tools/stepper/state.py:_reachable_base_scenes to ProtocolNotFoundError. Replaced try/except in object_validator path-kind check with direct guard. Removed stale "transitional skip" call-site comment. Added safety fallback in _build_scenes_registry for protocols with no local scenes and no SceneChange ops. Loosened brittle len()==1 assertions in test_object_validator_path_kind.py.
+- WS-DOCS-PATHS + audit cleanup: updated 4 spec docs (OBJECT_VOCABULARY.md, OBJECT_YAML_FORMAT.md, SCALING_MODEL.md, TARGET_FILE_STRUCTURE.md) to require the kind-subfolder layout enforced by the validator. Narrowed broad `except Exception` in tools/stepper/state.py:\_reachable_base_scenes to ProtocolNotFoundError. Replaced try/except in object_validator path-kind check with direct guard. Removed stale "transitional skip" call-site comment. Added safety fallback in \_build_scenes_registry for protocols with no local scenes and no SceneChange ops. Loosened brittle len()==1 assertions in test_object_validator_path_kind.py.
 
 ### Decisions and Failures
 
@@ -2051,8 +2043,8 @@
   field deferred to text-only companion and not authored in any WP-1.x object YAML.
 - MP-16 (`sdspage_destain_gel`) exceeds 15-interaction cap at 21 interactions after
   action-map reconciliation. Decompose into MP-16a (15 interactions: rinses + destain
-  + microwave) and MP-16b (6 interactions: kimwipes + rocker + pour-off). Total minis
-  increase from 18 to 19.
+  - microwave) and MP-16b (6 interactions: kimwipes + rocker + pour-off). Total minis
+    increase from 18 to 19.
 - Part 7 `select` gesture (buffer contamination Y/N choice) rewritten as `click` on
   `electrophoresis_tank.clean_buffer_affordance` subpart per stepper limitation (R4).
   Gesture matches stepper support; affordance is a passive click target.
@@ -2106,19 +2098,19 @@
   cells match on `material_name` + `material_volume`. Derivation via
   YAML walk (per `tools/stepper/state.py` `StateMap` does not track
   per-cell state today; tracked as a follow-up in
-  [docs/TODO.md](TODO.md)).
+  [TODO.md](TODO.md)).
 
 ### Decisions and Failures
 
 - Adopts the recommendation in
-  [docs/active_plans/96_well_authoring_shape_finding.md](active_plans/96_well_authoring_shape_finding.md)
+  `96_well_authoring_shape_finding.md`
   (96-well authoring shape semantics spike): case 1 (uniform plate
   action with no experimental meaning to name) ships today on `main`
   using `well_plate_96.all_wells`. Protocol-level `regions:` blocks
   and region-aware `ObjectStateChange` are explicitly NOT introduced
   by this patch; reserved for case 2 (meaningful subset) and only if
   a real subset use case appears. See plan at
-  [docs/active_plans/mtt_uniform_all_wells_rewrite.md](active_plans/mtt_uniform_all_wells_rewrite.md).
+  `mtt_uniform_all_wells_rewrite.md`.
 - Branched from `main`, not from the spike branch
   `spike/region-stepper`. Spike branch retained but unmerged; carries
   experimental validator + stepper extensions that this rewrite does
@@ -2138,7 +2130,7 @@
 
 ### Fixes and Maintenance
 
-- Fix audit findings against tools/stepper/ + tools/validators/ + docs/specs/PROTOCOL_YAML_FORMAT.md: remove dead subpart-validation stub in state.py:359 (B3 blocker); add channel_addressing ordering comment in scene_ops.py (H2 high); fail loudly on missing required field_name in state field decl (M1 medium); use absolute imports in object_validator.py (M2 medium); dedupe scenes registry to prevent false ambiguous_target_in_scene (M4 medium); narrow material-validation suppression guard to specific-name match (M6 medium); document deactivation exclusion in PROTOCOL_YAML_FORMAT.md target-resolution section (M7 medium); add WHY comment to _build_scenes_registry (M9 medium); remove unreachable region branch in scene_ops.py (L1 low). No new features.
+- Fix audit findings against tools/stepper/ + tools/validators/ + docs/specs/PROTOCOL_YAML_FORMAT.md: remove dead subpart-validation stub in state.py:359 (B3 blocker); add channel_addressing ordering comment in scene_ops.py (H2 high); fail loudly on missing required field_name in state field decl (M1 medium); use absolute imports in object_validator.py (M2 medium); dedupe scenes registry to prevent false ambiguous_target_in_scene (M4 medium); narrow material-validation suppression guard to specific-name match (M6 medium); document deactivation exclusion in PROTOCOL_YAML_FORMAT.md target-resolution section (M7 medium); add WHY comment to \_build_scenes_registry (M9 medium); remove unreachable region branch in scene_ops.py (L1 low). No new features.
 
 ## 2026-05-16 (CHANGELOG rotation)
 
@@ -2331,9 +2323,9 @@
 ### Decisions and Failures
 
 - **Scope honest math: shipped 8 of 10 planned ERROR rules.** Plan accepted (and dispatched) 10 hard-gate rule classes. 8 shipped at ERROR (`unknown_material`, `state_value_type_mismatch`, `state_value_not_allowed`, `undeclared_state_field`, `capability_mismatch`, `placement_name_collision`, flow-shape group: `broken_next_step` + `flow_cycle` + `flow_unreachable_step` + `flow_multi_terminal`, `scene_change_unresolved`, `timed_wait_missing_duration`/`timed_wait_invalid_duration`, `unknown_scene_operation_type`, `runner_of_runner`, `cross_mini_unknown_material`, `unknown_mini_protocol`). 2 deferred behind follow-on plans: WP-C3 material volume conservation and active-scene target resolution. Both deferrals lower the safety floor against real bug classes. Track follow-ons below.
-- **WP-C3 material volume conservation DEFERRED (scope cut, not finish-the-obvious).** Plan rated WP-C3 the highest-value structural F2-class catcher and said "do not ship without it." Pre-M1 dry-run found within-response balance incompatible with the universal split-response transfer pattern in shipped YAML (source decrement in response A, sink increment in response B). The balance window itself needs redesign (within-response vs whole-step vs cross-step). Until WP-C3 ships, the F2 bug class is only partially gated: name drift catches via `unknown_material` (proved on MP-7 today), but volume-math drift with names resolved still slips. Follow-on: [active_plans/material_volume_conservation_spec.md](active_plans/material_volume_conservation_spec.md) -- must include balance-window redesign as explicit objective, not just spec ratification. Retire-rule trigger: WP-C3 ships before any new dilution-heavy mini lands (next candidate: any future drug-prep protocol beyond MP-5).
+- **WP-C3 material volume conservation DEFERRED (scope cut, not finish-the-obvious).** Plan rated WP-C3 the highest-value structural F2-class catcher and said "do not ship without it." Pre-M1 dry-run found within-response balance incompatible with the universal split-response transfer pattern in shipped YAML (source decrement in response A, sink increment in response B). The balance window itself needs redesign (within-response vs whole-step vs cross-step). Until WP-C3 ships, the F2 bug class is only partially gated: name drift catches via `unknown_material` (proved on MP-7 today), but volume-math drift with names resolved still slips. Follow-on: `material_volume_conservation_spec.md` -- must include balance-window redesign as explicit objective, not just spec ratification. Retire-rule trigger: WP-C3 ships before any new dilution-heavy mini lands (next candidate: any future drug-prep protocol beyond MP-5).
 - **Active-scene target resolution ERROR -> WARNING (rule relaxation, not content fix).** Plan said "do not relax the stepper rule; fix the YAML." Live-tree run surfaced 234 such findings on intended-good content -- evidence the stepper's narrow active-scene model is wrong, not that the YAML is wrong 234 ways. Demoted `unknown_target_active_scene` and `ambiguous_target_in_scene` to WARNING so the gate could ship; 234 advisory findings now sit in CI output every run. Drift risk: WARNINGs that authors learn to ignore become permanent noise. Follow-on: [archive/scene_adapter_resolution_design.md](archive/scene_adapter_resolution_design.md) -- plan owner must commit to retiring the WARNING rule when scene-adapter design ratifies; without explicit retire-cross-link the WARNING lives forever.
-- **`step_kind` semantic check (TimedWait and related) deferred**: design captured in [active_plans/step_kind_spec_rfc.md](active_plans/step_kind_spec_rfc.md). Retire-rule trigger: step-kind RFC ratifies the enum.
+- **`step_kind` semantic check (TimedWait and related) deferred**: design captured in `step_kind_spec_rfc.md`. Retire-rule trigger: step-kind RFC ratifies the enum.
 - **`display_color` cross-file divergence check split off**: spawned as a separate validator plan at [archive/validator_display_color_check.md](archive/validator_display_color_check.md) rather than folded into the stepper, keeping the stepper focused on flow + state + scene-op simulation.
 - **CHANGELOG cadence collapsed to single rollup (deviation from plan).** Stepper plan specified per-milestone entries (M1, M2, M3 separate). All three landed within one day during single execution window; consolidated to one entry. Per-milestone cadence rule still stands for future work.
 
@@ -2544,7 +2536,7 @@
 - Created `content/protocols/trypan_blue_counting/scenes/hemocytometer_view.yaml`: protocol scene extending bench_basic; adds hemocytometer_slide (center), micropipette (right_tool_area), trypan_blue_bottle (rear_left), cell_suspension_tube (rear_center), lens_tissue (rear_right).
 - Created `content/protocols/trypan_blue_counting/scenes/cell_counter_workspace.yaml`: protocol scene extending cell_counter_basic; configures automated cell counter layout.
 - Moved `content/scenes/cell_counter_basic.yaml` to `content/protocols/trypan_blue_counting/scenes/cell_counter_basic.yaml`: base scene file is single-use for MP-3 per promotion table, now scoped to protocol scenes directory per PRIMARY_CONTRACT item 1 (scene authoring locality).
-- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=tube; state_fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube_* assets.
+- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); kind=tube; state*fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube*\* assets.
 
 ### Behavior or Interface Changes
 
@@ -2634,8 +2626,8 @@
 - Created `content/protocols/cell_seeding_plate_setup/protocol.yaml`: 4-step mini-protocol covering canonical actions A29-A31. Scope: Day 1 cell seeding phase of OVCAR8 assay. Entry step: calculate_dilution_volume. Learning block: objectives (C1V1=C2V2 dilution math, micropipetting), outcomes (prepare target-concentration suspension, seed all wells, incubate for attachment), goals (bridge counted suspension to Day 2 drug treatment). Steps: (1) calculate_dilution_volume (micropipette adjust to volume calculated via C1V1=C2V2 from MP-3 count); (2) prepare_diluted_suspension (aspirate calculated volume from cell_suspension_tube, dispense to conical_tube_for_dilution, adjust micropipette to media volume, aspirate media_bottle, dispense to tube, vortex 3 sec); (3) seed_96_well_plate (adjust micropipette to 100 microL, draw from dilution tube, dispense to all wells, ObjectStateChange material_name=cells, volume=9600 microL); (4) incubate_for_attachment (click well_plate_96, click incubator, TimedWait 1440 minutes). Actions A29 (PRESENT-EXPLICIT, steps 1-2), A30 (PRESENT-EXPLICIT, step 3), A31 (PRESENT-EXPLICIT, step 4). Validator green.
 - Created `content/protocols/cell_seeding_plate_setup/materials.yaml`: materials cell_suspension, media with display colors.
 - Created `content/protocols/cell_seeding_plate_setup/scenes/seeding_workspace.yaml`: extends hood_basic; adds cell_suspension_tube, conical_tube_for_dilution, well_plate_96, media_bottle, micropipette, vortex.
-- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state_fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube_* assets.
-- Created `content/objects/conical_tube_for_dilution.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state_fields: material_name (enum: empty, cell_suspension, media), material_volume (ml, max 15); reuses conical_15ml_* assets.
+- Created `content/objects/cell_suspension_tube.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state*fields: material_name (enum: empty, cell_suspension), material_volume (ml, max 20); reuses microtube*\* assets.
+- Created `content/objects/conical_tube_for_dilution.yaml`: NEW OBJECT (ASSET-UNVERIFIED); state*fields: material_name (enum: empty, cell_suspension, media), material_volume (ml, max 15); reuses conical_15ml*\* assets.
 
 ### Behavior or Interface Changes
 
@@ -2835,7 +2827,7 @@
 
 - Step-count deliberate excess: 32 steps vs 6-10 guideline. Per Resolved Decision #8 (plan), this is pedagogically correct for full dilution-series coverage. learning.goals documents rationale. Validator does NOT gate on step count (advisory only).
 - Object-asset audit: all 10 directly-referenced objects (micropipette, carboplatin_stock_bottle, metformin_stock_bottle, microtube_15ml_intermediate, metformin_working_tube, dilution_tube_rack_8, sterile_water_bottle, media_bottle, vortex, label_pen) tagged ASSET-OK (pre-existing objects with verified SVG assignments).
-- Deferral check: (1) SceneChange DOES NOT APPLY (single bench workspace). (2) Volume tolerance APPLIES (exact-match set_volume validators on micropipette; comment flags gap). (3) Named groups APPLIES (8 working stocks; pedagogy reads cleanly as individual stock-by-stock flow, no named-group construct needed). (4) material_kind DOES NOT APPLY (all liquids). (5) Shared materials library APPLIES (metformin_working_stock and carb_working_stock_* appear here only in M2; no cross-mini duplication documented yet). (6) Set-point depth APPLIES (vortex timer tracks duration only, not rpm; comment flags gap).
+- Deferral check: (1) SceneChange DOES NOT APPLY (single bench workspace). (2) Volume tolerance APPLIES (exact-match set*volume validators on micropipette; comment flags gap). (3) Named groups APPLIES (8 working stocks; pedagogy reads cleanly as individual stock-by-stock flow, no named-group construct needed). (4) material_kind DOES NOT APPLY (all liquids). (5) Shared materials library APPLIES (metformin_working_stock and carb_working_stock*\* appear here only in M2; no cross-mini duplication documented yet). (6) Set-point depth APPLIES (vortex timer tracks duration only, not rpm; comment flags gap).
 - Validator: `source source_me.sh && python3 tools/validate_content_yaml.py` reports 1 warning (step count) + 0 errors on drug_dilution_setup. Pre-existing failures (passage_hood_detachment materials schema) unchanged.
 - Coverage matrix updated: A47-A57 rows marked PRESENT-EXPLICIT in docs/active_plans/ovcar8_action_coverage_matrix.md.
 
@@ -2986,9 +2978,9 @@
   - M1 / M2 / M3 structural milestones shipped (object library, scene
     inheritance, sequence runner, four-class validator).
   - **Deferred to follow-on plan(s):**
-    1. Pedagogy reauthoring pass per WP-MP-* (T-1..T-23 reauthoring
+    1. Pedagogy reauthoring pass per WP-MP-\_ (T-1..T-23 reauthoring
        rules in the archived plan). Structural conformance shipped;
-       deep step rewrites from `docs/protocols/OVCAR8_*.md` are not yet
+       deep step rewrites from `docs/protocols/OVCAR8\__.md` are not yet
        done.
     2. Cross-workspace `SceneChange` wiring (hood / bench / microscope /
        centrifuge / plate_reader transitions). Needs `src/scene_runtime/`
@@ -3023,8 +3015,8 @@
 
 - `source source_me.sh && python3 tools/validate_content_yaml.py` exits clean.
   Four colored panels render above terse summary line. `pytest
-  tests/test_pyflakes_code_lint.py` and `pytest
-  tests/test_import_requirements.py` green. `rich` is supplied by
+tests/test_pyflakes_code_lint.py` and `pytest
+tests/test_import_requirements.py` green. `rich` is supplied by
   `pip_requirements-dev.txt` (devel tools).
 
 ## 2026-05-15 (Vocabulary rename: contents -> materials; fourth small authoring vocabulary)
@@ -3112,11 +3104,11 @@
     (extends `bench_basic`)
   - `content/protocols/plate_drug_treatment/scenes/bench_setup.yaml`
     (extends `bench_basic`)
-  Each scene uses only the four allowed protocol-scene operations
-  (currently just `add_placements`), one inheritance level, and stable
-  `placement_name` values per `SCENE_INHERITANCE.md`. Cross-workspace
-  transitions (e.g. centrifuge inside cell_culture) are deferred to a
-  future expansion that wires `SceneChange` per `PRIMARY_SPEC.md`.
+    Each scene uses only the four allowed protocol-scene operations
+    (currently just `add_placements`), one inheritance level, and stable
+    `placement_name` values per `SCENE_INHERITANCE.md`. Cross-workspace
+    transitions (e.g. centrifuge inside cell_culture) are deferred to a
+    future expansion that wires `SceneChange` per `PRIMARY_SPEC.md`.
 
 ### Developer Tests and Notes
 
@@ -3236,9 +3228,10 @@
 - A walk of every `content/**/*.yaml` confirms no key contains any ASCII
   uppercase character. Validator still passes 42 files, 0 failures.
 
-## 2026-05-15 (spec consistency pass: PRIMARY*.md and docs/specs/ contradictions reconciled)
+## 2026-05-15 (spec consistency pass: PRIMARY\*.md and docs/specs/ contradictions reconciled)
 
 ### Behavior or Interface Changes
+
 - **`docs/specs/PROTOCOL_AUTHORING_GUIDE.md`** (F1): replaced stale "`entry` block that declares the initial scene and first step" wording with the canonical "top-level `entry_step` field" statement. Protocol has no `entry` block and declares no opening scene; scene context comes from the first step's interactions and any `SceneChange` operation in their responses.
 - **`target_groups` term retired across all canonical specs** (F2 expanded): per user direction, the term is not part of the vocabulary at all -- not deferred, not retired-with-successor, just absent. Purged from `docs/PRIMARY_SPEC.md`, `docs/specs/OBJECT_VOCABULARY.md`, `docs/specs/OBJECT_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/SCENE_VOCABULARY.md`, `docs/specs/SCENE_YAML_FORMAT.md`, `docs/specs/SPEC_DESIGN_CHECKLIST.md`. Deleted the "Named groups deferred" subsections (OBJECT_VOCABULARY, OBJECT_YAML_FORMAT) and the SCENE_VOCABULARY "retired" paragraph. Replaced with "the vocabulary has no named-group construct"; the explicit-subpart pattern (`treatment_plate.A1`, ...) remains the only mechanism. Removed `target_groups` from every placement-may-not-override list. Validator gate in OBJECT_YAML_FORMAT now reads "unknown structure keys rejected" rather than a `target_groups`-specific rejection.
 - **`docs/PRIMARY_SPEC.md` walker bullet** (F1 follow-on): "starts in the protocol's declared entry scene" replaced with "starts in the scene reached by the protocol's `entry_step` (resolved through that step's target adapter or a `SceneChange` operation)". Removes self-contradiction with the no-scene-at-protocol-level rule.
@@ -3246,12 +3239,14 @@
 - **Render-layer primitive home moved to `docs/specs/OBJECT_VOCABULARY.md`** (F7): `SvgSwap`, `ColorChange`, `LiquidDisplayChange`, `SetPointDisplayChange` are now canonically described in the `visual_states` section of `OBJECT_VOCABULARY.md`, including the `ObjectStateChange` boundary and the flat state fields it writes. `docs/specs/SCENE_YAML_FORMAT.md` shrunk to a one-line pointer.
 
 ### Decisions and Failures
+
 - **F3 (asset SVG path scope)**: user chose to keep `assets/` as the parent scope in `PRIMARY_CONTRACT.md`. `assets/equipment/` in `SVG_PIPELINE.md` is a valid subdir, no edit required.
 - **F4 (learning-block leading phrases)**: false positive on initial audit. `docs/specs/PROTOCOL_YAML_FORMAT.md` already quotes the three exact required phrases verbatim in its schema table.
 - **F6 (`background` locked-field)**: false positive on initial audit. `docs/specs/SPEC_DESIGN_CHECKLIST.md` rule 20 already lists `background` among locked fields.
 - **F8 (canonical `contents.yaml` path)**: not addressed this pass. `OBJECT_VOCABULARY.md` and `PRIMARY_DESIGN.md` reference a `contents.yaml` registry without a canonical path; resolve in a follow-up doc edit.
 
 ### Removals and Deprecations
+
 - **All "deferred" / "reserved" / "not yet implemented" markers purged from canonical specs.** Per user direction, vocabulary docs state present tense only; no future-work hatches in spec surface. Changes:
   - `structure.layout: custom` enum value removed. `structure.layout` accepts only `grid` or `list`. Updated in `docs/specs/OBJECT_VOCABULARY.md` and `docs/specs/OBJECT_YAML_FORMAT.md`.
   - `liquidTransfer` capability id retired entirely (not declared by any scene, no module registered). Removed from `docs/specs/SCENE_YAML_FORMAT.md` and `docs/specs/SCENE_ARCHITECTURE.md` capability tables, from `tools/build_scene_data.py` `VALID_CAPABILITY_IDS`, and from `tests/test_spec_vocabulary.py` G9 allowlist.
@@ -3270,11 +3265,13 @@
 ## 2026-05-15 (spec doc sweep: key normalization, camelCase removal, retired-language cleanup - giggly-mixing-minsky)
 
 ### Additions and New Features
+
 - **`docs/specs/SPEC_DESIGN_CHECKLIST.md` Author YAML vocabulary lock extended (Class L1)**: Added ratified rule 8 to lock scope-specific identity handles in authored YAML. Bare `name:` is banned; the allowed handles are `protocol_name` (protocol), `step_name` (step), `object_name` (object identity, instruments included), and `field_name` (object state-field). Ordinary prose may still use the English word "name"; the ban applies to YAML fields and schema-table field-name cells. `entry_step` and `next_step` reference `step_name`. Any "the name of X" schema wording becomes "the `X_name`".
 - **`docs/specs/SPEC_DESIGN_CHECKLIST.md` smell-class 29 (Class L1)**: New blocker-severity smell class flagging bare `name:` in authored YAML and schema tables. RD-16 records the live rule only; no retired-term table rows.
 - **`tests/test_spec_vocabulary.py` G7, G8, G9 gates (Class L2)**: New hard-pass assertions enforce the vocabulary lock. G7 bans bare `name:` (excludes the checklist). G8 bans the retired root-of-protocol `entry:` block shape. G9 bans camelCase YAML keys in YAML fenced blocks and schema-table field-name cells, with a documented capability-id allowlist (`itemWorkspace`, `modalWorkspace`, `instrumentWorkspace`, `gridCountingWorkspace`, `incubatorWorkspace`, `plateReaderWorkspace`, `liquidTransfer`) and a fence-language parser that excludes TypeScript and other code-language fences.
 
 ### Behavior or Interface Changes
+
 - **Tier 1 key normalization across `docs/PRIMARY_*.md` and `docs/specs/*.md`**:
   - **Protocol handle (Class A)**: bare `name:` -> `protocol_name:` in protocol-level schema tables and YAML examples. `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md` updated.
   - **Step handle (Class B)**: bare `name:` -> `step_name:` in step schema tables, YAML examples, and all "the `name`" prose. `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_YAML_FORMAT.md`, `docs/specs/PROTOCOL_VOCABULARY.md`, `docs/specs/PROTOCOL_STEPS.md`, `docs/specs/PROTOCOL_AUTHORING_GUIDE.md`, `docs/specs/WALKTHROUGH_GUIDE.md` updated. `next_step` and `entry_step` prose now reference `step_name`.
@@ -3296,27 +3293,32 @@
   - **RD-10 runtime drift (Class K)**: `docs/specs/LIQUID_CONVENTION.md` reframed. The "Color Map" section now grounds color sourcing in `contents.yaml` `display_color` instead of `inventory_data.ts:REAGENTS:displayColor` and `style_constants.ts:COLOR_MAP`. The "Game State Integration" and "Rendering in Hood Scene" sections rewritten as an "Authored state model" section that names the canonical `held_contents_name` / `held_contents_volume` / `contents_name` / `contents_volume` authored fields and the `ObjectStateChange` protocol primitive that writes them; runtime-state names (`gameState.heldLiquid`, `gameState.tubeLiquids`, `gameState.plateLiquids`, `addTubeLiquid`) are no longer surfaced as authoring vocabulary. `docs/specs/SCENE_YAML_FORMAT.md` "Gaps not validated today" cross-reference updated from `inventory_data.ts` to `contents.yaml` and the object library.
 
 ### Fixes and Maintenance
+
 - `docs/specs/PROTOCOL_YAML_FORMAT.md` generated-TypeScript example (the runtime emit shape) updated to drop retired `colorKey` and to use the renamed `display_color` and `day_name` / `part_name` fields, so the documented emit matches the authored YAML form.
 
 ### Removals and Deprecations
+
 - `colorKey` removed from authored `contents.yaml` schema entirely (Class E). Color now derives solely from `display_color`.
 - `interactionSequence`, `directTool`, `multipleChoice` removed from WALKTHROUGH_GUIDE normative dispatch description (Class F). These per-step kinds are retired per `docs/PRIMARY_SPEC.md`.
 - The `entry:` multi-key block (`entry: { scene:, step: }`) removed from PROTOCOL_YAML_FORMAT.md (Class I). The flat top-level `entry_step:` field is the sole canonical form.
 - Bare `name:` retired as an authored YAML field across protocol, step, object, and instrument surfaces (Classes A-D, locked by L1, gated by L2).
 
 ### Decisions and Failures
+
 - **Instrument handle merged into `object_name`**: An earlier plan draft introduced `instrument_name` as a fourth scope-specific handle alongside `protocol_name` / `step_name` / `field_name`. Audit of object docs showed that instruments are already objects (instrument set-points live in `state_fields`; there is no separate instrument identity layer). The lock now states "Object identity handle is `object_name` (instruments included)" to avoid a synonym for the same concept and to honor "one canonical term per concept" from `docs/PRIMARY_DESIGN.md`.
 - **Class L split into L1 (lock-first) and L2 (gate-last)**: L1 extends `SPEC_DESIGN_CHECKLIST.md` before any content edits so every subsequent class cites a canonical reference. L2 adds the pytest gates after Classes A-K land, so the test suite turns green in the same commit as the final cleanup.
 - **`display_color` kept; `colorKey` dropped**: `contents.yaml` retains `display_color` as live authored color metadata for contents. `colorKey` is legacy runtime language with no current authoring use; dropping rather than renaming.
-- **G9 table-cell regex requires backticks**: First-cut Markdown table parser flagged glossary tables like `| dispatchInteraction | The adapter's ...`. Tightened the regex to require backticks around the field-name cell (`` | `fieldName` | ``), the documented schema-table convention. Glossary tables (no backticks) stay out of scope.
+- **G9 table-cell regex requires backticks**: First-cut Markdown table parser flagged glossary tables like `| dispatchInteraction | The adapter's ...`. Tightened the regex to require backticks around the field-name cell (``| `fieldName` |``), the documented schema-table convention. Glossary tables (no backticks) stay out of scope.
 
 ### Developer Tests and Notes
+
 - `source source_me.sh && pytest tests/test_spec_vocabulary.py -q`: **9 passed in 0.11s** (G1-G9).
 - `tests/test_markdown_links.py` failures are pre-existing (unrelated CHANGELOG and FILE_STRUCTURE links); not introduced by this sweep.
 
 ## 2026-05-15 (Validator hardening: relational DB, Tier 1 cross-file checks, closure model)
 
 ### Additions and New Features
+
 - **`tools/validators/` package**: validator split into modules - `constants.py` (closed sets + finding-tag registry), `findings.py` (Finding + Severity), `database.py` (ContentDatabase relational registry: objects, base_scenes, protocols, contents_by_protocol), `object_validator.py`, `scene_base_validator.py`, `scene_protocol_validator.py`, `protocol_validator.py`, `cross_protocol.py`, `summary.py`, `yaml_io.py`.
 - **ContentDatabase lookup methods**: `resolve_object`, `resolve_target` (bare + dotted subpart forms), `resolve_state_field`, `resolve_contents`.
 - **Tier 1 cross-file checks** with structured tags emitted by `ProtocolValidator`:
@@ -3330,12 +3332,14 @@
 - **`T3_CAMELCASE` tag**: general regex `[a-z][A-Z]` flags any camelCase key recursively across loaded YAML; no allow-list.
 
 ### Behavior or Interface Changes
+
 - Validator now requires `protocol_name`, `step_name`, `field_name` per `docs/specs/SPEC_DESIGN_CHECKLIST.md` bare-`name:` ban; old bare `name:` keys are flagged via `CLOSURE`.
 - `CONTENTS_REQUIRED_KEYS = {label, display_color}`; `colorKey` dropped.
 - File-category counts now reflect every file walked, not only files that passed.
 - Whole-tree scan walks `content/` only; `tests/content/` fixtures are out of scope.
 
 ### Fixes and Maintenance
+
 - Pyflakes clean across `tools/validate_content_yaml.py` and `tools/validators/*.py`.
 - All `from typing import ...` purged in favor of bare `dict`, `list`, `tuple`, `set`, `X | None` per `docs/PYTHON_STYLE.md`.
 - Replaced repeated `try/except RuntimeError` per file with a single `_load_and_collect` helper.
@@ -3347,53 +3351,65 @@
 - Verbose detail printers consolidated in `tools/validators/summary.py`; inline duplicates in `validate_content_yaml.py` removed.
 
 ### Removals and Deprecations
+
 - Deleted `RETIRED_OBJECT_KEYS`, `RETIRED_BASE_SCENE_KEYS`, `RETIRED_PROTOCOL_KEYS`, and `BANNED_TOKENS` allow-lists. Replaced by `CLOSURE` + `T3_CAMELCASE`.
 - Deleted unused `ContentDatabase.is_enum_value_valid` and `get_all_contents_names` (`ProtocolValidator` performs enum checks inline).
 - Deferred `check_contents_drift`; not wired in this pass.
 
 ### Developer Tests and Notes
+
 - `source source_me.sh && python3 tools/validate_content_yaml.py`: **Validated 42 files (34 objects, 1 base scenes, 1 protocol scenes, 6 protocols). 79 failures** - failures are real YAML drift now correctly surfaced for follow-up content cleanup.
 
 ## 2026-05-15 (protocol_type vocabulary consolidation)
 
 ### Additions and New Features
+
 - **`docs/specs/PROTOCOL_VOCABULARY.md` Protocol kinds section** added: canonical home for protocol package terminology and the allowed `protocol_type` values. New rows in Container Terms for protocol package, protocol type, mini-protocol, sequence runner, and developer smoke. New `protocol_type` slot added to the protocol-level slot charters table; new closed-enum row added to the cost-guardrail table.
 - **`docs/specs/PROTOCOL_YAML_FORMAT.md` top-level protocol-fields table** added with the `protocol_type` enum row and a worked YAML example.
 
 ### Behavior or Interface Changes
+
 - **Field renamed: `protocolType` -> `protocol_type`** across normative docs (`docs/PRIMARY_DESIGN.md`, `docs/PRIMARY_SPEC.md`, `docs/specs/PROTOCOL_*.md`, `docs/active_plans/*.md`), content YAML (`content/protocols/*/protocol.yaml`), runtime contract (`src/scene_runtime/contract.ts`), validator and builder (`tools/validate_content_yaml.py`, `tools/build_protocol_data.py`), tests (`tests/test_protocol_entry_no_hood_default.py`), and Playwright fixtures (`tests/playwright/fixtures/*/protocol.mjs`). Aligns with the snake_case authored-field rule from `SPEC_DESIGN_CHECKLIST.md` Author YAML vocabulary lock.
 - **Terminology surfaces trimmed to pointers**: `docs/specs/PROTOCOL_AUTHORING_GUIDE.md` "Terminology" section, `docs/PRIMARY_DESIGN.md` "Protocol and mini-protocol hierarchy" section, and `docs/PRIMARY_SPEC.md` "Protocol types" section now link into `PROTOCOL_VOCABULARY.md#protocol-kinds` instead of redefining the kinds independently.
 - **Friendly-label paragraphs absorbed**: `PRIMARY_DESIGN.md` and `PRIMARY_SPEC.md` "Sequence runners and friendly terminology" sections removed; the "may be rendered as 'full protocol'" note now lives inside the canonical Sequence runner definition in `PROTOCOL_VOCABULARY.md`.
 
 ### Removals and Deprecations
+
 - **Retired `protocol_type` value: `protocol`.** Active enum is now `{mini_protocol, sequence_runner, dev_smoke}` (`tools/validate_content_yaml.py` `PROTOCOL_TYPES`). The audit confirmed no in-tree content declared the retired value; no reclassification was required. The bare word "protocol" is no longer a formal kind or enum value, but it remains valid in structural contexts (`protocol.yaml`, protocol package, protocol-level field, `protocol_type` field name).
 - **Retired field name: `protocolType`.** The camelCase form has no validator special case; an authored file that uses it fails the existing missing-required-key and unknown-extra-key checks. Historical changelog entries and archived planning docs that reference the old name are preserved (per REPO_STYLE "entries are never removed").
 
 ### Developer Tests and Notes
+
 - `source source_me.sh && python3 tools/validate_content_yaml.py`: validator runs clean across the migrated `content/protocols/*/protocol.yaml` set after the rename.
 
 ## 2026-05-15 (M2 Wave 2a: five mini-protocols + 25 objects - sorted-snacking-kettle)
 
 ### Additions and New Features
+
 - **25 new shared objects** under `content/objects/`: liquid-bearing (serological_pipette, conical_15ml, multichannel_pipette, micropipette, carboplatin_stock_bottle, metformin_stock_bottle, dmso_bottle, mtt_vial, sterile_water_bottle, microtube_15ml_intermediate, metformin_working_tube), structured (conical_15ml_rack, well_plate_96, dilution_tube_rack_8, hemocytometer), equipment (centrifuge, incubator, microscope, plate_reader, vortex, water_bath, micropipette_tip_box, professor_avatar), waste (biohazard_decant, sharps_container), plus `t75_flask_new` for passage workflow.
 - **Five new mini-protocols** under `content/protocols/`: `drug_dilution_setup` (8 steps), `plate_drug_treatment` (7 steps), `cell_counting_and_seeding` (9 steps), `mtt_assay_readout` (7 steps), `cell_culture` (9 steps). All conform to two-level step/interaction model, closed gesture set, ratified `scene_operation` primitives, and 6-10 step gate.
 
 ### Behavior or Interface Changes
+
 - **Cross-protocol contents standardization**: `cell_suspension` displayColor canonicalized to `#d89bb8`; `media` label canonicalized to "Complete RPMI media"; `trypsin` label canonicalized to "Trypsin-EDTA 0.25%".
 
 ### Fixes and Maintenance
+
 - **Schema conformance fixes** applied across Wave 2a: vortex `running` field name; PDT parts/days `id`/`label` schema; well_plate_96 subpart addressing (A1..H12); contents_name enum alignment; TimedWait `duration_min`/`display` field names; hemocytometer flat state_fields addressing; aspirate_and_wash T-9 split.
 
 ### Developer Tests and Notes
+
 - `source source_me.sh && python3 tools/validate_content_yaml.py`: **Validated 42 files (34 objects, 1 base scenes, 1 protocol scenes, 6 protocols). 0 failures.**
 
 ## 2026-05-15 (spec vocabulary consolidation sweep - cheeky-popping-hartmanis)
 
 ### Additions and New Features
+
 - **`docs/specs/SPEC_DESIGN_CHECKLIST.md` extended**: New "Author YAML vocabulary lock" section codifies the closed authored-YAML surface, the identity tuple `(object_name, kind, label)`, the snake_case authored-field rule, the scene-placement override surface restricted to layout hints, and the `contents_container` rename.
 - **`tests/test_spec_vocabulary.py` (new)**: Grep-gate test enforces vocabulary closure across `docs/specs/*.md` and `docs/PRIMARY_*.md`. G1-G4 hard-assert zero occurrences of retired tokens (`short_label`/`shortLabel`, `element_id`/`elementId`, `render_map`, `inventory_ref`/`inventoryRef`, `liquid_container`, camelCase YAML field references). G5-G6 are informational sweeps for residual drift.
 
 ### Behavior or Interface Changes
+
 - **Spec sweep across `docs/specs/*.md` and `docs/PRIMARY_*.md`** (M2.W1-W7): Object, scene, protocol, layout-engine, liquid, SVG, and PRIMARY trio surfaces normalized to the locked vocabulary.
 - **Identity tuple locked**: Object identity expressed exclusively as `(object_name, kind, label)`; legacy `short_label` and `element_id` references retired from normative spec text.
 - **Scene-placement override surface locked**: Authored scene placements may override layout hints only; identity fields are not overridable at placement time.
@@ -3402,24 +3418,29 @@
 - **PRIMARY trio cross-links to the lock section added**: `docs/PRIMARY_CONTRACT.md`, `docs/PRIMARY_DESIGN.md`, and `docs/PRIMARY_SPEC.md` now point to the Author YAML vocabulary lock section in `docs/specs/SPEC_DESIGN_CHECKLIST.md`.
 
 ### Fixes and Maintenance
+
 - **Dead-link cleanup** in `docs/CHANGELOG.md` and `docs/CHANGELOG-2026-05a.md`: historical `content/plate_drug_treatment/*.yaml` and `content/cell_culture/{items,reagents}.yaml` link wrappers rephrased to bare backticked paths (per REPO_STYLE "entries are never removed, may be rephrased for accuracy and clarity"). The underlying historical text is unchanged; only the broken hyperlink wrappers are removed because those paths were retired by the 2026-05-15 vocabulary closure.
 - **`docs/FILE_STRUCTURE.md` "Where to add new work" table trimmed** of the `content/protocols/`, `content/objects/`, and `content/scenes/` rows pending layout settling. Content directories still exist on disk; the table rows return when the layout stabilizes.
 
 ### Removals and Deprecations
+
 - **Deleted retired-terms tables** from `docs/specs/OBJECT_VOCABULARY.md`, `docs/specs/SCENE_VOCABULARY.md`, `docs/specs/SCENE_YAML_FORMAT.md`, and `docs/specs/PROTOCOL_VOCABULARY.md` (no quarantine doc; closure is enforced by `tests/test_spec_vocabulary.py`).
 - **Retired tokens removed from normative spec text**: `short_label` / `shortLabel`, `element_id` / `elementId`, `liquid_color` as authored state, `render_map`, `inventory_ref` / `inventoryRef`, scene-placement `label` overrides, and all camelCase YAML field references.
 - Removed `scene_kind` field from authored scene YAML and validator; `workspace` is the sole identity field.
 
 ### Decisions and Failures
+
 - **D1 resolved**: `shortLabel` is fully retired in normative spec text regardless of any runtime residue. Runtime cleanup is tracked separately and is not a blocker for the spec lock.
 - **D2 resolved**: `scene_kind` removed entirely. It duplicated `workspace` as the identity field. Footprint was 4 locations (SCENE_INHERITANCE.md locked-field row, hood_basic.yaml usage, validator optional-keys set, this changelog entry).
 
 ### Developer Tests and Notes
+
 - `source source_me.sh && pytest tests/test_spec_vocabulary.py -q`: **6 passed in 0.08s** (G1-G6).
 
 ## 2026-05-15 (vocabulary audit sweep: retired-terms inventory and spec-consistency gates - WP-F1)
 
 ### Additions and New Features
+
 - **`docs/specs/SPEC_DESIGN_CHECKLIST.md` extended**: Added four new checklist smell classes with examples and severity labels covering vocabulary drift:
   - RD-10 (semantic vs runtime): Flag authored YAML that uses runtime implementation terms (prefixes, coordinates, element names, internal state names) instead of semantic author vocabulary (object_name, scene_name, contents_name).
   - RD-13 (layer boundaries): Flag author vocabulary that mixes protocol layer (intent), object layer (state and visual), and scene layer (placement and geometry). Protocol must not name assets; scene must not name protocol steps; object must not read protocol sequencing.
@@ -3428,16 +3449,18 @@
 - **Retired-terms closure table (SPEC_DESIGN_CHECKLIST.md RD-15)**: Fifteen author-YAML renames documented as ratified migrations (liquid_id -> contents_name, object_id -> object_name, render_map -> visual_states, etc.). Seven retired authored fields documented as removed (element_id, liquid_color authored separately, inventory_ref, items.yaml, reagents.yaml, src/content/<protocol>/). Enables systematic sweep validation in future spec audits.
 
 ### Behavior or Interface Changes
+
 - **Author-YAML semantic renaming (vocabulary closure WP-F1)**: Author-written YAML migrates from runtime-oriented naming to semantic author vocabulary:
   - liquid-state fields: `liquid_id` / `held_liquid_id` -> `contents_name` / `held_contents_name` (reflects semantic scope: reagents, waste, media, cells, mixtures, suspensions, drugs).
   - volume fields: `liquid_volume` / `held_liquid_volume` -> `contents_volume` / `held_contents_volume`.
-  - identity fields: `object_id` -> `object_name`, `scene_id` -> `scene_name`, `placement_id` -> `placement_name`, `subpart_id` -> `subpart_name`, `step_id` -> `step_name`, `protocol_id` -> `protocol_name`, `part_id` -> `part_name`, `day_id` -> `day_name` (closure: all identity fields use _name suffix, not _id).
+  - identity fields: `object_id` -> `object_name`, `scene_id` -> `scene_name`, `placement_id` -> `placement_name`, `subpart_id` -> `subpart_name`, `step_id` -> `step_name`, `protocol_id` -> `protocol_name`, `part_id` -> `part_name`, `day_id` -> `day_name` (closure: all identity fields use \_name suffix, not \_id).
   - asset identity: `asset_id` -> `asset_name`, `overlay_id` -> `overlay_name` (consistency with subparts and elements).
   - rendering surface: `render_map` -> `visual_states` (emphasizes closed enumeration, not generic template or expression engine).
 - **Authoring layout restructure**: Authored content relocates from protocol-centric `src/content/<protocol_name>/` to multi-layer organization under `content/`: protocols to `content/protocols/<protocol_name>/{protocol.yaml, contents.yaml, scenes/}`, shared objects to `content/objects/`, shared scenes to `content/scenes/`.
 - **Contents registry unification**: `items.yaml` and `reagents.yaml` consolidated into `contents.yaml` reflecting unified semantic scope (reagents, waste, media, cells, mixtures, suspensions, drugs, not separate item/reagent categories).
 
 ### Removals and Deprecations
+
 - **Dropped authored fields**: `element_id` (runtime derives mount identifier as `${scene_name}-scene`); `liquid_color` as authored state field (color derived from `contents_name` via object `visual_states`); scene-placement `label` / `short_label` overrides (use scene-global naming); `inventory_ref` (inventory external to author YAML).
 - **Retired authored files**: `items.yaml`, `reagents.yaml` (merged into `contents.yaml`).
 - **Retired path structure**: `src/content/<protocol_name>/` (moved to `content/protocols/<protocol_name>/`).
@@ -3446,6 +3469,7 @@
 ## 2026-05-15 (scene_object_split: three-vocabulary model close-out - WP-EV1 through WP-DOC-C1)
 
 ### Additions and New Features
+
 - **`docs/OBJECT_VOCABULARY.md` (new)**: Canonical object vocabulary
   defining object identity, structured surfaces and subparts (wells in
   plates, lanes in gels, slots in racks), the `state_fields` schema
@@ -3477,7 +3501,7 @@
 - **Three follow-on plan stubs in `docs/active_plans/`**: New stubs
   for the next stages of work --
   [content_yaml_migration_plan.md](archive/content_yaml_migration_plan.md),
-  [typescript_migration_plan.md](active_plans/typescript_migration_plan.md),
+  `typescript_migration_plan.md`,
   and [docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md).
   Each names inputs, targets, first decision or risk, and out-of-scope
   boundaries; full plans land when an owner picks one up.
@@ -3636,6 +3660,7 @@
   centrifuge_workspace_basic) and current migration candidates.
 
 ### Behavior or Interface Changes
+
 - **Scene-inheritance policy ratified; five dependent specs updated**: Ratified
   the three-layer scene-inheritance model in
   [specs/SCENE_INHERITANCE.md](specs/SCENE_INHERITANCE.md) with one-level depth,
@@ -3648,7 +3673,7 @@
   (Deactivated placements section). All five docs remain backward-compatible with
   current code; migration is deferred to the scene-inheritance migration plan.
 - **Self-contained spec cleanup**: Stripped temporary-plan citations
-  (RD-N codes, M0..M3 milestone references, WP-* work-package codes),
+  (RD-N codes, M0..M3 milestone references, WP-\* work-package codes),
   archive/active_plans links, and `current-code` / `target-state` /
   `for now` / `previously` / `eventually` transitional wording from
   every file under `docs/specs/` plus `docs/PRIMARY_SPEC.md` and
@@ -3688,7 +3713,7 @@
   one extra `../`. `AGENTS.md` "Required reading" and "Where to find
   things" sections updated. `CLAUDE.md` was simultaneously trimmed to
   only the three `@docs/PRIMARY_*.md` import lines (length-reduction
-  pass); the previous PROTOCOL_*, SCENE_*, OBJECT_*, and style/test
+  pass); the previous PROTOCOL*\*, SCENE*\_, OBJECT\_\_, and style/test
   `@`-imports were dropped from the manifest. `pytest tests/test_markdown_links.py` and
   `pytest tests/test_ascii_compliance.py` both pass. Plan source:
   [archive/docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md).
@@ -3732,8 +3757,8 @@
   (`response` is `scene_operations` plus optional `feedback`), and defers
   complex branching (`outcome` stays the simple `{ on_success, on_failure }`
   mapping). The tight model is `protocol -> step(name, prompt, sequence,
-  step_validator, outcome, next_step) -> interaction(target, gesture,
-  validator, response) -> response(scene_operations[], feedback?)`.
+step_validator, outcome, next_step) -> interaction(target, gesture,
+validator, response) -> response(scene_operations[], feedback?)`.
 - **`LiquidDisplayChange.operation` set settled (WP-STA1)**: The
   `LiquidDisplayChange` operation set settled to `hold` (tool-carried
   contents), `set` (direct absolute assign; empty a tool or vessel via
@@ -3742,25 +3767,26 @@
   with `volume_ml: 0`.
 
 ### Fixes and Maintenance
+
 - **docs/ link repair after protocols/ move (Patch 1 of docs reorg plan)**:
   Rewrote 13 broken markdown links left over from the in-flight `git mv`
   of five protocol-content docs into `docs/protocols/`. Touched
-  [docs/CHANGELOG-2026-05b.md](CHANGELOG-2026-05b.md) (6 link rewrites
+  [CHANGELOG-2026-05b.md](CHANGELOG-2026-05b.md) (6 link rewrites
   pointing OVCAR8 references at `protocols/`),
-  [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) (3 rewrites for OVCAR8 +
-  VOSS_DILUTIONS_GUIDE), [docs/USAGE.md](USAGE.md) (1 OVCAR8 reference),
-  [docs/archive/protocol_interaction_inventory.md](archive/protocol_interaction_inventory.md)
+  [FILE_STRUCTURE.md](FILE_STRUCTURE.md) (3 rewrites for OVCAR8 +
+  VOSS_DILUTIONS_GUIDE), [USAGE.md](USAGE.md) (1 OVCAR8 reference),
+  [protocol_interaction_inventory.md](archive/protocol_interaction_inventory.md)
   (2 `../protocols/` rewrites for Miraculin and SDS-PAGE), and
-  [docs/archive/2026-04-09-scene-layout-engine.md](archive/2026-04-09-scene-layout-engine.md)
+  [2026-04-09-scene-layout-engine.md](archive/2026-04-09-scene-layout-engine.md)
   (1 stale superpowers/specs link repointed at the design doc's new
   sibling location in `docs/archive/`; pre-existing failure flagged in
   the same report). `pytest tests/test_markdown_links.py` and
   `pytest tests/test_ascii_compliance.py` both pass. See the docs
-  reorganization plan [docs/archive/docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md)
+  reorganization plan [docs_folder_organization_plan.md](archive/docs_folder_organization_plan.md)
   for context; Patch 2 of that plan will create `docs/specs/`.
 - **Unified interaction vocabulary plan marked closed**: Added a
   `Plan status: closed` section to
-  [docs/archive/unified_interaction_vocabulary_plan.md](archive/unified_interaction_vocabulary_plan.md)
+  [unified_interaction_vocabulary_plan.md](archive/unified_interaction_vocabulary_plan.md)
   and flipped 10 rollout-checklist boxes to checked. The plan's M1-M4 work
   (canonical doc rewrites, dependent-doc alignment, primary-doc reconcile,
   4-pass audit, final terminology gate) was already complete and committed
@@ -3780,6 +3806,7 @@
   `docs/archive/` files. `pytest tests/test_markdown_links.py` now passes.
 
 ### Removals and Deprecations
+
 - **Archived 4 stale plan files**: Moved four superseded plan files from
   `docs/active_plans/` to `docs/archive/` with `git mv`:
   `focused_well_plate_workspace_plan.md` and
@@ -3793,6 +3820,7 @@
   steps that anticipate the archival.
 
 ### Decisions and Failures
+
 - **RD-1 (background = backdrop)**: A scene background is a static
   backdrop declared in scene YAML; clickable regions are objects
   placed over the background, not properties of the background.
@@ -4033,6 +4061,7 @@
   code itself, carried to the follow-on code-migration plan.
 
 ### Developer Tests and Notes
+
 - **M3 ratification evidence**: 120 steps across OVCAR8, the 7 shipped
   `content/*/protocol.yaml` files, Miraculin, and SDS-PAGE all map to the
   ratified two-level model with no M2 design revision required. The
@@ -4040,5 +4069,4 @@
   `docs/PRIMARY_SPEC.md` and `docs/PRIMARY_DESIGN.md` are the only known
   residual contradictions and are handed off to the follow-on code-migration
   plan stub at
-  [active_plans/protocol_vocabulary_code_migration_plan.md](active_plans/protocol_vocabulary_code_migration_plan.md).
-
+  `protocol_vocabulary_code_migration_plan.md`.

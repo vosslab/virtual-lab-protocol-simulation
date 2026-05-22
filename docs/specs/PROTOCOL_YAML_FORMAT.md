@@ -78,14 +78,15 @@ The `materials.yaml` file defines the materials used in the protocol: reagents, 
 
 Each material entry is a mapping keyed by snake_case name. All fields required.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `label` | string | Display name (shown in UI and step text) |
+| Field           | Type    | Description                                                                                                                                            |
+| --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `label`         | string  | Display name (shown in UI and step text)                                                                                                               |
 | `display_color` | mapping | Mapping with `light` and `dark` hex keys for light/dark theme support. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) for the canonical palette. |
 
 ### Materials example
 
 content/protocols/cell_culture/materials.yaml:
+
 ```yaml
 materials:
   pbs:
@@ -110,12 +111,12 @@ A required top-level `learning` block carries pedagogy metadata for every mini-p
 
 ### Top-level protocol fields
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `protocol_type` | enum | yes | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
-| `protocol_name` | string | yes | Stable snake_case identifier for the protocol. |
-| `entry_step` | string | yes | `step_name` of the first step the runtime runs. |
-| `steps` | list | conditional (mini_protocol + dev_smoke only) | List of authored step entries. Absent for `sequence_runner`. |
+| Field           | Type   | Required                                     | Description                                                                                                                          |
+| --------------- | ------ | -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `protocol_type` | enum   | yes                                          | One of `mini_protocol`, `sequence_runner`, `dev_smoke`. See [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md) Protocol kinds section. |
+| `protocol_name` | string | yes                                          | Stable snake_case identifier for the protocol.                                                                                       |
+| `entry_step`    | string | yes                                          | `step_name` of the first step the runtime runs.                                                                                      |
+| `steps`         | list   | conditional (mini_protocol + dev_smoke only) | List of authored step entries. Absent for `sequence_runner`.                                                                         |
 
 Example top of a mini-protocol `protocol.yaml`:
 
@@ -133,11 +134,11 @@ The block is authored metadata that documents what the mini-protocol teaches,
 what students will be able to do afterward, and why the mini-protocol exists
 in the broader curriculum.
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `objectives` | string | For mini-protocols | Begins with "Students completing this mini-protocol will have achieved..." and states what students will gain fluency with. |
-| `outcomes` | string | For mini-protocols | Begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol. |
-| `goals` | string | For mini-protocols | Begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose. |
+| Field        | Type   | Required           | Description                                                                                                                                 |
+| ------------ | ------ | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `objectives` | string | For mini-protocols | Begins with "Students completing this mini-protocol will have achieved..." and states what students will gain fluency with.                 |
+| `outcomes`   | string | For mini-protocols | Begins with "Students completing this mini-protocol will be able to..." and states what students can do after completing the mini-protocol. |
+| `goals`      | string | For mini-protocols | Begins with "Overall, this mini-protocol aims to accomplish..." and states the broader purpose.                                             |
 
 Mini-protocols use the required prefixes shown above ("Students completing this mini-protocol..."). Sequence runners also carry a `learning` block scoped to the overall pathway; for sequence runners the prefix may use "Students completing this protocol..." to describe the complete student-facing pathway. Developer smoke protocols and internal diagnostic protocols are exempt from the `learning` block requirement. See [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the full learning-block schema.
 
@@ -146,9 +147,9 @@ Mini-protocols use the required prefixes shown above ("Students completing this 
 The top-level `entry_step` field declares where protocol flow starts. It is
 required for every mini-protocol.
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `entry_step` | string | yes | The `step_name` of the first step the runtime runs. Must match a declared step in the `steps` list. |
+| Field        | Type   | Required | Description                                                                                         |
+| ------------ | ------ | -------- | --------------------------------------------------------------------------------------------------- |
+| `entry_step` | string | yes      | The `step_name` of the first step the runtime runs. Must match a declared step in the `steps` list. |
 
 Example:
 
@@ -172,14 +173,14 @@ place in the hood; the hood is not a default starting scene.
 A sequence runner is a protocol that chains together a list of mini-protocols
 rather than authoring steps directly. A sequence runner declares:
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `protocol_type` | enum | yes | Must be `sequence_runner`. |
-| `protocol_name` | string | yes | Stable snake_case identifier for the sequence. |
-| `entry_step` | string | yes | Must match the first mini-protocol's `entry_step`. |
-| `mini_protocols` | list of strings | yes | Ordered list of mini-protocol names; each name resolves to `content/protocols/<cluster>/<name>/protocol.yaml`. |
-| `steps` | list | no | Must be absent. Sequence runners do not author steps; they list constituent mini-protocols. |
-| `learning` | mapping | yes | Pedagogy block scoped to the overall pathway. Uses "Students completing this protocol..." phrasing. |
+| Field            | Type            | Required | Description                                                                                                    |
+| ---------------- | --------------- | -------- | -------------------------------------------------------------------------------------------------------------- |
+| `protocol_type`  | enum            | yes      | Must be `sequence_runner`.                                                                                     |
+| `protocol_name`  | string          | yes      | Stable snake_case identifier for the sequence.                                                                 |
+| `entry_step`     | string          | yes      | Must match the first mini-protocol's `entry_step`.                                                             |
+| `mini_protocols` | list of strings | yes      | Ordered list of mini-protocol names; each name resolves to `content/protocols/<cluster>/<name>/protocol.yaml`. |
+| `steps`          | list            | no       | Must be absent. Sequence runners do not author steps; they list constituent mini-protocols.                    |
+| `learning`       | mapping         | yes      | Pedagogy block scoped to the overall pathway. Uses "Students completing this protocol..." phrasing.            |
 
 Example:
 
@@ -221,7 +222,8 @@ Example (from `content/protocols/tutorial_plate_drug_additions/protocol.yaml`):
 
 ```yaml
 learning:
-  objectives: Students completing this mini-protocol will have achieved fluency with
+  objectives:
+    Students completing this mini-protocol will have achieved fluency with
     the OVCAR8 96-well plate map and the media-adjustment-before-drug ordering rule.
   outcomes: Students completing this mini-protocol will be able to dose a 96-well assay plate Day-2 unsupervised.
   goals: Overall, this mini-protocol aims to accomplish bridging the single-technique tutorials to the full OVCAR8 protocol.
@@ -231,20 +233,20 @@ learning:
 
 List of part definitions (order matters for UI display).
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `part_name` | string | Unique snake_case identifier |
-| `label` | string | Display name (e.g. "Part 1: Split") |
-| `day_name` | string | Reference to a `day_name` in the days block below |
+| Field       | Type   | Description                                       |
+| ----------- | ------ | ------------------------------------------------- |
+| `part_name` | string | Unique snake_case identifier                      |
+| `label`     | string | Display name (e.g. "Part 1: Split")               |
+| `day_name`  | string | Reference to a `day_name` in the days block below |
 
 ### Days block
 
 List of day definitions (order matters for UI display).
 
-| Field | Type | Description |
-| --- | --- | --- |
+| Field      | Type   | Description                                          |
+| ---------- | ------ | ---------------------------------------------------- |
 | `day_name` | string | Unique snake_case identifier (e.g. day1, day2, day4) |
-| `label` | string | Display name (e.g. "Day 1") |
+| `label`    | string | Display name (e.g. "Day 1")                          |
 
 ### Steps block
 
@@ -257,38 +259,38 @@ never array position.
 A `step` has six required slots, all defined in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md):
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `step_name` | string | yes | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging. |
-| `prompt` | string | yes | States what the student is asked to accomplish in this step. |
-| `sequence` | list of interactions | yes | The ordered list of `interaction` blocks that make up the step; order always matters. |
-| `step_validator` | mapping | yes | Named preset that checks whole-step completion. See "Validator presets". |
-| `outcome` | mapping | yes | The `{on_success, on_failure}` mapping that says how the step resolves. |
-| `next_step` | string or null | yes | The `step_name` of the next step, or `null` for a terminal step. The slot is always present. |
+| Field            | Type                 | Required | Description                                                                                  |
+| ---------------- | -------------------- | -------- | -------------------------------------------------------------------------------------------- |
+| `step_name`      | string               | yes      | Stable snake_case identifier for the step. Used for protocol flow, tests, and debugging.     |
+| `prompt`         | string               | yes      | States what the student is asked to accomplish in this step.                                 |
+| `sequence`       | list of interactions | yes      | The ordered list of `interaction` blocks that make up the step; order always matters.        |
+| `step_validator` | mapping              | yes      | Named preset that checks whole-step completion. See "Validator presets".                     |
+| `outcome`        | mapping              | yes      | The `{on_success, on_failure}` mapping that says how the step resolves.                      |
+| `next_step`      | string or null       | yes      | The `step_name` of the next step, or `null` for a terminal step. The slot is always present. |
 
 Optional step-level fields used for display only:
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
-| `label` | string | no | Short display name shown in the protocol panel. |
-| `why` | string | no | One-line rationale shown under the step card. |
-| `part_name` | string | no | Reference to a part name in the parts block; UI grouping only. |
-| `day_name` | string | no | Reference to a day name in the days block; UI grouping only. |
-| `step_index` | number | no | 1-based display position within the part. Display order only; never controls flow. |
-| `scene` | string | no | The scene this step's interactions happen in. |
-| `details` | list of strings | no | Short strings rendered as a bulleted side panel beneath the prompt. |
+| Field        | Type            | Required | Description                                                                        |
+| ------------ | --------------- | -------- | ---------------------------------------------------------------------------------- |
+| `label`      | string          | no       | Short display name shown in the protocol panel.                                    |
+| `why`        | string          | no       | One-line rationale shown under the step card.                                      |
+| `part_name`  | string          | no       | Reference to a part name in the parts block; UI grouping only.                     |
+| `day_name`   | string          | no       | Reference to a day name in the days block; UI grouping only.                       |
+| `step_index` | number          | no       | 1-based display position within the part. Display order only; never controls flow. |
+| `scene`      | string          | no       | The scene this step's interactions happen in.                                      |
+| `details`    | list of strings | no       | Short strings rendered as a bulleted side panel beneath the prompt.                |
 
 ## The interaction block
 
 Each entry in a step's `sequence` is one `interaction` block. An
 `interaction` has exactly four literal slots:
 
-| Slot | Type | Required | Description |
-| --- | --- | --- | --- |
-| `target` | string | yes | The semantic name of the scene object or control the student acts on. Geometry-free; the scene resolves the name. |
-| `gesture` | string | yes | How the student acts on the target. One of `click`, `drag`, `adjust`, `select`, `type`. |
-| `validator` | mapping | yes | Named preset that checks this one gesture on this one target. See "Validator presets". |
-| `response` | mapping | yes | Container for post-validation behavior: `scene_operations` and optional `feedback`. |
+| Slot        | Type    | Required | Description                                                                                                       |
+| ----------- | ------- | -------- | ----------------------------------------------------------------------------------------------------------------- |
+| `target`    | string  | yes      | The semantic name of the scene object or control the student acts on. Geometry-free; the scene resolves the name. |
+| `gesture`   | string  | yes      | How the student acts on the target. One of `click`, `drag`, `adjust`, `select`, `type`.                           |
+| `validator` | mapping | yes      | Named preset that checks this one gesture on this one target. See "Validator presets".                            |
+| `response`  | mapping | yes      | Container for post-validation behavior: `scene_operations` and optional `feedback`.                               |
 
 There is no separate interaction task-type slot. The work a gesture does
 is determined by the gesture plus the kind of target it lands on.
@@ -297,10 +299,10 @@ is determined by the gesture plus the kind of target it lands on.
 
 A `response` has two fields:
 
-| Field | Type | Required | Description |
-| --- | --- | --- | --- |
+| Field              | Type             | Required           | Description                                                                                                       |
+| ------------------ | ---------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------- |
 | `scene_operations` | list of mappings | yes (may be empty) | An ordered list of typed `scene_operation` primitives. Order matters; the runtime applies the list top to bottom. |
-| `feedback` | mapping | no | Optional learner-facing messaging, structured into `correct` and `incorrect`. |
+| `feedback`         | mapping          | no                 | Optional learner-facing messaging, structured into `correct` and `incorrect`.                                     |
 
 A `scene_operation` requires a `type` field naming one of the five
 ratified protocol-level primitives (`ObjectStateChange`, `CursorAttach`,

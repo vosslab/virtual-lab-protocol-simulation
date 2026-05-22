@@ -6,12 +6,12 @@ Method: Manual line-by-line read of all tracked CSS files; template inspection f
 
 ## Summary table by severity
 
-| Severity | Count | Primary concern |
-| --- | --- | --- |
-| HIGH | 42 | overflow:hidden on wrappers, position:absolute, max-height/max-width constraints on footprints, transform:translate for overlay placement |
-| MEDIUM | 8 | Per-scene selectors in non-canonical locations, inline `<style>` stubs |
-| LOW | 10 | !important on border/stroke overrides |
-| Total | 60 | |
+| Severity | Count | Primary concern                                                                                                                           |
+| -------- | ----- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| HIGH     | 42    | overflow:hidden on wrappers, position:absolute, max-height/max-width constraints on footprints, transform:translate for overlay placement |
+| MEDIUM   | 8     | Per-scene selectors in non-canonical locations, inline `<style>` stubs                                                                    |
+| LOW      | 10    | !important on border/stroke overrides                                                                                                     |
+| Total    | 60    |                                                                                                                                           |
 
 ## HIGH findings
 
@@ -41,7 +41,7 @@ NEW2 cross-reference: All 16 `overflow: hidden` findings on `.scene-container`, 
 
 Approximately 54 footprint constraint pairs (6 classes x 9 files). Representative findings:
 
-- `bench.css` crowded `.footprint--small-tool` `max-height: 90px` -- p200 micropipette renders 150-183px; 90px cap + `overflow:hidden` forces too-small state. Confirmed cause of bench_basic + drug_dilution_* p200 off-card.
+- `bench.css` crowded `.footprint--small-tool` `max-height: 90px` -- p200 micropipette renders 150-183px; 90px cap + `overflow:hidden` forces too-small state. Confirmed cause of bench*basic + drug_dilution*\* p200 off-card.
 - `bench.css` crowded `.footprint--handheld` `max-height: 160px` -- bottle natural h at 82px wide is 228px; 160px cap + overflow:hidden = clipping. Confirmed: every bottle in crowded_bench_dense is off-card.
 - `bench.css` crowded `.footprint--small-tool` `max-height: 160px` + `max-width: 80px` -- p200 pipette renders 183px tall at 42px wide; 160px max-height truncates 23px.
 
@@ -89,7 +89,7 @@ Total cross-reference: 28 findings overlap with new2 CSS-FIX-NOCROP lane.
 
 ## Unreviewed variant CSS files
 
-21 additional tracked variant CSS files (bench_a..e.css, hood_b..e.css, instrument_b..e.css, *_diorama.css, *_focusedstage.css, *_gameboard.css) were not scanned. Assume identical HIGH findings.
+21 additional tracked variant CSS files (bench*a..e.css, hood_b..e.css, instrument_b..e.css, *\_diorama.css, \_\_focusedstage.css, \*\_gameboard.css) were not scanned. Assume identical HIGH findings.
 
 ## Safe cleanup patches
 

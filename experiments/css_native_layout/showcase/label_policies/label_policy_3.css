@@ -13,17 +13,17 @@ the label is the accessible name.
 */
 
 .placement-label {
-	opacity: 0;
-	transition: opacity 120ms ease-out;
-	pointer-events: none;
+  opacity: 0;
+  transition: opacity 120ms ease-out;
+  pointer-events: none;
 }
 
 .placement:hover .placement-label,
 .placement:focus-within .placement-label {
-	opacity: 1;
+  opacity: 1;
 }
 
 /* Keyboard-focus on the placement itself shows the label too. */
 .placement:focus .placement-label {
-	opacity: 1;
+  opacity: 1;
 }

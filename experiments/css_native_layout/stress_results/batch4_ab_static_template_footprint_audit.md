@@ -7,25 +7,27 @@ Use "workstream" not "lane".
 ## Generator pipeline map
 
 generate_stress_scenes.py
-  - source: internal Python pools (BOTTLES, CONTAINERS, HANDHELD, etc.)
-  - does NOT read: regions/bench.yaml, regions/hood.yaml, regions/instrument.yaml
-  - emits to stress_scenes/generated/stress_<class>_NNN.yaml
-  - placements: object_name + zone only; no kind, no footprint
+
+- source: internal Python pools (BOTTLES, CONTAINERS, HANDHELD, etc.)
+- does NOT read: regions/bench.yaml, regions/hood.yaml, regions/instrument.yaml
+- emits to stress*scenes/generated/stress*<class>\_NNN.yaml
+- placements: object_name + zone only; no kind, no footprint
 
 render_stress_to_html.py
-  - reads: generated YAML
-  - does NOT read: regions/*.yaml
-  - uses: FOOTPRINT_KEYWORDS constant (lines 27-44)
-  - emits to stress_scenes/rendered/stress_<class>_NNN.html
-  - class="object-graphic footprint--<category>"
 
-Neither generator reads any regions/*.yaml file at any point.
+- reads: generated YAML
+- does NOT read: regions/\*.yaml
+- uses: FOOTPRINT_KEYWORDS constant (lines 27-44)
+- emits to stress*scenes/rendered/stress*<class>\_NNN.html
+- class="object-graphic footprint--<category>"
+
+Neither generator reads any regions/\*.yaml file at any point.
 
 ## Question 1: Where is the kind-to-footprint mapping?
 
 FOOTPRINT_KEYWORDS constant, render_stress_to_html.py lines 27-44. Python list of (category, [keywords]) tuples. Resolution via classify_footprint() lines 58-66, called from build_placement_html() line 93. Class emitted at line 105.
 
-## Question 2: Does render_stress_to_html.py read regions/*.yaml?
+## Question 2: Does render_stress_to_html.py read regions/\*.yaml?
 
 No. Imports: os, sys, argparse, yaml (lines 13-16). Only opens input scene YAMLs (line 207). Never reads any file under experiments/css_native_layout/regions/.
 
@@ -47,6 +49,7 @@ No. Static-render path has parallel keyword lists (large-equipment at lines 29-3
 ## Question 5: Why do bottles get footprint--container?
 
 Two causes:
+
 1. regions/bench.yaml never read. bottle: handheld (bench.yaml line 71) invisible to renderer.
 2. 'bottle' placed inside container keyword tuple at line 37, directly contradicting YAML vocabulary which assigns bottle: handheld in all three region files (bench.yaml line 71, hood.yaml line 71, instrument.yaml line 71).
 
@@ -63,48 +66,50 @@ ACCIDENTAL. Evidence:
 
 ## Bottle case study: exact trace
 
-| Step | File | Line | Value |
-| --- | --- | --- | --- |
-| YAML vocabulary | regions/bench.yaml | 71 | bottle: handheld |
-| Generator pool | generate_stress_scenes.py | 68-73 | BOTTLES pool, routed to rear_shelf |
-| YAML emission | generate_stress_scenes.py | 349 | zone only; no footprint field written |
-| Renderer call | render_stress_to_html.py | 93 | classify_footprint('sodium_hydroxide_bottle') |
-| Keyword match | render_stress_to_html.py | 37 | 'bottle' in container tuple -> 'container' |
-| HTML emission | render_stress_to_html.py | 105 | class="object-graphic footprint--container" |
-| Rendered output | stress_many_bottles_scene_001.html | 10 | footprint--container on all 16 bottle placements |
+| Step            | File                               | Line  | Value                                            |
+| --------------- | ---------------------------------- | ----- | ------------------------------------------------ |
+| YAML vocabulary | regions/bench.yaml                 | 71    | bottle: handheld                                 |
+| Generator pool  | generate_stress_scenes.py          | 68-73 | BOTTLES pool, routed to rear_shelf               |
+| YAML emission   | generate_stress_scenes.py          | 349   | zone only; no footprint field written            |
+| Renderer call   | render_stress_to_html.py           | 93    | classify_footprint('sodium_hydroxide_bottle')    |
+| Keyword match   | render_stress_to_html.py           | 37    | 'bottle' in container tuple -> 'container'       |
+| HTML emission   | render_stress_to_html.py           | 105   | class="object-graphic footprint--container"      |
+| Rendered output | stress_many_bottles_scene_001.html | 10    | footprint--container on all 16 bottle placements |
 
 ## Production runtime vs stress harness comparison
 
-| Aspect | Production (dynamic) | Stress harness (static) |
-| --- | --- | --- |
-| Kind-to-footprint source | regions/bench.yaml kind_to_footprint map | FOOTPRINT_KEYWORDS in render_stress_to_html.py |
-| Reads region YAML | Yes (css_native_adapter.ts) | No |
-| bottle -> footprint | handheld | container (DIVERGES) |
-| flask -> footprint | container | container (agrees) |
-| pipette -> footprint | small-tool | handheld (DIVERGES - secondary) |
-| equipment_large/small source | YAML | Parallel hardcoded lists (no sync) |
+| Aspect                       | Production (dynamic)                     | Stress harness (static)                        |
+| ---------------------------- | ---------------------------------------- | ---------------------------------------------- |
+| Kind-to-footprint source     | regions/bench.yaml kind_to_footprint map | FOOTPRINT_KEYWORDS in render_stress_to_html.py |
+| Reads region YAML            | Yes (css_native_adapter.ts)              | No                                             |
+| bottle -> footprint          | handheld                                 | container (DIVERGES)                           |
+| flask -> footprint           | container                                | container (agrees)                             |
+| pipette -> footprint         | small-tool                               | handheld (DIVERGES - secondary)                |
+| equipment_large/small source | YAML                                     | Parallel hardcoded lists (no sync)             |
 
 ## Recommendation
 
 NEEDS_USER_DECISION.
 
 Arguments for DOCUMENT_DIVERGENCE:
+
 - Harness under experiments/, not a production artifact.
 - footprint--container (~220x240 min) larger than footprint--handheld (~90x110), so many_bottles scenes currently exercise harder rear_shelf packing than production. Valid stress condition.
 - Aligning reduces stress value of those scenes and invalidates existing batch score comparisons.
 
 Arguments for ALIGN:
+
 - If stress results meant to predict production layout for bottles, current harness measures wrong footprint.
-- regions/*.yaml is canonical single source of truth per PRIMARY_CONTRACT.md.
+- regions/\*.yaml is canonical single source of truth per PRIMARY_CONTRACT.md.
 - Independent copy in static harness creates undocumented split future audits will rediscover.
 
 ## Risk table
 
-| Action | Risk |
-| --- | --- |
+| Action                                                                | Risk                                                                                                                   |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
 | ALIGN: move 'bottle' from container to handheld in FOOTPRINT_KEYWORDS | Stress scenes become less stressful for bottles. Existing batch scores cannot be directly compared to post-fix scores. |
-| DOCUMENT_DIVERGENCE: add comment to FOOTPRINT_KEYWORDS line 37 | Divergence persists; future readers may misread bottle stress scores as production-representative. |
-| No action | Silent divergence continues; next audit rediscovers this. |
+| DOCUMENT_DIVERGENCE: add comment to FOOTPRINT_KEYWORDS line 37        | Divergence persists; future readers may misread bottle stress scores as production-representative.                     |
+| No action                                                             | Silent divergence continues; next audit rediscovers this.                                                              |
 
 ## Secondary finding: pipette footprint also diverges
 

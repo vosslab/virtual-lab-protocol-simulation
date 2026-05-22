@@ -5,12 +5,12 @@ Status: FULL CORPUS VISUAL VERIFICATION
 
 ## Key Metrics
 
-| Metric | Value |
-| --- | --- |
-| Baseline (10 templates) | 58 visible crops |
-| Post-Trial5 Templates | 28 visible crops (-30, -52%) |
-| Post-Trial5 Gold Scenes | 73 visible crops |
-| **Full Corpus Total** | **101 visible crops** |
+| Metric                  | Value                        |
+| ----------------------- | ---------------------------- |
+| Baseline (10 templates) | 58 visible crops             |
+| Post-Trial5 Templates   | 28 visible crops (-30, -52%) |
+| Post-Trial5 Gold Scenes | 73 visible crops             |
+| **Full Corpus Total**   | **101 visible crops**        |
 
 ## Executive Summary
 
@@ -26,18 +26,18 @@ Trial 5 CSS changes were validated on 10 production templates, achieving 30 visi
 
 ## Baseline vs. Trial 5: Production Templates
 
-| Scene | Baseline Crops | Post-Trial5 Crops | Delta | Status |
-| --- | --- | --- | --- | --- |
-| bench_basic | 2 | 1 | -1 | FIXED |
-| crowded_bench_dense | 13 | 4 | -9 | FIXED |
-| drug_dilution_plate_workspace | 7 | 3 | -4 | FIXED |
-| drug_dilution_workspace_dense | 12 | 4 | -8 | FIXED |
-| electrophoresis_bench | 12 | 7 | -5 | FIXED |
-| hood_basic | 2 | 1 | -1 | FIXED |
-| microscope_basic | 0 | 1 | +1 | WORSENED |
-| cell_counter_basic | 0 | 1 | +1 | WORSENED |
-| staining_bench | 10 | 6 | -4 | FIXED |
-| well_plate_96_zoom | 0 | 0 | 0 | UNCHANGED |
+| Scene                         | Baseline Crops | Post-Trial5 Crops | Delta | Status    |
+| ----------------------------- | -------------- | ----------------- | ----- | --------- |
+| bench_basic                   | 2              | 1                 | -1    | FIXED     |
+| crowded_bench_dense           | 13             | 4                 | -9    | FIXED     |
+| drug_dilution_plate_workspace | 7              | 3                 | -4    | FIXED     |
+| drug_dilution_workspace_dense | 12             | 4                 | -8    | FIXED     |
+| electrophoresis_bench         | 12             | 7                 | -5    | FIXED     |
+| hood_basic                    | 2              | 1                 | -1    | FIXED     |
+| microscope_basic              | 0              | 1                 | +1    | WORSENED  |
+| cell_counter_basic            | 0              | 1                 | +1    | WORSENED  |
+| staining_bench                | 10             | 6                 | -4    | FIXED     |
+| well_plate_96_zoom            | 0              | 0                 | 0     | UNCHANGED |
 
 **Summary:** 8 of 10 production templates show fixed status. 2 scenes (microscope_basic, cell_counter_basic) regressed by +1 each (template-mode skeleton artifacts).
 
@@ -45,38 +45,38 @@ Trial 5 CSS changes were validated on 10 production templates, achieving 30 visi
 
 Per-scene crop counts across all 20 rendered scenes (templates + gold):
 
-| Scene | Type | Visible Crops | Severity |
-| --- | --- | --- | --- |
-| gold_electrophoresis_full_setup | Gold Ref | 10 | CRITICAL |
-| gold_heat_block_sample_prep | Gold Ref | 11 | CRITICAL |
-| gold_staining_bench | Gold Ref | 10 | CRITICAL |
-| gold_microscope_slide_prep | Gold Ref | 9 | WARN |
-| gold_drug_dilution_workspace | Gold Ref | 7 | WARN |
-| gold_mixed_bench | Gold Ref | 7 | WARN |
-| electrophoresis_bench | Production | 7 | WARN |
-| staining_bench | Production | 6 | WARN |
-| gold_cell_counter_station | Gold Ref | 6 | WARN |
-| gold_hood_prep | Gold Ref | 6 | WARN |
-| gold_plate_reader_assay | Gold Ref | 6 | WARN |
-| crowded_bench_dense | Production | 4 | WARN |
-| drug_dilution_workspace_dense | Production | 4 | WARN |
-| drug_dilution_plate_workspace | Production | 3 | WARN |
-| bench_basic | Production | 1 | PASS |
-| cell_counter_basic | Production | 1 | PASS |
-| hood_basic | Production | 1 | PASS |
-| microscope_basic | Production | 1 | PASS |
-| gold_well_plate_96_zoom_with_state | Gold Ref | 1 | PASS |
-| well_plate_96_zoom | Production | 0 | PASS |
+| Scene                              | Type       | Visible Crops | Severity |
+| ---------------------------------- | ---------- | ------------- | -------- |
+| gold_electrophoresis_full_setup    | Gold Ref   | 10            | CRITICAL |
+| gold_heat_block_sample_prep        | Gold Ref   | 11            | CRITICAL |
+| gold_staining_bench                | Gold Ref   | 10            | CRITICAL |
+| gold_microscope_slide_prep         | Gold Ref   | 9             | WARN     |
+| gold_drug_dilution_workspace       | Gold Ref   | 7             | WARN     |
+| gold_mixed_bench                   | Gold Ref   | 7             | WARN     |
+| electrophoresis_bench              | Production | 7             | WARN     |
+| staining_bench                     | Production | 6             | WARN     |
+| gold_cell_counter_station          | Gold Ref   | 6             | WARN     |
+| gold_hood_prep                     | Gold Ref   | 6             | WARN     |
+| gold_plate_reader_assay            | Gold Ref   | 6             | WARN     |
+| crowded_bench_dense                | Production | 4             | WARN     |
+| drug_dilution_workspace_dense      | Production | 4             | WARN     |
+| drug_dilution_plate_workspace      | Production | 3             | WARN     |
+| bench_basic                        | Production | 1             | PASS     |
+| cell_counter_basic                 | Production | 1             | PASS     |
+| hood_basic                         | Production | 1             | PASS     |
+| microscope_basic                   | Production | 1             | PASS     |
+| gold_well_plate_96_zoom_with_state | Gold Ref   | 1             | PASS     |
+| well_plate_96_zoom                 | Production | 0             | PASS     |
 
 **Observation:** Gold reference scenes average 7.3 crops per scene; production templates average 2.8 crops per scene. Gold scenes exhibit more complex object densities and specialized layouts.
 
 ## Remaining Visible Crop Analysis by Root Cause
 
-| Root Cause Category | Count | Examples | Fix Scope |
-| --- | --- | --- | --- |
-| svg-grow-needed (PLACEHOLDER boxes) | ~30 | counter_slide_cartridge, glass_slide, lab_marker, tall_glassware, composition types | Asset registry / SVG resolution layer |
-| parent-overflow (region bounds) | ~50 | Tall bottles in rear_shelf, pipettes in front_tools, instruments | Region min-height scaling, overflow clipping, or layout restructure |
-| aspect-cap-wrong (card proportions) | ~21 | Pipettes (0.23 ratio) in square cards, bottles (0.35-0.46) forced wide | Footprint class redesign per object kind |
+| Root Cause Category                 | Count | Examples                                                                            | Fix Scope                                                           |
+| ----------------------------------- | ----- | ----------------------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| svg-grow-needed (PLACEHOLDER boxes) | ~30   | counter_slide_cartridge, glass_slide, lab_marker, tall_glassware, composition types | Asset registry / SVG resolution layer                               |
+| parent-overflow (region bounds)     | ~50   | Tall bottles in rear_shelf, pipettes in front_tools, instruments                    | Region min-height scaling, overflow clipping, or layout restructure |
+| aspect-cap-wrong (card proportions) | ~21   | Pipettes (0.23 ratio) in square cards, bottles (0.35-0.46) forced wide              | Footprint class redesign per object kind                            |
 
 ## Verdict
 

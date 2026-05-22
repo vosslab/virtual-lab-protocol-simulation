@@ -18,13 +18,13 @@ follow-up blockers, not solved.
 
 ## 1. Seven sdspage zero-placement scene file paths
 
-1. [content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml](../../content/protocols/sdspage/sdspage_attach_lid_and_leads/scenes/sdspage_attach_lid_and_leads_workspace.yaml)
-2. [content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml](../../content/protocols/sdspage/sdspage_destain_gel_rock/scenes/sdspage_destain_gel_rock_workspace.yaml)
-3. [content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml](../../content/protocols/sdspage/sdspage_fill_tank_buffer/scenes/sdspage_fill_tank_buffer_workspace.yaml)
-4. [content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml](../../content/protocols/sdspage/sdspage_heat_denature_samples/scenes/sdspage_heat_denature_samples_workspace.yaml)
-5. [content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml](../../content/protocols/sdspage/sdspage_prepare_running_buffer/scenes/sdspage_prepare_running_buffer_workspace.yaml)
-6. [content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml](../../content/protocols/sdspage/sdspage_recycle_buffer/scenes/sdspage_recycle_buffer_workspace.yaml)
-7. [content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml](../../content/protocols/sdspage/sdspage_run_electrophoresis/scenes/sdspage_run_electrophoresis_workspace.yaml)
+1. `sdspage_attach_lid_and_leads_workspace.yaml`
+2. `sdspage_destain_gel_rock_workspace.yaml`
+3. `sdspage_fill_tank_buffer_workspace.yaml`
+4. `sdspage_heat_denature_samples_workspace.yaml`
+5. `sdspage_prepare_running_buffer_workspace.yaml`
+6. `sdspage_recycle_buffer_workspace.yaml`
+7. `sdspage_run_electrophoresis_workspace.yaml`
 
 ## 2. Zero-placement confirmation (7 of 7)
 
@@ -151,81 +151,81 @@ Experiment 1 Section 6.
 
 ### 3.1 sdspage_attach_lid_and_leads
 
-Parent file: [content/protocols/sdspage/sdspage_attach_lid_and_leads/protocol.yaml](../../content/protocols/sdspage/sdspage_attach_lid_and_leads/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
+| target               | classification                                                         |
+| -------------------- | ---------------------------------------------------------------------- |
 | electrophoresis_tank | workspace (Section 6 workspace note; flip-rule on lid/buffer interior) |
-| power_supply | structured (instrument display readout) |
+| power_supply         | structured (instrument display readout)                                |
 
 Distinct targets: 2.
 
 ### 3.2 sdspage_destain_gel_rock
 
-Parent file: [content/protocols/sdspage/sdspage_destain_gel_rock/protocol.yaml](../../content/protocols/sdspage/sdspage_destain_gel_rock/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
-| rocking_shaker | workspace |
-| staining_tray | workspace |
-| kimwipe_pad | workspace |
-| destain_waste_bottle | workspace |
+| target               | classification |
+| -------------------- | -------------- |
+| rocking_shaker       | workspace      |
+| staining_tray        | workspace      |
+| kimwipe_pad          | workspace      |
+| destain_waste_bottle | workspace      |
 
 Distinct targets: 4.
 
 ### 3.3 sdspage_fill_tank_buffer
 
-Parent file: [content/protocols/sdspage/sdspage_fill_tank_buffer/protocol.yaml](../../content/protocols/sdspage/sdspage_fill_tank_buffer/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
-| serological_pipette | workspace |
-| running_buffer_1x_carboy | workspace |
-| electrophoresis_tank | workspace |
+| target                   | classification |
+| ------------------------ | -------------- |
+| serological_pipette      | workspace      |
+| running_buffer_1x_carboy | workspace      |
+| electrophoresis_tank     | workspace      |
 
 Distinct targets: 3.
 
 ### 3.4 sdspage_heat_denature_samples
 
-Parent file: [content/protocols/sdspage/sdspage_heat_denature_samples/protocol.yaml](../../content/protocols/sdspage/sdspage_heat_denature_samples/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
-| heat_block | structured (instrument display readout) |
+| target            | classification                                |
+| ----------------- | --------------------------------------------- |
+| heat_block        | structured (instrument display readout)       |
 | microtube_rack_24 | structured (rack-kind; 24-microtube interior) |
 
 Distinct targets: 2.
 
 ### 3.5 sdspage_prepare_running_buffer
 
-Parent file: [content/protocols/sdspage/sdspage_prepare_running_buffer/protocol.yaml](../../content/protocols/sdspage/sdspage_prepare_running_buffer/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
-| serological_pipette | workspace |
-| running_buffer_10x_bottle | workspace |
-| running_buffer_1x_carboy | workspace |
-| ddh2o_bottle | workspace |
+| target                    | classification |
+| ------------------------- | -------------- |
+| serological_pipette       | workspace      |
+| running_buffer_10x_bottle | workspace      |
+| running_buffer_1x_carboy  | workspace      |
+| ddh2o_bottle              | workspace      |
 
 Distinct targets: 4.
 
 ### 3.6 sdspage_recycle_buffer
 
-Parent file: [content/protocols/sdspage/sdspage_recycle_buffer/protocol.yaml](../../content/protocols/sdspage/sdspage_recycle_buffer/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
-| electrophoresis_tank | workspace |
-| recycle_buffer_bottle | workspace |
+| target                | classification |
+| --------------------- | -------------- |
+| electrophoresis_tank  | workspace      |
+| recycle_buffer_bottle | workspace      |
 
 Distinct targets: 2.
 
 ### 3.7 sdspage_run_electrophoresis
 
-Parent file: [content/protocols/sdspage/sdspage_run_electrophoresis/protocol.yaml](../../content/protocols/sdspage/sdspage_run_electrophoresis/protocol.yaml)
+Parent file: `protocol.yaml`
 
-| target | classification |
-| --- | --- |
+| target       | classification                          |
+| ------------ | --------------------------------------- |
 | power_supply | structured (instrument display readout) |
 
 Distinct targets: 1.
@@ -262,21 +262,21 @@ Only one adapter exists: `well_plate`. None of the 13 objects below is
 `well_plate_96`; the well_plate adapter does not cover any sdspage
 inventory item.
 
-| object_name | object YAML | Section 6 class | adapter coverage |
-| --- | --- | --- | --- |
-| electrophoresis_tank | content/objects/equipment/electrophoresis_tank.yaml | workspace (flip-rule note) | workspace-only |
-| power_supply | content/objects/equipment/power_supply.yaml | structured | likely-adapter-gap |
-| rocking_shaker | content/objects/equipment/rocking_shaker.yaml | workspace (flip-rule note) | workspace-only |
-| staining_tray | content/objects/equipment/staining_tray.yaml | workspace (flip-rule note) | workspace-only |
-| kimwipe_pad | content/objects/decoration/kimwipe_pad.yaml | workspace | workspace-only |
-| destain_waste_bottle | content/objects/bottle/destain_waste_bottle.yaml | workspace | workspace-only |
-| serological_pipette | content/objects/pipette/serological_pipette.yaml | workspace | workspace-only |
-| running_buffer_1x_carboy | content/objects/bottle/running_buffer_1x_carboy.yaml | workspace | workspace-only |
-| running_buffer_10x_bottle | content/objects/bottle/running_buffer_10x_bottle.yaml | workspace | workspace-only |
-| ddh2o_bottle | content/objects/bottle/ddh2o_bottle.yaml | workspace | workspace-only |
-| recycle_buffer_bottle | content/objects/bottle/recycle_buffer_bottle.yaml | workspace | workspace-only |
-| heat_block | content/objects/equipment/heat_block.yaml | structured | likely-adapter-gap |
-| microtube_rack_24 | content/objects/rack/microtube_rack_24.yaml | structured | likely-adapter-gap |
+| object_name               | object YAML                                           | Section 6 class            | adapter coverage   |
+| ------------------------- | ----------------------------------------------------- | -------------------------- | ------------------ |
+| electrophoresis_tank      | content/objects/equipment/electrophoresis_tank.yaml   | workspace (flip-rule note) | workspace-only     |
+| power_supply              | content/objects/equipment/power_supply.yaml           | structured                 | likely-adapter-gap |
+| rocking_shaker            | content/objects/equipment/rocking_shaker.yaml         | workspace (flip-rule note) | workspace-only     |
+| staining_tray             | content/objects/equipment/staining_tray.yaml          | workspace (flip-rule note) | workspace-only     |
+| kimwipe_pad               | content/objects/decoration/kimwipe_pad.yaml           | workspace                  | workspace-only     |
+| destain_waste_bottle      | content/objects/bottle/destain_waste_bottle.yaml      | workspace                  | workspace-only     |
+| serological_pipette       | content/objects/pipette/serological_pipette.yaml      | workspace                  | workspace-only     |
+| running_buffer_1x_carboy  | content/objects/bottle/running_buffer_1x_carboy.yaml  | workspace                  | workspace-only     |
+| running_buffer_10x_bottle | content/objects/bottle/running_buffer_10x_bottle.yaml | workspace                  | workspace-only     |
+| ddh2o_bottle              | content/objects/bottle/ddh2o_bottle.yaml              | workspace                  | workspace-only     |
+| recycle_buffer_bottle     | content/objects/bottle/recycle_buffer_bottle.yaml     | workspace                  | workspace-only     |
+| heat_block                | content/objects/equipment/heat_block.yaml             | structured                 | likely-adapter-gap |
+| microtube_rack_24         | content/objects/rack/microtube_rack_24.yaml           | structured                 | likely-adapter-gap |
 
 Distinct workspace-only objects: 10. Distinct structured / likely-adapter-gap
 objects: 3.
@@ -300,11 +300,11 @@ Recorded only; not solved by this WP. Each gap below should be opened as
 a separate follow-up adapter authoring task before contracts M2-M5 try to
 guarantee end-to-end visible interaction for the affected steps.
 
-| object_name | reason adapter is needed |
-| --- | --- |
-| power_supply | structured instrument with set_voltage / running display readout (Experiment 1 Section 6). Used by `sdspage_attach_lid_and_leads` (`cathode_lead_attached`, `anode_lead_attached`) and `sdspage_run_electrophoresis` (`set_voltage`, `running`). |
-| heat_block | structured instrument with lid_open / set_temperature display readout (Experiment 1 Section 6). Used by `sdspage_heat_denature_samples` (`lid_open`, `rack_present`, 5 min TimedWait). |
-| microtube_rack_24 | rack-kind object owning 24-microtube interior (Experiment 1 Section 6). Used by `sdspage_heat_denature_samples` (rack-into-block placement, ladder + 3 sample tubes). |
+| object_name       | reason adapter is needed                                                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| power_supply      | structured instrument with set_voltage / running display readout (Experiment 1 Section 6). Used by `sdspage_attach_lid_and_leads` (`cathode_lead_attached`, `anode_lead_attached`) and `sdspage_run_electrophoresis` (`set_voltage`, `running`). |
+| heat_block        | structured instrument with lid_open / set_temperature display readout (Experiment 1 Section 6). Used by `sdspage_heat_denature_samples` (`lid_open`, `rack_present`, 5 min TimedWait).                                                           |
+| microtube_rack_24 | rack-kind object owning 24-microtube interior (Experiment 1 Section 6). Used by `sdspage_heat_denature_samples` (rack-into-block placement, ladder + 3 sample tubes).                                                                            |
 
 Adapter-gap count: 3.
 

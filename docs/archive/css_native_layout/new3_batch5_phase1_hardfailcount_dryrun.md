@@ -17,9 +17,9 @@ CRITICAL FINDING: Workstream-N did NOT eliminate clipped_by_parent and aspect_di
 - Actual finding: the precheck data in batch2_n_canonical still shows widespread crop and distortion violations in almost all 110 scenes
 
 WORKSTREAM-N EFFECT: INCONCLUSIVE. The original proposal reframed Workstream-N as lifting 108 scenes from "would-be zero" to measured scores. The dry run shows Batch 2-N still has 108 scenes with hard fails, suggesting either:
-  a) Workstream-N was not applied to batch2_n_canonical (the precheck data is stale)
-  b) Workstream-N did not achieve the intended no-crop fixes
-  c) The proposal's expectation was based on incorrect assumptions about post-N state
+a) Workstream-N was not applied to batch2_n_canonical (the precheck data is stale)
+b) Workstream-N did not achieve the intended no-crop fixes
+c) The proposal's expectation was based on incorrect assumptions about post-N state
 
 Phase 1 VERDICT: Proceed to user review with this critical finding highlighted. Phase 1 implementation is safe (additive fields only), but the downstream Phase 2 verdict (zeroing switch) requires clarification of Batch 2-N canonical state.
 
@@ -39,7 +39,7 @@ All under: experiments/css_native_layout/stress_results/phase1_dryrun_evidence/
 - batch2_n_canonical_summary.json (per-scene breakdown, Batch 2-N canonical)
 - batch2_n_canonical_scenes.csv (CSV export)
 
-All output files marked "proposal_only": true in JSON headers. No scorecard_*/ directories touched. No canonical files modified.
+All output files marked "proposal*only": true in JSON headers. No scorecard*\*/ directories touched. No canonical files modified.
 
 ## Phase 1 design recap (from Batch 4 Workstream C proposal)
 
@@ -47,17 +47,17 @@ All output files marked "proposal_only": true in JSON headers. No scorecard_*/ d
 
 ```javascript
 const hardFailCount =
-    (checks.clipped_artwork || []).length +
-    (checks.off_page || []).length +
-    (checks.svg_svg_overlap || []).length +
-    (checks.region_overflow || []).length;
+  (checks.clipped_artwork || []).length +
+  (checks.off_page || []).length +
+  (checks.svg_svg_overlap || []).length +
+  (checks.region_overflow || []).length;
 ```
 
 Four categories only. Scoring at line 453:
 
 ```javascript
 if (hardFailCount > 0) {
-    totalScore = 0;
+  totalScore = 0;
 }
 ```
 
@@ -65,14 +65,15 @@ if (hardFailCount > 0) {
 
 Extend hardFailCount to include two additional categories from artwork_integrity checks:
 
-| New category | Source | Severity | Description |
-| --- | --- | --- | --- |
-| clipped_by_parent | checks.artwork_integrity.clipped_by_parent | HARD_FAIL (always) | SVG img bbox clipped by ancestor with overflow != visible |
-| aspect_distorted_HF | checks.artwork_integrity.aspect_distorted filter by severity === 'HARD_FAIL' | HARD_FAIL for glassware/pipette/plate/instrument | Rendered aspect ratio differs from natural by >5% |
+| New category        | Source                                                                       | Severity                                         | Description                                               |
+| ------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------- |
+| clipped_by_parent   | checks.artwork_integrity.clipped_by_parent                                   | HARD_FAIL (always)                               | SVG img bbox clipped by ancestor with overflow != visible |
+| aspect_distorted_HF | checks.artwork_integrity.aspect_distorted filter by severity === 'HARD_FAIL' | HARD_FAIL for glassware/pipette/plate/instrument | Rendered aspect ratio differs from natural by >5%         |
 
 ### Phase 1 implementation approach
 
 Phase 1 is additive, low-risk:
+
 - Compute BOTH legacyHardFailCount (current 4) AND proposedHardFailCount (current 4 + 2 new)
 - Return both counts from computeSceneMetrics (lines 332-339)
 - Export hard_fails_legacy + hard_fails_extended alongside existing hard_fails
@@ -80,31 +81,34 @@ Phase 1 is additive, low-risk:
 - No change to returned totalScore or other metrics
 
 Phase 2 (later, user approval required):
+
 - hard_fails switches to use extendedHardFailCount
 - Scoring zeroing logic uses extendedHardFailCount > 0
 
 Phase 3 (later, user approval required):
+
 - Retire hard_fails_legacy field
 
 ## Dry-run results: Batch 1 (pre-Workstream-N)
 
 ### Summary stats
 
-| Metric | Value |
-| --- | --- |
-| Scene count | 110 |
-| Verdict changes (legacy 0 -> proposed >0) | 108 |
-| Verdict changes (%) | 98.2% |
-| Legacy median hard_fails | 0.0 |
-| Legacy mean hard_fails | 0.018 |
-| Proposed median hard_fails | 10.0 |
-| Proposed mean hard_fails | 10.94 |
+| Metric                                    | Value |
+| ----------------------------------------- | ----- |
+| Scene count                               | 110   |
+| Verdict changes (legacy 0 -> proposed >0) | 108   |
+| Verdict changes (%)                       | 98.2% |
+| Legacy median hard_fails                  | 0.0   |
+| Legacy mean hard_fails                    | 0.018 |
+| Proposed median hard_fails                | 10.0  |
+| Proposed mean hard_fails                  | 10.94 |
 
 ### Interpretation
 
 Batch 1 was the pre-Workstream-N baseline. Almost all scenes (108/110) had zero legacy hard fails but nonzero proposed hard fails, driven primarily by clipped_by_parent and aspect_distorted_HF violations.
 
 Top 5 scenes by proposed hard_fails:
+
 1. stress_many_bottles_scene_002: legacy=1, proposed=35, delta=34 (already failing legacy)
 2. stress_many_bottles_scene_001: legacy=1, proposed=33, delta=32 (already failing legacy)
 3. stress_dense_clutter_009: legacy=0, proposed=25, delta=25 (verdict change 0->FAIL)
@@ -112,6 +116,7 @@ Top 5 scenes by proposed hard_fails:
 5. stress_dense_clutter_001: legacy=0, proposed=23, delta=23 (verdict change 0->FAIL)
 
 Two scenes kept legacy hard_fails=1 (not affected by proposed extension):
+
 - stress_many_bottles_scene_001 (region_overflow)
 - stress_many_bottles_scene_002 (region_overflow)
 
@@ -119,15 +124,15 @@ Two scenes kept legacy hard_fails=1 (not affected by proposed extension):
 
 ### Summary stats
 
-| Metric | Value |
-| --- | --- |
-| Scene count | 110 |
-| Verdict changes (legacy 0 -> proposed >0) | 108 |
-| Verdict changes (%) | 98.2% |
-| Legacy median hard_fails | 0.0 |
-| Legacy mean hard_fails | 0.018 |
-| Proposed median hard_fails | 10.0 |
-| Proposed mean hard_fails | 10.92 |
+| Metric                                    | Value |
+| ----------------------------------------- | ----- |
+| Scene count                               | 110   |
+| Verdict changes (legacy 0 -> proposed >0) | 108   |
+| Verdict changes (%)                       | 98.2% |
+| Legacy median hard_fails                  | 0.0   |
+| Legacy mean hard_fails                    | 0.018 |
+| Proposed median hard_fails                | 10.0  |
+| Proposed mean hard_fails                  | 10.92 |
 
 ### CRITICAL FINDING: Mismatch with proposal expectation
 
@@ -175,11 +180,13 @@ This is the CRITICAL DISCREPANCY: the proposal expected Batch 2-N to have near-z
 VERDICT: NOT VISIBLE AS PROPOSED.
 
 Original claim (Workstream C proposal):
+
 - Workstream-N moved 108 scenes from "would-be zero" (hard-fail-zeroed state) to measured composition scores
 - N did not preserve scores, it LIFTED scenes into valid territory
 - N win would appear as: Batch 2-N canonical unchanged under Phase 1 (all extended = 0)
 
 Dry-run finding:
+
 - Batch 2-N canonical shows 108 scenes STILL with hard fails
 - Either: precheck data is stale, Workstream-N was not applied to batch2_n_canonical, or N did not achieve the intended fix
 - The "Workstream-N lifted 108 scenes" narrative cannot be verified from this precheck data
@@ -191,6 +198,7 @@ IMPLICATION: Phase 2 verdict (which depends on "Workstream-N succeeded") must be
 ### Can Phase 1 be implemented?
 
 YES. Phase 1 is purely additive:
+
 - No changes to scoring logic
 - No changes to returned totalScore
 - Only adds hard_fails_legacy + hard_fails_extended fields
@@ -200,6 +208,7 @@ YES. Phase 1 is purely additive:
 ### Is Phase 1 evidence complete?
 
 YES. The dry run provides:
+
 - Proof-of-concept hardFailCount extension logic
 - Before/after counts for all scenes in Batch 1 and Batch 2-N canonical
 - Per-scene breakdown showing which scenes are affected
@@ -243,12 +252,13 @@ If user approves Phase 1:
 - score_layout.mjs CHANGES only if user approves (Phase 1 implementation)
 - precheck.mjs unchanged
 - render_and_dump.mjs unchanged
-- No scorecard_*/ output dirs modified
+- No scorecard\_\*/ output dirs modified
 - Helper script clearly marked PROPOSAL ONLY
 
 ## Escalation path
 
 User decision required on:
+
 1. BLOCKING: Clarify Batch 2-N canonical state (Workstream-N impact)
 2. OPEN: Approve Phase 1 implementation (additive, safe)
 3. DEFERRED: Phase 2 verdict (depends on #1)

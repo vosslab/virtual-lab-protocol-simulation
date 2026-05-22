@@ -108,10 +108,10 @@ scene-side bounds it covers; it never declares clickable behavior on
 the background and never attaches state, capabilities, or
 `visual_states` to it.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `background.asset` | yes (if background present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file. |
-| `background.bounds` | no | Optional explicit bounds. Defaults to the scene's `scene_bounds`. |
+| Field               | Required                    | Purpose                                                                                   |
+| ------------------- | --------------------------- | ----------------------------------------------------------------------------------------- |
+| `background.asset`  | yes (if background present) | Asset id (image or SVG) used as the static backdrop. The asset library resolves the file. |
+| `background.bounds` | no                          | Optional explicit bounds. Defaults to the scene's `scene_bounds`.                         |
 
 ## Object-by-id placement
 
@@ -130,15 +130,15 @@ placement may not override object identity (`object_name`, `kind`,
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## The object side of
 the boundary".
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `placement.placement_name` | yes | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name. |
-| `placement.object_name` | yes | The name of the object in the object library. The object resolves identity, structure, state, rendering, and capabilities. |
-| `placement.zone` | yes | The [zone](#zones) this placement belongs to. |
-| `placement.depth_tier` | no | Numeric layering hint within the zone. |
-| `placement.align_stop` | no | One of `left`, `center`, `right`. Tab-stop group for the layout engine. |
-| `placement.baseline_override` | no | Per-instance baseline override. |
-| `placement.layout` | no | Instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
+| Field                         | Required | Purpose                                                                                                                                                                                                                                                  |
+| ----------------------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `placement.placement_name`    | yes      | Stable per-scene name for this placement. Distinct from `object_name`: a scene may place the same object more than once, and each placement needs its own scene-scoped name.                                                                             |
+| `placement.object_name`       | yes      | The name of the object in the object library. The object resolves identity, structure, state, rendering, and capabilities.                                                                                                                               |
+| `placement.zone`              | yes      | The [zone](#zones) this placement belongs to.                                                                                                                                                                                                            |
+| `placement.depth_tier`        | no       | Numeric layering hint within the zone.                                                                                                                                                                                                                   |
+| `placement.align_stop`        | no       | One of `left`, `center`, `right`. Tab-stop group for the layout engine.                                                                                                                                                                                  |
+| `placement.baseline_override` | no       | Per-instance baseline override.                                                                                                                                                                                                                          |
+| `placement.layout`            | no       | Instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
 
 Notes:
 
@@ -165,12 +165,12 @@ A zone is scene-side because it is a property of where things go, not
 of what any thing is. Zones do not carry identity, state, or
 rendering; they carry geometry and arrangement.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `zone.id` | yes | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`. |
-| `zone.bounds` | yes | Zone bounds inside the scene. The layout engine uses these to size and position the zone. |
-| `zone.align` | no | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
-| `zone.label` | no | Optional human-readable label for authoring and debugging. |
+| Field         | Required | Purpose                                                                                                                           |
+| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `zone.id`     | yes      | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`.                                               |
+| `zone.bounds` | yes      | Zone bounds inside the scene. The layout engine uses these to size and position the zone.                                         |
+| `zone.align`  | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
+| `zone.label`  | no       | Optional human-readable label for authoring and debugging.                                                                        |
 
 Schema detail belongs in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)
 "Zones".
@@ -179,18 +179,18 @@ Schema detail belongs in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)
 
 The scene declares the outer bounds of its own surface.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `scene_bounds` | yes | Outer bounds of the scene surface. Today's `sceneBounds`. |
+| Field          | Required | Purpose                                                   |
+| -------------- | -------- | --------------------------------------------------------- |
+| `scene_bounds` | yes      | Outer bounds of the scene surface. Today's `sceneBounds`. |
 
 ## Layout rules
 
 The scene declares scene-wide arrangement rules the layout engine
 consumes when arranging zones and placements.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `layout_rules` | no | Scene-wide arrangement rules (label sizing, offset hints, tab-stop budgets). |
+| Field          | Required | Purpose                                                                      |
+| -------------- | -------- | ---------------------------------------------------------------------------- |
+| `layout_rules` | no       | Scene-wide arrangement rules (label sizing, offset hints, tab-stop budgets). |
 
 `layout_rules` is intentionally narrow: it carries scene-wide hints
 the layout engine needs to resolve placements; it does not carry
@@ -207,19 +207,19 @@ clicks placements in an order the protocol rejects. It is a property
 of how this scene gives feedback, not of any one object's identity or
 state.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `wrong_order_message` | no | UI toast text for wrong-order interactions. |
+| Field                 | Required | Purpose                                     |
+| --------------------- | -------- | ------------------------------------------- |
+| `wrong_order_message` | no       | UI toast text for wrong-order interactions. |
 
 ## Scene identity
 
 The scene itself carries a small identity block. These fields name
 the scene and the workspace it targets; they are not object identity.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `scene_name` | yes | Stable scene name. |
-| `workspace` | yes | Workspace this scene targets. |
+| Field        | Required | Purpose                       |
+| ------------ | -------- | ----------------------------- |
+| `scene_name` | yes      | Stable scene name.            |
+| `workspace`  | yes      | Workspace this scene targets. |
 
 The `scene_name` value matches the directory name and YAML basename
 and is the key into the [scene registry](#scene-registry) and the
@@ -287,38 +287,38 @@ reference an object placed in a sibling scene of the same protocol
 without requiring a `SceneChange` back to that scene. No new
 author-facing YAML keys are introduced; the registry is derived
 runtime metadata. See
-[docs/archive/scene_adapter_recommendation.md](../archive/scene_adapter_recommendation.md)
+[scene_adapter_recommendation.md](../archive/scene_adapter_recommendation.md)
 for the design rationale (Option 2 analysis).
 
 ## Terms
 
-| term | one-line definition |
-| --- | --- |
-| scene | A self-contained interactive surface with one DOM root, one adapter, and one YAML config where static scene config exists. |
-| scene name | The stable string name for a scene; matches the directory name and YAML basename and is the key into `SCENE_CONFIGS` and the scene registry. |
-| adapter | The per-scene TypeScript object that owns `render` and `dispatchInteraction` for one scene name. |
-| placement | A scene-side entry that names an object by `object_name` and states where that object goes (zone, depth tier, align stop, optional layout overrides). |
-| placement name | The stable per-scene name for one placement; distinct from `object_name` because a scene may place the same object more than once. |
-| object name | The name of an object in the object library; the only handle the scene side uses to name an object. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md). |
-| background | The static backdrop asset declared on the scene; not interactive, carries no state. |
-| zone | A layout region declared by `zones[]` in scene YAML; placements reference zones by id. |
-| scene_bounds | Outer bounds of the scene surface. |
-| layout_rules | Scene-wide arrangement rules the layout engine consumes. |
-| layout engine | Shared placement system that positions object placements in zones. |
-| structured surface | An object with meaningful internal coordinates or subparts; the structure schema is object-side (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)). |
-| subpart | A visual or clickable element inside a structured surface; declared on the object, addressable via the object's `id_pattern`. |
-| workspace | A YAML-declared family label naming a scene's surface kind. Required by the scene YAML validator; advisory at runtime. |
-| item | The runtime name for a clickable DOM element rendered by the adapter and dispatched by `data-item-id`; in cleaned authoring, every item is the rendering of one [placement](#object-by-id-placement). |
-| wrong_order_message | A scene-side UI string shown when a learner clicks placements in an order the protocol rejects. |
-| instrument-overlay | The shared modal-slot DOM element used by instrument-style scenes; only one scene is visible in the slot at a time. |
-| module-load side effect | Top-level statement in an adapter or capability module that runs when the module is imported (registration, emitter pre-registration, listener attach, registry mutation). |
-| completion event | The string id passed to `triggerStep(stepId)` to signal that a step has completed; pre-registered via `registeredEmitters.add(...)`. |
-| render | The adapter's `render(ctx)` method; rebuilds the scene's DOM/SVG and rewires its listeners. |
-| dispatchInteraction | The adapter's `dispatchInteraction(itemId, ctx)` method; the fallback path the driver invokes when no capability claims a click. |
-| SceneContext | The runtime context object passed to capability and adapter methods; carries `sceneId` and a `dispatchInteraction(itemId)` callback. |
-| ClickTarget | The minimal `{itemId: string}` driver payload built from `data-item-id`; a low-level click-event shape, not the protocol `target` and not an object id. |
-| scene registry | The internal `SCENE_REGISTRY` map keyed by scene id; populated by `registerScene` calls at module load. |
-| capability registry | The `CAPABILITY_REGISTRY` map keyed by capability id; populated by `registerCapability` calls at module load. |
+| term                    | one-line definition                                                                                                                                                                                   |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| scene                   | A self-contained interactive surface with one DOM root, one adapter, and one YAML config where static scene config exists.                                                                            |
+| scene name              | The stable string name for a scene; matches the directory name and YAML basename and is the key into `SCENE_CONFIGS` and the scene registry.                                                          |
+| adapter                 | The per-scene TypeScript object that owns `render` and `dispatchInteraction` for one scene name.                                                                                                      |
+| placement               | A scene-side entry that names an object by `object_name` and states where that object goes (zone, depth tier, align stop, optional layout overrides).                                                 |
+| placement name          | The stable per-scene name for one placement; distinct from `object_name` because a scene may place the same object more than once.                                                                    |
+| object name             | The name of an object in the object library; the only handle the scene side uses to name an object. See [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md).                                                 |
+| background              | The static backdrop asset declared on the scene; not interactive, carries no state.                                                                                                                   |
+| zone                    | A layout region declared by `zones[]` in scene YAML; placements reference zones by id.                                                                                                                |
+| scene_bounds            | Outer bounds of the scene surface.                                                                                                                                                                    |
+| layout_rules            | Scene-wide arrangement rules the layout engine consumes.                                                                                                                                              |
+| layout engine           | Shared placement system that positions object placements in zones.                                                                                                                                    |
+| structured surface      | An object with meaningful internal coordinates or subparts; the structure schema is object-side (see [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md)).                                                   |
+| subpart                 | A visual or clickable element inside a structured surface; declared on the object, addressable via the object's `id_pattern`.                                                                         |
+| workspace               | A YAML-declared family label naming a scene's surface kind. Required by the scene YAML validator; advisory at runtime.                                                                                |
+| item                    | The runtime name for a clickable DOM element rendered by the adapter and dispatched by `data-item-id`; in cleaned authoring, every item is the rendering of one [placement](#object-by-id-placement). |
+| wrong_order_message     | A scene-side UI string shown when a learner clicks placements in an order the protocol rejects.                                                                                                       |
+| instrument-overlay      | The shared modal-slot DOM element used by instrument-style scenes; only one scene is visible in the slot at a time.                                                                                   |
+| module-load side effect | Top-level statement in an adapter or capability module that runs when the module is imported (registration, emitter pre-registration, listener attach, registry mutation).                            |
+| completion event        | The string id passed to `triggerStep(stepId)` to signal that a step has completed; pre-registered via `registeredEmitters.add(...)`.                                                                  |
+| render                  | The adapter's `render(ctx)` method; rebuilds the scene's DOM/SVG and rewires its listeners.                                                                                                           |
+| dispatchInteraction     | The adapter's `dispatchInteraction(itemId, ctx)` method; the fallback path the driver invokes when no capability claims a click.                                                                      |
+| SceneContext            | The runtime context object passed to capability and adapter methods; carries `sceneId` and a `dispatchInteraction(itemId)` callback.                                                                  |
+| ClickTarget             | The minimal `{itemId: string}` driver payload built from `data-item-id`; a low-level click-event shape, not the protocol `target` and not an object id.                                               |
+| scene registry          | The internal `SCENE_REGISTRY` map keyed by scene id; populated by `registerScene` calls at module load.                                                                                               |
+| capability registry     | The `CAPABILITY_REGISTRY` map keyed by capability id; populated by `registerCapability` calls at module load.                                                                                         |
 
 ## Term reference
 
@@ -337,7 +337,7 @@ YAML."
 The stable string name for a scene. It matches the directory name, the
 YAML basename, the adapter's `sceneId` field, the key in
 `generated/scene_data.ts` `SCENE_CONFIGS` (consumed via the
-[../../src/scene_configs.ts](../../src/scene_configs.ts) facade), and the key
+`scene_configs.ts` facade), and the key
 in the scene registry. The discoverer in
 [../../pipeline/build_scene_data.py](../../pipeline/build_scene_data.py) globs
 `src/scenes/<scene_name>/<scene_name>.yaml` to pick scenes up.
@@ -474,7 +474,7 @@ runs when the module is imported. Examples include
 `registeredEmitters.add(...)`, top-level `addEventListener` calls,
 and `window.*` test-API bindings. Module-load side effects only
 fire if the module is imported from
-[../../src/init.ts](../../src/init.ts) (directly or transitively); orphaning
+`init.ts` (directly or transitively); orphaning
 a module silently disables every side effect inside it. See the
 dedicated "Module-load side effects" section of
 [SCENE_ARCHITECTURE.md](SCENE_ARCHITECTURE.md) for the full list
@@ -486,7 +486,7 @@ The string id passed to `triggerStep(stepId)` to signal that a step
 has completed. Each completion-event id must be pre-registered via
 `registeredEmitters.add('<event>')` at module load so the protocol
 validator's coverage check (`validateCompletionEventCoverage` in
-[../../src/init.ts](../../src/init.ts)) can confirm every declared step has
+`init.ts`) can confirm every declared step has
 a matching emitter at startup. Missing emitters either throw
 (STRICT policy) or warn (RELAXED policy) depending on the protocol.
 The event-naming convention is on the protocol side;
@@ -546,7 +546,7 @@ The internal `SCENE_REGISTRY` map at
 `src/scenes/scene_registry.ts:38`. Keyed by scene id; values are
 `SceneAdapter` objects. Populated by `registerScene(adapter)` calls
 that run at module load when each scene file is imported from
-[../../src/init.ts](../../src/init.ts). Looked up via
+`init.ts`. Looked up via
 `getRegisteredScene(sceneId)`. Distinct from the
 [capability registry](#capability-registry).
 
@@ -557,11 +557,10 @@ The `CAPABILITY_REGISTRY` map at
 are `SceneCapability` objects. Populated by
 `registerCapability(capability)` calls that run at module load when
 each capability file is imported from
-[../../src/init.ts](../../src/init.ts). Read by `runScene(sceneId)` to mount
+`init.ts`. Read by `runScene(sceneId)` to mount
 the capabilities a scene declares.
 
 This is the runtime registry that maps a capability **id** to its
 implementation. It is distinct from the object-side `capabilities`
 list, which declares which affordances an object carries; see
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## Capabilities".
-

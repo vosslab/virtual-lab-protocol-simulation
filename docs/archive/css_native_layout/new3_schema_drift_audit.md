@@ -6,21 +6,21 @@
 
 ## Summary
 
-| Metric | Count |
-| --- | --- |
-| Total YAML files scanned | 201 |
-| Files with HARD violations | 8 |
-| Files with SOFT violations | 30 |
-| Total distinct HARD violation instances | 47 |
-| Total distinct SOFT violation instances | 51 |
-| Production protocol files with HARD violations | 0 |
-| `src/` frozen scenes with HARD violations | 8 (all frozen per `SRC_SCENES_FREEZE.md`) |
+| Metric                                         | Count                                     |
+| ---------------------------------------------- | ----------------------------------------- |
+| Total YAML files scanned                       | 201                                       |
+| Files with HARD violations                     | 8                                         |
+| Files with SOFT violations                     | 30                                        |
+| Total distinct HARD violation instances        | 47                                        |
+| Total distinct SOFT violation instances        | 51                                        |
+| Production protocol files with HARD violations | 0                                         |
+| `src/` frozen scenes with HARD violations      | 8 (all frozen per `SRC_SCENES_FREEZE.md`) |
 
 ## HARD violations
 
 HARD = coordinate-bearing fields (`x0`, `x1`, `baseline`, `gap`), identity-mixing fields (`svgAsset`, `kind`, `widthScale`, `anchorY`, `alignStop`) on placements, or fields explicitly forbidden by the spec.
 
-All 8 HARD-violation files are under `src/scenes/` (frozen legacy format per [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md)).
+All 8 HARD-violation files are under `src/scenes/` (frozen legacy format per `SRC_SCENES_FREEZE.md`).
 
 ### src/scenes/bench/bench.yaml
 
@@ -50,7 +50,7 @@ All 8 HARD-violation files are under `src/scenes/` (frozen legacy format per [do
 
 - root: `sceneId`, `items`, `wrongOrderMessage` -- HARD
 
-Critical context: all 6 `src/scenes/` files are governed by [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md). Frozen legacy pending migration. No production protocol YAML has HARD violations.
+Critical context: all 6 `src/scenes/` files are governed by `SRC_SCENES_FREEZE.md`. Frozen legacy pending migration. No production protocol YAML has HARD violations.
 
 ## SOFT violations
 
@@ -131,7 +131,7 @@ Not scene manifests. Domain-specific tooling vocabularies.
 
 None. All HARD violations confined to:
 
-- `src/scenes/` (6 files, all frozen per [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md))
+- `src/scenes/` (6 files, all frozen per `SRC_SCENES_FREEZE.md`)
 
 No file under `content/protocols/`, `content/base_scenes/` (excluding `_row_slot`), or `content/objects/` has a HARD coordinate-bearing violation.
 
@@ -142,7 +142,7 @@ All HARD live in `src/scenes/` which is explicitly frozen. Cleanup is migration,
 - `bench.yaml` + `cell_culture_hood.yaml`: migrate `x0`/`x1`/`baseline`/`gap` zone fields to `bounds: {left, right, top, bottom}`. Remove `svgAsset`, `kind`, `widthScale`, `anchorY`, `alignStop` from items (belong in object library). Rename camelCase root keys to snake_case.
 - `incubator`/`microscope`/`plate_reader`/`well_plate_workspace`: rename camelCase root keys to snake_case. Remove `elementId` (non-spec DOM override field).
 
-These migrations cannot proceed until [docs/active_plans/SRC_SCENES_FREEZE.md](SRC_SCENES_FREEZE.md) is resolved and a migration plan is approved.
+These migrations cannot proceed until `SRC_SCENES_FREEZE.md` is resolved and a migration plan is approved.
 
 ## Proposed closed schema
 

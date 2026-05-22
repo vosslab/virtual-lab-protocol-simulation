@@ -11,15 +11,15 @@ round overstepped and had to revert.
 Open these artifacts in order. Do not skip ahead; later artifacts depend on
 context from earlier ones.
 
-1. [../../experiments/css_native_layout/showcase/index.html](../../experiments/css_native_layout/showcase/index.html)
+1. `index.html`
    - The consolidated showcase entry point. Start here.
-2. [new0_new1_layout_rebuild_progress_report.pdf](new0_new1_layout_rebuild_progress_report.pdf)
+2. `new0_new1_layout_rebuild_progress_report.pdf`
    - 1.1 MB evidence PDF from the prior round. Provides baseline context.
 3. Lane A gallery contact sheet under
-   [../../experiments/css_native_layout/showcase/](../../experiments/css_native_layout/showcase/)
+   `showcase`
    - Static-evidence sheet of best scenes.
 4. Lane I pipeline diagram under
-   [../../experiments/css_native_layout/showcase/](../../experiments/css_native_layout/showcase/)
+   `showcase`
    - One-page mental model of the rebuild pipeline.
 
 ## 2. What screenshots matter most
@@ -113,4 +113,3 @@ Honest accounting of round mistakes. Reviewers deserve this section.
 - Workstream 1 was deferred because a cell-target workaround proved viable
   end-to-end without the forbidden-boundary edit. The workaround is not a
   permanent answer; the forbidden-boundary decision is still owed.
-

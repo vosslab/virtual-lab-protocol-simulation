@@ -19,9 +19,6 @@ fi
 echo "Installing npm dependencies..."
 npm install
 
-echo "Building initial dist/..."
-npm run build
-
 echo "Setup complete."
 echo "  npm run serve - start the dev server"
 echo "  npm run check - full gate (typecheck, lint, format-check, tests, build); pass --fast to skip build"

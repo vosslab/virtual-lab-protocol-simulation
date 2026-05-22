@@ -2,37 +2,37 @@ object_name: ddh2o_bottle
 kind: bottle
 label: ddH2O
 state_fields:
-- field_name: material_name
-  type: enum
-  allowed:
-  - empty
-  - ddh2o
-  default: empty
-  description: Contents currently in the bottle.
-- field_name: material_volume
-  type: float
-  unit: ml
-  min: 0
-  max: 500
-  default: 500
-  description: Volume of deionized water remaining, in milliliters.
+  - field_name: material_name
+    type: enum
+    allowed:
+      - empty
+      - ddh2o
+    default: empty
+    description: Contents currently in the bottle.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 500
+    default: 500
+    description: Volume of deionized water remaining, in milliliters.
 visual_states:
   material_name:
     kind: svg
     cases:
-    - when: empty
-      output:
-        asset_name: ddh2o_bottle
-    - when: ddh2o
-      output:
-        asset_name: ddh2o_bottle
+      - when: empty
+        output:
+          asset_name: ddh2o_bottle
+      - when: ddh2o
+        output:
+          asset_name: ddh2o_bottle
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=500)
 capabilities:
-- clickable
-- material_container
-- cursor_attachable
+  - clickable
+  - material_container
+  - cursor_attachable
 layout:
   default_width: 3
   label_width: 6

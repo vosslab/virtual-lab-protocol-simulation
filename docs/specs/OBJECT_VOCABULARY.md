@@ -57,11 +57,11 @@ For the asymmetric design across objects, protocols, and scenes, see
 Identity fields name the object and classify it. They are stable across
 scenes; a scene placement may not override them.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `object_name` | yes | Stable object name. Unique across the object library. The scene side names this object only by `object_name`. |
-| `kind` | yes | Coarse classification. Closed enum: `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration`. The eight values mirror today's `kind` sub-field; the inventory observed all eight in shipped scene YAML. |
-| `label` | yes | Required human-readable name. Object-owned; scene may not override. |
+| Field         | Required | Purpose                                                                                                                                                                                                                          |
+| ------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `object_name` | yes      | Stable object name. Unique across the object library. The scene side names this object only by `object_name`.                                                                                                                    |
+| `kind`        | yes      | Coarse classification. Closed enum: `plate`, `bottle`, `flask`, `pipette`, `rack`, `waste`, `equipment`, `decoration`. The eight values mirror today's `kind` sub-field; the inventory observed all eight in shipped scene YAML. |
+| `label`       | yes      | Required human-readable name. Object-owned; scene may not override.                                                                                                                                                              |
 
 `asset_name` (today's `items[]` sub-field) is **not** an identity field on
 the object. The object resolves an asset through `visual_states` from
@@ -85,15 +85,15 @@ The structure block is optional. An object with no structure block is a
 a structure block is a **structured surface**, and its subparts are
 first-class addressable units inside that object's namespace.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `structure.subpart_kind` | yes (if structure present) | What each subpart is (`well`, `tube`, `lane`, `slot`, `channel`). |
-| `structure.layout` | yes (if structure present) | One of `grid` or `list`. A grid declares rows and cols; a list declares an ordered count. |
-| `structure.rows` | grid only | Row count. |
-| `structure.cols` | grid only | Column count. |
-| `structure.count` | list only | Subpart count. |
-| `structure.name_pattern` | yes (if structure present) | How a subpart name is built from its row, col, or index. For example `{row_letter}{col}` for a 96-well plate (A1..H12); `slot_{index}` for a list-layout rack (slot_0..slot_n). |
-| `structure.subpart_state_fields` | no | A schema of state variables that every subpart carries. Same shape as the object-level `state_fields` schema, applied per subpart. |
+| Field                            | Required                   | Purpose                                                                                                                                                                         |
+| -------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `structure.subpart_kind`         | yes (if structure present) | What each subpart is (`well`, `tube`, `lane`, `slot`, `channel`).                                                                                                               |
+| `structure.layout`               | yes (if structure present) | One of `grid` or `list`. A grid declares rows and cols; a list declares an ordered count.                                                                                       |
+| `structure.rows`                 | grid only                  | Row count.                                                                                                                                                                      |
+| `structure.cols`                 | grid only                  | Column count.                                                                                                                                                                   |
+| `structure.count`                | list only                  | Subpart count.                                                                                                                                                                  |
+| `structure.name_pattern`         | yes (if structure present) | How a subpart name is built from its row, col, or index. For example `{row_letter}{col}` for a 96-well plate (A1..H12); `slot_{index}` for a list-layout rack (slot_0..slot_n). |
+| `structure.subpart_state_fields` | no                         | A schema of state variables that every subpart carries. Same shape as the object-level `state_fields` schema, applied per subpart.                                              |
 
 Subpart state is not a separate vocabulary. It is the same
 [`state_fields`](#state_fields) schema applied at subpart granularity.
@@ -134,13 +134,13 @@ flat fields per object (for example `material_name` plus `material_volume`
 for a well; `set_volume` for a pipette set-point).
 The runtime material-state model decomposes across these flat fields.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `field_name` | yes | Field name, snake_case, scoped to this object. |
-| `type` | yes | One of `enum`, `int`, `float`, `bool`. |
-| `default` | yes | Initial value. Required so an object's start state is never undefined. Must satisfy the per-type metadata below. |
-| `applies_to` | no | `object` (default) or `subpart`. When `subpart`, the field is declared per subpart instead of per object. Equivalent to listing the same field under `structure.subpart_state_fields`. |
-| `description` | no | One-line author-facing description. |
+| Field         | Required | Purpose                                                                                                                                                                                |
+| ------------- | -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `field_name`  | yes      | Field name, snake_case, scoped to this object.                                                                                                                                         |
+| `type`        | yes      | One of `enum`, `int`, `float`, `bool`.                                                                                                                                                 |
+| `default`     | yes      | Initial value. Required so an object's start state is never undefined. Must satisfy the per-type metadata below.                                                                       |
+| `applies_to`  | no       | `object` (default) or `subpart`. When `subpart`, the field is declared per subpart instead of per object. Equivalent to listing the same field under `structure.subpart_state_fields`. |
+| `description` | no       | One-line author-facing description.                                                                                                                                                    |
 
 ### Per-type constraint metadata
 
@@ -148,12 +148,12 @@ Constraint metadata is closed per primitive type. Only the
 keys listed below are allowed; an unknown metadata key is a build-time
 error. There is no open-ended `constraints` object.
 
-| Type | Allowed metadata keys |
-| --- | --- |
-| `enum` | `allowed` (non-empty list of strings, required), `default` (one value from `allowed`, required) |
-| `int` | `unit` (string), `min` (int), `max` (int), `step` (int), `default` (int, required) |
-| `float` | `unit` (string), `min` (float), `max` (float), `step` (float), `default` (float, required) |
-| `bool` | `default` (`true` or `false`, required) |
+| Type    | Allowed metadata keys                                                                           |
+| ------- | ----------------------------------------------------------------------------------------------- |
+| `enum`  | `allowed` (non-empty list of strings, required), `default` (one value from `allowed`, required) |
+| `int`   | `unit` (string), `min` (int), `max` (int), `step` (int), `default` (int, required)              |
+| `float` | `unit` (string), `min` (float), `max` (float), `step` (float), `default` (float, required)      |
+| `bool`  | `default` (`true` or `false`, required)                                                         |
 
 The `visual_states` entry for an `enum` field must cover every value in
 `allowed`. Numeric fields (`int`, `float`) are resolved through the
@@ -180,12 +180,12 @@ semantic.
 The `visual_states` is keyed by `state_field` name. For each named
 `state_field`, it maps state values to visual outputs.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `visual_states.<field>.kind` | yes | One of `svg`, `overlay`, `composite`. `svg` names a base SVG asset name. `overlay` names an SVG fragment composited over the base. `composite` is a list of any of the above. |
-| `visual_states.<field>.cases` | yes for `enum` / `bool` | One case per allowed value of the `state_field`. Each case has a `when` (the state value) and an output (asset_name, overlay_name, or composite list). |
-| `visual_states.<field>.formula` | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `material_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
-| `visual_states.<field>.applies_to` | no | `object` or `subpart`. When `subpart`, the `visual_states` applies per subpart (for example one fill per well). Default: `object`. |
+| Field                              | Required                | Purpose                                                                                                                                                                                                                                                                                                                                                                                              |
+| ---------------------------------- | ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `visual_states.<field>.kind`       | yes                     | One of `svg`, `overlay`, `composite`. `svg` names a base SVG asset name. `overlay` names an SVG fragment composited over the base. `composite` is a list of any of the above.                                                                                                                                                                                                                        |
+| `visual_states.<field>.cases`      | yes for `enum` / `bool` | One case per allowed value of the `state_field`. Each case has a `when` (the state value) and an output (asset_name, overlay_name, or composite list).                                                                                                                                                                                                                                               |
+| `visual_states.<field>.formula`    | yes for `int` / `float` | A declarative recipe drawn from the closed mini-language in [OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md) (for example "fill the container SVG to height proportional to `material_volume / capacity`"). For numeric fields where enumerating cases is impractical, the formula names the rendering rule; the runtime resolves it. The token set is closed; per-object formula code is not allowed. |
+| `visual_states.<field>.applies_to` | no                      | `object` or `subpart`. When `subpart`, the `visual_states` applies per subpart (for example one fill per well). Default: `object`.                                                                                                                                                                                                                                                                   |
 
 Rules:
 
@@ -240,8 +240,8 @@ and a protocol may attempt against this object. The inventory observed
 files; in the cleaned vocabulary it moves to the object (a capability
 is a property of what the thing is, not where it is placed).
 
-| Field | Required | Purpose |
-| --- | --- | --- |
+| Field          | Required           | Purpose                         |
+| -------------- | ------------------ | ------------------------------- |
 | `capabilities` | yes (may be empty) | Closed list of affordance tags. |
 
 The capability vocabulary is a closed list owned by this doc. An object
@@ -249,14 +249,14 @@ may not invent capabilities, and there are no open-ended capability
 objects. Adding a capability value requires an explicit edit to this
 vocabulary. The closed list is:
 
-| Capability | Meaning |
-| --- | --- |
-| `clickable` | The object accepts a `click` gesture (per the `gesture` set in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). An object that is not `clickable` is never clickable, regardless of placement. |
-| `material_container` | The object holds tracked material; expects flat `state_fields` such as `material_name` and `material_volume` and a visual rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
-| `instrument_with_setpoint` | The object exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture from the protocol side. |
-| `structured_surface` | The object has a `structure` block with subparts. Every plate, gel, rack, and multichannel pipette carries this capability. |
-| `cursor_attachable` | The object may be attached to the cursor by a `CursorAttach` `scene_operation`. Tools that the learner picks up and carries (a serological pipette, a transfer pipette) carry this capability. |
-| `decoration_only` | The object is rendered as a static visual and accepts no gestures and no state mutation. Mutually exclusive with every other capability above. |
+| Capability                 | Meaning                                                                                                                                                                                                     |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `clickable`                | The object accepts a `click` gesture (per the `gesture` set in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md)). An object that is not `clickable` is never clickable, regardless of placement.            |
+| `material_container`       | The object holds tracked material; expects flat `state_fields` such as `material_name` and `material_volume` and a visual rule for them. Used by every container (bottle, flask, pipette, well-as-subpart). |
+| `instrument_with_setpoint` | The object exposes one or more numeric set-point `state_fields` (typically `float` with `unit`, `min`, `max`); expects an `adjust` gesture from the protocol side.                                          |
+| `structured_surface`       | The object has a `structure` block with subparts. Every plate, gel, rack, and multichannel pipette carries this capability.                                                                                 |
+| `cursor_attachable`        | The object may be attached to the cursor by a `CursorAttach` `scene_operation`. Tools that the learner picks up and carries (a serological pipette, a transfer pipette) carry this capability.              |
+| `decoration_only`          | The object is rendered as a static visual and accepts no gestures and no state mutation. Mutually exclusive with every other capability above.                                                              |
 
 `decoration_only` is mutually exclusive with `clickable`,
 `material_container`, `instrument_with_setpoint`, `structured_surface`,
@@ -274,13 +274,13 @@ the object. They are visual metrics of the object itself, not of any
 one scene. A scene placement may override layout hints only; this is
 the only override category.
 
-| Field | Required | Purpose |
-| --- | --- | --- |
-| `layout.default_width` | yes | Default visual width in layout units. |
-| `layout.label_width` | no | Width budget for the label. |
-| `layout.anchor_y_offset` | no | Vertical anchor adjustment; observed on pipette assets. |
-| `layout.width_scale` | no | Per-object width multiplier; observed mainly on equipment. |
-| `layout.anchor_y` | no | One of `bottom` or `tip`. A serological pipette is anchored at its tip wherever it is placed. A scene may override. |
+| Field                    | Required | Purpose                                                                                                             |
+| ------------------------ | -------- | ------------------------------------------------------------------------------------------------------------------- |
+| `layout.default_width`   | yes      | Default visual width in layout units.                                                                               |
+| `layout.label_width`     | no       | Width budget for the label.                                                                                         |
+| `layout.anchor_y_offset` | no       | Vertical anchor adjustment; observed on pipette assets.                                                             |
+| `layout.width_scale`     | no       | Per-object width multiplier; observed mainly on equipment.                                                          |
+| `layout.anchor_y`        | no       | One of `bottom` or `tip`. A serological pipette is anchored at its tip wherever it is placed. A scene may override. |
 
 ## Object ownership of SVG manipulation
 
@@ -303,9 +303,9 @@ This rule is binding on:
   `int`, `float`, or `bool`). Nested writes are not allowed. The
   validator rejects unknown field names and type-mismatched values.
   Example payload (well at A1 receives 100 ul of PBS): `state: {
-  material_name: pbs, material_volume: 100 }`. The
+material_name: pbs, material_volume: 100 }`. The
   earlier nested form `state: { held_liquid: { reagent: pbs, volume:
-  100 } }` is not valid.
+100 } }` is not valid.
 
 ## The object side of the boundary
 
@@ -352,7 +352,7 @@ structure:
   layout: grid
   rows: 8
   cols: 12
-  name_pattern: "{row_letter}{col}"   # A1..H12; row_letter is A..H, col is 1..12
+  name_pattern: "{row_letter}{col}" # A1..H12; row_letter is A..H, col is 1..12
 
 state_fields:
   - field_name: material_name
@@ -467,7 +467,8 @@ visual_states:
     kind: composite
     formula: fill_height(state(held_material_volume), capacity_ml=25.0)
 
-capabilities: [clickable, material_container, instrument_with_setpoint, cursor_attachable]
+capabilities:
+  [clickable, material_container, instrument_with_setpoint, cursor_attachable]
 
 layout:
   default_width: 3
@@ -489,19 +490,17 @@ serological pipette is tip-anchored wherever it is placed.
 
 ## Terms
 
-| Term | One-line definition |
-| --- | --- |
-| object | The unit of authoring for "what a thing is"; one identity, one structure, one schema of state, one visual_states map, one capability set, one set of layout hints. |
-| object library | The collection of object definitions a scene references by `object_name`; the home of every object-identity slot. |
-| object_name | The stable string name for an object; the only handle the scene side names. |
-| material | Anything physically present in, on, produced by, removed from, or transferred between objects (reagent, waste, old media, cells, mixture, suspension, diluted drug). Authored in `materials.yaml`. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md). |
-| flat object | An object with no `structure` block; no subparts. |
-| structured surface | An object with a `structure` block declaring addressable subparts. |
-| subpart | An addressable internal unit of a structured surface (a `well`, `tube`, `lane`, `slot`, `channel`). |
-| `state_field` | One declared, typed flat-primitive state variable on an object or per subpart; the contract between the protocol and the object. |
-| `visual_states` | The object's state-to-visual function; resolves a `state_field` value to an SVG asset name, overlay name, or composite. |
-| capability | A closed-vocabulary affordance tag declared on the object: `clickable`, `material_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`. |
-| layout hint | An object-default visual metric the layout engine consumes (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). |
-| `ObjectStateChange` | The protocol-level primitive that mutates declared `state_fields` on an object; defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). |
-
-
+| Term                | One-line definition                                                                                                                                                                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| object              | The unit of authoring for "what a thing is"; one identity, one structure, one schema of state, one visual_states map, one capability set, one set of layout hints.                                                                                       |
+| object library      | The collection of object definitions a scene references by `object_name`; the home of every object-identity slot.                                                                                                                                        |
+| object_name         | The stable string name for an object; the only handle the scene side names.                                                                                                                                                                              |
+| material            | Anything physically present in, on, produced by, removed from, or transferred between objects (reagent, waste, old media, cells, mixture, suspension, diluted drug). Authored in `materials.yaml`. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md). |
+| flat object         | An object with no `structure` block; no subparts.                                                                                                                                                                                                        |
+| structured surface  | An object with a `structure` block declaring addressable subparts.                                                                                                                                                                                       |
+| subpart             | An addressable internal unit of a structured surface (a `well`, `tube`, `lane`, `slot`, `channel`).                                                                                                                                                      |
+| `state_field`       | One declared, typed flat-primitive state variable on an object or per subpart; the contract between the protocol and the object.                                                                                                                         |
+| `visual_states`     | The object's state-to-visual function; resolves a `state_field` value to an SVG asset name, overlay name, or composite.                                                                                                                                  |
+| capability          | A closed-vocabulary affordance tag declared on the object: `clickable`, `material_container`, `instrument_with_setpoint`, `structured_surface`, `cursor_attachable`, `decoration_only`.                                                                  |
+| layout hint         | An object-default visual metric the layout engine consumes (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`).                                                                                                               |
+| `ObjectStateChange` | The protocol-level primitive that mutates declared `state_fields` on an object; defined in [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).                                                                                                             |

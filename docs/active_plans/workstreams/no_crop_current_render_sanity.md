@@ -17,7 +17,7 @@ reconciles them against the Round 2 baseline.
 
 ## Round 2 reference (recap)
 
-From [docs/active_plans/no_cropped_svg_round2_visual_acceptance_report.md](../no_cropped_svg_round2_visual_acceptance_report.md):
+From `no_cropped_svg_round2_visual_acceptance_report.md`:
 
 - Round 2 templates baseline: 28 visible crops (10 production templates).
 - Round 2 gold scenes baseline: 73 visible crops (10 gold reference scenes).
@@ -29,11 +29,11 @@ overflow"). Same metric used below.
 
 ## Render-path inventory (3 paths)
 
-| Path                | Availability at HEAD 8795d25 | Source                                                                                   |
-| ---                 | ---                          | ---                                                                                      |
-| Production runtime  | UNRESOLVED                   | `dist/` absent in working tree; `pipeline/build_runtime_bundle.sh` not exercised in WS-G |
-| Static template     | AVAILABLE                    | `experiments/css_native_layout/templates/*.html` (10 tracked HTML files)                 |
-| Stress static-HTML  | FROZEN (artifacts only)      | `experiments/css_native_layout/stress_scenes/rendered/gold_*.html` (generator MISSING)   |
+| Path               | Availability at HEAD 8795d25 | Source                                                                                   |
+| ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------- |
+| Production runtime | UNRESOLVED                   | `dist/` absent in working tree; `pipeline/build_runtime_bundle.sh` not exercised in WS-G |
+| Static template    | AVAILABLE                    | `experiments/css_native_layout/templates/*.html` (10 tracked HTML files)                 |
+| Stress static-HTML | FROZEN (artifacts only)      | `experiments/css_native_layout/stress_scenes/rendered/gold_*.html` (generator MISSING)   |
 
 Stress static-HTML notes: `render_stress_to_html.py` is not present in the
 working tree (confirmed: `find experiments/css_native_layout -name 'render_stress*'`
@@ -58,37 +58,37 @@ Metric column key:
 
 ### Static template path (10 scenes)
 
-| Scene                            | Render path     | sub_e clipped | off_page | Round 2 | Delta |
-| ---                              | ---             | ---           | ---      | ---     | ---   |
-| bench_basic                      | static template | 2             | 1        | 1       | +1    |
-| cell_counter_basic               | static template | 1             | 1        | 1       | 0     |
-| crowded_bench_dense              | static template | 6             | 3        | 4       | +2    |
-| drug_dilution_plate_workspace    | static template | 5             | 2        | 3       | +2    |
-| drug_dilution_workspace_dense    | static template | 8             | 4        | 4       | +4    |
-| electrophoresis_bench            | static template | 12            | 6        | 7       | +5    |
-| hood_basic                       | static template | 0             | 0        | 1       | -1    |
-| microscope_basic                 | static template | 1             | 1        | 1       | 0     |
-| staining_bench                   | static template | 6             | 2        | 6       | 0     |
-| well_plate_96_zoom               | static template | 0             | 0        | 0       | 0     |
-| **TOTAL templates**              | static template | **41**        | **20**   | **28**  | **+13** |
+| Scene                         | Render path     | sub_e clipped | off_page | Round 2 | Delta   |
+| ----------------------------- | --------------- | ------------- | -------- | ------- | ------- |
+| bench_basic                   | static template | 2             | 1        | 1       | +1      |
+| cell_counter_basic            | static template | 1             | 1        | 1       | 0       |
+| crowded_bench_dense           | static template | 6             | 3        | 4       | +2      |
+| drug_dilution_plate_workspace | static template | 5             | 2        | 3       | +2      |
+| drug_dilution_workspace_dense | static template | 8             | 4        | 4       | +4      |
+| electrophoresis_bench         | static template | 12            | 6        | 7       | +5      |
+| hood_basic                    | static template | 0             | 0        | 1       | -1      |
+| microscope_basic              | static template | 1             | 1        | 1       | 0       |
+| staining_bench                | static template | 6             | 2        | 6       | 0       |
+| well_plate_96_zoom            | static template | 0             | 0        | 0       | 0       |
+| **TOTAL templates**           | static template | **41**        | **20**   | **28**  | **+13** |
 
 ### Stress static-HTML path (10 gold scenes)
 
 Frozen rendered HTML; precheck was re-run against these existing files.
 
-| Scene                                 | Render path        | sub_e clipped | off_page | Round 2 | Delta |
-| ---                                   | ---                | ---           | ---      | ---     | ---   |
-| gold_cell_counter_station             | stress static-HTML | 7             | 4        | 6       | +1    |
-| gold_drug_dilution_workspace          | stress static-HTML | 8             | 4        | 7       | +1    |
-| gold_electrophoresis_full_setup       | stress static-HTML | 11            | 5        | 10      | +1    |
-| gold_heat_block_sample_prep           | stress static-HTML | 11            | 2        | 11      | 0     |
-| gold_hood_prep                        | stress static-HTML | 6             | 3        | 6       | 0     |
-| gold_microscope_slide_prep            | stress static-HTML | 9             | 4        | 9       | 0     |
-| gold_mixed_bench                      | stress static-HTML | 9             | 4        | 7       | +2    |
-| gold_plate_reader_assay               | stress static-HTML | 6             | 5        | 6       | 0     |
-| gold_staining_bench                   | stress static-HTML | 10            | 3        | 10      | 0     |
-| gold_well_plate_96_zoom_with_state    | stress static-HTML | 1             | 0        | 1       | 0     |
-| **TOTAL gold**                        | stress static-HTML | **78**        | **34**   | **73**  | **+5**  |
+| Scene                              | Render path        | sub_e clipped | off_page | Round 2 | Delta  |
+| ---------------------------------- | ------------------ | ------------- | -------- | ------- | ------ |
+| gold_cell_counter_station          | stress static-HTML | 7             | 4        | 6       | +1     |
+| gold_drug_dilution_workspace       | stress static-HTML | 8             | 4        | 7       | +1     |
+| gold_electrophoresis_full_setup    | stress static-HTML | 11            | 5        | 10      | +1     |
+| gold_heat_block_sample_prep        | stress static-HTML | 11            | 2        | 11      | 0      |
+| gold_hood_prep                     | stress static-HTML | 6             | 3        | 6       | 0      |
+| gold_microscope_slide_prep         | stress static-HTML | 9             | 4        | 9       | 0      |
+| gold_mixed_bench                   | stress static-HTML | 9             | 4        | 7       | +2     |
+| gold_plate_reader_assay            | stress static-HTML | 6             | 5        | 6       | 0      |
+| gold_staining_bench                | stress static-HTML | 10            | 3        | 10      | 0      |
+| gold_well_plate_96_zoom_with_state | stress static-HTML | 1             | 0        | 1       | 0      |
+| **TOTAL gold**                     | stress static-HTML | **78**        | **34**   | **73**  | **+5** |
 
 ### Production runtime path
 
@@ -100,11 +100,11 @@ precheck. WS-G did not exercise this path; flagged to follow-up workstream.
 
 ## Combined 20-scene subset crop count
 
-| Scope                     | Today | Round 2 | Delta |
-| ---                       | ---   | ---     | ---   |
-| Templates (10)            | 41    | 28      | +13   |
-| Gold scenes (10)          | 78    | 73      | +5    |
-| **Combined (20-scene)**   | **119** | **101** | **+18** |
+| Scope                   | Today   | Round 2 | Delta   |
+| ----------------------- | ------- | ------- | ------- |
+| Templates (10)          | 41      | 28      | +13     |
+| Gold scenes (10)        | 78      | 73      | +5      |
+| **Combined (20-scene)** | **119** | **101** | **+18** |
 
 The combined corpus is 18 visible crops higher than Round 2. Drift is
 concentrated in template scenes (template delta +13 vs gold delta +5).
