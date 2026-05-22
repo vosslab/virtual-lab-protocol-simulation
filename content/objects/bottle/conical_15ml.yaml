@@ -26,16 +26,16 @@ visual_states:
     cases:
     - when: empty
       output:
-        asset_name: conical_15ml
+        asset_name: falcon_15ml
     - when: cells
       output:
-        asset_name: conical_15ml
+        asset_name: falcon_15ml
     - when: media
       output:
-        asset_name: conical_15ml
+        asset_name: falcon_15ml
     - when: trypsin
       output:
-        asset_name: conical_15ml
+        asset_name: falcon_15ml
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=15)

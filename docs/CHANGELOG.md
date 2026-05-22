@@ -2,12 +2,41 @@
 
 ## 2026-05-21
 
+### Additions and New Features
+
+- **M1 no-crop reconciliation bundle: 6 new workstream artifacts added under `docs/active_plans/workstreams/`.**
+  - [docs/active_plans/workstreams/no_crop_current_render_sanity.md](active_plans/workstreams/no_crop_current_render_sanity.md): WS-G re-baseline of current-render no-crop metrics tied to HEAD 8795d25.
+  - [docs/active_plans/workstreams/no_crop_render_harness_audit.md](active_plans/workstreams/no_crop_render_harness_audit.md): WS-D audit of the three render paths the no-crop work depends on (footprint class assignment, YAML consumption).
+  - [docs/active_plans/workstreams/no_crop_missing_asset_audit.md](active_plans/workstreams/no_crop_missing_asset_audit.md): WS-C re-execution that re-derives missing-asset state from current filesystem and `git ls-files`.
+  - [docs/active_plans/workstreams/no_crop_round3_static_template_repair_report.md](active_plans/workstreams/no_crop_round3_static_template_repair_report.md): WS-A retry comparing Strategies A, B, C and hybrid against the static-template baseline.
+  - [docs/active_plans/workstreams/no_crop_footprint_vocab_proposal.md](active_plans/workstreams/no_crop_footprint_vocab_proposal.md): WS-E proposal naming candidate `footprint--*` classes, capped at 4 permanent additions.
+  - [docs/active_plans/workstreams/no_crop_round3_plan.md](active_plans/workstreams/no_crop_round3_plan.md): WS-F synthesis tying the M1 deliverables into a priority-ordered Round 3 experiment list.
+
+### Behavior or Interface Changes
+
+- New accepted no-crop baseline: 119 visible crops (41 templates + 78 gold) tied to HEAD 8795d25, supersedes the Round 2 historical 101 (28 + 73) figure.
+
 ### Fixes and Maintenance
 
 - **Status report correction workstream: 7 audit passes applied to CSS-native layout manager status report.**
   Workstreams A-G completed: (A) evidence currency legend added with [CURRENT], [HISTORICAL], [STRESS-ONLY], [PROPOSAL], [SUPERSEDED] tags applied throughout; (B) file path verification pass corrected stale paths (well_plate_96_zoom moved to src/scenes/well_plate_96_zoom/); (C) no-crop hard rule restructured to separate current diagnostics from intended rule from Phase 1 proposal; (D) production-readiness language softened ("runtime integration is promising" replaces "approaching production maturity"); (E) screenshot captions revised with evidence tags [demo-only], [stress-evidence], [historical] to avoid pedagogy quality implications; (F) reproduction commands verified with expected output and known issues noted; (G) correction appendix added documenting stale data caveats, divergences (stress vs. static-HTML), hardFailCount gap, accepted commit baseline (4e2c709), and pending Batch 6 decisions.
   
   Artifacts revised: markdown source (`docs/active_plans/current_css_native_layout_manager_status_report.md`), regenerated HTML summary (`docs/active_plans/current_css_native_layout_manager_status_report.html`), regenerated PDF (`docs/active_plans/current_css_native_layout_manager_status_report.pdf`).
+
+### Removals and Deprecations
+
+- Round 2 "0 crops" subset claims marked superseded; the accepted no-crop baseline is now anchored to scope plus current screenshots per WS-G (re-baseline) rather than the prior subset figure.
+
+### Decisions and Failures
+
+- Pre-M1 git reset wiped initial WS-A, WS-B, WS-G, WS-C, WS-D, WS-E, and WS-F deliverables; the redo was dispatched in this session against HEAD 8795d25. WS-A history and WS-B scope-table were not redone; Round 2 references in `docs/active_plans/` root are used transitively.
+- WS-D found that zero render paths consume the `kind_to_footprint` YAML; `render_stress_to_html.py` is MISSING from the working tree and was never git-tracked.
+- WS-A Round 3 experiment outcome: Strategy C (object containment via `overflow: visible`) wins decisively against Strategies A, B, and the hybrid; it is queued as the reversible first Round 3 experiment (Exp 1).
+- WS-E permanent footprint vocabulary cap is 4, with 3 proposed permanent classes plus 1 experiment-only candidate; adoption is user-gated and blocked on WS-D Recovery Option 2.
+
+### Developer Tests and Notes
+
+- precheck baseline screenshots are tied to the current HEAD at `test-results/no_crop_fresh_manager_sanity/`.
 
 ---
 

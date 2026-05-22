@@ -100,12 +100,13 @@ body {
 }
 
 /* Work surface: single row, no wrap (vertical stack via order) */
+/* Round 3 WS-A hybrid: allow overflow visible so work_surface region does
+ * not crop artwork; viewport remains the outer clip. */
 .region--work_surface {
 	flex-wrap: nowrap;
 	flex-direction: column;
 	min-height: 120px;
-	max-height: 100%;
-	overflow: hidden;
+	overflow: visible;
 	justify-content: flex-end;
 }
 
@@ -146,14 +147,17 @@ body {
 }
 
 /* Placement (individual object) */
+/* Round 3 WS-A hybrid: Strategy C dominant lever. Remove placement
+ * overflow:hidden and max-height:100% so SVG artwork is never cropped by the
+ * placement box. The viewport (scene-container overflow:auto) remains the
+ * outer clip boundary; off_page captures genuine viewport exits. */
 .placement {
 	flex-shrink: 1;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
 	align-items: center;
-	max-height: 100%;
-	overflow: hidden;
+	overflow: visible;
 }
 
 /* Zoom detail scene: placement fills available space */

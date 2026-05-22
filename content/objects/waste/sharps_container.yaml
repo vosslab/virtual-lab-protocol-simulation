@@ -22,10 +22,10 @@ visual_states:
     cases:
     - when: empty
       output:
-        asset_name: sharps_container
+        asset_name: waste_container
     - when: sharps
       output:
-        asset_name: sharps_container
+        asset_name: waste_container
   material_volume:
     kind: composite
     composite: []
