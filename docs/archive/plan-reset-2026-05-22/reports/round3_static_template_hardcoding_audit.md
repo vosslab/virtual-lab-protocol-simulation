@@ -186,7 +186,7 @@ static templates as showcase-only and exclude them from acceptance gating.
 
 ## Related references
 
-- [PRIMARY_CONTRACT.md](../../PRIMARY_CONTRACT.md): "Scientific SVG assets must never be cropped" rule.
-- [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md): visual-integrity section.
-- [PRIMARY_SPEC.md](../../PRIMARY_SPEC.md): scene-vocabulary boundary and
+- PRIMARY_CONTRACT.md: "Scientific SVG assets must never be cropped" rule.
+- PRIMARY_DESIGN.md: visual-integrity section.
+- PRIMARY_SPEC.md: scene-vocabulary boundary and
   layout-engine ownership of placement.

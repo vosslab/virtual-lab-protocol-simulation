@@ -10,10 +10,10 @@ applies a single renderer-level clamp and re-captures the four mounted scenes.
 Author-declared label sizing is read in scene-coordinate units (scenes use a
 roughly 0-100 viewport) and is currently set per-scene via `layout_rules.label_font_size`.
 
-- [bench_basic.yaml](../../../content/base_scenes/bench_basic.yaml) (line 67) declares `label_font_size: 9` (9 scene units; at a 1280px-wide viewport that resolves to roughly 115px-tall glyphs).
-- [adapter.ts](../../../src/scene_runtime/layout/adapter.ts) (lines 203-204) extracts `label_font_size` from `scene.layout_rules` and defaults to `DEFAULT_LABEL_FONT_SIZE = 14`.
-- [layout_engine.ts](../../../src/scene_runtime/layout/layout_engine.ts) (line 633) populates per-placement `labelLines` with word-wrapped or truncated text.
-- [scene.ts](../../../src/scene_runtime/render/scene.ts) (lines 345-381) renders each label as an SVG `<text>` element with `font-size` taken from `layoutRules.labelFontSize`, multi-line via `<tspan>`, anchored at `layout.labelX` / `layout.labelY` above each placement. No prior clamp existed at this layer.
+- bench_basic.yaml (line 67) declares `label_font_size: 9` (9 scene units; at a 1280px-wide viewport that resolves to roughly 115px-tall glyphs).
+- adapter.ts (lines 203-204) extracts `label_font_size` from `scene.layout_rules` and defaults to `DEFAULT_LABEL_FONT_SIZE = 14`.
+- layout_engine.ts (line 633) populates per-placement `labelLines` with word-wrapped or truncated text.
+- scene.ts (lines 345-381) renders each label as an SVG `<text>` element with `font-size` taken from `layoutRules.labelFontSize`, multi-line via `<tspan>`, anchored at `layout.labelX` / `layout.labelY` above each placement. No prior clamp existed at this layer.
 
 ## Per-scene label issues observed
 
@@ -49,7 +49,7 @@ Properties:
 ## Applied? y
 
 Applied as a one-line clamp in
-[src/scene_runtime/render/scene.ts](../../../src/scene_runtime/render/scene.ts)
+src/scene_runtime/render/scene.ts
 around the label `font-size` calculation. Comment in the source cross-references
 this report.
 

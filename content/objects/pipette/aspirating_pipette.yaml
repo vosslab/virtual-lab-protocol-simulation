@@ -35,7 +35,7 @@ visual_states:
 capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
-  default_width: 3
+  default_width: 0.8
   label_width: 7
   anchor_y: tip
   anchor_y_offset: 0

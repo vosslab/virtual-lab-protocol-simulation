@@ -1,0 +1,203 @@
+/* Print stylesheet for the strategy doc.
+ * Forces backgrounds, stacks the YAML+preview block, paginates by stage,
+ * and replaces the editable <textarea> with a <pre> (swapped at print-prep time).
+ */
+
+@page {
+  size: letter landscape;
+  margin: 0.45in;
+}
+
+@media print {
+  /* Force colors */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  html, body { background: #FFFFFF !important; }
+
+  .page {
+    max-width: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Hide interactive controls */
+  .ghost-btn,
+  .overlay-toggles,
+  .yaml-actions .ghost-btn { display: none !important; }
+  .yaml-actions .status { float: right; }
+
+  /* Hero - keep tight, fit on first page */
+  .hero {
+    padding: 0 0 18px !important;
+    margin-bottom: 16px !important;
+  }
+  .hero h1 { font-size: 38px !important; margin-bottom: 12px !important; }
+  .hero-sub { font-size: 13px !important; max-width: none !important; }
+  .hero-kicker { margin-bottom: 8px !important; }
+
+  /* Pipeline diagram - wrap to two rows if needed */
+  .pipe-diagram {
+    overflow: visible !important;
+    flex-wrap: wrap !important;
+    padding: 10px 14px !important;
+    margin: 14px 0 22px !important;
+    break-inside: avoid;
+  }
+  .pipe-arrow { display: none !important; }
+  .pipe-step {
+    flex: 0 0 22% !important;
+    min-width: 0 !important;
+    padding: 4px 8px !important;
+    border-right: 1px solid var(--rule-soft);
+  }
+  .pipe-step:nth-child(8n+1),
+  .pipe-step:nth-child(8n+3),
+  .pipe-step:nth-child(8n+5),
+  .pipe-step:nth-child(8n+7) { /* every other entry in the source (steps only) */ }
+  .pipe-t { font-size: 13px !important; }
+  .pipe-d { font-size: 10.5px !important; }
+
+  /* Section dividers */
+  .section-divider {
+    margin: 14px 0 8px !important;
+    padding-top: 12px !important;
+    border-top: 1px solid var(--rule);
+    break-inside: avoid;
+  }
+  .sd-title { font-size: 22px !important; }
+  .sd-sub { font-size: 12px !important; }
+
+  /* YAML+preview block - stack on print */
+  .yaml-block {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    margin-bottom: 18px !important;
+    break-inside: avoid-page;
+  }
+  .yaml-col, .preview-col {
+    border-radius: 4px;
+    break-inside: avoid;
+  }
+  .yaml-toolbar, .preview-title {
+    padding: 6px 12px !important;
+    font-size: 10.5px !important;
+  }
+
+  /* Swap textarea for static <pre> at print time (set by inline JS) */
+  .yaml-edit { display: none !important; }
+  .yaml-edit-print {
+    display: block !important;
+    margin: 0;
+    padding: 12px 14px !important;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10.5px !important;
+    line-height: 1.45 !important;
+    background: #FCFAF1 !important;
+    color: var(--ink);
+    white-space: pre-wrap;
+    word-break: break-word;
+    border: 0;
+  }
+  .yaml-err { display: none !important; }
+
+  /* Each stage on its own page */
+  .stage-row {
+    break-before: page;
+    break-inside: avoid;
+    page-break-before: always;     /* legacy property - Safari/older Chromium */
+    page-break-inside: avoid;
+    padding: 14px 0 8px !important;
+    border-top: 0 !important;
+    grid-template-columns: 60px 1fr !important;
+    gap: 14px !important;
+  }
+  .stage-num {
+    font-size: 36px !important;
+    padding-top: 0 !important;
+  }
+  .stage-head h2 { font-size: 22px !important; }
+  .stage-head .kicker { margin-bottom: 4px !important; }
+  .stage-body { padding-top: 12px !important; }
+
+  /* Stage grid - keep two columns where the page is wide enough */
+  .stage-grid {
+    grid-template-columns: 5fr 7fr !important;
+    gap: 18px !important;
+    align-items: start;
+  }
+  .stage-text { font-size: 12px !important; line-height: 1.5 !important; }
+  .stage-text p { margin-bottom: 8px !important; }
+  .stage-text li { margin-bottom: 4px !important; }
+  .stage-text pre.mono.small { font-size: 10.5px !important; padding: 6px 10px !important; }
+
+  /* Stage viz cards */
+  .stage-viz { break-inside: avoid; }
+  .stage-viz-title { padding: 5px 12px !important; font-size: 10.5px !important; }
+
+  /* Scene canvas - make sure SVG prints crisp */
+  .scene-canvas {
+    height: 280px !important;
+    background: #FCFAF1 !important;
+  }
+  .scene-canvas svg { width: 100% !important; height: 100% !important; }
+
+  /* Stage 5 / 7 viewers a touch taller than others */
+  .stage-row:nth-of-type(7) .scene-canvas,
+  .stage-row:nth-of-type(8) .scene-canvas { height: 320px !important; }
+
+  /* Legend strips */
+  .legend { padding: 6px 12px !important; font-size: 10px !important; }
+
+  /* Three code cards in stage 1 - stack to single column if too wide */
+  .three-cards {
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .code-card pre { padding: 8px 10px !important; font-size: 10px !important; line-height: 1.4 !important; }
+  .code-card-title { padding: 4px 10px !important; font-size: 10px !important; }
+
+  /* Data tables (stage 3) */
+  .dt-wrap { padding: 8px 10px !important; }
+  .dt th { font-size: 9px !important; padding: 4px 6px !important; }
+  .dt td { font-size: 11px !important; padding: 4px 6px !important; }
+  .pill { font-size: 9.5px !important; padding: 0 5px !important; }
+
+  /* Zone buckets (stage 4) */
+  .zone-buckets {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+    padding: 10px !important;
+  }
+  .zb-head { padding: 5px 10px !important; }
+  .zb-id { font-size: 10.5px !important; }
+  .zb-items { padding: 6px 8px !important; min-height: 30px !important; }
+  .zb-item { padding: 3px 6px !important; font-size: 10.5px !important; }
+
+  /* Inheritance viz */
+  .inh-viz { padding: 10px !important; }
+  .inh-cols { gap: 8px !important; }
+  .inh-ops { margin: 10px 0 !important; padding: 6px 10px !important; }
+  .inh-op .op-name { min-width: 78px !important; font-size: 9.5px !important; }
+  .inh-chips { gap: 5px !important; }
+  .inh-chip { padding: 4px 8px !important; font-size: 10.5px !important; }
+
+  /* Closing block on its own page */
+  .closing {
+    break-before: page;
+    page-break-before: always;
+    margin-top: 0 !important;
+    padding-top: 24px !important;
+  }
+  .closing h2 { font-size: 24px !important; margin-bottom: 18px !important; }
+  .closing-list {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 12px 22px !important;
+  }
+  .closing-list li { font-size: 12px !important; padding: 2px 0 2px 10px !important; }
+
+  .footer { display: none !important; }
+}

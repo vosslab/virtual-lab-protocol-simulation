@@ -82,9 +82,9 @@ plan review path.
 
 ## Related references
 
-- [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) (visual integrity rule,
+- PRIMARY_DESIGN.md (visual integrity rule,
   never crop scientific assets).
-- [PRIMARY_CONTRACT.md](../../PRIMARY_CONTRACT.md) (clickable objects
+- PRIMARY_CONTRACT.md (clickable objects
   are SVG-backed scene objects laid out by the layout engine).
 - [no_crop_round3_sizing_source_reconciliation.md](no_crop_round3_sizing_source_reconciliation.md)
   (sibling Round 3 decision on sizing source reconciliation).

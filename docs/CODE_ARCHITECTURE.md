@@ -89,19 +89,19 @@ The modules below describe the interaction-dispatch runtime.
 
 #### Layout and SVG art
 
-- [layout_engine.ts](../src/scene_runtime/layout/layout_engine.ts) - Per-scene layout
+- layout_engine.ts - Per-scene layout
   computation.
 - Bench and hood layout: declared in scene YAML at
-  [bench.yaml](../src/scenes/bench/bench.yaml) and
-  [cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml).
+  bench.yaml and
+  cell_culture_hood.yaml.
   The legacy `src/bench_config.ts` and `src/hood_config.ts` modules were
   retired in the 2026-05-09 scene migration; YAML is the single source of
   truth for layout in those scenes.
 - Well-plate workspace layout: declared in scene YAML at
-  [well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml).
+  well_plate_workspace.yaml.
   The workspace is a first-class scene for plate-transfer and tube-prep
   mini-protocols, with render assembly in
-  [render.ts](../src/scene_runtime/adapters/well_plate/render.ts)
+  render.ts
   and click dispatch in
   `dispatch.ts`.
 - `plate_config.ts` - Legacy plate layout
@@ -149,7 +149,7 @@ The modules below describe the interaction-dispatch runtime.
 - Build-side helpers that mirror generated data live in `src/` next to
   the facade modules listed below.
 - **Authored content facades:**
-  - [protocol.ts](../src/scene_runtime/loader/protocol.ts) - Re-exports protocol steps and protocol ID
+  - protocol.ts - Re-exports protocol steps and protocol ID
     from `generated/protocol_data.ts`.
   - `inventory.ts` - Re-exports inventory metadata
     from `generated/inventory_data.ts`.
@@ -207,7 +207,7 @@ the external CSS and JS), and writes `.nojekyll` for GitHub Pages.
 [build_github_pages.sh](../build_github_pages.sh) and serves
 `dist/` on a LAN-visible HTTP port (default 5080). This is the
 canonical preview path. Playwright tests bootstrap-build their own
-artifact via [build_game_if_missing.mjs](../tests/playwright/build_game_if_missing.mjs).
+artifact via build_game_if_missing.mjs.
 
 ### Test suite (`tests`)
 
@@ -220,7 +220,7 @@ Three tiers, isolated by [conftest.py](../tests/conftest.py)
 - **Browser tests** under `playwright`: unit
   tests run inside a real page (resolver, interaction index, completion
   event coverage) and the data-layer
-  [protocol_graph_smoke.mjs](../tests/playwright/protocol_graph_smoke.mjs).
+  protocol_graph_smoke.mjs.
 - **Browser walkthroughs** under
   `e2e`: the canonical YAML
   walker [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs)
@@ -459,12 +459,12 @@ scene's render assembly and dispatch.
 
 | Scene                | Adapter                   | Render                                                                                    | YAML                                                                                      |
 | -------------------- | ------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Bench                | `bench.ts`                | adapter                                                                                   | [bench.yaml](../src/scenes/bench/bench.yaml)                                              |
-| Cell-culture hood    | `cell_culture_hood.ts`    | sibling [render.ts](../src/scene_runtime/adapters/well_plate/render.ts) (assembly seam)   | [cell_culture_hood.yaml](../src/scenes/cell_culture_hood/cell_culture_hood.yaml)          |
-| Well-plate workspace | `well_plate_workspace.ts` | sibling [render.ts](../src/scene_runtime/adapters/well_plate/render.ts) and `dispatch.ts` | [well_plate_workspace.yaml](../src/scenes/well_plate_workspace/well_plate_workspace.yaml) |
-| Microscope           | `microscope.ts`           | adapter                                                                                   | [microscope.yaml](../src/scenes/microscope/microscope.yaml)                               |
-| Incubator            | `incubator.ts`            | adapter                                                                                   | [incubator.yaml](../src/scenes/incubator/incubator.yaml)                                  |
-| Plate reader         | `plate_reader.ts`         | adapter                                                                                   | [plate_reader.yaml](../src/scenes/plate_reader/plate_reader.yaml)                         |
+| Bench                | `bench.ts`                | adapter                                                                                   | bench.yaml                                              |
+| Cell-culture hood    | `cell_culture_hood.ts`    | sibling render.ts (assembly seam)   | cell_culture_hood.yaml          |
+| Well-plate workspace | `well_plate_workspace.ts` | sibling render.ts and `dispatch.ts` | well_plate_workspace.yaml |
+| Microscope           | `microscope.ts`           | adapter                                                                                   | microscope.yaml                               |
+| Incubator            | `incubator.ts`            | adapter                                                                                   | incubator.yaml                                  |
+| Plate reader         | `plate_reader.ts`         | adapter                                                                                   | plate_reader.yaml                         |
 
 Scene YAML is compiled at build time by
 [build_scene_data.py](../pipeline/build_scene_data.py) into

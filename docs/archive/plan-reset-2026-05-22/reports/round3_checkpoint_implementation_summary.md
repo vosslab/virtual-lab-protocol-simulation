@@ -31,7 +31,7 @@ lives in
 ## Strategy C CSS effect on the static-template baseline
 
 The Strategy C dominant lever
-([bench.css](../../../experiments/css_native_layout/styles/bench.css)
+(bench.css
 lines 150-161, 103-111) removes `overflow: hidden` and `max-height: 100%` from
 `.placement` and switches `.region--work_surface` to `overflow: visible`, so
 the placement card stops cropping its child artwork. The viewport remains the
@@ -168,8 +168,8 @@ layer; static-template signal is downstream of a separate rendering path.
 Two object YAMLs were renamed via `git mv` (landed in c373a59) to align
 `asset_name` with canonical SVG basenames:
 
-- [conical_15ml.yaml](../../../content/objects/bottle/conical_15ml.yaml).
-- [sharps_container.yaml](../../../content/objects/waste/sharps_container.yaml).
+- conical_15ml.yaml.
+- sharps_container.yaml.
 
 These renames are production-relevant: they fix the `asset_name` lookup
 that the production SVG loader uses (per
@@ -189,12 +189,12 @@ reason as the ASSET_SPECS changes.
 
 ## Source files read
 
-- [bench.css](../../../experiments/css_native_layout/styles/bench.css)
+- bench.css
 - `render_stress_to_html.py`
 - `object_footprints.yaml`
 - `asset_specs.ts`
-- [conical_15ml.yaml](../../../content/objects/bottle/conical_15ml.yaml)
-- [sharps_container.yaml](../../../content/objects/waste/sharps_container.yaml)
+- conical_15ml.yaml
+- sharps_container.yaml
 - [no_crop_round3_next_fix_queue.md](../no_crop_round3_next_fix_queue.md)
 - [no_crop_round3_sizing_source_reconciliation.md](../decisions/no_crop_round3_sizing_source_reconciliation.md)
 - [no_crop_asset_specs_coverage.md](../audits/no_crop_asset_specs_coverage.md)

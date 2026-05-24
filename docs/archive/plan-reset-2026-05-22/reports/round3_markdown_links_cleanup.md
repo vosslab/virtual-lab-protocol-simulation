@@ -46,10 +46,10 @@ the basename, or a valid tail of the target path).
 - `round3_runtime_label_readability.md` (4 instances at lines 13-16)
 
 **Violations:**
-- `[content/base_scenes/bench_basic.yaml:67](...) → [bench_basic.yaml](...)`
-- `[src/scene_runtime/layout/adapter.ts:203-204](...) → [adapter.ts](...)`
-- `[src/scene_runtime/layout/layout_engine.ts:633](...) → [layout_engine.ts](...)`
-- `[src/scene_runtime/render/scene.ts:345-381](...) → [scene.ts](...)`
+- `[content/base_scenes/bench_basic.yaml:67](...) -> [bench_basic.yaml](...)`
+- `[src/scene_runtime/layout/adapter.ts:203-204](...) -> [adapter.ts](...)`
+- `[src/scene_runtime/layout/layout_engine.ts:633](...) -> [layout_engine.ts](...)`
+- `[src/scene_runtime/render/scene.ts:345-381](...) -> [scene.ts](...)`
 
 **Fix:** Simplified link text to filename only, moved line numbers to parenthetical
 text after the link per Markdown style conventions.
@@ -85,7 +85,7 @@ tests/test_markdown_links.py::test_markdown_links PASSED [100%]
 
 ## Status
 
-✓ Gate passes
-✓ All 12 errors resolved
-✓ Report files validated
-✓ No commits made (audit-only cleanup)
+OK Gate passes
+OK All 12 errors resolved
+OK Report files validated
+OK No commits made (audit-only cleanup)

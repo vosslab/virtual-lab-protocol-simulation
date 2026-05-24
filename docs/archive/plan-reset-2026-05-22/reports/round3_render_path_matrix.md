@@ -9,7 +9,7 @@ authoritative for visual acceptance and which are supporting references.
 
 | Render path | Inputs consumed | Asset source | Sizing source | Screenshot source |
 | --- | --- | --- | --- | --- |
-| Production runtime (HIGH trust) | `generated/object_data.ts` + `generated/scene_data.ts` | `generated/svg_assets/index.ts` barrel | `ASSET_SPECS` `layout.default_width` plus computed aspect in [layout_engine.ts](../../../src/scene_runtime/layout/layout_engine.ts) lines 404-412 | Playwright walker [walker.mjs](../../../tests/playwright/walker.mjs) against `dist/index.html` |
+| Production runtime (HIGH trust) | `generated/object_data.ts` + `generated/scene_data.ts` | `generated/svg_assets/index.ts` barrel | `ASSET_SPECS` `layout.default_width` plus computed aspect in layout_engine.ts lines 404-412 | Playwright walker walker.mjs against `dist/index.html` |
 | Static templates (MEDIUM trust) | Hand-authored HTML at `experiments/css_native_layout/templates/*.html` | Direct `<img src>` refs to `assets/equipment/*.svg` | Hardcoded CSS `.footprint--*` classes in `experiments/css_native_layout/styles/bench.css` | Direct browser or Playwright `file://` URLs |
 | Stress static HTML (MEDIUM trust) | Experiment-local YAML at `experiments/css_native_layout/stress_scenes/{gold,generated}/*.yaml` plus `experiments/css_native_layout/object_footprints.yaml` | File-based with `_placeholder.svg` fallback | Experiment-local `object_footprints.yaml` CSS class mapping | `render_stress_to_html.py` output |
 
@@ -24,7 +24,7 @@ runtime, MEDIUM for both static paths.
   `_placeholder.svg` when an asset is absent.
 - Sizing source: production sizing is computed from `ASSET_SPECS`
   `layout.default_width` plus measured aspect ratio in
-  [layout_engine.ts](../../../src/scene_runtime/layout/layout_engine.ts)
+  layout_engine.ts
   lines 404-412; static paths use hand-tuned CSS classes
   (`.footprint--*`) or an experiment-local footprint YAML that has no
   guaranteed relationship to `ASSET_SPECS`.

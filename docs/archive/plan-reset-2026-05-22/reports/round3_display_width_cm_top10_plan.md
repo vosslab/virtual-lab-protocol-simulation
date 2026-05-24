@@ -28,7 +28,7 @@ Evidence:
   schema, no generated artifact uses the field.
 - The canonical per-object width is `layout.default_width` in each
   `content/objects/<kind>/<object>.yaml`. All 78 objects carry it.
-  Example from [ddh2o_bottle.yaml](../../../content/objects/bottle/ddh2o_bottle.yaml):
+  Example from ddh2o_bottle.yaml:
 
   ```yaml
   layout:
@@ -129,6 +129,6 @@ D3 should pick one or two changes to apply first. Recommended order:
 ## Files read
 
 - [round3_asset_specs_impact_audit.md](round3_asset_specs_impact_audit.md)
-- [no_crop_audit_results.json](../../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json)
-- [ddh2o_bottle.yaml](../../../content/objects/bottle/ddh2o_bottle.yaml)
-- 17 object YAMLs under [content/objects/](../../../content/objects/) (default_width lookup)
+- no_crop_audit_results.json
+- ddh2o_bottle.yaml
+- 17 object YAMLs under content/objects/ (default_width lookup)

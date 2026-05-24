@@ -125,7 +125,7 @@ repo `VERSION` `26.05.17`. All wrong-vocabulary entries above
 are dead at the time of writing, not in-flight migrations. No
 `schema_version` field exists or is planned; the repo `VERSION`
 is the sole schema version anchor per
-[docs/PRIMARY_SPEC.md](../../PRIMARY_SPEC.md) section
+docs/PRIMARY_SPEC.md section
 "No schema version".
 
 ## Recommendation
@@ -142,13 +142,13 @@ into `docs/specs/` after V4 review, candidate path
   drifting out of view once Round 3 closes.
 - The trace pattern (authored -> generated -> runtime, with
   `file:line` citations) is the format
-  [docs/PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) requires
+  docs/PRIMARY_DESIGN.md requires
   for closed-vocabulary surfaces.
 
 Before graduation, V4 review should confirm: no further
 typed-but-dead fields remain in the path; the canonical field
 count matches the authoring schema in
-[docs/specs/SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md)
+docs/specs/SCENE_YAML_FORMAT.md
 and the object YAML format spec; and the wrong-vocabulary list
 is reconciled with any new audit findings between R4 and
 graduation.

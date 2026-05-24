@@ -49,5 +49,5 @@ visual_states:
 capabilities: [clickable, instrument_with_setpoint]
 
 layout:
-  default_width: 20
+  default_width: 7.5
   label_width: 14

@@ -85,6 +85,7 @@ skills-lock.json
 /layout/
 /liquid/
 artifacts/ui-review/
+tests/playwright/artifacts/
 generated/
 _[a-z]*.?*
 dist/

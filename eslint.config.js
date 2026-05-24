@@ -11,30 +11,30 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export default tseslint.config(
-	eslint.configs.recommended,
-	...tseslint.configs.recommendedTypeChecked,
-	{
-		languageOptions: {
-			parserOptions: {
-				project: ["./tsconfig.json"],
-				tsconfigRootDir: __dirname,
-			},
-			globals: { ...globals.browser, ...globals.node },
-		},
-		rules: {
-			"@typescript-eslint/no-explicit-any": "error",
-			"@typescript-eslint/no-unused-vars": "error",
-			"@typescript-eslint/explicit-function-return-type": "warn",
-			"@typescript-eslint/no-floating-promises": "error",
-			"no-var": "error",
-			"prefer-const": "error",
-			"no-implicit-coercion": "warn",
-			"eqeqeq": "error",
-			"no-throw-literal": "error",
-			"no-console": "warn",
-		},
-	},
-	{
-		ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.mjs"],
-	},
+  eslint.configs.recommended,
+  ...tseslint.configs.recommendedTypeChecked,
+  {
+    languageOptions: {
+      parserOptions: {
+        project: ["./tsconfig.json"],
+        tsconfigRootDir: __dirname,
+      },
+      globals: { ...globals.browser, ...globals.node },
+    },
+    rules: {
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/no-unused-vars": "error",
+      "@typescript-eslint/explicit-function-return-type": "warn",
+      "@typescript-eslint/no-floating-promises": "error",
+      "no-var": "error",
+      "prefer-const": "error",
+      "no-implicit-coercion": "warn",
+      eqeqeq: "error",
+      "no-throw-literal": "error",
+      "no-console": "warn",
+    },
+  },
+  {
+    ignores: ["dist/**", "node_modules/**", "*.config.js", "*.config.mjs"],
+  },
 );

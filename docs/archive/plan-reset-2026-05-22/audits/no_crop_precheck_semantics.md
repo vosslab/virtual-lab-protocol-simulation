@@ -1,7 +1,7 @@
 # No-crop precheck semantics audit
 
 Read-only reconciliation of diagnostic field names emitted by
-[precheck.mjs](../../../experiments/css_native_layout/precheck.mjs)
+precheck.mjs
 against numbers cited under conflicting names by prior agents in this work
 stream. All counts in this document were re-derived in-session from the
 visual_audit.json files listed under "Source files read"; none were copied
@@ -100,7 +100,7 @@ For each scene entry under `scenes[i].checks.*`:
   the closure returns early (line 536) and the placement records no
   clipped_by_parent entry. The 0-value for the new-render path is not
   evidence of "no crops"; it is a measurement gap. See limitation note in
-  [PRECHECK_USAGE.md](../../../experiments/css_native_layout/PRECHECK_USAGE.md)
+  PRECHECK_USAGE.md
   section "Known limitations".
 
 ## 3. Reconciliation of prior reports
@@ -237,7 +237,7 @@ scenes in a run. Rationale:
 1. It is the only precheck field that directly measures
    "rendered SVG asset clipped by parent overflow", which is the visual
    integrity contract from
-   [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md)
+   PRIMARY_DESIGN.md
    ("Visual integrity: never crop scientific assets").
 2. It is unambiguously a HARD FAIL (precheck.mjs line 623) and feeds the
    verdict path directly (line 1086, 1090-1097).

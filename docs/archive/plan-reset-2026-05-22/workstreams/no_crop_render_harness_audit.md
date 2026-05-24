@@ -10,7 +10,7 @@ Amended 2026-05-21: Vocabulary corrected per
 scaffolding for a static visual-test renderer, not sanctioned project
 architecture. Durable scene-side terms are `scene`, `scene YAML`,
 `scene object`, `SVG asset`, and `zone` per
-[SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md).
+SCENE_VOCABULARY.md.
 Measurements, counts, and baselines below are unchanged.
 
 ## Scope
@@ -55,7 +55,7 @@ NONE. No path in the current tree at HEAD 8795d25 consumes the
 experiment-local `regions/*.yaml` `kind_to_footprint` mapping. The
 mapping is experiment-local scaffolding (see Amended footnote at top
 of this file); it is not scene YAML in the canonical sense
-([SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md)).
+(SCENE_YAML_FORMAT.md).
 The mapping exists in:
 
 - experiments/css_native_layout/regions/bench.yaml lines 64-77

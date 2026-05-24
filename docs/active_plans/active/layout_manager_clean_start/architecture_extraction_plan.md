@@ -46,7 +46,7 @@ The set is closed at five values, declared today by [experiments/css_native_layo
 
 ### Canonical footprint vocabulary (closed, 7 classes today)
 
-Today the seven classes live in [experiments/css_native_layout/object_footprints.yaml](../../../../experiments/css_native_layout/object_footprints.yaml): `small-tool`, `handheld`, `container`, `rack`, `instrument`, `large-equipment`, `zoom-view`. 146 object kinds are mapped. The vocabulary is experiment-local today. Promotion path: `docs/specs/OBJECT_FOOTPRINTS.md` (vocabulary doc) plus `src/scene_runtime/layout/data/object_footprints.yaml` (runtime input). USER_DECISION_REQUIRED for promotion. Until promotion lands, the production manager reads the experiment-local YAML at startup; it does NOT inline a copy.
+Today the seven classes live in experiments/css_native_layout/object_footprints.yaml: `small-tool`, `handheld`, `container`, `rack`, `instrument`, `large-equipment`, `zoom-view`. 146 object kinds are mapped. The vocabulary is experiment-local today. Promotion path: `docs/specs/OBJECT_FOOTPRINTS.md` (vocabulary doc) plus `src/scene_runtime/layout/data/object_footprints.yaml` (runtime input). USER_DECISION_REQUIRED for promotion. Until promotion lands, the production manager reads the experiment-local YAML at startup; it does NOT inline a copy.
 
 ### Canonical region set proposed for promotion under the `zone` term
 

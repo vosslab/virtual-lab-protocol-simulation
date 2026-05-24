@@ -13,15 +13,15 @@ default.
 
 ## Files changed
 
-- [../../src/scene_runtime/layout/feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts):
+- ../../src/scene_runtime/layout/feature_flags.ts:
   281 bytes, NEW; exports
   `ENABLE_CSS_NATIVE_WELL_PLATE_ZOOM_SPIKE = false` const.
-- [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts):
+- ../../src/scene_runtime/layout/css_native_adapter.ts:
   7500 bytes, NEW; lines 1-224 implement the scaffold-and-measure
   adapter. Entry point `computeSceneLayoutCssNative` at lines 36-178;
   helpers `getRegionList` at lines 185-209 and `getRegionForPlacement`
   at lines 216-224.
-- [../../src/scene_runtime/layout/adapter.ts](../../src/scene_runtime/layout/adapter.ts):
+- ../../src/scene_runtime/layout/adapter.ts:
   6328 bytes, MODIFIED; imports at lines 14-15 and conditional dispatch
   at lines 45-50 (gated on `sceneId === 'well_plate_96_zoom'` and the
   flag).
@@ -32,7 +32,7 @@ default.
 - Type: hard-coded `const` boolean.
 - Default: `false`.
 - Location:
-  [../../src/scene_runtime/layout/feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts).
+  ../../src/scene_runtime/layout/feature_flags.ts.
 - Override mechanism: NONE this round. The manager's provisional call
   was to honor the reviewer brief literally ("hard-coded boolean ...
   Default off unless the spike test explicitly enables it") and to not
@@ -56,13 +56,13 @@ are out of spike scope and flagged in Open follow-ups.
 
 Not empirically verified this round. With the flag hard-coded to
 `false`, the spike branch at
-[adapter.ts:48-50](../../src/scene_runtime/layout/adapter.ts) cannot
+adapter.ts:48-50 cannot
 fire, so no browser invocation of `computeSceneLayoutCssNative` is
 reachable from the production runtime. Code-path inspection shows the
 spike returns `ComputedItemLayout[]` (built at css_native_adapter.ts
 lines 149-162) in the legacy shape consumed by
 `renderPlacement` at
-[scene.ts](../../src/scene_runtime/render/scene.ts) lines 230-238. No
+scene.ts lines 230-238. No
 field shape incompatibility detected.
 
 ## Backlog A: click target proof
@@ -71,17 +71,17 @@ Conclusion: the spike does NOT change the click-binding mechanism.
 
 Click resolution at runtime walks the DOM via `closest('[data-target-id]')`
 at
-[click.ts](../../src/scene_runtime/dispatch/click.ts) lines 43-45.
+click.ts lines 43-45.
 The `data-target-id` attribute is set on the rendered SVG group at
-[scene.ts](../../src/scene_runtime/render/scene.ts) line 247 and on
+scene.ts line 247 and on
 well-plate subpart groups at
-[render.ts](../../src/scene_runtime/adapters/well_plate/render.ts) line 136.
+render.ts line 136.
 
 The new CSS-native adapter scaffolds an off-screen DOM tree
 (css_native_adapter.ts:65-122) where placement elements carry
 `dataset.placement` (line 112) and `dataset.objectName` (line 113) but
 NOT `data-target-id`. That scaffold is then torn down at
-[css_native_adapter.ts:171](../../src/scene_runtime/layout/css_native_adapter.ts)
+css_native_adapter.ts:171
 before the function returns. The scaffold DOM is ephemeral and never
 participates in click dispatch.
 
@@ -101,7 +101,7 @@ idempotent and compatible with the ObjectStateChange re-render loop,
 with one perf caveat.
 
 `applyObjectStateChange` at
-[apply.ts](../../src/scene_runtime/render/apply.ts) lines 31-111
+apply.ts lines 31-111
 mutates `world.objectStates` and returns a new RuntimeWorld. The
 re-render path then calls `computeSceneLayout`, which (if the flag
 were on for `well_plate_96_zoom`) re-invokes
@@ -126,7 +126,7 @@ Conclusion: an anchor API is NOT needed. Path C is deferred
 indefinitely.
 
 `applyCursorAttach` at
-[apply.ts](../../src/scene_runtime/render/apply.ts) lines 161-198 is
+apply.ts lines 161-198 is
 state-only; it updates `world.cursorState.attachedTo` and
 `world.cursorState.operation`. It does not read any layout
 coordinates. Visual cursor following is not implemented in the
@@ -155,7 +155,7 @@ lands, run the canonical command recorded in
 Pass. The new adapter contains no track-sizing math, no gap
 distribution math, and no content-fit logic. The module's own
 header comment at
-[css_native_adapter.ts:7-9](../../src/scene_runtime/layout/css_native_adapter.ts)
+css_native_adapter.ts:7-9
 states verbatim:
 
 ```
@@ -207,7 +207,7 @@ CONTINUE the CSS-native integration spike, with caveats:
 
 ### Location
 
-Shim is in [css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts) at lines 109-114 (pixel-to-SVG viewBox coordinate transformation).
+Shim is in css_native_adapter.ts at lines 109-114 (pixel-to-SVG viewBox coordinate transformation).
 
 ### Guardrail checklist
 
@@ -232,7 +232,7 @@ As of 2026-05-20, the following checks were performed:
 
 5. **No per-scene solver** - YES. The shim is scene-agnostic at the algorithmic level. It reads `scene_bounds` from YAML (a data lookup, not a solving step) and applies uniform scaling. No scene-specific conditionals, no special rules for different scene types, no solver state machines.
 
-6. **No use outside spike unless promoted by plan** - YES. The shim is callable only via `compute_scene_layout_css_native`, which is gated on `scene_id === 'well_plate_96_zoom'` and the feature flag at [adapter.ts](../../src/scene_runtime/layout/adapter.ts) lines 45-50. No other caller exists in the codebase.
+6. **No use outside spike unless promoted by plan** - YES. The shim is callable only via `compute_scene_layout_css_native`, which is gated on `scene_id === 'well_plate_96_zoom'` and the feature flag at adapter.ts lines 45-50. No other caller exists in the codebase.
 
 ### Comment block added
 
@@ -277,9 +277,9 @@ This comment establishes the boundary: what the shim IS (a coordinate transform)
 
 Confirmed. Edits this round are limited to three files under
 `src/scene_runtime/layout/`
-([feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts),
-[css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts),
-[adapter.ts](../../src/scene_runtime/layout/adapter.ts)). No edits to
+(feature_flags.ts,
+css_native_adapter.ts,
+adapter.ts). No edits to
 `src/scene_runtime/dispatch/`, `src/scene_runtime/render/apply.ts`,
 `src/scene_runtime/render/scene.ts`,
 `src/scene_runtime/adapters/well_plate/`, or any loader. No edits to
@@ -295,7 +295,7 @@ Reviewer flagged two violations in the first Path A landing:
 - `(placement as any).label` -- wrong field (PlacementConfig has no `label`) plus disallowed cast.
 - `sceneId`, `viewportW`, `viewportH`, internal camelCase locals -- propagated forbidden naming into NEW spike code.
 
-Fixed in [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_runtime/layout/css_native_adapter.ts):
+Fixed in ../../src/scene_runtime/layout/css_native_adapter.ts:
 
 - `as any` casts removed (both `(placement as any).label` and `(scene as any).regions`).
 - Label is now derived from `world.objects[placement.object_name].label`. Placement label dropped entirely.
@@ -307,7 +307,7 @@ Fixed in [../../src/scene_runtime/layout/css_native_adapter.ts](../../src/scene_
 
 ### Feature flag override applied
 
-Replaced const-only flag with override-aware API in [../../src/scene_runtime/layout/feature_flags.ts](../../src/scene_runtime/layout/feature_flags.ts):
+Replaced const-only flag with override-aware API in ../../src/scene_runtime/layout/feature_flags.ts:
 
 - `is_css_native_well_plate_zoom_spike_enabled(): boolean`
 - `set_css_native_well_plate_zoom_spike_enabled_for_test(value: boolean | null): void`
@@ -333,10 +333,10 @@ Deliberately out of scope this round:
 
 ### Lane 3: browser empirical proof
 
-[../../tests/playwright/spike_css_native_well_plate_zoom.mjs](../../tests/playwright/spike_css_native_well_plate_zoom.mjs) -- ran 11 / 11 PASS.
+../../tests/playwright/spike_css_native_well_plate_zoom.mjs -- ran 11 / 11 PASS.
 
 Screenshot saved at `test-results/new1_spike/lane3_browser_proof.png` (gitignored; not linked).
-Results record: [../../tests/playwright/spike_css_native_well_plate_zoom_results.md](../../tests/playwright/spike_css_native_well_plate_zoom_results.md).
+Results record: ../../tests/playwright/spike_css_native_well_plate_zoom_results.md.
 
 Verified:
 
@@ -407,9 +407,9 @@ The placement's `width: calc(100% - 20px);` was constrained to ~1180px (within s
 
 **Files modified:**
 
-- [../../experiments/css_native_layout/styles/bench.css](../../experiments/css_native_layout/styles/bench.css): removed min-width/min-height from detail placement rule; removed min-height from detail work_surface rule.
-- [../../experiments/css_native_layout/styles/hood.css](../../experiments/css_native_layout/styles/hood.css): removed min-height from detail work_surface rule.
-- [../../experiments/css_native_layout/styles/instrument.css](../../experiments/css_native_layout/styles/instrument.css): removed min-height from detail work_surface rule.
+- ../../experiments/css_native_layout/styles/bench.css: removed min-width/min-height from detail placement rule; removed min-height from detail work_surface rule.
+- ../../experiments/css_native_layout/styles/hood.css: removed min-height from detail work_surface rule.
+- ../../experiments/css_native_layout/styles/instrument.css: removed min-height from detail work_surface rule.
 
 ## Bundle flag access (2026-05-19)
 
@@ -417,7 +417,7 @@ The feature flag override (setter and getter) is now reachable from browser-base
 
 **Changes:**
 
-- [../../src/scene_runtime/bundle/entry.ts](../../src/scene_runtime/bundle/entry.ts): re-exports `is_css_native_well_plate_zoom_spike_enabled` and `set_css_native_well_plate_zoom_spike_enabled_for_test` under a spike-only `__spike` namespace.
+- ../../src/scene_runtime/bundle/entry.ts: re-exports `is_css_native_well_plate_zoom_spike_enabled` and `set_css_native_well_plate_zoom_spike_enabled_for_test` under a spike-only `__spike` namespace.
 
 **Bundle integration:** esbuild's `--global-name=SceneRuntime --format=iife` wrapper exposes the `__spike` object as a property of the global `SceneRuntime` object.
 
@@ -452,7 +452,7 @@ await page.evaluate(() =>
 
 ### Overview
 
-NEW0 layout quantitative scorecard generated from stabilized precheck audit. See [../../experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md) for scoring model, metric definitions, and per-class weight tables.
+NEW0 layout quantitative scorecard generated from stabilized precheck audit. See ../../experiments/css_native_layout/LAYOUT_SCORECARD.md for scoring model, metric definitions, and per-class weight tables.
 
 ### Worst 3 scenes (by total_layout_score)
 
@@ -496,9 +496,9 @@ No major disagreements detected. The scorecard captures the visible evidence qua
 
 ### Files generated
 
-- [../../experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md) - Specification and scoring model.
-- [../../experiments/css_native_layout/scene_class_manifest.yaml](../../experiments/css_native_layout/scene_class_manifest.yaml) - Closed scene-to-class mapping (template, composition, instrument_heavy, zoom_detail, dense_clutter).
-- [../../experiments/css_native_layout/score_layout.mjs](../../experiments/css_native_layout/score_layout.mjs) - Scorer Node script. Reads precheck audit; emits scorecard.json + scorecard.md.
+- ../../experiments/css_native_layout/LAYOUT_SCORECARD.md - Specification and scoring model.
+- ../../experiments/css_native_layout/scene_class_manifest.yaml - Closed scene-to-class mapping (template, composition, instrument_heavy, zoom_detail, dense_clutter).
+- ../../experiments/css_native_layout/score_layout.mjs - Scorer Node script. Reads precheck audit; emits scorecard.json + scorecard.md.
 - `test-results/new0_css_native/scorecard/scorecard.json` (generated, gitignored) - Machine-readable scorecard.
 - `test-results/new0_css_native/scorecard/scorecard.md` (generated, gitignored) - Human-readable ranked table and per-scene breakdown.
 
@@ -648,7 +648,7 @@ PASS. A Playwright click on `[data-target-id="well_plate_96"]` reached the produ
 
 ### ObjectStateChange proof
 
-PARTIAL. The ObjectStateChange primitive was applied successfully (a `material_name` mutation was observed on the scene state). DOM idempotency was confirmed: body children delta after re-mount equals 0, so no DOM leak. However, `renderScene` re-execution was NOT triggered: the validator at [../../src/scene_runtime/bundle/entry.ts](../../src/scene_runtime/bundle/entry.ts) (function `isTargetSatisfied`, around line 761) rejects the well sub-target click, so the step resets instead of completing. With no step completion, no re-render fires, and the spike invocation count remains 1. The "no production code path forbidden boundary" was not fully crossed. Blocker documented at `lane_d_state_change_blocker.md`.
+PARTIAL. The ObjectStateChange primitive was applied successfully (a `material_name` mutation was observed on the scene state). DOM idempotency was confirmed: body children delta after re-mount equals 0, so no DOM leak. However, `renderScene` re-execution was NOT triggered: the validator at ../../src/scene_runtime/bundle/entry.ts (function `isTargetSatisfied`, around line 761) rejects the well sub-target click, so the step resets instead of completing. With no step completion, no re-render fires, and the spike invocation count remains 1. The "no production code path forbidden boundary" was not fully crossed. Blocker documented at `lane_d_state_change_blocker.md`.
 
 ### Precheck on built output
 
@@ -656,7 +656,7 @@ BLOCKED. `experiments/css_native_layout/precheck.mjs` at line 1047 uses a `.scen
 
 ### Layout scorecard
 
-DELIVERED. Artifacts: [../../experiments/css_native_layout/LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md), `experiments/css_native_layout/scene_class_manifest.yaml`, and `experiments/css_native_layout/score_layout.mjs`. Ten scenes ranked against class-specific weights. Best: `well_plate_96_zoom` at 89/100. Worst: `cell_counter_basic` at 51/100. Hard-fail count is 0. The scorecard agent reports the ranking agrees with visual judgment.
+DELIVERED. Artifacts: ../../experiments/css_native_layout/LAYOUT_SCORECARD.md, `experiments/css_native_layout/scene_class_manifest.yaml`, and `experiments/css_native_layout/score_layout.mjs`. Ten scenes ranked against class-specific weights. Best: `well_plate_96_zoom` at 89/100. Worst: `cell_counter_basic` at 51/100. Hard-fail count is 0. The scorecard agent reports the ranking agrees with visual judgment.
 
 ### Dev_smoke wiring path used
 

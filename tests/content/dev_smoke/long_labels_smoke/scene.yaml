@@ -1,0 +1,78 @@
+scene_name: long_labels_smoke
+workspace: bench
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  type: gradient
+  from: "#E8E2D0"
+  to: "#D4CBB3"
+  angle: 180
+
+zones:
+  - id: rear
+    bounds:
+      left: 5
+      right: 95
+      top: 10
+      bottom: 35
+    align: center
+    label: Rear shelf
+  - id: center
+    bounds:
+      left: 20
+      right: 80
+      top: 45
+      bottom: 75
+    align: center
+    label: Work surface
+  - id: front_right
+    bounds:
+      left: 70
+      right: 95
+      top: 80
+      bottom: 95
+    align: center
+    label: Right front
+
+placements:
+  - placement_name: rear_dmf_bottle
+    object_name: dmf_bottle
+    zone: rear
+    depth_tier: 1
+  - placement_name: rear_dmso_bottle
+    object_name: dmso_bottle
+    zone: rear
+    depth_tier: 1
+  - placement_name: rear_ethyl_acetate_bottle
+    object_name: ethyl_acetate_bottle
+    zone: rear
+    depth_tier: 1
+  - placement_name: center_tetrahydrofuran_bottle
+    object_name: tetrahydrofuran_bottle
+    zone: center
+    depth_tier: 1
+  - placement_name: center_acetonitrile_bottle
+    object_name: acetonitrile_bottle
+    zone: center
+    depth_tier: 1
+  - placement_name: front_right_dimethylacetamide_bottle
+    object_name: dimethylacetamide_bottle
+    zone: front_right
+    depth_tier: 1
+
+layout_rules:
+  label_font_size: 9
+  label_line_height: 1.1
+  label_offset_y: 4
+  zone_gap: 2
+
+wrong_order_message:
+  template: "Check the reagent labels."
+  toast_duration_ms: 2000

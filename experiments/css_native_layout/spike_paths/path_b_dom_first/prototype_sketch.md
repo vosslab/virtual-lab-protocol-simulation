@@ -43,7 +43,7 @@ return legacyComputeLayout(...);
 ```
 
 Returning `[]` is the cleanest "no rects" signal, but the consumer at
-[../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):229-232
+../../../../src/scene_runtime/render/scene.ts:229-232
 does `layoutMap.get(placement.placement_name)` and throws if the entry
 is missing:
 
@@ -60,7 +60,7 @@ So returning `[]` blows up immediately on the spike scene.
 
 To make Path B work without throwing, one of these edits is required
 inside the FORBIDDEN files
-([../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts)):
+(../../../../src/scene_runtime/render/scene.ts):
 
 - (a) Wrap the entire `renderPlacement` body in a scene-id branch:
   for `well_plate_96_zoom`, skip the legacy path because the
@@ -89,7 +89,7 @@ return [{
 ```
 
 Consumer trace at
-[../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):235-253:
+../../../../src/scene_runtime/render/scene.ts:235-253:
 
 - `const x = layout.x;` -> `0`
 - `const y = layout.y;` -> `0`
@@ -97,7 +97,7 @@ Consumer trace at
 - `const height = layout.height;` -> `0`
 - `tryRenderWellPlate(placement, objectConfig, group, 0, 0, 0, 0, world)`
   -> well-plate adapter at
-  [../../../../src/scene_runtime/adapters/well_plate/render.ts](../../../../src/scene_runtime/adapters/well_plate/render.ts):51-52
+  ../../../../src/scene_runtime/adapters/well_plate/render.ts:51-52
   computes `cellWidth = 0 / 12 = 0` and `cellHeight = 0 / 8 = 0`.
 - Result: 96 zero-sized `<rect>` cells at `(0, 0)`. SVG renders an
   invisible plate. Click dispatch resolves through `closest()` against

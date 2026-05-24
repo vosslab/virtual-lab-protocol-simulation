@@ -9,12 +9,12 @@ sys.path.insert(0, str(pathlib.Path(__file__).parent))
 import git_file_utils
 
 
-# Soft-reporter ceiling. Round 3 no-crop asset rename pass closed one slot
-# (conical_15ml -> falcon_15ml or sharps_container -> waste_container), so
-# the gap is now 47. The SVG picker pipeline (tools/svg_picker/) is the
-# remediation path. The follow-up patch that hardens this test to a true
-# zero-gap assertion deletes this constant and asserts len(missing) == 0.
-BASELINE_MISSING_COUNT = 47
+# Soft-reporter ceiling. M2c content cleanup reduced the gap; current
+# missing-asset list is 4 entries (electrophoresis_tank_* variants pending
+# in tools/svg_picker/ pipeline). The follow-up patch that hardens this
+# test to a true zero-gap assertion deletes this constant and asserts
+# len(missing) == 0.
+BASELINE_MISSING_COUNT = 4
 
 REPO_ROOT = pathlib.Path(git_file_utils.get_repo_root())
 OBJECTS_DIR = REPO_ROOT / "content" / "objects"

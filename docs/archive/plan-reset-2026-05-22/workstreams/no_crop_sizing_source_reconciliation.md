@@ -14,9 +14,9 @@ The user directive is that permanent CSS `footprint--*` classes are
 probably the wrong direction; at most they are a temporary diagnostic
 shim for the broken static harness. The durable sizing chain is
 `scene object -> asset_name -> ASSET_SPECS/default_width -> display_width_cm or width_scale -> layout engine computed box -> renderer preserves SVG aspect ratio`,
-owned by [SCALING_MODEL.md](../../specs/SCALING_MODEL.md),
-[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), and
-[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md). The
+owned by SCALING_MODEL.md,
+LAYOUT_ENGINE.md, and
+SVG_PIPELINE.md. The
 candidate `footprint--*` classes named below are downgraded from
 "permanent vocabulary" to "experiment-local test-harness shim" unless
 the gate in section "Gate for promoting an experiment-local shim to a
@@ -29,7 +29,7 @@ scaffolding for a static visual-test renderer, not sanctioned project
 architecture. `footprint--*` classes are an experimental visual-test
 layout aid, not a durable scene-side vocabulary; durable scene-side
 terms are `scene`, `scene object`, `SVG asset`, and `zone` per
-[SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md).
+SCENE_VOCABULARY.md.
 Class counts, evidence citations, and reduction estimates are
 unchanged.
 
@@ -56,9 +56,9 @@ architecture; see the architecture vocabulary clarification note.
 
 Before any CSS class is proposed (permanent or experiment-local), the
 durable sizing chain owned by `docs/specs/` must be checked. See
-[SCALING_MODEL.md](../../specs/SCALING_MODEL.md) for the
+SCALING_MODEL.md for the
 `display_width_cm` and per-scene `px_per_cm` model, and
-[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections
+LAYOUT_ENGINE.md sections
 "Asset specs", "Scene items", and "Footprints" for the
 `ASSET_SPECS.default_width` and `width_scale` surfaces. A cropping
 incident must be diagnosed against this chain before any CSS class
@@ -71,17 +71,17 @@ four of the following have been checked and none can represent the
 object:
 
 - `ASSET_SPECS.default_width` (per asset in `src/asset_specs.ts`; see
-  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Asset
+  LAYOUT_ENGINE.md "Asset
   specs").
 - `display_width_cm` (per object in
   `content/objects/<kind>/<object_name>.yaml`; see
-  [SCALING_MODEL.md](../../specs/SCALING_MODEL.md) "How
+  SCALING_MODEL.md "How
   sizing works").
 - `width_scale` (per placement in scene YAML; see
-  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Scene
+  LAYOUT_ENGINE.md "Scene
   items").
 - SVG `viewBox` correctness (per asset in `assets/equipment/*.svg`;
-  see [SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Four-
+  see SVG_PIPELINE.md "Four-
   layer flow").
 
 This proposal does not yet provide that proof for any of the four
@@ -133,7 +133,7 @@ risk to decide which are permanent and which are experiment-only.
 | Evidence screenshot          | `test-results/no_crop_round3_static_template_repair/hybrid_templates/electrophoresis_bench.png` (7 remaining crops, tall containers in dense scene; cite WS-A scoreboard "Remaining template violations" row). Pre-hybrid baseline: `test-results/no_crop_fresh_manager_sanity/templates/electrophoresis_bench.png` (12 visible crops). Gold cross-check: `test-results/no_crop_fresh_manager_sanity/gold/gold_electrophoresis_full_setup.png` (11 visible crops).                                                                                                                                                               |
 | Expected crop reduction      | Targets the 7-8 residual crops on `electrophoresis_bench` plus an estimated 3-4 in `staining_bench` / `crowded_bench_dense` involving tall containers. Estimated 5-10 visible_crops removed from the 21-crop post-hybrid template residual (~24-48% of residual). Source: WS-A "Remaining template violations" row count, no fresh measurement performed (proposal-only).                                                                                                                                                                                                                                                        |
 | Drift risk                   | LOW. The existing `footprint--container` class already mixes flasks, plates, and gel cassettes in one box (220-320 min-width, 240-360 min-height); splitting tall items out is a natural narrowing of an over-broad class, not a new authoring axis. The CSS rule reads vertical (min-height > min-width) and matches a stable physical category.                                                                                                                                                                                                                                                                                |
-| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 1 of 4"). The "tall glassware" category recurs in every wet-lab scene, but the existing scaling model (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) has not been proven inadequate to size tall glassware. Until the gate above is satisfied per-object, this remains an experiment-local diagnostic shim, not a durable schema class. The no-crop rule from [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) "Visual integrity: never crop scientific assets" still binds regardless. |
+| Permanent vs experiment-only | **EXPERIMENT-LOCAL SHIM** (downgraded 2026-05-21 per sizing-source reconciliation; was "PERMANENT candidate 1 of 4"). The "tall glassware" category recurs in every wet-lab scene, but the existing scaling model (`ASSET_SPECS.default_width`, `display_width_cm`, `width_scale`, SVG `viewBox`) has not been proven inadequate to size tall glassware. Until the gate above is satisfied per-object, this remains an experiment-local diagnostic shim, not a durable schema class. The no-crop rule from PRIMARY_DESIGN.md "Visual integrity: never crop scientific assets" still binds regardless. |
 
 ### Class 2: footprint--portrait-tool
 

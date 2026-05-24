@@ -2,6 +2,8 @@ object_name: p10_gel_loading_tip
 kind: decoration
 label: p10 gel loading tip
 
+asset: p10_gel_loading_tip
+
 state_fields: []
 
 visual_states: {}

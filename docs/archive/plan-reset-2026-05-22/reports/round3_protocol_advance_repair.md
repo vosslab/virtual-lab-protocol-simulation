@@ -228,7 +228,7 @@ Verifier: M5 task, pivoted by coordinator from "top-10 demo ranking" to
 currentInteractionIndex in the pass criteria".
 
 Independent smoke driver:
-[tests/playwright/\_temp_round3_advance_repair_smoke.mjs](../../../tests/playwright/_temp_round3_advance_repair_smoke.mjs)
+tests/playwright/\_temp_round3_advance_repair_smoke.mjs
 (underscore-prefixed temp; safe to delete). Distinct from the R7/R9
 driver in three ways:
 

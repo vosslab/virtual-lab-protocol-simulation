@@ -6,7 +6,7 @@ Path B renders `well_plate_96_zoom` as CSS-native DOM and resolves click
 targets entirely through `data-target-id` plus `Element.closest()`, with no
 coordinate emission from the layout adapter. The hypothesis is that the
 runtime already does DOM-based hit testing (see
-[../../../../src/scene_runtime/dispatch/click.ts](../../../../src/scene_runtime/dispatch/click.ts)),
+../../../../src/scene_runtime/dispatch/click.ts),
 so if the CSS-native renderer emits the same `data-target-id` attributes,
 the click pipeline works without any coordinate output. The adapter's
 `ComputedItemLayout[]` return shape would be eliminated for the spike scene
@@ -14,17 +14,17 @@ or stubbed to a rects-free placeholder.
 
 ## Production files this path would touch
 
-- [../../../../src/scene_runtime/layout/adapter.ts](../../../../src/scene_runtime/layout/adapter.ts):32-90
+- ../../../../src/scene_runtime/layout/adapter.ts:32-90
   gate on `sceneId === 'well_plate_96_zoom'` and dispatch to a DOM-first
   renderer instead of `legacyComputeLayout`.
-- [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):235-238
+- ../../../../src/scene_runtime/render/scene.ts:235-238
   the sole external consumer of `layout.x`, `layout.y`, `layout.width`,
   `layout.height`. Path B must either branch this code path or have the
   CSS-native renderer take over rendering entirely for the spike scene.
-- [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):253
+- ../../../../src/scene_runtime/render/scene.ts:253
   forwards `x, y, width, height` into the well-plate adapter; same branch
   point applies.
-- [../../../../src/scene_runtime/adapters/well_plate/render.ts](../../../../src/scene_runtime/adapters/well_plate/render.ts):37-46
+- ../../../../src/scene_runtime/adapters/well_plate/render.ts:37-46
   signature accepts `x, y, width, height` as parameters. Path B does not
   edit this file but must short-circuit its caller so the function is not
   invoked for the spike scene (or pass synthetic zero rects, which the
@@ -34,12 +34,12 @@ or stubbed to a rects-free placeholder.
 ## Per-feature analysis
 
 - Hit testing without rects: feasible. The capture-phase click handler in
-  [../../../../src/scene_runtime/dispatch/click.ts](../../../../src/scene_runtime/dispatch/click.ts)
+  ../../../../src/scene_runtime/dispatch/click.ts
   uses `closest('[data-target-id]')` exclusively; it reads no
   `ComputedItemLayout` field. CSS-native DOM that carries the same
   `data-target-id` attributes inherits this behavior with zero changes.
 - Cursor-attach without rects: feasible. `applyCursorAttach` in
-  [../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts):149-198
+  ../../../../src/scene_runtime/render/apply.ts:149-198
   is state-only (writes `cursorState.attachedTo`); it never reads
   `layout.x` or `layout.y`. No rect dependence here.
 - `ObjectStateChange` re-render: requires the CSS-native render entry
@@ -51,7 +51,7 @@ or stubbed to a rects-free placeholder.
 - Adapter return contract: Path B's natural shape is `void` (the
   renderer mutates the DOM directly) or `ComputedItemLayout[]` with all
   rects zeroed. Returning zeroed rects breaks
-  [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):235-238
+  ../../../../src/scene_runtime/render/scene.ts:235-238
   for the spike scene because the SVG `<g>` group is positioned at
   `(0, 0)` with zero `width`/`height`, and the well-plate adapter then
   divides zero width across 12 columns. Result: a degenerate scene that
@@ -75,7 +75,7 @@ or stubbed to a rects-free placeholder.
 Only one production call site reads `layout.x`, `layout.y`, `layout.width`,
 or `layout.height` from a `ComputedItemLayout`:
 
-- [../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts):235-238
+- ../../../../src/scene_runtime/render/scene.ts:235-238
   inside `renderPlacement`. It reads all four fields, forwards them to
   the well-plate adapter (line 253) and to non-well-plate placements
   (lines 278 onward for SVG asset insertion).
@@ -95,7 +95,7 @@ Path B is structurally sound (DOM-first hit testing already works in the
 runtime, and `closest()` ignores coordinates) but it cannot fit under the
 "one conditional in adapter.ts" charter because the only external
 coordinate consumer lives in a forbidden file
-([../../../../src/scene_runtime/render/scene.ts](../../../../src/scene_runtime/render/scene.ts)).
+(../../../../src/scene_runtime/render/scene.ts).
 
 To make Path B viable the charter would have to expand to permit a
 second conditional in `render/scene.ts` that short-circuits coordinate

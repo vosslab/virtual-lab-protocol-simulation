@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>M0 static visual capability summary</title>
+<style>
+@page {
+	size: letter;
+	margin: 0.6in;
+}
+html, body {
+	margin: 0;
+	padding: 0;
+	background: #ffffff;
+	color: #1a1a1a;
+}
+body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+	font-size: 10pt;
+	line-height: 1.45;
+	max-width: 7in;
+	margin: 0 auto;
+	padding: 0.25in 0;
+}
+h1 {
+	font-size: 18pt;
+	margin: 0 0 0.15in 0;
+	padding-bottom: 6pt;
+	border-bottom: 2pt solid #1a1a1a;
+}
+h2 {
+	font-size: 13pt;
+	margin: 18pt 0 8pt 0;
+	color: #1a1a1a;
+	border-bottom: 1pt solid #cccccc;
+	padding-bottom: 3pt;
+}
+h3 {
+	font-size: 11pt;
+	margin: 12pt 0 6pt 0;
+	color: #333333;
+}
+p {
+	margin: 0 0 6pt 0;
+}
+ul {
+	margin: 4pt 0 8pt 0;
+	padding-left: 22pt;
+}
+li {
+	margin-bottom: 3pt;
+}
+code, pre {
+	font-family: "SF Mono", Menlo, Consolas, monospace;
+	font-size: 8.5pt;
+	background: #f4f4f4;
+	border: 1pt solid #dddddd;
+	border-radius: 2pt;
+}
+code {
+	padding: 0 3pt;
+}
+pre {
+	padding: 6pt 8pt;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	word-wrap: break-word;
+	margin: 4pt 0 8pt 0;
+}
+pre code {
+	background: transparent;
+	border: none;
+	padding: 0;
+}
+table {
+	border-collapse: collapse;
+	width: 100%;
+	margin: 6pt 0 10pt 0;
+	font-size: 8pt;
+	table-layout: fixed;
+	word-wrap: break-word;
+}
+th, td {
+	border: 1pt solid #cccccc;
+	padding: 3pt 5pt;
+	text-align: left;
+	vertical-align: top;
+	word-wrap: break-word;
+	overflow-wrap: break-word;
+}
+th {
+	background: #efefef;
+	font-weight: 600;
+}
+.banner {
+	background: #fff8e1;
+	border: 1pt solid #d4a017;
+	padding: 8pt 10pt;
+	margin: 0 0 12pt 0;
+	font-size: 9pt;
+}
+.banner strong {
+	color: #8a4b00;
+}
+.pdf-warning {
+	background: #fdecea;
+	border: 1pt solid #c0392b;
+	padding: 6pt 8pt;
+	margin: 8pt 0;
+	font-size: 9pt;
+	color: #6b1f17;
+}
+.page-break {
+	page-break-before: always;
+	break-before: page;
+}
+.thumbnail-grid {
+	display: block;
+	margin: 8pt 0;
+}
+.thumb-card {
+	border: 1pt solid #cccccc;
+	border-radius: 3pt;
+	padding: 6pt;
+	margin-bottom: 10pt;
+	page-break-inside: avoid;
+	break-inside: avoid;
+	background: #fafafa;
+}
+.thumb-card .thumb-header {
+	font-size: 9pt;
+	font-weight: 600;
+	margin-bottom: 4pt;
+	color: #222222;
+}
+.thumb-card .thumb-meta {
+	font-size: 8pt;
+	color: #555555;
+	margin-bottom: 4pt;
+}
+.thumb-card img {
+	display: block;
+	width: 100%;
+	max-width: 6.4in;
+	height: auto;
+	border: 1pt solid #999999;
+	background: #ffffff;
+}
+.thumb-rationale {
+	font-size: 8pt;
+	margin-top: 4pt;
+	color: #333333;
+	line-height: 1.35;
+}
+.metric-source {
+	font-size: 8pt;
+	color: #666666;
+	font-style: italic;
+}
+.footer {
+	margin-top: 18pt;
+	padding-top: 6pt;
+	border-top: 1pt solid #cccccc;
+	font-size: 8pt;
+	color: #666666;
+}
+</style>
+</head>
+<body>
+
+<h1>M0 static visual capability summary</h1>
+
+<div class="banner">
+<strong>STATIC EXPERIMENT EVIDENCE.</strong> Date: 2026-05-22.
+</div>
+
+<p>Lane E (visual capability summary) for the layout-manager-clean-start
+manager. Documentation-only. No code, CSS, HTML, SVG, JS, or YAML is
+modified by this report. The numbers below are aggregated from the
+upstream M0 lanes (A, B, C, D, K, M) under
+<code>test-results/m0_static_summary/</code> and the two prior reports under
+<code>docs/active_plans/reports/</code>.</p>
+
+<h2>1. Status banner</h2>
+
+<p>STATIC EXPERIMENT EVIDENCE. Not runtime evidence. <code>src/</code> empty
+post-2026-05-22 reset; runtime dispatch path is broken. Static-template
+diagnostics still work.</p>
+
+<p>Concretely:</p>
+
+<ul>
+<li><code>src/</code> is empty (the 2026-05-22 reset wiped every TypeScript module).</li>
+<li>There is no built runtime bundle, no <code>dist/main.js</code>, no
+<code>SceneRuntime</code>, no click dispatcher.</li>
+<li>The diagnostic scripts under <code>experiments/css_native_layout/</code> do not
+import from <code>src/</code>, so they still run. They render the 10
+hand-authored static HTML templates and audit the rendered DOM.</li>
+<li>Every metric below describes those static templates. None of it
+describes built-application behavior.</li>
+</ul>
+
+<h2>2. What works</h2>
+
+<ul>
+<li><code>experiments/css_native_layout/precheck.mjs</code> runs end-to-end against
+the 10 tracked top-level templates under
+<code>experiments/css_native_layout/templates/*.html</code> in 9.180 s wall time
+(single Playwright invocation, viewport 1920x1080).</li>
+<li><code>experiments/css_native_layout/score_layout.mjs</code> aggregates precheck
+output into per-scene-class-weighted metrics in under 100 ms.</li>
+<li><code>experiments/css_native_layout/no_crop_audit/inspect.mjs</code> runs
+standalone (exit 0); it does not import anything under <code>src/</code> and is
+unaffected by the reset.</li>
+<li>10 PNG screenshots are produced at 1920x1080, one per template, under
+<code>test-results/m0_static_summary/precheck/</code>.</li>
+<li>The viewport sweep (1200x900, 1440x1000, 1920x1080) over the same 10
+templates completes in 17.9 s. 1920x1080 is the best viewport per
+Lane K's <code>SWEEP_TABLE.md</code>.</li>
+<li><code>test-results/m0_static_summary/INDEX.html</code> renders a 10-card grid of
+the precheck PNGs alongside per-scene score and verdict.</li>
+</ul>
+
+<h2>3. What is broken</h2>
+
+<ul>
+<li><code>src/</code> is empty, so the runtime bundle cannot be built. That blocks
+<code>render_and_dump.mjs</code> (the bridge from the runtime bundle into static
+HTML), which blocks built-app precheck, which blocks any Playwright
+runtime spike.</li>
+<li><code>pytest tests/</code> cannot start; <code>tests/conftest.py</code> imports
+<code>pipeline/build_new_protocol_data.py</code>, which does not exist in the
+current tree.</li>
+<li><code>experiments/css_native_layout/score_layout.mjs</code> has no <code>--audit</code> or
+<code>--out</code> flags; the input and output paths are hardcoded relative to a
+fixed location. Lane B worked around this by copying outputs into
+<code>test-results/m0_static_summary/scorecard/</code> after the run.</li>
+<li><code>experiments/css_native_layout/capture.mjs</code> (a 2-viewport
+direction-comparison driver) is not used for M0. It is gitignored and
+was supplanted by the Lane K viewport-sweep script
+<code>test-results/m0_static_summary/viewport_sweep/_sweep.mjs</code>.</li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2>4. Best 5 screenshots</h2>
+
+<p>Selected from the 10 templates by Lane A precheck hard-fail counts and
+Lane B aggregate scores. <code>well_plate_96_zoom</code> is top per the brief's
+required selection criteria (score 92, 1 hard fail in the extended
+artwork-integrity count from Lane M; 0 in the Lane A column-set count).
+<code>hood_basic</code> is in the top 5 per the brief (score 60, 0 hard fails in
+the Lane A column-set count). The remaining three are chosen on the
+lowest hard-fail count and best primary_ratio. All PNG paths resolve
+on disk.</p>
+
+<table>
+<thead>
+<tr>
+<th style="width:5%">Rank</th>
+<th style="width:18%">Scene</th>
+<th style="width:13%">Scene class</th>
+<th style="width:7%">Score</th>
+<th style="width:8%">Lane A HF</th>
+<th style="width:10%">Lane M total HF</th>
+<th style="width:39%">Rationale</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>well_plate_96_zoom</td>
+<td>zoom_detail</td>
+<td>92</td>
+<td>0</td>
+<td>1</td>
+<td>Only PASS scene. Primary ratio 92.0% against 25% threshold; single residual hard fail is a 6.49% plate aspect distortion at the zoom card.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>hood_basic</td>
+<td>template</td>
+<td>60</td>
+<td>0</td>
+<td>3</td>
+<td>Sole MARGINAL scene. Zero Lane A column hard fails. Three Lane M aspect distortions (worst is p1000_pipette at 480%). No off_page or clipped_artwork.</td>
+</tr>
+<tr>
+<td>3</td>
+<td>microscope_basic</td>
+<td>template</td>
+<td>0</td>
+<td>1</td>
+<td>2</td>
+<td>Lowest Lane M total HF among the FAIL scenes (2). Template-mode scene; primary detection skipped. Single off_page + one aspect distortion.</td>
+</tr>
+<tr>
+<td>4</td>
+<td>cell_counter_basic</td>
+<td>template</td>
+<td>0</td>
+<td>1</td>
+<td>3</td>
+<td>Same single off_page + clip pattern as microscope_basic, plus one cell_counter aspect distortion at 19.1%.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>bench_basic</td>
+<td>template</td>
+<td>0</td>
+<td>1</td>
+<td>4</td>
+<td>Lowest hard-fail count among scenes that declare equipment in the front_tools region. Pipette and plate aspect distortion are both borderline (15.6% and 5.34%).</td>
+</tr>
+</tbody>
+</table>
+
+<p>Lane M total HF includes the extended <code>artwork_integrity</code> hard fails
+(<code>clipped_by_parent</code> HARD_FAIL and <code>aspect_distorted</code> HARD_FAIL) that
+are not counted in the Lane A column-set.</p>
+
+<h3>Best 5 thumbnails</h3>
+
+<div class="thumbnail-grid">
+
+<div class="thumb-card">
+<div class="thumb-header">#1 well_plate_96_zoom (score 92, zoom_detail, PASS)</div>
+<div class="thumb-meta">Lane A HF: 0 &middot; Lane M total HF: 1</div>
+<img src="../../../test-results/m0_static_summary/precheck/well_plate_96_zoom.png" alt="well_plate_96_zoom precheck screenshot">
+<div class="thumb-rationale">Only PASS scene. Primary ratio 92.0% against 25% threshold; single residual hard fail is a 6.49% plate aspect distortion at the zoom card.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#2 hood_basic (score 60, template, MARGINAL)</div>
+<div class="thumb-meta">Lane A HF: 0 &middot; Lane M total HF: 3</div>
+<img src="../../../test-results/m0_static_summary/precheck/hood_basic.png" alt="hood_basic precheck screenshot">
+<div class="thumb-rationale">Sole MARGINAL scene. Zero Lane A column hard fails. Three Lane M aspect distortions (worst is p1000_pipette at 480%). No off_page or clipped_artwork.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#3 microscope_basic (score 0, template, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 1 &middot; Lane M total HF: 2</div>
+<img src="../../../test-results/m0_static_summary/precheck/microscope_basic.png" alt="microscope_basic precheck screenshot">
+<div class="thumb-rationale">Lowest Lane M total HF among the FAIL scenes (2). Template-mode scene; primary detection skipped. Single off_page + one aspect distortion.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#4 cell_counter_basic (score 0, template, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 1 &middot; Lane M total HF: 3</div>
+<img src="../../../test-results/m0_static_summary/precheck/cell_counter_basic.png" alt="cell_counter_basic precheck screenshot">
+<div class="thumb-rationale">Same single off_page + clip pattern as microscope_basic, plus one cell_counter aspect distortion at 19.1%.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#5 bench_basic (score 0, template, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 1 &middot; Lane M total HF: 4</div>
+<img src="../../../test-results/m0_static_summary/precheck/bench_basic.png" alt="bench_basic precheck screenshot">
+<div class="thumb-rationale">Lowest hard-fail count among scenes that declare equipment in the front_tools region. Pipette and plate aspect distortion are both borderline (15.6% and 5.34%).</div>
+</div>
+
+</div>
+
+<div class="page-break"></div>
+
+<h2>5. Worst 5 screenshots</h2>
+
+<p>Selected from the bottom of the Lane M aggregate table by <code>total HF</code>.
+All PNG paths resolve on disk.</p>
+
+<table>
+<thead>
+<tr>
+<th style="width:5%">Rank</th>
+<th style="width:22%">Scene</th>
+<th style="width:14%">Scene class</th>
+<th style="width:11%">Lane M total HF</th>
+<th style="width:9%">Lane A HF</th>
+<th style="width:39%">One-line summary</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10</td>
+<td>electrophoresis_bench</td>
+<td>instrument_heavy</td>
+<td>24</td>
+<td>8</td>
+<td>Worst scene. 7 off_page + 1 region_overflow + 3 svg_label_overlap + 7 clipped_by_parent + 6 aspect_distorted. Tank overflows top by 171px; front_tools row overflows bottom; serological_pipette at 253% aspect distortion.</td>
+</tr>
+<tr>
+<td>9</td>
+<td>drug_dilution_workspace_dense</td>
+<td>dense_clutter</td>
+<td>19</td>
+<td>4</td>
+<td>4 off_page + 4 clipped_by_parent + 10 aspect_distorted. tube_rack_24 placeholder leak; tip_box aspect 45.65% wrong; tube_rack_2 at 45.31%.</td>
+</tr>
+<tr>
+<td>8</td>
+<td>crowded_bench_dense</td>
+<td>dense_clutter</td>
+<td>14</td>
+<td>5</td>
+<td>3 off_page + 2 region_overflow + 3 clipped_by_parent + 6 glassware aspect distortions at 5.16% each. front_tools region exceeds 260px budget by 34px.</td>
+</tr>
+<tr>
+<td>7</td>
+<td>drug_dilution_plate_workspace</td>
+<td>composition</td>
+<td>11</td>
+<td>2</td>
+<td>2 off_page + 2 clipped_by_parent + 6 aspect_distorted. tool_p200 and waste_container clip past viewport bottom; tip_box 45.65% aspect distortion.</td>
+</tr>
+<tr>
+<td>6</td>
+<td>staining_bench</td>
+<td>composition</td>
+<td>8</td>
+<td>3</td>
+<td>2 off_page + 1 region_overflow + 2 clipped_by_parent + 3 aspect_distorted. front_tools row clipped; primary staining_tray at 3.4% ratio.</td>
+</tr>
+</tbody>
+</table>
+
+<h3>Worst 5 thumbnails</h3>
+
+<div class="thumbnail-grid">
+
+<div class="thumb-card">
+<div class="thumb-header">#10 electrophoresis_bench (instrument_heavy, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 8 &middot; Lane M total HF: 24</div>
+<img src="../../../test-results/m0_static_summary/precheck/electrophoresis_bench.png" alt="electrophoresis_bench precheck screenshot">
+<div class="thumb-rationale">Worst scene. 7 off_page + 1 region_overflow + 3 svg_label_overlap + 7 clipped_by_parent + 6 aspect_distorted. Tank overflows top by 171px; front_tools row overflows bottom; serological_pipette at 253% aspect distortion.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#9 drug_dilution_workspace_dense (dense_clutter, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 4 &middot; Lane M total HF: 19</div>
+<img src="../../../test-results/m0_static_summary/precheck/drug_dilution_workspace_dense.png" alt="drug_dilution_workspace_dense precheck screenshot">
+<div class="thumb-rationale">4 off_page + 4 clipped_by_parent + 10 aspect_distorted. tube_rack_24 placeholder leak; tip_box aspect 45.65% wrong; tube_rack_2 at 45.31%.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#8 crowded_bench_dense (dense_clutter, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 5 &middot; Lane M total HF: 14</div>
+<img src="../../../test-results/m0_static_summary/precheck/crowded_bench_dense.png" alt="crowded_bench_dense precheck screenshot">
+<div class="thumb-rationale">3 off_page + 2 region_overflow + 3 clipped_by_parent + 6 glassware aspect distortions at 5.16% each. front_tools region exceeds 260px budget by 34px.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#7 drug_dilution_plate_workspace (composition, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 2 &middot; Lane M total HF: 11</div>
+<img src="../../../test-results/m0_static_summary/precheck/drug_dilution_plate_workspace.png" alt="drug_dilution_plate_workspace precheck screenshot">
+<div class="thumb-rationale">2 off_page + 2 clipped_by_parent + 6 aspect_distorted. tool_p200 and waste_container clip past viewport bottom; tip_box 45.65% aspect distortion.</div>
+</div>
+
+<div class="thumb-card">
+<div class="thumb-header">#6 staining_bench (composition, FAIL)</div>
+<div class="thumb-meta">Lane A HF: 3 &middot; Lane M total HF: 8</div>
+<img src="../../../test-results/m0_static_summary/precheck/staining_bench.png" alt="staining_bench precheck screenshot">
+<div class="thumb-rationale">2 off_page + 1 region_overflow + 2 clipped_by_parent + 3 aspect_distorted. front_tools row clipped; primary staining_tray at 3.4% ratio.</div>
+</div>
+
+</div>
+
+<div class="page-break"></div>
+
+<h2>6. Diagnostic measurements (aggregate)</h2>
+
+<p>Numbers below come from
+<code>test-results/m0_static_summary/scorecard/scorecard.json</code>,
+<code>test-results/m0_static_summary/precheck/visual_audit.json</code>, Lane M's
+extended count in <code>docs/active_plans/reports/m0_static_failed_scenes.md</code>,
+and Lane D's category rollup in
+<code>docs/active_plans/reports/m0_static_svg_completeness.md</code>.</p>
+
+<table>
+<thead>
+<tr>
+<th style="width:55%">Metric</th>
+<th style="width:15%">Count</th>
+<th style="width:30%">Source</th>
+</tr>
+</thead>
+<tbody>
+<tr><td>Scenes processed</td><td>10</td><td>Lane A precheck + Lane B scorecard</td></tr>
+<tr><td>Verdicts FAIL</td><td>10</td><td>Lane B (8 are score 0 hard-fail FAIL; the 2 non-zero scores are PASS and MARGINAL per scorecard summary but the per-scene precheck verdict is FAIL on all 10)</td></tr>
+<tr><td>Aggregate layout score</td><td>152 / 1000</td><td>Lane B scorecard.md ranked table</td></tr>
+<tr><td>Off-page placements</td><td>21</td><td>Lane A HARD_FAIL_TABLE totals</td></tr>
+<tr><td>Region overflows</td><td>4</td><td>Lane A HARD_FAIL_TABLE totals</td></tr>
+<tr><td>SVG-label overlaps</td><td>3 (all in electrophoresis_bench)</td><td>Lane A + Lane M cross-reference</td></tr>
+<tr><td>Clipped artwork (Lane A column-set)</td><td>0</td><td>Lane A HARD_FAIL_TABLE totals</td></tr>
+<tr><td>SVG-SVG overlaps</td><td>0</td><td>Lane A HARD_FAIL_TABLE totals</td></tr>
+<tr><td>Label-label overlaps</td><td>0</td><td>Lane A HARD_FAIL_TABLE totals</td></tr>
+<tr><td><code>clipped_by_parent</code> HARD_FAIL (Lane M extended)</td><td>21</td><td>Lane M aggregate table</td></tr>
+<tr><td><code>aspect_distorted</code> HARD_FAIL (Lane M extended)</td><td>38</td><td>Lane M aggregate table</td></tr>
+<tr><td>Placeholder asset references</td><td>2 (<code>microtube_rack_24_placeholder.svg</code> in drug_dilution_plate_workspace and drug_dilution_workspace_dense)</td><td>Lane A + Lane D</td></tr>
+<tr><td>WRONG_ASSET references (Lane D)</td><td>14</td><td>Lane D aggregate category table</td></tr>
+</tbody>
+</table>
+
+<p>The aggregate score 152/1000 follows the scorer's contract: any scene
+with <code>hard_fails &gt; 0</code> is floored to 0 regardless of weighted metric
+performance. Only <code>well_plate_96_zoom</code> (92) and <code>hood_basic</code> (60) clear
+the zero floor.</p>
+
+<div class="page-break"></div>
+
+<h2>7. Exact commands used</h2>
+
+<p>All wall times are single-invocation, headless Chromium under
+Playwright.</p>
+
+<h3>Lane A precheck (9.180 s)</h3>
+
+<pre><code>node experiments/css_native_layout/precheck.mjs \
+  'experiments/css_native_layout/templates/*.html' \
+  --out test-results/m0_static_summary/precheck \
+  --annotate on</code></pre>
+
+<p>Produced: <code>visual_audit.json</code>, <code>visual_audit.md</code>,
+<code>sizing_manifest.json</code>, <code>HARD_FAIL_TABLE.md</code>, and 10 PNGs under
+<code>test-results/m0_static_summary/precheck/</code>. The <code>--annotate on</code> flag
+warned that the optional Python annotation helper <code>_temp_annotate.py</code>
+is absent; core artifacts were still produced.</p>
+
+<h3>Lane B scorecard (under 100 ms)</h3>
+
+<pre><code>node experiments/css_native_layout/score_layout.mjs</code></pre>
+
+<p>Reads <code>test-results/new0_css_native/audit</code> (the path is hardcoded in
+the script). Outputs were copied to
+<code>test-results/m0_static_summary/scorecard/scorecard.{json,md}</code> and
+the human-readable <code>SCORECARD_SUMMARY.md</code> was authored from
+<code>scorecard.json</code> in the same lane.</p>
+
+<h3>Lane D no-crop audit (standalone, no <code>src/</code> dependency)</h3>
+
+<pre><code>node experiments/css_native_layout/no_crop_audit/inspect.mjs</code></pre>
+
+<p>Reported 16 cropping or distortion incidents across the same 10
+templates. JSON output was copied verbatim to
+<code>test-results/m0_static_summary/no_crop_audit/no_crop_audit_results.json</code>.
+The SVG completeness rollup itself was assembled by a manual fallback
+that paired every <code>&lt;img src="...svg"&gt;</code> reference with its enclosing
+<code>data-object-name</code> and categorized against the assets tree under
+<code>assets/equipment/</code>.</p>
+
+<h3>Lane K viewport sweep (17.9 s)</h3>
+
+<pre><code>node test-results/m0_static_summary/viewport_sweep/_sweep.mjs</code></pre>
+
+<p>Renders each of the 10 templates at 1200x900, 1440x1000, and
+1920x1080. Wrote 30 PNGs plus 30 JSON files (10 templates x 3
+viewports = 60 artifacts) and <code>SWEEP_TABLE.md</code>.</p>
+
+<div class="page-break"></div>
+
+<h2>8. Output paths</h2>
+
+<p>All paths are relative to repo root. Every listed file exists on disk
+at the time of this report; the PNGs were verified with <code>ls -la</code>.</p>
+
+<ul>
+<li><code>test-results/m0_static_summary/precheck/visual_audit.json</code></li>
+<li><code>test-results/m0_static_summary/precheck/visual_audit.md</code></li>
+<li><code>test-results/m0_static_summary/precheck/sizing_manifest.json</code></li>
+<li><code>test-results/m0_static_summary/precheck/HARD_FAIL_TABLE.md</code></li>
+<li><code>test-results/m0_static_summary/precheck/bench_basic.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/cell_counter_basic.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/crowded_bench_dense.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/drug_dilution_plate_workspace.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/drug_dilution_workspace_dense.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/electrophoresis_bench.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/hood_basic.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/microscope_basic.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/staining_bench.png</code></li>
+<li><code>test-results/m0_static_summary/precheck/well_plate_96_zoom.png</code></li>
+<li><code>test-results/m0_static_summary/scorecard/scorecard.json</code></li>
+<li><code>test-results/m0_static_summary/scorecard/scorecard.md</code></li>
+<li><code>test-results/m0_static_summary/scorecard/SCORECARD_SUMMARY.md</code></li>
+<li><code>test-results/m0_static_summary/INDEX.html</code></li>
+<li><code>test-results/m0_static_summary/viewport_sweep/1200x900/</code> (10 PNG + 10 JSON)</li>
+<li><code>test-results/m0_static_summary/viewport_sweep/1440x1000/</code> (10 PNG + 10 JSON)</li>
+<li><code>test-results/m0_static_summary/viewport_sweep/1920x1080/</code> (10 PNG + 10 JSON)</li>
+<li><code>test-results/m0_static_summary/viewport_sweep/SWEEP_TABLE.md</code></li>
+<li><code>test-results/m0_static_summary/viewport_sweep/_sweep.mjs</code></li>
+<li><code>test-results/m0_static_summary/no_crop_audit/no_crop_audit_results.json</code></li>
+<li><code>docs/active_plans/reports/m0_static_svg_completeness.md</code></li>
+<li><code>docs/active_plans/reports/m0_static_failed_scenes.md</code></li>
+</ul>
+
+<div class="page-break"></div>
+
+<h2>9. What cannot be tested because src/ is gone</h2>
+
+<p>Each bullet names a capability the upstream tests would normally cover
+but cannot exercise today because the runtime is absent.</p>
+
+<ul>
+<li>Runtime click dispatch. No <code>SceneRuntime</code> exists; no <code>compose_scene</code>,
+no event router, no click-target binding. A static PNG cannot prove
+click behavior.</li>
+<li><code>ObjectStateChange</code> material updates. The protocol primitive that
+mutates <code>material_name</code>, <code>material_volume</code>, <code>held_material_name</code>, and
+<code>held_material_volume</code> cannot run.</li>
+<li>Validator preset hierarchical-target matching. Without a runtime,
+<code>correct_target</code>, <code>correct_choice</code>, <code>target_with_value</code>,
+<code>sequence_complete</code>, and <code>final_state_matches</code> cannot evaluate.</li>
+<li>Production 1920x1080 <code>well_plate_96_zoom</code> rect overflow. The runtime
+rect probe (<code>experiments/css_native_layout/well_plate_rect_probe/probe.mjs</code>)
+needs the built bundle; the static template-only run does not
+reproduce the runtime SVG rect coordinates for A1, E7, H12.</li>
+<li>Walker / Playwright spike runtime proofs. Visible-UI walkthroughs
+require the built app served from <code>dist/</code>; <code>dist/</code> is empty.</li>
+<li>Layout adapter recompute on state change. The CSS-native adapter spike
+(formerly <code>src/scene_runtime/layout/css_native_adapter.ts</code>) is gone;
+recompute behavior on object-state change is unobservable.</li>
+<li>Material setter primitives. The PROTOCOL_SPEC material setter family
+(<code>set_material_volume</code>, <code>transfer_material</code>, derived state flow) is
+not callable without <code>src/</code>.</li>
+<li>Cross-scene <code>SceneChange</code>. The protocol primitive that transitions
+scene context requires the runtime; only a single static template
+can be rendered at a time.</li>
+</ul>
+
+<h2>10. Next implementation target</h2>
+
+<p>The architecture extraction plan
+<code>docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md</code>
+lays out milestones M0 through M6 for rebuilding the production layout
+manager under <code>src/scene_runtime/layout/</code>. Lane E recommends M1 of
+that plan, scoped narrowly to two CSS-only fixes that do not need
+<code>src/</code> rebuilt and that produce the largest measurable static-evidence
+delta against the M0 baseline.</p>
+
+<p>Lane M root cause 4.1 (front_tools region height) is the dominant
+multi-scene defect. Per Lane M's <code>5.1</code> "Easiest recoveries", a single
+CSS change to <code>front_tools</code> (reduce region height OR move tall tool
+cards out of <code>front_tools</code>) is forecast to recover approximately 17
+off_page entries and approximately 21 <code>clipped_by_parent</code> HARD_FAIL
+entries across bench_basic, crowded_bench_dense,
+drug_dilution_plate_workspace, drug_dilution_workspace_dense,
+electrophoresis_bench, and staining_bench.</p>
+
+<p>Lane M root cause 4.3 (aspect distortion is repo-wide) is the dominant
+single-class defect. Per Lane M's <code>5.2</code> "Per-asset card resizing",
+resizing pipette, tip_box, and glassware cards so each card aspect
+matches the natural SVG aspect is forecast to recover approximately 38
+<code>aspect_distorted</code> HARD_FAIL entries across 9 of 10 scenes.</p>
+
+<p>Both fix surfaces are pure CSS edits under
+<code>experiments/css_native_layout/styles/</code> and pure card-dimension changes
+inside the template HTML; neither requires <code>src/</code> to be repopulated.
+Both produce measurable deltas on the next precheck + scorecard run.</p>
+
+<p>Combined upper-bound recovery: up to 17 of 21 off_page hard fails, up
+to 21 of 21 <code>clipped_by_parent</code> extended hard fails, and up to 38 of
+38 <code>aspect_distorted</code> extended hard fails. The 89 total Lane M hard
+fails could drop to a residual on the order of 10 to 15 (the
+electrophoresis tank top-clip at y=-217, the three center-cluster
+svg_label_overlap entries, the placeholder leak in two scenes, and the
+microscope wrong-asset). That residual maps cleanly onto the Lane M
+section 5.3 per-scene targeted fixes and the section 5.4 pedagogy
+review, neither of which is part of M1.</p>
+
+<h2>11. Files read</h2>
+
+<p>Top references consulted while writing this report:</p>
+
+<ul>
+<li><code>test-results/m0_static_summary/scorecard/scorecard.md</code></li>
+<li><code>test-results/m0_static_summary/scorecard/SCORECARD_SUMMARY.md</code></li>
+<li><code>test-results/m0_static_summary/precheck/HARD_FAIL_TABLE.md</code></li>
+<li><code>test-results/m0_static_summary/viewport_sweep/SWEEP_TABLE.md</code></li>
+<li><code>docs/active_plans/reports/m0_static_failed_scenes.md</code></li>
+<li><code>docs/active_plans/reports/m0_static_svg_completeness.md</code></li>
+<li><code>docs/active_plans/active/layout_manager_clean_start/ONBOARDING.md</code></li>
+<li><code>docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md</code></li>
+<li><code>docs/REPO_STYLE.md</code>, <code>docs/MARKDOWN_STYLE.md</code>, <code>AGENTS.md</code></li>
+<li>Filesystem listings of <code>test-results/m0_static_summary/precheck/*.png</code> and the subdirectories under <code>test-results/m0_static_summary/</code>.</li>
+</ul>
+
+<div class="footer">
+Source Markdown: docs/active_plans/reports/m0_static_visual_summary.md
+&middot; Thumbnails: test-results/m0_static_summary/precheck/
+&middot; Lane F (HTML/PDF report) under layout-manager-clean-start.
+</div>
+
+</body>
+</html>

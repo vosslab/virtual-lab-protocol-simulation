@@ -1,9 +1,9 @@
 # Round 3: Micropipette Placeholder Fix Report
 
-**Date:** 2026-05-22  
-**Status:** DONE (0 fallbacks)  
-**Pre-fix count:** 17 fallbacks  
-**Post-fix count:** 0 fallbacks  
+**Date:** 2026-05-22
+**Status:** DONE (0 fallbacks)
+**Pre-fix count:** 17 fallbacks
+**Post-fix count:** 0 fallbacks
 **Delta:** -17 (100% reduction)
 
 ## Summary
@@ -36,8 +36,8 @@ Working SVGs (serological_pipette, aspirating_pipette) used standard `<svg xmlns
 
 ## Fix Applied
 
-**File:** `src/scene_runtime/render/scene.ts`  
-**Function:** `insertSvgAsset` (lines 121-147)  
+**File:** `src/scene_runtime/render/scene.ts`
+**Function:** `insertSvgAsset` (lines 121-147)
 **Change:** Added SVG namespace normalization before parsing.
 
 ```typescript

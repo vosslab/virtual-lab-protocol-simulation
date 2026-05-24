@@ -35,9 +35,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: centrifuge_idle }
+        output: { asset_name: centrifuge }
       - when: true
-        output: { asset_name: centrifuge_spinning }
+        output: { asset_name: centrifuge }
 
 capabilities: [clickable, instrument_with_setpoint]
 

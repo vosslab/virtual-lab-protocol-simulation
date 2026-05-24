@@ -37,7 +37,7 @@ intrinsic aspect > clean) and a top-10 highest-severity subsection.
 - Problem-object subset: SVGs backing the clipped-object list from
   [../audits/no_crop_sizing_chain_root_cause.md](../audits/no_crop_sizing_chain_root_cause.md)
   (Audit A) plus every placeholder SVG listed in
-  [../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md).
+  ../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md.
   Total problem subset: 46 files.
 
 Severity bucketing (B4 task brief priority, sorted descending):
@@ -181,7 +181,7 @@ placeholders `kimwipe_pad.svg` and
   viewBox in the asset set is zero-origin, parseable, full-silhouette,
   positive, and ships with the default `xMidYMid meet`
   preserveAspectRatio. No SVG carries a root-level transform. Per
-  [../../specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Never crop
+  ../../specs/SVG_PIPELINE.md "Never crop
   in display": once the asset enters the rendering pipeline, the
   container is the crop site, not the SVG.
 - **Placeholder replacements are gated authoring work**, not a
@@ -213,7 +213,7 @@ placeholders `kimwipe_pad.svg` and
   -- top-10 next-fix queue; rows that depend on this audit's findings
   are R2 (placeholder replacement, gated) and R3 (aspect-extreme thin
   tips, downstream-routed).
-- [../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md)
+- ../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md
   -- the placeholder roster used to identify the 11 placeholder rows in
   the table.
 
@@ -232,5 +232,5 @@ placeholders `kimwipe_pad.svg` and
   (prior full-set audit).
 - [../no_crop_round3_next_fix_queue.md](../no_crop_round3_next_fix_queue.md)
   (problem-subset identification).
-- [../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md)
+- ../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md
   (placeholder roster).

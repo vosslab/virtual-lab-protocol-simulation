@@ -1,5 +1,93 @@
 # Changelog
 
+## 2026-05-23
+
+### Additions and New Features
+
+- Build-time codegen pipeline: three Python scripts (tools/gen_object_library.py, tools/gen_svg_registry.py, tools/gen_scene_index.py) plus shared validator tools/svg_validate.py emit generated/object_library.ts, generated/svg_registry.ts, generated/scenes.ts. `generated/` stays gitignored.
+- Renderer surface: src/scene_runtime/renderer/ (5 files plus inject_svg.ts helper) reads `PipelineResult.final` and paints DOM. Only inject_svg.ts uses `innerHTML`. Structural guards (structural_guards.ts) run before paint.
+- Gradient backgrounds as a first-class scene field: `background: {type: gradient, from: ..., to: ...}` (M2b ships gradient-only).
+- Label rendering at src/scene_runtime/renderer/render_label.ts with monospace text and `data-label-for` association.
+- Two-stage precheck (tests/test_bench_basic_preflight.mjs): exercises pipeline against demo fixtures and generated content path.
+- npm `pre*` hooks (`prebuild`, `pretypecheck`, `prelint`, `pretest:node`, `prebrowser:smoke`, `preui:review`) that regenerate `generated/` before every gate that imports from it. `serve` script gated by tools/check_dist_ready.sh.
+- Playwright walkthrough at tests/playwright/test_bench_basic_render.mjs with 11 DOM/bbox assertions; artifact at tests/playwright/artifacts/bench_basic.png.
+- Interaction-readiness test at tests/playwright/test_interaction_attrs.mjs asserting six required `data-*` attrs per item.
+
+### Behavior or Interface Changes
+
+- TypeScript renderer at src/main.ts + src/index.html is the new entry point for bench_basic. Static-template HTML for bench_basic is deprecated.
+- Demo fixtures moved from src/scene_runtime/layout/demo_library.ts to src/scene_runtime/layout/__fixtures__/demo_library.ts.
+
+### Fixes and Maintenance
+
+- tools/gen_svg_registry.py now registers SVG default namespace so emitted strings use `<svg>` (not `<ns0:svg>`).
+- src/scene_runtime/renderer/structural_guards.ts aspect check multiplies by viewport aspect before comparing to viewBox aspect.
+- src/scene_runtime/renderer/render_label.ts uses `data-label-for` instead of `data-placement-name` to avoid collision with item selectors in tests.
+- content/objects/vortex.yaml `default_width` reduced from 12 to 6 to fit the rear_right zone.
+- Test harness tests/test_bench_basic_preflight.mjs corrected to pass ASSET_SPECS and use 1920x1080 viewport.
+- Scene cascade: content/base_scenes_quarantine/well_plate_96_zoom.yaml moved to quarantine after `well_plate_96` object was quarantined.
+- A1x quarantined four objects without backing SVGs (trypan_blue_bottle, trypsin_bottle, hemocytometer, well_plate_96) to content/objects_quarantine/.
+
+### Removals and Deprecations
+
+- Static-template HTML for bench_basic is no longer the rendering path; deprecated for M2b/M2c. experiments/css_native_layout/ retained as diagnostic reference (see docs/archive/m2_cleanup_queue.md for the cleanup queue).
+- `generated/` artifacts never committed; codegen always regenerates.
+
+### Decisions and Failures
+
+- M2b acceptance closed with bench_basic 11/11 C2 assertions and 0 visual-integrity failures (M0 had 3 failures on the same scene).
+- L review APPROVED M2b with two non-blocking WARNs: `pretest:node` hook added (fixed); JSX cleanup deferred to M3.
+- Lane D1 selected 8 generalization scenes; lane D2 added 6 to the allowlist (4 blocked with documented reasons: electrophoresis_bench SVG gap, well_plate_96_zoom quarantine, long_labels_smoke missing objects, adversarial_overflow_smoke is by-design fail-loud).
+- Briefing 06.01 (section-7 heights) unresolved; M2b ships without frozen-baseline screenshots. Defer to M3 after designer confirmation.
+- Briefing 06.02 (strict validator) deferred to M3 per lane F4 plan.
+
+### Developer Tests and Notes
+
+- 23 layout tests still passing after fixtures move.
+- 7 SVG validator unit tests at tests/test_svg_validate.py pass.
+- 9 structural guard tests at tests/test_structural_guards.mjs pass.
+- Preflight, C2 Playwright, interaction-attrs Playwright all green for bench_basic.
+- See reports: docs/archive/m2_codegen.md, m2_renderer.md, m2_structural_guards.md, m2_label_rendering.md, m2_preflight.md, m2_render.md, m2_vs_m0.md, m2_generalization_scene_set.md, m2_generalization_codegen.md, m2_reproducibility.md, m2_svg_completeness.md, m2_state_mutation.md, m2_cleanup_queue.md, m2_m3_productionization_plan.md, m2_diff_review.md.
+
+### Additions and New Features (M2c+M2d)
+
+- `SCENE_ALLOWLIST` expanded from 1 to 6 (bench_basic, bench_basic_row_slot, sample_prep_bench, staining_bench, cell_counter_basic, hood_basic). Allowlist metadata visible in generated/scenes.ts when generated.
+- M2c generalization Playwright walkthrough at tests/playwright/test_generalization_render.mjs.
+- D3 preflight at tests/test_generalization_preflight.mjs.
+- M2 scorecard tool at tools/scorecard_m2.mjs; methodology adapted from `experiments/css_native_layout/score_layout.mjs` without mutating the source.
+- Viewport sweep test at tests/playwright/test_viewport_sweep.mjs; 18 artifacts (6 scenes x 3 viewports) under tests/playwright/artifacts/.
+- Generalization contact sheet at test-results/m2_generalization_gallery/INDEX.html.
+- M2d audits: F2 state-mutation readiness, F3 cleanup queue, F4 M3 productionization plan, E1 no-crop diagnostics, E3 scorecard, E4 viewport sweep, E5 visual report (HTML + PDF; lane in flight at changelog time, will land alongside this entry).
+
+### Behavior or Interface Changes (M2c+M2d)
+
+- Five scenes migrated from asset-form background to gradient form (sample_prep_bench, staining_bench, cell_counter_basic, hood_basic, bench_basic_row_slot); migration log in docs/archive/m2_generalization_codegen.md.
+- Object default_width reduced on 11 objects to satisfy zone containment guards: laemmli_4x_bottle, bme_bottle, coomassie_stain_bottle, coomassie_recycle_bottle, destain_bottle, destain_waste_bottle, microtube_rack_24, staining_tray, hood_surface (50->6), rocking_shaker, aspirating_pipette (3->0.8). Aspect ratios preserved per SVG viewBox.
+- Zone bounds adjusted in 3 scenes: cell_counter_basic instrument_area top 20->15; staining_bench center top 45->28; staining_bench right_tool_area right 95->97.
+
+### Fixes and Maintenance (M2c+M2d)
+
+- gen_scene_index.py validation now distinguishes blocked scenes from allowed scenes via SCENES_SKIPPED_METADATA; previously failed loud on validation errors regardless of allowlist membership.
+
+### Removals and Deprecations (M2c+M2d)
+
+- 4 D1 scenes excluded from M2c allowlist with documented reasons: electrophoresis_bench (electrophoresis_tank missing 4 visual-state SVGs), well_plate_96_zoom (object quarantined), long_labels_smoke (6 chemical bottle objects not authored), adversarial_overflow_smoke (capacity stress test, by-design fail-loud).
+
+### Decisions and Failures (M2c+M2d)
+
+- M2c acceptance MET (5 of 6 non-adversarial scenes pass all 11 common acceptance criteria). M2c known failure: staining_bench label-label overlap (10/11, assertion I). Queued for M3 label-placement refinement.
+- L M2c review APPROVED with conditions: human commit required before M2c artifacts are durably anchored; M3 visual review of hood_surface (default_width 6) and aspirating_pipette (default_width 0.8) for pixel fidelity; latent `_x` horizontal-bbox bug in structural_guards.ts filed for separate M3 issue.
+- M0 baseline comparison: M2 reports 0 visual-integrity failures vs M0's 3 on bench_basic. M2 scorecard average 85.2/100.
+- M2d diagnostic counts (per docs/archive/m2_no_crop_diagnostics.md): 0 cropped, 0 off-page, 0 item-overlaps, 0 aspect distortions, 0 placeholders, 0 labels-outside, 1 label-label overlap (staining_bench).
+- F4 M3 productionization plan delivered at docs/active_plans/reports/m3_productionization_plan.md; covers multi-scene selector, click handling, ObjectStateChange wiring, strict validator (briefing 06.02), protocol step wiring, frozen-baseline mode after designer confirms section-7 heights.
+
+### Developer Tests and Notes (M2c+M2d)
+
+- 23 layout tests + 7 svg validator tests + 9 structural guard tests + bench_basic preflight + 6 generalization preflight + 6 generalization render Playwright (5 with 11/11, 1 with 10/11) + 18 viewport sweep artifacts + interaction attrs Playwright all pass.
+- M2 reports under docs/active_plans/reports/: generalization scene set, generalization codegen, generalization preflight, generalization render, generalization failures, no_crop_diagnostics, scorecard, viewport_sweep, content_fix_d3_failures, c2_bc_failure_diagnosis, svg_injection_root_cause, bench_basic_root_cause, m2c_diff_review, m3_productionization_plan, svg_completeness, state_mutation_readiness, cleanup_queue, reproducibility, types_passthrough, structural_layout_guards, object_library_codegen, scene_cascade_fix.
+
+---
+
 ## 2026-05-22
 
 ### Additions and New Features
@@ -39,12 +127,12 @@
 ### Additions and New Features
 
 - **M1 no-crop reconciliation bundle: 6 new workstream artifacts added under `docs/active_plans/workstreams/`.**
-  - [no_crop_current_render_sanity.md](active_plans/workstreams/no_crop_current_render_sanity.md): WS-G re-baseline of current-render no-crop metrics tied to HEAD 8795d25.
-  - [no_crop_render_harness_audit.md](active_plans/workstreams/no_crop_render_harness_audit.md): WS-D audit of the three render paths the no-crop work depends on (footprint class assignment, YAML consumption).
-  - [no_crop_missing_asset_audit.md](active_plans/workstreams/no_crop_missing_asset_audit.md): WS-C re-execution that re-derives missing-asset state from current filesystem and `git ls-files`.
-  - [no_crop_round3_static_template_repair_report.md](active_plans/workstreams/no_crop_round3_static_template_repair_report.md): WS-A retry comparing Strategies A, B, C and hybrid against the static-template baseline.
+  - no_crop_current_render_sanity.md: WS-G re-baseline of current-render no-crop metrics tied to HEAD 8795d25.
+  - no_crop_render_harness_audit.md: WS-D audit of the three render paths the no-crop work depends on (footprint class assignment, YAML consumption).
+  - no_crop_missing_asset_audit.md: WS-C re-execution that re-derives missing-asset state from current filesystem and `git ls-files`.
+  - no_crop_round3_static_template_repair_report.md: WS-A retry comparing Strategies A, B, C and hybrid against the static-template baseline.
   - `no_crop_footprint_vocab_proposal.md`: WS-E proposal naming candidate `footprint--*` classes, capped at 4 permanent additions.
-  - [no_crop_round3_plan.md](active_plans/workstreams/no_crop_round3_plan.md): WS-F synthesis tying the M1 deliverables into a priority-ordered Round 3 experiment list.
+  - no_crop_round3_plan.md: WS-F synthesis tying the M1 deliverables into a priority-ordered Round 3 experiment list.
 
 ### Behavior or Interface Changes
 
@@ -81,7 +169,7 @@
 - **NEW1.5 layout hardening: six lanes closed, results compiled, Path A
   recommendation for NEW2.** Six bounded lanes plus adapter recovery ran
   against the CSS-native layout work. Compiled results live in
-  [active_plans/new1_5_layout_hardening_results.md](active_plans/new1_5_layout_hardening_results.md).
+  active_plans/new1_5_layout_hardening_results.md.
   Lane B extended `experiments/css_native_layout/render_and_dump.mjs`
   (approx +80 lines) to inject precheck-compatible shadow placements
   with measured rects; built-app precheck now runs end-to-end at
@@ -98,7 +186,7 @@
 - **NEW1 Round 2 bundle integration: render-and-dump bridge added, compatibility shim guardrails locked in, progress report published.**
   Round 2 ran four lanes against the built-app integration of the CSS-native
   layout work. Lane outcomes are captured in
-  [new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  new1_well_plate_96_zoom_spike_result.md
   under "Bundle integration round 2 (2026-05-20)".
 
   Additions:
@@ -135,7 +223,7 @@
   `src/scene_runtime/layout/css_native_adapter.ts`. Comment block added at
   lines 112-116 marking the pixel-to-SVG scaling shim as a contained
   compatibility layer, not a layout engine. Audit subsection added to
-  [new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  new1_well_plate_96_zoom_spike_result.md
   lines 206-276 with all 6 guardrails marked [x].
 
 ### Fixes and Maintenance
@@ -406,7 +494,7 @@ calc(100% - 20px); }` zoom rule.
   width = 1800, x = -300. Mathematically correct under the CSS cascade;
   open question whether the production `renderScene` consumer handles
   rects exceeding `scene_bounds`. Flagged in
-  [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  active_plans/new1_well_plate_96_zoom_spike_result.md
   for reviewer disposition next round.
 - **NEW1 measurement-fallback alternatives analyzed (documentation
   only).** New doc
@@ -564,7 +652,7 @@ calc(100% - 20px); }` zoom rule.
     placed after the existing scene-not-found check.
 
   Documents added:
-  - [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md):
+  - active_plans/new1_well_plate_96_zoom_spike_result.md:
     consolidated Backlog A/B/C/D report. Click-target and
     ObjectStateChange paths inspected analytically; not empirically
     verified this round because the flag default-off prevents
@@ -770,7 +858,7 @@ calc(100% - 20px); }` zoom rule.
   pre-spike 163, no NEW spike-caused errors). Three Playwright spike
   scripts under `tests/playwright/spike_built_app_*.mjs` PASS.
   Final per-round summary at
-  [active_plans/new1_well_plate_96_zoom_spike_result.md](active_plans/new1_well_plate_96_zoom_spike_result.md)
+  active_plans/new1_well_plate_96_zoom_spike_result.md
   under "Bundle integration round (2026-05-19)".
 
 ## 2026-05-18

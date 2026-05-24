@@ -21,5 +21,5 @@ visual_states:
 capabilities: [clickable]
 
 layout:
-  default_width: 50
+  default_width: 6
   label_width: 8

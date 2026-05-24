@@ -134,7 +134,7 @@ Reasons:
    water_bath_heating, gel_lane_sample) WILL need yaml-side per-case
    asset_name anyway. An alias map would be a stopgap that has to be
    undone once the real SVGs land.
-6. Vocabulary closure principle ([PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md))
+6. Vocabulary closure principle (PRIMARY_DESIGN.md)
    prefers explicit fields over hidden indirection layers. An alias map
    is a hidden cross-layer behavior of the kind the design spec warns
    against.

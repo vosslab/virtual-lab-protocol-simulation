@@ -111,7 +111,7 @@ The test logs pass/fail status for each viewport and assertion. Final exit code 
 
 ## References
 
-- [bench.yaml](../../src/scenes/bench/bench.yaml) - current bench scene layout declaration
+- bench.yaml - current bench scene layout declaration
 - `asset_specs.ts` - equipment widthScale and visual metrics
 - `professor_overlay.ts` - coach card rendering and mood
 - Retired `devel/test_layout_metrics.mjs` - automated layout test referenced by this archived note

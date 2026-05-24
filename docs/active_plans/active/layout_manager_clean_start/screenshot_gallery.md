@@ -78,7 +78,7 @@ substitutions appear.
 
 ### B1. microscope_basic (template, PASS_TEMPLATE)
 
-![microscope_basic](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/microscope_basic.png)
+!microscope_basic
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/microscope_basic.png`
 - Scene: microscope_basic
@@ -90,7 +90,7 @@ substitutions appear.
 
 ### B2. bench_basic (template)
 
-![bench_basic](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/bench_basic.png)
+!bench_basic
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/bench_basic.png`
 - Scene: bench_basic
@@ -103,7 +103,7 @@ substitutions appear.
 
 ### B3. cell_counter_basic (template)
 
-![cell_counter_basic](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/cell_counter_basic.png)
+!cell_counter_basic
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/cell_counter_basic.png`
 - Scene: cell_counter_basic
@@ -118,7 +118,7 @@ substitutions appear.
 
 ### B4. hood_basic (template)
 
-![hood_basic](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/hood_basic.png)
+!hood_basic
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/hood_basic.png`
 - Scene: hood_basic
@@ -131,7 +131,7 @@ substitutions appear.
 
 ### B5. well_plate_96_zoom (composition, zoom_detail)
 
-![well_plate_96_zoom](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/well_plate_96_zoom.png)
+!well_plate_96_zoom
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/well_plate_96_zoom.png`
 - Scene: well_plate_96_zoom
@@ -146,7 +146,7 @@ substitutions appear.
 
 ### B6. staining_bench (composition)
 
-![staining_bench](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/staining_bench.png)
+!staining_bench
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/staining_bench.png`
 - Scene: staining_bench
@@ -160,7 +160,7 @@ substitutions appear.
 
 ### B7. crowded_bench_dense (composition, dense_clutter)
 
-![crowded_bench_dense](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/crowded_bench_dense.png)
+!crowded_bench_dense
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/crowded_bench_dense.png`
 - Scene: crowded_bench_dense
@@ -176,7 +176,7 @@ substitutions appear.
 
 ### B8. drug_dilution_plate_workspace (composition)
 
-![drug_dilution_plate_workspace](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_plate_workspace.png)
+!drug_dilution_plate_workspace
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_plate_workspace.png`
 - Scene: drug_dilution_plate_workspace
@@ -189,7 +189,7 @@ substitutions appear.
 
 ### B9. drug_dilution_workspace_dense (composition, dense_clutter)
 
-![drug_dilution_workspace_dense](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_workspace_dense.png)
+!drug_dilution_workspace_dense
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/drug_dilution_workspace_dense.png`
 - Scene: drug_dilution_workspace_dense
@@ -202,7 +202,7 @@ substitutions appear.
 
 ### B10. electrophoresis_bench (composition, instrument_heavy)
 
-![electrophoresis_bench](../../../../experiments/css_native_layout/stress_results/precheck_b1_final/electrophoresis_bench.png)
+!electrophoresis_bench
 
 - Source: `experiments/css_native_layout/stress_results/precheck_b1_final/electrophoresis_bench.png`
 - Scene: electrophoresis_bench
@@ -228,7 +228,7 @@ images also show the no-crop contract rule being violated.
 
 ### W1. gold_cell_counter_station (clipped + aspect HARD FAIL)
 
-![gold_cell_counter_station](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_cell_counter_station.png)
+!gold_cell_counter_station
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_cell_counter_station.png`
 - Scene: gold_cell_counter_station
@@ -242,7 +242,7 @@ images also show the no-crop contract rule being violated.
 
 ### W2. gold_drug_dilution_workspace (severe upscaling + clipping)
 
-![gold_drug_dilution_workspace](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_drug_dilution_workspace.png)
+!gold_drug_dilution_workspace
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_drug_dilution_workspace.png`
 - Scene: gold_drug_dilution_workspace
@@ -259,7 +259,7 @@ images also show the no-crop contract rule being violated.
 
 ### W3. gold_electrophoresis_full_setup (off-page placements)
 
-![gold_electrophoresis_full_setup](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_electrophoresis_full_setup.png)
+!gold_electrophoresis_full_setup
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_electrophoresis_full_setup.png`
 - Scene: gold_electrophoresis_full_setup
@@ -273,7 +273,7 @@ images also show the no-crop contract rule being violated.
 
 ### W4. gold_heat_block_sample_prep (off-page + clipped glassware)
 
-![gold_heat_block_sample_prep](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_heat_block_sample_prep.png)
+!gold_heat_block_sample_prep
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_heat_block_sample_prep.png`
 - Scene: gold_heat_block_sample_prep
@@ -287,7 +287,7 @@ images also show the no-crop contract rule being violated.
 
 ### W5. gold_hood_prep (clipped glassware in hood frame)
 
-![gold_hood_prep](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_hood_prep.png)
+!gold_hood_prep
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_hood_prep.png`
 - Scene: gold_hood_prep
@@ -301,7 +301,7 @@ images also show the no-crop contract rule being violated.
 
 ### W6. gold_microscope_slide_prep (off-page + crop)
 
-![gold_microscope_slide_prep](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_microscope_slide_prep.png)
+!gold_microscope_slide_prep
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_microscope_slide_prep.png`
 - Scene: gold_microscope_slide_prep
@@ -314,7 +314,7 @@ images also show the no-crop contract rule being violated.
 
 ### W7. gold_mixed_bench (composition collision)
 
-![gold_mixed_bench](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_mixed_bench.png)
+!gold_mixed_bench
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_mixed_bench.png`
 - Scene: gold_mixed_bench
@@ -327,7 +327,7 @@ images also show the no-crop contract rule being violated.
 
 ### W8. gold_plate_reader_assay (instrument + plate crop)
 
-![gold_plate_reader_assay](../../../../experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_plate_reader_assay.png)
+!gold_plate_reader_assay
 
 - Source: `experiments/css_native_layout/stress_results/precheck_post_trial5_gold/gold_plate_reader_assay.png`
 - Scene: gold_plate_reader_assay
@@ -341,7 +341,7 @@ images also show the no-crop contract rule being violated.
 
 ### W9. stress_dense_clutter_004 (synthetic stress, dense_clutter class)
 
-![stress_dense_clutter_004](../../../../experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_dense_clutter_004.png)
+!stress_dense_clutter_004
 
 - Source: `experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_dense_clutter_004.png`
 - Scene: stress_dense_clutter_004
@@ -355,7 +355,7 @@ images also show the no-crop contract rule being violated.
 
 ### W10. stress_many_small_tools_scene_002 (synthetic stress, many tools)
 
-![stress_many_small_tools_scene_002](../../../../experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_many_small_tools_scene_002.png)
+!stress_many_small_tools_scene_002
 
 - Source: `experiments/css_native_layout/stress_results/precheck_batch2_container_sweep_container_C2_400_292/stress_many_small_tools_scene_002.png`
 - Scene: stress_many_small_tools_scene_002

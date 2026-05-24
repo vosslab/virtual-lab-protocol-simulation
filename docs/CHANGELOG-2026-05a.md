@@ -369,7 +369,7 @@
   - Removed `.padStart(2, '0')` from well-id generation in `plateTargets` handling (lines 59, 71).
   - Walker now generates unpadded well IDs from protocol `plateTargets` exactly as it did before step-5 work.
 
-- Fixed [render.ts](../src/scene_runtime/adapters/well_plate/render.ts):
+- Fixed render.ts:
   - Removed `.padStart(2, '0')` from column label generation in `renderWellGrid()` (line 135).
   - Removed `.padStart(2, '0')` from well-id generation in wells grid loop (line 145).
   - Removed `.padStart(2, '0')` from column label generation in `renderWell()` helper (line 178).
@@ -412,7 +412,7 @@
 
 ### Additions and New Features
 
-- Extended [index.ts](../src/scene_runtime/adapters/well_plate/index.ts) to wire click handlers on well plate elements:
+- Extended index.ts to wire click handlers on well plate elements:
   - Added click handler registration for `[data-well-id]` elements alongside `[data-item-id]` elements.
   - Well clicks dispatch as `{ id: wellId, kind: 'well' }` through the existing `dispatchClick()` path.
   - Both item and well clicks apply the same click tracking and step completion logic.
@@ -427,7 +427,7 @@
   - Updated `highlightInteractionSequence()` to expand `plateTargets` into well IDs for `nextTargets` when destination is `well_plate`.
   - Completed wells are tracked separately in `completedTargets` (marked with `.is-filled` class).
 
-- Enhanced [render.ts](../src/scene_runtime/adapters/well_plate/render.ts):
+- Enhanced render.ts:
   - Updated `renderWellGrid()` to accept optional `HighlightState` parameter.
   - Applied `.is-next-target` class to wells in `nextTargets` for blue highlight during interaction.
   - Applied `.is-filled` class to completed wells for green background visual confirmation.
@@ -497,7 +497,7 @@
   - Fixed zone width constant: increased minimum from 80px to accommodate 100px items without overflow.
   - Ensured zone ordering preserves insertion order (preserves top-left_bench before right_shelf).
 
-- Enhanced [render.ts](../src/scene_runtime/adapters/well_plate/render.ts):
+- Enhanced render.ts:
   - Added item sorting by Y position (top items first) before rendering to ensure correct z-index via document order.
   - Reversed z-index assignment so items higher on page (lower Y) have higher z-index and appear clickable.
 
@@ -572,7 +572,7 @@
 - Fixed sceneConfig to include zones array (main_plate_area, top_left_bench, right_shelf) from scene.yaml. Zones define positioning grids for layout engine.
 - Fixed layout engine constants: increased DEFAULT_ITEM_WIDTH and DEFAULT_ITEM_HEIGHT from 10px to 100px to match equipment-item CSS width/height (ITEM_SIZE_PX=100px). Increased MIN_GAP from 2px to 10px for readable spacing. Layout now produces correctly-spaced 100x100 equipment items in vertical stack.
 - Fixed interactionSequence completion tracking in well_plate adapter: added getInteractionSequenceLength() helper to compute expected sequence length from interactions array. Modified initWellPlateAdapter() and wireClickHandlers() to check if completedClicks.length >= expectedLength after each click; when true, mark advances=true and call onStepComplete(stepId). Dispatch module returns advances=false for interactionSequence; adapter now provides completion logic.
-- [index.ts](../src/scene_runtime/adapters/well_plate/index.ts): added completion tracking for interactionSequence path kind. Helper function counts tool/source/destination across interactions array. Main click handler and re-render handler both check completion and advance step when all interactions consumed.
+- index.ts: added completion tracking for interactionSequence path kind. Helper function counts tool/source/destination across interactions array. Main click handler and re-render handler both check completion and advance step when all interactions consumed.
 
 ### Verification (post-fix)
 
@@ -593,8 +593,8 @@
 
 - WP-WP-1: Authored `content/plate_drug_treatment/scene.yaml` - scene declarations for well_plate_workspace: well_plate (main_plate_area zone), multichannel_pipette, carboplatin_stock_solution, media_bottle, dilution_tube_carb_b (equipment zones). Minimal schema: id, label, zone per contract item 3 (SVG-backed, layout-engine-placed). No layout-rules/asset-metrics yet (deferred); scene is ready for adapter render.
 - WP-WP-2: Real well_plate adapter implementation:
-  - [render.ts](../src/scene_runtime/adapters/well_plate/render.ts): pure `renderWorkspace(scene: SceneConfig, highlights: HighlightState): string` renders SVG-backed equipment (pipettes, bottles, tubes) and custom 96-well grid (8x12 with row/col labels A-H and 1-12). Equipment items and plate container apply is-next-target highlight class. Reuses deriveHighlights() and getWorkspaceStyles() for CSS-in-JS. Under 350 lines.
-  - [index.ts](../src/scene_runtime/adapters/well_plate/index.ts): `initWellPlateAdapter(scene, step, config)` mounts workspace, injects styles, wires click handlers for all [data-item-id] elements. On matched click, re-renders highlights and re-wires handlers. Calls config.onClickMatched() for each valid click and config.onStepComplete(stepId) when step completes. Imports dispatchClick(), deriveHighlights() (pure subsystems); no branching on step.id. Under 250 lines.
+  - render.ts: pure `renderWorkspace(scene: SceneConfig, highlights: HighlightState): string` renders SVG-backed equipment (pipettes, bottles, tubes) and custom 96-well grid (8x12 with row/col labels A-H and 1-12). Equipment items and plate container apply is-next-target highlight class. Reuses deriveHighlights() and getWorkspaceStyles() for CSS-in-JS. Under 350 lines.
+  - index.ts: `initWellPlateAdapter(scene, step, config)` mounts workspace, injects styles, wires click handlers for all [data-item-id] elements. On matched click, re-renders highlights and re-wires handlers. Calls config.onClickMatched() for each valid click and config.onStepComplete(stepId) when step completes. Imports dispatchClick(), deriveHighlights() (pure subsystems); no branching on step.id. Under 250 lines.
 - WP-WP-3: Real entrypoint HTML:
   - `tests/playwright/fixtures/plate_drug_treatment_real/index.html`: loads PROTOCOL_CATALOG['plate_drug_treatment'] and INVENTORY_CATALOG['plate_drug_treatment'] from generated/\* data. Mounts well_plate adapter on step 1 (open_plate_workspace, modal kind). Inline JavaScript (no ES modules for file:// compatibility) renders workspace, wires workspace item clicks to show modal, wires modal confirm button to record step completion. Verified: walker passes step 1 end-to-end via visible clicks (well_plate -> confirm-plate-intro); saves 5 screenshots to test-results/walker/plate_drug_treatment_real/step_01/.
 - build_protocol_data.py: already supports scene.yaml parsing (no changes needed); scene YAML is for documentation/future layout-engine integration; current adapter reads from INVENTORY_CATALOG generated data.

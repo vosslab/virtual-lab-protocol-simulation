@@ -14,52 +14,52 @@ Analyzed 7 SDS-PAGE gel/electrode objects with identical 10-instance frequency a
 ### Per-Object Diagnosis
 
 1. **p10_gel_loading_tip_box** (decoration)
-   - **Cause**: VISUAL_STATE_GAP — empty `visual_states: {}`
+   - **Cause**: VISUAL_STATE_GAP - empty `visual_states: {}`
    - **Root**: Stateless object with no state field to key visual_states
    - **Fix Applied**: Added `visible` bool field; svg case for both true/false
    - **Generated**: field_name="visible", kind="svg_swap", cases for true/false
-   - **Asset**: SVG_P10_GEL_LOADING_TIP_BOX exists ✓
-   - **Result**: ELIMINATED (10 instances → 0)
+   - **Asset**: SVG_P10_GEL_LOADING_TIP_BOX exists OK
+   - **Result**: ELIMINATED (10 instances -> 0)
 
 2. **gel_opening_tool** (equipment)
-   - **Cause**: VISUAL_STATE_GAP — empty `visual_states: {}`
+   - **Cause**: VISUAL_STATE_GAP - empty `visual_states: {}`
    - **Root**: Stateless object with no state field to key visual_states
    - **Fix Applied**: Added `visible` bool field; svg case for both true/false
    - **Generated**: field_name="visible", kind="svg_swap", cases for true/false
-   - **Asset**: SVG_GEL_OPENING_TOOL exists ✓
-   - **Result**: ELIMINATED (10 instances → 0)
+   - **Asset**: SVG_GEL_OPENING_TOOL exists OK
+   - **Result**: ELIMINATED (10 instances -> 0)
 
 3. **electrode_module** (equipment)
-   - **Cause**: VISUAL_STATE_GAP — composite/overlay only visual_states
+   - **Cause**: VISUAL_STATE_GAP - composite/overlay only visual_states
    - **Root**: Had 3 state fields with svg cases, but all mapped composite/overlay only in schema
    - **Existing State**: mounted, cassette_mounted, wing_clamps_open (all bool)
    - **Original visual_states**: All three fields present but marked composite (incorrectly)
    - **Fix Applied**: Changed visual_states to svg kind with cases for true/false for all three fields
    - **Generated**: All three fields now kind="svg_swap" with correct cases
-   - **Asset**: SVG_ELECTRODE_MODULE exists ✓
-   - **Result**: ELIMINATED (10 instances → 0)
+   - **Asset**: SVG_ELECTRODE_MODULE exists OK
+   - **Result**: ELIMINATED (10 instances -> 0)
 
 4. **mini_protean_gel** (equipment)
-   - **Cause**: VISUAL_STATE_GAP — composite-only visual_state
+   - **Cause**: VISUAL_STATE_GAP - composite-only visual_state
    - **Root**: sealed bool field had kind: composite with empty composite: []
    - **Fix Applied**: Changed visual_states.sealed from composite to svg kind; added cases for true/false
    - **Generated**: field_name="sealed", kind="svg_swap", cases for true/false
-   - **Asset**: SVG_MINI_PROTEAN_GEL exists ✓
-   - **Result**: ELIMINATED (10 instances → 0)
+   - **Asset**: SVG_MINI_PROTEAN_GEL exists OK
+   - **Result**: ELIMINATED (10 instances -> 0)
 
 5. **gel_comb** (equipment)
-   - **Cause**: VISUAL_STATE_GAP — composite-only visual_state
+   - **Cause**: VISUAL_STATE_GAP - composite-only visual_state
    - **Root**: position enum field had kind: composite; single enum value not_in_cassette
    - **Fix Applied**: Changed visual_states.position from composite to svg kind; expanded enum to include in_cassette; added cases for both
    - **Generated**: field_name="position", kind="svg_swap", cases for in_cassette/not_in_cassette
-   - **Asset**: SVG_GEL_COMB exists ✓
-   - **Result**: ELIMINATED (10 instances → 0)
+   - **Asset**: SVG_GEL_COMB exists OK
+   - **Result**: ELIMINATED (10 instances -> 0)
 
 6. **p200_micropipette** (pipette)
    - **Status**: NOT FIXED
    - **Current Fallback Count**: 10 instances remain
    - **Diagnosis**: Object already had proper visual_states entries for held_material_name (svg_swap kind with cases for empty/filled); assets exist (p200_micropipette_empty, p200_micropipette_filled)
-   - **Root Cause**: Unclear — asset resolution should work. Likely issue:
+   - **Root Cause**: Unclear - asset resolution should work. Likely issue:
      - Object state not initialized with default held_material_name="empty" at scene start
      - OR runtime rendering skips this object for unknown reason
    - **Required Investigation**: Runtime state initialization flow; why held_material_name defaults not applied to p200_micropipette in SDS-PAGE scenes
@@ -71,7 +71,7 @@ Analyzed 7 SDS-PAGE gel/electrode objects with identical 10-instance frequency a
    - **Diagnosis**: Object has structure with subparts (lanes). visual_states define per-subpart rendering:
      - material_name (svg kind): references gel_lane_empty, gel_lane_ladder, gel_lane_sample
      - material_volume, tape_present, comb_present, top_plate_inserted, side_clamps_locked, wing_clamps_locked: all composite kind
-   - **Root Cause**: ASSET_NAME_MISSING — referenced assets do not exist:
+   - **Root Cause**: ASSET_NAME_MISSING - referenced assets do not exist:
      - gel_lane_empty: NOT FOUND in svg_assets/index.ts
      - gel_lane_ladder: NOT FOUND in svg_assets/index.ts
      - gel_lane_sample: NOT FOUND in svg_assets/index.ts
@@ -134,7 +134,7 @@ Generated files updated:
 
 3. **Structural Objects**: gel_cassette's subpart rendering requires per-lane assets that do not currently exist. This is an architecture + asset-authoring dependency.
 
-4. **Visual State Gap Detection**: The 120→66 reduction demonstrates that composite-only visual_states (without an svg fallback case) are the primary gap for this cluster.
+4. **Visual State Gap Detection**: The 120->66 reduction demonstrates that composite-only visual_states (without an svg fallback case) are the primary gap for this cluster.
 
 ## Recommendations
 

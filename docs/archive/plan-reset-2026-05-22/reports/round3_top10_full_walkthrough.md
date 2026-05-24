@@ -16,7 +16,7 @@ Walkthrough outcomes (post-adjust enhancement):
 - Protocols mounted: 9/9 (100%)
 - Full walkthroughs completed (all steps terminal): **9/9 (100%)**
 - Total steps walked: 25/25 (100%)
-- Total interactions executed: 39 (25 steps × interactions + adjust events)
+- Total interactions executed: 39 (25 steps x interactions + adjust events)
 - **Adjust gestures executed: 14/14 (100%)**
   - adjust_succeeded: 14
   - adjust_failed: 0
@@ -89,8 +89,8 @@ The walker engine (tests/playwright/walker/engine.mjs) now implements full adjus
 - Handles panel visibility timing after scene changes
 
 **Tested coverage:**
-- set_volume (micropipette, serological, multichannel): 11 gestures ✓
-- wavelength_nm (plate_reader): 1 gesture ✓
+- set_volume (micropipette, serological, multichannel): 11 gestures OK
+- wavelength_nm (plate_reader): 1 gesture OK
 - Success rate: 14/14 (100%)
 
 ### Viewport fix effectiveness (prior round)

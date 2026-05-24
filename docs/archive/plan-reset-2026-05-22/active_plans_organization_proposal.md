@@ -1,7 +1,7 @@
 # Active plans organization proposal (Phase 1)
 
 Proposal-only. No file moves, no `git mv`, no edits to
-[REPO_STYLE.md](../REPO_STYLE.md) in this phase. Phase 2 (if approved)
+REPO_STYLE.md in this phase. Phase 2 (if approved)
 applies moves and adds the REPO_STYLE.md section verbatim from section 6 below.
 
 Surveyed at HEAD `8795d25`.
@@ -230,7 +230,7 @@ working files. Everything else lives in `docs/archive/` or in canonical
 ## 6. Draft REPO_STYLE.md entry
 
 Suggested insertion point: after the existing "Documentation" section
-(line 143 of [REPO_STYLE.md](../REPO_STYLE.md)) and before
+(line 143 of REPO_STYLE.md) and before
 "### Recommended common docs" (line 155), as a new subsection. This places
 the working-folder rule next to the docs/-folder rules it depends on.
 

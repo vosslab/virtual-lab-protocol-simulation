@@ -119,6 +119,6 @@ without coordination with the other writer. Recommended:
 
 ## Boundaries respected
 
-- No contract edits ([../../PRIMARY_CONTRACT.md](../../PRIMARY_CONTRACT.md) untouched).
+- No contract edits (../../PRIMARY_CONTRACT.md untouched).
 - ASCII only.
 - No commits made.

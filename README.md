@@ -1,8 +1,6 @@
-# Cell culture game
+# Virtual lab protocol simulation
 
-An interactive browser-based simulation game that teaches cell culture laboratory
-techniques. Players practice aspirating old media, feeding cells with fresh media,
-drug treatment pipetting, and microscope observation in a guided workflow.
+YAML-authored lab protocols compile to TypeScript-rendered browser simulations through build-time codegen. Authors compose scenes, objects, and workflows without coding; the pipeline handles layout, SVG injection, and interaction tracking.
 
 ## Quick start
 

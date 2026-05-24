@@ -14,7 +14,7 @@ Source commands: `git status --short`, `git diff --stat`, `git diff --name-statu
 - All seven files declare `Read-only` or `doc-only; no code, YAML, or CSS edits`
   scope and cite HEAD `8795d25` as the audited revision.
 - Subdirectory placement matches the closed set in
-  [REPO_STYLE.md](../../REPO_STYLE.md) "Active plans folder organization"
+  REPO_STYLE.md "Active plans folder organization"
   (`audits/` and `decisions/`).
 
 ## File count by category

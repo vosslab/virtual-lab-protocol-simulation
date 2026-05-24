@@ -18,29 +18,29 @@ documents and are not cited here as canonical vocabulary sources.
 
 The canonical vocabulary docs are:
 
-- [LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md)
-- [MATERIAL_CONVENTION.md](../specs/MATERIAL_CONVENTION.md)
-- [OBJECT_VOCABULARY.md](../specs/OBJECT_VOCABULARY.md)
-- [OBJECT_YAML_FORMAT.md](../specs/OBJECT_YAML_FORMAT.md)
-- [PROTOCOL_AUTHORING_GUIDE.md](../specs/PROTOCOL_AUTHORING_GUIDE.md)
-- [PROTOCOL_STEPS.md](../specs/PROTOCOL_STEPS.md)
-- [PROTOCOL_VOCABULARY.md](../specs/PROTOCOL_VOCABULARY.md)
-- [PROTOCOL_YAML_FORMAT.md](../specs/PROTOCOL_YAML_FORMAT.md)
-- [SCALING_MODEL.md](../specs/SCALING_MODEL.md)
-- [SCENE_ARCHITECTURE.md](../specs/SCENE_ARCHITECTURE.md)
-- [SCENE_INHERITANCE.md](../specs/SCENE_INHERITANCE.md)
-- [SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md)
-- [SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md)
-- [SPEC_DESIGN_CHECKLIST.md](../specs/SPEC_DESIGN_CHECKLIST.md)
-- [SVG_PIPELINE.md](../specs/SVG_PIPELINE.md)
-- [TARGET_FILE_STRUCTURE.md](../specs/TARGET_FILE_STRUCTURE.md)
-- [WALKTHROUGH_GUIDE.md](../specs/WALKTHROUGH_GUIDE.md)
+- LAYOUT_ENGINE.md
+- MATERIAL_CONVENTION.md
+- OBJECT_VOCABULARY.md
+- OBJECT_YAML_FORMAT.md
+- PROTOCOL_AUTHORING_GUIDE.md
+- PROTOCOL_STEPS.md
+- PROTOCOL_VOCABULARY.md
+- PROTOCOL_YAML_FORMAT.md
+- SCALING_MODEL.md
+- SCENE_ARCHITECTURE.md
+- SCENE_INHERITANCE.md
+- SCENE_VOCABULARY.md
+- SCENE_YAML_FORMAT.md
+- SPEC_DESIGN_CHECKLIST.md
+- SVG_PIPELINE.md
+- TARGET_FILE_STRUCTURE.md
+- WALKTHROUGH_GUIDE.md
 
 None of the canonical specs above carry a "region" schema construct.
 The closest canonical construct (a named placement area inside a
 scene) is `zone`, declared by the scene YAML `zones[]` array and
 referenced from placements via `placement.zone`. See
-[SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md) sections
+SCENE_VOCABULARY.md sections
 "What a scene is" and "zone".
 
 ## Repo-wide evidence (verified at HEAD 8795d25)
@@ -82,7 +82,7 @@ ratio (8 / 416 = ~2% region; 86 / 416 = ~21% scene) confirms
 "Scene" is the durable, canonical authoring concept for "where
 things appear and how the space is arranged". The canonical
 definition lives in
-[SCENE_VOCABULARY.md](../specs/SCENE_VOCABULARY.md):
+SCENE_VOCABULARY.md:
 
 > A scene is the unit of authoring for "where things appear and how
 > the space is arranged". One scene declares one workspace surface,
@@ -92,13 +92,13 @@ definition lives in
 > spatial-arrangement rules that the layout engine consumes.
 
 The hard contract item that anchors this is
-[PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) item 1 (scene and
+PRIMARY_CONTRACT.md item 1 (scene and
 protocol configuration live in YAML) and item 3 (clickable objects
 are SVG-backed scene objects laid out by the layout engine). The
 scene YAML schema is closed and lives in
-[SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md). The
+SCENE_YAML_FORMAT.md. The
 scene runtime model lives in
-[SCENE_ARCHITECTURE.md](../specs/SCENE_ARCHITECTURE.md).
+SCENE_ARCHITECTURE.md.
 
 Scene-side durable terms (from SCENE_VOCABULARY.md):
 
@@ -128,7 +128,7 @@ These files are not scene YAML. They do not declare a scene, a
 backdrop, zones, placements, scene bounds, or layout rules. They
 declare a mapping table consumed (or intended to be consumed) by an
 experiment-local renderer. The canonical schema for scenes lives in
-[SCENE_YAML_FORMAT.md](../specs/SCENE_YAML_FORMAT.md) and is
+SCENE_YAML_FORMAT.md and is
 unrelated to the `regions/*.yaml` shape.
 
 The word "region" in the folder name predates the canonical "zone"

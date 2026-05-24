@@ -1,4 +1,4 @@
-# ObjectStateChange Real-Fire Audit Report — Round 3
+# ObjectStateChange Real-Fire Audit Report - Round 3
 
 Post-Foundation HTML wiring retest. Runtime auto-initializes via inlined script per-protocol HTML.
 
@@ -30,8 +30,8 @@ Foundation: Complete; HTML wiring ships inlined initialization
 
 | Protocol | Cluster | Target | Expected | Pre | Post | Delta | Match | Issue |
 |----------|---------|--------|----------|-----|------|-------|-------|-------|
-| cell_seeding_plate_setup | cell_culture | serological_pipette | set_volume=2.4 | 1 | 2.4 | YES | FIRE | — |
-| drug_dilution_setup | cell_culture | micropipette | set_volume=40 | 100 | 40 | YES | FIRE | — |
+| cell_seeding_plate_setup | cell_culture | serological_pipette | set_volume=2.4 | 1 | 2.4 | YES | FIRE | - |
+| drug_dilution_setup | cell_culture | micropipette | set_volume=40 | 100 | 40 | YES | FIRE | - |
 | trypan_blue_counting | cell_culture | micropipette | set_volume=10 | N/A | N/A | NO | ERROR | Adjust panel not visible post-attach |
 | mtt_plate_reaction | cell_culture | multichannel_pipette | set_volume=25 | N/A | N/A | NO | ERROR | Adjust panel not visible post-click |
 | mtt_solubilization_readout | cell_culture | multichannel_pipette | set_volume=100 | N/A | N/A | NO | ERROR | Adjust panel not visible post-click |

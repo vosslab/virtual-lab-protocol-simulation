@@ -10,7 +10,10 @@ scene_bounds:
   bottom: 95
 
 background:
-  asset: bench_workspace_bg
+  type: gradient
+  from: "#E8E2D0"
+  to: "#D4CBB3"
+  angle: 180
 
 zones:
   - id: rear_left
@@ -41,14 +44,14 @@ zones:
     bounds:
       left: 20
       right: 80
-      top: 45
+      top: 28
       bottom: 75
     align: center
     label: Bench work surface
   - id: right_tool_area
     bounds:
       left: 80
-      right: 95
+      right: 97
       top: 55
       bottom: 80
     align: center

@@ -14,7 +14,7 @@ subparts) is documented in [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md) and
 placement method itself: how object placements, zones, asset metrics, depth,
 labels, and scene bounds become positioned DOM elements.
 
-The core implementation lives in [layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts).
+The core implementation lives in layout_engine.ts.
 The public types live in `scene_types.ts`, and the
 asset metrics live in `asset_specs.ts`.
 
@@ -83,10 +83,10 @@ not mutate the source scene config and does not install click handlers.
 
 Bench and hood are the main layout-engine examples:
 
-- [../../src/scenes/bench/bench.yaml](../../src/scenes/bench/bench.yaml)
-- [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
-- [../../src/scenes/cell_culture_hood/cell_culture_hood.yaml](../../src/scenes/cell_culture_hood/cell_culture_hood.yaml)
-- [render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
+- ../../src/scenes/bench/bench.yaml
+- render.ts
+- ../../src/scenes/cell_culture_hood/cell_culture_hood.yaml
+- render.ts
 
 ## When to use it
 
@@ -125,7 +125,7 @@ Poor fits:
 - Instrument control panel.
 
 Dedicated SVG-coordinate workspaces such as
-[render.ts](../../src/scene_runtime/adapters/well_plate/render.ts)
+render.ts
 do not use the general layout engine for their internal plate or tube grid.
 They own a custom geometric layout because their primary objects are structured
 scientific grids, not row-and-zone bench objects.
@@ -628,7 +628,7 @@ Use the visual symptom to choose the fix:
 - Click target exists but visual is elsewhere: the renderer probably added its
   own offsets after layout. Use the computed box directly.
 
-Console warnings from [layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts) are
+Console warnings from layout_engine.ts are
 specific:
 
 - `alignment anchor violated` means the visual-edge invariant failed for a

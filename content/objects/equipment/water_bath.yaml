@@ -29,9 +29,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: water_bath_idle }
+        output: { asset_name: water_bath }
       - when: true
-        output: { asset_name: water_bath_heating }
+        output: { asset_name: water_bath }
   stage:
     kind: composite
 

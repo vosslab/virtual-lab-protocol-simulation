@@ -13,7 +13,7 @@
 | [build_github_pages.sh](../build_github_pages.sh)       | Canonical bundled build into `dist/`                                                                                                                             |
 | [run_web_server.sh](../run_web_server.sh)               | Build then serve `dist/` on local network                                                                                                                        |
 | [check_codebase.sh](../check_codebase.sh)               | Aggregate lint/test gate runner                                                                                                                                  |
-| [dist_clean.sh](../dist_clean.sh)                       | Clean generated/ and dist/ artifacts                                                                                                                             |
+| dist_clean.sh                       | Clean generated/ and dist/ artifacts                                                                                                                             |
 | [source_me.sh](../source_me.sh)                         | Bash environment for Python 3.12                                                                                                                                 |
 | [pip_requirements-dev.txt](../pip_requirements-dev.txt) | Dev Python dependencies                                                                                                                                          |
 | [package.json](../package.json)                         | Node dev dependencies (TypeScript, Playwright, esbuild)                                                                                                          |
@@ -145,12 +145,12 @@ are excluded from pytest collection by [conftest.py](../tests/conftest.py).
 | File                                                                                         | Purpose                                  |
 | -------------------------------------------------------------------------------------------- | ---------------------------------------- |
 | [repo_root.mjs](../tests/playwright/repo_root.mjs)                                           | Shared `REPO_ROOT` resolver              |
-| [build_game_if_missing.mjs](../tests/playwright/build_game_if_missing.mjs)                   | Bootstraps the bundled HTML on demand    |
-| [protocol_graph_smoke.mjs](../tests/playwright/protocol_graph_smoke.mjs)                     | Data-layer graph reachability smoke      |
-| [test_completion_event_coverage.mjs](../tests/playwright/test_completion_event_coverage.mjs) | `getCoveragePolicy` and emitter coverage |
+| build_game_if_missing.mjs                   | Bootstraps the bundled HTML on demand    |
+| protocol_graph_smoke.mjs                     | Data-layer graph reachability smoke      |
+| test_completion_event_coverage.mjs | `getCoveragePolicy` and emitter coverage |
 | `test_interaction_index.mjs`                                                                 | Interaction-index consistency            |
-| [test_interaction_resolver.mjs](../tests/playwright/test_interaction_resolver.mjs)           | Resolver behavior across step kinds      |
-| [test_game_ui.mjs](../tests/playwright/test_game_ui.mjs)                                     | Nine-gate UI smoke test                  |
+| test_interaction_resolver.mjs           | Resolver behavior across step kinds      |
+| test_game_ui.mjs                                     | Nine-gate UI smoke test                  |
 
 #### `e2e` - Full-path walkthroughs
 

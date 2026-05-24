@@ -24,9 +24,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: plate_reader_idle }
+        output: { asset_name: plate_reader }
       - when: true
-        output: { asset_name: plate_reader_reading }
+        output: { asset_name: plate_reader }
 
 capabilities: [clickable]
 

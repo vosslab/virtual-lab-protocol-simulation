@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Scene YAML -> 2D layout * strategy</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles-strategy.css">
+  <link rel="stylesheet" href="styles-schema.css">
+  <link rel="stylesheet" href="styles-diag.css">
+  <link rel="stylesheet" href="styles-print.css">
+
+  <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel" src="pipeline.jsx"></script>
+  <script type="text/babel" src="strategy-parts.jsx"></script>
+  <script type="text/babel" src="app.jsx"></script>
+  <script type="text/babel">
+    // Print prep: wait for React to mount + fonts to load, then swap the
+    // editable textarea for a static <pre> so its value prints, then call print.
+    (async function autoPrint() {
+      // Wait for React to mount and inject content
+      const waitForMount = () => new Promise((resolve) => {
+        const check = () => {
+          const yaml = document.querySelector('.yaml-edit');
+          const stages = document.querySelectorAll('.stage-row');
+          if (yaml && stages.length >= 8) resolve();
+          else requestAnimationFrame(check);
+        };
+        check();
+      });
+      await waitForMount();
+
+      // Wait for fonts
+      try { await document.fonts.ready; } catch (e) {}
+
+      // Swap textarea -> <pre> so the YAML prints
+      const ta = document.querySelector('.yaml-edit');
+      if (ta && !document.querySelector('.yaml-edit-print')) {
+        const pre = document.createElement('pre');
+        pre.className = 'yaml-edit-print mono';
+        pre.textContent = ta.value;
+        ta.parentNode.insertBefore(pre, ta);
+      }
+
+      // Final settle delay
+      await new Promise(r => setTimeout(r, 700));
+      window.print();
+    })();
+  </script>
+</body>
+</html>

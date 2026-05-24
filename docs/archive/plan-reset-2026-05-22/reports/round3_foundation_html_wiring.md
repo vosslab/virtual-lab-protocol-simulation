@@ -73,14 +73,14 @@ Added as final assertions to catch missing bundle or protocol generation failure
 
 **Build summary:**
 ```
-✓ dist/index.html (481 bytes) — ESM landing page
-✓ dist/main.js (2.3 MB) — ESM bundle for index.html
-✓ dist/main.js.map (3.0 MB) — ESM source map
-✓ dist/runtime.bundle.js (2.4 MB / 2,416,160 bytes) — IIFE runtime bundle
-✓ dist/runtime.bundle.js.map (3.0 MB) — IIFE source map
-✓ dist/style.css (42 KB) — shared stylesheet
-✓ dist/.nojekyll (0 bytes) — GitHub Pages marker
-✓ dist/<protocol_name>.html × 26 files (~2.4 KB each)
+OK dist/index.html (481 bytes) - ESM landing page
+OK dist/main.js (2.3 MB) - ESM bundle for index.html
+OK dist/main.js.map (3.0 MB) - ESM source map
+OK dist/runtime.bundle.js (2.4 MB / 2,416,160 bytes) - IIFE runtime bundle
+OK dist/runtime.bundle.js.map (3.0 MB) - IIFE source map
+OK dist/style.css (42 KB) - shared stylesheet
+OK dist/.nojekyll (0 bytes) - GitHub Pages marker
+OK dist/<protocol_name>.html x 26 files (~2.4 KB each)
 ```
 
 **Protocol HTML files generated (26 mini-protocols):**
@@ -128,16 +128,16 @@ Added as final assertions to catch missing bundle or protocol generation failure
 ```
 [1] Loading protocol HTML: file://.../dist/mtt_reagent_prep.html
 [2] Checking window.SceneRuntime availability...
-    ✓ window.SceneRuntime is available
+    OK window.SceneRuntime is available
 [3] Checking window.SceneRuntime.loadAndMountByProtocolName...
-    ✓ window.SceneRuntime.loadAndMountByProtocolName is callable
+    OK window.SceneRuntime.loadAndMountByProtocolName is callable
 [4] Checking window.__RUNTIME_PROTOCOL_CONFIG...
-    ✓ window.__RUNTIME_PROTOCOL_CONFIG is set
+    OK window.__RUNTIME_PROTOCOL_CONFIG is set
     - sceneId: mtt_reagent_prep_bench_workspace
     - protocol name: mtt_reagent_prep
     - entry step: pick_up_mtt_powder
 
-All smoke tests passed ✓
+All smoke tests passed OK
 Status: mount=yes
 ```
 

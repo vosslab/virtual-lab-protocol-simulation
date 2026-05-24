@@ -25,54 +25,54 @@ Lower is better for crops/placeholders/labels_bad/offpage. Clickable is informat
 - experiments source: `experiments/css_native_layout/templates/dir_b/bench_basic.html` (CSS-native static template)
 - runtime source: `dist/mtt_reagent_prep.html` -- mtt_reagent_prep (bench_workspace) (procedural runtime)
 
-![experiments bench (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/bench/experiments.png)
+!experiments bench (CSS-native static template)
 
-![runtime bench (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/bench/runtime.png)
+!runtime bench (procedural runtime)
 
 ### hood
 
 - experiments source: `experiments/css_native_layout/templates/dir_b/hood_basic.html` (CSS-native static template)
 - runtime source: `dist/passage_hood_detachment.html` -- passage_hood_detachment (hood_workspace) (procedural runtime)
 
-![experiments hood (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/hood/experiments.png)
+!experiments hood (CSS-native static template)
 
-![runtime hood (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/hood/runtime.png)
+!runtime hood (procedural runtime)
 
 ### electrophoresis
 
 - experiments source: `experiments/css_native_layout/templates/electrophoresis_bench.html` (CSS-native static template)
 - runtime source: `dist/sdspage_run_electrophoresis.html` -- sdspage_run_electrophoresis (procedural runtime)
 
-![experiments electrophoresis (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/electrophoresis/experiments.png)
+!experiments electrophoresis (CSS-native static template)
 
-![runtime electrophoresis (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/electrophoresis/runtime.png)
+!runtime electrophoresis (procedural runtime)
 
 ### well_plate
 
 - experiments source: `experiments/css_native_layout/templates/well_plate_96_zoom.html` (CSS-native static template)
 - runtime source: `dist/plate_drug_treatment_drug_addition.html` -- plate_drug_treatment_drug_addition (plate_workspace) (procedural runtime)
 
-![experiments well_plate (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/well_plate/experiments.png)
+!experiments well_plate (CSS-native static template)
 
-![runtime well_plate (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/well_plate/runtime.png)
+!runtime well_plate (procedural runtime)
 
 ### dense_composition
 
 - experiments source: `experiments/css_native_layout/templates/crowded_bench_dense.html` (CSS-native static template)
 - runtime source: `dist/drug_dilution_setup.html` -- drug_dilution_setup (dilution_workspace) (procedural runtime)
 
-![experiments dense_composition (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/dense_composition/experiments.png)
+!experiments dense_composition (CSS-native static template)
 
-![runtime dense_composition (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/dense_composition/runtime.png)
+!runtime dense_composition (procedural runtime)
 
 ### instrument
 
 - experiments source: `experiments/css_native_layout/templates/cell_counter_basic.html` (CSS-native static template)
 - runtime source: `dist/trypan_blue_counting.html` -- trypan_blue_counting (cell_counter_workspace) (procedural runtime)
 
-![experiments instrument (CSS-native static template)](../../../test-results/experiments_vs_runtime_side_by_side/instrument/experiments.png)
+!experiments instrument (CSS-native static template)
 
-![runtime instrument (procedural runtime)](../../../test-results/experiments_vs_runtime_side_by_side/instrument/runtime.png)
+!runtime instrument (procedural runtime)
 
 ## Verdict tally
 

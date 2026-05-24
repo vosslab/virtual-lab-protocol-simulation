@@ -173,13 +173,16 @@ else
 fi
 
 # 3. lint
-step_run lint npx eslint --max-warnings 0 'src/**/*.ts' 'tests/**/*.ts' '*.ts'
+step_run lint npx eslint --max-warnings 0 --no-error-on-unmatched-pattern 'src/**/*.ts' 'tests/**/*.ts' '*.ts'
 
 # 4. format:check
 step_run format:check npx prettier --check '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'
 
-# 5. test:node
-step_run test:node node --test 'tests/test_*.mjs'
+# 5. css:policy - check content policy
+step_run css:policy python3 tools/check_css_content_policy.py
+
+# 6. test:node
+step_run test:node node --import tsx --test 'tests/test_*.mjs'
 
 # All steps complete; summary prints via EXIT trap. Exit 0 (no failures
 # reach here -- failure paths exit 1 directly).

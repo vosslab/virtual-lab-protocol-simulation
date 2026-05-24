@@ -34,5 +34,5 @@ capabilities:
   - material_container
   - cursor_attachable
 layout:
-  default_width: 3
+  default_width: 2
   label_width: 8

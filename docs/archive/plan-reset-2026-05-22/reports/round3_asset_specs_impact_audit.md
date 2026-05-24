@@ -15,7 +15,7 @@ and the per-asset baseline width now lives as
 `OBJECT_CATALOG` in `object_data.ts` (generated at build time).
 This audit reads the current generated file (mtime 2026-05-21 14:59).
 The precheck JSON used for cross-reference
-([no_crop_audit_results.json](../../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json),
+(no_crop_audit_results.json,
 mtime 2026-05-21 23:08, generated_at 2026-05-20T21:51:15Z) is newer
 than the object data, so its violation counts reflect the current
 `default_width` values.
@@ -172,5 +172,5 @@ any item above.
 
 - `object_data.ts` (generated at build time)
 - [no_crop_asset_specs_coverage.md](../audits/no_crop_asset_specs_coverage.md)
-- [no_crop_audit_results.json](../../../experiments/css_native_layout/no_crop_audit/no_crop_audit_results.json)
-- 125 SVGs in [assets/equipment/](../../../assets/equipment/) (viewBox only)
+- no_crop_audit_results.json
+- 125 SVGs in assets/equipment/ (viewBox only)

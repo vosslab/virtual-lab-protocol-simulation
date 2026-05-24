@@ -8,7 +8,7 @@ work.
 
 Big scene-runtime activation plan paused as of 2026-05-17. Gated on the focused
 row-based base_scene layout plan. See
-[active_plans/scene_runtime_activation_on_hold.md](active_plans/scene_runtime_activation_on_hold.md)
+active_plans/scene_runtime_activation_on_hold.md
 for state at hold and resumption criteria.
 
 ## Stepper and validator follow-ups from 96-well spike

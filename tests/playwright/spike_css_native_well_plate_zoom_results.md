@@ -3,7 +3,7 @@
 Empirical evidence for NEW1 CSS-native adapter spike (Lane 3 browser proof and
 Lane 4 perf measurement).
 
-- Test file: [tests/playwright/spike_css_native_well_plate_zoom.mjs](spike_css_native_well_plate_zoom.mjs)
+- Test file: tests/playwright/spike_css_native_well_plate_zoom.mjs
 - Run command: `node tests/playwright/spike_css_native_well_plate_zoom.mjs`
 - Run host: macOS, headless Chromium via the `playwright` library
 

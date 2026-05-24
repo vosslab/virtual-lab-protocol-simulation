@@ -24,7 +24,7 @@ new durable sizing surface, when in fact the durable surface already
 exists in `docs/specs/`.
 
 The layout engine's existing `footprint` concept is a spacing slot
-(see [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections
+(see LAYOUT_ENGINE.md sections
 "Algorithm invariants" and "Footprints"). It is the horizontal slot
 used for distributing items in a row and for reserving label breathing
 room. It is NOT a rendered crop box. It is NOT a CSS card class. It
@@ -38,7 +38,7 @@ a word but not a role. They must stay separate in language:
 
 | Surface                                | What it is                                                                                                                                                                                                                                                                     | Production?                                                        | Reference                                                                                         |
 | -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| layout-engine footprint (spacing slot) | Per-row spacing slot owned by `computeSceneLayout()`; may be wider than the visual box to reserve label space; used to distribute items inside a zone.                                                                                                                         | YES (durable production behavior)                                  | [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) sections "Algorithm invariants" and "Footprints" |
+| layout-engine footprint (spacing slot) | Per-row spacing slot owned by `computeSceneLayout()`; may be wider than the visual box to reserve label space; used to distribute items inside a zone.                                                                                                                         | YES (durable production behavior)                                  | LAYOUT_ENGINE.md sections "Algorithm invariants" and "Footprints" |
 | CSS-native static-template class names | `.footprint--small-tool`, `.footprint--handheld`, `.footprint--container`, `.footprint--rack`, `.footprint--instrument`, `.footprint--large-equipment`, `.footprint--zoom-view` in `experiments/css_native_layout/styles/bench.css`. Used by hand-typed visual-test templates. | NO -- experiment-local visual-test CSS only                        | `experiments/css_native_layout/styles/bench.css`                                                  |
 | stress-harness sizing shims            | `experiments/css_native_layout/object_footprints.yaml` (and the legacy `experiments/css_native_layout/regions/*.yaml`) -- experiment-local kind-to-footprint mapping. Header explicitly labels it "Experimental CSS-native visual-test mapping. Not production schema."        | NO -- experiment-local, "test harness only, not production schema" | `experiments/css_native_layout/object_footprints.yaml` header                                     |
 
@@ -51,36 +51,36 @@ verbatim:
 This chain is owned by:
 
 - `asset_name` and per-placement metadata in scene YAML
-  ([SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md);
-  [SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md) sections
+  (SCENE_YAML_FORMAT.md;
+  SCENE_VOCABULARY.md sections
   "placement" and "object_name").
 - `ASSET_SPECS[asset_name].default_width` (named `defaultWidth` in the
   TypeScript table at `src/asset_specs.ts`); see
-  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) section
+  LAYOUT_ENGINE.md section
   "Asset specs".
 - `layout.display_width_cm` on each object plus the per-scene
   `SCENE_PX_PER_CM` constants; see
-  [SCALING_MODEL.md](../../specs/SCALING_MODEL.md) sections
+  SCALING_MODEL.md sections
   "Overview", "Per-scene constants", and "How sizing works".
 - `width_scale` per item (scene-specific multiplier on the asset's
   base width); see
-  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) section
+  LAYOUT_ENGINE.md section
   "Scene items".
 - The renderer's responsibility to consume the engine's computed `x`,
   `y`, `width`, `height` and to preserve SVG aspect ratio; see
-  [SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) section "Never
+  SVG_PIPELINE.md section "Never
   crop in display" and
-  [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) section
+  LAYOUT_ENGINE.md section
   "Layout invariant: no clipping or distortion".
 
 The no-crop rule itself is a permanent invariant: scientific SVG
 assets must never be clipped or distorted, regardless of any
 diagnostic score. This is stated canonically in
-[PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md) "Visual integrity: never
+PRIMARY_DESIGN.md "Visual integrity: never
 crop scientific assets" and is mirrored in
-[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) "Never crop in
+SVG_PIPELINE.md "Never crop in
 display" and
-[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) "Layout
+LAYOUT_ENGINE.md "Layout
 invariant: no clipping or distortion".
 
 ## Crop-cause checklist (verbatim)
@@ -183,32 +183,32 @@ This reconciliation reframes the Round 3 sizing work:
 5. The no-crop rule binds regardless of any precheck or visual
    acceptance score: a rendered scientific SVG that is visibly
    cropped is HARD FAIL, per
-   [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md).
+   PRIMARY_DESIGN.md.
 
 ## Citations (durable vocabulary surface)
 
-- [SCALING_MODEL.md](../../specs/SCALING_MODEL.md), sections
+- SCALING_MODEL.md, sections
   "Overview", "Per-scene constants", "How sizing works", "Adding a
   new object", "Current fallback behavior", "Tuning display_cm
   values".
-- [LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), sections
+- LAYOUT_ENGINE.md, sections
   "Mental model", "Algorithm invariants", "Scene items", "Asset
   specs", "Footprints", "Layout invariant: no clipping or
   distortion", "Tuning order".
-- [SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md), sections
+- SVG_PIPELINE.md, sections
   "Four-layer flow", "Hard rule for scenes and capabilities", "Never
   crop in display".
-- [SCENE_VOCABULARY.md](../../specs/SCENE_VOCABULARY.md),
+- SCENE_VOCABULARY.md,
   sections "placement", "object_name", "zone".
-- [SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md)
+- SCENE_YAML_FORMAT.md
   for the scene-side schema.
-- [OBJECT_VOCABULARY.md](../../specs/OBJECT_VOCABULARY.md)
+- OBJECT_VOCABULARY.md
   and
-  [OBJECT_YAML_FORMAT.md](../../specs/OBJECT_YAML_FORMAT.md)
+  OBJECT_YAML_FORMAT.md
   for the object-side schema (including `layout.display_width_cm`).
-- [PRIMARY_DESIGN.md](../../PRIMARY_DESIGN.md), section "Visual
+- PRIMARY_DESIGN.md, section "Visual
   integrity: never crop scientific assets".
-- [PRIMARY_CONTRACT.md](../../PRIMARY_CONTRACT.md), items 1 and 3.
+- PRIMARY_CONTRACT.md, items 1 and 3.
 
 `src/asset_specs.ts` is the authored TypeScript table that implements
 the `ASSET_SPECS` surface; the field is named `defaultWidth` in code
@@ -217,9 +217,9 @@ same.
 
 ## Note on minor spec-vs-code naming
 
-[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md) section
+LAYOUT_ENGINE.md section
 "Asset specs" and
-[SCALING_MODEL.md](../../specs/SCALING_MODEL.md) refer to
+SCALING_MODEL.md refer to
 `default_width` (snake_case prose). The authored TypeScript table at
 `src/asset_specs.ts` uses `defaultWidth` (camelCase identifier). Both
 refer to the same per-asset baseline width field. No conflict with

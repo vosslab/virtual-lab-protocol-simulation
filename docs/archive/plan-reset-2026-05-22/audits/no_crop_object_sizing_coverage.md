@@ -21,7 +21,7 @@ Scope: every YAML under `content/objects/**` plus every YAML under
 
 ## Methodology
 
-Per [SCALING_MODEL.md](../../specs/SCALING_MODEL.md) the
+Per SCALING_MODEL.md the
 authored sizing field is `layout.display_width_cm` on each object YAML
 (see "How sizing works", section 1, and "Adding a new object",
 section 1). The runtime converts that value to `width_scale` via:
@@ -30,7 +30,7 @@ section 1). The runtime converts that value to `width_scale` via:
 
 When a scene wants to override per-placement, it sets `width_scale`
 directly in the placement entry under `scene.items[]` (per
-[SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md)).
+SCENE_YAML_FORMAT.md).
 SCALING_MODEL.md "Current fallback behavior" explicitly states that
 objects without `display_width_cm` fall back to hardcoded `width_scale`
 in scene configs (the `legacy_scales` map in TypeScript). That fallback
@@ -162,12 +162,12 @@ attributable to the TS-side `widthScale` row for that asset_name
 
 ## Source files read
 
-- [SCALING_MODEL.md](../../specs/SCALING_MODEL.md) (full)
-- [OBJECT_YAML_FORMAT.md](../../specs/OBJECT_YAML_FORMAT.md) (header confirmed)
-- [SCENE_YAML_FORMAT.md](../../specs/SCENE_YAML_FORMAT.md) (header confirmed)
-- [ethanol_bottle.yaml](../../../content/objects/bottle/ethanol_bottle.yaml) (sample)
-- [centrifuge.yaml](../../../content/objects/equipment/centrifuge.yaml) (sample)
-- [micropipette_tip_box.yaml](../../../content/objects/decoration/micropipette_tip_box.yaml) (sample)
+- SCALING_MODEL.md (full)
+- OBJECT_YAML_FORMAT.md (header confirmed)
+- SCENE_YAML_FORMAT.md (header confirmed)
+- ethanol_bottle.yaml (sample)
+- centrifuge.yaml (sample)
+- micropipette_tip_box.yaml (sample)
 - `asset_specs.ts` (ASSET_SPECS table)
 - All 78 object YAMLs under `content/objects/`
 - 19 base scenes under `content/base_scenes/`

@@ -1,16 +1,16 @@
 # Round 3 R9 Rerun on 11 Protocols (Post-Foundation)
 
-**Date:** 2026-05-22  
-**Task:** Rerun all 11 P5-set protocols after foundation HTML wiring landed (PR #121)  
-**Previous result (old driver, HTTP URLs):** 0/11 PASS  
+**Date:** 2026-05-22
+**Task:** Rerun all 11 P5-set protocols after foundation HTML wiring landed (PR #121)
+**Previous result (old driver, HTTP URLs):** 0/11 PASS
 **Current result (post-foundation, file:// URLs):** 11/11 PASS
 
 ## Summary
 
 The foundation wiring (PR #121) established per-protocol HTML files in `dist/`. This rerun updates the driver to load via `file://` URLs instead of HTTP query params, matching the new architecture.
 
-- **Mount Pass**: 11/11 ✓
-- **clickWorks Pass**: 11/11 ✓
+- **Mount Pass**: 11/11 OK
+- **clickWorks Pass**: 11/11 OK
 - **Verdict**: Foundation is working. All protocols load and advance correctly.
 
 ## Test Results
@@ -67,7 +67,7 @@ All 11 protocols mount cleanly on first load. No app-layer protocol picker UI re
 - Driver: `tests/playwright/_temp_r9_rerun_on_11.mjs` (updated to file:// URLs)
 - Per-protocol outputs: `test-results/round3_r9_rerun_on_11/{protocol}_{before,after}.png`, `{protocol}.{json,log}`
 - Summary: `test-results/round3_r9_rerun_on_11/summary.json`
-- Total: 44 files (11 protocols × 4 types)
+- Total: 44 files (11 protocols x 4 types)
 
 Each protocol's `.json` records:
 - Mount state: `mounted: yes`, `activeSceneId`, `activeStepIndex`, `currentInteractionIndex`

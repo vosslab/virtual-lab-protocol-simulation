@@ -3,7 +3,10 @@ workspace: bench
 capabilities:
   - item_workspace
 background:
-  asset: bench_workspace_bg
+  type: gradient
+  from: "#E8E2D0"
+  to: "#D4CBB3"
+  angle: 180
 rows:
   - row_name: rear_bench
     slots:

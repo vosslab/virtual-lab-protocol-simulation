@@ -9,7 +9,10 @@ scene_bounds:
   bottom: 95
 
 background:
-  asset: hood_workspace_bg
+  type: gradient
+  from: "#E8E2D0"
+  to: "#D4CBB3"
+  angle: 180
 
 zones:
   - id: rear_left

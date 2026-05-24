@@ -22,7 +22,7 @@ Measurement: comprehensive scan of 26 mini-protocol HTML files for SVG fallback 
 
 ## Delta Analysis
 
-The measured 119 is NOT a regression — it represents a **measurement scope change**. Prior counts measured only specific fallback patterns (placement-level remapping failures). This recount is a **comprehensive query of all `[data-render-fallback="true"]` elements** mounted and rendered in the browser DOM after runtime settlement. This captures:
+The measured 119 is NOT a regression - it represents a **measurement scope change**. Prior counts measured only specific fallback patterns (placement-level remapping failures). This recount is a **comprehensive query of all `[data-render-fallback="true"]` elements** mounted and rendered in the browser DOM after runtime settlement. This captures:
 
 1. Missing SVG asset definitions (not in asset_name list).
 2. Missing object declarations in scene YAML.

@@ -7,9 +7,9 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ### Additions and New Features
 
 - WP-WP-4: Created `tests/playwright/fixtures/plate_drug_treatment_full/` fixture with protocol.mjs (plateDrugTreatmentFullProtocol export containing all 9 steps from content/plate_drug_treatment/protocol.yaml verbatim) and index.html (synthetic skeleton DOM with clickable affordances for all step types: modal openClick/advanceClick, interactionSequence with interactions array and plateTargets/tubeTargets, and direct item/well clicks). Fixture proves generic walker (zero step.id branches) can walk every step of a full real protocol end-to-end against synthetic DOM. Walker schema coverage verified: all four completionPath kinds (modal, interactionSequence with nested arrays, directTool, multipleChoice) shown to be dispatched and executed without conditional branching on step.id or protocol-specific logic.
-- Updated [walker.mjs](../tests/playwright/walker.mjs) loader to recognize plateDrugTreatmentFullProtocol export name in addition to existing smokeProtocol, plateDrugTreatmentProtocol, interactionsArrayProtocol.
-- Updated [index.ts](../tests/playwright/walker/index.ts) and compiled index.js: extended walker execution loop to call `window.advanceStepClick()` after each click for synthetic fixtures to track step progress. Added retries for advanceClick visibility (modal buttons may take 100ms+ to render after openClick; retry up to 20 times with 100ms waits).
-- Updated [click_resolver.ts](../tests/playwright/walker/click_resolver.ts) and compiled click_resolver.js: use dispatchEvent('click') instead of .click() to ensure JavaScript event listeners are triggered on synthetic fixtures. Added retry loop for advanceClick targets (up to 20 attempts with 100ms waits each).
+- Updated walker.mjs loader to recognize plateDrugTreatmentFullProtocol export name in addition to existing smokeProtocol, plateDrugTreatmentProtocol, interactionsArrayProtocol.
+- Updated index.ts and compiled index.js: extended walker execution loop to call `window.advanceStepClick()` after each click for synthetic fixtures to track step progress. Added retries for advanceClick visibility (modal buttons may take 100ms+ to render after openClick; retry up to 20 times with 100ms waits).
+- Updated click_resolver.ts and compiled click_resolver.js: use dispatchEvent('click') instead of .click() to ensure JavaScript event listeners are triggered on synthetic fixtures. Added retry loop for advanceClick targets (up to 20 attempts with 100ms waits each).
 
 ### Fixes and Maintenance
 
@@ -31,12 +31,12 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 ### Additions and New Features
 
 - WP-DISPATCH-1: Created `index.ts` - pure `dispatchClick(scene: SceneConfig, step: ProtocolStep, target: {id: string; kind: 'item'|'choice'|'step'}): DispatchResult` function. Implements kind-based dispatch switch for all four completionPath kinds: interactionSequence (flat tool/source/destination), directTool, modal (openClick + advanceClick), multipleChoice. Returns `DispatchResult` with matched/advances/expectedNext/wrongOrder/reason fields. Pure function with no DOM, no state writes, no imports from `src/scenes/` or `src/legacy_*`. Under 250 lines.
-- WP-DISPATCH-2: Created [test_dispatch_click.ts](../tests/test_dispatch_click.ts) - TypeScript test suite using node:test framework. Covers all four completionPath kinds: interactionSequence tool/source/destination matching, directTool correct/incorrect tool, modal openClick/advanceClick phases, multipleChoice correct/incorrect choice. Seven test cases; all pass. Run via `npx tsx --test tests/test_dispatch_click.ts`.
+- WP-DISPATCH-2: Created test_dispatch_click.ts - TypeScript test suite using node:test framework. Covers all four completionPath kinds: interactionSequence tool/source/destination matching, directTool correct/incorrect tool, modal openClick/advanceClick phases, multipleChoice correct/incorrect choice. Seven test cases; all pass. Run via `npx tsx --test tests/test_dispatch_click.ts`.
 - WP-DISPATCH-3: Created `index.ts` - pure `deriveHighlights(step: ProtocolStep, completedClicks: string[]): HighlightState` function. Computes nextTargets and completedTargets given the set of clicks already performed in a step. Honors sequence logic: interactionSequence progresses tool -> source -> destination; directTool single target; modal openClick then advanceClick; multipleChoice all targets simultaneously. Pure function with no DOM, no state writes. Under 150 lines. Created `test_highlight.ts` - TypeScript test suite using node:test framework. Covers all four kinds with emphasis on state progression: initial, partial completion, and final states. Nine test cases; all pass.
 
 ### Behavior or Interface Changes
 
-- Updated [types.ts](../src/scene_runtime/types.ts): `DispatchResult` now exports with matched/advances/expectedNext/wrongOrder/reason fields (replacing previous outcome/matchedStepId/errorHintKey); `HighlightState` now exports with nextTargets/completedTargets (replacing previous nextTargets/currentScene).
+- Updated types.ts: `DispatchResult` now exports with matched/advances/expectedNext/wrongOrder/reason fields (replacing previous outcome/matchedStepId/errorHintKey); `HighlightState` now exports with nextTargets/completedTargets (replacing previous nextTargets/currentScene).
 
 ### Fixes and Maintenance
 
@@ -54,10 +54,10 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Behavior or Interface Changes
 
-- Extended [contract.ts](../src/scene_runtime/contract.ts) with new types: `Interaction` (tool?, source?, destination?, liquid?, volumeMl?), `PlateTarget` (rows?[], cols?[], row?, col?, wellId?, liquid?, volumeMl?, label?), `TubeTarget` (tubeId: string). `InteractionSequencePath` now supports optional `interactions?: Interaction[]`, `plateTargets?: PlateTarget[]`, `tubeTargets?: TubeTarget[]` fields alongside existing flat tool/source/destination fields for backward compatibility.
-- Updated [index.ts](../tests/playwright/walker/index.ts) and index.js to dispatch on interactions array: when `path.interactions` exists, iterate each entry and push click targets for each {tool, source, destination}; else fall back to flat form. When `path.plateTargets` exists, expand rows[] and cols[] into individual well clicks (e.g., row B col 1 -> [data-well-id="B1"]). When `path.tubeTargets` exists, push each tube click. All target resolution delegated to existing click_resolver (no step.id/protocolId/modal.owner branches).
-- Updated [click_resolver.ts](../tests/playwright/walker/click_resolver.ts) and click_resolver.js to add `[data-well-id="${value}"]` selector (tried 4th in order) for well plate cell clicks.
-- Updated [walker.mjs](../tests/playwright/walker.mjs) loader to recognize `interactionsArrayProtocol` export name in fixture protocol.mjs files.
+- Extended contract.ts with new types: `Interaction` (tool?, source?, destination?, liquid?, volumeMl?), `PlateTarget` (rows?[], cols?[], row?, col?, wellId?, liquid?, volumeMl?, label?), `TubeTarget` (tubeId: string). `InteractionSequencePath` now supports optional `interactions?: Interaction[]`, `plateTargets?: PlateTarget[]`, `tubeTargets?: TubeTarget[]` fields alongside existing flat tool/source/destination fields for backward compatibility.
+- Updated index.ts and index.js to dispatch on interactions array: when `path.interactions` exists, iterate each entry and push click targets for each {tool, source, destination}; else fall back to flat form. When `path.plateTargets` exists, expand rows[] and cols[] into individual well clicks (e.g., row B col 1 -> [data-well-id="B1"]). When `path.tubeTargets` exists, push each tube click. All target resolution delegated to existing click_resolver (no step.id/protocolId/modal.owner branches).
+- Updated click_resolver.ts and click_resolver.js to add `[data-well-id="${value}"]` selector (tried 4th in order) for well plate cell clicks.
+- Updated walker.mjs loader to recognize `interactionsArrayProtocol` export name in fixture protocol.mjs files.
 
 ### Developer Tests and Notes
 
@@ -68,7 +68,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Additions and New Features
 
-- WP-LIQUID-1: Created `index.ts` - pure `applyLiquidTransfer(state: LiquidState, transfer: LiquidTransfer): LiquidState` function. Honors [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md) contract: transfer subtracts from source, adds to destination with merged entries; discharge subtracts from source only; mix combines entries with the same liquid key in one container. No DOM, no browser APIs, no module state, no imports from `src/scenes/` or `src/legacy_*`. Input state is immutable; returns new state. Edge cases handled: transfer from empty/nonexistent container is no-op; transfer with insufficient volume is no-op; discharge and mix are safe no-ops on empty containers. Exports `LiquidState`, `LiquidTransfer`, `LiquidEntry`, `ContainerLiquid` types from [types.ts](../src/scene_runtime/types.ts).
+- WP-LIQUID-1: Created `index.ts` - pure `applyLiquidTransfer(state: LiquidState, transfer: LiquidTransfer): LiquidState` function. Honors [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md) contract: transfer subtracts from source, adds to destination with merged entries; discharge subtracts from source only; mix combines entries with the same liquid key in one container. No DOM, no browser APIs, no module state, no imports from `src/scenes/` or `src/legacy_*`. Input state is immutable; returns new state. Edge cases handled: transfer from empty/nonexistent container is no-op; transfer with insufficient volume is no-op; discharge and mix are safe no-ops on empty containers. Exports `LiquidState`, `LiquidTransfer`, `LiquidEntry`, `ContainerLiquid` types from types.ts.
 - WP-LIQUID-2: Created `tests/test_liquid_state.mjs` - Node test suite using `node:test` module (no new dependencies). Covers transfer (full + partial + into existing container + edge cases), discharge (full + partial + edge cases), mix (multiple entries -> single merged entry + no-op on single entry), and immutability verification. Ten test cases; all pass. Tests embed a mock implementation matching the real function behavior for isolated verification.
 
 ### Developer Tests and Notes
@@ -84,7 +84,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 ### Behavior or Interface Changes
 
-- Extended [types.ts](../src/scene_runtime/types.ts) `LayoutResult` with `LayoutItem[]` array for full positioned item data (id, x, y, width, height), complementing the existing zones and itemPositions records. Optional fields in `DispatchResult` explicitly marked with `| undefined` to satisfy TypeScript strict mode.
+- Extended types.ts `LayoutResult` with `LayoutItem[]` array for full positioned item data (id, x, y, width, height), complementing the existing zones and itemPositions records. Optional fields in `DispatchResult` explicitly marked with `| undefined` to satisfy TypeScript strict mode.
 
 ## 2026-05-13 (M5 WP-WP-V1: well_plate vertical proof)
 
@@ -115,7 +115,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
 
 - User ruling: use `cell_culture_hood` (long form), not bare `hood`. Reason: distinguishes from future `chemistry_hood` or other hood variants and keeps the scene-id namespace explicit.
 - A hardcoded folder list in `tests/test_items_scene_no_hood_default.py::test_active_protocols_discovered` was flagged as brittle per [PYTEST_STYLE.md](PYTEST_STYLE.md) and replaced with a floor assertion.
-- src/scenes/ frozen. No new behavior, dispatch branches, or features. Mechanical renames + banner + compat shims only. New work lives in src/scene*runtime/ (TypeScript) + content/*/\_.yaml (declarative). See `docs/SRC_SCENES_FREEZE.md`. Reason: prevent drift back to per-adapter patching; force new design. Enforcement: new pytest gate [test_scenes_freeze_baseline.py](../tests/test_scenes_freeze_baseline.py) records per-file line-count baseline in `tests/data/scenes_freeze_baseline.json` and fails on growth beyond a small drift allowance. AGENTS.md and the Fresh Refactor Plan migration section updated to reference the freeze.
+- src/scenes/ frozen. No new behavior, dispatch branches, or features. Mechanical renames + banner + compat shims only. New work lives in src/scene*runtime/ (TypeScript) + content/*/\_.yaml (declarative). See `docs/SRC_SCENES_FREEZE.md`. Reason: prevent drift back to per-adapter patching; force new design. Enforcement: new pytest gate `tests/test_scenes_freeze_baseline.py` (since deleted as a fragile hardcoded-baseline test) recorded per-file line-count baseline in `tests/data/scenes_freeze_baseline.json` and failed on growth beyond a small drift allowance. AGENTS.md and the Fresh Refactor Plan migration section updated to reference the freeze.
 
 ### Developer Tests and Notes
 
@@ -183,7 +183,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
   `computeSceneLayout()`, and require screenshot evidence for layout-affecting
   changes.
 - Expanded [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) with implementation
-  details from [layout_engine.ts](../src/scene_runtime/layout/layout_engine.ts), including
+  details from layout_engine.ts, including
   percent-unit outputs, alignment invariants, footprint math, overflow
   behavior, label wrapping and collision rules, depth resolution, and
   `sceneBounds` translation behavior.
@@ -192,7 +192,7 @@ Archived day blocks from 2026-05-12 through 2026-05-13. Rotated from docs/CHANGE
   definition.
 - Added [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md), a dedicated reference for
   the scene layout engine. The guide documents the current placement method in
-  [layout_engine.ts](../src/scene_runtime/layout/layout_engine.ts), including zone/item inputs,
+  layout_engine.ts, including zone/item inputs,
   adapter responsibilities, footprint-based row placement, depth and baseline
   behavior, labels, scene bounds, and a workflow for laying out a new scene.
 - Moved the older layout metrics note to

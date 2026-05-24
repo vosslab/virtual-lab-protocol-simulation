@@ -534,7 +534,7 @@ walkthrough contract.
 ## Relationship to smoke tests
 
 [run_smoke.py](../../tools/run_smoke.py) builds the app and runs
-[test_game_ui.mjs](../../tests/playwright/test_game_ui.mjs). That smoke test
+test_game_ui.mjs. That smoke test
 checks that the app loads, key UI elements render, and basic early gates pass.
 
 Use smoke tests for fast browser sanity checks. Use the walkthrough when the

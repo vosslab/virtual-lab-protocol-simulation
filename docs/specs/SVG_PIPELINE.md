@@ -109,7 +109,7 @@ defeats the boundary the pipeline is built around.
 Two authored modules may import from `generated/`: `svg_assets.ts`
 (composition facade that uses the barrel re-export) and `svg_color_patch.ts`
 (recolor-primitives layer that imports the manifest for color-group metadata). Other authored
-consumers ([layout_engine.ts](../../src/scene_runtime/layout/layout_engine.ts) for aspect ratios and
+consumers (layout_engine.ts for aspect ratios and
 `protocol_ui.ts` for static SVGs) consume through `svg_assets.ts`;
 new code must not add direct `generated/` imports outside these two boundary modules.
 
@@ -268,7 +268,7 @@ exists and does not regenerate. This split keeps build scripts as the
 authoritative writers and keeps the check runner free of side effects.
 
 To validate that the build/check scripts correctly regenerate `generated/`
-on a clean checkout, run [dist_clean.sh](../../dist_clean.sh) at the repo root;
+on a clean checkout, run dist_clean.sh at the repo root;
 it wipes `generated/`, `dist/`, and other build artifacts so a subsequent
 build can be exercised end-to-end.
 

@@ -1,7 +1,7 @@
-# Round 3 Stream 3B — Asset Name Drift Remediation
+# Round 3 Stream 3B - Asset Name Drift Remediation
 
-**Date:** 2026-05-22  
-**Context:** Eliminate ASSET_NAME_DRIFT placeholder fallbacks (6 cleanest YAML files)  
+**Date:** 2026-05-22
+**Context:** Eliminate ASSET_NAME_DRIFT placeholder fallbacks (6 cleanest YAML files)
 **Status:** COMPLETED
 
 ## Summary
@@ -142,10 +142,10 @@ export { SVG_ELECTRODE_MODULE } from "./electrode_module"; (line 38)
 
 **Build Output:**
 ```
-  dist/main.js      2.3mb ⚠️
+  dist/main.js      2.3mb !
   dist/main.js.map  3.0mb
 
-⚡ Done in 13ms
+* Done in 13ms
 Built dist/ (GitHub Pages-ready).
 ```
 

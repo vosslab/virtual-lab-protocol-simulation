@@ -2,6 +2,8 @@ object_name: professor_avatar
 kind: decoration
 label: Professor avatar
 
+asset: angry_professor
+
 state_fields: []
 
 visual_states: {}

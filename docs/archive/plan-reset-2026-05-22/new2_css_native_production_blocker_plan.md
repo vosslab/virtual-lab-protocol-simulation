@@ -15,7 +15,7 @@ pytest gate stays green until they land):
 Upstream context:
 
 - [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
-- [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md)
+- ../PRIMARY_CONTRACT.md
 
 ## Purpose
 
@@ -169,7 +169,7 @@ For Workstream 2: no user decision; may proceed.
 - `new2_production_viewport_overflow_audit.md` (Lane O)
 - `new2_test_strategy.md` (Lane T)
 - [new1_5_layout_hardening_results.md](new1_5_layout_hardening_results.md)
-- [../PRIMARY_CONTRACT.md](../PRIMARY_CONTRACT.md) (item 3)
+- ../PRIMARY_CONTRACT.md (item 3)
 
 ## Workstream 1 status update (NEW2 prep-and-prototype round, 2026-05-20)
 
@@ -345,7 +345,7 @@ them. Each item below has been a prior drift vector.
 
 ## Hard rule: NEVER crop SVG assets in display
 
-Canonical home: [../PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md). See also [../specs/SVG_PIPELINE.md](../specs/SVG_PIPELINE.md) and [../specs/LAYOUT_ENGINE.md](../specs/LAYOUT_ENGINE.md).
+Canonical home: ../PRIMARY_DESIGN.md. See also ../specs/SVG_PIPELINE.md and ../specs/LAYOUT_ENGINE.md.
 
 A scene cannot pass visual review if any scientific SVG asset is cropped or
 aspect-distorted enough to change what the object is.
@@ -392,6 +392,6 @@ Anti-patterns (forbidden):
 - Do NOT claim visual success while glassware bottoms are cut off.
 
 See also:
-[../../experiments/css_native_layout/VISUAL_TARGETS.md](../../experiments/css_native_layout/VISUAL_TARGETS.md),
-[../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md](../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md),
+../../experiments/css_native_layout/VISUAL_TARGETS.md,
+../../experiments/css_native_layout/DIAGNOSTICS_REFERENCE.md,
 `new2_css_native_best_case_showcase_no_crop_addendum.md`.

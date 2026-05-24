@@ -233,22 +233,28 @@ async function dispatchAdjust(page, interaction) {
   await page.waitForTimeout(200);
 
   // Step 3: Fill the input using JavaScript directly (more reliable than Playwright fill)
-  await page.evaluate(({ selector, value }) => {
-    const input = document.querySelector(selector);
-    if (!input) {
-      throw new Error(`Input not found: ${selector}`);
-    }
-    input.value = String(value);
-  }, { selector: inputSelector, value: expectedValue });
+  await page.evaluate(
+    ({ selector, value }) => {
+      const input = document.querySelector(selector);
+      if (!input) {
+        throw new Error(`Input not found: ${selector}`);
+      }
+      input.value = String(value);
+    },
+    { selector: inputSelector, value: expectedValue },
+  );
 
   // Step 4: Dispatch input and change events to trigger the adjust dispatch handler
-  await page.evaluate(({ selector, value }) => {
-    const input = document.querySelector(selector);
-    if (input) {
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-      input.dispatchEvent(new Event("change", { bubbles: true }));
-    }
-  }, { selector: inputSelector, value: expectedValue });
+  await page.evaluate(
+    ({ selector, value }) => {
+      const input = document.querySelector(selector);
+      if (input) {
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    },
+    { selector: inputSelector, value: expectedValue },
+  );
 
   // Step 5: Optionally press Enter to commit (handlers may bind to Enter key)
   const inputLocator = page.locator(inputSelector);

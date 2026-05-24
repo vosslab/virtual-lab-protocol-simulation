@@ -7,7 +7,7 @@ No SVG files were modified.
 This audit feeds step 2 of the no-crop fix chain: if author cropped the
 viewBox, the asset cannot render uncropped no matter what CSS or width is
 applied downstream (see
-[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md#never-crop-in-display):
+SVG_PIPELINE.md:
 "Once an asset enters the rendering pipeline, no downstream container may
 clip or distort it.").
 
@@ -41,7 +41,7 @@ fixes prefer tiers 1-7; tier 8 is experiment-local only.
 
 Sizing-source reconciliation is accepted: viewBox footprint defines a
 spacing slot per
-[LAYOUT_ENGINE.md](../../specs/LAYOUT_ENGINE.md), not a
+LAYOUT_ENGINE.md, not a
 crop box. No new CSS footprint classes are proposed as production
 direction; any downstream-render finding is routed to the appropriate
 sizing tier (3, 4, 5, or 7).
@@ -91,7 +91,7 @@ below).
 `preserveAspectRatio` is absent on every file. Per SVG defaults, that
 resolves to `xMidYMid meet`, which matches the no-crop rule's required
 behavior in
-[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md#never-crop-in-display):
+SVG_PIPELINE.md:
 "Preserve SVG `preserveAspectRatio='xMidYMid meet'`." This is consistent
 across the asset set; no asset overrides the default to a cropping mode
 such as `xMidYMid slice`.
@@ -161,7 +161,7 @@ Selected distribution notes (informational, not findings):
   393x279 rendered at 320x240 (aspect 1.33). Natural matches viewBox
   exactly; downstream renderer compresses to 1.33.
 - **Placeholder family** (per
-  [MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md)):
+  MISSING_SVG_PLACEHOLDERS.md):
   `power_supply_off.svg`, `power_supply_on.svg`,
   `heat_block_closed.svg`, `heat_block_open.svg`,
   `microwave_closed.svg`, `microwave_open.svg`, `lightbox_off.svg`,
@@ -211,7 +211,7 @@ Additional clipped objects below the top 10 cut: `microscope.svg`
 **Net interpretation.** Every clipped asset in Strategy-C carries a
 correct, zero-origin, full-silhouette viewBox. The crop is not in the
 SVG file. Per
-[SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md#never-crop-in-display)
+SVG_PIPELINE.md
 ("Object artwork cut off by cards, regions, wrappers, `overflow:
 hidden`, or `.object-graphic` containers"), the residual
 `artwork_integrity.clipped_by_parent` flag is in the downstream card /
@@ -248,15 +248,15 @@ set is covered.
 
 ## Source files read
 
-- [SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md) (entire) -
+- SVG_PIPELINE.md (entire) -
   "Never crop in display" section is the binding rule; "Source-tree
   boundary" and "Generator behavior summary" inform how viewBoxes flow
   to the runtime.
-- [SCALING_MODEL.md](../../specs/SCALING_MODEL.md)
+- SCALING_MODEL.md
   (entire) - documents `display_width_cm` and `px_per_cm` per scene;
   no `viewBox`-specific section, but explains how SVG widths convert
   to render widths.
-- [MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md)
+- MISSING_SVG_PLACEHOLDERS.md
   (entire) - placeholder roster used to interpret the 100x100 viewBox
   family.
 - `visual_audit.md`
@@ -302,7 +302,7 @@ relative to the repo root.
 
 - **Tier**: 1 (asset mapping or missing SVG; the placeholder is a
   stand-in for an absent asset per
-  [MISSING_SVG_PLACEHOLDERS.md](../../../assets/equipment/MISSING_SVG_PLACEHOLDERS.md)).
+  MISSING_SVG_PLACEHOLDERS.md).
 - **Affected files**: `power_supply_off.svg`, `power_supply_on.svg`,
   `heat_block_closed.svg`, `heat_block_open.svg`,
   `microwave_closed.svg`, `microwave_open.svg`, `lightbox_off.svg`,

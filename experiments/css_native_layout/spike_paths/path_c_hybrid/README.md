@@ -23,7 +23,7 @@ DOM. None of them computes, allocates, or solves layout.
   Returns `null` if no element matches.
 - `getAnchorForTarget(targetId: string): {x: number, y: number} | null`.
   Same shape as above but keyed on `data-target-id` (matches the click
-  dispatcher's selector at [../../../../src/scene_runtime/dispatch/click.ts](../../../../src/scene_runtime/dispatch/click.ts)
+  dispatcher's selector at ../../../../src/scene_runtime/dispatch/click.ts
   line 43). Used when cursor-attach needs to follow a sub-target (a well in
   a plate) rather than the parent object.
 - `getAnchorBoundsForObject(name: string): {x: number, y: number, width: number, height: number} | null`.
@@ -37,7 +37,7 @@ unneeded).
 
 ## Production files this path touches
 
-- [../../../../src/scene_runtime/layout/adapter.ts](../../../../src/scene_runtime/layout/adapter.ts) lines 32-90: add one conditional gate scoped to
+- ../../../../src/scene_runtime/layout/adapter.ts lines 32-90: add one conditional gate scoped to
   `well_plate_96_zoom` that returns an empty or synthetic `ComputedItemLayout[]`
   when the feature flag is on. No coordinate math runs in TS.
 - the new `src/scene_runtime/layout/dom_anchors.ts` module (created by the spike): the three-function anchor
@@ -51,9 +51,9 @@ unneeded).
 
 NOT touched by Path C:
 
-- [../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts) lines 31-198. CursorAttach and
+- ../../../../src/scene_runtime/render/apply.ts lines 31-198. CursorAttach and
   ObjectStateChange remain state-only. No new render-side branching.
-- [../../../../src/scene_runtime/dispatch/click.ts](../../../../src/scene_runtime/dispatch/click.ts) lines 29-79. Click dispatch already
+- ../../../../src/scene_runtime/dispatch/click.ts lines 29-79. Click dispatch already
   reads `data-target-id` from the live DOM via `closest()`. CSS-native DOM
   with the same attributes inherits this pipeline unchanged.
 - Any per-adapter render module under `src/scene_runtime/adapters/`.
@@ -62,7 +62,7 @@ NOT touched by Path C:
 
 ### Cursor-attach via DOM-derived anchors
 
-- Production CursorAttach at [../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts)
+- Production CursorAttach at ../../../../src/scene_runtime/render/apply.ts
   lines 149-198 is state-only: it sets `cursorState.attachedTo` and
   `cursorState.operation`. No coordinate math runs in `applyCursorAttach`.
 - Visual cursor following (the ghost element that tracks the cursor while
@@ -76,7 +76,7 @@ NOT touched by Path C:
 
 ### ObjectStateChange re-render via existing apply.ts path
 
-- ObjectStateChange at [../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts) lines
+- ObjectStateChange at ../../../../src/scene_runtime/render/apply.ts lines
   31-111 is a pure state swap. It does not read DOM and does not read
   coordinates. Path C does not change this code.
 - After the state swap, the existing scene re-render runs. In Path C the

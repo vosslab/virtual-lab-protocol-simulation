@@ -41,7 +41,7 @@ Diagnostic artifacts (generated, gitignored):
 
 Tracked scorecard specification:
 
-- [LAYOUT_SCORECARD.md](../../experiments/css_native_layout/LAYOUT_SCORECARD.md)
+- LAYOUT_SCORECARD.md
 
 Tracked HTML assets copied for this report live under
 `docs/active_plans/new0_new1_layout_rebuild_assets/` and are referenced

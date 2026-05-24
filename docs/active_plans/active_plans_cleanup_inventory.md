@@ -1,6 +1,6 @@
 # Active plans cleanup inventory (M1 artifact)
 
-Built per [clean_up_active_plans.md](clean_up_active_plans.md) M1/WP-INV-1.
+Built per clean_up_active_plans.md M1/WP-INV-1.
 Stops at M1 exit; no `git mv`, no delete, no archive move until user approves.
 
 ## Inputs used

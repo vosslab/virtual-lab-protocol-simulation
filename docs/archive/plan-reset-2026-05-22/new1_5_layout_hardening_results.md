@@ -170,7 +170,7 @@ class definitions.
 ## Lane V: Visual targets
 
 PASS. New canonical doc:
-[../../experiments/css_native_layout/VISUAL_TARGETS.md](../../experiments/css_native_layout/VISUAL_TARGETS.md).
+../../experiments/css_native_layout/VISUAL_TARGETS.md.
 Six class sections (`bench`, `hood`, `zoom/detail`,
 `instrument_heavy`, `dense_clutter`, `template`), three measurable
 rules per class, 18 total. Cross-linked to

@@ -82,7 +82,7 @@ That is the entire surface. No state. No caching. No layout math.
 ## Cursor-attach call site (one-shot)
 
 CursorAttach state mutation already lives at
-[../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts) lines 149-198 and is unchanged
+../../../../src/scene_runtime/render/apply.ts lines 149-198 and is unchanged
 by Path C. The cursor-follower (the chrome layer that paints the ghost
 element while attached) calls the anchor API exactly once, at the moment
 the cursor state flips from `null` to `attached`.
@@ -120,7 +120,7 @@ become a tracker.
 ## ObjectStateChange call site: there is none
 
 ObjectStateChange does NOT call the anchor API. The applier at
-[../../../../src/scene_runtime/render/apply.ts](../../../../src/scene_runtime/render/apply.ts) lines 31-111 only mutates
+../../../../src/scene_runtime/render/apply.ts lines 31-111 only mutates
 `world.objectStates`. The downstream re-render reads the new state, updates
 class names or inline styles on DOM elements (for example, a `data-material`
 attribute or a `style="background-color: ..."` on the well's div), and the

@@ -66,7 +66,7 @@ Anti-patterns (forbidden):
 - Do NOT claim visual success while glassware bottoms are cut off.
 
 See also: [DIAGNOSTICS_REFERENCE.md](DIAGNOSTICS_REFERENCE.md),
-[../../docs/active_plans/new2_css_native_production_blocker_plan.md](../../docs/active_plans/new2_css_native_production_blocker_plan.md),
+../../docs/active_plans/new2_css_native_production_blocker_plan.md,
 [new2_css_native_best_case_showcase_no_crop_addendum.md](../../docs/archive/css_native_layout/new2_css_native_best_case_showcase_no_crop_addendum.md).
 
 ## Bench

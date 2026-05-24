@@ -104,7 +104,7 @@ targets electrophoresis_bench:
    `gel_cassette`, `electrode_module`, `p10_gel_loading_tip_box`, and
    whatever the small bottom-right ring resolves to. This is an SVG
    pipeline + asset registry task (see
-   [specs/SVG_PIPELINE.md](../../specs/SVG_PIPELINE.md)) and will
+   specs/SVG_PIPELINE.md) and will
    collapse `placeholder_count` from 4 toward 0.
 2. Shrink and reflow the placement-card titles so "Electrophoresis",
    "Power Supply", "Gel cassette", and "electrode module" fit inside
@@ -131,7 +131,7 @@ milestone re-proves R1: with the fix in place,
 `activeSceneId`. The branch is additive (only narrows the candidate
 scene set; never widens it) and respects the contract
 (`SceneChange` is already authored vocabulary per
-[PRIMARY_SPEC.md](../../PRIMARY_SPEC.md) "Scene operations"). No
+PRIMARY_SPEC.md "Scene operations"). No
 content YAML was edited to land mount success here; the authored
 intent was already correct.
 
