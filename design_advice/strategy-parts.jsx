@@ -1,12 +1,12 @@
 /* global React, jsyaml */
-// Strategy: scene YAML -> 2D visual space.
+// Strategy: scene YAML → 2D visual space.
 // Each stage of the layout pipeline is one section. The same scene flows
 // through every stage so you can watch the data shape and the visual state
 // evolve together.
 
 const { useState, useMemo, useRef, useEffect } = React;
 
-// -- The worked example (heat_block_bench.yaml from your attachment) --
+// ── The worked example (heat_block_bench.yaml from your attachment) ──
 const STARTER_YAML = `# Worked example: a protein-prep bench scene.
 # Edit anything here and the entire pipeline below recomputes live.
 
@@ -73,10 +73,10 @@ wrong_order_message:
   toast_duration_ms: 2000
 `;
 
-// -- The same scene in Schema B (row+slot) - coordinate-free authoring --
+// ── The same scene in Schema B (row+slot) — coordinate-free authoring ──
 const STARTER_YAML_ROW_SLOT = `# Same bench scene, authored as rows + slots.
 # No coordinates anywhere. Row names come from a workspace-scoped library
-# (see Stage 02 below). Slot order implies left->center->right ordering.
+# (see Stage 02 below). Slot order implies left→center→right ordering.
 
 scene_name: heat_block_bench_row_slot
 workspace: bench
@@ -99,7 +99,7 @@ rows:
         object_name: heat_block
 `;
 
-// -- A small worked example that exercises inheritance --------------
+// ── A small worked example that exercises inheritance ──────────────
 // Real protocol scene: drug_dilution_setup_bench_setup extends bench_basic
 // to stage all the bottles, tubes, and tools needed for a 1:7 dilution series.
 const INHERITANCE_DEMO = {
@@ -130,9 +130,9 @@ const INHERITANCE_DEMO = {
   },
 };
 
-// -----------------------------------------------------------------
-// SCENE CANVAS - the central visualization element.
-// Renders a scene viewport at 1920x1080 logical size, scaled to fit its
+// ─────────────────────────────────────────────────────────────────
+// SCENE CANVAS — the central visualization element.
+// Renders a scene viewport at 1920×1080 logical size, scaled to fit its
 // container. Layers are togglable so each stage can show the right thing.
 function SceneCanvas({
   scene, items = [],
@@ -149,7 +149,7 @@ function SceneCanvas({
   zoneColorFn,
 }) {
   const VW = 1920, VH = 1080;
-  // Map percent -> pixel inside the SVG viewBox
+  // Map percent → pixel inside the SVG viewBox
   const pX = (pct) => (pct / 100) * VW;
   const pY = (pct) => (pct / 100) * VH;
 
@@ -246,7 +246,7 @@ function SceneCanvas({
   );
 }
 
-// -- ItemArt: simplified SVG placeholders matching the demo objects --
+// ── ItemArt: simplified SVG placeholders matching the demo objects ──
 function ItemArt({ item, x, y, w, h }) {
   const k = item.asset;
   const ink = "var(--glass-stroke)";
@@ -358,7 +358,7 @@ function ItemArt({ item, x, y, w, h }) {
       </g>
     );
   }
-  // unknown asset - placeholder box
+  // unknown asset — placeholder box
   return (
     <g transform={`translate(${x}, ${y})`}>
       <rect width={w} height={h} fill="#E0DDD2" stroke={ink} strokeWidth="2" strokeDasharray="5 4"/>
@@ -367,7 +367,7 @@ function ItemArt({ item, x, y, w, h }) {
   );
 }
 
-// -- Compact stage scaffolding ------------------------------------
+// ── Compact stage scaffolding ────────────────────────────────────
 function Stage({ n, title, kicker, children }) {
   return (
     <section className="stage-row">

@@ -1,4 +1,4 @@
-/* Virtual Lab Protocol Simulation - Scene Layouts */
+/* Virtual Lab Protocol Simulation — Scene Layouts */
 /* Editorial / textbook visual system */
 
 :root {
@@ -50,7 +50,7 @@
   --cell-dead:     #2A6FAF;
 
   /* Accents */
-  --accent:        #1F7A7E;       /* teal - interactive */
+  --accent:        #1F7A7E;       /* teal — interactive */
   --accent-soft:   rgba(31,122,126,0.10);
   --accent-deep:   #14595D;
   --warm:          #C75234;       /* schematic / annotation */
@@ -71,11 +71,11 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-/* -- Typography roles --------------------------- */
+/* —— Typography roles ——————————————————————————— */
 .serif { font-family: 'Source Serif 4', 'Iowan Old Style', Georgia, serif; }
 .mono  { font-family: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace; }
 
-/* -- Scene artboard frame ----------------------- */
+/* —— Scene artboard frame ——————————————————————— */
 .scene-board {
   width: 100%; height: 100%;
   background: var(--paper);
@@ -145,7 +145,7 @@ body {
   background: currentColor;
 }
 
-/* -- Scene stage (the actual layout) -------------- */
+/* —— Scene stage (the actual layout) —————————————— */
 .stage {
   position: relative;
   overflow: hidden;
@@ -155,7 +155,7 @@ body {
   inset: 0;
 }
 
-/* -- Schematic overlay (zones + baselines + tier markers) -- */
+/* —— Schematic overlay (zones + baselines + tier markers) —— */
 .overlay {
   position: absolute;
   inset: 0;
@@ -228,7 +228,7 @@ body {
 .callout.center { transform: translate(-50%, 0); }
 .callout.left { transform: translate(0, 0); }
 
-/* -- Placement piece -------------------------- */
+/* —— Placement piece —————————————————————————— */
 .piece {
   position: absolute;
   transform: translate(-50%, -100%); /* anchor: bottom-center */
@@ -247,7 +247,7 @@ body {
 .piece.front svg { filter: drop-shadow(0 2px 4px rgba(0,0,0,0.10)); }
 .piece.back  { transform: translate(-50%, -100%) scale(0.86); transform-origin: bottom center; }
 
-/* -- Tiny shared chrome -- */
+/* —— Tiny shared chrome —— */
 .chip {
   display: inline-flex;
   align-items: center;
@@ -265,7 +265,7 @@ body {
   border: 1px solid rgba(0,0,0,0.15);
 }
 
-/* -- Top toolbar of the whole canvas -- */
+/* —— Top toolbar of the whole canvas —— */
 .app-header {
   padding: 20px 28px 14px;
   border-bottom: 1px solid var(--rule-soft);
@@ -285,7 +285,7 @@ body {
   margin-top: 2px;
 }
 
-/* -- Modal-scene chrome ---------------------- */
+/* —— Modal-scene chrome —————————————————————— */
 .modal-bezel {
   position: absolute;
   inset: 22px;
@@ -314,7 +314,7 @@ body {
 }
 .modal-bezel .bezel-body { position: relative; height: calc(100% - 36px); }
 
-/* -- Misc -- */
+/* —— Misc —— */
 .divider-v { width: 1px; background: var(--rule-soft); align-self: stretch; }
 .muted { color: var(--ink-faint); }
 
