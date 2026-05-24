@@ -1,11 +1,11 @@
 /* global React */
-// scene-yaml → 2D layout pipeline.
+// scene-yaml -> 2D layout pipeline.
 // Mirrors the semantics described in specs/LAYOUT_ENGINE.md.
 // All coordinates are in "scene percent" units (0..100 of viewport W or H).
-// Functions are pure — each returns a new value so stage visualizations can
+// Functions are pure - each returns a new value so stage visualizations can
 // inspect the exact intermediate data.
 
-// ── 1. Object library (subset, hardcoded for the worked example) ───
+// -- 1. Object library (subset, hardcoded for the worked example) ---
 // Note: `display_width_cm` is the canonical authored size (SCALING_MODEL.md).
 // `default_width` (scene-percent) is the legacy baseline; the engine prefers
 // the cm path when both are present.
@@ -69,7 +69,7 @@ const OBJECT_LIBRARY = {
   },
 };
 
-// ── 2. Asset specs (visual width default + aspect ratio) ──────────
+// -- 2. Asset specs (visual width default + aspect ratio) ----------
 // aspect_ratio = w / h of the underlying SVG.
 const ASSET_SPECS = {
   heat_block:        { default_width: 18, label_width: 12, aspect: 1.35 },
@@ -89,16 +89,16 @@ const DEPTH_SCALE        = { back: 0.80, mid: 1.00, front: 1.10 };
 const DEPTH_BASELINE_OFFSET = { back: -4, mid: 0, front: 4 };
 const DEFAULT_VIEWPORT   = { w: 1920, h: 1080 };
 const DEFAULT_LABEL_FONT_SIZE = 12;
-const PX_PER_SCENE_PERCENT = 11.52;  // empirical: 1280px viewport, 90% usable → 1152 px / 100%
+const PX_PER_SCENE_PERCENT = 11.52;  // empirical: 1280px viewport, 90% usable -> 1152 px / 100%
 const MAX_LAYOUT_PASSES = 3;          // convergence-loop iteration budget for Stages 6-10
 const LAYOUT_SHRINK_FACTOR = 0.9;     // uniform shrink applied per pass to items in overflowing zones
 
-// ── Workspace px-per-cm scaling constants (SCALING_MODEL.md) ───────
+// -- Workspace px-per-cm scaling constants (SCALING_MODEL.md) -------
 // Per-scene/workspace tuning dial: how many pixels represent 1 cm of
 // "display real-world dimension." Authors write `display_width_cm` on
 // the object; the engine multiplies by px_per_cm of the scene's workspace.
 const WORKSPACE_PX_PER_CM = {
-  bench:        3.2,   // tuned for 7-item single row at 1280×720
+  bench:        3.2,   // tuned for 7-item single row at 1280x720
   hood:         8.0,   // hood items mostly bottles + pipettes
   microscope:   8.0,
   incubator:    6.0,
@@ -106,7 +106,7 @@ const WORKSPACE_PX_PER_CM = {
   cell_counter: 8.0,
 };
 
-// ── Workspace row library (Schema B → Schema A bridge) ─────────────
+// -- Workspace row library (Schema B -> Schema A bridge) -------------
 // Each workspace declares its named rows. row_slot YAML authors pick
 // row names from this closed enum; coordinates come from here.
 // New row names require an edit here, not a YAML edit.
@@ -138,7 +138,7 @@ const WORKSPACE_ROW_LIBRARY = {
 const DEFAULT_SCENE_BOUNDS = { left: 1, right: 99, top: 5, bottom: 95 };
 const DEFAULT_LAYOUT_RULES = { label_font_size: 9, label_line_height: 1.1, label_offset_y: 4, zone_gap: 2 };
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 2: Schema normalize.
 // If the scene uses `rows[]` (Schema B), expand each row into a zone via the
 // workspace row library and assign depth_tier from slot order. If the scene
@@ -146,7 +146,7 @@ const DEFAULT_LAYOUT_RULES = { label_font_size: 9, label_line_height: 1.1, label
 function normalizeSchema(scene, rowLibrary = WORKSPACE_ROW_LIBRARY) {
   if (!scene) return { scene: null, source: "none", trace: [] };
   if (scene.rows) {
-    // Schema B → expand to Schema A
+    // Schema B -> expand to Schema A
     const lib = rowLibrary[scene.workspace] || [];
     const byName = new Map(lib.map(r => [r.row_name, r]));
     const zones = [];
@@ -165,7 +165,7 @@ function normalizeSchema(scene, rowLibrary = WORKSPACE_ROW_LIBRARY) {
         baseline: ref.baseline,
         label: row.row_name,
       });
-      trace.push({ op: "row→zone", row: row.row_name, slots: (row.slots || []).length });
+      trace.push({ op: "row->zone", row: row.row_name, slots: (row.slots || []).length });
       (row.slots || []).forEach((slot, i) => {
         placements.push({
           placement_name: slot.placement_name,
@@ -193,13 +193,13 @@ function normalizeSchema(scene, rowLibrary = WORKSPACE_ROW_LIBRARY) {
   return { scene: { ...scene }, source: "zone_bounds", trace };
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 1: Resolve inheritance
-// Walk `extends` chain, apply remove → deactivate → reposition → add.
+// Walk `extends` chain, apply remove -> deactivate -> reposition -> add.
 // For the demo, supports a single optional `_base_scenes` map passed in.
 function resolveInheritance(scene, baseSceneMap = {}) {
   if (!scene.extends) {
-    // No extends — flat list of placements.
+    // No extends - flat list of placements.
     return {
       placements: (scene.placements || []).map(p => ({ ...p, active: true })),
       provenance: (scene.placements || []).map(p => ({ name: p.placement_name, from: "own" })),
@@ -225,7 +225,7 @@ function resolveInheritance(scene, baseSceneMap = {}) {
     placements = placements.filter(p => p.placement_name !== name);
     operations.push({ op: "remove", target: name, removed: before - placements.length });
   }
-  // deactivate_placements (mark as inactive — kept but excluded from layout)
+  // deactivate_placements (mark as inactive - kept but excluded from layout)
   for (const d of (scene.deactivate_placements || [])) {
     const name = typeof d === "string" ? d : d.placement_name;
     placements = placements.map(p => p.placement_name === name ? { ...p, active: false } : p);
@@ -246,7 +246,7 @@ function resolveInheritance(scene, baseSceneMap = {}) {
   return { placements, provenance, operations };
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 2: Bind objects
 // For each placement, look up its object in the library and merge layout hints.
 function bindObjects(placements, library = OBJECT_LIBRARY, assets = ASSET_SPECS, diagnostics = []) {
@@ -288,10 +288,10 @@ function bindObjects(placements, library = OBJECT_LIBRARY, assets = ASSET_SPECS,
   });
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 5: Scale to real-world dimensions (SCALING_MODEL.md).
 // Computes a per-placement `_width_scale` from the cm model:
-//   width_scale = (display_width_cm × px_per_cm) / (default_width × 11.52)
+//   width_scale = (display_width_cm x px_per_cm) / (default_width x 11.52)
 // Falls back to authored layout.width_scale if the object lacks cm or
 // the workspace has no px_per_cm registered.
 function scaleToRealWorld(boundPlacements, workspace, opts = {}, diagnostics = []) {
@@ -326,7 +326,7 @@ function scaleToRealWorld(boundPlacements, workspace, opts = {}, diagnostics = [
   });
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 3: Group by zone, sort by depth_tier (asc), then by placement_name.
 function groupByZone(boundPlacements, zones) {
   const zoneIndex = new Map(zones.map(z => [z.id, z]));
@@ -346,7 +346,7 @@ function groupByZone(boundPlacements, zones) {
   return { groups, orphans };
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Helpers
 function depthFor(p) {
   // Manual depth wins; otherwise mid.
@@ -366,7 +366,7 @@ function visualWidthFor(p, scale = 1) {
   return p.layout.default_width * widthScaleFor(p) * DEPTH_SCALE[depthFor(p)] * scale;
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 4: Horizontal layout per zone.
 // Computes each item's x (center) and visualWidth in scene %.
 function horizontalLayout(groups, zones, layoutRules = {}, diagnostics = []) {
@@ -416,7 +416,7 @@ function horizontalLayout(groups, zones, layoutRules = {}, diagnostics = []) {
       // shrink gaps first
       const minSpread = footprints.reduce((s, f) => s + f, 0);
       if (minSpread < zoneW) {
-        // negative gaps not yet — keep scale 1 with reduced gap
+        // negative gaps not yet - keep scale 1 with reduced gap
       } else {
         scale = Math.max(MIN_SCALE, zoneW / minSpread);
         footprints = items.map(it => footprintFor(it, scale));
@@ -489,10 +489,10 @@ function horizontalLayout(groups, zones, layoutRules = {}, diagnostics = []) {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 7 (was 5): Vertical placement. Adds _y (anchor point), _height, _top.
 // Aspect-correct: a square asset (aspect = 1) renders square in pixels at
-// any viewport. Formula: heightPct = visualWidth × (viewport.w / viewport.h) / aspect.
+// any viewport. Formula: heightPct = visualWidth x (viewport.w / viewport.h) / aspect.
 function verticalLayout(zoneLayouts, zones, viewport = DEFAULT_VIEWPORT, diagnostics = []) {
   const viewportAspect = viewport.w / viewport.h;
   const result = new Map();
@@ -502,7 +502,7 @@ function verticalLayout(zoneLayouts, zones, viewport = DEFAULT_VIEWPORT, diagnos
     result.set(zone.id, items.map(it => {
       const depthOffset = DEPTH_BASELINE_OFFSET[depthFor(it)];
       const baseline = it.baseline_override ?? (zoneBaselineY + depthOffset);
-      // heightPct = visualWidth × (vp.w / vp.h) / aspect. Keeps pixel aspect
+      // heightPct = visualWidth x (vp.w / vp.h) / aspect. Keeps pixel aspect
       // constant regardless of viewport shape (percent is per-axis).
       const heightPct = (it._visualWidth * viewportAspect) / Math.max(0.01, it.aspect);
       let top;
@@ -544,7 +544,7 @@ function wrapLabel(label, budget) {
   return [head, tail];
 }
 
-// ─────────────────────────────────────────────────────────────────
+// -----------------------------------------------------------------
 // Stage 8 (was 6): Label layout + 3-pass collision nudge within each zone.
 function layoutLabels(zoneLayouts, zones, layoutRules = {}, diagnostics = []) {
   const labelOffsetY = layoutRules.label_offset_y ?? 3.5; // in scene-% units
@@ -594,8 +594,8 @@ function layoutLabels(zoneLayouts, zones, layoutRules = {}, diagnostics = []) {
   return result;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Stage 7: scene_bounds clamp — translate any escaping zone group back in.
+// -----------------------------------------------------------------
+// Stage 7: scene_bounds clamp - translate any escaping zone group back in.
 function clampSceneBounds(zoneLayouts, zones, sceneBounds, diagnostics = []) {
   if (!sceneBounds) return zoneLayouts;
   const result = new Map();
@@ -630,8 +630,8 @@ function clampSceneBounds(zoneLayouts, zones, sceneBounds, diagnostics = []) {
   return result;
 }
 
-// ─────────────────────────────────────────────────────────────────
-// Full pipeline runner — returns the data captured at each stage.
+// -----------------------------------------------------------------
+// Full pipeline runner - returns the data captured at each stage.
 function runPipeline(scene, opts = {}) {
   const library = opts.library || OBJECT_LIBRARY;
   const assets  = opts.assets  || ASSET_SPECS;
@@ -643,7 +643,7 @@ function runPipeline(scene, opts = {}) {
   const shrinkFactor = opts.shrinkFactor ?? LAYOUT_SHRINK_FACTOR;
   const diagnostics = [];
 
-  // ── Stages 1-5: identity resolution (single-pass) ────────────────
+  // -- Stages 1-5: identity resolution (single-pass) ----------------
   const normalized  = normalizeSchema(scene, rowLibrary);
   for (const t of (normalized.trace || [])) {
     if (t.op === "row_missing") {
@@ -659,8 +659,8 @@ function runPipeline(scene, opts = {}) {
   // Diagnostics from identity-resolution stages persist across passes.
   const identityDiagCount = diagnostics.length;
 
-  // ── Stages 6-10: convergence loop ────────────────────────────────
-  // Each pass runs Group → Horizontal → Vertical → Labels → Clamp.
+  // -- Stages 6-10: convergence loop --------------------------------
+  // Each pass runs Group -> Horizontal -> Vertical -> Labels -> Clamp.
   // After each pass, if any zone overflowed (horizontal or vertical),
   // uniformly shrink _width_scale for items in those zones by
   // LAYOUT_SHRINK_FACTOR and re-iterate. Caps at MAX_LAYOUT_PASSES.

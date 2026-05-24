@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Manager briefing · M2a TypeScript port</title>
+<title>Manager briefing * M2a TypeScript port</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -47,7 +47,7 @@
     padding: 56px 56px 80px;
   }
 
-  /* ── Hero ───────────────────────────────────────────── */
+  /* -- Hero --------------------------------------------- */
   .hero {
     border-bottom: 1px solid var(--rule);
     padding-bottom: 28px;
@@ -79,7 +79,7 @@
     margin: 0 0 24px;
   }
 
-  /* ── Status strip ──────────────────────────────────── */
+  /* -- Status strip ------------------------------------ */
   .status-strip {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -115,7 +115,7 @@
     box-shadow: 0 0 0 3px rgba(75,122,74,0.18);
   }
 
-  /* ── Section headers ───────────────────────────────── */
+  /* -- Section headers --------------------------------- */
   .section {
     margin-top: 56px;
   }
@@ -147,7 +147,7 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* ── Priority cards ───────────────────────────────── */
+  /* -- Priority cards --------------------------------- */
   .priorities {
     display: grid;
     gap: 12px;
@@ -230,7 +230,7 @@
   .pri.defer .pri-rank { background: #F0EAD4; }
   .pri.defer .pri-h { color: var(--ink-soft); }
 
-  /* ── Spec sync table ──────────────────────────────── */
+  /* -- Spec sync table -------------------------------- */
   .sync-table {
     background: var(--card);
     border: 1px solid var(--rule);
@@ -291,7 +291,7 @@
   .sync-effort.small .pip { background: var(--ok); }
   .sync-effort.med   .pip { background: var(--highlight); }
 
-  /* ── Decisions panel ──────────────────────────────── */
+  /* -- Decisions panel -------------------------------- */
   .decisions {
     background: var(--card);
     border: 2px solid var(--accent);
@@ -372,7 +372,7 @@
     margin-right: 8px;
   }
 
-  /* ── Risk list ────────────────────────────────────── */
+  /* -- Risk list -------------------------------------- */
   .risks {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -413,7 +413,7 @@
     margin: 0;
   }
 
-  /* ── Wins block ───────────────────────────────────── */
+  /* -- Wins block ------------------------------------- */
   .wins {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -439,7 +439,7 @@
     line-height: 1.45;
   }
 
-  /* ── Footer ──────────────────────────────────────── */
+  /* -- Footer ---------------------------------------- */
   footer {
     margin-top: 64px;
     padding-top: 20px;
@@ -451,7 +451,7 @@
     justify-content: space-between;
   }
 
-  /* ── Figures ─────────────────────────────────────── */
+  /* -- Figures --------------------------------------- */
   .fig {
     background: var(--card);
     border: 1px solid var(--rule);
@@ -501,7 +501,7 @@
     height: auto;
   }
 
-  /* ── Rules table (lint rules) ───────────────────── */
+  /* -- Rules table (lint rules) --------------------- */
   .rules {
     background: var(--card);
     border: 1px solid var(--rule);
@@ -561,7 +561,7 @@
     color: var(--ink);
   }
 
-  /* ── Recommendation block ───────────────────────── */
+  /* -- Recommendation block ------------------------- */
   .recblock {
     background: var(--card);
     border: 2px solid var(--accent-deep);
@@ -633,7 +633,7 @@
     margin: 0 0 3px;
   }
 
-  /* ── Escape-hatch contract (subsection lead-in) ── */
+  /* -- Escape-hatch contract (subsection lead-in) -- */
   .sub-h {
     font-family: 'Source Serif 4', serif;
     font-size: 19px;
@@ -670,7 +670,7 @@
   }
   .contract-list b { font-weight: 600; }
 
-  /* ── Print ───────────────────────────────────────── */
+  /* -- Print ----------------------------------------- */
   @media print {
     * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
     @page { size: letter; margin: 0.5in; }
@@ -687,13 +687,13 @@
 <body>
 <div class="page">
 
-  <!-- ── HERO ─────────────────────────────────────── -->
+  <!-- -- HERO --------------------------------------- -->
   <header class="hero">
-    <div class="hero-kicker">Manager briefing · M2a → M2b</div>
+    <div class="hero-kicker">Manager briefing * M2a -> M2b</div>
     <h1 class="serif">TS port landed clean.<br><span class="accent">Three decisions, then ship M2b.</span></h1>
     <p class="hero-sub">
       The layout engine port is complete and every gate is green. The porter
-      surfaced six small spec drifts during the work — all are minor edits
+      surfaced six small spec drifts during the work - all are minor edits
       to my docs, not engine bugs. The questions for you are about
       sequencing, not correctness.
     </p>
@@ -718,37 +718,37 @@
     </div>
   </header>
 
-  <!-- ── WINS ─────────────────────────────────────── -->
+  <!-- -- WINS --------------------------------------- -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">01</div>
       <h2 class="section-title serif">What landed.</h2>
-      <div class="section-sub">M2a · TypeScript port</div>
+      <div class="section-sub">M2a * TypeScript port</div>
     </div>
 
     <div class="wins">
       <div class="win">
         <div class="win-h">17</div>
-        <div class="win-sub">TypeScript files — one per stage, plus shared helpers + the convergence runner.</div>
+        <div class="win-sub">TypeScript files - one per stage, plus shared helpers + the convergence runner.</div>
       </div>
       <div class="win">
         <div class="win-h">23 tests</div>
         <div class="win-sub">Per-stage coverage plus the heat_block_bench worked example end-to-end.</div>
       </div>
       <div class="win">
-        <div class="win-h">±0.001</div>
+        <div class="win-h">+/-0.001</div>
         <div class="win-sub">Tolerance achieved on <span class="mono">_width_scale</span> against the spec fixture.</div>
       </div>
     </div>
 
     <p style="margin-top:18px; color: var(--ink-soft); font-size: 14px; line-height: 1.6; max-width: 76ch;">
       The convergence loop, the tab-stops overflow diagnostic (declared but not emitted in the JS reference),
-      and the per-pass debug record all shipped. The port is now the source of truth for runtime layout —
+      and the per-pass debug record all shipped. The port is now the source of truth for runtime layout -
       <span class="mono">design_advice/pipeline.jsx</span> can sunset whenever you want.
     </p>
   </section>
 
-  <!-- ── VISUALS ──────────────────────────────────── -->
+  <!-- -- VISUALS ------------------------------------ -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">02</div>
@@ -756,7 +756,7 @@
       <div class="section-sub">3 diagrams</div>
     </div>
 
-    <!-- ─── FIG A · Anatomy of a scene ─── -->
+    <!-- --- FIG A * Anatomy of a scene --- -->
     <figure class="fig">
       <div class="fig-head">
         <div class="fig-num">Fig A</div>
@@ -767,7 +767,7 @@
         <b>zones</b> inside it, and items placed in each zone. Each zone has a
         <b>baseline</b>; items sit on it (anchor: <span class="mono">bottom</span>) or
         hang from a tip (anchor: <span class="mono">tip</span>, used for pipettes).
-        Authoring just names the zones and the items — the engine derives every pixel.
+        Authoring just names the zones and the items - the engine derives every pixel.
       </p>
       <div class="fig-stage">
         <svg viewBox="0 0 960 420" xmlns="http://www.w3.org/2000/svg" aria-label="Scene anatomy diagram showing zones, baselines and items">
@@ -786,13 +786,13 @@
                 fill="rgba(31,122,126,0.05)" stroke="#1F7A7E" stroke-width="1.4"
                 stroke-dasharray="5 5" opacity="0.75" rx="3"/>
           <rect x="76" y="50" width="138" height="20" rx="3" fill="#FBF8EE" stroke="#1F7A7E" stroke-width="0.9"/>
-          <text x="145" y="64" font-family="JetBrains Mono" font-size="11" fill="#14595D" text-anchor="middle">zone · rear_supplies</text>
+          <text x="145" y="64" font-family="JetBrains Mono" font-size="11" fill="#14595D" text-anchor="middle">zone * rear_supplies</text>
 
           <!-- baseline rear -->
           <line x1="58" y1="160" x2="902" y2="160" stroke="#1F7A7E" stroke-width="1"
                 stroke-dasharray="2 6" opacity="0.6"/>
 
-          <!-- microtube rack — left tab-stop -->
+          <!-- microtube rack - left tab-stop -->
           <g transform="translate(78, 122)" filter="url(#figa-shadow)">
             <rect x="0" y="14" width="120" height="24" rx="3" fill="#9DA1A8" stroke="#15171C" stroke-width="1.4"/>
             <circle cx="12" cy="13" r="4.3" fill="#D33B33" stroke="#15171C" stroke-width="0.7"/>
@@ -807,7 +807,7 @@
           </g>
           <text x="138" y="178" text-anchor="middle" font-family="Inter" font-size="12" fill="#15171C">microtube rack</text>
 
-          <!-- eppendorf ladder tube — right tab-stop -->
+          <!-- eppendorf ladder tube - right tab-stop -->
           <g transform="translate(820, 96)" filter="url(#figa-shadow)">
             <ellipse cx="10" cy="6" rx="11" ry="5" fill="#D33B33" stroke="#15171C" stroke-width="1.1"/>
             <rect x="-1" y="6" width="22" height="36" fill="rgba(216,230,232,0.55)" stroke="#15171C" stroke-width="1.1"/>
@@ -822,13 +822,13 @@
                 fill="rgba(31,122,126,0.05)" stroke="#1F7A7E" stroke-width="1.4"
                 stroke-dasharray="5 5" opacity="0.75" rx="3"/>
           <rect x="248" y="210" width="138" height="20" rx="3" fill="#FBF8EE" stroke="#1F7A7E" stroke-width="0.9"/>
-          <text x="317" y="224" font-family="JetBrains Mono" font-size="11" fill="#14595D" text-anchor="middle">zone · work_surface</text>
+          <text x="317" y="224" font-family="JetBrains Mono" font-size="11" fill="#14595D" text-anchor="middle">zone * work_surface</text>
 
           <!-- baseline work_surface -->
           <line x1="220" y1="348" x2="740" y2="348" stroke="#1F7A7E" stroke-width="1"
                 stroke-dasharray="2 6" opacity="0.6"/>
 
-          <!-- heat block — center -->
+          <!-- heat block - center -->
           <g transform="translate(410, 268)" filter="url(#figa-shadow)">
             <rect x="0" y="16" width="140" height="64" rx="4" fill="#E1DCC6" stroke="#15171C" stroke-width="1.5"/>
             <rect x="8" y="0" width="124" height="18" rx="3" fill="#3D4046" stroke="#15171C" stroke-width="1.5"/>
@@ -850,7 +850,7 @@
           </g>
           <text x="480" y="368" text-anchor="middle" font-family="Inter" font-size="12" fill="#15171C">heat block</text>
 
-          <!-- ─── CALLOUTS ─── -->
+          <!-- --- CALLOUTS --- -->
           <!-- scene_bounds badge (top-left) -->
           <g>
             <line x1="42" y1="22" x2="42" y2="40" stroke="#C75234" stroke-width="1"/>
@@ -888,7 +888,7 @@
       </div>
     </figure>
 
-    <!-- ─── FIG B · CSS grid failure vs pipeline ─── -->
+    <!-- --- FIG B * CSS grid failure vs pipeline --- -->
     <figure class="fig">
       <div class="fig-head">
         <div class="fig-num">Fig B</div>
@@ -902,15 +902,15 @@
       </p>
       <div class="fig-stage">
         <svg viewBox="0 0 960 340" xmlns="http://www.w3.org/2000/svg" aria-label="Before and after: CSS grid versus pipeline">
-          <!-- ─── LEFT PANEL · M1 CSS GRID ─── -->
+          <!-- --- LEFT PANEL * M1 CSS GRID --- -->
           <g>
             <rect x="14" y="14" width="456" height="312" rx="4" fill="#FBFAF1" stroke="#15171C" stroke-width="1.4"/>
             <rect x="14" y="14" width="456" height="34" rx="4" fill="#1B1D22"/>
             <rect x="14" y="42" width="456" height="6" fill="#1B1D22"/>
-            <text x="32" y="36" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">M1 · CSS GRID</text>
+            <text x="32" y="36" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">M1 * CSS GRID</text>
             <g transform="translate(442, 24)">
               <rect x="-46" y="0" width="46" height="20" rx="3" fill="#D33B33"/>
-              <text x="-23" y="14" font-family="JetBrains Mono" font-size="10" fill="white" text-anchor="middle" font-weight="700">✗ FAIL</text>
+              <text x="-23" y="14" font-family="JetBrains Mono" font-size="10" fill="white" text-anchor="middle" font-weight="700">&#x2717; FAIL</text>
             </g>
 
             <!-- grid row hint -->
@@ -921,7 +921,7 @@
             <g transform="translate(58, 100)">
               <!-- base trapezoid -->
               <path d="M0 60 L80 60 L72 70 L8 70 Z" fill="#E1DCC6" stroke="#15171C" stroke-width="1.4"/>
-              <!-- arm — short because crushed -->
+              <!-- arm - short because crushed -->
               <rect x="32" y="32" width="14" height="32" fill="#E1DCC6" stroke="#15171C" stroke-width="1.4"/>
               <!-- objective turret (squashed ellipse instead of circle) -->
               <ellipse cx="40" cy="32" rx="20" ry="10" fill="#3D4046" stroke="#15171C" stroke-width="1.4"/>
@@ -934,9 +934,9 @@
               <!-- aspect violation marker -->
               <path d="M-6 70 L-6 0" stroke="#D33B33" stroke-width="1.4" stroke-dasharray="3 3"/>
               <text x="-10" y="38" font-family="JetBrains Mono" font-size="8" fill="#D33B33" text-anchor="end" font-weight="600">crushed</text>
-              <text x="-10" y="48" font-family="JetBrains Mono" font-size="8" fill="#D33B33" text-anchor="end" font-weight="600">−42%</text>
+              <text x="-10" y="48" font-family="JetBrains Mono" font-size="8" fill="#D33B33" text-anchor="end" font-weight="600">-42%</text>
             </g>
-            <text x="98" y="194" text-anchor="middle" font-family="Inter" font-size="11" fill="#15171C">microsco…</text>
+            <text x="98" y="194" text-anchor="middle" font-family="Inter" font-size="11" fill="#15171C">microsco...</text>
 
             <!-- bottle, also crushed -->
             <g transform="translate(174, 100)">
@@ -950,7 +950,7 @@
             </g>
             <text x="204" y="194" text-anchor="middle" font-family="Inter" font-size="11" fill="#15171C">DMEM media</text>
 
-            <!-- heat block — short enough that it fits -->
+            <!-- heat block - short enough that it fits -->
             <g transform="translate(260, 134)">
               <rect x="0" y="10" width="90" height="36" rx="3" fill="#E1DCC6" stroke="#15171C" stroke-width="1.3"/>
               <rect x="6" y="0" width="78" height="12" rx="2" fill="#3D4046" stroke="#15171C" stroke-width="1.3"/>
@@ -972,26 +972,26 @@
               <rect x="13" y="36" width="8" height="22" fill="#F0ECDF" stroke="#15171C" stroke-width="1.2"/>
               <path d="M14 58 L20 58 L19 70 L15 70 Z" fill="#3D4046" stroke="#15171C" stroke-width="1.2"/>
             </g>
-            <text x="389" y="194" text-anchor="middle" font-family="Inter" font-size="11" fill="#15171C">p200 pipet…</text>
+            <text x="389" y="194" text-anchor="middle" font-family="Inter" font-size="11" fill="#15171C">p200 pipet...</text>
 
             <!-- footer status -->
             <rect x="14" y="280" width="456" height="46" fill="#FBF8EE"/>
             <line x1="14" y1="280" x2="470" y2="280" stroke="#15171C" stroke-width="0.6"/>
             <g font-family="Inter" font-size="11.5" fill="#4B4E55">
               <text x="32" y="298" font-weight="600" fill="#D33B33">3 of 4 items aspect-distorted</text>
-              <text x="32" y="316">2 labels clipped · 1 popup_layer bug masking 4 regions</text>
+              <text x="32" y="316">2 labels clipped * 1 popup_layer bug masking 4 regions</text>
             </g>
           </g>
 
-          <!-- ─── RIGHT PANEL · PIPELINE OK ─── -->
+          <!-- --- RIGHT PANEL * PIPELINE OK --- -->
           <g transform="translate(490, 0)">
             <rect x="0" y="14" width="456" height="312" rx="4" fill="#FBFAF1" stroke="#15171C" stroke-width="1.4"/>
             <rect x="0" y="14" width="456" height="34" rx="4" fill="#14595D"/>
             <rect x="0" y="42" width="456" height="6" fill="#14595D"/>
-            <text x="18" y="36" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">M2 · PIPELINE</text>
+            <text x="18" y="36" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">M2 * PIPELINE</text>
             <g transform="translate(428, 24)">
               <rect x="-50" y="0" width="50" height="20" rx="3" fill="#4B7A4A"/>
-              <text x="-25" y="14" font-family="JetBrains Mono" font-size="10" fill="white" text-anchor="middle" font-weight="700">✓ CLEAN</text>
+              <text x="-25" y="14" font-family="JetBrains Mono" font-size="10" fill="white" text-anchor="middle" font-weight="700">&check; CLEAN</text>
             </g>
 
             <!-- microscope at correct aspect -->
@@ -1065,23 +1065,23 @@
             <line x1="0" y1="280" x2="456" y2="280" stroke="#15171C" stroke-width="0.6"/>
             <g font-family="Inter" font-size="11.5" fill="#4B4E55">
               <text x="18" y="298" font-weight="600" fill="#14595D">aspect preserved on every item</text>
-              <text x="18" y="316">labels intact · diagnostics empty · 1 pass</text>
+              <text x="18" y="316">labels intact * diagnostics empty * 1 pass</text>
             </g>
           </g>
         </svg>
       </div>
     </figure>
 
-    <!-- ─── FIG C · Convergence loop ─── -->
+    <!-- --- FIG C * Convergence loop --- -->
     <figure class="fig">
       <div class="fig-head">
         <div class="fig-num">Fig C</div>
         <h3 class="fig-title serif">When a zone is overcrowded, the engine tries again.</h3>
       </div>
       <p class="fig-cap">
-        Stages 6–10 run inside a convergence loop. After each pass, any zone whose
-        items overflowed gets a uniform <span class="mono">0.9×</span> shrink applied
-        — <b>aspect preserved</b> — and the pipeline retries. Up to three passes; a
+        Stages 6-10 run inside a convergence loop. After each pass, any zone whose
+        items overflowed gets a uniform <span class="mono">0.9x</span> shrink applied
+        - <b>aspect preserved</b> - and the pipeline retries. Up to three passes; a
         clean scene takes one. Stress cases that still don't fit at pass 3 emit
         <span class="mono">max_iterations_reached</span> so authoring can be fixed upstream.
       </p>
@@ -1097,7 +1097,7 @@
             </marker>
           </defs>
 
-          <!-- ─── PASS 1 ─── -->
+          <!-- --- PASS 1 --- -->
           <g transform="translate(0, 0)">
             <!-- pass label -->
             <rect x="14" y="14" width="76" height="22" rx="3" fill="#1B1D22"/>
@@ -1134,16 +1134,16 @@
             <text x="28" y="252" font-family="Inter" font-size="11" fill="#4B4E55">6 items don't fit at scale 1.00</text>
           </g>
 
-          <!-- arrow 1 → 2 -->
+          <!-- arrow 1 -> 2 -->
           <g>
             <path d="M324 120 Q344 120 344 138 Q344 150 354 150" fill="none"
                   stroke="#1F7A7E" stroke-width="1.6" marker-end="url(#arrow-c)"/>
             <rect x="318" y="92" width="76" height="20" rx="3" fill="#1F7A7E"/>
             <text x="356" y="106" font-family="JetBrains Mono" font-size="10" fill="white"
-                  text-anchor="middle" font-weight="600">shrink ×0.9</text>
+                  text-anchor="middle" font-weight="600">shrink x0.9</text>
           </g>
 
-          <!-- ─── PASS 2 ─── -->
+          <!-- --- PASS 2 --- -->
           <g transform="translate(335, 0)">
             <rect x="14" y="14" width="76" height="22" rx="3" fill="#1B1D22"/>
             <text x="52" y="29" font-family="JetBrains Mono" font-size="11" fill="#FBF8EE" text-anchor="middle" letter-spacing="0.10em">PASS 2</text>
@@ -1155,7 +1155,7 @@
             <line x1="20" y1="158" x2="290" y2="158" stroke="#1F7A7E" stroke-width="1"
                   stroke-dasharray="2 6" opacity="0.6"/>
 
-            <!-- 6 items at 0.9× scale -->
+            <!-- 6 items at 0.9x scale -->
             <g filter="url(#figc-shadow)">
               <rect x="32"  y="113" width="40" height="45" rx="3" fill="#E1DCC6" stroke="#15171C" stroke-width="1.2"/>
               <rect x="76"  y="115" width="38" height="43" rx="3" fill="#9DA1A8" stroke="#15171C" stroke-width="1.2"/>
@@ -1170,26 +1170,26 @@
             <rect x="14" y="200" width="290" height="60" rx="3" fill="#FBF8EE" stroke="#E8B73A" stroke-width="1"/>
             <text x="28" y="220" font-family="JetBrains Mono" font-size="10" fill="#9C7A1F" letter-spacing="0.08em">DIAGNOSTIC</text>
             <text x="28" y="237" font-family="Inter" font-size="11.5" fill="#15171C" font-weight="600">small residual overflow</text>
-            <text x="28" y="252" font-family="Inter" font-size="11" fill="#4B4E55">items at scale 0.90 · shrink again</text>
+            <text x="28" y="252" font-family="Inter" font-size="11" fill="#4B4E55">items at scale 0.90 * shrink again</text>
           </g>
 
-          <!-- arrow 2 → 3 -->
+          <!-- arrow 2 -> 3 -->
           <g>
             <path d="M656 120 Q676 120 676 138 Q676 150 686 150" fill="none"
                   stroke="#1F7A7E" stroke-width="1.6" marker-end="url(#arrow-c)"/>
             <rect x="650" y="92" width="76" height="20" rx="3" fill="#1F7A7E"/>
             <text x="688" y="106" font-family="JetBrains Mono" font-size="10" fill="white"
-                  text-anchor="middle" font-weight="600">shrink ×0.9</text>
+                  text-anchor="middle" font-weight="600">shrink x0.9</text>
           </g>
 
-          <!-- ─── PASS 3 · CONVERGED ─── -->
+          <!-- --- PASS 3 * CONVERGED --- -->
           <g transform="translate(670, 0)">
             <rect x="14" y="14" width="76" height="22" rx="3" fill="#14595D"/>
             <text x="52" y="29" font-family="JetBrains Mono" font-size="11" fill="white" text-anchor="middle" letter-spacing="0.10em">PASS 3</text>
             <g transform="translate(96, 14)">
               <rect x="0" y="0" width="86" height="22" rx="3" fill="#4B7A4A"/>
               <text x="43" y="15" font-family="JetBrains Mono" font-size="10" fill="white"
-                    text-anchor="middle" font-weight="700">✓ CONVERGED</text>
+                    text-anchor="middle" font-weight="700">&check; CONVERGED</text>
             </g>
             <rect x="20" y="60" width="270" height="120"
                   fill="rgba(75,122,74,0.06)" stroke="#4B7A4A" stroke-width="1.4"
@@ -1199,7 +1199,7 @@
             <line x1="20" y1="158" x2="290" y2="158" stroke="#4B7A4A" stroke-width="1"
                   stroke-dasharray="2 6" opacity="0.6"/>
 
-            <!-- 6 items at 0.81× scale, neatly spaced -->
+            <!-- 6 items at 0.81x scale, neatly spaced -->
             <g filter="url(#figc-shadow)">
               <rect x="38"  y="117" width="36" height="41" rx="3" fill="#E1DCC6" stroke="#15171C" stroke-width="1.2"/>
               <rect x="80"  y="119" width="34" height="39" rx="3" fill="#9DA1A8" stroke="#15171C" stroke-width="1.2"/>
@@ -1212,14 +1212,14 @@
             <rect x="14" y="200" width="290" height="60" rx="3" fill="#FBF8EE" stroke="#4B7A4A" stroke-width="1"/>
             <text x="28" y="220" font-family="JetBrains Mono" font-size="10" fill="#2F5E2F" letter-spacing="0.08em">RESULT</text>
             <text x="28" y="237" font-family="Inter" font-size="11.5" fill="#15171C" font-weight="600">diagnostics empty</text>
-            <text x="28" y="252" font-family="Inter" font-size="11" fill="#4B4E55">items at scale 0.81 · render</text>
+            <text x="28" y="252" font-family="Inter" font-size="11" fill="#4B4E55">items at scale 0.81 * render</text>
           </g>
         </svg>
       </div>
     </figure>
   </section>
 
-  <!-- ── PRIORITIES ───────────────────────────────── -->
+  <!-- -- PRIORITIES --------------------------------- -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">03</div>
@@ -1234,7 +1234,7 @@
           <div class="of mono">DO FIRST</div>
         </div>
         <div class="pri-body">
-          <h3 class="pri-h serif">Renderer <span class="sub">final[] → DOM</span></h3>
+          <h3 class="pri-h serif">Renderer <span class="sub">final[] -> DOM</span></h3>
           <p class="pri-d">
             <b>Highest leverage.</b> Until the pipeline output is visible, every other M2b work item
             is unverified theory. A thin renderer reading <span class="mono">final[]</span>
@@ -1243,8 +1243,8 @@
           </p>
         </div>
         <div class="pri-meta">
-          <div class="row"><span class="k">depends on</span><span class="v">M2a ✓</span></div>
-          <div class="row"><span class="k">unblocks</span><span class="v">items 2 – 4</span></div>
+          <div class="row"><span class="k">depends on</span><span class="v">M2a &check;</span></div>
+          <div class="row"><span class="k">unblocks</span><span class="v">items 2 - 4</span></div>
         </div>
       </div>
 
@@ -1263,7 +1263,7 @@
           </p>
         </div>
         <div class="pri-meta">
-          <div class="row"><span class="k">depends on</span><span class="v">M2a ✓</span></div>
+          <div class="row"><span class="k">depends on</span><span class="v">M2a &check;</span></div>
           <div class="row"><span class="k">parallel with</span><span class="v">renderer</span></div>
         </div>
       </div>
@@ -1274,7 +1274,7 @@
           <div class="of mono">VALIDATE</div>
         </div>
         <div class="pri-body">
-          <h3 class="pri-h serif">First scene end-to-end <span class="sub">bench_basic.yaml → Playwright</span></h3>
+          <h3 class="pri-h serif">First scene end-to-end <span class="sub">bench_basic.yaml -> Playwright</span></h3>
           <p class="pri-d">
             Take one real base scene through the full chain and capture a Playwright baseline.
             This is the M0 / M1 baseline replacement we've been waiting for. If this passes,
@@ -1315,7 +1315,7 @@
         <div class="pri-body">
           <h3 class="pri-h serif">Sync spec to port <span class="sub">six small edits</span></h3>
           <p class="pri-d">
-            Each is a localized doc fix — see §03 below. I'll handle these myself while the
+            Each is a localized doc fix - see §03 below. I'll handle these myself while the
             porter works on the renderer; they don't need a dedicated slot in M2b.
           </p>
         </div>
@@ -1327,30 +1327,30 @@
     </div>
   </section>
 
-  <!-- ── ESCAPE HATCH ────────────────────────────── -->
+  <!-- -- ESCAPE HATCH ------------------------------ -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">04</div>
       <h2 class="section-title serif">When a scene can't render.</h2>
-      <div class="section-sub">Tiers · lint · escape hatch</div>
+      <div class="section-sub">Tiers * lint * escape hatch</div>
     </div>
 
     <p style="font-size: 15px; color: var(--ink-soft); line-height: 1.6; max-width: 78ch; margin: 0 0 24px;">
       A scene YAML existing doesn't mean it will render. The convergence loop
-      (Fig C above) catches <b>cluttered</b> — it can't catch <b>broken</b>.
+      (Fig C above) catches <b>cluttered</b> - it can't catch <b>broken</b>.
       Three failure tiers sit beyond the loop's reach. Each needs a different
       response; the cleanest enforcement point is a build-time
       <b>design linter</b>, with the runtime engine as the last line of defense.
     </p>
 
-    <!-- ─── Fig D · Four tiers ─── -->
+    <!-- --- Fig D * Four tiers --- -->
     <figure class="fig">
       <div class="fig-head">
         <div class="fig-num">Fig D</div>
         <h3 class="fig-title serif">Four tiers of "can this render?"</h3>
       </div>
       <p class="fig-cap">
-        Tier 1 and 2 the engine handles. Tier 3 needs an <b>escape hatch</b> —
+        Tier 1 and 2 the engine handles. Tier 3 needs an <b>escape hatch</b> -
         the runtime falls back to a renderable parent scene with a banner; the
         protocol step pauses. Tier 4 is validator territory: the YAML never
         reaches runtime.
@@ -1363,10 +1363,10 @@
             </filter>
           </defs>
 
-          <!-- ─── TIER 1 · CLEAN ─── -->
+          <!-- --- TIER 1 * CLEAN --- -->
           <g>
             <rect x="0" y="0" width="222" height="28" rx="3" fill="#1B1D22"/>
-            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 1 · CLEAN</text>
+            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 1 * CLEAN</text>
             <rect x="170" y="6" width="46" height="16" rx="3" fill="#4B7A4A"/>
             <text x="193" y="17.5" font-family="JetBrains Mono" font-size="9" fill="white" text-anchor="middle" font-weight="700">PASS 1</text>
 
@@ -1387,12 +1387,12 @@
             <text x="14" y="266" font-family="JetBrains Mono" font-size="10" fill="#4B4E55">diagnostics: 0</text>
           </g>
 
-          <!-- ─── TIER 2 · CONVERGED ─── -->
+          <!-- --- TIER 2 * CONVERGED --- -->
           <g transform="translate(246, 0)">
             <rect x="0" y="0" width="222" height="28" rx="3" fill="#1B1D22"/>
-            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 2 · CONVERGED</text>
+            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 2 * CONVERGED</text>
             <rect x="170" y="6" width="46" height="16" rx="3" fill="#E8B73A"/>
-            <text x="193" y="17.5" font-family="JetBrains Mono" font-size="9" fill="#15171C" text-anchor="middle" font-weight="700">×0.81</text>
+            <text x="193" y="17.5" font-family="JetBrains Mono" font-size="9" fill="#15171C" text-anchor="middle" font-weight="700">x0.81</text>
 
             <rect x="14" y="50" width="194" height="120" fill="rgba(31,122,126,0.05)"
                   stroke="#1F7A7E" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.7" rx="2"/>
@@ -1413,10 +1413,10 @@
             <text x="14" y="266" font-family="JetBrains Mono" font-size="10" fill="#4B4E55">zone_overflow (resolved)</text>
           </g>
 
-          <!-- ─── TIER 3 · ESCAPE HATCH ─── -->
+          <!-- --- TIER 3 * ESCAPE HATCH --- -->
           <g transform="translate(492, 0)">
             <rect x="0" y="0" width="222" height="28" rx="3" fill="#1B1D22"/>
-            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 3 · ESCAPE</text>
+            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 3 * ESCAPE</text>
             <rect x="166" y="6" width="50" height="16" rx="3" fill="#C75234"/>
             <text x="191" y="17.5" font-family="JetBrains Mono" font-size="9" fill="white" text-anchor="middle" font-weight="700">FALLBK</text>
 
@@ -1424,7 +1424,7 @@
                   stroke="#1F7A7E" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.55" rx="2"/>
             <line x1="14" y1="148" x2="208" y2="148" stroke="#1F7A7E" stroke-width="0.8"
                   stroke-dasharray="2 5" opacity="0.45"/>
-            <!-- only 2 items shown — the parent scene -->
+            <!-- only 2 items shown - the parent scene -->
             <g filter="url(#figd-shadow)" opacity="0.7">
               <rect x="52"  y="92" width="44" height="56" rx="3" fill="#E1DCC6" stroke="#15171C" stroke-width="1.2"/>
               <rect x="124" y="94" width="44" height="54" rx="3" fill="#9DA1A8" stroke="#15171C" stroke-width="1.2"/>
@@ -1441,12 +1441,12 @@
             <text x="14" y="266" font-family="JetBrains Mono" font-size="10" fill="#4B4E55">max_iterations_reached</text>
           </g>
 
-          <!-- ─── TIER 4 · BLOCKED ─── -->
+          <!-- --- TIER 4 * BLOCKED --- -->
           <g transform="translate(738, 0)">
             <rect x="0" y="0" width="222" height="28" rx="3" fill="#1B1D22"/>
-            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 4 · BLOCKED</text>
+            <text x="12" y="19" font-family="JetBrains Mono" font-size="11" fill="#E6E1D4" letter-spacing="0.10em">TIER 4 * BLOCKED</text>
             <rect x="170" y="6" width="46" height="16" rx="3" fill="#D33B33"/>
-            <text x="193" y="17.5" font-family="JetBrains Mono" font-size="9" fill="white" text-anchor="middle" font-weight="700">✗ VAL</text>
+            <text x="193" y="17.5" font-family="JetBrains Mono" font-size="9" fill="white" text-anchor="middle" font-weight="700">&#x2717; VAL</text>
 
             <rect x="14" y="50" width="194" height="120" fill="rgba(179,58,46,0.04)"
                   stroke="#B33A2E" stroke-width="1.2" stroke-dasharray="4 4" opacity="0.45" rx="2"/>
@@ -1462,13 +1462,13 @@
             <text x="14" y="214" font-family="JetBrains Mono" font-size="10" fill="#B33A2E" letter-spacing="0.08em">OUTCOME</text>
             <text x="14" y="232" font-family="Inter" font-size="12" font-weight="600" fill="#15171C">Never reaches runtime.</text>
             <text x="14" y="250" font-family="Inter" font-size="11" fill="#4B4E55">Validator throws at build.</text>
-            <text x="14" y="266" font-family="JetBrains Mono" font-size="10" fill="#4B4E55">unknown_object · cycle</text>
+            <text x="14" y="266" font-family="JetBrains Mono" font-size="10" fill="#4B4E55">unknown_object * cycle</text>
           </g>
         </svg>
       </div>
     </figure>
 
-    <!-- ─── Design rules ─── -->
+    <!-- --- Design rules --- -->
     <h3 class="sub-h">Design rules the linter would enforce.</h3>
     <p class="sub-p">
       Eight rules in v1, each mapping to a structured finding. Errors fail the
@@ -1481,35 +1481,35 @@
       <div class="rule">
         <div class="rule-num">1</div>
         <div class="rule-name">items_per_row_max</div>
-        <div class="rule-threshold">N ≤ ⌊row_width / 8⌋</div>
+        <div class="rule-threshold">N <= &lfloor;row_width / 8&rfloor;</div>
         <div><span class="rule-sev error">error</span></div>
-        <div class="rule-catches">"<em>25 items in one row</em>" — runtime gives up</div>
+        <div class="rule-catches">"<em>25 items in one row</em>" - runtime gives up</div>
       </div>
       <div class="rule">
         <div class="rule-num">2</div>
         <div class="rule-name">row_balance_ratio</div>
-        <div class="rule-threshold">max(N) / min(N) ≤ 5×</div>
+        <div class="rule-threshold">max(N) / min(N) <= 5x</div>
         <div><span class="rule-sev warn">warn</span></div>
         <div class="rule-catches">"<em>1 / 25 / 2</em>" composition across rows</div>
       </div>
       <div class="rule">
         <div class="rule-num">3</div>
         <div class="rule-name">largest_item_zone_ratio</div>
-        <div class="rule-threshold">item_footprint / zone ≤ 0.6</div>
+        <div class="rule-threshold">item_footprint / zone <= 0.6</div>
         <div><span class="rule-sev warn">warn</span></div>
         <div class="rule-catches">one item visually dominates the zone</div>
       </div>
       <div class="rule">
         <div class="rule-num">4</div>
         <div class="rule-name">scene_density</div>
-        <div class="rule-threshold">0.15 ≤ density ≤ 0.70</div>
+        <div class="rule-threshold">0.15 <= density <= 0.70</div>
         <div><span class="rule-sev warn">warn</span></div>
-        <div class="rule-catches">empty stage · stuffed shelf</div>
+        <div class="rule-catches">empty stage * stuffed shelf</div>
       </div>
       <div class="rule">
         <div class="rule-num">5</div>
         <div class="rule-name">tab_stops_symmetry</div>
-        <div class="rule-threshold">max(L, C, R) / min ≤ 3×</div>
+        <div class="rule-threshold">max(L, C, R) / min <= 3x</div>
         <div><span class="rule-sev info">info</span></div>
         <div class="rule-catches">"<em>8 left, 0 center, 1 right</em>"</div>
       </div>
@@ -1523,20 +1523,20 @@
       <div class="rule">
         <div class="rule-num">7</div>
         <div class="rule-name">unknown_row_name</div>
-        <div class="rule-threshold">row ∈ WORKSPACE_ROW_LIBRARY</div>
+        <div class="rule-threshold">row &isin; WORKSPACE_ROW_LIBRARY</div>
         <div><span class="rule-sev error">error</span></div>
         <div class="rule-catches">typo in <em>row_name</em></div>
       </div>
       <div class="rule">
         <div class="rule-num">8</div>
         <div class="rule-name">unknown_object_name</div>
-        <div class="rule-threshold">object ∈ OBJECT_LIBRARY</div>
+        <div class="rule-threshold">object &isin; OBJECT_LIBRARY</div>
         <div><span class="rule-sev error">error</span></div>
         <div class="rule-catches">typo in <em>object_name</em></div>
       </div>
     </div>
 
-    <!-- ─── Recommendation block ─── -->
+    <!-- --- Recommendation block --- -->
     <div class="recblock">
       <div class="recblock-head">
         <span class="recblock-kicker">RECOMMENDATION</span>
@@ -1574,7 +1574,7 @@
             <div class="rec-col-h">What it outputs</div>
             <div class="rec-col-body">
               JSON to <span class="mono">stdout</span>, human-readable to
-              <span class="mono">stderr</span>. Exit codes 0 · 1 (warn) · 2 (error).
+              <span class="mono">stderr</span>. Exit codes 0 * 1 (warn) * 2 (error).
               Dev overlay reads the JSON.
             </div>
           </div>
@@ -1590,32 +1590,32 @@
       </div>
     </div>
 
-    <!-- ─── Escape-hatch runtime contract ─── -->
+    <!-- --- Escape-hatch runtime contract --- -->
     <h3 class="sub-h">The runtime escape-hatch contract.</h3>
     <p class="sub-p">
-      When the linter is bypassed or skipped — or when the runtime hits Tier 3
-      anyway — the engine has to respond gracefully. Three rules:
+      When the linter is bypassed or skipped - or when the runtime hits Tier 3
+      anyway - the engine has to respond gracefully. Three rules:
     </p>
     <ul class="contract-list">
       <li><b>Never crash the player.</b> A failed scene must always produce a renderable result of some kind.</li>
       <li><b>Walk the extends chain backward.</b> If the protocol-scoped scene fails, render its parent. If the parent fails, render the base scene. If the base fails, render the workspace placeholder.</li>
-      <li><b>Surface the failure visibly.</b> Warm banner across the top: "Protocol step paused · scene rendering blocked." Telemetry logs the diagnostic that triggered fallback. The player can continue; the protocol step records as <span class="mono">skipped_no_render</span>.</li>
+      <li><b>Surface the failure visibly.</b> Warm banner across the top: "Protocol step paused * scene rendering blocked." Telemetry logs the diagnostic that triggered fallback. The player can continue; the protocol step records as <span class="mono">skipped_no_render</span>.</li>
     </ul>
   </section>
 
-  <!-- ── SPEC SYNC ─────────────────────────────────── -->
+  <!-- -- SPEC SYNC ----------------------------------- -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">05</div>
-      <h2 class="section-title serif">Spec gaps — my verdict on each.</h2>
-      <div class="section-sub">6 items · all docs-side</div>
+      <h2 class="section-title serif">Spec gaps - my verdict on each.</h2>
+      <div class="section-sub">6 items * all docs-side</div>
     </div>
 
     <div class="sync-table">
       <div class="sync-row">
         <div class="sync-id">3.1</div>
         <div class="sync-gap"><b>§4.5 heading</b> referenced four times, never inlined.</div>
-        <div class="sync-verdict"><b>Fix in spec.</b> The content lives only in the Decisions doc. Inline §4.5 into the spec so it's self-contained — that was always the intent.</div>
+        <div class="sync-verdict"><b>Fix in spec.</b> The content lives only in the Decisions doc. Inline §4.5 into the spec so it's self-contained - that was always the intent.</div>
         <div class="sync-effort small"><span class="pip"></span>15 min</div>
       </div>
       <div class="sync-row">
@@ -1638,20 +1638,20 @@
       </div>
       <div class="sync-row">
         <div class="sync-id">3.5</div>
-        <div class="sync-gap"><b>passes[i] snapshot timing</b> — meta-diagnostic landed outside the per-pass record.</div>
+        <div class="sync-gap"><b>passes[i] snapshot timing</b> - meta-diagnostic landed outside the per-pass record.</div>
         <div class="sync-verdict"><b>Snapshot after the meta push.</b> Clean correctness fix; tighten the contract in both pipeline.jsx and the TS port. Tiny code change, big diagnostic clarity.</div>
         <div class="sync-effort med"><span class="pip"></span>20 min</div>
       </div>
       <div class="sync-row">
         <div class="sync-id">3.6</div>
-        <div class="sync-gap"><b>tab_stop_overflow</b> formula — porter chose a sensible one; needs ratification.</div>
-        <div class="sync-verdict"><b>Ratify as-is.</b> <span class="mono">bucketTotal &gt; zoneW + 0.5 ⇒ warn</span> matches the spirit of the other overflow checks. Lock it in §4 Stage 7.</div>
+        <div class="sync-gap"><b>tab_stop_overflow</b> formula - porter chose a sensible one; needs ratification.</div>
+        <div class="sync-verdict"><b>Ratify as-is.</b> <span class="mono">bucketTotal &gt; zoneW + 0.5 &rArr; warn</span> matches the spirit of the other overflow checks. Lock it in §4 Stage 7.</div>
         <div class="sync-effort small"><span class="pip"></span>5 min</div>
       </div>
     </div>
   </section>
 
-  <!-- ── DECISIONS ────────────────────────────────── -->
+  <!-- -- DECISIONS ---------------------------------- -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">06</div>
@@ -1695,7 +1695,7 @@
         </div>
         <div class="decision-body">
           <p>
-            The runtime pipeline does not throw on authoring errors — it accumulates diagnostics. A strict
+            The runtime pipeline does not throw on authoring errors - it accumulates diagnostics. A strict
             validator (build-time, throws on <span class="mono">unknown_object</span>, multi-level extends,
             locked-field mutations, etc.) is listed as M2b item 4 in the port handoff.
           </p>
@@ -1734,7 +1734,7 @@
     </div>
   </section>
 
-  <!-- ── RISKS ───────────────────────────────────── -->
+  <!-- -- RISKS ------------------------------------- -->
   <section class="section">
     <div class="section-head">
       <div class="section-num">07</div>
@@ -1782,14 +1782,14 @@
         </div>
         <p class="risk-d">
           Author responsibility today. Listed in spec §10 as a known gap. Real risk only emerges
-          when many scenes share inherited zone definitions — not in M2b.
+          when many scenes share inherited zone definitions - not in M2b.
         </p>
       </div>
     </div>
   </section>
 
   <footer>
-    <div>Manager briefing · M2a → M2b transition</div>
+    <div>Manager briefing * M2a -> M2b transition</div>
     <div>May 23, 2026</div>
   </footer>
 

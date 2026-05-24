@@ -1,9 +1,9 @@
-# Scene-lint plan (v3) — render-failure predictor
+# Scene-lint plan (v3) - render-failure predictor
 
 Python build-time predictor for `content/base_scenes/*.yaml` and
 `content/protocols/*/scenes/*.yaml`. Answers the question **"will this
 scene render, or does the runtime have to invoke the Tier 3 escape
-hatch?"** Does *not* assess vocabulary validity or design quality —
+hatch?"** Does *not* assess vocabulary validity or design quality -
 those are owned by sibling tools.
 
 ## Scope, in relation to other tools
@@ -12,7 +12,7 @@ those are owned by sibling tools.
 |---|---|---|---|
 | Existing vocab/structural lint | "Is the YAML grammar valid?" | error / ok | fail on error |
 | **This tool** | "Will this YAML render, or trigger fail-loud?" | `BLOCKED` / `ESCAPE_REQUIRED` / `CLEAN` | block / report / pass |
-| `SCENE_DESIGN_LINT_PLAN.md` (sibling) | "Is this a good scene to teach with?" | 0–100 score | never blocks; PR-diff budget |
+| `SCENE_DESIGN_LINT_PLAN.md` (sibling) | "Is this a good scene to teach with?" | 0-100 score | never blocks; PR-diff budget |
 | `precheck.mjs` (final truth) | "Did it actually render?" | per-metric pass/warn/fail | retroactive only |
 
 This tool predicts. `precheck.mjs` measures. A `CLEAN` verdict here does
@@ -46,7 +46,7 @@ The four predictors in Group B target this distribution directly.
 
 | Verdict | Meaning | Build action | Runtime action |
 |---|---|---|---|
-| `BLOCKED` | Invalid data or unresolved references. Scene cannot enter the layout pipeline. | **Fail build** (Group A from v0). | n/a — YAML never reaches runtime. |
+| `BLOCKED` | Invalid data or unresolved references. Scene cannot enter the layout pipeline. | **Fail build** (Group A from v0). | n/a - YAML never reaches runtime. |
 | `ESCAPE_REQUIRED` | Valid data, but layout predicted to crop / overlap / go off-page / vanish / aspect-distort. | **Advisory** in v1/v2 (report-only); **fail build** in strict mode after v1 confusion table proves precision. | Runtime refuses scene with explicit fail-loud diagnostic. Never silently clip. |
 | `CLEAN` | No known failures or risks. | Proceed. | Proceed. |
 
@@ -63,16 +63,16 @@ simulator port and rule implementations agree.
 | `scene_bounds`, `zone.bounds` | scene-percent | `[0, 100]` | `LAYOUT_PIPELINE.md` §1 |
 | `_visualWidth`, `_height`, `heightPct` | scene-percent (per-axis) | typically `[0, 100]` | spec §1; aspect-corrected per axis |
 | `_x`, `_y`, `_top`, `_labelX`, `_labelY` | scene-percent | within scene_bounds | spec §1 |
-| `_footprint` | scene-percent (horizontal) | `≥ _visualWidth` | spec §4 Stage 7 |
+| `_footprint` | scene-percent (horizontal) | `>= _visualWidth` | spec §4 Stage 7 |
 | `default_width`, `label_width` | scene-percent (horizontal) | object-defined | `LayoutHint` |
 | `display_width_cm` | centimeters | object-defined | `SCALING_MODEL.md` |
-| `_width_scale`, `_scale` | dimensionless multiplier | `≥ MIN_SCALE = 0.55` | spec §2 |
+| `_width_scale`, `_scale` | dimensionless multiplier | `>= MIN_SCALE = 0.55` | spec §2 |
 | `aspect` | dimensionless (w/h) | from SVG `viewBox.width / viewBox.height` | `AssetSpec` |
-| `viewport.w`, `viewport.h` | CSS pixels | default `1920×1080` | spec §2 |
+| `viewport.w`, `viewport.h` | CSS pixels | default `1920x1080` | spec §2 |
 | `PX_PER_SCENE_PERCENT` | px / scene-percent | `11.52` (constant) | spec §2 |
 | `px_per_cm` | px / cm | per-workspace, `{bench:3.2, hood/microscope/plate_reader/cell_counter:8, incubator:6}` | spec §2 |
 
-**Aspect correction.** `_height = _visualWidth × (viewport.w / viewport.h) / aspect`.
+**Aspect correction.** `_height = _visualWidth x (viewport.w / viewport.h) / aspect`.
 A square SVG (`aspect = 1`) renders square in pixels at any viewport
 because the `(viewport.w / viewport.h)` factor compensates for per-axis
 percent units. The simulator must use this formula verbatim; rules must
@@ -92,21 +92,21 @@ carry `bbox_type` so reports stay unambiguous.
 
 | Name | What it is | Used by |
 |---|---|---|
-| `visual_bbox` | The rendered SVG's painted rectangle (asset-aspect-honoring). `(_visualWidth × _height)`. | aspect rules, item-item overlap, off-page checks for the artwork itself |
+| `visual_bbox` | The rendered SVG's painted rectangle (asset-aspect-honoring). `(_visualWidth x _height)`. | aspect rules, item-item overlap, off-page checks for the artwork itself |
 | `placement_bbox` | The visual_bbox + any depth offset and renderer margins; the `.placement` element's rect that precheck's `region_overflow` measures. | placement-outside-zone / outside-scene checks |
-| `footprint_bbox` | `max(_visualWidth, min(label_width, _visualWidth × MAX_FOOTPRINT_RATIO))` wide; height = max(_height, label_height). The space the layout engine *budgets* for the placement. | row-footprint and zone-density checks |
+| `footprint_bbox` | `max(_visualWidth, min(label_width, _visualWidth x MAX_FOOTPRINT_RATIO))` wide; height = max(_height, label_height). The space the layout engine *budgets* for the placement. | row-footprint and zone-density checks |
 
 A rule that reads "item overflows zone" without naming the bbox is
 ambiguous; the linter should refuse to ship a rule that does this.
 
 ## Rule catalog
 
-### Group A · Data blockers → `BLOCKED`
+### Group A * Data blockers -> `BLOCKED`
 
 Deterministic authoring errors. No simulator needed. **Never
 suppressible.** Build-failing from v0.
 
-Coordinate with existing vocab lint — Group A rules already covered by
+Coordinate with existing vocab lint - Group A rules already covered by
 the vocab tool stay in the vocab tool; the rules below are the ones
 not (yet) handled there.
 
@@ -114,7 +114,7 @@ not (yet) handled there.
 |---|---|
 | `duplicate_scene_name` | Two scene YAMLs declare the same `scene_name`. (Caught: `heat_block_bench` shipped twice in the corpus.) |
 | `duplicate_placement_name` | `placement_name` appears twice within one scene (post-inheritance resolution). |
-| `invalid_scene_bounds` | Any of l/r/t/b outside `[0,100]`, or `left ≥ right`, or `top ≥ bottom`. |
+| `invalid_scene_bounds` | Any of l/r/t/b outside `[0,100]`, or `left >= right`, or `top >= bottom`. |
 | `invalid_zone_bounds` | Same plus `zone.bounds` must fit inside `scene_bounds`. |
 | `zone_outside_scene_bounds` | Zone `bounds` rect not contained in `scene_bounds`. |
 | `missing_svg_asset` | `object.asset` does not resolve to a real SVG on disk. |
@@ -130,9 +130,9 @@ Vocab-lint overlaps (defer to existing tool unless gaps exist):
 `unknown_object_kind`, `unknown_workspace`, `unknown_capability`,
 `unsupported_background_type`.
 
-### Group B · Geometry predictors → `ESCAPE_REQUIRED`
+### Group B * Geometry predictors -> `ESCAPE_REQUIRED`
 
-These require the Python simulator (Python port of M2a TS, Stages 2–10).
+These require the Python simulator (Python port of M2a TS, Stages 2-10).
 Advisory until v1 confusion table establishes precision; strict mode
 after.
 
@@ -144,80 +144,80 @@ after.
 | `placement_bbox_outside_scene` | `off_page` | placement_bbox | ~21 (overlaps taller/wider) |
 | `placement_bbox_outside_zone` | `region_overflow` | placement_bbox | ~4 |
 | `item_item_overlap` | `svg_svg_overlap` | visual_bbox pairs | density-dependent |
-| `label_offscreen` | label clipped at scene edge | label bbox vs scene_bounds | ~3–5 |
+| `label_offscreen` | label clipped at scene edge | label bbox vs scene_bounds | ~3-5 |
 | `label_object_overlap` | `svg_label_overlap` | label bbox vs visual_bbox | density-dependent |
 | `invisible_placement` | "scene renders but object is gone" (`microscope_basic`) | visual_bbox sizing pathologies | 1 catastrophic + N near-misses |
 | `zone_overlap` | cross-zone collision (spec §10 known gap) | zone.bounds pairs | structural; static |
 
 #### Rule specs
 
-##### B1 · `aspect_distorted_predicted`
+##### B1 * `aspect_distorted_predicted`
 
 ```
 authored_aspect = svg.viewBox.width / svg.viewBox.height
 rendered_aspect = _visualWidth / _height
-delta_pct = abs(rendered_aspect - authored_aspect) / authored_aspect × 100
+delta_pct = abs(rendered_aspect - authored_aspect) / authored_aspect x 100
 if delta_pct > 5.0: ESCAPE_REQUIRED
 ```
 
 All matches are `ESCAPE_REQUIRED`. (Earlier draft had BLOCKED escalation
 for glassware/pipette/plate/instrument; demoted to ESCAPE_REQUIRED to
 keep verdict semantics clean.) The high-priority object groups remain
-relevant — they're surfaced in `evidence.severity_hint` so the design
+relevant - they're surfaced in `evidence.severity_hint` so the design
 team can prioritize triage, but the verdict itself is uniform.
 
-##### B2 · `item_taller_than_zone`
+##### B2 * `item_taller_than_zone`
 
 ```
-zone_inner_h = (zone.bounds.bottom - zone.bounds.top) - 2 × ZONE_PADDING
+zone_inner_h = (zone.bounds.bottom - zone.bounds.top) - 2 x ZONE_PADDING
 required_scale = zone_inner_h / _height
 if required_scale < MIN_SCALE (0.55): ESCAPE_REQUIRED
 ```
 
-##### B3 · `row_footprint_overflow`
+##### B3 * `row_footprint_overflow`
 
 Replaces the prior `items_per_row_max` count heuristic with real
-footprint math (per the v2 → v3 critique).
+footprint math (per the v2 -> v3 critique).
 
 ```
 For each zone:
   n = len(items_in_zone)
-  total_footprint = Σ footprint_i   # footprint_bbox.width
-  required_w = total_footprint + (n - 1) × zone_gap
-  zone_inner_w = (zone.bounds.right - zone.bounds.left) - 2 × ZONE_PADDING
+  total_footprint = &Sigma; footprint_i   # footprint_bbox.width
+  required_w = total_footprint + (n - 1) x zone_gap
+  zone_inner_w = (zone.bounds.right - zone.bounds.left) - 2 x ZONE_PADDING
 
-  if required_w ≤ zone_inner_w:           pass
-  elif (zone_inner_w / total_footprint) ≥ MIN_SCALE:  INFO (shrink will fit)
+  if required_w <= zone_inner_w:           pass
+  elif (zone_inner_w / total_footprint) >= MIN_SCALE:  INFO (shrink will fit)
   else:                                   ESCAPE_REQUIRED
 ```
 
 For tab-stops zones, compute three independent sub-sums
-(left/center/right) + 2 × zone_gap against the zone width; emit
+(left/center/right) + 2 x zone_gap against the zone width; emit
 `tab_stop_overflow`.
 
-##### B4 · `placement_bbox_outside_scene`
+##### B4 * `placement_bbox_outside_scene`
 
 ```
 bbox = simulator.final_placement_bbox(placement)  # post-Stage 10 clamp
-if not bbox ⊆ scene_bounds: ESCAPE_REQUIRED
+if not bbox &sube; scene_bounds: ESCAPE_REQUIRED
 ```
 
 Stage 10 already tries to clamp; this rule fires when it can't recover.
 
-##### B5 · `placement_bbox_outside_zone`
+##### B5 * `placement_bbox_outside_zone`
 
 ```
-if not bbox ⊆ zone.bounds + 4-px tolerance: ESCAPE_REQUIRED
+if not bbox &sube; zone.bounds + 4-px tolerance: ESCAPE_REQUIRED
 ```
 
-##### B6 · `item_item_overlap`
+##### B6 * `item_item_overlap`
 
 ```
 For each (a, b):
-  if area(a.visual_bbox ∩ b.visual_bbox) > 50 px²: ESCAPE_REQUIRED
+  if area(a.visual_bbox &cap; b.visual_bbox) > 50 px²: ESCAPE_REQUIRED
 ```
 
-##### B7 · `label_offscreen`
+##### B7 * `label_offscreen`
 
 ```
 label_left  = _labelX - label_width / 2
@@ -229,17 +229,17 @@ if label_right > scene_bounds.right: ESCAPE_REQUIRED
 Stage 9's intra-zone clamp doesn't protect against this when the zone
 touches `scene_bounds`. Seen in the `*__center_kimwipe_pad` screenshots.
 
-##### B8 · `label_object_overlap`
+##### B8 * `label_object_overlap`
 
 ```
 For each label L and each scientific-group placement P (not L's own):
-  if area(L.bbox ∩ P.visual_bbox) > 10 px²: ESCAPE_REQUIRED
+  if area(L.bbox &cap; P.visual_bbox) > 10 px²: ESCAPE_REQUIRED
 ```
 
 Limited to scientific-group objects (don't fail on labels overlapping
 `decoration` kind).
 
-##### B9 · `invisible_placement`
+##### B9 * `invisible_placement`
 
 Rewritten around the actual field names in the codebase. The object
 library's canonical sizing field is `layout.default_width` (always
@@ -247,25 +247,25 @@ present); `layout.display_width_cm` is the optional cm-model upgrade
 (see `SCALING_MODEL.md`). The previous draft assumed `display_width_cm`
 existed.
 
-Triggers — any one:
-1. Predicted `_visualWidth × _height < 100 px²` → ESCAPE_REQUIRED.
-2. `_height > 2 × zone_inner_h` (renderer clamps to invisibility) → ESCAPE_REQUIRED.
-3. `_scale_source == "skipped_error"` from Stage 5 → ESCAPE_REQUIRED.
-4. `layout.default_width` missing or ≤ 0 → BLOCKED (Group A overlap; defensive).
+Triggers - any one:
+1. Predicted `_visualWidth x _height < 100 px²` -> ESCAPE_REQUIRED.
+2. `_height > 2 x zone_inner_h` (renderer clamps to invisibility) -> ESCAPE_REQUIRED.
+3. `_scale_source == "skipped_error"` from Stage 5 -> ESCAPE_REQUIRED.
+4. `layout.default_width` missing or <= 0 -> BLOCKED (Group A overlap; defensive).
 5. `layout.default_width > 0` AND no `display_width_cm` AND
-   `WORKSPACE_PX_PER_CM[workspace]` defined →
+   `WORKSPACE_PX_PER_CM[workspace]` defined ->
    no failure, but emit INFO that scene falls back to `fallback_authored`
    scale source (degrades simulator confidence for other rules).
 
-##### B10 · `zone_overlap`
+##### B10 * `zone_overlap`
 
 ```
 For each pair (Za, Zb) in scene.zones:
-  if area(Za.bounds ∩ Zb.bounds) > 0: ESCAPE_REQUIRED
+  if area(Za.bounds &cap; Zb.bounds) > 0: ESCAPE_REQUIRED
 ```
 
 No simulator needed; static geometry. Moved here from earlier
-design-quality grouping — overlapping zones cause real cross-zone
+design-quality grouping - overlapping zones cause real cross-zone
 collisions per spec §10.
 
 ## Finding shape
@@ -300,11 +300,11 @@ JSONL line per finding. Stable contract; runtime can consume same shape.
 ```
 
 **`confidence` levels**:
-- `high` — all inputs from `cm_model` scale source; simulator is full
+- `high` - all inputs from `cm_model` scale source; simulator is full
   fidelity.
-- `medium` — at least one input from `fallback_authored` (no cm model);
+- `medium` - at least one input from `fallback_authored` (no cm model);
   simulator may diverge from real render.
-- `low` — derived from `fallback_no_workspace` or partial data.
+- `low` - derived from `fallback_no_workspace` or partial data.
 
 Findings with `confidence: low` never escalate past advisory severity,
 even in strict mode.
@@ -328,8 +328,8 @@ Path: `tools/scene_lint/suppressions.yaml`. Format:
 
 Rules:
 1. All four fields (`reason`, `ticket`, `owner`, `expires`) are
-   required. Missing any → suppression rejected, finding stands.
-2. `expires` must be ≤ 90 days from creation.
+   required. Missing any -> suppression rejected, finding stands.
+2. `expires` must be <= 90 days from creation.
 3. Past-expiry suppressions are themselves a finding (`expired_suppression`,
    verdict `BLOCKED` against the suppression manifest, not the scene).
 4. Every active suppression appears in the report under "Active
@@ -344,7 +344,7 @@ team in isolation.
 
 ## Implementation phases
 
-### v0 · Framework + Group A · build-failing immediately — ~1 day
+### v0 * Framework + Group A * build-failing immediately - ~1 day
 
 - `tools/scene_lint/` package, CLI, finding shape, JSONL+MD writers.
 - Loaders: scene YAML, object library, SVG viewBox parsing.
@@ -353,7 +353,7 @@ team in isolation.
 
 Ships even if simulator slips. Closes data-blocker surface.
 
-### v1 · Simulator + top-2 predictors · advisory only — ~2.5 days
+### v1 * Simulator + top-2 predictors * advisory only - ~2.5 days
 
 - Python port of `src/scene_runtime/layout/` (TS, M2a). Parity test:
   heat_block_bench fixture from `LAYOUT_PIPELINE.md` §7 must match
@@ -366,7 +366,7 @@ Ships even if simulator slips. Closes data-blocker surface.
 **Advisory only.** No `ESCAPE_REQUIRED` failures gate the build at
 v1. Findings ship in the report; engineers / authors read them.
 
-### v2 · Remaining predictors · advisory — ~1.5 days
+### v2 * Remaining predictors * advisory - ~1.5 days
 
 - `row_footprint_overflow` (B3), `placement_bbox_outside_scene` (B4),
   `placement_bbox_outside_zone` (B5), `item_item_overlap` (B6),
@@ -374,20 +374,20 @@ v1. Findings ship in the report; engineers / authors read them.
   `invisible_placement` (B9), `zone_overlap` (B10).
 - Confusion tables for each new rule.
 
-Still advisory. The point of v0–v2 is **measurement**, not enforcement.
+Still advisory. The point of v0-v2 is **measurement**, not enforcement.
 
-### v3 · Strict mode for proven predictors — gated on metrics — ~0.5 day
+### v3 * Strict mode for proven predictors - gated on metrics - ~0.5 day
 
 - Suppression manifest schema + enforcement.
 - A per-rule **promotion policy**: a rule moves from advisory to
   build-failing only when its confusion table shows:
-  - **Precision ≥ 0.90** on the M0 + M1 corpus (false-positive rate
-    ≤ 10%). False positives erode author trust faster than false
+  - **Precision >= 0.90** on the M0 + M1 corpus (false-positive rate
+    <= 10%). False positives erode author trust faster than false
     negatives.
-  - **Recall ≥ 0.80** (covers ≥ 80% of the precheck-flagged failures
+  - **Recall >= 0.80** (covers >= 80% of the precheck-flagged failures
     that rule targets).
   - **At least 20 evaluated instances** across the corpus.
-- Rules that don't meet the bar stay advisory until they do — fix the
+- Rules that don't meet the bar stay advisory until they do - fix the
   rule or the simulator, then re-measure.
 - CI strict mode enabled rule-by-rule, not all at once.
 
@@ -397,7 +397,7 @@ Still advisory. The point of v0–v2 is **measurement**, not enforcement.
 - v1 + v2 (~4 days) deliver the predictors as a measurement tool.
 - v3 enables build gating only for rules that have earned it.
 
-This staging is the answer to "what if Wave 1 simulator slips" — v0
+This staging is the answer to "what if Wave 1 simulator slips" - v0
 still ships independently, and the simulator deliverables are
 advisory-only until their precision is established.
 
@@ -431,7 +431,7 @@ updated copy.
 
 ### Recall AND precision
 
-The v2 plan tracked only recall (target ≥85%). v3 requires both:
+The v2 plan tracked only recall (target >=85%). v3 requires both:
 - A rule with 100% recall and 50% precision is a false-alarm machine;
   authors learn to ignore it.
 - A rule with 100% precision and 50% recall is incomplete but trustworthy.
@@ -447,7 +447,7 @@ python -m tools.scene_lint content/base_scenes/*.yaml
 # Strict mode for proven rules (per --promotions config)
 python -m tools.scene_lint --strict <paths>
 
-# Report-only — useful in local dev
+# Report-only - useful in local dev
 python -m tools.scene_lint --report-only <paths>
 
 # Confusion-table mode (for rule-implementation PRs)
@@ -459,10 +459,10 @@ python -m tools.scene_lint --rules=aspect_distorted_predicted <paths>
 ```
 
 Exit codes:
-- `0` — no errors at active gate.
-- `1` — Group A finding, or `ESCAPE_REQUIRED` finding for a promoted
+- `0` - no errors at active gate.
+- `1` - Group A finding, or `ESCAPE_REQUIRED` finding for a promoted
   rule in strict mode.
-- `2` — invocation problem.
+- `2` - invocation problem.
 
 ## Non-goals
 
@@ -476,12 +476,12 @@ Exit codes:
 
 ## Open questions
 
-1. Where does the simulator live — `tools/scene_lint/simulator.py` or
+1. Where does the simulator live - `tools/scene_lint/simulator.py` or
    a shared `src/scene_runtime/python/layout_engine.py` that the design
    lint also imports? Recommend shared.
-2. Does `expires: ≤ 90 days` on suppressions hold up in practice, or
+2. Does `expires: <= 90 days` on suppressions hold up in practice, or
    does 180 better match release cadence?
-3. Confusion-table baseline — M0 only, or M0 + M1 + future runs as they
+3. Confusion-table baseline - M0 only, or M0 + M1 + future runs as they
    land? Recommend rolling window of the last 3 precheck runs.
 
 ## References
