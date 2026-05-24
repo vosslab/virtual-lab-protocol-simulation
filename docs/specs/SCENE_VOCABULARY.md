@@ -165,12 +165,12 @@ A zone is scene-side because it is a property of where things go, not
 of what any thing is. Zones do not carry identity, state, or
 rendering; they carry geometry and arrangement.
 
-| Field         | Required | Purpose                                                                                                                           |
-| ------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `zone.id`     | yes      | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`.                                               |
-| `zone.bounds` | yes      | Zone bounds inside the scene. The layout engine uses these to size and position the zone.                                         |
-| `zone.align`  | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
-| `zone.label`  | no       | Optional human-readable label for authoring and debugging.                                                                        |
+| Field             | Required | Purpose                                                                                                                           |
+| ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `zone.zone_name`  | yes      | Stable zone name, scoped to this scene. Placements reference it via `placement.zone`.                                             |
+| `zone.bounds`     | yes      | Zone bounds inside the scene. The layout engine uses these to size and position the zone.                                         |
+| `zone.align`     | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (today's behavior, paired with per-placement `align_stop`). |
+| `zone.label`     | no       | Optional human-readable label for authoring and debugging.                                                                        |
 
 Schema detail belongs in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md)
 "Zones".

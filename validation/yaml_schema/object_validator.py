@@ -3,7 +3,7 @@
 import os
 import pathlib
 
-from validation.yaml.constants import (
+from validation.yaml_schema.constants import (
 	OBJECT_KINDS,
 	OBJECT_CAPABILITIES,
 	OBJECT_REQUIRED_KEYS,
@@ -15,7 +15,7 @@ from validation.yaml.constants import (
 	CHANNEL_ADDRESSABLE_KINDS,
 	KIND_MATERIAL_FIELD_CONVENTION,
 )
-from validation.yaml.findings import Finding, Severity
+from validation.yaml_schema.findings import Finding, Severity
 
 
 class ObjectValidator:

@@ -8,8 +8,8 @@ that resolves to multiple distinct asset_name values (variant fan-out).
 
 import pytest
 
-from validation.yaml.object_validator import ObjectValidator
-from validation.yaml.findings import Severity
+from validation.yaml_schema.object_validator import ObjectValidator
+from validation.yaml_schema.findings import Severity
 
 
 #============================================

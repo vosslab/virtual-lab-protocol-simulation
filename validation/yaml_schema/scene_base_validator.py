@@ -1,10 +1,10 @@
 """BaseSceneValidator: validates base scene YAML per SCENE_YAML_FORMAT.md."""
 
-from validation.yaml.constants import (
+from validation.yaml_schema.constants import (
 	BASE_SCENE_REQUIRED_KEYS,
 	BASE_SCENE_ALL_KEYS,
 )
-from validation.yaml.findings import Finding, Severity
+from validation.yaml_schema.findings import Finding, Severity
 
 
 class BaseSceneValidator:
@@ -82,24 +82,24 @@ class BaseSceneValidator:
 				))
 				continue
 
-			if 'id' not in zone:
+			if 'zone_name' not in zone:
 				findings.append(Finding(
 					path=zone_path,
 					lineno=None,
 					severity=Severity.ERROR,
-					message="zone missing required 'id'",
+					message="zone missing required 'zone_name'",
 				))
 			else:
-				zone_id = zone['id']
-				if zone_id in zone_ids:
+				zone_name = zone['zone_name']
+				if zone_name in zone_ids:
 					findings.append(Finding(
 						path=zone_path,
 						lineno=None,
 						severity=Severity.ERROR,
-						message=f"duplicate zone id '{zone_id}'",
+						message=f"duplicate zone_name '{zone_name}'",
 					))
 				else:
-					zone_ids.add(zone_id)
+					zone_ids.add(zone_name)
 
 		return findings, zone_ids
 

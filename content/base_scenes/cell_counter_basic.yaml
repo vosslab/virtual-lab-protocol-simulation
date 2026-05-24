@@ -16,7 +16,7 @@ background:
   angle: 180
 
 zones:
-  - id: instrument_area
+  - zone_name: instrument_area
     bounds:
       left: 15
       right: 85
@@ -24,7 +24,7 @@ zones:
       bottom: 70
     align: center
     label: Cell counter display and controls
-  - id: right_accessory_area
+  - zone_name: right_accessory_area
     bounds:
       left: 80
       right: 95

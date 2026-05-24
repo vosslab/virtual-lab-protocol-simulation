@@ -1,0 +1,25 @@
+# Scene lint promotion policy
+#
+# This file declares which Group B rules have been promoted to strict mode.
+# A rule is promoted only when its confusion-table metrics meet the bar:
+#   - precision >= 0.90
+#   - recall >= 0.80
+#   - >= 20 ground-truth positive labels in labeled_corpus.yaml
+#
+# At load time, each promotion is re-validated against the current labeled
+# corpus. If current metrics fall below the bar, the rule emits a
+# promotion_below_bar advisory and stays advisory (not strict).
+#
+# Closed schema (all fields required):
+#   rule: str (B-rule name; Group A rules not allowed)
+#   promoted_at: str (YYYY-MM-DD when promotion decision was made)
+#   precision: float (metric value at promotion time)
+#   recall: float (metric value at promotion time)
+#   positive_count: int (positive labels in corpus at promotion time)
+#   low_confidence_approved: bool (default false; allows low-confidence
+#     findings on this rule to contribute to strict-mode failures)
+#
+# When --strict is passed, the CLI exits 1 on any ESCAPE_REQUIRED finding
+# from a successfully-promoted rule (after re-validation).
+
+promotions: []

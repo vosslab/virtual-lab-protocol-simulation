@@ -1,7 +1,7 @@
 """Compiled summary renderer for validate_content_yaml."""
 
 import validation.shared_toolkit.console
-from validation.yaml.summary import _protocol_counts
+from validation.yaml_schema.summary import _protocol_counts
 
 
 def aggregate(db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=None):

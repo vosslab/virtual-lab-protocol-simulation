@@ -23,8 +23,8 @@ validator only enforces the materials.yaml schema itself.
 
 import re
 
-from validation.yaml.findings import Finding, Severity
-from validation.yaml.constants import MATERIAL_REQUIRED_KEYS, MATERIAL_ALL_KEYS
+from validation.yaml_schema.findings import Finding, Severity
+from validation.yaml_schema.constants import MATERIAL_REQUIRED_KEYS, MATERIAL_ALL_KEYS
 
 
 SNAKE_CASE_RE = re.compile(r'^[a-z][a-z0-9_]*$')

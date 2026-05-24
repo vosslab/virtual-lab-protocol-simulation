@@ -17,15 +17,15 @@ import yaml
 from pathlib import Path
 
 from validation.shared_toolkit.yaml_io import load_yaml
-from validation.yaml.database import ContentDatabase
-from validation.yaml.object_validator import ObjectValidator
-from validation.yaml.scene_base_validator import BaseSceneValidator
-from validation.yaml.scene_protocol_validator import ProtocolSceneValidator
-from validation.yaml.protocol_validator import ProtocolValidator
-from validation.yaml.material_validator import MaterialValidator
-from validation.yaml.cross_protocol import CrossProtocolValidator
-import validation.yaml.summary as summary_printer
-import validation.yaml.compiled_summary as compiled_summary
+from validation.yaml_schema.database import ContentDatabase
+from validation.yaml_schema.object_validator import ObjectValidator
+from validation.yaml_schema.scene_base_validator import BaseSceneValidator
+from validation.yaml_schema.scene_protocol_validator import ProtocolSceneValidator
+from validation.yaml_schema.protocol_validator import ProtocolValidator
+from validation.yaml_schema.material_validator import MaterialValidator
+from validation.yaml_schema.cross_protocol import CrossProtocolValidator
+import validation.yaml_schema.summary as summary_printer
+import validation.yaml_schema.compiled_summary as compiled_summary
 
 import validation.shared_toolkit.cli as toolkit_cli
 import validation.shared_toolkit.protocols as toolkit_protocols

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from validation.yaml.database import ContentDatabase
+from validation.yaml_schema.database import ContentDatabase
 from validation.shared_toolkit.yaml_io import load_yaml
 
 

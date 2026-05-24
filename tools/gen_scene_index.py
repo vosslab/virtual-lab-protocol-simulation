@@ -487,7 +487,10 @@ def main() -> None:
 				ts_lines.append("\t\tzones: [")
 				for zone in zones:
 					ts_lines.append("\t\t\t" + "{" )
-					ts_lines.append(f"\t\t\t\tid: {repr(zone.get('id'))},")
+					# Authored YAML uses `zone_name` (rule 25). The TS runtime type
+					# SceneZone declares `id: string`; the pipeline maps zone_name -> id
+					# at this YAML/TS boundary so the runtime field name is unchanged.
+					ts_lines.append(f"\t\t\t\tid: {repr(zone['zone_name'])},")
 					bounds = zone.get("bounds")
 					if bounds:
 						ts_lines.append("\t\t\t\tbounds: " + "{" )

@@ -492,7 +492,7 @@ Rule:
 - Author-facing YAML uses `_name` suffixes to name semantic entities:
   `object_name`, `scene_name`, `placement_name`, `target_name`, `step_name`,
   `part_name`, `day_name`, `asset_name`, `overlay_name`, `material_name`,
-  `held_material_name`.
+  `held_material_name`, `zone_name`.
 - `_id` does not appear in author-facing YAML vocabulary. The runtime may
   use `_id` internally for deduplication, indexing, or DOM binding; that is
   a runtime implementation detail.

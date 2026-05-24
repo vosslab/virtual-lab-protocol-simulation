@@ -73,11 +73,11 @@ source source_me.sh && python3 validation/validate.py
 
 ### Canonical entry point
 
-`validation/validate.py` is the aggregate entry point for the full validation suite. It runs five stages (YAML schema, SVG assets, protocol stepper, folder layout, manual lint) with a unified command-line interface and overview-mode rich summary output.
+`validation/validate.py` is the aggregate entry point for the full validation suite. It runs seven stages (YAML schema, SVG assets, protocol stepper, folder layout, manual lint, scene-lint, scene-design) with a unified command-line interface and overview-mode rich summary output.
 
 ### Unified flag table
 
-All validation CLIs (aggregate `validation/validate.py`, plus per-stage `python3 -m validation.yaml`, `python3 -m validation.svg`, `python3 -m validation.stepper`, and `python3 validation/manual/protocol_manual.py --validate`) accept this flag set:
+All validation CLIs (aggregate `validation/validate.py`, plus per-stage `python3 -m validation.yaml_schema`, `python3 -m validation.svg`, `python3 -m validation.stepper`, `python3 -m validation.scene_lint.cli`, `python3 -m validation.scene_design.cli`, and `python3 validation/manual/protocol_manual.py --validate`) accept this flag set:
 
 | Long            | Short | Type     | Default | Notes                                                                                                                                                                                                                             |
 | --------------- | ----- | -------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -94,7 +94,7 @@ All validation CLIs (aggregate `validation/validate.py`, plus per-stage `python3
 | `--no-color`    | --    | flag     | off     | Suppress color output. Also honors `NO_COLOR` env var.                                                                                                                                                                            |
 | `--json`        | `-j`  | flag     | off     | Emit unified JSON document.                                                                                                                                                                                                       |
 | `--ndjson`      | `-J`  | flag     | off     | Stream one finding per line + final summary record.                                                                                                                                                                              |
-| `--only`        | `-O`  | stage(s) | (all)   | Stage filter: `yaml`, `svg`, `stepper`, `structure`, `manual` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. `manual` runs `validation/manual/protocol_manual.py --validate` (lint pass over rendered protocol manuals). |
+| `--only`        | `-O`  | stage(s) | (all)   | Stage filter: `yaml`, `svg`, `stepper`, `structure`, `manual`, `scene-lint`, `scene-design` (aggregate entry only). `svg` runs both pipeline_check and asset_audit. `manual` runs `validation/manual/protocol_manual.py --validate`. `scene-lint` runs Group A + Group B render-failure predictors; `scene-design` runs the composition scorecard. |
 
 Short-flag summary: `-f -p -o -S -l -i -q -v -e -s -j -J -O`, plus alias `-A` for `--asset`.
 
@@ -128,10 +128,43 @@ Run individual validation stages directly (per-stage entry points ignore `--only
 
 ```bash
 python3 validation/structure/layout_check.py
-python3 -m validation.yaml
+python3 -m validation.yaml_schema
 python3 -m validation.svg
 python3 -m validation.stepper
 python3 validation/manual/protocol_manual.py --validate --all
+python3 -m validation.scene_lint.cli -S content/base_scenes/*.yaml
+python3 -m validation.scene_design.cli -S content/base_scenes/*.yaml
+```
+
+### Scene-lint specific flags
+
+Beyond the unified flag set, `python3 -m validation.scene_lint.cli` accepts:
+
+| Long                  | Type   | Default                                       | Notes                                                                                                                                                                                                       |
+| --------------------- | ------ | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--report-only`       | flag   | off                                           | Print findings but exit 0 regardless (diagnostics).                                                                                                                                                         |
+| `--validate-against`  | path   | (none)                                        | Path to `test-results/scene_lint/labeled_corpus.yaml` for confusion-table validation.                                                                                                                       |
+| `--emit-confusion`    | path   | (none)                                        | Output stem; CLI emits one Markdown confusion file per rule.                                                                                                                                                |
+| `--suppressions`      | path   | (none)                                        | Suppression manifest; matching Group B advisories are removed before output. Group A is never suppressible.                                                                                                 |
+| `--promotions`        | path   | `validation/scene_lint/promotions.yaml`       | Promotion config; promoted-rule `ESCAPE_REQUIRED` findings cause exit 1 under `--strict`.                                                                                                                   |
+| `--no-promotions`     | flag   | off                                           | Skip promotions loading entirely; with `--strict`, no ESCAPE_REQUIRED finding causes exit 1.                                                                                                                |
+
+### Scene-design specific flags
+
+Beyond the unified flag set, `python3 -m validation.scene_design.cli` accepts:
+
+| Long              | Short | Type | Default | Notes                                                                                                                                            |
+| ----------------- | ----- | ---- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `--markdown`      | `-m`  | flag | off     | Emit Markdown card output instead of JSONL.                                                                                                       |
+| `--no-history`    | --    | flag | off     | Skip appending a row to `test-results/scene_design/history/scorecard_history.jsonl` (useful for dry runs and tests).                              |
+
+Quarterly rollups are produced via the separate manual-trigger script:
+
+```bash
+python3 -m validation.scene_design.quarterly \
+    --quarter 2026-Q2 \
+    --history-path test-results/scene_design/history/scorecard_history.jsonl \
+    --out docs/active_plans/active/scene_lint/scorecard_quarterly_2026-Q2.md
 ```
 
 ## Testing

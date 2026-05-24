@@ -312,8 +312,8 @@ node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --wrong-order
 - **Style:** tab indentation, trailing whitespace, shebang consistency.
 - **Imports:** no `import *`, no relative imports, all third-party in
   requirements files.
-- **Protocol YAML:** validators orchestrated by `validation/yaml/content_lint.py`
-  enforce a suite of rules (V1-V7 plus V6a) across modules under `validation/yaml/*_validator.py`.
+- **Protocol YAML:** validators orchestrated by `validation/yaml_schema/content_lint.py`
+  enforce a suite of rules (V1-V7 plus V6a) across modules under `validation/yaml_schema/*_validator.py`.
 - **Browser walker:** drives the full protocol via DOM clicks; the
   `--wrong-order` flag injects bad clicks and verifies soft-fail recovery.
 

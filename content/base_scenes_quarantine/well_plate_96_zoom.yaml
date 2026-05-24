@@ -22,7 +22,7 @@ background:
   asset: bench_workspace_bg
 
 zones:
-  - id: work_surface
+  - zone_name: work_surface
     bounds:
       left: 10
       right: 90

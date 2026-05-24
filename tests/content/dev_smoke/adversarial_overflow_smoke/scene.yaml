@@ -16,7 +16,7 @@ background:
   angle: 180
 
 zones:
-  - id: zone_a
+  - zone_name: zone_a
     bounds:
       left: 5
       right: 30
@@ -24,7 +24,7 @@ zones:
       bottom: 35
     align: center
     label: Zone A (capacity test)
-  - id: zone_b
+  - zone_name: zone_b
     bounds:
       left: 35
       right: 65
@@ -32,7 +32,7 @@ zones:
       bottom: 35
     align: center
     label: Zone B (capacity test)
-  - id: zone_c
+  - zone_name: zone_c
     bounds:
       left: 70
       right: 95

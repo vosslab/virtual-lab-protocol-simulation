@@ -1,6 +1,7 @@
 """YAML loading utility."""
 
 from pathlib import Path
+
 import yaml
 
 

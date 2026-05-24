@@ -1,11 +1,11 @@
 """ProtocolSceneValidator: validates protocol-scene (inherited) YAML per SCENE_INHERITANCE.md."""
 
-from validation.yaml.constants import (
+from validation.yaml_schema.constants import (
 	PROTOCOL_SCENE_ALLOWED_KEYS,
 	PLACEMENT_LOCKED_FIELDS,
 	REPOSITION_ALLOWED_FIELDS,
 )
-from validation.yaml.findings import Finding, Severity
+from validation.yaml_schema.findings import Finding, Severity
 
 
 class ProtocolSceneValidator:

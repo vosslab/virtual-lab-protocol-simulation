@@ -49,16 +49,16 @@ Regenerates gitignored `generated/` artifacts from authored YAML and SVG sources
 
 Standalone YAML validators and audit tools for schema, structure, and logical consistency.
 
-#### `yaml` - Protocol and scene YAML validator
+#### `yaml_schema` - Protocol and scene YAML validator
 
 | File                                                                          | Purpose                                                                         |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| [content_lint.py](../validation/yaml/content_lint.py)                         | Canonical YAML validator entry point; schema rules, object/scene/protocol audit |
-| [protocol_validator.py](../validation/yaml/protocol_validator.py)             | Protocol schema and interaction validation                                      |
-| [object_validator.py](../validation/yaml/object_validator.py)                 | Object schema and state_field validation                                        |
-| [scene_base_validator.py](../validation/yaml/scene_base_validator.py)         | Scene YAML base schema validation                                               |
-| [scene_protocol_validator.py](../validation/yaml/scene_protocol_validator.py) | Scene-protocol adapter rules (target resolution)                                |
-| [protocol_audit.py](../validation/yaml/protocol_audit.py)                     | Audit unused materials, items, and cross-protocol orphans                       |
+| [content_lint.py](../validation/yaml_schema/content_lint.py)                         | Canonical YAML validator entry point; schema rules, object/scene/protocol audit |
+| [protocol_validator.py](../validation/yaml_schema/protocol_validator.py)             | Protocol schema and interaction validation                                      |
+| [object_validator.py](../validation/yaml_schema/object_validator.py)                 | Object schema and state_field validation                                        |
+| [scene_base_validator.py](../validation/yaml_schema/scene_base_validator.py)         | Scene YAML base schema validation                                               |
+| [scene_protocol_validator.py](../validation/yaml_schema/scene_protocol_validator.py) | Scene-protocol adapter rules (target resolution)                                |
+| [protocol_audit.py](../validation/yaml_schema/protocol_audit.py)                     | Audit unused materials, items, and cross-protocol orphans                       |
 
 #### `stepper` - Protocol step-flow validator
 
@@ -97,6 +97,59 @@ Common discovery, reporting, and YAML I/O helpers used by all validators.
 | [protocols.py](../validation/shared_toolkit/protocols.py) | Protocol introspection (steps, interactions, targets)     |
 | [objects.py](../validation/shared_toolkit/objects.py)     | Object introspection (materials, state fields, subparts)  |
 | [paths.py](../validation/shared_toolkit/paths.py)         | Path utilities and REPO_ROOT detection                    |
+| `validation/shared_toolkit/scene_loaders.py` (untracked)  | SVG viewBox parsing + scene-inheritance resolution helpers |
+| `validation/shared_toolkit/cli.py` (untracked)            | Shared `build_parser` and unified flag set for stage CLIs |
+
+#### `scene_calc` - Scene geometry calculator (subtree untracked)
+
+Pure-function geometry primitives consumed by both scene-lint and scene-design. Not a port of the TS layout pipeline. Files below are untracked at time of writing; convert to Markdown links after `git add`.
+
+| File                                          | Purpose                                                                |
+| --------------------------------------------- | ---------------------------------------------------------------------- |
+| `validation/scene_calc/bboxes.py`             | visual_bbox / placement_bbox / footprint_bbox primitives               |
+| `validation/scene_calc/aspect.py`             | Predicted aspect-ratio delta vs SVG viewBox                            |
+| `validation/scene_calc/zones.py`              | Zone-fit math (inner_rect, fits_in_zone, required_scale_to_fit)        |
+| `validation/scene_calc/labels.py`             | Label-box estimate + scientific-vs-decoration gap selection            |
+| `validation/scene_calc/dump.py`               | Thin loader/serializer: scene YAML -> JSON dump consumed downstream    |
+
+#### `scene_lint` - Render-failure predictor (subtree untracked)
+
+Pre-render CLI that emits BLOCKED Group A findings and ESCAPE_REQUIRED Group B advisories. CLI-only; not wired to CI. Files below are untracked at time of writing.
+
+| File                                                | Purpose                                                                                  |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `validation/scene_lint/cli.py`                      | Entry point: `python3 -m validation.scene_lint.cli`                                      |
+| `validation/scene_lint/findings.py`                 | Finding dataclass, Verdict enum, Confidence enum                                         |
+| `validation/scene_lint/writers.py`                  | JSONL + Markdown finding writers                                                         |
+| `validation/scene_lint/rules_group_a.py`            | Group A (BLOCKED, never suppressible) data blockers                                      |
+| `validation/scene_lint/rules_group_b.py`            | Group B (ESCAPE_REQUIRED, advisory) geometry predictors B1-B10                           |
+| `validation/scene_lint/confusion.py`                | Labeled-corpus loader + per-rule confusion-table emitter                                 |
+| `validation/scene_lint/suppressions.py`             | Suppression manifest loader + apply pass + malformed/expired advisories                  |
+| `validation/scene_lint/suppressions.yaml`           | Example suppression manifest (closed schema; ships empty)                                |
+| `validation/scene_lint/promotion.py`                | Promotion config loader + `--strict` mode bar evaluator                                  |
+| `validation/scene_lint/promotions.yaml`             | Promotion config (ships empty; authors populate as labeled-corpus evidence accrues)      |
+| `validation/scene_lint/coverage_matrix.md`          | Group A rule coverage matrix vs vocab lint                                               |
+
+#### `scene_design` - Composition scorecard (subtree untracked)
+
+CLI that emits per-class weighted score cards + per-scene metrics. Advisory only; never gates. Files below are untracked at time of writing.
+
+| File                                                | Purpose                                                                                  |
+| --------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `validation/scene_design/cli.py`                    | Entry point: `python3 -m validation.scene_design.cli`                                    |
+| `validation/scene_design/class_detect.py`           | Five-step scene-class classifier (template / composition / instrument_heavy / etc.)      |
+| `validation/scene_design/weights.py`                | Per-class metric weight tables                                                           |
+| `validation/scene_design/score.py`                  | Weighted-sum aggregator (returns None if any required metric is None)                    |
+| `validation/scene_design/cards.py`                  | SceneCard dataclass + JSONL/Markdown writers                                             |
+| `validation/scene_design/archive.py`                | scorecard_history.jsonl append-on-write + load_history reader                            |
+| `validation/scene_design/quarterly.py`              | Manual-trigger quarterly Markdown rollup generator                                       |
+| `validation/scene_design/suggest.py`                | Suggested-fix engine: permute zone/width/data-primary moves; score + render-risk guards  |
+| `validation/scene_design/metrics/hierarchy.py`      | Primary-object area + prominence + detection-confidence metrics                          |
+| `validation/scene_design/metrics/balance.py`        | Zone footprint balance + largest empty band + scene occupied                             |
+| `validation/scene_design/metrics/proximity.py`      | Support-distance + protocol-step-affinity metrics                                        |
+| `validation/scene_design/metrics/labels.py`         | Predicted label overlap + label-to-object distance + wrap rate                           |
+| `validation/scene_design/metrics/density.py`        | Scene density + row overcrowding                                                         |
+| `validation/scene_design/metrics/composition.py`    | Tab-stops symmetry + depth-tier usage + aspect fidelity                                  |
 
 ### `tools` - Runtime and development utilities
 

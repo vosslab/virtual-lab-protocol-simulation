@@ -214,14 +214,14 @@ baseline, a gap, and an alignment policy.
 
 Important fields:
 
-| Field      | Meaning                                        |
-| ---------- | ---------------------------------------------- |
-| `id`       | Stable zone id referenced by `items[].zone`.   |
-| `x0`       | Left zone edge, in percent of scene width.     |
-| `x1`       | Right zone edge, in percent of scene width.    |
-| `baseline` | Vertical baseline, in percent of scene height. |
-| `gap`      | Minimum inter-item gap in scene units.         |
-| `align`    | Horizontal placement mode.                     |
+| Field        | Meaning                                              |
+| ------------ | ---------------------------------------------------- |
+| `zone_name`  | Stable zone name referenced by `items[].zone`.       |
+| `x0`         | Left zone edge, in percent of scene width.           |
+| `x1`         | Right zone edge, in percent of scene width.          |
+| `baseline`   | Vertical baseline, in percent of scene height.       |
+| `gap`        | Minimum inter-item gap in scene units.               |
+| `align`      | Horizontal placement mode.                           |
 
 Zones should represent meaningful physical regions: a bench shelf, a hood back
 row, a front work row, or an instrument row. Avoid creating a new zone for
@@ -448,7 +448,7 @@ Generated scene configs keep `sceneBounds` at the top level, not inside
 `layoutRules`. Adapters must copy it into `SceneLayoutRules` so the final
 group-translation pass runs.
 
-Minimal adapter pattern:
+Minimal adapter pattern (reads the generated TS field `id`, which the build pipeline emits from the authored YAML `zone_name` field per SPEC_DESIGN_CHECKLIST.md rule 25 runtime carve-out):
 
 ```ts
 const zonesRecord: Record<string, ZoneDef> = {};

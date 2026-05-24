@@ -712,7 +712,10 @@ def _emit_zones(zones: List[Dict[str, Any]]) -> str:
 	lines = ["["]
 	for zone in zones:
 		lines.append("\t\t\t{")
-		lines.append(f"\t\t\t\tid: {zone['id']!r},")
+		# Authored YAML uses `zone_name` (rule 25). The TS runtime type
+		# SceneZone declares `id: string`; the pipeline maps zone_name -> id
+		# at this YAML/TS boundary so the runtime field name is unchanged.
+		lines.append(f"\t\t\t\tid: {zone['zone_name']!r},")
 
 		bounds = zone["bounds"]
 		lines.append(f"\t\t\t\tbounds: {{ left: {bounds['left']}, right: {bounds['right']}, top: {bounds['top']}, bottom: {bounds['bottom']} }},")

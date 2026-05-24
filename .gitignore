@@ -5,6 +5,7 @@
 # children re-included via negation. The form below ignores contents of each
 # subdir with `dir/*`, then negates the specific files we keep, so git still
 # recurses into the path.
+tests/fixtures/
 experiments/*
 !experiments/css_native_layout/
 experiments/css_native_layout/*

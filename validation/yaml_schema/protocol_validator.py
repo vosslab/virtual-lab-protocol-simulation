@@ -1,6 +1,6 @@
 """ProtocolValidator: validates protocol YAML per PRIMARY_SPEC.md with Tier 1 cross-file checks."""
 
-from validation.yaml.constants import (
+from validation.yaml_schema.constants import (
 	PROTOCOL_TYPES,
 	PROTOCOL_REQUIRED_KEYS,
 	PROTOCOL_ALL_KEYS,
@@ -12,8 +12,8 @@ from validation.yaml.constants import (
 	SCENE_OPERATION_SCHEMA,
 	VALIDATOR_PRESET_SCHEMA,
 )
-from validation.yaml.findings import Finding, Severity
-from validation.yaml.database import ContentDatabase
+from validation.yaml_schema.findings import Finding, Severity
+from validation.yaml_schema.database import ContentDatabase
 
 
 class ProtocolValidator:

@@ -167,18 +167,18 @@ carries geometry and arrangement; it never carries identity, state, or
 rendering. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) for how the layout
 engine consumes zones.
 
-| Field    | Type           | Required | Meaning                                                                                                                                     |
-| -------- | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `id`     | string         | yes      | Stable zone id, scoped to this scene. Placements reference it via `placement.zone`. Zone ids must be unique within the scene.               |
-| `bounds` | mapping (rect) | yes      | Zone bounds inside the scene (`left`, `right`, `top`, `bottom`, percent units). The layout engine uses these to size and position the zone. |
-| `align`  | enum           | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (paired with per-placement `align_stop`) and `center`.                |
+| Field        | Type           | Required | Meaning                                                                                                                                          |
+| ------------ | -------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `zone_name`  | string         | yes      | Stable zone name, scoped to this scene. Placements reference it via `placement.zone`. Zone names must be unique within the scene.                |
+| `bounds`     | mapping (rect) | yes      | Zone bounds inside the scene (`left`, `right`, `top`, `bottom`, percent units). The layout engine uses these to size and position the zone.      |
+| `align`      | enum           | no       | Arrangement rule for placements inside the zone. Includes `tab-stops` (paired with per-placement `align_stop`) and `center`.                     |
 | `label`  | string         | no       | Optional human-readable label for authoring and debugging.                                                                                  |
 
 Example:
 
 ```yaml
 zones:
-  - id: back_row
+  - zone_name: back_row
     bounds: { left: 5, right: 95, top: 70, bottom: 80 }
     align: tab-stops
 ```
@@ -463,10 +463,10 @@ scene_bounds:
   bottom: 98
 
 zones:
-  - id: back_shelf
+  - zone_name: back_shelf
     bounds: { left: 5, right: 95, top: 17, bottom: 27 }
     align: tab-stops
-  - id: mid_bench
+  - zone_name: mid_bench
     bounds: { left: 5, right: 95, top: 70, bottom: 80 }
     align: tab-stops
 

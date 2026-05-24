@@ -13,7 +13,7 @@ background:
   asset: microscope_view_bg
 
 zones:
-  - id: instrument_area
+  - zone_name: instrument_area
     bounds:
       left: 15
       right: 85

@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 
 from validation.shared_toolkit.yaml_io import load_yaml
-from validation.yaml.findings import Finding, Severity
+from validation.yaml_schema.findings import Finding, Severity
 
 
 class ContentDatabase:

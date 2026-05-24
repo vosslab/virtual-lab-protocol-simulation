@@ -62,7 +62,7 @@ def build_parser():
 	"""Build argparse parser with unified flags for aggregate validation."""
 	parser = validation.shared_toolkit.cli.build_parser(
 		prog='validate',
-		description='Aggregate validation suite: runs yaml, svg, and stepper validators.',
+		description='Aggregate validation suite: runs yaml, svg, stepper, structure, manual, scene-lint, and scene-design validators.',
 	)
 	return parser
 
@@ -76,11 +76,13 @@ def _stage_scripts(stage_name: str) -> list[str]:
 	files well-formed?" (author review). Both belong under --only svg.
 	"""
 	stage_map = {
-		'yaml': ['validation/yaml/content_lint.py'],
+		'yaml': ['validation/yaml_schema/content_lint.py'],
 		'svg': ['validation/svg/pipeline_check.py', 'validation/svg/asset_audit.py'],
 		'stepper': ['validation/stepper/step_check.py'],
 		'structure': ['validation/structure/layout_check.py'],
 		'manual': ['validation/manual/protocol_manual.py'],
+		'scene-lint': ['validation/scene_lint/cli.py'],
+		'scene-design': ['validation/scene_design/cli.py'],
 	}
 	return stage_map.get(stage_name, [])
 
@@ -90,7 +92,7 @@ def run_stage(stage_name: str, args, repo_root: Path) -> tuple[int, str]:
 	Run one validation stage and return (exit_code, captured_stdout).
 
 	Args:
-		stage_name: one of 'yaml', 'svg', 'stepper', 'structure', 'manual'
+		stage_name: one of 'yaml', 'svg', 'stepper', 'structure', 'manual', 'scene-lint', 'scene-design'
 		args: argparse.Namespace from build_parser().parse_args()
 		repo_root: repo root path
 
@@ -166,6 +168,20 @@ def _run_one_script(script_path: Path, args, repo_root: Path) -> tuple[int, str]
 		if not args.protocols and not args.focus:
 			cmd.append('--all')
 
+	# Special case for scene stages: when no -S scenes selected, auto-discover all base scenes.
+	# scene-lint and scene-design require at least one scene path via -S.
+	# In a whole-suite run (no --scene selector), pass all content/base_scenes/*.yaml files.
+	is_scene_stage = (
+		str(script_path).endswith('scene_lint/cli.py')
+		or str(script_path).endswith('scene_design/cli.py')
+	)
+	if is_scene_stage and not args.scenes and not args.focus:
+		base_scenes_dir = repo_root / 'content' / 'base_scenes'
+		scene_yaml_files = sorted(base_scenes_dir.glob('*.yaml'))
+		if scene_yaml_files:
+			# Remove the -S args already added above (none were added since args.scenes is empty)
+			cmd.extend(['-S'] + [str(f) for f in scene_yaml_files])
+
 	# Pass output format flags if JSON/NDJSON
 	if args.output_format == 'json':
 		cmd.append('--json')
@@ -211,7 +227,7 @@ def main() -> None:
 	args = parser.parse_args()
 
 	# Determine which stages to run
-	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper', 'structure', 'manual']
+	stages = args.stages if args.stages else ['yaml', 'svg', 'stepper', 'structure', 'manual', 'scene-lint', 'scene-design']
 
 	# Determine scope
 	# --focus is forwarded to each per-stage subprocess. Per-stage

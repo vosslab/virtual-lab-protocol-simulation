@@ -1,0 +1,33 @@
+# Suppression manifest for Group B (ESCAPE_REQUIRED) findings.
+# Group A (BLOCKED) findings are never suppressible.
+#
+# Manifest format:
+#   suppressions:
+#     - rule: <rule_name>
+#       scene: <scene_name>
+#       placement_name: <optional_name or null>  # null/absent => scene-wide
+#       reason: <free-text justification>
+#       ticket: <free-text identifier>
+#       owner: <free-text owner>
+#       expires: <YYYY-MM-DD>
+#
+# Validation:
+#   - All four fields (reason, ticket, owner, expires) required
+#   - Group A rule names rejected
+#   - expires > 90 days from today required
+#   - Past-expiry suppressions emit expired_suppression advisory
+#
+# Triage owner for expired entries: <design_team_lead_email>
+
+suppressions:
+  # Example: suppress aspect_distorted_predicted (B1) on bench_basic scene
+  # due to equipment constraint. placement_name: null matches all placements.
+  - rule: aspect_distorted_predicted
+    scene: bench_basic
+    placement_name: null
+    reason: |
+      Accepted distortion on rear_left_waste and rear_right_vortex due to
+      pipette rack spatial constraint. Redesign planned in Q3 2026.
+    ticket: VLAB-2847
+    owner: jane_doe@example.com
+    expires: 2026-08-24

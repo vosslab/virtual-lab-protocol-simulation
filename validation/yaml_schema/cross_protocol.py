@@ -2,7 +2,7 @@
 
 import re
 
-from validation.yaml.findings import Finding, Severity
+from validation.yaml_schema.findings import Finding, Severity
 
 # spec: docs/specs/SPEC_DESIGN_CHECKLIST.md "snake_case lock" (plan: giggly-mixing-minsky Class E)
 # Authored YAML keys must be snake_case. A camelCase boundary inside a key

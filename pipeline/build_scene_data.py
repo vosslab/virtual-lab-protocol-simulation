@@ -137,17 +137,17 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 			if not isinstance(zone, dict):
 				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}] must be a dict, got {type(zone)}")
 
-			if 'id' not in zone:
-				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}] missing 'id' field")
+			if 'zone_name' not in zone:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}] missing 'zone_name' field")
 
-			zone_id = zone['id']
-			if not isinstance(zone_id, str) or not zone_id.strip():
-				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}].id must be a non-empty string, got {zone_id!r}")
+			zone_name = zone['zone_name']
+			if not isinstance(zone_name, str) or not zone_name.strip():
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): zones[{i}].zone_name must be a non-empty string, got {zone_name!r}")
 
-			if zone_id in zone_ids:
-				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): duplicate zone id '{zone_id}'")
+			if zone_name in zone_ids:
+				raise ValueError(f"Scene YAML {path} (sceneId={scene_id}): duplicate zone_name '{zone_name}'")
 
-			zone_ids.add(zone_id)
+			zone_ids.add(zone_name)
 	else:
 		zone_ids = set()
 
@@ -330,7 +330,7 @@ def validate_scene_yaml(path: pathlib.Path) -> dict:
 
 	# Check for unknown keys within zones
 	if 'zones' in scene_config:
-		allowed_zone_keys = {'id', 'x0', 'x1', 'baseline', 'gap', 'align', 'tier', 'label'}
+		allowed_zone_keys = {'zone_name', 'x0', 'x1', 'baseline', 'gap', 'align', 'tier', 'label'}
 		zones = scene_config['zones']
 		for i, zone in enumerate(zones):
 			for key in zone.keys():
