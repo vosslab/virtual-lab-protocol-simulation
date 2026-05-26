@@ -24,14 +24,14 @@ The system uses build-time codegen to compile scene, object, and protocol defini
 For codegen-only debugging, run:
 
 ```bash
-python3 tools/gen_object_library.py
-python3 tools/gen_svg_registry.py
-python3 tools/gen_scene_index.py
+python3 pipeline/gen_object_library.py
+python3 pipeline/gen_svg_registry.py
+python3 pipeline/gen_scene_index.py
 ```
 
 The same three Python scripts also run automatically as npm `pre*` hooks before non-build gates that import from `generated/`:
 
-### Codegen scripts (under `tools/`)
+### Codegen scripts (under `pipeline/`)
 
 - `gen_object_library.py`: Reads object YAML from `content/objects/**/*.yaml`, validates against closed `KINDS` enum and asset references, emits `generated/object_library.ts` with typed `OBJECT_LIBRARY` and `ASSET_SPECS`.
 - `gen_svg_registry.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_registry.ts` with inline `SVG_REGISTRY` content (one base64-encoded entry per SVG).

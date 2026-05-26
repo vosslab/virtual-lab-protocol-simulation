@@ -2,6 +2,12 @@
 
 ## 2026-05-26
 
+### Additions and New Features
+
+- Added a browser protocol selector as the default `dist/index.html` experience. The launcher lists generated protocol metadata, groups full sequences before mini-protocols, supports direct `?protocol=<protocol_name>` links, and shows a recoverable unavailable-scene state when a protocol starts outside the current scene allowlist.
+- Added [pipeline/build_protocol_index.py](../pipeline/build_protocol_index.py), which emits `generated/protocol_index.ts` from `content/protocols/**/protocol.yaml` for the browser launcher.
+- Added [tests/playwright/test_protocol_selector.mjs](../tests/playwright/test_protocol_selector.mjs) as a reusable smoke test for the protocol selector landing page and first-card navigation.
+
 ### Behavior or Interface Changes
 
 - Fresh-clone build workflow now treats [build_github_pages.sh](../build_github_pages.sh) as the single generated-data build entry point. The script regenerates `generated/object_library.ts`, `generated/svg_registry.ts`, and `generated/scenes.ts` before type-checking and bundling, so `bash build_github_pages.sh`, `npm run build`, and [run_web_server.sh](../run_web_server.sh) share the same fresh-build path.
@@ -9,7 +15,8 @@
 ### Fixes and Maintenance
 
 - Removed the duplicate npm `prebuild` hook. `npm run serve` now delegates directly to [run_web_server.sh](../run_web_server.sh), which already rebuilds before serving.
-- Fixed [tools/gen_scene_index.py](../tools/gen_scene_index.py) validation to read authored `zone_name` instead of retired `id`, matching the 2026-05-26 `zone.id` retirement. Required scene and placement keys now use direct `dict[key]` access per [PYTHON_STYLE.md](PYTHON_STYLE.md); the generator still emits runtime `id` fields for the TypeScript `SceneZone` shape.
+- Moved generated-artifact builders from `tools/` to `pipeline/`: [pipeline/gen_object_library.py](../pipeline/gen_object_library.py), [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py), and [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py). Build scripts and npm pre-hooks now call the pipeline paths.
+- Fixed [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) validation to read authored `zone_name` instead of retired `id`, matching the 2026-05-26 `zone.id` retirement. Required scene and placement keys now use direct `dict[key]` access per [PYTHON_STYLE.md](PYTHON_STYLE.md); the generator still emits runtime `id` fields for the TypeScript `SceneZone` shape.
 
 ## 2026-05-24
 

@@ -54,9 +54,10 @@ if ! grep -Eq '<script[^>]+type="module"[^>]+src="(\./)?main\.js"' src/index.htm
 	echo "  Build will proceed; the page may render but main.js will not run." >&2
 fi
 
-python3 tools/gen_object_library.py
-python3 tools/gen_svg_registry.py
-python3 tools/gen_scene_index.py
+python3 pipeline/gen_object_library.py
+python3 pipeline/gen_svg_registry.py
+python3 pipeline/gen_scene_index.py
+python3 pipeline/build_protocol_index.py
 
 rm -rf dist
 mkdir -p dist
