@@ -3,6 +3,7 @@
 #
 # Contract:
 #   - Wipes dist/ from scratch.
+#   - Regenerates generated/ from current YAML and SVG source.
 #   - Type-checks via 'tsc --noEmit -p tsconfig.json'.
 #   - Resolves the entry: src/main.ts preferred, src/init.ts legacy fallback.
 #     Aborts with an actionable error if neither exists.
@@ -52,6 +53,10 @@ if ! grep -Eq '<script[^>]+type="module"[^>]+src="(\./)?main\.js"' src/index.htm
 	echo "  Expected tag: <script type=\"module\" src=\"main.js\"></script>" >&2
 	echo "  Build will proceed; the page may render but main.js will not run." >&2
 fi
+
+python3 tools/gen_object_library.py
+python3 tools/gen_svg_registry.py
+python3 tools/gen_scene_index.py
 
 rm -rf dist
 mkdir -p dist

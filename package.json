@@ -5,9 +5,8 @@
 	"scripts": {
 		"setup": "./devel/setup_typescript.sh",
 		"setup:playwright": "./devel/setup_playwright.sh",
-		"prebuild": "python3 tools/gen_object_library.py && python3 tools/gen_svg_registry.py && python3 tools/gen_scene_index.py",
 		"build": "bash build_github_pages.sh",
-		"serve": "bash tools/check_dist_ready.sh && bash run_web_server.sh",
+		"serve": "bash run_web_server.sh",
 		"check": "bash check_codebase.sh",
 		"clean": "bash devel/dist_clean.sh",
 		"pretest:node": "python3 tools/gen_object_library.py && python3 tools/gen_svg_registry.py && python3 tools/gen_scene_index.py",

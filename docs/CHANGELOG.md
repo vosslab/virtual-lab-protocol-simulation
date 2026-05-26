@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-05-26
+
+### Behavior or Interface Changes
+
+- Fresh-clone build workflow now treats [build_github_pages.sh](../build_github_pages.sh) as the single generated-data build entry point. The script regenerates `generated/object_library.ts`, `generated/svg_registry.ts`, and `generated/scenes.ts` before type-checking and bundling, so `bash build_github_pages.sh`, `npm run build`, and [run_web_server.sh](../run_web_server.sh) share the same fresh-build path.
+
+### Fixes and Maintenance
+
+- Removed the duplicate npm `prebuild` hook. `npm run serve` now delegates directly to [run_web_server.sh](../run_web_server.sh), which already rebuilds before serving.
+
 ## 2026-05-24
 
 ### Additions and New Features

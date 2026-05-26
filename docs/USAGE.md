@@ -19,7 +19,17 @@ bash run_web_server.sh
 
 ## Build pipeline and codegen
 
-The system uses build-time codegen to compile scene, object, and protocol definitions into typed TypeScript modules. Three Python scripts run automatically as npm `pre*` hooks before every gate that imports from `generated/`:
+The system uses build-time codegen to compile scene, object, and protocol definitions into typed TypeScript modules. [build_github_pages.sh](../build_github_pages.sh) regenerates `generated/` before type-checking and bundling, so a fresh clone can build without a separate manual codegen step.
+
+For codegen-only debugging, run:
+
+```bash
+python3 tools/gen_object_library.py
+python3 tools/gen_svg_registry.py
+python3 tools/gen_scene_index.py
+```
+
+The same three Python scripts also run automatically as npm `pre*` hooks before non-build gates that import from `generated/`:
 
 ### Codegen scripts (under `tools/`)
 
