@@ -7,7 +7,7 @@ generated/scenes.ts with typed SCENES export for the renderer.
 
 Validation:
 - background.type is "gradient" and from/to parse as hex
-- every zone id is unique within the scene
+- every zone_name is unique within the scene
 - every placement.zone resolves to a declared zone
 - every placement.object_name resolves to an object (cross-checked against
   generated/object_library.ts or content/objects/**/*.yaml)
@@ -164,13 +164,13 @@ def process_scene_yaml(
 		raise ValueError(f"Scene YAML must be a dict: {yaml_path}")
 
 	# Validate required fields
-	scene_name = data.get("scene_name")
+	scene_name = data["scene_name"]
 	if not scene_name:
-		raise ValueError(f"Missing scene_name: {yaml_path}")
+		raise ValueError(f"Empty scene_name: {yaml_path}")
 
-	workspace = data.get("workspace")
+	workspace = data["workspace"]
 	if not workspace:
-		raise ValueError(f"Missing workspace: {yaml_path}")
+		raise ValueError(f"Empty workspace: {yaml_path}")
 
 	# Validate background if present
 	background = data.get("background")
@@ -202,18 +202,18 @@ def process_scene_yaml(
 		if not isinstance(zones, list):
 			raise ValueError(f"zones must be a list: {yaml_path}")
 
-		zone_ids = set()
+		zone_names = set()
 		for zone in zones:
-			zone_id = zone.get("id")
-			if not zone_id:
-				raise ValueError(f"Zone missing id: {yaml_path}")
+			zone_name = zone["zone_name"]
+			if not zone_name:
+				raise ValueError(f"Zone empty zone_name: {yaml_path}")
 
-			if zone_id in zone_ids:
+			if zone_name in zone_names:
 				raise ValueError(
-					f"Duplicate zone id '{zone_id}': {yaml_path}"
+					f"Duplicate zone_name '{zone_name}': {yaml_path}"
 				)
 
-			zone_ids.add(zone_id)
+			zone_names.add(zone_name)
 
 		# Validate placements reference existing zones and objects
 		placements = data.get("placements", [])
@@ -221,14 +221,14 @@ def process_scene_yaml(
 			raise ValueError(f"placements must be a list: {yaml_path}")
 
 		for placement in placements:
-			placement_name = placement.get("placement_name")
+			placement_name = placement["placement_name"]
 			if not placement_name:
-				raise ValueError(f"Placement missing placement_name: {yaml_path}")
+				raise ValueError(f"Placement empty placement_name: {yaml_path}")
 
-			object_name = placement.get("object_name")
+			object_name = placement["object_name"]
 			if not object_name:
 				raise ValueError(
-					f"Placement '{placement_name}' missing object_name: {yaml_path}"
+					f"Placement '{placement_name}' empty object_name: {yaml_path}"
 				)
 
 			if object_name not in object_names:
@@ -237,13 +237,13 @@ def process_scene_yaml(
 					f"'{object_name}': {yaml_path}"
 				)
 
-			zone = placement.get("zone")
+			zone = placement["zone"]
 			if not zone:
 				raise ValueError(
-					f"Placement '{placement_name}' missing zone: {yaml_path}"
+					f"Placement '{placement_name}' empty zone: {yaml_path}"
 				)
 
-			if zone not in zone_ids:
+			if zone not in zone_names:
 				raise ValueError(
 					f"Placement '{placement_name}' references unknown zone "
 					f"'{zone}': {yaml_path}"

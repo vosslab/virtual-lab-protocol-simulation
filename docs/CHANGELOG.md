@@ -9,6 +9,7 @@
 ### Fixes and Maintenance
 
 - Removed the duplicate npm `prebuild` hook. `npm run serve` now delegates directly to [run_web_server.sh](../run_web_server.sh), which already rebuilds before serving.
+- Fixed [tools/gen_scene_index.py](../tools/gen_scene_index.py) validation to read authored `zone_name` instead of retired `id`, matching the 2026-05-26 `zone.id` retirement. Required scene and placement keys now use direct `dict[key]` access per [PYTHON_STYLE.md](PYTHON_STYLE.md); the generator still emits runtime `id` fields for the TypeScript `SceneZone` shape.
 
 ## 2026-05-24
 
