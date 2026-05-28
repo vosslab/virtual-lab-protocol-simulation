@@ -8,8 +8,8 @@ The scene-lint system validates rendered scene layouts against design intent, fo
 
 ## Design source documents
 
-- [SCENE_LINT_PLAN.md](../../../design_advice/SCENE_LINT_PLAN.md) - scene-lint architecture and rule set
-- [SCENE_DESIGN_LINT_PLAN.md](../../../design_advice/SCENE_DESIGN_LINT_PLAN.md) - scene-design tool specification
+- `SCENE_LINT_PLAN.md` - scene-lint architecture and rule set
+- `SCENE_DESIGN_LINT_PLAN.md` - scene-design tool specification
 - Approved implementation plan (maintained in `/Users/vosslab/.claude/plans/replicated-hatching-avalanche.md` outside the repo)
 
 ## Tracker files

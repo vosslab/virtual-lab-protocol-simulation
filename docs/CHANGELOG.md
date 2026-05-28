@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-05-28
+
+### Additions and New Features
+
+- Added [content/objects_quarantine/README.md](../content/objects_quarantine/README.md) documenting quarantine restoration policy.
+- Added [content/base_scenes_quarantine/README.md](../content/base_scenes_quarantine/README.md) documenting quarantine restoration policy.
+
+### Removals and Deprecations
+
+- Deleted `design_advice/` directory (planning docs and JSX prototypes, all superseded by implemented code in `validation/`).
+- Deleted 9 unreferenced legacy SVG assets from `assets/equipment/`: `cell_counter_old`, `incubator_legacy`, `microscope_old`, `multichannel_pipette_old`, `plate_reader_old`, `t75_flask_legacy`, `tip_box_old`, `vortex_old`, `water_bath_old`.
+
 ## 2026-05-26
 
 ### Additions and New Features
