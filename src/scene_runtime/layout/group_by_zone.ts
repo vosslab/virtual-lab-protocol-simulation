@@ -3,12 +3,7 @@
 // Inactive placements are dropped. Error-marked placements go to orphans.
 // Items whose zone is unknown go to orphans with an unknown_zone diagnostic.
 
-import type {
-  Diagnostics,
-  GroupedPlacements,
-  ScaledPlacement,
-  Zone,
-} from "./types.js";
+import type { Diagnostics, GroupedPlacements, ScaledPlacement, Zone } from "./types.js";
 
 export function groupByZone(
   scaled: ScaledPlacement[],

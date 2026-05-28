@@ -20,10 +20,7 @@ import fs from "node:fs/promises";
 function startLocalServer() {
   return new Promise((resolve) => {
     const server = http.createServer(async (req, res) => {
-      let filePath = path.join(
-        DIST_DIR,
-        req.url === "/" ? "index.html" : req.url,
-      );
+      let filePath = path.join(DIST_DIR, req.url === "/" ? "index.html" : req.url);
       const ext = path.extname(filePath);
       let contentType = "text/html";
       if (ext === ".js") contentType = "application/javascript";
@@ -84,9 +81,7 @@ async function main() {
 
   // Listen for console and page errors
   const consoleLogs = [];
-  page.on("console", (msg) =>
-    consoleLogs.push(`[${msg.type()}] ${msg.text()}`),
-  );
+  page.on("console", (msg) => consoleLogs.push(`[${msg.type()}] ${msg.text()}`));
 
   const pageErrors = [];
   page.on("pageerror", (err) => pageErrors.push(err.toString()));
@@ -103,14 +98,10 @@ async function main() {
     await page.waitForTimeout(2000);
 
     // Wait for any placement items to render (with longer timeout and no visibility check)
-    const itemCount = await page
-      .locator("#scene-root [data-placement-name]")
-      .count();
+    const itemCount = await page.locator("#scene-root [data-placement-name]").count();
 
     if (itemCount === 0) {
-      console.error(
-        `[F1] No items found with data-placement-name. Checking DOM structure...`,
-      );
+      console.error(`[F1] No items found with data-placement-name. Checking DOM structure...`);
       const sceneRootHtml = await page.locator("#scene-root").innerHTML();
       if (sceneRootHtml.length < 200) {
         console.error(`[F1] Scene root HTML: ${sceneRootHtml}`);
@@ -137,16 +128,12 @@ async function main() {
         pageErrors.forEach((err) => console.error(`     ${err}`));
       }
 
-      throw new Error(
-        "No items rendered in scene-root. Check build and JavaScript execution.",
-      );
+      throw new Error("No items rendered in scene-root. Check build and JavaScript execution.");
     }
     console.log(`[F1] Scene root with ${itemCount} placements detected`);
 
     // Collect all placement elements
-    const elements = await page
-      .locator("#scene-root [data-placement-name]")
-      .all();
+    const elements = await page.locator("#scene-root [data-placement-name]").all();
 
     console.log(`[F1] Found ${elements.length} items with data-placement-name`);
 
@@ -295,9 +282,7 @@ async function main() {
         } else {
           console.log(`     ✗ ${check.attr}: ${check.reason}`);
           if (check.valid_values) {
-            console.log(
-              `       Valid values: ${check.valid_values.join(", ")}`,
-            );
+            console.log(`       Valid values: ${check.valid_values.join(", ")}`);
           }
           failures.push({
             item: itemId,

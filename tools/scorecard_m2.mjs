@@ -159,12 +159,7 @@ function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
   return overlapWidth > tolerance && overlapHeight > tolerance;
 }
 
-function getBboxDeviationRatio(
-  renderedWidth,
-  renderedHeight,
-  vbWidth,
-  vbHeight,
-) {
+function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
   const renderedAspect = renderedWidth / renderedHeight;
   const naturalAspect = vbWidth / vbHeight;
   const deviation = Math.abs(renderedAspect - naturalAspect) / naturalAspect;
@@ -273,15 +268,12 @@ function computeRegionFillingScore(regionWhitespaceData) {
   if (!regionWhitespaceData || regionWhitespaceData.length === 0) {
     return 50;
   }
-  const regionsWithObjects = regionWhitespaceData.filter(
-    (r) => r.placement_count > 0,
-  );
+  const regionsWithObjects = regionWhitespaceData.filter((r) => r.placement_count > 0);
   if (regionsWithObjects.length === 0) {
     return 50;
   }
   const meanWhitespace =
-    regionsWithObjects.reduce((sum, r) => sum + r.whitespace_pct, 0) /
-    regionsWithObjects.length;
+    regionsWithObjects.reduce((sum, r) => sum + r.whitespace_pct, 0) / regionsWithObjects.length;
   return Math.max(0, 100 - meanWhitespace);
 }
 
@@ -305,12 +297,7 @@ function computeAspectRatioFidelityScore(placements) {
 }
 
 function computePrimaryProminenceScore(primaryArea, allPlacements) {
-  if (
-    !primaryArea ||
-    primaryArea <= 0 ||
-    !allPlacements ||
-    allPlacements.length < 2
-  ) {
+  if (!primaryArea || primaryArea <= 0 || !allPlacements || allPlacements.length < 2) {
     return 100;
   }
   let maxSupportArea = 0;
@@ -457,9 +444,7 @@ async function analyzeScene(page, sceneRootBbox) {
   let overlapCount = 0;
   for (let i = 0; i < placements.length; i++) {
     for (let j = i + 1; j < placements.length; j++) {
-      if (
-        bboxsOverlap(placements[i].bbox, placements[j].bbox, OVERLAP_TOLERANCE)
-      ) {
+      if (bboxsOverlap(placements[i].bbox, placements[j].bbox, OVERLAP_TOLERANCE)) {
         overlapCount++;
       }
     }
@@ -495,9 +480,7 @@ async function analyzeScene(page, sceneRootBbox) {
       }
       return null;
     });
-    const associatedPlacement = placements.find(
-      (p) => p.name === placementName,
-    );
+    const associatedPlacement = placements.find((p) => p.name === placementName);
     if (associatedPlacement && associatedPlacement.svgBbox) {
       if (bboxsOverlap(labels[i].bbox, associatedPlacement.svgBbox)) {
         svgLabelOverlapCount++;
@@ -509,24 +492,14 @@ async function analyzeScene(page, sceneRootBbox) {
   // Compute metrics
   //============================================
 
-  const primaryArea =
-    allPlacements.length > 0
-      ? Math.max(...allPlacements.map((p) => p.area))
-      : 0;
+  const primaryArea = allPlacements.length > 0 ? Math.max(...allPlacements.map((p) => p.area)) : 0;
   const sceneArea = (sceneRootBbox.width || 1) * (sceneRootBbox.height || 1);
 
   const metrics = {
-    primary_area_ratio: computePrimaryAreaRatioScore(
-      (primaryArea / sceneArea) * 100,
-    ),
-    label_overlap: computeLabelOverlapScore(
-      labelLabelOverlapCount,
-      svgLabelOverlapCount,
-    ),
+    primary_area_ratio: computePrimaryAreaRatioScore((primaryArea / sceneArea) * 100),
+    label_overlap: computeLabelOverlapScore(labelLabelOverlapCount, svgLabelOverlapCount),
     scene_occupied: computeSceneOccupiedScore(
-      ((sceneArea - allPlacements.reduce((sum, p) => sum + p.area, 0)) /
-        sceneArea) *
-        100,
+      ((sceneArea - allPlacements.reduce((sum, p) => sum + p.area, 0)) / sceneArea) * 100,
     ),
     support_distance: 75, // Placeholder; would require zone analysis
     balance: 75, // Placeholder; would require zone geometry
@@ -536,10 +509,7 @@ async function analyzeScene(page, sceneRootBbox) {
       0,
     ),
     aspect_ratio_fidelity: computeAspectRatioFidelityScore(placements),
-    primary_prominence: computePrimaryProminenceScore(
-      primaryArea,
-      allPlacements,
-    ),
+    primary_prominence: computePrimaryProminenceScore(primaryArea, allPlacements),
   };
 
   return {
@@ -649,8 +619,7 @@ async function scoreScene(page, sceneName) {
         penalty: Math.round(m.penalty),
       })),
       recommended_adjustment: recommendedAdjustment,
-      recommendation_text:
-        RECOMMENDATION_TAXONOMY[recommendedAdjustment] || "Review layout",
+      recommendation_text: RECOMMENDATION_TAXONOMY[recommendedAdjustment] || "Review layout",
     };
   } catch (err) {
     console.error(`Error scoring ${sceneName}:`, err.message);
@@ -673,8 +642,7 @@ async function scoreScene(page, sceneName) {
 function generateMarkdownReport(scorecard, m0Scorecard) {
   let markdown = "";
   markdown += "# M2 TypeScript Renderer Layout Scorecard\n\n";
-  markdown +=
-    "**Evidence Source:** M2 TypeScript renderer DOM analysis via Playwright\n\n";
+  markdown += "**Evidence Source:** M2 TypeScript renderer DOM analysis via Playwright\n\n";
   markdown += `Generated: ${scorecard.generated_at}\n`;
   markdown += `Total scenes: ${scorecard.total_scenes}\n\n`;
 
@@ -685,9 +653,7 @@ function generateMarkdownReport(scorecard, m0Scorecard) {
     markdown += "| --- | --- | --- | --- | --- |\n";
 
     for (const m2Scene of scorecard.scenes) {
-      const m0Scene = m0Scorecard.scenes.find(
-        (s) => s.scene_name === m2Scene.scene_name,
-      );
+      const m0Scene = m0Scorecard.scenes.find((s) => s.scene_name === m2Scene.scene_name);
       if (m0Scene) {
         const delta = m2Scene.total_layout_score - m0Scene.total_layout_score;
         const sign = delta > 0 ? "+" : "";
@@ -797,10 +763,7 @@ async function startLocalServer() {
   return new Promise((resolve, reject) => {
     const DIST_DIR = path.join(REPO_ROOT, "dist");
     const server = http.createServer(async (req, res) => {
-      let filePath = path.join(
-        DIST_DIR,
-        req.url === "/" ? "index.html" : req.url,
-      );
+      let filePath = path.join(DIST_DIR, req.url === "/" ? "index.html" : req.url);
       const ext = path.extname(filePath);
       let contentType = "text/html";
       if (ext === ".js") contentType = "application/javascript";
@@ -889,9 +852,7 @@ async function main() {
     }
 
     // Sort by score descending
-    scorecard.scenes.sort(
-      (a, b) => b.total_layout_score - a.total_layout_score,
-    );
+    scorecard.scenes.sort((a, b) => b.total_layout_score - a.total_layout_score);
 
     // Load M0 scorecard for comparison
     let m0Scorecard = null;
@@ -918,8 +879,7 @@ async function main() {
     console.log("\n=== Summary ===");
     console.log(`Total scenes: ${scorecard.total_scenes}`);
     const avgScore =
-      scorecard.scenes.reduce((sum, s) => sum + s.total_layout_score, 0) /
-      scorecard.scenes.length;
+      scorecard.scenes.reduce((sum, s) => sum + s.total_layout_score, 0) / scorecard.scenes.length;
     console.log(`Average score: ${avgScore.toFixed(1)}/100`);
     console.log("\nTop 3 scenes:");
     scorecard.scenes.slice(0, 3).forEach((s, idx) => {

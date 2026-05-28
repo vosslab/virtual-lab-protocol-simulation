@@ -1,13 +1,7 @@
 // Layout engine constants, mirrors `docs/specs/LAYOUT_ENGINE.md` and the
 // reference impl in `design_advice/pipeline.jsx`. Closed sets only.
 
-export const ALIGN_MODES = [
-  "left",
-  "right",
-  "center",
-  "justify",
-  "tab-stops",
-] as const;
+export const ALIGN_MODES = ["left", "right", "center", "justify", "tab-stops"] as const;
 export const ALIGN_STOPS = ["left", "center", "right"] as const;
 export const ANCHOR_YS = ["bottom", "tip", "top"] as const;
 export const DEPTHS = ["back", "mid", "front"] as const;
@@ -97,12 +91,11 @@ export const DEFAULT_LAYOUT_RULES = {
 
 // Per-workspace px_per_cm (SCALING_MODEL.md). Author writes display_width_cm
 // on object; engine multiplies by per-workspace px_per_cm.
-export const WORKSPACE_PX_PER_CM: Record<(typeof WORKSPACES)[number], number> =
-  {
-    bench: 3.2,
-    hood: 8.0,
-    microscope: 8.0,
-    incubator: 6.0,
-    plate_reader: 8.0,
-    cell_counter: 8.0,
-  };
+export const WORKSPACE_PX_PER_CM: Record<(typeof WORKSPACES)[number], number> = {
+  bench: 3.2,
+  hood: 8.0,
+  microscope: 8.0,
+  incubator: 6.0,
+  plate_reader: 8.0,
+  cell_counter: 8.0,
+};

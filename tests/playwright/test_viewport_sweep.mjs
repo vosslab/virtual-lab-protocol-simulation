@@ -137,9 +137,7 @@ async function testSceneAtViewports(sceneName, server, serverUrl) {
 
     // Test each viewport
     for (const viewport of VIEWPORTS) {
-      console.log(
-        `\n  Testing viewport: ${viewport.name} (${viewport.width}x${viewport.height})`,
-      );
+      console.log(`\n  Testing viewport: ${viewport.name} (${viewport.width}x${viewport.height})`);
 
       const browser = await chromium.launch({ headless: true });
       const page = await browser.newPage({ viewport });
@@ -157,10 +155,8 @@ async function testSceneAtViewports(sceneName, server, serverUrl) {
           windowHeight: window.innerHeight,
         }));
 
-        const hasHorizontalScroll =
-          pageSize.documentWidth > pageSize.windowWidth;
-        const hasVerticalScroll =
-          pageSize.documentHeight > pageSize.windowHeight;
+        const hasHorizontalScroll = pageSize.documentWidth > pageSize.windowWidth;
+        const hasVerticalScroll = pageSize.documentHeight > pageSize.windowHeight;
 
         // Get scene root info for compression check
         const sceneRootInfo = await page.evaluate(() => {
@@ -199,9 +195,7 @@ async function testSceneAtViewports(sceneName, server, serverUrl) {
         });
 
         console.log(`    Screenshot: ${screenshotName} (${fileSizeKb} KB)`);
-        console.log(
-          `    Scroll: H=${hasHorizontalScroll}, V=${hasVerticalScroll}`,
-        );
+        console.log(`    Scroll: H=${hasHorizontalScroll}, V=${hasVerticalScroll}`);
         if (sceneRootInfo) {
           console.log(
             `    Scene root: ${sceneRootInfo.width.toFixed(0)}x${sceneRootInfo.height.toFixed(0)}px`,
@@ -239,8 +233,7 @@ function generateMarkdownReport(allResults) {
   markdown +=
     "This report documents viewport sweep testing across 3 viewport sizes for all 6 D4 scenes.\n\n";
   markdown += "**Method (Option B - Browser-only viewport sweep):**\n";
-  markdown +=
-    "- Pipeline renders at fixed 1920x1080 layout output (percentage coordinates)\n";
+  markdown += "- Pipeline renders at fixed 1920x1080 layout output (percentage coordinates)\n";
   markdown += "- Browser viewport is parameterized to 3 sizes\n";
   markdown += "- Tests CSS scaling and responsive reflow\n";
   markdown += "- Does NOT rebuild layout engine for each viewport\n";
@@ -255,8 +248,7 @@ function generateMarkdownReport(allResults) {
   markdown += "| 1920x1080 | 16:9 | Default; modern widescreen |\n\n";
 
   markdown += "## Results Table\n\n";
-  markdown +=
-    "| Scene | Viewport | Size (KB) | H-Scroll | V-Scroll | Status |\n";
+  markdown += "| Scene | Viewport | Size (KB) | H-Scroll | V-Scroll | Status |\n";
   markdown += "| --- | --- | --- | --- | --- | --- |\n";
 
   for (const result of allResults) {
@@ -274,10 +266,7 @@ function generateMarkdownReport(allResults) {
   // Analyze scroll behavior
   const scenesWithScroll = new Set();
   for (const result of allResults) {
-    if (
-      result.status === "OK" &&
-      (result.hasHorizontalScroll || result.hasVerticalScroll)
-    ) {
+    if (result.status === "OK" && (result.hasHorizontalScroll || result.hasVerticalScroll)) {
       scenesWithScroll.add(result.scene);
     }
   }
@@ -289,9 +278,7 @@ function generateMarkdownReport(allResults) {
     markdown +=
       "**Scroll behavior:** The following scenes triggered scroll at smaller viewports:\n";
     for (const scene of scenesWithScroll) {
-      const sceneResults = allResults.filter(
-        (r) => r.scene === scene && r.status === "OK",
-      );
+      const sceneResults = allResults.filter((r) => r.scene === scene && r.status === "OK");
       const scrollViewports = sceneResults
         .filter((r) => r.hasHorizontalScroll || r.hasVerticalScroll)
         .map((r) => r.viewport)
@@ -321,8 +308,7 @@ function generateMarkdownReport(allResults) {
   markdown += "\n";
 
   markdown += "## Artifacts\n\n";
-  markdown +=
-    "All 18 screenshots are stored in `tests/playwright/artifacts/`:\n";
+  markdown += "All 18 screenshots are stored in `tests/playwright/artifacts/`:\n";
   markdown += "- Naming: `<scene>_<viewport>.png`\n";
   markdown += "- Example: `bench_basic_1200x900.png`\n\n";
 
@@ -336,10 +322,8 @@ function generateMarkdownReport(allResults) {
   markdown += "## Residual Risks\n\n";
   markdown +=
     "- CSS media queries (if any) might behave differently than percentage-based layout\n";
-  markdown +=
-    "- Very small viewports (< 1200px) not tested; edge cases unknown\n";
-  markdown +=
-    "- Visual compression (squashing) subjective; not quantified in this sweep\n";
+  markdown += "- Very small viewports (< 1200px) not tested; edge cases unknown\n";
+  markdown += "- Visual compression (squashing) subjective; not quantified in this sweep\n";
   markdown +=
     "- Layout engine convergence shrink (3 passes) not measured; pipeline still runs at 1920x1080\n\n";
 
@@ -382,11 +366,7 @@ async function main() {
     const allResults = [];
     for (const sceneName of SCENES_TO_TEST) {
       try {
-        const results = await testSceneAtViewports(
-          sceneName,
-          server,
-          server.url,
-        );
+        const results = await testSceneAtViewports(sceneName, server, server.url);
         allResults.push(...results);
       } catch (error) {
         console.error(`Error testing scene ${sceneName}:`, error);
@@ -404,10 +384,7 @@ async function main() {
     // Generate report
     console.log("\n========== Generating Report ==========");
     const reportMarkdown = generateMarkdownReport(allResults);
-    const reportPath = path.join(
-      REPO_ROOT,
-      "docs/active_plans/reports/m2_viewport_sweep.md",
-    );
+    const reportPath = path.join(REPO_ROOT, "docs/active_plans/reports/m2_viewport_sweep.md");
 
     // Ensure directory exists
     const reportDir = path.dirname(reportPath);

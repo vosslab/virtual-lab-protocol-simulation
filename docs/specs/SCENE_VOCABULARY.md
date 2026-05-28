@@ -339,7 +339,7 @@ YAML basename, the adapter's `sceneId` field, the key in
 `generated/scene_data.ts` `SCENE_CONFIGS` (consumed via the
 `scene_configs.ts` facade), and the key
 in the scene registry. The discoverer in
-[../../pipeline/build_scene_data.py](../../pipeline/build_scene_data.py) globs
+[../../pipeline/gen_scene_index.py](../../pipeline/gen_scene_index.py) globs
 `src/scenes/<scene_name>/<scene_name>.yaml` to pick scenes up.
 
 ### adapter
@@ -439,7 +439,7 @@ each one explicitly. See
 A YAML field naming the workspace family for a scene; values are
 stable strings used to classify scene surface kinds. Required by the
 scene YAML validator
-([../../pipeline/build_scene_data.py](../../pipeline/build_scene_data.py));
+([../../pipeline/gen_scene_index.py](../../pipeline/gen_scene_index.py));
 advisory at runtime. Example:
 
 ```yaml

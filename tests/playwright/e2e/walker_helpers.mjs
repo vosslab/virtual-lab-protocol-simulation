@@ -23,20 +23,12 @@ export async function waitForStepCompleted(page, stepId, timeoutMs = 30000) {
 }
 
 // Wait until heldLiquid.tool and heldLiquid.liquid match expected values.
-export async function waitForHeldLiquid(
-  page,
-  expectedTool,
-  expectedLiquid,
-  timeoutMs = 3000,
-) {
+export async function waitForHeldLiquid(page, expectedTool, expectedLiquid, timeoutMs = 3000) {
   await page.waitForFunction(
     ({ expectedTool, expectedLiquid }) => {
       const state = window.gameState;
       if (!state || !state.heldLiquid) return false;
-      return (
-        state.heldLiquid.tool === expectedTool &&
-        state.heldLiquid.liquid === expectedLiquid
-      );
+      return state.heldLiquid.tool === expectedTool && state.heldLiquid.liquid === expectedLiquid;
     },
     { expectedTool, expectedLiquid },
     { timeout: timeoutMs },
@@ -108,9 +100,7 @@ export async function switchToBench(page, report) {
   // The "To Bench" button is rendered in the hood scene
   const toBenchBtn = page.locator("#hood-to-bench-btn").first();
   if ((await toBenchBtn.count()) === 0) {
-    throw new Error(
-      "To Bench button not found in DOM; cannot switch scene without a real click",
-    );
+    throw new Error("To Bench button not found in DOM; cannot switch scene without a real click");
   }
   await toBenchBtn.click();
   await waitForActiveScene(page, "bench", 3000);
@@ -126,9 +116,7 @@ export async function switchToHood(page, report) {
   // The "To Hood" button is rendered in the bench scene
   const toHoodBtn = page.locator("#bench-to-hood-btn").first();
   if ((await toHoodBtn.count()) === 0) {
-    throw new Error(
-      "To Hood button not found in DOM; cannot switch scene without a real click",
-    );
+    throw new Error("To Hood button not found in DOM; cannot switch scene without a real click");
   }
   await toHoodBtn.click();
   await waitForActiveScene(page, "hood", 3000);
@@ -194,10 +182,7 @@ export async function clickItemAndWaitProgress(
   clickBudgetMs = 3000,
   scene = null,
 ) {
-  const selector =
-    scene !== null
-      ? resolveScopedSelector(itemId, scene)
-      : resolveSelector(itemId);
+  const selector = scene !== null ? resolveScopedSelector(itemId, scene) : resolveSelector(itemId);
   const locator = page.locator(selector).first();
 
   // Verify element exists and is visible
@@ -234,13 +219,11 @@ export async function clickItemAndWaitProgress(
       (initState) => {
         const state = window.gameState;
         if (state.selectedTool !== initState.selectedTool) return true;
-        if (JSON.stringify(state.heldLiquid) !== initState.heldLiquid)
-          return true;
+        if (JSON.stringify(state.heldLiquid) !== initState.heldLiquid) return true;
         if (state.interactionIndex !== initState.interactionIndex) return true;
         if (state.activeStepId !== initState.activeStepId) return true;
         if (state.activeScene !== initState.activeScene) return true;
-        if ((state.completedSteps || []).length > initState.completedStepsCount)
-          return true;
+        if ((state.completedSteps || []).length > initState.completedStepsCount) return true;
         return false;
       },
       initialState,

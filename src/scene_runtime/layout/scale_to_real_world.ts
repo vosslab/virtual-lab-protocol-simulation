@@ -20,8 +20,7 @@ export function scaleToRealWorld(
   diagnostics: Diagnostics = [],
 ): ScaledPlacement[] {
   const pxPerCmMap = opts.workspacePxPerCm ?? WORKSPACE_PX_PER_CM;
-  const pxPerCm: number | undefined =
-    workspace !== undefined ? pxPerCmMap[workspace] : undefined;
+  const pxPerCm: number | undefined = workspace !== undefined ? pxPerCmMap[workspace] : undefined;
 
   return bound.map((p): ScaledPlacement => {
     if (p._error !== undefined) {

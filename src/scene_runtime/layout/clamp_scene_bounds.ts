@@ -3,12 +3,7 @@
 // scene_bounds, translates the whole zone group by a single (dx, dy).
 // Items in the same zone shift together; this preserves intra-zone alignment.
 
-import type {
-  ComputedItem,
-  Diagnostics,
-  SceneBoundsRect,
-  Zone,
-} from "./types.js";
+import type { ComputedItem, Diagnostics, SceneBoundsRect, Zone } from "./types.js";
 
 export function clampSceneBounds(
   zoneLayouts: Map<string, ComputedItem[]>,

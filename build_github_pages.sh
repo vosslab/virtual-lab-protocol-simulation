@@ -1,83 +1,100 @@
 #!/usr/bin/env bash
 # build_github_pages.sh - canonical production build for GitHub Pages.
 #
+# WP-3-10 extension. The build now produces:
+#
+#   dist/index.html              -- launcher entry (from src/launcher/index.html)
+#   dist/main.js                 -- single shared ESM bundle (Solid + runtime)
+#   dist/style.css               -- copied verbatim from src/style.css
+#   dist/bench_basic.html        -- preserved bench page as a render smoke target
+#                                   (renamed from the legacy dist/index.html)
+#   dist/<protocol_name>.html    -- one per entry in generated PROTOCOLS_INDEX,
+#                                   templated from src/protocol_host_template.html
+#   dist/.nojekyll               -- GitHub Pages flag
+#
 # Contract:
 #   - Wipes dist/ from scratch.
-#   - Regenerates generated/ from current YAML and SVG source.
+#   - Verifies required source files: src/dist_entry.tsx,
+#     src/launcher/index.html, src/protocol_host_template.html,
+#     src/index.html (bench), src/style.css. Aborts on missing.
 #   - Type-checks via 'tsc --noEmit -p tsconfig.json'.
-#   - Resolves the entry: src/main.ts preferred, src/init.ts legacy fallback.
-#     Aborts with an actionable error if neither exists.
-#   - Verifies src/index.html and src/style.css exist before copying;
-#     aborts with an actionable error if missing.
-#   - Verifies src/index.html references dist/main.js with a module script
-#     tag (warns if missing -- the page will load but main.js is dead).
-#   - Bundles the entry into dist/main.js with esbuild (ESM, es2020,
-#     browser, minified, with sourcemap).
-#   - Copies src/index.html and src/style.css into dist/.
-#   - Writes dist/.nojekyll so GitHub Pages serves files starting with _.
-#   - Asserts dist/index.html and dist/main.js exist before exiting.
+#   - Bundles src/dist_entry.tsx with esbuild (ESM, es2020, browser,
+#     minified, sourcemap, Solid JSX flags) into dist/main.js.
+#   - Copies src/launcher/index.html  -> dist/index.html (launcher page).
+#   - Copies src/index.html           -> dist/bench_basic.html (bench page).
+#   - Copies src/style.css            -> dist/style.css.
+#   - Reads PROTOCOLS_INDEX entries from generated/protocols.ts via
+#     pipeline/list_protocols.py and instantiates src/protocol_host_template.html
+#     once per entry, substituting {{PROTOCOL_NAME}}.
+#   - Writes dist/.nojekyll.
+#   - Asserts the canonical artifacts exist before exiting.
 #
 # Hard rule: never produces single-file output. ESM only.
 
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
-# Resolve entry point.
-if [ -f "src/main.ts" ]; then
-	ENTRY="src/main.ts"
-elif [ -f "src/init.ts" ]; then
-	ENTRY="src/init.ts"
-	echo "WARNING: using legacy src/init.ts. Rename to src/main.ts." >&2
-else
-	echo "ERROR: no entry point. Create src/main.ts (preferred) or src/init.ts." >&2
-	exit 1
-fi
+# Two-bundle split (see docs/active_plans/active/web_ui/bundle_audit.md):
+#   src/launcher_entry.tsx       -> dist/launcher.js       (lightweight)
+#   src/protocol_host_entry.tsx  -> dist/protocol_host.js  (runtime + renderer + SVGs)
 
-# Verify required static assets before any destructive step.
-for required in src/index.html src/style.css; do
+# Verify required source inputs before any destructive step.
+REQUIRED_SOURCES=(
+	"src/launcher_entry.tsx"
+	"src/protocol_host_entry.tsx"
+	"src/launcher/index.html"
+	"src/protocol_host_template.html"
+	"src/index.html"
+	"src/style.css"
+	"generated/protocols.ts"
+	"generated/protocols_index_slim.ts"
+	"pipeline/list_protocols.py"
+)
+for required in "${REQUIRED_SOURCES[@]}"; do
 	if [ ! -f "$required" ]; then
 		echo "ERROR: required source file missing: $required" >&2
-		case "$required" in
-			src/index.html)
-				echo "  Create src/index.html with a <script type=\"module\" src=\"main.js\"></script> tag." >&2 ;;
-			src/style.css)
-				echo "  Create src/style.css (empty file is fine)." >&2 ;;
-		esac
 		exit 1
 	fi
 done
 
-# Soft-warn if index.html does not reference main.js as an ES module.
-if ! grep -Eq '<script[^>]+type="module"[^>]+src="(\./)?main\.js"' src/index.html; then
-	echo "WARNING: src/index.html does not appear to load main.js as an ES module." >&2
-	echo "  Expected tag: <script type=\"module\" src=\"main.js\"></script>" >&2
-	echo "  Build will proceed; the page may render but main.js will not run." >&2
-fi
-
-python3 pipeline/gen_object_library.py
-python3 pipeline/gen_svg_registry.py
-python3 pipeline/gen_scene_index.py
-python3 pipeline/build_protocol_index.py
-
+# Wipe and recreate dist/.
 rm -rf dist
 mkdir -p dist
 
+# 1. Typecheck.
 npx tsc --noEmit -p tsconfig.json
 
-npx esbuild "$ENTRY" \
-	--bundle \
-	--format=esm \
-	--target=es2020 \
-	--platform=browser \
-	--minify \
-	--sourcemap \
-	--outfile=dist/main.js
+# 2. Bundle the single dist entry via esbuild-plugin-solid (Node API).
+#    The plugin runs Solid's babel transform on JSX so reactivity is
+#    fine-grained. The plain esbuild CLI cannot do this transform.
+node pipeline/build_main_bundle.mjs
 
-cp src/index.html dist/index.html
+# 3. Copy launcher HTML as the dist root (dist/index.html).
+cp src/launcher/index.html dist/index.html
+
+# 4. Copy bench HTML to bench_basic.html as a render smoke target.
+#    The legacy bench page used to be dist/index.html; it is preserved
+#    under a stable name so existing smoke paths keep working.
+cp src/index.html dist/bench_basic.html
+
+# 5. Copy stylesheet.
 cp src/style.css dist/style.css
+
+# 6. Generate dist/<protocol_name>.html for every PROTOCOLS_INDEX entry.
+#    list_protocols.py 'emit' parses PROTOCOLS_INDEX from generated/protocols.ts
+#    and writes one dist/<name>.html per entry, substituting {{PROTOCOL_NAME}}.
+python3 pipeline/list_protocols.py emit \
+	--template src/protocol_host_template.html \
+	--out-dir dist
+
+# 7. GitHub Pages marker.
 touch dist/.nojekyll
 
+# 8. Assert the canonical artifacts exist.
 test -f dist/index.html
-test -f dist/main.js
+test -f dist/launcher.js
+test -f dist/protocol_host.js
+test -f dist/style.css
+test -f dist/bench_basic.html
 
 echo "Built dist/ (GitHub Pages-ready)."

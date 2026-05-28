@@ -38,11 +38,7 @@ const REPO_ROOT = execSync("git rev-parse --show-toplevel", {
  * Extract all mini_protocol entries from generated/protocol_data.ts
  */
 function discoverMiniProtocols() {
-  const protocolDataPath = path.join(
-    REPO_ROOT,
-    "generated",
-    "protocol_data.ts",
-  );
+  const protocolDataPath = path.join(REPO_ROOT, "generated", "protocol_data.ts");
 
   if (!fs.existsSync(protocolDataPath)) {
     throw new Error(`protocol_data.ts not found at ${protocolDataPath}`);
@@ -129,9 +125,7 @@ function ensureProtocolHTML(protocolName) {
       shell: "/bin/bash",
     });
   } catch (err) {
-    throw new Error(
-      `Failed to build HTML for protocol "${protocolName}": ${err.message}`,
-    );
+    throw new Error(`Failed to build HTML for protocol "${protocolName}": ${err.message}`);
   }
 }
 
@@ -197,11 +191,7 @@ function classifyGap(errorMessage) {
  */
 async function walkProtocol(protocolName) {
   try {
-    const screenshotDir = path.join(
-      REPO_ROOT,
-      "test-results",
-      `walker_${protocolName}`,
-    );
+    const screenshotDir = path.join(REPO_ROOT, "test-results", `walker_${protocolName}`);
 
     const result = await runWalker({
       protocolName,
@@ -285,9 +275,7 @@ function generateMarkdownReport(results) {
     const errorMsg = r.errorMessage
       ? r.errorMessage.substring(0, 60).replace(/\|/g, "\\|") + "..."
       : "-";
-    lines.push(
-      `| ${r.protocolName} | ${status} | ${steps} | ${gapClass} | ${errorMsg} |`,
-    );
+    lines.push(`| ${r.protocolName} | ${status} | ${steps} | ${gapClass} | ${errorMsg} |`);
   }
 
   lines.push("");
@@ -372,9 +360,7 @@ async function main() {
 
     const status = walkerResult.success ? "✓" : "✗";
     const steps = `${walkerResult.stepsCompleted}/${walkerResult.stepsTotal}`;
-    console.log(
-      `[INFO] ${status} ${protocolName}: ${steps} (${walkerResult.gapClass})`,
-    );
+    console.log(`[INFO] ${status} ${protocolName}: ${steps} (${walkerResult.gapClass})`);
   }
 
   // Ensure output directory exists

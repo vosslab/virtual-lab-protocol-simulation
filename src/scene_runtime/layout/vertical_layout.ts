@@ -22,8 +22,7 @@ export function verticalLayout(
 
   for (const zone of zones) {
     const items = zoneLayouts.get(zone.id) ?? [];
-    const zoneBaselineY =
-      zone.baseline ?? (zone.bounds.top + zone.bounds.bottom) / 2;
+    const zoneBaselineY = zone.baseline ?? (zone.bounds.top + zone.bounds.bottom) / 2;
 
     const updated = items.map((it): ComputedItem => {
       const depthOffset = DEPTH_BASELINE_OFFSET[depthFor(it)];

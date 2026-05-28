@@ -15,13 +15,5 @@ export { layoutLabels } from "./layout_labels.js";
 export { clampSceneBounds } from "./clamp_scene_bounds.js";
 export { runPipeline } from "./run_pipeline.js";
 export { wrapLabel } from "./wrap_label.js";
-export {
-  depthFor,
-  footprintFor,
-  visualWidthFor,
-  widthScaleFor,
-} from "./footprint.js";
-export {
-  DEMO_OBJECT_LIBRARY,
-  DEMO_ASSET_SPECS,
-} from "./__fixtures__/demo_library.js";
+export { depthFor, footprintFor, visualWidthFor, widthScaleFor } from "./footprint.js";
+export { DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS } from "./__fixtures__/demo_library.js";

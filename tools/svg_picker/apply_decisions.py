@@ -319,7 +319,7 @@ def main() -> None:
 		print(f"Attribution rows appended: {attribution_rows_count}")
 
 	print()
-	print("Remember to run: source source_me.sh && python3 pipeline/generate_svg_globals.py")
+	print("Remember to run: source source_me.sh && python3 pipeline/gen_svg_registry.py")
 
 
 if __name__ == "__main__":

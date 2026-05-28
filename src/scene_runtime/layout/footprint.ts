@@ -13,9 +13,7 @@ export function widthScaleFor(p: ScaledPlacement): number {
 }
 
 export function visualWidthFor(p: ScaledPlacement, scale = 1): number {
-  return (
-    p.layout.default_width * widthScaleFor(p) * DEPTH_SCALE[depthFor(p)] * scale
-  );
+  return p.layout.default_width * widthScaleFor(p) * DEPTH_SCALE[depthFor(p)] * scale;
 }
 
 export function footprintFor(p: ScaledPlacement, scale = 1): number {

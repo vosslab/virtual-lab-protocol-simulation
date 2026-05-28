@@ -3,19 +3,19 @@
 ### Additions and New Features
 
 - **layout-manager clean-start handoff bundle: 9 new artifacts added under `docs/active_plans/active/layout_manager_clean_start/`.**
-  - [docs/active_plans/active/layout_manager_clean_start/ONBOARDING.md](active_plans/active/layout_manager_clean_start/ONBOARDING.md): entry point for the clean-start effort (already committed as 4d7889d).
-  - [docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md](active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md): 6 extraction milestones (M1-M6) with 19 USER_DECISION_REQUIRED markers.
-  - [docs/active_plans/active/layout_manager_clean_start/contact_sheet.html](active_plans/active/layout_manager_clean_start/contact_sheet.html): contact sheet pairing best/worst screenshots.
-  - [docs/active_plans/active/layout_manager_clean_start/diagnostics_baseline.md](active_plans/active/layout_manager_clean_start/diagnostics_baseline.md): 10 templates, 0 hard fails at 1200x900; 2 hard fails at 1920x1080 on well_plate_96_zoom.
-  - [docs/active_plans/active/layout_manager_clean_start/experiments_code_triage.md](active_plans/active/layout_manager_clean_start/experiments_code_triage.md): triage of experiments/ tree for keep/rewrite/delete.
-  - [docs/active_plans/active/layout_manager_clean_start/js_mjs_usage_audit.md](active_plans/active/layout_manager_clean_start/js_mjs_usage_audit.md): 21 JS/MJS scripts audited (9 KEEP_AS_MJS, 6 REWRITE_TO_TS, 5 DELETE, 1 DELETE_AFTER_MERGE).
-  - [docs/active_plans/active/layout_manager_clean_start/scene_object_audit.md](active_plans/active/layout_manager_clean_start/scene_object_audit.md): 574 object records across 72 files; 354 real SVG, 167 placeholder, 11 missing, 42 wrong-asset.
-  - [docs/active_plans/active/layout_manager_clean_start/screenshot_gallery.md](active_plans/active/layout_manager_clean_start/screenshot_gallery.md): 10 best + 10 worst screenshots curated.
-  - [docs/active_plans/active/layout_manager_clean_start/svg_completeness_plan.md](active_plans/active/layout_manager_clean_start/svg_completeness_plan.md): 124 tracked SVGs in assets/equipment/, 78 object YAMLs, 12 missing SVGs, 49 orphan SVGs.
+  - [ONBOARDING.md](archive/layout_manager_clean_start/ONBOARDING.md): entry point for the clean-start effort (already committed as 4d7889d).
+  - [architecture_extraction_plan.md](archive/layout_manager_clean_start/architecture_extraction_plan.md): 6 extraction milestones (M1-M6) with 19 USER_DECISION_REQUIRED markers.
+  - [contact_sheet.html](archive/layout_manager_clean_start/contact_sheet.html): contact sheet pairing best/worst screenshots.
+  - [diagnostics_baseline.md](archive/layout_manager_clean_start/diagnostics_baseline.md): 10 templates, 0 hard fails at 1200x900; 2 hard fails at 1920x1080 on well_plate_96_zoom.
+  - [experiments_code_triage.md](archive/layout_manager_clean_start/experiments_code_triage.md): triage of experiments/ tree for keep/rewrite/delete.
+  - [js_mjs_usage_audit.md](archive/layout_manager_clean_start/js_mjs_usage_audit.md): 21 JS/MJS scripts audited (9 KEEP_AS_MJS, 6 REWRITE_TO_TS, 5 DELETE, 1 DELETE_AFTER_MERGE).
+  - [scene_object_audit.md](archive/layout_manager_clean_start/scene_object_audit.md): 574 object records across 72 files; 354 real SVG, 167 placeholder, 11 missing, 42 wrong-asset.
+  - [screenshot_gallery.md](archive/layout_manager_clean_start/screenshot_gallery.md): 10 best + 10 worst screenshots curated.
+  - [svg_completeness_plan.md](archive/layout_manager_clean_start/svg_completeness_plan.md): 124 tracked SVGs in assets/equipment/, 78 object YAMLs, 12 missing SVGs, 49 orphan SVGs.
 
 ### Behavior or Interface Changes
 
-- [experiments/css_native_layout/README.md](../experiments/css_native_layout/README.md) rewritten as a 15-section operational README for the css_native_layout experiment.
+- `experiments/css_native_layout/README.md` rewritten as a 15-section operational README for the css_native_layout experiment.
 
 ### Decisions and Failures
 
@@ -27,7 +27,7 @@
 
 ### Developer Tests and Notes
 
-- M0 milestone in [docs/active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md](active_plans/active/layout_manager_clean_start/architecture_extraction_plan.md) is a read-only baseline regen; regeneration command targets are named in [docs/active_plans/active/layout_manager_clean_start/diagnostics_baseline.md](active_plans/active/layout_manager_clean_start/diagnostics_baseline.md) section 6.
+- M0 milestone in [architecture_extraction_plan.md](archive/layout_manager_clean_start/architecture_extraction_plan.md) is a read-only baseline regen; regeneration command targets are named in [diagnostics_baseline.md](archive/layout_manager_clean_start/diagnostics_baseline.md) section 6.
 - `tests/test_markdown_links.py` was skipped for this changelog entry because the broken `pytest_sessionstart` bootstrap (noted above) blocks pytest invocations repo-wide.
 
 ---
@@ -91,7 +91,7 @@
   hide-labels CSS rule to `experiments/css_native_layout/styles/bench.css`
   (lines 242-245). Lane E accepted one of four weak-scene trials
   (electrophoresis_bench +12 via column-wrap support_placement). Lane V
-  created [../experiments/css_native_layout/VISUAL_TARGETS.md](../experiments/css_native_layout/VISUAL_TARGETS.md)
+  created `experiments/css_native_layout/VISUAL_TARGETS.md`
   with 18 measurable rules across 6 scene classes.
 - **NEW1 Round 2 bundle integration: render-and-dump bridge added, compatibility shim guardrails locked in, progress report published.**
   Round 2 ran four lanes against the built-app integration of the CSS-native
@@ -422,11 +422,11 @@ calc(100% - 20px); }` zoom rule.
     -- section 5 per-scene checklist table added; sections 7/8 rewritten
     to "what improved" and "what still fails"; historic Direction A/B/C
     content preserved as section 7-historic.
-  - [../experiments/css_native_layout/PRECHECK_SUMMARY.md](../experiments/css_native_layout/PRECHECK_SUMMARY.md)
+  - `experiments/css_native_layout/PRECHECK_SUMMARY.md`
     -- new section "Scene-class threshold + visual checklist
     (2026-05-19)"; new "Current pass results" table with primary-ratio
     delta vs baseline; three em-dash fixes.
-  - [../experiments/css_native_layout/DECISION_MEMO.md](../experiments/css_native_layout/DECISION_MEMO.md)
+  - `experiments/css_native_layout/DECISION_MEMO.md`
     -- new section "Scene-class candidates (2026-05-19)"; drug-dilution
     recovery and electrophoresis recovery documented; three left-arrow
     fixes.
@@ -440,8 +440,8 @@ calc(100% - 20px); }` zoom rule.
   `test-results/new0_css_native/contact_sheets/`. Hardening closeout
   edits land only in four tracked docs:
   `new0_reproducible_evidence_package.md`,
-  [../experiments/css_native_layout/PRECHECK_SUMMARY.md](../experiments/css_native_layout/PRECHECK_SUMMARY.md),
-  [../experiments/css_native_layout/DECISION_MEMO.md](../experiments/css_native_layout/DECISION_MEMO.md),
+  `experiments/css_native_layout/PRECHECK_SUMMARY.md`,
+  `experiments/css_native_layout/DECISION_MEMO.md`,
   and this file.
 
 - **NEW0 stabilization re-confirmation pass complete: forward candidate locked, evidence reproducible from tracked files only**
@@ -694,7 +694,7 @@ calc(100% - 20px); }` zoom rule.
     `spike_built_app_click_target.mjs`,
     `spike_built_app_state_change.mjs`. All three assertions PASS.
   - Layout scorecard artifacts:
-    [../experiments/css_native_layout/LAYOUT_SCORECARD.md](../experiments/css_native_layout/LAYOUT_SCORECARD.md),
+    `experiments/css_native_layout/LAYOUT_SCORECARD.md`,
     `experiments/css_native_layout/scene_class_manifest.yaml`,
     `experiments/css_native_layout/score_layout.mjs`. Ten scenes ranked;
     best `well_plate_96_zoom` 89/100, worst `cell_counter_basic` 51/100,

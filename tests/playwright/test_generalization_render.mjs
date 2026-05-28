@@ -56,12 +56,7 @@ function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
   return overlapWidth > tolerance && overlapHeight > tolerance;
 }
 
-function getBboxDeviationRatio(
-  renderedWidth,
-  renderedHeight,
-  vbWidth,
-  vbHeight,
-) {
+function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
   const renderedAspect = renderedWidth / renderedHeight;
   const naturalAspect = vbWidth / vbHeight;
   const deviation = Math.abs(renderedAspect - naturalAspect) / naturalAspect;
@@ -75,7 +70,7 @@ function extractViewBoxDimensions(viewBoxStr) {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
-async function checkComputedStyles(locator, page) {
+async function checkComputedStyles(locator, _page) {
   const styles = await locator.evaluate((el) => {
     const computed = window.getComputedStyle(el);
     return {
@@ -131,7 +126,7 @@ async function rebuildDist() {
       reject(new Error("Build timeout"));
     }, 30000);
 
-    let buildSuccess = false;
+    let _buildSuccess = false;
 
     proc.on("close", (code) => {
       clearTimeout(timeout);
@@ -255,9 +250,7 @@ async function renderAndTestScene(sceneName, page, server) {
     const placementLocators = await page.locator("[data-placement-name]").all();
     const labelLocators = await page.locator("[data-label]").all();
 
-    console.log(
-      `Found ${placementLocators.length} placements, ${labelLocators.length} labels`,
-    );
+    console.log(`Found ${placementLocators.length} placements, ${labelLocators.length} labels`);
 
     const placements = [];
     for (const locator of placementLocators) {
@@ -391,13 +384,7 @@ async function renderAndTestScene(sceneName, page, server) {
     let fFailed = false;
     for (let i = 0; i < placements.length; i++) {
       for (let j = i + 1; j < placements.length; j++) {
-        if (
-          bboxsOverlap(
-            placements[i].bbox,
-            placements[j].bbox,
-            OVERLAP_TOLERANCE,
-          )
-        ) {
+        if (bboxsOverlap(placements[i].bbox, placements[j].bbox, OVERLAP_TOLERANCE)) {
           fFailed = true;
           break;
         }
@@ -433,9 +420,7 @@ async function renderAndTestScene(sceneName, page, server) {
         }
         return null;
       });
-      const associatedPlacement = placements.find(
-        (p) => p.name === placementName,
-      );
+      const associatedPlacement = placements.find((p) => p.name === placementName);
       if (associatedPlacement && associatedPlacement.svgBbox) {
         if (bboxsOverlap(labels[i].bbox, associatedPlacement.svgBbox)) {
           hFailed = true;
@@ -495,8 +480,7 @@ async function renderAndTestScene(sceneName, page, server) {
     const bundlePath = path.join(REPO_ROOT, "dist/main.js");
     const bundleContent = fs.readFileSync(bundlePath, "utf8");
     const kFailed =
-      bundleContent.includes('=== "bench_basic"') ||
-      bundleContent.includes("=== 'bench_basic'");
+      bundleContent.includes('=== "bench_basic"') || bundleContent.includes("=== 'bench_basic'");
     results.K = !kFailed;
     console.log(`${results.K ? "PASS" : "FAIL"}: No scene-specific branches`);
 
@@ -809,19 +793,13 @@ async function main() {
 
     // Generate contact sheet
     console.log("\nGenerating contact sheet...");
-    const contactSheetDir = path.join(
-      REPO_ROOT,
-      "test-results/m2_generalization_gallery",
-    );
+    const contactSheetDir = path.join(REPO_ROOT, "test-results/m2_generalization_gallery");
     if (!fs.existsSync(contactSheetDir)) {
       fs.mkdirSync(contactSheetDir, { recursive: true });
     }
 
     const contactSheetPath = path.join(contactSheetDir, "INDEX.html");
-    const contactSheetHtml = generateContactSheet(
-      renderResults,
-      SCENES_BLOCKED,
-    );
+    const contactSheetHtml = generateContactSheet(renderResults, SCENES_BLOCKED);
     fs.writeFileSync(contactSheetPath, contactSheetHtml, "utf8");
     console.log(`Contact sheet saved: ${contactSheetPath}`);
 

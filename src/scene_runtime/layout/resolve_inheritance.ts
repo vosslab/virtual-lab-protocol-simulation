@@ -2,12 +2,7 @@
 // If scene.extends is set, look up the base in baseSceneMap, then apply the
 // four operations in fixed order: remove -> deactivate -> reposition -> add.
 
-import type {
-  InheritanceOp,
-  InheritanceResolution,
-  PlacementAuthored,
-  SceneA,
-} from "./types.js";
+import type { InheritanceOp, InheritanceResolution, PlacementAuthored, SceneA } from "./types.js";
 
 function placementName(entry: { placement_name: string } | string): string {
   return typeof entry === "string" ? entry : entry.placement_name;
@@ -85,17 +80,13 @@ export function resolveInheritance(
 
   for (const d of scene.deactivate_placements ?? []) {
     const name = d.placement_name;
-    placements = placements.map((p) =>
-      p.placement_name === name ? { ...p, active: false } : p,
-    );
+    placements = placements.map((p) => (p.placement_name === name ? { ...p, active: false } : p));
     operations.push({ op: "deactivate", target: name });
   }
 
   for (const r of scene.reposition_placements ?? []) {
     const name = r.placement_name;
-    placements = placements.map((p) =>
-      p.placement_name === name ? { ...p, ...r } : p,
-    );
+    placements = placements.map((p) => (p.placement_name === name ? { ...p, ...r } : p));
     const op: InheritanceOp = { op: "reposition", target: name };
     if (r.zone !== undefined) op.to_zone = r.zone;
     operations.push(op);

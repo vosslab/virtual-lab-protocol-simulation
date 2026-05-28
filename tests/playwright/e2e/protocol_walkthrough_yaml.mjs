@@ -134,14 +134,10 @@ Examples:
 //============================================
 
 function startServer() {
-  const proc = spawn(
-    "python3",
-    ["-m", "http.server", String(PORT), "--directory", DIST_DIR],
-    {
-      stdio: ["ignore", "pipe", "pipe"],
-      cwd: REPO_ROOT,
-    },
-  );
+  const proc = spawn("python3", ["-m", "http.server", String(PORT), "--directory", DIST_DIR], {
+    stdio: ["ignore", "pipe", "pipe"],
+    cwd: REPO_ROOT,
+  });
   return proc;
 }
 
@@ -225,9 +221,7 @@ async function buildClickPlan(page, interaction) {
     !interaction.destination &&
     interaction.completionEvent
   ) {
-    throw new Error(
-      "Invalid interaction shape: completionEvent only (no tool/source/destination)",
-    );
+    throw new Error("Invalid interaction shape: completionEvent only (no tool/source/destination)");
   }
 
   // Tool only (no source, no destination)
@@ -278,11 +272,8 @@ async function buildClickPlan(page, interaction) {
 
 async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
   // Get interactions from either the new completionPath schema or legacy top-level field
-  const interactions =
-    step.completionPath?.interactions || step.interactionSequence || [];
-  report.info(
-    `  Using interactionSequence path (${interactions.length} interactions)`,
-  );
+  const interactions = step.completionPath?.interactions || step.interactionSequence || [];
+  report.info(`  Using interactionSequence path (${interactions.length} interactions)`);
 
   // In --wrong-order mode, we'll track when we're about to start the correct sequence
   // so we can compare state before and after the correct clicks (not including the injection).
@@ -290,9 +281,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
 
   for (let i = 0; i < interactions.length; i++) {
     const interaction = interactions[i];
-    const startIndex = await page.evaluate(
-      () => window.gameState.interactionIndex,
-    );
+    const startIndex = await page.evaluate(() => window.gameState.interactionIndex);
     report.info(`  Interaction ${i}/${interactions.length}`, {
       index: i,
       startInteractionIndex: startIndex,
@@ -318,9 +307,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
         });
 
         // Click the wrong item
-        report.info(
-          `  [wrong-order injection] clicking ${wrongItem} (not in interaction)`,
-        );
+        report.info(`  [wrong-order injection] clicking ${wrongItem} (not in interaction)`);
         const wrongItemSelector = resolveSelector(wrongItem);
         const wrongItemLocator = page.locator(wrongItemSelector).first();
         await wrongItemLocator.click();
@@ -330,11 +317,9 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
         // If it never increments within the budget, that IS the failure case — post-state read below records it.
         const preCount = preWrongState.wrongOrderClicks;
         await page
-          .waitForFunction(
-            (target) => window.gameState.wrongOrderClicks > target,
-            preCount,
-            { timeout: 1500 },
-          )
+          .waitForFunction((target) => window.gameState.wrongOrderClicks > target, preCount, {
+            timeout: 1500,
+          })
           .catch(() => {
             /* timeout is the failure case; let post-state read record it */
           });
@@ -350,12 +335,9 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
         });
 
         const wrongClickIncremented =
-          postWrongState.wrongOrderClicks ===
-          preWrongState.wrongOrderClicks + 1;
-        const indexUnchanged =
-          postWrongState.interactionIndex === preWrongState.interactionIndex;
-        const stepUnchanged =
-          postWrongState.activeStepId === preWrongState.activeStepId;
+          postWrongState.wrongOrderClicks === preWrongState.wrongOrderClicks + 1;
+        const indexUnchanged = postWrongState.interactionIndex === preWrongState.interactionIndex;
+        const stepUnchanged = postWrongState.activeStepId === preWrongState.activeStepId;
 
         recordInjection(report, step.id, wrongItem);
 
@@ -365,9 +347,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
               `(before: ${preWrongState.wrongOrderClicks}, after: ${postWrongState.wrongOrderClicks})`,
             { stepId: step.id, injectedItemId: wrongItem },
           );
-          throw new Error(
-            `Injection on ${wrongItem}: wrongOrderClicks did not increment`,
-          );
+          throw new Error(`Injection on ${wrongItem}: wrongOrderClicks did not increment`);
         }
 
         if (!indexUnchanged || !stepUnchanged) {
@@ -377,9 +357,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
               `stepBefore: ${preWrongState.activeStepId}, stepAfter: ${postWrongState.activeStepId})`,
             { stepId: step.id, injectedItemId: wrongItem },
           );
-          throw new Error(
-            `Injection on ${wrongItem}: step advanced when it should not have`,
-          );
+          throw new Error(`Injection on ${wrongItem}: step advanced when it should not have`);
         }
 
         report.info(
@@ -389,10 +367,9 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
         // Record state after injection, before correct sequence
         stateBeforeCorrectSequence = postWrongState;
       } else {
-        report.info(
-          `  [wrong-order injection] skipped: no alternative item visible in scene`,
-          { stepId: step.id },
-        );
+        report.info(`  [wrong-order injection] skipped: no alternative item visible in scene`, {
+          stepId: step.id,
+        });
         // Even if injection skipped, record pre-sequence state
         stateBeforeCorrectSequence = await page.evaluate(() => {
           const state = window.gameState;
@@ -408,13 +385,7 @@ async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
     const clickPlan = await buildClickPlan(page, interaction);
 
     for (const click of clickPlan) {
-      await clickItemAndWaitProgress(
-        page,
-        click.itemId,
-        report,
-        3000,
-        step.scene,
-      );
+      await clickItemAndWaitProgress(page, click.itemId, report, 3000, step.scene);
     }
   }
 
@@ -439,13 +410,9 @@ async function walkIncubationStep(page, step, report) {
     // Switch to hood to pick up well_plate
     await switchToHood(page, report);
     // Click well_plate to pick it up
-    const wellPlateLocator = page
-      .locator('[data-item-id="well_plate"]')
-      .first();
+    const wellPlateLocator = page.locator('[data-item-id="well_plate"]').first();
     if ((await wellPlateLocator.count()) === 0) {
-      throw new Error(
-        "well_plate not found in hood for incubate_day1; cannot proceed",
-      );
+      throw new Error("well_plate not found in hood for incubate_day1; cannot proceed");
     }
     await clickItemAndWaitProgress(page, "well_plate", report);
     await switchToBench(page, report);
@@ -478,10 +445,7 @@ async function walkIncubationStep(page, step, report) {
   } catch {
     // Overlay may have opened and closed already; check if step completed
     const completed = await page.evaluate((id) => {
-      return (
-        window.gameState.completedSteps &&
-        window.gameState.completedSteps.includes(id)
-      );
+      return window.gameState.completedSteps && window.gameState.completedSteps.includes(id);
     }, step.id);
     if (completed) {
       report.info("Incubation step already completed (overlay too fast)");
@@ -515,9 +479,7 @@ async function _walkCountCellsStep(page, step, report) {
   });
 
   // Click cell_counter on bench to open microscope
-  const cellCounterLocator = page
-    .locator('[data-item-id="cell_counter"]')
-    .first();
+  const cellCounterLocator = page.locator('[data-item-id="cell_counter"]').first();
   if ((await cellCounterLocator.count()) === 0) {
     throw new Error("cell_counter element not found on bench");
   }
@@ -542,10 +504,9 @@ async function _walkCountCellsStep(page, step, report) {
     report.info("Clicked confirm-viability");
 
     // Wait for viability screen to switch to counting screen
-    await page.waitForFunction(
-      () => window.gameState.microscopeViabilityChecked === true,
-      { timeout: 3000 },
-    );
+    await page.waitForFunction(() => window.gameState.microscopeViabilityChecked === true, {
+      timeout: 3000,
+    });
 
     // Wait for quadrant buttons to appear
     await page.waitForSelector(".quadrant-btn", { timeout: 3000 });
@@ -574,10 +535,7 @@ async function _walkCountCellsStep(page, step, report) {
           const btn = buttons[index];
           const style = window.getComputedStyle(btn);
           // Check if button's border style has changed (selected state)
-          return (
-            style.borderColor === "rgb(76, 175, 80)" ||
-            style.borderWidth === "3px"
-          );
+          return style.borderColor === "rgb(76, 175, 80)" || style.borderWidth === "3px";
         }
         return false;
       },
@@ -625,23 +583,12 @@ async function walkMicroscopeModalStep(page, step, report) {
     // Scope to bench scene where the cell_counter lives
     await switchToBench(page, report);
 
-    const openerSelector = resolveScopedSelector(
-      step.completionPath.openClick,
-      "bench",
-    );
+    const openerSelector = resolveScopedSelector(step.completionPath.openClick, "bench");
     const openerLocator = page.locator(openerSelector).first();
     if ((await openerLocator.count()) === 0) {
-      throw new Error(
-        `Item ${step.completionPath.openClick} not found to open microscope`,
-      );
+      throw new Error(`Item ${step.completionPath.openClick} not found to open microscope`);
     }
-    await clickItemAndWaitProgress(
-      page,
-      step.completionPath.openClick,
-      report,
-      3000,
-      "bench",
-    );
+    await clickItemAndWaitProgress(page, step.completionPath.openClick, report, 3000, "bench");
 
     // Wait for microscope modal to open
     await waitForMicroscopeOpen(page, 3000);
@@ -682,10 +629,7 @@ async function walkMicroscopeModalStep(page, step, report) {
           if (buttons.length > index) {
             const btn = buttons[index];
             const style = window.getComputedStyle(btn);
-            return (
-              style.borderColor === "rgb(76, 175, 80)" ||
-              style.borderWidth === "3px"
-            );
+            return style.borderColor === "rgb(76, 175, 80)" || style.borderWidth === "3px";
           }
           return false;
         },
@@ -722,14 +666,7 @@ async function walkMicroscopeModalStep(page, step, report) {
 // Player must: optionally open modal (if openClick present), then click advance button
 //============================================
 
-async function walkModalStep(
-  page,
-  step,
-  openClick,
-  advanceClick,
-  completionEvent,
-  report,
-) {
+async function walkModalStep(page, step, openClick, advanceClick, completionEvent, report) {
   report.info(`  Using generic modal path for ${step.id}`);
 
   const advanceSelector = `[data-walker-advance="${advanceClick}"]`;
@@ -756,9 +693,7 @@ async function walkModalStep(
     const openerSelector = resolveScopedSelector(openClick, step.scene);
     const openerLocator = page.locator(openerSelector).first();
     if ((await openerLocator.count()) === 0) {
-      throw new Error(
-        `Item ${openClick} not found to open modal for step ${step.id}`,
-      );
+      throw new Error(`Item ${openClick} not found to open modal for step ${step.id}`);
     }
     await clickItemAndWaitProgress(page, openClick, report, 3000, step.scene);
 
@@ -957,15 +892,11 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 
         // Special case: incubate_plate requires clicking "Take plate to incubator" button first
         if (step.id === "incubate_plate") {
-          const currentScene = await page.evaluate(
-            () => window.gameState.activeScene,
-          );
+          const currentScene = await page.evaluate(() => window.gameState.activeScene);
           if (currentScene === "well_plate_workspace") {
             const takeIncubatorBtn = page.locator("#take-to-incubator").first();
             if ((await takeIncubatorBtn.count()) === 0) {
-              throw new Error(
-                "Take plate to incubator button not found on plate scene",
-              );
+              throw new Error("Take plate to incubator button not found on plate scene");
             }
             await takeIncubatorBtn.click();
             report.summary.totalClicks++;
@@ -997,10 +928,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
         await clickItemAndWaitProgress(page, tool, report);
       } else if (kind === "modal") {
         // Dispatch to special handlers for microscope modals with quadrant counting
-        if (
-          step.modal?.screen === "viability" ||
-          step.modal?.screen === "counting"
-        ) {
+        if (step.modal?.screen === "viability" || step.modal?.screen === "counting") {
           // Hemocytometer quadrant counting requires window.prompt override.
           // Override window.prompt because the runtime collects quadrant counts via a native browser dialog; without this Playwright would hang on the modal dialog.
           await page.evaluate(() => {
@@ -1017,14 +945,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
           const advanceClick = step.completionPath.advanceClick;
           const completionEvent = step.completionPath.completionEvent;
 
-          await walkModalStep(
-            page,
-            step,
-            openClick,
-            advanceClick,
-            completionEvent,
-            report,
-          );
+          await walkModalStep(page, step, openClick, advanceClick, completionEvent, report);
         }
       } else if (kind === "multipleChoice") {
         // Multiple-choice quiz step: find correct choice and click it
@@ -1032,32 +953,20 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
         const correct = cp.choices.find((c) => c.correct === true);
         if (!correct) throw new Error(`No correct choice on ${step.id}`);
         const _selector = resolveScopedSelector(correct.id, step.scene);
-        await clickItemAndWaitProgress(
-          page,
-          correct.id,
-          report,
-          3000,
-          step.scene,
-        );
+        await clickItemAndWaitProgress(page, correct.id, report, 3000, step.scene);
       } else {
-        throw new Error(
-          `Unknown completionPath.kind '${kind}' for step ${step.id}`,
-        );
+        throw new Error(`Unknown completionPath.kind '${kind}' for step ${step.id}`);
       }
     } else if (step.isIncubation) {
       // Legacy: pure incubation steps (no completionPath yet)
       await walkIncubationStep(page, step, report);
     } else {
-      throw new Error(
-        `Step ${step.id} has no completionPath and is not an incubation step`,
-      );
+      throw new Error(`Step ${step.id} has no completionPath and is not an incubation step`);
     }
 
     // Check per-step budget
     if (Date.now() - stepStart > STEP_BUDGET_MS) {
-      throw new Error(
-        `step_stalled: step ${step.id} exceeded ${STEP_BUDGET_MS}ms budget`,
-      );
+      throw new Error(`step_stalled: step ${step.id} exceeded ${STEP_BUDGET_MS}ms budget`);
     }
 
     // Wait for step completion (async steps like incubation, aspiration animation)
@@ -1091,9 +1000,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
     // (In --wrong-order mode with interactionSequence, compare to state after injection;
     //  otherwise compare to state at the start of the step.)
     const compareState =
-      stateBeforeCorrectSequence !== null
-        ? stateBeforeCorrectSequence
-        : beforeState;
+      stateBeforeCorrectSequence !== null ? stateBeforeCorrectSequence : beforeState;
     if (afterState.wrongOrderClicks > compareState.wrongOrderClicks) {
       throw new Error(
         `wrongOrderClicks incremented during correct sequence (before: ${compareState.wrongOrderClicks}, after: ${afterState.wrongOrderClicks})`,
@@ -1133,9 +1040,7 @@ async function walkStep(page, step, report, wrongOrderMode, protocolId) {
 
 async function main() {
   const args = parseArgs();
-  console.log(
-    `Starting walker: protocol=${args.protocol}, wrongOrder=${args.wrongOrder}`,
-  );
+  console.log(`Starting walker: protocol=${args.protocol}, wrongOrder=${args.wrongOrder}`);
 
   // Ensure results directory exists
   if (!fs.existsSync(RESULTS_DIR)) {
@@ -1245,9 +1150,7 @@ async function main() {
     // Dismiss welcome modal
     report.info("Dismissing welcome modal");
     const welcomeBtn = page
-      .locator(
-        '#welcome-start-btn, button:has-text("Start"), button:has-text("Begin")',
-      )
+      .locator('#welcome-start-btn, button:has-text("Start"), button:has-text("Begin")')
       .first();
     if ((await welcomeBtn.count()) > 0) {
       await welcomeBtn.click();
@@ -1283,9 +1186,7 @@ async function main() {
     for (const step of steps) {
       // Check whole-run budget
       if (Date.now() - runStart > RUN_BUDGET_MS) {
-        report.error(
-          `run_stalled: exceeded ${RUN_BUDGET_MS}ms whole-run budget`,
-        );
+        report.error(`run_stalled: exceeded ${RUN_BUDGET_MS}ms whole-run budget`);
         report.summary.failureReason = "run_stalled";
         break;
       }
@@ -1328,19 +1229,13 @@ async function main() {
     // End-state assertions (only if no failures)
     if (report.summary.stepsFailed === 0) {
       if (endingState.activeStepId !== null) {
-        report.error(
-          "activeStepId is not null at end (not all steps completed)",
-        );
+        report.error("activeStepId is not null at end (not all steps completed)");
       }
       if (endingState.wrongOrderClicks > 0 && !args.wrongOrder) {
-        report.error(
-          `wrongOrderClicks = ${endingState.wrongOrderClicks} (should be 0)`,
-        );
+        report.error(`wrongOrderClicks = ${endingState.wrongOrderClicks} (should be 0)`);
       }
       if (endingState.stepsOutOfOrder > 0) {
-        report.error(
-          `stepsOutOfOrder = ${endingState.stepsOutOfOrder} (should be 0)`,
-        );
+        report.error(`stepsOutOfOrder = ${endingState.stepsOutOfOrder} (should be 0)`);
       }
     }
 
@@ -1349,9 +1244,7 @@ async function main() {
       .locator('#scoring-screen, #results-screen, [data-screen="scoring"]')
       .first();
     if ((await resultScreen.count()) === 0) {
-      report.error(
-        "Final result screen not found in DOM (spec Rule 6: assert the ending)",
-      );
+      report.error("Final result screen not found in DOM (spec Rule 6: assert the ending)");
     } else {
       report.info("Final result screen present");
     }
@@ -1371,23 +1264,17 @@ async function main() {
     }
 
     // Determine pass/fail
-    const errorCount = report.entries.filter(
-      (e) => e.severity === "error",
-    ).length;
+    const errorCount = report.entries.filter((e) => e.severity === "error").length;
     if (errorCount > 0 || report.summary.stepsFailed > 0) {
       const failMsg =
         errorCount > 0
           ? `Walker FAILED: ${errorCount} errors logged`
           : `Walker FAILED: ${report.summary.stepsFailed} steps failed`;
       console.log(`\n${failMsg}`);
-      console.log(
-        `Passed: ${report.summary.stepsPassed}/${steps.length} steps`,
-      );
+      console.log(`Passed: ${report.summary.stepsPassed}/${steps.length} steps`);
       process.exitCode = 1;
     } else {
-      console.log(
-        `\nWalker PASSED: all ${report.summary.stepsWalked} steps completed`,
-      );
+      console.log(`\nWalker PASSED: all ${report.summary.stepsWalked} steps completed`);
       process.exitCode = 0;
     }
 

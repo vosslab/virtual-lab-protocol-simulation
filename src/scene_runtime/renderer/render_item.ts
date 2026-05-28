@@ -47,6 +47,10 @@ export function renderItem(item: ComputedItem): HTMLElement {
     el.setAttribute("data-depth", item.depth);
   }
   el.setAttribute("data-target-id", ""); // Reserved, empty in M2b.
+  // Walker-addressable id. Protocol YAML interactions reference targets
+  // by object_name; mirror that onto data-item-id so click_resolver and
+  // Playwright walkers can find the visible element directly.
+  el.setAttribute("data-item-id", item.object_name);
 
   // Inject SVG asset. Throws if asset missing (no fallback, no placeholder).
   injectSvgInto(el, item.asset);

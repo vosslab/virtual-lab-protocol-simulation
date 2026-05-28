@@ -63,12 +63,7 @@ export function ensureScreenshotDir(protocolId) {
  * Returns the full path to the written file.
  */
 export async function captureBefore(page, ctx) {
-  const fullPath = getScreenshotPath(
-    ctx.protocolId,
-    ctx.stepIndex,
-    ctx.actionIndex,
-    "before",
-  );
+  const fullPath = getScreenshotPath(ctx.protocolId, ctx.stepIndex, ctx.actionIndex, "before");
   // Ensure parent directory exists.
   const parentDir = path.dirname(fullPath);
   if (!fs.existsSync(parentDir)) {
@@ -86,12 +81,7 @@ export async function captureBefore(page, ctx) {
  * Returns the full path to the written file.
  */
 export async function captureAfter(page, ctx) {
-  const fullPath = getScreenshotPath(
-    ctx.protocolId,
-    ctx.stepIndex,
-    ctx.actionIndex,
-    "after",
-  );
+  const fullPath = getScreenshotPath(ctx.protocolId, ctx.stepIndex, ctx.actionIndex, "after");
   // Ensure parent directory exists.
   const parentDir = path.dirname(fullPath);
   if (!fs.existsSync(parentDir)) {

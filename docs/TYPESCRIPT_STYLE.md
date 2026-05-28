@@ -27,7 +27,7 @@ Language Model guide to Neil TypeScript programming
 * Avoid broad `try/catch` blocks when possible. I find they often hide bugs.
 * Use `try/catch` rarely, and keep the scope small.
 * Throw `Error` objects rather than returning silent failure values.
-* Apply "fix the design, not the symptom" here too: do not paper over a misbehaving caller with a swallowed error or a silent default.
+* Apply "fix the design, not the symptom" here too: do not paper over a misbehaving caller with a swallowed error or a silent default. See Design philosophy in docs/REPO_STYLE.md.
 * Return statements should be simple and should not build large objects or long strings inline. Store computed values first, then return the variable.
 * Add comments within the code to describe what different lines are doing, especially for complex lines.
 * Please only use ASCII characters in the script. If special characters are needed in output, escape them when appropriate.
@@ -188,7 +188,7 @@ import { writeReport } from "./write_report";
 * For real projects, use a normal test framework and keep tests in a `tests/` folder.
 * Keep tests small and deterministic.
 * Avoid network calls, random behavior, and time-based logic unless mocked.
-* Browser tests live under `tests/playwright/` (see [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)). Pure Node unit tests via `node --test tests/test_*.mjs`. TS hygiene tests under `tests/test_typescript_*.py` enforce ESLint, tsc, package.json schema, tsconfig canonical fields, and ESLint flat-config presence.
+* Browser tests live under `tests/playwright/` (see [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)). Pure Node unit tests via `node --test tests/test_*.mjs`. TS hygiene tests under `tests/test_typescript_*.py` enforce tsc, package.json schema, tsconfig canonical fields, and ESLint flat-config presence. ESLint correctness is gated by `check_codebase.sh` step 3 directly; no separate pytest wrapper.
 
 ## FORMATTERS AND LINTERS
 
@@ -197,7 +197,11 @@ import { writeReport } from "./write_report";
 * Do not fight Prettier on style choices. If Prettier formats it, that is the style.
 * ESLint rules should catch problems, not enforce cosmetic preferences that Prettier already handles.
 * Strict typing is preferred. Enable `noImplicitAny` and `strict` in `tsconfig.json`.
-* ESLint config lives at `eslint.config.js` at the repo root (canonical, propagated). Hygiene test `tests/test_typescript_eslint.py` enforces zero errors.
+* ESLint config lives at `eslint.config.js` at the repo root (canonical, propagated). Lint correctness is enforced by `check_codebase.sh` step 3 (`npx eslint --max-warnings 0 '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'`).
+* Prettier scope in this repo is JS, TypeScript, MJS, CJS, TSX, MTS, CTS only. JSON, YAML, Markdown, and Python files are explicitly NOT prettier-managed.
+* Indent is two spaces for every prettier-managed extension (prettier default; documented in propagated `.prettierrc`). This differs from the Python tabs rule in `docs/PYTHON_STYLE.md`; agents editing `.py` use tabs, agents editing `.ts`/`.mjs`/etc use two spaces. Do not over-generalize one language's rule to the other.
+* Auto-fix path when `npm run check` step 4 (`format:check`) fails: `npm run format:write` (script alias for `npx prettier --write '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'`).
+* `.prettierignore` ships from the template and covers noisy generated trees (`node_modules/`, `dist/`, `dist-single/`, `_site/`, `generated/`, `coverage/`, `playwright-report/`, `test-results/`, `blob-report/`, `package-lock.json`).
 
 ### ESLint canonical rules
 
@@ -205,7 +209,7 @@ Each enabled rule enforces a single class of error:
 
 - `@typescript-eslint/no-explicit-any: error` &mdash; `any` defeats type system.
 - `@typescript-eslint/no-unused-vars: error` &mdash; dead code rots.
-- `@typescript-eslint/explicit-function-return-type: warn` &mdash; exported function signatures are API.
+- `@typescript-eslint/explicit-function-return-type: error` &mdash; exported function signatures are API. Severity matches `check_codebase.sh` step 3 `--max-warnings 0` (the prior `warn` setting was dead documentation since `--max-warnings 0` upgraded every warn to a gate failure anyway).
 - `@typescript-eslint/no-floating-promises: error` &mdash; silent async errors.
 - `no-var: error` &mdash; function-scoping breaks expectations.
 - `prefer-const: error` &mdash; mutability should be deliberate.
@@ -224,7 +228,6 @@ Each enabled rule enforces a single class of error:
 | `strict` | `true` | Enables all strict type checks. |
 | `noImplicitAny` | `true` | Explicit type annotations required. |
 | `noUncheckedIndexedAccess` | `true` | Accessing an array or object by index/key is `unknown` unless bounds-checked. |
-| `exactOptionalPropertyTypes` | `true` | `{ x?: string }` is not assignable to `{ x: string \| undefined }`. |
 | `noImplicitOverride` | `true` | Derived class methods must mark `override` keyword. |
 | `verbatimModuleSyntax` | `true` | Import/export syntax must match module kind exactly. |
 | `useUnknownInCatchVariables` | `true` | Caught exceptions are `unknown`, not `any`. |
@@ -239,6 +242,14 @@ Each enabled rule enforces a single class of error:
 | `esModuleInterop` | `true` | Interop helpers for CommonJS imports (rare; maintained for compat). |
 | `sourceMap` | `true` | Generate source maps for debugging. |
 | `lib` | `["dom", "dom.iterable", "esnext"]` | Browser APIs, DOM iteration, ESM features. |
+
+### Opt-in strict flags (not default)
+
+`exactOptionalPropertyTypes: true` is intentionally NOT in the default `tsconfig.json` the template ships. The flag makes `{ x?: string }` non-assignable to `{ x: string | undefined }`, which most third-party `@types/*` packages do not comply with even when `skipLibCheck: true` is set. Consumers see spurious errors from `node_modules`. A repo that wants the stricter shape can add the flag locally to its own `tsconfig.json` (which is consumer-owned after bootstrap); per-type assertions or `skipLibCheck` interactions are the consumer's responsibility once enabled.
+
+A wider type-check pass covers `tests/` and `tools/` via `tsconfig.lint.json` (`extends: "./tsconfig.json"`, `include: ["tests/**/*.ts", "tools/**/*.ts"]`); `check_codebase.sh` step 2 always runs it.
+
+Heads-up: `tsc -p tsconfig.lint.json` exits 2 with `TS18003` ("No inputs were found in config file") when its `include` list matches no files. A consumer with no `tests/*.ts` and no `tools/*.ts` will hit this on `check_codebase.sh` step 2. Workarounds: (1) seed a stub `.ts` in either tree, or (2) edit the consumer-owned `tsconfig.lint.json` and narrow `include` to a tree that exists.
 
 ## BUILD SYSTEM
 
@@ -256,8 +267,8 @@ Single `dist/main.js` + `dist/index.html` + `dist/.nojekyll`. GitHub Pages serve
 
 - `[build_github_pages.sh](../build_github_pages.sh)` (build esbuild bundle).
 - `[run_web_server.sh](../run_web_server.sh)` (serve `dist/` on random port).
-- `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, lint, format-check, tests, and build via npm scripts; pass `--fast` to skip the build step; Playwright is not part of this gate).
-- `[dist_clean.sh](../dist_clean.sh)` (wipe `dist/`).
+- `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, wider typecheck via `tsconfig.lint.json`, lint, format-check, css-policy if present, and Node unit tests; build and Playwright are explicitly out of scope and run separately via `npm run build` / `npm run test:playwright`).
+- `[dist_clean.sh](../devel/dist_clean.sh)` (wipe `dist/`).
 
 ### Module system
 
@@ -281,9 +292,8 @@ This is the baseline TypeScript repository layout:
 - `src/index.html` &mdash; HTML host with `<script type="module" src="main.js">`.
 - `src/style.css` &mdash; stylesheet copied verbatim into `dist/`.
 - `dist/` &mdash; only build output (canonical GitHub Pages artifact).
-- `tests/test_smoke.mjs` &mdash; ships from template; keeps `node --test` green on a freshly-bootstrapped repo until real tests exist.
 
-This is the canonical floor, not a ceiling. Per-repo additions (extra `src/*.ts` modules, `tests/test_*.mjs`, `tests/playwright/*.spec.ts`) are expected and not constrained.
+This is the canonical floor, not a ceiling. Per-repo additions (`src/*.ts` modules, `tests/test_*.mjs`, `tests/playwright/*.spec.ts`) are expected and not constrained. `check_codebase.sh` step 6 (`node --import tsx --test 'tests/test_*.mjs'`) SKIPs cleanly (does not fail the gate) when no `tests/test_*.mjs` files are present, so a fresh consumer can land its first test without a placeholder smoke file shipped by the template.
 
 ## ARGUMENT PARSING
 

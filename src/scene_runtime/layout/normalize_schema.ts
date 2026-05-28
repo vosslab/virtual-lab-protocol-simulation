@@ -68,8 +68,7 @@ export function normalizeSchema(
           zone: row.row_name,
           depth_tier: slot.depth_tier ?? i + 1,
         };
-        if (slot.align_stop !== undefined)
-          placement.align_stop = slot.align_stop;
+        if (slot.align_stop !== undefined) placement.align_stop = slot.align_stop;
         if (slot.layout !== undefined) placement.layout = slot.layout;
         placements.push(placement);
       });
@@ -85,8 +84,7 @@ export function normalizeSchema(
     };
     if (scene.capabilities) normalized.capabilities = scene.capabilities;
     if (scene.background) normalized.background = scene.background;
-    if (scene.wrong_order_message)
-      normalized.wrong_order_message = scene.wrong_order_message;
+    if (scene.wrong_order_message) normalized.wrong_order_message = scene.wrong_order_message;
 
     return { scene: normalized, source: "row_slot", trace };
   }

@@ -90,9 +90,7 @@ function runPreflightOnScene(sceneName) {
 
     // Capture pass info
     result.passes_count = pipelineResult.passes.length;
-    result.zones_shrunk_per_pass = pipelineResult.passes.map(
-      (p) => p.zones_shrunk_count || 0,
-    );
+    result.zones_shrunk_per_pass = pipelineResult.passes.map((p) => p.zones_shrunk_count || 0);
 
     // Capture final item count
     result.final_count = pipelineResult.final.length;
@@ -141,9 +139,7 @@ function generateMarkdownReport(results) {
   lines.push("");
   lines.push("## Scope");
   lines.push("");
-  lines.push(
-    "Lane D3 runs the full layout pipeline on each of the 6 D1 generalization scenes",
-  );
+  lines.push("Lane D3 runs the full layout pipeline on each of the 6 D1 generalization scenes");
   lines.push("(from SCENE_ALLOWLIST in generated/scenes.ts). For each scene:");
   lines.push("");
   lines.push("- Parse and normalize the scene YAML");
@@ -156,12 +152,8 @@ function generateMarkdownReport(results) {
   lines.push("## Method");
   lines.push("");
   lines.push("Each preflight invokes:");
-  lines.push(
-    "`runPipeline(scene, { library: OBJECT_LIBRARY, assets: ASSET_SPECS })`",
-  );
-  lines.push(
-    "followed by `runStructuralGuards(result.final, scene)` to verify",
-  );
+  lines.push("`runPipeline(scene, { library: OBJECT_LIBRARY, assets: ASSET_SPECS })`");
+  lines.push("followed by `runStructuralGuards(result.final, scene)` to verify");
   lines.push("layout geometry before D4 attempts rendering.");
   lines.push("");
   lines.push("## Results: summary table");
@@ -219,9 +211,7 @@ function generateMarkdownReport(results) {
     lines.push("");
 
     if (r.zones_shrunk_per_pass.length > 0) {
-      lines.push(
-        `**Zones shrunk per pass:** ${r.zones_shrunk_per_pass.join(", ")}`,
-      );
+      lines.push(`**Zones shrunk per pass:** ${r.zones_shrunk_per_pass.join(", ")}`);
     } else {
       lines.push("**Zones shrunk per pass:** (no shrinking occurred)");
     }
@@ -236,7 +226,7 @@ function generateMarkdownReport(results) {
   lines.push("");
 
   const passCount = results.filter((r) => r.guard_verdict === "PASS").length;
-  const failCount = results.length - passCount;
+  const _failCount = results.length - passCount;
 
   lines.push(`**D4-ready (preflight pass):** ${passCount} / ${results.length}`);
   lines.push("");

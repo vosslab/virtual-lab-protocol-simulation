@@ -69,12 +69,7 @@ export function runPipeline(
   }
   const normalScene = normalized.scene ?? (scene as SceneA);
   const inheritance = resolveInheritance(normalScene, baseSceneMap);
-  const bound = bindObjects(
-    inheritance.placements,
-    library,
-    assets,
-    diagnostics,
-  );
+  const bound = bindObjects(inheritance.placements, library, assets, diagnostics);
   let scaled: ScaledPlacement[] = scaleToRealWorld(
     bound,
     normalScene.workspace,
@@ -104,12 +99,7 @@ export function runPipeline(
       normalScene.layout_rules ?? {},
       passDiagnostics,
     );
-    vertical = verticalLayout(
-      horizontal,
-      normalScene.zones ?? [],
-      viewport,
-      passDiagnostics,
-    );
+    vertical = verticalLayout(horizontal, normalScene.zones ?? [], viewport, passDiagnostics);
     labelled = layoutLabels(
       vertical,
       normalScene.zones ?? [],

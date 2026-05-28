@@ -1,7 +1,8 @@
 // Test suite for structural_guards.ts
 // Tests each of the 8 guards with passing and failing cases.
 
-import { strict as assert } from "assert";
+// `assert` import dropped; the suite uses inline throw to keep node:test
+// failures clear without an additional assertion layer.
 import { runStructuralGuards } from "../src/scene_runtime/renderer/structural_guards.ts";
 
 //============================================

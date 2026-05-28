@@ -1,124 +1,43 @@
-# Build artifacts
-# NEW0 deliverable: track reproducibility surface, ignore scratch.
-# See docs/active_plans/new0_outside_review_handoff.md.
-# Note on rule shape: a directory ignored with `experiments/` cannot have its
-# children re-included via negation. The form below ignores contents of each
-# subdir with `dir/*`, then negates the specific files we keep, so git still
-# recurses into the path.
-tests/fixtures/
-experiments/*
-!experiments/css_native_layout/
-experiments/css_native_layout/*
-!experiments/css_native_layout/README.md
-!experiments/css_native_layout/PRECHECK_SUMMARY.md
-!experiments/css_native_layout/PRECHECK_USAGE.md
-!experiments/css_native_layout/DECISION_MEMO.md
-!experiments/css_native_layout/LAYOUT_SCORECARD.md
-!experiments/css_native_layout/scene_class_manifest.yaml
-!experiments/css_native_layout/score_layout.mjs
-!experiments/css_native_layout/precheck.mjs
-!experiments/css_native_layout/render_and_dump.mjs
-!experiments/css_native_layout/VISUAL_TARGETS.md
-!experiments/css_native_layout/run_precheck.sh
-!experiments/css_native_layout/run_built_app_precheck.sh
-!experiments/css_native_layout/regions/
-!experiments/css_native_layout/styles/
-!experiments/css_native_layout/templates/
-experiments/css_native_layout/regions/*
-!experiments/css_native_layout/regions/bench.yaml
-!experiments/css_native_layout/regions/hood.yaml
-!experiments/css_native_layout/regions/instrument.yaml
-experiments/css_native_layout/styles/*
-!experiments/css_native_layout/styles/bench.css
-!experiments/css_native_layout/styles/hood.css
-!experiments/css_native_layout/styles/instrument.css
-!experiments/css_native_layout/styles/dir_b_bench.css
-!experiments/css_native_layout/styles/dir_b_hood.css
-!experiments/css_native_layout/styles/dir_b_instrument.css
-!experiments/css_native_layout/styles/dir_c_bench.css
-!experiments/css_native_layout/styles/dir_c_hood.css
-!experiments/css_native_layout/styles/dir_c_instrument.css
-experiments/css_native_layout/templates/*
-!experiments/css_native_layout/templates/*.html
-!experiments/css_native_layout/templates/dir_b/
-experiments/css_native_layout/templates/dir_b/*
-!experiments/css_native_layout/templates/dir_b/*.html
-!experiments/css_native_layout/templates/dir_c/
-experiments/css_native_layout/templates/dir_c/*
-!experiments/css_native_layout/templates/dir_c/*.html
-!experiments/css_native_layout/scenes/
-experiments/css_native_layout/scenes/*
-!experiments/css_native_layout/scenes/*.yaml
-!experiments/css_native_layout/spike_fixtures/
-experiments/css_native_layout/spike_fixtures/*
-!experiments/css_native_layout/spike_fixtures/*.md
-!experiments/css_native_layout/spike_fixtures/*.yaml
-!experiments/css_native_layout/spike_paths/
-experiments/css_native_layout/spike_paths/*
-!experiments/css_native_layout/spike_paths/*/
-experiments/css_native_layout/spike_paths/*/*
-!experiments/css_native_layout/spike_paths/*/*.md
-!experiments/css_native_layout/spike_paths/*/*.json
-!experiments/css_native_layout/stress_generators/
-experiments/css_native_layout/stress_generators/*
-!experiments/css_native_layout/stress_generators/*.py
-!experiments/css_native_layout/stress_results/
-experiments/css_native_layout/stress_results/*
-!experiments/css_native_layout/stress_results/*.md
-!experiments/css_native_layout/showcase/
-!experiments/css_native_layout/showcase/**/*.html
-!experiments/css_native_layout/showcase/**/*.json
-!experiments/css_native_layout/no_crop_audit/
-!experiments/css_native_layout/no_crop_audit/*.mjs
-!experiments/css_native_layout/no_crop_audit/*.json
-tools/svg_picker/*.json
-manual*.md
-output_manuals/
-.claude
-.agents
-skills-lock.json
-.cache/
-# stray tsc emits at repo root (misconfigured outDir); source of truth is the .ts
-/contract.js
-/types.js
-/dispatch/
-/highlight/
-/layout/
-/liquid/
-artifacts/ui-review/
-tests/playwright/artifacts/
-generated/
-_[a-z]*.?*
+# ============================================================
+# Build outputs (regenerated every build)
+# ============================================================
 dist/
-dist-single/
-OTHER_REPOS/*/
+generated/
+*.tsbuildinfo
+*.pyc
+
+# ============================================================
+# Dependencies
+# ============================================================
 node_modules/
 package-lock.json
-test-results/
-playwright-report/
+OTHER_REPOS/*/
 
-# Python
-*.pyc
-build/
-
-# Reports
-report_*.txt
-
-# Superpowers brainstorming sessions
-.superpowers/
-
-# OS
-.DS_Store
-# === UNIVERSAL ===
-_temp*.?*
-# === TYPESCRIPT ===
-_site/
-*.tsbuildinfo
+# ============================================================
+# Tooling caches (recreated on next lint/format run)
+# ============================================================
 .eslintcache
 .prettiercache
-blob-report/
-coverage/
-meta.json
-stats.html
 
+# ============================================================
+# Test artifacts
+# ============================================================
+tests/fixtures/
+tests/playwright/artifacts/
+test-results/
+playwright-report/
+coverage/
+
+# ============================================================
+# Reports and scratch files
+# ============================================================
+report_*.txt
+_[a-z]*.?*
+output_manuals/
+tools/svg_picker/*.json
+
+# ============================================================
+# OS junk
+# ============================================================
+.DS_Store
 

@@ -1,5 +1,100 @@
 # TODO
 
+
+Immediate follow-ups from Solid shell vertical slice
+
+The Solid shell vertical slice is green for sdspage_heat_denature_samples, but the product is not complete. The following items should not be forgotten.
+
+Protocol interaction support
+
+* Add a visible DOM affordance for the adjust gesture.
+    * Required for protocols that set values such as pipette volume, temperature, time, RPM, voltage, or other continuous / set-point actions.
+    * Must emit a typed runtime event with target, gesture, and value.
+    * Must validate through the existing validator path, not shell-local logic.
+    * First target protocol: mtt_reagent_prep.
+* Confirm the walker can complete an adjust protocol through visible UI.
+    * No hidden step advance.
+    * No brute-force clicking.
+    * Screenshots before and after meaningful interactions.
+
+Shell UI completion
+
+* Build the inventory / tool tray UI.
+    * Use data-tray-tool-id.
+    * Confirm keyboard access and selected-state semantics.
+* Build modal UI for choice and direct-tool interactions.
+    * Focus trap required.
+    * Escape cancels without advancing protocol state.
+    * Focus returns to invoking element.
+* Build feedback toast UI.
+    * Success and retry states.
+    * Use role="status".
+* Build professor / help overlay.
+    * Same focus behavior as modal.
+    * No protocol mutation from help UI.
+* Add basic visual styling for the shell.
+    * Keep shell CSS scoped to shell selectors only.
+    * Do not target scene internals, SVG elements, [data-item-id], or renderer-owned classes.
+
+Walker and visible UI proof
+
+* Revisit direct DOM click in the walker.
+    * Current walker uses page.evaluate(el.click()).
+    * Determine whether Playwright actionability failed because of a real student-clickability issue or because of SVG / injected DOM structure.
+    * If student-clickability is weak, fix rendered hit targets.
+    * If only Playwright actionability is brittle, document the reason and keep direct DOM click.
+* Add a second green pilot protocol.
+    * Prefer a protocol that exercises tray, modal, feedback, or adjust.
+    * Do not count two HUD-only protocols as sufficient shell coverage.
+
+Scene and rendering follow-ups
+
+* Replace neutral background placeholder rendering with real asset background rendering.
+    * Current placeholder uses neutral fill and data-bg-asset-pending.
+* Fix layout drift in flagged scenes.
+    * electrophoresis_bench
+    * heat_block_bench
+    * passage_hood_detachment_microscope_view
+* Add scene lint coverage for untested scene YAML.
+    * Confirm per-protocol scene YAML is indexed and rendered.
+    * Catch layout drift before Playwright walker runs.
+
+Content and protocol cleanup
+
+* Resolve 6 unresolved protocol targets from protocol_object_xref.md.
+    * passage_hood_detachment.incubator
+    * passage_pellet_reseed.biohazard_decant
+    * trypan_blue_counting.cell_suspension_tube
+    * sdspage_image_gel.waste_container x2
+    * well_plate_96_zoom_check.well_plate_96.E7
+* Review 75 ambiguous target mappings.
+    * Decide which are acceptable fanouts and which need YAML cleanup.
+* Review 156 fanout targets.
+    * Confirm these are intentional and walker-safe.
+
+Pipeline cleanup
+
+* Human: archive the 4 pipeline scripts marked SAFE_TO_ARCHIVE in codegen_consolidation_plan.md.
+    * Use git mv.
+    * Do not let agents perform git operations.
+* Decide UNCLEAR-1: build_new_scene_data.py.
+    * Determine whether inheritance behavior is still needed.
+    * Keep until replacement coverage exists.
+* Decide UNCLEAR-2: build_protocol_html.py.
+    * Keep until the new protocol host path fully replaces it.
+
+Documentation
+
+* Update docs/CHANGELOG.md with the Solid shell vertical slice.
+* Update docs/CODE_ARCHITECTURE.md with:
+    * src/shell/
+    * src/launcher/
+    * src/protocol_host.tsx
+    * src/scene_runtime/protocol/
+    * tools/build_main_bundle.mjs
+* Document that sdspage_heat_denature_samples is the first green visible-UI pilot.
+* Document that mtt_reagent_prep is blocked on adjust affordance.
+
 Triage backlog for issues surfaced but not fixed during recent work. See the
 active plans under `~/.claude/plans/` or [ROADMAP.md](ROADMAP.md) for queued
 work.

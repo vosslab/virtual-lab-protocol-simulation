@@ -51,9 +51,7 @@ async function __advanceTestClock(page, seconds) {
     if (globalThis_.__RUNTIME_TEST_CLOCK) {
       return globalThis_.__RUNTIME_TEST_CLOCK.advance(secs);
     }
-    throw new Error(
-      "Test clock not initialized; TimedWait not available in this build",
-    );
+    throw new Error("Test clock not initialized; TimedWait not available in this build");
   }, seconds);
 }
 
@@ -79,12 +77,7 @@ function ensureScreenshotDir(screenshotDir) {
 /**
  * Capture a screenshot before an interaction.
  */
-async function captureBeforeScreenshot(
-  page,
-  screenshotDir,
-  stepName,
-  interactionIdx,
-) {
+async function captureBeforeScreenshot(page, screenshotDir, stepName, interactionIdx) {
   const filename = `${stepName}_${interactionIdx.toString().padStart(2, "0")}_before.png`;
   const filepath = path.join(screenshotDir, filename);
   try {
@@ -97,12 +90,7 @@ async function captureBeforeScreenshot(
 /**
  * Capture a screenshot after an interaction.
  */
-async function captureAfterScreenshot(
-  page,
-  screenshotDir,
-  stepName,
-  interactionIdx,
-) {
+async function captureAfterScreenshot(page, screenshotDir, stepName, interactionIdx) {
   const filename = `${stepName}_${interactionIdx.toString().padStart(2, "0")}_after.png`;
   const filepath = path.join(screenshotDir, filename);
   try {
@@ -136,16 +124,10 @@ async function locateTarget(page, target, _gesture) {
 
       if (obj && obj.structure && obj.structure.subpart_groups) {
         // Search for a group with this name.
-        for (const groupCategory of Object.values(
-          obj.structure.subpart_groups,
-        )) {
+        for (const groupCategory of Object.values(obj.structure.subpart_groups)) {
           if (groupCategory.members) {
             for (const member of groupCategory.members) {
-              if (
-                member.name === targetId &&
-                member.contains &&
-                member.contains.length > 0
-              ) {
+              if (member.name === targetId && member.contains && member.contains.length > 0) {
                 // This is a group; resolve to its first member.
                 const firstMember = member.contains[0];
                 resolvedTarget = `${objectName}.${firstMember}`;
@@ -170,9 +152,7 @@ async function locateTarget(page, target, _gesture) {
     );
   }
 
-  const isVisible = await locator
-    .isVisible({ timeout: 100 })
-    .catch(() => false);
+  const isVisible = await locator.isVisible({ timeout: 100 }).catch(() => false);
   if (!isVisible) {
     throw new Error(
       `Target not visible: target="${target}" (resolved to "${resolvedTarget}") ` +
@@ -312,13 +292,7 @@ async function dispatchDrag(page, target, gesture) {
 /**
  * Execute one interaction in a step's sequence.
  */
-async function executeInteraction(
-  page,
-  interaction,
-  stepName,
-  interactionIdx,
-  screenshotDir,
-) {
+async function executeInteraction(page, interaction, stepName, interactionIdx, screenshotDir) {
   const { target, gesture } = interaction;
 
   if (!target) {
@@ -352,8 +326,7 @@ async function executeInteraction(
       break;
     default:
       throw new Error(
-        `Unknown gesture "${gesture}" on target "${target}" ` +
-          `in step ${stepName}`,
+        `Unknown gesture "${gesture}" on target "${target}" ` + `in step ${stepName}`,
       );
   }
 
@@ -364,33 +337,20 @@ async function executeInteraction(
 /**
  * Execute one step: walk all interactions in sequence, verify completion.
  */
-async function executeStep(
-  page,
-  step,
-  stepIndex,
-  protocol,
-  screenshotDir,
-  verbosity,
-) {
+async function executeStep(page, step, stepIndex, protocol, screenshotDir, verbosity) {
   const { step_name, prompt, sequence, __next_step } = step;
 
-  log(
-    `Step ${stepIndex + 1}/${protocol.steps.length}: ${step_name}`,
-    verbosity,
-  );
+  log(`Step ${stepIndex + 1}/${protocol.steps.length}: ${step_name}`, verbosity);
   log(`  Prompt: ${prompt}`, verbosity, "debug");
 
   // Verify prompt panel shows the correct prompt
   const promptElement = page.locator('[data-testid="prompt-panel-text"]');
-  const promptVisible = await promptElement
-    .isVisible({ timeout: 1000 })
-    .catch(() => false);
+  const promptVisible = await promptElement.isVisible({ timeout: 1000 }).catch(() => false);
   if (promptVisible) {
     const promptText = await promptElement.textContent();
     if (promptText !== prompt) {
       throw new Error(
-        `Prompt mismatch in step ${step_name}: ` +
-          `expected "${prompt}", got "${promptText}"`,
+        `Prompt mismatch in step ${step_name}: ` + `expected "${prompt}", got "${promptText}"`,
       );
     }
     log(`  Prompt verified`, verbosity, "debug");
@@ -411,34 +371,23 @@ async function executeStep(
     );
 
     try {
-      await executeInteraction(
-        page,
-        interaction,
-        step_name,
-        i + 1,
-        screenshotDir,
-      );
+      await executeInteraction(page, interaction, step_name, i + 1, screenshotDir);
       interactionsWalked++;
     } catch (err) {
-      throw new Error(
-        `Failed executing interaction ${i + 1} in step ${step_name}: ${err.message}`,
-      );
+      throw new Error(`Failed executing interaction ${i + 1} in step ${step_name}: ${err.message}`);
     }
   }
 
   // Check for step completion (the next button should be visible)
   const nextButton = page.locator('[data-testid="next-button"]');
-  const nextVisible = await nextButton
-    .isVisible({ timeout: 5000 })
-    .catch(() => false);
+  const nextVisible = await nextButton.isVisible({ timeout: 5000 }).catch(() => false);
   if (!nextVisible) {
     // Check runtime state for debugging
     const runtimeState = await page.evaluate(() => {
       const w = globalThis;
       return {
         lastButtonRender: w.__RUNTIME_LAST_BUTTON_RENDER,
-        currentInteractionIndex:
-          w.__RUNTIME_PROTOCOL_CONFIG?.world?.currentInteractionIndex,
+        currentInteractionIndex: w.__RUNTIME_PROTOCOL_CONFIG?.world?.currentInteractionIndex,
         activeStepIndex: w.__RUNTIME_PROTOCOL_CONFIG?.world?.activeStepIndex,
         stepLength:
           w.__RUNTIME_PROTOCOL_CONFIG?.world?.protocol?.steps?.[
@@ -449,14 +398,10 @@ async function executeStep(
           .map((c) => `[${c.targetId}@idx${c.currentInteractionIndex}]`),
         checkStepLog: (w.__RUNTIME_CHECK_STEP_LOG || [])
           .slice(-10)
-          .map(
-            (c) => `[step${c.activeStepIndex}@idx${c.currentInteractionIndex}]`,
-          ),
+          .map((c) => `[step${c.activeStepIndex}@idx${c.currentInteractionIndex}]`),
         orchestrateLog: (w.__RUNTIME_ORCHESTRATE_LOG || [])
           .slice(-10)
-          .map(
-            (o) => `[step${o.activeStepIndex}@idx${o.currentInteractionIndex}]`,
-          ),
+          .map((o) => `[step${o.activeStepIndex}@idx${o.currentInteractionIndex}]`),
         orchestrateCallLog: (w.__RUNTIME_ORCHESTRATE_CALL_LOG || [])
           .slice(-20)
           .map((c) => `[step${c.step}@idx${c.idx}]`),
@@ -465,9 +410,7 @@ async function executeStep(
           (d) => `[${d.event}@step${d.activeStepIndex}]`,
         ),
         clickEarlyReturn: w.__RUNTIME_CLICK_EARLY_RETURN,
-        adjustLog: (w.__RUNTIME_ADJUST_LOG || []).map(
-          (a) => `[step${a.step}@idx${a.idxBefore}]`,
-        ),
+        adjustLog: (w.__RUNTIME_ADJUST_LOG || []).map((a) => `[step${a.step}@idx${a.idxBefore}]`),
       };
     });
     throw new Error(
@@ -493,15 +436,10 @@ async function executeStep(
  * This is done at build time (in Node) before opening the browser.
  */
 function loadProtocolFromGenerated(protocolName) {
-  const generatedPath = path.join(
-    process.cwd(),
-    "generated",
-    "protocol_data.ts",
-  );
+  const generatedPath = path.join(process.cwd(), "generated", "protocol_data.ts");
   if (!fs.existsSync(generatedPath)) {
     throw new Error(
-      `Generated protocol data not found at ${generatedPath}. ` +
-        `Run: source source_me.sh && python3 pipeline/build_protocol_data.py`,
+      `Generated protocol data not found at ${generatedPath}. ` + `Run: npm run prebuild`,
     );
   }
 
@@ -530,8 +468,7 @@ export async function runWalker(opts) {
 
   const finalScreenshotDir = screenshotDir || `test-results/${protocolName}/`;
   const finalBaseUrl =
-    baseUrl ||
-    `file://${path.resolve(process.cwd(), `dist/${protocolName}.html`)}`;
+    baseUrl || `file://${path.resolve(process.cwd(), `dist/${protocolName}.html`)}`;
 
   ensureScreenshotDir(finalScreenshotDir);
 
@@ -552,10 +489,7 @@ export async function runWalker(opts) {
         verbosity,
       );
     } catch (err) {
-      log(
-        `Could not load protocol from generated data: ${err.message}`,
-        verbosity,
-      );
+      log(`Could not load protocol from generated data: ${err.message}`, verbosity);
       // Continue anyway; the browser might have it
       protocol = null;
     }
@@ -577,9 +511,7 @@ export async function runWalker(opts) {
       });
 
       if (!protocol) {
-        throw new Error(
-          "Protocol config not found in generated data or runtime globals",
-        );
+        throw new Error("Protocol config not found in generated data or runtime globals");
       }
     }
 
@@ -589,9 +521,7 @@ export async function runWalker(opts) {
     );
 
     // Verify entry step
-    const entryStep = protocol.steps.find(
-      (s) => s.step_name === protocol.entry_step,
-    );
+    const entryStep = protocol.steps.find((s) => s.step_name === protocol.entry_step);
     if (!entryStep) {
       throw new Error(`Entry step "${protocol.entry_step}" not found in steps`);
     }
@@ -628,10 +558,7 @@ export async function runWalker(opts) {
       }
     }
 
-    log(
-      `Walker completed successfully: ${stepsWalked}/${protocol.steps.length} steps`,
-      verbosity,
-    );
+    log(`Walker completed successfully: ${stepsWalked}/${protocol.steps.length} steps`, verbosity);
 
     return {
       protocolName,

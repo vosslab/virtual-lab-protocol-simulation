@@ -19,7 +19,7 @@ Converted to inline code blocks with explanatory text.
 - `round3_asset_specs_impact_audit.md` (2 instances at lines 15, 173)
 - `round3_display_width_cm_top10_plan.md` (1 instance at line 41)
 
-**Fix:** Changed `[object_data.ts](../../../generated/object_data.ts)` to `` `object_data.ts` (generated at build time) ``
+**Fix:** Changed ``object_data.ts`` to `` `object_data.ts` (generated at build time) ``
 
 ### 2. Broken links to temporary output directories (3 errors)
 
@@ -46,10 +46,10 @@ the basename, or a valid tail of the target path).
 - `round3_runtime_label_readability.md` (4 instances at lines 13-16)
 
 **Violations:**
-- `[content/base_scenes/bench_basic.yaml:67](...) -> [bench_basic.yaml](...)`
-- `[src/scene_runtime/layout/adapter.ts:203-204](...) -> [adapter.ts](...)`
-- `[src/scene_runtime/layout/layout_engine.ts:633](...) -> [layout_engine.ts](...)`
-- `[src/scene_runtime/render/scene.ts:345-381](...) -> [scene.ts](...)`
+- ``...` -> `...``
+- ``...` -> `...``
+- ``...` -> `...``
+- ``...` -> `...``
 
 **Fix:** Simplified link text to filename only, moved line numbers to parenthetical
 text after the link per Markdown style conventions.

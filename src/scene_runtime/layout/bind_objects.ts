@@ -22,12 +22,10 @@ function resolveLayout(
 ): ResolvedLayoutHint {
   const cm = override.display_width_cm ?? fromObject.display_width_cm;
   const out: ResolvedLayoutHint = {
-    default_width:
-      override.default_width ?? fromObject.default_width ?? defaultWidth,
+    default_width: override.default_width ?? fromObject.default_width ?? defaultWidth,
     label_width: override.label_width ?? fromObject.label_width ?? labelWidth,
     anchor_y: override.anchor_y ?? fromObject.anchor_y ?? "bottom",
-    anchor_y_offset:
-      override.anchor_y_offset ?? fromObject.anchor_y_offset ?? 0,
+    anchor_y_offset: override.anchor_y_offset ?? fromObject.anchor_y_offset ?? 0,
     width_scale: override.width_scale ?? fromObject.width_scale ?? 1.0,
     fudge: override.fudge ?? fromObject.fudge ?? 1.0,
   };

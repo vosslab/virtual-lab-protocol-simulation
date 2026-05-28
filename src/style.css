@@ -1,19 +1,3 @@
-html,
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100%;
-  font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
-  color: #1d2522;
-  background: #f4f1ea;
-}
-
-* {
-  box-sizing: border-box;
-}
-
 /* scene root: primary layout container */
 #scene-root {
   position: relative;
@@ -21,200 +5,6 @@ body {
   height: 100vh;
   overflow: auto;
   background: linear-gradient(180deg, #e8e2d0 0%, #d4cbb3 100%);
-}
-
-#scene-root.launcher {
-  position: static;
-  min-height: 100vh;
-  height: auto;
-  background:
-    linear-gradient(180deg, rgba(244, 241, 234, 0.96), rgba(231, 236, 229, 0.96)),
-    radial-gradient(circle at 18% 0%, rgba(72, 111, 86, 0.16), transparent 32%),
-    #f4f1ea;
-}
-
-.launcher__shell {
-  width: min(1180px, calc(100vw - 40px));
-  margin: 0 auto;
-  padding: 38px 0 56px;
-}
-
-.launcher__header {
-  display: grid;
-  gap: 10px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid rgba(29, 37, 34, 0.16);
-}
-
-.launcher__header h1 {
-  margin: 0;
-  font-size: 34px;
-  line-height: 1.08;
-  font-weight: 760;
-  letter-spacing: 0;
-}
-
-.launcher__header p {
-  margin: 0;
-  max-width: 58ch;
-  color: #4f5a55;
-  font-size: 16px;
-  line-height: 1.5;
-}
-
-.launcher__error {
-  width: fit-content;
-  margin-top: 8px;
-  padding: 10px 12px;
-  border: 1px solid #b94735;
-  border-radius: 6px;
-  color: #7e2418;
-  background: #fff0ec;
-  font-size: 14px;
-  font-weight: 650;
-}
-
-.protocol-section {
-  padding-top: 28px;
-}
-
-.protocol-section h2 {
-  margin: 0 0 14px;
-  color: #26332e;
-  font-size: 18px;
-  line-height: 1.2;
-  font-weight: 720;
-  letter-spacing: 0;
-}
-
-.protocol-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 12px;
-}
-
-.protocol-card {
-  display: grid;
-  grid-template-rows: auto auto 1fr;
-  min-height: 132px;
-  padding: 16px;
-  border: 1px solid rgba(29, 37, 34, 0.16);
-  border-left: 4px solid #2f6f5e;
-  border-radius: 8px;
-  color: inherit;
-  background: rgba(255, 255, 255, 0.86);
-  text-decoration: none;
-  box-shadow: 0 1px 2px rgba(29, 37, 34, 0.06);
-}
-
-.protocol-card:hover,
-.protocol-card:focus-visible {
-  border-color: #2f6f5e;
-  outline: 2px solid rgba(47, 111, 94, 0.28);
-  outline-offset: 2px;
-  background: #ffffff;
-}
-
-.protocol-card__name {
-  font-size: 16px;
-  line-height: 1.25;
-  font-weight: 720;
-}
-
-.protocol-card__meta {
-  margin-top: 8px;
-  color: #2f5e72;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.protocol-card__code {
-  align-self: end;
-  margin-top: 16px;
-  color: #65716c;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-  font-size: 12px;
-  line-height: 1.35;
-  overflow-wrap: anywhere;
-}
-
-#scene-root.scene-page {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  overflow: hidden;
-  background: #f6f7f4;
-}
-
-.scene-toolbar {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 16px;
-  min-height: 56px;
-  padding: 10px 16px;
-  border-bottom: 1px solid rgba(29, 37, 34, 0.16);
-  background: #ffffff;
-}
-
-.scene-toolbar__back {
-  padding: 8px 10px;
-  border: 1px solid rgba(29, 37, 34, 0.18);
-  border-radius: 6px;
-  color: #1f4f44;
-  text-decoration: none;
-  font-size: 14px;
-  font-weight: 700;
-}
-
-.scene-toolbar__back:hover,
-.scene-toolbar__back:focus-visible {
-  border-color: #2f6f5e;
-  outline: 2px solid rgba(47, 111, 94, 0.24);
-  outline-offset: 2px;
-}
-
-.scene-toolbar__title {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 16px;
-  font-weight: 760;
-}
-
-.scene-toolbar__meta {
-  color: #5c6963;
-  font-size: 13px;
-  font-weight: 700;
-}
-
-#active-scene {
-  position: relative;
-  min-height: 0;
-  overflow: auto;
-  background: linear-gradient(180deg, #e8e2d0 0%, #d4cbb3 100%);
-}
-
-.scene-unavailable {
-  width: min(620px, calc(100vw - 32px));
-  margin: 56px auto;
-  padding: 20px;
-  border: 1px solid rgba(139, 83, 38, 0.28);
-  border-radius: 8px;
-  background: #fff8ec;
-}
-
-.scene-unavailable h2 {
-  margin: 0 0 8px;
-  color: #603c15;
-  font-size: 20px;
-  line-height: 1.2;
-}
-
-.scene-unavailable p {
-  margin: 0;
-  color: #765527;
-  line-height: 1.5;
 }
 
 /* zone: grouping container for placement items within a zone */
@@ -260,26 +50,316 @@ body {
   pointer-events: none;
 }
 
-@media (max-width: 680px) {
-  .launcher__shell {
-    width: min(100vw - 24px, 1180px);
-    padding-top: 26px;
-  }
+/*============================================
+  Launcher shell styles
+  Scoped under .launcher-root. These rules must not target scene
+  internals (.scene, [data-item-id], SVG elements) per
+  docs/specs/INTERFACE_VOCABULARY.md.
+============================================*/
 
-  .launcher__header h1 {
-    font-size: 28px;
-  }
+.launcher-root {
+  font-family:
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    sans-serif;
+  color: #1f2933;
+  background:
+    linear-gradient(180deg, #f7f9fb 0%, #eef2f6 100%);
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
-  .protocol-grid {
-    grid-template-columns: 1fr;
-  }
+.launcher-root *,
+.launcher-root *::before,
+.launcher-root *::after {
+  box-sizing: border-box;
+}
 
-  .scene-toolbar {
-    grid-template-columns: 1fr;
-    gap: 8px;
-  }
+.launcher-header {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 48px 24px 16px 24px;
+}
 
-  .scene-toolbar__title {
-    white-space: normal;
-  }
+.launcher-title {
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin: 0 0 8px 0;
+  color: #102a43;
+}
+
+.launcher-subtitle {
+  font-size: 1rem;
+  color: #627d98;
+  margin: 0;
+}
+
+.launcher-main {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 24px 64px 24px;
+}
+
+.cluster-section {
+  margin-bottom: 40px;
+}
+
+.cluster-section:last-child {
+  margin-bottom: 0;
+}
+
+.cluster-heading {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #243b53;
+  margin: 0 0 16px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #d9e2ec;
+}
+
+.protocol-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.protocol-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #ffffff;
+  border: 1px solid #d9e2ec;
+  border-radius: 8px;
+  padding: 16px 18px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition:
+    transform 120ms ease-out,
+    box-shadow 120ms ease-out,
+    border-color 120ms ease-out;
+}
+
+.protocol-card:hover {
+  transform: translateY(-2px);
+  border-color: #486581;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+.protocol-card:focus-visible {
+  outline: 3px solid #334e68;
+  outline-offset: 2px;
+}
+
+.protocol-card-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.protocol-card-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #102a43;
+  line-height: 1.3;
+}
+
+.protocol-card-id {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    "SF Mono",
+    Menlo,
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 0.72rem;
+  color: #829ab1;
+  background: #f0f4f8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  align-self: flex-start;
+  letter-spacing: 0.01em;
+}
+
+.protocol-card-hook {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #486581;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/*============================================
+  Tier 1: Full protocols (sequence runners)
+  Tier 2: Mini-protocols (grouped by cluster)
+============================================*/
+
+.launcher-tier {
+  margin-bottom: 48px;
+}
+
+.launcher-tier:last-child {
+  margin-bottom: 0;
+}
+
+.tier-heading {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #102a43;
+  margin: 0 0 20px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #bcccdc;
+  letter-spacing: -0.01em;
+}
+
+.launcher-tier-runners .tier-heading {
+  border-bottom-color: #b7791f;
+}
+
+/* Sequence-runner card grid: larger minimum width to make them prominent. */
+.protocol-card-grid-runners {
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 20px;
+}
+
+/*============================================
+  Step count + estimated time badges
+============================================*/
+
+.protocol-card-meta {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.protocol-card-steps,
+.protocol-card-eta {
+  font-family:
+    ui-monospace,
+    SFMono-Regular,
+    "SF Mono",
+    Menlo,
+    Consolas,
+    "Liberation Mono",
+    monospace;
+  font-size: 0.72rem;
+  color: #627d98;
+  background: #f0f4f8;
+  padding: 2px 6px;
+  border-radius: 4px;
+  letter-spacing: 0.01em;
+}
+
+/*============================================
+  Sequence runner card treatment
+  Gold accent, larger title, thicker left border.
+============================================*/
+
+.protocol-card[data-protocol-type="sequence_runner"] {
+  border-left: 4px solid #b7791f;
+  padding: 20px 22px;
+  background: linear-gradient(180deg, #fffaf0 0%, #ffffff 100%);
+}
+
+.protocol-card[data-protocol-type="sequence_runner"]:hover {
+  border-color: #b7791f;
+  box-shadow: 0 4px 12px rgba(183, 121, 31, 0.18);
+}
+
+.protocol-card[data-protocol-type="sequence_runner"] .protocol-card-title {
+  font-size: 1.25rem;
+  color: #744210;
+}
+
+.protocol-card[data-protocol-type="sequence_runner"] .protocol-card-steps {
+  background: #fef3c7;
+  color: #744210;
+}
+
+/*============================================
+  Cluster accent colors (mini-protocol cards)
+  Pulled from a small muted palette. Default slate covers
+  any unmapped cluster.
+============================================*/
+
+/* Default fallback for any cluster not in the palette below. */
+.cluster-section .protocol-card {
+  border-left: 4px solid #4a5568;
+}
+
+.cluster-section .cluster-heading {
+  border-bottom: 1px solid #d9e2ec;
+}
+
+/* cell_culture: muted teal */
+.cluster-section[data-cluster="cell_culture"] .protocol-card {
+  border-left-color: #2c7a7b;
+}
+.cluster-section[data-cluster="cell_culture"] .cluster-heading {
+  border-bottom-color: #2c7a7b;
+}
+.cluster-section[data-cluster="cell_culture"] .protocol-card:hover {
+  box-shadow: 0 4px 12px rgba(44, 122, 123, 0.18);
+}
+
+/* sdspage: muted indigo */
+.cluster-section[data-cluster="sdspage"] .protocol-card {
+  border-left-color: #4c51bf;
+}
+.cluster-section[data-cluster="sdspage"] .cluster-heading {
+  border-bottom-color: #4c51bf;
+}
+.cluster-section[data-cluster="sdspage"] .protocol-card:hover {
+  box-shadow: 0 4px 12px rgba(76, 81, 191, 0.18);
+}
+
+/* routine_passage: muted olive */
+.cluster-section[data-cluster="routine_passage"] .protocol-card {
+  border-left-color: #6b7c32;
+}
+.cluster-section[data-cluster="routine_passage"] .cluster-heading {
+  border-bottom-color: #6b7c32;
+}
+.cluster-section[data-cluster="routine_passage"] .protocol-card:hover {
+  box-shadow: 0 4px 12px rgba(107, 124, 50, 0.18);
+}
+
+/* drug_treatment + plate_drug_treatment: muted plum */
+.cluster-section[data-cluster="drug_treatment"] .protocol-card,
+.cluster-section[data-cluster="plate_drug_treatment"] .protocol-card {
+  border-left-color: #805ad5;
+}
+.cluster-section[data-cluster="drug_treatment"] .cluster-heading,
+.cluster-section[data-cluster="plate_drug_treatment"] .cluster-heading {
+  border-bottom-color: #805ad5;
+}
+.cluster-section[data-cluster="drug_treatment"] .protocol-card:hover,
+.cluster-section[data-cluster="plate_drug_treatment"] .protocol-card:hover {
+  box-shadow: 0 4px 12px rgba(128, 90, 213, 0.18);
+}
+
+/* mtt: muted rust */
+.cluster-section[data-cluster="mtt"] .protocol-card {
+  border-left-color: #c05621;
+}
+.cluster-section[data-cluster="mtt"] .cluster-heading {
+  border-bottom-color: #c05621;
+}
+.cluster-section[data-cluster="mtt"] .protocol-card:hover {
+  box-shadow: 0 4px 12px rgba(192, 86, 33, 0.18);
 }

@@ -169,9 +169,7 @@ function registerEventListeners() {
   });
 
   // Export button
-  document
-    .getElementById("export-btn")
-    .addEventListener("click", exportDecisions);
+  document.getElementById("export-btn").addEventListener("click", exportDecisions);
 
   // Keyboard help
   document.getElementById("keyboard-help-btn").addEventListener("click", () => {
@@ -320,9 +318,7 @@ function renderLeftPane() {
         itemDiv.classList.add("multi-selected");
       }
 
-      const status = decision
-        ? `[${decision.state.toUpperCase().substring(0, 1)}]`
-        : "[ ]";
+      const status = decision ? `[${decision.state.toUpperCase().substring(0, 1)}]` : "[ ]";
       itemDiv.innerHTML = `
 				<div>${t.asset_name}</div>
 				<div class="target-status">${status}</div>
@@ -473,9 +469,7 @@ function renderMiddlePane() {
     const btn3 = document.createElement("button");
     btn3.textContent = `Ignore all ${state.multiSelect.size} (shared reason)`;
     btn3.addEventListener("click", () => {
-      const reason = window.prompt(
-        "Enter reason for ignoring all selected targets:",
-      );
+      const reason = window.prompt("Enter reason for ignoring all selected targets:");
       if (reason && reason.trim()) {
         for (const assetName of state.multiSelect) {
           state.decisions.set(assetName, {
@@ -550,11 +544,7 @@ function renderCandidateGrid(target) {
     }
 
     const decision = state.decisions.get(target.asset_name);
-    if (
-      decision &&
-      decision.state === "assigned" &&
-      decision.candidate_id === cand.candidate_id
-    ) {
+    if (decision && decision.state === "assigned" && decision.candidate_id === cand.candidate_id) {
       tile.classList.add("selected");
     }
 
@@ -575,8 +565,7 @@ function renderCandidateGrid(target) {
     img.alt = candData.filename;
     img.onerror = () => {
       imgContainer.style.background = "var(--color-gray)";
-      imgContainer.innerHTML =
-        '<span style="color: white; font-size: 10px;">Not found</span>';
+      imgContainer.innerHTML = '<span style="color: white; font-size: 10px;">Not found</span>';
     };
 
     imgContainer.appendChild(img);
@@ -594,9 +583,7 @@ function renderCandidateGrid(target) {
     // Optional subtitle: bioicons category (or scienceicons / repo source).
     const subtitleText =
       candData.category ||
-      (candData.source_repo === "OTHER_REPOS/scienceicons"
-        ? "scienceicons"
-        : "") ||
+      (candData.source_repo === "OTHER_REPOS/scienceicons" ? "scienceicons" : "") ||
       (candData.source_repo === "assets/equipment" ? "repo" : "");
     if (subtitleText) {
       const subtitleDiv = document.createElement("div");
@@ -813,10 +800,7 @@ function assignCurrentCandidate() {
   if (!target) return;
 
   const candidates = getVisibleCandidates(target);
-  if (
-    state.selectedCandidateIndex < 0 ||
-    state.selectedCandidateIndex >= candidates.length
-  ) {
+  if (state.selectedCandidateIndex < 0 || state.selectedCandidateIndex >= candidates.length) {
     return;
   }
 
@@ -875,10 +859,7 @@ function hideCandidate() {
   if (!target) return;
 
   const candidates = getVisibleCandidates(target);
-  if (
-    state.selectedCandidateIndex < 0 ||
-    state.selectedCandidateIndex >= candidates.length
-  ) {
+  if (state.selectedCandidateIndex < 0 || state.selectedCandidateIndex >= candidates.length) {
     return;
   }
 
@@ -907,17 +888,12 @@ function hideCandidateForFamily() {
   if (!target) return;
 
   const candidates = getVisibleCandidates(target);
-  if (
-    state.selectedCandidateIndex < 0 ||
-    state.selectedCandidateIndex >= candidates.length
-  ) {
+  if (state.selectedCandidateIndex < 0 || state.selectedCandidateIndex >= candidates.length) {
     return;
   }
 
   const cand = candidates[state.selectedCandidateIndex];
-  const familyTargets = state.targets.filter(
-    (t) => t.state_family === target.state_family,
-  );
+  const familyTargets = state.targets.filter((t) => t.state_family === target.state_family);
 
   for (const t of familyTargets) {
     const decision = state.decisions.get(t.asset_name) || {
@@ -953,9 +929,7 @@ function computeMatchLabel(cand) {
 
   // Servier badge wins over score-derived labels: theme consistency trumps
   // token overlap because Servier icons render uniformly across scenes.
-  const candData = cand.candidate_id
-    ? state.candidatesById[cand.candidate_id]
-    : null;
+  const candData = cand.candidate_id ? state.candidatesById[cand.candidate_id] : null;
   if (candData && candData.rel_path.includes("/Servier/")) {
     return { text: "Servier", class: "strong" };
   }
@@ -994,10 +968,7 @@ function updateProgressCounters() {
   document.getElementById("counter-assigned").textContent = assigned;
   document.getElementById("counter-deferred").textContent = deferred;
   document.getElementById("counter-ignored").textContent = ignored;
-  document.getElementById("counter-remaining").textContent = Math.max(
-    0,
-    remaining,
-  );
+  document.getElementById("counter-remaining").textContent = Math.max(0, remaining);
 }
 
 function updateFilterChips() {

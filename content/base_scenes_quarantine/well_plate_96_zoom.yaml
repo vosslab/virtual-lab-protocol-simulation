@@ -3,7 +3,6 @@
 # Spike fixture mirror. Remove together with tests/content/dev_smoke/well_plate_96_zoom_check/.
 # Scene manifest for the NEW1 integration spike.
 # Schema: docs/active_plans/new1_css_native_layout_integration_plan.md, section 4.
-# Source of placement truth: experiments/css_native_layout/templates/well_plate_96_zoom.html.
 # Closed schema. No coordinate fields. Authors compose existing terms only.
 
 scene_name: well_plate_96_zoom_check_scene

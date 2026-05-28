@@ -35,15 +35,19 @@ export interface Bounds {
 export type SceneBoundsRect = Bounds;
 
 //============================================
-// Background discriminated union. M2b supports gradient only.
+// Background discriminated union. Supports gradient (M2b) and asset forms.
 //============================================
 
-export type Background = {
-  type: "gradient";
-  from: string;
-  to: string;
-  angle?: number;
-};
+export type Background =
+  | {
+      type: "gradient";
+      from: string;
+      to: string;
+      angle?: number;
+    }
+  | {
+      asset: string;
+    };
 
 export interface Zone {
   id: string;

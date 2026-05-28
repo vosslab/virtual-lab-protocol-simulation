@@ -363,7 +363,7 @@ object YAML. This is the closed six-capability set.
 
 ## Validation rules
 
-The validator in [../../pipeline/build_scene_data.py](../../pipeline/build_scene_data.py)
+The validator in [../../pipeline/gen_scene_index.py](../../pipeline/gen_scene_index.py)
 enforces these rules against the fused format:
 
 - The YAML root must be a mapping.

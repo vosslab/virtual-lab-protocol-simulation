@@ -14,7 +14,7 @@ import {
   DEPTH_SCALE,
   groupByZone,
   horizontalLayout,
-  layoutLabels,
+  layoutLabels as _layoutLabels,
   LAYOUT_SHRINK_FACTOR,
   MAX_LAYOUT_PASSES,
   normalizeSchema,
@@ -215,14 +215,9 @@ test("scaleToRealWorld: cm_model formula matches SCALING_MODEL.md", () => {
   const scaled = scaleToRealWorld(bound, "bench", {}, diags);
 
   const pxPerCm = WORKSPACE_PX_PER_CM.bench;
-  const rack = scaled.find(
-    (p) => p.placement_name === "rear_left_eppendorf_rack",
-  );
+  const rack = scaled.find((p) => p.placement_name === "rear_left_eppendorf_rack");
   const expected = (12 * pxPerCm) / (13 * PX_PER_SCENE_PERCENT);
-  assert.ok(
-    Math.abs(rack._width_scale - expected) < 0.001,
-    `rack got ${rack._width_scale}`,
-  );
+  assert.ok(Math.abs(rack._width_scale - expected) < 0.001, `rack got ${rack._width_scale}`);
   assert.equal(rack._scale_source, "cm_model");
 
   const heat = scaled.find((p) => p.placement_name === "center_heat_block");
@@ -238,12 +233,7 @@ test("scaleToRealWorld: unknown workspace falls back to authored width_scale + e
     DEMO_ASSET_SPECS,
     diags,
   );
-  const scaled = scaleToRealWorld(
-    bound,
-    "incubator",
-    { workspacePxPerCm: { bench: 3.2 } },
-    diags,
-  );
+  const scaled = scaleToRealWorld(bound, "incubator", { workspacePxPerCm: { bench: 3.2 } }, diags);
   assert.equal(scaled[0]._scale_source, "fallback_no_workspace");
   assert.ok(diags.some((d) => d.kind === "unknown_workspace"));
 });
@@ -270,12 +260,7 @@ test("groupByZone: sorts by depth_tier ASC, then placement_name", () => {
       depth_tier: 1,
     },
   ];
-  const bound = bindObjects(
-    placements,
-    DEMO_OBJECT_LIBRARY,
-    DEMO_ASSET_SPECS,
-    [],
-  );
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
   const grouped = groupByZone(scaled, [
     { id: "w", bounds: { left: 0, right: 100, top: 0, bottom: 100 } },
@@ -295,12 +280,7 @@ test("groupByZone: unknown zone -> orphan + diagnostic", () => {
       zone: "missing_zone",
     },
   ];
-  const bound = bindObjects(
-    placements,
-    DEMO_OBJECT_LIBRARY,
-    DEMO_ASSET_SPECS,
-    [],
-  );
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
   const grouped = groupByZone(
     scaled,
@@ -321,12 +301,7 @@ test("horizontalLayout: center alignment positions a single item at zone midpoin
       depth_tier: 1,
     },
   ];
-  const bound = bindObjects(
-    placements,
-    DEMO_OBJECT_LIBRARY,
-    DEMO_ASSET_SPECS,
-    [],
-  );
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
   const grouped = groupByZone(scaled, [
     {
@@ -359,12 +334,7 @@ test("verticalLayout: square aspect renders square at 1920x1080", () => {
       depth_tier: 1,
     },
   ];
-  const bound = bindObjects(
-    placements,
-    DEMO_OBJECT_LIBRARY,
-    DEMO_ASSET_SPECS,
-    [],
-  );
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   bound[0].aspect = 1.0;
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
   const zones = [
@@ -392,12 +362,7 @@ test("verticalLayout: bottom anchor places _top above baseline by heightPct", ()
       depth_tier: 1,
     },
   ];
-  const bound = bindObjects(
-    placements,
-    DEMO_OBJECT_LIBRARY,
-    DEMO_ASSET_SPECS,
-    [],
-  );
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
   const scaled = scaleToRealWorld(bound, "bench", {}, []);
   const zones = [
     {
@@ -460,9 +425,7 @@ test("clampSceneBounds: zone group with item past right shifts left", () => {
     },
   ];
   const diags = [];
-  const zones = [
-    { id: "w", bounds: { left: 0, right: 100, top: 0, bottom: 100 } },
-  ];
+  const zones = [{ id: "w", bounds: { left: 0, right: 100, top: 0, bottom: 100 } }];
   const out = clampSceneBounds(
     new Map([["w", items]]),
     zones,
@@ -486,36 +449,20 @@ test("runPipeline: heat_block_bench fixture converges in 1 pass, no diagnostics"
 
 test("runPipeline: _width_scale fixture values match spec §7", () => {
   const result = runHeatBlock();
-  const byName = new Map(
-    result.stages.scaled.map((p) => [p.placement_name, p]),
-  );
+  const byName = new Map(result.stages.scaled.map((p) => [p.placement_name, p]));
   const pxPerCm = WORKSPACE_PX_PER_CM.bench;
   const rack = byName.get("rear_left_eppendorf_rack");
   const heat = byName.get("center_heat_block");
   const ladder = byName.get("rear_right_protein_ladder");
-  assert.ok(
-    Math.abs(rack._width_scale - (12 * pxPerCm) / (13 * PX_PER_SCENE_PERCENT)) <
-      0.001,
-  );
-  assert.ok(
-    Math.abs(heat._width_scale - (25 * pxPerCm) / (18 * PX_PER_SCENE_PERCENT)) <
-      0.001,
-  );
-  assert.ok(
-    Math.abs(ladder._width_scale - (3 * pxPerCm) / (4 * PX_PER_SCENE_PERCENT)) <
-      0.001,
-  );
+  assert.ok(Math.abs(rack._width_scale - (12 * pxPerCm) / (13 * PX_PER_SCENE_PERCENT)) < 0.001);
+  assert.ok(Math.abs(heat._width_scale - (25 * pxPerCm) / (18 * PX_PER_SCENE_PERCENT)) < 0.001);
+  assert.ok(Math.abs(ladder._width_scale - (3 * pxPerCm) / (4 * PX_PER_SCENE_PERCENT)) < 0.001);
 });
 
 test("runPipeline: heat_block fixture _x and _height match Stage 7/8 math", () => {
   const result = runHeatBlock();
-  const heat = result.final.find(
-    (p) => p.placement_name === "center_heat_block",
-  );
-  assert.ok(
-    Math.abs(heat._x - 50) < 0.1,
-    `heat_block centered at _x=${heat._x}`,
-  );
+  const heat = result.final.find((p) => p.placement_name === "center_heat_block");
+  assert.ok(Math.abs(heat._x - 50) < 0.1, `heat_block centered at _x=${heat._x}`);
   const expectedHeight = (heat._visualWidth * (1920 / 1080)) / 1.35;
   assert.ok(Math.abs(heat._height - expectedHeight) < 0.001);
 });
@@ -546,22 +493,12 @@ test("runPipeline: convergence loop shrinks _width_scale on overflow", () => {
     assets: DEMO_ASSET_SPECS,
   });
   // Expect either multiple passes with shrinking, OR max_iterations_reached.
-  const shrunkSomewhere = result.passes.some((p) =>
-    p.zones_shrunk.includes("tight"),
-  );
-  const reachedMax = result.diagnostics.some(
-    (d) => d.kind === "max_iterations_reached",
-  );
-  assert.ok(
-    shrunkSomewhere || reachedMax,
-    "expected shrink or max_iterations_reached",
-  );
+  const shrunkSomewhere = result.passes.some((p) => p.zones_shrunk.includes("tight"));
+  const reachedMax = result.diagnostics.some((d) => d.kind === "max_iterations_reached");
+  assert.ok(shrunkSomewhere || reachedMax, "expected shrink or max_iterations_reached");
   // _width_scale on at least one placement should be <= cm-derived value.
-  const cmDerived =
-    (25 * WORKSPACE_PX_PER_CM.bench) / (18 * PX_PER_SCENE_PERCENT);
-  const minObserved = Math.min(
-    ...result.stages.scaled.map((p) => p._width_scale),
-  );
+  const cmDerived = (25 * WORKSPACE_PX_PER_CM.bench) / (18 * PX_PER_SCENE_PERCENT);
+  const minObserved = Math.min(...result.stages.scaled.map((p) => p._width_scale));
   if (shrunkSomewhere) {
     assert.ok(
       minObserved < cmDerived,

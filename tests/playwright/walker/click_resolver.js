@@ -130,8 +130,7 @@ export async function resolveAndClick(page, target) {
     errorMsg += `\n  display: ${bestVisibility.display}, visibility: ${bestVisibility.visibility}`;
     errorMsg += `\n  pointer-events: ${bestVisibility.pointerEvents}, size: ${bestVisibility.width}x${bestVisibility.height}`;
   } else {
-    errorMsg +=
-      "\nNo matching selector found for any of: " + selectors.join(", ");
+    errorMsg += "\nNo matching selector found for any of: " + selectors.join(", ");
   }
   throw new ClickResolutionError(errorMsg);
 }

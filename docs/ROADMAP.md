@@ -1,6 +1,163 @@
 # Roadmap
 
-<!-- Verified current: 2026-05-09 (scene migration closeout: Plans A/B/C complete; responsibility-seam decomposition closed; bench_config/hood_config retired; layout_engine.ts split promoted as next deferred item) -->
+
+Completed: Solid shell vertical slice
+
+A first Solid-based protocol shell vertical slice is complete.
+
+The current green proof is sdspage_heat_denature_samples:
+
+* Launcher renders student-visible protocols.
+* Protocol host opens from launcher.
+* Per-protocol scene YAML is indexed.
+* Scene renders.
+* HUD shows prompt and progress.
+* Runtime advances through visible object clicks.
+* Protocol reaches terminal completion.
+* Screenshots are captured during the Playwright walker.
+* ?shell=off confirms the runtime is not shell-dependent.
+* npm run check passes.
+* M4 Playwright specs pass headless.
+
+This milestone proves the shell / runtime / scene / walker path can work end-to-end for a click-only protocol.
+
+Next milestone: Complete the shell UI surface
+
+Goal: turn the current bare-bones shell into the reusable protocol shell.
+
+Scope:
+
+* Inventory / tool tray
+* Interaction modal
+* Feedback toast
+* Professor / help overlay
+* Results screen
+* Basic shell styling
+* Keyboard accessibility for all shell controls
+* Shell CSS isolation from scene internals
+
+Completion criteria:
+
+* Shell components are mounted through the protocol host.
+* Each shell component has stable test selectors.
+* Keyboard access works for tray and modals.
+* Modal focus behavior is correct.
+* Shell components do not mutate protocol state directly.
+* Shell CSS does not target renderer-owned scene elements.
+
+Next milestone: Add adjust gesture support
+
+Goal: support real lab protocol interactions that require setting values, not just clicking objects.
+
+Initial target: mtt_reagent_prep.
+
+Scope:
+
+* Define visible affordance for adjust.
+* Support value input for pipette volume and similar set-points.
+* Emit typed runtime event with target, gesture, and value.
+* Validate through existing validator system.
+* Add Playwright proof for an adjust protocol.
+
+Completion criteria:
+
+* A protocol with adjust completes through visible UI.
+* Walker does not use hidden controls.
+* Screenshots show the value-setting interaction.
+* Runtime, not shell, remains authoritative for validation and step progression.
+
+Next milestone: Expand pilot coverage
+
+Goal: prove the shell across more than one simple click-only protocol.
+
+Pilot selection should cover:
+
+* HUD
+* Tray
+* Feedback
+* Modal or help overlay
+* At least one protocol with adjust
+
+Candidate protocols:
+
+* sdspage_heat_denature_samples as current green baseline.
+* mtt_reagent_prep after adjust support.
+* mtt_solubilization_readout if modal or readout flow coverage is needed.
+* open_plate_workspace if a simpler click-only comparison is needed.
+
+Completion criteria:
+
+* At least two protocols complete through visible UI.
+* At least one protocol exercises more than HUD and basic clicking.
+* Walker evidence is stored under tests/playwright/artifacts/<protocol_name>/.
+
+Next milestone: Scene integrity and scene YAML hardening
+
+Goal: make scene YAML reliable enough that protocol authors can use it without hidden layout failures.
+
+Scope:
+
+* Scene lint coverage for per-protocol scenes.
+* Fix layout drift in flagged scenes.
+* Confirm scientific assets are not cropped or aspect-distorted.
+* Replace neutral background placeholders with real asset rendering.
+* Keep asset integrity tests running with shell mounted.
+
+Completion criteria:
+
+* Flagged scenes pass scene-integrity checks.
+* Background assets render correctly.
+* Scene lint catches common scene YAML failures before browser tests.
+* Shell chrome does not alter scene layout or crop assets.
+
+Next milestone: Protocol content cleanup
+
+Goal: reduce broken and ambiguous protocol references before scaling protocol coverage.
+
+Scope:
+
+* Resolve 6 unresolved protocol targets.
+* Review ambiguous target mappings.
+* Review intentional fanouts.
+* Confirm protocol object references match scene object names.
+* Add or improve audits so these issues stay caught.
+
+Completion criteria:
+
+* No unresolved targets in student-visible protocols.
+* Ambiguous mappings are either fixed or explicitly documented as intentional.
+* Fanout behavior is walker-safe and visible.
+
+Next milestone: Codegen pipeline consolidation
+
+Goal: keep one canonical codegen path.
+
+Scope:
+
+* Archive scripts marked SAFE_TO_ARCHIVE.
+* Decide build_new_scene_data.py.
+* Decide build_protocol_html.py.
+* Keep generated artifacts deterministic.
+* Ensure docs match package.json and actual build scripts.
+
+Completion criteria:
+
+* One canonical pipeline path is documented.
+* Dead pipeline scripts are archived by the human via git mv.
+* docs/FILE_STRUCTURE.md and build scripts agree.
+* Build and generated protocol / scene artifacts are reproducible.
+
+Longer-term roadmap
+
+* Add richer lab gestures beyond click and adjust as needed.
+* Add results screen and scoring display.
+* Add better shell styling once functional coverage is stable.
+* Expand protocol library coverage.
+* Add optional debug panel for protocol state snapshots.
+* Improve authoring diagnostics for protocol / scene mismatches.
+* Add full accessibility review after core shell surfaces are complete.
+* Consider mobile / touch support only after desktop protocol flow is stable.
+
 
 Planned features and improvements for the cell culture simulation game.
 

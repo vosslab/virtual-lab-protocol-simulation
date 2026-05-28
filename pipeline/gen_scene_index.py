@@ -1,34 +1,38 @@
 #!/usr/bin/env python3
 """
-Codegen for scene index from content/base_scenes/*.yaml.
+Codegen for scene index from content/base_scenes/*.yaml and content/protocols/*/scenes/*.yaml.
 
 Reads scene YAML files, validates against closed scene schema, and emits
 generated/scenes.ts with typed SCENES export for the renderer.
 
+Base scenes are emitted with their scene_name as key.
+Per-protocol scenes are ingested, inheritance is resolved, and they are emitted
+with composite key <protocol_name>_<scene_basename>.
+
 Validation:
 - background.type is "gradient" and from/to parse as hex
-- every zone_name is unique within the scene
+- every zone id is unique within the scene
 - every placement.zone resolves to a declared zone
 - every placement.object_name resolves to an object (cross-checked against
   generated/object_library.ts or content/objects/**/*.yaml)
 - for Schema B scenes, every row_name is in WORKSPACE_ROW_LIBRARY
+- per-protocol scenes: extends chain resolves to an existing base scene
 
 Output: generated/scenes.ts with SCENE_ALLOWLIST, SCENES_SKIPPED,
-SCENES_SKIPPED_FILES, and SCENES exports.
+SCENES_SKIPPED_FILES, and SCENES exports. Includes both base and per-protocol scenes.
 """
 
+# Standard Library
 import os
-import sys
 import re
 import subprocess
-
-import yaml
-
-# Standard Library
+import sys
 
 # PIP3 modules
+import yaml  # pyyaml
 
 # local repo modules
+import scene_inheritance
 
 
 #============================================
@@ -71,16 +75,14 @@ def collect_object_names(repo_root: str) -> set:
 		for file in files:
 			if file.endswith(".yaml"):
 				abs_path = os.path.join(root, file)
-				try:
-					with open(abs_path, "r") as f:
-						data = yaml.safe_load(f)
-					if data and isinstance(data, dict):
-						object_name = data.get("object_name")
-						if object_name:
-							object_names.add(object_name)
-				except Exception:
-					# Silently skip objects that fail to parse
-					pass
+				with open(abs_path, "r") as f:
+					data = yaml.safe_load(f)
+				if not isinstance(data, dict):
+					raise ValueError(
+						f"Object YAML must be a mapping at top level: {abs_path}"
+					)
+				object_name = data["object_name"]
+				object_names.add(object_name)
 
 	return object_names
 
@@ -141,6 +143,70 @@ def read_workspace_row_library(repo_root: str) -> dict:
 
 #============================================
 
+def discover_per_protocol_scenes(repo_root: str) -> dict:
+	"""
+	Discover all per-protocol scene YAML files under content/protocols/*/scenes/.
+
+	Returns a dict mapping composite_key -> (protocol_name, scene_basename, yaml_path).
+	Composite key format: <protocol_name>_<scene_basename>
+
+	Args:
+		repo_root: Repository root path.
+
+	Returns:
+		Dict mapping composite_key -> (protocol_name, scene_basename, yaml_path).
+	"""
+	protocol_scenes = {}
+	protocols_dir = os.path.join(repo_root, "content", "protocols")
+
+	if not os.path.isdir(protocols_dir):
+		return protocol_scenes
+
+	# Walk through each cluster/protocol_name/scenes/ directory
+	for cluster_dir in os.listdir(protocols_dir):
+		cluster_path = os.path.join(protocols_dir, cluster_dir)
+		if not os.path.isdir(cluster_path):
+			continue
+
+		for protocol_name in os.listdir(cluster_path):
+			protocol_path = os.path.join(cluster_path, protocol_name)
+			scenes_dir = os.path.join(protocol_path, "scenes")
+
+			if not os.path.isdir(scenes_dir):
+				continue
+
+			for file in os.listdir(scenes_dir):
+				if file.endswith(".yaml"):
+					scene_basename = file.replace(".yaml", "")
+					yaml_path = os.path.join(scenes_dir, file)
+
+					# Key by the YAML's scene_name field so the runtime key
+					# matches SceneChange.to_scene values exactly. Authors
+					# already namespace scene_name with the protocol prefix.
+					with open(yaml_path, "r") as f:
+						data = yaml.safe_load(f)
+					if not isinstance(data, dict):
+						raise ValueError(
+							f"Per-protocol scene YAML must be a dict: {yaml_path}"
+						)
+					scene_name_field = data["scene_name"]
+					if not scene_name_field or not isinstance(scene_name_field, str):
+						raise ValueError(
+							f"Missing or non-string scene_name in {yaml_path}"
+						)
+					composite_key = scene_name_field
+
+					protocol_scenes[composite_key] = (
+						protocol_name,
+						scene_basename,
+						yaml_path,
+					)
+
+	return protocol_scenes
+
+
+#============================================
+
 def process_scene_yaml(
 	yaml_path: str,
 	object_names: set,
@@ -166,11 +232,11 @@ def process_scene_yaml(
 	# Validate required fields
 	scene_name = data["scene_name"]
 	if not scene_name:
-		raise ValueError(f"Empty scene_name: {yaml_path}")
+		raise ValueError(f"Missing scene_name: {yaml_path}")
 
 	workspace = data["workspace"]
 	if not workspace:
-		raise ValueError(f"Empty workspace: {yaml_path}")
+		raise ValueError(f"Missing workspace: {yaml_path}")
 
 	# Validate background if present
 	background = data.get("background")
@@ -182,8 +248,8 @@ def process_scene_yaml(
 				pass
 			elif bg_type == "gradient":
 				# Validate gradient colors
-				from_color = background.get("from")
-				to_color = background.get("to")
+				from_color = background["from"]
+				to_color = background["to"]
 
 				if not from_color or not parse_hex_color(from_color):
 					raise ValueError(
@@ -202,18 +268,18 @@ def process_scene_yaml(
 		if not isinstance(zones, list):
 			raise ValueError(f"zones must be a list: {yaml_path}")
 
-		zone_names = set()
+		zone_ids = set()
 		for zone in zones:
-			zone_name = zone["zone_name"]
-			if not zone_name:
-				raise ValueError(f"Zone empty zone_name: {yaml_path}")
+			zone_id = zone["zone_name"]
+			if not zone_id:
+				raise ValueError(f"Zone missing zone_name: {yaml_path}")
 
-			if zone_name in zone_names:
+			if zone_id in zone_ids:
 				raise ValueError(
-					f"Duplicate zone_name '{zone_name}': {yaml_path}"
+					f"Duplicate zone_name '{zone_id}': {yaml_path}"
 				)
 
-			zone_names.add(zone_name)
+			zone_ids.add(zone_id)
 
 		# Validate placements reference existing zones and objects
 		placements = data.get("placements", [])
@@ -223,12 +289,12 @@ def process_scene_yaml(
 		for placement in placements:
 			placement_name = placement["placement_name"]
 			if not placement_name:
-				raise ValueError(f"Placement empty placement_name: {yaml_path}")
+				raise ValueError(f"Placement missing placement_name: {yaml_path}")
 
 			object_name = placement["object_name"]
 			if not object_name:
 				raise ValueError(
-					f"Placement '{placement_name}' empty object_name: {yaml_path}"
+					f"Placement '{placement_name}' missing object_name: {yaml_path}"
 				)
 
 			if object_name not in object_names:
@@ -240,10 +306,10 @@ def process_scene_yaml(
 			zone = placement["zone"]
 			if not zone:
 				raise ValueError(
-					f"Placement '{placement_name}' empty zone: {yaml_path}"
+					f"Placement '{placement_name}' missing zone: {yaml_path}"
 				)
 
-			if zone not in zone_names:
+			if zone not in zone_ids:
 				raise ValueError(
 					f"Placement '{placement_name}' references unknown zone "
 					f"'{zone}': {yaml_path}"
@@ -264,7 +330,7 @@ def process_scene_yaml(
 		valid_row_names = set(workspace_rows[workspace])
 
 		for row in rows:
-			row_name = row.get("row_name")
+			row_name = row["row_name"]
 			if not row_name:
 				raise ValueError(f"Row missing row_name: {yaml_path}")
 
@@ -281,7 +347,7 @@ def process_scene_yaml(
 				)
 
 			for slot in slots:
-				object_name = slot.get("object_name")
+				object_name = slot["object_name"]
 				if not object_name:
 					raise ValueError(
 						f"Slot in row '{row_name}' missing object_name: {yaml_path}"
@@ -352,19 +418,20 @@ def main() -> None:
 			scene_yaml = os.path.join(smoke_dir, subdir, "scene.yaml")
 			if os.path.isfile(scene_yaml):
 				# Extract scene_name from the YAML to form a unique filename
-				try:
-					with open(scene_yaml, "r") as f:
-						data = yaml.safe_load(f)
-					if data and isinstance(data, dict):
-						scene_name = data.get("scene_name", subdir)
-						scene_files.append((f"{scene_name}.yaml", scene_yaml))
-				except Exception:
-					pass  # Silently skip malformed smoke fixtures
+				with open(scene_yaml, "r") as f:
+					data = yaml.safe_load(f)
+				if not isinstance(data, dict):
+					raise ValueError(
+						f"Smoke scene YAML must be a mapping: {scene_yaml}"
+					)
+				scene_name = data.get("scene_name", subdir)
+				scene_files.append((f"{scene_name}.yaml", scene_yaml))
 
 	scene_files.sort(key=lambda x: x[0])
 
-	# Process each scene YAML
+	# Process each base scene YAML
 	scenes_dict = {}
+	base_scenes_dict = {}
 	skipped_files = []
 	failed_count = 0
 
@@ -377,6 +444,9 @@ def main() -> None:
 				SCENE_ALLOWLIST,
 			)
 
+			# Track base scene for per-protocol inheritance
+			base_scenes_dict[scene_name] = scene_data
+
 			# Only include scenes in the allowlist
 			if scene_name in SCENE_ALLOWLIST:
 				scenes_dict[scene_name] = scene_data
@@ -385,16 +455,15 @@ def main() -> None:
 				base_name = filename.replace(".yaml", "")
 				skipped_files.append(base_name)
 
-		except Exception as e:
-			# Extract scene_name from the YAML file for better error tracking
+		except (ValueError, KeyError, yaml.YAMLError, OSError) as e:
+			# A scene failed validation. Re-read the YAML once to get its
+			# scene_name for logging; if the re-read also fails, the error
+			# message will name the file path only.
 			scene_name = None
-			try:
-				with open(yaml_path, "r") as f:
-					data = yaml.safe_load(f)
-				if data and isinstance(data, dict):
-					scene_name = data.get("scene_name")
-			except Exception:
-				pass
+			with open(yaml_path, "r") as f:
+				data = yaml.safe_load(f)
+			if isinstance(data, dict):
+				scene_name = data.get("scene_name")
 
 			# Log the error with the file path for visibility
 			print(f"ERROR processing {yaml_path}: {e}", file=sys.stderr)
@@ -406,6 +475,40 @@ def main() -> None:
 				# Non-allowlisted scenes can fail validation; they're skipped anyway
 				base_name = filename.replace(".yaml", "")
 				skipped_files.append(base_name)
+
+	# Discover and process per-protocol scenes
+	per_protocol_scenes = discover_per_protocol_scenes(repo_root)
+	per_protocol_count = 0
+
+	for composite_key in sorted(per_protocol_scenes.keys()):
+		protocol_name, scene_basename, yaml_path = per_protocol_scenes[composite_key]
+
+		try:
+			with open(yaml_path, "r") as f:
+				protocol_scene_data = yaml.safe_load(f)
+
+			if not protocol_scene_data:
+				raise ValueError(f"Empty YAML: {yaml_path}")
+
+			if not isinstance(protocol_scene_data, dict):
+				raise ValueError(f"Scene YAML must be a dict: {yaml_path}")
+
+			# Resolve inheritance
+			resolved_scene = scene_inheritance.resolve_protocol_scene(
+				composite_key,
+				protocol_scene_data,
+				base_scenes_dict,
+			)
+
+			scenes_dict[composite_key] = resolved_scene
+			per_protocol_count += 1
+
+		except Exception as e:
+			print(
+				f"ERROR processing per-protocol scene {yaml_path}: {e}",
+				file=sys.stderr,
+			)
+			failed_count += 1
 
 	if failed_count > 0:
 		sys.exit(1)
@@ -436,149 +539,148 @@ def main() -> None:
 	ts_lines.extend([
 		"};",
 		"",
-		"export const SCENES: Record<typeof SCENE_ALLOWLIST[number], SceneA | SceneB> = {",
+		"export const SCENES: Record<string, SceneA | SceneB> = {",
 	])
 
-	# Emit each scene
-	for scene_name in SCENE_ALLOWLIST:
-		if scene_name in scenes_dict:
-			scene_data = scenes_dict[scene_name]
-			ts_lines.append(f"\t{repr(scene_name)}: " + "{" )
+	# Emit scenes in sorted order (base scenes first, then per-protocol)
+	for scene_key in sorted(scenes_dict.keys()):
+		scene_data = scenes_dict[scene_key]
+		ts_lines.append(f"\t{repr(scene_key)}: " + "{" )
 
-			# Emit each field from the scene YAML
-			ts_lines.append(f"\t\tscene_name: {repr(scene_data.get('scene_name'))},")
-			ts_lines.append(f"\t\tworkspace: {repr(scene_data.get('workspace'))},")
+		# Emit each field from the scene YAML
+		ts_lines.append(f"\t\tscene_name: {repr(scene_data.get('scene_name'))},")
+		ts_lines.append(f"\t\tworkspace: {repr(scene_data.get('workspace'))},")
 
-			# capabilities
-			capabilities = scene_data.get("capabilities")
-			if capabilities:
-				ts_lines.append("\t\tcapabilities: [")
-				for cap in capabilities:
-					ts_lines.append(f"\t\t\t{repr(cap)},")
-				ts_lines.append("\t\t],")
+		# capabilities
+		capabilities = scene_data.get("capabilities")
+		if capabilities:
+			ts_lines.append("\t\tcapabilities: [")
+			for cap in capabilities:
+				ts_lines.append(f"\t\t\t{repr(cap)},")
+			ts_lines.append("\t\t],")
 
-			# background
-			background = scene_data.get("background")
-			if background:
-				ts_lines.append("\t\tbackground: " + "{" )
-				for key, val in background.items():
-					if isinstance(val, str):
-						ts_lines.append(f"\t\t\t{key}: {repr(val)},")
-					elif isinstance(val, (int, float)):
-						ts_lines.append(f"\t\t\t{key}: {val},")
-					else:
-						# Handle complex types
-						pass
-				ts_lines.append("\t\t},")
+		# background
+		background = scene_data.get("background")
+		if background:
+			ts_lines.append("\t\tbackground: " + "{" )
+			for key, val in background.items():
+				if isinstance(val, str):
+					ts_lines.append(f"\t\t\t{key}: {repr(val)},")
+				elif isinstance(val, (int, float)):
+					ts_lines.append(f"\t\t\t{key}: {val},")
+				else:
+					# Handle complex types
+					pass
+			ts_lines.append("\t\t},")
 
-			# scene_bounds
-			scene_bounds = scene_data.get("scene_bounds")
-			if scene_bounds:
-				ts_lines.append("\t\tscene_bounds: " + "{" )
-				for key in ["left", "right", "top", "bottom"]:
-					val = scene_bounds.get(key)
-					if val is not None:
-						ts_lines.append(f"\t\t\t{key}: {val},")
-				ts_lines.append("\t\t},")
+		# scene_bounds
+		scene_bounds = scene_data.get("scene_bounds")
+		if scene_bounds:
+			ts_lines.append("\t\tscene_bounds: " + "{" )
+			for key in ["left", "right", "top", "bottom"]:
+				val = scene_bounds.get(key)
+				if val is not None:
+					ts_lines.append(f"\t\t\t{key}: {val},")
+			ts_lines.append("\t\t},")
 
-			# zones (Schema A)
-			zones = scene_data.get("zones")
-			if zones:
-				ts_lines.append("\t\tzones: [")
-				for zone in zones:
-					ts_lines.append("\t\t\t" + "{" )
-					# Authored YAML uses `zone_name` (rule 25). The TS runtime type
-					# SceneZone declares `id: string`; the pipeline maps zone_name -> id
-					# at this YAML/TS boundary so the runtime field name is unchanged.
-					ts_lines.append(f"\t\t\t\tid: {repr(zone['zone_name'])},")
-					bounds = zone.get("bounds")
-					if bounds:
-						ts_lines.append("\t\t\t\tbounds: " + "{" )
-						for key in ["left", "right", "top", "bottom"]:
-							val = bounds.get(key)
-							if val is not None:
-								ts_lines.append(f"\t\t\t\t\t{key}: {val},")
-						ts_lines.append("\t\t\t\t},")
-					if zone.get("align"):
-						ts_lines.append(f"\t\t\t\talign: {repr(zone.get('align'))},")
-					if zone.get("baseline") is not None:
-						ts_lines.append(f"\t\t\t\tbaseline: {zone.get('baseline')},")
-					if zone.get("label"):
-						ts_lines.append(f"\t\t\t\tlabel: {repr(zone.get('label'))},")
-					ts_lines.append("\t\t\t},")
-				ts_lines.append("\t\t],")
+		# zones (Schema A)
+		zones = scene_data.get("zones")
+		if zones:
+			ts_lines.append("\t\tzones: [")
+			for zone in zones:
+				ts_lines.append("\t\t\t" + "{" )
+				# Authored YAML uses `zone_name` (rule 25). The TS runtime type
+				# SceneZone declares `id: string`; the pipeline maps zone_name -> id
+				# at this YAML/TS boundary so the runtime field name is unchanged.
+				ts_lines.append(f"\t\t\t\tid: {repr(zone['zone_name'])},")
+				bounds = zone.get("bounds")
+				if bounds:
+					ts_lines.append("\t\t\t\tbounds: " + "{" )
+					for key in ["left", "right", "top", "bottom"]:
+						val = bounds.get(key)
+						if val is not None:
+							ts_lines.append(f"\t\t\t\t\t{key}: {val},")
+					ts_lines.append("\t\t\t\t},")
+				if zone.get("align"):
+					ts_lines.append(f"\t\t\t\talign: {repr(zone.get('align'))},")
+				if zone.get("baseline") is not None:
+					ts_lines.append(f"\t\t\t\tbaseline: {zone.get('baseline')},")
+				if zone.get("label"):
+					ts_lines.append(f"\t\t\t\tlabel: {repr(zone.get('label'))},")
+				ts_lines.append("\t\t\t},")
+			ts_lines.append("\t\t],")
 
-			# placements (Schema A)
-			placements = scene_data.get("placements")
-			if placements:
-				ts_lines.append("\t\tplacements: [")
-				for placement in placements:
-					ts_lines.append("\t\t\t" + "{" )
+		# placements (Schema A)
+		placements = scene_data.get("placements")
+		if placements:
+			ts_lines.append("\t\tplacements: [")
+			for placement in placements:
+				ts_lines.append("\t\t\t" + "{" )
+				ts_lines.append(
+					f"\t\t\t\tplacement_name: {repr(placement.get('placement_name'))},"
+				)
+				ts_lines.append(
+					f"\t\t\t\tobject_name: {repr(placement.get('object_name'))},"
+				)
+				ts_lines.append(
+					f"\t\t\t\tzone: {repr(placement.get('zone'))},"
+				)
+				if placement.get("depth_tier") is not None:
 					ts_lines.append(
-						f"\t\t\t\tplacement_name: {repr(placement.get('placement_name'))},"
+						f"\t\t\t\tdepth_tier: {placement.get('depth_tier')},"
+					)
+				ts_lines.append("\t\t\t},")
+			ts_lines.append("\t\t],")
+
+		# rows (Schema B)
+		rows = scene_data.get("rows")
+		if rows:
+			ts_lines.append("\t\trows: [")
+			for row in rows:
+				ts_lines.append("\t\t\t" + "{" )
+				ts_lines.append(f"\t\t\t\trow_name: {repr(row.get('row_name'))},")
+				slots = row.get("slots", [])
+				ts_lines.append("\t\t\t\tslots: [")
+				for slot in slots:
+					ts_lines.append("\t\t\t\t\t" + "{" )
+					ts_lines.append(
+						f"\t\t\t\t\t\tplacement_name: {repr(slot.get('placement_name'))},"
 					)
 					ts_lines.append(
-						f"\t\t\t\tobject_name: {repr(placement.get('object_name'))},"
+						f"\t\t\t\t\t\tobject_name: {repr(slot.get('object_name'))},"
 					)
-					ts_lines.append(
-						f"\t\t\t\tzone: {repr(placement.get('zone'))},"
-					)
-					if placement.get("depth_tier") is not None:
+					if slot.get("depth_tier") is not None:
 						ts_lines.append(
-							f"\t\t\t\tdepth_tier: {placement.get('depth_tier')},"
+							f"\t\t\t\t\t\tdepth_tier: {slot.get('depth_tier')},"
 						)
-					ts_lines.append("\t\t\t},")
-				ts_lines.append("\t\t],")
+					ts_lines.append("\t\t\t\t\t},")
+				ts_lines.append("\t\t\t\t],")
+				ts_lines.append("\t\t\t},")
+			ts_lines.append("\t\t],")
 
-			# rows (Schema B)
-			rows = scene_data.get("rows")
-			if rows:
-				ts_lines.append("\t\trows: [")
-				for row in rows:
-					ts_lines.append("\t\t\t" + "{" )
-					ts_lines.append(f"\t\t\t\trow_name: {repr(row.get('row_name'))},")
-					slots = row.get("slots", [])
-					ts_lines.append("\t\t\t\tslots: [")
-					for slot in slots:
-						ts_lines.append("\t\t\t\t\t" + "{" )
-						ts_lines.append(
-							f"\t\t\t\t\t\tplacement_name: {repr(slot.get('placement_name'))},"
-						)
-						ts_lines.append(
-							f"\t\t\t\t\t\tobject_name: {repr(slot.get('object_name'))},"
-						)
-						if slot.get("depth_tier") is not None:
-							ts_lines.append(
-								f"\t\t\t\t\t\tdepth_tier: {slot.get('depth_tier')},"
-							)
-						ts_lines.append("\t\t\t\t\t},")
-					ts_lines.append("\t\t\t\t],")
-					ts_lines.append("\t\t\t},")
-				ts_lines.append("\t\t],")
+		# layout_rules
+		layout_rules = scene_data.get("layout_rules")
+		if layout_rules:
+			ts_lines.append("\t\tlayout_rules: " + "{" )
+			for key, val in layout_rules.items():
+				if isinstance(val, str):
+					ts_lines.append(f"\t\t\t{key}: {repr(val)},")
+				elif isinstance(val, (int, float)):
+					ts_lines.append(f"\t\t\t{key}: {val},")
+			ts_lines.append("\t\t},")
 
-			# layout_rules
-			layout_rules = scene_data.get("layout_rules")
-			if layout_rules:
-				ts_lines.append("\t\tlayout_rules: " + "{" )
-				for key, val in layout_rules.items():
-					if isinstance(val, str):
-						ts_lines.append(f"\t\t\t{key}: {repr(val)},")
-					elif isinstance(val, (int, float)):
-						ts_lines.append(f"\t\t\t{key}: {val},")
-				ts_lines.append("\t\t},")
+		# wrong_order_message
+		wrong_order_msg = scene_data.get("wrong_order_message")
+		if wrong_order_msg:
+			ts_lines.append("\t\twrong_order_message: " + "{" )
+			for key, val in wrong_order_msg.items():
+				if isinstance(val, str):
+					ts_lines.append(f"\t\t\t{key}: {repr(val)},")
+				elif isinstance(val, (int, float)):
+					ts_lines.append(f"\t\t\t{key}: {val},")
+			ts_lines.append("\t\t},")
 
-			# wrong_order_message
-			wrong_order_msg = scene_data.get("wrong_order_message")
-			if wrong_order_msg:
-				ts_lines.append("\t\twrong_order_message: " + "{" )
-				for key, val in wrong_order_msg.items():
-					if isinstance(val, str):
-						ts_lines.append(f"\t\t\t{key}: {repr(val)},")
-					elif isinstance(val, (int, float)):
-						ts_lines.append(f"\t\t\t{key}: {val},")
-				ts_lines.append("\t\t},")
-
-			ts_lines.append("\t},")
+		ts_lines.append("\t},")
 
 	ts_lines.append("} as const;")
 
@@ -589,7 +691,8 @@ def main() -> None:
 		f.write(ts_code)
 
 	print(
-		f"Generated {output_path} with {len(scenes_dict)} scenes, "
+		f"Generated {output_path} with {len(scenes_dict)} scenes "
+		f"({len(SCENE_ALLOWLIST)} base, {per_protocol_count} per-protocol), "
 		f"{len(skipped_files)} skipped",
 		file=sys.stderr,
 	)

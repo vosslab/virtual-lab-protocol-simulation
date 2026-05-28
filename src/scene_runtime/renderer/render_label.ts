@@ -16,10 +16,7 @@ import type { ComputedItem } from "../layout/types.js";
  * @param labelFontSize - Font size in px (from layout_rules.label_font_size or default 9px).
  * @returns HTMLElement positioned absolutely at label coordinates.
  */
-export function renderLabel(
-  item: ComputedItem,
-  labelFontSize: number = 9,
-): HTMLElement {
+export function renderLabel(item: ComputedItem, labelFontSize: number = 9): HTMLElement {
   const label = document.createElement("div");
 
   // Positioning: scene-percent to CSS percent for absolute positioning.

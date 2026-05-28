@@ -65,16 +65,16 @@ visual_states:
     kind: svg
     cases:
       - when: true
-        output: { asset_name: electrophoresis_tank_with_lid }
+        output: { asset_name: electrophoresis_tank }
       - when: false
-        output: { asset_name: electrophoresis_tank_without_lid }
+        output: { asset_name: electrophoresis_tank }
   module_present:
     kind: svg
     cases:
       - when: true
-        output: { asset_name: electrophoresis_tank_with_module }
+        output: { asset_name: electrophoresis_tank }
       - when: false
-        output: { asset_name: electrophoresis_tank_without_module }
+        output: { asset_name: electrophoresis_tank }
 
 capabilities: [clickable, material_container]
 

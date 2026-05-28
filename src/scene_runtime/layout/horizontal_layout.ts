@@ -6,13 +6,7 @@
 
 import { MIN_SCALE, ZONE_PADDING } from "./constants.js";
 import { footprintFor, visualWidthFor } from "./footprint.js";
-import type {
-  ComputedItem,
-  Diagnostics,
-  LayoutRules,
-  ScaledPlacement,
-  Zone,
-} from "./types.js";
+import type { ComputedItem, Diagnostics, LayoutRules, ScaledPlacement, Zone } from "./types.js";
 
 interface PlacedItem extends ScaledPlacement {
   _scale: number;
@@ -66,8 +60,7 @@ export function horizontalLayout(
 
   for (const zone of zones) {
     const items = groups.get(zone.id) ?? [];
-    const provisionalY =
-      zone.baseline ?? (zone.bounds.top + zone.bounds.bottom) / 2;
+    const provisionalY = zone.baseline ?? (zone.bounds.top + zone.bounds.bottom) / 2;
     if (items.length === 0) {
       result.set(zone.id, []);
       continue;
@@ -92,8 +85,7 @@ export function horizontalLayout(
       const rightRes = placeBucket(buckets.right, x1, "right", gap, 1, out);
       const mid = (x0 + x1) / 2;
       const centerRes = placeBucket(buckets.center, mid, "center", gap, 1, out);
-      const bucketTotal =
-        leftRes.total + centerRes.total + rightRes.total + 2 * gap;
+      const bucketTotal = leftRes.total + centerRes.total + rightRes.total + 2 * gap;
       if (bucketTotal > zoneW + 0.5) {
         diagnostics.push({
           stage: "horizontal",
@@ -132,8 +124,7 @@ export function horizontalLayout(
     let scale = 1;
     let footprints = items.map((it) => footprintFor(it, scale));
     let totalFootprint =
-      footprints.reduce((s, f) => s + f, 0) +
-      gap * Math.max(0, items.length - 1);
+      footprints.reduce((s, f) => s + f, 0) + gap * Math.max(0, items.length - 1);
 
     if (totalFootprint > zoneW) {
       const minSpread = footprints.reduce((s, f) => s + f, 0);

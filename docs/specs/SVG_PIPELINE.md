@@ -234,7 +234,7 @@ then write the recipe. Recipes do not invent ids.
 
 ## Generator behavior summary
 
-[../../pipeline/generate_svg_globals.py](../../pipeline/generate_svg_globals.py) is the
+[../../pipeline/gen_svg_registry.py](../../pipeline/gen_svg_registry.py) is the
 source of truth; this section is a high-level summary.
 
 - Deterministic output. Source SVGs are sorted before iteration; emitted

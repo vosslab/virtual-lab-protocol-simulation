@@ -42,12 +42,7 @@ function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
   return overlapWidth > tolerance && overlapHeight > tolerance;
 }
 
-function getBboxDeviationRatio(
-  renderedWidth,
-  renderedHeight,
-  vbWidth,
-  vbHeight,
-) {
+function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
   const renderedAspect = renderedWidth / renderedHeight;
   const naturalAspect = vbWidth / vbHeight;
   const deviation = Math.abs(renderedAspect - naturalAspect) / naturalAspect;
@@ -61,7 +56,7 @@ function extractViewBoxDimensions(viewBoxStr) {
   return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
-async function checkComputedStyles(locator, page) {
+async function checkComputedStyles(locator, _page) {
   const styles = await locator.evaluate((el) => {
     const computed = window.getComputedStyle(el);
     return {
@@ -145,9 +140,7 @@ async function main() {
     console.log(`Navigating to: ${baseUrl}`);
 
     // Capture console messages BEFORE navigation to debug rendering issues
-    page.on("console", (msg) =>
-      console.log(`[PAGE CONSOLE] ${msg.type()}: ${msg.text()}`),
-    );
+    page.on("console", (msg) => console.log(`[PAGE CONSOLE] ${msg.type()}: ${msg.text()}`));
     page.on("pageerror", (err) => console.error(`[PAGE ERROR] ${err}`));
 
     await page.goto(baseUrl, { waitUntil: "networkidle" });
@@ -322,9 +315,7 @@ async function main() {
     let assertionBFailed = false;
     for (const placement of placements) {
       if (!placement.svgBbox || !placement.viewBox) {
-        console.error(
-          `FAIL: Placement ${placement.name} has no real SVG or missing viewBox`,
-        );
+        console.error(`FAIL: Placement ${placement.name} has no real SVG or missing viewBox`);
         assertionBFailed = true;
         continue;
       }
@@ -349,9 +340,7 @@ async function main() {
     let assertionCFailed = false;
     for (const placement of placements) {
       if (!placement.svgBbox || !placement.viewBox) {
-        console.error(
-          `FAIL: Placement ${placement.name} missing SVG bbox or viewBox`,
-        );
+        console.error(`FAIL: Placement ${placement.name} missing SVG bbox or viewBox`);
         assertionCFailed = true;
         continue;
       }
@@ -439,14 +428,8 @@ async function main() {
         } else {
           const minX = Math.min(zoneBbox.x, item.bbox.x);
           const minY = Math.min(zoneBbox.y, item.bbox.y);
-          const maxX = Math.max(
-            zoneBbox.x + zoneBbox.width,
-            item.bbox.x + item.bbox.width,
-          );
-          const maxY = Math.max(
-            zoneBbox.y + zoneBbox.height,
-            item.bbox.y + item.bbox.height,
-          );
+          const maxX = Math.max(zoneBbox.x + zoneBbox.width, item.bbox.x + item.bbox.width);
+          const maxY = Math.max(zoneBbox.y + zoneBbox.height, item.bbox.y + item.bbox.height);
           zoneBbox = {
             x: minX,
             y: minY,
@@ -547,9 +530,7 @@ async function main() {
         return null;
       });
 
-      const associatedPlacement = placements.find(
-        (p) => p.name === placementName,
-      );
+      const associatedPlacement = placements.find((p) => p.name === placementName);
       if (!associatedPlacement || !associatedPlacement.svgBbox) continue;
 
       if (bboxsOverlap(label.bbox, associatedPlacement.svgBbox)) {
@@ -640,9 +621,7 @@ async function main() {
     }
 
     if (!assertionJFailed) {
-      console.log(
-        `PASS: All ${labels.length} labels pass readability hard-failure checks`,
-      );
+      console.log(`PASS: All ${labels.length} labels pass readability hard-failure checks`);
     }
 
     //============================================
@@ -655,13 +634,10 @@ async function main() {
     if (fs.existsSync(bundlePath)) {
       const bundleContent = fs.readFileSync(bundlePath, "utf8");
       const hasBranch =
-        bundleContent.includes('=== "bench_basic"') ||
-        bundleContent.includes("=== 'bench_basic'");
+        bundleContent.includes('=== "bench_basic"') || bundleContent.includes("=== 'bench_basic'");
 
       if (hasBranch) {
-        console.error(
-          `FAIL: Found if scene === "bench_basic" branch in dist/main.js`,
-        );
+        console.error(`FAIL: Found if scene === "bench_basic" branch in dist/main.js`);
         assertionKFailed = true;
       } else {
         console.log("PASS: No scene-specific branches in dist/main.js");

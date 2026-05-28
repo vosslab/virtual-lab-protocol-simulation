@@ -43,9 +43,7 @@ async function main() {
     const parsed = parse(input);
     // Check if input already ends with .pdf to avoid overwriting
     if (parsed.ext.toLowerCase() === ".pdf") {
-      console.error(
-        `Error: input file already has .pdf extension, cannot derive output: ${input}`,
-      );
+      console.error(`Error: input file already has .pdf extension, cannot derive output: ${input}`);
       process.exit(1);
     }
     outputPath = format({
@@ -57,11 +55,7 @@ async function main() {
 
   // Resolve input URL or file path
   let url;
-  if (
-    input.startsWith("http://") ||
-    input.startsWith("https://") ||
-    input.startsWith("file://")
-  ) {
+  if (input.startsWith("http://") || input.startsWith("https://") || input.startsWith("file://")) {
     url = input;
   } else {
     // Resolve relative paths against cwd

@@ -210,9 +210,7 @@ export async function walkProtocol(opts) {
       await page.waitForTimeout(1000);
     }
     if (!protocolConfig || !protocolConfig.steps) {
-      throw new Error(
-        "Protocol config not found in window.currentProtocol or no steps",
-      );
+      throw new Error("Protocol config not found in window.currentProtocol or no steps");
     }
     const steps = protocolConfig.steps;
     let stepsPassed = 0;
@@ -224,12 +222,7 @@ export async function walkProtocol(opts) {
       const step = steps[stepIndex];
       try {
         // stepIndex is 0-based; pass 1-based stepIndex to executeStep.
-        const screenshotsTaken = await executeStep(
-          page,
-          step,
-          protocolId,
-          stepIndex + 1,
-        );
+        const screenshotsTaken = await executeStep(page, step, protocolId, stepIndex + 1);
         totalScreenshotsTaken += screenshotsTaken;
         stepsPassed += 1;
       } catch (err) {
