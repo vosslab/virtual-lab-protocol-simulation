@@ -300,7 +300,7 @@ def process_object_yaml(
 #============================================
 
 def main() -> None:
-	"""Main entry point for codegen."""
+	"""Main entry point for the object-library generator."""
 	repo_root = get_repo_root()
 
 	# Read KINDS enum

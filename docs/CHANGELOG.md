@@ -4,6 +4,8 @@
 
 ### Additions and New Features
 
+- Added [pipeline/build_generated.sh](../pipeline/build_generated.sh): the single source of truth for generator order. It wipes and fully regenerates the gitignored `generated/` artifact tree by running the four generators in canonical order (`gen_object_library.py` -> `gen_svg_registry.py` -> `gen_scene_index.py` -> `gen_protocols.py`). A fresh clone now reaches a running server in one command, `bash run_web_server.sh`.
+
 - WP-FRAME-1 (M2): replaced `#scene-root` `100vw x 100vh` with a bounded aspect-locked panel inside a six-region CSS grid layout. Added `.protocol-page-grid` grid in [src/style.css](../src/style.css) with named areas: `header` (avatar + tips + counter), `scene` (bounded panel), `outline` (right column spanning scene + guidance rows), `guidance` (teal bar). Added `.scene-panel-inner` intermediate wrapper to enforce `aspect-ratio: 16/9` on a non-scene-content element (CSS policy compliance). Updated [src/protocol_host_template.html](../src/protocol_host_template.html) with all six regions using `data-region` attributes for Playwright targeting. `#shell-root` remains a sibling of `.protocol-page-grid` (asset-crop rule preserved).
 
 - WP-FRAME-2 (M2): fixed scene-percent -> pixel mapping for the bounded panel. [src/protocol_host.tsx](../src/protocol_host.tsx) now calls `getBoundingClientRect()` on `#scene-root` before `runPipeline`, measuring the actual panel size (e.g. 1044x587) instead of assuming `DEFAULT_VIEWPORT` (1920x1080). The measured `viewport` is passed to both `runPipeline` and `renderScene`. Updated `runStructuralGuards` in [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) to accept an optional `viewport` parameter for Guard 5 (aspect distortion), fixing false failures when the panel aspect ratio differs from 16:9 default. Updated `renderScene` in [src/scene_runtime/renderer/render_scene.ts](../src/scene_runtime/renderer/render_scene.ts) to forward `viewport` to guards. All 3 items in the `sdspage_heat_denature_samples` scene render inside the bounded panel with no overflow and correct aspect ratios.
@@ -32,7 +34,15 @@
 
 - Added `docs/active_plans/audits/blank_scene_gap_report.md` (WP-DIAG-1, M0): per-protocol initial-scene gap report classifying all 31 protocols as OK (22), scene-missing (4), or unresolved (5). H1 refuted (all 25 per-protocol scenes emit). H2 confirmed for sequence_runners. H3 refuted (no empty scenes). H4 confirmed (4 protocols resolve to allowlist-excluded base scenes). No code changed. Evidence nominated: `passage_hood_detachment` (cell_culture, 2 placements), `sdspage_heat_denature_samples` (sdspage, 3 placements).
 
+### Behavior or Interface Changes
+
+- Made file generation an explicit step in the shell entry scripts instead of a hidden npm lifecycle side effect. [build_github_pages.sh](../build_github_pages.sh) now calls [pipeline/build_generated.sh](../pipeline/build_generated.sh) directly before type-checking and bundling, fixing the clean-repo failure `ERROR: required source file missing: generated/protocols.ts`. [check_codebase.sh](../check_codebase.sh) checks the codebase only; it never generates and does not depend on whether the gitignored `generated/` tree exists. [run_web_server.sh](../run_web_server.sh) auto-runs `devel/setup_typescript.sh` when `node_modules` is missing (local dev convenience); `build_github_pages.sh` stays CI/GitHub-Pages clean by erroring on missing `node_modules` instead of installing. `devel/dist_clean.sh` now also wipes `generated/`.
+
+- Stripped `package.json` `scripts` to six thin shell-script aliases (`setup`, `setup:playwright`, `build`, `serve`, `check`, `clean`). Removed all six duplicated `pre*` generator hooks and the standalone `typecheck`/`lint`/`format:*`/`test:node`/`browser:smoke`/`ui:review`/`pdf` aliases; those tools now run as direct commands (documented in [USAGE.md](USAGE.md)).
+
 ### Fixes and Maintenance
+
+- Purged the jargon word "codegen" (not a dictionary word; confusing for non-programmer protocol authors) across docs prose and code docstrings/comments, replacing it with plain English ("file generation", "generator scripts"): [USAGE.md](USAGE.md), [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md), [ROADMAP.md](ROADMAP.md), [VALIDATION_JSON_SCHEMA.md](VALIDATION_JSON_SCHEMA.md), [specs/TARGET_FILE_STRUCTURE.md](specs/TARGET_FILE_STRUCTURE.md), and docstrings in `pipeline/gen_object_library.py`, `pipeline/gen_scene_index.py`, `pipeline/scene_inheritance.py`, `pipeline/gen_svg_registry.py`, `validation/validate.py`.
 
 - WP-EVID-1 honesty fix: removed synthetic DOM-injection block from `tests/playwright/test_initial_scene_evidence_m1.mjs`. The previous Part B (placeholder-mode evidence) injected a `data-missing-svg="true"` element into `#scene-root` via `page.evaluate()` and then asserted on it -- a test asserting on an element it created itself proves nothing. Removed the injection block, three dependent assertions, and supporting infrastructure (`PLACEHOLDER_PROTOCOL`, `PLACEHOLDER_OBJECT_NAME`, `test_placeholder_protocol()`, `restore_strict_build()`, `register_custom_route`, `execSync` import). The strict-mode evidence (3 protocols, item counts >=1, screenshots) is unchanged. Added explanatory comment noting that placeholder render contract is covered by `tests/test_render_item_missing_svg.mjs` and that end-to-end placeholder rendering through the pipeline is tracked as follow-up (gen_object_library.py does not scan dev_smoke fixtures). The `tests/content/dev_smoke/missing_svg_check/` fixture is left in place (untracked, no build step reads it, no tracked test references it).
 
@@ -48,6 +58,7 @@
 
 - Deleted `design_advice/` directory (planning docs and JSX prototypes, all superseded by implemented code in `validation/`).
 - Deleted 9 unreferenced legacy SVG assets from `assets/equipment/`: `cell_counter_old`, `incubator_legacy`, `microscope_old`, `multichannel_pipette_old`, `plate_reader_old`, `t75_flask_legacy`, `tip_box_old`, `vortex_old`, `water_bath_old`.
+- Removed `tools/check_dist_ready.sh`: obsolete now that `run_web_server.sh` always builds before serving. Removed the `package.json` `pre*` generator hooks (`prebuild`, `pretypecheck`, `prelint`, `pretest:node`, `prebrowser:smoke`, `preui:review`) and the standalone npm aliases they guarded; file generation now runs inside the shell entry scripts via `pipeline/build_generated.sh`.
 
 ### Decisions and Failures
 

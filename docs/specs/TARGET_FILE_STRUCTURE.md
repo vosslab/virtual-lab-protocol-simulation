@@ -51,7 +51,7 @@ assets/               source SVGs and other binary inputs
   equipment/
 
 docs/                 design docs, style guides, vocabularies
-tools/                build scripts and codegen
+tools/                developer utilities (smoke runners, inspection)
 archive/              retired code and closed historical material
   code/               retired TypeScript snapshots
 dist/                 bundled HTML/JS build (gitignored)

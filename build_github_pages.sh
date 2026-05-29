@@ -34,6 +34,18 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+# Require dependencies, but never install them here: this script must stay
+# clean for CI / GitHub Pages, where the workflow installs deps (npm ci) before
+# building. Local dev convenience (auto-install) lives in run_web_server.sh.
+if [ ! -d node_modules ]; then
+	echo "ERROR: node_modules missing. Run 'bash devel/setup_typescript.sh' or 'npm ci' first." >&2
+	exit 1
+fi
+
+# Regenerate the generated/ artifact tree directly (no npm lifecycle hooks).
+# build_generated.sh is the single source of truth for generator order.
+bash pipeline/build_generated.sh
+
 # Two-bundle split (see docs/active_plans/active/web_ui/bundle_audit.md):
 #   src/launcher_entry.tsx       -> dist/launcher.js       (lightweight)
 #   src/protocol_host_entry.tsx  -> dist/protocol_host.js  (runtime + renderer + SVGs)

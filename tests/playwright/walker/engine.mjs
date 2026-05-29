@@ -432,28 +432,6 @@ async function executeStep(page, step, stepIndex, protocol, screenshotDir, verbo
 }
 
 /**
- * Load a protocol from the generated protocol data.
- * This is done at build time (in Node) before opening the browser.
- */
-function loadProtocolFromGenerated(protocolName) {
-  const generatedPath = path.join(process.cwd(), "generated", "protocol_data.ts");
-  if (!fs.existsSync(generatedPath)) {
-    throw new Error(
-      `Generated protocol data not found at ${generatedPath}. ` + `Run: npm run prebuild`,
-    );
-  }
-
-  // Read the TypeScript file
-  let tsContent = fs.readFileSync(generatedPath, "utf-8");
-
-  // Note: evaluating the TypeScript generated file is complex due to interfaces,
-  // imports, and type annotations. Instead, we rely on the browser runtime to load
-  // the protocol config via the PROTOCOL_CATALOG exported by runtime.bundle.js.
-  // Return null so the walker loads the full config from the browser.
-  return null;
-}
-
-/**
  * Main walker engine: load protocol and walk all steps.
  */
 export async function runWalker(opts) {
@@ -480,19 +458,9 @@ export async function runWalker(opts) {
     log(`  Base URL: ${finalBaseUrl}`, verbosity, "debug");
     log(`  Screenshot dir: ${finalScreenshotDir}`, verbosity, "debug");
 
-    // Load the protocol from generated data before launching the browser
-    let protocol;
-    try {
-      protocol = loadProtocolFromGenerated(protocolName);
-      log(
-        `Loaded protocol "${protocolName}" with ${protocol.steps?.length || 0} steps from generated data`,
-        verbosity,
-      );
-    } catch (err) {
-      log(`Could not load protocol from generated data: ${err.message}`, verbosity);
-      // Continue anyway; the browser might have it
-      protocol = null;
-    }
+    // The protocol config is read from the browser runtime global
+    // (__RUNTIME_PROTOCOL_CONFIG) after the page loads; see below.
+    let protocol = null;
 
     // Launch browser
     browser = await chromium.launch({ headless });

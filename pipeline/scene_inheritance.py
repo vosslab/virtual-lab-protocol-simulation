@@ -4,7 +4,7 @@ Scene inheritance resolver for zone-based scenes.
 Handles extends-chain resolution and placement operations:
 remove_placements, deactivate_placements, reposition_placements, add_placements.
 
-Reusable helper for codegen tools that need to resolve scene inheritance.
+Reusable helper for generator scripts that need to resolve scene inheritance.
 """
 
 from typing import Any, Dict, List

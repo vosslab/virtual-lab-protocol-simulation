@@ -103,7 +103,7 @@ Refer to individual tool documentation for the complete list of codes.
 
 ## Composite SVG stage
 
-The aggregate `validation/validate.py --only svg` runs both `pipeline_check.py` and `asset_audit.py` and merges their findings into the unified schema. The `pipeline_check.py` tool emits a pass/fail gate (reproducible codegen); `asset_audit.py` reports per-asset file metadata and issues. When invoked standalone, `pipeline_check.py --json` emits a summary object with `checks_passed` and `source_svgs` counts rather than a findings array.
+The aggregate `validation/validate.py --only svg` runs both `pipeline_check.py` and `asset_audit.py` and merges their findings into the unified schema. The `pipeline_check.py` tool emits a pass/fail gate (reproducible generation); `asset_audit.py` reports per-asset file metadata and issues. When invoked standalone, `pipeline_check.py --json` emits a summary object with `checks_passed` and `source_svgs` counts rather than a findings array.
 
 ## NDJSON summary record
 

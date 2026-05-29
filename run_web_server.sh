@@ -7,9 +7,11 @@
 set -euo pipefail
 cd "$(git rev-parse --show-toplevel)"
 
+# Local dev convenience: auto-install dependencies on a fresh clone so a single
+# command brings up the server. (build_github_pages.sh stays CI-clean and only
+# errors here; this auto-bootstrap is dev-only.)
 if [ ! -d node_modules ]; then
-	echo "node_modules missing. Run 'npm install' first." >&2
-	exit 1
+	bash devel/setup_typescript.sh
 fi
 
 # Random port per session: each port is its own browser origin, so the

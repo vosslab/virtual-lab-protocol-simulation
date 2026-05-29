@@ -71,7 +71,7 @@ def _stage_scripts(stage_name: str) -> list[str]:
 	"""
 	Return the list of validator scripts that compose a stage.
 
-	The svg stage is composite: check.py answers "is codegen
+	The svg stage is composite: check.py answers "is file generation
 	reproducible + complete?" (CI gate); audit.py answers "are SVG
 	files well-formed?" (author review). Both belong under --only svg.
 	"""

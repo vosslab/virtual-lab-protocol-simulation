@@ -709,7 +709,7 @@ def emit_scene_ts(
 #============================================
 
 def main() -> None:
-	"""Main entry point for codegen."""
+	"""Main entry point for the scene-index generator."""
 	args = parse_args()
 	missing_svg_mode = args.missing_svg_mode
 

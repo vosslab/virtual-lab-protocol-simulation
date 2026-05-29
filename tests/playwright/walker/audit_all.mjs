@@ -5,8 +5,8 @@
  *
  * Comprehensive walker audit for all mini_protocols in the repo.
  *
- * Discovers all mini_protocol entries from generated/protocol_data.ts,
- * builds HTML (if needed), runs walker on each, captures results,
+ * Discovers all mini_protocol entries from generated/protocols.ts,
+ * builds dist/ once, runs walker on each, captures results,
  * classifies failures into gap categories, and emits a markdown summary
  * plus machine-readable JSON.
  *
@@ -35,68 +35,33 @@ const REPO_ROOT = execSync("git rev-parse --show-toplevel", {
 //============================================
 
 /**
- * Extract all mini_protocol entries from generated/protocol_data.ts
+ * Extract all mini_protocol entries from generated/protocols.ts (the PROTOCOLS map).
  */
 function discoverMiniProtocols() {
-  const protocolDataPath = path.join(REPO_ROOT, "generated", "protocol_data.ts");
+  const protocolsPath = path.join(REPO_ROOT, "generated", "protocols.ts");
 
-  if (!fs.existsSync(protocolDataPath)) {
-    throw new Error(`protocol_data.ts not found at ${protocolDataPath}`);
+  if (!fs.existsSync(protocolsPath)) {
+    throw new Error(
+      `protocols.ts not found at ${protocolsPath}. Run: bash pipeline/build_generated.sh`,
+    );
   }
 
-  const content = fs.readFileSync(protocolDataPath, "utf8");
+  const content = fs.readFileSync(protocolsPath, "utf8");
 
-  // Parse the TypeScript object literal to extract mini_protocol entries.
-  // Pattern: <name>: { protocol_type: 'mini_protocol', ... },
-  // We extract all objects where protocol_type === 'mini_protocol'
-
+  // Each protocol is emitted as one top-level line in the PROTOCOLS map:
+  //   <name>: { protocol_type: "mini_protocol", protocol_name: "<name>", ... },
+  // Match only the lines whose protocol_type is mini_protocol.
   const protocols = [];
-  const lines = content.split("\n");
-
-  let inCatalog = false;
-  let currentProtocolName = null;
-  let braceDepth = 0;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    // Check for export const PROTOCOL_CATALOG start
-    if (line.includes("export const PROTOCOL_CATALOG")) {
-      inCatalog = true;
-      continue;
-    }
-
-    if (!inCatalog) {
-      continue;
-    }
-
-    // Look for protocol_name key at top level of catalog
-    const nameMatch = line.match(/^\s*(\w+):\s*\{/);
-    if (nameMatch) {
-      currentProtocolName = nameMatch[1];
-      braceDepth = 1;
-      continue;
-    }
-
-    if (currentProtocolName) {
-      // Count braces to find protocol block boundaries
-      braceDepth += (line.match(/\{/g) || []).length;
-      braceDepth -= (line.match(/\}/g) || []).length;
-
-      // Check if this is a mini_protocol
-      if (line.includes("protocol_type:") && line.includes("mini_protocol")) {
-        protocols.push(currentProtocolName);
-      }
-
-      // End of this protocol block
-      if (braceDepth === 0 && currentProtocolName) {
-        currentProtocolName = null;
-      }
+  const lineRe = /^\s*(\w+):\s*\{\s*protocol_type:\s*["']mini_protocol["']/;
+  for (const line of content.split("\n")) {
+    const match = line.match(lineRe);
+    if (match) {
+      protocols.push(match[1]);
     }
   }
 
   if (protocols.length === 0) {
-    throw new Error("No mini_protocols found in protocol_data.ts");
+    throw new Error("No mini_protocols found in protocols.ts");
   }
 
   return protocols.sort();
@@ -107,25 +72,15 @@ function discoverMiniProtocols() {
 //============================================
 
 /**
- * Build HTML for a protocol if not already present.
+ * Verify the per-protocol HTML exists in dist/.
+ * build_github_pages.sh emits one dist/<protocol_name>.html per PROTOCOLS_INDEX
+ * entry, so this is a presence check rather than a per-protocol build step.
  */
 function ensureProtocolHTML(protocolName) {
   const htmlPath = path.join(REPO_ROOT, "dist", `${protocolName}.html`);
 
-  if (fs.existsSync(htmlPath)) {
-    return; // Already built
-  }
-
-  // Run build_protocol_html.py
-  try {
-    const cmd = `source source_me.sh && python3 pipeline/build_protocol_html.py --protocol ${protocolName}`;
-    execSync(cmd, {
-      cwd: REPO_ROOT,
-      stdio: "pipe",
-      shell: "/bin/bash",
-    });
-  } catch (err) {
-    throw new Error(`Failed to build HTML for protocol "${protocolName}": ${err.message}`);
+  if (!fs.existsSync(htmlPath)) {
+    throw new Error(`dist/${protocolName}.html not found; build_github_pages.sh did not emit it`);
   }
 }
 
@@ -315,15 +270,15 @@ async function main() {
   }
   console.log(`[INFO] Found ${protocols.length} mini_protocols`);
 
-  // Build runtime bundle first
-  console.log("[INFO] Building runtime bundle...");
+  // Build the full dist/ once (bundle + per-protocol HTML + generated data).
+  console.log("[INFO] Building dist/ (bundle + per-protocol HTML)...");
   try {
-    execSync("bash pipeline/build_runtime_bundle.sh", {
+    execSync("bash build_github_pages.sh", {
       cwd: REPO_ROOT,
       stdio: "pipe",
     });
   } catch (_err) {
-    console.error("[ERROR] Failed to build runtime bundle");
+    console.error("[ERROR] Failed to build dist/");
     process.exit(1);
   }
 

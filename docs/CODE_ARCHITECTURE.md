@@ -8,7 +8,7 @@ This doc uses that vocabulary without restating definitions.
 A browser-based educational simulation that teaches laboratory techniques
 (cell culture, SDS-PAGE) through step-by-step YAML-authored mini-protocols.
 Protocol and scene content lives as YAML in `content/` and is compiled to
-TypeScript by codegen scripts in `pipeline/` before each build. The shared
+TypeScript by generator scripts in `pipeline/` before each build. The shared
 TypeScript runtime under `src/` renders scenes, drives protocol steps, and
 surfaces a HUD shell to the student.
 

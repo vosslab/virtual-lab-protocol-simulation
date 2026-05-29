@@ -4,40 +4,45 @@ This doc explains how to build, render, and test the virtual lab protocol system
 
 ## Quick start
 
-```bash
-npm run build
-npm run serve
-```
-
-`npm run build` runs the codegen pipeline and TypeScript renderer to produce `dist/`. `npm run serve` starts a web server on a random port and opens the protocol selector page.
-
-To build and serve in one step:
+From a fresh clone, one command brings up the server:
 
 ```bash
 bash run_web_server.sh
 ```
 
-## Build pipeline and codegen
+`run_web_server.sh` installs npm dependencies if `node_modules` is missing, builds the site via [build_github_pages.sh](../build_github_pages.sh), and serves `dist/` on a random port with the protocol selector page open.
 
-The system uses build-time codegen to compile scene, object, and protocol definitions into typed TypeScript modules. [build_github_pages.sh](../build_github_pages.sh) regenerates `generated/` before type-checking and bundling, so a fresh clone can build without a separate manual codegen step.
-
-For codegen-only debugging, run:
+The npm aliases still work as thin wrappers around the shell scripts:
 
 ```bash
-python3 pipeline/gen_object_library.py
-python3 pipeline/gen_svg_registry.py
-python3 pipeline/gen_scene_index.py
+npm run build    # bash build_github_pages.sh
+npm run serve    # bash run_web_server.sh
+npm run check    # bash check_codebase.sh
+npm run clean    # bash devel/dist_clean.sh
 ```
 
-The same three Python scripts also run automatically as npm `pre*` hooks before non-build gates that import from `generated/`:
+`npm run build` generates the typed TypeScript modules and bundles the renderer to produce `dist/`. Unlike `run_web_server.sh`, `build_github_pages.sh` does not install dependencies: it errors if `node_modules` is missing so it stays clean for CI / GitHub Pages (where the workflow runs `npm ci` first). A CI build must also provide `python3` and `pyyaml`, since the generators run inside the build.
 
-### Codegen scripts (under `pipeline/`)
+## Build pipeline and file generation
+
+The system compiles scene, object, and protocol definitions into typed TypeScript modules at build time. [build_github_pages.sh](../build_github_pages.sh) calls [pipeline/build_generated.sh](../pipeline/build_generated.sh), which wipes and regenerates `generated/` from source before type-checking and bundling. A fresh clone builds without any separate manual step. [check_codebase.sh](../check_codebase.sh) only checks the codebase; it never generates. Build `generated/` first (it is imported by the typechecked source).
+
+To regenerate the `generated/` tree on its own (for debugging):
+
+```bash
+bash pipeline/build_generated.sh
+```
+
+`build_generated.sh` is the single source of truth for generator order. Run order is load-bearing: `gen_scene_index.py` reads `generated/object_library.ts`, so `gen_object_library.py` must run first.
+
+### Generator scripts (under `pipeline/`)
 
 - `gen_object_library.py`: Reads object YAML from `content/objects/**/*.yaml`, validates against closed `KINDS` enum and asset references, emits `generated/object_library.ts` with typed `OBJECT_LIBRARY` and `ASSET_SPECS`.
 - `gen_svg_registry.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_registry.ts` with inline `SVG_REGISTRY` content (one base64-encoded entry per SVG).
 - `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml` and per-protocol scene files, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object. Accepts `--missing-svg=strict|placeholder` (strict is default; see [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for details).
+- `gen_protocols.py`: Reads `protocol.yaml` from `content/protocols/**/` and smoke fixtures, validates against the closed protocol schema, emits `generated/protocols.ts` and `generated/protocols_index_slim.ts`.
 
-The `generated/` directory is gitignored; codegen output is a build artifact, never committed. Source of truth is `content/`, `assets/`, and the codegen scripts themselves.
+The `generated/` directory is gitignored; everything in it is a build artifact, never committed, and is fully rebuilt by `build_generated.sh`. Source of truth is `content/`, `assets/`, and the generator scripts themselves. Run `bash pipeline/build_generated.sh` before anything that imports from `generated/` (a standalone test, or `bash check_codebase.sh`, which checks the codebase only and never generates).
 
 ### Render flow
 
@@ -66,7 +71,7 @@ No runtime YAML parsing, no `fetch`, no `js-yaml` dependency. All data is compil
 - **Runtime bundle:** `dist/` contains `main.js` (bundled ES module), `index.html`, `style.css`, and per-protocol HTML shells (empty stubs that load shared runtime data).
 - **Visual artifacts:** `tests/playwright/artifacts/` stores Playwright screenshots, before/after comparisons, and visual reports.
 - **Diagnostic reports:** `docs/active_plans/reports/` stores milestone reports, failure taxonomies, and M2c diagnostic metrics.
-- **Generated data:** `generated/object_library.ts`, `generated/svg_registry.ts`, `generated/scenes.ts` are produced by codegen and gitignored.
+- **Generated data:** `generated/object_library.ts`, `generated/svg_registry.ts`, `generated/scenes.ts`, `generated/protocols.ts`, and `generated/protocols_index_slim.ts` are produced by the generator scripts and gitignored.
 
 ## Scene allowlist
 
@@ -226,6 +231,16 @@ Run only changed files for faster feedback:
 
 ```bash
 FAST_REPO_HYGIENE=1 source source_me.sh && python3 -m pytest tests/
+```
+
+### Other browser and tool commands
+
+These run directly (they are no longer npm aliases). Run a build first if they depend on `dist/` or `generated/`:
+
+```bash
+node tests/playwright/test_game_ui.mjs    # browser smoke walkthrough
+node tests/playwright/ui_review.mjs       # UI review capture
+node tools/html_to_pdf.mjs --input report.html --output test-results/report.pdf
 ```
 
 ## Where to find more

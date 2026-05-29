@@ -128,9 +128,9 @@ Completion criteria:
 * Ambiguous mappings are either fixed or explicitly documented as intentional.
 * Fanout behavior is walker-safe and visible.
 
-Next milestone: Codegen pipeline consolidation
+Next milestone: Generator pipeline consolidation
 
-Goal: keep one canonical codegen path.
+Goal: keep one canonical file-generation path.
 
 Scope:
 

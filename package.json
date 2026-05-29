@@ -5,24 +5,10 @@
 	"scripts": {
 		"setup": "./devel/setup_typescript.sh",
 		"setup:playwright": "./devel/setup_playwright.sh",
-		"prebuild": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
 		"build": "bash build_github_pages.sh",
-		"serve": "bash tools/check_dist_ready.sh && bash run_web_server.sh",
+		"serve": "bash run_web_server.sh",
 		"check": "bash check_codebase.sh",
-		"clean": "bash devel/dist_clean.sh",
-		"pretest:node": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
-		"pretypecheck": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
-		"typecheck": "npx tsc --noEmit -p tsconfig.json",
-		"prelint": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
-		"lint": "npx eslint src/ tests/",
-		"format:check": "npx prettier --check \"**/*.{ts,tsx,mts,cts,js,mjs,cjs}\"",
-		"format:write": "npx prettier --write \"**/*.{ts,tsx,mts,cts,js,mjs,cjs}\"",
-		"test:node": "node --import tsx --test tests/test_*.mjs",
-		"prebrowser:smoke": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
-		"browser:smoke": "PLAYWRIGHT_BROWSERS_PATH=.cache/ms-playwright node tests/playwright/test_game_ui.mjs",
-		"preui:review": "python3 pipeline/gen_object_library.py && python3 pipeline/gen_svg_registry.py && python3 pipeline/gen_scene_index.py && python3 pipeline/gen_protocols.py",
-		"ui:review": "node tests/playwright/ui_review.mjs",
-		"pdf": "node tools/html_to_pdf.mjs"
+		"clean": "bash devel/dist_clean.sh"
 	},
 	"devDependencies": {
 		"@eslint/js": ">=10.0.1",

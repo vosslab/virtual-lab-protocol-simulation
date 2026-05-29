@@ -14,7 +14,7 @@ import subprocess
 from pathlib import Path
 
 # Import the shared validator (lives in tools/ as a dev-tool helper).
-# pipeline/ codegen scripts add the sibling tools/ dir to sys.path so the
+# pipeline/ generator scripts add the sibling tools/ dir to sys.path so the
 # bare-name import remains valid per docs/PYTHON_STYLE.md.
 sys.path.insert(0, os.path.dirname(__file__))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "tools"))
