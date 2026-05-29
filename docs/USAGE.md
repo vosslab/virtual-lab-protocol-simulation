@@ -9,7 +9,7 @@ npm run build
 npm run serve
 ```
 
-`npm run build` runs the codegen pipeline and TypeScript renderer to produce `dist/`. `npm run serve` starts a web server on a random port and opens the first allowlisted scene (currently `bench_basic`).
+`npm run build` runs the codegen pipeline and TypeScript renderer to produce `dist/`. `npm run serve` starts a web server on a random port and opens the protocol selector page.
 
 To build and serve in one step:
 
@@ -35,24 +35,29 @@ The same three Python scripts also run automatically as npm `pre*` hooks before 
 
 - `gen_object_library.py`: Reads object YAML from `content/objects/**/*.yaml`, validates against closed `KINDS` enum and asset references, emits `generated/object_library.ts` with typed `OBJECT_LIBRARY` and `ASSET_SPECS`.
 - `gen_svg_registry.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_registry.ts` with inline `SVG_REGISTRY` content (one base64-encoded entry per SVG).
-- `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml`, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object exposing every scene as a `SceneA` instance.
+- `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml` and per-protocol scene files, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object. Accepts `--missing-svg=strict|placeholder` (strict is default; see [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for details).
 
 The `generated/` directory is gitignored; codegen output is a build artifact, never committed. Source of truth is `content/`, `assets/`, and the codegen scripts themselves.
 
 ### Render flow
 
-The entry point `src/main.ts` imports codegen outputs directly:
+The entry point resolves the initial scene from the protocol's `entry_step` at runtime via
+`resolve_entry_scene_name`. The default page served is the protocol selector; selecting a
+protocol navigates to `<protocol_name>.html`, which loads the shared bundle and resolves
+the initial scene from the protocol config.
 
 ```typescript
-import { SCENES } from "../generated/scenes.js";
-import { SCENE_ALLOWLIST } from "./scene_allowlist";
-// ...
-const scene = SCENES.bench_basic;  // M2b hardcoded; M2c expands allowlist
-const result = runPipeline(scene);
+// Simplified render path (protocol_host.tsx)
+const scene_name = resolve_entry_scene_name(config, PROTOCOLS);
+const scene = SCENES[scene_name];
+const result = runPipeline(scene, OBJECT_LIBRARY, ASSET_SPECS, viewport);
 renderScene(root, result);
 ```
 
-The pipeline (`src/scene_runtime/layout/`) takes a `SceneA` plus `OBJECT_LIBRARY` and `ASSET_SPECS`, produces `PipelineResult.final: ComputedItem[]`, and passes the result to `renderScene()`. The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` and emits absolutely-positioned SVG-injected DOM elements.
+The pipeline (`src/scene_runtime/layout/`) takes a `SceneA` or `SceneB` plus `OBJECT_LIBRARY`
+and `ASSET_SPECS`, produces `PipelineResult.final: ComputedItem[]`, and passes the result to
+`renderScene()`. The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` and emits
+absolutely-positioned SVG-injected DOM elements.
 
 No runtime YAML parsing, no `fetch`, no `js-yaml` dependency. All data is compiled at build time.
 
@@ -65,12 +70,18 @@ No runtime YAML parsing, no `fetch`, no `js-yaml` dependency. All data is compil
 
 ## Scene allowlist
 
-Currently only `bench_basic` is in `SCENE_ALLOWLIST` and will render. Other scenes under `content/base_scenes/` are present for M2c generalization work but are SKIPPED at runtime until they pass the full precheck suite.
+The allowlist `SCENE_ALLOWLIST` lives in `pipeline/gen_scene_index.py` and currently contains
+8 base scenes: `bench_basic`, `bench_basic_row_slot`, `cell_counter_basic`,
+`electrophoresis_bench`, `hood_basic`, `imaging_bench`, `sample_prep_bench`, and
+`staining_bench`. Only allowlisted scenes are emitted to `generated/scenes.ts` and
+available to the renderer. Other scenes under `content/base_scenes/` are skipped until
+they pass the full precheck suite.
 
-To expand the allowlist, update `src/scene_allowlist.ts` after confirming the scene passes validation:
+To expand the allowlist, add the scene name to `SCENE_ALLOWLIST` in
+`pipeline/gen_scene_index.py` after confirming the scene passes validation:
 
 ```bash
-source source_me.sh && python3 validation/validate.py --protocol <scene_name> -O structure
+source source_me.sh && python3 validation/validate.py --scene <scene_name> -O structure
 ```
 
 ## Validation

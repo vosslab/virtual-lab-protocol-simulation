@@ -7,8 +7,63 @@
 <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div id="scene-root"></div>
+<!--
+  Six-region protocol host layout (WP-FRAME-1, M2).
+
+  CSS grid regions (see style.css .protocol-page-grid):
+    protocol-header  : top row -- avatar | tips-bubble | step-counter
+    scene-panel      : center-left -- bounded #scene-root (NOT full viewport)
+    outline-panel    : right column -- read-only step outline (spans center + bottom rows)
+    guidance-bar     : bottom-left -- current step prompt
+
+  #scene-root and #shell-root are SIBLINGS (never ancestor/descendant).
+  Shell mounts into #shell-root; scene renders into #scene-root.
+  This preserves the asset-crop rule (PRIMARY_CONTRACT.md item 3).
+-->
+<div class="protocol-page-grid">
+
+  <!-- Top row: avatar + tips bubble + step counter -->
+  <header class="protocol-header" data-region="header">
+    <!-- Avatar slot: static placeholder image -->
+    <div class="professor-avatar" data-region="avatar" aria-label="Professor avatar"></div>
+
+    <!-- Tips bubble: current_tip if set, else generic fallback -->
+    <div class="tips-bubble" data-region="tips-bubble">
+      <div id="tips-text" class="tips-bubble-text">Follow the current step guidance.</div>
+    </div>
+
+    <!-- Step counter box (green) -->
+    <div class="step-counter-box" data-region="step-counter" id="step-counter-box">
+      <span id="step-counter-text">0 / 0</span>
+    </div>
+  </header>
+
+  <!-- Center-left: bounded scene panel -->
+  <!-- .scene-panel is the grid cell; .scene-panel-inner enforces 16:9 aspect ratio
+       on a non-scene-content element; #scene-root fills the inner panel 100%x100%.
+       This two-layer approach keeps aspect-ratio off #scene-root (CSS policy). -->
+  <div class="scene-panel" data-region="scene-panel">
+    <div class="scene-panel-inner">
+      <div id="scene-root"></div>
+    </div>
+  </div>
+
+  <!-- Right column: read-only step outline (spans center + bottom rows) -->
+  <aside class="outline-panel" data-region="outline" id="outline-panel">
+    <div class="outline-heading">Step by step<br>Outline</div>
+    <div id="outline-steps" class="outline-steps"></div>
+  </aside>
+
+  <!-- Bottom-left: current step guidance bar -->
+  <div class="guidance-bar" data-region="guidance-bar" id="guidance-bar">
+    <span id="guidance-text">Loading...</span>
+  </div>
+
+</div>
+
+<!-- Shell mounts here: sibling of .protocol-page-grid internals, outside scene-root -->
 <div id="shell-root"></div>
+
 <script>
 window.__PROTOCOL_NAME__ = "{{PROTOCOL_NAME}}";
 </script>

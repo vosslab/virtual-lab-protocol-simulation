@@ -45,6 +45,20 @@ The `entry_step` field declares where protocol flow starts.
 - `entry_step` is the `step_name` of the first step the runtime runs. Flow starts there and follows `next_step` from step to step.
 - The scene a protocol opens in is not a protocol-level field. The protocol vocabulary is geometry-free and scene-free at the flow level; a step's interactions name semantic `target` objects, and the scene adapter resolves those names. A `SceneChange` scene operation in a step's `response` transitions the scene context. See [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md).
 
+### Entry-scene resolution precedence
+
+The runtime resolves the initial scene from the entry step using this precedence:
+
+1. The entry step's optional `scene:` field, when present and non-empty.
+2. The first `SceneChange.to_scene` found anywhere in the entry step's `sequence` (scans all interactions, not only `sequence[0]`).
+3. Throw a clear error naming the protocol and entry step.
+
+No protocol-level `entry_scene` field exists or is read; adding one would violate the vocabulary closure rule.
+
+For `sequence_runner` protocols: the runner carries no `steps` list. Resolution delegates to the first listed mini-protocol by looking it up in the protocol registry and applying the same three-step precedence to its entry step.
+
+For `dev_smoke` protocols: the empty-scene guard (which throws when `final.length === 0`) is exempt. Smoke fixtures may intentionally exercise partial or empty scenes.
+
 Validation rules:
 
 - `entry_step` must name a `step_name` present in the `steps` list.

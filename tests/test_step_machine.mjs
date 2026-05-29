@@ -379,3 +379,98 @@ describe("step machine - active_interaction_target and active_interaction_gestur
     assert.strictEqual(after.active_interaction_gesture, "click");
   });
 });
+
+describe("step machine - current_tip snapshot field", () => {
+  test("current_tip is set from step.tip on step_started", () => {
+    const step = {
+      step_name: "a",
+      prompt: "Click the bottle",
+      tip: "Make sure the cap is loose before clicking.",
+      sequence: [
+        {
+          target: "obj_a",
+          gesture: "click",
+          validator: { preset: "correct_target" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "sequence_complete" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: null,
+    };
+    const cfg = make_config([step], "a");
+    const { machine, emitter } = build_harness(cfg);
+    machine.start();
+    assert.strictEqual(
+      emitter.get_snapshot().current_tip,
+      "Make sure the cap is loose before clicking.",
+    );
+  });
+
+  test("current_tip reverts to null when protocol completes", () => {
+    const step = {
+      step_name: "a",
+      prompt: "Click the bottle",
+      tip: "Tip text here.",
+      sequence: [
+        {
+          target: "obj_a",
+          gesture: "click",
+          validator: { preset: "correct_target" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "sequence_complete" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: null,
+    };
+    const cfg = make_config([step], "a");
+    const { machine, emitter } = build_harness(cfg);
+    machine.start();
+    assert.strictEqual(emitter.get_snapshot().current_tip, "Tip text here.");
+    machine.handle_click("obj_a", "click");
+    assert.strictEqual(emitter.get_snapshot().is_complete, true);
+    assert.strictEqual(emitter.get_snapshot().current_tip, null);
+  });
+
+  test("current_tip transitions from tip step to null step on next_step", () => {
+    const step_with_tip = {
+      step_name: "a",
+      prompt: "Step A",
+      tip: "Here is the tip.",
+      sequence: [
+        {
+          target: "obj_a",
+          gesture: "click",
+          validator: { preset: "correct_target" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "sequence_complete" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: "b",
+    };
+    const step_no_tip = {
+      step_name: "b",
+      prompt: "Step B",
+      sequence: [
+        {
+          target: "obj_b",
+          gesture: "click",
+          validator: { preset: "correct_target" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "sequence_complete" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: null,
+    };
+    const cfg = make_config([step_with_tip, step_no_tip], "a");
+    const { machine, emitter } = build_harness(cfg);
+    machine.start();
+    assert.strictEqual(emitter.get_snapshot().current_tip, "Here is the tip.");
+    machine.handle_click("obj_a", "click");
+    // Step B has no tip; current_tip must be null.
+    assert.strictEqual(emitter.get_snapshot().current_tip, null);
+  });
+});

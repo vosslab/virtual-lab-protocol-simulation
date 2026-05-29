@@ -8,8 +8,10 @@
 // Mount order:
 //   1. Resolve protocol name (query string or window fallback).
 //   2. Look up ProtocolConfig from generated/protocols.ts.
-//   3. Resolve the entry scene (first SceneChange's to_scene, or a
-//      protocol.entry_scene field, or the protocol's local scene).
+//   3. Resolve the entry scene: (1) entry step's optional scene: field;
+//      (2) first SceneChange.to_scene in the entry step; (3) throw.
+//      For sequence_runner protocols, resolution delegates to the first
+//      mini-protocol's entry step. See resolve_entry_scene.ts.
 //   4. Run the layout pipeline + renderer to paint #scene-root.
 //   5. Build emitter (seeded with initial ShellViewSnapshot), scene-op
 //      handler (stubbed deps; renderer integration is M2-3 follow-up),
@@ -56,6 +58,10 @@ import {
   type SceneOpDeps,
 } from "./scene_runtime/protocol/scene_operations.js";
 import { attach_click_resolver } from "./scene_runtime/protocol/click_resolver.js";
+import {
+  resolve_entry_scene_name,
+  assert_scene_not_empty,
+} from "./scene_runtime/protocol/resolve_entry_scene.js";
 
 import { render } from "solid-js/web";
 import { subscribeEmitterToSnapshot } from "./shell/signals.js";
@@ -101,42 +107,12 @@ function resolve_protocol_name(): string {
   );
 }
 
-// Resolve the entry scene name for a protocol. Order of precedence:
-//   1. The first SceneChange operation in the protocol's entry step.
-//   2. A protocol.entry_scene field, if present.
-//   3. The protocol package's local scene, if discoverable in SCENES.
-// Throws with a clear message if none of these resolve.
-function resolve_entry_scene_name(config: ProtocolConfig): string {
-  if (config.entry_scene && config.entry_scene !== "") {
-    return config.entry_scene;
-  }
-  // Walk the entry step's sequence and pick the first SceneChange.
-  const steps = config.steps ?? [];
-  for (const step of steps) {
-    if (step.step_name !== config.entry_step) {
-      continue;
-    }
-    for (const interaction of step.sequence) {
-      for (const op of interaction.response.scene_operations) {
-        if (op.type === "SceneChange") {
-          return op.to_scene;
-        }
-      }
-    }
-  }
-  // Fall back to a protocol-local scene name guess: many packages
-  // expose <protocol_name>_<scene_file>. Look for SCENES keys that
-  // start with the protocol name.
-  const scene_keys = Object.keys(SCENES);
-  const prefix = `${config.protocol_name}_`;
-  for (const key of scene_keys) {
-    if (key.startsWith(prefix)) {
-      return key;
-    }
-  }
-  throw new Error(
-    `protocol_host: cannot resolve entry scene for protocol "${config.protocol_name}"`,
-  );
+// resolve_entry_scene_name is imported from resolve_entry_scene.ts.
+// See that file for the full precedence spec and sequence_runner delegation logic.
+// This thin wrapper binds the module-level PROTOCOLS map so callers in mount()
+// do not have to pass it explicitly.
+function resolve_entry_scene_name_bound(config: ProtocolConfig): string {
+  return resolve_entry_scene_name(config, PROTOCOLS);
 }
 
 // Initial snapshot seed. Derived directly from the protocol config so the
@@ -147,6 +123,8 @@ function build_initial_snapshot(config: ProtocolConfig): ShellViewSnapshot {
     protocol_name: config.protocol_name,
     current_step_name: null,
     current_prompt: null,
+    // No step active yet; tip resolves to null until step_started fires.
+    current_tip: null,
     current_interaction_index: 0,
     progress: { completed_step_count: 0, total_step_count },
     last_outcome: null,
@@ -227,7 +205,7 @@ function mount(): void {
   }
 
   // Resolve and load the entry scene.
-  const scene_name = resolve_entry_scene_name(config);
+  const scene_name = resolve_entry_scene_name_bound(config);
   const scene = SCENES[scene_name];
   if (!scene) {
     throw new Error(
@@ -235,12 +213,58 @@ function mount(): void {
     );
   }
 
-  // Layout + render pass into #scene-root.
+  // WP-FRAME-2: measure actual #scene-root pixel dimensions before running the
+  // pipeline. getBoundingClientRect() forces a synchronous layout reflow so the
+  // CSS grid and flex sizing is resolved. The bounded panel is NOT full viewport
+  // and may have a different aspect ratio than DEFAULT_VIEWPORT (1920x1080).
+  // The pipeline's vertical_layout stage uses viewport W/H to compute item heights
+  // as percentages. Passing the actual panel size makes item heights correct for
+  // the bounded box: rendered pixel aspect = (visualWidth/height) * (panelW/panelH)
+  // = aspect_svg (correct). Using the wrong viewport aspect ratio here would cause
+  // Guard 5 (structural_guards.ts) to throw an aspect-distortion error.
+  function measure_scene_viewport(el: HTMLElement): { w: number; h: number } {
+    // Forces a layout reflow. Reliable even in synchronous DOMContentLoaded context.
+    const rect = el.getBoundingClientRect();
+    // Fail loud: zero dimensions mean CSS has not been applied or the element is
+    // not yet in the rendered tree. A silent 1920x1080 fallback would hide a real
+    // layout failure and cause incorrect item sizing downstream.
+    if (rect.width === 0 || rect.height === 0) {
+      throw new Error(
+        `protocol_host: #scene-root has zero dimensions (${rect.width}x${rect.height}); CSS may not be applied`,
+      );
+    }
+    const w = Math.round(rect.width);
+    const h = Math.round(rect.height);
+    return { w, h };
+  }
+
+  // Measure the actual panel size. With CSS aspect-ratio: 16/9 on #scene-root,
+  // the panel should be close to 16:9 but the grid layout may constrain it to
+  // a non-16:9 size depending on header/guidance bar heights. The measured size
+  // is always correct regardless of CSS constraints.
+  const scene_viewport = measure_scene_viewport(scene_root);
+
+  // Run the layout pipeline with the actual scene-root dimensions.
+  // This ensures items fit correctly in the bounded panel and Guard 5 passes.
   const pipeline_result = runPipeline(scene, {
     library: OBJECT_LIBRARY,
     assets: ASSET_SPECS,
+    viewport: scene_viewport,
   });
-  renderScene(scene_root, pipeline_result);
+
+  // WP-RESOLVE-2: fail-loud empty-scene guard (via assert_scene_not_empty).
+  // A student-visible protocol must render a non-empty scene. dev_smoke is exempt.
+  assert_scene_not_empty(
+    pipeline_result.final.length,
+    config.protocol_type,
+    protocol_name,
+    scene_name,
+  );
+
+  // Pass the measured viewport to renderScene so Guard 5 (aspect ratio) uses
+  // the same dimensions as the pipeline. This prevents false aspect-distortion
+  // failures when the bounded panel is not exactly 1920x1080.
+  renderScene(scene_root, pipeline_result, scene_viewport);
 
   // Build the emitter + step machine + scene-op handler.
   const initial_snapshot = build_initial_snapshot(config);
@@ -259,7 +283,10 @@ function mount(): void {
   const shell_off = read_query_param("shell") === "off";
   if (!shell_off) {
     const snapshot_signal = subscribeEmitterToSnapshot(emitter);
-    render(() => <ProtocolHud snapshot={snapshot_signal} />, shell_root);
+    // Pass config.steps to ProtocolHud so the read-only step outline can render.
+    // sequence_runner protocols have no steps list; mini_protocols and dev_smoke do.
+    const protocol_steps = config.steps ?? [];
+    render(() => <ProtocolHud snapshot={snapshot_signal} steps={protocol_steps} />, shell_root);
   }
 
   // Walker hook. Off by default; only consumed by the M4 walker.

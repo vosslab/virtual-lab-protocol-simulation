@@ -82,6 +82,7 @@ const _snapshot_shape_check: ShellViewSnapshot = {
   protocol_name: "x",
   current_step_name: null,
   current_prompt: null,
+  current_tip: null,
   current_interaction_index: 0,
   progress: { completed_step_count: 0, total_step_count: 0 },
   last_outcome: null,

@@ -106,6 +106,10 @@ export interface PlacementAuthored {
   active?: boolean;
   // Provenance after extends: "base" or "own".
   _from?: "base" | "own";
+  // Placeholder mode only: true when the object's SVG assets are missing from assets/.
+  // Set by pipeline/gen_scene_index.py --missing-svg=placeholder. Never true in
+  // a strict (normal) build. WP-RESOLVE-3 reads this to render a labeled placeholder.
+  missing_svg?: true;
 }
 
 export interface SceneA {
@@ -135,6 +139,8 @@ export interface SceneBRow {
     depth_tier?: number;
     align_stop?: AlignStop;
     layout?: Partial<LayoutHint>;
+    // Placeholder mode only: mirrors PlacementAuthored.missing_svg for row-slot scenes.
+    missing_svg?: true;
   }>;
 }
 

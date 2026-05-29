@@ -98,6 +98,8 @@ export interface ShellViewSnapshot {
   readonly protocol_name: string;
   readonly current_step_name: string | null;
   readonly current_prompt: string | null;
+  // Professor-tip for the current step. Null when the step has no tip or no step is active.
+  readonly current_tip: string | null;
   readonly current_interaction_index: number;
   readonly progress: ProgressTuple;
   readonly last_outcome: LastOutcome | null;
@@ -343,6 +345,13 @@ export interface StepOutcome {
 export interface ProtocolStep {
   readonly step_name: string;
   readonly prompt: string;
+  // Optional per-step scene declaration. When present, the runtime uses this
+  // as the authoritative initial/transition scene for this step (precedence 1
+  // in resolve_entry_scene_name). See docs/specs/PROTOCOL_YAML_FORMAT.md.
+  readonly scene?: string;
+  // Optional professor-tip string for the tip bubble. Null/absent when not authored.
+  // See docs/specs/PROTOCOL_YAML_FORMAT.md optional step-fields table.
+  readonly tip?: string;
   readonly sequence: ReadonlyArray<Interaction>;
   readonly step_validator: ValidatorReference;
   readonly outcome: StepOutcome;
@@ -354,7 +363,6 @@ export interface ProtocolConfig {
   readonly protocol_name: string;
   readonly protocol_type: ProtocolKind;
   readonly entry_step: string;
-  readonly entry_scene?: string;
   readonly learning?: LearningBlock;
   readonly steps?: ReadonlyArray<ProtocolStep>;
   readonly mini_protocols?: ReadonlyArray<string>;

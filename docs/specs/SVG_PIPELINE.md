@@ -322,6 +322,29 @@ Anti-patterns (forbidden):
 - Do not accept a high score if the asset is visibly cropped.
 - Do not claim visual success while glassware bottoms are cut off.
 
+## gen_scene_index.py missing-SVG flag
+
+`pipeline/gen_scene_index.py` accepts a `--missing-svg` flag that controls how
+placements referencing objects with missing SVG assets are handled:
+
+| Flag value      | Behavior                                                                                                                                                       |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `strict`        | Default; normal build. Reports missing SVGs loudly to stderr naming the object and asset ids. The scene is excluded from `SCENES` and the build fails if the scene is allowlisted. Never silently skips or blanks a placement. |
+| `placeholder`   | Dev/test mode. Emits the scene with `missing_svg: true` on each affected placement. The renderer shows a visually obvious dashed-border labeled box (carries `data-missing-svg="true"` and the object name) instead of injecting real SVG art. |
+
+Both modes emit a missing-asset report to stderr listing every affected placement,
+its object name, and the missing asset ids.
+
+The `strict` mode is the gate: a scene that passes strict mode has all its SVG
+assets present and is safe to render. The `placeholder` mode is a development
+aid that lets authors work on protocol flow before final art is available.
+
+Example (placeholder mode for a smoke fixture build):
+
+```bash
+source source_me.sh && python3 pipeline/gen_scene_index.py --missing-svg=placeholder
+```
+
 ## Related docs
 
 - [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) - Scene YAML schema and the

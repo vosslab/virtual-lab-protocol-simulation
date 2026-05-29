@@ -1,40 +1,43 @@
 # Virtual lab protocol simulation
 
-YAML-authored lab protocols compile to TypeScript-rendered browser simulations through build-time codegen. Authors compose scenes, objects, and workflows without coding; the pipeline handles layout, SVG injection, and interaction tracking.
+Browser-based virtual lab protocol games for biology students. Authors compose scenes, objects, and workflows in YAML; the pipeline compiles them to interactive TypeScript simulations with SVG-backed objects laid out by a scene engine.
 
 ## Quick start
 
 ```bash
-bash export_single_file.sh
-open cell_culture_game.html
+bash run_web_server.sh
 ```
 
-The build script compiles TypeScript source files into a single self-contained
-HTML file (rebuilt on demand if missing, and git-ignored). Open it in any
-modern browser to play.
+Builds the project and serves `dist/` on a random port, then opens the protocol selector in your browser.
+
+Other useful commands:
+
+```bash
+bash build_github_pages.sh   # build dist/ for deployment
+bash check_codebase.sh       # typecheck, lint, and format check
+source source_me.sh && pytest tests/   # run unit tests
+```
 
 ## Documentation
 
-- [docs/INSTALL.md](docs/INSTALL.md): prerequisites and setup
-- [docs/USAGE.md](docs/USAGE.md): how to build and play
+Core docs:
+
+- [docs/INSTALL.md](docs/INSTALL.md): prerequisites and setup steps
+- [docs/USAGE.md](docs/USAGE.md): how to build, run, and author content
 - [docs/CODE_ARCHITECTURE.md](docs/CODE_ARCHITECTURE.md): system design and data flow
-- [docs/specs/PROTOCOL_AUTHORING_GUIDE.md](docs/specs/PROTOCOL_AUTHORING_GUIDE.md): how to author a new protocol (worked example)
 - [docs/FILE_STRUCTURE.md](docs/FILE_STRUCTURE.md): directory map and file purposes
+- [docs/specs/PROTOCOL_AUTHORING_GUIDE.md](docs/specs/PROTOCOL_AUTHORING_GUIDE.md): worked example for authoring a new protocol
+
+Reference docs:
+
+- [AGENTS.md](AGENTS.md): agent instructions and repo guardrails
+- [docs/PRIMARY_CONTRACT.md](docs/PRIMARY_CONTRACT.md): hard design invariants
 - [docs/CHANGELOG.md](docs/CHANGELOG.md): record of changes
-- [docs/AUTHORS.md](docs/AUTHORS.md): maintainers and contributors
-- [docs/PYTHON_STYLE.md](docs/PYTHON_STYLE.md): Python conventions for this repo
-- [docs/MARKDOWN_STYLE.md](docs/MARKDOWN_STYLE.md): Markdown formatting rules
-- [docs/REPO_STYLE.md](docs/REPO_STYLE.md): repo-wide organization conventions
-
-## Testing
-
-```bash
-source source_me.sh && python3 -m pytest tests/
-```
+- [docs/ROADMAP.md](docs/ROADMAP.md): planned work and priorities
 
 ## License
 
-- Code: [LGPL v3](LICENSE.LGPL_v3)
-- Non-code content: [CC BY 4.0](LICENSE.CC_BY_4_0)
+- Code: [LICENSE.LGPL_v3](LICENSE.LGPL_v3)
+- Non-code content: [LICENSE.CC_BY_4_0](LICENSE.CC_BY_4_0)
 
 Maintained by Neil Voss, https://bsky.app/profile/neilvosslab.bsky.social

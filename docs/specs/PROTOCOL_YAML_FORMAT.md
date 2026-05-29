@@ -279,6 +279,7 @@ Optional step-level fields used for display only:
 | `step_index` | number          | no       | 1-based display position within the part. Display order only; never controls flow. |
 | `scene`      | string          | no       | The scene this step's interactions happen in.                                      |
 | `details`    | list of strings | no       | Short strings rendered as a bulleted side panel beneath the prompt.                |
+| `tip`        | string          | no       | One sentence of professor guidance shown in the tip bubble next to the step prompt. Authoring real per-step tips is future content work (TODO). |
 
 ## The interaction block
 

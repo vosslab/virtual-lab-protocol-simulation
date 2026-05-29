@@ -1,498 +1,304 @@
 # Code architecture
 
-Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md). This doc uses that vocabulary.
+Protocol terminology is defined in [specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md).
+This doc uses that vocabulary without restating definitions.
 
 ## Overview
 
-An interactive browser-based educational simulation that teaches cell culture
-laboratory techniques. The game is authored as TypeScript ES modules under
-`src` and bundled by esbuild into a browser bundle. Two artifacts
-are produced from the same sources:
+A browser-based educational simulation that teaches laboratory techniques
+(cell culture, SDS-PAGE) through step-by-step YAML-authored mini-protocols.
+Protocol and scene content lives as YAML in `content/` and is compiled to
+TypeScript by codegen scripts in `pipeline/` before each build. The shared
+TypeScript runtime under `src/` renders scenes, drives protocol steps, and
+surfaces a HUD shell to the student.
 
-- A GitHub Pages-ready directory at `dist/` (separate `index.html`,
-  `style.css`, `main.js`).
-- A portable, fully self-contained single-file HTML at
-  `dist-single/game.html` for sharing without a server.
-
-Protocol content lives as YAML in `content/protocols/` and is
-compiled into TypeScript modules by [gen_protocols.py](../pipeline/gen_protocols.py)
-before each build. Object library YAML lives under `content/objects/`;
-shared base scenes under `content/base_scenes/`. A pytest test suite plus Playwright browser tests support
-local development.
+Build output is a GitHub Pages-ready directory at `dist/`. A shared bundle
+(`dist/launcher.js`, `dist/protocol_host.js`) serves every page; routing is
+by DOM-element presence, not by URL.
 
 ## Major components
 
-### TypeScript game modules (`src`)
+### Entry and routing (`src/`)
 
-The game is authored as ES modules. `init.ts` is the
-single bundle entry point; esbuild walks the import graph and produces one
-JavaScript output. There is no concatenation step.
+| File | Purpose |
+| --- | --- |
+| [src/dist_entry.tsx](../src/dist_entry.tsx) | Bundle entry; routes to launcher, protocol host, or bench by DOM root presence |
+| [src/launcher_entry.tsx](../src/launcher_entry.tsx) | Launcher bundle entry; mounts Solid `Launcher` into `#launcher-root` |
+| [src/protocol_host_entry.tsx](../src/protocol_host_entry.tsx) | Protocol-host bundle entry; imports `protocol_host.tsx` |
+| [src/protocol_host.tsx](../src/protocol_host.tsx) | Wires layout pipeline, renderer, step machine, click resolver, and HUD for one protocol page |
+| [src/launcher/Launcher.tsx](../src/launcher/Launcher.tsx) | Solid component; renders the protocol selector from `PROTOCOLS_INDEX_SLIM` |
+| [src/index.html](../src/index.html) | Bench page (render smoke target; copied to `dist/bench_basic.html`) |
+| [src/launcher/index.html](../src/launcher/index.html) | Launcher page (copied to `dist/index.html`) |
+| `src/protocol_host_template.html` | Six-region framed-interface shell for per-protocol pages (`#scene-root`, `#shell-root`, named `data-region` targets) |
 
-#### Core runtime
+`protocol_host.tsx` mount order:
 
-- `init.ts` - Bootstrap, protocol graph validation,
-  completion-event coverage check, render dispatcher.
-- `constants.ts` - `ProtocolStep`, `Interaction`,
-  `CompletionPath` types and shared layout constants.
-- `types.ts` - Shared runtime type definitions.
-- `game_state.ts` - `GameState` interface,
-  initial state, `completeStep()`, mutation helpers.
-- `cell_model.ts` - Cell population model with an
-  IC50-style drug-response curve.
-- `scoring.ts` - Final score across order,
-  cleanliness, waste, and timing.
+1. Resolve protocol name from `?protocol=` query string or `window.__PROTOCOL_NAME__`.
+2. Look up `ProtocolConfig` from `generated/protocols.ts`.
+3. Resolve entry scene via `resolve_entry_scene_name` (see scene_runtime/protocol below).
+4. Call `runPipeline` then `renderScene` to paint `#scene-root`.
+5. Build emitter, scene-op handler, step machine, and click resolver.
+6. Mount `ProtocolHud` into `#shell-root` (unless `?shell=off`).
+7. Call `step_machine.start()`.
 
-#### Scenes
+### Scene runtime - layout (`src/scene_runtime/layout/`)
 
-Scene runtime is fully driver-routed as of 2026-05-09. Each scene is
-implemented as an adapter at `src/scenes/<scene>/<scene>.ts`; no flat
-monolithic scene modules remain at `src/scenes/*.ts`. See the
-[Capability-based scene architecture](#capability-based-scene-architecture-current-state-2026-05-09)
-section below for the layered model and the per-adapter file map. Schema
-reference for the per-scene `<scene>.yaml` files lives in
-[specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md); the deep-dive on driver,
-registry, adapters, and capabilities lives in
-[specs/SCENE_ARCHITECTURE.md](specs/SCENE_ARCHITECTURE.md), the canonical scene terms
-in [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md), and the canonical object
-terms (state_fields, render_map, structured surfaces and subparts) in
-[specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) and
-[specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md).
+Multi-pass layout pipeline. Converts a scene YAML record plus the object
+library into positioned, scaled `ComputedItem` records.
 
-#### Step modules
+| File | Purpose |
+| --- | --- |
+| [src/scene_runtime/layout/run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; stages 1-5 once, stages 6-10 in convergence loop |
+| [src/scene_runtime/layout/types.ts](../src/scene_runtime/layout/types.ts) | All layout type definitions (`PipelineResult`, `ComputedItem`, `PlacementAuthored`, etc.) |
+| [src/scene_runtime/layout/constants.ts](../src/scene_runtime/layout/constants.ts) | Layout constants (`DEFAULT_VIEWPORT`, `WORKSPACE_PX_PER_CM`, shrink factor) |
+| [src/scene_runtime/layout/workspace_row_library.ts](../src/scene_runtime/layout/workspace_row_library.ts) | Row templates for Schema B scenes |
+| [src/scene_runtime/layout/bind_objects.ts](../src/scene_runtime/layout/bind_objects.ts) | Stage: bind object YAML to placements |
+| [src/scene_runtime/layout/resolve_inheritance.ts](../src/scene_runtime/layout/resolve_inheritance.ts) | Stage: resolve base-scene inheritance chain |
+| [src/scene_runtime/layout/normalize_schema.ts](../src/scene_runtime/layout/normalize_schema.ts) | Stage: normalize Schema A/B fields |
+| [src/scene_runtime/layout/scale_to_real_world.ts](../src/scene_runtime/layout/scale_to_real_world.ts) | Stage: convert real-world dimensions to pixels |
+| [src/scene_runtime/layout/horizontal_layout.ts](../src/scene_runtime/layout/horizontal_layout.ts) | Stage: compute x positions |
+| [src/scene_runtime/layout/vertical_layout.ts](../src/scene_runtime/layout/vertical_layout.ts) | Stage: compute y positions |
+| [src/scene_runtime/layout/group_by_zone.ts](../src/scene_runtime/layout/group_by_zone.ts) | Stage: group placements by zone |
+| [src/scene_runtime/layout/footprint.ts](../src/scene_runtime/layout/footprint.ts) | Footprint helpers |
+| [src/scene_runtime/layout/clamp_scene_bounds.ts](../src/scene_runtime/layout/clamp_scene_bounds.ts) | Clamp placements to scene bounds |
+| [src/scene_runtime/layout/layout_labels.ts](../src/scene_runtime/layout/layout_labels.ts) | Label positioning |
+| [src/scene_runtime/layout/wrap_label.ts](../src/scene_runtime/layout/wrap_label.ts) | Label line-wrap helper |
+| [src/scene_runtime/layout/index.ts](../src/scene_runtime/layout/index.ts) | Barrel re-export: `runPipeline` |
 
-Per-step UI and emitter logic. Each module registers a completion-event
-emitter via `triggerStep(stepId)`.
+### Scene runtime - protocol (`src/scene_runtime/protocol/`)
 
-- `feed_cells.ts` - Media aspirate /
-  add with volume validation.
-- `drug_treatment.ts` - Drug
-  pipetting flow.
-- `mtt_readout.ts` - MTT plate
-  readout flow.
-- `plate_96.ts` - 96-well plate
-  rendering.
+Step machine, validators, scene operations, and click resolver.
 
-#### Interaction and dispatch
+| File | Purpose |
+| --- | --- |
+| [src/scene_runtime/protocol/resolve_entry_scene.ts](../src/scene_runtime/protocol/resolve_entry_scene.ts) | `resolve_entry_scene_name` (step.scene -> SceneChange fallback -> throw; runner delegation); `assert_scene_not_empty` guard |
+| [src/scene_runtime/protocol/step_machine.ts](../src/scene_runtime/protocol/step_machine.ts) | Pure step machine: step progression, interaction-index advancement, validator dispatch, scene-op handoff, event emission |
+| [src/scene_runtime/protocol/validators.ts](../src/scene_runtime/protocol/validators.ts) | Interaction and step validator dispatch (`correct_target`, `correct_choice`, `target_with_value`, `sequence_complete`, `final_state_matches`) |
+| [src/scene_runtime/protocol/scene_operations.ts](../src/scene_runtime/protocol/scene_operations.ts) | Routes five `SceneOperation` primitives to renderer/layout deps (stubs for `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`) |
+| [src/scene_runtime/protocol/click_resolver.ts](../src/scene_runtime/protocol/click_resolver.ts) | Attaches DOM click listener; maps click target to interaction validator |
+| [src/scene_runtime/protocol/emitter.ts](../src/scene_runtime/protocol/emitter.ts) | `ProtocolShellEmitter` and `RuntimeEmitterHandle`; snapshot reducer pattern |
 
-The modules below describe the interaction-dispatch runtime.
+Note: scene operations are stubbed. The step machine calls
+`build_stub_scene_op_deps` which console.warns on every operation.
+No mini-protocol is fully playable (PRIMARY_CONTRACT item 4 not yet satisfied).
 
-- `interaction_resolver.ts` - Resolves
-  the current interaction from the step.
-- `step_dispatch.ts` - Maps the
-  step shape to handlers.
-- `protocol_ui.ts` - Protocol panel rendering
-  (left sidebar).
-- `ui_rendering.ts` - Sidebar HUD, meters,
-  warnings, results screen.
-- `professor_overlay.ts` - In-game hint
-  overlay.
+### Scene runtime - renderer (`src/scene_runtime/renderer/`)
 
-#### Layout and SVG art
+Renders a `PipelineResult` into the DOM.
 
-- layout_engine.ts - Per-scene layout
-  computation.
-- Bench and hood layout: declared in scene YAML at
-  bench.yaml and
-  cell_culture_hood.yaml.
-  The legacy `src/bench_config.ts` and `src/hood_config.ts` modules were
-  retired in the 2026-05-09 scene migration; YAML is the single source of
-  truth for layout in those scenes.
-- Well-plate workspace layout: declared in scene YAML at
-  well_plate_workspace.yaml.
-  The workspace is a first-class scene for plate-transfer and tube-prep
-  mini-protocols, with render assembly in
-  render.ts
-  and click dispatch in
-  `dispatch.ts`.
-- `plate_config.ts` - Legacy plate layout
-  exports retained for older helpers; superseded for interactive work by
-  `well_plate_workspace`.
-- `scene_types.ts` - Scene/zone enums and types.
-- `style_constants.ts` - Color and style
-  tokens used by SVG and DOM rendering.
-- `asset_specs.ts`, `brands.ts` -
-  Asset metadata and brand-name helpers.
-- `svg_assets.ts` - SVG composition helpers.
-- `svg_overlays.ts` - Overlay decorations
-  (labels, badges) layered on SVG art.
-- `svg_color_patch.ts` - Applies
-  `SvgColorPatch[]` to a baked SVG string.
-- `svg_recipes.ts` - Maps semantic state to
-  patch lists (`bottleLiquidPatches`, `T75LiquidVisual`, etc.).
-- `generated/svg_assets/<name>.ts` - Per-asset SVG string constants
-  (`SVG_<NAME>: string`), one file per source SVG under
-  `assets/equipment/`. Gitignored; regenerated by
-  [gen_svg_registry.py](../pipeline/gen_svg_registry.py).
-- `generated/svg_assets/index.ts` - Barrel re-exporting every per-asset
-  constant. Consumed only by `svg_assets.ts`;
-  other importers reach for the specific per-asset module they need.
-- `generated/svg_manifest.ts` - Small manifest exporting `SVG_IDS`,
-  `SVG_GROUPS`, and the `SvgGroupEntry` type (no SVG strings). Imported
-  by `svg_color_patch.ts` and tests that
-  do not need SVG markup.
-- The entire `generated/` tree is gitignored. Build scripts
-  (`build_github_pages.sh`, `export_single_file.sh`) regenerate it
-  before `tsc` and the bundler; `tests/conftest.py` regenerates it once
-  per pytest session if `generated/svg_manifest.ts` is missing.
-- See [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for the full SVG asset
-  ownership boundary and the rule that scenes import only
-  `svg_assets.ts`.
+| File | Purpose |
+| --- | --- |
+| [src/scene_runtime/renderer/render_scene.ts](../src/scene_runtime/renderer/render_scene.ts) | Top-level renderer: clear root, run structural guards, render background/items/labels |
+| [src/scene_runtime/renderer/render_item.ts](../src/scene_runtime/renderer/render_item.ts) | Render one item; placeholder dashed box when `missing_svg: true` |
+| [src/scene_runtime/renderer/render_label.ts](../src/scene_runtime/renderer/render_label.ts) | Render label element for an item |
+| [src/scene_runtime/renderer/render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
+| [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.) |
+| [src/scene_runtime/renderer/inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Inject inline SVG from `ASSET_SPECS` |
+| [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene` |
 
-#### Content and generated data facades
+### Shell and HUD (`src/shell/`)
 
-- `content/protocols/<cluster>/<protocol_name>/` - Authored protocols (each
-  carrying `protocol.yaml`, `materials.yaml`, and optional protocol-scoped
-  scene overrides under `scenes/`).
-- `content/objects/<object_name>.yaml` - Object library (shared across
-  protocols).
-- `content/base_scenes/<base_scene_name>.yaml` - Shared base scenes.
-- Build-side helpers that mirror generated data live in `src/` next to
-  the facade modules listed below.
-- **Authored content facades:**
-  - protocol.ts - Re-exports protocol steps and protocol ID
-    from `generated/protocol_data.ts`.
-  - `inventory.ts` - Re-exports inventory metadata
-    from `generated/inventory_data.ts`.
-  - `scene_configs.ts` - Re-exports scene configurations
-    from `generated/scene_data.ts`.
-  - `svg_assets.ts` - Re-exports SVG string constants and
-    utilities (imported from `generated/svg_assets/`).
-  - `svg_color_patch.ts` - Composition layer for recolor
-    primitives that imports `generated/svg_manifest` directly for color-group metadata;
-    provides utilities for applying SVG group-based color patches.
-- **Generated TypeScript artifacts (gitignored):**
-  - `generated/protocol_data.ts` - Protocol steps and metadata
-    (emitted by [gen_protocols.py](../pipeline/gen_protocols.py)).
-  - `generated/inventory_data.ts` - Inventory metadata for items and reagents
-    (emitted by [gen_protocols.py](../pipeline/gen_protocols.py)).
-  - `generated/scene_data.ts` - Scene configurations and registrations
-    (emitted by [gen_scene_index.py](../pipeline/gen_scene_index.py)).
-  - `generated/svg_assets/*.ts` - Per-asset SVG string constants
-    (emitted by [gen_svg_registry.py](../pipeline/gen_svg_registry.py)).
-  - `generated/svg_manifest.ts` - SVG id/group registry and type definitions
-    (emitted by [gen_svg_registry.py](../pipeline/gen_svg_registry.py)).
-  - See [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for the full SVG asset
-    pipeline and ownership rules.
+Solid.js observer layer. Subscribes to the emitter; never mutates protocol state.
 
-### Build pipeline
+| File | Purpose |
+| --- | --- |
+| [src/shell/adapter/types.ts](../src/shell/adapter/types.ts) | Closed seam contract: `ProtocolConfig`, `ShellViewSnapshot`, all event/op/gesture types |
+| [src/shell/signals.ts](../src/shell/signals.ts) | Re-exports Solid signals; `subscribeEmitterToSnapshot` binding helper |
+| [src/shell/hud/ProtocolHud.tsx](../src/shell/hud/ProtocolHud.tsx) | Mounts four Solid region components into named DOM targets |
+| [src/shell/regions/StepOutline.tsx](../src/shell/regions/StepOutline.tsx) | Read-only ordered step cards (`data-step-status` current/previous/upcoming) |
+| [src/shell/regions/TipsBubble.tsx](../src/shell/regions/TipsBubble.tsx) | Professor-tip bubble (`current_tip` or fallback) |
+| [src/shell/regions/StepCounter.tsx](../src/shell/regions/StepCounter.tsx) | Completed/total counter |
+| [src/shell/regions/GuidanceBar.tsx](../src/shell/regions/GuidanceBar.tsx) | Current-step prompt in the teal guidance bar |
 
-Two build entry points share a common pre-step:
+The shell is a sibling of `#scene-root`, never an ancestor (asset-crop rule).
 
-1. [gen_protocols.py](../pipeline/gen_protocols.py) parses
-   `content/protocols/<cluster>/<protocol_name>/*.yaml`, applies the cross-file schema
-   rules (see [specs/PROTOCOL_YAML_FORMAT.md](specs/PROTOCOL_YAML_FORMAT.md)),
-   and writes `generated/protocol_data.ts` + `generated/inventory_data.ts`
-   (gitignored; consumed via the `src/protocol.ts` and `src/inventory.ts`
-   facades). Build scripts run this with `--validate-only` first as a fast
-   gate.
-2. [gen_svg_registry.py](../pipeline/gen_svg_registry.py) reads
-   `assets/equipment/*.svg`, namespaces ids, and emits
-   `generated/svg_assets/<name>.ts` (per-asset SVG modules),
-   `generated/svg_assets/index.ts` (barrel re-export), and
-   `generated/svg_manifest.ts` (`SVG_IDS` and `SVG_GROUPS`). The
-   `generated/` tree is gitignored and regenerated on every build.
-3. `npx tsc --noEmit -p src/tsconfig.json` type-checks (no JS emit from tsc).
-4. `npx esbuild src/init.ts --bundle ...` produces the JS bundle.
+### Build pipeline (`pipeline/`)
 
-[build_github_pages.sh](../build_github_pages.sh) wipes `dist/`,
-emits `--format=esm` to `dist/main.js`, copies `style.css`, assembles
-`dist/index.html` from `head.html` + `body.html` + `tail.html` (linking
-the external CSS and JS), and writes `.nojekyll` for GitHub Pages.
+All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
+`package.json` pre-hooks and `build_github_pages.sh`.
 
-`build_github_pages.sh` is the only supported build script.
+| File | Purpose |
+| --- | --- |
+| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts` |
+| [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
+| [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts`; `--missing-svg=strict|placeholder` flag |
+| [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` |
+| [pipeline/build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index helpers |
+| [pipeline/list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
+| [pipeline/scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (shared by gen_scene_index) |
+| [pipeline/build_main_bundle.mjs](../pipeline/build_main_bundle.mjs) | esbuild Node API bundle: `src/launcher_entry.tsx` -> `dist/launcher.js`, `src/protocol_host_entry.tsx` -> `dist/protocol_host.js` |
 
-### Local development server
+### Validation (`validation/`)
 
-[run_web_server.sh](../run_web_server.sh) runs
-[build_github_pages.sh](../build_github_pages.sh) and serves
-`dist/` on a LAN-visible HTTP port (default 5080). This is the
-canonical preview path. Playwright tests bootstrap-build their own
-artifact via build_game_if_missing.mjs.
+Python validators for YAML content, SVG assets, and protocol step flow.
+Entry point: [validation/validate.py](../validation/validate.py).
 
-### Test suite (`tests`)
+| Subtree | Purpose |
+| --- | --- |
+| `validation/yaml_schema/` | Schema and cross-field rules for protocol, object, and scene YAML |
+| `validation/stepper/` | Protocol step-flow walker: simulates execution, checks validator/outcome/scene-op semantics |
+| `validation/svg/` | SVG asset usage audit |
+| `validation/manual/` | Human-readable protocol manual renderer |
+| `validation/scene_lint/` | Pre-render failure predictor (BLOCKED Group A / advisory Group B) |
+| `validation/scene_design/` | Composition scorecard (weighted metrics, advisory only) |
+| `validation/scene_calc/` | Pure-function geometry primitives shared by scene_lint and scene_design |
+| `validation/structure/` | Layout structural check |
+| `validation/shared_toolkit/` | Shared discovery, YAML I/O, findings, reporter, CLI helpers |
 
-Three tiers, isolated by [conftest.py](../tests/conftest.py)
+### Testing (`tests/`)
+
+Three tiers, isolated by [tests/conftest.py](../tests/conftest.py)
 (`collect_ignore = ["e2e", "playwright"]`):
 
-- **Fast pytest** at the top level: pyflakes, bandit, ASCII compliance,
-  whitespace, indentation, shebangs, import policy, init-file hygiene,
-  protocol YAML validator (eight rules), test naming conventions.
-- **Browser tests** under `playwright`: unit
-  tests run inside a real page (resolver, interaction index, completion
-  event coverage) and the data-layer
-  protocol_graph_smoke.mjs.
-- **Browser walkthroughs** under
-  `e2e`: the canonical YAML
-  walker [protocol_walkthrough_yaml.mjs](../tests/playwright/e2e/protocol_walkthrough_yaml.mjs)
-  drives full protocols via DOM clicks; layout/scene checks live
-  alongside.
-- A reserved `e2e` tree for non-browser shell or
-  Python E2E runners (currently empty).
+- **Fast pytest** (`tests/test_*.py`): pyflakes, ASCII compliance, tab indentation,
+  trailing whitespace, shebangs, import policy, init-file hygiene, protocol YAML
+  validators, spec doc camelCase gate, test naming conventions, and more.
+- **Node unit tests** (`tests/test_*.mjs`, run by `node --import tsx --test`):
+  layout engine, step machine, structural guards, resolve_entry_scene, render_item
+  missing-svg, scene operations, shell signals, walker no-step-branches, and more.
+- **Playwright browser tests** (`tests/playwright/`): framed-layout evidence,
+  initial-scene evidence, interaction attrs, launcher, protocol host, solid walker,
+  viewport sweep, and full-path walkthroughs under `tests/playwright/e2e/`.
+- **Non-browser E2E** (`tests/e2e/`): `e2e_*.py` runners for bandit security,
+  facade smoke, gen_protocols, gen_scene_index, and scene_design CLI.
 
-See [E2E_TESTS.md](E2E_TESTS.md) and [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)
-for tier-specific conventions.
+### Developer tools (`tools/`)
+
+Developer-only helpers that do not appear in any build chain.
+
+| File | Purpose |
+| --- | --- |
+| [tools/run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
+| [tools/run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
+| [tools/build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
+| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG post-processing for asset normalization |
+| [tools/check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
+| [tools/html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
+| [tools/seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
+| [tools/svg_picker/README.md](../tools/svg_picker/README.md) | Browser-based SVG asset picker for content authors |
+| [tools/scorecard_m2.mjs](../tools/scorecard_m2.mjs) | M2 scene scorecard runner |
 
 ## Data flow
 
+Opening a protocol page end-to-end:
+
 ```text
-User input (click)
+Browser loads dist/<protocol_name>.html
   |
   v
-Scene driver capture-phase listener (src/scenes/scene_driver.ts)
+dist_entry.tsx: sees window.__PROTOCOL_NAME__ + #scene-root + #shell-root
   |
   v
-SceneAdapter.dispatchInteraction(itemId, ctx) (src/scenes/<scene>/<scene>.ts)
+protocol_host.tsx: look up ProtocolConfig in generated/protocols.ts
   |
   v
-step-kind handler (src/step_dispatch.ts)
+resolve_entry_scene_name(): entry step's scene: field -> SceneChange fallback -> throw
   |
   v
-GameState mutations (src/game_state.ts)
+runPipeline(scene, {library: OBJECT_LIBRARY, assets: ASSET_SPECS})
+  -> normalizeSchema -> resolveInheritance -> bindObjects
+  -> scaleToRealWorld -> groupByZone -> horizontalLayout
+  -> verticalLayout -> layoutLabels -> clampSceneBounds
+  returns PipelineResult (ComputedItems)
   |
   v
-Validation (volume, interaction order, cleanliness)
+renderScene(#scene-root, result): structural guards -> renderBackground
+  -> renderItem (inject_svg or placeholder) -> renderLabel
   |
   v
-warnings[] accumulation (real-time sidebar)
+assert_scene_not_empty(): throws for student protocols with 0 items
   |
   v
-renderGame() dispatcher (src/init.ts)
+createProtocolShellEmitter(): emitter + initial ShellViewSnapshot
+create_scene_op_handler(stub_deps): all ops console.warn (stubs)
+create_step_machine(): pure step machine, no DOM
+attach_click_resolver(): DOM click -> step machine
   |
   v
-SceneAdapter.render(ctx) per scene (bench, cell_culture_hood, microscope, incubator, plate, plate_reader)
+ProtocolHud.mount(#shell-root): StepOutline, TipsBubble, StepCounter, GuidanceBar
+  subscribes via Solid signal to emitter snapshot
   |
   v
-SVG/HTML output to DOM
+step_machine.start(): emits step_started for entry step -> HUD renders first prompt
   |
   v
-triggerStep(id) -> completeStep() advances protocol
-  |
-  v
-Results scene -> calculateScore() -> star rating
+Student clicks scene item -> click_resolver -> step_machine.handle_click()
+  -> dispatch_interaction_validator() -> on success: scene_operations (stubbed)
+  -> emit step progress events -> HUD re-renders
 ```
 
-## Game protocol
-
-For authoring a new protocol from scratch, see
-[specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md).
-Mini-protocols span the OVCAR8 cell-culture / MTT workflow (under
-`cell_culture/`) and the SDS-PAGE electrophoresis workflow (under
-`sdspage/`), composed by sequence runners under `runners/`. Each
-mini-protocol teaches one focused workflow and is independently walkable
-and testable.
-
-Each step wraps an ordered `sequence` of `interaction` blocks, checked by
-a `step_validator`, resolved by an `outcome`, and linked by `next_step`; see
-[specs/PROTOCOL_VOCABULARY.md](specs/PROTOCOL_VOCABULARY.md) and
-[specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md).
-
-## Scoring
-
-Four weighted categories in `scoring.ts`:
-
-| Category    | Max points | Tracks                                     |
-| ----------- | ---------- | ------------------------------------------ |
-| Order       | 30         | Steps completed in correct sequence        |
-| Cleanliness | 25         | Contamination and sterile-technique errors |
-| Waste       | 20         | Excess media usage                         |
-| Timing      | 25         | Speed to completion                        |
-
-Final score maps to a 1-3 star rating.
+Note: scene operations remain stubbed. `SceneChange`, `ObjectStateChange`, and
+other primitives console.warn without mutating scene state. No mini-protocol
+satisfies PRIMARY_CONTRACT item 4 (visible browser completion) at this time.
 
 ## Testing and verification
 
 ```bash
-source source_me.sh && python3 -m pytest tests/
-node tests/playwright/protocol_graph_smoke.mjs
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --wrong-order
+# Fast pytest gate (Python)
+pytest tests/
+
+# Node unit tests (TypeScript modules, no browser)
+npm run pretest:node && node --import tsx --test tests/test_*.mjs
+
+# Codebase check gate (typecheck, lint, format, node tests)
+bash check_codebase.sh
+
+# Playwright browser tests (requires built dist/)
+bash build_github_pages.sh && bash run_web_server.sh
+# then in another shell:
+node tests/playwright/test_framed_layout_m2.mjs
+node tests/playwright/test_initial_scene_evidence_m1.mjs
 ```
 
-- **Linting:** pyflakes, bandit, ASCII compliance.
-- **Style:** tab indentation, trailing whitespace, shebang consistency.
-- **Imports:** no `import *`, no relative imports, all third-party in
-  requirements files.
-- **Protocol YAML:** validators orchestrated by `validation/yaml_schema/content_lint.py`
-  enforce a suite of rules (V1-V7 plus V6a) across modules under `validation/yaml_schema/*_validator.py`.
-- **Browser walker:** drives the full protocol via DOM clicks; the
-  `--wrong-order` flag injects bad clicks and verifies soft-fail recovery.
+What each gate checks:
 
-## Dynamic SVG recolor pipeline
+- **pytest**: pyflakes, ASCII compliance, tab indentation, shebang hygiene,
+  import policy, init-file hygiene, protocol YAML validators, markdown links,
+  test naming conventions, spec doc camelCase gate.
+- **node tests**: layout engine pipeline, step machine, structural guards,
+  entry-scene resolution, render_item placeholder contract, scene operations,
+  protocol emitter, shell signals, walker no-step-branches.
+- **check_codebase.sh**: TypeScript typecheck (tsconfig.json + tsconfig.lint.json),
+  ESLint zero warnings, Prettier format check, CSS content policy, node unit tests.
+- **Playwright**: framed-layout measurable evidence, initial-scene rendering
+  evidence, full-path YAML walker.
 
-Liquid color in the game is data-driven, not baked into static art:
-
-1. **SVG art** owns shapes and stable ids. Liquid sub-objects carry ids
-   like `liquid_<sha8>` (geometry-keyed) or named ids like
-   `liquid_residue`.
-2. **Generator** ([gen_svg_registry.py](../pipeline/gen_svg_registry.py))
-   reads `assets/equipment/*.svg`, namespaces every id with
-   `<basename>__`, and emits the `SVG_IDS` and `SVG_GROUPS` manifests in
-   `generated/svg_manifest.ts` (alongside the per-asset SVG modules
-   under `generated/svg_assets/`).
-3. **Renderer** (`svg_color_patch.ts`)
-   applies `SvgColorPatch[]` to a baked SVG string. Patches address one
-   element by namespaced id and write `fill`, `stroke` (via
-   `strokeRole`), and/or `opacity`.
-4. **Recipes** (`svg_recipes.ts`) map semantic
-   state (`T75LiquidVisual`, `BottleLiquid`) to patch lists.
-5. **Sidecar JSON** (`assets/equipment/<basename>.colormap.json`) groups
-   multiple authored ids under one semantic target with per-id opacity,
-   so one role color drives a layered shading effect (base + shadow +
-   highlight).
-
-Design lock: only fill/stroke/opacity changes on authored ids. No new
-geometry, no overlay engine, no state machines.
-
-## Completion-event coverage policy (CE-3)
-
-Each protocol has a coverage policy returned by
-`getCoveragePolicy(protocolId)` in `init.ts`. The
-policy controls how missing completion-event emitters are handled at
-startup:
-
-- **STRICT** (used for sequence runners and unknown ids): any step missing
-  a matching emitter throws via `showValidationError` with
-  `'missing completion-event emitter'`.
-- **RELAXED** (used for mini-protocols): missing emitters are
-  logged via `console.warn`; the page still loads.
-
-`validateCompletionEventCoverage()` runs after all scene render functions
-on the `load` event and compares declared steps against the set of
-emitters populated by `triggerStep()` calls.
+See [E2E_TESTS.md](E2E_TESTS.md) and [PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md)
+for browser-test conventions.
 
 ## Extension points
 
-- **New protocol steps:** edit
-  `content/protocols/<cluster>/<protocol_name>/protocol.yaml`, add a `step` with its
-  `sequence`, `step_validator`, `outcome`, and `next_step` slots, and
-  re-run [gen_protocols.py](../pipeline/gen_protocols.py).
-  See [specs/PROTOCOL_STEPS.md](specs/PROTOCOL_STEPS.md) and
-  [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md).
-- **New scenes:** create a folder `src/scenes/<scene>/` with `<scene>.yaml`
-  (capabilities + items + optional `elementId`) and `<scene>.ts` (a
-  `SceneAdapter` implementation with `dispatchInteraction(itemId, ctx)` and
-  `render(ctx)`). Import the adapter from `init.ts` so
-  it self-registers with the scene registry, and add a `case` in the
-  `renderGame` switch that calls `runSceneRender('<scene>')`.
-- **Drug models:** modify the IC50 curve parameters in
-  `cell_model.ts`.
-- **Scoring adjustments:** change weights and thresholds in
-  `scoring.ts`.
-
-## Capability-based scene architecture
-
-The scene system uses a capability-based driver with click dispatch and
-per-scene adapters. Every scene's click dispatch and render are adapter-owned,
-every protocol routes through the driver, and the `sceneRouter` flag has been
-removed.
-
-### Ownership model
-
-- **Capabilities own reusable mechanics.** Click routing, layout,
-  wrong-order detection, modal screen sequencing, instrument
-  workspaces, grid counting. A capability is shared infrastructure that
-  multiple scenes can compose.
-- **Adapters own scene-specific render assembly, state mutations,
-  notifications, and per-step effects.** An adapter is per-scene and
-  cannot be shared. Each `completionEvent` handler is unique scene
-  logic, not capability-shaped.
-- **No LOC gates.** Splits are decided by responsibility seams, not
-  size. Today only `cell_culture_hood` is split (assembly seam between
-  `cell_culture_hood/render.ts` and `cell_culture_hood/cell_culture_hood.ts`);
-  the other adapters are single-file because they are cohesive.
-
-### Layered model
-
-```text
-+---------------------------------------------------------------+
-|  init.ts renderGame switch                                    |
-|    -> runSceneRender(sceneId)   [scene_driver.ts]             |
-|         -> SceneAdapter.render(ctx)   [scene-owned DOM/SVG]   |
-|    -> runScene(sceneId) (once per scene)                      |
-|         -> dispatch click events on scene element             |
-|         -> walk capability list from scene_registry           |
-|         -> capability.onClick / onStepChange / mount / unmount|
-|         -> SceneAdapter.dispatchInteraction(itemId, ctx)      |
-|         -> game_state.completeStep / triggerStep / mutations  |
-+---------------------------------------------------------------+
-```
-
-### SceneAdapter contract
-
-```ts
-interface SceneAdapter {
-  sceneId: string;
-  dispatchInteraction(itemId: string, ctx: SceneContext): void;
-  render(ctx: SceneContext): void;
-}
-```
-
-`render(ctx)` is required.
-
-### Driver infrastructure
-
-- `scene_driver.ts` -
-  `runScene(sceneId)` lifecycle plus `runSceneRender(sceneId)` render
-  routing.
-- `scene_registry.ts` -
-  capability and scene-adapter registries.
-
-### Capabilities
-
-Six capability modules live in `capabilities`.
-Each conforms to a `SceneCapability` contract (`mount`, `onStepChange`,
-`onClick`, `unmount`) and self-registers at module load.
-
-| Capability id             | Module                       | Responsibility                                                    |
-| ------------------------- | ---------------------------- | ----------------------------------------------------------------- |
-| `item_workspace`          | `item_workspace.ts`          | Item-grid click dispatch, accent styling, wrong-order detection   |
-| `modal_workspace`         | `modal_workspace.ts`         | Modal screen flow tracking                                        |
-| `plate_reader_workspace`  | `plate_reader_workspace.ts`  | Plate-reader insert/read state                                    |
-| `instrument_workspace`    | `instrument_workspace.ts`    | Mounted-instrument surface state (microscope, cell counter)       |
-| `incubator_workspace`     | `incubator_workspace.ts`     | Incubation overlay lifecycle state                                |
-| `grid_counting_workspace` | `grid_counting_workspace.ts` | Hemocytometer quadrant click tracking and total-count aggregation |
-
-### Scene adapters
-
-Six first-class adapters under `src/scenes/<scene>/`. Each owns its
-scene's render assembly and dispatch.
-
-| Scene                | Adapter                   | Render                                                                                    | YAML                                                                                      |
-| -------------------- | ------------------------- | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Bench                | `bench.ts`                | adapter                                                                                   | bench.yaml                                              |
-| Cell-culture hood    | `cell_culture_hood.ts`    | sibling render.ts (assembly seam)   | cell_culture_hood.yaml          |
-| Well-plate workspace | `well_plate_workspace.ts` | sibling render.ts and `dispatch.ts` | well_plate_workspace.yaml |
-| Microscope           | `microscope.ts`           | adapter                                                                                   | microscope.yaml                               |
-| Incubator            | `incubator.ts`            | adapter                                                                                   | incubator.yaml                                  |
-| Plate reader         | `plate_reader.ts`         | adapter                                                                                   | plate_reader.yaml                         |
-
-Scene YAML is compiled at build time by
-[gen_scene_index.py](../pipeline/gen_scene_index.py) into
-`generated/scene_data.ts` (gitignored; consumed via the `src/scene_configs.ts`
-facade; loud build-time failures on missing
-`sceneId`, unknown capability ids, item references to unknown zones,
-duplicate ids, and missing required config blocks).
-
-### Element-id mechanism
-
-Most scenes use a DOM element id of the form `<sceneId>-scene` (for
-example `bench-scene`). Two scenes do not: `cell_culture_hood` mounts
-to `hood-scene`, and `microscope` uses `instrument-overlay` for the
-modal-style flow (shared with `plate_reader`). The scene YAML carries an optional `elementId` field
-that overrides the default; `runScene` consults `sceneConfig.elementId`
-first and falls back to `${sceneId}-scene` when absent.
-
-### Flat files at src/scenes/
-
-The only flat files at `src/scenes/*.ts` are driver infrastructure
-(`scene_driver.ts`, `scene_registry.ts`). Every scene implementation lives
-under its own folder.
+- **New mini-protocol**: create `content/protocols/<cluster>/<name>/` with
+  `protocol.yaml`, a `scenes/` directory, and optionally `materials.yaml`.
+  Re-run the four pipeline generators (`npm run prebuild`).
+  See [specs/PROTOCOL_AUTHORING_GUIDE.md](specs/PROTOCOL_AUTHORING_GUIDE.md).
+- **New scene**: add a YAML file under `content/base_scenes/` or alongside a
+  protocol's `scenes/` directory. Re-run `pipeline/gen_scene_index.py`.
+  See [specs/SCENE_YAML_FORMAT.md](specs/SCENE_YAML_FORMAT.md).
+- **New scene region component**: add a Solid `.tsx` file under
+  `src/shell/regions/` and mount it in `src/shell/hud/ProtocolHud.tsx`.
+- **New pipeline generator**: add the script to `pipeline/` (not `tools/`);
+  register it in `package.json` `prebuild` and `pretest:node` hooks;
+  update [docs/FILE_STRUCTURE.md](FILE_STRUCTURE.md) and
+  [docs/CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) in the same patch
+  (per `AGENTS.md` binding-location rule).
+- **New validation rule**: add to the appropriate `validation/yaml_schema/`
+  or `validation/scene_lint/` module; new rules in `scene_lint` must go
+  through Group A (BLOCKED) or Group B (advisory) classification.
 
 ## Known gaps
 
-- Verification task: confirm whether non-browser
-  `e2e` is intended to remain empty or whether
-  shell wrappers (currently in `tools`) belong there.
-- `src/layout_engine.ts` (~857 LOC) is coherent at its current size but
-  is the next deferred decomposition target if it grows further.
-  Tracked as a deferred cleanup in [ROADMAP.md](ROADMAP.md).
+- Scene operations are stubbed: `ObjectStateChange`, `CursorAttach`,
+  `SceneChange`, `LayoutMove`, and `TimedWait` all console.warn without
+  updating scene state. Un-stubbing is tracked as follow-up work.
+- No mini-protocol satisfies PRIMARY_CONTRACT item 4 (visible browser
+  completion through student UI) until scene operations are implemented.
+- sequence_runner protocols resolve and render their initial scene but are
+  not runnable: the step machine logs "Unknown step_name" because runners
+  carry no `steps` list of their own.
+- End-to-end placeholder rendering through the full pipeline is not yet
+  proven: `gen_object_library.py` does not scan `tests/content/dev_smoke/`
+  fixtures, so dev_smoke fixture objects are not loaded into `OBJECT_LIBRARY`.
+- Verification task: confirm whether `tools/run_protocol_walkthrough.py` and
+  `tools/run_smoke.py` are the canonical walkthrough entry points, or whether
+  `tests/playwright/walker/` supersedes them.

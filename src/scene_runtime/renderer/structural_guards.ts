@@ -244,14 +244,25 @@ function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): void {
 // Guard 5: aspect preserved per item
 //============================================
 
-function checkAspectRatio(final: ComputedItem[]): void {
+function checkAspectRatio(
+  final: ComputedItem[],
+  viewport: { w: number; h: number } = DEFAULT_VIEWPORT,
+): void {
   // Item dimensions are in percent units (0-100 scale).
   // Pipeline computes _height = _visualWidth * (viewport.w / viewport.h) / aspect_svg
   // So _visualWidth / _height = aspect_svg / (viewport.w / viewport.h)
   // To get the rendered screen-pixel aspect, multiply percent-aspect by viewport aspect.
-  const viewportAspect = DEFAULT_VIEWPORT.w / DEFAULT_VIEWPORT.h;
+  // IMPORTANT: viewport must match the pipeline viewport used to compute _height.
+  // Using a different viewport (e.g. DEFAULT_VIEWPORT when the pipeline used the
+  // actual bounded panel size) will cause false aspect-distortion failures.
+  const viewportAspect = viewport.w / viewport.h;
 
   for (const item of final) {
+    // Placeholder items have no real SVG asset; skip aspect check.
+    if (item.missing_svg === true) {
+      continue;
+    }
+
     const assetSpec = typedAssetSpecs[item.asset];
     if (!assetSpec) {
       // If asset spec not found, that's caught by guard 6
@@ -285,6 +296,11 @@ function checkAspectRatio(final: ComputedItem[]): void {
 
 function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): void {
   for (const item of final) {
+    // Placeholder items deliberately have missing assets; skip the registry check.
+    if (item.missing_svg === true) {
+      continue;
+    }
+
     const asset = item.asset;
     if (!typedSvgRegistry[asset]) {
       throw new Error(
@@ -349,7 +365,11 @@ function checkNoLabelOwnSvgOverlap(final: ComputedItem[]): void {
 // Main entry point
 //============================================
 
-export function runStructuralGuards(final: ComputedItem[], scene: SceneA | SceneB): void {
+export function runStructuralGuards(
+  final: ComputedItem[],
+  scene: SceneA | SceneB,
+  viewport?: { w: number; h: number },
+): void {
   // Guard 1: items inside zone bboxes
   checkItemsInZones(final, scene);
 
@@ -362,8 +382,11 @@ export function runStructuralGuards(final: ComputedItem[], scene: SceneA | Scene
   // Guard 4: same-zone horizontal gaps
   checkSameZoneGap(final, scene);
 
-  // Guard 5: aspect ratios preserved
-  checkAspectRatio(final);
+  // Guard 5: aspect ratios preserved.
+  // Pass the same viewport used by the pipeline so rendered-aspect checks are
+  // consistent with computed _height values. Falls back to DEFAULT_VIEWPORT when
+  // not provided (safe for full-viewport renders and unit tests).
+  checkAspectRatio(final, viewport ?? DEFAULT_VIEWPORT);
 
   // Guard 6: assets resolved in registry
   checkAssetsResolved(final, scene);

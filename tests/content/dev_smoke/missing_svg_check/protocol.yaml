@@ -1,0 +1,22 @@
+protocol_type: dev_smoke
+protocol_name: missing_svg_check_check
+entry_step: view_placeholder
+
+steps:
+  - step_name: view_placeholder
+    prompt: "Click the placeholder object to confirm missing-SVG rendering."
+    sequence:
+      - target: test_missing_svg_target
+        gesture: click
+        validator:
+          preset: correct_target
+        response:
+          scene_operations:
+            - type: SceneChange
+              to_scene: missing_svg_check
+    step_validator:
+      preset: sequence_complete
+    outcome:
+      on_success: complete
+      on_failure: retry
+    next_step: null

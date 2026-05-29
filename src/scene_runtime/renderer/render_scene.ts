@@ -20,9 +20,17 @@ import { renderLabel } from "./render_label.js";
  *
  * @param root - HTMLElement (typically #scene-root) to render into
  * @param result - PipelineResult from runPipeline
+ * @param viewport - Optional actual pixel dimensions of the scene root panel.
+ *                   When provided, Guard 5 (aspect ratio) uses these dimensions
+ *                   instead of DEFAULT_VIEWPORT. Must match the viewport passed
+ *                   to runPipeline so the aspect check is consistent.
  * @throws Error if layout validation fails or SVG asset is missing
  */
-export function renderScene(root: HTMLElement, result: PipelineResult): void {
+export function renderScene(
+  root: HTMLElement,
+  result: PipelineResult,
+  viewport?: { w: number; h: number },
+): void {
   // Clear root. Preferred: removeChild loop avoids innerHTML entirely.
   // Using innerHTML is the one other innerHTML site allowed (only for clearing).
   while (root.firstChild) {
@@ -30,7 +38,8 @@ export function renderScene(root: HTMLElement, result: PipelineResult): void {
   }
 
   // Validate layout. Throws if invalid. Renderer never paints invalid layout.
-  runStructuralGuards(result.final, result.scene);
+  // Pass viewport so Guard 5 aspect check uses the correct panel dimensions.
+  runStructuralGuards(result.final, result.scene, viewport);
 
   // Render background.
   if (result.scene.background) {
