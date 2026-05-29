@@ -18,27 +18,45 @@ Validation:
 - for Schema B scenes, every row_name is in WORKSPACE_ROW_LIBRARY
 - per-protocol scenes: extends chain resolves to an existing base scene
 
+Scene discovery and classification (no curated allowlist):
+- Every base scene under content/base_scenes/, every dev-smoke fixture, and every
+  per-protocol scene is discovered and classified into exactly one outcome.
+- emitted: the scene validates and is buildable; it is written into SCENES.
+- skipped: the scene is invalid/unsupported but NON-FATAL (validation error,
+  strict-mode missing-SVG, or a documented quarantine reason). It is recorded in
+  the manifest with a machine-readable reason; the build still succeeds. No scene
+  silently disappears -- a skip always carries a reason.
+- errored: a FATAL generator condition (e.g. a per-protocol scene whose
+  inheritance chain cannot resolve). The generator exits non-zero and the build
+  STOPS. errored scenes are never written as a quiet manifest row.
+
 SVG handling (controlled by --missing-svg flag):
-- strict (default, normal build): a scene with a placement whose object references
-  a missing SVG asset is reported loudly with object names and asset ids. The scene
-  is excluded from SCENES and never silently skipped or blanked.
-- placeholder (dev/test): a scene with missing-SVG placements emits normally; each
-  affected placement carries missing_svg: true so the renderer can show a labeled
-  placeholder. A missing-asset report is still emitted to stderr.
+- placeholder (default, normal dev/build): a scene with missing-SVG placements is
+  EMITTED; each affected placement carries missing_svg: true so the renderer shows
+  a labeled placeholder. The scene does not vanish and does not become a skip.
+- strict (CI gating): a scene with a placement whose object references a missing
+  SVG asset is reported loudly and SKIPPED with a missing-SVG reason recorded in
+  the manifest.
 
 In both modes a missing-asset report is written to stderr listing every placement
 with a missing SVG, the object name, and the missing asset ids.
 
-Output: generated/scenes.ts with SCENE_ALLOWLIST, SCENES_SKIPPED,
-SCENES_SKIPPED_FILES, and SCENES exports. Includes both base and per-protocol scenes.
+Output:
+- generated/scenes.ts with SCENES_SKIPPED and SCENES exports.
+  Includes both base and per-protocol scenes.
+- generated/scene_manifest.json: the source-of-truth scene classification. Top
+  level is {"scenes": [ {name, outcome: "emitted"|"skipped", reason: str|null,
+  source_placement_count: int, source_placement_names: [str]} ]}. A successful
+  build's manifest contains only emitted and skipped entries.
 """
 
 # Standard Library
-import argparse
 import os
 import re
-import subprocess
 import sys
+import json
+import argparse
+import subprocess
 
 # PIP3 modules
 import yaml  # pyyaml
@@ -71,11 +89,12 @@ def parse_args() -> argparse.Namespace:
 		'--missing-svg',
 		dest='missing_svg_mode',
 		choices=('strict', 'placeholder'),
-		default='strict',
+		default='placeholder',
 		help=(
 			"How to handle scenes where a placement references an object with missing SVG assets. "
-			"strict (default, normal build): report loudly and exclude the scene. "
-			"placeholder (dev/test): emit the scene with missing_svg: true on affected placements."
+			"placeholder (default, normal dev/build): emit the scene with missing_svg: true on "
+			"affected placements so the renderer shows a labeled placeholder. "
+			"strict (CI gating): report loudly and skip the scene with a missing-SVG reason."
 		),
 	)
 	args = parser.parse_args()
@@ -202,6 +221,48 @@ def check_scene_svg_gaps(
 			gaps.append((placement_name, object_name, missing))
 
 	return gaps
+
+
+#============================================
+
+def collect_resolved_placement_names(scene_data: dict) -> list:
+	"""
+	Collect every placement_name from a fully-resolved scene (post-inheritance).
+
+	Handles both scene schemas:
+	- Schema A: top-level `placements` list, each with a placement_name.
+	- Schema B: `rows` list, each row carrying `slots`, each slot a placement.
+
+	Args:
+		scene_data: Resolved scene dict (after inheritance for per-protocol scenes).
+
+	Returns:
+		List of placement_name strings in source order. The list length is the
+		source_placement_count recorded in the manifest, matching what the runtime
+		pipeline would receive.
+	"""
+	names = []
+
+	# Schema A placements
+	placements = scene_data.get("placements")
+	if isinstance(placements, list):
+		for placement in placements:
+			if isinstance(placement, dict):
+				# placement_name is a required field, validated upstream
+				names.append(placement["placement_name"])
+
+	# Schema B row slots
+	rows = scene_data.get("rows")
+	if isinstance(rows, list):
+		for row in rows:
+			if not isinstance(row, dict):
+				continue
+			for slot in row.get("slots", []):
+				if isinstance(slot, dict):
+					# slot placement_name is a required field, validated upstream
+					names.append(slot["placement_name"])
+
+	return names
 
 
 #============================================
@@ -390,7 +451,6 @@ def process_scene_yaml(
 	yaml_path: str,
 	object_names: set,
 	workspace_rows: dict,
-	allowlist: list,
 ) -> tuple:
 	"""
 	Load and validate a single scene YAML.
@@ -423,7 +483,7 @@ def process_scene_yaml(
 		if isinstance(background, dict):
 			bg_type = background.get("type")
 			if bg_type and bg_type != "gradient":
-				# Accept old asset-form backgrounds; will be skipped if out of allowlist
+				# Accept old asset-form backgrounds; the renderer ignores them.
 				pass
 			elif bg_type == "gradient":
 				# Validate gradient colors
@@ -708,6 +768,86 @@ def emit_scene_ts(
 
 #============================================
 
+def recover_scene_name_from_yaml(yaml_path: str, filename: str) -> str:
+	"""Read a YAML file and return its scene_name field, or fall back to the filename stem.
+
+	Used after a scene fails validation so the manifest still names the scene.
+	A re-read failure means the YAML is completely unparseable; fall back to
+	the filename stem so the skip entry still names something stable.
+	"""
+	data = None
+	try:
+		with open(yaml_path, "r") as reread:
+			data = yaml.safe_load(reread)
+	except (yaml.YAMLError, OSError):
+		pass
+	if isinstance(data, dict):
+		recovered = data.get("scene_name")
+		if recovered:
+			return recovered
+	return filename.replace(".yaml", "")
+
+
+#============================================
+
+def record_base_scene_skip(
+	manifest_entries: dict,
+	skipped_files: list,
+	manifest_name: str,
+	filename: str,
+	error: Exception,
+	repo_root: str,
+) -> None:
+	"""Record a base-scene validation failure as a skipped manifest entry.
+
+	Strips the absolute repo_root prefix from the reason so manifests are
+	machine-portable across checkouts.
+
+	Args:
+		manifest_entries: Mutable dict accumulating manifest classification data.
+		skipped_files: Mutable list of skipped scene name stems (no .yaml extension).
+		manifest_name: Key to use in manifest_entries (usually the scene_name).
+		filename: Original YAML filename; stem is appended to skipped_files.
+		error: The validation exception whose message becomes the skip reason.
+		repo_root: Absolute repo root path; stripped from the reason string.
+	"""
+	reason_text = str(error).replace(repo_root + os.sep, "")
+	manifest_entries[manifest_name] = {
+		"outcome": "skipped",
+		"reason": f"validation error: {reason_text}",
+		"source_placement_count": 0,
+		"source_placement_names": [],
+	}
+	skipped_files.append(filename.replace(".yaml", ""))
+
+
+#============================================
+
+def load_and_resolve_protocol_scene(
+	yaml_path: str,
+	composite_key: str,
+	base_scenes_dict: dict,
+) -> dict:
+	"""Load a per-protocol scene YAML and resolve its inheritance chain.
+
+	Raises ValueError, KeyError, yaml.YAMLError, or OSError on any failure.
+	The caller catches these and records the scene as errored.
+	"""
+	with open(yaml_path, "r") as f:
+		protocol_scene_data = yaml.safe_load(f)
+	if not protocol_scene_data:
+		raise ValueError(f"Empty YAML: {yaml_path}")
+	if not isinstance(protocol_scene_data, dict):
+		raise ValueError(f"Scene YAML must be a dict: {yaml_path}")
+	return scene_inheritance.resolve_protocol_scene(
+		composite_key,
+		protocol_scene_data,
+		base_scenes_dict,
+	)
+
+
+#============================================
+
 def main() -> None:
 	"""Main entry point for the scene-index generator."""
 	args = parse_args()
@@ -715,27 +855,12 @@ def main() -> None:
 
 	repo_root = get_repo_root()
 
-	# Allowlist: controls which base scenes ship to runtime.
-	# D1 generalization scene set; electrophoresis_bench and imaging_bench added
-	# in M1/WP-SUPPLY-1 (their SVGs are present; the stale SCENES_SKIPPED_METADATA
-	# entry has been corrected below).
-	SCENE_ALLOWLIST = [
-		"bench_basic",
-		"bench_basic_row_slot",
-		"cell_counter_basic",
-		"electrophoresis_bench",
-		"hood_basic",
-		"imaging_bench",
-		"sample_prep_bench",
-		"staining_bench",
-	]
-
-	# Scenes skipped with documented reasons.
-	# Only scenes with a genuine, current skip reason belong here.
-	# electrophoresis_bench was previously listed with a stale "SVG gap" reason;
-	# that entry is removed because all referenced SVGs are present in assets/equipment/.
-	# electrophoresis_bench and imaging_bench are now in SCENE_ALLOWLIST.
-	SCENES_SKIPPED_METADATA = {
+	# Documented quarantine/design skips. These are NOT a hiding gate: every base
+	# scene is still discovered and emitted by default. A scene listed here is
+	# classified `skipped` with the given reason instead of `emitted`, so it still
+	# appears in the manifest (no scene silently disappears). Add an entry only
+	# when a scene is genuinely unbuildable for a durable, documented reason.
+	QUARANTINE_SKIP_REASONS = {
 		"well_plate_96_zoom": "Quarantined: references quarantined object well_plate_96",
 		"adversarial_overflow_smoke": "Design skip: capacity stress test, expected to fail loudly",
 		"long_labels_smoke": "Object gap: requires 6 chemical bottle objects not yet authored",
@@ -768,9 +893,9 @@ def main() -> None:
 
 	# Find all base scene YAML files and smoke fixtures.
 	# scene_files is a list of (filename, yaml_path, is_smoke_fixture).
-	# is_smoke_fixture=True means the scene should always be emitted (not subject to
-	# SCENE_ALLOWLIST filtering) and SVG gaps never fail the build (smoke fixtures are
-	# dev/test only and may intentionally reference missing assets).
+	# is_smoke_fixture=True means the scene is exempt from quarantine skips and
+	# never skips on SVG gaps (smoke fixtures are dev/test only and may
+	# intentionally reference missing assets to exercise the gap code path).
 	scene_files = []
 
 	# Scan content/base_scenes/
@@ -803,150 +928,162 @@ def main() -> None:
 
 	scene_files.sort(key=lambda x: x[0])
 
-	# Process each base scene YAML
+	# Per-scene classification state.
+	# scenes_dict: scene_key -> resolved scene data for every EMITTED scene.
+	# base_scenes_dict: every base scene that validated, for inheritance resolution.
+	# scenes_missing_svg_placements: scene_key -> set of placement_names with missing
+	#   SVGs (used to write missing_svg: true markers in placeholder mode).
+	# manifest_entries: scene name -> classification row for scene_manifest.json.
+	#   Each row is {outcome, reason, source_placement_count, source_placement_names}.
+	# errored_count: number of FATAL conditions; nonzero stops the build.
 	scenes_dict = {}
 	base_scenes_dict = {}
-	skipped_files = []
-	failed_count = 0
-	# Maps scene_key -> set of placement_names with missing SVGs (placeholder mode)
 	scenes_missing_svg_placements = {}
+	manifest_entries = {}
+	skipped_files = []
+	errored_count = 0
 	# Accumulates all missing-SVG findings across all scenes for the final report
 	all_missing_svg_findings = []
 
+	# ----- base scenes and dev-smoke fixtures -----
 	for filename, yaml_path, is_smoke_fixture in scene_files:
 		try:
-			scene_name, scene_data = process_scene_yaml(
-				yaml_path,
-				object_names,
-				workspace_rows,
-				SCENE_ALLOWLIST,
-			)
-
-			# Track base scene for per-protocol inheritance
-			base_scenes_dict[scene_name] = scene_data
-
-			# Determine whether to emit this scene:
-			# - Smoke fixtures: always emit (bypass allowlist filtering)
-			# - Base scenes: emit only if in SCENE_ALLOWLIST
-			should_emit = is_smoke_fixture or (scene_name in SCENE_ALLOWLIST)
-
-			if should_emit:
-				# Check for missing SVG assets before emitting
-				gaps = check_scene_svg_gaps(scene_data, object_svg_refs, available_svgs)
-				if gaps:
-					# Accumulate for final missing-asset report
-					all_missing_svg_findings.append((scene_name, gaps))
-					# Report immediately to stderr (both modes)
-					emit_missing_asset_report(scene_name, gaps, missing_svg_mode)
-					if missing_svg_mode == "strict" and not is_smoke_fixture:
-						# Strict mode for non-smoke: exclude and report error
-						print(
-							f"ERROR [strict] scene '{scene_name}' excluded: {len(gaps)} placement(s) "
-							f"have missing SVG assets. Use --missing-svg=placeholder to emit with "
-							f"placeholders instead.",
-							file=sys.stderr,
-						)
-						base_name = filename.replace(".yaml", "")
-						skipped_files.append(base_name)
-						failed_count += 1
-					else:
-						# Placeholder mode (any scene) or strict mode for smoke fixtures:
-						# emit the scene with missing_svg markers on affected placements.
-						# Smoke fixtures never fail the build even in strict mode -- they
-						# exist to exercise the SVG-gap code path, not to have final art.
-						missing_pnames = {p for p, _obj, _assets in gaps}
-						scenes_missing_svg_placements[scene_name] = missing_pnames
-						scenes_dict[scene_name] = scene_data
-				else:
-					# No SVG gaps: emit normally
-					scenes_dict[scene_name] = scene_data
-			else:
-				# Track skipped scenes (non-allowlisted base scenes)
-				base_name = filename.replace(".yaml", "")
-				skipped_files.append(base_name)
-
+			scene_name, scene_data = process_scene_yaml(yaml_path, object_names, workspace_rows)
 		except (ValueError, KeyError, yaml.YAMLError, OSError) as e:
-			# A scene failed validation. Re-read the YAML once to get its
-			# scene_name for logging; if the re-read also fails, the error
-			# message will name the file path only.
-			scene_name = None
-			with open(yaml_path, "r") as f:
-				data = yaml.safe_load(f)
-			if isinstance(data, dict):
-				scene_name = data.get("scene_name")
-
-			# Log the error with the file path for visibility
+			# Validation failure is NON-FATAL: skip and record in the manifest.
+			manifest_name = recover_scene_name_from_yaml(yaml_path, filename)
 			print(f"ERROR processing {yaml_path}: {e}", file=sys.stderr)
+			record_base_scene_skip(manifest_entries, skipped_files, manifest_name, filename, e, repo_root)
+			continue
 
-			# Only fail if an allowlisted base scene has a validation error.
-			# Smoke fixtures with validation errors are skipped with a warning,
-			# not a build failure.
-			if not is_smoke_fixture and scene_name and scene_name in SCENE_ALLOWLIST:
-				failed_count += 1
-			else:
-				# Non-allowlisted base scenes and smoke fixtures can fail validation;
-				# they are skipped
-				if scene_name:
-					base_name = filename.replace(".yaml", "")
-					skipped_files.append(base_name)
+		# Track every valid base scene for per-protocol inheritance, even if it is
+		# later classified `skipped` (a child may still extend a quarantined base).
+		base_scenes_dict[scene_name] = scene_data
 
-	# Discover and process per-protocol scenes
+		placement_names = collect_resolved_placement_names(scene_data)
+
+		# Documented quarantine/design skip takes precedence over emission.
+		# Smoke fixtures are exempt: they exist to exercise code paths and always
+		# emit (they are excluded from the student launcher elsewhere).
+		if not is_smoke_fixture and scene_name in QUARANTINE_SKIP_REASONS:
+			reason = QUARANTINE_SKIP_REASONS[scene_name]
+			print(f"SKIP scene '{scene_name}': {reason}", file=sys.stderr)
+			manifest_entries[scene_name] = {
+				"outcome": "skipped",
+				"reason": reason,
+				"source_placement_count": len(placement_names),
+				"source_placement_names": placement_names,
+			}
+			skipped_files.append(filename.replace(".yaml", ""))
+			continue
+
+		# Check for missing SVG assets.
+		gaps = check_scene_svg_gaps(scene_data, object_svg_refs, available_svgs)
+		if gaps:
+			all_missing_svg_findings.append((scene_name, gaps))
+			emit_missing_asset_report(scene_name, gaps, missing_svg_mode)
+			# Strict mode for non-smoke scenes: SKIP with a missing-SVG reason
+			# (non-fatal; recorded in the manifest). Smoke fixtures never skip on
+			# SVG gaps -- they exercise the gap path intentionally.
+			if missing_svg_mode == "strict" and not is_smoke_fixture:
+				missing_assets = sorted({a for _p, _o, assets in gaps for a in assets})
+				reason = "missing SVG assets: " + ", ".join(missing_assets)
+				print(
+					f"SKIP [strict] scene '{scene_name}': {len(gaps)} placement(s) "
+					f"have missing SVG assets. Use --missing-svg=placeholder to emit "
+					f"with placeholders instead.",
+					file=sys.stderr,
+				)
+				manifest_entries[scene_name] = {
+					"outcome": "skipped",
+					"reason": reason,
+					"source_placement_count": len(placement_names),
+					"source_placement_names": placement_names,
+				}
+				skipped_files.append(filename.replace(".yaml", ""))
+				continue
+			# Placeholder mode (default) or smoke fixture: emit with markers.
+			scenes_missing_svg_placements[scene_name] = {p for p, _o, _a in gaps}
+
+		# Emit the scene.
+		scenes_dict[scene_name] = scene_data
+		manifest_entries[scene_name] = {
+			"outcome": "emitted",
+			"reason": None,
+			"source_placement_count": len(placement_names),
+			"source_placement_names": placement_names,
+		}
+
+	# ----- per-protocol scenes (inheritance-resolved) -----
 	per_protocol_scenes = discover_per_protocol_scenes(repo_root)
 	per_protocol_count = 0
 
 	for composite_key in sorted(per_protocol_scenes.keys()):
 		protocol_name, scene_basename, yaml_path = per_protocol_scenes[composite_key]
 
+		# Resolve inheritance. A per-protocol scene whose extends chain cannot
+		# resolve is a FATAL error: the protocol host would later fail to find
+		# its entry scene, so the build must STOP rather than ship a broken set.
 		try:
-			with open(yaml_path, "r") as f:
-				protocol_scene_data = yaml.safe_load(f)
-
-			if not protocol_scene_data:
-				raise ValueError(f"Empty YAML: {yaml_path}")
-
-			if not isinstance(protocol_scene_data, dict):
-				raise ValueError(f"Scene YAML must be a dict: {yaml_path}")
-
-			# Resolve inheritance
-			resolved_scene = scene_inheritance.resolve_protocol_scene(
-				composite_key,
-				protocol_scene_data,
-				base_scenes_dict,
-			)
-
-			# Check for missing SVG assets in the resolved per-protocol scene
-			gaps = check_scene_svg_gaps(resolved_scene, object_svg_refs, available_svgs)
-			if gaps:
-				# Accumulate for final missing-asset report
-				all_missing_svg_findings.append((composite_key, gaps))
-				# Report immediately to stderr
-				emit_missing_asset_report(composite_key, gaps, missing_svg_mode)
-				if missing_svg_mode == "strict":
-					# Strict mode: exclude this per-protocol scene
-					print(
-						f"ERROR [strict] per-protocol scene '{composite_key}' excluded: "
-						f"{len(gaps)} placement(s) have missing SVG assets.",
-						file=sys.stderr,
-					)
-					failed_count += 1
-					continue
-				else:
-					# Placeholder mode: emit with missing_svg markers
-					missing_pnames = {p for p, _obj, _assets in gaps}
-					scenes_missing_svg_placements[composite_key] = missing_pnames
-
-			scenes_dict[composite_key] = resolved_scene
-			per_protocol_count += 1
-
+			resolved_scene = load_and_resolve_protocol_scene(yaml_path, composite_key, base_scenes_dict)
 		except (ValueError, KeyError, yaml.YAMLError, OSError) as e:
-			print(
-				f"ERROR processing per-protocol scene {yaml_path}: {e}",
-				file=sys.stderr,
-			)
-			failed_count += 1
+			print(f"ERROR [fatal] per-protocol scene {yaml_path}: {e}", file=sys.stderr)
+			manifest_entries[composite_key] = {
+				"outcome": "errored",
+				"reason": f"inheritance/parse error: {e}",
+				"source_placement_count": 0,
+				"source_placement_names": [],
+			}
+			errored_count += 1
+			continue
 
-	if failed_count > 0:
-		sys.exit(1)
+		placement_names = collect_resolved_placement_names(resolved_scene)
+
+		# Check for missing SVG assets in the resolved per-protocol scene.
+		gaps = check_scene_svg_gaps(resolved_scene, object_svg_refs, available_svgs)
+		if gaps:
+			all_missing_svg_findings.append((composite_key, gaps))
+			emit_missing_asset_report(composite_key, gaps, missing_svg_mode)
+			if missing_svg_mode == "strict":
+				missing_assets = sorted({a for _p, _o, assets in gaps for a in assets})
+				reason = "missing SVG assets: " + ", ".join(missing_assets)
+				print(
+					f"SKIP [strict] per-protocol scene '{composite_key}': "
+					f"{len(gaps)} placement(s) have missing SVG assets.",
+					file=sys.stderr,
+				)
+				manifest_entries[composite_key] = {
+					"outcome": "skipped",
+					"reason": reason,
+					"source_placement_count": len(placement_names),
+					"source_placement_names": placement_names,
+				}
+				skipped_files.append(composite_key)
+				continue
+			# Placeholder mode: emit with missing_svg markers.
+			scenes_missing_svg_placements[composite_key] = {p for p, _o, _a in gaps}
+
+		scenes_dict[composite_key] = resolved_scene
+		manifest_entries[composite_key] = {
+			"outcome": "emitted",
+			"reason": None,
+			"source_placement_count": len(placement_names),
+			"source_placement_names": placement_names,
+		}
+		per_protocol_count += 1
+
+	# A FATAL condition stops the build. The manifest is NOT written in this case;
+	# a successful build's manifest carries only emitted and skipped entries.
+	if errored_count > 0:
+		errored_scenes = [
+			name
+			for name, entry in manifest_entries.items()
+			if entry["outcome"] == "errored"
+		]
+		raise RuntimeError(
+			f"FATAL: {errored_count} scene(s) errored; build stopped. "
+			f"Errored scenes: {', '.join(errored_scenes)}"
+		)
 
 	# Emit a consolidated missing-asset summary if any gaps were found
 	if all_missing_svg_findings:
@@ -975,22 +1112,10 @@ def main() -> None:
 		"",
 		"import type { SceneA, SceneB } from '../src/scene_runtime/layout/types.js';",
 		"",
-		f"export const SCENE_ALLOWLIST = {repr(SCENE_ALLOWLIST)} as const;",
 		f"export const SCENES_SKIPPED = {len(skipped_files)};",
-		f"export const SCENES_SKIPPED_FILES = {repr(sorted(skipped_files))} as const;",
-		"",
-		"// D1 scenes skipped with documented blockers",
-		"export const SCENES_SKIPPED_METADATA: Record<string, string> = {",
-	]
-
-	for scene_name, reason in sorted(SCENES_SKIPPED_METADATA.items()):
-		ts_lines.append(f"\t{repr(scene_name)}: {repr(reason)},")
-
-	ts_lines.extend([
-		"};",
 		"",
 		"export const SCENES: Record<string, SceneA | SceneB> = {",
-	])
+	]
 
 	# Emit scenes in sorted order (base scenes first, then per-protocol)
 	for scene_key in sorted(scenes_dict.keys()):
@@ -1007,13 +1132,42 @@ def main() -> None:
 	with open(output_path, "w") as f:
 		f.write(ts_code)
 
-	# Count base scenes actually emitted (scenes in SCENE_ALLOWLIST that shipped)
-	base_scene_count = sum(1 for k in scenes_dict if k in SCENE_ALLOWLIST)
+	# Write the machine-readable scene manifest (source of truth for tooling).
+	# Sorted by name for deterministic output. Contains only emitted/skipped rows
+	# on a successful build (errored rows would have exited above).
+	manifest_scenes = []
+	for name in sorted(manifest_entries.keys()):
+		entry = manifest_entries[name]
+		manifest_scenes.append({
+			"name": name,
+			"outcome": entry["outcome"],
+			"reason": entry["reason"],
+			"source_placement_count": entry["source_placement_count"],
+			"source_placement_names": entry["source_placement_names"],
+		})
+	manifest = {"scenes": manifest_scenes}
+	manifest_path = os.path.join(repo_root, "generated", "scene_manifest.json")
+	with open(manifest_path, "w") as f:
+		json.dump(manifest, f, indent="\t", sort_keys=False)
+		f.write("\n")
+
+	# Skip summary to stderr.
+	emitted_count = sum(1 for e in manifest_entries.values() if e["outcome"] == "emitted")
+	skipped_count = sum(1 for e in manifest_entries.values() if e["outcome"] == "skipped")
+	print(
+		f"SCENE SUMMARY: {emitted_count} emitted, {skipped_count} skipped "
+		f"(missing-svg mode: {missing_svg_mode}).",
+		file=sys.stderr,
+	)
+	for entry_name in sorted(manifest_entries.keys()):
+		entry = manifest_entries[entry_name]
+		if entry["outcome"] == "skipped":
+			print(f"  SKIPPED {entry_name}: {entry['reason']}", file=sys.stderr)
 
 	print(
 		f"Generated {output_path} with {len(scenes_dict)} scenes "
-		f"({base_scene_count} base, {per_protocol_count} per-protocol), "
-		f"{len(skipped_files)} skipped",
+		f"({per_protocol_count} per-protocol), {len(skipped_files)} skipped. "
+		f"Manifest: {manifest_path}",
 		file=sys.stderr,
 	)
 

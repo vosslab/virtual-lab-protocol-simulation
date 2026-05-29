@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Scene Viewer</title>
+    <link rel="stylesheet" href="./style.css" />
+    <style>
+      /* Minimal viewer layout: center the scene panel on the page. */
+      body {
+        margin: 0;
+        padding: 16px;
+        background: #e8e0cc;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 100vh;
+        box-sizing: border-box;
+      }
+
+      /* Reuse .scene-panel-inner aspect-lock so PNG geometry matches the
+         real protocol host render. The inner element enforces 16:9; #scene-root
+         fills it 100% x 100% per style.css rules. */
+      .scene-panel-inner {
+        width: min(100%, calc(100vh * 16 / 9));
+      }
+    </style>
+  </head>
+  <body>
+    <!--
+      Scene viewer host (WS-M1-B).
+      Only #scene-root is present -- no #shell-root, no window.__PROTOCOL_NAME__.
+      dist_entry.tsx / route() sees only #scene-root and reads ?scene=<name>
+      from the URL to dispatch to mount_scene_viewer.
+    -->
+    <div class="scene-panel-inner">
+      <div id="scene-root"></div>
+    </div>
+    <script type="module" src="./scene_viewer.js"></script>
+  </body>
+</html>

@@ -42,6 +42,13 @@ export function bindObjects(
   return placements.map((p): BoundPlacement => {
     const obj = library[p.object_name];
     if (!obj) {
+      // Object absent from the library. Record the diagnostic, but DO NOT mark
+      // _error: an _error placement is orphaned in group_by_zone and never
+      // reaches the render output, blanking content. Instead bind it as a
+      // renderable placeholder (missing_svg true) carrying _missing_object so
+      // the renderer shows a distinct "missing object" box. It then flows
+      // through scale -> group -> layout normally (it has a real zone and a
+      // default layout/aspect), and structural guards skip missing_svg items.
       diagnostics.push({
         stage: "bind",
         severity: "error",
@@ -51,8 +58,9 @@ export function bindObjects(
       });
       return {
         ...p,
-        _error: `unknown object "${p.object_name}"`,
-        kind: "unknown",
+        // decoration is a real KIND so downstream layout stages treat it as a
+        // normal item; "unknown" is not a valid Kind for layout.
+        kind: "decoration",
         label: p.object_name,
         asset: "",
         capabilities: [],
@@ -65,6 +73,8 @@ export function bindObjects(
           width_scale: 1.0,
           fudge: 1.0,
         },
+        missing_svg: true,
+        _missing_object: true,
       };
     }
     const asset = assets[obj.asset];

@@ -336,3 +336,19 @@ retired and bench/hood layout is now sourced from scene YAML.
 
 The next deferred layout-engine item is the `src/layout_engine.ts` split
 described in "Next deferred item" above.
+
+## Deferred scene-diagnostic statistics (added 2026-05-29)
+
+The scene diagnostic tools (`tools/scene_stats.mjs`, `tools/scene_to_png.mjs`)
+currently report render-yield and the easy diagnostics. The following richer
+statistics are deferred for later passes:
+
+- Browser-event counts per scene.
+- Exact-union coverage of the scene area.
+- Severe-overlap and occlusion detection.
+- Stability scoring and unstable-layout flags.
+- Balance scoring across the scene area.
+- Zone-coverage metrics.
+- Contrast checks.
+- Interaction-readiness scoring.
+- Fuller item labels in the stats output.

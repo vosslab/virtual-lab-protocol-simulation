@@ -4,6 +4,8 @@ import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import { spawn } from "node:child_process";
 
+import { bboxContains, bboxsOverlap, extractViewBoxDimensions } from "../../tools/bbox_helpers.mjs";
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "../../");
 
@@ -21,39 +23,11 @@ const ARTIFACT_DIR = path.join(REPO_ROOT, "tests/playwright/artifacts");
 // Utility functions
 //============================================
 
-function bboxContains(outer, inner) {
-  return (
-    inner.x >= outer.x &&
-    inner.y >= outer.y &&
-    inner.x + inner.width <= outer.x + outer.width &&
-    inner.y + inner.height <= outer.y + outer.height
-  );
-}
-
-function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
-  const left = Math.max(bbox1.x, bbox2.x);
-  const right = Math.min(bbox1.x + bbox1.width, bbox2.x + bbox2.width);
-  const top = Math.max(bbox1.y, bbox2.y);
-  const bottom = Math.min(bbox1.y + bbox1.height, bbox2.y + bbox2.height);
-
-  const overlapWidth = right - left;
-  const overlapHeight = bottom - top;
-
-  return overlapWidth > tolerance && overlapHeight > tolerance;
-}
-
 function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {
   const renderedAspect = renderedWidth / renderedHeight;
   const naturalAspect = vbWidth / vbHeight;
   const deviation = Math.abs(renderedAspect - naturalAspect) / naturalAspect;
   return deviation;
-}
-
-function extractViewBoxDimensions(viewBoxStr) {
-  if (!viewBoxStr) return null;
-  const parts = viewBoxStr.trim().split(/\s+/).map(Number);
-  if (parts.length !== 4) return null;
-  return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
 }
 
 async function checkComputedStyles(locator, _page) {

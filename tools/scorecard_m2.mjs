@@ -31,6 +31,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import fs from "node:fs";
 import http from "node:http";
+import { bboxContains, bboxsOverlap } from "./bbox_helpers.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
@@ -136,27 +137,6 @@ function findRepoRoot() {
     current = path.dirname(current);
   }
   throw new Error("Could not find repo root");
-}
-
-function bboxContains(outer, inner) {
-  return (
-    inner.x >= outer.x &&
-    inner.y >= outer.y &&
-    inner.x + inner.width <= outer.x + outer.width &&
-    inner.y + inner.height <= outer.y + outer.height
-  );
-}
-
-function bboxsOverlap(bbox1, bbox2, tolerance = 0) {
-  const left = Math.max(bbox1.x, bbox2.x);
-  const right = Math.min(bbox1.x + bbox1.width, bbox2.x + bbox2.width);
-  const top = Math.max(bbox1.y, bbox2.y);
-  const bottom = Math.min(bbox1.y + bbox1.height, bbox2.y + bbox2.height);
-
-  const overlapWidth = right - left;
-  const overlapHeight = bottom - top;
-
-  return overlapWidth > tolerance && overlapHeight > tolerance;
 }
 
 function getBboxDeviationRatio(renderedWidth, renderedHeight, vbWidth, vbHeight) {

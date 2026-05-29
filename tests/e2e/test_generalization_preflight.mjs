@@ -1,5 +1,5 @@
 // Lane D3: Pipeline preflight on all 6 D1 generalization scenes.
-// For each scene in SCENE_ALLOWLIST, run the pipeline with generated artifacts,
+// For each emitted scene (every key in SCENES), run the pipeline with generated artifacts,
 // capture diagnostics and pass counts, run structural guards, and emit a
 // markdown report at docs/active_plans/reports/m2_generalization_preflight.md
 //
@@ -10,7 +10,7 @@ import path from "node:path";
 
 import { runPipeline } from "../src/scene_runtime/layout/index.ts";
 import { runStructuralGuards } from "../src/scene_runtime/renderer/structural_guards.ts";
-import { SCENES, SCENE_ALLOWLIST } from "../generated/scenes.js";
+import { SCENES } from "../generated/scenes.js";
 import { OBJECT_LIBRARY } from "../generated/object_library.js";
 import { ASSET_SPECS } from "../generated/object_library.js";
 
@@ -139,8 +139,8 @@ function generateMarkdownReport(results) {
   lines.push("");
   lines.push("## Scope");
   lines.push("");
-  lines.push("Lane D3 runs the full layout pipeline on each of the 6 D1 generalization scenes");
-  lines.push("(from SCENE_ALLOWLIST in generated/scenes.ts). For each scene:");
+  lines.push("Lane D3 runs the full layout pipeline on every emitted scene");
+  lines.push("(all keys in SCENES from generated/scenes.ts). For each scene:");
   lines.push("");
   lines.push("- Parse and normalize the scene YAML");
   lines.push("- Resolve all objects to the object library");
@@ -265,11 +265,13 @@ function generateMarkdownReport(results) {
 
 function main() {
   console.log("D3: Pipeline preflight on generalization scenes");
-  console.log(`Testing scenes: ${Array.from(SCENE_ALLOWLIST).join(", ")}`);
+  // SCENE_ALLOWLIST was removed; every emitted base scene now ships in SCENES.
+  const sceneNames = Object.keys(SCENES).sort();
+  console.log(`Testing scenes: ${sceneNames.join(", ")}`);
   console.log("");
 
   const results = [];
-  for (const sceneName of SCENE_ALLOWLIST) {
+  for (const sceneName of sceneNames) {
     console.log(`Preflighting ${sceneName}...`);
     const result = runPreflightOnScene(sceneName);
     results.push(result);

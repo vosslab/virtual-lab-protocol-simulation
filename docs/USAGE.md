@@ -39,7 +39,7 @@ bash pipeline/build_generated.sh
 
 - `gen_object_library.py`: Reads object YAML from `content/objects/**/*.yaml`, validates against closed `KINDS` enum and asset references, emits `generated/object_library.ts` with typed `OBJECT_LIBRARY` and `ASSET_SPECS`.
 - `gen_svg_registry.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_registry.ts` with inline `SVG_REGISTRY` content (one base64-encoded entry per SVG).
-- `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml` and per-protocol scene files, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object. Accepts `--missing-svg=strict|placeholder` (strict is default; see [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for details).
+- `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml` and per-protocol scene files, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object and `generated/scene_manifest.json`. Accepts `--missing-svg=strict|placeholder` (placeholder is default; see [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for details).
 - `gen_protocols.py`: Reads `protocol.yaml` from `content/protocols/**/` and smoke fixtures, validates against the closed protocol schema, emits `generated/protocols.ts` and `generated/protocols_index_slim.ts`.
 
 The `generated/` directory is gitignored; everything in it is a build artifact, never committed, and is fully rebuilt by `build_generated.sh`. Source of truth is `content/`, `assets/`, and the generator scripts themselves. Run `bash pipeline/build_generated.sh` before anything that imports from `generated/` (a standalone test, or `bash check_codebase.sh`, which checks the codebase only and never generates).
@@ -73,21 +73,106 @@ No runtime YAML parsing, no `fetch`, no `js-yaml` dependency. All data is compil
 - **Diagnostic reports:** `docs/active_plans/reports/` stores milestone reports, failure taxonomies, and M2c diagnostic metrics.
 - **Generated data:** `generated/object_library.ts`, `generated/svg_registry.ts`, `generated/scenes.ts`, `generated/protocols.ts`, and `generated/protocols_index_slim.ts` are produced by the generator scripts and gitignored.
 
-## Scene allowlist
+## Scene rendering and render-yield stats
 
-The allowlist `SCENE_ALLOWLIST` lives in `pipeline/gen_scene_index.py` and currently contains
-8 base scenes: `bench_basic`, `bench_basic_row_slot`, `cell_counter_basic`,
-`electrophoresis_bench`, `hood_basic`, `imaging_bench`, `sample_prep_bench`, and
-`staining_bench`. Only allowlisted scenes are emitted to `generated/scenes.ts` and
-available to the renderer. Other scenes under `content/base_scenes/` are skipped until
-they pass the full precheck suite.
-
-To expand the allowlist, add the scene name to `SCENE_ALLOWLIST` in
-`pipeline/gen_scene_index.py` after confirming the scene passes validation:
+`tools/scene_to_png.mjs` is a developer tool that renders scenes via the scene viewer page,
+captures PNG screenshots, and writes structured render-yield stats alongside each PNG.
+It does not modify any source or generated files.
 
 ```bash
-source source_me.sh && python3 validation/validate.py --scene <scene_name> -O structure
+# Render one named scene (PNG + stats.json, single summary to stdout)
+node tools/scene_to_png.mjs --scene hood_basic
+
+# Render all emitted scenes; skipped scenes get a summary row but no PNG
+node tools/scene_to_png.mjs --all
+
+# Custom output directory and viewport
+node tools/scene_to_png.mjs --all --out /tmp/scene_pngs --viewport 1440x900
+
+# Single-scene with a specific output PNG path
+node tools/scene_to_png.mjs --scene hood_basic --out test-results/hood_basic.png
 ```
+
+The npm alias `npm run scene:png -- <args>` also works.
+
+Output directories (defaults):
+
+- `--scene`: `test-results/scenes/<scene>.png` + `<scene>.stats.json`
+- `--all`: `test-results/scenes/` with one PNG + stats.json per emitted scene, plus `summary.json`
+
+Categories reported per scene:
+
+- `populated`: at least one real (non-placeholder) rendered item.
+- `placeholder-only`: all rendered items are placeholders (missing-svg mode).
+- `empty`: viewer-ready but zero rendered items.
+- `load-failed`: page threw or timed out before the ready marker.
+- `skipped`: manifest says outcome=skipped; no render attempted.
+
+The `--missing-svg` flag (`strict` or `placeholder`) is a passthrough recorded in stats.json.
+Changing the missing-svg mode requires a rebuild: `bash build_github_pages.sh`.
+
+Speed design: one browser and one HTTP server for the entire run; waits on the
+`#scene-root[data-viewer-ready="true"]` marker, not `networkidle`. Elapsed time
+is reported per scene and as a total.
+
+## Protocol rendering and step reachability
+
+`tools/protocol_to_png.mjs` is a developer tool that renders protocol pages to PNG and reports
+load outcomes and step reachability. It does not modify any source or generated files.
+
+```bash
+# Render the initial interface of one protocol (single PNG + console outcome)
+node tools/protocol_to_png.mjs --protocol passage_hood_detachment
+
+# Render all protocols; writes one PNG per protocol + summary.json + console table
+node tools/protocol_to_png.mjs --all
+
+# Render one protocol and attempt to reach each declared step via visible UI
+node tools/protocol_to_png.mjs --protocol passage_hood_detachment --steps
+
+# Render all protocols with step reachability matrix
+node tools/protocol_to_png.mjs --all --steps
+
+# Custom output directory and viewport
+node tools/protocol_to_png.mjs --all --out /tmp/protocol_pngs --viewport 1440x900
+```
+
+The npm alias `npm run protocol:png -- <args>` also works.
+
+Output directories (defaults):
+
+- `--all` initial: `test-results/protocols_initial/`
+- `--all --steps`: `test-results/protocols_steps/`
+
+Load outcomes reported per protocol:
+
+- `protocol-HTML-missing`: `dist/<name>.html` does not exist (run build first).
+- `page-load-failure`: browser JS error or navigation failure.
+- `shell-loaded-but-scene-empty`: shell regions present; scene has 0 items.
+- `scene-loaded-but-guidance-missing`: scene items rendered; guidance bar absent.
+- `populated`: scene has >= 1 item and guidance bar present.
+
+Step records in `<protocol>.steps.json`:
+
+- `reached`: step was reached via visible UI; PNG captured.
+- `blocked`: step could not be reached (reason recorded: no visible advance control, etc.).
+
+## Scene discovery and classification
+
+`pipeline/gen_scene_index.py` discovers ALL base scenes (`content/base_scenes/*.yaml`) and
+per-protocol scene files automatically -- there is no curated allowlist. For each scene it
+emits one of three classifications into `generated/scene_manifest.json`:
+
+- `emitted`: scene passed validation and was written to `generated/scenes.ts`.
+- `skipped`: scene was skipped for a machine-readable reason (e.g. missing required objects,
+  broken inheritance, incomplete precheck suite). The reason string is recorded in the manifest.
+- `errored`: a fatal error occurred while processing the scene; the error message is recorded.
+
+The source of truth for which scenes are available at runtime is `generated/scene_manifest.json`.
+To understand why a scene is absent from `generated/scenes.ts`, inspect its entry there.
+
+To keep a scene out of the emitted set it must have a genuine skip or error reason -- there is
+no list to omit it from. Fix the underlying issue to promote a scene from `skipped` to `emitted`.
 
 ## Validation
 

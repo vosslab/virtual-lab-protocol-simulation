@@ -6,8 +6,13 @@
 //   - dist/index.html        -> #launcher-root present -> launcher mount
 //   - dist/<protocol>.html   -> #scene-root + #shell-root + window.__PROTOCOL_NAME__
 //                                -> protocol_host mount
-//   - dist/bench_basic.html  -> #scene-root only, no protocol name
-//                                -> bench mount (legacy src/main.ts behavior)
+//   - dist/scene_viewer.html -> #scene-root only, no protocol name, ?scene=<name>
+//                                -> scene viewer mount (defaults to hood_basic when
+//                                   ?scene= is absent; also serves as bench smoke target)
+//
+// Note: dist/bench_basic.html loads protocol_host.js, not main.js, so this
+// entry never routes bench_basic.html traffic. The scene viewer path above is
+// the correct route for standalone scene display via this bundle.
 //
 // Routing is by DOM presence, not by URL. Each page declares its intent
 // by which root elements it includes. The entry runs the matching module
@@ -18,27 +23,39 @@
 //   - docs/PRIMARY_CONTRACT.md item 1 (TypeScript runtime is shared)
 
 //============================================
-// Bench (legacy main.ts) mount
+// Scene viewer mount (replaces legacy bench mount)
 //============================================
 
-// Inline the bench bootstrap so we do not need a second esbuild entry.
-// Mirrors src/main.ts. The bench scene is preserved as a render smoke target;
-// see tools/run_smoke.py.
-async function mount_bench(root: HTMLElement): Promise<void> {
+// Renders any named scene without a protocol. The scene name is read from
+// the ?scene= URL search param, defaulting to hood_basic when absent.
+// On success or recoverable error, sets data-viewer-ready="true" on root
+// so automated tools can tell the viewer finished from a page load failure.
+async function mount_scene_viewer(root: HTMLElement, scene_name: string): Promise<void> {
   const { SCENES } = await import("../generated/scenes.js");
   const { OBJECT_LIBRARY, ASSET_SPECS } = await import("../generated/object_library.js");
   const { runPipeline } = await import("./scene_runtime/layout/index.js");
   const { renderScene } = await import("./scene_runtime/renderer/index.js");
 
-  const scene = SCENES.hood_basic;
+  // Guard: unknown scene -> visible error banner, no throw.
+  const scene = SCENES[scene_name];
   if (!scene) {
-    throw new Error("Scene hood_basic not found in SCENES index");
+    const banner = document.createElement("div");
+    banner.style.cssText =
+      "padding:1rem;background:#fee;border:2px solid #c00;color:#900;font-family:monospace;";
+    banner.textContent = `Scene viewer error: unknown scene "${scene_name}". Check the ?scene= parameter.`;
+    root.appendChild(banner);
+    // Mark ready so tools know the viewer ran (even on error path).
+    root.setAttribute("data-viewer-ready", "true");
+    return;
   }
+
   const result = runPipeline(scene, {
     library: OBJECT_LIBRARY,
     assets: ASSET_SPECS,
   });
   renderScene(root, result);
+  // Mark ready after a successful render.
+  root.setAttribute("data-viewer-ready", "true");
 }
 
 //============================================
@@ -69,7 +86,8 @@ async function mount_protocol_host(): Promise<void> {
 function route(): Promise<void> {
   // Order matters. Protocol host is the most specific: it requires a
   // protocol name set on window AND a scene-root. If only scene-root is
-  // present we treat it as bench. Launcher uses its own dedicated root.
+  // present, check for ?scene= to use the scene viewer, else fall back
+  // to bench (hood_basic). Launcher uses its own dedicated root.
   const launcher_root = document.getElementById("launcher-root");
   if (launcher_root instanceof HTMLElement) {
     return mount_launcher(launcher_root);
@@ -82,15 +100,22 @@ function route(): Promise<void> {
     if (has_protocol_name && has_shell_root) {
       return mount_protocol_host();
     }
-    return mount_bench(scene_root);
+    // Scene viewer: activated when no protocol name is set. Read ?scene=
+    // from the URL; fall back to hood_basic when absent (bench smoke target).
+    const url_params = new URLSearchParams(window.location.search);
+    const scene_param = url_params.get("scene");
+    const scene_name = scene_param !== null && scene_param !== "" ? scene_param : "hood_basic";
+    return mount_scene_viewer(scene_root, scene_name);
   }
   throw new Error("dist_entry: no recognized root element (#launcher-root or #scene-root)");
 }
 
 route().catch((err: unknown) => {
-  // Surface routing or mount failures loudly. The page will be blank
-  // anyway, so console.error is the only useful escape valve.
+  // Surface routing or mount failures loudly for unexpected errors
+  // (e.g. dynamic import failures). Known recoverable errors (unknown scene)
+  // are handled inside mount_scene_viewer and never reach here.
   // eslint-disable-next-line no-console
   console.error("dist_entry failed:", err);
-  throw err;
+  // Do NOT rethrow: rethrowing leaves a blank page with no user-visible
+  // feedback. The console.error above is the only useful signal.
 });

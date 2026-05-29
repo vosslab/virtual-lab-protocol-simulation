@@ -329,6 +329,40 @@ test("missing_svg item: element is positioned absolutely with percent units", ()
 });
 
 //============================================
+// Tests: missing-object placeholder kind distinction
+// A placement whose object is absent from OBJECT_LIBRARY is bound with
+// missing_svg: true AND _missing_object: true (see bind_objects.ts). The
+// renderer must mark it data-placeholder-kind="missing-object" so stats and
+// the DOM can distinguish it from a missing-art (missing-svg) placeholder.
+//============================================
+
+test("missing-object item: data-placeholder-kind is 'missing-object'", () => {
+  const item = makeMissingItem({ _missing_object: true });
+  const el = renderItem(item);
+  assert.equal(el.getAttribute("data-placeholder-kind"), "missing-object");
+});
+
+test("missing-object item: still carries data-missing-svg='true' for back-compat", () => {
+  const item = makeMissingItem({ _missing_object: true });
+  const el = renderItem(item);
+  assert.equal(el.getAttribute("data-missing-svg"), "true");
+});
+
+test("missing-object item: label text includes 'MISSING OBJECT' cause", () => {
+  const item = makeMissingItem({ _missing_object: true });
+  const el = renderItem(item);
+  const text = el.textContent ?? "";
+  assert.ok(text.includes("MISSING OBJECT"), `Expected MISSING OBJECT cause, got: "${text}"`);
+});
+
+test("missing-svg (not missing-object) item: data-placeholder-kind is 'missing-svg'", () => {
+  // _missing_object absent -> the object exists but its SVG art is absent.
+  const item = makeMissingItem();
+  const el = renderItem(item);
+  assert.equal(el.getAttribute("data-placeholder-kind"), "missing-svg");
+});
+
+//============================================
 // Tests: normal item (no missing_svg)
 //============================================
 

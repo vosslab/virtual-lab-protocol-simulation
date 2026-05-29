@@ -35,6 +35,7 @@ src/
 +- protocol_host_entry.tsx     -- protocol-host bundle entry
 +- protocol_host.tsx           -- wires pipeline, renderer, step machine, HUD
 +- index.html                  -- bench page (smoke target)
++- scene_viewer_template.html  -- scene viewer HTML template (copied to dist/scene_viewer.html)
 +- style.css                   -- stylesheet (copied to dist/)
 +- launcher/
 |  +- index.html               -- launcher HTML page
@@ -92,7 +93,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | --- | --- |
 | [gen_object_library.py](../pipeline/gen_object_library.py) | `content/objects/` YAML -> `generated/object_library.ts` |
 | [gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
-| [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts`; `--missing-svg=strict|placeholder` |
+| [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json`; `--missing-svg=strict|placeholder` (default `placeholder`) |
 | [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` |
 | [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index build helpers |
 | [list_protocols.py](../pipeline/list_protocols.py) | Reads `PROTOCOLS_INDEX`; `emit` writes one `dist/<name>.html` per protocol |
@@ -268,9 +269,11 @@ All gitignored (see [.gitignore](../.gitignore)):
 | `generated/object_library.ts` | [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) |
 | `generated/svg_registry.ts` | [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) |
 | `generated/scenes.ts` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) |
+| `generated/scene_manifest.json` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) (per-scene classification, source of truth for scene tooling) |
 | `generated/protocols.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocols_index_slim.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `dist/` | [build_github_pages.sh](../build_github_pages.sh) (GitHub Pages bundle) |
+| `dist/scene_viewer.html` | Copied from `src/scene_viewer_template.html` during build |
 | `test-results/` | Playwright screenshots and reports |
 | `node_modules/` | npm install output |
 

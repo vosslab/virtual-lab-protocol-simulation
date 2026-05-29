@@ -175,6 +175,12 @@ export interface BoundPlacement extends PlacementAuthored {
   aspect: number;
   layout: ResolvedLayoutHint;
   _error?: string;
+  // True when the placement references an object absent from OBJECT_LIBRARY.
+  // Set during bind. The placement is bound as a renderable placeholder
+  // (missing_svg true) instead of being dropped, so the renderer can show a
+  // distinct "missing object" box and structural guards skip it. Distinguished
+  // in the DOM from a missing-SVG placeholder via data-placeholder-kind.
+  _missing_object?: true;
 }
 
 export interface ScaledPlacement extends BoundPlacement {

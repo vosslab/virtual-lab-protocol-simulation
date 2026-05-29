@@ -8,7 +8,9 @@
 		"build": "bash build_github_pages.sh",
 		"serve": "bash run_web_server.sh",
 		"check": "bash check_codebase.sh",
-		"clean": "bash devel/dist_clean.sh"
+		"clean": "bash devel/dist_clean.sh",
+		"protocol:png": "node tools/protocol_to_png.mjs",
+		"scene:png": "node tools/scene_to_png.mjs"
 	},
 	"devDependencies": {
 		"@eslint/js": ">=10.0.1",

@@ -4,10 +4,14 @@
 # WP-3-10 extension. The build now produces:
 #
 #   dist/index.html              -- launcher entry (from src/launcher/index.html)
-#   dist/main.js                 -- single shared ESM bundle (Solid + runtime)
+#   dist/launcher.js             -- launcher bundle (src/launcher_entry.tsx)
+#   dist/protocol_host.js        -- protocol host bundle (src/protocol_host_entry.tsx)
+#   dist/scene_viewer.js         -- scene viewer bundle (src/dist_entry.tsx)
 #   dist/style.css               -- copied verbatim from src/style.css
 #   dist/bench_basic.html        -- preserved bench page as a render smoke target
 #                                   (renamed from the legacy dist/index.html)
+#   dist/scene_viewer.html       -- minimal host: only #scene-root, loads ?scene=<name>
+#                                   (from src/scene_viewer_template.html)
 #   dist/<protocol_name>.html    -- one per entry in generated PROTOCOLS_INDEX,
 #                                   templated from src/protocol_host_template.html
 #   dist/.nojekyll               -- GitHub Pages flag
@@ -15,11 +19,16 @@
 # Contract:
 #   - Wipes dist/ from scratch.
 #   - Verifies required source files: src/dist_entry.tsx,
+#     src/launcher_entry.tsx, src/protocol_host_entry.tsx,
 #     src/launcher/index.html, src/protocol_host_template.html,
-#     src/index.html (bench), src/style.css. Aborts on missing.
+#     src/scene_viewer_template.html, src/index.html (bench),
+#     src/style.css. Aborts on missing.
 #   - Type-checks via 'tsc --noEmit -p tsconfig.json'.
-#   - Bundles src/dist_entry.tsx with esbuild (ESM, es2020, browser,
-#     minified, sourcemap, Solid JSX flags) into dist/main.js.
+#   - Bundles three entry points with esbuild (ESM, es2020, browser,
+#     minified, sourcemap, Solid JSX flags):
+#     src/launcher_entry.tsx       -> dist/launcher.js
+#     src/protocol_host_entry.tsx  -> dist/protocol_host.js
+#     src/dist_entry.tsx           -> dist/scene_viewer.js
 #   - Copies src/launcher/index.html  -> dist/index.html (launcher page).
 #   - Copies src/index.html           -> dist/bench_basic.html (bench page).
 #   - Copies src/style.css            -> dist/style.css.
@@ -54,8 +63,10 @@ bash pipeline/build_generated.sh
 REQUIRED_SOURCES=(
 	"src/launcher_entry.tsx"
 	"src/protocol_host_entry.tsx"
+	"src/dist_entry.tsx"
 	"src/launcher/index.html"
 	"src/protocol_host_template.html"
+	"src/scene_viewer_template.html"
 	"src/index.html"
 	"src/style.css"
 	"generated/protocols.ts"
@@ -89,24 +100,32 @@ cp src/launcher/index.html dist/index.html
 #    under a stable name so existing smoke paths keep working.
 cp src/index.html dist/bench_basic.html
 
-# 5. Copy stylesheet.
+# 5. Copy scene viewer host HTML.
+#    Minimal page: only #scene-root (no #shell-root, no window.__PROTOCOL_NAME__).
+#    dist_entry.tsx route() reads ?scene=<name> and calls mount_scene_viewer.
+#    Served as dist/scene_viewer.html?scene=<name> by tools and smoke tests.
+cp src/scene_viewer_template.html dist/scene_viewer.html
+
+# 6. Copy stylesheet.
 cp src/style.css dist/style.css
 
-# 6. Generate dist/<protocol_name>.html for every PROTOCOLS_INDEX entry.
+# 7. Generate dist/<protocol_name>.html for every PROTOCOLS_INDEX entry.
 #    list_protocols.py 'emit' parses PROTOCOLS_INDEX from generated/protocols.ts
 #    and writes one dist/<name>.html per entry, substituting {{PROTOCOL_NAME}}.
 python3 pipeline/list_protocols.py emit \
 	--template src/protocol_host_template.html \
 	--out-dir dist
 
-# 7. GitHub Pages marker.
+# 8. GitHub Pages marker.
 touch dist/.nojekyll
 
-# 8. Assert the canonical artifacts exist.
+# 9. Assert the canonical artifacts exist.
 test -f dist/index.html
 test -f dist/launcher.js
 test -f dist/protocol_host.js
+test -f dist/scene_viewer.js
 test -f dist/style.css
 test -f dist/bench_basic.html
+test -f dist/scene_viewer.html
 
 echo "Built dist/ (GitHub Pages-ready)."

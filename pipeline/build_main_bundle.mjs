@@ -21,6 +21,9 @@ const writeMeta = process.env.BUILD_METAFILE === "1";
 const targets = [
   { entry: "src/launcher_entry.tsx", out: "dist/launcher.js" },
   { entry: "src/protocol_host_entry.tsx", out: "dist/protocol_host.js" },
+  // Scene viewer bundle: minimal entry that reads ?scene= and renders any named
+  // scene without a protocol shell. Loaded by dist/scene_viewer.html.
+  { entry: "src/dist_entry.tsx", out: "dist/scene_viewer.js" },
 ];
 
 for (const t of targets) {

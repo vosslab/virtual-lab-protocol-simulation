@@ -77,6 +77,14 @@ function renderMissingPlaceholder(item: ComputedItem): HTMLElement {
   // Mark as placeholder so tests and diagnostics can distinguish it from real items.
   el.setAttribute("data-missing-svg", "true");
 
+  // Distinguish the two placeholder causes in the DOM and in stats:
+  //   missing-object -> placement references an object absent from OBJECT_LIBRARY
+  //   missing-svg    -> object exists but its SVG asset is absent from assets/
+  // _missing_object is set in bind_objects.ts. Both still carry data-missing-svg
+  // for back-compat with existing tests/tools.
+  const placeholderKind = item._missing_object === true ? "missing-object" : "missing-svg";
+  el.setAttribute("data-placeholder-kind", placeholderKind);
+
   // Placeholder visual: dashed border, neutral background, centered label.
   // Deliberately NOT an object-fit/SVG container so it cannot be mistaken for
   // or cropped like a real scientific asset.
@@ -96,8 +104,11 @@ function renderMissingPlaceholder(item: ComputedItem): HTMLElement {
   label.style.textAlign = "center";
   label.style.padding = "2px 4px";
   label.style.pointerEvents = "none";
-  // Show object name on first line and "MISSING ART" below it.
-  label.textContent = `${item.object_name}\nMISSING ART`;
+  // Show object name on first line and the cause on the second.
+  // missing-object: the object is not in OBJECT_LIBRARY at all.
+  // missing-svg: the object exists but its SVG art is absent.
+  const causeText = item._missing_object === true ? "MISSING OBJECT" : "MISSING ART";
+  label.textContent = `${item.object_name}\n${causeText}`;
   // whiteSpace "pre" is required so the \n in the label text renders as a line break.
   label.style.whiteSpace = "pre";
 

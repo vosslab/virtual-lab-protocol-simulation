@@ -1,8 +1,13 @@
 // Scene rendering. Top-level renderer entry point.
-// Clears root, validates layout via runStructuralGuards, renders background,
-// items, and labels. No scene-name branching anywhere.
+// Clears root, classifies layout via collectStructuralViolations, renders
+// background, items, and labels. No scene-name branching anywhere.
+//
+// Report-mode design: a structural violation NEVER blanks the scene. The
+// renderer collects violations, marks the root degraded, warns, and still
+// renders every item so the problem (overlap, off-scene label, distortion) is
+// visible for diagnosis. The throwing guard mode lives in tests/CI only.
 
-import { runStructuralGuards } from "./structural_guards.js";
+import { collectStructuralViolations } from "./structural_guards.js";
 import type { PipelineResult } from "../layout/types.js";
 import { renderBackground } from "./render_background.js";
 import { renderItem } from "./render_item.js";
@@ -13,10 +18,12 @@ import { renderLabel } from "./render_label.js";
 /**
  * Render a complete scene from a PipelineResult.
  * 1. Clears the root element.
- * 2. Calls runStructuralGuards for layout validation (throws on failure).
- * 3. Renders background.
- * 4. Renders each item and its label, appended in depth_tier order.
- * No scene-name branching. Throws on validation failure.
+ * 2. Collects structural violations (report mode; never throws).
+ * 3. When violations exist: marks root degraded, warns, and STILL renders.
+ * 4. Renders background.
+ * 5. Renders each item and its label, appended in depth_tier order.
+ * No scene-name branching. Never blanks the scene on a structural violation;
+ * the strict/throwing guard mode is reserved for tests and CI.
  *
  * @param root - HTMLElement (typically #scene-root) to render into
  * @param result - PipelineResult from runPipeline
@@ -24,7 +31,6 @@ import { renderLabel } from "./render_label.js";
  *                   When provided, Guard 5 (aspect ratio) uses these dimensions
  *                   instead of DEFAULT_VIEWPORT. Must match the viewport passed
  *                   to runPipeline so the aspect check is consistent.
- * @throws Error if layout validation fails or SVG asset is missing
  */
 export function renderScene(
   root: HTMLElement,
@@ -37,9 +43,24 @@ export function renderScene(
     root.removeChild(root.firstChild);
   }
 
-  // Validate layout. Throws if invalid. Renderer never paints invalid layout.
-  // Pass viewport so Guard 5 aspect check uses the correct panel dimensions.
-  runStructuralGuards(result.final, result.scene, viewport);
+  // Classify layout in report mode. Pass viewport so Guard 5 aspect check uses
+  // the correct panel dimensions. A violation degrades, never blanks, the scene.
+  const violations = collectStructuralViolations(result.final, result.scene, viewport);
+  if (violations.length > 0) {
+    // Surface the degraded state in the DOM so diagnostic tools can detect it.
+    root.setAttribute("data-scene-degraded", "true");
+    root.setAttribute("data-degraded-violation-count", String(violations.length));
+    // Warn loudly (one grouped message) but keep rendering every item.
+    const summary = violations.map((v) => `[${v.guard}] ${v.message}`).join("\n");
+    // eslint-disable-next-line no-console
+    console.warn(
+      `Scene "${result.scene.scene_name}" rendered DEGRADED with ${violations.length} structural violation(s):\n${summary}`,
+    );
+  } else {
+    // Clean render: ensure no stale degraded marker remains on a reused root.
+    root.removeAttribute("data-scene-degraded");
+    root.removeAttribute("data-degraded-violation-count");
+  }
 
   // Render background.
   if (result.scene.background) {

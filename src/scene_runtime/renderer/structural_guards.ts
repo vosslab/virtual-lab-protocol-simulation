@@ -1,7 +1,16 @@
 // Structural layout guards: verifies final layout against no-clipping and
 // invariant constraints before rendering. This module is a verifier only;
 // it reads geometry from PipelineResult and scene, does not compute positions.
-// Throws with offending placement_name on first violation.
+//
+// Two consumption modes share one pure classification core:
+//   - collectStructuralViolations(): returns the full list of violations and
+//     never throws. The renderer uses this so a structural problem degrades the
+//     scene (still renders every item, flags it) instead of blanking the page.
+//   - runStructuralGuards(): throws on the first violation. Tests and CI use
+//     this so a structural regression fails loudly.
+// The guards classify; the caller decides fatality. There is no try/catch
+// around the guard calls; the throwing wrapper simply re-raises the first
+// violation the pure core already found.
 
 import type { ComputedItem, SceneA, SceneB, Bounds } from "../layout/types.js";
 import { ASSET_SPECS } from "../../../generated/object_library.js";
@@ -17,6 +26,29 @@ const typedAssetSpecs = ASSET_SPECS as Record<
   { default_width: number; label_width: number; aspect: number }
 >;
 const typedSvgRegistry = SVG_REGISTRY;
+
+//============================================
+// Violation classification
+//============================================
+
+// One structural-guard violation. The guards classify problems into this flat
+// record; the caller (renderer = report, tests/CI = throw) decides fatality.
+export interface StructuralViolation {
+  // Stable guard identifier, used for filtering and diagnostics.
+  guard:
+    | "zone_lookup"
+    | "zone_off_scene"
+    | "item_overlap"
+    | "zone_gap"
+    | "aspect_distortion"
+    | "missing_asset"
+    | "label_off_scene"
+    | "label_svg_overlap";
+  // Human-readable message identical to the legacy thrown Error message.
+  message: string;
+  // The primary placement (or zone) the violation concerns, when applicable.
+  placement_name?: string;
+}
 
 //============================================
 // Helper types and constants
@@ -89,10 +121,11 @@ function bboxContained(inner: Bounds, outer: Bounds, tolerance: number): boolean
 // Guard 1: every item lies inside its zone bbox
 //============================================
 
-function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): void {
+function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   const sceneA = "zones" in scene ? scene : null;
   if (!sceneA) {
-    return; // SceneB doesn't have zones; skip this guard
+    return violations; // SceneB doesn't have zones; skip this guard
   }
 
   const zoneMap = new Map<string, Bounds>();
@@ -106,9 +139,15 @@ function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): void 
     }
     const zoneBounds: Bounds | undefined = zoneMap.get(item.zone);
     if (!zoneBounds) {
-      throw new Error(
-        `Structural guard failure (zone lookup): item "${item.placement_name}" zone "${item.zone}" not found in scene.`,
-      );
+      // Zone-lookup miss is a structural violation, not a throw. The pure core
+      // must never throw (report mode would blank the scene); the throwing
+      // wrapper re-raises this like any other violation for tests/CI.
+      violations.push({
+        guard: "zone_lookup",
+        placement_name: item.placement_name,
+        message: `Structural guard failure (zone lookup): item "${item.placement_name}" zone "${item.zone}" not found in scene.`,
+      });
+      continue;
     }
     const itemBboxVal = itemBbox(item);
     if (!bboxContained(itemBboxVal, zoneBounds, JITTER_TOLERANCE)) {
@@ -123,37 +162,43 @@ function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): void 
       );
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 2: every zone lies inside scene_bounds
 //============================================
 
-function checkZonesInScene(scene: SceneA | SceneB): void {
+function checkZonesInScene(scene: SceneA | SceneB): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   const sceneA = "zones" in scene ? scene : null;
   if (!sceneA) {
-    return;
+    return violations;
   }
 
   const sceneBounds = sceneA.scene_bounds;
   if (!sceneBounds) {
-    return;
+    return violations;
   }
 
   for (const zone of sceneA.zones) {
     if (!bboxContained(zone.bounds, sceneBounds, JITTER_TOLERANCE)) {
-      throw new Error(
-        `Structural guard failure (zone off-scene): zone "${zone.id}" bounds [${zone.bounds.left.toFixed(1)}, ${zone.bounds.top.toFixed(1)}, ${zone.bounds.right.toFixed(1)}, ${zone.bounds.bottom.toFixed(1)}] lies outside scene_bounds [${sceneBounds.left.toFixed(1)}, ${sceneBounds.top.toFixed(1)}, ${sceneBounds.right.toFixed(1)}, ${sceneBounds.bottom.toFixed(1)}].`,
-      );
+      violations.push({
+        guard: "zone_off_scene",
+        placement_name: zone.id,
+        message: `Structural guard failure (zone off-scene): zone "${zone.id}" bounds [${zone.bounds.left.toFixed(1)}, ${zone.bounds.top.toFixed(1)}, ${zone.bounds.right.toFixed(1)}, ${zone.bounds.bottom.toFixed(1)}] lies outside scene_bounds [${sceneBounds.left.toFixed(1)}, ${sceneBounds.top.toFixed(1)}, ${sceneBounds.right.toFixed(1)}, ${sceneBounds.bottom.toFixed(1)}].`,
+      });
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 3: no item-item overlap
 //============================================
 
-function checkNoItemOverlap(final: ComputedItem[]): void {
+function checkNoItemOverlap(final: ComputedItem[]): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   for (let i = 0; i < final.length; i++) {
     for (let j = i + 1; j < final.length; j++) {
       const itemA: ComputedItem | undefined = final[i];
@@ -175,22 +220,26 @@ function checkNoItemOverlap(final: ComputedItem[]): void {
       const overlapPct = minArea > 0 ? (overlapArea / minArea) * 100 : 100;
 
       if (overlapPct > ITEM_OVERLAP_TOLERANCE) {
-        throw new Error(
-          `Structural guard failure (item overlap): item "${itemA.placement_name}" overlaps with "${itemB.placement_name}" by ${overlapPct.toFixed(1)}%.`,
-        );
+        violations.push({
+          guard: "item_overlap",
+          placement_name: itemA.placement_name,
+          message: `Structural guard failure (item overlap): item "${itemA.placement_name}" overlaps with "${itemB.placement_name}" by ${overlapPct.toFixed(1)}%.`,
+        });
       }
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 4: same-zone gap >= layout_rules.zone_gap
 //============================================
 
-function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): void {
+function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   const sceneA = "zones" in scene ? scene : null;
   if (!sceneA) {
-    return;
+    return violations;
   }
 
   const zoneGapPx = sceneA.layout_rules?.zone_gap ?? DEFAULT_ZONE_GAP;
@@ -230,14 +279,17 @@ function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): void {
         // Only enforce gap if horizontally adjacent
         if (horizontalGap < 1 && horizontalGap >= 0) {
           if (horizontalGap < zoneGapPct) {
-            throw new Error(
-              `Structural guard failure (zone gap): items "${itemA.placement_name}" and "${itemB.placement_name}" in zone "${zoneId}" have horizontal gap ${horizontalGap.toFixed(1)}% < required ${zoneGapPct.toFixed(1)}%.`,
-            );
+            violations.push({
+              guard: "zone_gap",
+              placement_name: itemA.placement_name,
+              message: `Structural guard failure (zone gap): items "${itemA.placement_name}" and "${itemB.placement_name}" in zone "${zoneId}" have horizontal gap ${horizontalGap.toFixed(1)}% < required ${zoneGapPct.toFixed(1)}%.`,
+            });
           }
         }
       }
     }
   }
+  return violations;
 }
 
 //============================================
@@ -247,7 +299,8 @@ function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): void {
 function checkAspectRatio(
   final: ComputedItem[],
   viewport: { w: number; h: number } = DEFAULT_VIEWPORT,
-): void {
+): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   // Item dimensions are in percent units (0-100 scale).
   // Pipeline computes _height = _visualWidth * (viewport.w / viewport.h) / aspect_svg
   // So _visualWidth / _height = aspect_svg / (viewport.w / viewport.h)
@@ -283,18 +336,22 @@ function checkAspectRatio(
     const deviation = Math.abs(aspectRatio - 1);
 
     if (deviation > ASPECT_TOLERANCE) {
-      throw new Error(
-        `Structural guard failure (aspect distortion): item "${item.placement_name}" asset "${item.asset}" has rendered aspect ${renderedAspect.toFixed(3)} vs expected viewBox aspect ${expectedAspect.toFixed(3)} (deviation ${(deviation * 100).toFixed(1)}%).`,
-      );
+      violations.push({
+        guard: "aspect_distortion",
+        placement_name: item.placement_name,
+        message: `Structural guard failure (aspect distortion): item "${item.placement_name}" asset "${item.asset}" has rendered aspect ${renderedAspect.toFixed(3)} vs expected viewBox aspect ${expectedAspect.toFixed(3)} (deviation ${(deviation * 100).toFixed(1)}%).`,
+      });
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 6: asset resolves in SVG_REGISTRY
 //============================================
 
-function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): void {
+function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   for (const item of final) {
     // Placeholder items deliberately have missing assets; skip the registry check.
     if (item.missing_svg === true) {
@@ -303,21 +360,25 @@ function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): voi
 
     const asset = item.asset;
     if (!typedSvgRegistry[asset]) {
-      throw new Error(
-        `Structural guard failure (missing asset): scene "${scene.scene_name}" / placement "${item.placement_name}" / object "${item.object_name}" / asset "${asset}" not in SVG_REGISTRY.`,
-      );
+      violations.push({
+        guard: "missing_asset",
+        placement_name: item.placement_name,
+        message: `Structural guard failure (missing asset): scene "${scene.scene_name}" / placement "${item.placement_name}" / object "${item.object_name}" / asset "${asset}" not in SVG_REGISTRY.`,
+      });
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 7: no label outside scene
 //============================================
 
-function checkLabelsInScene(final: ComputedItem[], scene: SceneA | SceneB): void {
+function checkLabelsInScene(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   const sceneBounds = scene.scene_bounds;
   if (!sceneBounds) {
-    return;
+    return violations;
   }
 
   for (const item of final) {
@@ -326,18 +387,22 @@ function checkLabelsInScene(final: ComputedItem[], scene: SceneA | SceneB): void
     }
     const labelBboxVal = labelBbox(item);
     if (!bboxContained(labelBboxVal, sceneBounds, JITTER_TOLERANCE)) {
-      throw new Error(
-        `Structural guard failure (label off-scene): label for item "${item.placement_name}" bbox [${labelBboxVal.left.toFixed(1)}, ${labelBboxVal.top.toFixed(1)}, ${labelBboxVal.right.toFixed(1)}, ${labelBboxVal.bottom.toFixed(1)}] lies outside scene_bounds [${sceneBounds.left.toFixed(1)}, ${sceneBounds.top.toFixed(1)}, ${sceneBounds.right.toFixed(1)}, ${sceneBounds.bottom.toFixed(1)}].`,
-      );
+      violations.push({
+        guard: "label_off_scene",
+        placement_name: item.placement_name,
+        message: `Structural guard failure (label off-scene): label for item "${item.placement_name}" bbox [${labelBboxVal.left.toFixed(1)}, ${labelBboxVal.top.toFixed(1)}, ${labelBboxVal.right.toFixed(1)}, ${labelBboxVal.bottom.toFixed(1)}] lies outside scene_bounds [${sceneBounds.left.toFixed(1)}, ${sceneBounds.top.toFixed(1)}, ${sceneBounds.right.toFixed(1)}, ${sceneBounds.bottom.toFixed(1)}].`,
+      });
     }
   }
+  return violations;
 }
 
 //============================================
 // Guard 8: no label overlap with own SVG
 //============================================
 
-function checkNoLabelOwnSvgOverlap(final: ComputedItem[]): void {
+function checkNoLabelOwnSvgOverlap(final: ComputedItem[]): StructuralViolation[] {
+  const violations: StructuralViolation[] = [];
   for (const item of final) {
     if (item._labelLines.length === 0) {
       continue;
@@ -353,47 +418,80 @@ function checkNoLabelOwnSvgOverlap(final: ComputedItem[]): void {
       const overlapPct = minArea > 0 ? (overlapArea / minArea) * 100 : 100;
 
       if (overlapPct > LABEL_OVERLAP_TOLERANCE) {
-        throw new Error(
-          `Structural guard failure (label-svg overlap): label for item "${item.placement_name}" overlaps its own SVG by ${overlapPct.toFixed(1)}%.`,
-        );
+        violations.push({
+          guard: "label_svg_overlap",
+          placement_name: item.placement_name,
+          message: `Structural guard failure (label-svg overlap): label for item "${item.placement_name}" overlaps its own SVG by ${overlapPct.toFixed(1)}%.`,
+        });
       }
     }
   }
+  return violations;
 }
 
 //============================================
 // Main entry point
 //============================================
 
+/**
+ * Pure classification core. Runs every guard and returns ALL violations found,
+ * never throwing. Guard 1 zone-containment drift only console.warns and is not
+ * a violation, but a guard 1 zone-lookup miss is collected. The renderer uses
+ * this to degrade-not-blank; tests/CI use the throwing wrapper below.
+ *
+ * @param final - computed layout items
+ * @param scene - source scene (SceneA or SceneB)
+ * @param viewport - pixel dimensions used by the pipeline (for aspect check)
+ * @returns every structural violation, in guard order; empty when clean
+ */
+export function collectStructuralViolations(
+  final: ComputedItem[],
+  scene: SceneA | SceneB,
+  viewport?: { w: number; h: number },
+): StructuralViolation[] {
+  const effectiveViewport = viewport ?? DEFAULT_VIEWPORT;
+
+  // Guards 1-8 each return a (possibly empty) violation list. Collect in order.
+  const violations: StructuralViolation[] = [
+    // Guard 1: items inside zone bboxes. Zone-containment drift is warn-only and
+    // contributes no violation; a zone-lookup miss is a collected violation.
+    ...checkItemsInZones(final, scene),
+    // Guard 2: zones inside scene_bounds
+    ...checkZonesInScene(scene),
+    // Guard 3: no item-item overlap
+    ...checkNoItemOverlap(final),
+    // Guard 4: same-zone horizontal gaps
+    ...checkSameZoneGap(final, scene),
+    // Guard 5: aspect ratios preserved. Pass the same viewport used by the
+    // pipeline so rendered-aspect checks are consistent with computed _height.
+    ...checkAspectRatio(final, effectiveViewport),
+    // Guard 6: assets resolved in registry
+    ...checkAssetsResolved(final, scene),
+    // Guard 7: labels inside scene
+    ...checkLabelsInScene(final, scene),
+    // Guard 8: labels don't overlap own SVG
+    ...checkNoLabelOwnSvgOverlap(final),
+  ];
+
+  return violations;
+}
+
+/**
+ * Throwing wrapper for tests and CI. Runs the pure core and throws the first
+ * violation's Error so a structural regression fails loudly. This preserves the
+ * historical fail-on-first-violation contract that the guard test suite asserts.
+ * It is NOT a try/catch swallow; it re-raises the classification result.
+ *
+ * @throws Error with the first violation's message when any guard fails
+ */
 export function runStructuralGuards(
   final: ComputedItem[],
   scene: SceneA | SceneB,
   viewport?: { w: number; h: number },
 ): void {
-  // Guard 1: items inside zone bboxes
-  checkItemsInZones(final, scene);
-
-  // Guard 2: zones inside scene_bounds
-  checkZonesInScene(scene);
-
-  // Guard 3: no item-item overlap
-  checkNoItemOverlap(final);
-
-  // Guard 4: same-zone horizontal gaps
-  checkSameZoneGap(final, scene);
-
-  // Guard 5: aspect ratios preserved.
-  // Pass the same viewport used by the pipeline so rendered-aspect checks are
-  // consistent with computed _height values. Falls back to DEFAULT_VIEWPORT when
-  // not provided (safe for full-viewport renders and unit tests).
-  checkAspectRatio(final, viewport ?? DEFAULT_VIEWPORT);
-
-  // Guard 6: assets resolved in registry
-  checkAssetsResolved(final, scene);
-
-  // Guard 7: labels inside scene
-  checkLabelsInScene(final, scene);
-
-  // Guard 8: labels don't overlap own SVG
-  checkNoLabelOwnSvgOverlap(final);
+  const violations = collectStructuralViolations(final, scene, viewport);
+  const first = violations[0];
+  if (first) {
+    throw new Error(first.message);
+  }
 }

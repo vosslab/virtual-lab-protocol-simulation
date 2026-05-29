@@ -1,5 +1,31 @@
 # Changelog
 
+## 2026-05-29
+
+### Additions and New Features
+
+- Added a standalone scene viewer: `mount_scene_viewer` in [src/dist_entry.tsx](../src/dist_entry.tsx) reads `?scene=<name>`, shows an unknown-scene banner before running the pipeline, and sets a `data-viewer-ready` marker. New host page [src/scene_viewer_template.html](../src/scene_viewer_template.html) is emitted as `dist/scene_viewer.html` by [build_github_pages.sh](../build_github_pages.sh) and [pipeline/build_main_bundle.mjs](../pipeline/build_main_bundle.mjs). Added Playwright smoke `tests/playwright/test_scene_viewer.mjs`.
+
+- Added [tools/scene_to_png.mjs](../tools/scene_to_png.mjs): renders a scene to PNG plus structured stats (`--scene <name>`, `--all`, `scene:png` npm alias). Added [tools/scene_stats.mjs](../tools/scene_stats.mjs) (exports `computeSceneStats`; reports render-yield and the easy diagnostics) with helpers in [tools/bbox_helpers.mjs](../tools/bbox_helpers.mjs), and unit tests `tests/test_scene_stats.mjs`.
+
+- Added [tools/protocol_to_png.mjs](../tools/protocol_to_png.mjs): renders a protocol interface and scene to PNG, reports load outcomes, and supports `--all`, `--steps`, and the `protocol:png` npm alias.
+
+### Behavior or Interface Changes
+
+- Deleted `SCENE_ALLOWLIST` from [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) and replaced it with discover-all plus per-scene classification: `emitted`, `skipped` (non-fatal, with a recorded reason), or `errored` (fatal, raises). The generator now emits `generated/scene_manifest.json` (`{name, outcome, reason, source_placement_count, source_placement_names}`). Added regression test [tests/test_no_scene_allowlist.py](../tests/test_no_scene_allowlist.py).
+
+- Flipped the `--missing-svg` default in [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) from `strict` to `placeholder` so a scene referencing a missing SVG now emits a labeled placeholder instead of vanishing; `strict` is retained for CI gating.
+
+### Fixes and Maintenance
+
+- M3 blank-scene fix: structural guards now report instead of throw in the render path. `collectStructuralViolations` gathers violations and `renderScene` sets `data-scene-degraded`, warns, and renders all items; a strict throwing wrapper is retained for tests/CI. Added a missing-object placeholder path in `bind_objects.ts`, `group_by_zone.ts`, and `render_item.ts` with a distinct `data-placeholder-kind="missing-object"`. Result: before 25 populated / 19 load-failed / 1 empty / 1 skipped; after 44 populated / 0 load-failed / 0 empty / 1 placeholder-only / 1 skipped. `bash check_codebase.sh` passes (6 checks, 151 node tests). Evidence: `docs/active_plans/audits/blank_scene_evidence.md`.
+
+### Decisions and Failures
+
+- Structural guards stay in report mode (the render path never blanks a scene) per user direction; quality assessment lives in the diagnostic tools, not the render path. Git workflow is fully out of scope for agents.
+
+- Deferred diagnostic statistics (browser-event counts, exact-union coverage, severe-overlap/occlusion, stability/unstable flags, balance, zone-coverage, contrast, interaction-readiness, fuller labels) are recorded in [ROADMAP.md](ROADMAP.md).
+
 ## 2026-05-28
 
 ### Additions and New Features

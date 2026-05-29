@@ -190,7 +190,7 @@ test("bindObjects: merges layout hints, identity fields cannot be overridden", (
   assert.equal(diags.length, 0);
 });
 
-test("bindObjects: unknown_object emits diagnostic + skip-friendly _error", () => {
+test("bindObjects: unknown_object emits diagnostic + renderable placeholder", () => {
   const diags = [];
   const bound = bindObjects(
     [{ placement_name: "p", object_name: "ghost", zone: "z" }],
@@ -198,9 +198,17 @@ test("bindObjects: unknown_object emits diagnostic + skip-friendly _error", () =
     DEMO_ASSET_SPECS,
     diags,
   );
+  // Diagnostic is still recorded so the missing object is visible to tooling.
   assert.equal(diags.length, 1);
   assert.equal(diags[0].kind, "unknown_object");
-  assert.ok(bound[0]._error);
+  // New contract (WS-M3-B): a missing object is NOT marked _error (which would
+  // orphan it in group_by_zone and blank the scene). It binds as a renderable
+  // placeholder so it flows through layout and renders a "missing object" box.
+  assert.equal(bound[0]._error, undefined);
+  assert.equal(bound[0].missing_svg, true);
+  assert.equal(bound[0]._missing_object, true);
+  // It carries a real Kind so downstream layout stages treat it normally.
+  assert.equal(bound[0].kind, "decoration");
 });
 
 // ─── Stage 5 ────────────────────────────────────────────────────────

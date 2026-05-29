@@ -88,11 +88,11 @@ Renders a `PipelineResult` into the DOM.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/renderer/render_scene.ts](../src/scene_runtime/renderer/render_scene.ts) | Top-level renderer: clear root, run structural guards, render background/items/labels |
+| [src/scene_runtime/renderer/render_scene.ts](../src/scene_runtime/renderer/render_scene.ts) | Top-level renderer: clear root, run structural guards (collects violations), render background/items/labels; sets `data-scene-degraded` and emits `console.warn` on violations instead of throwing in the render path (throwing wrapper used in tests/CI) |
 | [src/scene_runtime/renderer/render_item.ts](../src/scene_runtime/renderer/render_item.ts) | Render one item; placeholder dashed box when `missing_svg: true` |
 | [src/scene_runtime/renderer/render_label.ts](../src/scene_runtime/renderer/render_label.ts) | Render label element for an item |
 | [src/scene_runtime/renderer/render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
-| [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.) |
+| [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.); collects all violations rather than throwing on the first; throwing wrapper is exposed for tests/CI |
 | [src/scene_runtime/renderer/inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Inject inline SVG from `ASSET_SPECS` |
 | [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene` |
 
@@ -121,7 +121,7 @@ All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
 | --- | --- |
 | [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts` |
 | [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
-| [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts`; `--missing-svg=strict|placeholder` flag |
+| [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json` (per-scene classification: emitted/skipped/errored); `--missing-svg=strict|placeholder` flag (default `placeholder`) |
 | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` |
 | [pipeline/build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index helpers |
 | [pipeline/list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
@@ -177,6 +177,10 @@ Developer-only helpers that do not appear in any build chain.
 | [tools/seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
 | [tools/svg_picker/README.md](../tools/svg_picker/README.md) | Browser-based SVG asset picker for content authors |
 | [tools/scorecard_m2.mjs](../tools/scorecard_m2.mjs) | M2 scene scorecard runner |
+| [tools/scene_to_png.mjs](../tools/scene_to_png.mjs) | `scene:png` -- renders a scene page to PNG + writes render-yield stats |
+| [tools/protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
+| [tools/scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |
+| [tools/bbox_helpers.mjs](../tools/bbox_helpers.mjs) | Shared bounding-box helper utilities used by scene tools |
 
 ## Data flow
 
@@ -202,8 +206,9 @@ runPipeline(scene, {library: OBJECT_LIBRARY, assets: ASSET_SPECS})
   returns PipelineResult (ComputedItems)
   |
   v
-renderScene(#scene-root, result): structural guards -> renderBackground
-  -> renderItem (inject_svg or placeholder) -> renderLabel
+renderScene(#scene-root, result): structural guards (collect violations,
+  set data-scene-degraded + console.warn instead of throwing) ->
+  renderBackground -> renderItem (inject_svg or placeholder) -> renderLabel
   |
   v
 assert_scene_not_empty(): throws for student protocols with 0 items
