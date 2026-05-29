@@ -13,16 +13,16 @@
 	"devDependencies": {
 		"@eslint/js": ">=10.0.1",
 		"@playwright/test": ">=1.60.0",
-		"@types/node": "^25.9.1",
+		"@types/node": ">=25.9.1",
 		"esbuild": ">=0.28.0",
-		"esbuild-plugin-solid": "^0.6.0",
+		"esbuild-plugin-solid": ">=0.6.0",
 		"eslint": ">=10.4.0",
 		"globals": ">=17.6.0",
 		"playwright": ">=1.60.0",
 		"prettier": ">=3.8.3",
-		"solid-js": "^1.9.13",
+		"solid-js": ">=1.9.13",
 		"tsx": ">=4.22.3",
 		"typescript": ">=6.0.3",
-		"typescript-eslint": ">=8.59.4"
+		"typescript-eslint": ">=8.60.0"
 	}
 }

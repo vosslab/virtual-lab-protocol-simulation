@@ -20,15 +20,6 @@ OTHER_REPOS/*/
 .prettiercache
 
 # ============================================================
-# Test artifacts
-# ============================================================
-tests/fixtures/
-tests/playwright/artifacts/
-test-results/
-playwright-report/
-coverage/
-
-# ============================================================
 # Reports and scratch files
 # ============================================================
 report_*.txt
