@@ -1,37 +1,82 @@
 scene_name: hood_workspace
 extends: hood_basic
 scene_notes: |
-  Hood workspace for pellet reseed mini-protocol. Adds conical tube rack
-  (for A11 transfer target), fresh media bottle (for A17 source), fresh
-  plate (for A17 seeding target), and label pen (for A12, A18 labeling).
+  Hood workspace for pellet reseed mini-protocol. Adds T75 flask (center),
+  conical 15ml rack (rear center), fresh media bottle (rear left), label pen
+  (right tool area), and incubator (rear right, replacing base media bottles).
+  NOTE: well_plate_96 is quarantined (missing asset/object); substituted with
+  microtube_rack_24 as best-effort placeholder until the 96-well plate object
+  and SVG land.
+
+remove_placements:
+  # Fully remove (not just deactivate) the base rear-right bottles. Deactivated
+  # placements are still laid out and rendered, so they sat underneath the large
+  # incubator and produced item-box overlaps. Removing them frees the rear_right
+  # band for the incubator alone.
+  - base_rear_right_media
+  - base_rear_right_sterile_water
+  # The inherited serological pipette is not a target of this mini-protocol
+  # (pellet reseed uses the aspirating pipette only) and its right_tool_area slot
+  # collided with the incubator, which overflows that band. Remove it.
+  - base_right_serological_pipette
+  # The inherited tip box is not a target here and shared the rear_left band with
+  # ethanol and the fresh media bottle, overlapping the media bottle. Remove it
+  # so rear_left holds just ethanol, fresh media, and the conical rack.
+  - base_rear_left_tip_box
 
 add_placements:
+  # T75 flask in center work area (front row, left).
   - placement_name: center_t75_flask
     object_name: t75_flask
     zone: center
-    depth_tier: 3
+    depth_tier: 1
+    align_stop: left
 
+  # Conical 15ml rack in rear_left (right slot, beside the fresh media bottle).
+  # rear_center now carries PBS, the relocated tip box, and waste, so the rack
+  # goes to rear_left where ethanol (left) leaves the right slot open.
   - placement_name: center_conical_rack
     object_name: conical_15ml_rack
-    zone: center
+    zone: rear_left
     depth_tier: 2
+    align_stop: right
 
+  # Fresh media bottle in rear_left (center slot, between ethanol and the rack).
   - placement_name: rear_left_fresh_media
     object_name: media_bottle
     zone: rear_left
     depth_tier: 1
+    align_stop: center
 
+  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
+  # Front row, right; flask is front-row left. align_stop right separates the
+  # plate from the flask (center alignment left them touching).
   - placement_name: center_fresh_plate
-    object_name: well_plate_96
+    object_name: microtube_rack_24
     zone: center
     depth_tier: 1
+    align_stop: right
 
+  # Incubator in rear_right. It is large equipment whose rendered height spans
+  # most of the scene, so it claims the entire right side. The right_tool_area
+  # zone overlaps rear_right in X, so any tool placed there would sit under the
+  # incubator; the label pen is therefore placed in the center band instead.
+  # Incubator in rear_right. The incubator asset is oversized (its real-world
+  # 55cm width scales beyond the rear_right zone), so it clips slightly at the
+  # right edge regardless of alignment; align_stop center gives the least clip.
+  # Its X-range still covers the right half of right_tool_area, so the aspirating
+  # pipette and label pen are kept in the left slot of that zone.
   - placement_name: rear_right_incubator
     object_name: incubator
     zone: rear_right
     depth_tier: 1
+    align_stop: center
 
-  - placement_name: right_label_pen
+  # Label pen in the center band (back row, center). Keeping it out of
+  # right_tool_area avoids the incubator overlap; the back row (depth_tier 2)
+  # offsets it vertically from the front-row flask so the two do not touch.
+  - placement_name: center_label_pen
     object_name: label_pen
-    zone: right_tool_area
-    depth_tier: 1
+    zone: center
+    depth_tier: 2
+    align_stop: center

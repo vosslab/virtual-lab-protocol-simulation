@@ -56,6 +56,10 @@ The following SVG files have been adopted directly from the Servier Medical Art 
 
 | Our Filename                     | Servier Source                                          | Notes                                           |
 | -------------------------------- | ------------------------------------------------------- | ----------------------------------------------- |
+| `bottle_pink.svg`                | `Microbiology/Servier/bottle-medium-pink.svg`           | Media/pink reagent bottle; normalized via normalize_svg_v2.py; no liquid anchors yet |
+| `bottle_orange.svg`              | `Microbiology/Servier/bottle-medium-orange.svg`         | Ethanol/amber reagent bottle; normalized via normalize_svg_v2.py; no liquid anchors yet |
+| `bottle_green.svg`               | `Microbiology/Servier/bottle-medium-green.svg`          | PBS/buffer/clear reagent bottle; normalized via normalize_svg_v2.py; no liquid anchors yet |
+| `tube_rack.svg`                  | `servier/tube-rack.svg`                                 | Tube rack for dilution rack object; normalized via normalize_svg_v2.py |
 | `microtube_empty.svg`            | `Microbiology/Servier/microtube-open-translucent.svg`   | Eppendorf-style conical microtube (open)        |
 | `microtube_filled.svg`           | `Microbiology/Servier/microtube-closed-translucent.svg` | Eppendorf-style conical microtube (closed)      |
 | `protein_sample_tube_empty.svg`  | `Microbiology/Servier/microtube-closed-blue.svg`        | Microtube (blue tint for sample identification) |
@@ -63,20 +67,42 @@ The following SVG files have been adopted directly from the Servier Medical Art 
 | `protein_ladder_tube_empty.svg`  | `Microbiology/Servier/microtube-closed-pink.svg`        | Microtube (pink tint for ladder identification) |
 | `protein_ladder_tube_filled.svg` | `Microbiology/Servier/microtube-closed-pink.svg`        | Microtube (pink tint for ladder identification) |
 
+### Lab Apparatus / DBCLS (CC-BY-4.0)
+
+| Our Filename            | Source                                                  | Notes                                                            |
+| ----------------------- | ------------------------------------------------------- | ---------------------------------------------------------------- |
+| `heat_block_closed.svg` | `cc-by-4.0/Lab_apparatus/DBCLS/thermalcycler-pcr.svg`  | PCR thermal cycler (lid closed); used as heat block closed state |
+| `heat_block_open.svg`   | `cc-by-4.0/Lab_apparatus/DBCLS/thermalcycler-pcr-2.svg`| PCR thermal cycler (lid open); used as heat block open state     |
+
+Attribution: TogoTV / DBCLS (https://togotv.dbcls.jp/en/pics.html)
+License: CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/)
+Commercial use permitted.
+
+### Lab Apparatus / Servier (additional)
+
+| Our Filename           | Servier Source                      | Notes                                                                |
+| ---------------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| `microwave_closed.svg` | `Lab_apparatus/Servier/incubator.svg` | Front-loading benchtop box; used as lab microwave (closed/off state) |
+| `microwave_open.svg`   | `Lab_apparatus/Servier/incubator.svg` | Same source; no open-door variant available in source library        |
+
+### Hand-authored SVGs
+
+| Our Filename      | Notes                                                               |
+| ----------------- | ------------------------------------------------------------------- |
+| `lightbox_off.svg` | Matches `lightbox_on.svg` structure (dark body, dim screen/buttons) |
+
 ## Placeholder SVGs
 
-The following objects have no suitable Servier candidate and use standard placeholder SVGs:
+The following objects have no suitable source and remain as dashed placeholder SVGs:
 
-- `power_supply_off.svg` - Power Supply (off state)
-- `power_supply_on.svg` - Power Supply (on state)
-- `heat_block_closed.svg` - Heat Block (closed)
-- `heat_block_open.svg` - Heat Block (open)
-- `microwave_closed.svg` - Microwave (closed)
-- `microwave_open.svg` - Microwave (open)
-- `lightbox_off.svg` - Lightbox (off)
-- `gel_opening_tool.svg` - Gel Opening Tool
-- `microtube_rack_24_placeholder.svg` - Microtube Rack (24-slot)
-- `kimwipe_pad.svg` - Kimwipe Pad
+- `power_supply_off.svg` - Power Supply (off state) - no benchtop PSU icon found
+- `power_supply_on.svg` - Power Supply (on state) - no benchtop PSU icon found
+- `gel_opening_tool.svg` - Gel Opening Tool - no matching icon found
+- `microtube_rack_24_placeholder.svg` - Microtube Rack (24-slot) - see note below
+- `kimwipe_pad.svg` - Kimwipe Pad - no tissue/wipe box icon found
 - `electrode_module.svg` - Electrode Module
+
+Note on `microtube_rack_24`: the existing `tube_rack.svg` (isometric rack with multiple tube positions) is a viable substitute.
+Consider remapping `microtube_rack_24` object `asset_name` to `tube_rack` instead of importing a new asset.
 
 See `MISSING_SVG_PLACEHOLDERS.md` for details and replacement status.

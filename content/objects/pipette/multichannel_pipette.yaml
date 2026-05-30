@@ -56,6 +56,7 @@ channel_addressing:
 
 layout:
   default_width: 6
+  display_width_cm: 14
   label_width: 8
   anchor_y: tip
   anchor_y_offset: 0

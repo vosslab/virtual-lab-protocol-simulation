@@ -48,7 +48,6 @@ const MIN_FONT_SIZE = 6; // pixels
 // Scenes to score (same 6 D2 allowlisted scenes as D4)
 const SCENES_TO_SCORE = [
   "bench_basic",
-  "bench_basic_row_slot",
   "sample_prep_bench",
   "staining_bench",
   "cell_counter_basic",

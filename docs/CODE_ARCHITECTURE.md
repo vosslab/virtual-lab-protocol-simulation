@@ -51,10 +51,9 @@ library into positioned, scaled `ComputedItem` records.
 | [src/scene_runtime/layout/run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; stages 1-5 once, stages 6-10 in convergence loop |
 | [src/scene_runtime/layout/types.ts](../src/scene_runtime/layout/types.ts) | All layout type definitions (`PipelineResult`, `ComputedItem`, `PlacementAuthored`, etc.) |
 | [src/scene_runtime/layout/constants.ts](../src/scene_runtime/layout/constants.ts) | Layout constants (`DEFAULT_VIEWPORT`, `WORKSPACE_PX_PER_CM`, shrink factor) |
-| [src/scene_runtime/layout/workspace_row_library.ts](../src/scene_runtime/layout/workspace_row_library.ts) | Row templates for Schema B scenes |
 | [src/scene_runtime/layout/bind_objects.ts](../src/scene_runtime/layout/bind_objects.ts) | Stage: bind object YAML to placements |
 | [src/scene_runtime/layout/resolve_inheritance.ts](../src/scene_runtime/layout/resolve_inheritance.ts) | Stage: resolve base-scene inheritance chain |
-| [src/scene_runtime/layout/normalize_schema.ts](../src/scene_runtime/layout/normalize_schema.ts) | Stage: normalize Schema A/B fields |
+| [src/scene_runtime/layout/normalize_schema.ts](../src/scene_runtime/layout/normalize_schema.ts) | Stage: normalize Schema A scene fields and apply layout-rule defaults |
 | [src/scene_runtime/layout/scale_to_real_world.ts](../src/scene_runtime/layout/scale_to_real_world.ts) | Stage: convert real-world dimensions to pixels |
 | [src/scene_runtime/layout/horizontal_layout.ts](../src/scene_runtime/layout/horizontal_layout.ts) | Stage: compute x positions |
 | [src/scene_runtime/layout/vertical_layout.ts](../src/scene_runtime/layout/vertical_layout.ts) | Stage: compute y positions |
@@ -141,7 +140,7 @@ Entry point: [validation/validate.py](../validation/validate.py).
 | `validation/manual/` | Human-readable protocol manual renderer |
 | `validation/scene_lint/` | Pre-render failure predictor (BLOCKED Group A / advisory Group B) |
 | `validation/scene_design/` | Composition scorecard (weighted metrics, advisory only) |
-| `validation/scene_calc/` | Pure-function geometry primitives shared by scene_lint and scene_design |
+| `validation/scene_calc/` | Thin loader of rendered geometry (`test-results/scenes/<scene>.stats.json`) for scene_lint and scene_design; computes no layout. Single geometry producer: the browser render pipeline (`tools/scene_to_png.mjs` -> `tools/scene_stats.mjs`). |
 | `validation/structure/` | Layout structural check |
 | `validation/shared_toolkit/` | Shared discovery, YAML I/O, findings, reporter, CLI helpers |
 

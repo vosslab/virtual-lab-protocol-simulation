@@ -62,9 +62,7 @@ export interface LayoutHint {
   label_width?: number;
   anchor_y?: AnchorY;
   anchor_y_offset?: number;
-  width_scale?: number;
   display_width_cm?: number;
-  fudge?: number;
 }
 
 export interface ObjectDef {
@@ -131,30 +129,6 @@ export interface SceneA {
   remove_placements?: Array<{ placement_name: string } | string>;
 }
 
-export interface SceneBRow {
-  row_name: string;
-  slots: Array<{
-    placement_name: string;
-    object_name: string;
-    depth_tier?: number;
-    align_stop?: AlignStop;
-    layout?: Partial<LayoutHint>;
-    // Placeholder mode only: mirrors PlacementAuthored.missing_svg for row-slot scenes.
-    missing_svg?: true;
-  }>;
-}
-
-export interface SceneB {
-  scene_name: string;
-  workspace: Workspace;
-  capabilities?: string[];
-  background?: Background;
-  rows: SceneBRow[];
-  scene_bounds?: SceneBoundsRect;
-  layout_rules?: LayoutRules;
-  wrong_order_message?: { template: string; toast_duration_ms?: number };
-}
-
 // Required form of LayoutHint after merge: defaults applied for every field.
 // display_width_cm remains optional (may not be authored).
 export interface ResolvedLayoutHint {
@@ -162,9 +136,7 @@ export interface ResolvedLayoutHint {
   label_width: number;
   anchor_y: AnchorY;
   anchor_y_offset: number;
-  width_scale: number;
   display_width_cm?: number;
-  fudge: number;
 }
 
 export interface BoundPlacement extends PlacementAuthored {
@@ -220,21 +192,20 @@ export interface Diagnostic {
   items?: number;
   passes_used?: number;
   unresolved?: number;
+  // Stagger row index (0-based) for label_row_staggered diagnostics.
+  staggered_row?: number;
 }
 
 export type Diagnostics = Diagnostic[];
 
 export interface NormalizeTrace {
-  op: "detect" | "row_missing" | "row_to_zone";
-  value?: "row_slot" | "zone_bounds";
-  row?: string;
-  workspace?: string;
-  slots?: number;
+  op: "detect";
+  value?: "zone_bounds";
 }
 
 export interface NormalizedScene {
   scene: SceneA | null;
-  source: "row_slot" | "zone_bounds" | "none";
+  source: "zone_bounds" | "none";
   trace: NormalizeTrace[];
 }
 
@@ -258,24 +229,15 @@ export interface GroupedPlacements {
   orphans: ScaledPlacement[];
 }
 
-export interface ZoneRow {
-  row_name: string;
-  bounds: Bounds;
-  align: AlignMode;
-  baseline: number;
-}
-
-export type WorkspaceRowLibrary = Record<Workspace, ZoneRow[]>;
 export type WorkspacePxPerCm = Record<Workspace, number>;
 
 export interface PipelineInputs {
-  scene: SceneA | SceneB;
+  scene: SceneA;
   library?: ObjectLibrary;
   assets?: AssetSpecs;
   viewport?: { w: number; h: number };
   baseSceneMap?: Record<string, SceneA>;
   workspacePxPerCm?: WorkspacePxPerCm;
-  rowLibrary?: WorkspaceRowLibrary;
   maxPasses?: number;
   shrinkFactor?: number;
 }
@@ -288,7 +250,7 @@ export interface PassRecord {
 
 export interface PipelineStages {
   inputs: {
-    scene: SceneA | SceneB;
+    scene: SceneA;
     library: ObjectLibrary;
     assets: AssetSpecs;
   };
@@ -305,7 +267,7 @@ export interface PipelineStages {
 
 export interface PipelineResult {
   scene: SceneA;
-  sourceScene: SceneA | SceneB;
+  sourceScene: SceneA;
   diagnostics: Diagnostic[];
   passes: PassRecord[];
   identityDiagCount: number;

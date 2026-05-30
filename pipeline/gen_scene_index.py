@@ -15,7 +15,6 @@ Validation:
 - every placement.zone resolves to a declared zone
 - every placement.object_name resolves to an object (cross-checked against
   generated/object_library.ts or content/objects/**/*.yaml)
-- for Schema B scenes, every row_name is in WORKSPACE_ROW_LIBRARY
 - per-protocol scenes: extends chain resolves to an existing base scene
 
 Scene discovery and classification (no curated allowlist):
@@ -63,6 +62,14 @@ import yaml  # pyyaml
 
 # local repo modules
 import scene_inheritance
+
+
+# Per-placement layout keys that are forbidden override escape hatches.
+# Object size has exactly one source: the object-level display_width_cm scaled
+# by the workspace px_per_cm (SCALING_MODEL.md). width_scale and fudge were
+# per-placement multipliers; display_width_cm at the placement level would be a
+# size override. All three are removed under vocabulary closure.
+FORBIDDEN_LAYOUT_KEYS = {"width_scale", "fudge", "display_width_cm"}
 
 
 #============================================
@@ -229,9 +236,8 @@ def collect_resolved_placement_names(scene_data: dict) -> list:
 	"""
 	Collect every placement_name from a fully-resolved scene (post-inheritance).
 
-	Handles both scene schemas:
+	Handles the scene schema:
 	- Schema A: top-level `placements` list, each with a placement_name.
-	- Schema B: `rows` list, each row carrying `slots`, each slot a placement.
 
 	Args:
 		scene_data: Resolved scene dict (after inheritance for per-protocol scenes).
@@ -250,17 +256,6 @@ def collect_resolved_placement_names(scene_data: dict) -> list:
 			if isinstance(placement, dict):
 				# placement_name is a required field, validated upstream
 				names.append(placement["placement_name"])
-
-	# Schema B row slots
-	rows = scene_data.get("rows")
-	if isinstance(rows, list):
-		for row in rows:
-			if not isinstance(row, dict):
-				continue
-			for slot in row.get("slots", []):
-				if isinstance(slot, dict):
-					# slot placement_name is a required field, validated upstream
-					names.append(slot["placement_name"])
 
 	return names
 
@@ -325,60 +320,6 @@ def collect_object_names(repo_root: str, extra_object_dirs: list = None) -> set:
 					object_names.add(object_name)
 
 	return object_names
-
-
-#============================================
-
-def read_workspace_row_library(repo_root: str) -> dict:
-	"""
-	Read WORKSPACE_ROW_LIBRARY from src/scene_runtime/layout/workspace_row_library.ts.
-	Returns {workspace: [row_names]}.
-	"""
-	row_lib_path = os.path.join(
-		repo_root,
-		"src",
-		"scene_runtime",
-		"layout",
-		"workspace_row_library.ts",
-	)
-
-	workspace_rows = {}
-
-	with open(row_lib_path, "r") as f:
-		content = f.read()
-
-	# Find export const WORKSPACE_ROW_LIBRARY = {
-	start = content.find("export const WORKSPACE_ROW_LIBRARY: WorkspaceRowLibrary = {")
-	if start == -1:
-		raise ValueError("WORKSPACE_ROW_LIBRARY not found in workspace_row_library.ts")
-
-	# Simple parser: find {workspace: [...rows...], workspace: [...rows...]}
-	# Look for row_name: "name" patterns
-	row_pattern = r"row_name:\s*['\"](\w+)['\"]"
-
-	content_section = content[start:]
-	end = content_section.find("};")
-	if end == -1:
-		raise ValueError("WORKSPACE_ROW_LIBRARY closing brace not found")
-
-	content_section = content_section[:end]
-
-	# Parse workspaces and their row_names
-	current_workspace = None
-	for line in content_section.split("\n"):
-		# Check for workspace declaration: "bench: ["
-		ws_match = re.match(r'\s*(\w+):\s*\[', line)
-		if ws_match:
-			current_workspace = ws_match.group(1)
-			workspace_rows[current_workspace] = []
-
-		# Check for row_name
-		row_match = re.search(row_pattern, line)
-		if row_match and current_workspace:
-			row_name = row_match.group(1)
-			workspace_rows[current_workspace].append(row_name)
-
-	return workspace_rows
 
 
 #============================================
@@ -450,7 +391,6 @@ def discover_per_protocol_scenes(repo_root: str) -> dict:
 def process_scene_yaml(
 	yaml_path: str,
 	object_names: set,
-	workspace_rows: dict,
 ) -> tuple:
 	"""
 	Load and validate a single scene YAML.
@@ -553,50 +493,6 @@ def process_scene_yaml(
 					f"Placement '{placement_name}' references unknown zone "
 					f"'{zone}': {yaml_path}"
 				)
-
-	# For Schema B (rows), validate rows and slots
-	rows = data.get("rows")
-	if rows:
-		# Schema B
-		if not isinstance(rows, list):
-			raise ValueError(f"rows must be a list: {yaml_path}")
-
-		if workspace not in workspace_rows:
-			raise ValueError(
-				f"Workspace '{workspace}' not in WORKSPACE_ROW_LIBRARY: {yaml_path}"
-			)
-
-		valid_row_names = set(workspace_rows[workspace])
-
-		for row in rows:
-			row_name = row["row_name"]
-			if not row_name:
-				raise ValueError(f"Row missing row_name: {yaml_path}")
-
-			if row_name not in valid_row_names:
-				raise ValueError(
-					f"Row '{row_name}' not in WORKSPACE_ROW_LIBRARY for "
-					f"workspace '{workspace}': {yaml_path}"
-				)
-
-			slots = row.get("slots", [])
-			if not isinstance(slots, list):
-				raise ValueError(
-					f"Row '{row_name}' slots must be a list: {yaml_path}"
-				)
-
-			for slot in slots:
-				object_name = slot["object_name"]
-				if not object_name:
-					raise ValueError(
-						f"Slot in row '{row_name}' missing object_name: {yaml_path}"
-					)
-
-				if object_name not in object_names:
-					raise ValueError(
-						f"Slot in row '{row_name}' references unknown object "
-						f"'{object_name}': {yaml_path}"
-					)
 
 	return scene_name, data
 
@@ -704,40 +600,36 @@ def emit_scene_ts(
 				ts_lines.append(
 					f"\t\t\t\tdepth_tier: {placement.get('depth_tier')},"
 				)
+			# align_stop: used with tab-stops zones to position items left/center/right
+			if placement.get("align_stop") is not None:
+				ts_lines.append(
+					f"\t\t\t\talign_stop: {repr(placement.get('align_stop'))},"
+				)
+			# layout overrides: per-placement anchor hints. width_scale and fudge
+			# are forbidden override escape hatches (vocabulary closure); object
+			# size has one source, the object-level display_width_cm.
+			layout_override = placement.get("layout")
+			if layout_override:
+				forbidden = FORBIDDEN_LAYOUT_KEYS & set(layout_override.keys())
+				if forbidden:
+					scene_name = scene_data.get("scene_name")
+					raise ValueError(
+						f"scene {scene_name!r} placement "
+						f"{placement.get('placement_name')!r} carries forbidden "
+						f"layout override key(s) {sorted(forbidden)}; object size "
+						"comes only from object-level display_width_cm"
+					)
+				ts_lines.append("\t\t\t\tlayout: {")
+				for lk, lv in layout_override.items():
+					if isinstance(lv, str):
+						ts_lines.append(f"\t\t\t\t\t{lk}: {repr(lv)},")
+					else:
+						ts_lines.append(f"\t\t\t\t\t{lk}: {lv},")
+				ts_lines.append("\t\t\t\t},")
 			# Mark missing-SVG placements in placeholder mode
 			pname = placement.get("placement_name")
 			if pname and pname in missing_svg_placements:
 				ts_lines.append("\t\t\t\tmissing_svg: true,")
-			ts_lines.append("\t\t\t},")
-		ts_lines.append("\t\t],")
-
-	# rows (Schema B)
-	rows = scene_data.get("rows")
-	if rows:
-		ts_lines.append("\t\trows: [")
-		for row in rows:
-			ts_lines.append("\t\t\t" + "{")
-			ts_lines.append(f"\t\t\t\trow_name: {repr(row.get('row_name'))},")
-			slots = row.get("slots", [])
-			ts_lines.append("\t\t\t\tslots: [")
-			for slot in slots:
-				ts_lines.append("\t\t\t\t\t" + "{")
-				ts_lines.append(
-					f"\t\t\t\t\t\tplacement_name: {repr(slot.get('placement_name'))},"
-				)
-				ts_lines.append(
-					f"\t\t\t\t\t\tobject_name: {repr(slot.get('object_name'))},"
-				)
-				if slot.get("depth_tier") is not None:
-					ts_lines.append(
-						f"\t\t\t\t\t\tdepth_tier: {slot.get('depth_tier')},"
-					)
-				# Row-slot missing_svg support (placeholder mode)
-				slot_pname = slot.get("placement_name")
-				if slot_pname and slot_pname in missing_svg_placements:
-					ts_lines.append("\t\t\t\t\t\tmissing_svg: true,")
-				ts_lines.append("\t\t\t\t\t},")
-			ts_lines.append("\t\t\t\t],")
 			ts_lines.append("\t\t\t},")
 		ts_lines.append("\t\t],")
 
@@ -888,9 +780,6 @@ def main() -> None:
 		all_extra_object_dirs.extend(extra_object_dirs)
 	object_svg_refs = collect_object_svg_refs(repo_root, extra_object_dirs=all_extra_object_dirs)
 
-	# Read workspace row library
-	workspace_rows = read_workspace_row_library(repo_root)
-
 	# Find all base scene YAML files and smoke fixtures.
 	# scene_files is a list of (filename, yaml_path, is_smoke_fixture).
 	# is_smoke_fixture=True means the scene is exempt from quarantine skips and
@@ -948,7 +837,7 @@ def main() -> None:
 	# ----- base scenes and dev-smoke fixtures -----
 	for filename, yaml_path, is_smoke_fixture in scene_files:
 		try:
-			scene_name, scene_data = process_scene_yaml(yaml_path, object_names, workspace_rows)
+			scene_name, scene_data = process_scene_yaml(yaml_path, object_names)
 		except (ValueError, KeyError, yaml.YAMLError, OSError) as e:
 			# Validation failure is NON-FATAL: skip and record in the manifest.
 			manifest_name = recover_scene_name_from_yaml(yaml_path, filename)
@@ -1110,11 +999,11 @@ def main() -> None:
 	ts_lines = [
 		"// AUTO-GENERATED. Do not edit by hand.",
 		"",
-		"import type { SceneA, SceneB } from '../src/scene_runtime/layout/types.js';",
+		"import type { SceneA } from '../src/scene_runtime/layout/types.js';",
 		"",
 		f"export const SCENES_SKIPPED = {len(skipped_files)};",
 		"",
-		"export const SCENES: Record<string, SceneA | SceneB> = {",
+		"export const SCENES: Record<string, SceneA> = {",
 	]
 
 	# Emit scenes in sorted order (base scenes first, then per-protocol)

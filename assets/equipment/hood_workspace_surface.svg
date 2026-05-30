@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 60" preserveAspectRatio="xMidYMid meet">
+  <!-- Transparent click target for the hood workspace surface.
+       The hood gradient background already serves as the visible surface.
+       This asset is invisible so the waste_tray is not displayed center-scene,
+       but the placement remains clickable for protocol step targeting. -->
+  <rect x="0" y="0" width="100" height="60" fill="none" stroke="none" opacity="0"/>
+</svg>

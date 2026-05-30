@@ -22,6 +22,36 @@
 //   - docs/active_plans/active/web_ui/runtime_seam_plan.md (WP-3-10)
 //   - docs/PRIMARY_CONTRACT.md item 1 (TypeScript runtime is shared)
 
+import { ZONE_PADDING } from "./scene_runtime/layout/constants.js";
+import type { PipelineResult } from "./scene_runtime/layout/types.js";
+
+// Pipeline-truth geometry the render tool reads from the page. Shape mirrors the
+// dump consumed by scene_calc/dump.py (pre-pixel-conversion). Set by the scene
+// viewer mount; absent on the launcher and protocol-host routes.
+interface SceneGeometryZone {
+  name: string;
+  bounds: { left: number; right: number; top: number; bottom: number };
+}
+interface SceneGeometryPlacement {
+  placement_name: string;
+  kind: string;
+  zone: string;
+  asset: string;
+  aspect: number;
+  scale_source: string;
+}
+interface SceneGeometry {
+  scene_name: string;
+  zone_padding: number;
+  zones: SceneGeometryZone[];
+  placements: SceneGeometryPlacement[];
+}
+declare global {
+  interface Window {
+    __SCENE_GEOMETRY__?: SceneGeometry;
+  }
+}
+
 //============================================
 // Scene viewer mount (replaces legacy bench mount)
 //============================================
@@ -54,8 +84,47 @@ async function mount_scene_viewer(root: HTMLElement, scene_name: string): Promis
     assets: ASSET_SPECS,
   });
   renderScene(root, result);
+  // Stash pipeline-truth geometry the render tool needs but cannot read from the
+  // DOM: per-placement scale_source + intended SVG aspect, and the resolved zone
+  // bounds (scene-percent). scene_to_png.mjs reads this together with rendered
+  // DOM rects to assemble the dump-shaped geometry. The browser pipeline remains
+  // the single geometry producer; this is its output, not a second model.
+  attachSceneGeometry(result);
   // Mark ready after a successful render.
   root.setAttribute("data-viewer-ready", "true");
+}
+
+// Builds a serializable geometry summary from the pipeline result and attaches
+// it to window so the render tool can read pipeline-truth values (scale_source,
+// intended aspect, resolved zone bounds) that are not present as DOM attributes.
+function attachSceneGeometry(result: PipelineResult): void {
+  const zones = result.scene.zones.map((zone) => ({
+    name: zone.id,
+    // Zone bounds are scene-percent (0..100 per axis). Pixel conversion happens
+    // in the render tool against the rendered #scene-root box.
+    bounds: {
+      left: zone.bounds.left,
+      right: zone.bounds.right,
+      top: zone.bounds.top,
+      bottom: zone.bounds.bottom,
+    },
+  }));
+  const placements = result.final.map((item) => ({
+    placement_name: item.placement_name,
+    kind: item.kind,
+    zone: item.zone,
+    asset: item.asset,
+    // Intended asset aspect (SVG viewBox w/h). Used for aspect_delta_pct.
+    aspect: item.aspect,
+    // Pipeline scale-source enum (cm_model | fallback_* | skipped_error).
+    scale_source: item._scale_source,
+  }));
+  window.__SCENE_GEOMETRY__ = {
+    scene_name: result.scene.scene_name,
+    zone_padding: ZONE_PADDING,
+    zones,
+    placements,
+  };
 }
 
 //============================================

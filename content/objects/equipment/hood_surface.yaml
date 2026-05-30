@@ -14,12 +14,13 @@ visual_states:
     kind: svg
     cases:
       - when: dirty
-        output: { asset_name: glove_box }
+        output: { asset_name: hood_workspace_surface }
       - when: ethanol_sprayed
-        output: { asset_name: glove_box }
+        output: { asset_name: hood_workspace_surface }
 
 capabilities: [clickable]
 
 layout:
   default_width: 6
+  display_width_cm: 50
   label_width: 8

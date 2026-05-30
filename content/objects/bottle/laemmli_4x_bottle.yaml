@@ -22,10 +22,10 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: laemmli_4x_bottle
+          asset_name: bottle_green
       - when: laemmli_4x
         output:
-          asset_name: laemmli_4x_bottle
+          asset_name: bottle_green
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=10)
@@ -35,4 +35,5 @@ capabilities:
   - cursor_attachable
 layout:
   default_width: 2
+  display_width_cm: 6
   label_width: 6

@@ -36,6 +36,7 @@ capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 0.8
+  display_width_cm: 4
   label_width: 7
   anchor_y: tip
   anchor_y_offset: 0

@@ -1,0 +1,38 @@
+object_name: trypan_blue_bottle
+kind: bottle
+label: Trypan Blue (0.4%)
+
+state_fields:
+  - field_name: material_name
+    type: enum
+    allowed: [empty, trypan_blue]
+    default: trypan_blue
+    description: Contents of the bottle; pre-filled with 0.4% Trypan Blue stain solution.
+  - field_name: material_volume
+    type: float
+    unit: ml
+    min: 0
+    max: 10
+    default: 10
+    description: Volume of Trypan Blue solution remaining, in milliliters.
+
+visual_states:
+  material_name:
+    kind: svg
+    cases:
+      - when: empty
+        output:
+          asset_name: bottle_medium_pink
+      - when: trypan_blue
+        output:
+          asset_name: bottle_medium_pink
+  material_volume:
+    kind: composite
+    formula: fill_height(state(material_volume), capacity_ml=10)
+
+capabilities: [clickable, material_container]
+
+layout:
+  default_width: 3
+  display_width_cm: 8
+  label_width: 6

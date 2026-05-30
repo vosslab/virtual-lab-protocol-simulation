@@ -1,39 +1,61 @@
 scene_name: incubator_workspace
 extends: bench_basic
 
-add_placements:
-  # Incubator for temperature-controlled incubation
-  - placement_name: main_incubator
-    object_name: incubator
-    zone: center
-    depth_tier: 1
+scene_notes: |
+  Incubator workspace for MTT plate reaction step. The incubator is the primary
+  instrument at center. MTT solution bottle at rear left. Multichannel pipette at
+  right tool area for adding MTT to all wells. Biohazard waste bin at rear right.
+  Paper towels at rear center for plate drying after decant.
 
-  # MTT solution bottle (freshly prepared 12 mM)
+remove_placements:
+  - rear_left_media_bottle
+  - rear_center_pbs
+  - rear_center_ethanol
+  - center_water_bath
+  - center_rocking_shaker
+  - base_right_tip_box
+  - rear_right_heat_block
+
+add_placements:
+  # MTT solution bottle at rear left (right stop beside waste)
   - placement_name: mtt_solution
     object_name: mtt_solution_bottle
     zone: rear_left
     depth_tier: 1
+    align_stop: right
 
-  # Treatment plate (96-well from previous drug treatment step)
-  - placement_name: treatment_plate_main
-    object_name: well_plate_96
-    zone: center
-    depth_tier: 2
-
-  # Multichannel pipette for distributing MTT across 12-well columns
-  - placement_name: pipette_multichannel
-    object_name: multichannel_pipette
-    zone: right_tool_area
-    depth_tier: 1
-
-  # Biohazard waste container for MTT/media decant
-  - placement_name: hazard_waste_bin
-    object_name: biohazard_decant_bin
-    zone: rear_right
-    depth_tier: 1
-
-  # Paper towel dispenser/pad for drying plate after decant
+  # Paper towels at rear center for blotting after decant
   - placement_name: drying_surface
     object_name: paper_towel_pad
     zone: rear_center
     depth_tier: 1
+    align_stop: center
+
+  # Biohazard bin at rear right for media decant
+  - placement_name: hazard_waste_bin
+    object_name: biohazard_decant_bin
+    zone: rear_right
+    depth_tier: 1
+    align_stop: left
+
+  # Incubator is the main instrument -- center, prominent
+  - placement_name: main_incubator
+    object_name: incubator
+    zone: center
+    depth_tier: 1
+    align_stop: left
+
+  # Treatment plate (96-well placeholder) at center beside incubator
+  # well_plate_96 object pending; microtube_rack_24 as layout placeholder
+  - placement_name: treatment_plate_main
+    object_name: microtube_rack_24
+    zone: center
+    depth_tier: 2
+    align_stop: right
+
+  # Multichannel pipette for distributing MTT across all columns
+  - placement_name: pipette_multichannel
+    object_name: multichannel_pipette
+    zone: right_tool_area
+    depth_tier: 1
+    align_stop: center

@@ -15,9 +15,13 @@ Scope boundaries:
 - Scene design **does not score** scenes the render predictor would mark
   broken (`gated_by_render_predictor` field reserved for that signal; see
   [#scorecard-shape](#scorecard-shape)).
-- Scene design **consumes** the same SIM dump as scene lint
-  (`validation/scene_calc/dump.py`); metrics that need geometry skip when
-  the dump fails.
+- Scene design **consumes** the same rendered geometry as scene lint, loaded
+  by `validation/scene_calc/dump.py` from `test-results/scenes/<scene>.stats.json`.
+  The single geometry producer is the browser render pipeline
+  (`tools/scene_to_png.mjs` -> `tools/scene_stats.mjs`); scene_calc computes no
+  layout. Metrics that need geometry return None when the stats file is missing
+  (the loader fails loudly rather than predicting). Render first:
+  `node tools/scene_to_png.mjs --all`.
 
 ## CLI surface
 
@@ -337,14 +341,16 @@ suppressed list but never returned to the caller.
 
 ### Known limitation (decision-gated)
 
-`dump_scene_geometry` walks the scene path parent chain upward looking
-for `AGENTS.md` to resolve the repo root. A temp file under `/tmp`
-escapes that walk; the object registry comes back empty, every placement
-gets `scale_source='skipped_error'`, and `_score_mutation` returns None
-for the candidate. The engine and guards remain correct, but in
-practice the engine produces zero monotonic-improvement suggestions on
-the current corpus. The fix path is a `dump_scene_geometry(scene_dict,
-repo_root)` refactor that decouples the dump from filesystem walking.
+`dump_scene_geometry` now loads rendered geometry from a scene's
+`test-results/scenes/<scene>.stats.json`. The suggest engine scores
+hypothetical *mutated* scenes, which have never been rendered and so have
+no stats.json. The loader raises `RuntimeError` for the missing file,
+`_score_mutation` catches it and returns None, and the engine produces zero
+monotonic-improvement suggestions in practice. This is correct by the
+validator-follows-generator design: a layout cannot be validated until it is
+rendered. The fix path is to render candidate mutations through the browser
+pipeline before scoring them (a render-in-the-loop suggest engine), not to
+re-introduce a Python geometry model.
 
 ## Pipeline integration
 

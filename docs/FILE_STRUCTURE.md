@@ -46,7 +46,6 @@ src/
 |  |  +- run_pipeline.ts       -- top-level pipeline runner
 |  |  +- types.ts              -- PipelineResult, ComputedItem, layout types
 |  |  +- constants.ts          -- DEFAULT_VIEWPORT, shrink factor
-|  |  +- workspace_row_library.ts -- Schema B row templates
 |  |  `- (bind_objects, normalize_schema, resolve_inheritance, scale_to_real_world,
 |  |      group_by_zone, horizontal_layout, vertical_layout, layout_labels,
 |  |      clamp_scene_bounds, footprint, wrap_label, index).ts
@@ -139,7 +138,7 @@ validation/
 +- manual/                     -- human-readable protocol manual renderer
 +- scene_lint/                 -- pre-render failure predictor (Group A BLOCKED, Group B advisory)
 +- scene_design/               -- composition scorecard (weighted metrics, advisory only)
-+- scene_calc/                 -- pure-function geometry primitives shared by lint and design
++- scene_calc/                 -- thin loader of rendered geometry (stats.json) for lint and design; no layout math
 +- structure/                  -- layout structural check
 `- shared_toolkit/             -- discovery, YAML I/O, findings, reporter, CLI helpers
 ```

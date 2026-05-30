@@ -59,7 +59,7 @@ const result = runPipeline(scene, OBJECT_LIBRARY, ASSET_SPECS, viewport);
 renderScene(root, result);
 ```
 
-The pipeline (`src/scene_runtime/layout/`) takes a `SceneA` or `SceneB` plus `OBJECT_LIBRARY`
+The pipeline (`src/scene_runtime/layout/`) takes a `SceneA` plus `OBJECT_LIBRARY`
 and `ASSET_SPECS`, produces `PipelineResult.final: ComputedItem[]`, and passes the result to
 `renderScene()`. The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` and emits
 absolutely-positioned SVG-injected DOM elements.

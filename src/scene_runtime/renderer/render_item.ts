@@ -53,6 +53,10 @@ function applyItemAttributes(el: HTMLElement, item: ComputedItem): void {
   el.setAttribute("data-target-id", ""); // Reserved, empty in M2b.
   // Walker-addressable id: mirrors object_name for click_resolver and Playwright.
   el.setAttribute("data-item-id", item.object_name);
+  // Asset key: lets the stats tools look the rendered asset up against the
+  // placeholder-key registry so dashed-box stand-ins are not counted as real
+  // populated content. Real items carry the resolved asset name.
+  el.setAttribute("data-asset", item.asset);
 }
 
 //============================================

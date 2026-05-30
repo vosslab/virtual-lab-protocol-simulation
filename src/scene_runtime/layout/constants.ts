@@ -58,6 +58,7 @@ export const DIAGNOSTIC_KINDS = [
   "tab_stop_overflow",
   "item_escapes_zone_vertically",
   "label_collision_residual",
+  "label_row_staggered",
   "zone_clamped_to_bounds",
   "max_iterations_reached",
 ] as const;
@@ -67,10 +68,27 @@ export const ZONE_PADDING = 1.5;
 export const MIN_SCALE = 0.55;
 export const MAX_FOOTPRINT_RATIO = 2.5;
 export const PX_PER_SCENE_PERCENT = 11.52;
-export const AVG_CHAR_WIDTH_PCT = 0.6;
+// Average glyph advance as a fraction of label_font_size, used by wrap_label
+// and the stagger reserve to estimate label width. Tuned for the condensed
+// proportional face PT Sans Narrow (see render_label.ts); its mean advance is
+// ~0.45em, much narrower than the 0.6 used when labels were monospace.
+export const AVG_CHAR_WIDTH_PCT = 0.45;
 export const MAX_LAYOUT_PASSES = 3;
 export const LAYOUT_SHRINK_FACTOR = 0.9;
 export const ITEM_ESCAPES_ZONE_TOLERANCE = 3;
+
+// Canvas-relative label font sizing. The live PNG render path mounts the scene
+// root then calls renderScene without a viewport, so the renderer derives a
+// font size from the root's actual pixel width. An absolute 16px on a ~1920px
+// canvas is illegible (~0.8% of width); a fraction of canvas width scales with
+// the render surface. LABEL_FONT_MIN_PX is the floor for small panels.
+export const LABEL_FONT_WIDTH_FRACTION = 0.012;
+export const LABEL_FONT_MIN_PX = 12;
+
+// Vertical label stagger: when adjacent labels collide horizontally, lower
+// labels drop to a new row. Row height is a multiple of the label line height,
+// expressed in scene-percent. 2.2 spaces a 2-line label clear of the row below.
+export const LABEL_LINE_HEIGHT_PCT = 2.2;
 
 export const DEPTH_SCALE = { back: 0.8, mid: 1.0, front: 1.1 } as const;
 export const DEPTH_BASELINE_OFFSET = { back: -4, mid: 0, front: 4 } as const;
@@ -82,7 +100,7 @@ export const DEFAULT_SCENE_BOUNDS = {
   bottom: 95,
 } as const;
 export const DEFAULT_LAYOUT_RULES = {
-  label_font_size: 9,
+  label_font_size: 16,
   label_line_height: 1.1,
   label_offset_y: 4,
   zone_gap: 2,
@@ -91,11 +109,23 @@ export const DEFAULT_LAYOUT_RULES = {
 
 // Per-workspace px_per_cm (SCALING_MODEL.md). Author writes display_width_cm
 // on object; engine multiplies by per-workspace px_per_cm.
+// Calibrated empirically so a fully-populated scene (Workstream C target)
+// lands in 15-70% occupancy with no clip or item_escapes_zone diagnostics.
+// bench: raised from 3.2 (the old fallback-width placeholder value) to 7.0;
+//   at 7.0 a vortex (22 cm) -> width_scale ~2.2 -> ~13% of canvas, a media
+//   bottle (12 cm) -> ~6%; 7 bench instruments together occupy ~55-65%.
+// hood: kept at 8.0; hood items are mostly bottles and pipettes which are
+//   smaller (3-12 cm) so 8.0 gives reasonable per-item widths (~3-8%).
+// microscope: raised to 10.0 to make the microscope instrument (35 cm)
+//   occupy ~25% of the workspace -- visible and prominent.
+// incubator: raised to 9.0; incubator chamber items are medium-sized.
+// plate_reader: kept at 8.0; plate reader (42 cm) -> ~25% at 8.0.
+// cell_counter: raised to 9.0; cell counter (38 cm) -> ~24% at 9.0.
 export const WORKSPACE_PX_PER_CM: Record<(typeof WORKSPACES)[number], number> = {
-  bench: 3.2,
+  bench: 5.5,
   hood: 8.0,
-  microscope: 8.0,
-  incubator: 6.0,
+  microscope: 10.0,
+  incubator: 9.0,
   plate_reader: 8.0,
-  cell_counter: 8.0,
+  cell_counter: 9.0,
 };

@@ -23,4 +23,5 @@ capabilities: [clickable]
 
 layout:
   default_width: 3
+  display_width_cm: 8
   label_width: 5

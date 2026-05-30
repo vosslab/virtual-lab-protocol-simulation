@@ -1,15 +1,47 @@
 scene_name: hemocytometer_view
 extends: microscope_basic
 
+remove_placements:
+  # The inherited hemocytometer slide (a magenta bottle asset) is align_stop
+  # left in right_bench, which lands it at the left edge of the bench abutting
+  # the microscope base (art-on-art). Re-add it below at the right align stop
+  # so it clears the microscope.
+  - right_hemocytometer_slide
+  # The inherited microtube is align_stop right; move it to the left stop
+  # (re-added below) so right_bench items do not collide.
+  - right_microtube
+
 add_placements:
   - placement_name: prepared_hemocytometer
     object_name: hemocytometer_slide
     zone: instrument_area
     depth_tier: 2
 
+  # Trypan blue staining bottle moved off the microscope (was instrument_area
+  # depth_tier 0, sitting on the microscope base as art-on-art) onto the rear
+  # right shelf where it reads as a staging reagent with a clear label and
+  # does not crowd the left bench tubes.
   - placement_name: staining_bottles
     object_name: trypan_blue_bottle
-    zone: instrument_area
-    depth_tier: 0
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+
+  # Hemocytometer slide pushed to the far-right of the right bench, clear of
+  # the microscope base on the left edge of the zone.
+  - placement_name: right_hemocytometer_slide_clear
+    object_name: hemocytometer_slide
+    zone: right_bench
+    depth_tier: 1
+    align_stop: right
+
+  # Microtube shares the right stop with the slide so the two pack sequentially
+  # along the right edge of the bench, both clear of the microscope base on the
+  # left side of the zone.
+  - placement_name: right_microtube_left
+    object_name: microtube
+    zone: right_bench
+    depth_tier: 2
+    align_stop: right
 
 scene_notes: "Microscope workspace showing the hemocytometer slide under magnification for manual cell counting and viability assessment using trypan blue exclusion. The hemocytometer_slide displays quadrant-based counts and user can enter manual counts before switching to automated cell counter."

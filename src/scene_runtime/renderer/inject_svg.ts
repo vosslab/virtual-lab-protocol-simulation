@@ -18,8 +18,17 @@ import { SVG_REGISTRY } from "../../../generated/svg_registry.js";
 export function injectSvgInto(host: HTMLElement, assetName: string): void {
   const svgMarkup = SVG_REGISTRY[assetName];
 
-  if (!svgMarkup) {
+  // Missing key: the asset was never registered (e.g. dropped by validation).
+  if (svgMarkup === undefined) {
     throw new Error(`SVG asset not found in registry: "${assetName}"`);
+  }
+
+  // Empty / whitespace-only markup: a registered-but-empty asset (e.g. a
+  // 0-byte source SVG) would inject nothing and draw a silent blank layer.
+  // Fail loudly here so a future empty asset can never render as invisible
+  // content. Repo principle: loud failures, never silent blank.
+  if (svgMarkup.trim().length === 0) {
+    throw new Error(`SVG asset is empty in registry: "${assetName}"`);
   }
 
   host.innerHTML = svgMarkup;

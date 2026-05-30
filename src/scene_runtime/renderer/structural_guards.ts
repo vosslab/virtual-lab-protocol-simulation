@@ -12,7 +12,7 @@
 // around the guard calls; the throwing wrapper simply re-raises the first
 // violation the pure core already found.
 
-import type { ComputedItem, SceneA, SceneB, Bounds } from "../layout/types.js";
+import type { ComputedItem, SceneA, Bounds } from "../layout/types.js";
 import { ASSET_SPECS } from "../../../generated/object_library.js";
 import { SVG_REGISTRY } from "../../../generated/svg_registry.js";
 import { DEFAULT_VIEWPORT } from "../layout/constants.js";
@@ -121,15 +121,11 @@ function bboxContained(inner: Bounds, outer: Bounds, tolerance: number): boolean
 // Guard 1: every item lies inside its zone bbox
 //============================================
 
-function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+function checkItemsInZones(final: ComputedItem[], scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
-  const sceneA = "zones" in scene ? scene : null;
-  if (!sceneA) {
-    return violations; // SceneB doesn't have zones; skip this guard
-  }
 
   const zoneMap = new Map<string, Bounds>();
-  for (const zone of sceneA.zones) {
+  for (const zone of scene.zones) {
     zoneMap.set(zone.id, zone.bounds);
   }
 
@@ -169,19 +165,15 @@ function checkItemsInZones(final: ComputedItem[], scene: SceneA | SceneB): Struc
 // Guard 2: every zone lies inside scene_bounds
 //============================================
 
-function checkZonesInScene(scene: SceneA | SceneB): StructuralViolation[] {
+function checkZonesInScene(scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
-  const sceneA = "zones" in scene ? scene : null;
-  if (!sceneA) {
-    return violations;
-  }
 
-  const sceneBounds = sceneA.scene_bounds;
+  const sceneBounds = scene.scene_bounds;
   if (!sceneBounds) {
     return violations;
   }
 
-  for (const zone of sceneA.zones) {
+  for (const zone of scene.zones) {
     if (!bboxContained(zone.bounds, sceneBounds, JITTER_TOLERANCE)) {
       violations.push({
         guard: "zone_off_scene",
@@ -235,14 +227,10 @@ function checkNoItemOverlap(final: ComputedItem[]): StructuralViolation[] {
 // Guard 4: same-zone gap >= layout_rules.zone_gap
 //============================================
 
-function checkSameZoneGap(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+function checkSameZoneGap(final: ComputedItem[], scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
-  const sceneA = "zones" in scene ? scene : null;
-  if (!sceneA) {
-    return violations;
-  }
 
-  const zoneGapPx = sceneA.layout_rules?.zone_gap ?? DEFAULT_ZONE_GAP;
+  const zoneGapPx = scene.layout_rules?.zone_gap ?? DEFAULT_ZONE_GAP;
   const viewportWidth = DEFAULT_VIEWPORT_WIDTH; // fallback; could read from PipelineResult if available
   const zoneGapPct = (zoneGapPx / viewportWidth) * 100;
 
@@ -350,7 +338,7 @@ function checkAspectRatio(
 // Guard 6: asset resolves in SVG_REGISTRY
 //============================================
 
-function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+function checkAssetsResolved(final: ComputedItem[], scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
   for (const item of final) {
     // Placeholder items deliberately have missing assets; skip the registry check.
@@ -374,7 +362,7 @@ function checkAssetsResolved(final: ComputedItem[], scene: SceneA | SceneB): Str
 // Guard 7: no label outside scene
 //============================================
 
-function checkLabelsInScene(final: ComputedItem[], scene: SceneA | SceneB): StructuralViolation[] {
+function checkLabelsInScene(final: ComputedItem[], scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
   const sceneBounds = scene.scene_bounds;
   if (!sceneBounds) {
@@ -440,13 +428,13 @@ function checkNoLabelOwnSvgOverlap(final: ComputedItem[]): StructuralViolation[]
  * this to degrade-not-blank; tests/CI use the throwing wrapper below.
  *
  * @param final - computed layout items
- * @param scene - source scene (SceneA or SceneB)
+ * @param scene - source scene (SceneA)
  * @param viewport - pixel dimensions used by the pipeline (for aspect check)
  * @returns every structural violation, in guard order; empty when clean
  */
 export function collectStructuralViolations(
   final: ComputedItem[],
-  scene: SceneA | SceneB,
+  scene: SceneA,
   viewport?: { w: number; h: number },
 ): StructuralViolation[] {
   const effectiveViewport = viewport ?? DEFAULT_VIEWPORT;
@@ -486,7 +474,7 @@ export function collectStructuralViolations(
  */
 export function runStructuralGuards(
   final: ComputedItem[],
-  scene: SceneA | SceneB,
+  scene: SceneA,
   viewport?: { w: number; h: number },
 ): void {
   const violations = collectStructuralViolations(final, scene, viewport);

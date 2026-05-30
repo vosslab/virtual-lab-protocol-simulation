@@ -1,44 +1,101 @@
 scene_name: seeding_workspace
 extends: hood_basic
-scene_notes: "Workspace for cell seeding (A29-A31): prepare diluted suspension and seed 96-well plate"
+scene_notes: |
+  Workspace for cell seeding (A29-A31): prepare diluted suspension and seed
+  96-well plate. NOTE: well_plate_96 quarantined (missing asset/object);
+  substituted with microtube_rack_24 as best-effort placeholder.
+
+remove_placements:
+  # Base serological pipette removed; protocol adds its own at a specific slot
+  - base_right_serological_pipette
+  # Remove base rear-right bottles to make room for the incubator. These were
+  # previously only deactivated, which left them rendered and crowding the
+  # center band; removing them frees the space the incubator needs.
+  - base_rear_right_media
+  - base_rear_right_sterile_water
+  # The inherited aspirating pipette is not a target of this mini-protocol
+  # (seeding uses the micropipette and serological pipette only). Its
+  # right_tool_area slot sat under the large incubator and overlapped it; remove
+  # it to declutter the right tool band.
+  - right_aspirating_pipette
 
 add_placements:
+  # The oversized incubator art covers the entire right_tool_area X-range, so
+  # the hood tools live in the center and rear_center bands instead. Items are
+  # spread across align stops and depth tiers, keeping wide items (rack,
+  # vortex) clear of each other, so neither art nor labels collide.
+
+  # Layout note: the inherited hood_surface backdrop occupies the center stop
+  # of the center band. The tab-stop engine packs all items sharing one
+  # align_stop side by side (no overlap), but items in different stops can
+  # overlap spatially. So the three sample items (two tubes + wide rack) all
+  # share the RIGHT stop where they pack sequentially without overlap, and the
+  # three tools (two pipettes + vortex) all share the LEFT stop.
+
+  # Sample tubes and the plate all share the RIGHT stop, so they pack
+  # sequentially along the right side of the center band without overlapping
+  # the center-stop hood surface or the left-stop tools.
   - placement_name: center_cell_suspension_tube
     object_name: cell_suspension_tube
     zone: center
-    depth_tier: 2
+    depth_tier: 1
+    align_stop: right
 
   - placement_name: center_conical_tube_for_dilution
     object_name: conical_tube_for_dilution
     zone: center
     depth_tier: 2
+    align_stop: right
 
+  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
   - placement_name: center_well_plate_96
-    object_name: well_plate_96
+    object_name: microtube_rack_24
     zone: center
     depth_tier: 3
+    align_stop: right
 
+  # Media bottle: rear_center, center stop, between the inherited PBS (left)
+  # and waste (right) bottles on the rear shelf.
   - placement_name: rear_center_media_bottle
     object_name: media_bottle
     zone: rear_center
     depth_tier: 1
+    align_stop: center
 
+  # Vortex: center band left stop, stacked with the two pipettes. The three
+  # tools form the slim left column; the wide rack and tubes sit in the right
+  # bucket, and the hood surface holds the center. Keeping the vortex out of
+  # the rear shelf avoids crowding the inherited ethanol and tip box.
+  - placement_name: center_vortex
+    object_name: vortex
+    zone: center
+    depth_tier: 3
+    align_stop: left
+
+  # Incubator in rear_right. The incubator asset is oversized (its real-world
+  # 55cm width scales beyond the rear_right zone), so it clips slightly at the
+  # right edge regardless of alignment; align_stop center gives the least clip.
+  # Its rendered height spans most of the scene and its X-range covers the
+  # right_tool_area, so the pipettes that would normally sit there are moved into
+  # the center band below.
   - placement_name: rear_right_incubator
     object_name: incubator
     zone: rear_right
     depth_tier: 1
+    align_stop: center
 
-  - placement_name: right_micropipette
+  # Micropipette: front row, left. Kept in the center band because the
+  # oversized incubator art covers the right_tool_area X-range.
+  - placement_name: center_micropipette
     object_name: micropipette
-    zone: right_tool_area
-    depth_tier: 1
-
-  - placement_name: right_serological_pipette
-    object_name: serological_pipette
-    zone: right_tool_area
-    depth_tier: 1
-
-  - placement_name: center_vortex
-    object_name: vortex
     zone: center
     depth_tier: 1
+    align_stop: left
+
+  # Serological pipette: center band, left column, mid row, stacked above the
+  # micropipette. Both pipettes are narrow.
+  - placement_name: center_serological_pipette
+    object_name: serological_pipette
+    zone: center
+    depth_tier: 2
+    align_stop: left

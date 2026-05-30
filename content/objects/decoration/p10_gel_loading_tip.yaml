@@ -2,14 +2,26 @@ object_name: p10_gel_loading_tip
 kind: decoration
 label: p10 gel loading tip
 
-asset: p10_gel_loading_tip
+state_fields:
+  - field_name: visible
+    type: bool
+    default: true
+    description: Whether the p10 gel loading tip is visible.
 
-state_fields: []
-
-visual_states: {}
+visual_states:
+  visible:
+    kind: svg
+    cases:
+      - when: true
+        output:
+          asset_name: p10_gel_loading_tip
+      - when: false
+        output:
+          asset_name: p10_gel_loading_tip
 
 capabilities: [decoration_only]
 
 layout:
   default_width: 1
+  display_width_cm: 2
   label_width: 5

@@ -37,6 +37,12 @@ state_fields:
     description: Whether the electrode module is mounted in the tank.
 
 visual_states:
+  lid_present:
+    kind: composite
+    composite: []
+  module_present:
+    kind: composite
+    composite: []
   inner_chamber_material_name:
     kind: svg
     cases:
@@ -61,23 +67,10 @@ visual_states:
   outer_chamber_material_volume:
     kind: composite
     formula: fill_height(state(outer_chamber_material_volume), capacity_ml=500)
-  lid_present:
-    kind: svg
-    cases:
-      - when: true
-        output: { asset_name: electrophoresis_tank }
-      - when: false
-        output: { asset_name: electrophoresis_tank }
-  module_present:
-    kind: svg
-    cases:
-      - when: true
-        output: { asset_name: electrophoresis_tank }
-      - when: false
-        output: { asset_name: electrophoresis_tank }
 
 capabilities: [clickable, material_container]
 
 layout:
   default_width: 18
+  display_width_cm: 35
   label_width: 10

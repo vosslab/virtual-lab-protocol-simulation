@@ -109,6 +109,13 @@ cp src/scene_viewer_template.html dist/scene_viewer.html
 # 6. Copy stylesheet.
 cp src/style.css dist/style.css
 
+# 6b. Copy bundled fonts so the @font-face url() in style.css resolves.
+#     style.css references assets/fonts/*.woff2 relative to dist/style.css;
+#     both the PNG render server (tools/scene_to_png.mjs) and GitHub Pages
+#     serve dist/, so the font must live under dist/assets/fonts/.
+mkdir -p dist/assets/fonts
+cp assets/fonts/*.woff2 dist/assets/fonts/
+
 # 7. Generate dist/<protocol_name>.html for every PROTOCOLS_INDEX entry.
 #    list_protocols.py 'emit' parses PROTOCOLS_INDEX from generated/protocols.ts
 #    and writes one dist/<name>.html per entry, substituting {{PROTOCOL_NAME}}.

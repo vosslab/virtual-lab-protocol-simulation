@@ -31,11 +31,11 @@ visual_states:
     applies_to: subpart
     cases:
       - when: empty
-        output: { asset_name: microtube }
+        output: { asset_name: tube_rack }
       - when: carboplatin
-        output: { asset_name: microtube }
+        output: { asset_name: tube_rack }
       - when: media
-        output: { asset_name: microtube }
+        output: { asset_name: tube_rack }
   material_volume:
     kind: composite
     applies_to: subpart
@@ -45,4 +45,5 @@ capabilities: [clickable, structured_surface, material_container]
 
 layout:
   default_width: 8
+  display_width_cm: 25
   label_width: 6

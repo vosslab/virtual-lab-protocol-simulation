@@ -13,63 +13,147 @@ background:
   asset: bench_workspace_bg
 
 zones:
+  # Rear shelf band: bottles and small instruments at top
   - zone_name: rear_left
     bounds:
       left: 5
       right: 30
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear left zone
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear left - reagents
   - zone_name: rear_center
     bounds:
       left: 35
       right: 65
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear center zone
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear center - reagents
   - zone_name: rear_right
     bounds:
       left: 70
       right: 95
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear right zone
-  - zone_name: center
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear right - reagents
+  # Mid working band: racks and tubes staged mid-bench
+  - zone_name: mid_left
     bounds:
-      left: 20
-      right: 80
-      top: 45
-      bottom: 75
-    align: center
+      left: 5
+      right: 48
+      top: 38
+      bottom: 62
+    baseline: 58
+    align: tab-stops
+    label: Mid bench - left
+  - zone_name: mid_right
+    bounds:
+      left: 52
+      right: 95
+      top: 38
+      bottom: 62
+    baseline: 58
+    align: tab-stops
+    label: Mid bench - right
+  # Front working band: heat block center-stage with tools
+  - zone_name: front
+    bounds:
+      left: 8
+      right: 84
+      top: 64
+      bottom: 94
+    baseline: 90
+    align: tab-stops
     label: Bench work surface
+  # Right tool area
   - zone_name: right_tool_area
     bounds:
-      left: 80
-      right: 95
-      top: 55
-      bottom: 80
-    align: center
+      left: 84
+      right: 97
+      top: 64
+      bottom: 94
+    baseline: 90
+    align: tab-stops
     label: Right tool rack
 
 placements:
-  - placement_name: center_heat_block
-    object_name: heat_block
-    zone: center
-    depth_tier: 1
-  - placement_name: rear_left_eppendorf_rack
-    object_name: microtube_rack_24
+  # Rear shelf: SDS-PAGE sample prep reagents
+  - placement_name: rear_left_protein_sample
+    object_name: protein_sample_tube
     zone: rear_left
     depth_tier: 1
-  - placement_name: rear_right_protein_ladder
+    align_stop: left
+  - placement_name: rear_left_protein_ladder
     object_name: protein_ladder_tube
+    zone: rear_left
+    depth_tier: 1
+    align_stop: right
+  - placement_name: rear_center_laemmli
+    object_name: laemmli_4x_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: left
+  - placement_name: rear_center_bme
+    object_name: bme_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
+  - placement_name: rear_right_ddh2o
+    object_name: ddh2o_bottle
     zone: rear_right
     depth_tier: 1
+    align_stop: left
+  - placement_name: rear_right_waste
+    object_name: waste_container
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+  # Mid bench left: microtube rack staged
+  - placement_name: mid_eppendorf_rack
+    object_name: microtube_rack_24
+    zone: mid_left
+    depth_tier: 1
+    align_stop: center
+  # Mid bench right: tip box and a microtube sample
+  - placement_name: mid_p10_tip_box
+    object_name: p10_gel_loading_tip_box
+    zone: mid_right
+    depth_tier: 1
+    align_stop: left
+  - placement_name: mid_microtube_sample
+    object_name: microtube
+    zone: mid_right
+    depth_tier: 2
+    align_stop: right
+  # Front working surface: heat block center, micropipette right
+  - placement_name: front_heat_block
+    object_name: heat_block
+    zone: front
+    depth_tier: 1
+    align_stop: center
+  - placement_name: front_microtube_rack
+    object_name: microtube_rack_24
+    zone: front
+    depth_tier: 1
+    align_stop: left
+  - placement_name: front_micropipette
+    object_name: micropipette
+    zone: front
+    depth_tier: 1
+    align_stop: right
+  # Right tool area: general tip box
+  - placement_name: right_tool_area_tip_box
+    object_name: micropipette_tip_box
+    zone: right_tool_area
+    depth_tier: 1
+    align_stop: center
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
   zone_gap: 2

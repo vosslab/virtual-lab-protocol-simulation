@@ -44,4 +44,5 @@ capabilities:
   - material_container
 layout:
   default_width: 3
+  display_width_cm: 5
   label_width: 6

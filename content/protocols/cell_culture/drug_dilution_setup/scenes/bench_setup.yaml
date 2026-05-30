@@ -1,42 +1,56 @@
 scene_name: drug_dilution_setup_bench_setup
 extends: bench_basic
 
+scene_notes: |
+  Bench-side scene for drug_dilution_setup. Two stock bottles at rear,
+  sterile water at rear right, intermediate tubes. Vortex and heat block
+  inherited from bench_basic rear right.
+
+remove_placements:
+  - rear_left_media_bottle
+  - rear_center_pbs
+  - rear_center_ethanol
+  - rear_right_heat_block
+
 add_placements:
+  # Carboplatin stock at rear left (right stop beside waste)
   - placement_name: rear_left_carboplatin_stock
     object_name: carboplatin_stock_bottle
     zone: rear_left
     depth_tier: 2
+    align_stop: right
+
+  # Metformin stock at rear center (left stop)
   - placement_name: rear_center_metformin_stock
     object_name: metformin_stock_bottle
     zone: rear_center
-    depth_tier: 2
+    depth_tier: 1
+    align_stop: left
+
+  # Sterile water at rear right (additional diluent, left stop)
   - placement_name: rear_right_sterile_water
     object_name: sterile_water_bottle
     zone: rear_right
     depth_tier: 2
+    align_stop: left
+
+  # Intermediate tube at center (left stop) -- the working vessel
   - placement_name: center_microtube_intermediate
     object_name: microtube_15ml_intermediate
     zone: center
     depth_tier: 1
+    align_stop: left
+
+  # Metformin working tube at center (center stop)
   - placement_name: center_metformin_working_tube
     object_name: metformin_working_tube
     zone: center
-    depth_tier: 2
+    depth_tier: 1
+    align_stop: center
+
+  # Dilution rack at center (right stop) -- where diluted samples go
   - placement_name: center_dilution_tube_rack
     object_name: dilution_tube_rack_8
     zone: center
-    depth_tier: 3
-  - placement_name: right_tool_micropipette
-    object_name: micropipette
-    zone: right_tool_area
-    depth_tier: 1
-  - placement_name: right_tool_tip_box
-    object_name: micropipette_tip_box
-    zone: right_tool_area
     depth_tier: 2
-
-scene_notes: |
-  Bench-side scene for drug_dilution_setup. Two stock bottles, sterile
-  water, two intermediate tubes, micropipette, and tip box. Vortex
-  inherited from bench_basic (rear right). All dilution math happens at
-  one bench surface; no scene change required.
+    align_stop: right

@@ -20,7 +20,6 @@ const ARTIFACT_DIR = path.join(REPO_ROOT, "tests/playwright/artifacts");
 // Scenes to render (all 6 D2 scenes after content fixes from task #76)
 const SCENES_TO_RENDER = [
   "bench_basic",
-  "bench_basic_row_slot",
   "sample_prep_bench",
   "staining_bench",
   "cell_counter_basic",

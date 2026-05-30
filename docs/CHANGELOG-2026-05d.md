@@ -1192,7 +1192,7 @@ calc(100% - 20px); }` zoom rule.
   All 830 tests pass; no regression on zone-based path.
 
 - **Row+slot prototype for hood_basic (WP-PROTO-1)**: authored
-  [hood_basic_row_slot.yaml](../content/base_scenes/hood_basic_row_slot.yaml)
+  `hood_basic_row_slot.yaml`
   as the first Model B (row+slot) prototype per the plan reference
   `docs/active_plans/row_slot_base_scene_prototype.md#WP-PROTO-1`. Used
   hood_basic as the target scene per user-locked defaults. Preserved all

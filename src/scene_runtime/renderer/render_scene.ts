@@ -8,6 +8,7 @@
 // visible for diagnosis. The throwing guard mode lives in tests/CI only.
 
 import { collectStructuralViolations } from "./structural_guards.js";
+import { LABEL_FONT_MIN_PX, LABEL_FONT_WIDTH_FRACTION } from "../layout/constants.js";
 import type { PipelineResult } from "../layout/types.js";
 import { renderBackground } from "./render_background.js";
 import { renderItem } from "./render_item.js";
@@ -67,12 +68,20 @@ export function renderScene(
     renderBackground(root, result.scene.background);
   }
 
+  // Resolve label font size. The live PNG path mounts the root then calls this
+  // with no viewport, so an absolute px default is illegible on a wide canvas.
+  // Derive a canvas-relative size from the already-mounted root's pixel width,
+  // floored at LABEL_FONT_MIN_PX. An authored layout_rules override still wins.
+  const w = root.getBoundingClientRect().width;
+  const relativePx = Math.max(LABEL_FONT_MIN_PX, Math.round(w * LABEL_FONT_WIDTH_FRACTION));
+  const labelFontSize = result.scene.layout_rules?.label_font_size ?? relativePx;
+
   // Render items and labels in depth_tier order (already sorted in result.final).
   for (const item of result.final) {
     const itemEl = renderItem(item);
     root.appendChild(itemEl);
 
-    const labelEl = renderLabel(item);
+    const labelEl = renderLabel(item, labelFontSize);
     root.appendChild(labelEl);
   }
 }

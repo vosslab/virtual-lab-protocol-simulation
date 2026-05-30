@@ -34,7 +34,7 @@ visual_states:
       - when: false
         output: { asset_name: power_supply_off }
       - when: true
-        output: { asset_name: power_supply_on }
+        output: { asset_name: power_supply_off }
   cathode_lead_attached:
     kind: composite
     composite: []
@@ -46,4 +46,5 @@ capabilities: [clickable, instrument_with_setpoint]
 
 layout:
   default_width: 18
+  display_width_cm: 22
   label_width: 12

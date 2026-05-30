@@ -77,7 +77,45 @@ class ProtocolSceneValidator:
 
 		new_placement_names = set(base_placement_names)
 
-		for op in ['remove_placements', 'deactivate_placements', 'reposition_placements', 'add_placements']:
+		# remove_placements and deactivate_placements are LISTS OF STRINGS
+		# (bare placement_name values). The builder iterates these names
+		# directly and filters by name; see pipeline/scene_inheritance.py
+		# apply_remove_placements / apply_deactivate_placements. The canonical
+		# authored form is a list of strings, not a list of mappings.
+		for op in ['remove_placements', 'deactivate_placements']:
+			ops = scene.get(op, [])
+			if not isinstance(ops, list):
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=f"{op} must be a list",
+				))
+				continue
+
+			for idx, entry in enumerate(ops):
+				entry_path = f"{path}.{op}[{idx}]"
+				# Each entry must be a non-empty placement-name string.
+				if not isinstance(entry, str) or not entry:
+					findings.append(Finding(
+						path=entry_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message="entry must be a non-empty placement_name string",
+					))
+					continue
+
+				if entry not in new_placement_names:
+					findings.append(Finding(
+						path=entry_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=f"{op} references unknown placement_name '{entry}'",
+					))
+
+		# add_placements and reposition_placements are LISTS OF MAPPINGS,
+		# each carrying a 'placement_name' key plus operation fields.
+		for op in ['reposition_placements', 'add_placements']:
 			ops = scene.get(op, [])
 			if not isinstance(ops, list):
 				findings.append(Finding(

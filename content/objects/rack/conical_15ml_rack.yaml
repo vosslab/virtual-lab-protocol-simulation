@@ -43,5 +43,6 @@ visual_states:
 capabilities: [clickable, structured_surface, material_container]
 
 layout:
-  default_width: 10
+  default_width: 3
+  display_width_cm: 3
   label_width: 8

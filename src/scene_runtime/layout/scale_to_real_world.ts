@@ -1,8 +1,12 @@
 // Stage 5: Scale to real-world dimensions (SCALING_MODEL.md).
 // Computes _width_scale per placement from the cm model:
-//   _width_scale = (display_width_cm * px_per_cm) / (default_width * 11.52) * fudge
+//   _width_scale = (display_width_cm * px_per_cm) / (default_width * 11.52)
+// _width_scale is an internal, pipeline-computed quantity. There is no authored
+// width_scale or fudge override; object sizes are determined solely by the
+// object-level display_width_cm and the workspace px_per_cm. Authors fix sizes
+// at the object level, not per-placement.
 // Fallback chain: cm_model -> fallback_no_workspace -> fallback_authored ->
-// skipped_error.
+// skipped_error. Fallback branches use a neutral 1.0 scale.
 
 import { PX_PER_SCENE_PERCENT, WORKSPACE_PX_PER_CM } from "./constants.js";
 import type {
@@ -32,11 +36,11 @@ export function scaleToRealWorld(
       };
     }
     const cm = p.layout.display_width_cm;
-    const fudge = p.layout.fudge;
     const def = p.layout.default_width;
 
     if (cm !== undefined && pxPerCm !== undefined && def > 0) {
-      const scale = ((cm * pxPerCm) / (def * PX_PER_SCENE_PERCENT)) * fudge;
+      // cm_model: single deterministic formula, no per-placement multiplier.
+      const scale = (cm * pxPerCm) / (def * PX_PER_SCENE_PERCENT);
       return {
         ...p,
         _width_scale: scale,
@@ -55,7 +59,7 @@ export function scaleToRealWorld(
       });
       return {
         ...p,
-        _width_scale: p.layout.width_scale,
+        _width_scale: 1.0,
         _scale_source: "fallback_no_workspace",
         _px_per_cm: null,
       };
@@ -63,7 +67,7 @@ export function scaleToRealWorld(
 
     return {
       ...p,
-      _width_scale: p.layout.width_scale,
+      _width_scale: 1.0,
       _scale_source: "fallback_authored",
       _px_per_cm: pxPerCm ?? null,
     };

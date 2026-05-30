@@ -3,7 +3,6 @@
 
 export * from "./constants.js";
 export * from "./types.js";
-export { WORKSPACE_ROW_LIBRARY } from "./workspace_row_library.js";
 export { normalizeSchema } from "./normalize_schema.js";
 export { resolveInheritance } from "./resolve_inheritance.js";
 export { bindObjects } from "./bind_objects.js";

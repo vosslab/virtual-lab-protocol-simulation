@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.0" viewBox="0 0 400 280">
+  <!-- Benchtop automated cell counter: a compact box with screen, LED display, slide slot, and control buttons -->
+  <!-- Main body: dark grey housing -->
+  <rect x="20" y="60" width="360" height="200" rx="12" ry="12" fill="#3a3a3a" stroke="#222" stroke-width="2"/>
+  <!-- Body highlight (top face) -->
+  <rect x="22" y="60" width="356" height="40" rx="10" ry="10" fill="#484848" stroke="none"/>
+  <!-- Front panel lighter area -->
+  <rect x="30" y="100" width="340" height="152" rx="6" ry="6" fill="#2d2d2d" stroke="none"/>
+
+  <!-- Large LCD/LED screen (left 2/3 of front panel) -->
+  <rect x="42" y="112" width="200" height="110" rx="5" ry="5" fill="#111820" stroke="#555" stroke-width="1.5"/>
+  <!-- Screen glow / inner display area -->
+  <rect x="46" y="116" width="192" height="102" rx="3" ry="3" fill="#0a1a2e" stroke="none"/>
+  <!-- Screen content: count display -->
+  <rect x="50" y="122" width="180" height="28" rx="2" ry="2" fill="#001a33" stroke="none"/>
+  <text x="140" y="141" font-family="monospace" font-size="14" fill="#00ccff" text-anchor="middle" font-weight="bold">Cell Count: 8.50e5</text>
+  <!-- Screen viability row -->
+  <rect x="50" y="155" width="180" height="24" rx="2" ry="2" fill="#001a33" stroke="none"/>
+  <text x="140" y="171" font-family="monospace" font-size="13" fill="#00ff88" text-anchor="middle">Viability: 92.5%</text>
+  <!-- Status row -->
+  <rect x="50" y="184" width="180" height="20" rx="2" ry="2" fill="#001a33" stroke="none"/>
+  <text x="140" y="198" font-family="monospace" font-size="11" fill="#ffcc00" text-anchor="middle">READY</text>
+
+  <!-- Right control panel -->
+  <!-- CAPTURE button (large green) -->
+  <rect x="260" y="114" width="94" height="36" rx="8" ry="8" fill="#1a7a1a" stroke="#0d5a0d" stroke-width="1.5"/>
+  <rect x="263" y="116" width="88" height="16" rx="4" ry="4" fill="#2aaa2a" stroke="none"/>
+  <text x="307" y="137" font-family="sans-serif" font-size="11" fill="#fff" text-anchor="middle" font-weight="bold">CAPTURE</text>
+
+  <!-- FOCUS button (blue) -->
+  <rect x="260" y="158" width="44" height="28" rx="6" ry="6" fill="#1a4a8a" stroke="#0d3560" stroke-width="1.5"/>
+  <rect x="262" y="160" width="40" height="12" rx="3" ry="3" fill="#2a6ab0" stroke="none"/>
+  <text x="282" y="177" font-family="sans-serif" font-size="9" fill="#fff" text-anchor="middle">FOCUS</text>
+
+  <!-- EJECT button (grey) -->
+  <rect x="310" y="158" width="44" height="28" rx="6" ry="6" fill="#5a5a5a" stroke="#3a3a3a" stroke-width="1.5"/>
+  <rect x="312" y="160" width="40" height="12" rx="3" ry="3" fill="#7a7a7a" stroke="none"/>
+  <text x="332" y="177" font-family="sans-serif" font-size="9" fill="#fff" text-anchor="middle">EJECT</text>
+
+  <!-- Power LED indicator (green dot) -->
+  <circle cx="278" cy="205" r="5" fill="#00ee44" stroke="#006622" stroke-width="1"/>
+  <circle cx="278" cy="205" r="3" fill="#44ff88" stroke="none"/>
+
+  <!-- Status LED (blue) -->
+  <circle cx="298" cy="205" r="5" fill="#0088ff" stroke="#004488" stroke-width="1"/>
+  <circle cx="298" cy="205" r="3" fill="#44aaff" stroke="none"/>
+
+  <!-- Label under LEDs -->
+  <text x="288" y="220" font-family="sans-serif" font-size="8" fill="#999" text-anchor="middle">STATUS</text>
+
+  <!-- Slide slot: horizontal opening at bottom front -->
+  <rect x="42" y="232" width="300" height="14" rx="3" ry="3" fill="#111" stroke="#555" stroke-width="1.5"/>
+  <rect x="44" y="234" width="296" height="10" rx="2" ry="2" fill="#080808" stroke="none"/>
+  <!-- Slide slot label -->
+  <text x="192" y="264" font-family="sans-serif" font-size="9" fill="#888" text-anchor="middle">SLIDE INSERT</text>
+  <!-- Arrow indicators for slot -->
+  <polygon points="130,249 138,244 138,254" fill="#666" stroke="none"/>
+  <polygon points="250,249 242,244 242,254" fill="#666" stroke="none"/>
+
+  <!-- Instrument label on top -->
+  <text x="200" y="92" font-family="sans-serif" font-size="11" fill="#ccc" text-anchor="middle" font-weight="bold">AUTOMATED CELL COUNTER</text>
+
+  <!-- Base feet -->
+  <rect x="40" y="255" width="30" height="8" rx="3" ry="3" fill="#222" stroke="#111" stroke-width="1"/>
+  <rect x="330" y="255" width="30" height="8" rx="3" ry="3" fill="#222" stroke="#111" stroke-width="1"/>
+
+  <!-- Overlay root for runtime compositing -->
+  <g id="overlay_root"/>
+
+  <!-- ANCHORS: invisible positioning elements -->
+  <rect id="anchor_label" x="40" y="196" width="320" height="42" fill="none" stroke="none" display="none"/>
+  <rect id="anchor_error" x="340" y="176" width="16" height="16" fill="none" stroke="none" display="none"/>
+</svg>

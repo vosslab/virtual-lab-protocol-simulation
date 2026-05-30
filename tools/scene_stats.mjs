@@ -117,17 +117,21 @@ function computeCounts(manifestEntry, renderedItems) {
   const renderedNameSet = new Set(renderedItems.map((item) => item.placementName));
   const droppedPlacementNames = sourceNames.filter((name) => !renderedNameSet.has(name));
 
-  // Render yield: rendered / source, as a percent. A source count of zero
-  // yields 100% by convention (nothing to render, nothing dropped).
+  const placeholderItemCount = renderedItems.filter((item) => item.isPlaceholder).length;
+  const realItemCount = renderedPlacementCount - placeholderItemCount;
+
+  // Render yield: REAL (non-placeholder) rendered items / source, as a percent.
+  // Placeholders are dashed-box stand-ins, not delivered content, so they must
+  // not count toward yield. Previously yield counted every rendered placement,
+  // letting a scene whose objects are all placeholders report 100% yield while
+  // the eye saw only dashed boxes. A source count of zero yields 100% by
+  // convention (nothing to render, nothing dropped).
   let renderYieldPercent;
   if (sourcePlacementCount === 0) {
     renderYieldPercent = 100;
   } else {
-    renderYieldPercent = round1((renderedPlacementCount / sourcePlacementCount) * 100);
+    renderYieldPercent = round1((realItemCount / sourcePlacementCount) * 100);
   }
-
-  const placeholderItemCount = renderedItems.filter((item) => item.isPlaceholder).length;
-  const realItemCount = renderedPlacementCount - placeholderItemCount;
 
   let placeholderFraction;
   if (renderedPlacementCount === 0) {
@@ -144,6 +148,10 @@ function computeCounts(manifestEntry, renderedItems) {
     render_yield_percent: renderYieldPercent,
     real_item_count: realItemCount,
     placeholder_item_count: placeholderItemCount,
+    // Alias of placeholder_item_count under the name the scene-rework metric
+    // contract uses; counts dashed-box stand-ins (missing-svg, missing-object,
+    // and resolved placeholder-art assets) in this scene.
+    placeholder_count: placeholderItemCount,
     placeholder_fraction: placeholderFraction,
   };
   return counts;
@@ -175,12 +183,16 @@ function computeMissingNames(renderedItems) {
 //============================================
 
 // Builds the layout section: coverage, overlaps, clipping, offscreen, tiny.
-function computeLayout(renderedItems, sceneRootBbox) {
+function computeLayout(renderedItems, sceneRootBbox, labels) {
   const sceneArea = bboxArea(sceneRootBbox);
 
-  // Naive coverage: sum of item areas over scene area. Overlaps double-count.
+  // Naive coverage: sum of REAL item areas over scene area. Overlaps
+  // double-count. Placeholder items (dashed-box stand-ins) are excluded so a
+  // scene filled with placeholders does not read as occupied / non-empty; the
+  // occupancy estimate must reflect real delivered content only.
   let summedItemArea = 0;
   for (const item of renderedItems) {
+    if (item.isPlaceholder) continue;
     summedItemArea += bboxArea(item.bbox);
   }
   let percentEmptyApprox;
@@ -203,6 +215,31 @@ function computeLayout(renderedItems, sceneRootBbox) {
     }
   }
 
+  // Pairwise label-vs-label overlap count. Labels with a null bbox (zero-size,
+  // not rendered) are skipped so they cannot register a collision.
+  let labelOverlapPairCount = 0;
+  for (let i = 0; i < labels.length; i++) {
+    for (let j = i + 1; j < labels.length; j++) {
+      const a = labels[i].bbox;
+      const b = labels[j].bbox;
+      if (!a || !b) continue;
+      if (bboxsOverlap(a, b, 0)) labelOverlapPairCount++;
+    }
+  }
+
+  // Label-vs-art overlap count: each label box against each item box, EXCLUDING
+  // the item the label belongs to (labelFor matches that item's placementName).
+  // A label sitting over its own art is expected and must not count.
+  let labelArtOverlapCount = 0;
+  for (const label of labels) {
+    if (!label.bbox) continue;
+    for (const item of renderedItems) {
+      if (!item.bbox) continue;
+      if (label.labelFor === item.placementName) continue;
+      if (bboxsOverlap(label.bbox, item.bbox, 0)) labelArtOverlapCount++;
+    }
+  }
+
   let clippedItemCount = 0;
   let fullyOffscreenItemCount = 0;
   let tinyItemCount = 0;
@@ -220,12 +257,166 @@ function computeLayout(renderedItems, sceneRootBbox) {
   const layout = {
     percent_empty_approx: percentEmptyApprox,
     overlap_pair_count: overlapPairCount,
+    label_overlap_pair_count: labelOverlapPairCount,
+    label_art_overlap_count: labelArtOverlapCount,
     clipped_item_count: clippedItemCount,
     fully_offscreen_item_count: fullyOffscreenItemCount,
     tiny_item_count: tinyItemCount,
     label_count: 0,
   };
   return layout;
+}
+
+//============================================
+// Geometry block (dump-shaped, single pixel space)
+//============================================
+//
+// This is the canonical geometry the scene_calc validator consumes. It is the
+// browser pipeline's output (rendered DOM rects + pipeline-truth aspect and
+// scale_source), assembled here so there is exactly one geometry producer.
+//
+// All boxes are CSS pixels with a top-left origin, in {x, y, w, h} form. Zone
+// inner_rect is also pixels (converted from the scene-percent zone bounds using
+// the rendered #scene-root box, then padded by zone_padding), so every box fed
+// to a rule shares one coordinate space.
+
+// Threshold mirrors validation/scene_lint ASPECT_DISTORTION_THRESHOLD_PCT and
+// validation/scene_calc/aspect.py. Kept here only for documentation; the value
+// is applied by the rules layer, not gated here.
+
+// Converts a {x,y,width,height} DOM rect to a {x,y,w,h} dump box, or a zeroed
+// box when the rect is missing.
+function toDumpBox(rect) {
+  if (!rect) return { x: 0, y: 0, w: 0, h: 0 };
+  return { x: rect.x, y: rect.y, w: rect.width, h: rect.height };
+}
+
+// Computes aspect_delta_pct for one rendered item: how far the rendered visual
+// box deviates from the intended SVG aspect, as a percentage. Mirrors
+// validation/scene_calc/aspect.py: abs(rendered - authored) / authored * 100.
+// visualDumpBox is a {x, y, w, h} dump box. Returns 0 when the intended aspect
+// or rendered box is unusable.
+function aspectDeltaPct(visualDumpBox, intendedAspect) {
+  if (!visualDumpBox || visualDumpBox.w <= 0 || visualDumpBox.h <= 0) return 0;
+  if (!intendedAspect || intendedAspect <= 0) return 0;
+  const renderedAspect = visualDumpBox.w / visualDumpBox.h;
+  const delta = (Math.abs(renderedAspect - intendedAspect) / intendedAspect) * 100;
+  return round1(delta);
+}
+
+// Converts a scene-percent edge rect to a pixel edge rect using the rendered
+// scene-root box. percent (0..100 per axis) maps linearly onto the scene-root
+// pixel extent.
+function pctEdgesToPx(edgesPct, sceneRootBbox) {
+  return {
+    left: sceneRootBbox.x + (edgesPct.left / 100) * sceneRootBbox.width,
+    right: sceneRootBbox.x + (edgesPct.right / 100) * sceneRootBbox.width,
+    top: sceneRootBbox.y + (edgesPct.top / 100) * sceneRootBbox.height,
+    bottom: sceneRootBbox.y + (edgesPct.bottom / 100) * sceneRootBbox.height,
+  };
+}
+
+// Converts a scene-percent zone-bounds rect to a padded pixel inner_rect.
+// Padding is applied in scene-percent, then converted to pixels.
+function zoneInnerRectPx(boundsPct, paddingPct, sceneRootBbox) {
+  const inner = {
+    left: boundsPct.left + paddingPct,
+    right: boundsPct.right - paddingPct,
+    top: boundsPct.top + paddingPct,
+    bottom: boundsPct.bottom - paddingPct,
+  };
+  return pctEdgesToPx(inner, sceneRootBbox);
+}
+
+// Scene-bounds in pixel edge form: the rendered scene-root box edges. All
+// placement boxes are measured against the same scene-root, so this is the
+// pixel-space scene_bounds the rules compare against.
+function sceneBoundsPx(sceneRootBbox) {
+  return {
+    left: sceneRootBbox.x,
+    right: sceneRootBbox.x + sceneRootBbox.width,
+    top: sceneRootBbox.y,
+    bottom: sceneRootBbox.y + sceneRootBbox.height,
+  };
+}
+
+// Builds the dump-shaped geometry block from rendered items, labels, the
+// pipeline-truth geometry summary, and the scene-root box. Returns null when
+// the pipeline geometry or scene-root box is unavailable (load-failed pages);
+// the loader treats a null geometry block as "not renderable" and fails loudly.
+function computeGeometry(renderedItems, labels, sceneGeometry, sceneRootBbox) {
+  if (!sceneGeometry || !sceneRootBbox) return null;
+
+  // Index pipeline-truth placements and labels by placement name.
+  const truthByName = new Map();
+  for (const p of sceneGeometry.placements) {
+    truthByName.set(p.placement_name, p);
+  }
+  const labelByPlacement = new Map();
+  for (const lab of labels) {
+    if (lab.labelFor) labelByPlacement.set(lab.labelFor, lab);
+  }
+
+  const placements = [];
+  for (const item of renderedItems) {
+    const truth = truthByName.get(item.placementName);
+    // placement_bbox: the positioned item div rect.
+    const placementBox = toDumpBox(item.bbox);
+    // visual_bbox: the inner SVG asset rect (or div rect when no SVG).
+    const visualBox = toDumpBox(item.visualBbox ?? item.bbox);
+    // label_bbox: the matched label element rect.
+    const labelRec = labelByPlacement.get(item.placementName);
+    const labelBox = toDumpBox(labelRec ? labelRec.bbox : null);
+    // footprint_bbox: the rendered layout footprint, taken as the union of the
+    // placement box and its label box (the space the item plus label occupy).
+    const footprintBox = unionBox(placementBox, labelBox);
+
+    const intendedAspect = truth ? truth.aspect : null;
+    const scaleSource = truth ? truth.scale_source : "skipped_error";
+    placements.push({
+      placement_name: item.placementName,
+      kind: item.kind ?? (truth ? truth.kind : "unknown"),
+      asset_path: truth ? truth.asset : "<unknown>",
+      visual_bbox: visualBox,
+      placement_bbox: placementBox,
+      footprint_bbox: footprintBox,
+      label_bbox: labelBox,
+      aspect_delta_pct: aspectDeltaPct(visualBox, intendedAspect),
+      scale_source: scaleSource,
+    });
+  }
+
+  const zones = [];
+  for (const zone of sceneGeometry.zones) {
+    const boundsPx = pctEdgesToPx(zone.bounds, sceneRootBbox);
+    const innerRect = zoneInnerRectPx(zone.bounds, sceneGeometry.zone_padding, sceneRootBbox);
+    zones.push({
+      name: zone.name,
+      bounds: boundsPx,
+      inner_rect: innerRect,
+    });
+  }
+
+  return {
+    coordinate_space: "css_px_top_left",
+    scene_bounds: sceneBoundsPx(sceneRootBbox),
+    placements,
+    zones,
+  };
+}
+
+// Union of two {x,y,w,h} boxes. A zero-area box contributes nothing.
+function unionBox(a, b) {
+  const aValid = a.w > 0 && a.h > 0;
+  const bValid = b.w > 0 && b.h > 0;
+  if (!aValid && !bValid) return { x: 0, y: 0, w: 0, h: 0 };
+  if (!bValid) return { ...a };
+  if (!aValid) return { ...b };
+  const left = Math.min(a.x, b.x);
+  const top = Math.min(a.y, b.y);
+  const right = Math.max(a.x + a.w, b.x + b.w);
+  const bottom = Math.max(a.y + a.h, b.y + b.h);
+  return { x: left, y: top, w: right - left, h: bottom - top };
 }
 
 //============================================
@@ -303,6 +494,7 @@ export function computeSceneStats({
   renderedItems,
   labels,
   sceneRootBbox,
+  sceneGeometry = null,
   loadFailed = false,
 }) {
   const items = renderedItems || [];
@@ -310,8 +502,12 @@ export function computeSceneStats({
 
   const counts = computeCounts(manifestEntry, items);
   const missing = computeMissingNames(items);
-  const layout = computeLayout(items, sceneRootBbox);
+  const layout = computeLayout(items, sceneRootBbox, labelList);
   layout.label_count = labelList.length;
+
+  // Dump-shaped geometry for the scene_calc validator (single producer). Null on
+  // load-failed pages; the loader fails loudly rather than synthesizing geometry.
+  const geometry = computeGeometry(items, labelList, sceneGeometry, sceneRootBbox);
 
   const category = classifyScene(counts, loadFailed);
   const advisoryFlags = computeAdvisoryFlags(category, counts, layout, missing);
@@ -334,6 +530,7 @@ export function computeSceneStats({
       missing_svg_names: missing.missingSvgNames,
     },
     pass_fail: passFail,
+    geometry: geometry,
   };
   return stats;
 }

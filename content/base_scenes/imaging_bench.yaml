@@ -13,43 +13,138 @@ background:
   asset: bench_workspace_bg
 
 zones:
+  # Rear shelf: reagent bottles and small tools, split for even spread
   - zone_name: rear_left
     bounds:
       left: 5
-      right: 30
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear left zone
+      right: 32
+      top: 8
+      bottom: 34
+    baseline: 30
+    align: tab-stops
+    label: Rear left - reagents
   - zone_name: rear_center
     bounds:
-      left: 35
-      right: 65
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear center zone
+      left: 34
+      right: 66
+      top: 8
+      bottom: 34
+    baseline: 30
+    align: tab-stops
+    label: Rear center - reagents
+  - zone_name: rear_right
+    bounds:
+      left: 68
+      right: 95
+      top: 8
+      bottom: 34
+    baseline: 30
+    align: tab-stops
+    label: Rear right - accessories
+
+  # Center working surface: lightbox and staining tray, instruments center-stage
   - zone_name: center
     bounds:
       left: 20
       right: 80
-      top: 45
-      bottom: 75
-    align: center
+      top: 38
+      bottom: 92
+    baseline: 84
+    align: tab-stops
     label: Bench work surface
 
+  # Left tool area: imaging consumables
+  - zone_name: left_tool_area
+    bounds:
+      left: 3
+      right: 19
+      top: 38
+      bottom: 92
+    baseline: 84
+    align: tab-stops
+    label: Left tool area
+
+  # Right tool area: imaging consumables
+  - zone_name: right_tool_area
+    bounds:
+      left: 81
+      right: 97
+      top: 38
+      bottom: 92
+    baseline: 84
+    align: tab-stops
+    label: Right tool area
+
 placements:
+  # Center work surface: lightbox left-center, staining tray right-center
+  - placement_name: center_lightbox
+    object_name: lightbox
+    zone: center
+    depth_tier: 1
+    align_stop: left
+
   - placement_name: center_staining_tray
     object_name: staining_tray
     zone: center
     depth_tier: 1
-  - placement_name: rear_center_lightbox
-    object_name: lightbox
+    align_stop: right
+
+  # Rear left: coomassie stain bottle, destain bottle
+  - placement_name: rear_coomassie
+    object_name: coomassie_stain_bottle
+    zone: rear_left
+    depth_tier: 1
+    align_stop: left
+  - placement_name: rear_destain
+    object_name: destain_bottle
+    zone: rear_left
+    depth_tier: 1
+    align_stop: right
+
+  # Rear center: ddH2O and ethanol bottles
+  - placement_name: rear_ddh2o
+    object_name: ddh2o_bottle
     zone: rear_center
     depth_tier: 1
+    align_stop: left
+  - placement_name: rear_ethanol_bottle
+    object_name: ethanol_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
+
+  # Rear right: tip box and microtube rack
+  - placement_name: rear_tip_box
+    object_name: micropipette_tip_box
+    zone: rear_right
+    depth_tier: 1
+    align_stop: left
+  - placement_name: rear_microtube_rack
+    object_name: microtube_rack_24
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+
+  # Left tool area: rocking shaker for stain incubation
+  - placement_name: left_rocking_shaker
+    object_name: rocking_shaker
+    zone: left_tool_area
+    depth_tier: 1
+    align_stop: center
+
+  # Right tool area: micropipette and a microtube sample
+  - placement_name: right_micropipette
+    object_name: micropipette
+    zone: right_tool_area
+    depth_tier: 1
+    align_stop: left
+  - placement_name: right_microtube
+    object_name: microtube
+    zone: right_tool_area
+    depth_tier: 2
+    align_stop: right
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
   zone_gap: 2

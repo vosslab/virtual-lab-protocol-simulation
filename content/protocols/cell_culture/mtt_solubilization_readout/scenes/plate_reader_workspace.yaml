@@ -1,18 +1,30 @@
 scene_name: mtt_solubilization_readout_plate_reader_workspace
 extends: bench_basic
 
+scene_notes: |
+  Plate reader workspace for MTT solubilization absorbance readout. The plate
+  reader instrument is the primary object at center. The treated 96-well plate
+  (microtube_rack_24 as placeholder) is at rear center ready to be inserted.
+
+remove_placements:
+  - center_water_bath
+  - center_rocking_shaker
+  - rear_left_media_bottle
+  - rear_center_ethanol
+  - rear_right_heat_block
+
 add_placements:
+  # Treated 96-well plate at rear center (ready to load)
+  # well_plate_96 object pending; microtube_rack_24 as layout placeholder
   - placement_name: rear_center_treated_plate
-    object_name: well_plate_96
+    object_name: microtube_rack_24
     zone: rear_center
     depth_tier: 1
+    align_stop: center
+
+  # Plate reader instrument at center -- the main instrument for readout
   - placement_name: center_plate_reader
     object_name: plate_reader
     zone: center
     depth_tier: 1
-
-scene_notes: |
-  Plate reader workspace for MTT solubilization readout. Placements: the plate reader
-  instrument (center zone) and the treated 96-well plate (rear center zone, prepared
-  for insertion). Student inserts the plate, sets wavelength to 560 nm, and measures
-  absorbance across the 96-well plate.
+    align_stop: center

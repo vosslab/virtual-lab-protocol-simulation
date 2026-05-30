@@ -14,9 +14,19 @@ Scope boundaries:
   [#promotion-config](#promotion-config) and `--strict`.
 - Scene lint **does not score** composition quality. That belongs to
   [SCENE_DESIGN.md](SCENE_DESIGN.md).
-- Scene lint **consumes** the geometry primitives in
-  [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) via the shared SIM dump
-  (`validation/scene_calc/dump.py`); it does not implement layout itself.
+- Scene lint **consumes** rendered geometry, never a Python layout model. The
+  single geometry producer is the browser render pipeline
+  (`tools/scene_to_png.mjs` -> `tools/scene_stats.mjs`), which lays out every
+  shipped scene through the real TypeScript layout engine and writes the
+  rendered bounding boxes to `test-results/scenes/<scene>.stats.json`.
+  `validation/scene_calc/dump.py` is a thin loader of that stats file; it
+  performs no layout math. When the validator disagrees with the render, the
+  validator is wrong by definition (the generator wins). If a scene's
+  stats.json is missing, the loader fails loudly (Group B is skipped with a
+  `dump_error` finding); it never re-derives geometry. Render first:
+  `node tools/scene_to_png.mjs --all`. See
+  [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) for the layout primitives the renderer
+  applies.
 
 The two-tool split (lint vs. design) is intentional: a single mega-lint
 mixing render failures and composition advisories failed in practice
@@ -302,7 +312,8 @@ across all Group B rules.
 
 | Module | Purpose |
 | --- | --- |
-| `validation/scene_calc/dump.py` | Provides `dump_scene_geometry(path)`; output is the canonical input to Group B rules. |
+| `validation/scene_calc/dump.py` | Thin loader: reads `test-results/scenes/<scene>.stats.json` (produced by the browser render) and returns the rendered geometry as the canonical input to Group B rules. Computes no layout. |
+| `tools/scene_to_png.mjs` + `tools/scene_stats.mjs` | The single geometry producer: render each scene through the real TS layout engine and emit rendered bboxes, `aspect_delta_pct`, `scale_source`, and zone `inner_rect` into stats.json. |
 | `validation/shared_toolkit/scene_loaders.py` | `load_svg_viewbox`, `resolve_inheritance`, typed inheritance exceptions consumed by Group A rules. |
 | `validation/shared_toolkit/yaml_io.py` | YAML loader with error wrapping. |
 | `validation/shared_toolkit/cli.py` | Shared argparse base (`-S/--scene`, `--strict`, `-O/--only`). |

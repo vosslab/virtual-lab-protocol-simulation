@@ -84,40 +84,6 @@ test("normalizeSchema: Schema A passthrough applies layout_rules defaults", () =
   assert.equal(out.scene.layout_rules.label_offset_y, 4);
 });
 
-test("normalizeSchema: Schema B expands rows -> zones via workspace row library", () => {
-  const sceneB = {
-    scene_name: "schema_b_demo",
-    workspace: "bench",
-    rows: [
-      {
-        row_name: "work_surface",
-        slots: [
-          { placement_name: "p1", object_name: "heat_block" },
-          { placement_name: "p2", object_name: "microtube_rack_24" },
-        ],
-      },
-    ],
-  };
-  const out = normalizeSchema(sceneB);
-  assert.equal(out.source, "row_slot");
-  assert.equal(out.scene.zones.length, 1);
-  assert.equal(out.scene.zones[0].id, "work_surface");
-  assert.equal(out.scene.placements.length, 2);
-  assert.equal(out.scene.placements[0].depth_tier, 1);
-  assert.equal(out.scene.placements[1].depth_tier, 2);
-});
-
-test("normalizeSchema: unknown row_name records trace + supplies default scene_bounds", () => {
-  const out = normalizeSchema({
-    scene_name: "x",
-    workspace: "bench",
-    rows: [{ row_name: "not_a_real_row", slots: [] }],
-  });
-  const missing = out.trace.filter((t) => t.op === "row_missing");
-  assert.equal(missing.length, 1);
-  assert.equal(out.scene.scene_bounds.left, 1);
-});
-
 // ─── Stage 3 ────────────────────────────────────────────────────────
 test("resolveInheritance: extends applies remove/deactivate/reposition/add in order", () => {
   const base = {

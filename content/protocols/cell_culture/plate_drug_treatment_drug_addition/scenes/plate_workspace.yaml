@@ -4,24 +4,58 @@ scene_notes: |
   Hood workspace for drug treatment mini-protocol. Adds carboplatin and
   metformin working stock rack (rear center zone), seeded well plate
   (center zone), and micropipette (right tool area).
+  NOTE: well_plate_96 quarantined; substituted with microtube_rack_24 placeholder.
+
+remove_placements:
+  # The base PBS and waste bottles are context decoration here (not protocol
+  # targets). Left in rear_center they crowd the two drug-stock targets and
+  # their labels ran under the waste-container art. align_stop cannot be
+  # changed by reposition, so remove and re-add them at the free center stops
+  # of the rear_left and rear_right zones, clear of the other shelf items.
+  - base_rear_center_pbs
+  - rear_center_waste
 
 add_placements:
+  # PBS re-added at the rear_left center stop (context decoration), between the
+  # ethanol (left) and tip box (right) columns on the rear shelf.
+  - placement_name: rear_left_pbs_decor
+    object_name: pbs_bottle
+    zone: rear_left
+    depth_tier: 2
+    align_stop: center
+
+  # Waste container re-added at the rear_right center stop (context
+  # decoration), between the media (left) and sterile water (right) columns.
+  - placement_name: rear_right_waste_decor
+    object_name: waste_container
+    zone: rear_right
+    depth_tier: 2
+    align_stop: center
+
+  # Drug stock tube rack in rear_center (left side)
   - placement_name: rear_center_carb_stocks
     object_name: dilution_tube_rack_8
     zone: rear_center
     depth_tier: 1
+    align_stop: left
 
+  # Metformin working tube in rear_center (right side)
   - placement_name: rear_center_metformin_stock
     object_name: metformin_working_tube
     zone: rear_center
     depth_tier: 2
+    align_stop: right
 
+  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
   - placement_name: center_well_plate
-    object_name: well_plate_96
+    object_name: microtube_rack_24
     zone: center
     depth_tier: 1
+    align_stop: center
 
+  # Micropipette in right tool area
   - placement_name: right_micropipette
     object_name: micropipette
     zone: right_tool_area
     depth_tier: 2
+    align_stop: center

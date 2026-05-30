@@ -1,39 +1,81 @@
 scene_name: centrifuge_workspace
 extends: bench_basic
+
 scene_notes: |
-  Centrifuge workspace for pellet reseed mini-protocol. Adds centrifuge
-  (A13 target) and conical tube rack (for pellet operations A14, A15).
-  Per-protocol scene; NOT promoted to base. If a second protocol uses
-  centrifuge, this scene becomes a candidate for promotion to
-  content/base_scenes/centrifuge_basic.yaml.
+  Centrifuge workspace for pellet reseed step. Centrifuge is the primary instrument
+  at center (left stop). Conical 15 mL rack at rear center holds pellet tubes.
+  Conical 15 mL tube at rear left is the active tube. T75 flask at center right
+  for cell reseed after centrifugation. Label pen and aspirating pipette at right
+  tool area.
+
+remove_placements:
+  - center_water_bath
+  - center_rocking_shaker
+  - rear_left_media_bottle
+  - rear_center_pbs
+  - rear_center_ethanol
+  - rear_right_heat_block
 
 add_placements:
-  - placement_name: center_centrifuge
-    object_name: centrifuge
-    zone: center
-    depth_tier: 2
-
-  - placement_name: rear_center_conical_rack
-    object_name: conical_15ml_rack
-    zone: rear_center
-    depth_tier: 1
-
+  # Conical tube at rear left -- the pellet tube about to be centrifuged
   - placement_name: rear_left_conical_tube
     object_name: conical_15ml
     zone: rear_left
     depth_tier: 1
+    align_stop: right
 
+  # Conical rack at rear center -- holds extra tubes
+  - placement_name: rear_center_conical_rack
+    object_name: conical_15ml_rack
+    zone: rear_center
+    depth_tier: 1
+    align_stop: center
+
+  # Centrifuge at center (left stop) -- main instrument, sized to fit zone
+  - placement_name: center_centrifuge
+    object_name: centrifuge
+    zone: center
+    depth_tier: 2
+    align_stop: left
+
+  # T75 flask at center (right stop) for cell reseed
   - placement_name: center_t75_flask
     object_name: t75_flask
     zone: center
     depth_tier: 1
+    align_stop: right
 
-  - placement_name: right_label_pen
-    object_name: label_pen
-    zone: right_tool_area
-    depth_tier: 2
-
+  # Aspirating pipette at right tool area
   - placement_name: right_aspirating_pipette
     object_name: aspirating_pipette
     zone: right_tool_area
     depth_tier: 1
+    align_stop: center
+
+  # Label pen at right tool area
+  - placement_name: right_label_pen
+    object_name: label_pen
+    zone: right_tool_area
+    depth_tier: 2
+    align_stop: right
+
+  # Rear center: micropipette tip box restocks the emptied rear shelf
+  - placement_name: rear_center_tip_box
+    object_name: micropipette_tip_box
+    zone: rear_center
+    depth_tier: 1
+    align_stop: center
+
+  # Rear right: PBS rinse bottle staged for the reseed step
+  - placement_name: rear_right_pbs
+    object_name: pbs_bottle
+    zone: rear_right
+    depth_tier: 1
+    align_stop: left
+
+  # Center (mid): microtube rack staged alongside the centrifuge
+  - placement_name: center_microtube_rack
+    object_name: microtube_rack_24
+    zone: center
+    depth_tier: 3
+    align_stop: center

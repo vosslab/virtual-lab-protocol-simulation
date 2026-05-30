@@ -16,35 +16,98 @@ background:
   angle: 180
 
 zones:
+  # Rear shelf: small consumables behind the main instrument, split for spread
+  - zone_name: rear_shelf
+    bounds:
+      left: 5
+      right: 95
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear shelf - consumables and reagents
+
+  # Left bench: consumables flanking the counter
+  - zone_name: left_bench
+    bounds:
+      left: 4
+      right: 26
+      top: 40
+      bottom: 92
+    baseline: 86
+    align: tab-stops
+    label: Left bench - consumables
+
+  # Center instrument stage: automated cell counter fills the canvas
   - zone_name: instrument_area
     bounds:
-      left: 15
-      right: 85
-      top: 15
-      bottom: 70
+      left: 27
+      right: 73
+      top: 40
+      bottom: 92
+    baseline: 90
     align: center
     label: Cell counter display and controls
+
+  # Right accessory area: consumables at right
   - zone_name: right_accessory_area
     bounds:
-      left: 80
-      right: 95
-      top: 50
-      bottom: 80
-    align: center
-    label: Accessory area
+      left: 74
+      right: 97
+      top: 40
+      bottom: 92
+    baseline: 86
+    align: tab-stops
+    label: Right accessory area
 
 placements:
+  # Primary instrument - center stage
   - placement_name: main_cell_counter
     object_name: cell_counter
     zone: instrument_area
     depth_tier: 1
-  - placement_name: counter_slide_cartridge
+    align_stop: center
+
+  # Rear shelf: slide cartridge, trypan blue, tip box, cell suspension spread across
+  - placement_name: rear_counter_slide_cartridge
     object_name: counter_slide_cartridge
+    zone: rear_shelf
+    depth_tier: 1
+    align_stop: left
+
+  - placement_name: rear_trypan_blue_bottle
+    object_name: trypan_blue_bottle
+    zone: rear_shelf
+    depth_tier: 1
+    align_stop: center
+
+  - placement_name: rear_cell_suspension_tube
+    object_name: cell_suspension_tube
+    zone: rear_shelf
+    depth_tier: 1
+    align_stop: right
+
+  # Left bench: microtube rack staged for sample dilution
+  - placement_name: left_microtube_rack
+    object_name: microtube_rack_24
+    zone: left_bench
+    depth_tier: 1
+    align_stop: left
+
+  - placement_name: left_tip_box
+    object_name: micropipette_tip_box
+    zone: left_bench
+    depth_tier: 1
+    align_stop: right
+
+  # Right accessories: hemocytometer slide cartridge for counter loading
+  - placement_name: base_hemocytometer_slide
+    object_name: hemocytometer_slide
     zone: right_accessory_area
     depth_tier: 1
+    align_stop: center
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
   zone_gap: 2

@@ -23,13 +23,13 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: running_buffer_1x_carboy
+          asset_name: bottle_green
       - when: running_buffer_1x
         output:
-          asset_name: running_buffer_1x_carboy
+          asset_name: bottle_green
       - when: ddh2o
         output:
-          asset_name: running_buffer_1x_carboy
+          asset_name: bottle_green
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=1000)
@@ -39,4 +39,5 @@ capabilities:
   - cursor_attachable
 layout:
   default_width: 4
+  display_width_cm: 18
   label_width: 8

@@ -18,7 +18,6 @@ import { normalizeSchema } from "./normalize_schema.js";
 import { resolveInheritance } from "./resolve_inheritance.js";
 import { scaleToRealWorld } from "./scale_to_real_world.js";
 import { verticalLayout } from "./vertical_layout.js";
-import { WORKSPACE_ROW_LIBRARY } from "./workspace_row_library.js";
 import type {
   AssetSpecs,
   ComputedItem,
@@ -30,7 +29,6 @@ import type {
   PipelineResult,
   ScaledPlacement,
   SceneA,
-  SceneB,
 } from "./types.js";
 
 const FITTABLE_KINDS = new Set([
@@ -39,35 +37,19 @@ const FITTABLE_KINDS = new Set([
   "item_escapes_zone_vertically",
 ]);
 
-export function runPipeline(
-  scene: SceneA | SceneB,
-  opts: Partial<PipelineInputs> = {},
-): PipelineResult {
+export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): PipelineResult {
   const library: ObjectLibrary = opts.library ?? {};
   const assets: AssetSpecs = opts.assets ?? {};
   const baseSceneMap = opts.baseSceneMap ?? {};
   const viewport = opts.viewport ?? DEFAULT_VIEWPORT;
-  const rowLibrary = opts.rowLibrary ?? WORKSPACE_ROW_LIBRARY;
   const workspacePxPerCm = opts.workspacePxPerCm ?? WORKSPACE_PX_PER_CM;
   const maxPasses = opts.maxPasses ?? MAX_LAYOUT_PASSES;
   const shrinkFactor = opts.shrinkFactor ?? LAYOUT_SHRINK_FACTOR;
   const diagnostics: Diagnostics = [];
 
   // Stages 1-5: identity resolution (single-pass)
-  const normalized = normalizeSchema(scene, rowLibrary);
-  for (const t of normalized.trace) {
-    if (t.op === "row_missing") {
-      const d: Diagnostics[number] = {
-        stage: "normalize",
-        severity: "error",
-        kind: "unknown_row",
-      };
-      if (t.row !== undefined) d.row = t.row;
-      if (t.workspace !== undefined) d.workspace = t.workspace;
-      diagnostics.push(d);
-    }
-  }
-  const normalScene = normalized.scene ?? (scene as SceneA);
+  const normalized = normalizeSchema(scene);
+  const normalScene = normalized.scene ?? scene;
   const inheritance = resolveInheritance(normalScene, baseSceneMap);
   const bound = bindObjects(inheritance.placements, library, assets, diagnostics);
   let scaled: ScaledPlacement[] = scaleToRealWorld(

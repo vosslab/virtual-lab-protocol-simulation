@@ -183,12 +183,13 @@ Two invisible anchor rects help position overlays:
 
 ## Color Map
 
-Liquid colors derive from the authored `materials.yaml` `display_color` field
-for each material name. The authored color is the source of truth; the
-runtime resolves a `material_name` (or `held_material_name`) state value to
-its `display_color` through the object's `visual_states`. The canonical
-`materials.yaml` schema lives in this doc (see "Materials YAML schema"
-above); [PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) cites it.
+Both the body tint and the liquid-fill color derive from the authored
+`materials.yaml` `display_color` field for each material name (see "Recolor
+model" below). The authored color is the source of truth; the runtime resolves
+a `material_name` (or `held_material_name`) state value to its `display_color`
+through the object's `visual_states`. The canonical `materials.yaml` schema
+lives in this doc (see "Materials YAML schema" above);
+[PROTOCOL_YAML_FORMAT.md](PROTOCOL_YAML_FORMAT.md) cites it.
 
 For the canonical palette of material hex codes currently used in curriculum
 content, see [../archive/sds_palette_table.md](../archive/sds_palette_table.md).
@@ -249,6 +250,44 @@ vocabulary error: an object whose `visual_states` declares a paired
 `<prefix>material_volume` `fill_height(...)` composite while its paired
 `<prefix>material_name` (or `<prefix>held_material_name`) cases resolve to
 more than one distinct `asset_name` is rejected at validation time.
+
+## Recolor model: one neutral base SVG, tinted by display_color
+
+The single base SVG is authored neutral (clear or uncolored glass and
+liquid region). Material identity is applied by tinting the base art with the
+material's `display_color`, not by shipping one pre-colored SVG per reagent.
+A PBS bottle, a media bottle, and a trypsin bottle are the same neutral base
+asset; the visible color difference is the runtime tint driven by each
+material's `display_color`.
+
+Two distinct render layers carry color, and they are separate concerns:
+
+- **Body tint.** The fillable interior region of the base art is recolored to
+  the resolved material's `display_color`. The body tint is what makes a clear
+  bottle read as "PBS" (blue) or "media" (pink). The tint targets only the
+  liquid interior of the art, never the glassware outline, cap, or label.
+- **Fill height.** The liquid surface rises and falls with
+  `material_volume` (or `held_material_volume`) through the
+  `fill_height(...)` composite, clipped to `anchor_liquid_clip` and anchored
+  to `anchor_liquid_bounds`. Height encodes amount; it never encodes identity.
+
+`display_color` is therefore the sole source of material color for both the
+body tint and the liquid-fill overlay. The protocol YAML and object YAML never
+name a hex color; they name a `material_name`, and the runtime resolves that
+name to its `display_color` (light or dark per the active background) through
+the object's `visual_states`. Because color comes from one authored field,
+adding a new reagent color is a `materials.yaml` edit, not a new SVG.
+
+### Target overlay interface
+
+The runtime composite handler resolves one liquid overlay per fillable region
+from four inputs: the asset identity, the fill level, the resolved color, and
+the base SVG markup. It returns the recolored, clipped overlay composited over
+the base art. The author supplies none of these directly: identity comes from
+the placed object, level from `fill_height(...)`, color from the material's
+`display_color`, and markup from the collapsed base SVG. This interface is the
+same across every kind in "Convention scope" below; a bottle, a pipette, a
+well, and a tank chamber all recolor and fill through one code path.
 
 ## Convention scope
 
@@ -351,6 +390,37 @@ At render time: when `material_name == empty` (default initial state) or
 `display_color` and clipped to that asset's prefixed
 `<asset_name>__anchor_liquid_clip`.
 
+## Current implementation status
+
+This is the one section that carries runtime caveats. The rules above state the
+target design in present tense; the status below records what the live Solid.js
+runtime does today. The live gap tracker is
+[../../assets/SVG_ASSET_GAPS.md](../../assets/SVG_ASSET_GAPS.md); when this
+status and that tracker disagree, the tracker is the current truth.
+
+- **Recolor pipeline: not yet implemented.** The single-neutral-base plus
+  `display_color` body tint and the liquid-fill overlay described above do not
+  run in the Solid.js runtime. The recolor path (and the
+  `anchor_liquid_clip` / `anchor_liquid_bounds` overlay) was lost in the
+  Solid.js rewrite and has not been restored.
+- **Bottles use pre-colored proxy SVGs.** As a stopgap, reagent bottles render
+  from a few pre-colored variant SVGs (pink, orange, green) rather than from one
+  neutral base tinted per material. This is a temporary proxy, not the design.
+- **Blue reagents proxy to green.** No blue bottle variant exists, so blue dyes
+  (for example Coomassie stain and the SDS-PAGE running buffers) proxy to the
+  green variant. Distinct SDS-PAGE buffers therefore render identically until
+  recolor lands.
+- **Per-well and per-chamber overlays not yet rendered.** The well subpart and
+  the electrophoresis-tank chambers depend on the same overlay path and are
+  blocked on the same restoration; `well_plate_96` is quarantined pending it.
+
+Restoring the recolor pipeline (re-adding `anchor_liquid_clip` /
+`anchor_liquid_bounds` to the neutral base SVGs and re-implementing the tint
+plus fill overlay in the Solid.js runtime) is the tracked follow-up that makes
+the rules in this spec live. The vocabulary, validator gate, and base-asset
+shape above are already in place so that restoration is a runtime change, not a
+re-authoring of content.
+
 ## Future Extensions
 
 - **Multichannel pipette**: 8 parallel channels with individual fill rects (not implemented)
@@ -359,7 +429,9 @@ At render time: when `material_name == empty` (default initial state) or
 
 ## Testing
 
-`devel/test_pipette_liquid.mjs` uses Playwright to verify:
+`devel/test_pipette_liquid.mjs` uses Playwright to verify the overlay
+behavior the runtime is expected to provide once the recolor pipeline is
+restored (see "Current implementation status"):
 
 1. Liquid overlay present when pipette is loaded
 2. Overlay color matches the `display_color` for the held `material_name`

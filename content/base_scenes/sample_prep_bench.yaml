@@ -16,71 +16,147 @@ background:
   angle: 180
 
 zones:
+  # Rear shelf band: reagent bottles at top
   - zone_name: rear_left
     bounds:
       left: 5
       right: 30
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear left zone
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear left - reagents
   - zone_name: rear_center
     bounds:
       left: 35
       right: 65
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear center zone
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear center - reagents
   - zone_name: rear_right
     bounds:
       left: 70
       right: 95
-      top: 10
-      bottom: 35
-    align: center
-    label: Rear right zone
+      top: 8
+      bottom: 32
+    baseline: 28
+    align: tab-stops
+    label: Rear right - reagents
+  # Mid working band: racks and tubes staged mid-bench
+  - zone_name: mid_left
+    bounds:
+      left: 5
+      right: 48
+      top: 38
+      bottom: 64
+    baseline: 60
+    align: tab-stops
+    label: Mid bench - left
+  - zone_name: mid_right
+    bounds:
+      left: 52
+      right: 95
+      top: 38
+      bottom: 64
+    baseline: 60
+    align: tab-stops
+    label: Mid bench - right
+  # Front working band: active tools center-stage (named 'center' for inheritors)
   - zone_name: center
     bounds:
-      left: 20
-      right: 80
-      top: 45
-      bottom: 75
-    align: center
+      left: 8
+      right: 84
+      top: 66
+      bottom: 94
+    baseline: 90
+    align: tab-stops
     label: Bench work surface
+  # Right tool area: tip box
   - zone_name: right_tool_area
     bounds:
-      left: 80
-      right: 95
-      top: 55
-      bottom: 80
-    align: center
+      left: 84
+      right: 97
+      top: 66
+      bottom: 94
+    baseline: 90
+    align: tab-stops
     label: Right tool rack
 
 placements:
+  # Rear shelf: SDS-PAGE sample reagents - three zones filled
   - placement_name: rear_left_protein_sample
     object_name: protein_sample_tube
     zone: rear_left
     depth_tier: 1
+    align_stop: left
+  - placement_name: rear_left_protein_ladder
+    object_name: protein_ladder_tube
+    zone: rear_left
+    depth_tier: 1
+    align_stop: right
   - placement_name: rear_center_laemmli
     object_name: laemmli_4x_bottle
     zone: rear_center
     depth_tier: 1
+    align_stop: left
+  - placement_name: rear_center_ddh2o
+    object_name: ddh2o_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
   - placement_name: rear_right_bme
     object_name: bme_bottle
     zone: rear_right
     depth_tier: 1
-  - placement_name: center_eppendorf_rack
+    align_stop: left
+  - placement_name: rear_right_waste
+    object_name: waste_container
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+  # Mid bench left: microtube rack staged for sample loading
+  - placement_name: mid_eppendorf_rack
     object_name: microtube_rack_24
-    zone: center
+    zone: mid_left
+    depth_tier: 1
+    align_stop: center
+  # Mid bench right: gel loading tip box and a microtube
+  - placement_name: mid_p10_tip_box
+    object_name: p10_gel_loading_tip_box
+    zone: mid_right
+    depth_tier: 1
+    align_stop: left
+  - placement_name: mid_microtube_sample
+    object_name: microtube
+    zone: mid_right
     depth_tier: 2
+    align_stop: right
+  # Front working surface: micropipette center, second rack left
   - placement_name: center_micropipette
     object_name: micropipette
     zone: center
     depth_tier: 1
+    align_stop: center
+  - placement_name: center_microtube_rack
+    object_name: microtube_rack_24
+    zone: center
+    depth_tier: 1
+    align_stop: left
+  - placement_name: center_laemmli_working
+    object_name: laemmli_4x_bottle
+    zone: center
+    depth_tier: 1
+    align_stop: right
+  # Right tool area: general tip box
+  - placement_name: right_tool_area_tip_box
+    object_name: micropipette_tip_box
+    zone: right_tool_area
+    depth_tier: 1
+    align_stop: center
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
   zone_gap: 2

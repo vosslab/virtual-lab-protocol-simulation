@@ -12,6 +12,29 @@
     guidance -- bottom-left: current step guidance bar
 ============================================*/
 
+/*============================================
+  Bundled condensed font for scene-object labels.
+  PT Sans Narrow (SIL OFL 1.1). Bundled as woff2 so it renders identically
+  in the headless-Chromium PNG render path and the GitHub Pages browser build;
+  a bare system font name would silently fall back. The build copies
+  assets/fonts/ into dist/assets/fonts/, so the url() resolves relative to
+  dist/style.css. See assets/fonts/ATTRIBUTION.md and assets/fonts/OFL.txt.
+============================================*/
+@font-face {
+  font-family: "PT Sans Narrow";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/pt_sans_narrow_regular.woff2") format("woff2");
+}
+@font-face {
+  font-family: "PT Sans Narrow";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("assets/fonts/pt_sans_narrow_bold.woff2") format("woff2");
+}
+
 .protocol-page-grid {
   display: grid;
   /* Two columns: scene area (flex) + outline (fixed 220px) */

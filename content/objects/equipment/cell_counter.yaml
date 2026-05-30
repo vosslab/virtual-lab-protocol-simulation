@@ -39,13 +39,10 @@ visual_states:
     cases:
       - when: false
         output:
-          asset_name: cell_counter
+          asset_name: cell_counter_instrument
       - when: true
         output:
-          asset_name: cell_counter
-  slide_loaded_overlay:
-    kind: overlay
-    formula: conditional(state(slide_loaded), "Slide loaded", "Empty")
+          asset_name: cell_counter_instrument
   focused:
     kind: overlay
     formula: conditional(state(focused), "Focused", "Focusing...")
@@ -66,4 +63,5 @@ capabilities: [clickable]
 
 layout:
   default_width: 22
+  display_width_cm: 38
   label_width: 14

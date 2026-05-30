@@ -13,23 +13,115 @@ background:
   asset: microscope_view_bg
 
 zones:
+  # Rear shelf left: accessories behind the left of the bench
+  - zone_name: rear_left
+    bounds:
+      left: 5
+      right: 30
+      top: 8
+      bottom: 34
+    baseline: 30
+    align: tab-stops
+    label: Rear left - accessories
+  # Rear shelf right: accessories behind the right of the bench
+  - zone_name: rear_right
+    bounds:
+      left: 70
+      right: 95
+      top: 8
+      bottom: 34
+    baseline: 30
+    align: tab-stops
+    label: Rear right - accessories
+
+  # Left bench: consumables flanking the microscope
+  - zone_name: left_bench
+    bounds:
+      left: 4
+      right: 30
+      top: 40
+      bottom: 92
+    baseline: 86
+    align: tab-stops
+    label: Left bench - consumables
+
+  # Center-stage band: microscope fills canvas vertically
   - zone_name: instrument_area
     bounds:
-      left: 15
-      right: 85
-      top: 20
-      bottom: 70
+      left: 31
+      right: 71
+      top: 18
+      bottom: 92
+    baseline: 88
     align: center
     label: Microscope viewing area
 
+  # Right bench: slides and reagents flanking the microscope
+  - zone_name: right_bench
+    bounds:
+      left: 72
+      right: 97
+      top: 40
+      bottom: 92
+    baseline: 86
+    align: tab-stops
+    label: Right bench - slides and reagents
+
 placements:
+  # Primary instrument - center stage
   - placement_name: main_microscope
     object_name: microscope
     zone: instrument_area
+    depth_tier: 2
+    align_stop: center
+
+  # Rear left: tip box and slide cartridge behind the left bench
+  - placement_name: rear_tip_box
+    object_name: micropipette_tip_box
+    zone: rear_left
     depth_tier: 1
+    align_stop: left
+
+  - placement_name: rear_slide_cartridge
+    object_name: counter_slide_cartridge
+    zone: rear_left
+    depth_tier: 1
+    align_stop: right
+
+  # Rear right: ethanol bottle behind the right bench
+  - placement_name: rear_ethanol_bottle
+    object_name: ethanol_bottle
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+
+  # Left bench: microtube rack staged for slide prep, microtube in front
+  - placement_name: left_microtube_rack
+    object_name: microtube_rack_24
+    zone: left_bench
+    depth_tier: 1
+    align_stop: left
+
+  - placement_name: left_cell_suspension
+    object_name: cell_suspension_tube
+    zone: left_bench
+    depth_tier: 2
+    align_stop: right
+
+  # Right bench: hemocytometer slide and a microtube sample
+  - placement_name: right_hemocytometer_slide
+    object_name: hemocytometer_slide
+    zone: right_bench
+    depth_tier: 1
+    align_stop: left
+
+  - placement_name: right_microtube
+    object_name: microtube
+    zone: right_bench
+    depth_tier: 2
+    align_stop: right
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
   zone_gap: 2

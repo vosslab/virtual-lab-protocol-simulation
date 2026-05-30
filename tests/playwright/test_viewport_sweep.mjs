@@ -23,7 +23,6 @@ const ARTIFACT_DIR = path.join(REPO_ROOT, "tests/playwright/artifacts");
 // Scenes to test (all 6 D4 scenes)
 const SCENES_TO_TEST = [
   "bench_basic",
-  "bench_basic_row_slot",
   "sample_prep_bench",
   "staining_bench",
   "cell_counter_basic",

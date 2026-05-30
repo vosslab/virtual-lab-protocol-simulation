@@ -69,6 +69,7 @@ capabilities:
 
 layout:
   default_width: 3
+  display_width_cm: 3
   label_width: 6
   anchor_y: tip
   anchor_y_offset: 0

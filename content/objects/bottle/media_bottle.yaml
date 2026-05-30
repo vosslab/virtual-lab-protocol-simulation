@@ -35,14 +35,15 @@ visual_states:
     cases:
       - when: empty
         output:
-          asset_name: bottle
+          asset_name: bottle_pink
       - when: media
         output:
-          asset_name: bottle
+          asset_name: bottle_pink
 capabilities:
   - clickable
   - material_container
   - cursor_attachable
 layout:
   default_width: 3
+  display_width_cm: 12
   label_width: 4

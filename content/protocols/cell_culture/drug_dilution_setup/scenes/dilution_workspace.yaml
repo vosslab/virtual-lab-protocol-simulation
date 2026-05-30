@@ -1,58 +1,63 @@
 scene_name: dilution_workspace
 extends: bench_basic
 
+scene_notes: |
+  Dilution workspace for drug_dilution_setup. Shows carboplatin and metformin
+  stock bottles at rear left, intermediate tubes at rear center, sterile water
+  at rear right, and the serial dilution rack at center. Micropipette and label
+  pen are at right tool area.
+
+remove_placements:
+  - rear_left_media_bottle
+  - rear_center_pbs
+  - rear_right_heat_block
+
 add_placements:
-  # Carboplatin stock (master)
+  # Carboplatin stock bottle at rear left
   - placement_name: carb_stock
     object_name: carboplatin_stock_bottle
     zone: rear_left
     depth_tier: 1
+    align_stop: right
 
-  # Metformin stock (master)
+  # Metformin stock at rear center (left stop)
   - placement_name: met_stock
     object_name: metformin_stock_bottle
-    zone: rear_left
-    depth_tier: 2
+    zone: rear_center
+    depth_tier: 1
+    align_stop: left
 
-  # Carboplatin intermediate tube (microtube)
+  # Carboplatin intermediate tube at rear center (center stop)
   - placement_name: carb_intermediate
     object_name: microtube_15ml_intermediate
     zone: rear_center
-    depth_tier: 1
+    depth_tier: 2
+    align_stop: center
 
-  # Metformin working stock tube
+  # Sterile water bottle at rear right (left stop) for dilutions
+  - placement_name: water_source
+    object_name: sterile_water_bottle
+    zone: rear_right
+    depth_tier: 1
+    align_stop: left
+
+  # Metformin working stock tube at rear right (right stop)
   - placement_name: met_working_tube
     object_name: metformin_working_tube
     zone: rear_right
-    depth_tier: 1
+    depth_tier: 2
+    align_stop: right
 
-  # Serial dilution rack with 8 tubes for carboplatin working stocks
+  # Serial dilution rack in center -- the main work area
   - placement_name: dilution_rack
     object_name: dilution_tube_rack_8
     zone: center
     depth_tier: 1
+    align_stop: left
 
-  # Sterile water bottle (diluent source)
-  - placement_name: water_source
-    object_name: sterile_water_bottle
-    zone: rear_left
-    depth_tier: 3
-
-  # Media bottle (alternative diluent)
-  - placement_name: media_source
-    object_name: media_bottle
-    zone: rear_center
-    depth_tier: 2
-
-  # Micropipette for volume transfers
-  - placement_name: pipette_tool
-    object_name: micropipette
-    zone: right_tool_area
-    depth_tier: 1
-
-  # Vortex mixer (already in bench_basic)
-  # Label pen
+  # Label pen at right tool area (center)
   - placement_name: labeling_tool
     object_name: label_pen
     zone: right_tool_area
-    depth_tier: 2
+    depth_tier: 1
+    align_stop: center

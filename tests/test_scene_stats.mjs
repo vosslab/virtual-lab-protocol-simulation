@@ -266,6 +266,70 @@ test("tiny items are counted by area threshold", () => {
 });
 
 //============================================
+// Label collision counts
+//============================================
+
+test("two overlapping labels count one label-overlap pair", () => {
+  const manifestEntry = makeManifestEntry("label_scene", ["a"]);
+  const renderedItems = [makeItem("a", { bbox: { x: 0, y: 0, width: 5, height: 5 } })];
+  // Two label boxes that overlap each other.
+  const labels = [
+    { bbox: { x: 40, y: 40, width: 20, height: 10 }, text: "one", labelFor: null },
+    { bbox: { x: 50, y: 42, width: 20, height: 10 }, text: "two", labelFor: null },
+  ];
+  const stats = computeSceneStats({
+    sceneName: "label_scene",
+    manifestEntry,
+    renderedItems,
+    labels,
+    sceneRootBbox: SCENE_ROOT,
+  });
+  assert.equal(stats.layout.label_overlap_pair_count, 1);
+});
+
+test("disjoint labels count zero label-overlap pairs", () => {
+  const manifestEntry = makeManifestEntry("label_scene", ["a"]);
+  const renderedItems = [makeItem("a", { bbox: { x: 0, y: 0, width: 5, height: 5 } })];
+  // Two label boxes that do not overlap.
+  const labels = [
+    { bbox: { x: 10, y: 10, width: 10, height: 10 }, text: "one", labelFor: null },
+    { bbox: { x: 60, y: 60, width: 10, height: 10 }, text: "two", labelFor: null },
+  ];
+  const stats = computeSceneStats({
+    sceneName: "label_scene",
+    manifestEntry,
+    renderedItems,
+    labels,
+    sceneRootBbox: SCENE_ROOT,
+  });
+  assert.equal(stats.layout.label_overlap_pair_count, 0);
+});
+
+test("label over its own item is not a label-art overlap, over another item is", () => {
+  const manifestEntry = makeManifestEntry("label_scene", ["own", "other"]);
+  const renderedItems = [
+    makeItem("own", { bbox: { x: 0, y: 0, width: 20, height: 20 } }),
+    makeItem("other", { bbox: { x: 50, y: 50, width: 20, height: 20 } }),
+  ];
+  // labelOwn sits over its own item ("own") -> excluded. It also overlaps the
+  // "other" item -> that one DOES count. labelOther sits only over "other",
+  // which it owns -> excluded.
+  const labels = [
+    { bbox: { x: 5, y: 5, width: 60, height: 60 }, text: "own", labelFor: "own" },
+    { bbox: { x: 52, y: 52, width: 5, height: 5 }, text: "other", labelFor: "other" },
+  ];
+  const stats = computeSceneStats({
+    sceneName: "label_scene",
+    manifestEntry,
+    renderedItems,
+    labels,
+    sceneRootBbox: SCENE_ROOT,
+  });
+  // labelOwn vs "other" item is the only counted collision.
+  assert.equal(stats.layout.label_art_overlap_count, 1);
+});
+
+//============================================
 // Structured output shape
 //============================================
 

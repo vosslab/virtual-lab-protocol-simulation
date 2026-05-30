@@ -21,7 +21,7 @@ visual_states:
     kind: svg
     cases:
       - when: carboplatin
-        output: { asset_name: bottle }
+        output: { asset_name: bottle_pink }
   material_volume:
     kind: composite
     formula: fill_height(state(material_volume), capacity_ml=50)
@@ -30,4 +30,5 @@ capabilities: [clickable, material_container, cursor_attachable]
 
 layout:
   default_width: 3
+  display_width_cm: 8
   label_width: 8

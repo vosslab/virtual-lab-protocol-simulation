@@ -41,7 +41,7 @@ visual_states:
       - when: false
         output: { asset_name: rocking_shaker_idle }
       - when: true
-        output: { asset_name: rocking_shaker_running }
+        output: { asset_name: rocking_shaker_idle }
   tray_present:
     kind: composite
     composite: []
@@ -50,4 +50,5 @@ capabilities: [clickable, instrument_with_setpoint]
 
 layout:
   default_width: 7.5
+  display_width_cm: 28
   label_width: 14

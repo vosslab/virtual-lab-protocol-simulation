@@ -51,6 +51,38 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
 const MANIFEST_PATH = path.join(REPO_ROOT, "generated", "scene_manifest.json");
+const SVG_REGISTRY_PATH = path.join(REPO_ROOT, "generated", "svg_registry.ts");
+
+//============================================
+// Placeholder-asset key set
+//============================================
+
+// Reads the SVG_PLACEHOLDER_KEYS array out of the generated svg_registry.ts
+// module. The generated file is TypeScript, so rather than pull in a TS loader
+// just for this tool, parse the single string-array literal directly. Returns
+// a Set of asset keys whose registry markup is a dashed-box placeholder.
+function read_placeholder_keys() {
+  if (!fs.existsSync(SVG_REGISTRY_PATH)) {
+    throw new Error(
+      `SVG registry not found: ${SVG_REGISTRY_PATH}\nRun: bash pipeline/build_generated.sh`,
+    );
+  }
+  const text = fs.readFileSync(SVG_REGISTRY_PATH, "utf8");
+  const blockMatch = text.match(/SVG_PLACEHOLDER_KEYS[^=]*=\s*\[([\s\S]*?)\]/);
+  if (!blockMatch) {
+    throw new Error(
+      `SVG_PLACEHOLDER_KEYS export missing from ${SVG_REGISTRY_PATH}. ` +
+        "Regenerate with pipeline/gen_svg_registry.py.",
+    );
+  }
+  const keys = [];
+  const keyRegex = /"([^"]+)"/g;
+  let m;
+  while ((m = keyRegex.exec(blockMatch[1])) !== null) {
+    keys.push(m[1]);
+  }
+  return new Set(keys);
+}
 
 //============================================
 // Timing constants
@@ -78,6 +110,7 @@ const MIME_MAP = {
   ".png": "image/png",
   ".svg": "image/svg+xml",
   ".json": "application/json",
+  ".woff2": "font/woff2",
 };
 
 //============================================
@@ -219,8 +252,9 @@ async function check_playwright_installed() {
 
 // Collects all [data-placement-name] elements from the page.
 // Returns an array matching the renderedItems shape scene_stats.mjs expects.
-async function collect_rendered_items(page) {
-  return page.evaluate(() => {
+async function collect_rendered_items(page, placeholderKeys) {
+  return page.evaluate((placeholderKeyList) => {
+    const placeholderKeySet = new Set(placeholderKeyList);
     const els = Array.from(document.querySelectorAll("[data-placement-name]"));
     return els.map((el) => {
       const rect = el.getBoundingClientRect();
@@ -237,8 +271,17 @@ async function collect_rendered_items(page) {
       const placeholderKindAttr = el.getAttribute("data-placeholder-kind");
       const hasMissingSvgAttr = el.hasAttribute("data-missing-svg");
       const hasSvg = el.querySelector("svg") !== null;
-      // A placeholder is any element flagged by either attribute, or with no SVG.
-      const isPlaceholder = placeholderKindAttr !== null || hasMissingSvgAttr || !hasSvg;
+      // A dashed-box placeholder ASSET resolves in the registry and injects
+      // real SVG markup, so the missing-svg/missing-object checks above never
+      // flag it. Detect it here by looking the rendered asset key up against
+      // the placeholder-key set from the generated registry. The eye sees a
+      // dashed stand-in; the metric must agree.
+      const assetKey = el.getAttribute("data-asset");
+      const isPlaceholderAsset = assetKey !== null && placeholderKeySet.has(assetKey);
+      // A placeholder is any element flagged by either attribute, with no SVG,
+      // or resolved through a placeholder asset.
+      const isPlaceholder =
+        placeholderKindAttr !== null || hasMissingSvgAttr || !hasSvg || isPlaceholderAsset;
       let placeholderKind = null;
       if (isPlaceholder) {
         if (placeholderKindAttr !== null) {
@@ -246,9 +289,26 @@ async function collect_rendered_items(page) {
         } else if (hasMissingSvgAttr) {
           // Back-compat fallback: only the legacy data-missing-svg flag present.
           placeholderKind = "missing-svg";
+        } else if (isPlaceholderAsset) {
+          // Resolved asset whose art is a dashed-box stand-in.
+          placeholderKind = "placeholder-art";
         } else {
           placeholderKind = "missing-object";
         }
+      }
+
+      // Visual bbox: the rect of the actual drawn SVG asset inside the item div.
+      // The item div is the placement box; the inner <svg> is the visual box
+      // (object-fit:contain may letterbox inside the div). When no SVG is
+      // present (placeholder), the visual box falls back to the div rect.
+      const svgEl = el.querySelector("svg");
+      let visualBbox = bbox;
+      if (svgEl) {
+        const svgRect = svgEl.getBoundingClientRect();
+        visualBbox =
+          svgRect.width > 0 || svgRect.height > 0
+            ? { x: svgRect.x, y: svgRect.y, width: svgRect.width, height: svgRect.height }
+            : bbox;
       }
 
       return {
@@ -258,11 +318,12 @@ async function collect_rendered_items(page) {
         kind: el.getAttribute("data-kind") ?? null,
         depth: el.hasAttribute("data-depth") ? Number(el.getAttribute("data-depth")) : null,
         bbox,
+        visualBbox,
         isPlaceholder,
         placeholderKind,
       };
     });
-  });
+  }, Array.from(placeholderKeys));
 }
 
 // Collects [data-label] elements.
@@ -279,8 +340,18 @@ async function collect_labels(page) {
       return {
         bbox,
         text: el.textContent ?? "",
+        // data-label-for ties a label to the placement it labels (render_label.ts).
+        labelFor: el.getAttribute("data-label-for") ?? null,
       };
     });
+  });
+}
+
+// Reads the pipeline-truth geometry summary the viewer stashed on window.
+// Returns null when absent (e.g. load-failed or non-viewer page).
+async function collect_scene_geometry(page) {
+  return page.evaluate(() => {
+    return window.__SCENE_GEOMETRY__ ?? null;
   });
 }
 
@@ -294,13 +365,56 @@ async function collect_scene_root_bbox(page) {
   });
 }
 
+// Computes an integer-pixel screenshot clip rect from the scene-root bbox,
+// clamped to the viewport. Playwright rejects a clip that exceeds the page,
+// so we round to whole pixels and clamp x/y/width/height inside the viewport.
+// Returns null when the bbox is missing or has no positive area (caller falls
+// back to a full-viewport screenshot).
+function compute_scene_clip(scene_root_bbox, viewport_size) {
+  if (!scene_root_bbox) return null;
+  if (!viewport_size) return null;
+
+  const vp_w = viewport_size.width;
+  const vp_h = viewport_size.height;
+
+  // Round the origin down and the far edges so the rect stays whole-pixel
+  // and never extends past where the content actually is.
+  let x = Math.floor(scene_root_bbox.x);
+  let y = Math.floor(scene_root_bbox.y);
+  const right = Math.ceil(scene_root_bbox.x + scene_root_bbox.width);
+  const bottom = Math.ceil(scene_root_bbox.y + scene_root_bbox.height);
+
+  // Clamp the origin into the viewport.
+  if (x < 0) x = 0;
+  if (y < 0) y = 0;
+
+  // Clamp the far edges into the viewport, then derive width/height.
+  const clamped_right = Math.min(right, vp_w);
+  const clamped_bottom = Math.min(bottom, vp_h);
+  const width = clamped_right - x;
+  const height = clamped_bottom - y;
+
+  // Reject degenerate rects (zero/negative area).
+  if (width <= 0 || height <= 0) return null;
+
+  return { x, y, width, height };
+}
+
 //============================================
 // Render one scene: load, wait for ready, capture, compute stats
 //============================================
 
 // Renders one scene. Returns a result object.
 // page is reused across calls; out_dir is the directory for outputs.
-async function render_scene(page, base_url, scene_name, manifest_entry, out_dir, missing_svg_mode) {
+async function render_scene(
+  page,
+  base_url,
+  scene_name,
+  manifest_entry,
+  out_dir,
+  missing_svg_mode,
+  placeholder_keys,
+) {
   const t_start = Date.now();
 
   const url = `${base_url}/scene_viewer.html?scene=${encodeURIComponent(scene_name)}`;
@@ -345,11 +459,13 @@ async function render_scene(page, base_url, scene_name, manifest_entry, out_dir,
   let rendered_items = [];
   let labels = [];
   let scene_root_bbox = null;
+  let scene_geometry = null;
 
   if (!load_failed) {
-    rendered_items = await collect_rendered_items(page);
+    rendered_items = await collect_rendered_items(page, placeholder_keys);
     labels = await collect_labels(page);
     scene_root_bbox = await collect_scene_root_bbox(page);
+    scene_geometry = await collect_scene_geometry(page);
   }
 
   // Compute stats using the shared module.
@@ -359,6 +475,7 @@ async function render_scene(page, base_url, scene_name, manifest_entry, out_dir,
     renderedItems: rendered_items,
     labels,
     sceneRootBbox: scene_root_bbox,
+    sceneGeometry: scene_geometry,
     loadFailed: load_failed,
   });
 
@@ -371,7 +488,19 @@ async function render_scene(page, base_url, scene_name, manifest_entry, out_dir,
   // Save the PNG.
   fs.mkdirSync(out_dir, { recursive: true });
   const png_path = path.join(out_dir, `${scene_name}.png`);
-  await page.screenshot({ path: png_path, fullPage: false });
+  // Clip the screenshot to the #scene-root content so non-16:9 scenes do not
+  // letterbox. Without this, the scene (and its proportional labels) occupies
+  // only part of the 1920px-wide PNG and reads as tiny with empty margins.
+  // This is a pure image-export crop; it does not touch the stats/geometry math.
+  const clip_rect = compute_scene_clip(scene_root_bbox, page.viewportSize());
+  if (clip_rect) {
+    await page.screenshot({ path: png_path, clip: clip_rect });
+  } else {
+    // Bbox missing or unusable (load-failed, zero-size). Fall back to the full
+    // viewport so we still emit a PNG, and warn so the cause is visible.
+    console.warn(`  warning: ${scene_name} scene-root bbox unusable; capturing full viewport`);
+    await page.screenshot({ path: png_path, fullPage: false });
+  }
 
   // Save the stats JSON alongside the PNG.
   const stats_path = path.join(out_dir, `${scene_name}.stats.json`);
@@ -484,6 +613,8 @@ async function run_single(args) {
 
   await check_playwright_installed();
 
+  const placeholder_keys = read_placeholder_keys();
+
   const server = await start_server(DIST_DIR);
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: args.viewport });
@@ -497,6 +628,7 @@ async function run_single(args) {
       manifest_entry,
       out_dir,
       args.missing_svg,
+      placeholder_keys,
     );
 
     // If a specific --out path was given, move the PNG there.
@@ -532,6 +664,8 @@ async function run_all(args) {
 
   await check_playwright_installed();
 
+  const placeholder_keys = read_placeholder_keys();
+
   const server = await start_server(DIST_DIR);
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage({ viewport: args.viewport });
@@ -552,6 +686,7 @@ async function run_all(args) {
           render_yield_percent: undefined,
           real_item_count: undefined,
           placeholder_item_count: undefined,
+          placeholder_count: undefined,
           percent_empty_approx: undefined,
           overlap_pair_count: undefined,
           advisory_flags: [],
@@ -573,6 +708,7 @@ async function run_all(args) {
           entry,
           out_dir,
           args.missing_svg,
+          placeholder_keys,
         );
       } catch (err) {
         // Continue past a failing render -- record load-failed row.
@@ -585,6 +721,7 @@ async function run_all(args) {
           render_yield_percent: 0,
           real_item_count: 0,
           placeholder_item_count: 0,
+          placeholder_count: 0,
           percent_empty_approx: 100,
           overlap_pair_count: 0,
           advisory_flags: [],
@@ -603,8 +740,11 @@ async function run_all(args) {
         render_yield_percent: stats.counts.render_yield_percent,
         real_item_count: stats.counts.real_item_count,
         placeholder_item_count: stats.counts.placeholder_item_count,
+        placeholder_count: stats.counts.placeholder_item_count,
         percent_empty_approx: stats.layout.percent_empty_approx,
         overlap_pair_count: stats.layout.overlap_pair_count,
+        label_overlap_pair_count: stats.layout.label_overlap_pair_count,
+        label_art_overlap_count: stats.layout.label_art_overlap_count,
         advisory_flags: stats.flags.advisory_flags,
         elapsed_ms: result.elapsed_ms,
         reason: null,

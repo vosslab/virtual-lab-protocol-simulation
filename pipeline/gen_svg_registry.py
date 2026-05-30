@@ -53,6 +53,7 @@ def main():
 	print(f"Found {len(svg_files)} SVG files under {assets_dir}")
 
 	registry = {}
+	placeholder_keys = set()
 	failed_files = []
 
 	for svg_path in svg_files:
@@ -88,6 +89,15 @@ def main():
 
 		registry[key] = svg_str
 
+		# Flag dashed-box placeholder assets. A placeholder is a stand-in SVG
+		# whose body is the dashed-box-plus-label convention (CSS classes
+		# placeholder-border and placeholder-text). These resolve in the
+		# registry like real art, so without an explicit flag the render-yield
+		# and occupancy metrics treat them as populated content. Marking them
+		# here lets the stats tools exclude placeholder-resolved objects.
+		if _is_placeholder_svg(svg_str):
+			placeholder_keys.add(key)
+
 	# If there are failures, report and exit non-zero
 	if failed_files:
 		print("\nVALIDATION FAILURES:", file=sys.stderr)
@@ -114,11 +124,16 @@ def main():
 		for key in sorted(dropped):
 			print(f"  - {key}")
 
+	# Restrict the placeholder-key set to shipped keys (orphans are dropped).
+	shipped_placeholders = {k for k in placeholder_keys if k in shipped}
+
 	# Emit TS module
 	output_file = os.path.join(generated_dir, "svg_registry.ts")
-	_emit_ts_registry(output_file, shipped)
+	_emit_ts_registry(output_file, shipped, shipped_placeholders)
 
 	print(f"\nGenerated {len(shipped)} SVG entries into {output_file}")
+	print(f"Flagged {len(shipped_placeholders)} placeholder asset(s): "
+		+ ", ".join(sorted(shipped_placeholders)))
 	print("Exit code: 0")
 
 
@@ -160,32 +175,134 @@ def _scan_referenced_keys(repo_root: str, candidate_keys: set) -> set:
 	return referenced
 
 
+def _is_placeholder_svg(svg_str: str) -> bool:
+	"""Return True when the SVG markup is a dashed-box placeholder stand-in.
+
+	The placeholder convention is a dashed rectangle plus a centered label,
+	styled by the CSS classes placeholder-border and placeholder-text. Both
+	class markers must be present so a real asset that happens to use one of
+	the words is not mis-flagged.
+
+	Args:
+		svg_str: sanitized SVG markup string.
+
+	Returns:
+		True if the markup uses the placeholder-border and placeholder-text
+		class convention, False otherwise.
+	"""
+	has_border = "placeholder-border" in svg_str
+	has_text = "placeholder-text" in svg_str
+	return has_border and has_text
+
+
 def _strip_unsafe_attrs(elem):
-	"""Recursively strip attributes that could be sanitization risks."""
-	# Attributes that are safe to keep: standard SVG/XML attributes
+	"""Recursively strip attributes that could be sanitization risks.
+
+	The safe_attrs set uses both bare names (e.g. 'xlink:href') and
+	ET-internal namespace-expanded forms (e.g. '{http://...}href') because
+	xml.etree.ElementTree stores namespace-prefixed attributes using the
+	Clark-notation expanded form internally. Without both forms, namespace-
+	qualified attributes like xlink:href are silently dropped at serialization.
+
+	Attributes stripped (not safe): event handlers (onclick, onload, etc.),
+	javascript: href values, and any attribute not in the allow list. The
+	validator (svg_validate.py) already rejects files with event handlers and
+	script content; this strip is a defense-in-depth pass.
+	"""
+	# Namespace expansions used by Python xml.etree.ElementTree internally.
+	XLINK_NS = "http://www.w3.org/1999/xlink"
+
+	# Attributes that are safe to keep: standard SVG/XML attributes.
+	# Include both bare form and ET-internal namespace-expanded form so that
+	# xlink:href and similar namespace-qualified attributes survive round-trip.
 	safe_attrs = {
+		# --- identity and namespace declarations ---
 		"xmlns",
 		"version",
+		# --- presentation and layout ---
 		"viewBox",
 		"preserveAspectRatio",
 		"width",
 		"height",
 		"x",
 		"y",
+		"x1",
+		"y1",
+		"x2",
+		"y2",
 		"cx",
 		"cy",
 		"r",
+		"rx",
+		"ry",
 		"d",
+		"points",
+		"pathLength",
+		# --- paint ---
 		"fill",
 		"stroke",
 		"stroke-width",
 		"stroke-linecap",
 		"stroke-linejoin",
+		"stroke-miterlimit",
+		"stroke-dasharray",
+		"stroke-dashoffset",
 		"fill-opacity",
 		"stroke-opacity",
 		"fill-rule",
 		"clip-path",
 		"clip-rule",
+		"color",
+		"color-interpolation-filters",
+		# --- filter and gradient ---
+		"gradientUnits",
+		"gradientTransform",
+		"patternUnits",
+		"patternTransform",
+		"spreadMethod",
+		"offset",
+		"stop-color",
+		"stop-opacity",
+		"filterUnits",
+		"primitiveUnits",
+		"result",
+		"in",
+		"in2",
+		"type",
+		"values",
+		"stdDeviation",
+		"dx",
+		"dy",
+		"k1",
+		"k2",
+		"k3",
+		"k4",
+		"operator",
+		"edgeMode",
+		"flood-color",
+		"flood-opacity",
+		"lighting-color",
+		# --- markers and text ---
+		"marker-start",
+		"marker-mid",
+		"marker-end",
+		"markerWidth",
+		"markerHeight",
+		"markerUnits",
+		"refX",
+		"refY",
+		"orient",
+		"font-size",
+		"font-family",
+		"font-weight",
+		"font-style",
+		"text-anchor",
+		"dominant-baseline",
+		"letter-spacing",
+		"word-spacing",
+		"textLength",
+		"lengthAdjust",
+		# --- structural ---
 		"id",
 		"class",
 		"style",
@@ -193,12 +310,28 @@ def _strip_unsafe_attrs(elem):
 		"opacity",
 		"visibility",
 		"display",
+		"overflow",
+		"clip",
+		"clip-path",
+		"mask",
+		"enable-background",
+		"shape-rendering",
+		"image-rendering",
+		"text-rendering",
+		"color-rendering",
+		# --- linking (bare form, used when no namespace prefix registered) ---
 		"href",
 		"xlink:href",
+		# --- ET-internal Clark-notation expanded form for xlink:href.
+		#     Python's ET stores 'xlink:href' as '{ns}href' internally;
+		#     without this entry the attribute is treated as unsafe and stripped. ---
+		"{%s}href" % XLINK_NS,
+		# --- repo-specific data attributes ---
 		"data-item-id",
 		"data-well-id",
 		"data-tube-id",
 		"data-plate-id",
+		"data-name",
 	}
 
 	# Remove attributes not in safe list
@@ -210,11 +343,18 @@ def _strip_unsafe_attrs(elem):
 		_strip_unsafe_attrs(child)
 
 
-def _emit_ts_registry(output_file: str, registry: dict):
-	"""Emit registry as TypeScript module."""
+def _emit_ts_registry(output_file: str, registry: dict, placeholder_keys: set):
+	"""Emit registry as TypeScript module.
+
+	Emits two exports: SVG_REGISTRY maps each asset key to its sanitized
+	markup string, and SVG_PLACEHOLDER_KEYS lists the keys whose markup is a
+	dashed-box placeholder stand-in. A separate placeholder export keeps the
+	string-valued registry shape that existing consumers expect, while letting
+	stats tools and the runtime ask whether a resolved asset is real art.
+	"""
 	lines = []
 	lines.append("// Auto-generated SVG registry. Do not edit.")
-	lines.append("// Generated by tools/gen_svg_registry.py")
+	lines.append("// Generated by pipeline/gen_svg_registry.py")
 	lines.append("")
 	lines.append("export const SVG_REGISTRY: Record<string, string> = {")
 
@@ -225,6 +365,14 @@ def _emit_ts_registry(output_file: str, registry: dict):
 		lines.append(f'  "{key}": "{escaped}",')
 
 	lines.append("};")
+	lines.append("")
+	# Placeholder keys: assets that resolve in the registry but are dashed-box
+	# stand-ins, not real scientific art. Stats and render code use this set to
+	# avoid counting placeholders as populated content.
+	lines.append("export const SVG_PLACEHOLDER_KEYS: ReadonlyArray<string> = [")
+	for key in sorted(placeholder_keys):
+		lines.append(f'  "{key}",')
+	lines.append("];")
 	lines.append("")
 
 	with open(output_file, "w") as f:

@@ -39,26 +39,20 @@ These values are tuned so that:
 2. The value is compiled into object metadata in `generated/object_data.ts`
    (gitignored; consumed via the runtime object registry).
 
-3. Scene YAML under `content/base_scenes/<base_scene_name>.yaml` (bench and hood)
-   together with the layout engine compute `width_scale` from `display_width_cm`:
-
-   ```typescript
-   width_scale = compute_width_scale_from_display(
-     display_width_cm,
-     scene,
-     default_width,
-   );
-   ```
+3. The layout engine computes an internal `_width_scale` from `display_width_cm`
+   during the scale stage (`src/scene_runtime/layout/scale_to_real_world.ts`).
+   `_width_scale` is a pipeline-computed quantity (underscore-prefixed). It is
+   never authored in YAML; there is no authored `width_scale` field.
 
 4. The formula:
 
    ```
-   width_scale = (display_width_cm * px_per_cm) / (default_width * px_per_scene_percent)
+   _width_scale = (display_width_cm * px_per_cm) / (default_width * px_per_scene_percent)
    ```
 
    where `px_per_scene_percent = 11.52` (empirical: 1280px viewport, 90% usable = 1152px)
 
-5. Layout engine uses `width_scale` to render objects at the computed size
+5. Layout engine uses `_width_scale` to render objects at the computed size
 
 ## Adding a new object
 
@@ -86,20 +80,12 @@ These values are tuned so that:
 
 ## Current fallback behavior
 
-Objects **without** `layout.display_width_cm` fall back to hardcoded `width_scale` values in scene configs:
-
-```typescript
-const legacy_scales: Record<string, number> = {
-  tip_box: 0.8,
-  // ... other objects
-};
-```
-
-To migrate an object to `layout.display_width_cm`:
-
-1. Add `layout.display_width_cm` to `content/objects/<kind>/<object_name>.yaml`
-2. Remove the object from `legacy_scales`
-3. Verify layout with tests
+Objects **without** `layout.display_width_cm`, or scenes without a known
+workspace `px_per_cm`, fall back to a neutral internal `_width_scale` of `1.0`
+(scale source `fallback_authored` or `fallback_no_workspace`). There is no
+authored `width_scale` field to supply a custom fallback; size comes from the
+object-level `display_width_cm`. The fix for a mis-sized object is to set its
+`display_width_cm`, not to add an override.
 
 ## Tuning display_cm values
 
@@ -123,24 +109,11 @@ Start with rough proportions relative to real-world sizes, then exaggerate for v
 
 Larger items are exaggerated more than smaller items to maintain visibility.
 
-## Optional fudge factor
+## No override escape hatches
 
-For visual tweaks on specific items, add `fudge`:
-
-```yaml
-my_instrument:
-  display_width_cm: 45
-  fudge: 1.1 # 10% larger than computed
-```
-
-This multiplies the final `width_scale`: `width_scale *= (fudge ?? 1.0)`
-
-Use sparingly for final layout adjustments.
-
-## Compatibility notes for layout scaling
-
-The layout engine is unchanged. All scaling happens at the scene config level via `width_scale` computation. This ensures:
-
-- Items without `display_width_cm` continue to work with their hardcoded `width_scale`
-- No changes needed to `layout_engine.ts`
-- The layout metrics test should continue to pass
+There is no per-placement size override. The removed `fudge` multiplier and the
+authored `width_scale` field were escape hatches and have been deleted from the
+schema, the generator, and the layout engine (vocabulary closure:
+PRIMARY_DESIGN.md). Object size has exactly one source: the object-level
+`display_width_cm` scaled by the workspace `px_per_cm`. To resize an object,
+change its `display_width_cm`.

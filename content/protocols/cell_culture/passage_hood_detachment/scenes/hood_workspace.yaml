@@ -2,31 +2,41 @@ scene_name: passage_hood_detachment_hood_workspace
 extends: hood_basic
 
 add_placements:
+  # T75 flask in the center working area (left of center)
   - placement_name: center_flask
     object_name: t75_flask
     zone: center
     depth_tier: 1
+    align_stop: left
 
+  # Protocol-specific reagent bottles: PBS (rear_left, left of ethanol)
   - placement_name: rear_left_pbs
     object_name: pbs_bottle
     zone: rear_left
     depth_tier: 0
+    align_stop: center
 
+  # Trypsin bottle (bottle_pink; trypsin with phenol red reads pink)
   - placement_name: rear_center_trypsin
     object_name: trypsin_bottle
     zone: rear_center
     depth_tier: 0
+    align_stop: left
 
+  # Media bottle in rear_right (protocol-specific, left of base items)
   - placement_name: rear_right_media
     object_name: media_bottle
     zone: rear_right
     depth_tier: 0
+    align_stop: center
 
 reposition_placements:
+  # Keep ethanol in rear_left for sterilization step
   - placement_name: rear_left_ethanol
     zone: rear_left
     depth_tier: 1
 
+  # Hood surface stays center
   - placement_name: center_hood_surface
     zone: center
     depth_tier: 2

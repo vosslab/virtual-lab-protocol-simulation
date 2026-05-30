@@ -386,9 +386,18 @@ class StateMap:
 			registry_hits = self._scenes_registry.get(object_name_part, [])
 
 			if len(registry_hits) == 0:
-				# No match in active scene or registry
+				# No match in active scene or registry.
+				# TEMPORARY "for now" deferral: well_plate_96 per-well overlay
+				# targets are deferred until the Solid.js runtime supports them.
+				# See assets/SVG_ASSET_GAPS.md. Demote ONLY well_plate_96 targets
+				# to WARNING; every other unresolved target stays ERROR (may be a
+				# real bug). Reversible when the per-well overlay work lands.
+				unresolved_level = (
+					Level.WARNING if object_name_part == 'well_plate_96'
+					else Level.ERROR
+				)
 				self.emitter.emit_finding(Finding(
-					level=Level.ERROR,
+					level=unresolved_level,
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,

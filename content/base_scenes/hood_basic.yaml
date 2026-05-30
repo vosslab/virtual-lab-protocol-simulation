@@ -15,70 +15,120 @@ background:
   angle: 180
 
 zones:
+  # Rear shelf band (~top 8-36%): reagent bottles and context items
   - zone_name: rear_left
     bounds:
       left: 5
-      right: 30
-      top: 10
-      bottom: 35
-    align: center
+      right: 33
+      top: 8
+      bottom: 36
+    baseline: 32
+    align: tab-stops
     label: Rear left zone
   - zone_name: rear_center
     bounds:
-      left: 35
-      right: 65
-      top: 10
-      bottom: 35
-    align: center
+      left: 34
+      right: 66
+      top: 8
+      bottom: 36
+    baseline: 32
+    align: tab-stops
     label: Rear center zone
   - zone_name: rear_right
     bounds:
-      left: 70
+      left: 67
       right: 95
-      top: 10
-      bottom: 35
-    align: center
+      top: 8
+      bottom: 36
+    baseline: 32
+    align: tab-stops
     label: Rear right zone
+  # Center working-surface band (~40-88%): primary instruments center-stage
   - zone_name: center
     bounds:
-      left: 20
-      right: 80
-      top: 45
-      bottom: 75
-    align: center
+      left: 5
+      right: 68
+      top: 38
+      bottom: 94
+    baseline: 84
+    align: tab-stops
     label: Work surface center
+  # Right tool area: mirrors center band vertically
   - zone_name: right_tool_area
     bounds:
-      left: 80
-      right: 95
-      top: 55
-      bottom: 80
-    align: center
+      left: 70
+      right: 97
+      top: 38
+      bottom: 94
+    baseline: 84
+    align: tab-stops
     label: Right tool rack
 
 placements:
+  # Rear left: ethanol spray bottle (left), tip box (right)
   - placement_name: rear_left_ethanol
     object_name: ethanol_bottle
     zone: rear_left
     depth_tier: 1
+    align_stop: left
+
+  - placement_name: base_rear_left_tip_box
+    object_name: micropipette_tip_box
+    zone: rear_left
+    depth_tier: 2
+    align_stop: right
+
+  # Rear center: PBS (left), waste container (right)
+  - placement_name: base_rear_center_pbs
+    object_name: pbs_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: left
+
   - placement_name: rear_center_waste
     object_name: waste_container
     zone: rear_center
     depth_tier: 1
+    align_stop: right
+
+  # Rear right: media bottle (left), sterile water (right)
+  - placement_name: base_rear_right_media
+    object_name: media_bottle
+    zone: rear_right
+    depth_tier: 1
+    align_stop: left
+
+  - placement_name: base_rear_right_sterile_water
+    object_name: sterile_water_bottle
+    zone: rear_right
+    depth_tier: 1
+    align_stop: right
+
+  # Center working surface: hood surface placeholder (center)
   - placement_name: center_hood_surface
     object_name: hood_surface
     zone: center
     depth_tier: 2
+    align_stop: center
+
+  # Right tool area: aspirating pipette (left), serological pipette (right)
   - placement_name: right_aspirating_pipette
     object_name: aspirating_pipette
     zone: right_tool_area
     depth_tier: 1
+    align_stop: left
+
+  - placement_name: base_right_serological_pipette
+    object_name: serological_pipette
+    zone: right_tool_area
+    depth_tier: 1
+    align_stop: right
 
 layout_rules:
-  label_font_size: 9
   label_line_height: 1.1
   label_offset_y: 4
-  zone_gap: 2
+  zone_gap: 4
+  default_align_stop: center
 
 wrong_order_message:
   template: "Try using the {expected_label}."

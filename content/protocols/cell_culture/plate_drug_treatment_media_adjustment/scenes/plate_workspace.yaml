@@ -1,22 +1,71 @@
 scene_name: plate_drug_treatment_media_adjustment_plate_workspace
 extends: hood_basic
 
+remove_placements:
+  # Media adjustment across a 96-well plate is done with the multichannel
+  # pipette added below. The inherited single-channel serological pipette is
+  # not used here and its wide footprint crowded the multichannel in the right
+  # tool area, so remove it to declutter that corner.
+  - base_right_serological_pipette
+
+remove_placements:
+  # The base PBS and waste bottles are context decoration here (not protocol
+  # targets). Their labels ran under the waste-container art in the crowded
+  # rear_center band, and the waste label dropped onto the tall multichannel
+  # pipette. align_stop cannot be changed by reposition, so remove and re-add
+  # them at explicit, non-colliding stops in the rear_center band beside the
+  # media bottle.
+  - base_rear_center_pbs
+  - rear_center_waste
+
+reposition_placements:
+  # The inherited aspirating pipette shares the right_tool_area front row with
+  # the added multichannel pipette; their labels abutted. Push the aspirating
+  # pipette to the back row so the two pipette labels separate vertically.
+  - placement_name: right_aspirating_pipette
+    depth_tier: 2
+
 add_placements:
+  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
   - placement_name: center_well_plate_96
-    object_name: well_plate_96
+    object_name: microtube_rack_24
     zone: center
     depth_tier: 1
+    align_stop: center
+
+  # Media bottle in rear_center (protocol-specific)
   - placement_name: rear_center_media
     object_name: media_bottle
     zone: rear_center
     depth_tier: 2
+    align_stop: center
+
+  # Multichannel pipette in right tool area
   - placement_name: right_tool_multichannel
     object_name: multichannel_pipette
     zone: right_tool_area
     depth_tier: 1
+    align_stop: center
+
+  # PBS re-added at the rear_center left stop (context decoration), beside the
+  # media bottle, clear of the tip box and the multichannel pipette.
+  - placement_name: rear_center_pbs_decor
+    object_name: pbs_bottle
+    zone: rear_center
+    depth_tier: 1
+    align_stop: left
+
+  # Waste container re-added at the rear_center right stop (context decoration),
+  # well to the left of the tall multichannel pipette so its label no longer
+  # drops onto the pipette art.
+  - placement_name: rear_center_waste_decor
+    object_name: waste_container
+    zone: rear_center
+    depth_tier: 1
+    align_stop: right
 
 scene_notes: |
   Hood-side plate-workspace scene for plate_drug_treatment_media_adjustment.
-  96-well plate in center, media bottle in rear center, multichannel pipette
-  in right tool area. All media adjustments happen in this single hood workspace;
-  no scene change required.
+  96-well plate (microtube_rack_24 placeholder) in center, media bottle in
+  rear center, multichannel pipette in right tool area.
+  NOTE: well_plate_96 quarantined; using microtube_rack_24 as placeholder.

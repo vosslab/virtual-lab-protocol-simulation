@@ -36,9 +36,6 @@ visual_states:
       - when: trypan_blue_mixture
         output:
           asset_name: bottle
-  material_name_overlay:
-    kind: overlay
-    formula: 'label(state(material_name), format="Loaded: {value}")'
   material_volume:
     kind: composite
     composite: []
@@ -50,4 +47,5 @@ capabilities: [clickable, material_container]
 
 layout:
   default_width: 8
+  display_width_cm: 8
   label_width: 10

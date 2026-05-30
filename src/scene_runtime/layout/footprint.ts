@@ -8,8 +8,8 @@ export function depthFor(p: ScaledPlacement): Depth {
 }
 
 export function widthScaleFor(p: ScaledPlacement): number {
-  if (p._width_scale !== undefined) return p._width_scale;
-  return p.layout.width_scale;
+  // _width_scale is always set by scaleToRealWorld (cm model or 1.0 fallback).
+  return p._width_scale;
 }
 
 export function visualWidthFor(p: ScaledPlacement, scale = 1): number {
