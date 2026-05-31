@@ -74,6 +74,62 @@
 
 - `check_codebase.sh` 6/6 PASS maintained throughout all workstreams. Full object validator (`python3 validation/yaml_schema/object_validator.py`) and scene validators run after each workstream and exit 0. All 45 scene families re-rendered as browser evidence (`tools/scene_to_png.mjs --all`).
 
+- WP4 verbosity patch series (validation consistency). New `validation/shared_toolkit/verbosity.py`:
+  closed `VerbosityLevel` enum (`QUIET`/`NORMAL`/`VERBOSE`) + `resolve_level` (raises `ValueError`
+  on `--quiet --verbose` conflict); canonical `summary_line` grammar "Checked N <label>. F failures.
+  W warnings." (always emits both counts including zero; preserves the `N failures`/`N warnings` regex
+  tokens `validate.py` depends on); `diagnostic_summary(DiagnosticData)` with empty-state
+  ("No diagnostics."), count-desc/name-asc sort, top-K=10 truncation. All 7 validation stages
+  migrated: `yaml_schema`, `svg_audit`, `stepper`, `structure`, `manual`, `scene_lint`,
+  `scene_design`. Fast formatter unit tests: `tests/test_validation_verbosity.py` (10 tests,
+  sub-second). Per-stage subprocess and machine-format contract checks:
+  `tests/e2e/e2e_validation_verbosity.py` (25/25 pass). Full suite: 1392 passed, 1 xfail, 0 failed.
+
+### Additions and New Features
+
+- WP4 verbosity: added `validation/shared_toolkit/verbosity.py` -- closed `VerbosityLevel` enum
+  (`QUIET`/`NORMAL`/`VERBOSE`), `resolve_level` (raises `ValueError` on conflicting flags),
+  canonical `summary_line` ("Checked N <label>. F failures. W warnings." always printing both counts
+  including zero), and `diagnostic_summary` with empty-state guard, count-desc/name-asc sort,
+  top-10 truncation. This is now the single source for the `N failures`/`N warnings` regex tokens
+  that `validate.py` parses from each stage.
+
+- WP4 verbosity: `reporter.print_summary_line` now delegates to `verbosity.summary_line`
+  (single source); zero-warning count is now always emitted (previously omitted), preserving the
+  aggregate regex contract.
+
+### Behavior or Interface Changes
+
+- WP4 verbosity: `scene_lint` and `scene_design` `--json` now emit a single JSON document
+  (`{"findings":[...]}` / `{"cards":[...]}`) instead of JSONL, matching the other 5 stages and the
+  `validate.py` aggregate `json.loads` contract. `--ndjson` still emits JSONL. `--markdown` remains
+  an explicit format flag orthogonal to verbosity. `tests/e2e/e2e_scene_design_cli.py` updated to
+  pass `--json`.
+
+- WP4 verbosity: per-stage quiet/default/verbose output now consistent across all 7 stages.
+  Quiet = exactly 1 canonical summary line. Default <= 40 lines. Verbose <= 199 lines.
+  Per-stage drift fixed: `yaml_schema` (corrected "Validated" wording and embedded-newline quiet bug;
+  default 658->~34 lines); `svg_audit` (fixed hardcoded `verbose=False` so cleanup-surface items
+  print at `-v`); `stepper` (removed inverted `runner_quiet=not args.verbose`; per-protocol fail
+  lines now show in both default and verbose; default 160->40 lines); `structure` and `manual`
+  (added missing verbose diagnostic branch; `manual` default 198->3 lines); `scene_lint` and
+  `scene_design` (converted from always-JSONL to text at quiet/normal/verbose).
+
+### Removals and Deprecations
+
+- WP4 verbosity: dropped missing `validation/svg/pipeline_check.py` from the `validate.py` svg
+  stage map (was printing "Stage script not found" on every run). Decision recorded in
+  `docs/active_plans/decisions/pipeline_check_dispatch.md`.
+
+### Decisions and Failures
+
+- WP4 verbosity (KNOWN ISSUE, pre-existing, not fixed): whole-suite `validate.py --json` still raises
+  `JSONDecodeError` because the 5 text-mode stages emit plain text (not JSON) under `--json` --
+  the aggregate JSON merge was explicitly out of scope for this patch. Covered by an `xfail` test in
+  `tests/test_validation_verbosity.py`. Deferred cleanup nits from review left as-is: loop variable
+  `l` in one internal helper, omitted `warnings=` kwarg in two yaml calls, `is_verbose` local bool
+  in `svg_audit`.
+
 ## 2026-05-28
 
 ### Additions and New Features

@@ -1,9 +1,12 @@
 """Scene design lint CLI and main entry point."""
 
 import sys
+import json
 from pathlib import Path
 
 from validation.shared_toolkit.yaml_io import load_yaml
+import validation.shared_toolkit.verbosity as verbosity
+import validation.shared_toolkit.reporter as reporter
 from validation.scene_design.class_detect import detect, SceneClassError
 from validation.scene_design.cards import SceneCard, write_cards_jsonl, write_cards_markdown
 from validation.scene_design.archive import append_history_row
@@ -147,6 +150,115 @@ def compute_metrics(scene: dict, dump_data: dict | None) -> dict:
 
 
 #============================================
+# Text rendering (verbosity-gated)
+#============================================
+
+# Number of lowest-scoring cards shown in NORMAL text mode.
+NORMAL_TOP_CARDS = 10
+
+
+def count_scoring_failures(cards: list[SceneCard]) -> int:
+	"""
+	Count cards whose aggregate score could not be computed.
+
+	scene_design is advisory and never fails on design quality, so the only
+	"failure" the canonical summary reports is a scoring failure: a card whose
+	score is None because a required metric was missing (partial dump). This
+	keeps the exit code at the advisory baseline (0) and avoids inventing an
+	arbitrary pass/fail quality threshold.
+	"""
+	failures = sum(1 for card in cards if card.score is None)
+	return failures
+
+
+def render_normal_lines(cards: list[SceneCard]) -> list[str]:
+	"""
+	Render NORMAL text mode: totals plus the lowest-scoring cards.
+
+	Full per-card metric detail goes to --json / --ndjson, not text. Cards
+	with a None score sort first (treated as lowest) so scoring failures are
+	surfaced at the top.
+	"""
+	lines: list[str] = []
+	# Sort ascending by score; None scores sort first as the worst case.
+	def sort_key(card: SceneCard) -> tuple:
+		# None -> (0, 0.0) sorts before any real score (1, score).
+		if card.score is None:
+			return (0, 0.0)
+		return (1, card.score)
+	ranked = sorted(cards, key=sort_key)
+	shown = ranked[:NORMAL_TOP_CARDS]
+	lines.append(f"Lowest-scoring scenes (showing {len(shown)} of {len(cards)}):")
+	for card in shown:
+		# Render the score with a fixed shape; None becomes an explicit token.
+		score_text = "n/a" if card.score is None else f"{card.score:.1f}"
+		lines.append(f"  {card.scene} [{card.scene_class}]: {score_text} ({card.confidence})")
+	return lines
+
+
+def build_diagnostic_data(cards: list[SceneCard]) -> verbosity.DiagnosticData:
+	"""
+	Build the VERBOSE diagnostic block input for scene_design.
+
+	Per the stage contract table, scene_design VERBOSE supplies:
+	  top_offenders   -> lowest-scoring scenes (worst design scores first)
+	  category_counts -> cards grouped by detected scene class
+	"""
+	# top_offenders: lowest score is the worst offender. diagnostic_summary
+	# sorts by count descending, so invert the score into a magnitude where a
+	# lower score yields a larger displayed number. A None score maps to the
+	# maximum magnitude (100) so unscored cards lead the list.
+	offenders: list = []
+	for card in cards:
+		if card.score is None:
+			magnitude = 100
+		else:
+			# Round so the displayed integer is stable and deterministic.
+			magnitude = round(100 - card.score)
+		offenders.append((card.scene, magnitude))
+
+	# category_counts: number of cards per detected scene class.
+	class_counts: dict = {}
+	for card in cards:
+		class_counts[card.scene_class] = class_counts.get(card.scene_class, 0) + 1
+	category_counts = [(name, count) for name, count in class_counts.items()]
+
+	data = verbosity.DiagnosticData(
+		top_offenders=offenders,
+		category_counts=category_counts,
+	)
+	return data
+
+
+def render_cards_text(cards: list[SceneCard], level: verbosity.VerbosityLevel) -> None:
+	"""
+	Render cards as human text gated by verbosity level.
+
+	QUIET   : exactly one canonical summary line.
+	NORMAL  : summary line plus the lowest-scoring cards.
+	VERBOSE : NORMAL plus the grouped diagnostic block.
+	"""
+	total = len(cards)
+	failures = count_scoring_failures(cards)
+
+	# QUIET: exactly one canonical summary line, nothing else.
+	if level is verbosity.VerbosityLevel.QUIET:
+		reporter.print_summary_line(total, failures, item_label="scenes")
+		return
+
+	# NORMAL and VERBOSE both begin with the canonical summary line.
+	reporter.print_summary_line(total, failures, item_label="scenes")
+	for line in render_normal_lines(cards):
+		print(line)
+
+	# VERBOSE appends the grouped diagnostic block.
+	if level is verbosity.VerbosityLevel.VERBOSE:
+		data = build_diagnostic_data(cards)
+		block = verbosity.diagnostic_summary(data)
+		print(block)
+
+
+#============================================
 # Main entry
 #============================================
 
@@ -230,13 +342,28 @@ def main() -> None:
 				history_path=history_path,
 			)
 
-	# Emit cards in requested format. Advisory only: never exit 1 on design findings.
+	# Format dispatch comes FIRST and is orthogonal to verbosity. When any
+	# explicit output-format flag is set, the human-text path is bypassed and
+	# verbosity does not gate the format. Advisory only: never exit 1 here.
 	if args.markdown_output:
-		output = write_cards_markdown(cards)
-	else:
-		output = write_cards_jsonl(cards)
+		# Markdown is a format, never folded into -v.
+		sys.stdout.write(write_cards_markdown(cards))
+		return
+	if args.output_format == 'json':
+		# Single JSON document so aggregate --json (validate.py) can json.loads
+		# the whole stdout, matching the other stages instead of crashing on
+		# multi-line JSONL.
+		document = {'cards': [card.to_dict() for card in cards]}
+		sys.stdout.write(json.dumps(document, separators=(',', ':')) + '\n')
+		return
+	if args.output_format == 'ndjson':
+		# Newline-delimited JSON: one card per line (the legacy machine shape).
+		sys.stdout.write(write_cards_jsonl(cards))
+		return
 
-	sys.stdout.write(output)
+	# Text mode: resolve the verbosity level once and render accordingly.
+	level = verbosity.resolve_level(quiet=args.quiet, verbose=args.verbose)
+	render_cards_text(cards, level)
 
 
 if __name__ == '__main__':

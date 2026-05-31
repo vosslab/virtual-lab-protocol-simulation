@@ -26,6 +26,7 @@ import validation.shared_toolkit.paths as toolkit_paths
 import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.reporter as reporter
 import validation.shared_toolkit.cli as toolkit_cli
+import validation.shared_toolkit.verbosity as verbosity
 
 #============================================
 # setup
@@ -726,21 +727,26 @@ def print_full_report(
 	# Deduplicate: orphan takes precedence over unknown
 	truly_unknown = unknown_svgs - orphan_svgs
 
-	# Quiet mode: ONLY print the final summary line
-	if quiet:
-		total_checked = len(objects)
-		failure_count = len(orphan_svgs) + len(truly_unknown) + normalization_failures + forbidden_construct_count + unattributed_servier
+	# Resolve verbosity level once via the shared helper.
+	level = verbosity.resolve_level(quiet=quiet, verbose=verbose)
+
+	# Compute totals needed by all modes.
+	total_checked = len(objects)
+	failure_count = (
+		len(orphan_svgs) + len(truly_unknown) + normalization_failures
+		+ forbidden_construct_count + unattributed_servier
+	)
+
+	# QUIET mode: exactly one canonical summary line.
+	if level == verbosity.VerbosityLevel.QUIET:
 		reporter.print_summary_line(total_checked, failure_count, item_label="objects")
 		return
 
-	# Default mode: section headers + count tables + actionable findings + summary
-	# Verbose mode: diagnostic summary only (not full per-asset details)
-
-	# Print section header
+	# NORMAL and VERBOSE: section header + per-object source breakdown + actionable findings
 	print(f"=== SVG asset audit ({len(objects)} objects / {len(disk_svgs)} SVGs) ===")
 	print()
 
-	# Per-object source breakdown table (always shown in default and verbose modes)
+	# Per-object source breakdown table (always shown in NORMAL and VERBOSE).
 	print("Per-object source breakdown:")
 	print(f"  servier:     {servier_objs} objects, {servier_assets} svgs")
 	print(f"  placeholder: {placeholder_objs} objects, {placeholder_assets} svgs")
@@ -749,18 +755,26 @@ def print_full_report(
 	print(f"  unknown:     {unknown_objs} objects (one or more .svg in neither manifest)")
 	print()
 
-	# Verbose mode: print diagnostic summary (NOT full per-asset details)
-	if verbose:
-		print("Diagnostic Summary:")
-		print("")
-		print("Classification counts:")
-		print(f"  Servier assets: {servier_assets}")
-		print(f"  Placeholder assets: {placeholder_assets}")
-		print(f"  Unknown assets: {unknown_assets}")
-		print(f"  Missing assets: {missing_assets}")
-		print("")
+	# Cleanup surface section: counts always shown; item listings only in VERBOSE.
+	is_verbose = (level == verbosity.VerbosityLevel.VERBOSE)
+	print_cleanup_surface_section(orphan_svgs, unknown_svgs, verbose=is_verbose)
+	print()
 
-		# Top 10 objects with most subpart mismatches
+	# Actionable findings summary (NORMAL and VERBOSE).
+	print("Actionable findings:")
+	print(f"  Orphan SVG files: {len(orphan_svgs)}")
+	print(f"  Unknown SVG files: {len(truly_unknown)}")
+	print(f"  Normalization failures: {normalization_failures}")
+	print(f"  Forbidden constructs: {forbidden_construct_count}")
+	print(f"  Unattributed Servier adoptions: {unattributed_servier}")
+	print()
+
+	# Final summary line (NORMAL and VERBOSE).
+	reporter.print_summary_line(total_checked, failure_count, item_label="objects")
+
+	# VERBOSE: append the shared diagnostic summary block.
+	if level == verbosity.VerbosityLevel.VERBOSE:
+		# Build top_offenders: objects ranked by subpart mismatch count.
 		mismatch_counts = {}
 		for obj_name in objects.keys():
 			obj_data = objects[obj_name]
@@ -771,68 +785,29 @@ def print_full_report(
 					if asset_name in per_asset_metadata:
 						meta = per_asset_metadata[asset_name]
 						svg_subparts = set(meta.get('subpart_ids', []))
-						missing = expected_subparts - svg_subparts
-						extra = svg_subparts - expected_subparts
-						mismatch_count = len(missing) + len(extra)
+						missing_sp = expected_subparts - svg_subparts
+						extra_sp = svg_subparts - expected_subparts
+						mismatch_count = len(missing_sp) + len(extra_sp)
 						if mismatch_count > 0:
 							if obj_name not in mismatch_counts:
 								mismatch_counts[obj_name] = 0
 							mismatch_counts[obj_name] += mismatch_count
+		top_offenders_list = list(mismatch_counts.items())
 
-		if mismatch_counts:
-			print("Top 10 objects by subpart mismatches:")
-			sorted_mismatches = sorted(mismatch_counts.items(), key=lambda kv: (-kv[1], kv[0]))
-			for obj_name, count in sorted_mismatches[:10]:
-				print(f"  {obj_name}: {count}")
-			if len(sorted_mismatches) > 10:
-				print(f"  ... and {len(sorted_mismatches) - 10} more")
-			print("")
+		# Build category_counts: asset classification breakdown.
+		category_counts_list = [
+			("servier", servier_assets),
+			("placeholder", placeholder_assets),
+			("unknown", unknown_assets),
+			("missing", missing_assets),
+		]
 
-		# Provenance breakdown by source
-		print("Provenance breakdown:")
-		print(f"  Servier (attributed): {sum(1 for m in per_asset_metadata.values() if m.get('servier_source_path') and m.get('attribution') == 'attributed_both')}")
-		print(f"  Servier (not attributed): {sum(1 for m in per_asset_metadata.values() if m.get('servier_source_path') and not m.get('attribution'))}")
-		print(f"  Custom/Unknown: {sum(1 for m in per_asset_metadata.values() if not m.get('servier_source_path'))}")
+		diag_data = verbosity.DiagnosticData(
+			top_offenders=top_offenders_list,
+			category_counts=category_counts_list,
+		)
 		print()
-
-		# Per-asset-file breakdown (verbose mode only)
-		print("Per-asset-file breakdown:")
-		asset_summaries = []
-		for asset_name in sorted(per_asset_metadata.keys()):
-			meta = per_asset_metadata[asset_name]
-			classification = "servier" if meta.get('servier_source_path') else "custom/unknown"
-			asset_summaries.append(f"  {asset_name}: {classification}")
-
-		# Cap at 80 lines if too many assets
-		if len(asset_summaries) > 80:
-			for line in asset_summaries[:80]:
-				print(line)
-			remaining = len(asset_summaries) - 80
-			print(f"  ... and {remaining} more assets")
-		else:
-			for line in asset_summaries:
-				print(line)
-		print()
-
-	# Cleanup surface section (with different behavior in verbose mode)
-	# In verbose mode, don't show full item lists (those are trace-level)
-	# Just show counts
-	print_cleanup_surface_section(orphan_svgs, unknown_svgs, verbose=False)
-	print()
-
-	# Actionable findings (default and verbose modes)
-	print("Actionable findings:")
-	print(f"  Orphan SVG files: {len(orphan_svgs)}")
-	print(f"  Unknown SVG files: {len(truly_unknown)}")
-	print(f"  Normalization failures: {normalization_failures}")
-	print(f"  Forbidden constructs: {forbidden_construct_count}")
-	print(f"  Unattributed Servier adoptions: {unattributed_servier}")
-	print()
-
-	# Final summary line (in all non-quiet modes)
-	total_checked = len(objects)
-	failure_count = len(orphan_svgs) + len(truly_unknown) + normalization_failures + forbidden_construct_count + unattributed_servier
-	reporter.print_summary_line(total_checked, failure_count, item_label="objects")
+		print(verbosity.diagnostic_summary(diag_data))
 
 def print_provenance_section(per_asset_metadata: dict[str, object], asset_filter: set[str] | None = None) -> None:
 	"""Print provenance section: source, license, attribution, modification status.

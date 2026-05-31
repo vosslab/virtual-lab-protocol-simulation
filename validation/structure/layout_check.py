@@ -22,6 +22,7 @@ import validation.shared_toolkit.cli
 import validation.shared_toolkit.console
 import validation.shared_toolkit.emit
 import validation.shared_toolkit.repo_root
+import validation.shared_toolkit.verbosity
 from validation.shared_toolkit.findings import Finding, Severity
 
 
@@ -449,12 +450,21 @@ def main() -> int:
 		# Text format (default)
 		console = validation.shared_toolkit.console.make_console(no_color=args.no_color)
 
-		if args.quiet:
-			# Quiet mode: one line per stage
-			summary = f"Checked {protocol_count} protocol folders. {len(errors)} failures."
+		# Resolve verbosity level once; renderers switch on the enum.
+		level = validation.shared_toolkit.verbosity.resolve_level(
+			quiet=args.quiet, verbose=args.verbose
+		)
+		# Build the canonical summary line via the shared formatter.
+		summary = validation.shared_toolkit.verbosity.summary_line(
+			protocol_count, len(errors), item_label="protocol folders"
+		)
+
+		if level == validation.shared_toolkit.verbosity.VerbosityLevel.QUIET:
+			# Quiet mode: exactly one canonical summary line.
 			console.print(summary)
-		else:
-			# Default: per-cluster summary
+
+		elif level == validation.shared_toolkit.verbosity.VerbosityLevel.NORMAL:
+			# Default mode: totals + top failures.
 			if errors:
 				console.print("[bold red]Layout Failures:[/bold red]")
 				for err in errors[:10]:
@@ -462,13 +472,28 @@ def main() -> int:
 				if len(errors) > 10:
 					console.print(f"  ... and {len(errors) - 10} more")
 				console.print()
-
-			# Summary line
-			summary = f"Checked {protocol_count} protocol folders. {len(errors)} failures."
+			# Summary line styled by pass/fail.
 			if len(errors) == 0:
 				console.print(f"[bold green]{summary}[/bold green]")
 			else:
 				console.print(f"[bold red]{summary}[/bold red]")
+
+		else:
+			# Verbose mode: summary + diagnostic block (top_codes by rule/error code).
+			if len(errors) == 0:
+				console.print(f"[bold green]{summary}[/bold green]")
+			else:
+				console.print(f"[bold red]{summary}[/bold red]")
+
+			# Build code->count breakdown from layout failures.
+			code_counts: dict = {}
+			for err in errors:
+				code_counts[err.code] = code_counts.get(err.code, 0) + 1
+			top_codes = list(code_counts.items())
+
+			diag = validation.shared_toolkit.verbosity.DiagnosticData(top_codes=top_codes)
+			block = validation.shared_toolkit.verbosity.diagnostic_summary(diag)
+			console.print(block)
 
 	# Return exit code
 	return 0 if len(errors) == 0 else 1

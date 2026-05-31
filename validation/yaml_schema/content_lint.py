@@ -31,6 +31,8 @@ import validation.shared_toolkit.cli as toolkit_cli
 import validation.shared_toolkit.protocols as toolkit_protocols
 import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.emit as emit
+import validation.shared_toolkit.verbosity as verbosity
+import validation.shared_toolkit.reporter as reporter
 
 
 class ValidationError(Exception):
@@ -48,10 +50,12 @@ VERBOSE_PRINTERS = {
 }
 
 
-def _load_and_collect(path: Path, rel_path: Path, validator, cross_validator: CrossProtocolValidator, errors: list):
+def _load_and_collect(path: Path, rel_path: Path, validator, cross_validator: CrossProtocolValidator, errors: list, emit_findings: bool = True):
 	"""
-	Load one YAML file, run validator + camelCase sweep, print and collect any
-	findings. Returns (findings, data) where data is None if load failed.
+	Load one YAML file, run validator + camelCase sweep, collect any findings.
+	When emit_findings is True, print each finding to stdout (text verbose mode only).
+	When emit_findings is False, collect silently (quiet, normal, and machine format modes).
+	Returns (findings, data) where data is None if load failed.
 	"""
 	# YAML parse failure is the one case we catch and continue: one bad file
 	# should not stop the whole-tree walk.
@@ -60,14 +64,16 @@ def _load_and_collect(path: Path, rel_path: Path, validator, cross_validator: Cr
 	except RuntimeError as e:
 		msg = str(e)
 		errors.append(msg)
-		print(msg)
+		if emit_findings:
+			print(msg)
 		return None, None
 	findings = validator.validate(data, str(rel_path))
 	findings.extend(cross_validator.check_camelcase_keys(data, str(rel_path)))
 	for fnd in findings:
 		msg = fnd.format()
 		errors.append(msg)
-		print(msg)
+		if emit_findings:
+			print(msg)
 	return findings, data
 
 
@@ -102,13 +108,19 @@ def find_yaml_files(root: str, file_type: str) -> list:
 	return sorted(files)
 
 
-def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False) -> tuple:
+def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False, emit_findings: bool = True) -> tuple:
 	"""
 	Validate entire content tree.
-	Returns (success, list_of_error_messages, counts_dict).
+	Returns (success, list_of_error_messages, counts_dict, findings).
 	counts_dict: {'objects': N, 'base_scenes': N, 'protocol_scenes': N, 'protocols': N, 'materials': N}
+
+	emit_findings controls whether per-finding lines are printed to stdout.
+	Set False for quiet/normal modes where line budget applies; set True for
+	verbose text mode and json/ndjson modes.
 	"""
 	errors = []
+	# all_findings collects all Finding objects from per-file validation for diagnostics.
+	all_findings = []
 	counts = {'objects': 0, 'base_scenes': 0, 'protocol_scenes': 0, 'protocols': 0, 'materials': 0}
 
 	# Collect protocol, protocol_scene, and material rows for compiled summary
@@ -123,7 +135,9 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	# Collect findings from database load errors
 	for finding in db.findings:
 		errors.append(finding.format())
-		print(finding.format())
+		all_findings.append(finding)
+		if emit_findings:
+			print(finding.format())
 
 	# Cross-cutting camelCase regex sweep (general, no allow-list)
 	cross_validator = CrossProtocolValidator()
@@ -145,12 +159,12 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	]
 
 	for header, file_type, count_key, validator in sections:
-		if verbose:
-			print(f"=== {header} ===")
 		for f in find_yaml_files(repo_root, file_type):
 			rel_path = f.relative_to(repo_root)
 			counts[count_key] += 1
-			findings, data = _load_and_collect(f, rel_path, validator, cross_validator, errors)
+			findings, data = _load_and_collect(f, rel_path, validator, cross_validator, errors, emit_findings=emit_findings)
+			if findings:
+				all_findings.extend(findings)
 			if data is not None and not findings:
 				_print_pass(rel_path, data, file_type, verbose)
 			# Collect rows for compiled summary (collect even if there are findings)
@@ -167,17 +181,14 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 	for fnd in cross_material_findings:
 		msg = fnd.format()
 		errors.append(msg)
-		print(msg)
+		all_findings.append(fnd)
+		if emit_findings:
+			print(msg)
 
 	success = len(errors) == 0
 
-	# Render compiled summary (gated by quiet)
-	# Dashboard only renders when not quiet (regardless of success/failure)
-	if not quiet:
-		counts_agg = compiled_summary.aggregate(db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts)
-		compiled_summary.render(counts_agg)
-
-	return success, errors, counts, db.findings
+	# Return db and rows for use in main() diagnostic rendering
+	return success, errors, counts, all_findings, db, protocol_rows, protocol_scene_rows, material_rows
 
 
 def list_protocols(repo_root: str) -> list:
@@ -664,29 +675,83 @@ def main():
 			print(str(e))
 			sys.exit(1)
 
-	# Whole-tree validation (default, no-arg mode)
-	if not args.quiet:
-		print(f"Validating content tree under {repo_root}/content/")
-	success, errors, counts, findings = validate_whole_tree(str(repo_root), quiet=args.quiet, verbose=args.verbose)
+	# Resolve verbosity level once from the (quiet, verbose) boolean pair.
+	level = verbosity.resolve_level(quiet=args.quiet, verbose=args.verbose)
+
+	# Whole-tree validation (default, no-arg mode).
+	# For json/ndjson and verbose text, emit per-finding lines; suppress them for
+	# quiet and normal (line-budget modes).
+	is_machine_format = args.output_format in ('json', 'ndjson')
+	# Per-finding inline text lines belong to text/verbose modes only.
+	# In machine format (json/ndjson), emit.emit_findings() is the sole stdout writer;
+	# suppress inline text so the JSON document is the only stdout content.
+	emit_findings_flag = False
+
+	result = validate_whole_tree(
+		str(repo_root),
+		quiet=args.quiet,
+		verbose=args.verbose,
+		emit_findings=emit_findings_flag,
+	)
+	success, errors, counts, findings, db, protocol_rows, protocol_scene_rows, material_rows = result
+
 	total_files = counts['objects'] + counts['base_scenes'] + counts['protocol_scenes'] + counts['materials'] + counts['protocols']
 	failure_count = len(errors)
 
-	# Handle JSON/NDJSON output
-	if args.output_format in ('json', 'ndjson'):
+	# Handle JSON/NDJSON output (orthogonal to verbosity level).
+	if is_machine_format:
 		emit.emit_findings(findings, output_format=args.output_format)
-	else:
-		# Text format (default)
-		if args.verbose and not args.quiet:
-			# Load database to get object/findings info for diagnostic summary
-			db = ContentDatabase()
-			db.load_from_tree(Path(repo_root))
-			_render_verbose_diagnostics(db)
+		sys.exit(0 if success else 1)
 
-		terse_line = f"Validated {total_files} files ({counts['objects']} objects, {counts['base_scenes']} base scenes, {counts['protocol_scenes']} protocol scenes, {counts['materials']} materials, {counts['protocols']} protocols). {failure_count} failures."
-		if args.quiet:
-			print(terse_line)
-		else:
-			print(f"\n{terse_line}")
+	# Text output: switch on the resolved level enum.
+	if level == verbosity.VerbosityLevel.QUIET:
+		# QUIET: exactly one canonical summary line.
+		reporter.print_summary_line(total_files, failure_count, item_label="files")
+
+	elif level == verbosity.VerbosityLevel.NORMAL:
+		# NORMAL: compiled dashboard (totals + top categories) then summary line.
+		# Per-finding detail is suppressed; totals are visible in the dashboard.
+		counts_agg = compiled_summary.aggregate(
+			db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts
+		)
+		compiled_summary.render(counts_agg)
+		reporter.print_summary_line(total_files, failure_count, item_label="files")
+
+	else:
+		# VERBOSE: NORMAL content plus the diagnostic block.
+		counts_agg = compiled_summary.aggregate(
+			db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts
+		)
+		compiled_summary.render(counts_agg)
+
+		# Build DiagnosticData from the same data _render_verbose_diagnostics used.
+		# findings holds all Finding objects from per-file validation and db findings.
+		# Use finding.tag (structured code) for top_codes; fall back to severity label
+		# when tag is absent so every finding is counted.
+		top_codes_data = []
+		if findings:
+			tag_counts = {}
+			for finding in findings:
+				tag = finding.tag if finding.tag else finding.severity.value
+				tag_counts[tag] = tag_counts.get(tag, 0) + 1
+			top_codes_data = list(tag_counts.items())
+
+		category_counts_data = []
+		if db.objects:
+			kind_counts = {}
+			for obj_name, obj_data in db.objects.items():
+				kind = obj_data['kind']
+				kind_counts[kind] = kind_counts.get(kind, 0) + 1
+			category_counts_data = list(kind_counts.items())
+
+		diag_data = verbosity.DiagnosticData(
+			top_codes=top_codes_data,
+			category_counts=category_counts_data,
+		)
+		diag_block = verbosity.diagnostic_summary(diag_data)
+		print(diag_block)
+
+		reporter.print_summary_line(total_files, failure_count, item_label="files")
 
 	sys.exit(0 if success else 1)
 

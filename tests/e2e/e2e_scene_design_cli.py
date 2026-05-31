@@ -22,7 +22,7 @@ def test_scene_design_cli_populates_metrics_with_dump():
 		raise FileNotFoundError(f'{scene_path} not found; run from repo root')
 
 	result = subprocess.run(
-		[sys.executable, '-m', 'validation.scene_design.cli', '-S', str(scene_path)],
+		[sys.executable, '-m', 'validation.scene_design.cli', '-S', str(scene_path), '--json'],
 		capture_output=True,
 		text=True,
 	)
@@ -30,7 +30,9 @@ def test_scene_design_cli_populates_metrics_with_dump():
 	assert result.returncode == 0, f'CLI failed: {result.stderr}'
 	assert result.stdout, 'CLI produced no output'
 
-	card = json.loads(result.stdout.strip().split('\n')[0])
+	# --json emits a single {"cards":[...]} document, not JSONL.
+	document = json.loads(result.stdout)
+	card = document['cards'][0]
 	metrics = card['metrics']
 
 	# depth_tier_usage is YAML-only and should always populate.

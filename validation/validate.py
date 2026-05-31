@@ -71,13 +71,16 @@ def _stage_scripts(stage_name: str) -> list[str]:
 	"""
 	Return the list of validator scripts that compose a stage.
 
-	The svg stage is composite: check.py answers "is file generation
-	reproducible + complete?" (CI gate); audit.py answers "are SVG
-	files well-formed?" (author review). Both belong under --only svg.
+	The svg stage runs asset_audit.py, which checks SVG files for
+	well-formedness and author-review issues.
+	pipeline_check.py (SVG generation determinism + coverage gate) was
+	previously listed here but the file no longer exists in the repo;
+	it was removed from active dispatch to stop the "Stage script not
+	found" error. See docs/active_plans/decisions/pipeline_check_dispatch.md.
 	"""
 	stage_map = {
 		'yaml': ['validation/yaml_schema/content_lint.py'],
-		'svg': ['validation/svg/pipeline_check.py', 'validation/svg/asset_audit.py'],
+		'svg': ['validation/svg/asset_audit.py'],
 		'stepper': ['validation/stepper/step_check.py'],
 		'structure': ['validation/structure/layout_check.py'],
 		'manual': ['validation/manual/protocol_manual.py'],

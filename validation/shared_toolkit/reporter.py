@@ -11,6 +11,8 @@ suppressed on success but summary still printed.
 
 import sys
 
+import validation.shared_toolkit.verbosity as verbosity
+
 
 def print_section_header(name):
 	"""Print a `=== name ===` section header to stdout."""
@@ -45,12 +47,12 @@ def print_error(message):
 
 def print_summary_line(total, failures, *, item_label="files", warnings=0):
 	"""
-	Print the final summary line for a tool run.
+	Print the canonical stage summary line.
 
-	Format mirrors validate_content_yaml.py:
-	  "Checked N files. F failures." (warnings appended when non-zero)
+	Delegates to verbosity.summary_line so there is exactly one summary
+	string in the codebase. The line always prints both the failures and
+	warnings counts, including zeros:
+	  "Checked N files. F failures. W warnings."
 	"""
-	line = f"Checked {total} {item_label}. {failures} failures."
-	if warnings:
-		line += f" {warnings} warnings."
+	line = verbosity.summary_line(total, failures, item_label=item_label, warnings=warnings)
 	print(line)

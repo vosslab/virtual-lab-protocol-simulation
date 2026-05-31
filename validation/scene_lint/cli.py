@@ -1,11 +1,14 @@
 """Scene lint CLI and main entry point."""
 
 import sys
+import json
 from pathlib import Path
 
 from validation.scene_lint.findings import Finding, Verdict
 from validation.scene_lint.confusion import load_labeled_corpus, compute_confusion, write_confusion_markdown
 import validation.shared_toolkit.cli as toolkit_cli
+import validation.shared_toolkit.reporter as reporter
+import validation.shared_toolkit.verbosity as verbosity
 
 
 def _add_scene_lint_extras(parser):
@@ -215,6 +218,66 @@ def run_all_rules(paths: list[Path]) -> list[Finding]:
 	return findings
 
 
+def emit_findings_json_document(findings: list[Finding], output) -> None:
+	"""
+	Emit findings as a single JSON document: {"findings": [...]}.
+
+	This is the --json shape consumed by validation/validate.py, which calls
+	json.loads on the whole stdout. Unlike --ndjson (one finding object per
+	line), --json must be one parseable document.
+	"""
+	# Build the wrapped document; serialize each finding via to_dict.
+	document = {'findings': [finding.to_dict() for finding in findings]}
+	json.dump(document, output, separators=(',', ':'))
+	output.write('\n')
+
+
+#============================================
+# Text-output diagnostic helpers
+#============================================
+
+def count_top_codes(findings: list[Finding]) -> list:
+	"""
+	Count findings grouped by a rule+verdict code, returned as (code, count).
+
+	The code is "<rule>/<verdict>" so the same rule firing at different
+	verdicts stays distinguishable in the diagnostic block.
+	"""
+	code_counts: dict[str, int] = {}
+	for finding in findings:
+		code = f'{finding.rule}/{finding.verdict.value}'
+		code_counts[code] = code_counts.get(code, 0) + 1
+	return list(code_counts.items())
+
+
+def count_top_offenders(findings: list[Finding]) -> list:
+	"""Count findings per scene, returned as (scene_name, count)."""
+	scene_counts: dict[str, int] = {}
+	for finding in findings:
+		scene_counts[finding.scene] = scene_counts.get(finding.scene, 0) + 1
+	return list(scene_counts.items())
+
+
+def render_top_findings(findings: list[Finding], limit: int = 10) -> list:
+	"""
+	Build up to `limit` one-line text descriptions of the top findings.
+
+	Each line names the scene, rule, and verdict so the NORMAL text level
+	shows what fired without dumping every finding (full detail lives in
+	--json / --ndjson).
+	"""
+	lines: list[str] = []
+	# Show BLOCKED first, then ESCAPE_REQUIRED, then the rest, for relevance.
+	order = {Verdict.BLOCKED: 0, Verdict.ESCAPE_REQUIRED: 1, Verdict.CLEAN: 2}
+	ranked = sorted(findings, key=lambda f: (order[f.verdict], f.scene, f.rule))
+	for finding in ranked[:limit]:
+		lines.append(f'  {finding.scene}: {finding.rule} [{finding.verdict.value}]')
+	remainder = len(ranked) - len(ranked[:limit])
+	if remainder > 0:
+		lines.append(f'  ... and {remainder} more')
+	return lines
+
+
 def main() -> None:
 	"""Main entry point for scene_lint."""
 	args = parse_args()
@@ -283,8 +346,61 @@ def main() -> None:
 			# Emit advisory findings from promotion loading (malformed, below_bar)
 			findings.extend(advisory_from_promotions)
 
-	from validation.scene_lint.writers import write_findings_jsonl
-	write_findings_jsonl(findings, sys.stdout)
+	# Resolve verbosity level once from the (quiet, verbose) boolean pair.
+	level = verbosity.resolve_level(quiet=args.quiet, verbose=args.verbose)
+
+	# Branch on output format FIRST: machine formats bypass verbosity entirely.
+	# --json emits a single JSON document {"findings": [...]} so validate.py's
+	# json.loads(stdout) merge path succeeds. --ndjson keeps the legacy JSONL
+	# shape (one finding object per line).
+	if args.output_format == 'json':
+		emit_findings_json_document(findings, sys.stdout)
+	elif args.output_format == 'ndjson':
+		from validation.scene_lint.writers import write_findings_jsonl
+		write_findings_jsonl(findings, sys.stdout)
+	else:
+		# Text output: switch on the resolved level enum.
+		# Failures map to BLOCKED findings (the verdict that drives exit 1);
+		# warnings map to ESCAPE_REQUIRED (advisory unless promoted in strict).
+		blocked = [f for f in findings if f.verdict == Verdict.BLOCKED]
+		escape = [f for f in findings if f.verdict == Verdict.ESCAPE_REQUIRED]
+		total_scenes = len(paths)
+		failure_count = len(blocked)
+		warning_count = len(escape)
+		flagged = blocked + escape
+
+		if level == verbosity.VerbosityLevel.QUIET:
+			# QUIET: exactly one canonical summary line.
+			reporter.print_summary_line(
+				total_scenes, failure_count,
+				item_label='scenes', warnings=warning_count,
+			)
+		elif level == verbosity.VerbosityLevel.NORMAL:
+			# NORMAL: totals plus the top flagged findings, then the summary line.
+			if flagged:
+				print('Top findings:')
+				for line in render_top_findings(flagged):
+					print(line)
+			reporter.print_summary_line(
+				total_scenes, failure_count,
+				item_label='scenes', warnings=warning_count,
+			)
+		else:
+			# VERBOSE: NORMAL content plus the grouped diagnostic block.
+			if flagged:
+				print('Top findings:')
+				for line in render_top_findings(flagged):
+					print(line)
+			diag_data = verbosity.DiagnosticData(
+				top_codes=count_top_codes(flagged),
+				top_offenders=count_top_offenders(flagged),
+			)
+			diag_block = verbosity.diagnostic_summary(diag_data)
+			print(diag_block)
+			reporter.print_summary_line(
+				total_scenes, failure_count,
+				item_label='scenes', warnings=warning_count,
+			)
 
 	# Confusion-table path: load corpus and emit per-rule report when requested
 	if args.validate_against:

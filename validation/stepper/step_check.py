@@ -30,6 +30,8 @@ import validation.shared_toolkit.protocols as toolkit_protocols
 import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.reporter as reporter
 import validation.shared_toolkit.findings as shared_findings
+import validation.shared_toolkit.emit as emit
+import validation.shared_toolkit.verbosity as verbosity
 
 
 
@@ -136,81 +138,103 @@ def _resolve_selection(args, repo_root, tree):
 	return names
 
 
-def _render_verbose_diagnostics(counts):
+def _build_diagnostic_data(counts):
 	"""
-	Render diagnostic-summary output for -v mode.
+	Build a verbosity.DiagnosticData from aggregated walk counts.
 
-	Shows:
-	  - Top failing codes by occurrence (if any findings exist)
-	  - Per-protocol error/warning counts (if any findings exist)
-	  - Per-protocol PASS/FAIL summary (always shown)
+	Per the verbosity contract's per-stage table, the stepper VERBOSE
+	diagnostic block carries two sections:
+	  - top_codes: failing finding codes by occurrence count.
+	  - top_offenders: noisy protocols by combined error + warning count.
+
+	Truncation and sort order are handled by verbosity.diagnostic_summary;
+	this builder only assembles the (name, count) tuples.
 
 	Args:
-		counts: dict from dashboard.aggregate()
+		counts: dict from dashboard.aggregate().
+
+	Returns:
+		A verbosity.DiagnosticData value.
 	"""
-	output_lines = []
+	# Top failing codes: code -> total occurrences across all protocols.
+	top_codes = [
+		(code, entry['count'])
+		for code, entry in counts['findings_by_code'].items()
+	]
 
-	#============================================
-	# Top failing codes (only if findings exist)
-	if counts['findings_by_code']:
-		output_lines.append("Diagnostic Summary:")
-		output_lines.append("")
-		output_lines.append("Top failing codes (by occurrence):")
-		# Sort by count descending, then by level (errors before warnings)
-		sorted_items = sorted(
-			counts['findings_by_code'].items(),
-			key=lambda kv: (-kv[1]['count'], 0 if kv[1]['level'] == 'ERROR' else 1)
-		)
-		for code, entry in sorted_items[:10]:
-			output_lines.append(f"  {code}: {entry['count']}")
-		if len(sorted_items) > 10:
-			output_lines.append(f"  ... and {len(sorted_items) - 10} more")
+	# Top offenders: protocols carrying any error or warning, ranked by the
+	# combined finding count. The formatter sorts and truncates.
+	top_offenders = [
+		(name, entry['errors'] + entry['warnings'])
+		for name, entry in counts['per_protocol'].items()
+		if entry['errors'] > 0 or entry['warnings'] > 0
+	]
 
-		#============================================
-		# Per-protocol error/warning counts
-		noisy_protocols = [
-			(name, entry)
-			for name, entry in counts['per_protocol'].items()
-			if entry['errors'] > 0 or entry['warnings'] > 0
-		]
-		if noisy_protocols:
-			output_lines.append("")
-			output_lines.append("Per-protocol findings (only protocols with issues):")
-			# Sort: most errors first, then most warnings, then by name
-			noisy_protocols.sort(
-				key=lambda kv: (-kv[1]['errors'], -kv[1]['warnings'], kv[0])
-			)
-			for name, entry in noisy_protocols[:10]:
-				output_lines.append(
-					f"  {name}: {entry['errors']} errors, {entry['warnings']} warnings"
-				)
-			if len(noisy_protocols) > 10:
-				output_lines.append(f"  ... and {len(noisy_protocols) - 10} more protocols")
-
-	#============================================
-	# Per-protocol PASS/FAIL breakdown (always shown in -v mode)
-	if output_lines:
-		output_lines.append("")
-
-	output_lines.append("Per-protocol breakdown:")
-	# Sort: failures first (errors > 0), then by name
-	all_protocols = sorted(
-		counts['per_protocol'].items(),
-		key=lambda kv: (0 if kv[1]['errors'] > 0 else 1, kv[0])
+	data = verbosity.DiagnosticData(
+		top_codes=top_codes,
+		top_offenders=top_offenders,
 	)
+	return data
 
-	for name, entry in all_protocols:
-		steps = entry.get('step_count', 0)
-		interactions = entry.get('interaction_count', 0)
-		if entry['errors'] > 0:
-			status = f"FAIL ({entry['errors']} errors, {entry['warnings']} warnings)"
-		else:
-			status = f"PASS ({steps} steps, {interactions} interactions)"
-		output_lines.append(f"  {name}: {status}")
 
-	if output_lines:
-		print('\n'.join(output_lines))
-		print()
+def _render_normal_totals(counts):
+	"""
+	Render the compact NORMAL-level totals block (no color, no dashboard).
+
+	NORMAL keeps the per-protocol fail lines (printed during the walk) plus
+	these aggregate totals, and stays within the 40-line stdout budget. The
+	exhaustive per-protocol dashboard and findings-by-code breakdown move to
+	VERBOSE.
+
+	Args:
+		counts: dict from dashboard.aggregate().
+	"""
+	type_strs = [f"{t} {n}" for t, n in sorted(counts['by_type'].items())]
+	by_type = ', '.join(type_strs) if type_strs else '(none)'
+	fail_count = len(counts['failed_protocols'])
+	pass_count = len(counts['clean_protocols'])
+
+	lines = []
+	lines.append("Stepped content YAML (totals)")
+	lines.append(f"  Protocols: {counts['total_protocols']} ({by_type})")
+	lines.append(
+		f"  Steps: {counts['total_steps']}   "
+		f"Interactions: {counts['total_interactions']}"
+	)
+	lines.append(f"  Pass: {pass_count}   Fail: {fail_count}")
+	lines.append(f"  Errors: {counts['errors']}   Warnings: {counts['warnings']}")
+	print('\n'.join(lines))
+
+
+def _to_shared_finding(finding):
+	"""
+	Convert a stepper Finding into a shared_toolkit Finding.
+
+	The stepper Finding uses attribute names (level, protocol_name,
+	step_name, file_path) that do not line up with emit.finding_to_dict's
+	expected names (severity, protocol, step, path). Converting to the
+	shared Finding gives emit_findings the canonical attribute names so the
+	normalized dict carries the correct values.
+
+	Args:
+		finding: A validation.stepper.findings.Finding instance.
+
+	Returns:
+		A validation.shared_toolkit.findings.Finding instance.
+	"""
+	shared = shared_findings.Finding(
+		severity=finding.level,
+		tool='stepper',
+		code=finding.code,
+		message=finding.message,
+		path=finding.file_path,
+		line=None,
+		protocol=finding.protocol_name,
+		scene=None,
+		step=finding.step_name,
+		target=finding.target,
+	)
+	return shared
 
 
 def main():
@@ -239,11 +263,23 @@ def main():
 	if protocol_names is None:
 		sys.exit(1)
 
-	# Output model (revised for verbosity contract):
-	#   -q:       only the closing summary line (one line).
-	#   default:  grouped dashboard, closing summary line.
-	#   -v:       diagnostic summary (top codes, per-protocol counts), dashboard, summary.
-	runner_quiet = not args.verbose
+	# Resolve the output level once and switch on the enum. The walker
+	# itself stays quiet in every level; main() owns all text output, so
+	# the level mapping is direct with no inverted double-negative.
+	level = verbosity.resolve_level(quiet=args.quiet, verbose=args.verbose)
+
+	# Output model (verbosity contract):
+	#   QUIET:   only the closing summary line (one line).
+	#   NORMAL:  per-protocol fail lines, compact totals, summary line.
+	#   VERBOSE: per-protocol fail lines, diagnostic block (top codes, top
+	#            offenders), full dashboard, summary line.
+	# The fail lines appear in BOTH NORMAL and VERBOSE.
+	# In machine-readable modes the JSON / NDJSON document is the sole stdout
+	# content, so the per-protocol fail lines must be suppressed there.
+	machine_format = args.output_format in ('json', 'ndjson')
+	show_fail_lines = (not machine_format) and level in (
+		verbosity.VerbosityLevel.NORMAL, verbosity.VerbosityLevel.VERBOSE,
+	)
 
 	walks = []
 	has_error = False
@@ -258,12 +294,12 @@ def main():
 
 		if protocol_type == "sequence_runner":
 			leaf_count, interaction_count, emitter = validation.stepper.runner.walk_sequence_runner(
-				tree, protocol_name, verbose=False, quiet=runner_quiet,
+				tree, protocol_name, verbose=False, quiet=True,
 			)
 			step_count = leaf_count
 		else:
 			step_count, interaction_count, emitter = validation.stepper.runner.walk_protocol(
-				tree, protocol_name, verbose=False, quiet=runner_quiet,
+				tree, protocol_name, verbose=False, quiet=True,
 			)
 
 		# Post-walk material consistency checks
@@ -281,24 +317,40 @@ def main():
 		if emitter.has_errors():
 			has_error = True
 			failures += 1
-			# Even in default (non-verbose) mode, name the failing
-			# protocol immediately so the reader doesn't have to wait
-			# for the dashboard to learn what blew up.
-			if not args.quiet and not args.verbose:
+			# Name each failing protocol immediately in NORMAL and VERBOSE
+			# so the reader does not have to wait for the totals/dashboard
+			# to learn what blew up.
+			if show_fail_lines:
 				reporter.print_fail(protocol_name)
 		warnings += sum(
 			1 for f in emitter.findings
 			if f.level == validation.stepper.findings.Level.WARNING
 		)
 
-	if not args.quiet:
+	# Machine-readable output (JSON / NDJSON) is the SOLE stdout content in
+	# those modes: no text totals, dashboard, or summary line. The exit code
+	# stays identical to the text path (exit 1 when any emitter had errors,
+	# which is already captured in has_error above).
+	if args.output_format in ('json', 'ndjson'):
+		all_findings = []
+		for _name, _ptype, _steps, _interactions, emitter in walks:
+			for finding in emitter.findings:
+				all_findings.append(_to_shared_finding(finding))
+		emit.emit_findings(all_findings, output_format=args.output_format)
+		sys.exit(1 if has_error else 0)
+
+	counts = dashboard.aggregate(walks)
+
+	if level == verbosity.VerbosityLevel.NORMAL:
+		# Compact totals only; the exhaustive breakdown is VERBOSE-only so
+		# NORMAL stays within the line budget.
+		_render_normal_totals(counts)
+	elif level == verbosity.VerbosityLevel.VERBOSE:
+		# Diagnostic block first, then the full colorized dashboard.
 		print()
-		counts = dashboard.aggregate(walks)
-
-		# Render diagnostic summary if verbose mode
-		if args.verbose:
-			_render_verbose_diagnostics(counts)
-
+		diagnostic_data = _build_diagnostic_data(counts)
+		print(verbosity.diagnostic_summary(diagnostic_data))
+		print()
 		dashboard.render(counts)
 		print()
 

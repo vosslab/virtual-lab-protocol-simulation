@@ -47,6 +47,7 @@ import validation.shared_toolkit.reporter as toolkit_reporter
 import validation.shared_toolkit.cli as toolkit_cli
 import validation.shared_toolkit.findings as toolkit_findings
 import validation.shared_toolkit.emit as toolkit_emit
+import validation.shared_toolkit.verbosity as toolkit_verbosity
 
 REPO_ROOT = toolkit_paths.REPO_ROOT
 CONTENT_ROOT = toolkit_paths.CONTENT_ROOT
@@ -1760,21 +1761,44 @@ def main():
 		has_error = error_count > 0
 		has_warning = warning_count > 0
 
-		# Emit findings in the requested format. In quiet text mode, suppress
-		# per-finding output and emit only the one-line summary so the
-		# aggregate validate.py picks up a well-formed sibling-style summary.
-		if args.output_format == 'text' and args.quiet:
+		# Resolve verbosity level once for the entire output path.
+		level = toolkit_verbosity.resolve_level(
+			quiet=args.quiet,
+			verbose=args.verbose,
+		)
+
+		# Emit findings and summary respecting the contracted output level.
+		if args.output_format != 'text':
+			# Machine formats (JSON, NDJSON) bypass the verbosity level entirely.
+			toolkit_emit.emit_findings(all_findings, args.output_format)
+		elif level == toolkit_verbosity.VerbosityLevel.QUIET:
+			# QUIET: exactly one canonical summary line, no finding detail.
 			toolkit_reporter.print_summary_line(
 				len(names), error_count,
 				item_label="manuals", warnings=warning_count,
 			)
+		elif level == toolkit_verbosity.VerbosityLevel.VERBOSE:
+			# VERBOSE: summary + diagnostic block (top_codes per contract table).
+			# The full findings dump is available via --json; text verbose stays
+			# within the 199-line budget by emitting only the diagnostic summary.
+			toolkit_reporter.print_summary_line(
+				len(names), error_count,
+				item_label="manuals", warnings=warning_count,
+			)
+			# Build top_codes from findings: count occurrences of each code.
+			code_counts: dict = {}
+			for f in all_findings:
+				code_counts[f.code] = code_counts.get(f.code, 0) + 1
+			diag_data = toolkit_verbosity.DiagnosticData(
+				top_codes=list(code_counts.items()),
+			)
+			print(toolkit_verbosity.diagnostic_summary(diag_data))
 		else:
-			toolkit_emit.emit_findings(all_findings, args.output_format)
-			if args.output_format == 'text':
-				toolkit_reporter.print_summary_line(
-					len(names), error_count,
-					item_label="manuals", warnings=warning_count,
-				)
+			# NORMAL: summary totals only (no per-finding dump); within 40-line budget.
+			toolkit_reporter.print_summary_line(
+				len(names), error_count,
+				item_label="manuals", warnings=warning_count,
+			)
 
 		exit_code = 0
 		if has_error:
