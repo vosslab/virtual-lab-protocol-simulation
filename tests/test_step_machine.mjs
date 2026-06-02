@@ -380,6 +380,53 @@ describe("step machine - active_interaction_target and active_interaction_gestur
   });
 });
 
+describe("step machine - target_with_value authored value", () => {
+  test("adjust interaction validates from YAML value block", () => {
+    const config = {
+      protocol_name: "p",
+      protocol_type: "mini_protocol",
+      entry_step: "s1",
+      steps: [
+        {
+          step_name: "s1",
+          prompt: "Set the pipette volume.",
+          sequence: [
+            {
+              target: "serological_pipette",
+              gesture: "adjust",
+              validator: {
+                preset: "target_with_value",
+                value: { set_volume: 25 },
+              },
+              response: {
+                scene_operations: [
+                  {
+                    type: "ObjectStateChange",
+                    target: "serological_pipette",
+                    state: { set_volume: 25 },
+                  },
+                ],
+              },
+            },
+          ],
+          step_validator: { preset: "sequence_complete" },
+          outcome: { on_success: "complete", on_failure: "retry" },
+          next_step: null,
+        },
+      ],
+    };
+    const { machine, events, scene_ops } = build_harness(config);
+
+    machine.start();
+    machine.handle_click("serological_pipette", "adjust");
+
+    assert.ok(events.some((ev) => ev.kind === "interaction_validated"));
+    assert.ok(events.some((ev) => ev.kind === "protocol_completed"));
+    assert.strictEqual(scene_ops.length, 1);
+    assert.strictEqual(scene_ops[0].type, "ObjectStateChange");
+  });
+});
+
 describe("step machine - current_tip snapshot field", () => {
   test("current_tip is set from step.tip on step_started", () => {
     const step = {

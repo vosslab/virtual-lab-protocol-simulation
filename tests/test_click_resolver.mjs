@@ -3,7 +3,7 @@
 // Node tests for src/scene_runtime/protocol/click_resolver.ts.
 // Imports the real TypeScript source via the tsx loader.
 //
-// click_resolver.ts depends on the browser globals HTMLElement and
+// click_resolver.ts depends on the browser globals Element, HTMLElement, and
 // MouseEvent (used in instanceof checks). Node has neither. To exercise
 // the real function we install minimal stub classes onto globalThis
 // BEFORE importing the module. The stubs implement only the surface the
@@ -14,10 +14,10 @@ import { test } from "node:test";
 import assert from "node:assert";
 
 //============================================
-// Minimal HTMLElement / MouseEvent stubs
+// Minimal Element / HTMLElement / MouseEvent stubs
 //============================================
 
-class StubHTMLElement {
+class StubElement {
   constructor() {
     this._attrs = new Map();
     this._children = [];
@@ -65,6 +65,10 @@ class StubHTMLElement {
   }
 }
 
+class StubHTMLElement extends StubElement {}
+
+class StubSVGElement extends StubElement {}
+
 class StubMouseEvent {
   constructor(type, init) {
     this.type = type;
@@ -74,6 +78,7 @@ class StubMouseEvent {
 
 // Install before importing the module under test so its instanceof
 // checks see these classes as the browser globals.
+globalThis.Element = StubElement;
 globalThis.HTMLElement = StubHTMLElement;
 globalThis.MouseEvent = StubMouseEvent;
 // click_resolver also references Event implicitly (event: Event); no
@@ -123,6 +128,24 @@ test("click on descendant resolves to nearest [data-item-id] ancestor", () => {
   root.fire(new StubMouseEvent("click", { target: inner }));
 
   assert.strictEqual(resolved, "flask");
+});
+
+test("click on SVG descendant resolves to nearest [data-item-id] ancestor", () => {
+  const root = new StubHTMLElement();
+  const item = new StubHTMLElement();
+  item.setAttribute("data-item-id", "well_plate_96");
+  const svgChild = new StubSVGElement();
+  root.appendChild(item);
+  item.appendChild(svgChild);
+
+  let resolved = null;
+  attach_click_resolver(root, (name) => {
+    resolved = name;
+  });
+
+  root.fire(new StubMouseEvent("click", { target: svgChild }));
+
+  assert.strictEqual(resolved, "well_plate_96");
 });
 
 test("click on element with no [data-item-id] ancestor does not invoke callback", () => {

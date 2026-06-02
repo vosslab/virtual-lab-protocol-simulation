@@ -29,6 +29,7 @@ import type {
   SceneOperation,
   ShellViewSnapshot,
   StepValidatorPreset,
+  ValidatorReference,
   ValidatorPreset,
 } from "../../shell/adapter/types";
 import type { RuntimeEmitterHandle, SnapshotReducer } from "./emitter";
@@ -331,6 +332,18 @@ function to_validator_interaction(
   return interaction;
 }
 
+function validator_parameters(ref: ValidatorReference): Record<string, unknown> | undefined {
+  const authored_params = ref.params ?? ref.value;
+  if (authored_params === undefined) {
+    return undefined;
+  }
+  const out: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(authored_params)) {
+    out[key] = value;
+  }
+  return out;
+}
+
 // Convert a config ProtocolStep into the shape validators.ts expects.
 function to_validator_step(step: ProtocolStep): ValidatorStep {
   const preset: StepValidatorPreset = step.step_validator.preset as StepValidatorPreset;
@@ -339,7 +352,7 @@ function to_validator_step(step: ProtocolStep): ValidatorStep {
       interaction.target,
       interaction.gesture,
       interaction.validator.preset as InteractionValidatorPreset,
-      interaction.validator.params,
+      validator_parameters(interaction.validator),
     ),
   );
   const validator_block: ValidatorStep["step_validator"] = step.step_validator.params
@@ -573,9 +586,16 @@ export function create_step_machine(
       interaction.target,
       interaction.gesture,
       preset,
-      interaction.validator.params,
+      validator_parameters(interaction.validator),
     );
-    const result = dispatch_interaction_validator(preset, validator_interaction, target, null, {});
+    const value_map = preset === "target_with_value" ? validator_parameters(interaction.validator) : {};
+    const result = dispatch_interaction_validator(
+      preset,
+      validator_interaction,
+      target,
+      null,
+      value_map,
+    );
     if (!result.ok) {
       emit_rejection(
         step.step_name,
@@ -619,7 +639,7 @@ export function create_step_machine(
       interaction.target,
       interaction.gesture,
       preset,
-      interaction.validator.params,
+      validator_parameters(interaction.validator),
     );
     const result = dispatch_interaction_validator(
       preset,

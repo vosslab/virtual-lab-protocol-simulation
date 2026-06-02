@@ -77,12 +77,12 @@ export function attach_click_resolver(root: HTMLElement, on_click: ClickCallback
     // event.target is the element that received the click. Walk up to find
     // the closest ancestor (or target itself) carrying [data-item-id].
     const target = event.target;
-    if (!(target instanceof HTMLElement)) {
+    if (!(target instanceof Element)) {
       return;
     }
 
     const element = target.closest("[data-item-id]");
-    if (element instanceof HTMLElement) {
+    if (element instanceof Element) {
       const targetName = element.getAttribute("data-item-id");
       if (targetName !== null) {
         // Gesture is always "click" in this WP.
