@@ -18,7 +18,7 @@ Scope boundaries:
   single geometry producer is the browser render pipeline
   (`tools/scene_to_png.mjs` -> `tools/scene_stats.mjs`), which lays out every
   shipped scene through the real TypeScript layout engine and writes the
-  rendered bounding boxes to `test-results/scenes/<scene>.stats.json`.
+  rendered bounding boxes to `generated/scene_render_stats/<scene>.stats.json`.
   `validation/scene_calc/dump.py` is a thin loader of that stats file; it
   performs no layout math. When the validator disagrees with the render, the
   validator is wrong by definition (the generator wins). If a scene's
@@ -312,7 +312,7 @@ across all Group B rules.
 
 | Module | Purpose |
 | --- | --- |
-| `validation/scene_calc/dump.py` | Thin loader: reads `test-results/scenes/<scene>.stats.json` (produced by the browser render) and returns the rendered geometry as the canonical input to Group B rules. Computes no layout. |
+| `validation/scene_calc/dump.py` | Thin loader: reads `generated/scene_render_stats/<scene>.stats.json` (produced by the browser render) and returns the rendered geometry as the canonical input to Group B rules. Computes no layout. |
 | `tools/scene_to_png.mjs` + `tools/scene_stats.mjs` | The single geometry producer: render each scene through the real TS layout engine and emit rendered bboxes, `aspect_delta_pct`, `scale_source`, and zone `inner_rect` into stats.json. |
 | `validation/shared_toolkit/scene_loaders.py` | `load_svg_viewbox`, `resolve_inheritance`, typed inheritance exceptions consumed by Group A rules. |
 | `validation/shared_toolkit/yaml_io.py` | YAML loader with error wrapping. |

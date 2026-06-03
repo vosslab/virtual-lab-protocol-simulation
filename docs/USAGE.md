@@ -38,7 +38,7 @@ bash pipeline/build_generated.sh
 ### Generator scripts (under `pipeline/`)
 
 - `gen_object_library.py`: Reads object YAML from `content/objects/**/*.yaml`, validates against closed `KINDS` enum and asset references, emits `generated/object_library.ts` with typed `OBJECT_LIBRARY` and `ASSET_SPECS`.
-- `gen_svg_registry.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_registry.ts` with inline `SVG_REGISTRY` content (one base64-encoded entry per SVG).
+- `gen_svg_manifest.py`: Scans `assets/**/*.svg` for all tracked SVG files, validates SVG structure, emits `generated/svg_manifest.ts` mapping each `asset_name` to a relative SVG file path plus `generated/svg_placeholder_keys.ts` (build/test-only), and removes any stale `generated/svg_registry.ts`. It does not copy SVGs; the static SVG files are copied to `dist/assets/svg/` by `build_github_pages.sh` at bundle time. There is no inline `SVG_REGISTRY` markup blob; the runtime loads SVG via the manifest plus `fetch()`.
 - `gen_scene_index.py`: Reads scene YAML from `content/base_scenes/*.yaml` and per-protocol scene files, validates placements against the object library, emits `generated/scenes.ts` with typed `SCENES` object and `generated/scene_manifest.json`. Accepts `--missing-svg=strict|placeholder` (placeholder is default; see [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) for details).
 - `gen_protocols.py`: Reads `protocol.yaml` from `content/protocols/**/` and smoke fixtures, validates against the closed protocol schema, emits `generated/protocols.ts` and `generated/protocols_index_slim.ts`.
 
@@ -64,41 +64,41 @@ and `ASSET_SPECS`, produces `PipelineResult.final: ComputedItem[]`, and passes t
 `renderScene()`. The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` and emits
 absolutely-positioned SVG-injected DOM elements.
 
-No runtime YAML parsing, no `fetch`, no `js-yaml` dependency. All data is compiled at build time.
+No runtime YAML parsing and no `js-yaml` dependency. Non-SVG data (object library, scenes, protocols) is compiled at build time. SVG assets are the exception: `svg_manifest_loader.ts` uses runtime `fetch()` to load SVG files from `dist/assets/svg/` via the SVG manifest. The bundled `svg_registry` injection path has been removed; the manifest-plus-`fetch()` path is the only runtime SVG loader.
 
 ## Artifact locations
 
 - **Runtime bundle:** `dist/` contains `main.js` (bundled ES module), `index.html`, `style.css`, and per-protocol HTML shells (empty stubs that load shared runtime data).
 - **Visual artifacts:** `tests/playwright/artifacts/` stores Playwright screenshots, before/after comparisons, and visual reports.
 - **Diagnostic reports:** `docs/active_plans/reports/` stores milestone reports, failure taxonomies, and M2c diagnostic metrics.
-- **Generated data:** `generated/object_library.ts`, `generated/svg_registry.ts`, `generated/scenes.ts`, `generated/protocols.ts`, and `generated/protocols_index_slim.ts` are produced by the generator scripts and gitignored.
+- **Generated data:** `generated/object_library.ts`, `generated/svg_manifest.ts` (canonical SVG artifact), `generated/scenes.ts`, `generated/protocols.ts`, and `generated/protocols_index_slim.ts` are produced by the generator scripts and gitignored. `generated/svg_registry.ts` is REMOVED: `gen_svg_manifest.py` deletes any stale copy, and the runtime loads SVG via `generated/svg_manifest.ts` (relative paths) and `svg_manifest_loader.ts` fetch.
 
 ## Scene rendering and render-yield stats
 
-`tools/scene_to_png.mjs` is a developer tool that renders scenes via the scene viewer page,
-captures PNG screenshots, and writes structured render-yield stats alongside each PNG.
-It does not modify any source or generated files.
+`tools/scene_to_png.mjs` is a developer tool that renders scenes via the scene viewer page and
+writes structured render-yield stats. `build_github_pages.sh` runs it as its final build step.
+It does not modify any source files.
 
 ```bash
-# Render one named scene (PNG + stats.json, single summary to stdout)
+# Render one named scene (stats.json, single summary to stdout)
 node tools/scene_to_png.mjs --scene hood_basic
 
-# Render all emitted scenes; skipped scenes get a summary row but no PNG
+# Render all emitted scenes; writes one stats.json per emitted scene
 node tools/scene_to_png.mjs --all
 
-# Custom output directory and viewport
-node tools/scene_to_png.mjs --all --out /tmp/scene_pngs --viewport 1440x900
+# Add optional human PNG screenshots under test-results/scenes/
+node tools/scene_to_png.mjs --all --png
 
-# Single-scene with a specific output PNG path
-node tools/scene_to_png.mjs --scene hood_basic --out test-results/hood_basic.png
+# Custom viewport
+node tools/scene_to_png.mjs --all --viewport 1440x900
 ```
 
 The npm alias `npm run scene:png -- <args>` also works.
 
 Output directories (defaults):
 
-- `--scene`: `test-results/scenes/<scene>.png` + `<scene>.stats.json`
-- `--all`: `test-results/scenes/` with one PNG + stats.json per emitted scene, plus `summary.json`
+- Machine stats: one `generated/scene_render_stats/<scene>.stats.json` per emitted scene (required validation input). These are never written under `test-results/`.
+- Optional human PNG screenshots (`--png` only): `test-results/scenes/<scene>.png`, plus `summary.json` under `test-results/scenes/` for `--all`.
 
 Categories reported per scene:
 
@@ -185,6 +185,29 @@ source source_me.sh && python3 validation/validate.py
 ### Canonical entry point
 
 `validation/validate.py` is the aggregate entry point for the full validation suite. It runs seven stages (YAML schema, SVG assets, protocol stepper, folder layout, manual lint, scene-lint, scene-design) with a unified command-line interface and overview-mode rich summary output.
+
+### Render evidence and validation
+
+Scene render-stats are renderer-derived BUILD evidence. `build_github_pages.sh` produces them as its final step (after `dist/` is built), via `node tools/scene_to_png.mjs --all`, writing one `generated/scene_render_stats/<scene>.stats.json` per emitted scene. The required validation evidence is therefore a declared build artifact, not a hidden cache.
+
+`run_validate.sh` VALIDATES ONLY: it reads the existing `generated/scene_render_stats/*.stats.json` and never renders. If those stats are absent, the Python validator fails clearly via `MissingRenderEvidenceError`, pointing at `./build_github_pages.sh` as the fix. There is no self-heal step.
+
+Machine-readable scene stats live under `generated/scene_render_stats/` (generated, required validation input). They never live under `test-results/`. The Python validators stay pure: `scene-lint` and `scene-design` read only `generated/scene_render_stats/<scene>.stats.json` and never parse PNG pixels or spawn Node.
+
+PNG screenshots are OPTIONAL human artifacts. Produce them with `--png`:
+
+```bash
+# Optional human screenshots: writes test-results/scenes/<scene>.png
+node tools/scene_to_png.mjs --all --png
+```
+
+`summary.json` is also an optional human run report under `test-results/scenes/`.
+
+Clean-tree sequence (nothing else is needed between steps; the build produces the validation evidence):
+
+```bash
+devel/dist_clean.sh && devel/setup_typescript.sh && ./build_github_pages.sh && ./run_validate.sh
+```
 
 ### Unified flag table
 

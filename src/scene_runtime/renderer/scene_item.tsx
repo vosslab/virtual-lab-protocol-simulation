@@ -32,7 +32,7 @@
 // this component adds NO per-item click handler.
 
 import type { JSXElement } from "solid-js";
-import { createMemo, createSignal, createEffect, Show, For } from "solid-js";
+import { createMemo, createSignal, createEffect, createResource, Show, For } from "solid-js";
 
 import type { ComputedItem, ObjectVisualStates } from "../layout/types.js";
 import type { SceneStore } from "../state/scene_store.js";
@@ -42,7 +42,8 @@ import {
   type ObjectState,
   type ResolvedVisualState,
 } from "./visual_state_resolver.js";
-import { injectSvgInto } from "./inject_svg.js";
+import { injectSvgFromManifest } from "./inject_svg.js";
+import { resolveSvgUrl, requiresDomSvg } from "./svg_manifest_loader.js";
 import { SubpartVisualStateOverlay } from "./subpart_visual_state_renderer.js";
 import { find_material_tint_subpart_field } from "./subpart_dispatch.js";
 import { OBJECT_LIBRARY } from "../../../generated/object_library.js";
@@ -145,22 +146,141 @@ function read_flags(
 }
 
 //============================================
-// SVG host (imperative innerHTML injection, ref-driven)
+// SVG host (tiered: <img> for static assets, fetched SVG DOM for DOM-required)
 //============================================
 
-// Inject a validated generated SVG asset into a host div by ref. inject_svg.ts
-// is the ONLY innerHTML site and accepts only build-time generated asset names
-// from SVG_REGISTRY; no authored YAML string ever reaches innerHTML here.
-function SvgHost(props: { asset: string }): JSXElement {
-  // The ref callback runs once when Solid creates the node. asset is a stable
-  // resolved registry key (string), never authored markup.
+// A fixed-size box that fills the item geometry. Both render tiers use it so the
+// host keeps a stable layout box before SVG file text arrives (no layout shift
+// while the async fetch is in flight).
+const SVG_HOST_BOX_STYLE: Record<string, string> = { width: "100%", height: "100%" };
+
+// Render a DOM-SVG-required asset: fetch its file text once (cached per URL),
+// namespace ids per render instance, and inject the resulting SVG DOM. The whole
+// fetch+namespace+inject runs inside a Solid resource so a failure is captured by
+// the resource (no unhandled promise rejection). The ref records the host element
+// and signals readiness; the resource (keyed on asset + key + host readiness)
+// performs the injection only once a host exists. A fetch/parse failure flows to
+// the resource's error state, which renders a visible error marker and stamps
+// data-svg-load-error on the host. Success inserts ONLY already-resolved markup.
+function DomSvgHost(props: { asset: string; svgInstanceKey: string }): JSXElement {
+  let hostEl: HTMLDivElement | undefined;
+  // Readiness flips true once the ref has set hostEl, so the resource does not
+  // run before a host exists to inject into.
+  const [hostReady, setHostReady] = createSignal<boolean>(false);
+
+  // The resource source bundles asset, key, and the host-ready flag. A changed
+  // asset (e.g. an SvgSwap-style enum visual_state) re-runs the injection. The
+  // resolver does the fetch+namespace+inject; its rejection becomes the
+  // resource's error state, surfaced visibly below.
+  const [injected] = createResource(
+    () => ({ asset: props.asset, key: props.svgInstanceKey, ready: hostReady() }),
+    async (k: { asset: string; key: string; ready: boolean }): Promise<boolean> => {
+      if (!k.ready || hostEl === undefined) {
+        // No host yet; resolve falsy and let the source re-trigger on readiness.
+        return false;
+      }
+      // Fetch (cached by URL) + namespace per instance + insert. A failure
+      // rejects, which Solid records as injected.error (handled below).
+      await injectSvgFromManifest(hostEl, k.asset, k.key);
+      return true;
+    },
+  );
+
+  // Loud, visible failure: a resource error becomes an explicit rendered error
+  // state plus a data-svg-load-error stamp -- never an unhandled rejection or a
+  // silent blank. Reading injected.error subscribes this memo to the resource.
+  const loadError = createMemo<string>(() => {
+    const err: unknown = injected.error;
+    if (err === undefined) {
+      return "";
+    }
+    if (err instanceof Error) {
+      return err.message;
+    }
+    if (typeof err === "string") {
+      return err;
+    }
+    // Non-Error, non-string resource error: serialize safely rather than
+    // relying on Object's default "[object Object]" stringification.
+    return JSON.stringify(err);
+  });
+
+  let lastLoggedError = "";
+  createEffect(() => {
+    const message = loadError();
+    if (message.length > 0 && message !== lastLoggedError) {
+      // eslint-disable-next-line no-console
+      console.error(`SVG load failed for asset "${props.asset}": ${message}`);
+    }
+    lastLoggedError = message;
+  });
+
   return (
     <div
-      style={{ width: "100%", height: "100%" }}
+      style={SVG_HOST_BOX_STYLE}
+      data-svg-render-mode="dom-svg"
+      data-svg-load-error={loadError().length > 0 ? loadError() : undefined}
       ref={(el: HTMLDivElement) => {
-        injectSvgInto(el, props.asset);
+        hostEl = el;
+        setHostReady(true);
       }}
-    ></div>
+    >
+      <Show when={loadError().length > 0}>
+        <span
+          style={{
+            "font-size": "10px",
+            "font-family": "monospace",
+            color: "#c0392b",
+            "pointer-events": "none",
+          }}
+        >
+          {`SVG load failed: ${props.asset}`}
+        </span>
+      </Show>
+    </div>
+  );
+}
+
+// Render a static (non-DOM-SVG-required) asset as an <img>. The container item
+// div already carries the data-* attributes and the delegated click affordance,
+// so the image must not intercept pointer events; pointer-events:none keeps the
+// container clickable/highlightable. object-fit:contain preserves aspect (never
+// crop/stretch a scientific asset, per PRIMARY_DESIGN.md). The fixed box style
+// keeps layout stable.
+function ImgSvgHost(props: { asset: string }): JSXElement {
+  const url = createMemo<string>(() => resolveSvgUrl(props.asset));
+  return (
+    <img
+      src={url()}
+      alt=""
+      data-svg-render-mode="img"
+      style={{
+        ...SVG_HOST_BOX_STYLE,
+        "object-fit": "contain",
+        "pointer-events": "none",
+        display: "block",
+      }}
+    />
+  );
+}
+
+// Tiered SVG host. The render mode is chosen from the asset's DECLARED
+// requires_dom_svg value in the manifest (derived at generation time from object
+// declarations), never from current material/visual state -- so it is stable
+// across the object's lifetime. DOM-SVG-required assets fetch + namespace +
+// inject SVG DOM; static assets render as an opaque <img>. svgInstanceKey is a
+// stable unique render-instance key (scene_name + placement_name) used to
+// namespace internal SVG ids so two injected instances never collide on a shared
+// id (e.g. clipPath id="a").
+function SvgHost(props: { asset: string; svgInstanceKey: string }): JSXElement {
+  // requiresDomSvg reads the manifest's generation-time-derived boolean. It is a
+  // declaration property, not runtime state, so reading it once per asset (memo)
+  // is correct and stable.
+  const isDomSvg = createMemo<boolean>(() => requiresDomSvg(props.asset));
+  return (
+    <Show when={isDomSvg()} fallback={<ImgSvgHost asset={props.asset} />}>
+      <DomSvgHost asset={props.asset} svgInstanceKey={props.svgInstanceKey} />
+    </Show>
   );
 }
 
@@ -267,6 +387,11 @@ export function SceneItem(props: {
   item: ComputedItem;
   store: SceneStore;
   materialRegistry: MaterialRegistry | null;
+  // Scene/page id, threaded from SceneView. Composed with placement_name into a
+  // stable UNIQUE svgInstanceKey for SVG id namespacing. placement_name alone
+  // can repeat across nested scenes, overlays, or side-by-side views, so the
+  // scene id is required to keep the key unique per render instance.
+  sceneName: string;
   // SceneView-owned degrade sink. Called with a non-empty message when this
   // item's resolver throws, and with "" when it resolves cleanly, so SceneView
   // can reactively own the scene-root data-scene-degraded marker without a
@@ -472,7 +597,9 @@ export function SceneItem(props: {
           (e.g. an SvgSwap-style enum visual_state), the keyed Show remounts
           only the inner SVG host, never the item's outer node. */}
       <Show when={asset_name()} keyed>
-        {(asset) => <SvgHost asset={asset} />}
+        {(asset) => (
+          <SvgHost asset={asset} svgInstanceKey={`${props.sceneName}__${item.placement_name}`} />
+        )}
       </Show>
       <Show when={resolved() !== null}>
         <Overlays resolved={resolved()!} />

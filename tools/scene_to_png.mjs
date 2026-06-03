@@ -5,14 +5,28 @@
 // WS-M2-A + WS-M2-C: Render scene pages to PNG and report render stats.
 //
 // Usage (bare node):
-//   node tools/scene_to_png.mjs --scene <name> [--out <path>] [--viewport WxH]
-//   node tools/scene_to_png.mjs --all [--out <dir>] [--viewport WxH]
+//   node tools/scene_to_png.mjs --scene <name> [--png] [--out <path>] [--viewport WxH]
+//   node tools/scene_to_png.mjs --all [--png] [--out <dir>] [--viewport WxH]
+//
+// Output split:
+//   <scene>.stats.json -> generated/scene_render_stats/ (ALWAYS written; machine
+//                         validation evidence from DOM bbox measurement, not the
+//                         PNG; see STATS_DIR).
+//   <scene>.png        -> test-results/scenes/ (ONLY when --png is passed).
+//   summary.json       -> test-results/scenes/ (--all run report).
+//   --out controls the PNG/summary dir ONLY; stats always go to
+//   generated/scene_render_stats regardless of --out.
 //
 // --scene <name>           : Render one named scene from the manifest.
 // --all                    : Render every EMITTED scene in the manifest.
 //                            Skipped scenes get a summary row but no PNG.
-// --out <path>             : Single-scene: path for the PNG file.
-//                            --all: output directory (default: test-results/scenes/).
+// --png                    : Also write the PNG screenshot. Without it, the
+//                            page is rendered and stats are computed/written,
+//                            but no screenshot is captured. Default: off.
+// --out <path>             : Single-scene: path for the PNG file (with --png).
+//                            --all: PNG/summary output directory
+//                            (default: test-results/scenes/). Does not affect
+//                            stats.json location.
 // --missing-svg <mode>     : strict | placeholder. Recorded in stats.json but
 //                            does NOT trigger a rebuild. To switch mode, run:
 //                            bash build_github_pages.sh, then re-run this tool.
@@ -51,28 +65,32 @@ const REPO_ROOT = path.resolve(__dirname, "..");
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
 const MANIFEST_PATH = path.join(REPO_ROOT, "generated", "scene_manifest.json");
-const SVG_REGISTRY_PATH = path.join(REPO_ROOT, "generated", "svg_registry.ts");
+// Machine-readable stats.json files always write here, separate from the
+// human PNG/summary outputs under test-results/scenes. --out never moves them.
+const STATS_DIR = path.join(REPO_ROOT, "generated", "scene_render_stats");
+const SVG_PLACEHOLDER_KEYS_PATH = path.join(REPO_ROOT, "generated", "svg_placeholder_keys.ts");
 
 //============================================
 // Placeholder-asset key set
 //============================================
 
-// Reads the SVG_PLACEHOLDER_KEYS array out of the generated svg_registry.ts
-// module. The generated file is TypeScript, so rather than pull in a TS loader
-// just for this tool, parse the single string-array literal directly. Returns
-// a Set of asset keys whose registry markup is a dashed-box placeholder.
+// Reads the SVG_PLACEHOLDER_KEYS array out of the generated
+// svg_placeholder_keys.ts module. The generated file is TypeScript, so rather
+// than pull in a TS loader just for this tool, parse the single string-array
+// literal directly. Returns a Set of asset keys whose render is a dashed-box
+// placeholder.
 function read_placeholder_keys() {
-  if (!fs.existsSync(SVG_REGISTRY_PATH)) {
+  if (!fs.existsSync(SVG_PLACEHOLDER_KEYS_PATH)) {
     throw new Error(
-      `SVG registry not found: ${SVG_REGISTRY_PATH}\nRun: bash pipeline/build_generated.sh`,
+      `SVG placeholder keys not found: ${SVG_PLACEHOLDER_KEYS_PATH}\nRun: bash pipeline/build_generated.sh`,
     );
   }
-  const text = fs.readFileSync(SVG_REGISTRY_PATH, "utf8");
+  const text = fs.readFileSync(SVG_PLACEHOLDER_KEYS_PATH, "utf8");
   const blockMatch = text.match(/SVG_PLACEHOLDER_KEYS[^=]*=\s*\[([\s\S]*?)\]/);
   if (!blockMatch) {
     throw new Error(
-      `SVG_PLACEHOLDER_KEYS export missing from ${SVG_REGISTRY_PATH}. ` +
-        "Regenerate with pipeline/gen_svg_registry.py.",
+      `SVG_PLACEHOLDER_KEYS export missing from ${SVG_PLACEHOLDER_KEYS_PATH}. ` +
+        "Regenerate with pipeline/gen_svg_manifest.py.",
     );
   }
   const keys = [];
@@ -122,6 +140,7 @@ function parse_args(argv) {
     scene: null,
     all: false,
     out: null,
+    png: false,
     missing_svg: "placeholder",
     viewport: { width: 1920, height: 1080 },
   };
@@ -135,6 +154,8 @@ function parse_args(argv) {
       args.all = true;
     } else if (tok === "--out") {
       args.out = argv[++i];
+    } else if (tok === "--png") {
+      args.png = true;
     } else if (tok === "--missing-svg") {
       const mode = argv[++i];
       if (mode !== "strict" && mode !== "placeholder") {
@@ -414,6 +435,7 @@ async function render_scene(
   out_dir,
   missing_svg_mode,
   placeholder_keys,
+  write_png,
 ) {
   const t_start = Date.now();
 
@@ -485,26 +507,34 @@ async function render_scene(
     note: "missing_svg_mode is a passthrough flag. Changing it requires re-running bash build_github_pages.sh.",
   };
 
-  // Save the PNG.
-  fs.mkdirSync(out_dir, { recursive: true });
-  const png_path = path.join(out_dir, `${scene_name}.png`);
-  // Clip the screenshot to the #scene-root content so non-16:9 scenes do not
-  // letterbox. Without this, the scene (and its proportional labels) occupies
-  // only part of the 1920px-wide PNG and reads as tiny with empty margins.
-  // This is a pure image-export crop; it does not touch the stats/geometry math.
-  const clip_rect = compute_scene_clip(scene_root_bbox, page.viewportSize());
-  if (clip_rect) {
-    await page.screenshot({ path: png_path, clip: clip_rect });
-  } else {
-    // Bbox missing or unusable (load-failed, zero-size). Fall back to the full
-    // viewport so we still emit a PNG, and warn so the cause is visible.
-    console.warn(`  warning: ${scene_name} scene-root bbox unusable; capturing full viewport`);
-    await page.screenshot({ path: png_path, fullPage: false });
-  }
-
-  // Save the stats JSON alongside the PNG.
-  const stats_path = path.join(out_dir, `${scene_name}.stats.json`);
+  // Save the stats JSON to the generated stats dir (NOT out_dir). Stats come
+  // from DOM bbox measurement above; this write must not depend on the PNG.
+  // The PNG and summary.json are human artifacts under test-results/scenes; the
+  // machine stats are required validation evidence under
+  // generated/scene_render_stats and are written ALWAYS, regardless of --png.
+  fs.mkdirSync(STATS_DIR, { recursive: true });
+  const stats_path = path.join(STATS_DIR, `${scene_name}.stats.json`);
   fs.writeFileSync(stats_path, JSON.stringify(stats, null, 2));
+
+  // Save the PNG only when requested via --png.
+  let png_path = null;
+  if (write_png) {
+    fs.mkdirSync(out_dir, { recursive: true });
+    png_path = path.join(out_dir, `${scene_name}.png`);
+    // Clip the screenshot to the #scene-root content so non-16:9 scenes do not
+    // letterbox. Without this, the scene (and its proportional labels) occupies
+    // only part of the 1920px-wide PNG and reads as tiny with empty margins.
+    // This is a pure image-export crop; it does not touch the stats/geometry math.
+    const clip_rect = compute_scene_clip(scene_root_bbox, page.viewportSize());
+    if (clip_rect) {
+      await page.screenshot({ path: png_path, clip: clip_rect });
+    } else {
+      // Bbox missing or unusable (load-failed, zero-size). Fall back to the full
+      // viewport so we still emit a PNG, and warn so the cause is visible.
+      console.warn(`  warning: ${scene_name} scene-root bbox unusable; capturing full viewport`);
+      await page.screenshot({ path: png_path, fullPage: false });
+    }
+  }
 
   const elapsed_ms = Date.now() - t_start;
   return { scene_name, stats, png_path, stats_path, elapsed_ms, load_failed };
@@ -629,10 +659,12 @@ async function run_single(args) {
       out_dir,
       args.missing_svg,
       placeholder_keys,
+      args.png,
     );
 
-    // If a specific --out path was given, move the PNG there.
-    if (png_override && png_override !== result.png_path) {
+    // If a specific --out path was given, move the PNG there (only when a PNG
+    // was actually written via --png).
+    if (result.png_path && png_override && png_override !== result.png_path) {
       fs.mkdirSync(path.dirname(png_override), { recursive: true });
       fs.renameSync(result.png_path, png_override);
       result.png_path = png_override;
@@ -640,7 +672,9 @@ async function run_single(args) {
 
     console.log("");
     print_scene_summary(result);
-    console.log(`  png:            ${result.png_path}`);
+    if (result.png_path) {
+      console.log(`  png:            ${result.png_path}`);
+    }
     console.log(`  stats:          ${result.stats_path}`);
   } finally {
     await browser.close();
@@ -709,6 +743,7 @@ async function run_all(args) {
           out_dir,
           args.missing_svg,
           placeholder_keys,
+          args.png,
         );
       } catch (err) {
         // Continue past a failing render -- record load-failed row.

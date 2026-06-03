@@ -417,3 +417,17 @@ on introduction rather than drift the floor.
   registry-backed field explicitly declared in the object schema so the enum is not a
   conflicting surface. Scope: object schema + validator + generator changes; no runtime
   behavior change required.
+
+## Solid runtime polish (follow-up, not blocking)
+
+The current Solid implementation is broadly idiomatic; these are non-blocking refinements.
+
+- Review imperative `createEffect` calls that only stamp `data-*` attributes onto DOM
+  nodes. Where practical, replace them with JSX attribute bindings so Solid owns the DOM
+  update directly.
+- Consider a shared Solid SVG loading/error component (or boundary) later; do not refactor
+  the current `createResource` path unless real duplication or an error-handling problem
+  appears.
+- Preserve the rule that SVG DOM access stays isolated behind the injection/lookup layer
+  (`injectSvgFromManifest` / `resolveAnchor`); runtime state and control flow stay in Solid
+  stores/signals, never DOM queries.

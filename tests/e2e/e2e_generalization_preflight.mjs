@@ -4,9 +4,6 @@
 // markdown report at docs/active_plans/reports/m2_generalization_preflight.md
 //
 // Run via: node --import tsx tests/e2e/e2e_generalization_preflight.mjs
-// (this file currently sits at tests/e2e/test_generalization_preflight.mjs and
-// will be renamed to e2e_generalization_preflight.mjs by a human git mv; the
-// command above already names the post-rename path).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -147,7 +144,7 @@ function generateMarkdownReport(results) {
   lines.push("");
   lines.push("- Parse and normalize the scene YAML");
   lines.push("- Resolve all objects to the object library");
-  lines.push("- Resolve all assets to SVG_REGISTRY");
+  lines.push("- Resolve all assets to SVG_MANIFEST");
   lines.push("- Run the full convergence loop (up to MAX_LAYOUT_PASSES)");
   lines.push("- Run structural guards on final layout");
   lines.push("- Capture diagnostics, pass counts, and guard pass/fail verdict");

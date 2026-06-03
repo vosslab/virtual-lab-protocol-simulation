@@ -268,7 +268,7 @@ try {
 }
 
 //============================================
-// Guard 6: Asset resolves in SVG_REGISTRY
+// Guard 6: Asset resolves in SVG_MANIFEST
 //============================================
 
 console.log("Testing Guard 6: asset resolved...");

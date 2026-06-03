@@ -153,7 +153,7 @@ def run_all_rules(paths: list[Path]) -> list[Finding]:
 		check_invisible_placement,
 		check_zone_overlap,
 	)
-	from validation.scene_calc.dump import dump_scene_geometry
+	from validation.scene_calc.dump import dump_scene_geometry, MissingRenderEvidenceError
 	from validation.scene_lint.findings import Confidence
 	from validation.shared_toolkit.yaml_io import load_yaml
 	import yaml
@@ -190,9 +190,29 @@ def run_all_rules(paths: list[Path]) -> list[Finding]:
 		# Compute dump once per scene and reuse across all B rules.
 		try:
 			dump_data = dump_scene_geometry(path)
+		except MissingRenderEvidenceError as e:
+			# Render-evidence prerequisite failure: the per-scene stats.json is
+			# missing or load-failed. Emit a precise prerequisite message naming
+			# the fix command. Validation never renders; rendering is a separate
+			# explicit evidence step (node tools/scene_to_png.mjs --all).
+			message = (
+				"SCENE-LINT blocked: rendered scene stats are missing.\n"
+				"Generate render evidence first:\n"
+				"  node tools/scene_to_png.mjs --all"
+			)
+			findings.append(Finding(
+				scene=scene_name,
+				placement_name=None,
+				rule='missing_render_evidence',
+				verdict=Verdict.BLOCKED,
+				confidence=Confidence.HIGH,
+				message=message,
+				evidence={'error': str(e)},
+			))
+			continue
 		except (OSError, RuntimeError, KeyError) as e:
-			# If the dump fails, skip Group B for this scene; Group A findings
-			# (e.g., missing_svg_asset) will already flag the root cause.
+			# Other dump failures (not render-evidence). Skip Group B for this
+			# scene; Group A findings (e.g., missing_svg_asset) flag the root cause.
 			findings.append(Finding(
 				scene=scene_name,
 				placement_name=None,

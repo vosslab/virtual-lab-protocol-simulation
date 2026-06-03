@@ -19,18 +19,22 @@ What v2 does:
 Path support:
   M/m, L/l, H/h, V/v, C/c, S/s, Q/q, T/t, A/a, Z/z
 
-Bounding boxes for curves and arcs are approximate. Curves use control points
-and endpoints. Arcs use endpoints. This is good enough for cropping icon art,
-but it is not a mathematically exact Bezier or arc extrema solver.
+Bounding boxes for cubic and quadratic curves are approximate: they use the
+control points and endpoints (a conservative superset of the true curve, so the
+box never undershoots). Elliptical arcs ARE solved exactly: arc_extrema computes
+the true axis-aligned extrema, accounting for rotation, the large-arc flag, and
+the sweep flag, so a bulging arc is fully contained.
 """
 
 from __future__ import annotations
 
-import argparse
 import re
-import shutil
 import sys
+import math
+import shutil
+import argparse
 import tempfile
+import unicodedata
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -97,12 +101,14 @@ class BBox:
 		return self.max_y - self.min_y
 
 
+#============================================
 def local_name(tag: str) -> str:
 	if "}" in tag:
 		return tag.rsplit("}", 1)[1]
 	return tag
 
 
+#============================================
 def fmt(value: float) -> str:
 	if abs(value) < 1e-9:
 		value = 0.0
@@ -110,6 +116,7 @@ def fmt(value: float) -> str:
 	return text if text else "0"
 
 
+#============================================
 def parse_float(value: str | None, default: float = 0.0) -> float:
 	if value is None:
 		return default
@@ -119,6 +126,7 @@ def parse_float(value: str | None, default: float = 0.0) -> float:
 	return float(match.group(1))
 
 
+#============================================
 def tokenize_path(d_attr: str) -> list[str]:
 	tokens: list[str] = []
 	for match in COMMAND_RE.finditer(d_attr):
@@ -126,10 +134,12 @@ def tokenize_path(d_attr: str) -> list[str]:
 	return tokens
 
 
+#============================================
 def is_command(token: str) -> bool:
 	return len(token) == 1 and token.isalpha()
 
 
+#============================================
 def parse_path_to_absolute(d_attr: str) -> list[PathSegment]:
 	"""Parse common SVG path data and convert commands to absolute form."""
 	tokens = tokenize_path(d_attr)
@@ -298,6 +308,7 @@ def parse_path_to_absolute(d_attr: str) -> list[PathSegment]:
 	return segments
 
 
+#============================================
 def path_segments_to_d(segments: Iterable[PathSegment], dx: float = 0.0, dy: float = 0.0) -> str:
 	parts: list[str] = []
 	for seg in segments:
@@ -324,43 +335,240 @@ def path_segments_to_d(segments: Iterable[PathSegment], dx: float = 0.0, dy: flo
 	return " ".join(parts)
 
 
+#============================================
+def _arc_center_params(
+	x0: float, y0: float, rx: float, ry: float, phi_deg: float,
+	large_arc: float, sweep: float, x1: float, y1: float,
+) -> tuple[float, float, float, float] | None:
+	"""Convert an SVG endpoint-form arc to center parameterization.
+
+	Implements the F.6.5 / F.6.6 endpoint-to-center conversion from the SVG
+	spec. Returns the ellipse center, the start angle, and the signed sweep
+	angle (delta), all in radians. Returns None when the arc degenerates to a
+	straight line (zero radius or coincident endpoints), since such an arc has
+	no bulge beyond its endpoints.
+
+	Args:
+		x0, y0: Arc start point (absolute user units).
+		rx, ry: Ellipse radii as authored (may need correction).
+		phi_deg: X-axis rotation of the ellipse, in degrees.
+		large_arc: Large-arc flag (0 or 1).
+		sweep: Sweep flag (0 or 1).
+		x1, y1: Arc end point (absolute user units).
+
+	Returns:
+		Tuple (cx, cy, theta1, delta_theta) in radians, or None if degenerate.
+	"""
+	rx = abs(rx)
+	ry = abs(ry)
+	# Zero radius means the arc is just a line to the endpoint; no bulge.
+	if rx == 0.0 or ry == 0.0:
+		return None
+	# Coincident endpoints render nothing (per spec); treat as no bulge.
+	if x0 == x1 and y0 == y1:
+		return None
+	phi = math.radians(phi_deg % 360.0)
+	cos_phi = math.cos(phi)
+	sin_phi = math.sin(phi)
+	# Step 1: compute (x1p, y1p), the midpoint delta in the rotated frame.
+	dx2 = (x0 - x1) / 2.0
+	dy2 = (y0 - y1) / 2.0
+	x1p = cos_phi * dx2 + sin_phi * dy2
+	y1p = -sin_phi * dx2 + cos_phi * dy2
+	# Correct out-of-range radii (spec F.6.6 step 3).
+	radii_check = (x1p * x1p) / (rx * rx) + (y1p * y1p) / (ry * ry)
+	if radii_check > 1.0:
+		scale = math.sqrt(radii_check)
+		rx *= scale
+		ry *= scale
+	# Step 2: compute the transformed center (cxp, cyp).
+	num = rx * rx * ry * ry - rx * rx * y1p * y1p - ry * ry * x1p * x1p
+	den = rx * rx * y1p * y1p + ry * ry * x1p * x1p
+	# Numerical guard: clamp tiny negative numerators to zero.
+	if num < 0.0:
+		num = 0.0
+	if den == 0.0:
+		return None
+	coef = math.sqrt(num / den)
+	# Sign per spec: negative when large_arc != sweep.
+	if int(large_arc) == int(sweep):
+		coef = -coef
+	cxp = coef * (rx * y1p) / ry
+	cyp = coef * (-ry * x1p) / rx
+	# Step 3: map the center back to the original coordinate frame.
+	cx = cos_phi * cxp - sin_phi * cyp + (x0 + x1) / 2.0
+	cy = sin_phi * cxp + cos_phi * cyp + (y0 + y1) / 2.0
+
+	# Step 4: compute the start angle theta1 and sweep delta.
+	def angle(ux: float, uy: float, vx: float, vy: float) -> float:
+		dot = ux * vx + uy * vy
+		mag = math.sqrt((ux * ux + uy * uy) * (vx * vx + vy * vy))
+		# Clamp to [-1, 1] to absorb floating point drift before acos.
+		ratio = max(-1.0, min(1.0, dot / mag))
+		result = math.acos(ratio)
+		if ux * vy - uy * vx < 0.0:
+			result = -result
+		return result
+
+	ux = (x1p - cxp) / rx
+	uy = (y1p - cyp) / ry
+	vx = (-x1p - cxp) / rx
+	vy = (-y1p - cyp) / ry
+	theta1 = angle(1.0, 0.0, ux, uy)
+	delta = angle(ux, uy, vx, vy)
+	# Honor the sweep flag direction per spec.
+	if int(sweep) == 0 and delta > 0.0:
+		delta -= 2.0 * math.pi
+	elif int(sweep) == 1 and delta < 0.0:
+		delta += 2.0 * math.pi
+	return cx, cy, theta1, delta
+
+
+#============================================
+def _arc_point(
+	cx: float, cy: float, rx: float, ry: float, cos_phi: float, sin_phi: float, t: float,
+) -> tuple[float, float]:
+	"""Return the (x, y) point on the rotated ellipse at angle t (radians)."""
+	cos_t = math.cos(t)
+	sin_t = math.sin(t)
+	x = cx + rx * cos_t * cos_phi - ry * sin_t * sin_phi
+	y = cy + rx * cos_t * sin_phi + ry * sin_t * cos_phi
+	return x, y
+
+
+#============================================
+def arc_extrema(
+	x0: float, y0: float, rx: float, ry: float, phi_deg: float,
+	large_arc: float, sweep: float, x1: float, y1: float,
+) -> tuple[list[float], list[float]]:
+	"""Solve the true x/y extrema of an SVG elliptical arc.
+
+	Evaluates the arc endpoints plus the axis-aligned extrema (the parametric
+	angles where dx/dt = 0 and dy/dt = 0), keeping only those that fall inside
+	the arc's actual angular sweep. This accounts for rotation, the large-arc
+	flag, and the sweep flag, so an arc that bulges past its endpoints
+	contributes the bulge to the bounding box.
+
+	Args:
+		x0, y0: Arc start point (absolute user units).
+		rx, ry: Ellipse radii as authored.
+		phi_deg: X-axis rotation of the ellipse, in degrees.
+		large_arc: Large-arc flag (0 or 1).
+		sweep: Sweep flag (0 or 1).
+		x1, y1: Arc end point (absolute user units).
+
+	Returns:
+		Tuple (xs, ys) of candidate x and y coordinates whose min/max bound the
+		arc. Always includes the two endpoints.
+	"""
+	xs = [x0, x1]
+	ys = [y0, y1]
+	params = _arc_center_params(x0, y0, rx, ry, phi_deg, large_arc, sweep, x1, y1)
+	if params is None:
+		# Degenerate arc: endpoints already bound it.
+		return xs, ys
+	cx, cy, theta1, delta = params
+	# Re-derive the corrected radii in the same way the center conversion did,
+	# so the extrema math matches the center we computed.
+	rx = abs(rx)
+	ry = abs(ry)
+	phi = math.radians(phi_deg % 360.0)
+	cos_phi = math.cos(phi)
+	sin_phi = math.sin(phi)
+	# Recompute the radius correction for consistency with the center solve.
+	dx2 = (x0 - x1) / 2.0
+	dy2 = (y0 - y1) / 2.0
+	x1p = cos_phi * dx2 + sin_phi * dy2
+	y1p = -sin_phi * dx2 + cos_phi * dy2
+	radii_check = (x1p * x1p) / (rx * rx) + (y1p * y1p) / (ry * ry)
+	if radii_check > 1.0:
+		scale = math.sqrt(radii_check)
+		rx *= scale
+		ry *= scale
+	# Candidate angles where the x derivative is zero:
+	#   x(t) = cx + rx cos t cos_phi - ry sin t sin_phi
+	#   dx/dt = -rx sin t cos_phi - ry cos t sin_phi = 0
+	#   => tan t = -(ry sin_phi) / (rx cos_phi)
+	# Two solutions, t and t + pi.
+	t_x = math.atan2(-ry * sin_phi, rx * cos_phi)
+	# Candidate angles where the y derivative is zero:
+	#   y(t) = cy + rx cos t sin_phi + ry sin t cos_phi
+	#   dy/dt = -rx sin t sin_phi + ry cos t cos_phi = 0
+	#   => tan t = (ry cos_phi) / (rx sin_phi)
+	t_y = math.atan2(ry * cos_phi, rx * sin_phi)
+	candidate_base = [t_x, t_x + math.pi, t_y, t_y + math.pi]
+	theta2 = theta1 + delta
+	lo = min(theta1, theta2)
+	hi = max(theta1, theta2)
+	for t in candidate_base:
+		# The sweep covers [lo, hi]; shift t by multiples of 2pi to test
+		# whether the extremum angle lies within that swept interval.
+		k = math.ceil((lo - t) / (2.0 * math.pi))
+		t_shifted = t + k * 2.0 * math.pi
+		if lo - 1e-9 <= t_shifted <= hi + 1e-9:
+			px, py = _arc_point(cx, cy, rx, ry, cos_phi, sin_phi, t_shifted)
+			xs.append(px)
+			ys.append(py)
+	return xs, ys
+
+
+#============================================
 def path_bbox_from_segments(segments: Iterable[PathSegment]) -> BBox | None:
 	xs: list[float] = []
 	ys: list[float] = []
 	current_start: tuple[float, float] | None = None
+	# Track the current pen position so an arc can solve its true extrema from
+	# its start point (previous endpoint) through its own end point.
+	cur_x = 0.0
+	cur_y = 0.0
 	for seg in segments:
 		cmd = seg.cmd
 		nums = seg.nums
 		if cmd == "M":
 			xs.append(nums[0]); ys.append(nums[1])
 			current_start = (nums[0], nums[1])
+			cur_x, cur_y = nums[0], nums[1]
 		elif cmd == "L":
 			xs.append(nums[0]); ys.append(nums[1])
+			cur_x, cur_y = nums[0], nums[1]
 		elif cmd == "C":
 			xs.extend([nums[0], nums[2], nums[4]])
 			ys.extend([nums[1], nums[3], nums[5]])
+			cur_x, cur_y = nums[4], nums[5]
 		elif cmd == "Q":
 			xs.extend([nums[0], nums[2]])
 			ys.extend([nums[1], nums[3]])
+			cur_x, cur_y = nums[2], nums[3]
 		elif cmd == "A":
-			# Endpoint approximation. Arc extrema are not solved.
-			xs.append(nums[5]); ys.append(nums[6])
+			# Solve true arc extrema (rotation, large-arc, sweep) instead of
+			# using only the endpoint, which undershoots a bulging arc.
+			rx, ry, rot, large, sweep, end_x, end_y = nums
+			arc_xs, arc_ys = arc_extrema(
+				cur_x, cur_y, rx, ry, rot, large, sweep, end_x, end_y
+			)
+			xs.extend(arc_xs)
+			ys.extend(arc_ys)
+			cur_x, cur_y = end_x, end_y
 		elif cmd == "Z" and current_start is not None:
 			xs.append(current_start[0]); ys.append(current_start[1])
+			cur_x, cur_y = current_start
 	if not xs:
 		return None
 	return BBox(min(xs), min(ys), max(xs), max(ys))
 
 
+#============================================
 def parse_points(points: str) -> list[tuple[float, float]]:
 	nums = [float(x) for x in re.findall(r"[-+]?(?:\d*\.\d+|\d+\.?)(?:[eE][-+]?\d+)?", points)]
 	return [(nums[i], nums[i + 1]) for i in range(0, len(nums) - 1, 2)]
 
 
+#============================================
 def format_points(points: list[tuple[float, float]], dx: float, dy: float) -> str:
 	return " ".join(f"{fmt(x + dx)},{fmt(y + dy)}" for x, y in points)
 
 
+#============================================
 def element_bbox(elem: ET.Element) -> BBox | None:
 	tag = local_name(elem.tag)
 	if tag not in SHAPE_TAGS:
@@ -419,6 +627,7 @@ def element_bbox(elem: ET.Element) -> BBox | None:
 	return None
 
 
+#============================================
 def compute_bbox(root: ET.Element) -> BBox:
 	bbox: BBox | None = None
 	for elem in root.iter():
@@ -433,6 +642,7 @@ def compute_bbox(root: ET.Element) -> BBox:
 	return bbox
 
 
+#============================================
 def shift_element(elem: ET.Element, dx: float, dy: float) -> None:
 	tag = local_name(elem.tag)
 	if tag == "path" and elem.attrib.get("d"):
@@ -450,25 +660,27 @@ def shift_element(elem: ET.Element, dx: float, dy: float) -> None:
 			elem.set(attr, fmt(parse_float(elem.attrib[attr]) + dy))
 
 
+#============================================
 def extract_pre_root_comments(source_text: str) -> list[str]:
 	"""Return XML comments that appear before the <svg> root element.
 
-    ElementTree's TreeBuilder(insert_comments=True) preserves comments inside
-    the root only; comments between <?xml ...?> and <svg ...> are otherwise
-    dropped on round-trip, stripping attribution credit lines.
+	ElementTree's TreeBuilder(insert_comments=True) preserves comments inside
+	the root only; comments between <?xml ...?> and <svg ...> are otherwise
+	dropped on round-trip, stripping attribution credit lines.
 
-    Args:
-        source_text: Full raw text of an SVG file.
+	Args:
+		source_text: Full raw text of an SVG file.
 
-    Returns:
-        Each captured comment as its full <!-- ... --> form, in source order.
-    """
+	Returns:
+		Each captured comment as its full <!-- ... --> form, in source order.
+	"""
 	pre_root_match = re.search(r"^(.*?)<svg\b", source_text, re.DOTALL)
 	if not pre_root_match:
 		return []
 	return re.findall(r"<!--.*?-->", pre_root_match.group(1), re.DOTALL)
 
 
+#============================================
 def _ascii_id(value: str, seen_ids: dict[str, str]) -> str:
 	"""Return an ASCII replacement for a non-ASCII id or data-name attribute value.
 
@@ -488,7 +700,6 @@ def _ascii_id(value: str, seen_ids: dict[str, str]) -> str:
 	# For layer-style ids with CJK characters we drop non-ASCII bytes;
 	# for unknown scripts we fall back to removing non-ASCII entirely
 	# and then deduplicate against already-seen names.
-	import unicodedata
 	ascii_chars: list[str] = []
 	for ch in value:
 		if ord(ch) < 128:
@@ -522,6 +733,7 @@ def _ascii_id(value: str, seen_ids: dict[str, str]) -> str:
 	return candidate
 
 
+#============================================
 def make_ascii_clean(root: ET.Element) -> None:
 	"""Replace non-ASCII id and data-name attribute VALUES with ASCII equivalents.
 
@@ -587,18 +799,18 @@ def make_ascii_clean(root: ET.Element) -> None:
 def normalize_svg_file(input_path: Path, output_path: Path, padding: float = 2.0) -> tuple[BBox, str]:
 	"""Normalize an SVG: crop to drawn bbox, shift to origin, repad.
 
-    Preserves attribution metadata: pre-root XML comments are re-injected on
-    write; in-root comments survive via TreeBuilder(insert_comments=True);
-    dc:/cc:/rdf: namespace prefixes survive via module-level registrations.
+	Preserves attribution metadata: pre-root XML comments are re-injected on
+	write; in-root comments survive via TreeBuilder(insert_comments=True);
+	dc:/cc:/rdf: namespace prefixes survive via module-level registrations.
 
-    Args:
-        input_path: Path to source SVG.
-        output_path: Path to write the normalized SVG.
-        padding: Padding around drawn content, in user units. Default 2.
+	Args:
+		input_path: Path to source SVG.
+		output_path: Path to write the normalized SVG.
+		padding: Padding around drawn content, in user units. Default 2.
 
-    Returns:
-        Tuple of the original drawn BBox and the new viewBox string.
-    """
+	Returns:
+		Tuple of the original drawn BBox and the new viewBox string.
+	"""
 	source_text = input_path.read_text(encoding="utf-8")
 	pre_root_comments = extract_pre_root_comments(source_text)
 	parser = ET.XMLParser(target=ET.TreeBuilder(insert_comments=True))
@@ -635,6 +847,7 @@ def normalize_svg_file(input_path: Path, output_path: Path, padding: float = 2.0
 	return bbox, root.attrib["viewBox"]
 
 
+#============================================
 def output_path_for(input_path: Path, output_dir: Path | None, suffix: str, in_place: bool) -> Path:
 	if in_place:
 		return input_path
@@ -643,6 +856,7 @@ def output_path_for(input_path: Path, output_dir: Path | None, suffix: str, in_p
 	return input_path.with_name(f"{input_path.stem}{suffix}{input_path.suffix}")
 
 
+#============================================
 def path_data_list(svg_path: Path) -> list[str]:
 	root = ET.parse(svg_path).getroot()
 	data: list[str] = []
@@ -652,6 +866,7 @@ def path_data_list(svg_path: Path) -> list[str]:
 	return data
 
 
+#============================================
 def assert_no_relative_hvz(svg_path: Path) -> None:
 	bad: list[str] = []
 	for d_attr in path_data_list(svg_path):
@@ -662,6 +877,7 @@ def assert_no_relative_hvz(svg_path: Path) -> None:
 		raise AssertionError(f"Output still contains lowercase h/v/z in {svg_path}: {bad[:2]}")
 
 
+#============================================
 def write_svg(path: Path, body: str, view_box: str = "0 0 100 100") -> None:
 	path.write_text(f'<svg xmlns="{SVG_NS}" viewBox="{view_box}">\n{body}\n</svg>\n', encoding="utf-8")
 
@@ -690,6 +906,7 @@ METADATA_FIXTURE = '''<?xml version="1.0" encoding="UTF-8"?>
 '''
 
 
+#============================================
 def run_self_test() -> int:
 	temp_dir = Path(tempfile.mkdtemp(prefix="normalize-svg-v2-self-test-"))
 	failures: list[str] = []
@@ -758,6 +975,7 @@ def run_self_test() -> int:
 		raise
 
 
+#============================================
 def parse_args() -> argparse.Namespace:
 	parser = argparse.ArgumentParser(
 		description="Self-contained SVG normalizer v2 with h/v/z support.",
@@ -779,6 +997,7 @@ def parse_args() -> argparse.Namespace:
 	return parser.parse_args()
 
 
+#============================================
 def main() -> int:
 	args = parse_args()
 	if args.self_test or not args.input:

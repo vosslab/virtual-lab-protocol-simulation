@@ -48,6 +48,18 @@ Source: https://bioicons.com/
 | -------------------------- | ------------------------------------- | -------------------- | ------------------------------------------------------------------------------ |
 | 96well_pcr_plate_kelly.svg | assets/equipment/96well_pcr_plate.svg | Xi-Chen              | None (registered as SVG_96WELL_PCR_PLATE via pipeline/generate_svg_globals.py) |
 
+## DBCLS Lab Apparatus Icons
+
+Lab apparatus icon sourced from bioicons.com (https://bioicons.com/) under the CC-BY-4.0 license.
+
+License: CC-BY-4.0 (https://creativecommons.org/licenses/by/4.0/)
+Attribution: DBCLS, https://dbcls.rois.ac.jp/
+Source: OTHER_REPOS/bioicons/static/icons/cc-by-4.0/Lab_apparatus/DBCLS/shaker.svg
+
+| Source File | Destination File                             | Modifications                      |
+| ----------- | -------------------------------------------- | ---------------------------------- |
+| shaker.svg  | assets/equipment/rocking_shaker_idle.svg     | Normalized with normalize_svg_v2.py (arc-fixed); no anchors added |
+
 ## Anchor System
 
 All integrated Servier SVGs include the following anchor elements for layout and interaction:

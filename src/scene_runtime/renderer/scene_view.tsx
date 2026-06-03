@@ -245,6 +245,7 @@ export function SceneView(props: {
             item={item}
             store={props.store}
             materialRegistry={props.materialRegistry}
+            sceneName={result.scene.scene_name}
             onDegrade={onDegrade}
           />
           <SceneLabel item={item} fontSize={label_font_size} />

@@ -16,8 +16,9 @@
 //   2. The fill overlay actually changed height (the reactive update happened).
 //   3. Lifecycle: a SceneChange (re-mount) disposes the prior root (old item
 //      nodes are detached); dispose() empties the scene root (no orphans).
-//   4. SVG-injection safety: every injected <svg> matches a SVG_REGISTRY entry,
-//      and no authored label/object-name string leaks into injected SVG markup.
+//   4. SVG-injection safety: every injected <svg> matches a generated/svg_manifest.ts
+//      (SVG_MANIFEST) entry, and no authored label/object-name string leaks into
+//      injected SVG markup.
 //
 // Run: node tests/playwright/test_scene_reactivity_lifecycle.mjs
 
@@ -118,8 +119,8 @@ async function main() {
     await page.waitForSelector(`#scene-root [data-item-id="${FILL_TARGET}"]`, { timeout: 5000 });
 
     //----------------------------------------
-    // 4. SVG-injection safety: every injected <svg> matches a SVG_REGISTRY
-    //    entry, and no authored label/object-name text leaks into svg markup.
+    // 4. SVG-injection safety: every injected <svg> matches a generated/svg_manifest.ts
+    //    (SVG_MANIFEST) entry, and no authored label/object-name text leaks into svg markup.
     //----------------------------------------
     const injection = await page.evaluate(() => {
       const items = Array.from(document.querySelectorAll("#scene-root [data-item-id]"));

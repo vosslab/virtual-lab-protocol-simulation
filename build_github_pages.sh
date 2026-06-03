@@ -15,6 +15,7 @@
 #   dist/<protocol_name>.html    -- one per entry in generated PROTOCOLS_INDEX,
 #                                   templated from src/protocol_host_template.html
 #   dist/.nojekyll               -- GitHub Pages flag
+#   generated/scene_render_stats/<scene>.stats.json -- renderer-derived scene geometry consumed by SCENE-LINT/SCENE-DESIGN
 #
 # Contract:
 #   - Wipes dist/ from scratch.
@@ -116,6 +117,21 @@ cp src/style.css dist/style.css
 mkdir -p dist/assets/fonts
 cp assets/fonts/*.woff2 dist/assets/fonts/
 
+# 6c. Copy SVG source files so the manifest's relative paths resolve.
+#     generated/svg_manifest.ts maps each asset to assets/svg/<category>/<name>.svg
+#     relative to the served dist/ root. Both the PNG render server
+#     (tools/scene_to_png.mjs) and GitHub Pages serve dist/, so SVGs must live
+#     under dist/assets/svg/<category>/. Mirror the assets/<category>/ layout.
+mkdir -p dist/assets/svg
+for category_dir in assets/*/; do
+	category=$(basename "$category_dir")
+	# Only categories that actually contain SVG files (skip fonts, etc.).
+	if compgen -G "${category_dir}*.svg" > /dev/null; then
+		mkdir -p "dist/assets/svg/${category}"
+		cp "${category_dir}"*.svg "dist/assets/svg/${category}/"
+	fi
+done
+
 # 7. Generate dist/<protocol_name>.html for every PROTOCOLS_INDEX entry.
 #    list_protocols.py 'emit' parses PROTOCOLS_INDEX from generated/protocols.ts
 #    and writes one dist/<name>.html per entry, substituting {{PROTOCOL_NAME}}.
@@ -135,4 +151,14 @@ test -f dist/style.css
 test -f dist/bench_basic.html
 test -f dist/scene_viewer.html
 
-echo "Built dist/ (GitHub Pages-ready)."
+# 10. Generate scene render-stats (renderer-derived build evidence).
+#     SCENE-LINT and SCENE-DESIGN consume generated/scene_render_stats/*.stats.json.
+#     Generate them now that dist/ exists -- the renderer loads the built dist.
+#     Stats only (no --png); PNG screenshots are optional human evidence.
+node tools/scene_to_png.mjs --all
+compgen -G "generated/scene_render_stats/*.stats.json" > /dev/null || {
+	echo "ERROR: scene render stats were not generated" >&2
+	exit 1
+}
+
+echo "Built dist/ + scene render stats (GitHub Pages-ready)."

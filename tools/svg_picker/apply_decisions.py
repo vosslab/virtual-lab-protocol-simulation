@@ -289,7 +289,7 @@ def main() -> None:
 		print("Preflight validation failed:", file=sys.stderr)
 		for error in preflight_errors:
 			print(f"  {error}", file=sys.stderr)
-		sys.exit(1)
+		raise SystemExit(1)
 
 	# Count decisions by state
 	assigned_count = sum(1 for d in decisions if d.get("state") == "assigned")
@@ -319,7 +319,7 @@ def main() -> None:
 		print(f"Attribution rows appended: {attribution_rows_count}")
 
 	print()
-	print("Remember to run: source source_me.sh && python3 pipeline/gen_svg_registry.py")
+	print("Remember to run: source source_me.sh && python3 pipeline/gen_svg_manifest.py")
 
 
 if __name__ == "__main__":

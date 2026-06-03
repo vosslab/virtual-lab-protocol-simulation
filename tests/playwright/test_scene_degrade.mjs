@@ -195,7 +195,7 @@ async function main() {
         exists: true,
         // Check that the item has DOM children: the SvgHost div should be present.
         // The Show(when=asset_name) always has a truthy string (the bound asset),
-        // so an <svg> should be injected via injectSvgInto.
+        // so an <svg> should be injected via injectSvgFromManifest.
         hasSvg: svg !== null,
         degradedAttr: item.getAttribute("data-resolver-degraded"),
         assetAttr: item.getAttribute("data-asset"),

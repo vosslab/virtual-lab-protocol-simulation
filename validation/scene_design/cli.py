@@ -11,7 +11,7 @@ from validation.scene_design.class_detect import detect, SceneClassError
 from validation.scene_design.cards import SceneCard, write_cards_jsonl, write_cards_markdown
 from validation.scene_design.archive import append_history_row
 from validation.scene_design.score import aggregate_score
-from validation.scene_calc.dump import dump_scene_geometry
+from validation.scene_calc.dump import dump_scene_geometry, MissingRenderEvidenceError
 import validation.shared_toolkit.cli as toolkit_cli
 
 from validation.scene_design.metrics.labels import (
@@ -302,6 +302,19 @@ def main() -> None:
 		dump_note = None
 		try:
 			dump_data = dump_scene_geometry(path)
+		except MissingRenderEvidenceError:
+			# Render-evidence prerequisite failure: the per-scene stats.json is
+			# missing or load-failed. This is a hard prerequisite, not an advisory
+			# partial: fail the stage with a precise message naming the fix
+			# command. Validation never renders; rendering is a separate explicit
+			# step (node tools/scene_to_png.mjs --all).
+			print(
+				"SCENE-DESIGN blocked: rendered scene stats are missing.\n"
+				"Generate render evidence first:\n"
+				"  node tools/scene_to_png.mjs --all",
+				file=sys.stderr,
+			)
+			sys.exit(1)
 		except (OSError, RuntimeError, KeyError) as e:
 			dump_note = f"Scene geometry dump failed; dump-consuming metrics skipped: {e}"
 

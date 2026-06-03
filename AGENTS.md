@@ -43,7 +43,7 @@ These rules come from the primary contract and primary spec. See those files for
 
 Codegen and build-pipeline code lives in `pipeline/`. Developer utilities live in `tools/`. This is not negotiable and has been re-litigated multiple times; do not move it back or duplicate.
 
-- `pipeline/` owns every script that emits to `generated/`, assembles bundles, or produces `dist/` artifacts. Examples: `gen_object_library.py`, `gen_protocols.py`, `gen_scene_index.py`, `gen_svg_registry.py`, `build_main_bundle.mjs`, `list_protocols.py`, `scene_inheritance.py`.
+- `pipeline/` owns every script that emits to `generated/`, assembles bundles, or produces `dist/` artifacts. Examples: `gen_object_library.py`, `gen_protocols.py`, `gen_scene_index.py`, `gen_svg_manifest.py`, `build_main_bundle.mjs`, `list_protocols.py`, `scene_inheritance.py`.
 - `tools/` owns developer-only helpers that do not appear in any build chain: smoke runners, SVG inspection, PDF/HTML utilities, CSS policy checks, contrast calculators, one-off review scripts.
 - Do not write a new generator into `tools/`. Do not keep duplicate copies of a generator in both directories. Do not "archive" superseded pipeline files into `tools/` -- git history is the archive; delete them.
 - If a script is unclear, ask: does it emit to `generated/` or `dist/`, or is it invoked by `package.json` scripts or `build_github_pages.sh`? Yes -> `pipeline/`. No -> `tools/`.

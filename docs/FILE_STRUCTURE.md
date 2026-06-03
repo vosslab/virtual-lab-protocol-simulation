@@ -68,6 +68,7 @@ src/
 |     +- render_background.ts  -- background (gradient or asset)
 |     +- structural_guards.ts  -- six layout validation guards
 |     +- inject_svg.ts         -- inline SVG injection from ASSET_SPECS
+|     +- svg_manifest_loader.ts -- runtime SVG manifest fetch/cache layer
 |     `- index.ts              -- barrel: renderScene, mountScene, SceneView, SceneItem
 `- shell/
    +- adapter/
@@ -97,7 +98,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | File | Purpose |
 | --- | --- |
 | [gen_object_library.py](../pipeline/gen_object_library.py) | `content/objects/` YAML -> `generated/object_library.ts` |
-| [gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
+| [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) | `assets/**/*.svg` -> `generated/svg_manifest.ts` (asset_name -> relative file path) |
 | [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json`; `--missing-svg=strict|placeholder` (default `placeholder`) |
 | [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
 | [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index build helpers |
@@ -208,7 +209,19 @@ Key Node test files:
 
 `assets/equipment/` contains tracked source SVG files for all lab objects.
 Sidecar `*.colormap.json` files group element ids for the recolor pipeline.
-Processed by [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py).
+Processed by [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py).
+
+### `tools/` - Developer-only helpers
+
+Scripts that do not appear in any build chain. See [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md)
+for the full list.
+
+Key tool:
+
+| File | Purpose |
+| --- | --- |
+| [tools/svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
+| [tools/svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |
 
 ### `devel/` - Maintainer scripts
 
@@ -274,15 +287,19 @@ All gitignored (see [.gitignore](../.gitignore)):
 | Path | Source script |
 | --- | --- |
 | `generated/object_library.ts` | [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) |
-| `generated/svg_registry.ts` | [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) |
+| `generated/svg_manifest.ts` | [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) |
+| `generated/svg_placeholder_keys.ts` | [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py) (build/test-only placeholder key array) |
 | `generated/scenes.ts` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) |
 | `generated/scene_manifest.json` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) (per-scene classification, source of truth for scene tooling) |
 | `generated/protocols.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocols_index_slim.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocol_materials.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) (per-protocol material registry; keyed by protocol_name) |
+| `generated/scene_render_stats/<scene>.stats.json` | renderer-produced scene geometry stats (build evidence consumed by SCENE-LINT/SCENE-DESIGN), written by [build_github_pages.sh](../build_github_pages.sh) via [tools/scene_to_png.mjs](../tools/scene_to_png.mjs) |
 | `dist/` | [build_github_pages.sh](../build_github_pages.sh) (GitHub Pages bundle) |
+| `dist/assets/svg/<category>/<name>.svg` | SVG assets copied by [build_github_pages.sh](../build_github_pages.sh) |
 | `dist/scene_viewer.html` | Copied from `src/scene_viewer_template.html` during build |
 | `test-results/` | Playwright screenshots and reports |
+| `test-results/scenes/<scene>.png`, `test-results/scenes/summary.json` | optional human artifacts (PNG screenshots and run report), written only with `node tools/scene_to_png.mjs --all --png` |
 | `node_modules/` | npm install output |
 
 The `generated/` tree is rebuilt from current YAML and SVG sources on every

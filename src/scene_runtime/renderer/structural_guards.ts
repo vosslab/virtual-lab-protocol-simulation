@@ -14,7 +14,7 @@
 
 import type { ComputedItem, SceneA, Bounds } from "../layout/types.js";
 import { ASSET_SPECS } from "../../../generated/object_library.js";
-import { SVG_REGISTRY } from "../../../generated/svg_registry.js";
+import { SVG_MANIFEST } from "../../../generated/svg_manifest.js";
 import { DEFAULT_VIEWPORT } from "../layout/constants.js";
 
 //============================================
@@ -25,7 +25,10 @@ const typedAssetSpecs = ASSET_SPECS as Record<
   string,
   { default_width: number; label_width: number; aspect: number }
 >;
-const typedSvgRegistry = SVG_REGISTRY;
+// Guard 6 validates asset presence against the SVG MANIFEST (the post-cutover
+// source of every shipped asset), not the removed inline SVG_REGISTRY. An asset
+// is resolvable iff it has a manifest entry.
+const typedSvgManifest = SVG_MANIFEST;
 
 //============================================
 // Violation classification
@@ -335,23 +338,23 @@ function checkAspectRatio(
 }
 
 //============================================
-// Guard 6: asset resolves in SVG_REGISTRY
+// Guard 6: asset resolves in the SVG manifest
 //============================================
 
 function checkAssetsResolved(final: ComputedItem[], scene: SceneA): StructuralViolation[] {
   const violations: StructuralViolation[] = [];
   for (const item of final) {
-    // Placeholder items deliberately have missing assets; skip the registry check.
+    // Placeholder items deliberately have missing assets; skip the manifest check.
     if (item.missing_svg === true) {
       continue;
     }
 
     const asset = item.asset;
-    if (!typedSvgRegistry[asset]) {
+    if (typedSvgManifest[asset] === undefined) {
       violations.push({
         guard: "missing_asset",
         placement_name: item.placement_name,
-        message: `Structural guard failure (missing asset): scene "${scene.scene_name}" / placement "${item.placement_name}" / object "${item.object_name}" / asset "${asset}" not in SVG_REGISTRY.`,
+        message: `Structural guard failure (missing asset): scene "${scene.scene_name}" / placement "${item.placement_name}" / object "${item.object_name}" / asset "${asset}" not in SVG_MANIFEST.`,
       });
     }
   }
@@ -453,7 +456,7 @@ export function collectStructuralViolations(
     // Guard 5: aspect ratios preserved. Pass the same viewport used by the
     // pipeline so rendered-aspect checks are consistent with computed _height.
     ...checkAspectRatio(final, effectiveViewport),
-    // Guard 6: assets resolved in registry
+    // Guard 6: assets resolved in SVG manifest
     ...checkAssetsResolved(final, scene),
     // Guard 7: labels inside scene
     ...checkLabelsInScene(final, scene),

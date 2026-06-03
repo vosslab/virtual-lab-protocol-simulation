@@ -79,7 +79,7 @@ On success, the applier:
 After applying decisions:
 
 ```bash
-source source_me.sh && python3 pipeline/gen_svg_registry.py
+source source_me.sh && python3 pipeline/gen_svg_manifest.py
 ```
 
 This regenerates the TypeScript constant exports that make the SVG assets available to the scene renderer.

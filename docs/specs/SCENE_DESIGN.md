@@ -16,7 +16,7 @@ Scope boundaries:
   broken (`gated_by_render_predictor` field reserved for that signal; see
   [#scorecard-shape](#scorecard-shape)).
 - Scene design **consumes** the same rendered geometry as scene lint, loaded
-  by `validation/scene_calc/dump.py` from `test-results/scenes/<scene>.stats.json`.
+  by `validation/scene_calc/dump.py` from `generated/scene_render_stats/<scene>.stats.json`.
   The single geometry producer is the browser render pipeline
   (`tools/scene_to_png.mjs` -> `tools/scene_stats.mjs`); scene_calc computes no
   layout. Metrics that need geometry return None when the stats file is missing
@@ -342,7 +342,7 @@ suppressed list but never returned to the caller.
 ### Known limitation (decision-gated)
 
 `dump_scene_geometry` now loads rendered geometry from a scene's
-`test-results/scenes/<scene>.stats.json`. The suggest engine scores
+`generated/scene_render_stats/<scene>.stats.json`. The suggest engine scores
 hypothetical *mutated* scenes, which have never been rendered and so have
 no stats.json. The loader raises `RuntimeError` for the missing file,
 `_score_mutation` catches it and returns None, and the engine produces zero

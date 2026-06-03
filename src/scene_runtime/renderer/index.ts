@@ -1,5 +1,5 @@
 // Public surface for the renderer. Consumers import from this module.
-// Internal helpers (injectSvgInto) stay private.
+// Internal helpers (injectSvgMarkupInto) stay private.
 
 export { renderScene, mountScene } from "./render_scene.js";
 export type { SceneDispose, MountSceneOptions } from "./render_scene.js";

@@ -9,7 +9,7 @@
 # for its placement cross-check, so gen_object_library.py must run first.
 #
 #   1. gen_object_library.py -> generated/object_library.ts
-#   2. gen_svg_registry.py   -> generated/svg_registry.ts
+#   2. gen_svg_manifest.py   -> generated/svg_manifest.ts (+ build/test-only svg_placeholder_keys.ts)
 #   3. gen_scene_index.py    -> generated/scenes.ts (reads object_library.ts)
 #   4. gen_protocols.py      -> generated/protocols.ts, generated/protocols_index_slim.ts
 #
@@ -25,8 +25,8 @@ mkdir -p generated
 
 # Run the generators in canonical order.
 python3 pipeline/gen_object_library.py
-python3 pipeline/gen_svg_registry.py
+python3 pipeline/gen_svg_manifest.py
 python3 pipeline/gen_scene_index.py
 python3 pipeline/gen_protocols.py
 
-echo "Regenerated generated/ (object_library, svg_registry, scenes, protocols)."
+echo "Regenerated generated/ (object_library, svg_manifest, svg_placeholder_keys, scenes, protocols)."

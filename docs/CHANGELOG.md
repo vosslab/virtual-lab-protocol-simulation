@@ -91,6 +91,30 @@
   `tests/test_object_validator_well_plate_subpart_material.py`.
   Full suite: 1447 passed. Content lint: 168 files, 113 errors (timing artifact; see Decisions and Failures), 5 warnings, 0 advisories.
 
+- SVG-pipeline work (M1 through M5, partial): per-render-instance id namespacing, SVG manifest
+  generation, tiered rendering infrastructure, dev tooling, and asset hygiene. Specifically:
+  - Per-render-instance id namespacing at the single injection chokepoint
+    (`src/scene_runtime/renderer/inject_svg.ts` `namespaceSvgIds`). Every injected SVG's internal
+    ids are prefixed `<asset_name>__<scene_or_page_id>__<placement_name>__<old_id>`. Reference
+    rewriting covers all `url()` forms (unquoted, quoted, whitespace) in any attribute, `href` and
+    `xlink:href`, and `url(#id)` inside `<style>` text nodes. Fixes the duplicate-id collision
+    (`clipPath id="a"` repeated across Servier-normalized assets) that mis-clipped objects in
+    multi-object scenes (the "wedge" on `destain_gel_rock`, `destain_gel_setup`, `stain_gel`,
+    `image_gel`).
+  - SVG manifest generation: `pipeline/gen_svg_manifest.py` (renamed from `gen_svg_registry.py`)
+    emits `generated/svg_manifest.ts` mapping `asset_name -> { relative path, requires_dom_svg }`.
+    `build_github_pages.sh` copies SVG sources to `dist/assets/svg/<category>/`. New runtime
+    fetch/cache layer `src/scene_runtime/renderer/svg_manifest_loader.ts`. New anchor-resolver seam
+    `resolveAnchor(host, bareAuthoredId)` so material code resolves bare authored anchor ids to
+    namespaced DOM elements without string concatenation.
+  - `requires_dom_svg` predicate derived from declared object capabilities
+    (`material_container`/`structured_surface`, non-empty `visual_states` or `composite`,
+    `fill_height` formula). Objects needing internal SVG access are DOM-injected; static objects
+    are `<img>`-eligible. Tightened from 41 to 30 assets flagged.
+  - Dev tools: `tools/svg_to_html_render.mjs` (multi-swatch SVG render/diff harness using
+    Playwright Firefox) and `tools/svg_identity_sweep.py` (perceptual-hash duplicate/mislabel
+    sweep). Identity sweep report in `docs/active_plans/audits/svg_identity_sweep.md`.
+
 - Registered and placed `well_plate_96` using the existing Servier SVG `96well_pcr_plate.svg`.
   Created `content/objects/plate/well_plate_96.yaml` with a grid 8x12 structure,
   subpart groups, object-level `material_name`/`material_volume` state fields (required by
@@ -102,7 +126,54 @@
   `well_plate_96: per-well material state not implemented (K writes across M protocols, out of
   scope)`. Per-well fill rendering remains out of scope (see TODO.md).
 
+- M5 SVG cutover COMPLETE (closeout): the runtime now renders SVG from
+  `generated/svg_manifest.ts` only, verified post-material-merge. The tiered render
+  path is live: objects with `requires_dom_svg: true` (30 of 56 assets, derived from
+  declared capabilities) fetch SVG text and inject namespaced SVG DOM; objects with
+  `requires_dom_svg: false` render as `<img>` with relative manifest paths that
+  resolve under the GitHub Pages repo subpath.
+- New test `tests/playwright/test_svg_file_loading.mjs`: serves `dist/` under
+  `http://localhost:<port>/virtual-lab-protocol-simulation/` and proves SVGs load
+  (HTTP 200, `image/svg+xml`, relative URLs), the four wedge pages
+  (`destain_gel_rock`, `destain_gel_setup`, `stain_gel`, `image_gel`) render with
+  `duplicateInjectedIds=0`, a `requires_dom_svg:true` object (`bottle_green`) renders
+  as injected `<svg>` while a `requires_dom_svg:false` object (`rocking_shaker_idle`)
+  renders as `<img>`, and `resolveAnchor(host, "anchor_liquid_bounds")` resolves to
+  the per-instance namespaced element with no string concatenation.
+
 ### Behavior or Interface Changes
+
+- SCENE-LINT and SCENE-DESIGN now emit a precise prerequisite failure when
+  rendered scene stats are missing or stale, replacing the generic
+  `dump_error [BLOCKED]` output. `validation/scene_calc/dump.py` raises a new
+  typed `MissingRenderEvidenceError(RuntimeError)` at both render-evidence raise
+  sites (missing `generated/scene_render_stats/<scene>.stats.json`, or a
+  load-failed render with no geometry block); both CLIs catch that type narrowly
+  and print `SCENE-LINT blocked: rendered scene stats are missing.` (and the
+  `SCENE-DESIGN` variant) pointing at `./build_github_pages.sh` as the fix. Both
+  stages still FAIL on this prerequisite. Validation never renders:
+  `run_validate.sh` and the validators do not auto-run the renderer; scene
+  render-stats are produced by the build instead.
+
+- Scene render-stats are now BUILD output: `build_github_pages.sh` generates
+  `generated/scene_render_stats/*.stats.json` as its final build step (after
+  `dist/` is built, via `node tools/scene_to_png.mjs --all`), so the required
+  validation evidence is a declared build artifact, not a hidden test-results
+  cache.
+
+- `run_validate.sh` validates existing generated stats only (no rendering, no
+  self-heal); when the stats are absent, `MissingRenderEvidenceError` fails
+  clearly pointing at `./build_github_pages.sh`.
+
+- Machine stats relocated from `test-results/scenes/` to
+  `generated/scene_render_stats/`; PNG screenshots are now optional
+  (`node tools/scene_to_png.mjs --all --png`) human artifacts under
+  `test-results/scenes/`. Documented in `docs/USAGE.md` and
+  `docs/FILE_STRUCTURE.md`.
+
+- Arc-extrema bounding-box fix in `tools/normalize_svg_v2.py`: true elliptical-arc extrema with
+  rotation, large-arc, and sweep flags (not endpoint-only), preventing clipped arc assets.
+  Documented in `docs/active_plans/audits/normalize_svg_v2_audit.md`.
 
 - Migrated the TypeScript material-color path from nested `{light, dark}` to a
   single scalar `display_color` hex string (M3 WP-COLOR), clearing the 171 tsc
@@ -140,8 +211,21 @@
   (see Additions), the 834 `state_value_not_allowed` errors resolved to 0; see
   Decisions and Failures for the resolution path.
 
+- Bundle-size win realized by the M5 SVG cutover: `dist/protocol_host.js` dropped
+  from 1.7 MB to 478 KB (489496 bytes), about 72% smaller, as the ~1.3 MB inline-SVG-markup
+  blob left the JS bundle. The bundled inline-SVG-markup registry
+  (`generated/svg_registry.ts`) is no longer emitted (the generator removes any stale
+  copy) and is no longer imported anywhere under `src/`. `structural_guards.ts` Guard 6
+  now validates asset presence against `SVG_MANIFEST`, not the removed registry.
+
 ### Fixes and Maintenance
 
+- Asset hygiene: deleted byte-duplicate `assets/equipment/vortex_new.svg`; replaced the mislabeled
+  `rocking_shaker_idle.svg` with the DBCLS shaker (CC-BY-4.0, attributed in
+  `docs/THIRD_PARTY_ASSETS.md`).
+- Doc and comment cleanup from pre-merge audit: updated stale `SVG_REGISTRY` wording in
+  `docs/specs/SVG_PIPELINE.md`, `docs/CODE_ARCHITECTURE.md`, `docs/FILE_STRUCTURE.md`;
+  `gen_svg_registry.py` references updated to `gen_svg_manifest.py` where applicable.
 - Renamed mislabeled `bench_basic` placement `center_rocking_shaker` (object `centrifuge`) to
   `center_centrifuge`. Propagated the rename into 5 inheriting scenes'
   `remove_placements` lists and the local add in `centrifuge_workspace`
@@ -192,8 +276,45 @@
   `MATERIAL_LINT.md` hook table updated to mark L5 and L3 spec_cite as EXISTS
   (done by WP-MAT-SWEEP and this workstream respectively).
 
+- Resolved the post-material-merge doc conflicts in `docs/CHANGELOG.md`,
+  `docs/CODE_ARCHITECTURE.md`, and `docs/FILE_STRUCTURE.md`, preserving both the
+  material and SVG content from each side.
+- Migrated SVG test tooling off the removed registry. `tests/playwright/svg_namespacing_harness.ts`
+  and `tests/playwright/test_svg_id_namespacing.mjs` now use the post-cutover API
+  (`injectSvgMarkupInto` with small inline-markup fixtures, `injectSvgFromManifest`,
+  `resolveAnchor`) instead of `SVG_REGISTRY`/`injectSvgInto`; registry-specific
+  error-message assertions were replaced with the real throw strings, and the obsolete
+  "missing registry key" negative case was dropped (no key->markup lookup exists
+  post-cutover). `tools/scene_to_png.mjs` fixed to read
+  `generated/svg_placeholder_keys.ts` (was an undefined `SVG_REGISTRY_PATH`).
+- One-line render-path lint fix in `scene_item.tsx`: the SVG resource error is narrowed
+  to `unknown` then to Error/string/`JSON.stringify`, clearing `no-unsafe-assignment`
+  and `no-base-to-string`.
+
+### Removals and Deprecations
+
+- M5 cutover closeout: `generated/svg_registry.ts` is no longer emitted (the generator
+  removes any stale copy) and is no longer imported anywhere under `src/`. The gated
+  runtime cutover described in the next bullet is now fully landed; the registry is
+  removed from the app render path. `structural_guards.ts` Guard 6 validates against
+  `SVG_MANIFEST`.
+
+- `generated/svg_registry.ts` is now a transitional bridge file, still emitted, to be removed in
+  the gated runtime cutover (scene_item render-mode flip + registry removal, including
+  `structural_guards.ts` Guard 6). The cutover is gated on the material commit landing first.
+
 ### Decisions and Failures
 
+- Root cause of the multi-object "wedge": a duplicate inline-SVG id collision (`url(#a)` resolving
+  to the first match in document order), not normalizer geometry. Fixed by per-render-instance id
+  namespacing at the inject chokepoint rather than per-asset prefixing. Per-asset prefixing would
+  miss same-asset-twice collisions.
+- `requires_dom_svg` means "needs internal SVG access", not "has any visual state". This narrows
+  the set from 41 to 30 assets. `<img>` is the safe default for static objects and is immune to
+  the id-collision bug.
+- Runtime cutover (scene_item render-mode flip + SVG_REGISTRY removal) is NOT done yet. It is
+  gated on the material commit landing. Until then the `SVG_REGISTRY` remains in the app render
+  path alongside the new manifest.
 - Decision: `kind: plate` object validation requires declaring `material_name` and
   `material_volume` at the object level plus `material_container` capability. These are
   object-level placeholders only; per-well material state is not implemented and the
@@ -242,6 +363,13 @@
 
 ### Developer Tests and Notes
 
+- New tests: `tests/playwright/test_svg_id_namespacing.mjs` (namespacing correctness + four wedge
+  pages render clean), `tests/test_svg_manifest_predicate.py` (`requires_dom_svg` branches), and
+  `tests/test_normalize_svg_geometry.py` (2 arc-extrema tests).
+- New test from the M5 cutover closeout: `tests/playwright/test_svg_file_loading.mjs`
+  (subpath file-loading: 5/5), proving manifest-served SVGs load and the tiered
+  `<svg>`/`<img>` split renders.
+- `check_codebase.sh` PASS (6 steps) after M1 through M4 and M5 Phase 1.
 - M4 WP-DOCS final gate results (per-well material state plan):
   - `pytest tests/`: 1460 passed.
   - `./run_validate.sh`: TOTAL 0 errors. 288 warnings. 113 advisories across 7 stages. -> PASS (warnings only); STEPPER 0 errors.
@@ -252,6 +380,12 @@
   Visible-UI per-well-protocol walkthrough is out of scope for this plan; gated on #28
   (visible adjust gesture affordance, a separate web_ui task, not a material-rendering
   defect).
+- M5 SVG cutover gate results (closeout, post-material-merge):
+  - `bash check_codebase.sh`: PASS (6 checks).
+  - `pytest tests/`: 1487 passed.
+  - `node --test`: SVG id-namespacing 5/5 and file-loading 5/5.
+  - `./run_validate.sh`: PASS (0 errors).
+  - Wedge-page screenshots saved under `test-results/`.
 
 ## 2026-06-02
 
@@ -526,7 +660,7 @@
 ### Fixes and Maintenance
 
 - Removed the duplicate npm `prebuild` hook. `npm run serve` now delegates directly to [run_web_server.sh](../run_web_server.sh), which already rebuilds before serving.
-- Moved generated-artifact builders from `tools/` to `pipeline/`: [gen_object_library.py](../pipeline/gen_object_library.py), [gen_svg_registry.py](../pipeline/gen_svg_registry.py), and [gen_scene_index.py](../pipeline/gen_scene_index.py). Build scripts and npm pre-hooks now call the pipeline paths.
+- Moved generated-artifact builders from `tools/` to `pipeline/`: [gen_object_library.py](../pipeline/gen_object_library.py), [gen_svg_manifest.py](../pipeline/gen_svg_manifest.py), and [gen_scene_index.py](../pipeline/gen_scene_index.py). Build scripts and npm pre-hooks now call the pipeline paths.
 - Fixed [gen_scene_index.py](../pipeline/gen_scene_index.py) validation to read authored `zone_name` instead of retired `id`, matching the 2026-05-26 `zone.id` retirement. Required scene and placement keys now use direct `dict[key]` access per [PYTHON_STYLE.md](PYTHON_STYLE.md); the generator still emits runtime `id` fields for the TypeScript `SceneZone` shape.
 
 ## 2026-05-24
