@@ -65,6 +65,54 @@ export interface LayoutHint {
   display_width_cm?: number;
 }
 
+// State-field schema types emitted by the object-library generator.
+// These are the declared contract; visual_states is the rendering map.
+
+export type StateFieldType = "enum" | "int" | "float" | "bool";
+
+export interface StateFieldDef {
+  field_name: string;
+  type: StateFieldType;
+  default: string | number | boolean;
+  applies_to: "object" | "subpart";
+  // enum-specific
+  allowed?: string[];
+  // numeric-specific
+  unit?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  description?: string;
+}
+
+// Visual state case for enum/bool fields
+export interface VisualStateCase {
+  when: string | boolean;
+  output: VisualStateOutput;
+}
+
+// Output shapes for a visual state case
+export type VisualStateOutput =
+  | { asset_name: string }
+  | { overlay_name: string }
+  | { composite: VisualStateOutput[] };
+
+export interface VisualStateDef {
+  kind: "svg" | "overlay" | "composite";
+  applies_to: "object" | "subpart";
+  // Cases for enum/bool fields
+  cases?: VisualStateCase[];
+  // Formula string for int/float fields
+  formula?: string;
+}
+
+// Keyed by field_name
+export type ObjectVisualStates = Record<string, VisualStateDef>;
+
+// State schema surface for store validation.
+// Derived from declared state_fields (not inferred from visual_states).
+export type ObjectStateSchema = Record<string, StateFieldDef>;
+
 export interface ObjectDef {
   object_name: string;
   kind: Kind;
@@ -72,6 +120,12 @@ export interface ObjectDef {
   asset: string;
   capabilities: Capability[];
   layout: LayoutHint;
+  // Declared state-field schema (object-level fields only; subpart fields in subpart_state_schema)
+  state_schema: ObjectStateSchema;
+  // Per-object visual_states rendering map
+  visual_states: ObjectVisualStates;
+  // Subpart state schema (only set on structured objects; empty object otherwise)
+  subpart_state_schema: ObjectStateSchema;
 }
 
 export interface AssetSpec {
@@ -82,6 +136,12 @@ export interface AssetSpec {
 
 export type ObjectLibrary = Record<string, ObjectDef>;
 export type AssetSpecs = Record<string, AssetSpec>;
+
+// Top-level schema registries emitted by gen_object_library.py.
+// Keys are object_name. Object-level state fields only (subpart fields excluded).
+export type ObjectStateSchemas = Record<string, ObjectStateSchema>;
+// Subpart-level state fields only (only set for structured objects).
+export type ObjectSubpartStateSchemas = Record<string, ObjectStateSchema>;
 
 export interface LayoutRules {
   zone_gap?: number;

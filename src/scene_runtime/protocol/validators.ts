@@ -95,34 +95,33 @@ export function validate_correct_target(
 }
 
 /**
- * Validate that the modal choice matches the expected choice.
+ * Validate that the student selected the correct next-step scene object.
  *
  * Preset: `correct_choice`
  *
- * Rule: a modal closed with a choice_id matching the validator's
- * expected value. The interaction's validator parameters carry the
- * expected choice_id (or a set of valid choice_ids).
+ * Corrected semantics (WS-M5-ST, ratified by the repo owner): `select` is
+ * the primary way a student interacts with a protocol -- it means "choose the
+ * next-step object among the scene objects already present in the scene." There
+ * is NO separate answer/choice-list concept. The selectable set is simply the
+ * clickable scene objects already rendered (each carrying its data-item-id).
+ * `correct_choice` therefore means target-equality: the SELECTED scene object
+ * equals the interaction's declared `target` (the student chose the correct
+ * next-step object). Selecting a wrong present object fails the same way a
+ * wrong-order click fails and does NOT advance.
+ *
+ * This is the same equality test as `correct_target`; the distinct preset name
+ * is retained because the gesture (`select`) and pedagogy (choosing among
+ * present objects) differ, and the closed preset vocabulary keeps the name.
  *
  * Rejection reasons:
- * - `wrong_value`: modal closed with a different choice_id.
+ * - `wrong_target`: the selected scene object is not the expected target.
  */
 export function validate_correct_choice(
   interaction: Interaction,
-  modal_close_choice_id: string | null,
+  selected_target: string | null,
 ): InteractionValidationResult {
-  if (!interaction.validator.parameters) {
-    // If no parameters are defined, the validator is misconfigured.
-    // Fail as wrong_value rather than silently pass.
-    return { ok: false, reason: "wrong_value" };
-  }
-
-  const expected_choice_id = interaction.validator.parameters["choice_id"];
-  if (expected_choice_id === undefined) {
-    return { ok: false, reason: "wrong_value" };
-  }
-
-  const ok = modal_close_choice_id === expected_choice_id;
-  const reason: InteractionRejectReason | null = ok ? null : "wrong_value";
+  const ok = selected_target === interaction.target;
+  const reason: InteractionRejectReason | null = ok ? null : "wrong_target";
   return { ok, reason };
 }
 
@@ -248,17 +247,18 @@ export function validate_final_state_matches(
  *
  * @param preset The validator preset name.
  * @param interaction The interaction to validate.
- * @param clicked_target The target that was clicked.
- * @param modal_choice_id Optional: the modal choice_id if the gesture
- *                         was a select on a modal.
- * @param value_map Optional: object state values for target_with_value.
+ * @param clicked_target The target that was clicked or selected.
+ * @param _unused Reserved slot (was the legacy modal choice_id; the corrected
+ *                `correct_choice` uses target-equality on clicked_target and
+ *                ignores this). Kept positional so callers do not churn.
+ * @param value_map Optional: object state / typed values for target_with_value.
  * @returns The validation result (ok boolean + rejection reason).
  */
 export function dispatch_interaction_validator(
   preset: InteractionValidatorPreset,
   interaction: Interaction,
   clicked_target: string,
-  modal_choice_id?: string | null,
+  _unused?: string | null,
   value_map?: InteractionValueMap,
 ): InteractionValidationResult {
   switch (preset) {
@@ -267,7 +267,8 @@ export function dispatch_interaction_validator(
     }
 
     case "correct_choice": {
-      return validate_correct_choice(interaction, modal_choice_id ?? null);
+      // Corrected semantics: target-equality on the selected scene object.
+      return validate_correct_choice(interaction, clicked_target);
     }
 
     case "target_with_value": {

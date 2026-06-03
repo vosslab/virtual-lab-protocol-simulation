@@ -3,7 +3,10 @@
 // capture diagnostics and pass counts, run structural guards, and emit a
 // markdown report at docs/active_plans/reports/m2_generalization_preflight.md
 //
-// Run via: node --import tsx tests/test_generalization_preflight.mjs
+// Run via: node --import tsx tests/e2e/e2e_generalization_preflight.mjs
+// (this file currently sits at tests/e2e/test_generalization_preflight.mjs and
+// will be renamed to e2e_generalization_preflight.mjs by a human git mv; the
+// command above already names the post-rename path).
 
 import fs from "node:fs";
 import path from "node:path";

@@ -200,7 +200,7 @@ describe("step machine - retry path", () => {
       ],
       step_validator: {
         preset: "final_state_matches",
-        params: { some_obj: { field: "expected" } },
+        value: { some_obj: { field: "expected" } },
       },
       outcome: { on_success: "complete", on_failure: "retry" },
       next_step: null,
@@ -219,19 +219,20 @@ describe("step machine - retry path", () => {
   });
 });
 
-describe("step machine - modal close drives correct_choice", () => {
-  test("commit with correct choice_id validates", () => {
-    const step = {
+describe("step machine - select chooses the next-step object (correct_choice)", () => {
+  // Corrected semantics (WS-M5-ST): a `select` interaction validated by
+  // correct_choice means "the student chose the correct next-step object among
+  // the present scene objects". It is driven through the same visible-click path
+  // (handle_click) with the select gesture; target-equality decides.
+  function make_select_step() {
+    return {
       step_name: "a",
-      prompt: "pick",
+      prompt: "pick the plate",
       sequence: [
         {
-          target: "modal_target",
+          target: "treatment_plate",
           gesture: "select",
-          validator: {
-            preset: "correct_choice",
-            params: { choice_id: "yes" },
-          },
+          validator: { preset: "correct_choice" },
           response: { scene_operations: [] },
         },
       ],
@@ -239,28 +240,46 @@ describe("step machine - modal close drives correct_choice", () => {
       outcome: { on_success: "complete", on_failure: "retry" },
       next_step: null,
     };
-    const cfg = make_config([step], "a");
+  }
+
+  test("selecting the correct object validates and completes", () => {
+    const cfg = make_config([make_select_step()], "a");
     const { machine, events } = build_harness(cfg);
     machine.start();
-    machine.handle_modal_close(true, "yes");
+    machine.handle_click("treatment_plate", "select");
     const validated = events.find((e) => e.kind === "interaction_validated");
     assert.ok(validated);
+    assert.strictEqual(validated.gesture, "select");
     const done = events.find((e) => e.kind === "protocol_completed");
     assert.ok(done);
   });
 
-  test("commit with wrong choice_id rejects with wrong_value", () => {
-    const step = {
+  test("selecting a wrong present object rejects and does not advance", () => {
+    const cfg = make_config([make_select_step()], "a");
+    const { machine, events, emitter } = build_harness(cfg);
+    machine.start();
+    machine.handle_click("waste_beaker", "select");
+    const rejected = events.find((e) => e.kind === "interaction_rejected");
+    assert.ok(rejected);
+    assert.strictEqual(rejected.reason_code, "wrong_target");
+    assert.strictEqual(emitter.get_snapshot().is_complete, false);
+    assert.strictEqual(emitter.get_snapshot().current_step_name, "a");
+  });
+});
+
+describe("step machine - type commit (target_with_value)", () => {
+  // A `type` interaction asks the student to enter a value. handle_type_commit
+  // takes the raw typed text, coerces it to the validator's declared field type,
+  // and validates via target_with_value.
+  function make_type_step() {
+    return {
       step_name: "a",
-      prompt: "pick",
+      prompt: "enter the count",
       sequence: [
         {
-          target: "modal_target",
-          gesture: "select",
-          validator: {
-            preset: "correct_choice",
-            params: { choice_id: "yes" },
-          },
+          target: "cell_counter",
+          gesture: "type",
+          validator: { preset: "target_with_value", value: { entered_count: 42 } },
           response: { scene_operations: [] },
         },
       ],
@@ -268,13 +287,39 @@ describe("step machine - modal close drives correct_choice", () => {
       outcome: { on_success: "complete", on_failure: "retry" },
       next_step: null,
     };
-    const cfg = make_config([step], "a");
+  }
+
+  test("committing the correct typed value validates and completes", () => {
+    const cfg = make_config([make_type_step()], "a");
     const { machine, events } = build_harness(cfg);
     machine.start();
-    machine.handle_modal_close(true, "no");
+    machine.handle_type_commit("cell_counter", "42");
+    const validated = events.find((e) => e.kind === "interaction_validated");
+    assert.ok(validated);
+    assert.strictEqual(validated.gesture, "type");
+    const done = events.find((e) => e.kind === "protocol_completed");
+    assert.ok(done);
+  });
+
+  test("committing a wrong typed value rejects and does not advance", () => {
+    const cfg = make_config([make_type_step()], "a");
+    const { machine, events, emitter } = build_harness(cfg);
+    machine.start();
+    machine.handle_type_commit("cell_counter", "13");
     const rejected = events.find((e) => e.kind === "interaction_rejected");
     assert.ok(rejected);
     assert.strictEqual(rejected.reason_code, "wrong_value");
+    assert.strictEqual(emitter.get_snapshot().is_complete, false);
+  });
+
+  test("committing on a non-type interaction rejects with wrong_target", () => {
+    const cfg = make_config([make_click_step("a", "obj_a", null)], "a");
+    const { machine, events } = build_harness(cfg);
+    machine.start();
+    machine.handle_type_commit("obj_a", "anything");
+    const rejected = events.find((e) => e.kind === "interaction_rejected");
+    assert.ok(rejected);
+    assert.strictEqual(rejected.reason_code, "wrong_target");
   });
 });
 

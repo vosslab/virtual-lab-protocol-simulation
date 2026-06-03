@@ -1,0 +1,168 @@
+// Scene rendering. Public Solid mount facade for the scene renderer.
+//
+// This module is the durable public mount facade. It mounts the Solid
+// <SceneView> into a root element and OWNS the active scene's Solid root
+// dispose function.
+//
+// Two entry points:
+//   - renderScene(root, result, viewport?): backwards-compatible facade used by
+//     the scene viewer and protocol host. It creates an internal store,
+//     seeds it from the PipelineResult, mounts SceneView, and tracks the
+//     dispose handle PER ROOT so a re-render into the same root disposes the
+//     prior Solid root first (no orphan roots/effects/listeners). Returns void
+//     for source compatibility with existing callers.
+//   - mountScene(root, result, opts): the full mount surface. Accepts an
+//     external store + material registry and RETURNS a dispose handle. The
+//     store-driven scene_operations layer (WS-M3-D) uses this so it can hold
+//     the store, drive ObjectStateChange writes, and dispose on SceneChange.
+//
+// Report-mode + structural-guard behavior, label sizing, background, and the
+// depth-ordered item/label emission all live in scene_view.tsx now; this file
+// is the lifecycle owner.
+//
+// Lifecycle (plan "Browser runtime constraints"): a Solid root created by
+// render() must be disposed to release its effects/listeners. renderScene
+// tracks one dispose per root in a WeakMap and calls it before mounting a new
+// root into the same element. protocol_host calls the returned dispose on
+// teardown; SceneChange (WS-M3-D) disposes before mounting the next scene.
+
+import { render } from "solid-js/web";
+
+import type { PipelineResult } from "../layout/types.js";
+import { create_scene_store, type SceneStore } from "../state/scene_store.js";
+import type { MaterialRegistry } from "./visual_state_resolver.js";
+import { SceneView, build_seed_list } from "./scene_view.js";
+
+//============================================
+// Public dispose handle
+//============================================
+
+// Disposing a mounted scene tears down its Solid root: every reactive effect,
+// memo, and ref-attached listener created under the root is released, and the
+// rendered DOM children are removed.
+export type SceneDispose = () => void;
+
+// Per-root dispose tracking for the backwards-compatible renderScene facade.
+// A WeakMap keyed by the root element so a second renderScene into the same
+// root disposes the first mount without leaking the prior Solid root.
+const ROOT_DISPOSERS = new WeakMap<HTMLElement, SceneDispose>();
+
+//============================================
+// Full mount surface
+//============================================
+
+// Options for mountScene. store and materialRegistry are supplied by the
+// caller (the scene-op layer / protocol host) so the same reactive store
+// drives both the renderer and the protocol operations.
+export interface MountSceneOptions {
+  // External reactive store. The scene is seeded from the PipelineResult into
+  // this store (replacing any prior contents) before mounting.
+  store: SceneStore;
+  // Active protocol's material registry (per-package materials.yaml), or null
+  // when no protocol material context exists (e.g. the scene viewer). A provided
+  // registry is authoritative; null disables material-color resolution.
+  materialRegistry: MaterialRegistry | null;
+  // Optional pixel viewport used by the aspect structural guard. Must match the
+  // viewport passed to runPipeline so the aspect check is consistent.
+  viewport?: { w: number; h: number };
+  // When true, skip seeding the store from this PipelineResult. The caller has
+  // already seeded it (e.g. to preserve cursor-held state across a SceneChange).
+  skipSeed?: boolean;
+}
+
+// Mount a Solid scene into root, returning a dispose handle. Clears root first,
+// seeds the store unless skipSeed, then renders SceneView. The returned dispose
+// tears down the Solid root and any previously-tracked dispose for this root is
+// invoked first.
+export function mountScene(
+  root: HTMLElement,
+  result: PipelineResult,
+  opts: MountSceneOptions,
+): SceneDispose {
+  // Dispose any prior mount in this root before clearing + mounting a new one.
+  const prior = ROOT_DISPOSERS.get(root);
+  if (prior) {
+    prior();
+    ROOT_DISPOSERS.delete(root);
+  }
+
+  // Clear root via removeChild loop (no innerHTML; matches the old renderer's
+  // one allowed clear site). render() appends the Solid tree afterward.
+  while (root.firstChild) {
+    root.removeChild(root.firstChild);
+  }
+
+  // Seed the store from the pipeline result unless the caller already seeded.
+  if (opts.skipSeed !== true) {
+    opts.store.seed_from_scene(build_seed_list(result));
+  }
+
+  // Mount the Solid view. render() returns its own dispose function.
+  const solid_dispose = render(
+    () => (
+      <SceneView
+        root={root}
+        result={result}
+        store={opts.store}
+        materialRegistry={opts.materialRegistry}
+        viewport={opts.viewport}
+      />
+    ),
+    root,
+  );
+
+  const dispose: SceneDispose = () => {
+    solid_dispose();
+    // Remove the background + degraded markers SceneView set on the root so a
+    // disposed scene leaves the root clean for the next mount.
+    root.style.background = "";
+    root.removeAttribute("data-scene-root");
+    root.removeAttribute("data-scene-degraded");
+    root.removeAttribute("data-degraded-violation-count");
+    root.removeAttribute("data-bg-asset-pending");
+    if (ROOT_DISPOSERS.get(root) === dispose) {
+      ROOT_DISPOSERS.delete(root);
+    }
+  };
+
+  ROOT_DISPOSERS.set(root, dispose);
+  return dispose;
+}
+
+//============================================
+// Backwards-compatible facade
+//============================================
+
+/**
+ * Render a complete scene from a PipelineResult into root.
+ *
+ * Backwards-compatible facade matching the historical signature. Internally it
+ * mounts the Solid SceneView with a fresh internal store seeded from the
+ * PipelineResult. Calling it again on the same root disposes the prior Solid
+ * root first, so reused roots never leak effects or listeners.
+ *
+ * @param root - HTMLElement (typically #scene-root) to render into
+ * @param result - PipelineResult from runPipeline
+ * @param viewport - Optional pixel dimensions of the scene root panel. When
+ *                   provided, the aspect structural guard uses these dimensions.
+ *                   Must match the viewport passed to runPipeline.
+ */
+export function renderScene(
+  root: HTMLElement,
+  result: PipelineResult,
+  viewport?: { w: number; h: number },
+): void {
+  // Fresh internal store per facade render. The state-free contract render
+  // seeds declared object fields to their schema defaults.
+  const store = create_scene_store();
+  const options: MountSceneOptions = {
+    store,
+    // No protocol context in the facade render path: material colors cannot be
+    // resolved without a protocol's materials.yaml, so null disables color.
+    materialRegistry: null,
+  };
+  if (viewport !== undefined) {
+    options.viewport = viewport;
+  }
+  mountScene(root, result, options);
+}

@@ -32,6 +32,7 @@ owned by the imperative SVG renderer and documented under
 - `data-feedback-*` -- feedback toast.
 - `data-protocol-id` -- launcher link target.
 - `data-launcher-*` -- launcher chrome.
+- `data-type-*` -- type-gesture text-input affordance.
 
 ## Currently emitted attributes
 
@@ -49,6 +50,11 @@ owned by the imperative SVG renderer and documented under
 | `data-launcher-hook` | `src/launcher/Launcher.tsx` | learning_hook text |
 | `data-launcher-empty` | `src/launcher/Launcher.tsx` | empty-state marker |
 | `data-bg-asset-pending` | `src/scene_runtime/renderer/render_background.ts` | asset name pending registry wiring (scene-side, listed for cross-reference) |
+| `data-type-input-panel` | `src/shell/hud/type_input.tsx` | empty, marker for the type-input overlay panel (shown only while the active interaction's gesture is `type`) |
+| `data-type-input-label` | `src/shell/hud/type_input.tsx` | empty, marker for the input label |
+| `data-type-input` | `src/shell/hud/type_input.tsx` | empty, marker on the text input the student types into |
+| `data-type-target` | `src/shell/hud/type_input.tsx` | the active `type` interaction's target name, or empty |
+| `data-type-commit` | `src/shell/hud/type_input.tsx` | empty, marker on the Commit button |
 
 ## Modal / tray / help / feedback
 

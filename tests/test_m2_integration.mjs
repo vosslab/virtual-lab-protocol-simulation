@@ -87,7 +87,7 @@ function make_retry_step(name, target, next_step) {
     ],
     step_validator: {
       preset: "final_state_matches",
-      params: { some_obj: { field: "expected" } },
+      value: { some_obj: { field: "expected" } },
     },
     outcome: { on_success: "complete", on_failure: "retry" },
     next_step,
@@ -97,14 +97,13 @@ function make_retry_step(name, target, next_step) {
 function make_modal_step(name, next_step) {
   return {
     step_name: name,
-    prompt: `Step ${name}: select choice`,
+    prompt: `Step ${name}: select the correct next-step object`,
     sequence: [
       {
-        target: "modal_target",
+        target: "correct_object",
         gesture: "select",
         validator: {
           preset: "correct_choice",
-          params: { choice_id: "choice_a" },
         },
         response: { scene_operations: [] },
       },
@@ -392,16 +391,18 @@ describe("M2 integration - scenario 4: scene operations dispatcher", () => {
 });
 
 //============================================
-// Scenario 5: Modal close with correct_choice validator
+// Scenario 5: select-gesture validation (correct_choice = target-equality)
 //============================================
 
-describe("M2 integration - scenario 5: modal close validation", () => {
-  test("modal_close with correct choice_id validates and advances", () => {
+describe("M2 integration - scenario 5: select validation", () => {
+  test("selecting the correct object validates and advances", () => {
     const cfg = make_config([make_modal_step("s1", null)], "s1");
     const { machine, events } = build_harness(cfg);
     machine.start();
 
-    machine.handle_modal_close(true, "choice_a");
+    // select reuses the visible-click path: a click on the active target is
+    // promoted to the active select gesture by the host.
+    machine.handle_click("correct_object", "select");
 
     const validated = events.find((e) => e.kind === "interaction_validated");
     assert.ok(validated);
@@ -411,38 +412,17 @@ describe("M2 integration - scenario 5: modal close validation", () => {
     assert.ok(completed);
   });
 
-  test("modal_close with wrong choice_id rejects with wrong_value", () => {
+  test("selecting a wrong present object rejects and does not advance", () => {
     const cfg = make_config([make_modal_step("s1", null)], "s1");
     const { machine, events, emitter } = build_harness(cfg);
     machine.start();
 
-    machine.handle_modal_close(true, "choice_b");
+    machine.handle_click("wrong_object", "select");
 
     const rejected = events.find((e) => e.kind === "interaction_rejected");
     assert.ok(rejected);
-    assert.strictEqual(rejected.reason_code, "wrong_value");
+    assert.strictEqual(rejected.reason_code, "wrong_target");
     assert.strictEqual(emitter.get_snapshot().current_interaction_index, 0);
-
-    const protocol_done = events.find((e) => e.kind === "protocol_completed");
-    assert.ok(!protocol_done);
-  });
-
-  test("modal_close with committed=false emits rejection but preserves state", () => {
-    const cfg = make_config(
-      [make_modal_step("s1", "s2"), make_simple_click_step("s2", "t2", null)],
-      "s1",
-    );
-    const { machine, events, emitter } = build_harness(cfg);
-    machine.start();
-
-    machine.handle_modal_close(false, null);
-
-    const rejected = events.find((e) => e.kind === "interaction_rejected");
-    assert.ok(rejected);
-
-    const snap = emitter.get_snapshot();
-    assert.strictEqual(snap.current_step_name, "s1");
-    assert.strictEqual(snap.current_interaction_index, 0);
 
     const protocol_done = events.find((e) => e.kind === "protocol_completed");
     assert.ok(!protocol_done);

@@ -20,6 +20,23 @@ but it is not a full protocol walkthrough.
 The goal is to prove that a mini-protocol is playable through visible browser
 interactions, not merely schema-valid.
 
+The walker drives the Solid protocol host
+([src/protocol_host.tsx](../../src/protocol_host.tsx)). It reads two FROZEN
+read-only browser surfaces and never writes them:
+
+- `window.PROTOCOL_STEPS`: the step list (`id` / `label` / `scene` / `nextId`).
+- `window.gameState`: the read-only progress projection, including the current
+  interaction's `activeTarget` / `activeGesture` (the same fields the runtime
+  itself uses to resolve a click's gesture) plus the progress signals the
+  progress predicate watches.
+
+Both surfaces are installed by
+[walker_debug.ts](../../src/scene_runtime/protocol/walker_debug.ts) and are a
+projection of the step machine's emitter snapshot plus the scene store. The
+walker reads `gameState.activeTarget` to know which visible `[data-item-id]`
+element to click next, so it stays schema-driven with no per-protocol branch and
+no internal-API call.
+
 ## System overview
 
 The walkthrough has four layers:
@@ -28,20 +45,23 @@ The walkthrough has four layers:
 | -------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
 | Built app      | `dist/`                                                                                   | Browser-rendered game output produced by the build                                       |
 | Node walker    | [protocol_walkthrough_yaml.mjs](../../tests/playwright/e2e/protocol_walkthrough_yaml.mjs) | Starts the server, launches Playwright, opens the protocol, walks steps, writes evidence |
-| Helper library | [walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs)                       | Scene switching, selector resolution, click-and-wait logic, wrong-order helpers          |
+| Helper library | [walker_helpers.mjs](../../tests/playwright/e2e/walker_helpers.mjs)                       | Selector resolution, real-click-and-wait-for-progress, wrong-order helpers               |
 | Python wrapper | [run_protocol_walkthrough.py](../../tools/run_protocol_walkthrough.py)                    | Optional build-and-run convenience around the Node walker                                |
 
 The core loop is:
 
 1. Serve the compiled `dist/` directory.
 2. Launch headless Chromium through Playwright.
-3. Open the requested protocol with `/?protocol=<id>`.
+3. Open the per-protocol page `/<protocol>.html` exactly as a student would.
 4. Reset browser persistence with `localStorage.clear()` and reload.
-5. Enter through the visible welcome/start UI.
-6. Read the already-compiled protocol steps from `window.PROTOCOL_STEPS`.
-7. For each step, walk the `sequence` and perform each interaction's `gesture` on its `target`.
-8. Click visible DOM targets and wait for state progress.
-9. Verify step completion and next-step advancement.
+5. Enter through any visible welcome/start control (best-effort; the new host
+   has none, so this is a no-op there).
+6. Read the compiled step list from `window.PROTOCOL_STEPS`.
+7. Drive the active step: read `gameState.activeTarget` / `gameState.activeGesture`
+   and act on the resolved target via a real visible click, repeating until the
+   runtime advances `activeStepId`.
+8. Wait for an observable progress signal after each click.
+9. Verify step completion and next-step advancement through the read-only state.
 10. Save report and screenshot evidence.
 
 The walker is both an E2E test and a playable audit. It is an E2E test because
@@ -59,19 +79,22 @@ served locally and completed through the same visible click path a learner uses.
 
 Specifically, it proves:
 
-- The built app loads through `/?protocol=<protocol_name>`.
+- The built app loads through the per-protocol page `/<protocol_name>.html`.
 - The walker starts from normal browser entry, clears `localStorage`, reloads,
-  and dismisses the welcome modal by clicking a visible start button.
+  and dismisses any visible welcome/start control by clicking it (the new host
+  has none).
 - Protocol steps are available through `window.PROTOCOL_STEPS`.
-- Runtime state is available through `window.gameState`.
+- Runtime state is available through `window.gameState`, including the current
+  interaction's `activeTarget` / `activeGesture`.
 - Required scene objects exist as DOM elements with `data-item-id`.
 - Required click targets are visible when the walker clicks them.
 - Clicks go through browser event handlers, not direct protocol APIs.
-- Each click that uses `clickItemAndWaitProgress()` produces observable state
+- Each click that uses `clickTargetAndWaitProgress()` produces observable state
   progress.
 - Each step's `step_validator` passes and emits a `<step_name>_complete` event.
 - The runtime advances to the step's `next_step`, or to a terminal state when `next_step` is `null`.
-- The final result screen exists.
+- The protocol reaches the terminal state: `isComplete` is `true`, `activeStepId`
+  is `null`, and `completedSteps` covers every step.
 - Console errors and same-origin network failures are captured in the report.
 
 This is the browser evidence side of
@@ -105,16 +128,41 @@ Normal walkthroughs use local headless Playwright against the compiled
 
 ```bash
 npm run build
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_drug_additions
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol cell_culture
-node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_plate_drug_additions --wrong-order
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_assemble_electrode_module
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_extract_gel_from_cassette
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_assemble_electrode_module --wrong-order
 ```
+
+To capture finer-grained screenshot evidence, use the `--screenshots` flag:
+
+```bash
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_extract_gel_from_cassette --screenshots per-interaction
+node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol sdspage_extract_gel_from_cassette --screenshots per-click
+```
+
+The walker drives only the closed gesture set the new host exposes a visible
+affordance for (currently `click`, `select`, and `type`). `select` reuses the
+visible scene-object click affordance (the host promotes a click on the active
+target to the `select` gesture); `type` fills + commits the visible
+type-input affordance (`[data-type-input]` / `[data-type-commit]`). A protocol
+whose active interaction needs a gesture the host has no visible affordance for
+yet (`adjust`, `drag`) fails loudly with an `unsupported_gesture` classification
+rather than silently skipping or branching per protocol. The simplest all-`click`
+protocols (`sdspage_assemble_electrode_module`,
+`sdspage_extract_gel_from_cassette`) walk end-to-end today, and the
+`select_check` / `type_check` dev_smoke fixtures exercise the `select` and `type`
+gestures (including a wrong-selection rejection under `--wrong-order`).
+
+The `--screenshots` flag accepts `per-step` (default), `per-interaction`, or
+`per-click`. Per-interaction and per-click modes add report entries in
+`playthrough_report.json` that link each screenshot to its `step_name`,
+`interaction_index`, `gesture`, and `target`.
 
 The Node walker:
 
 - Serves `dist/` with `python3 -m http.server`.
 - Uses port `8126`.
-- Opens `http://127.0.0.1:8126/?protocol=<protocol_name>`.
+- Opens `http://127.0.0.1:8126/<protocol_name>.html`.
 - Launches Chromium through the Playwright library.
 - Uses a `1280 x 900` viewport.
 - Runs headless.
@@ -162,14 +210,18 @@ test-results/walker/
 Current outputs include:
 
 - `playthrough_report.json`: structured run report with timestamp, protocol id,
-  wrong-order mode, summary counts, log entries, final-state notes, console
-  errors, and same-origin network errors.
+  wrong-order mode, screenshot mode, summary counts, log entries, final-state
+  notes, console errors, and same-origin network errors.
 - `initial_state.png`: screenshot after browser entry, localStorage clearing,
   reload, and welcome dismissal.
 - `step_<n>_<step_name>.png`: screenshot after each passed step.
 - `fail_<step_name>.png`: screenshot after a step failure.
 - `final_screen.png`: screenshot after final checks.
 - `crash_screen.png`: screenshot if the top-level walker crashes.
+- `interaction_<step_name>_i<n>_<target>.png`: screenshot after each interaction
+  (only when `--screenshots per-interaction` is set).
+- `click_<step_name>_i<n>_c<k>_<item_id>.png`: screenshot after each click
+  (only when `--screenshots per-click` is set).
 
 The report summary currently tracks:
 
@@ -192,13 +244,14 @@ The current sequence is:
 
 1. Start a local static server for `dist/`.
 2. Launch Chromium headlessly with Playwright.
-3. Open `/?protocol=<protocol_name>`.
+3. Open `/<protocol_name>.html`.
 4. Wait for browser exports: `window.gameState` and
-   `window.PROTOCOL_STEPS` (runtime debug surface).
+   `window.PROTOCOL_STEPS` (read-only walker surfaces).
 5. Clear `localStorage`.
 6. Reload the page.
 7. Wait for exports again.
-8. Click the welcome/start button if present.
+8. Click a visible welcome/start control if present (the new host has none, so
+   this is a no-op there; `step_machine.start()` already ran at mount).
 9. Read `window.PROTOCOL_STEPS` from the page.
 10. Save `initial_state.png`.
 
@@ -208,36 +261,47 @@ as a normal user.
 
 ## How the walker decides what to click
 
-The walker is schema-driven. `walkStep()` dispatches from each interaction's
-`target.kind` plus its `gesture`, not from a per-step kind discriminator and
-not from a hand-authored recipe table. Step kinds are retired entirely; see
-[../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the canonical interaction model.
+The walker is schema-driven. `walkActiveStep()` dispatches from the current
+interaction's `gesture` plus its resolved `target`, not from a per-step kind
+discriminator and not from a hand-authored recipe table. Step kinds are retired
+entirely; see [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md) for the canonical
+interaction model.
 
-For every step, the walker reads the ordered `sequence` of `interaction`
-blocks and, for each interaction, performs the named `gesture` on the named
-`target`. `click` gestures click the resolved DOM element; `select` gestures
-click the matching choice; `adjust` gestures perform the set-point input;
-`drag` and `type` follow the corresponding visible UI affordance.
+The walker does not parse the protocol YAML itself. It reads the current
+interaction's `target` and `gesture` from the read-only `window.gameState`
+(`activeTarget` / `activeGesture`). These are projected from the same emitter
+snapshot the runtime uses to resolve a click's gesture, so the walker mirrors
+the runtime's own resolution: it clicks the visible `[data-item-id]` element
+whose id equals `activeTarget`. The runtime advances `interactionIndex` on each
+validated interaction and changes `activeStepId` when the step completes, so the
+walker simply loops: read the active interaction, click its target, wait for
+progress, repeat until the step id changes.
 
-Tool-preconditions (where one interaction must precede another) are encoded
-by the `sequence` order itself. The walker does not consult retired
-`gameState.heldLiquid`, `selectedTool`, or `_with_` canonical-tool strings;
-held state is derived from the `ObjectStateChange` `scene_operations` that
-prior interactions emit.
+The walker acts only on the closed gesture set (`click`, `drag`, `adjust`,
+`select`, `type`). `click` and `select` have a visible affordance in the new host
+(the click resolver promotes a click on the active target to the active gesture,
+so `select` -- choosing the correct next-step object among the present objects --
+reuses the click path); `type` fills + commits the visible type-input affordance.
+`adjust` and `drag` FAIL with an `unsupported_gesture` classification so M4-D can
+record them; the walker never silently skips and never adds a per-protocol
+branch. For a `type` interaction the walker reads the expected value read-only
+from `gameState.activeTypeValue` (projected from the authored validator `value`)
+and types it into `[data-type-input]`, then clicks `[data-type-commit]`.
 
-The central click helper is `clickItemAndWaitProgress()`. It resolves a
-`data-item-id` selector, optionally scopes it to a scene container, verifies
-that the element exists, verifies that it is visible, clicks it, increments
-`report.summary.totalClicks`, and waits for observable state progress.
+The central click helper is `clickTargetAndWaitProgress()`. It resolves a
+scene-scoped `data-item-id` selector, verifies that the element exists, verifies
+that it is visible, clicks it via Playwright's actionability-checked
+`locator.click()`, increments `report.summary.totalClicks`, and waits for
+observable state progress.
 
 The progress predicate accepts any observable state change produced by a
-validated interaction's `response.scene_operations`:
+validated interaction's `response.scene_operations`, read from `gameState`:
 
-- An `ObjectStateChange` mutated a declared `state_field`.
-- A `CursorAttach` attached or detached a tool from the cursor.
-- A `SceneChange` switched the active scene.
-- A `LayoutMove` repositioned an object.
-- A step resolved `complete` (the `<step_name>_complete` event fired).
+- An `ObjectStateChange` advanced `interactionIndex` (or completed the step).
+- A `CursorAttach` changed `selectedTool` / `heldLiquid`.
+- A `SceneChange` switched `activeScene`.
+- A step resolved `complete` (`activeStepId` advanced, `completedSteps` grew, or
+  `isComplete` flipped).
 
 If none of those changes occur before the click budget expires, the helper
 throws:
@@ -248,25 +312,23 @@ click_did_not_advance: click on <object_name> produced no state change after <ms
 
 ## Scene scoping
 
-Scene scoping is important because the same `data-item-id` can exist in more
-than one scene. `resolveScopedSelector()` maps scene names to scene containers:
+The new host mounts exactly one scene at a time into `#scene-root` (it tags the
+active scene with `data-active-scene`). `resolveSelector()` therefore scopes
+every item to `#scene-root`:
 
-| Scene                  | Container                     |
-| ---------------------- | ----------------------------- |
-| `well_plate_workspace` | `#well_plate_workspace-scene` |
-| `bench`                | `#bench-scene`                |
-| `plate_reader`         | `#bench-scene`                |
-| default/hood           | `#hood-scene`                 |
+```text
+#scene-root [data-item-id="<object_name>"]
+```
 
-The walker switches scenes through visible UI paths where possible:
+This avoids picking up a shell or outline element that might share an id, and it
+needs no per-scene container map.
 
-- `switchToBench()` clicks `#hood-to-bench-btn`.
-- `switchToHood()` clicks `#bench-to-hood-btn`.
-- `switchToPlate()` switches to the hood if needed, clicks the visible
-  `well_plate`, and waits for `activeScene === 'well_plate_workspace'`.
-
-This catches scene-wiring problems that direct `gameState.activeScene` writes
-would hide.
+Scene switches are NOT performed by the walker. They happen through the same
+visible-click gesture model: a validated click whose `response` carries a
+`SceneChange` scene_operation re-renders the next scene into `#scene-root`. The
+walker observes the switch through `gameState.activeScene`; it never writes
+`activeScene` and never clicks a dedicated scene-switch button. This catches
+scene-wiring problems that direct state writes would hide.
 
 ## Interaction support
 
@@ -276,55 +338,53 @@ retired per-step kinds (`interactionSequence`, `directTool`, `modal`,
 `multipleChoice`) are no longer dispatchable shapes; every step is one
 ordered `sequence` of interactions per [../PRIMARY_SPEC.md](../PRIMARY_SPEC.md).
 
-What were the legacy kinds map to interaction shapes as follows:
+Current new-host affordance coverage:
 
-- A legacy `interactionSequence` step is an ordered `click` sequence.
-- A legacy `directTool` step is a one-interaction `sequence` with a `click`.
-- A legacy `modal` step is an interaction whose `response` carries a
-  `SceneChange` (open a modal) or a `feedback`-only payload (advance once
-  inside).
-- A legacy `multipleChoice` step is a `select`-gesture interaction validated
-  by the `correct_choice` preset.
-
-Modal handling details (microscope viability, counting screens, plate-reader
-modal) are scene-side affordances reached through the same gesture model;
-the walker has no per-step branch for them.
+- `click` and `select` are fully supported. The click resolver promotes a click
+  on the active target to whatever gesture that interaction declares, so a
+  `click` interaction walks directly and a `select` interaction (choosing the
+  correct next-step object among the present scene objects) reuses the same
+  visible-click affordance. Selecting a wrong present object is rejected, exactly
+  like a wrong-order click.
+- `type` is supported through the visible type-input affordance
+  (`[data-type-input]` + `[data-type-commit]`, from `src/shell/hud/type_input.tsx`).
+  It appears only while the active interaction's gesture is `type`; the walker
+  fills it and clicks Commit, routing the typed text to
+  `step_machine.handle_type_commit` (validated by `target_with_value`).
+- `drag` and `adjust` have no visible affordance in the new host yet. The host
+  renders no set-point control and no drag surface. When the active interaction
+  needs one of these, the walker fails with `unsupported_gesture` and the gap is
+  classified for M4-D.
 
 The walker stays schema-driven. Step-name-specific branches and per-protocol
 special cases are not allowed; if the visible UI cannot be exercised by the
-closed gesture set, the fix is to extend the YAML, scene, or runtime, never
-to add a walker branch.
+closed gesture set, the fix is to extend the YAML, scene, or runtime (add the
+visible affordance), never to add a walker branch.
 
 ## Implementation nuances
 
 These details are easy to miss when extending the walker.
 
-`clickItemAndWaitProgress()` is deliberately state-based, not time-based. It
+`clickTargetAndWaitProgress()` is deliberately state-based, not time-based. It
 does not sleep after a click and hope the UI changed. It snapshots selected
-tool, held liquid, interaction index, active step, active scene, and completed
-step count before the click. After the click, it waits until one of those values
-changes.
+tool, held liquid, interaction index, active step, active scene, completed step
+count, and `isComplete` before the click. After the click, it waits until one of
+those values changes. The wait predicate only READS `window.gameState`; it never
+writes it.
 
 That design catches silent click-handler failures, but it also means a valid
 click that only changes CSS and not game state will fail. If a new interaction
-is meant to be walker-driven, it needs an observable state signal or a different
-explicit wait predicate.
+is meant to be walker-driven, it needs an observable state signal (an
+`ObjectStateChange`, `CursorAttach`, `SceneChange`, or step completion).
 
-Scene-specific selectors are not optional. A bare `[data-item-id="..."]`
-selector can pick the wrong copy of an item when the same object exists in more
-than one scene. New walker code should pass `step.scene` into
-`clickItemAndWaitProgress()` whenever the step is scene-specific.
+Selectors are scene-scoped to `#scene-root`. The new host mounts one scene at a
+time, so `resolveSelector()` always scopes to `#scene-root [data-item-id="..."]`
+without a per-scene container map.
 
-Modal steps need already-open handling. Some modals stay open across adjacent
-steps, so rerunning `openClick` can re-render the overlay and break pointer
-events. The generic modal path first checks whether the configured
-`data-walker-advance` button already exists; if it does, it skips `openClick`
-and advances the existing modal.
-
-The microscope path is special because the runtime uses native `prompt()` for
-quadrant counts. The walker overrides `window.prompt` after each reload and
-again before microscope modal walking so Playwright does not hang on a browser
-dialog.
+The walker reads the active interaction from `gameState.activeTarget` /
+`gameState.activeGesture`. It does not parse protocol YAML and does not call any
+internal runtime API to discover what to click; the read-only projection is the
+single source of the path.
 
 The walker records console and network errors without stopping immediately.
 Those errors are collected during the run and then written into the report and
@@ -342,11 +402,11 @@ adding special-case code.
 | `Element ... is not visible`                    | Wrong scene is active, hidden duplicate was selected, or overlay state blocks the target     | Fix scene switching or pass a scoped scene selector                             |
 | `click_did_not_advance`                         | Click handler is missing, handler changes only CSS, or state signal is delayed beyond budget | Add the runtime handler or expose an observable state change                    |
 | Active step advances to the wrong `step_name`   | Step completes but the runtime resolves `next_step` to a wrong or missing step               | Fix protocol YAML `next_step` value or completion dispatch                      |
-| Final result screen missing                     | Terminal step completed without rendering the scoring/results screen                         | Fix terminal UI flow, not the walker                                            |
+| Protocol never reaches `isComplete`             | Terminal step did not complete, or a later step stalled                                      | Fix the terminal step's completion path or the stalled step                     |
 | Wrong-order injection advances the step         | Runtime accepts a non-required interaction as valid progress                                 | Tighten interaction-validator dispatch and active-target checks                 |
 | Mini-protocol enters hood or bench unexpectedly | Scene isolation is broken for a workspace-only protocol                                      | Fix the `SceneChange` `scene_operation` chain in the affected step's `response` |
-| Modal advance control missing                   | Modal scene's advance affordance is not rendered or not clickable                            | Fix modal scene rendering and the step's interaction `target`                   |
-| `select`-gesture step cannot click answer       | Choice id is not rendered as a scene-scoped click target                                     | Fix choice rendering and the interaction `target`                               |
+| `unsupported_gesture` on a step                 | Active interaction needs `adjust` or `drag`; new host has no visible affordance | Add the visible affordance to the host/scene/runtime; classify in M4-D          |
+| `type_input_missing` / `type_did_not_advance`   | `type` interaction active but the type-input affordance is missing/hidden, or the committed value did not validate | Confirm `[data-type-input]`/`[data-type-commit]` render and the validator `value` matches the committed text |
 
 Prefer fixing runtime schema, YAML, render output, or dispatch behavior before
 adding walker branches. The walker is most valuable when it remains a generic
@@ -430,7 +490,8 @@ node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <protocol_nam
 A mini-protocol is walkthrough-ready when the walker can complete it from a
 fresh browser state using only real DOM clicks, with no direct game-state
 mutation, no hidden click targets, no missing scene objects, no console errors,
-and a final result screen.
+and a terminal state (`isComplete` true, `activeStepId` null, every step in
+`completedSteps`).
 
 ## Failure modes
 
@@ -448,7 +509,9 @@ failure cases include:
 - A step's `step_validator` does not pass, so no `<step_name>_complete` event fires.
 - The runtime advances to the wrong `step_name`, or `next_step` resolves to a missing step.
 - Wrong-order clicks are accepted during the correct sequence.
-- The final result screen is missing.
+- The active interaction needs a gesture the new host cannot drive yet
+  (`unsupported_gesture`).
+- The protocol never reaches the terminal state (`isComplete` stays false).
 - Console errors are detected.
 - Same-origin network requests fail.
 - The walker crashes before normal cleanup.
@@ -463,48 +526,60 @@ Current budgets:
 
 ## Wrong-order mode
 
-`--wrong-order` mode is a negative test. Before each correct interaction
-in a step's `sequence`, the walker tries to find a visible
-`data-item-id` element that is not the required `target` for that
-interaction.
+`--wrong-order` mode is a negative test. Before each correct interaction,
+the walker finds a visible `#scene-root [data-item-id]` element that is not the
+current `activeTarget` and clicks it with a real visible click.
 
 The wrong-order click must:
 
-- Trigger the scene's `wrong_order_message` toast affordance.
-- Leave the step's interaction position unchanged.
-- Leave the active step unchanged.
+- Increment the read-only `gameState.wrongOrderClicks` counter (the runtime
+  declined to advance on a non-required target).
+- Leave the step's `interactionIndex` unchanged.
+- Leave `activeStepId` unchanged.
 
-After the injected click is verified, the walker performs the correct click
-sequence and checks that wrong-order count does not increase during the correct
-sequence.
+The new host has no `wrong_order_message` toast affordance, so the walker
+asserts rejection through the `wrongOrderClicks` counter rather than a toast.
+After the injected click is verified rejected, the walker performs the correct
+click. In wrong-order mode the end-state check tolerates
+`wrongOrderClicks > 0`.
 
 ## Screenshot evidence status
 
-The walkthrough uses headless Playwright. It currently captures screenshots at
-step boundaries: initial state, after each passed step, failure state, final
-screen, and crash state. This is useful, but it is not enough to prove
-fine-grained interaction quality.
+The walkthrough uses headless Playwright. It captures screenshots at step
+boundaries by default: initial state, after each passed step, failure state,
+final screen, and crash state.
 
-The desired future behavior is stronger: the walkthrough should save a
-screenshot after every click or at least after every interaction. That evidence
-would show the exact sequence of visible tool, source, destination, highlight,
-and liquid-state changes.
+Finer-grained screenshot modes are available via the `--screenshots` flag:
 
-Until that exists, a passing walkthrough proves that the protocol can be
-completed through real DOM clicks in a headless browser. It does not fully prove
-that every intermediate visual teaching state is correct.
+| Mode | Description |
+| --- | --- |
+| `per-step` | One screenshot after each step (default, existing behavior) |
+| `per-interaction` | Screenshot after every interaction in a step's `sequence`; report entries link each screenshot to its `step_name`, `interaction_index`, `gesture`, and `target` |
+| `per-click` | Screenshot after every individual click within an interaction; same report fields |
+
+Screenshots are always saved under `test-results/walker/`. Naming conventions:
+
+- Per-step: `step_<n>_<step_name>.png` (existing)
+- Per-interaction: `interaction_<step_name>_i<interaction_index>_<target>.png`
+- Per-click: `click_<step_name>_i<interaction_index>_c<click_index>_<item_id>.png`
+
+Report entries for per-interaction and per-click modes include the fields
+`screenshot`, `step_name`, `interaction_index`, `gesture`, and `target` so the
+report is self-documenting at the interaction level.
+
+The `playthrough_report.json` top-level field `screenshotMode` records which
+mode was used, making the report self-describing.
 
 ## Required future work
 
-Documented future work, not implemented yet:
+Documented future work, not yet implemented:
 
-- Add screenshot capture inside `clickItemAndWaitProgress()`.
-- Name screenshots with step id, interaction index, click index, and item id.
-- Add report entries linking each screenshot to the click that produced it.
-- Optionally add a `--screenshots per-step|per-interaction|per-click` flag.
-
-The current walker is already valuable because it proves real DOM completion.
-The missing piece is finer screenshot evidence between step boundaries.
+- Add visible affordances for the `adjust` and `drag` gestures in the new
+  host (set-point control, drag surface). Until then the walker fails
+  `unsupported_gesture` on protocols that need them, and M4-D records the gap.
+  This is a host/scene/runtime extension, never a walker branch.
+- Compare screenshots against golden baselines.
+- Prove that every intermediate teaching visual is correct.
 
 ## Mini-protocol completion contract
 
@@ -543,9 +618,9 @@ interactions.
 
 ## When to update this guide
 
-Update this guide whenever the walker gains a new `completionPath.kind`, a new
-screenshot evidence mode, a new scene-switch helper, or a new failure mode that
-future coders are likely to hit.
+Update this guide whenever the walker gains support for a new gesture, a new
+screenshot evidence mode, a new read-only `gameState` field it depends on, or a
+new failure mode that future coders are likely to hit.
 
 ## Related docs
 

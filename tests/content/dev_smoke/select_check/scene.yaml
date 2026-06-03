@@ -1,0 +1,43 @@
+scene_name: select_check
+workspace: bench
+capabilities:
+  - item_workspace
+
+scene_bounds:
+  left: 1
+  right: 99
+  top: 5
+  bottom: 95
+
+background:
+  type: gradient
+  from: "#E8E2D0"
+  to: "#D4CBB3"
+
+zones:
+  - zone_name: left_zone
+    bounds:
+      left: 10
+      right: 45
+      top: 30
+      bottom: 80
+    align: center
+    label: Ethanol
+  - zone_name: right_zone
+    bounds:
+      left: 55
+      right: 90
+      top: 30
+      bottom: 80
+    align: center
+    label: PBS
+
+placements:
+  - placement_name: ethanol_placement
+    object_name: ethanol_bottle
+    zone: left_zone
+    depth_tier: 1
+  - placement_name: pbs_placement
+    object_name: pbs_bottle
+    zone: right_zone
+    depth_tier: 1

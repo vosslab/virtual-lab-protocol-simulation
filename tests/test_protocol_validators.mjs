@@ -64,34 +64,54 @@ test("validate_correct_target: different target rejects with wrong_target", () =
 });
 
 //============================================
-// validate_correct_choice
+// validate_correct_choice (corrected semantics: target-equality)
+//
+// `select` means "choose the next-step object among the scene objects already
+// present". correct_choice now passes when the SELECTED scene object equals the
+// interaction's declared target, and rejects (wrong_target) otherwise. There is
+// no choice_id / answer-list concept.
 //============================================
 
-test("validate_correct_choice: matching choice_id passes", () => {
-  const interaction = make_interaction("choice_modal", "correct_choice", {
-    choice_id: "option_a",
-  });
-  const result = validate_correct_choice(interaction, "option_a");
+test("validate_correct_choice: selecting the correct object passes", () => {
+  const interaction = make_interaction("treatment_plate", "correct_choice");
+  const result = validate_correct_choice(interaction, "treatment_plate");
   assert.strictEqual(result.ok, true);
   assert.strictEqual(result.reason, null);
 });
 
-test("validate_correct_choice: mismatched choice_id rejects with wrong_value", () => {
-  const interaction = make_interaction("choice_modal", "correct_choice", {
-    choice_id: "option_a",
-  });
-  const result = validate_correct_choice(interaction, "option_b");
+test("validate_correct_choice: selecting a wrong present object rejects with wrong_target", () => {
+  const interaction = make_interaction("treatment_plate", "correct_choice");
+  const result = validate_correct_choice(interaction, "waste_beaker");
   assert.strictEqual(result.ok, false);
-  assert.strictEqual(result.reason, "wrong_value");
+  assert.strictEqual(result.reason, "wrong_target");
 });
 
-test("validate_correct_choice: null modal close (cancel) rejects", () => {
-  const interaction = make_interaction("choice_modal", "correct_choice", {
-    choice_id: "option_a",
-  });
+test("validate_correct_choice: no selection (null) rejects", () => {
+  const interaction = make_interaction("treatment_plate", "correct_choice");
   const result = validate_correct_choice(interaction, null);
   assert.strictEqual(result.ok, false);
-  assert.strictEqual(result.reason, "wrong_value");
+  assert.strictEqual(result.reason, "wrong_target");
+});
+
+test("dispatch_interaction_validator: routes correct_choice as target-equality", () => {
+  const interaction = make_interaction("treatment_plate", "correct_choice");
+  const ok = dispatch_interaction_validator(
+    "correct_choice",
+    interaction,
+    "treatment_plate",
+    null,
+    {},
+  );
+  assert.strictEqual(ok.ok, true);
+  const bad = dispatch_interaction_validator(
+    "correct_choice",
+    interaction,
+    "waste_beaker",
+    null,
+    {},
+  );
+  assert.strictEqual(bad.ok, false);
+  assert.strictEqual(bad.reason, "wrong_target");
 });
 
 //============================================

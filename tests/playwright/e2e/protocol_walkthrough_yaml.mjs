@@ -1,45 +1,51 @@
-// tests/protocol_walkthrough_yaml.mjs
+// tests/playwright/e2e/protocol_walkthrough_yaml.mjs
 //
-// YAML-driven UI walker: real DOM regression test for protocol playthrough.
+// Schema-driven UI walker for the NEW Solid protocol host (src/protocol_host.tsx).
 //
-// Conforms to the six rules from the auto-walker spec:
-// 1. Click the DOM, never the API. Every state advance comes from real clicks.
-// 2. Fresh browser state, normal entry. localStorage.clear(), hard reload, welcome button, start flow.
-// 3. Wait for the UI, not for the clock. Playwright waitFor* predicates over fixed timeouts.
-// 4. Fail when the UI is broken. Missing/hidden/disabled items, wrong scene fail with clear messages.
-// 5. Capture evidence. Per-step screenshots, console errors, network errors, playthrough_report.json.
-
-let _serverDied;
-// 6. Assert the ending. All steps completed, wrongOrderClicks === 0, activeStepId === null, final screen present.
+// It loads /<protocol>.html exactly as a student would, clears localStorage,
+// reloads, reads the FROZEN read-only walker surfaces (window.PROTOCOL_STEPS +
+// window.gameState), and drives the protocol entirely through real visible
+// clicks. Dispatch is from the interaction's closed gesture set + resolved
+// target only. There are NO step-name branches and NO per-protocol special
+// cases.
 //
-// Step category dispatch:
-// - interactionSequence non-empty: YAML-driven click plan (tool/source/destination)
-// - isIncubation: click incubator on bench, wait for animation to complete
-// - modal.owner === 'microscope': open microscope, confirm viability, enter quadrant counts, submit
-// - modal.owner === 'drug_treatment': open drug modal, click the advance button
-// - modal.owner === 'plate_reader': switch to plate_reader scene, click advance button
-// - completionTrigger (prewarm_media): click water_bath on bench
-// - completionTrigger (media_adjust): multichannel + media_bottle + well_plate
-// - completionTrigger (add_mtt): multichannel + mtt_vial + well_plate
-// - completionTrigger (decant_mtt): well_plate + biohazard_decant
-// - completionTrigger (add_dmso): multichannel + dmso_bottle + well_plate
-// - completionTrigger (plate_read, results): handled via plate_reader scene
+// Hard real-click integrity (see WALKTHROUGH_GUIDE.md "How the walker decides
+// what to click"):
+//   1. Every advance comes from a real visible click via locator.click()
+//      (Playwright actionability check: attached, visible, stable, hit-testable).
+//   2. The target is verified to exist and be visible before clicking; missing
+//      or hidden targets fail loudly. No force-click, no dispatchEvent.
+//   3. window.PROTOCOL_STEPS / window.gameState are READ-ONLY. The walker never
+//      writes them, never calls an internal runtime/protocol API to advance,
+//      never forces a scene change, never mutates window.prompt/confirm.
+//   4. clickTargetAndWaitProgress snapshots progress signals before the click and
+//      waits for one to change as a consequence of the real handler.
+//   5. Scene switches happen through the same visible-click gesture model (a
+//      validated click whose response carries a SceneChange), not by writing
+//      activeScene.
 //
-// Stall detection:
-// - Per-click budget: 3000ms. If no progress signal fires, fail with click_did_not_advance.
-// - Per-step budget: 30000ms. If step not completed within budget, fail with step_stalled.
-// - Whole-run budget: 600000ms (10 min). If exceeded, fail with run_stalled.
-// - On any error: write report + final screenshot, close browser cleanly, exit non-zero.
+// Schema-driven dispatch:
+//   The walker reads gameState.activeTarget + gameState.activeGesture (the
+//   current interaction, projected read-only from the runtime snapshot -- the
+//   same fields the runtime itself uses to resolve a click's gesture) and acts
+//   on the closed gesture set: click, drag, adjust, select, type.
+//   Only "click" is driveable through the new host's current visible UI (the
+//   click resolver promotes a click on the active target to the active gesture).
+//   Any gesture the new host has no visible affordance for FAILS with a clear
+//   unsupported_gesture classification (M4-D records it); the walker NEVER
+//   silently skips and NEVER adds a per-protocol branch.
 //
 // Usage:
-//   node tests/protocol_walkthrough_yaml.mjs [OPTIONS]
+//   node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol <id> [options]
 //
 // Options:
-//   -p, --protocol NAME    Protocol id under content/ to walk (default: cell_culture).
-//   --wrong-order          Drive interactions in wrong order (negative test).
-//   -h, --help             Show help message and exit.
+//   -p, --protocol NAME    Protocol id (per-protocol page dist/<id>.html).
+//   --wrong-order          Negative mode: inject a wrong visible click before
+//                          each correct one and assert the runtime rejects it.
+//   --screenshots MODE     per-step (default) | per-interaction | per-click.
+//   -h, --help             Show help and exit.
 //
-// Output: test-results/walker/ directory with screenshots and playthrough_report.json
+// Output: test-results/walker/ (screenshots + playthrough_report.json).
 
 import { chromium } from "playwright";
 import { spawn } from "node:child_process";
@@ -49,35 +55,38 @@ import fs from "node:fs";
 import { REPO_ROOT } from "../repo_root.mjs";
 
 import {
-  waitForStepCompleted,
-  _waitForHeldLiquid,
-  isToolPreconditionMet,
-  _waitForActiveScene,
-  waitForMicroscopeOpen,
-  waitForIncubationComplete,
-  switchToBench,
-  switchToHood,
-  switchToPlate,
-  resolveSelector,
-  resolveScopedSelector,
-  clickItemAndWaitProgress,
-  _recordInfo,
-  _recordWarn,
-  _recordError,
-  recordInjection,
+  waitForExports,
+  readGameState,
+  readProgressSnapshot,
+  clickTargetAndWaitProgress,
+  typeCommitAndWaitProgress,
   pickWrongOrderItem,
+  recordInjection,
 } from "./walker_helpers.mjs";
 
 const DIST_DIR = path.join(REPO_ROOT, "dist");
 const PORT = 8126;
 const RESULTS_DIR = path.join(REPO_ROOT, "test-results", "walker");
 
-// Whole-run budget: 10 minutes
+// Whole-run budget: 10 minutes.
 const RUN_BUDGET_MS = 600000;
-// Per-step budget: 30 seconds
+// Per-step budget: 30 seconds.
 const STEP_BUDGET_MS = 30000;
-// Per-click budget: 3 seconds
-const _CLICK_BUDGET_MS = 3000;
+// Per-click budget: 3 seconds.
+const CLICK_BUDGET_MS = 3000;
+
+// Closed gesture set (PRIMARY_SPEC.md). "click", "select", and "type" have
+// visible affordances in the host:
+//   - click  : a real visible click on the active scene object.
+//   - select : choosing the next-step object among the present scene objects;
+//              reuses the same visible-click affordance (the host promotes a
+//              click on the active target to the active `select` gesture).
+//   - type   : filling + committing the visible type-input affordance
+//              ([data-type-input] / [data-type-commit]).
+// "drag" and "adjust" stay classified-unsupported in v1: the host has no visible
+// affordance for them yet, so the walker fails loud (M4-D classifies them).
+const SUPPORTED_GESTURES = new Set(["click", "select", "type"]);
+const KNOWN_GESTURES = new Set(["click", "drag", "adjust", "select", "type"]);
 
 //============================================
 // Arg parsing
@@ -86,33 +95,26 @@ const _CLICK_BUDGET_MS = 3000;
 function parseArgs() {
   const args = process.argv.slice(2);
   const result = {
-    protocol: "cell_culture",
+    protocol: "sdspage_assemble_electrode_module",
     wrongOrder: false,
+    screenshotMode: "per-step",
   };
+  const VALID_SCREENSHOT_MODES = ["per-step", "per-interaction", "per-click"];
 
-  // Check for --help or -h first and print usage
   if (args.includes("--help") || args.includes("-h")) {
     const usage = `Usage: node tests/playwright/e2e/protocol_walkthrough_yaml.mjs [OPTIONS]
 
-Walk through a protocol end-to-end in a headless browser, validating that every
-step can be completed via real DOM interactions.
+Schema-driven walker for the new Solid protocol host. Loads /<protocol>.html,
+reads the read-only window.PROTOCOL_STEPS / window.gameState surfaces, and drives
+the protocol through real visible clicks (no per-protocol branches).
 
 Options:
-  -p, --protocol NAME    Protocol id under content/ to walk (default: cell_culture).
-                         Examples: cell_culture, tutorial_hemocytometer_count,
-                         tutorial_split, tutorial_cell_counter, tutorial_hood_transfer,
-                         tutorial_drug_dilution, tutorial_bench_direct,
-                         tutorial_pbs, tutorial_plate_reader.
-                         The walker opens /?protocol=NAME against the built catalog.
-                         Use the Python wrapper's --list-protocols option to see choices.
-      --wrong-order      Drive interactions in the WRONG order (negative test:
-                         expects the runtime to reject the click and not advance).
-  -h, --help             Show this help message and exit.
-
-Examples:
-  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs
-  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol tutorial_hemocytometer_count
-  node tests/playwright/e2e/protocol_walkthrough_yaml.mjs --protocol cell_culture --wrong-order`;
+  -p, --protocol NAME      Protocol id (page dist/<id>.html). Default:
+                           sdspage_assemble_electrode_module.
+      --wrong-order        Negative mode: inject a wrong visible click before each
+                           correct one and assert the runtime rejects it.
+      --screenshots MODE   per-step (default) | per-interaction | per-click.
+  -h, --help               Show this help message and exit.`;
     console.log(usage);
     process.exit(0);
   }
@@ -123,9 +125,18 @@ Examples:
       i++;
     } else if (args[i] === "--wrong-order") {
       result.wrongOrder = true;
+    } else if (args[i] === "--screenshots" && i + 1 < args.length) {
+      const mode = args[i + 1];
+      if (!VALID_SCREENSHOT_MODES.includes(mode)) {
+        console.error(
+          `Invalid --screenshots value '${mode}'. Valid: ${VALID_SCREENSHOT_MODES.join(", ")}`,
+        );
+        process.exit(1);
+      }
+      result.screenshotMode = mode;
+      i++;
     }
   }
-
   return result;
 }
 
@@ -134,11 +145,10 @@ Examples:
 //============================================
 
 function startServer() {
-  const proc = spawn("python3", ["-m", "http.server", String(PORT), "--directory", DIST_DIR], {
+  return spawn("python3", ["-m", "http.server", String(PORT), "--directory", DIST_DIR], {
     stdio: ["ignore", "pipe", "pipe"],
     cwd: REPO_ROOT,
   });
-  return proc;
 }
 
 async function waitForServer(url, maxMs = 5000) {
@@ -156,7 +166,7 @@ async function waitForServer(url, maxMs = 5000) {
 }
 
 //============================================
-// Report and logging
+// Report
 //============================================
 
 class WalkerReport {
@@ -164,6 +174,7 @@ class WalkerReport {
     this.timestamp = new Date().toISOString();
     this.protocol = "";
     this.wrongOrderMode = false;
+    this.screenshotMode = "per-step";
     this.entries = [];
     this.summary = {
       stepsWalked: 0,
@@ -175,25 +186,16 @@ class WalkerReport {
   }
 
   addEntry(severity, message, metadata = {}) {
-    const entry = {
-      timestamp: new Date().toISOString(),
-      severity,
-      message,
-      ...metadata,
-    };
-    this.entries.push(entry);
-    const tag = severity.toUpperCase();
-    console.log(`[${tag}] ${message}`);
+    this.entries.push({ timestamp: new Date().toISOString(), severity, message, ...metadata });
+    console.log(`[${severity.toUpperCase()}] ${message}`);
   }
 
   info(msg, metadata) {
     this.addEntry("info", msg, metadata);
   }
-
   warn(msg, metadata) {
     this.addEntry("warn", msg, metadata);
   }
-
   error(msg, metadata) {
     this.addEntry("error", msg, metadata);
   }
@@ -208,841 +210,143 @@ class WalkerReport {
 }
 
 //============================================
-// Build click plan from YAML interaction
+// Step walker (schema-driven, one ordered sequence of interactions)
 //============================================
 
-async function buildClickPlan(page, interaction) {
-  const plan = [];
+// Walk the active step by repeatedly reading the read-only active interaction
+// (target + gesture) and acting on it via a real visible click, until the step's
+// id changes (it completed and the runtime advanced) or the protocol completes.
+async function walkActiveStep(page, step, report, opts) {
+  const { wrongOrderMode, screenshotMode, resultsDir } = opts;
+  report.info(`Walking step: ${step.id}`, { stepId: step.id });
 
-  // Validation: completionEvent-only is invalid
-  if (
-    !interaction.tool &&
-    !interaction.source &&
-    !interaction.destination &&
-    interaction.completionEvent
-  ) {
-    throw new Error("Invalid interaction shape: completionEvent only (no tool/source/destination)");
-  }
-
-  // Tool only (no source, no destination)
-  if (interaction.tool && !interaction.source && !interaction.destination) {
-    plan.push({ itemId: interaction.tool, kind: "tool" });
-    return plan;
-  }
-
-  // Tool + source, no destination (load)
-  if (interaction.tool && interaction.source && !interaction.destination) {
-    const preconditionMet = await isToolPreconditionMet(page, interaction.tool);
-    if (!preconditionMet) {
-      plan.push({ itemId: interaction.tool, kind: "tool" });
-    }
-    plan.push({ itemId: interaction.source, kind: "source" });
-    return plan;
-  }
-
-  // Tool + destination, no source (discharge/apply)
-  if (interaction.tool && !interaction.source && interaction.destination) {
-    const preconditionMet = await isToolPreconditionMet(page, interaction.tool);
-    if (!preconditionMet) {
-      plan.push({ itemId: interaction.tool, kind: "tool" });
-    }
-    plan.push({ itemId: interaction.destination, kind: "destination" });
-    return plan;
-  }
-
-  // Tool + source + destination (pass-through): click tool then source
-  if (interaction.tool && interaction.source && interaction.destination) {
-    plan.push({ itemId: interaction.tool, kind: "tool" });
-    plan.push({ itemId: interaction.source, kind: "source" });
-    return plan;
-  }
-
-  // Destination only
-  if (!interaction.tool && !interaction.source && interaction.destination) {
-    plan.push({ itemId: interaction.destination, kind: "destination" });
-    return plan;
-  }
-
-  throw new Error("Unable to determine click plan from interaction shape");
-}
-
-//============================================
-// CATEGORY: Walk a step with interactionSequence
-//============================================
-
-async function walkInteractionSequenceStep(page, step, report, wrongOrderMode) {
-  // Get interactions from either the new completionPath schema or legacy top-level field
-  const interactions = step.completionPath?.interactions || step.interactionSequence || [];
-  report.info(`  Using interactionSequence path (${interactions.length} interactions)`);
-
-  // In --wrong-order mode, we'll track when we're about to start the correct sequence
-  // so we can compare state before and after the correct clicks (not including the injection).
-  let stateBeforeCorrectSequence = null;
-
-  for (let i = 0; i < interactions.length; i++) {
-    const interaction = interactions[i];
-    const startIndex = await page.evaluate(() => window.gameState.interactionIndex);
-    report.info(`  Interaction ${i}/${interactions.length}`, {
-      index: i,
-      startInteractionIndex: startIndex,
-    });
-
-    // In --wrong-order mode: before issuing the correct sequence,
-    // inject a wrong-order click on a non-required item.
-    if (wrongOrderMode) {
-      const requiredItems = [];
-      if (interaction.tool) requiredItems.push(interaction.tool);
-      if (interaction.source) requiredItems.push(interaction.source);
-      if (interaction.destination) requiredItems.push(interaction.destination);
-
-      const wrongItem = await pickWrongOrderItem(page, requiredItems);
-      if (wrongItem) {
-        // Get pre-injection state
-        const preWrongState = await page.evaluate(() => {
-          return {
-            wrongOrderClicks: window.gameState.wrongOrderClicks,
-            interactionIndex: window.gameState.interactionIndex,
-            activeStepId: window.gameState.activeStepId,
-          };
-        });
-
-        // Click the wrong item
-        report.info(`  [wrong-order injection] clicking ${wrongItem} (not in interaction)`);
-        const wrongItemSelector = resolveSelector(wrongItem);
-        const wrongItemLocator = page.locator(wrongItemSelector).first();
-        await wrongItemLocator.click();
-        report.summary.totalClicks++;
-
-        // Wait for wrongOrderClicks to increment (observable signal of wrong-order click being processed).
-        // If it never increments within the budget, that IS the failure case — post-state read below records it.
-        const preCount = preWrongState.wrongOrderClicks;
-        await page
-          .waitForFunction((target) => window.gameState.wrongOrderClicks > target, preCount, {
-            timeout: 1500,
-          })
-          .catch(() => {
-            /* timeout is the failure case; let post-state read record it */
-          });
-
-        // Verify the injection had the expected effect:
-        // wrongOrderClicks incremented by 1, but index/activeStepId did NOT change
-        const postWrongState = await page.evaluate(() => {
-          return {
-            wrongOrderClicks: window.gameState.wrongOrderClicks,
-            interactionIndex: window.gameState.interactionIndex,
-            activeStepId: window.gameState.activeStepId,
-          };
-        });
-
-        const wrongClickIncremented =
-          postWrongState.wrongOrderClicks === preWrongState.wrongOrderClicks + 1;
-        const indexUnchanged = postWrongState.interactionIndex === preWrongState.interactionIndex;
-        const stepUnchanged = postWrongState.activeStepId === preWrongState.activeStepId;
-
-        recordInjection(report, step.id, wrongItem);
-
-        if (!wrongClickIncremented) {
-          report.error(
-            `Wrong-order injection on ${wrongItem} failed to increment wrongOrderClicks ` +
-              `(before: ${preWrongState.wrongOrderClicks}, after: ${postWrongState.wrongOrderClicks})`,
-            { stepId: step.id, injectedItemId: wrongItem },
-          );
-          throw new Error(`Injection on ${wrongItem}: wrongOrderClicks did not increment`);
-        }
-
-        if (!indexUnchanged || !stepUnchanged) {
-          report.error(
-            `Wrong-order injection on ${wrongItem} advanced the step ` +
-              `(indexBefore: ${preWrongState.interactionIndex}, indexAfter: ${postWrongState.interactionIndex}; ` +
-              `stepBefore: ${preWrongState.activeStepId}, stepAfter: ${postWrongState.activeStepId})`,
-            { stepId: step.id, injectedItemId: wrongItem },
-          );
-          throw new Error(`Injection on ${wrongItem}: step advanced when it should not have`);
-        }
-
-        report.info(
-          `  [wrong-order injection] passed: wrongOrderClicks incremented, step unchanged`,
-        );
-
-        // Record state after injection, before correct sequence
-        stateBeforeCorrectSequence = postWrongState;
-      } else {
-        report.info(`  [wrong-order injection] skipped: no alternative item visible in scene`, {
-          stepId: step.id,
-        });
-        // Even if injection skipped, record pre-sequence state
-        stateBeforeCorrectSequence = await page.evaluate(() => {
-          const state = window.gameState;
-          return {
-            wrongOrderClicks: state.wrongOrderClicks,
-            interactionIndex: state.interactionIndex,
-            activeStepId: state.activeStepId,
-          };
-        });
-      }
-    }
-
-    const clickPlan = await buildClickPlan(page, interaction);
-
-    for (const click of clickPlan) {
-      await clickItemAndWaitProgress(page, click.itemId, report, 3000, step.scene);
-    }
-  }
-
-  // Return the state before correct sequence for validation in walkStep
-  return stateBeforeCorrectSequence;
-}
-
-//============================================
-// CATEGORY: Walk incubation step (isIncubation: true)
-// Player must: be on bench, click incubator, wait for animation
-//============================================
-
-async function walkIncubationStep(page, step, report) {
-  report.info(`  Using incubation path for ${step.id}`);
-
-  // Ensure we're on bench
-  await switchToBench(page, report);
-
-  // For incubate_day1: we need to pick up the well_plate first
-  // (the incubator bench handler checks selectedTool === 'well_plate')
-  if (step.id === "incubate_day1") {
-    // Switch to hood to pick up well_plate
-    await switchToHood(page, report);
-    // Click well_plate to pick it up
-    const wellPlateLocator = page.locator('[data-item-id="well_plate"]').first();
-    if ((await wellPlateLocator.count()) === 0) {
-      throw new Error("well_plate not found in hood for incubate_day1; cannot proceed");
-    }
-    await clickItemAndWaitProgress(page, "well_plate", report);
-    await switchToBench(page, report);
-  }
-
-  // Click the incubator
-  const incubatorLocator = page.locator('[data-item-id="incubator"]').first();
-  const count = await incubatorLocator.count();
-  if (count === 0) {
-    throw new Error(`Incubator element not found on bench`);
-  }
-
-  // Click incubator to start animation
-  await incubatorLocator.click();
-  report.summary.totalClicks++;
-  report.info("Clicked incubator, waiting for animation...");
-
-  // Wait for incubation overlay to appear and complete
-  // The overlay shows for ~4 seconds (4000ms animation + 1000ms delay)
-  try {
-    // First wait for overlay to become active
-    await page.waitForFunction(
-      () => {
-        const overlay = document.getElementById("incubator-screen");
-        return overlay && overlay.classList.contains("active");
-      },
-      { timeout: 3000 },
-    );
-    report.info("Incubation overlay opened");
-  } catch {
-    // Overlay may have opened and closed already; check if step completed
-    const completed = await page.evaluate((id) => {
-      return window.gameState.completedSteps && window.gameState.completedSteps.includes(id);
-    }, step.id);
-    if (completed) {
-      report.info("Incubation step already completed (overlay too fast)");
-      return;
-    }
-  }
-
-  // Wait for overlay to close (animation completes)
-  await waitForIncubationComplete(page, 10000);
-  report.info("Incubation animation complete");
-}
-
-//============================================
-// CATEGORY: Walk microscope/count_cells step
-// Player must: click cell_counter on bench -> confirm viability -> enter quadrant counts -> submit
-//============================================
-
-async function _walkCountCellsStep(page, step, report) {
-  report.info(`  Using count_cells/microscope path for ${step.id}`);
-
-  // Ensure on bench
-  await switchToBench(page, report);
-
-  // Override window.prompt to return a fixed cell count for walker
-  // (quadrant buttons use prompt() for user input)
-  await page.evaluate(() => {
-    // Return 20 as the cell count for each quadrant (realistic value)
-    window.prompt = function () {
-      return "20";
-    };
-  });
-
-  // Click cell_counter on bench to open microscope
-  const cellCounterLocator = page.locator('[data-item-id="cell_counter"]').first();
-  if ((await cellCounterLocator.count()) === 0) {
-    throw new Error("cell_counter element not found on bench");
-  }
-
-  // Load sample if serological_pipette_with_sample is needed
-  // (bench.ts: if selectedTool === 'serological_pipette_with_sample', sets hemocytometerLoaded)
-  // The hood legacy path requires serological_pipette -> flask -> click microscope.
-  // But count_cells can also fire from cell_counter click directly.
-  await cellCounterLocator.click();
-  report.summary.totalClicks++;
-  report.info("Clicked cell_counter, waiting for microscope overlay...");
-
-  // Wait for microscope overlay to open
-  await waitForMicroscopeOpen(page, 3000);
-  report.info("Microscope overlay opened");
-
-  // Step 1: Confirm Viability
-  const confirmBtn = page.locator("#confirm-viability").first();
-  if ((await confirmBtn.count()) > 0) {
-    await confirmBtn.click();
-    report.summary.totalClicks++;
-    report.info("Clicked confirm-viability");
-
-    // Wait for viability screen to switch to counting screen
-    await page.waitForFunction(() => window.gameState.microscopeViabilityChecked === true, {
-      timeout: 3000,
-    });
-
-    // Wait for quadrant buttons to appear
-    await page.waitForSelector(".quadrant-btn", { timeout: 3000 });
-    report.info("Viability confirmed, counting screen visible");
-  }
-
-  // Step 2: Click all 4 quadrant buttons to enter counts
-  const quadrantBtns = page.locator(".quadrant-btn");
-  const quadrantCount = await quadrantBtns.count();
-  if (quadrantCount < 4) {
-    throw new Error(`Expected 4 quadrant buttons, found ${quadrantCount}`);
-  }
-
-  for (let i = 0; i < 4; i++) {
-    const btn = quadrantBtns.nth(i);
-    await btn.click();
-    report.summary.totalClicks++;
-    report.info(`Clicked quadrant ${i}`);
-    // Wait for the quadrant button to show as selected.
-    // The promptoverride returns a fixed value; we wait for the button's border style to change.
-    // The code sets `el.style.border = '3px solid #4caf50'` when selected.
-    await page.waitForFunction(
-      (index) => {
-        const buttons = document.querySelectorAll(".quadrant-btn");
-        if (buttons.length > index) {
-          const btn = buttons[index];
-          const style = window.getComputedStyle(btn);
-          // Check if button's border style has changed (selected state)
-          return style.borderColor === "rgb(76, 175, 80)" || style.borderWidth === "3px";
-        }
-        return false;
-      },
-      i,
-      { timeout: 1500 },
-    );
-  }
-
-  // Wait for all 4 quadrants to be selected (submit button enabled)
-  await page.waitForFunction(
-    () => {
-      const submitBtn = document.getElementById("submit-cell-count");
-      return submitBtn && !submitBtn.disabled;
-    },
-    { timeout: 3000 },
-  );
-  report.info("All 4 quadrants counted, submit enabled");
-
-  // Step 3: Submit the count
-  const submitBtn = page.locator("#submit-cell-count").first();
-  if ((await submitBtn.count()) === 0) {
-    throw new Error("submit-cell-count button not found");
-  }
-  await submitBtn.click();
-  report.summary.totalClicks++;
-  report.info("Submitted quadrant count");
-}
-
-//============================================
-// MICROSCOPE MODAL: Walk viability and/or quadrant counting steps
-// Handles both: confirm-viability screens and quadrant-counting screens
-//============================================
-
-async function walkMicroscopeModalStep(page, step, report) {
-  report.info(`  Using microscope modal path for ${step.id}`);
-
-  const advanceSelector = `[data-walker-advance="${step.completionPath.advanceClick}"]`;
-  const advanceClick = step.completionPath.advanceClick;
-
-  // Check if advance button is already visible (modal already open from prior step)
-  const alreadyOpenCount = await page.locator(advanceSelector).count();
-
-  if (step.completionPath.openClick && alreadyOpenCount === 0) {
-    // Open the microscope via the openClick item (e.g., microscope or cell_counter)
-    // Scope to bench scene where the cell_counter lives
-    await switchToBench(page, report);
-
-    const openerSelector = resolveScopedSelector(step.completionPath.openClick, "bench");
-    const openerLocator = page.locator(openerSelector).first();
-    if ((await openerLocator.count()) === 0) {
-      throw new Error(`Item ${step.completionPath.openClick} not found to open microscope`);
-    }
-    await clickItemAndWaitProgress(page, step.completionPath.openClick, report, 3000, "bench");
-
-    // Wait for microscope modal to open
-    await waitForMicroscopeOpen(page, 3000);
-    report.info("Microscope overlay opened");
-  }
-
-  // If this step's advance button is confirm-viability, click it and return
-  if (advanceClick === "confirm-viability") {
-    const confirmBtn = page.locator("#confirm-viability").first();
-    if ((await confirmBtn.count()) === 0) {
-      throw new Error("confirm-viability button not found");
-    }
-    await confirmBtn.click();
-    report.summary.totalClicks++;
-    report.info("Clicked confirm-viability");
-    return;
-  }
-
-  // If this step's advance button is submit-cell-count, click all quadrants first
-  if (advanceClick === "submit-cell-count") {
-    // Click all 4 quadrant buttons to enter counts
-    const quadrantBtns = page.locator(".quadrant-btn");
-    const quadrantCount = await quadrantBtns.count();
-    if (quadrantCount < 4) {
-      throw new Error(`Expected 4 quadrant buttons, found ${quadrantCount}`);
-    }
-
-    for (let i = 0; i < 4; i++) {
-      const btn = quadrantBtns.nth(i);
-      await btn.click();
-      report.summary.totalClicks++;
-      report.info(`Clicked quadrant ${i}`);
-
-      // Wait for the quadrant button to show as selected
-      await page.waitForFunction(
-        (index) => {
-          const buttons = document.querySelectorAll(".quadrant-btn");
-          if (buttons.length > index) {
-            const btn = buttons[index];
-            const style = window.getComputedStyle(btn);
-            return style.borderColor === "rgb(76, 175, 80)" || style.borderWidth === "3px";
-          }
-          return false;
-        },
-        i,
-        { timeout: 1500 },
-      );
-    }
-
-    // Wait for all 4 quadrants to be selected (submit button enabled)
-    await page.waitForFunction(
-      () => {
-        const submitBtn = document.getElementById("submit-cell-count");
-        return submitBtn && !submitBtn.disabled;
-      },
-      { timeout: 3000 },
-    );
-    report.info("All 4 quadrants counted, submit enabled");
-  }
-
-  // Click the advance button
-  const advanceBtn = page.locator(advanceSelector).first();
-  if ((await advanceBtn.count()) === 0) {
-    throw new Error(
-      `Advance button with selector "${advanceSelector}" not found for step ${step.id}`,
-    );
-  }
-  await advanceBtn.click();
-  report.summary.totalClicks++;
-  report.info(`Clicked advance button for ${step.id}`);
-}
-
-//============================================
-// GENERIC: Walk a modal step
-// Player must: optionally open modal (if openClick present), then click advance button
-//============================================
-
-async function walkModalStep(page, step, openClick, advanceClick, completionEvent, report) {
-  report.info(`  Using generic modal path for ${step.id}`);
-
-  const advanceSelector = `[data-walker-advance="${advanceClick}"]`;
-
-  // If the advance button is already visible, the modal is already open from
-  // the prior step's completionEvent (e.g. results follows plate_read with
-  // the plate_reader overlay still active). Re-running openClick in that
-  // state re-renders the overlay and breaks pointer events. Skip openClick.
-  const alreadyOpenCount = await page.locator(advanceSelector).count();
-
-  if (openClick && alreadyOpenCount === 0) {
-    // Use step.scene as the truth source (matches walkInteractionSequence).
-    // Scope the item locator to the correct scene to avoid picking up the wrong element
-    // when multiple scenes have the same data-item-id (e.g., multichannel_pipette in hood vs well_plate_workspace).
-    if (step.scene === "cell_culture_hood") {
-      await switchToHood(page, report);
-    } else if (step.scene === "bench" || step.scene === "plate_reader") {
-      await switchToBench(page, report);
-    } else if (step.scene === "well_plate_workspace") {
-      await switchToPlate(page, report);
-    }
-
-    // Click the opener item, scoped to the correct scene
-    const openerSelector = resolveScopedSelector(openClick, step.scene);
-    const openerLocator = page.locator(openerSelector).first();
-    if ((await openerLocator.count()) === 0) {
-      throw new Error(`Item ${openClick} not found to open modal for step ${step.id}`);
-    }
-    await clickItemAndWaitProgress(page, openClick, report, 3000, step.scene);
-
-    // Wait for modal to become visible (the advance button appears)
-    await page.waitForSelector(advanceSelector, { timeout: 3000 });
-    report.info(`Modal opened via ${openClick}, advance button visible`);
-  } else {
-    // Modal is already open from previous step's completionEvent
-    // Just wait for the advance button to appear
-    await page.waitForSelector(advanceSelector, { timeout: 3000 });
-    report.info("Modal already open from prior step, advance button visible");
-  }
-
-  // Click the advance button
-  const advanceBtn = page.locator(advanceSelector).first();
-  if ((await advanceBtn.count()) === 0) {
-    throw new Error(
-      `Advance button with selector "${advanceSelector}" not found for step ${step.id}`,
-    );
-  }
-  await advanceBtn.click();
-  report.summary.totalClicks++;
-  report.info(`Clicked advance button for ${step.id}`);
-}
-
-//============================================
-// CATEGORY: Walk prewarm_media (completionTrigger: water_bath on bench)
-//============================================
-
-async function _walkPrewarmMediaStep(page, step, report) {
-  report.info(`  Using prewarm_media path`);
-
-  await switchToBench(page, report);
-
-  // Click water_bath
-  await clickItemAndWaitProgress(page, "water_bath", report);
-}
-
-//============================================
-// CATEGORY: Walk media_adjust (multichannel + media_bottle + well_plate on hood)
-//============================================
-
-async function _walkMediaAdjustStep(page, step, report) {
-  report.info(`  Using media_adjust path`);
-
-  await switchToHood(page, report);
-
-  // Build and execute click plan: tool, source, destination
-  const clickPlan = [
-    { itemId: "multichannel_pipette", kind: "tool" },
-    { itemId: "media_bottle", kind: "source" },
-    { itemId: "well_plate", kind: "destination" },
-  ];
-
-  for (const click of clickPlan) {
-    const locator = page.locator(resolveSelector(click.itemId)).first();
-    const count = await locator.count();
-    if (count === 0) {
-      throw new Error(`Item ${click.itemId} not found in DOM for media_adjust`);
-    }
-    await clickItemAndWaitProgress(page, click.itemId, report);
-  }
-}
-
-//============================================
-// CATEGORY: Walk add_mtt (multichannel + mtt_vial + well_plate on hood)
-//============================================
-
-async function _walkAddMttStep(page, step, report) {
-  report.info(`  Using add_mtt path`);
-
-  await switchToHood(page, report);
-
-  // Build and execute click plan: tool, source, destination
-  const clickPlan = [
-    { itemId: "multichannel_pipette", kind: "tool" },
-    { itemId: "mtt_vial", kind: "source" },
-    { itemId: "well_plate", kind: "destination" },
-  ];
-
-  for (const click of clickPlan) {
-    const locator = page.locator(resolveSelector(click.itemId)).first();
-    const count = await locator.count();
-    if (count === 0) {
-      throw new Error(`Item ${click.itemId} not found in DOM for add_mtt`);
-    }
-    await clickItemAndWaitProgress(page, click.itemId, report);
-  }
-}
-
-//============================================
-// CATEGORY: Walk decant_mtt (well_plate + biohazard_decant on hood)
-//============================================
-
-async function _walkDecantMttStep(page, step, report) {
-  report.info(`  Using decant_mtt path`);
-
-  await switchToHood(page, report);
-
-  // Build and execute click plan: tool, destination
-  const clickPlan = [
-    { itemId: "well_plate", kind: "tool" },
-    { itemId: "biohazard_decant", kind: "destination" },
-  ];
-
-  for (const click of clickPlan) {
-    const locator = page.locator(resolveSelector(click.itemId)).first();
-    const count = await locator.count();
-    if (count === 0) {
-      throw new Error(`Item ${click.itemId} not found in DOM for decant_mtt`);
-    }
-    await clickItemAndWaitProgress(page, click.itemId, report);
-  }
-}
-
-//============================================
-// CATEGORY: Walk add_dmso (multichannel + dmso_bottle + well_plate on hood)
-//============================================
-
-async function _walkAddDmsoStep(page, step, report) {
-  report.info(`  Using add_dmso path`);
-
-  await switchToHood(page, report);
-
-  // Build and execute click plan: tool, source, destination
-  const clickPlan = [
-    { itemId: "multichannel_pipette", kind: "tool" },
-    { itemId: "dmso_bottle", kind: "source" },
-    { itemId: "well_plate", kind: "destination" },
-  ];
-
-  for (const click of clickPlan) {
-    const locator = page.locator(resolveSelector(click.itemId)).first();
-    const count = await locator.count();
-    if (count === 0) {
-      throw new Error(`Item ${click.itemId} not found in DOM for add_dmso`);
-    }
-    await clickItemAndWaitProgress(page, click.itemId, report);
-  }
-}
-
-//============================================
-// Main step walker: dispatch to category handler
-//============================================
-
-async function walkStep(page, step, report, wrongOrderMode, protocolId) {
-  const stepReport = {
-    stepId: step.id,
-    label: step.label,
-    clicks: [],
-    passed: false,
-    reason: null,
-  };
-
-  report.info(`Walking step: ${step.id} (${step.label})`, { stepId: step.id });
-
-  // Per-step budget: race between step completion and a timeout
   const stepStart = Date.now();
+  let interactionCounter = 0;
 
-  try {
-    // Before-step state
-    const beforeState = await page.evaluate(() => {
-      const state = window.gameState;
-      return {
-        wrongOrderClicks: state.wrongOrderClicks,
-        interactionIndex: state.interactionIndex,
-        activeScene: state.activeScene,
-      };
-    });
-
-    // Dispatch to correct handler based on completionPath.kind
-    // Zero step.id branches: all dispatch is schema-driven
-    let stateBeforeCorrectSequence = null;
-
-    if (step.completionPath) {
-      const kind = step.completionPath.kind;
-
-      if (kind === "interactionSequence") {
-        // Ensure correct scene before walking
-        if (step.scene === "bench") {
-          await switchToBench(page, report);
-        } else if (step.scene === "cell_culture_hood") {
-          await switchToHood(page, report);
-        } else if (step.scene === "well_plate_workspace") {
-          await switchToPlate(page, report);
-        }
-        stateBeforeCorrectSequence = await walkInteractionSequenceStep(
-          page,
-          step,
-          report,
-          wrongOrderMode,
-        );
-      } else if (kind === "directTool") {
-        // Direct tool interaction: click the tool and wait for completion
-        const tool = step.completionPath.tool;
-
-        // Special case: incubate_plate requires clicking "Take plate to incubator" button first
-        if (step.id === "incubate_plate") {
-          const currentScene = await page.evaluate(() => window.gameState.activeScene);
-          if (currentScene === "well_plate_workspace") {
-            const takeIncubatorBtn = page.locator("#take-to-incubator").first();
-            if ((await takeIncubatorBtn.count()) === 0) {
-              throw new Error("Take plate to incubator button not found on plate scene");
-            }
-            await takeIncubatorBtn.click();
-            report.summary.totalClicks++;
-            report.info('Clicked "Take plate to incubator" button');
-            // Switch to bench and set selectedTool (the button dispatch should have done this, but enforce it here)
-            await page.evaluate(() => {
-              window.gameState.activeScene = "bench";
-              window.gameState.selectedTool = "well_plate";
-              window.renderGame?.();
-            });
-            report.info("Switched to bench and set selectedTool to well_plate");
-          } else if (currentScene !== "bench") {
-            // Fallback: switch to bench if not already there
-            await switchToBench(page, report);
-          }
-        } else {
-          // Normal scene switching for other directTool steps
-          // Determine scene for the tool
-          if (step.scene === "bench") {
-            await switchToBench(page, report);
-          } else if (step.scene === "cell_culture_hood") {
-            await switchToHood(page, report);
-          } else if (step.scene === "well_plate_workspace") {
-            await switchToPlate(page, report);
-          }
-        }
-
-        report.info(`  Using directTool path (tool: ${tool})`);
-        await clickItemAndWaitProgress(page, tool, report);
-      } else if (kind === "modal") {
-        // Dispatch to special handlers for microscope modals with quadrant counting
-        if (step.modal?.screen === "viability" || step.modal?.screen === "counting") {
-          // Hemocytometer quadrant counting requires window.prompt override.
-          // Override window.prompt because the runtime collects quadrant counts via a native browser dialog; without this Playwright would hang on the modal dialog.
-          await page.evaluate(() => {
-            window.prompt = function () {
-              return "20";
-            };
-          });
-          await walkMicroscopeModalStep(page, step, report);
-        } else {
-          // Generic modal interaction: optionally open, then click advance.
-          // walkModalStep auto-detects an already-open modal so plate_reader
-          // continuations (results after plate_read) need no special case.
-          const openClick = step.completionPath.openClick || null;
-          const advanceClick = step.completionPath.advanceClick;
-          const completionEvent = step.completionPath.completionEvent;
-
-          await walkModalStep(page, step, openClick, advanceClick, completionEvent, report);
-        }
-      } else if (kind === "multipleChoice") {
-        // Multiple-choice quiz step: find correct choice and click it
-        const cp = step.completionPath;
-        const correct = cp.choices.find((c) => c.correct === true);
-        if (!correct) throw new Error(`No correct choice on ${step.id}`);
-        const _selector = resolveScopedSelector(correct.id, step.scene);
-        await clickItemAndWaitProgress(page, correct.id, report, 3000, step.scene);
-      } else {
-        throw new Error(`Unknown completionPath.kind '${kind}' for step ${step.id}`);
-      }
-    } else if (step.isIncubation) {
-      // Legacy: pure incubation steps (no completionPath yet)
-      await walkIncubationStep(page, step, report);
-    } else {
-      throw new Error(`Step ${step.id} has no completionPath and is not an incubation step`);
-    }
-
-    // Check per-step budget
+  // Loop over the step's interactions. The runtime advances interactionIndex on
+  // each validated interaction and changes activeStepId when the step completes.
+  while (true) {
     if (Date.now() - stepStart > STEP_BUDGET_MS) {
       throw new Error(`step_stalled: step ${step.id} exceeded ${STEP_BUDGET_MS}ms budget`);
     }
 
-    // Wait for step completion (async steps like incubation, aspiration animation)
-    await waitForStepCompleted(page, step.id, STEP_BUDGET_MS);
+    const gs = await readGameState(page);
 
-    // After-step state
-    const afterState = await page.evaluate(() => {
-      const state = window.gameState;
-      return {
-        wrongOrderClicks: state.wrongOrderClicks,
-        activeStepId: state.activeStepId,
-        activeScene: state.activeScene,
-        completedSteps: state.completedSteps.slice(),
-      };
-    });
-
-    // Validate: step in completedSteps
-    if (!afterState.completedSteps.includes(step.id)) {
-      throw new Error(`Step ${step.id} not in completedSteps after walk`);
+    // Step finished: the runtime resolved this step and moved on (or completed).
+    if (gs.activeStepId !== step.id) {
+      return;
     }
 
-    // Validate: activeStepId advanced to nextId (or null for terminal)
-    const expectedNextId = step.nextId !== undefined ? step.nextId : null;
-    if (afterState.activeStepId !== expectedNextId) {
+    const target = gs.activeTarget;
+    const gesture = gs.activeGesture;
+    if (target === null || gesture === null) {
       throw new Error(
-        `activeStepId ${afterState.activeStepId} !== expected nextId ${expectedNextId}`,
+        `no_active_interaction: step ${step.id} has no active target/gesture but is still active`,
       );
     }
 
-    // Validate: wrongOrderClicks did not increment during the correct sequence
-    // (In --wrong-order mode with interactionSequence, compare to state after injection;
-    //  otherwise compare to state at the start of the step.)
-    const compareState =
-      stateBeforeCorrectSequence !== null ? stateBeforeCorrectSequence : beforeState;
-    if (afterState.wrongOrderClicks > compareState.wrongOrderClicks) {
+    // Schema-driven dispatch from the closed gesture set. No step-name branch.
+    if (!KNOWN_GESTURES.has(gesture)) {
+      throw new Error(`unknown_gesture: '${gesture}' not in closed gesture set on step ${step.id}`);
+    }
+    if (!SUPPORTED_GESTURES.has(gesture)) {
+      // Classify for M4-D: the new host has no visible affordance for this
+      // gesture yet. Fail loudly; never silently skip, never branch per protocol.
       throw new Error(
-        `wrongOrderClicks incremented during correct sequence (before: ${compareState.wrongOrderClicks}, after: ${afterState.wrongOrderClicks})`,
+        `unsupported_gesture: gesture '${gesture}' on target '${target}' (step ${step.id}) has ` +
+          `no visible affordance in the new host yet; classify in M4-D`,
       );
     }
 
-    // Scene-isolation assertion for tutorial_plate_drug_additions:
-    // Fail if the tutorial ever leaves the well_plate_workspace scene.
-    if (protocolId === "tutorial_plate_drug_additions") {
-      const forbiddenScenes = ["cell_culture_hood", "bench", "incubator"];
-      if (forbiddenScenes.includes(afterState.activeScene)) {
-        throw new Error(
-          `Scene-isolation violation: tutorial_plate_drug_additions reached forbidden scene '${afterState.activeScene}' (must stay in 'well_plate_workspace')`,
-        );
+    // Wrong-order injection (negative mode): a real visible click on a
+    // non-required item must be rejected by the runtime. Only meaningful for the
+    // visible-click gestures (click/select); a `type` interaction has no
+    // alternative scene object to click, so injection is skipped for it.
+    if (wrongOrderMode && gesture !== "type") {
+      const wrongItem = await pickWrongOrderItem(page, target);
+      if (wrongItem) {
+        report.info(`[wrong-order injection] clicking ${wrongItem} (not the active target)`);
+        recordInjection(report, step.id, wrongItem);
+        await clickTargetAndWaitProgress(page, wrongItem, report, {
+          clickBudgetMs: CLICK_BUDGET_MS,
+          progressKind: "reject",
+        });
+      } else {
+        report.info(`[wrong-order injection] skipped: no alternative visible item`, {
+          stepId: step.id,
+        });
       }
     }
 
-    stepReport.passed = true;
-    report.info(`Step passed: ${step.id}`);
-    report.summary.stepsPassed++;
-  } catch (err) {
-    stepReport.reason = err.message;
-    report.error(`Step failed: ${step.id} - ${err.message}`, {
-      stepId: step.id,
-    });
-    report.summary.stepsFailed++;
-    throw err;
-  }
+    // Correct interaction: drive the active interaction through its visible
+    // affordance and wait for a progress signal produced by the real handler.
+    if (gesture === "type") {
+      // The expected typed value is read read-only from gameState.activeTypeValue
+      // (projected from the authored validator `value`, the same read-only basis
+      // the walker uses to know which object to click). A real fill + commit on
+      // the visible [data-type-input] / [data-type-commit] affordance.
+      const typedText = gs.activeTypeValue;
+      if (typedText === null) {
+        throw new Error(
+          `type_value_missing: step ${step.id} type interaction on '${target}' has no ` +
+            `activeTypeValue to type (validator declares no expected value)`,
+        );
+      }
+      await typeCommitAndWaitProgress(page, typedText, report, {
+        clickBudgetMs: CLICK_BUDGET_MS,
+      });
+    } else {
+      // click and select both drive a real visible click on the active scene
+      // object. select promotes that click to the active gesture in the host.
+      const perClickOpts =
+        screenshotMode === "per-click" && resultsDir !== null
+          ? {
+              mode: "per-click",
+              resultsDir,
+              stepName: step.id,
+              interactionIndex: gs.interactionIndex,
+              clickIndex: 0,
+              gesture,
+              target,
+            }
+          : null;
 
-  report.summary.stepsWalked++;
-  return stepReport;
+      await clickTargetAndWaitProgress(page, target, report, {
+        clickBudgetMs: CLICK_BUDGET_MS,
+        progressKind: "advance",
+        screenshotOpts: perClickOpts,
+      });
+    }
+
+    // Per-interaction screenshot after the interaction's click completes.
+    if (screenshotMode === "per-interaction" && resultsDir !== null) {
+      const safeTarget = target.replace(/[^a-z0-9_]/gi, "_");
+      const screenshotName = `interaction_${step.id}_i${interactionCounter}_${safeTarget}.png`;
+      const screenshotPath = `${resultsDir}/${screenshotName}`;
+      await page.screenshot({ path: screenshotPath });
+      report.addEntry("info", `Screenshot: ${screenshotName}`, {
+        screenshot: screenshotPath,
+        step_name: step.id,
+        interaction_index: interactionCounter,
+        gesture,
+        target,
+      });
+    }
+    interactionCounter++;
+  }
 }
 
 //============================================
-// Main walker
+// Main
 //============================================
 
 async function main() {
   const args = parseArgs();
-  console.log(`Starting walker: protocol=${args.protocol}, wrongOrder=${args.wrongOrder}`);
+  console.log(
+    `Starting walker: protocol=${args.protocol}, wrongOrder=${args.wrongOrder}, ` +
+      `screenshots=${args.screenshotMode}`,
+  );
 
-  // Ensure results directory exists
   if (!fs.existsSync(RESULTS_DIR)) {
     fs.mkdirSync(RESULTS_DIR, { recursive: true });
   }
@@ -1050,32 +354,24 @@ async function main() {
   const report = new WalkerReport();
   report.protocol = args.protocol;
   report.wrongOrderMode = args.wrongOrder;
+  report.screenshotMode = args.screenshotMode;
 
   const runStart = Date.now();
-  const gameUrl = `http://127.0.0.1:${PORT}/?protocol=${encodeURIComponent(args.protocol)}`;
+  // The new host serves a per-protocol page at dist/<protocol>.html.
+  const gameUrl = `http://127.0.0.1:${PORT}/${encodeURIComponent(args.protocol)}.html`;
 
   const server = startServer();
-  server.on("exit", (code) => {
-    _serverDied = code;
-  });
 
   const browser = await chromium.launch({ headless: true });
-  const page = await browser.newPage({
-    viewport: { width: 1280, height: 900 },
-  });
+  const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 
-  // Capture console errors
   const consoleErrors = [];
   page.on("console", (msg) => {
-    if (msg.type() === "error") {
-      consoleErrors.push(msg.text());
-    }
+    if (msg.type() === "error") consoleErrors.push(msg.text());
   });
 
-  // Capture network errors
   const networkErrors = [];
   page.on("requestfailed", (req) => {
-    // Only capture same-origin asset failures
     try {
       const url = new URL(req.url());
       if (url.origin === `http://127.0.0.1:${PORT}`) {
@@ -1085,7 +381,7 @@ async function main() {
           reason: req.failure().errorText,
         });
       }
-    } catch (_e) {
+    } catch {
       // ignore parse errors
     }
   });
@@ -1100,177 +396,122 @@ async function main() {
   }
 
   try {
-    // Navigate to game
-    report.info("Navigating to game", { url: gameUrl });
+    // Normal browser entry.
+    report.info("Navigating to protocol page", { url: gameUrl });
     await page.goto(gameUrl, { waitUntil: "networkidle" });
+    await waitForExports(page);
+    report.info("Walker surfaces ready");
 
-    // Wait for window exports to be defined
-    await page.waitForFunction(
-      () => {
-        return (
-          typeof window.gameState !== "undefined" &&
-          typeof window.PROTOCOL_STEPS !== "undefined" &&
-          typeof window.resolveInteractionByIndex === "function" &&
-          Array.isArray(window.PROTOCOL_STEPS) &&
-          window.PROTOCOL_STEPS.length > 0
-        );
-      },
-      { timeout: 5000 },
-    );
-    report.info("Game exports ready");
-
-    // Clear localStorage and reload
+    // Fresh browser state: clear persistence and hard reload.
     report.info("Clearing localStorage and reloading");
-    await page.evaluate(() => {
-      localStorage.clear();
-    });
+    await page.evaluate(() => localStorage.clear());
     await page.reload({ waitUntil: "networkidle" });
+    await waitForExports(page);
 
-    // Wait again for exports after reload
-    await page.waitForFunction(
-      () => {
-        return (
-          typeof window.gameState !== "undefined" &&
-          typeof window.PROTOCOL_STEPS !== "undefined" &&
-          Array.isArray(window.PROTOCOL_STEPS) &&
-          window.PROTOCOL_STEPS.length > 0
-        );
-      },
-      { timeout: 5000 },
-    );
-
-    // Override window.prompt for count_cells quadrant input
-    // (must be done after reload and before microscope modal opens)
-    await page.evaluate(() => {
-      window.prompt = function () {
-        return "20";
-      };
-    });
-
-    // Dismiss welcome modal
-    report.info("Dismissing welcome modal");
-    const welcomeBtn = page
-      .locator('#welcome-start-btn, button:has-text("Start"), button:has-text("Begin")')
+    // Dismiss any visible welcome/start control by clicking it (a real user
+    // would). The new host has no welcome modal; this is best-effort so the
+    // walker stays compatible if one is added later.
+    const startBtn = page
+      .locator('button:has-text("Start"), button:has-text("Begin"), #welcome-start-btn')
       .first();
-    if ((await welcomeBtn.count()) > 0) {
-      await welcomeBtn.click();
-      await page.waitForFunction(
-        () => {
-          return window.gameState && window.gameState.activeStepId !== null;
-        },
-        { timeout: 2000 },
-      );
+    if ((await startBtn.count()) > 0 && (await startBtn.isVisible())) {
+      report.info("Dismissing visible start control");
+      await startBtn.click();
     }
 
-    report.info("Game state initialized");
-
-    // Get protocol steps from the page (they're already parsed from YAML)
-    const steps = await page.evaluate(() => {
-      return window.PROTOCOL_STEPS || [];
-    });
-
+    const steps = await page.evaluate(() => window.PROTOCOL_STEPS);
     if (!steps || steps.length === 0) {
-      throw new Error("No protocol steps found");
+      throw new Error("No protocol steps found in window.PROTOCOL_STEPS");
     }
+    report.info(`Protocol has ${steps.length} steps`, { stepCount: steps.length });
 
-    report.info(`Protocol has ${steps.length} steps`, {
-      stepCount: steps.length,
-    });
+    await page.screenshot({ path: path.join(RESULTS_DIR, "initial_state.png") });
 
-    // Take initial screenshot
-    await page.screenshot({
-      path: path.join(RESULTS_DIR, "initial_state.png"),
-    });
-
-    // Walk each step
-    for (const step of steps) {
-      // Check whole-run budget
+    // Walk steps in flow order (entry_step then next_step), driven by the
+    // runtime: read the active step id, find its descriptor, walk it.
+    const stepById = new Map(steps.map((s) => [s.id, s]));
+    let guard = 0;
+    while (guard < steps.length + 5) {
+      guard++;
       if (Date.now() - runStart > RUN_BUDGET_MS) {
         report.error(`run_stalled: exceeded ${RUN_BUDGET_MS}ms whole-run budget`);
         report.summary.failureReason = "run_stalled";
         break;
       }
 
-      try {
-        await walkStep(page, step, report, args.wrongOrder, args.protocol);
+      const gs = await readGameState(page);
+      if (gs.isComplete || gs.activeStepId === null) {
+        break;
+      }
+      const step = stepById.get(gs.activeStepId);
+      if (!step) {
+        throw new Error(`active step '${gs.activeStepId}' not in PROTOCOL_STEPS`);
+      }
 
-        // Per-step screenshot on pass
+      try {
+        await walkActiveStep(page, step, report, {
+          wrongOrderMode: args.wrongOrder,
+          screenshotMode: args.screenshotMode,
+          resultsDir: RESULTS_DIR,
+        });
+        report.summary.stepsWalked++;
+        report.summary.stepsPassed++;
+        report.info(`Step passed: ${step.id}`);
         const stepScreenshot = path.join(
           RESULTS_DIR,
           `step_${report.summary.stepsWalked}_${step.id}.png`,
         );
         await page.screenshot({ path: stepScreenshot });
       } catch (err) {
+        report.summary.stepsWalked++;
+        report.summary.stepsFailed++;
         report.summary.failureReason = err.message;
-        // Screenshot on failure
-        const failScreenshot = path.join(RESULTS_DIR, `fail_${step.id}.png`);
-        await page.screenshot({ path: failScreenshot });
+        report.error(`Step failed: ${step.id} - ${err.message}`, { stepId: step.id });
+        await page.screenshot({ path: path.join(RESULTS_DIR, `fail_${step.id}.png`) });
         break;
       }
     }
 
-    // Final state check
-    const endingState = await page.evaluate(() => {
-      const state = window.gameState;
-      return {
-        activeStepId: state.activeStepId,
-        completedSteps: state.completedSteps.slice(),
-        wrongOrderClicks: state.wrongOrderClicks,
-        stepsOutOfOrder: state.stepsOutOfOrder,
-      };
-    });
-
+    // End-state assertions.
+    const ending = await readGameState(page);
     report.info("Final game state", {
-      activeStepId: endingState.activeStepId,
-      completedStepsCount: endingState.completedSteps.length,
-      wrongOrderClicks: endingState.wrongOrderClicks,
+      activeStepId: ending.activeStepId,
+      completedStepsCount: ending.completedSteps.length,
+      wrongOrderClicks: ending.wrongOrderClicks,
+      isComplete: ending.isComplete,
     });
 
-    // End-state assertions (only if no failures)
     if (report.summary.stepsFailed === 0) {
-      if (endingState.activeStepId !== null) {
+      if (!ending.isComplete) {
+        report.error("Protocol did not reach isComplete=true (not all steps completed)");
+      }
+      if (ending.activeStepId !== null) {
         report.error("activeStepId is not null at end (not all steps completed)");
       }
-      if (endingState.wrongOrderClicks > 0 && !args.wrongOrder) {
-        report.error(`wrongOrderClicks = ${endingState.wrongOrderClicks} (should be 0)`);
+      if (ending.completedSteps.length !== steps.length) {
+        report.error(
+          `completedSteps ${ending.completedSteps.length} !== step count ${steps.length}`,
+        );
       }
-      if (endingState.stepsOutOfOrder > 0) {
-        report.error(`stepsOutOfOrder = ${endingState.stepsOutOfOrder} (should be 0)`);
+      if (ending.wrongOrderClicks > 0 && !args.wrongOrder) {
+        report.error(`wrongOrderClicks = ${ending.wrongOrderClicks} (should be 0)`);
       }
     }
 
-    // Check for final result screen (required per spec Rule 6)
-    const resultScreen = page
-      .locator('#scoring-screen, #results-screen, [data-screen="scoring"]')
-      .first();
-    if ((await resultScreen.count()) === 0) {
-      report.error("Final result screen not found in DOM (spec Rule 6: assert the ending)");
-    } else {
-      report.info("Final result screen present");
-    }
-
-    // Log any console errors
     if (consoleErrors.length > 0) {
       report.error(`Console errors detected: ${consoleErrors.length}`, {
         errors: consoleErrors.slice(0, 5),
       });
     }
-
-    // Log any network errors
     if (networkErrors.length > 0) {
-      report.error(`Network errors detected: ${networkErrors.length}`, {
-        errors: networkErrors,
-      });
+      report.error(`Network errors detected: ${networkErrors.length}`, { errors: networkErrors });
     }
 
-    // Determine pass/fail
     const errorCount = report.entries.filter((e) => e.severity === "error").length;
     if (errorCount > 0 || report.summary.stepsFailed > 0) {
-      const failMsg =
-        errorCount > 0
-          ? `Walker FAILED: ${errorCount} errors logged`
-          : `Walker FAILED: ${report.summary.stepsFailed} steps failed`;
-      console.log(`\n${failMsg}`);
+      console.log(
+        `\nWalker FAILED: ${errorCount} errors, ${report.summary.stepsFailed} steps failed`,
+      );
       console.log(`Passed: ${report.summary.stepsPassed}/${steps.length} steps`);
       process.exitCode = 1;
     } else {
@@ -1278,27 +519,20 @@ async function main() {
       process.exitCode = 0;
     }
 
-    // Final screenshot
     await page.screenshot({ path: path.join(RESULTS_DIR, "final_screen.png") });
   } catch (err) {
     report.error(`Walker crashed: ${err.message}`, { stack: err.stack });
     report.summary.failureReason = err.message;
     process.exitCode = 1;
-
-    // Screenshot on crash
     try {
-      await page.screenshot({
-        path: path.join(RESULTS_DIR, "crash_screen.png"),
-      });
+      await page.screenshot({ path: path.join(RESULTS_DIR, "crash_screen.png") });
     } catch {
       // ignore screenshot failure
     }
   } finally {
-    // Save report before closing
     const reportPath = path.join(RESULTS_DIR, "playthrough_report.json");
     report.save(reportPath);
     console.log(`Report saved to ${reportPath}`);
-
     await browser.close();
     server.kill();
     await new Promise((r) => setTimeout(r, 100));

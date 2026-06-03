@@ -33,6 +33,10 @@ import type {
   ValidatorPreset,
 } from "../../shell/adapter/types";
 import type { RuntimeEmitterHandle, SnapshotReducer } from "./emitter";
+// SceneOpHandler is defined canonically in scene_operations.ts (the module that
+// builds the handler). Import it here (type-only, allowed within protocol/) and
+// re-export so this module's existing public surface is unchanged.
+import type { SceneOpHandler } from "./scene_operations";
 import {
   dispatch_interaction_validator,
   dispatch_step_validator,
@@ -44,13 +48,22 @@ import {
 // Public types
 //============================================
 
-export type SceneOpHandler = (op: SceneOperation) => void;
+// SceneOpHandler re-exported from its canonical home (scene_operations.ts).
+export type { SceneOpHandler };
 
 export interface StepMachineHandle {
   start(): void;
   handle_click(target: string, gesture: Gesture): void;
   handle_modal_close(committed: boolean, choice_id: string | null): void;
   handle_timer_elapsed(equipment_name: string): void;
+  // Commit a typed value for the active `type` interaction. The committed text
+  // is the raw string the student typed into the visible type-input affordance
+  // (src/shell/hud/type_input.tsx). It is validated by the active interaction's
+  // target_with_value preset: the typed text is coerced to the type of the
+  // single field declared in the validator's `value` block and compared. A
+  // match advances exactly like a validated click; a mismatch emits
+  // interaction_rejected (wrong_value) and does NOT advance.
+  handle_type_commit(target: string, typed_text: string): void;
 }
 
 //============================================
@@ -333,13 +346,14 @@ function to_validator_interaction(
 }
 
 function validator_parameters(ref: ValidatorReference): Record<string, unknown> | undefined {
-  const authored_params = ref.params ?? ref.value;
-  if (authored_params === undefined) {
+  // `value` is the sole authored spelling (WS-M1-E vocabulary-closure patch).
+  const authored_value = ref.value;
+  if (authored_value === undefined) {
     return undefined;
   }
   const out: Record<string, unknown> = {};
-  for (const [key, value] of Object.entries(authored_params)) {
-    out[key] = value;
+  for (const [key, val] of Object.entries(authored_value)) {
+    out[key] = val;
   }
   return out;
 }
@@ -355,10 +369,11 @@ function to_validator_step(step: ProtocolStep): ValidatorStep {
       validator_parameters(interaction.validator),
     ),
   );
-  const validator_block: ValidatorStep["step_validator"] = step.step_validator.params
+  // Use `value` only (WS-M1-E vocabulary-closure patch; `params` alias removed).
+  const validator_block: ValidatorStep["step_validator"] = step.step_validator.value
     ? {
         preset,
-        parameters: step.step_validator.params,
+        parameters: step.step_validator.value,
       }
     : { preset };
   const out: ValidatorStep = {
@@ -588,7 +603,8 @@ export function create_step_machine(
       preset,
       validator_parameters(interaction.validator),
     );
-    const value_map = preset === "target_with_value" ? validator_parameters(interaction.validator) : {};
+    const value_map =
+      preset === "target_with_value" ? validator_parameters(interaction.validator) : {};
     const result = dispatch_interaction_validator(
       preset,
       validator_interaction,
@@ -684,11 +700,105 @@ export function create_step_machine(
     handle_validated(step, interaction.target, interaction.gesture, preset);
   }
 
+  function handle_type_commit(target: string, typed_text: string): void {
+    const step = current_step();
+    if (!started || completed || step === null) {
+      emit_rejection(active_step_name ?? "", 0, target, "type", "correct_target", "no_active_step");
+      return;
+    }
+    const interaction = step.sequence[interaction_index];
+    if (!interaction) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "type",
+        "correct_target",
+        "no_active_step",
+      );
+      return;
+    }
+    const preset = interaction.validator.preset as InteractionValidatorPreset;
+    // A type commit only applies to the active `type` interaction on its target.
+    if (interaction.gesture !== "type" || interaction.target !== target) {
+      emit_rejection(step.step_name, interaction_index, target, "type", preset, "wrong_target");
+      return;
+    }
+    // Build the value_map from the typed text. target_with_value compares the
+    // validator's declared `value` fields against this map. The visible type
+    // input yields a single string; coerce it to each declared field's type so
+    // a numeric field compares as a number, not a string.
+    const expected = validator_parameters(interaction.validator) ?? {};
+    const value_map = build_typed_value_map(expected, typed_text);
+    const validator_interaction = to_validator_interaction(
+      interaction.target,
+      interaction.gesture,
+      preset,
+      expected,
+    );
+    const result = dispatch_interaction_validator(
+      preset,
+      validator_interaction,
+      target,
+      null,
+      value_map,
+    );
+    if (!result.ok) {
+      emit_rejection(
+        step.step_name,
+        interaction_index,
+        target,
+        "type",
+        preset,
+        result.reason ?? "wrong_value",
+      );
+      return;
+    }
+    handle_validated(step, target, "type", preset);
+  }
+
   const handle: StepMachineHandle = {
     start,
     handle_click,
     handle_modal_close,
     handle_timer_elapsed,
+    handle_type_commit,
   };
   return handle;
+}
+
+//============================================
+// Typed-value coercion for the `type` gesture
+//============================================
+
+// Build the value_map a target_with_value validator compares against, from the
+// raw typed text. Each field the validator's `value` block declares is filled
+// with the typed text coerced to that field's value kind (number vs string vs
+// boolean), inferred from the expected value's JS type. A `type` interaction
+// declares exactly one expected field in practice, but every declared field is
+// filled identically so multi-field declarations stay well-defined.
+function build_typed_value_map(
+  expected: Record<string, unknown>,
+  typed_text: string,
+): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [key, expected_value] of Object.entries(expected)) {
+    out[key] = coerce_typed_text(typed_text, expected_value);
+  }
+  return out;
+}
+
+// Coerce the typed string to the JS type of the expected value so a numeric
+// field compares as a number. A non-numeric string against a numeric field
+// yields NaN, which never strict-equals the expected number, so it correctly
+// rejects. A boolean field compares the lowercased text against "true".
+function coerce_typed_text(typed_text: string, expected_value: unknown): unknown {
+  const trimmed = typed_text.trim();
+  if (typeof expected_value === "number") {
+    return Number(trimmed);
+  }
+  if (typeof expected_value === "boolean") {
+    return trimmed.toLowerCase() === "true";
+  }
+  return trimmed;
 }

@@ -247,8 +247,8 @@ input the student performs. The gesture value set is closed:
 | `click`  | Clicks the target. The simple, discrete gesture.                          |
 | `drag`   | Drags the target, or drags from the target to another target.             |
 | `adjust` | Moves a continuous control to a set-point value. The skill-based gesture. |
-| `select` | Picks one option from a presented set of choices.                         |
-| `type`   | Enters a value or text.                                                   |
+| `select` | Chooses the next-step object among the scene objects already present. The primary way a student drives a protocol; reuses the visible scene-object click affordance. |
+| `type`   | Enters a value or text into a visible input and commits it.                |
 
 ### `adjust` is the skill-based set-point gesture
 
@@ -264,15 +264,22 @@ into a `click` teaches the student nothing about volume set-points.
 
 `select` and `click` are kept distinct:
 
-- `click` is acting on a scene object in the lab space -- a
-  pipette, a bottle, an incubator. The target is a thing in the
-  world.
-- `select` is picking one option from a presented set -- an answer
-  choice, a phase to keep after centrifugation. The target is one
-  option among a set the runtime presented.
+- `click` is acting on a specific scene object the step already
+  directs the student to -- a pipette, a bottle, an incubator. The
+  target is a single thing in the world to act on.
+- `select` is choosing the correct next-step object among the scene
+  objects already present. The selectable set is simply the
+  clickable scene objects already rendered (each carries its own
+  `data-item-id`); there is no separate answer-choice list, no modal,
+  and no choice identifier. Selecting the interaction's `target`
+  advances; selecting any other present object is rejected (the same
+  discipline as a wrong-order click) and does not advance.
 
-The author's intent differs and the scene renders them differently,
-so the two gestures stay separate.
+`select` reuses the same visible scene-object click affordance as
+`click`; the runtime promotes a click on the active target to the
+active `select` gesture. The author's intent differs (choosing among
+present objects vs. acting on one directed object), so the two
+gestures stay separate even though the affordance is shared.
 
 ### The gesture extension rule
 
@@ -299,7 +306,8 @@ teaches:
 
 - `adjust` on a continuous control teaches a **set-point skill**.
 - `click` on a scene object teaches **recognition and sequencing**.
-- `select` on an answer-choice target teaches a **decision**.
+- `select` on the correct next-step object among the present objects
+  teaches a **decision**.
 - `drag` on a scene object teaches a **spatial placement** skill.
 - `type` on a control teaches **entering a precise value**.
 
@@ -619,8 +627,8 @@ presets and two step presets.
 | Preset                | Scope                        | Required fields                                                     | What it checks                                                                                                                                   |
 | --------------------- | ---------------------------- | ------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `correct_target`      | interaction `validator` only | `preset`                                                            | The student performed the interaction's `gesture` on the interaction's `target`.                                                                 |
-| `correct_choice`      | interaction `validator` only | `preset`                                                            | The student selected the correct answer-choice target from a presented set (a `select`-gesture interaction).                                     |
-| `target_with_value`   | interaction `validator` only | `preset`, `value` (a mapping of typed value keys)                   | The student performed the `gesture` on the `target` and the target reached the named `value` -- the preset an `adjust`-gesture interaction uses. |
+| `correct_choice`      | interaction `validator` only | `preset`                                                            | The student selected the correct next-step object: the selected scene object equals the interaction's `target` (target-equality). The selectable set is the clickable scene objects already present; there is no separate answer-choice list. Used by a `select`-gesture interaction. |
+| `target_with_value`   | interaction `validator` only | `preset`, `value` (a mapping of typed value keys)                   | The student performed the `gesture` on the `target` and the target reached the named `value` -- the preset an `adjust`- or `type`-gesture interaction uses. For a `type` interaction the committed text is coerced to the declared value's type and compared. |
 | `sequence_complete`   | `step_validator` only        | `preset`                                                            | Every interaction in the step's `sequence` validated, in order.                                                                                  |
 | `final_state_matches` | `step_validator` only        | `preset`, `target`, `contains` (a mapping of expected target state) | After the sequence runs, the named `target` is in the state described by `contains`, regardless of the exact path.                               |
 

@@ -267,9 +267,10 @@ export interface LearningBlock {
 }
 
 // Validator reference (preset + optional typed parameters).
+// Authored YAML uses `value` only. The legacy `params` alias was removed
+// in WS-M1-E (vocabulary-closure patch).
 export interface ValidatorReference {
   readonly preset: ValidatorPreset;
-  readonly params?: Readonly<Record<string, string | number | boolean>>;
   readonly value?: Readonly<Record<string, string | number | boolean>>;
   readonly target?: string;
   readonly contains?: Readonly<Record<string, string | number | boolean>>;

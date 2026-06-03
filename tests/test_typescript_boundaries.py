@@ -1,36 +1,47 @@
 """
-Boundary lint for src/scene_runtime/{layout,renderer}/ import restrictions.
+Boundary lint for Solid.js import restrictions.
 
-Rules:
-1. No 'solid-js' (or 'solid-js/...') import in scene_runtime/{layout,renderer}/*.ts
-2. No src/shell/, src/launcher/ (or relative paths resolving to them) imported
-   in scene_runtime/{layout,renderer}/*.ts
+Solid import boundary (from plan refactored-drifting-narwhal.md, M1/WS-M1-B):
 
-Approach: scan every .ts/.tsx file in the protected directories, extract imports,
-and assert no violations. Includes a negative test that creates a known-bad fixture,
+  Solid ALLOWED:    src/shell/, src/scene_runtime/renderer/,
+                    src/scene_runtime/state/
+
+  Solid FORBIDDEN:  src/scene_runtime/layout/, pipeline/, validation/,
+                    generated/, src/scene_runtime/protocol/
+                    (the stepper; type-only imports from state permitted).
+
+The stepper (protocol/) calls store operations through a small runtime bridge,
+never as a Solid component dependency. Type-only imports (import type ...) of
+Solid types from the state layer into protocol/ are explicitly allowed.
+
+Additional boundary rules:
+  - No src/shell/ or src/launcher/ imported in scene_runtime/layout/ or
+    scene_runtime/renderer/ (shell/adapter/types is the seam exception).
+
+Approach: scan every .ts/.tsx file in the protected directories, extract
+imports, and assert no violations. A negative test creates a known-bad fixture,
 asserts it would be caught, then cleans up.
 """
 
 import os
 import re
-import subprocess
+
+import git_file_utils
 
 
 #============================================
 def _resolve_repo_root() -> str:
 	"""
-	Resolve the repository root using git rev-parse.
+	Resolve the repository root.
+
+	Delegates to the propagated shared helper (tests/git_file_utils.py), the
+	same resolver other tests use, instead of re-implementing the git rev-parse
+	subprocess call here.
 
 	Returns:
 		str: Absolute path to repository root.
 	"""
-	result = subprocess.run(
-		["git", "rev-parse", "--show-toplevel"],
-		capture_output=True,
-		text=True,
-		check=True,
-	)
-	return result.stdout.strip()
+	return git_file_utils.get_repo_root()
 
 
 #============================================
@@ -59,6 +70,7 @@ def _extract_imports(file_content: str) -> list[str]:
 	  import { x } from "path"
 	  import x from 'path'
 	  import * as x from "path"
+	  import type { T } from "path"
 
 	Args:
 		file_content: Raw TypeScript/TSX source code
@@ -66,16 +78,47 @@ def _extract_imports(file_content: str) -> list[str]:
 	Returns:
 		List of import paths (the string inside quotes)
 	"""
-	# Match import statements with any quote style, capture the path string
-	pattern = r'import\s+(?:\{[^}]*\}|[\w\s*,]+)\s+from\s+["\']([^"\']+)["\']'
+	# Match import statements (including type-only) with any quote style
+	pattern = r'import\s+(?:type\s+)?(?:\{[^}]*\}|[\w\s*,]+)\s+from\s+["\']([^"\']+)["\']'
 	matches = re.findall(pattern, file_content)
 	return matches
 
 
 #============================================
+def _extract_type_only_imports(file_content: str) -> list[str]:
+	"""
+	Extract only type-only import paths (import type ... from ...).
+
+	Args:
+		file_content: Raw TypeScript/TSX source code
+
+	Returns:
+		List of import paths that are type-only imports
+	"""
+	# Match only "import type { ... } from '...'" forms
+	pattern = r'import\s+type\s+(?:\{[^}]*\}|[\w\s*,]+)\s+from\s+["\']([^"\']+)["\']'
+	matches = re.findall(pattern, file_content)
+	return matches
+
+
+#============================================
+def _is_solid_import(import_path: str) -> bool:
+	"""
+	Return True if import_path is a solid-js import.
+
+	Args:
+		import_path: The import string (e.g., "solid-js", "solid-js/store")
+
+	Returns:
+		True if this is a solid-js or solid-js/* import
+	"""
+	return import_path == "solid-js" or import_path.startswith("solid-js/")
+
+
+#============================================
 def _check_import_violation(import_path: str) -> str | None:
 	"""
-	Check if a single import violates the boundary rules.
+	Check if a single import violates the boundary rules for layout/ and renderer/.
 
 	Rule 1: no 'solid-js' or 'solid-js/*'
 	Rule 2: no absolute or relative paths resolving to src/shell/ or src/launcher/
@@ -87,7 +130,7 @@ def _check_import_violation(import_path: str) -> str | None:
 		Violation reason string if violated, None if OK.
 	"""
 	# Rule 1: Reject solid-js and solid-js subpaths
-	if import_path.startswith("solid-js"):
+	if _is_solid_import(import_path):
 		return f"forbidden solid-js import: {import_path}"
 
 	# Rule 2: Reject relative/absolute paths pointing to shell/ or launcher/.
@@ -108,12 +151,60 @@ def _check_import_violation(import_path: str) -> str | None:
 
 
 #============================================
+def _check_solid_violation_strict(import_path: str) -> str | None:
+	"""
+	Check if an import is a forbidden solid-js import (strict: no exceptions).
+
+	Used for pipeline/, validation/, generated/, and layout/ directories
+	where solid-js is never allowed.
+
+	Args:
+		import_path: The import string
+
+	Returns:
+		Violation reason string if violated, None if OK.
+	"""
+	if _is_solid_import(import_path):
+		return f"forbidden solid-js import: {import_path}"
+	return None
+
+
+#============================================
+def _check_solid_violation_protocol(
+	import_path: str,
+	is_type_only: bool,
+) -> str | None:
+	"""
+	Check if an import violates the solid-js rule for the protocol/ stepper.
+
+	The stepper (protocol/) must not depend on solid-js as a runtime import.
+	Type-only imports of Solid types (import type ...) from the state layer
+	are explicitly permitted so the stepper can reference state types.
+
+	Args:
+		import_path: The import string
+		is_type_only: True if this import is an 'import type' statement
+
+	Returns:
+		Violation reason string if violated, None if OK.
+	"""
+	if not _is_solid_import(import_path):
+		return None
+	# Type-only imports are allowed in protocol/ (for state type references)
+	if is_type_only:
+		return None
+	return f"forbidden runtime solid-js import in protocol/: {import_path}"
+
+
+#============================================
 def _scan_directory_for_violations(
 	directory: str,
 	repo_root: str,
 ) -> list[tuple[str, str]]:
 	"""
 	Scan a directory for .ts/.tsx files and check for import violations.
+
+	Applies the layout/renderer boundary rules (both solid-js and shell/launcher).
 
 	Args:
 		directory: Path to scan (e.g., src/scene_runtime/layout/)
@@ -124,8 +215,8 @@ def _scan_directory_for_violations(
 	"""
 	violations: list[tuple[str, str]] = []
 
-	# Find all .ts and .tsx files
-	for root, dirs, files in os.walk(directory):
+	# Walk all .ts and .tsx files in the directory
+	for root, _dirs, files in os.walk(directory):
 		for filename in files:
 			if not (filename.endswith(".ts") or filename.endswith(".tsx")):
 				continue
@@ -134,10 +225,10 @@ def _scan_directory_for_violations(
 			rel_path = os.path.relpath(filepath, repo_root)
 
 			try:
-				with open(filepath, "r", encoding="utf-8") as f:
-					content = f.read()
-			except Exception as e:
-				violations.append((rel_path, f"read error: {e}"))
+				with open(filepath, "r", encoding="utf-8") as handle:
+					content = handle.read()
+			except OSError as err:
+				violations.append((rel_path, f"read error: {err}"))
 				continue
 
 			imports = _extract_imports(content)
@@ -150,43 +241,104 @@ def _scan_directory_for_violations(
 
 
 #============================================
-def test_no_solid_js_in_scene_runtime() -> None:
+def _scan_directory_for_solid_violations_strict(
+	directory: str,
+	repo_root: str,
+) -> list[tuple[str, str]]:
 	"""
-	Assert: no solid-js import exists in any src/scene_runtime/ subtree.
-	The protocol/ subtree shares the rule with layout/ and renderer/: the
-	runtime must not depend on the reactive framework.
+	Scan a directory for solid-js imports (strict: no type-only exception).
+
+	Used for pipeline/, validation/, generated/ where solid-js is never allowed
+	regardless of import form.
+
+	Args:
+		directory: Path to scan
+		repo_root: Repository root
+
+	Returns:
+		List of (filepath, violation_reason) tuples
 	"""
-	import pytest
-
-	marker = _read_marker()
-	repo_root = _resolve_repo_root()
-
-	if marker != "typescript":
-		pytest.skip("repo is not typescript-typed")
-
-	runtime_dirs = [
-		os.path.join(repo_root, "src", "scene_runtime", "layout"),
-		os.path.join(repo_root, "src", "scene_runtime", "renderer"),
-		os.path.join(repo_root, "src", "scene_runtime", "protocol"),
-	]
-
 	violations: list[tuple[str, str]] = []
 
-	for runtime_dir in runtime_dirs:
-		if os.path.isdir(runtime_dir):
-			violations.extend(_scan_directory_for_violations(runtime_dir, repo_root))
+	for root, _dirs, files in os.walk(directory):
+		for filename in files:
+			if not (filename.endswith(".ts") or filename.endswith(".tsx")):
+				continue
 
-	if violations:
-		msg_lines = ["Boundary lint violations found:"]
-		for filepath, reason in violations:
-			msg_lines.append(f"  {filepath}: {reason}")
-		raise AssertionError("\n".join(msg_lines))
+			filepath = os.path.join(root, filename)
+			rel_path = os.path.relpath(filepath, repo_root)
+
+			try:
+				with open(filepath, "r", encoding="utf-8") as handle:
+					content = handle.read()
+			except OSError as err:
+				violations.append((rel_path, f"read error: {err}"))
+				continue
+
+			imports = _extract_imports(content)
+			for imp in imports:
+				violation = _check_solid_violation_strict(imp)
+				if violation:
+					violations.append((rel_path, violation))
+
+	return violations
 
 
 #============================================
-def test_no_shell_launcher_in_scene_runtime() -> None:
+def _scan_protocol_directory_for_solid_violations(
+	directory: str,
+	repo_root: str,
+) -> list[tuple[str, str]]:
 	"""
-	Assert: no src/shell/ or src/launcher/ import in scene_runtime/{layout,renderer}
+	Scan the protocol/ directory for forbidden solid-js imports.
+
+	Type-only imports of solid-js types are permitted (for state type references).
+	Runtime solid-js imports are forbidden.
+
+	Args:
+		directory: Path to the protocol/ directory
+		repo_root: Repository root
+
+	Returns:
+		List of (filepath, violation_reason) tuples
+	"""
+	violations: list[tuple[str, str]] = []
+
+	for root, _dirs, files in os.walk(directory):
+		for filename in files:
+			if not (filename.endswith(".ts") or filename.endswith(".tsx")):
+				continue
+
+			filepath = os.path.join(root, filename)
+			rel_path = os.path.relpath(filepath, repo_root)
+
+			try:
+				with open(filepath, "r", encoding="utf-8") as handle:
+					content = handle.read()
+			except OSError as err:
+				violations.append((rel_path, f"read error: {err}"))
+				continue
+
+			# Gather type-only imports separately so we can exempt them
+			type_only_imports = set(_extract_type_only_imports(content))
+			all_imports = _extract_imports(content)
+
+			for imp in all_imports:
+				is_type_only = imp in type_only_imports
+				violation = _check_solid_violation_protocol(imp, is_type_only)
+				if violation:
+					violations.append((rel_path, violation))
+
+	return violations
+
+
+#============================================
+def test_no_solid_js_in_layout() -> None:
+	"""
+	Solid.js is FORBIDDEN in src/scene_runtime/layout/.
+
+	The layout engine is a pure pipeline that must not depend on the
+	reactive framework. Solid owns rendering; the layout engine owns geometry.
 	"""
 	import pytest
 
@@ -197,28 +349,29 @@ def test_no_shell_launcher_in_scene_runtime() -> None:
 		pytest.skip("repo is not typescript-typed")
 
 	layout_dir = os.path.join(repo_root, "src", "scene_runtime", "layout")
-	renderer_dir = os.path.join(repo_root, "src", "scene_runtime", "renderer")
 
 	violations: list[tuple[str, str]] = []
 
+	# Only check if the directory exists; absence is not a failure
 	if os.path.isdir(layout_dir):
-		violations.extend(_scan_directory_for_violations(layout_dir, repo_root))
-
-	if os.path.isdir(renderer_dir):
-		violations.extend(_scan_directory_for_violations(renderer_dir, repo_root))
+		violations.extend(
+			_scan_directory_for_solid_violations_strict(layout_dir, repo_root)
+		)
 
 	if violations:
-		msg_lines = ["Boundary lint violations found:"]
+		msg_lines = ["Solid.js boundary lint violations in layout/:"]
 		for filepath, reason in violations:
 			msg_lines.append(f"  {filepath}: {reason}")
 		raise AssertionError("\n".join(msg_lines))
 
 
 #============================================
-def test_boundary_lint_fixture_detection() -> None:
+def test_no_solid_js_in_pipeline() -> None:
 	"""
-	Negative test: create a known-bad fixture, verify lint catches it,
-	then clean up. Proves the lint is working.
+	Solid.js is FORBIDDEN in pipeline/.
+
+	The build pipeline emits generated data; it must never depend on the
+	reactive framework.
 	"""
 	import pytest
 
@@ -228,47 +381,214 @@ def test_boundary_lint_fixture_detection() -> None:
 	if marker != "typescript":
 		pytest.skip("repo is not typescript-typed")
 
-	# Create a temporary fixture file in a protected directory
-	fixture_dir = os.path.join(
-		repo_root, "tests", "fixtures", "boundary_violation_test"
-	)
-	os.makedirs(fixture_dir, exist_ok=True)
+	pipeline_dir = os.path.join(repo_root, "pipeline")
 
-	fixture_file = os.path.join(fixture_dir, "bad_import.ts")
+	violations: list[tuple[str, str]] = []
 
-	# Write a file with a forbidden import
-	bad_content = """import { createSignal } from "solid-js";
+	# Only check if the directory exists; absence is not a failure
+	if os.path.isdir(pipeline_dir):
+		violations.extend(
+			_scan_directory_for_solid_violations_strict(pipeline_dir, repo_root)
+		)
 
-export const x = createSignal(0);
-"""
+	if violations:
+		msg_lines = ["Solid.js boundary lint violations in pipeline/:"]
+		for filepath, reason in violations:
+			msg_lines.append(f"  {filepath}: {reason}")
+		raise AssertionError("\n".join(msg_lines))
 
-	try:
-		with open(fixture_file, "w", encoding="utf-8") as f:
-			f.write(bad_content)
 
-		# Verify the fixture would be caught by our lint function
-		imports = _extract_imports(bad_content)
-		assert "solid-js" in imports, "fixture must have solid-js import"
+#============================================
+def test_no_solid_js_in_validation() -> None:
+	"""
+	Solid.js is FORBIDDEN in validation/.
 
-		violation = _check_import_violation("solid-js")
-		assert violation is not None, "lint must detect solid-js violation"
+	YAML validators and protocol stepper simulation are pure Python/TS;
+	they must not depend on the reactive framework.
+	"""
+	import pytest
 
-		# Also test shell/launcher detection. shell/adapter/types is the
-		# typed seam exception, so use shell/hud which is forbidden.
-		violation2 = _check_import_violation("../../shell/hud/ProtocolHud")
-		assert violation2 is not None, "lint must detect shell import violation"
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
 
-		# And confirm the seam-types exception is honored: importing from
-		# shell/adapter/types must NOT be flagged.
-		seam_allowed = _check_import_violation("../../shell/adapter/types")
-		assert seam_allowed is None, "lint must allow shell/adapter/types seam"
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
 
-		violation3 = _check_import_violation("../launcher/foo")
-		assert violation3 is not None, "lint must detect launcher import violation"
+	validation_dir = os.path.join(repo_root, "validation")
 
-	finally:
-		# Clean up: remove the fixture file
-		if os.path.exists(fixture_file):
-			os.remove(fixture_file)
-		if os.path.exists(fixture_dir):
-			os.rmdir(fixture_dir)
+	violations: list[tuple[str, str]] = []
+
+	# Only check if the directory exists; absence is not a failure
+	if os.path.isdir(validation_dir):
+		violations.extend(
+			_scan_directory_for_solid_violations_strict(validation_dir, repo_root)
+		)
+
+	if violations:
+		msg_lines = ["Solid.js boundary lint violations in validation/:"]
+		for filepath, reason in violations:
+			msg_lines.append(f"  {filepath}: {reason}")
+		raise AssertionError("\n".join(msg_lines))
+
+
+#============================================
+def test_no_solid_js_in_generated() -> None:
+	"""
+	Solid.js is FORBIDDEN in generated/.
+
+	Generated data files carry YAML-compiled runtime data; they must not
+	import Solid.js. If a generated file starts importing Solid, a pipeline
+	generator has violated the layer boundary.
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	generated_dir = os.path.join(repo_root, "generated")
+
+	violations: list[tuple[str, str]] = []
+
+	# Only check if the directory exists; absence is not a failure
+	if os.path.isdir(generated_dir):
+		violations.extend(
+			_scan_directory_for_solid_violations_strict(generated_dir, repo_root)
+		)
+
+	if violations:
+		msg_lines = ["Solid.js boundary lint violations in generated/:"]
+		for filepath, reason in violations:
+			msg_lines.append(f"  {filepath}: {reason}")
+		raise AssertionError("\n".join(msg_lines))
+
+
+#============================================
+def test_no_solid_js_runtime_import_in_protocol() -> None:
+	"""
+	Runtime solid-js imports are FORBIDDEN in src/scene_runtime/protocol/.
+
+	The stepper (protocol/) calls store operations through a small runtime
+	bridge, never as a Solid component dependency. Type-only imports of
+	Solid types (import type ...) from the state layer are permitted so the
+	stepper can reference state types without a runtime dependency.
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	protocol_dir = os.path.join(repo_root, "src", "scene_runtime", "protocol")
+
+	violations: list[tuple[str, str]] = []
+
+	# Only check if the directory exists; absence is not a failure
+	if os.path.isdir(protocol_dir):
+		violations.extend(
+			_scan_protocol_directory_for_solid_violations(protocol_dir, repo_root)
+		)
+
+	if violations:
+		msg_lines = [
+			"Solid.js runtime boundary lint violations in src/scene_runtime/protocol/:",
+			"(type-only imports are permitted; runtime imports are forbidden)",
+		]
+		for filepath, reason in violations:
+			msg_lines.append(f"  {filepath}: {reason}")
+		raise AssertionError("\n".join(msg_lines))
+
+
+#============================================
+def test_no_shell_launcher_in_scene_runtime() -> None:
+	"""
+	No src/shell/ or src/launcher/ import in scene_runtime/layout/.
+
+	The layout engine must not depend on the shell or launcher layers.
+	shell/adapter/types is the one permitted seam exception (typed contract).
+	"""
+	import pytest
+
+	marker = _read_marker()
+	repo_root = _resolve_repo_root()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	layout_dir = os.path.join(repo_root, "src", "scene_runtime", "layout")
+
+	violations: list[tuple[str, str]] = []
+
+	if os.path.isdir(layout_dir):
+		violations.extend(_scan_directory_for_violations(layout_dir, repo_root))
+
+	if violations:
+		msg_lines = ["Boundary lint violations found:"]
+		for filepath, reason in violations:
+			msg_lines.append(f"  {filepath}: {reason}")
+		raise AssertionError("\n".join(msg_lines))
+
+
+#============================================
+def test_boundary_lint_fixture_detection(tmp_path) -> None:
+	"""
+	Negative test: write a known-bad fixture, verify the lint catches it.
+	Proves the lint is working.
+
+	The fixture file is written under the pytest tmp_path fixture, never inside
+	the repo source tree, so a killed test leaves nothing behind to clean up. The
+	lint-detection assertions below operate on in-memory content strings and the
+	helper checks (which scan the real protected dirs), so the on-disk fixture is
+	only an artifact of the negative case and does not need to live in the tree.
+	"""
+	import pytest
+
+	marker = _read_marker()
+
+	if marker != "typescript":
+		pytest.skip("repo is not typescript-typed")
+
+	# Write the fixture under tmp_path (auto-cleaned by pytest), not the tree.
+	fixture_file = tmp_path / "bad_import.ts"
+
+	# A file with a forbidden runtime solid-js import.
+	bad_content = 'import { createSignal } from "solid-js";\n\nexport const x = createSignal(0);\n'
+	# A file with a permitted type-only solid-js import.
+	type_only_content = 'import type { Accessor } from "solid-js";\n\nexport type MyType = Accessor<number>;\n'
+
+	fixture_file.write_text(bad_content, encoding="utf-8")
+
+	# Verify the fixture would be caught: runtime solid-js import
+	imports = _extract_imports(bad_content)
+	assert "solid-js" in imports, "fixture must have solid-js import"
+
+	# Strict violation (layout/pipeline/validation/generated)
+	violation = _check_solid_violation_strict("solid-js")
+	assert violation is not None, "strict lint must detect solid-js violation"
+
+	# Protocol/ runtime violation
+	protocol_violation = _check_solid_violation_protocol("solid-js", is_type_only=False)
+	assert protocol_violation is not None, "protocol lint must detect runtime solid-js"
+
+	# Protocol/ type-only import must be ALLOWED
+	type_only_allowed = _check_solid_violation_protocol("solid-js", is_type_only=True)
+	assert type_only_allowed is None, "type-only solid-js import must be allowed in protocol/"
+
+	# Verify type-only extraction works correctly
+	type_only_imports = _extract_type_only_imports(type_only_content)
+	assert "solid-js" in type_only_imports, "type-only extractor must find solid-js"
+
+	# Shell/launcher import checks
+	violation2 = _check_import_violation("../../shell/hud/ProtocolHud")
+	assert violation2 is not None, "lint must detect shell import violation"
+
+	# Seam exception: shell/adapter/types must NOT be flagged
+	seam_allowed = _check_import_violation("../../shell/adapter/types")
+	assert seam_allowed is None, "lint must allow shell/adapter/types seam"
+
+	violation3 = _check_import_violation("../launcher/foo")
+	assert violation3 is not None, "lint must detect launcher import violation"

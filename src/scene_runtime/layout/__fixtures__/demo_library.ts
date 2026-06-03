@@ -4,6 +4,10 @@
 
 import type { AssetSpecs, ObjectLibrary } from "../types.js";
 
+// Shared empty state schema for fixture objects that have no declared state.
+const EMPTY_STATE_SCHEMA = {} as const;
+const EMPTY_VISUAL_STATES = {} as const;
+
 export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
   heat_block: {
     object_name: "heat_block",
@@ -17,6 +21,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 25,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   microtube_rack_24: {
     object_name: "microtube_rack_24",
@@ -30,6 +37,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 12,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   protein_ladder_tube: {
     object_name: "protein_ladder_tube",
@@ -43,6 +53,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 3,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   t75_flask: {
     object_name: "t75_flask",
@@ -56,6 +69,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 20,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   media_bottle: {
     object_name: "media_bottle",
@@ -69,6 +85,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 12,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   waste_jar: {
     object_name: "waste_jar",
@@ -82,6 +101,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y: "bottom",
       display_width_cm: 14,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
   serological_pipette: {
     object_name: "serological_pipette",
@@ -96,6 +118,9 @@ export const DEMO_OBJECT_LIBRARY: ObjectLibrary = {
       anchor_y_offset: 0,
       display_width_cm: 3,
     },
+    state_schema: EMPTY_STATE_SCHEMA,
+    visual_states: EMPTY_VISUAL_STATES,
+    subpart_state_schema: EMPTY_STATE_SCHEMA,
   },
 };
 

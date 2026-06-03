@@ -1,0 +1,465 @@
+// src/scene_runtime/state/scene_store.ts
+//
+// Reactive scene-object state store backed by Solid's createStore.
+//
+// This store is the single source of truth for per-target scene object
+// state during a running protocol. The Solid renderer (WS-M3-C) reads from
+// it so visual updates follow state writes automatically, and the
+// store-driven scene_operations rewrite (WS-M3-D) writes to it in place of
+// the imperative Map/Set in protocol_host.tsx build_scene_op_deps.
+//
+// What this store is:
+//   - Runtime state keyed by target, including subpart targets
+//     (e.g. "treatment_plate.A1").
+//   - Declared object state fields (material_name, material_volume,
+//     held_material_*, set_volume, set_temperature, set_rpm, ...) plus a
+//     small set of runtime-only flags (is_selected, is_active_target,
+//     cursor attach + held material).
+//
+// What this store is NOT:
+//   - It is not the stepper. It carries no step-flow logic, no validators,
+//     no next_step. The stepper calls into it through a runtime bridge.
+//   - It does not infer writable keys from visual_states. Writable keys are
+//     validated ONLY against the generated declared state_fields schemas
+//     (OBJECT_STATE_SCHEMAS / OBJECT_SUBPART_STATE_SCHEMAS). visual_states is
+//     a rendering map, not a contract for what may be written.
+//
+// Schema resolution rule:
+//   - An object target ("centrifuge") validates writes against the object's
+//     OBJECT_STATE_SCHEMAS entry.
+//   - A subpart target ("treatment_plate.A1") validates writes against the
+//     object's OBJECT_SUBPART_STATE_SCHEMAS entry (NOT the object-level
+//     schema). The object name is the segment before the first ".".
+//
+// References:
+//   - docs/specs/OBJECT_VOCABULARY.md (state_fields, subpart state, target
+//     naming: "treatment_plate.A1")
+//   - docs/PRIMARY_SPEC.md ("Scene operations": ObjectStateChange is the sole
+//     primitive that mutates declared object state)
+//   - src/scene_runtime/layout/types.ts (StateFieldDef, ObjectStateSchema)
+//   - generated/object_library.ts (OBJECT_STATE_SCHEMAS,
+//     OBJECT_SUBPART_STATE_SCHEMAS)
+
+import { createStore, produce } from "solid-js/store";
+
+import {
+  OBJECT_STATE_SCHEMAS,
+  OBJECT_SUBPART_STATE_SCHEMAS,
+} from "../../../generated/object_library.js";
+import type { ObjectStateSchema } from "../layout/types.js";
+
+//============================================
+// Public value types
+//============================================
+
+// A declared state field value is one of the three primitive kinds the
+// schema declares (enum -> string, int/float -> number, bool -> boolean).
+export type StateValue = string | number | boolean;
+
+// A partial-merge write payload: a subset of declared fields for one target.
+export type StatePartial = Readonly<Record<string, StateValue>>;
+
+// Runtime-only flags and held-material cursor info for one target. These are
+// store concerns, not declared object state, so they live in their own slot
+// and are never schema-validated.
+export interface TargetRuntimeFlags {
+  // True when the target is the student's current selection.
+  is_selected: boolean;
+  // True when the target is the active interaction target for the step.
+  is_active_target: boolean;
+  // True when the cursor is "holding" this target (CursorAttach attach).
+  cursor_attached: boolean;
+  // Material currently held by the cursor while attached. Null when the
+  // cursor holds nothing (detached, or attached with no material).
+  held_material_name: string | null;
+  held_material_volume: number | null;
+}
+
+// One target's full reactive record: declared state plus runtime flags.
+export interface TargetState {
+  // The object_name this target belongs to (segment before first ".").
+  object_name: string;
+  // The subpart suffix ("A1") for a subpart target, or null for an object
+  // target. Determines which schema validates writes.
+  subpart: string | null;
+  // Declared state fields, keyed by field_name. Seeded from schema defaults.
+  state: Record<string, StateValue>;
+  flags: TargetRuntimeFlags;
+}
+
+// The reactive store map: target name -> TargetState.
+export type SceneStoreState = Record<string, TargetState>;
+
+// One seed entry: which targets the store should initialize for a scene.
+// The full target name carries the subpart suffix; object_name names the
+// object-library entry whose schema seeds the defaults.
+export interface TargetSeed {
+  target: string;
+  object_name: string;
+}
+
+//============================================
+// Public store API
+//============================================
+
+export interface SceneStore {
+  // Reactive read accessor. Components subscribe by reading state[target].
+  readonly state: SceneStoreState;
+  // Initialize targets for a scene, seeding declared fields to schema
+  // defaults and runtime flags to off. Replaces any prior contents.
+  seed_from_scene(seeds: ReadonlyArray<TargetSeed>): void;
+  // Ensure a single target is seeded WITHOUT disturbing other targets. Used by
+  // the scene-op layer to add a subpart instance ("plate.A1") on first write,
+  // since the subpart instance set is not enumerable from the PipelineResult.
+  // A no-op when the target is already seeded; never resets sibling targets.
+  seed_target(seed: TargetSeed): void;
+  // Partial-merge a declared-state write into a seeded target. Every key is
+  // validated against the target's resolved schema; an undeclared key throws.
+  set_object_state(target: string, partial: StatePartial): void;
+  // Attach or detach the cursor for a target, optionally carrying material.
+  set_cursor(target: string, op: CursorWrite): void;
+  // Set one or both runtime selection/active-target flags on a target. These
+  // are render-layer flags (not declared object state) the Solid renderer
+  // reads reactively to drive highlight. A partial write leaves the unset
+  // flag unchanged.
+  set_flags(target: string, flags: FlagWrite): void;
+  // Clear all targets. The store returns to its empty initial condition.
+  reset(): void;
+}
+
+// Runtime-flag write payload. Either flag may be omitted to leave it as-is.
+export interface FlagWrite {
+  is_selected?: boolean;
+  is_active_target?: boolean;
+}
+
+// Cursor write payload. attach=true holds the target (optionally with the
+// named material); attach=false detaches and clears held material.
+export interface CursorWrite {
+  attach: boolean;
+  held_material_name?: string;
+  held_material_volume?: number;
+}
+
+//============================================
+// Schema resolution
+//============================================
+
+// Split a target name into object_name and optional subpart suffix. The
+// object name is everything before the first "."; the subpart is the rest.
+// "treatment_plate.A1" -> { object_name: "treatment_plate", subpart: "A1" }
+// "centrifuge"         -> { object_name: "centrifuge", subpart: null }
+function split_target(target: string): { object_name: string; subpart: string | null } {
+  const dot_index = target.indexOf(".");
+  if (dot_index < 0) {
+    return { object_name: target, subpart: null };
+  }
+  const object_name = target.slice(0, dot_index);
+  const subpart = target.slice(dot_index + 1);
+  // A trailing/empty subpart ("plate.") is malformed and must fail loudly.
+  if (object_name.length === 0 || subpart.length === 0) {
+    throw new Error(`scene_store: malformed target name "${target}"`);
+  }
+  return { object_name, subpart };
+}
+
+// Resolve the declared state-field schema that governs writes to a target.
+// Object targets use OBJECT_STATE_SCHEMAS; subpart targets use
+// OBJECT_SUBPART_STATE_SCHEMAS. A missing object entry is a loud error: the
+// scene referenced an object the library does not declare.
+function resolve_schema(object_name: string, subpart: string | null): ObjectStateSchema {
+  const registry = subpart === null ? OBJECT_STATE_SCHEMAS : OBJECT_SUBPART_STATE_SCHEMAS;
+  const schema = registry[object_name];
+  if (schema === undefined) {
+    const level = subpart === null ? "object" : "subpart";
+    throw new Error(`scene_store: no ${level} state schema for object "${object_name}"`);
+  }
+  return schema;
+}
+
+//============================================
+// Default-state seeding
+//============================================
+
+// Build the initial declared-state record for a target from its schema
+// defaults. Every declared field starts at its declared default value.
+function build_default_state(schema: ObjectStateSchema): Record<string, StateValue> {
+  const state: Record<string, StateValue> = {};
+  for (const field_name of Object.keys(schema)) {
+    const field_def = schema[field_name];
+    // Defensive: Object.keys guarantees the key exists; noUncheckedIndexedAccess
+    // narrows field_def to possibly-undefined, so assert presence loudly.
+    if (field_def === undefined) {
+      throw new Error(`scene_store: schema field "${field_name}" missing definition`);
+    }
+    state[field_name] = field_def.default;
+  }
+  return state;
+}
+
+// Build the off-state runtime flags for a freshly seeded target.
+function build_default_flags(): TargetRuntimeFlags {
+  return {
+    is_selected: false,
+    is_active_target: false,
+    cursor_attached: false,
+    held_material_name: null,
+    held_material_volume: null,
+  };
+}
+
+//============================================
+// Write validation
+//============================================
+
+// Validate every key/value in a partial write against the target schema.
+// An undeclared key throws (ObjectStateChange writing an undeclared key is a
+// hard error per the task contract). Values are also checked against the
+// field's declared primitive type so a typed write cannot corrupt the store.
+function validate_partial(target: string, schema: ObjectStateSchema, partial: StatePartial): void {
+  for (const key of Object.keys(partial)) {
+    const field_def = schema[key];
+    if (field_def === undefined) {
+      throw new Error(`scene_store: undeclared state key "${key}" for target "${target}"`);
+    }
+    const value = partial[key];
+    validate_value_type(target, field_def.field_name, field_def.type, value);
+    // Closed-vocabulary enum membership check: an enum write whose value is not
+    // in the declared `allowed` set is a bad ObjectStateChange and must fail
+    // loud at the store, never degrade silently in the renderer. Only enforced
+    // when the schema actually declares an `allowed` list (some enum fields are
+    // open-ended sentinels like material_name and declare none).
+    if (field_def.type === "enum" && field_def.allowed !== undefined) {
+      validate_enum_membership(target, field_def.field_name, field_def.allowed, value);
+    }
+  }
+}
+
+// Check an enum value against the declared allowed set. A value outside the set
+// throws so a typo'd or out-of-vocabulary enum write fails at the store.
+function validate_enum_membership(
+  target: string,
+  field_name: string,
+  allowed: ReadonlyArray<string>,
+  value: StateValue | undefined,
+): void {
+  // value is already proven defined + string-typed by validate_value_type.
+  if (typeof value === "string" && !allowed.includes(value)) {
+    throw new Error(
+      `scene_store: enum field "${field_name}" on target "${target}" got "${value}",` +
+        ` not in allowed [${allowed.join(", ")}]`,
+    );
+  }
+}
+
+// Check a single value against the declared field type. enum values are
+// strings; int/float are numbers; bool is boolean. A type mismatch throws.
+function validate_value_type(
+  target: string,
+  field_name: string,
+  field_type: ObjectStateSchema[string]["type"],
+  value: StateValue | undefined,
+): void {
+  if (value === undefined) {
+    throw new Error(`scene_store: undefined value for field "${field_name}" on target "${target}"`);
+  }
+  const actual = typeof value;
+  let expected: "string" | "number" | "boolean";
+  if (field_type === "enum") {
+    expected = "string";
+  } else if (field_type === "bool") {
+    expected = "boolean";
+  } else {
+    // int and float both map to JS number.
+    expected = "number";
+  }
+  if (actual !== expected) {
+    throw new Error(
+      `scene_store: field "${field_name}" on target "${target}" expects ${expected}` +
+        ` (${field_type}), got ${actual}`,
+    );
+  }
+}
+
+//============================================
+// Store factory
+//============================================
+
+// Create a fresh reactive scene store. Each protocol mount creates one
+// store; tests create one per case for isolation.
+export function create_scene_store(): SceneStore {
+  const [state, set_state] = createStore<SceneStoreState>({});
+
+  //----------------------------------------
+  function seed_from_scene(seeds: ReadonlyArray<TargetSeed>): void {
+    // Build the full next map first so a malformed seed throws before any
+    // store mutation (seeding is all-or-nothing).
+    const next: SceneStoreState = {};
+    for (const seed of seeds) {
+      const { object_name, subpart } = split_target(seed.target);
+      // The seed's declared object_name must agree with the target's object
+      // segment; a mismatch means the caller mislabeled the seed.
+      if (object_name !== seed.object_name) {
+        throw new Error(
+          `scene_store: seed target "${seed.target}" object segment "${object_name}"` +
+            ` does not match declared object_name "${seed.object_name}"`,
+        );
+      }
+      const schema = resolve_schema(object_name, subpart);
+      next[seed.target] = {
+        object_name,
+        subpart,
+        state: build_default_state(schema),
+        flags: build_default_flags(),
+      };
+    }
+    // Replace the target set for a (re)entered scene. Clear stale keys first:
+    // Solid's createStore merges a plain-object write and never deletes keys
+    // absent from the new object, so an explicit delete pass is required.
+    replace_all(next);
+  }
+
+  //----------------------------------------
+  // Replace the entire store contents with next, deleting every prior key.
+  // Done inside one produce so the reactive write is atomic.
+  function replace_all(next: SceneStoreState): void {
+    set_state(
+      produce((store: SceneStoreState) => {
+        for (const key of Object.keys(store)) {
+          delete store[key];
+        }
+        for (const key of Object.keys(next)) {
+          store[key] = next[key] as TargetState;
+        }
+      }),
+    );
+  }
+
+  //----------------------------------------
+  // Add one target if it is not already present, leaving every existing target
+  // untouched. Unlike seed_from_scene (which replaces the whole map), this is a
+  // targeted insert so a subpart write cannot reset its siblings' state.
+  function seed_target(seed: TargetSeed): void {
+    if (state[seed.target] !== undefined) {
+      // Already seeded; never reset an existing target.
+      return;
+    }
+    const { object_name, subpart } = split_target(seed.target);
+    if (object_name !== seed.object_name) {
+      throw new Error(
+        `scene_store: seed target "${seed.target}" object segment "${object_name}"` +
+          ` does not match declared object_name "${seed.object_name}"`,
+      );
+    }
+    const schema = resolve_schema(object_name, subpart);
+    const fresh: TargetState = {
+      object_name,
+      subpart,
+      state: build_default_state(schema),
+      flags: build_default_flags(),
+    };
+    set_state(
+      produce((store: SceneStoreState) => {
+        store[seed.target] = fresh;
+      }),
+    );
+  }
+
+  //----------------------------------------
+  function require_target(target: string): TargetState {
+    const entry = state[target];
+    if (entry === undefined) {
+      throw new Error(`scene_store: target "${target}" is not seeded; call seed_from_scene first`);
+    }
+    return entry;
+  }
+
+  //----------------------------------------
+  function set_object_state(target: string, partial: StatePartial): void {
+    const entry = require_target(target);
+    const schema = resolve_schema(entry.object_name, entry.subpart);
+    // Validate before writing so a bad key/value leaves the store untouched.
+    validate_partial(target, schema, partial);
+    // Partial-merge: only the named fields change; the rest stay as-is.
+    set_state(
+      produce((store: SceneStoreState) => {
+        const current = store[target];
+        if (current === undefined) {
+          // Cannot happen: require_target already proved presence. Guard for
+          // noUncheckedIndexedAccess and to fail loudly if it ever does.
+          throw new Error(`scene_store: target "${target}" vanished during write`);
+        }
+        for (const key of Object.keys(partial)) {
+          const value = partial[key];
+          if (value === undefined) {
+            continue;
+          }
+          current.state[key] = value;
+        }
+      }),
+    );
+  }
+
+  //----------------------------------------
+  function set_cursor(target: string, op: CursorWrite): void {
+    // Proves the target is seeded; throws otherwise.
+    require_target(target);
+    set_state(
+      produce((store: SceneStoreState) => {
+        const current = store[target];
+        if (current === undefined) {
+          throw new Error(`scene_store: target "${target}" vanished during cursor write`);
+        }
+        if (op.attach) {
+          current.flags.cursor_attached = true;
+          current.flags.held_material_name = op.held_material_name ?? null;
+          current.flags.held_material_volume = op.held_material_volume ?? null;
+        } else {
+          // Detach clears the held material so a stale name cannot linger.
+          current.flags.cursor_attached = false;
+          current.flags.held_material_name = null;
+          current.flags.held_material_volume = null;
+        }
+      }),
+    );
+  }
+
+  //----------------------------------------
+  function set_flags(target: string, flags: FlagWrite): void {
+    // Proves the target is seeded; throws otherwise.
+    require_target(target);
+    set_state(
+      produce((store: SceneStoreState) => {
+        const current = store[target];
+        if (current === undefined) {
+          throw new Error(`scene_store: target "${target}" vanished during flag write`);
+        }
+        // Partial-merge: only the named flags change.
+        if (flags.is_selected !== undefined) {
+          current.flags.is_selected = flags.is_selected;
+        }
+        if (flags.is_active_target !== undefined) {
+          current.flags.is_active_target = flags.is_active_target;
+        }
+      }),
+    );
+  }
+
+  //----------------------------------------
+  function reset(): void {
+    // Full reset: the store returns to its empty initial condition. Use the
+    // explicit delete pass so no stale keys survive (see replace_all).
+    replace_all({});
+  }
+
+  const store: SceneStore = {
+    state,
+    seed_from_scene,
+    seed_target,
+    set_object_state,
+    set_cursor,
+    set_flags,
+    reset,
+  };
+  return store;
+}

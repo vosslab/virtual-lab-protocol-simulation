@@ -29,15 +29,10 @@
 //   - docs/PRIMARY_CONTRACT.md item 4 (visible UI contract)
 
 import type {
-  ObjectStateChangeOp,
-  CursorAttachOp,
   Gesture,
-  LayoutMoveOp,
   ProtocolConfig,
   ProtocolShellEmitter,
-  SceneChangeOp,
   ShellViewSnapshot,
-  TimedWaitOp,
 } from "./shell/adapter/types";
 
 import { PROTOCOLS } from "../generated/protocols.js";
@@ -45,17 +40,19 @@ import { SCENES } from "../generated/scenes.js";
 import { OBJECT_LIBRARY, ASSET_SPECS } from "../generated/object_library.js";
 
 import { runPipeline } from "./scene_runtime/layout/index.js";
-import { renderScene } from "./scene_runtime/renderer/index.js";
+import { mountScene, type SceneDispose } from "./scene_runtime/renderer/index.js";
+import type { MaterialRegistry } from "./scene_runtime/renderer/visual_state_resolver.js";
+import { create_scene_store } from "./scene_runtime/state/scene_store.js";
+import { PROTOCOL_MATERIALS } from "../generated/protocol_materials.js";
 
 import { createProtocolShellEmitter } from "./scene_runtime/protocol/emitter.js";
 import {
   create_step_machine,
   create_snapshot_reducer,
 } from "./scene_runtime/protocol/step_machine.js";
-import {
-  create_scene_op_handler,
-  type SceneOpDeps,
-} from "./scene_runtime/protocol/scene_operations.js";
+import { create_scene_op_handler } from "./scene_runtime/protocol/scene_operations.js";
+import { build_store_scene_op_deps } from "./scene_runtime/protocol/scene_op_deps.js";
+import { install_walker_debug_surface } from "./scene_runtime/protocol/walker_debug.js";
 import { attach_click_resolver } from "./scene_runtime/protocol/click_resolver.js";
 import {
   resolve_entry_scene_name,
@@ -65,6 +62,7 @@ import {
 import { render } from "solid-js/web";
 import { subscribeEmitterToSnapshot } from "./shell/signals.js";
 import { ProtocolHud } from "./shell/hud/ProtocolHud.js";
+import { TypeInput } from "./shell/hud/type_input.js";
 
 //============================================
 // Window extensions (debug-only)
@@ -145,84 +143,6 @@ function build_initial_snapshot(config: ProtocolConfig): ShellViewSnapshot {
   return initial;
 }
 
-function set_json_data_attribute(el: HTMLElement, name: string, value: unknown): void {
-  el.setAttribute(name, JSON.stringify(value));
-}
-
-function find_rendered_item(root: HTMLElement, target: string): HTMLElement | null {
-  const items = root.querySelectorAll<HTMLElement>("[data-item-id]");
-  for (const item of items) {
-    if (item.getAttribute("data-item-id") === target) {
-      return item;
-    }
-  }
-  return null;
-}
-
-// Browser scene-op deps. SceneChange rerenders through the same generated YAML
-// scene pipeline as initial mount. State/cursor/timer ops remain semantic here:
-// they update observable DOM attributes for shell/tests without creating new
-// author-facing vocabulary or per-protocol branches.
-function build_scene_op_deps(
-  scene_root: HTMLElement,
-  render_protocol_scene: (scene_name: string) => void,
-): SceneOpDeps {
-  const object_states = new Map<string, Record<string, string | number | boolean>>();
-  const cursor_attached_targets = new Set<string>();
-
-  const deps: SceneOpDeps = {
-    apply_object_state(op: ObjectStateChangeOp): void {
-      const next_state = {
-        ...(object_states.get(op.target) ?? {}),
-        ...op.state,
-      };
-      object_states.set(op.target, next_state);
-      scene_root.setAttribute("data-object-state-target-count", String(object_states.size));
-
-      const item = find_rendered_item(scene_root, op.target);
-      if (item !== null) {
-        set_json_data_attribute(item, "data-object-state", next_state);
-      }
-    },
-    apply_cursor_attach(op: CursorAttachOp): void {
-      const item = find_rendered_item(scene_root, op.target);
-      if (op.operation === "attach") {
-        cursor_attached_targets.add(op.target);
-        if (item !== null) {
-          item.setAttribute("data-cursor-attached", "true");
-        }
-      } else {
-        cursor_attached_targets.delete(op.target);
-        if (item !== null) {
-          item.removeAttribute("data-cursor-attached");
-        }
-      }
-      set_json_data_attribute(
-        scene_root,
-        "data-cursor-attached-targets",
-        Array.from(cursor_attached_targets),
-      );
-    },
-    apply_scene_change(op: SceneChangeOp): void {
-      render_protocol_scene(op.to_scene);
-    },
-    apply_layout_move(op: LayoutMoveOp): void {
-      const item = find_rendered_item(scene_root, op.target);
-      if (item !== null) {
-        item.setAttribute("data-requested-zone", op.zone);
-      }
-    },
-    start_timed_wait(op: TimedWaitOp): void {
-      set_json_data_attribute(scene_root, "data-active-timed-wait", {
-        target: op.target,
-        duration_min: op.duration_min,
-        display: op.display ?? null,
-      });
-    },
-  };
-  return deps;
-}
-
 //============================================
 // Mount
 //============================================
@@ -284,6 +204,25 @@ function mount(): void {
   // is always correct regardless of CSS constraints.
   const scene_viewport = measure_scene_viewport(active_scene_root);
 
+  // Reactive scene store shared by the Solid renderer and the store-driven
+  // scene_operations (WS-M3-D). The renderer seeds it from each rendered
+  // scene's PipelineResult; scene operations write it after a validated
+  // interaction, and the Solid renderer reacts.
+  const scene_store = create_scene_store();
+
+  // Per-protocol material registry (WS-M3-D). Each protocol package carries its
+  // own materials.yaml; gen_protocols.py emits PROTOCOL_MATERIALS keyed by
+  // protocol_name. A protocol with no materials.yaml has no entry; null then
+  // disables material-color resolution (geometry/asset/overlays still resolve).
+  // sequence_runner registries aggregate their constituent mini-protocols.
+  const material_registry: MaterialRegistry | null = PROTOCOL_MATERIALS[protocol_name] ?? null;
+
+  // The active scene's Solid root dispose handle. render_scene.ts owns the
+  // dispose; protocol_host holds the latest handle so host teardown (and the
+  // SceneChange reset path) can release it. mountScene returns the handle and
+  // disposes any prior root for the same element internally.
+  let active_dispose: SceneDispose | null = null;
+
   function render_protocol_scene(next_scene_name: string): void {
     const scene = SCENES[next_scene_name];
     if (!scene) {
@@ -307,10 +246,16 @@ function mount(): void {
       next_scene_name,
     );
 
-    // Pass the measured viewport to renderScene so Guard 5 (aspect ratio) uses
-    // the same dimensions as the pipeline. This prevents false aspect-distortion
-    // failures when the bounded panel is not exactly 1920x1080.
-    renderScene(active_scene_root, pipeline_result, scene_viewport);
+    // Mount (or re-mount) the Solid scene. mountScene owns the Solid root
+    // dispose: a re-render into the same root disposes the prior root first
+    // (tracked per-root in render_scene.ts), so a SceneChange re-render leaks no
+    // orphan roots/effects/listeners. Pass the measured viewport so Guard 5
+    // (aspect ratio) uses the same dimensions as the pipeline.
+    active_dispose = mountScene(active_scene_root, pipeline_result, {
+      store: scene_store,
+      materialRegistry: material_registry,
+      viewport: scene_viewport,
+    });
     active_scene_root.setAttribute("data-active-scene", next_scene_name);
   }
 
@@ -320,12 +265,31 @@ function mount(): void {
   const initial_snapshot = build_initial_snapshot(active_config);
   const reducer = create_snapshot_reducer(active_config);
   const emitter = createProtocolShellEmitter(initial_snapshot, reducer);
+  // Store-driven scene-op deps (WS-M3-D). ObjectStateChange/CursorAttach write
+  // the reactive store; SceneChange re-renders the target scene through
+  // render_protocol_scene (which disposes the prior Solid root and reseeds the
+  // store, applying the reset policy) while the deps preserve cursor-held state
+  // across the transition; LayoutMove is a reported no-op (Option A); TimedWait
+  // keeps observable semantics through the subsequent ObjectStateChange.
   const scene_op_handler = create_scene_op_handler(
-    build_scene_op_deps(active_scene_root, render_protocol_scene),
+    build_store_scene_op_deps(scene_store, render_protocol_scene),
   );
   const step_machine = create_step_machine(active_config, emitter, scene_op_handler);
 
+  // Restore the read-only walker/debug surfaces (window.PROTOCOL_STEPS +
+  // window.gameState) the Solid HUD migration dropped. Read-only: the walker
+  // and tests read these to observe progress; nothing advances state by writing
+  // them. Sourced from the emitter snapshot + step events + the scene store.
+  const dispose_walker_surface = install_walker_debug_surface(active_config, emitter, scene_store);
+
   // Attach the click resolver to the scene root and route to step machine.
+  // The click resolver only knows "a scene object was clicked" (gesture
+  // "click"). The active interaction's gesture decides what that click counts
+  // as: a `select` interaction promotes a click on the active target to a
+  // `select` (the student is choosing the next-step object among the present
+  // scene objects), so select reuses the same visible-click affordance as click.
+  // A click on a non-active target stays "click" and the step machine rejects
+  // it (wrong target / wrong order), which is exactly the wrong-selection path.
   attach_click_resolver(active_scene_root, (target: string, gesture: Gesture) => {
     const snapshot = emitter.get_snapshot();
     const active_gesture = snapshot.active_interaction_gesture;
@@ -335,6 +299,28 @@ function mount(): void {
         : gesture;
     step_machine.handle_click(target, resolved_gesture);
   });
+
+  // Mount the visible type-input affordance (WS-M5-ST). It lives in its own
+  // overlay container appended to the document body so it works whether or not
+  // the HUD shell is mounted (?shell=off). It shows only while the active
+  // interaction's gesture is `type`; a real fill + commit routes the typed text
+  // to step_machine.handle_type_commit (the only advance path), which validates
+  // it via the interaction's target_with_value preset.
+  const type_input_root = document.createElement("div");
+  type_input_root.id = "type-input-root";
+  document.body.appendChild(type_input_root);
+  const type_snapshot_signal = subscribeEmitterToSnapshot(emitter);
+  const dispose_type_input = render(
+    () => (
+      <TypeInput
+        snapshot={type_snapshot_signal}
+        on_commit={(target: string, typed_text: string) =>
+          step_machine.handle_type_commit(target, typed_text)
+        }
+      />
+    ),
+    type_input_root,
+  );
 
   // Optional shell mount. ?shell=off keeps the runtime running but
   // leaves the shell DOM empty for independence testing (WP-3-11).
@@ -352,6 +338,26 @@ function mount(): void {
   if (walker_expose) {
     window.__shellEmitter = emitter;
   }
+
+  // Host teardown: dispose the active Solid root and the walker/debug surface
+  // on page hide so no orphan effects/listeners/globals survive navigation away
+  // (plan "Lifecycle cleanup + ownership"). pagehide fires on both unload and
+  // bfcache eviction; once is enough.
+  window.addEventListener(
+    "pagehide",
+    () => {
+      if (active_dispose !== null) {
+        active_dispose();
+        active_dispose = null;
+      }
+      dispose_type_input();
+      if (type_input_root.parentNode !== null) {
+        type_input_root.parentNode.removeChild(type_input_root);
+      }
+      dispose_walker_surface();
+    },
+    { once: true },
+  );
 
   // Kick the machine. Emits protocol_loaded + step_started.
   step_machine.start();

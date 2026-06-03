@@ -53,23 +53,29 @@ src/
 |  |  +- resolve_entry_scene.ts -- entry-scene resolution + empty-scene guard
 |  |  +- step_machine.ts       -- pure step machine (no DOM)
 |  |  +- validators.ts         -- interaction and step validator dispatch
-|  |  +- scene_operations.ts   -- five SceneOperation primitives (stubbed)
+|  |  +- scene_operations.ts   -- routes the five SceneOperation primitives to injected store-backed deps
+|  |  +- scene_op_deps.ts      -- SceneOpDeps interface + store-backed factory
+|  |  +- walker_debug.ts       -- debug helpers for walkthrough evidence collection
 |  |  +- click_resolver.ts     -- DOM click -> step machine
 |  |  `- emitter.ts            -- ProtocolShellEmitter, RuntimeEmitterHandle
-|  `- renderer/                -- DOM rendering from PipelineResult
-|     +- render_scene.ts       -- top-level renderer (clear, guards, bg, items, labels)
-|     +- render_item.ts        -- per-item render + missing-svg placeholder
-|     +- render_label.ts       -- label element rendering
+|  +- state/                   -- Solid signal store for shared scene state
+|  |  `- scene_store.ts        -- createSceneStore: object state signals + updaters
+|  `- renderer/                -- Solid DOM rendering from PipelineResult
+|     +- render_scene.tsx      -- public Solid mount facade (mounts SceneView)
+|     +- scene_view.tsx        -- Solid SceneView (bg, items, labels, guards)
+|     +- scene_item.tsx        -- Solid SceneItem (per-item + missing-svg placeholder)
+|     +- visual_state_resolver.ts -- state + visual_states -> renderable description
 |     +- render_background.ts  -- background (gradient or asset)
 |     +- structural_guards.ts  -- six layout validation guards
 |     +- inject_svg.ts         -- inline SVG injection from ASSET_SPECS
-|     `- index.ts              -- barrel: renderScene
+|     `- index.ts              -- barrel: renderScene, mountScene, SceneView, SceneItem
 `- shell/
    +- adapter/
    |  `- types.ts              -- closed seam: ProtocolConfig, ShellViewSnapshot, events, ops
    +- signals.ts               -- Solid signal helpers + subscribeEmitterToSnapshot
    +- hud/
-   |  `- ProtocolHud.tsx       -- mounts four region components into named DOM targets
+   |  +- ProtocolHud.tsx       -- mounts four region components into named DOM targets
+   |  `- type_input.tsx        -- visible type-input affordance (data-type-input / data-type-commit)
    `- regions/
       +- StepOutline.tsx       -- read-only ordered step cards
       +- TipsBubble.tsx        -- professor-tip bubble
@@ -93,7 +99,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | [gen_object_library.py](../pipeline/gen_object_library.py) | `content/objects/` YAML -> `generated/object_library.ts` |
 | [gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
 | [gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json`; `--missing-svg=strict|placeholder` (default `placeholder`) |
-| [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` |
+| [gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
 | [build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index build helpers |
 | [list_protocols.py](../pipeline/list_protocols.py) | Reads `PROTOCOLS_INDEX`; `emit` writes one `dist/<name>.html` per protocol |
 | [scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (imported by gen_scene_index) |
@@ -159,7 +165,6 @@ tests/
 |  `- dev_smoke/               -- dev-smoke protocol fixtures (same schema as content/)
 +- data/                       -- baseline snapshots used by pytest fixtures
 +- e2e/                        -- non-browser E2E runners (e2e_*.py, e2e_*.sh)
-+- fixtures/                   -- generated test fixtures (gitignored)
 `- playwright/                 -- browser-driven tests
    +- repo_root.mjs            -- shared REPO_ROOT resolver
    +- test_*.mjs               -- browser tests (framed layout, initial scene, etc.)
@@ -189,7 +194,7 @@ Key Node test files:
 | [tests/test_step_machine.mjs](../tests/test_step_machine.mjs) | Step machine unit tests |
 | [tests/test_structural_guards.mjs](../tests/test_structural_guards.mjs) | Structural guard unit tests |
 | [tests/test_resolve_entry_scene.mjs](../tests/test_resolve_entry_scene.mjs) | Entry-scene resolution unit tests |
-| [tests/test_render_item_missing_svg.mjs](../tests/test_render_item_missing_svg.mjs) | Missing-SVG placeholder contract |
+| [tests/test_visual_state_resolver.mjs](../tests/test_visual_state_resolver.mjs) | Visual-state resolver (formulas, materials, missing-svg) |
 | [tests/test_scene_operations.mjs](../tests/test_scene_operations.mjs) | Scene operations unit tests |
 | [tests/test_protocol_emitter.mjs](../tests/test_protocol_emitter.mjs) | Emitter unit tests |
 | [tests/test_shell_signals.mjs](../tests/test_shell_signals.mjs) | Shell signal binding tests |
@@ -271,6 +276,7 @@ All gitignored (see [.gitignore](../.gitignore)):
 | `generated/scene_manifest.json` | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) (per-scene classification, source of truth for scene tooling) |
 | `generated/protocols.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocols_index_slim.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
+| `generated/protocol_materials.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) (per-protocol material registry; keyed by protocol_name) |
 | `dist/` | [build_github_pages.sh](../build_github_pages.sh) (GitHub Pages bundle) |
 | `dist/scene_viewer.html` | Copied from `src/scene_viewer_template.html` during build |
 | `test-results/` | Playwright screenshots and reports |

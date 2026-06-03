@@ -93,7 +93,7 @@ Each `interaction` in a `sequence` carries exactly four slots: `target` (the sem
 
 ### Gestures
 
-A `gesture` is how the student acts on a target. The value set is closed: `click`, `drag`, `adjust`, `select`, `type`. `adjust` is the continuous, skill-based set-point gesture (a pipette volume, a power-supply voltage, a titrated pH); it must not collapse into `click`. `select` picks one option from a presented set; `click` acts on a scene object in the lab space.
+A `gesture` is how the student acts on a target. The value set is closed: `click`, `drag`, `adjust`, `select`, `type`. `adjust` is the continuous, skill-based set-point gesture (a pipette volume, a power-supply voltage, a titrated pH); it must not collapse into `click`. `select` chooses the correct next-step object among the scene objects already present (it reuses the visible scene-object click affordance; there is no answer-choice list); `click` acts on a single directed scene object in the lab space.
 
 ### Scene operations
 
@@ -101,7 +101,7 @@ A `response` holds `scene_operations` (an ordered, possibly empty list of typed 
 
 ### Validators and outcome
 
-Every `validator` and every `step_validator` is a named preset with typed parameters; content creators select from the documented preset library and never write custom validation logic. Interaction presets: `correct_target`, `correct_choice`, `target_with_value`. Step presets: `sequence_complete`, `final_state_matches`. The `outcome` mapping has exactly two keys: `on_success: complete` resolves the step, after which flow moves to `next_step`; `on_failure: retry` restarts the whole step, resetting the entire `sequence`. `outcome` never carries an `advance` value and never names a step.
+Every `validator` and every `step_validator` is a named preset with typed parameters; content creators select from the documented preset library and never write custom validation logic. Interaction presets: `correct_target`, `correct_choice`, `target_with_value`. `correct_choice` is target-equality on the selected scene object (the student chose the correct next-step object among the present objects); `target_with_value` also backs the `type` gesture by coercing the committed text to the declared value's type before comparing. Step presets: `sequence_complete`, `final_state_matches`. The `outcome` mapping has exactly two keys: `on_success: complete` resolves the step, after which flow moves to `next_step`; `on_failure: retry` restarts the whole step, resetting the entire `sequence`. `outcome` never carries an `advance` value and never names a step.
 
 The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a `step_name` or from per-protocol special cases.
 

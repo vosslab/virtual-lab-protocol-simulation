@@ -1,305 +1,316 @@
-// tests/walker_helpers.mjs
+// tests/playwright/e2e/walker_helpers.mjs
 //
-// Reusable Playwright helper functions for YAML-driven protocol walkers.
-// Provides: click/wait/report patterns for game state readiness, scene switching,
-// and structured logging.
+// Reusable Playwright helpers for the schema-driven protocol walker that drives
+// the NEW Solid protocol host (src/protocol_host.tsx). They read the FROZEN
+// read-only walker surfaces only:
 //
-// All functions read gameState only (no writes). All errors throw clearly.
+//   window.PROTOCOL_STEPS  - the step list (id / label / scene / nextId).
+//   window.gameState       - the read-only progress projection, including the
+//                            active interaction's target/gesture and the
+//                            progress signals the progress predicate watches.
+//
+// Hard real-click integrity rules enforced here (see WALKTHROUGH_GUIDE.md):
+//   - Every advance comes from a real visible click via Playwright's
+//     actionability-checked locator.click(). No force-click, no dispatchEvent
+//     on hidden nodes.
+//   - The read-only surfaces are NEVER written. Nothing here calls an internal
+//     runtime/protocol API, mutates the emitter, or forces a scene change.
+//   - clickTargetAndWaitProgress snapshots observable progress signals BEFORE
+//     the click, clicks the visible element, then WAITS for one of those signals
+//     to change as a consequence of the real handler. The wait predicate reads
+//     state but never sets it. If nothing changes within budget it throws
+//     click_did_not_advance.
+//   - A target is verified to EXIST and be VISIBLE before the click; a missing
+//     or hidden target fails loudly.
+//
+// The new host mounts exactly one scene at a time into #scene-root and tags it
+// with data-active-scene. Scene switches happen through the same gesture model
+// (a validated click whose response carries a SceneChange scene_operation), not
+// by writing activeScene. So scene scoping is simply the single #scene-root.
 
 //============================================
-// Readiness helpers - wait for observable game state signals
+// Read-only state snapshots
 //============================================
 
-// Wait until the given step id appears in completedSteps.
-export async function waitForStepCompleted(page, stepId, timeoutMs = 30000) {
-  await page.waitForFunction(
-    (id) => {
-      const state = window.gameState;
-      return state && state.completedSteps && state.completedSteps.includes(id);
-    },
-    stepId,
-    { timeout: timeoutMs },
-  );
+// The progress signals a real click may change. Snapshot-compared, never set.
+export async function readProgressSnapshot(page) {
+  return await page.evaluate(() => {
+    const s = window.gameState;
+    return {
+      activeStepId: s.activeStepId,
+      interactionIndex: s.interactionIndex,
+      activeScene: s.activeScene,
+      completedStepsCount: (s.completedSteps || []).length,
+      selectedTool: s.selectedTool,
+      heldLiquid: JSON.stringify(s.heldLiquid),
+      wrongOrderClicks: s.wrongOrderClicks,
+      isComplete: s.isComplete,
+    };
+  });
 }
 
-// Wait until heldLiquid.tool and heldLiquid.liquid match expected values.
-export async function waitForHeldLiquid(page, expectedTool, expectedLiquid, timeoutMs = 3000) {
-  await page.waitForFunction(
-    ({ expectedTool, expectedLiquid }) => {
-      const state = window.gameState;
-      if (!state || !state.heldLiquid) return false;
-      return state.heldLiquid.tool === expectedTool && state.heldLiquid.liquid === expectedLiquid;
-    },
-    { expectedTool, expectedLiquid },
-    { timeout: timeoutMs },
-  );
+// Read the full read-only gameState projection.
+export async function readGameState(page) {
+  return await page.evaluate(() => {
+    const s = window.gameState;
+    return {
+      activeStepId: s.activeStepId,
+      interactionIndex: s.interactionIndex,
+      activeScene: s.activeScene,
+      completedSteps: (s.completedSteps || []).slice(),
+      selectedTool: s.selectedTool,
+      heldLiquid: s.heldLiquid,
+      wrongOrderClicks: s.wrongOrderClicks,
+      stepsOutOfOrder: s.stepsOutOfOrder,
+      isComplete: s.isComplete,
+      activeTarget: s.activeTarget,
+      activeGesture: s.activeGesture,
+      activeTypeValue: s.activeTypeValue,
+    };
+  });
 }
 
-// Check if the tool precondition for an interaction is already met.
-// Mirrors dispatchInteractionClick's logic: heldLiquid is derived from selectedTool
-// (via deriveHeldLiquid), so only check selectedTool canonical form.
-// Do NOT read gameState.heldLiquid directly -- it may be stale from a prior step.
-export async function isToolPreconditionMet(page, interactionTool) {
-  if (!interactionTool) return true;
-  return await page.evaluate((tool) => {
-    const state = window.gameState;
-    if (!state) return false;
-    // Only check selectedTool (canonical form); heldLiquid is derived from selectedTool
-    const sel = state.selectedTool;
-    if (!sel) return false;
-    const idx = sel.indexOf("_with_");
-    const canonical = idx >= 0 ? sel.substring(0, idx) : sel;
-    return canonical === tool;
-  }, interactionTool);
-}
-
-// Wait until the scene is active.
-export async function waitForActiveScene(page, sceneName, timeoutMs = 5000) {
-  await page.waitForFunction(
-    (scene) => {
-      const state = window.gameState;
-      return state && state.activeScene === scene;
-    },
-    sceneName,
-    { timeout: timeoutMs },
-  );
-}
-
-// Wait until the instrument overlay is active.
-export async function waitForMicroscopeOpen(page, timeoutMs = 3000) {
+// Wait for the read-only walker surfaces to appear (after load and after reload).
+export async function waitForExports(page, timeoutMs = 8000) {
   await page.waitForFunction(
     () => {
-      const overlay = document.getElementById("instrument-overlay");
-      return overlay && overlay.classList.contains("active");
-    },
-    { timeout: timeoutMs },
-  );
-}
-
-// Wait until the incubator overlay is not active (animation complete).
-export async function waitForIncubationComplete(page, timeoutMs = 10000) {
-  await page.waitForFunction(
-    () => {
-      const overlay = document.getElementById("incubator-screen");
-      return !overlay || !overlay.classList.contains("active");
+      return (
+        typeof window.gameState !== "undefined" &&
+        typeof window.PROTOCOL_STEPS !== "undefined" &&
+        Array.isArray(window.PROTOCOL_STEPS) &&
+        window.PROTOCOL_STEPS.length > 0
+      );
     },
     { timeout: timeoutMs },
   );
 }
 
 //============================================
-// Scene switching helpers
+// Selectors (scene-scoped to the single mounted scene)
 //============================================
 
-// Switch to bench scene via the "To Bench" button and wait.
-export async function switchToBench(page, report) {
-  const currentScene = await page.evaluate(() => window.gameState.activeScene);
-  if (currentScene === "bench") return;
-
-  report.info("Switching to bench scene");
-  // The "To Bench" button is rendered in the hood scene
-  const toBenchBtn = page.locator("#hood-to-bench-btn").first();
-  if ((await toBenchBtn.count()) === 0) {
-    throw new Error("To Bench button not found in DOM; cannot switch scene without a real click");
-  }
-  await toBenchBtn.click();
-  await waitForActiveScene(page, "bench", 3000);
-  report.info("Now on bench scene");
-}
-
-// Switch to hood scene via the "To Hood" button and wait.
-export async function switchToHood(page, report) {
-  const currentScene = await page.evaluate(() => window.gameState.activeScene);
-  if (currentScene === "hood") return;
-
-  report.info("Switching to hood scene");
-  // The "To Hood" button is rendered in the bench scene
-  const toHoodBtn = page.locator("#bench-to-hood-btn").first();
-  if ((await toHoodBtn.count()) === 0) {
-    throw new Error("To Hood button not found in DOM; cannot switch scene without a real click");
-  }
-  await toHoodBtn.click();
-  await waitForActiveScene(page, "hood", 3000);
-  report.info("Now on hood scene");
-}
-
-// Switch to well_plate_workspace scene by clicking well_plate in the hood and waiting.
-export async function switchToPlate(page, report) {
-  const currentScene = await page.evaluate(() => window.gameState.activeScene);
-  if (currentScene === "well_plate_workspace") return;
-
-  report.info("Switching to well_plate_workspace scene");
-  // Switch to hood first if not there
-  if (currentScene !== "hood") {
-    await switchToHood(page, report);
-  }
-
-  // Click well_plate to trigger scene switch to well_plate_workspace
-  const wellPlateLocator = page.locator('[data-item-id="well_plate"]').first();
-  if ((await wellPlateLocator.count()) === 0) {
-    throw new Error(
-      "well_plate not found in hood; cannot switch to well_plate_workspace scene without a real click",
-    );
-  }
-  await wellPlateLocator.click();
-  await waitForActiveScene(page, "well_plate_workspace", 3000);
-  report.info("Now on well_plate_workspace scene");
-}
-
-//============================================
-// Selector and click helpers
-//============================================
-
-// Resolve data-item-id selector.
+// The new host mounts one scene at a time into #scene-root. Scoping to
+// #scene-root avoids picking up a shell/outline element that might share an id.
 export function resolveSelector(itemId) {
-  return `[data-item-id="${itemId}"]`;
+  return `#scene-root [data-item-id="${itemId}"]`;
 }
 
-// Resolve scene-scoped data-item-id selector.
-// When a step is scene-specific (scene: 'well_plate_workspace', 'bench', 'hood', 'plate_reader'),
-// this function scopes the item locator to the correct scene container.
-// Returns the scoped selector (e.g., '#well_plate_workspace-scene [data-item-id="multichannel_pipette"]').
-// plate_reader items live in the bench scene DOM (they're not in a separate container).
-export function resolveScopedSelector(itemId, scene) {
-  const sceneSelector =
-    scene === "well_plate_workspace"
-      ? "#well_plate_workspace-scene"
-      : scene === "bench"
-        ? "#bench-scene"
-        : scene === "plate_reader"
-          ? "#bench-scene"
-          : "#hood-scene";
-  return `${sceneSelector} [data-item-id="${itemId}"]`;
-}
+//============================================
+// Real-click + wait-for-progress
+//============================================
 
-// Click an item and wait for progress signal.
-// Optional clickBudgetMs parameter (default 3000ms) can be overridden by caller.
-// Optional scene parameter scopes the item to a specific scene container (e.g., 'well_plate_workspace', 'bench', 'hood').
-export async function clickItemAndWaitProgress(
+// Verify a target exists and is visible, then click it and wait for an
+// observable progress signal to change as a consequence of the real handler.
+//
+// progressKind:
+//   "advance"  - expect one of the forward progress signals to change
+//                (interactionIndex, activeStepId, activeScene, completedSteps,
+//                 selectedTool, heldLiquid). Throws click_did_not_advance if
+//                nothing changes within budget.
+//   "reject"   - (wrong-order injection) expect wrongOrderClicks to increment
+//                and the step position to stay unchanged. Throws if the click is
+//                silently accepted as progress.
+export async function clickTargetAndWaitProgress(
   page,
   itemId,
   report,
-  clickBudgetMs = 3000,
-  scene = null,
+  { clickBudgetMs = 3000, progressKind = "advance", screenshotOpts = null } = {},
 ) {
-  const selector = scene !== null ? resolveScopedSelector(itemId, scene) : resolveSelector(itemId);
+  const selector = resolveSelector(itemId);
   const locator = page.locator(selector).first();
 
-  // Verify element exists and is visible
-  const elementCount = await locator.count();
-  if (elementCount === 0) {
+  // Rule b: verify EXISTS and VISIBLE before clicking. Fail loud otherwise.
+  const count = await locator.count();
+  if (count === 0) {
     throw new Error(`Element ${selector} does not exist in DOM`);
   }
-  const isVisible = await locator.isVisible();
-  if (!isVisible) {
+  const visible = await locator.isVisible();
+  if (!visible) {
     throw new Error(`Element ${selector} is not visible`);
   }
 
-  // Get initial state
-  const initialState = await page.evaluate(() => {
-    const state = window.gameState;
-    return {
-      interactionIndex: state.interactionIndex,
-      selectedTool: state.selectedTool,
-      heldLiquid: JSON.stringify(state.heldLiquid),
-      activeStepId: state.activeStepId,
-      activeScene: state.activeScene,
-      completedStepsCount: (state.completedSteps || []).length,
-    };
-  });
+  // Rule d: snapshot observable progress signals BEFORE the click.
+  const before = await readProgressSnapshot(page);
 
-  // Click the element
+  // Rule a: real, actionability-checked click on the visible element.
   await locator.click();
   report.summary.totalClicks++;
   report.info(`Clicked ${itemId}`);
 
-  // Wait for any state progress
-  try {
-    await page.waitForFunction(
-      (initState) => {
-        const state = window.gameState;
-        if (state.selectedTool !== initState.selectedTool) return true;
-        if (JSON.stringify(state.heldLiquid) !== initState.heldLiquid) return true;
-        if (state.interactionIndex !== initState.interactionIndex) return true;
-        if (state.activeStepId !== initState.activeStepId) return true;
-        if (state.activeScene !== initState.activeScene) return true;
-        if ((state.completedSteps || []).length > initState.completedStepsCount) return true;
-        return false;
-      },
-      initialState,
-      { timeout: clickBudgetMs },
-    );
-  } catch (_err) {
-    throw new Error(
-      `click_did_not_advance: click on ${itemId} produced no state change after ${clickBudgetMs}ms`,
-    );
+  if (progressKind === "reject") {
+    // Expect wrongOrderClicks to increment; step/index must NOT advance.
+    await page
+      .waitForFunction((b) => window.gameState.wrongOrderClicks > b.wrongOrderClicks, before, {
+        timeout: 1500,
+      })
+      .catch(() => {
+        /* timeout handled by post-state read below */
+      });
+    const after = await readProgressSnapshot(page);
+    if (after.wrongOrderClicks <= before.wrongOrderClicks) {
+      throw new Error(
+        `wrong_order_not_rejected: click on ${itemId} did not increment wrongOrderClicks ` +
+          `(before ${before.wrongOrderClicks}, after ${after.wrongOrderClicks})`,
+      );
+    }
+    if (
+      after.interactionIndex !== before.interactionIndex ||
+      after.activeStepId !== before.activeStepId
+    ) {
+      throw new Error(
+        `wrong_order_advanced_step: click on ${itemId} advanced the step ` +
+          `(idx ${before.interactionIndex}->${after.interactionIndex}, ` +
+          `step ${before.activeStepId}->${after.activeStepId})`,
+      );
+    }
+    report.info(`Wrong-order click on ${itemId} rejected (no advance)`);
+  } else {
+    // Rule d: wait for a forward progress signal. The predicate READS state.
+    try {
+      await page.waitForFunction(
+        (b) => {
+          const s = window.gameState;
+          if (s.interactionIndex !== b.interactionIndex) return true;
+          if (s.activeStepId !== b.activeStepId) return true;
+          if (s.activeScene !== b.activeScene) return true;
+          if ((s.completedSteps || []).length > b.completedStepsCount) return true;
+          if (s.selectedTool !== b.selectedTool) return true;
+          if (JSON.stringify(s.heldLiquid) !== b.heldLiquid) return true;
+          if (s.isComplete !== b.isComplete) return true;
+          return false;
+        },
+        before,
+        { timeout: clickBudgetMs },
+      );
+    } catch {
+      throw new Error(
+        `click_did_not_advance: click on ${itemId} produced no state change after ${clickBudgetMs}ms`,
+      );
+    }
+    report.info(`Click on ${itemId} progressed`);
   }
 
-  report.info(`Click on ${itemId} progressed`);
+  // Optional per-click screenshot.
+  if (screenshotOpts && screenshotOpts.mode === "per-click") {
+    const { resultsDir, stepName, interactionIndex, clickIndex, gesture, target } = screenshotOpts;
+    const screenshotName = `click_${stepName}_i${interactionIndex}_c${clickIndex}_${itemId}.png`;
+    const screenshotPath = `${resultsDir}/${screenshotName}`;
+    await page.screenshot({ path: screenshotPath });
+    report.addEntry("info", `Screenshot: ${screenshotName}`, {
+      screenshot: screenshotPath,
+      step_name: stepName,
+      interaction_index: interactionIndex,
+      click_index: clickIndex,
+      gesture: gesture || "click",
+      target: target || itemId,
+      item_id: itemId,
+    });
+  }
 }
 
 //============================================
-// Report logging helpers
+// Real type-fill + commit (for the `type` gesture)
 //============================================
 
-// Record info-level message to report.
-export function recordInfo(report, message) {
-  report.info(message);
-}
+// Drive a `type` interaction through the VISIBLE type-input affordance
+// (src/shell/hud/type_input.tsx): verify the input + commit button exist and
+// are visible, fill the input with a real Playwright fill() (actionability-
+// checked), then click the visible Commit button and wait for an observable
+// forward progress signal. No internal state write, no force interaction.
+//
+// typedText: the raw string the student would type.
+export async function typeCommitAndWaitProgress(
+  page,
+  typedText,
+  report,
+  { clickBudgetMs = 3000 } = {},
+) {
+  const inputLocator = page.locator("[data-type-input]").first();
+  const commitLocator = page.locator("[data-type-commit]").first();
 
-// Record warn-level message to report.
-export function recordWarn(report, message) {
-  report.warn(message);
-}
+  // Rule b: verify EXISTS and VISIBLE before interacting. Fail loud otherwise.
+  if ((await inputLocator.count()) === 0) {
+    throw new Error("type_input_missing: [data-type-input] affordance not in DOM for type gesture");
+  }
+  if (!(await inputLocator.isVisible())) {
+    throw new Error("type_input_hidden: [data-type-input] affordance is not visible");
+  }
+  if ((await commitLocator.count()) === 0 || !(await commitLocator.isVisible())) {
+    throw new Error("type_commit_missing: [data-type-commit] button not visible for type gesture");
+  }
 
-// Record error-level message to report.
-export function recordError(report, stepId, kind, evidence) {
-  const message = `[${kind}] ${evidence}`;
-  report.error(message, { stepId });
-}
+  // Rule d: snapshot observable progress signals BEFORE the commit.
+  const before = await readProgressSnapshot(page);
 
-// Record injection-level message to report.
-// Distinct from info so injection records are grep-able in report.
-export function recordInjection(report, stepId, itemId) {
-  const message = `[injection] step ${stepId}: clicked wrong-order item ${itemId}`;
-  report.addEntry("injection", message, { stepId, injectedItemId: itemId });
+  // Real, actionability-checked fill + commit.
+  await inputLocator.fill(typedText);
+  await commitLocator.click();
+  report.summary.totalClicks++;
+  report.info(`Typed "${typedText}" and committed`);
+
+  try {
+    await page.waitForFunction(
+      (b) => {
+        const s = window.gameState;
+        if (s.interactionIndex !== b.interactionIndex) return true;
+        if (s.activeStepId !== b.activeStepId) return true;
+        if (s.activeScene !== b.activeScene) return true;
+        if ((s.completedSteps || []).length > b.completedStepsCount) return true;
+        if (s.isComplete !== b.isComplete) return true;
+        return false;
+      },
+      before,
+      { timeout: clickBudgetMs },
+    );
+  } catch {
+    throw new Error(
+      `type_did_not_advance: committing "${typedText}" produced no state change after ${clickBudgetMs}ms`,
+    );
+  }
+  report.info(`Type commit "${typedText}" progressed`);
 }
 
 //============================================
 // Wrong-order item picker
 //============================================
 
-// Pick a clickable wrong-order item from the active scene.
-// Strategy: find any visible data-item-id element that is NOT in the
-// required-interaction set (tool, source, destination).
-// This ensures we click something valid and on-scene but not the expected
-// next click.
-export async function pickWrongOrderItem(page, requiredItemIds) {
-  const wrongItem = await page.evaluate((required) => {
-    // Find all visible data-item-id elements in the active scene
-    const allItems = document.querySelectorAll("[data-item-id]");
-    const requiredSet = new Set(required);
-
-    for (const elem of allItems) {
+// Pick a visible scene item that is NOT the required target. Used by
+// --wrong-order mode to inject a real visible click on a non-required object.
+export async function pickWrongOrderItem(page, requiredItemId) {
+  return await page.evaluate((required) => {
+    const items = document.querySelectorAll("#scene-root [data-item-id]");
+    for (const elem of items) {
       const itemId = elem.getAttribute("data-item-id");
-      // Skip if this is one of the required items
-      if (requiredSet.has(itemId)) {
-        continue;
-      }
-      // Check visibility
+      if (itemId === required) continue;
       const style = window.getComputedStyle(elem);
+      if (style.display === "none" || style.visibility === "hidden") continue;
       const rect = elem.getBoundingClientRect();
-      if (style.display === "none" || style.visibility === "hidden") {
-        continue;
-      }
-      if (rect.width === 0 || rect.height === 0) {
-        continue;
-      }
-      // Found a clickable item that is not required
+      if (rect.width === 0 || rect.height === 0) continue;
       return itemId;
     }
     return null;
-  }, requiredItemIds);
+  }, requiredItemId);
+}
 
-  return wrongItem;
+//============================================
+// Report logging helpers
+//============================================
+
+export function recordInfo(report, message) {
+  report.info(message);
+}
+
+export function recordWarn(report, message) {
+  report.warn(message);
+}
+
+export function recordError(report, stepId, kind, evidence) {
+  report.error(`[${kind}] ${evidence}`, { stepId });
+}
+
+export function recordInjection(report, stepId, itemId) {
+  report.addEntry("injection", `[injection] step ${stepId}: clicked wrong-order item ${itemId}`, {
+    stepId,
+    injectedItemId: itemId,
+  });
 }

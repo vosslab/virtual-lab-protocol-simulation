@@ -333,6 +333,24 @@ two step presets); their names and required fields are specified in
 [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md). A validator is never
 free-form prose and never an inline expression.
 
+A `select`-gesture interaction is validated by `correct_choice`, which is
+target-equality on the selected scene object: the student chose the correct
+next-step object among the present scene objects. It needs no `value` block.
+A `type`-gesture interaction is validated by `target_with_value`: the
+committed text is coerced to the type of the declared `value` field and
+compared. Example shapes:
+
+```yaml
+# select: choose the correct next-step object among present objects
+- target: pbs_bottle
+  gesture: select
+  validator: { preset: correct_choice }
+# type: enter and commit a precise value
+- target: cell_count_pad
+  gesture: type
+  validator: { preset: target_with_value, value: { entered_count: 42 } }
+```
+
 ### The `outcome` mapping
 
 `outcome` is a mapping with exactly two keys:

@@ -73,27 +73,36 @@ Step machine, validators, scene operations, and click resolver.
 | [src/scene_runtime/protocol/resolve_entry_scene.ts](../src/scene_runtime/protocol/resolve_entry_scene.ts) | `resolve_entry_scene_name` (step.scene -> SceneChange fallback -> throw; runner delegation); `assert_scene_not_empty` guard |
 | [src/scene_runtime/protocol/step_machine.ts](../src/scene_runtime/protocol/step_machine.ts) | Pure step machine: step progression, interaction-index advancement, validator dispatch, scene-op handoff, event emission |
 | [src/scene_runtime/protocol/validators.ts](../src/scene_runtime/protocol/validators.ts) | Interaction and step validator dispatch (`correct_target`, `correct_choice`, `target_with_value`, `sequence_complete`, `final_state_matches`) |
-| [src/scene_runtime/protocol/scene_operations.ts](../src/scene_runtime/protocol/scene_operations.ts) | Routes five `SceneOperation` primitives to renderer/layout deps (stubs for `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`) |
+| [src/scene_runtime/protocol/scene_operations.ts](../src/scene_runtime/protocol/scene_operations.ts) | Routes five `SceneOperation` primitives to injected deps (exhaustive switch over `ObjectStateChange`, `CursorAttach`, `SceneChange`, `LayoutMove`, `TimedWait`) |
+| [src/scene_runtime/protocol/scene_op_deps.ts](../src/scene_runtime/protocol/scene_op_deps.ts) | Store-driven `SceneOpDeps`: `ObjectStateChange`/`CursorAttach` write `scene_store`; `SceneChange` reseeds + applies the reset policy (preserving cursor-held state); `LayoutMove` is a reported no-op (Option A); `TimedWait` keeps observable semantics through the subsequent state write |
+| [src/scene_runtime/protocol/walker_debug.ts](../src/scene_runtime/protocol/walker_debug.ts) | Read-only walker/debug surface: installs `window.PROTOCOL_STEPS` + `window.gameState` projected from the emitter snapshot + scene store (frozen contract) |
 | [src/scene_runtime/protocol/click_resolver.ts](../src/scene_runtime/protocol/click_resolver.ts) | Attaches DOM click listener; maps click target to interaction validator |
 | [src/scene_runtime/protocol/emitter.ts](../src/scene_runtime/protocol/emitter.ts) | `ProtocolShellEmitter` and `RuntimeEmitterHandle`; snapshot reducer pattern |
 
-Note: scene operations are stubbed. The step machine calls
-`build_stub_scene_op_deps` which console.warns on every operation.
-No mini-protocol is fully playable (PRIMARY_CONTRACT item 4 not yet satisfied).
+Scene operations drive the reactive `scene_store` (WS-M3-D): a validated
+interaction's `ObjectStateChange` writes declared object state, the Solid
+renderer reacts, and a `SceneChange` re-renders the next scene while preserving
+cursor-held tool/material. `protocol_host.tsx` wires the store-driven deps and
+restores the read-only `window.PROTOCOL_STEPS` / `window.gameState` surfaces.
 
 ### Scene runtime - renderer (`src/scene_runtime/renderer/`)
 
-Renders a `PipelineResult` into the DOM.
+Renders a `PipelineResult` into the DOM. The paint path is Solid: a reactive
+`SceneView` component renders one `SceneItem` per placement and reacts to the
+`scene_store`. The earlier imperative item-paint path (`render_item.ts`,
+`render_label.ts`) is retired; `render_scene.tsx` is the public Solid mount
+facade and `scene_item.tsx` / `scene_view.tsx` own item and label rendering.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/renderer/render_scene.ts](../src/scene_runtime/renderer/render_scene.ts) | Top-level renderer: clear root, run structural guards (collects violations), render background/items/labels; sets `data-scene-degraded` and emits `console.warn` on violations instead of throwing in the render path (throwing wrapper used in tests/CI) |
-| [src/scene_runtime/renderer/render_item.ts](../src/scene_runtime/renderer/render_item.ts) | Render one item; placeholder dashed box when `missing_svg: true` |
-| [src/scene_runtime/renderer/render_label.ts](../src/scene_runtime/renderer/render_label.ts) | Render label element for an item |
+| [src/scene_runtime/renderer/render_scene.tsx](../src/scene_runtime/renderer/render_scene.tsx) | Public Solid mount facade: creates the scene store, mounts `SceneView` into `#scene-root`, returns a dispose handle |
+| [src/scene_runtime/renderer/scene_view.tsx](../src/scene_runtime/renderer/scene_view.tsx) | Solid `SceneView`: renders background, one `SceneItem` per placement, and label elements; runs structural guards (collects violations) and sets `data-scene-degraded` |
+| [src/scene_runtime/renderer/scene_item.tsx](../src/scene_runtime/renderer/scene_item.tsx) | Solid `SceneItem`: reactive single-item paint (position, depth, SVG inject, missing-svg placeholder dashed box, `data-*` attributes) |
+| [src/scene_runtime/renderer/visual_state_resolver.ts](../src/scene_runtime/renderer/visual_state_resolver.ts) | Pure (no-DOM, no-Solid) resolver mapping object state + authored `visual_states` + per-protocol material registry to a renderable description |
 | [src/scene_runtime/renderer/render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
 | [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.); collects all violations rather than throwing on the first; throwing wrapper is exposed for tests/CI |
 | [src/scene_runtime/renderer/inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Inject inline SVG from `ASSET_SPECS` |
-| [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene` |
+| [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene`, `mountScene`, `SceneView`, `SceneItem`, `renderBackground` |
 
 ### Shell and HUD (`src/shell/`)
 
@@ -118,10 +127,10 @@ All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
 
 | File | Purpose |
 | --- | --- |
-| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts` |
+| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts`; emits `OBJECT_LIBRARY` (per-object `state_schema`, `visual_states`, `subpart_state_schema`), `ASSET_SPECS`, `OBJECT_STATE_SCHEMAS` (object-level state-field contract for store validation), `OBJECT_SUBPART_STATE_SCHEMAS` (subpart-level state-field contract). `state_fields` are the contract; `visual_states` are the rendering map. |
 | [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
 | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json` (per-scene classification: emitted/skipped/errored); `--missing-svg=strict|placeholder` flag (default `placeholder`) |
-| [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` |
+| [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |
 | [pipeline/build_protocol_index.py](../pipeline/build_protocol_index.py) | Protocol index helpers |
 | [pipeline/list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
 | [pipeline/scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (shared by gen_scene_index) |
@@ -153,8 +162,9 @@ Three tiers, isolated by [tests/conftest.py](../tests/conftest.py)
   trailing whitespace, shebangs, import policy, init-file hygiene, protocol YAML
   validators, spec doc camelCase gate, test naming conventions, and more.
 - **Node unit tests** (`tests/test_*.mjs`, run by `node --import tsx --test`):
-  layout engine, step machine, structural guards, resolve_entry_scene, render_item
-  missing-svg, scene operations, shell signals, walker no-step-branches, and more.
+  layout engine, step machine, structural guards, resolve_entry_scene,
+  visual_state_resolver, scene operations, shell signals, walker
+  no-step-branches, and more.
 - **Playwright browser tests** (`tests/playwright/`): framed-layout evidence,
   initial-scene evidence, interaction attrs, launcher, protocol host, solid walker,
   viewport sweep, and full-path walkthroughs under `tests/playwright/e2e/`.
@@ -205,16 +215,19 @@ runPipeline(scene, {library: OBJECT_LIBRARY, assets: ASSET_SPECS})
   returns PipelineResult (ComputedItems)
   |
   v
-renderScene(#scene-root, result): structural guards (collect violations,
-  set data-scene-degraded + console.warn instead of throwing) ->
-  renderBackground -> renderItem (inject_svg or placeholder) -> renderLabel
+renderScene(#scene-root, result): mounts Solid SceneView -> structural guards
+  (collect violations, set data-scene-degraded + console.warn instead of
+  throwing) -> renderBackground -> SceneItem per placement (inject_svg or
+  placeholder) -> label elements
   |
   v
 assert_scene_not_empty(): throws for student protocols with 0 items
   |
   v
 createProtocolShellEmitter(): emitter + initial ShellViewSnapshot
-create_scene_op_handler(stub_deps): all ops console.warn (stubs)
+create_scene_op_handler(build_store_scene_op_deps(store, render_scene)):
+  ops write the reactive scene_store (SceneChange re-renders + resets)
+install_walker_debug_surface(): window.PROTOCOL_STEPS + window.gameState (read-only)
 create_step_machine(): pure step machine, no DOM
 attach_click_resolver(): DOM click -> step machine
   |
@@ -227,13 +240,61 @@ step_machine.start(): emits step_started for entry step -> HUD renders first pro
   |
   v
 Student clicks scene item -> click_resolver -> step_machine.handle_click()
-  -> dispatch_interaction_validator() -> on success: scene_operations (stubbed)
+  -> dispatch_interaction_validator() -> on success: scene_operations write
+     the reactive scene_store -> Solid renderer reacts (artwork/highlight) and
+     window.gameState reflects progress
   -> emit step progress events -> HUD re-renders
 ```
 
-Note: scene operations remain stubbed. `SceneChange`, `ObjectStateChange`, and
-other primitives console.warn without mutating scene state. No mini-protocol
-satisfies PRIMARY_CONTRACT item 4 (visible browser completion) at this time.
+Scene operations are store-driven (WS-M3-D): `ObjectStateChange` writes declared
+object state and the Solid renderer updates the affected item reactively;
+`SceneChange` re-renders the next scene while preserving cursor-held
+tool/material; `LayoutMove` is an explicit reported no-op (zero authored uses,
+Option A). The read-only `window.gameState` / `window.PROTOCOL_STEPS` surfaces
+are restored for the walker. Full PRIMARY_CONTRACT item 4 completion (every
+student-visible protocol walked end-to-end) is the M4 corpus gate.
+
+## Solid.js import boundary
+
+Solid.js is the reactive rendering framework. Its imports are permitted only
+in specific subtrees. This boundary is declared here and enforced by
+[tests/test_typescript_boundaries.py](../tests/test_typescript_boundaries.py).
+
+```text
+Solid ALLOWED:    src/shell/
+                  src/scene_runtime/renderer/
+                  src/scene_runtime/state/
+
+Solid FORBIDDEN:  src/scene_runtime/layout/
+                  src/scene_runtime/protocol/
+                  pipeline/
+                  validation/
+                  generated/
+```
+
+Rationale for each zone:
+
+- `src/shell/` - the HUD observer layer; already uses Solid signals and
+  components.
+- `src/scene_runtime/renderer/` - hosts the Solid scene components
+  (`SceneView`, `SceneItem`) that consume `PipelineResult` and emit the
+  stable `data-*` DOM contract. The imperative item-paint path is retired.
+- `src/scene_runtime/state/` - hosts the reactive object-state store
+  (Solid signals/stores); object-state reactivity is Solid's job.
+- `src/scene_runtime/layout/` - pure geometry pipeline; must never depend
+  on the reactive framework. If layout uses Solid, two layout systems exist.
+- `src/scene_runtime/protocol/` - the step machine (stepper); must not
+  depend on Solid as a component. The stepper calls store operations through
+  a small runtime bridge. Exception: `import type` statements that reference
+  Solid types from the state layer are permitted (type-only, no runtime cost).
+- `pipeline/` - build pipeline scripts that emit to `generated/`; must not
+  depend on the reactive framework.
+- `validation/` - Python-based YAML validators and protocol stepper simulation;
+  TypeScript files here must not depend on the reactive framework.
+- `generated/` - compiled YAML data files; must not import Solid.
+
+The lint rule is enforced at pytest time. A violation in any forbidden zone
+fails the `pytest tests/` gate.
 
 ## Testing and verification
 
@@ -260,7 +321,7 @@ What each gate checks:
   import policy, init-file hygiene, protocol YAML validators, markdown links,
   test naming conventions, spec doc camelCase gate.
 - **node tests**: layout engine pipeline, step machine, structural guards,
-  entry-scene resolution, render_item placeholder contract, scene operations,
+  entry-scene resolution, visual_state_resolver, scene operations,
   protocol emitter, shell signals, walker no-step-branches.
 - **check_codebase.sh**: TypeScript typecheck (tsconfig.json + tsconfig.lint.json),
   ESLint zero warnings, Prettier format check, CSS content policy, node unit tests.
@@ -292,11 +353,19 @@ for browser-test conventions.
 
 ## Known gaps
 
-- Scene operations are stubbed: `ObjectStateChange`, `CursorAttach`,
-  `SceneChange`, `LayoutMove`, and `TimedWait` all console.warn without
-  updating scene state. Un-stubbing is tracked as follow-up work.
-- No mini-protocol satisfies PRIMARY_CONTRACT item 4 (visible browser
-  completion through student UI) until scene operations are implemented.
+- Scene operations are store-driven (WS-M3-D): `ObjectStateChange` and
+  `CursorAttach` write the reactive `scene_store`, `SceneChange` re-renders the
+  next scene under the reset policy, `TimedWait` is observable through the
+  subsequent state write, and `LayoutMove` is an explicit reported no-op (zero
+  authored uses, Option A).
+- The canonical walker (`tests/playwright/e2e/protocol_walkthrough_yaml.mjs`)
+  cannot yet complete a new-host protocol end-to-end: its startup contract still
+  targets the legacy cell-culture game (`window.resolveInteractionByIndex`, a
+  `#welcome-start-btn` modal, the `completionPath.kind` step schema, and a
+  scoring screen) that the protocol host does not produce. The read-only
+  `window.PROTOCOL_STEPS` / `window.gameState` surfaces the walker reads ARE
+  restored and verified; rewriting the walker to the new schema-driven model is
+  M4 work, not WS-M3-D.
 - sequence_runner protocols resolve and render their initial scene but are
   not runnable: the step machine logs "Unknown step_name" because runners
   carry no `steps` list of their own.

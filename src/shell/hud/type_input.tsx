@@ -1,0 +1,150 @@
+// src/shell/hud/type_input.tsx
+//
+// Visible text-input affordance for the `type` gesture (WS-M5-ST).
+//
+// `type` is one of the closed gesture set (PROTOCOL_VOCABULARY.md). A `type`
+// interaction asks the student to enter a value (e.g. a counted cell number)
+// into a VISIBLE input and commit it. This component renders that input
+// reactively: it appears only while the active interaction's gesture is `type`
+// and hides otherwise. The student types into the input and commits via the
+// Commit button or the Enter key; the committed raw text is handed to the
+// runtime through on_commit, which routes to step_machine.handle_type_commit.
+// The runtime validates it with the interaction's target_with_value preset.
+//
+// Integrity (PRIMARY_SPEC.md walker rule):
+//   - This is a REAL visible control with a stable data-* selector
+//     (data-type-input on the input, data-type-commit on the button). The
+//     walker fills + commits through Playwright actionability-checked
+//     interactions; it never writes runtime state directly.
+//   - on_commit is the ONLY path to advance; it calls the step machine's
+//     public handle_type_commit, not any internal state write.
+//   - The component reads a read-only snapshot accessor; it never mutates it.
+//
+// Layer boundary: this is a shell/interface control (Solid is allowed under
+// src/shell/). It carries no protocol-flow logic; it only surfaces the active
+// `type` interaction and forwards the committed text.
+
+import type { Accessor, JSXElement } from "solid-js";
+import { Show, createSignal, createEffect } from "solid-js";
+
+import type { ShellViewSnapshot } from "../adapter/types";
+
+//============================================
+// Component props
+//============================================
+
+export interface TypeInputProps {
+  // Live read-only protocol snapshot. The input shows only when
+  // active_interaction_gesture === "type".
+  snapshot: Accessor<ShellViewSnapshot>;
+  // Commit handler. Receives the active target and the raw typed text. Wired
+  // by protocol_host.tsx to step_machine.handle_type_commit.
+  on_commit: (target: string, typed_text: string) => void;
+}
+
+//============================================
+// Component implementation
+//============================================
+
+export function TypeInput(props: TypeInputProps): JSXElement {
+  // Local draft text. Reset whenever the active interaction target changes so a
+  // new `type` interaction starts with an empty field.
+  const [draft, set_draft] = createSignal("");
+
+  // Whether the active interaction is a `type` gesture.
+  const is_type_active = (): boolean => props.snapshot().active_interaction_gesture === "type";
+
+  // The active target for the current type interaction (null when not typing).
+  const active_target = (): string | null => props.snapshot().active_interaction_target;
+
+  // Reset the draft when the active target changes (new interaction/step).
+  let last_target: string | null = null;
+  createEffect(() => {
+    const target = active_target();
+    if (target !== last_target) {
+      last_target = target;
+      set_draft("");
+    }
+  });
+
+  // Commit the current draft text for the active target.
+  function commit(): void {
+    const target = active_target();
+    if (target === null) {
+      return;
+    }
+    props.on_commit(target, draft());
+  }
+
+  // Commit on Enter for keyboard reachability.
+  function on_keydown(event: KeyboardEvent): void {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commit();
+    }
+  }
+
+  return (
+    <Show when={is_type_active()}>
+      <div
+        data-type-input-panel=""
+        style={{
+          position: "fixed",
+          bottom: "16px",
+          left: "50%",
+          transform: "translateX(-50%)",
+          "z-index": "1000",
+          display: "flex",
+          "align-items": "center",
+          gap: "8px",
+          padding: "10px 14px",
+          "background-color": "#ffffff",
+          border: "2px solid #4a90d9",
+          "border-radius": "6px",
+          "box-shadow": "0 2px 10px rgba(0, 0, 0, 0.2)",
+          "font-family": '"PT Sans", Arial, sans-serif',
+        }}
+      >
+        <label
+          data-type-input-label=""
+          for="protocol-type-input"
+          style={{ "font-size": "14px", color: "#333333" }}
+        >
+          Enter value:
+        </label>
+        <input
+          id="protocol-type-input"
+          data-type-input=""
+          data-type-target={active_target() ?? ""}
+          type="text"
+          value={draft()}
+          onInput={(event) => set_draft(event.currentTarget.value)}
+          onKeyDown={on_keydown}
+          style={{
+            "font-size": "14px",
+            padding: "4px 8px",
+            border: "1px solid #999999",
+            "border-radius": "4px",
+            "min-width": "120px",
+          }}
+        />
+        <button
+          data-type-commit=""
+          type="button"
+          onClick={() => commit()}
+          style={{
+            "font-size": "14px",
+            padding: "5px 12px",
+            "background-color": "#4a90d9",
+            color: "#ffffff",
+            border: "none",
+            "border-radius": "4px",
+            cursor: "pointer",
+          }}
+        >
+          Commit
+        </button>
+      </div>
+    </Show>
+  );
+}
