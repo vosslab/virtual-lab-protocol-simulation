@@ -64,11 +64,14 @@ asset plus a runtime swap land.
 
 | Object | Current state | Done looks like | Status |
 | --- | --- | --- | --- |
-| well_plate_96 | Best-effort or proxy plate visual; quarantined | Per-well material overlays render in the Solid.js runtime | [ ] |
+| well_plate_96 | Placed in base scenes (object-level material only) | Per-well material overlays render in the Solid.js runtime | [ ] |
 
 The 96-well plate is one object. Wells are per-well material overlays, like a
-bottle liquid, not 96 separate scene objects. It is quarantined until overlay
-rendering lands in the Solid.js runtime.
+bottle liquid, not 96 separate scene objects. The object is now registered and
+placed (`content/objects/plate/well_plate_96.yaml`) with object-level material
+placeholders only; per-well distinct material state and overlay rendering remain
+unimplemented (protocols writing per-well drug materials currently FAIL the
+STEPPER stage). See docs/TODO.md.
 
 ## Build and protocol follow-ups
 

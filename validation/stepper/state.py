@@ -156,9 +156,18 @@ class StateMap:
 			placements.extend(add_placements)
 
 		# Apply remove_placements (by name)
+		# remove_placements entries are plain strings (placement_name values)
 		remove_placements = scene_data.get("remove_placements", [])
 		if isinstance(remove_placements, list):
-			removed_names = {p.get("placement_name") for p in remove_placements if isinstance(p, dict)}
+			# Handle string entries (the YAML format) as well as legacy dict entries
+			removed_names: set[str] = set()
+			for p in remove_placements:
+				if isinstance(p, str):
+					removed_names.add(p)
+				elif isinstance(p, dict):
+					name = p.get("placement_name")
+					if name:
+						removed_names.add(name)
 			placements = [p for p in placements if not (isinstance(p, dict) and p.get("placement_name") in removed_names)]
 
 		# Register all placements
@@ -386,16 +395,10 @@ class StateMap:
 			registry_hits = self._scenes_registry.get(object_name_part, [])
 
 			if len(registry_hits) == 0:
-				# No match in active scene or registry.
-				# TEMPORARY "for now" deferral: well_plate_96 per-well overlay
-				# targets are deferred until the Solid.js runtime supports them.
-				# See assets/SVG_ASSET_GAPS.md. Demote ONLY well_plate_96 targets
-				# to WARNING; every other unresolved target stays ERROR (may be a
-				# real bug). Reversible when the per-well overlay work lands.
-				unresolved_level = (
-					Level.WARNING if object_name_part == 'well_plate_96'
-					else Level.ERROR
-				)
+				# No match in active scene or registry: unresolved target is an ERROR.
+				# Every unresolved target is treated identically; there are no
+				# object-name special-cases in this resolution path.
+				unresolved_level = Level.ERROR
 				self.emitter.emit_finding(Finding(
 					level=unresolved_level,
 					protocol_name=self.protocol_name,
@@ -501,9 +504,18 @@ class StateMap:
 			placements.extend(add_placements)
 
 		# Apply remove_placements (by name)
+		# remove_placements entries are plain strings (placement_name values)
 		remove_placements = scene_data.get("remove_placements", [])
 		if isinstance(remove_placements, list):
-			removed_names = {p.get("placement_name") for p in remove_placements if isinstance(p, dict)}
+			# Handle string entries (the YAML format) as well as legacy dict entries
+			removed_names: set[str] = set()
+			for p in remove_placements:
+				if isinstance(p, str):
+					removed_names.add(p)
+				elif isinstance(p, dict):
+					name = p.get("placement_name")
+					if name:
+						removed_names.add(name)
 			placements = [p for p in placements if not (isinstance(p, dict) and p.get("placement_name") in removed_names)]
 
 		return placements

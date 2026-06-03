@@ -3,8 +3,8 @@ extends: hood_basic
 scene_notes: |
   Hood workspace for drug treatment mini-protocol. Adds carboplatin and
   metformin working stock rack (rear center zone), seeded well plate
-  (center zone), and micropipette (right tool area).
-  NOTE: well_plate_96 quarantined; substituted with microtube_rack_24 placeholder.
+  (center zone), and micropipette (right tool area). The well_plate_96 object is
+  placed in the inherited hood_basic center; protocols target well_plate_96.*.
 
 remove_placements:
   # The base PBS and waste bottles are context decoration here (not protocol
@@ -46,12 +46,8 @@ add_placements:
     depth_tier: 2
     align_stop: right
 
-  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
-  - placement_name: center_well_plate
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 1
-    align_stop: center
+  # well_plate_96 is now placed in the inherited hood_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.
 
   # Micropipette in right tool area
   - placement_name: right_micropipette

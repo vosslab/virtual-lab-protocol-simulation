@@ -12,7 +12,7 @@ remove_placements:
   - rear_center_pbs
   - rear_center_ethanol
   - center_water_bath
-  - center_rocking_shaker
+  - center_centrifuge
   - base_right_tip_box
   - rear_right_heat_block
 
@@ -45,13 +45,8 @@ add_placements:
     depth_tier: 1
     align_stop: left
 
-  # Treatment plate (96-well placeholder) at center beside incubator
-  # well_plate_96 object pending; microtube_rack_24 as layout placeholder
-  - placement_name: treatment_plate_main
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 2
-    align_stop: right
+  # well_plate_96 is now placed in the inherited bench_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.
 
   # Multichannel pipette for distributing MTT across all columns
   - placement_name: pipette_multichannel

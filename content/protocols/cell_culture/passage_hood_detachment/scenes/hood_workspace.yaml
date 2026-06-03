@@ -1,6 +1,12 @@
 scene_name: passage_hood_detachment_hood_workspace
 extends: hood_basic
 
+remove_placements:
+  # Base pbs_bottle removed; protocol adds its own at rear_left (rear_left_pbs)
+  - base_rear_center_pbs
+  # Base media_bottle removed; protocol adds its own at rear_right (rear_right_media)
+  - base_rear_right_media
+
 add_placements:
   # T75 flask in the center working area (left of center)
   - placement_name: center_flask

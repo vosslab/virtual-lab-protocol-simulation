@@ -3,14 +3,14 @@ extends: bench_basic
 
 scene_notes: |
   Bench workspace for MTT solubilization. DMSO bottle at rear left for adding
-  to wells to dissolve formazan crystals. The 96-well treatment plate (using
-  microtube_rack_24 as placeholder) is at center. Micropipette from base for
+  to wells to dissolve formazan crystals. The 96-well treatment plate (inherited
+  well_plate_96 from bench_basic) is at center. Micropipette from base for
   adding and triaturating DMSO.
 
 remove_placements:
   - rear_left_media_bottle
   - rear_center_ethanol
-  - center_rocking_shaker
+  - center_centrifuge
   - rear_right_heat_block
 
 add_placements:
@@ -21,10 +21,5 @@ add_placements:
     depth_tier: 1
     align_stop: right
 
-  # Treatment plate (96-well placeholder) at center -- main work object
-  # well_plate_96 object pending; microtube_rack_24 as layout placeholder
-  - placement_name: center_treatment_plate
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 1
-    align_stop: left
+  # well_plate_96 is now placed in the inherited bench_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.

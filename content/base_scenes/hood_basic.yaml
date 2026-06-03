@@ -20,7 +20,7 @@ zones:
     bounds:
       left: 5
       right: 33
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -29,7 +29,7 @@ zones:
     bounds:
       left: 34
       right: 66
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -38,7 +38,7 @@ zones:
     bounds:
       left: 67
       right: 95
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -89,7 +89,7 @@ placements:
     object_name: waste_container
     zone: rear_center
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Rear right: media bottle (left), sterile water (right)
   - placement_name: base_rear_right_media
@@ -102,7 +102,7 @@ placements:
     object_name: sterile_water_bottle
     zone: rear_right
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Center working surface: hood surface placeholder (center)
   - placement_name: center_hood_surface
@@ -110,6 +110,16 @@ placements:
     zone: center
     depth_tier: 2
     align_stop: center
+
+  # Center working surface: 96-well plate sits on the hood surface. Replaces the
+  # per-protocol microtube_rack_24 placeholders; protocols target well_plate_96.*
+  # and resolve against this single inherited placement. depth_tier 3 keeps it in
+  # front of the surface backdrop at the center stop.
+  - placement_name: center_well_plate_96
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 3
+    align_stop: left
 
   # Right tool area: aspirating pipette (left), serological pipette (right)
   - placement_name: right_aspirating_pipette

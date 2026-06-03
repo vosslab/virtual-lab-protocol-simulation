@@ -1,6 +1,10 @@
 scene_name: sdspage_prepare_sample_mix_single_lane_workspace
 extends: sample_prep_bench
 
+remove_placements:
+  # Base microtube removed; protocol adds its own at center (eppendorf_tube)
+  - mid_microtube_sample
+
 add_placements:
   - placement_name: eppendorf_tube
     object_name: microtube

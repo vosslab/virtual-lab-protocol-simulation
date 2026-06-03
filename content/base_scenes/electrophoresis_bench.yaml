@@ -18,7 +18,7 @@ zones:
     bounds:
       left: 5
       right: 30
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: center
@@ -27,7 +27,7 @@ zones:
     bounds:
       left: 35
       right: 65
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: center
@@ -36,7 +36,7 @@ zones:
     bounds:
       left: 70
       right: 95
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: center

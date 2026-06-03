@@ -20,7 +20,7 @@ zones:
     bounds:
       left: 5
       right: 33
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -29,7 +29,7 @@ zones:
     bounds:
       left: 34
       right: 66
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -38,7 +38,7 @@ zones:
     bounds:
       left: 67
       right: 95
-      top: 8
+      top: 5
       bottom: 36
     baseline: 32
     align: tab-stops
@@ -76,7 +76,7 @@ placements:
     object_name: media_bottle
     zone: rear_left
     depth_tier: 2
-    align_stop: right
+    align_stop: center
 
   # Rear center: PBS (left) and ethanol (right)
   - placement_name: rear_center_pbs
@@ -89,7 +89,7 @@ placements:
     object_name: ethanol_bottle
     zone: rear_center
     depth_tier: 2
-    align_stop: right
+    align_stop: center
 
   # Rear right: vortex (left) and heat block (right)
   - placement_name: rear_right_vortex
@@ -105,24 +105,29 @@ placements:
     align_stop: right
 
   # Center working surface: water bath (left) and centrifuge (right).
-  # The center previously paired water_bath with rocking_shaker, and the bench
-  # also carries a vortex; the rocking shaker, vortex, and water bath all read
-  # as similar blue control-panel boxes, so the bench looked like repeated
-  # filler. The centrifuge has a distinct domed-lid silhouette, so swapping it
-  # in for the rocking shaker differentiates the two center instruments. The
-  # placement_name stays 'center_rocking_shaker' because sibling scenes that
-  # extend bench_basic remove this placement by that name.
+  # The centrifuge has a distinct domed-lid silhouette that differentiates
+  # the two center instruments from the rear vortex and heat block.
   - placement_name: center_water_bath
     object_name: water_bath
     zone: center
     depth_tier: 1
     align_stop: left
 
-  - placement_name: center_rocking_shaker
+  - placement_name: center_centrifuge
     object_name: centrifuge
     zone: center
     depth_tier: 1
     align_stop: right
+
+  # Center working surface: 96-well plate at the center stop, between the
+  # water bath (left) and centrifuge (right). Replaces the per-protocol
+  # microtube_rack_24 placeholders; protocols target well_plate_96.* and resolve
+  # against this single inherited placement. align_stop center is otherwise free.
+  - placement_name: center_well_plate_96
+    object_name: well_plate_96
+    zone: center
+    depth_tier: 2
+    align_stop: center
 
   # Right tool area: tip box and micropipette
   - placement_name: base_right_tip_box

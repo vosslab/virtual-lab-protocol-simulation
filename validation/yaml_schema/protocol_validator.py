@@ -408,15 +408,8 @@ class ProtocolValidator:
 			if target and self.db:
 				resolved = self.db.resolve_target(target)
 				if not resolved:
-					# TEMPORARY "for now" deferral: well_plate_96 per-well
-					# overlay targets are deferred until the Solid.js runtime
-					# supports them. See assets/SVG_ASSET_GAPS.md. Demote ONLY
-					# well_plate_96 targets to WARNING; every other unresolved
-					# target stays ERROR (may be a real bug). Reversible when
-					# the per-well overlay work lands.
-					object_name_part = target.split('.')[0]
-					is_well_plate_96 = object_name_part == 'well_plate_96'
-					severity = Severity.WARNING if is_well_plate_96 else Severity.ERROR
+					# Unresolved target is always ERROR; no object-name special-cases.
+					severity = Severity.ERROR
 					findings.append(Finding(
 						path=f"{interaction_path}.target",
 						lineno=None,

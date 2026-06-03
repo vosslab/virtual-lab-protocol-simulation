@@ -10,7 +10,7 @@ scene_notes: |
 
 remove_placements:
   - center_water_bath
-  - center_rocking_shaker
+  - center_centrifuge
   - rear_left_media_bottle
   - rear_center_pbs
   - rear_center_ethanol
@@ -31,8 +31,8 @@ add_placements:
     depth_tier: 1
     align_stop: center
 
-  # Centrifuge at center (left stop) -- main instrument, sized to fit zone
-  - placement_name: center_centrifuge
+  # Centrifuge at center (left stop) -- main instrument for spinning pellets
+  - placement_name: center_centrifuge_spin
     object_name: centrifuge
     zone: center
     depth_tier: 2

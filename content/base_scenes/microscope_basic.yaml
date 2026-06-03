@@ -17,8 +17,8 @@ zones:
   - zone_name: rear_left
     bounds:
       left: 5
-      right: 30
-      top: 8
+      right: 35
+      top: 5
       bottom: 34
     baseline: 30
     align: tab-stops
@@ -28,7 +28,7 @@ zones:
     bounds:
       left: 70
       right: 95
-      top: 8
+      top: 5
       bottom: 34
     baseline: 30
     align: tab-stops
@@ -38,7 +38,7 @@ zones:
   - zone_name: left_bench
     bounds:
       left: 4
-      right: 30
+      right: 36
       top: 40
       bottom: 92
     baseline: 86
@@ -93,7 +93,7 @@ placements:
     object_name: ethanol_bottle
     zone: rear_right
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Left bench: microtube rack staged for slide prep, microtube in front
   - placement_name: left_microtube_rack

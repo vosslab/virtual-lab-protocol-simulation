@@ -390,3 +390,10 @@ Once the non-liquid hardware-state variant slots also close
 bare-bottle base SVGs land, flip `tests/test_object_asset_refs.py` from the
 baseline-counter pattern to a hard `assert missing == 0` so new gaps fail CI
 on introduction rather than drift the floor.
+
+- Implement `well_plate_96` per-well distinct material state: protocols write drug material
+  names (`carboplatin`, etc.) into `well_plate_96.material_name`, whose plate-level enum is
+  only `[empty, media, cells]`, producing 834 `state_value_not_allowed` STEPPER errors that
+  FAIL the validator. Resolution requires per-subpart material tracking plus a fill runtime;
+  at that point remove the object-level `material_name`/`material_volume`/`material_container`
+  placeholders from `content/objects/plate/well_plate_96.yaml`.

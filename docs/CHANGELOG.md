@@ -1,5 +1,84 @@
 # Changelog
 
+## 2026-06-03
+
+### Additions and New Features
+
+- Registered and placed `well_plate_96` using the existing Servier SVG `96well_pcr_plate.svg`.
+  Created `content/objects/plate/well_plate_96.yaml` with a grid 8x12 structure,
+  subpart groups, object-level `material_name`/`material_volume` state fields (required by
+  `kind: plate` validator), and `material_container` capability. Added one placement to each
+  of `hood_basic` and `bench_basic`; removed the `microtube_rack_24` placeholder placements
+  and stale quarantine notes from 6 cell-culture protocol-local scenes. After placement, YAML
+  target warnings for `well_plate_96.*` cleared automatically. The residual per-well material
+  gap is reported as ONE narrowly-keyed STEPPER signal:
+  `well_plate_96: per-well material state not implemented (K writes across M protocols, out of
+  scope)`. Per-well fill rendering remains out of scope (see TODO.md).
+
+### Behavior or Interface Changes
+
+- Removed the protocol-specific `well_plate_96` material-write fold from
+  `validation/stepper/state.py`. The fold had been suppressing all
+  `state_value_not_allowed` errors for any write to `well_plate_96.material_name`
+  whose value was not in the declared plate-level enum `[empty, media, cells]`.
+  Also removed two pre-existing TEMPORARY unresolved-target demotions from
+  `validation/stepper/state.py` and `validation/yaml_schema/protocol_validator.py`;
+  these had been dead since the plate was placed (targets now resolve) and removed
+  cleanly without changing any active finding. With the fold gone, 834 genuine
+  `state_value_not_allowed` errors surface: protocols such as `mtt_plate_reaction`
+  and `plate_drug_treatment_*` write per-well drug material names (`carboplatin`,
+  etc.) into `well_plate_96.material_name`, whose plate-level enum does not include
+  drug material names. This is the unimplemented per-well distinct-material feature,
+  now visible instead of hidden. The validator is now protocol-agnostic throughout.
+  Current run: TOTAL 834 errors. 156 warnings. 114 advisories. FAIL (ERROR stage: STEPPER).
+
+### Fixes and Maintenance
+
+- Renamed mislabeled `bench_basic` placement `center_rocking_shaker` (object `centrifuge`) to
+  `center_centrifuge`. Propagated the rename into 5 inheriting scenes'
+  `remove_placements` lists and the local add in `centrifuge_workspace`
+  (-> `center_centrifuge_spin`). Cleared 66 `placement_name_collision` errors and 4
+  `tray_present` `undeclared_state_field` errors.
+- Fixed a real bug in `validation/stepper/state.py` where `remove_placements` (a list of
+  strings) was read as a list of dicts, so removals were never applied. Also cleared 7
+  `ambiguous_target_in_scene` errors by removing redundant inherited duplicate placements
+  (`serological_pipette`, `hemocytometer_slide`, `microtube`, `pbs_bottle` x2,
+  `media_bottle` x2) via `remove_placements` in protocol-local scene YAMLs.
+- Scene-layout tuning across 8 base scenes cleared 15 SCENE-LINT overlap and outside-zone
+  warnings; 54 warnings -> 39 warnings. Remaining cases require design judgment and
+  are left out of scope.
+- SVG anchor normalization. Added missing `anchor_liquid_clip` and
+  `anchor_liquid_bounds` anchors to 6 liquid-container SVGs: `bottle_green.svg`,
+  `bottle_orange.svg`, `bottle_pink.svg`, `bottle_medium_pink.svg`, `mtt_vial.svg`,
+  `falcon_15ml.svg`. Also ran `normalize_svg_v2.py --in-place` on `mtt_vial.svg`
+  (viewBox `0 0 102.085 270.69` -> `0 0 104.097 272.637`) and `falcon_15ml.svg`
+  (viewBox `0 0 68.863 419.187` -> `0 0 70.68 421.427`). YAML non-normalized warnings
+  dropped from 28 to 1 (residual: `tube_rack.svg` left out of scope -- ambiguous
+  liquid-anchor placement for a structured rack with 8 tubes). Registry regenerated:
+  95/95 PASS. Orphan deletion: 9 `*_new` SVGs remain unreferenced in YAML; no clear
+  rename/supersession evidence, left in place.
+- Net validation from the merges above (before hardcode removal):
+  baseline 135 errors / 618 warnings / 121 advisories (FAIL) ->
+  0 errors / 156 warnings / 114 advisories (claimed PASS at that point).
+  That figure was achieved only because a protocol-specific fold in the
+  protocol-agnostic validator was suppressing 834 genuine errors (see
+  Behavior or Interface Changes above and Decisions and Failures below).
+
+### Decisions and Failures
+
+- Decision: `kind: plate` object validation requires declaring `material_name` and
+  `material_volume` at the object level plus `material_container` capability. These are
+  object-level placeholders only; per-well material state is not implemented and the
+  object-level fields will be removed when per-well fill rendering is added (see TODO.md).
+- Decision: kept the validator honest after hardcode removal. Rather than re-adding the
+  `well_plate_96` fold or widening the plate-level `material_name` enum as a band-aid,
+  accepted the STEPPER FAIL (834 `state_value_not_allowed` errors). The same-day
+  "0 errors PASS" figure in earlier bullets was valid only with the suppressing fold in
+  place; the corrected total is 834 errors / 156 warnings / 114 advisories -> FAIL.
+  The centrifuge rename, ambiguity fixes, scene-layout tuning, and SVG normalization from
+  the workstreams above all stand and are not reverted. Resolution requires implementing
+  per-well distinct material state for `well_plate_96` (see TODO.md).
+
 ## 2026-06-02
 
 ### Additions and New Features

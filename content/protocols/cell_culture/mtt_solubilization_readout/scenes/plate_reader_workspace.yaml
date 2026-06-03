@@ -8,7 +8,7 @@ scene_notes: |
 
 remove_placements:
   - center_water_bath
-  - center_rocking_shaker
+  - center_centrifuge
   - rear_left_media_bottle
   - rear_center_ethanol
   - rear_right_heat_block

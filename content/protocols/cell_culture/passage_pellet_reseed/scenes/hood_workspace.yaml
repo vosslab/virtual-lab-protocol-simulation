@@ -4,9 +4,8 @@ scene_notes: |
   Hood workspace for pellet reseed mini-protocol. Adds T75 flask (center),
   conical 15ml rack (rear center), fresh media bottle (rear left), label pen
   (right tool area), and incubator (rear right, replacing base media bottles).
-  NOTE: well_plate_96 is quarantined (missing asset/object); substituted with
-  microtube_rack_24 as best-effort placeholder until the 96-well plate object
-  and SVG land.
+  The well_plate_96 object is placed in the inherited hood_basic center;
+  protocols target well_plate_96.* against that inherited placement.
 
 remove_placements:
   # Fully remove (not just deactivate) the base rear-right bottles. Deactivated
@@ -48,14 +47,8 @@ add_placements:
     depth_tier: 1
     align_stop: center
 
-  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
-  # Front row, right; flask is front-row left. align_stop right separates the
-  # plate from the flask (center alignment left them touching).
-  - placement_name: center_fresh_plate
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 1
-    align_stop: right
+  # well_plate_96 is now placed in the inherited hood_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.
 
   # Incubator in rear_right. It is large equipment whose rendered height spans
   # most of the scene, so it claims the entire right side. The right_tool_area

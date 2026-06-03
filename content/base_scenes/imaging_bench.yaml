@@ -18,7 +18,7 @@ zones:
     bounds:
       left: 5
       right: 32
-      top: 8
+      top: 5
       bottom: 34
     baseline: 30
     align: tab-stops
@@ -27,7 +27,7 @@ zones:
     bounds:
       left: 34
       right: 66
-      top: 8
+      top: 5
       bottom: 34
     baseline: 30
     align: tab-stops
@@ -36,7 +36,7 @@ zones:
     bounds:
       left: 68
       right: 95
-      top: 8
+      top: 5
       bottom: 34
     baseline: 30
     align: tab-stops
@@ -99,7 +99,7 @@ placements:
     object_name: destain_bottle
     zone: rear_left
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Rear center: ddH2O and ethanol bottles
   - placement_name: rear_ddh2o
@@ -111,7 +111,7 @@ placements:
     object_name: ethanol_bottle
     zone: rear_center
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Rear right: tip box and microtube rack
   - placement_name: rear_tip_box
@@ -123,7 +123,7 @@ placements:
     object_name: microtube_rack_24
     zone: rear_right
     depth_tier: 1
-    align_stop: right
+    align_stop: center
 
   # Left tool area: rocking shaker for stain incubation
   - placement_name: left_rocking_shaker

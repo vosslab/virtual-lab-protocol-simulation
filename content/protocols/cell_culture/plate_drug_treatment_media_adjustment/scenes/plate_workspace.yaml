@@ -26,12 +26,8 @@ reposition_placements:
     depth_tier: 2
 
 add_placements:
-  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
-  - placement_name: center_well_plate_96
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 1
-    align_stop: center
+  # well_plate_96 is now placed in the inherited hood_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.
 
   # Media bottle in rear_center (protocol-specific)
   - placement_name: rear_center_media
@@ -66,6 +62,6 @@ add_placements:
 
 scene_notes: |
   Hood-side plate-workspace scene for plate_drug_treatment_media_adjustment.
-  96-well plate (microtube_rack_24 placeholder) in center, media bottle in
-  rear center, multichannel pipette in right tool area.
-  NOTE: well_plate_96 quarantined; using microtube_rack_24 as placeholder.
+  96-well plate (inherited from hood_basic) in center, media bottle in
+  rear center, multichannel pipette in right tool area. Protocols target
+  well_plate_96.* against the inherited plate placement.

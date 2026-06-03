@@ -21,7 +21,7 @@ zones:
     bounds:
       left: 5
       right: 30
-      top: 8
+      top: 5
       bottom: 32
     baseline: 28
     align: tab-stops
@@ -30,7 +30,7 @@ zones:
     bounds:
       left: 35
       right: 65
-      top: 8
+      top: 5
       bottom: 32
     baseline: 28
     align: tab-stops
@@ -39,7 +39,7 @@ zones:
     bounds:
       left: 70
       right: 95
-      top: 8
+      top: 5
       bottom: 32
     baseline: 28
     align: tab-stops
@@ -77,7 +77,7 @@ zones:
   - zone_name: right_tool_area
     bounds:
       left: 84
-      right: 97
+      right: 99
       top: 66
       bottom: 94
     baseline: 90
@@ -105,7 +105,7 @@ placements:
     object_name: ddh2o_bottle
     zone: rear_center
     depth_tier: 1
-    align_stop: right
+    align_stop: center
   - placement_name: rear_right_bme
     object_name: bme_bottle
     zone: rear_right
@@ -115,7 +115,7 @@ placements:
     object_name: waste_container
     zone: rear_right
     depth_tier: 1
-    align_stop: right
+    align_stop: center
   # Mid bench left: microtube rack staged for sample loading
   - placement_name: mid_eppendorf_rack
     object_name: microtube_rack_24

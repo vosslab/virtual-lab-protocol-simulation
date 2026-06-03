@@ -2,8 +2,8 @@ scene_name: seeding_workspace
 extends: hood_basic
 scene_notes: |
   Workspace for cell seeding (A29-A31): prepare diluted suspension and seed
-  96-well plate. NOTE: well_plate_96 quarantined (missing asset/object);
-  substituted with microtube_rack_24 as best-effort placeholder.
+  96-well plate. The well_plate_96 object is placed in the inherited hood_basic
+  center; protocols target well_plate_96.* against that inherited placement.
 
 remove_placements:
   # Base serological pipette removed; protocol adds its own at a specific slot
@@ -47,12 +47,8 @@ add_placements:
     depth_tier: 2
     align_stop: right
 
-  # NOTE: well_plate_96 quarantined. Using microtube_rack_24 as placeholder.
-  - placement_name: center_well_plate_96
-    object_name: microtube_rack_24
-    zone: center
-    depth_tier: 3
-    align_stop: right
+  # well_plate_96 is now placed in the inherited hood_basic center band (single
+  # plate); the former microtube_rack_24 placeholder was removed here.
 
   # Media bottle: rear_center, center stop, between the inherited PBS (left)
   # and waste (right) bottles on the rear shelf.
