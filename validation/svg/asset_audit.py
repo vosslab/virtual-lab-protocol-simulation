@@ -260,9 +260,13 @@ def check_normalization(asset_name: str) -> tuple[str, str | None]:
 		except (ValueError, AttributeError):
 			return 'failed', 'viewbox_not_numeric'
 
-		# Check xmlns
-		xmlns = root.get('{http://www.w3.org/2000/xmlns/}svg') or root.get('xmlns')
-		if xmlns != 'http://www.w3.org/2000/svg':
+		# Check xmlns. ElementTree folds the default namespace into the tag
+		# (root.tag becomes '{http://www.w3.org/2000/svg}svg'); it does NOT
+		# expose 'xmlns' as a gettable attribute, so root.get('xmlns') is always
+		# None for a correctly-namespaced SVG. Detect normalization from the
+		# parsed tag namespace instead.
+		svg_namespace = '{http://www.w3.org/2000/svg}'
+		if not root.tag.startswith(svg_namespace):
 			return 'failed', 'bad_xmlns'
 
 		return 'normalized', None
@@ -654,7 +658,7 @@ def print_full_report(
 	per_asset_metadata: dict[str, object],
 	quiet: bool = False,
 	verbose: bool = False
-) -> None:
+) -> int:
 	"""Print the full audit report with enriched metadata.
 
 	Three-tier verbosity:
@@ -701,11 +705,22 @@ def print_full_report(
 			elif classification == 'unknown':
 				unknown_assets += 1
 
-	# Compute counts for actionable findings (computed early, needed by all modes)
-	normalization_failures = sum(
-		1 for m in per_asset_metadata.values()
-		if m.get('normalization') != 'OK'
-	)
+	# Compute counts for actionable findings (computed early, needed by all modes).
+	# check_normalization returns status 'normalized' or 'failed' (NOT 'OK'); a
+	# non-normalized asset is anything that did not come back 'normalized'.
+	# Split by reason: a parse/XML failure is a blocking error (malformed SVG);
+	# every other normalization miss is a non-normalized warning.
+	MALFORMED_REASONS = ('xml_parse_error', 'parse_exception')
+	malformed_count = 0
+	non_normalized_count = 0
+	for m in per_asset_metadata.values():
+		if m.get('normalization') == 'normalized':
+			continue
+		if m.get('normalization_reason') in MALFORMED_REASONS:
+			malformed_count += 1
+		else:
+			non_normalized_count += 1
+	normalization_failures = malformed_count + non_normalized_count
 	forbidden_construct_count = sum(
 		1 for m in per_asset_metadata.values()
 		if m.get('forbidden_constructs')
@@ -730,17 +745,22 @@ def print_full_report(
 	# Resolve verbosity level once via the shared helper.
 	level = verbosity.resolve_level(quiet=quiet, verbose=verbose)
 
-	# Compute totals needed by all modes.
+	# Compute totals needed by all modes, split into the three severity tiers.
+	#   error    = malformed SVG (unparseable) + forbidden constructs
+	#   warning  = non-normalized SVG + unattributed Servier adoptions
+	#   advisory = orphan SVGs + unknown SVGs (cleanup, do not block)
 	total_checked = len(objects)
-	failure_count = (
-		len(orphan_svgs) + len(truly_unknown) + normalization_failures
-		+ forbidden_construct_count + unattributed_servier
-	)
+	error_count = malformed_count + forbidden_construct_count
+	warning_count = non_normalized_count + unattributed_servier
+	advisory_count = len(orphan_svgs) + len(truly_unknown)
 
 	# QUIET mode: exactly one canonical summary line.
 	if level == verbosity.VerbosityLevel.QUIET:
-		reporter.print_summary_line(total_checked, failure_count, item_label="objects")
-		return
+		reporter.print_summary_line(
+			total_checked, error_count, item_label="objects",
+			warnings=warning_count, advisories=advisory_count,
+		)
+		return error_count
 
 	# NORMAL and VERBOSE: section header + per-object source breakdown + actionable findings
 	print(f"=== SVG asset audit ({len(objects)} objects / {len(disk_svgs)} SVGs) ===")
@@ -770,7 +790,10 @@ def print_full_report(
 	print()
 
 	# Final summary line (NORMAL and VERBOSE).
-	reporter.print_summary_line(total_checked, failure_count, item_label="objects")
+	reporter.print_summary_line(
+		total_checked, error_count, item_label="objects",
+		warnings=warning_count, advisories=advisory_count,
+	)
 
 	# VERBOSE: append the shared diagnostic summary block.
 	if level == verbosity.VerbosityLevel.VERBOSE:
@@ -808,6 +831,8 @@ def print_full_report(
 		)
 		print()
 		print(verbosity.diagnostic_summary(diag_data))
+
+	return error_count
 
 def print_provenance_section(per_asset_metadata: dict[str, object], asset_filter: set[str] | None = None) -> None:
 	"""Print provenance section: source, license, attribution, modification status.
@@ -1066,11 +1091,13 @@ def main():
 			# Per-object mode always prints per-asset detail
 			print_object_detail_table(args.object_name, objects, asset_reuse, per_asset_metadata, orphan_svgs, servier, placeholders)
 		else:
-			# Repo-wide mode: honor -q and -v
-			print_full_report(
+			# Repo-wide mode: honor -q and -v. Exit is ERROR-only: warnings and
+			# advisories (non-normalized, orphan) print but do not fail the run.
+			error_count = print_full_report(
 				objects, missing_items, orphan_svgs, disk_svgs, servier, placeholders,
 				asset_reuse, per_asset_metadata, quiet=args.quiet, verbose=args.verbose
 			)
+			sys.exit(1 if error_count else 0)
 
 def print_object_detail_table(
 	object_name: str,

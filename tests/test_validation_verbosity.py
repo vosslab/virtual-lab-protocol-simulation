@@ -40,17 +40,21 @@ def test_resolve_level_both_raises():
 #============================================
 # summary_line
 #============================================
-def test_summary_line_zero_counts_emit_both_tokens():
-	# Zero counts must still print verbatim failures/warnings tokens.
-	line = verbosity.summary_line(5, 0, item_label="files", warnings=0)
-	assert "0 failures" in line
+def test_summary_line_zero_counts_emit_all_tiers():
+	# Zero counts must still print all three severity-tier tokens verbatim.
+	line = verbosity.summary_line(5, 0, item_label="files", warnings=0, advisories=0)
+	assert "0 errors" in line
 	assert "0 warnings" in line
+	assert "0 advisories" in line
 
 
 def test_summary_line_nonzero_counts():
-	line = verbosity.summary_line(12, 3, item_label="objects", warnings=2)
-	assert "3 failures" in line
+	line = verbosity.summary_line(
+		12, 3, item_label="objects", warnings=2, advisories=1
+	)
+	assert "3 errors" in line
 	assert "2 warnings" in line
+	assert "1 advisories" in line
 
 
 #============================================

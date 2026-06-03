@@ -1,8 +1,5 @@
 """ObjectValidator: validates object YAML per OBJECT_YAML_FORMAT.md."""
 
-import os
-import pathlib
-
 from validation.yaml_schema.constants import (
 	OBJECT_KINDS,
 	OBJECT_CAPABILITIES,
@@ -16,6 +13,7 @@ from validation.yaml_schema.constants import (
 	KIND_MATERIAL_FIELD_CONVENTION,
 )
 from validation.yaml_schema.findings import Finding, Severity
+import validation.shared_toolkit.repo_root
 
 
 class ObjectValidator:
@@ -866,6 +864,7 @@ class ObjectValidator:
 				path=path,
 				lineno=None,
 				severity=Severity.WARNING,
+				code='variant-collapse',
 				message=(
 					f"[VARIANT-COLLAPSE] {paired_field} cases for volume composite "
 					f"{volume_state_name} resolve to {len(asset_names)} distinct asset_name values: "
@@ -894,29 +893,23 @@ class ObjectValidator:
 
 		This method modifies the findings list in-place.
 		"""
-		# Locate repo root and assets directory
-		try:
-			repo_root = pathlib.Path(os.getcwd()).parent
-			while repo_root != repo_root.parent:
-				if (repo_root / '.git').exists():
-					break
-				repo_root = repo_root.parent
-		except Exception:
-			# If we can't find repo root, skip the check
-			return
+		# Resolve repo root through the shared resolver. The old code walked up
+		# from os.getcwd().parent, which starts ABOVE the repo and reports
+		# existing assets as missing.
+		repo_root = validation.shared_toolkit.repo_root.REPO_ROOT
 
 		svg_path = repo_root / 'assets' / 'equipment' / f'{asset_name}.svg'
 
-		# Check if file exists
+		# Literal category: the referenced base SVG is absent on disk.
 		if not svg_path.exists():
 			findings.append(Finding(
 				path=path,
 				lineno=None,
 				severity=Severity.WARNING,
+				code='missing',
 				message=(
-					f"[ASSET-READINESS] base SVG not yet on disk for asset_name '{asset_name}': "
-					f"expected {svg_path.relative_to(repo_root)}. "
-					f"WS-ANCHORS will author the base SVG once WP-YAML-1/2 lands."
+					f"base SVG absent on disk for asset_name '{asset_name}': "
+					f"expected {svg_path.relative_to(repo_root)}."
 				),
 			))
 			return
@@ -939,15 +932,17 @@ class ObjectValidator:
 			if not has_bounds:
 				missing.append('anchor_liquid_bounds')
 
+			# Literal category: the SVG is present but not normalized to carry
+			# the required liquid anchors.
 			findings.append(Finding(
 				path=path,
 				lineno=None,
 				severity=Severity.WARNING,
+				code='non-normalized',
 				message=(
-					f"[ASSET-READINESS] base SVG for asset_name '{asset_name}' "
-					f"({svg_path.relative_to(repo_root)}) lacks bare-id anchor elements: "
-					f"missing {', '.join(missing)}. "
-					f"WS-ANCHORS will add these anchor rects (authored as bare ids, not pre-prefixed)."
+					f"base SVG for asset_name '{asset_name}' "
+					f"({svg_path.relative_to(repo_root)}) lacks liquid anchors: "
+					f"missing {', '.join(missing)}."
 				),
 			))
 

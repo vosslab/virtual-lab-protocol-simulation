@@ -33,6 +33,7 @@ import validation.shared_toolkit.interactive as toolkit_interactive
 import validation.shared_toolkit.emit as emit
 import validation.shared_toolkit.verbosity as verbosity
 import validation.shared_toolkit.reporter as reporter
+import validation.shared_toolkit.console
 
 
 class ValidationError(Exception):
@@ -106,6 +107,87 @@ def find_yaml_files(root: str, file_type: str) -> list:
 		files = list(root_path.glob('content/protocols/**/materials.yaml'))
 
 	return sorted(files)
+
+
+def _count_by_severity(findings: list, parse_failures: int = 0) -> dict:
+	"""
+	Bucket findings into the three severity tiers.
+
+	Severity is closed at three values: ERROR (blocks), WARNING (should fix),
+	INFO (advisory, cleanup/info). INFO is displayed as "advisory" in
+	validation output and never affects exit code. Parse failures are counted
+	as errors (malformed YAML is a blocking failure).
+
+	Returns {'errors': E, 'warnings': W, 'advisories': A}.
+	"""
+	from validation.shared_toolkit.findings import Severity
+	errors = parse_failures
+	warnings = 0
+	advisories = 0
+	for finding in findings:
+		if finding.severity == Severity.ERROR:
+			errors += 1
+		elif finding.severity == Severity.WARNING:
+			warnings += 1
+		else:
+			# INFO is the advisory tier.
+			advisories += 1
+	return {'errors': errors, 'warnings': warnings, 'advisories': advisories}
+
+
+# Stage-owned display map: raw diagnostic tag -> friendly category label.
+# The raw `tag` is preserved on the Finding (and in --json); this map only
+# governs the human rollup label. Severity is NOT decided here.
+_TAG_TO_CATEGORY = {
+	'T1_TARGET': 'unresolved-target',
+	'T1_TARGET_WITH_VALUE': 'unresolved-target',
+	'T1_STATE_FIELD': 'invalid-state',
+	'T1_ENUM': 'invalid-state',
+	'T1_MATERIAL_REF': 'unresolved-target',
+	'T3_CAMELCASE': 'schema-invalid',
+	'CLOSURE': 'schema-invalid',
+	'SCENE_EXTENDS': 'schema-invalid',
+	'BANNED': 'schema-invalid',
+	'RETIRED': 'schema-invalid',
+}
+
+
+def _category_label(finding) -> str:
+	"""
+	Resolve a finding's friendly category label for the rollup.
+
+	Preference: an explicit `code` (already friendly), else a mapped `tag`,
+	else the raw tag, else the severity name. Raw tag/code are untouched.
+	"""
+	if finding.code:
+		return finding.code
+	if finding.tag:
+		return _TAG_TO_CATEGORY.get(finding.tag, finding.tag)
+	return finding.severity.value
+
+
+def _build_severity_rollup(findings: list) -> str:
+	"""
+	Group findings by severity tier and friendly category into the rollup.
+
+	INFO is the advisory tier.
+	"""
+	from validation.shared_toolkit.findings import Severity
+	tiers = {'error': {}, 'warning': {}, 'advisory': {}}
+	for finding in findings:
+		if finding.severity == Severity.ERROR:
+			bucket = tiers['error']
+		elif finding.severity == Severity.WARNING:
+			bucket = tiers['warning']
+		else:
+			bucket = tiers['advisory']
+		label = _category_label(finding)
+		bucket[label] = bucket.get(label, 0) + 1
+	return verbosity.severity_rollup(
+		list(tiers['error'].items()),
+		list(tiers['warning'].items()),
+		list(tiers['advisory'].items()),
+	)
 
 
 def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = False, emit_findings: bool = True) -> tuple:
@@ -185,10 +267,17 @@ def validate_whole_tree(repo_root: str, quiet: bool = False, verbose: bool = Fal
 		if emit_findings:
 			print(msg)
 
-	success = len(errors) == 0
+	# Honest severity counting. `errors` holds every parse-failure string plus
+	# a formatted copy of each Finding; `all_findings` holds the Finding objects
+	# only. A parse failure is a real blocking error (malformed YAML), so the
+	# parse-failure count is the surplus of `errors` over `all_findings`.
+	severity_counts = _count_by_severity(all_findings, len(errors) - len(all_findings))
+
+	# Success is ERROR-only. Warnings and advisories never fail the run.
+	success = severity_counts['errors'] == 0
 
 	# Return db and rows for use in main() diagnostic rendering
-	return success, errors, counts, all_findings, db, protocol_rows, protocol_scene_rows, material_rows
+	return success, errors, counts, all_findings, db, protocol_rows, protocol_scene_rows, material_rows, severity_counts
 
 
 def list_protocols(repo_root: str) -> list:
@@ -693,10 +782,12 @@ def main():
 		verbose=args.verbose,
 		emit_findings=emit_findings_flag,
 	)
-	success, errors, counts, findings, db, protocol_rows, protocol_scene_rows, material_rows = result
+	success, errors, counts, findings, db, protocol_rows, protocol_scene_rows, material_rows, severity_counts = result
 
 	total_files = counts['objects'] + counts['base_scenes'] + counts['protocol_scenes'] + counts['materials'] + counts['protocols']
-	failure_count = len(errors)
+	error_count = severity_counts['errors']
+	warning_count = severity_counts['warnings']
+	advisory_count = severity_counts['advisories']
 
 	# Handle JSON/NDJSON output (orthogonal to verbosity level).
 	if is_machine_format:
@@ -706,7 +797,10 @@ def main():
 	# Text output: switch on the resolved level enum.
 	if level == verbosity.VerbosityLevel.QUIET:
 		# QUIET: exactly one canonical summary line.
-		reporter.print_summary_line(total_files, failure_count, item_label="files")
+		reporter.print_summary_line(
+			total_files, error_count, item_label="files",
+			warnings=warning_count, advisories=advisory_count,
+		)
 
 	elif level == verbosity.VerbosityLevel.NORMAL:
 		# NORMAL: compiled dashboard (totals + top categories) then summary line.
@@ -714,15 +808,23 @@ def main():
 		counts_agg = compiled_summary.aggregate(
 			db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts
 		)
-		compiled_summary.render(counts_agg)
-		reporter.print_summary_line(total_files, failure_count, item_label="files")
+		compiled_summary.render(counts_agg, severity_counts=severity_counts)
+		# Grouped per-code rollup so the reader sees WHAT without --json.
+		rollup = _build_severity_rollup(findings)
+		if rollup:
+			console = validation.shared_toolkit.console.make_console()
+			console.print(rollup)
+		reporter.print_summary_line(
+			total_files, error_count, item_label="files",
+			warnings=warning_count, advisories=advisory_count,
+		)
 
 	else:
 		# VERBOSE: NORMAL content plus the diagnostic block.
 		counts_agg = compiled_summary.aggregate(
 			db, protocol_rows, protocol_scene_rows, material_rows, counts_dict=counts
 		)
-		compiled_summary.render(counts_agg)
+		compiled_summary.render(counts_agg, severity_counts=severity_counts)
 
 		# Build DiagnosticData from the same data _render_verbose_diagnostics used.
 		# findings holds all Finding objects from per-file validation and db findings.
@@ -751,7 +853,10 @@ def main():
 		diag_block = verbosity.diagnostic_summary(diag_data)
 		print(diag_block)
 
-		reporter.print_summary_line(total_files, failure_count, item_label="files")
+		reporter.print_summary_line(
+			total_files, error_count, item_label="files",
+			warnings=warning_count, advisories=advisory_count,
+		)
 
 	sys.exit(0 if success else 1)
 

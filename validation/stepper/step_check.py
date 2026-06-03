@@ -32,6 +32,72 @@ import validation.shared_toolkit.reporter as reporter
 import validation.shared_toolkit.findings as shared_findings
 import validation.shared_toolkit.emit as emit
 import validation.shared_toolkit.verbosity as verbosity
+import validation.shared_toolkit.console
+
+
+# Stage-owned display map: raw stepper code -> friendly category label. The
+# raw `code` stays on the finding (and in --json); this only governs the human
+# rollup label. Severity is decided by the finding's level, not by this map.
+_CODE_TO_CATEGORY = {
+	'placement_name_collision': 'placement-collision',
+	'ambiguous_target_in_scene': 'ambiguous-target',
+	'undeclared_state_field': 'invalid-state',
+	'object_state_change_invalid_state': 'invalid-state',
+	'state_value_not_allowed': 'invalid-state',
+	'state_value_type_mismatch': 'invalid-state',
+	'broken_next_step': 'flow-broken',
+	'flow_cycle': 'flow-broken',
+	'flow_unreachable_step': 'flow-broken',
+	'flow_multi_terminal': 'flow-broken',
+	'entry_step_missing': 'flow-broken',
+	'entry_step_not_found': 'flow-broken',
+	'runner_of_runner': 'flow-broken',
+	'scene_change_unresolved': 'scene-op-invalid',
+	'scene_change_missing_to_scene': 'scene-op-invalid',
+	'scene_change_internal_error': 'scene-op-invalid',
+	'cursor_attach_missing_target': 'scene-op-invalid',
+	'object_state_change_missing_target': 'scene-op-invalid',
+	'timed_wait_missing_duration': 'scene-op-invalid',
+	'timed_wait_invalid_duration': 'scene-op-invalid',
+	'unknown_scene_operation_type': 'scene-op-invalid',
+	'subpart_group_internal_error': 'scene-op-invalid',
+	'unknown_target_active_scene': 'unresolved-target',
+	'unknown_object_in_scene': 'unresolved-target',
+	'unknown_placement': 'unresolved-target',
+	'no_active_scene_at_resolution': 'unresolved-target',
+	'no_initial_scene_found': 'unresolved-target',
+	'unknown_active_scene': 'unresolved-target',
+	's-unused': 'unused',
+	's-unreachable': 'unused',
+	'unknown_material': 'unused',
+	'cross_mini_unknown_material': 'unused',
+	's-state-jump': 'state-jump',
+}
+
+
+def _build_severity_rollup(walks: list) -> str:
+	"""
+	Group every walk's findings by severity tier and friendly category.
+
+	INFO is the advisory tier. Unmapped codes fall back to the raw code so a
+	new stepper code is still visible (just not yet friendly-labeled).
+	"""
+	tiers = {'error': {}, 'warning': {}, 'advisory': {}}
+	for _name, _ptype, _steps, _interactions, emitter in walks:
+		for finding in emitter.findings:
+			if finding.level == shared_findings.Severity.ERROR:
+				bucket = tiers['error']
+			elif finding.level == shared_findings.Severity.WARNING:
+				bucket = tiers['warning']
+			else:
+				bucket = tiers['advisory']
+			label = _CODE_TO_CATEGORY.get(finding.code, finding.code or 'unknown')
+			bucket[label] = bucket.get(label, 0) + 1
+	return verbosity.severity_rollup(
+		list(tiers['error'].items()),
+		list(tiers['warning'].items()),
+		list(tiers['advisory'].items()),
+	)
 
 
 
@@ -284,8 +350,13 @@ def main():
 	walks = []
 	has_error = False
 	total = 0
-	failures = 0
+	# failed_protocols is the protocol-level count (how many protocols had >=1
+	# error); errors/warnings/advisories are FINDING-level counts. The summary
+	# line reports findings; the parenthetical reports the protocol span.
+	failed_protocols = 0
+	errors = 0
 	warnings = 0
+	advisories = 0
 
 	for protocol_name in protocol_names:
 		total += 1
@@ -316,16 +387,21 @@ def main():
 
 		if emitter.has_errors():
 			has_error = True
-			failures += 1
+			failed_protocols += 1
 			# Name each failing protocol immediately in NORMAL and VERBOSE
 			# so the reader does not have to wait for the totals/dashboard
 			# to learn what blew up.
 			if show_fail_lines:
 				reporter.print_fail(protocol_name)
-		warnings += sum(
-			1 for f in emitter.findings
-			if f.level == validation.stepper.findings.Level.WARNING
-		)
+		# Finding-level severity tallies. Severity is closed at three tiers:
+		# ERROR blocks, WARNING should-fix, INFO is the advisory tier.
+		for f in emitter.findings:
+			if f.level == shared_findings.Severity.ERROR:
+				errors += 1
+			elif f.level == shared_findings.Severity.WARNING:
+				warnings += 1
+			else:
+				advisories += 1
 
 	# Machine-readable output (JSON / NDJSON) is the SOLE stdout content in
 	# those modes: no text totals, dashboard, or summary line. The exit code
@@ -345,6 +421,11 @@ def main():
 		# Compact totals only; the exhaustive breakdown is VERBOSE-only so
 		# NORMAL stays within the line budget.
 		_render_normal_totals(counts)
+		# Grouped per-code rollup so the reader sees WHAT blocks without --json.
+		rollup = _build_severity_rollup(walks)
+		if rollup:
+			console = validation.shared_toolkit.console.make_console()
+			console.print(rollup)
 	elif level == verbosity.VerbosityLevel.VERBOSE:
 		# Diagnostic block first, then the full colorized dashboard.
 		print()
@@ -355,8 +436,14 @@ def main():
 		print()
 
 	reporter.print_summary_line(
-		total, failures, item_label="protocols", warnings=warnings,
+		total, errors, item_label="protocols",
+		warnings=warnings, advisories=advisories,
 	)
+	# State the counting unit explicitly: the line counts findings, this counts
+	# protocols. Only shown when errors exist, and never in QUIET (the summary
+	# line must stay the last line so the aggregate runner can read it).
+	if errors and level != verbosity.VerbosityLevel.QUIET:
+		print(f"  (errors span {failed_protocols} of {total} protocols)")
 
 	sys.exit(1 if has_error else 0)
 

@@ -151,13 +151,16 @@ def aggregate(db, protocol_rows, protocol_scene_rows, material_rows, counts_dict
 	return counts
 
 
-def render(counts):
+def render(counts, severity_counts=None):
 	"""
 	Render compact indented dashboard to stdout.
 	Uses rich Console with auto-detected output mode for section headings in bold colored style.
 
 	Args:
 		counts: dict from aggregate().
+		severity_counts: optional {'errors', 'warnings', 'advisories'} from
+			validate_whole_tree. When provided, the Totals block reports the
+			real per-severity counts instead of a hardcoded zero.
 	"""
 	console = validation.shared_toolkit.console.make_console()
 
@@ -174,7 +177,12 @@ def render(counts):
 	output_lines.append(f"  Protocol scenes: {counts['scenes']['protocol_count']}")
 	output_lines.append(f"  Materials files: {counts['materials']['file_count']}")
 	output_lines.append(f"  Protocols: {sum(counts['protocols']['by_type'].values())}")
-	output_lines.append("  Failures: 0")
+	# Real per-severity counts, not a hardcoded zero. error blocks the run;
+	# warning and advisory do not.
+	if severity_counts is not None:
+		output_lines.append(f"  Errors: {severity_counts['errors']}")
+		output_lines.append(f"  Warnings: {severity_counts['warnings']}")
+		output_lines.append(f"  Advisories: {severity_counts['advisories']}")
 
 	#============================================
 	# Objects section

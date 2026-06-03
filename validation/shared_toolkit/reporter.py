@@ -45,14 +45,20 @@ def print_error(message):
 	print(f"ERROR: {message}", file=sys.stderr)
 
 
-def print_summary_line(total, failures, *, item_label="files", warnings=0):
+def print_summary_line(total, errors, *, item_label="files", warnings=0, advisories=0):
 	"""
 	Print the canonical stage summary line.
 
 	Delegates to verbosity.summary_line so there is exactly one summary
-	string in the codebase. The line always prints both the failures and
-	warnings counts, including zeros:
-	  "Checked N files. F failures. W warnings."
+	string in the codebase. The line always prints all three severity-tier
+	counts, including zeros:
+	  "Checked N files. E errors. W warnings. A advisories."
+
+	Severity is closed at three tiers: error (blocks the run), warning
+	(should fix), advisory (cleanup/info). The second positional arg is the
+	blocking ERROR count.
 	"""
-	line = verbosity.summary_line(total, failures, item_label=item_label, warnings=warnings)
+	line = verbosity.summary_line(
+		total, errors, item_label=item_label, warnings=warnings, advisories=advisories
+	)
 	print(line)

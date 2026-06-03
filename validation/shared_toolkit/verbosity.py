@@ -24,14 +24,15 @@ Canonical summary-line grammar
 ------------------------------
 All stages emit one stable, parseable shape:
 
-  Checked <N> <label>. <F> failures. <W> warnings.
+  Checked <N> <label>. <E> errors. <W> warnings. <A> advisories.
 
-Failures AND warnings are ALWAYS printed, including zero counts, so the
-shape is identical across stages and across runs. The tokens
-"<F> failures" and "<W> warnings" appear verbatim so the regexes in
-validation/validate.py (r"(\\d+)\\s+failures\\b", r"(\\d+)\\s+warnings\\b")
-match for color markup. <label> is the stage's item noun (files, objects,
-protocols, folders, scenes).
+Severity is closed at three tiers: error (blocks the run), warning (should
+fix, does not block), advisory (cleanup/info, does not block). All three
+counts are ALWAYS printed, including zero counts, so the shape is identical
+across stages and across runs. The tokens "<E> errors", "<W> warnings", and
+"<A> advisories" appear verbatim so the regexes in validation/validate.py
+match each tier for color markup. <label> is the stage's item noun (files,
+objects, protocols, folders, scenes).
 
 Diagnostic input schema
 ------------------------
@@ -122,24 +123,82 @@ def resolve_level(*, quiet: bool, verbose: bool) -> VerbosityLevel:
 
 
 #============================================
-def summary_line(total: int, failures: int, *,
-		item_label: str = "items", warnings: int = 0) -> str:
+def summary_line(total: int, errors: int, *,
+		item_label: str = "items", warnings: int = 0, advisories: int = 0) -> str:
 	"""
 	Build the canonical stage summary line.
 
+	Severity is closed at three tiers: error (blocks the run), warning
+	(should fix, does not block), advisory (cleanup/info, does not block).
+	The word "failures" is intentionally gone: a count of findings is not a
+	count of failed stages.
+
 	Args:
 		total: number of items the stage checked.
-		failures: number of failures found.
+		errors: number of blocking ERROR-severity findings.
 		item_label: the stage's item noun (files, objects, protocols, ...).
-		warnings: number of warnings found.
+		warnings: number of WARNING-severity findings.
+		advisories: number of advisory (INFO-severity) findings.
 
 	Returns:
-		"Checked <N> <label>. <F> failures. <W> warnings." with both the
-		failures and warnings counts always present, including zeros.
+		"Checked <N> <label>. <E> errors. <W> warnings. <A> advisories."
+		All three counts always present, including zeros, so the shape is
+		identical across stages and parseable by validate.py.
 	"""
-	# Always emit both counts so the shape is identical across stages.
-	line = f"Checked {total} {item_label}. {failures} failures. {warnings} warnings."
+	# Always emit all three counts so the shape is identical across stages.
+	line = (
+		f"Checked {total} {item_label}. "
+		f"{errors} errors. {warnings} warnings. {advisories} advisories."
+	)
 	return line
+
+
+#============================================
+# Severity-tier display: icon is by severity (ASCII, so NO_COLOR loses
+# nothing); header color is by severity only. INFO is the advisory tier.
+_TIER_ICON = {'error': '!', 'warning': '?', 'advisory': 'i'}
+_TIER_HEADER_STYLE = {'error': 'bold red', 'warning': 'yellow', 'advisory': 'dim'}
+
+
+def severity_rollup(errors_by_code: list, warnings_by_code: list,
+		advisories_by_code: list) -> str:
+	"""
+	Render the grouped, scannable per-code rollup.
+
+	Three fixed-order groups (ERRORS, WARNINGS, ADVISORIES); each group is
+	omitted when empty. Within a group, codes sort by count descending. Each
+	code line carries the severity icon so the meaning survives NO_COLOR.
+	Group headers are wrapped in Rich markup keyed to severity; Rich strips
+	the markup when color is suppressed.
+
+	Args:
+		errors_by_code / warnings_by_code / advisories_by_code: lists of
+			(code, count) tuples for each tier.
+
+	Returns:
+		A possibly empty multi-line string (empty when all tiers are empty).
+	"""
+	groups = [
+		('error', 'ERRORS', errors_by_code),
+		('warning', 'WARNINGS', warnings_by_code),
+		('advisory', 'ADVISORIES', advisories_by_code),
+	]
+	lines = []
+	for tier, header, entries in groups:
+		if not entries:
+			continue
+		style = _TIER_HEADER_STYLE[tier]
+		icon = _TIER_ICON[tier]
+		lines.append(f"  [{style}]{header}[/{style}]")
+		# Sort by count descending, then code ascending for stable ties.
+		sorted_entries = sorted(entries, key=lambda pair: (-pair[1], pair[0]))
+		shown = sorted_entries[:TOP_K]
+		for code, count in shown:
+			lines.append(f"    {icon} {code}: {count}")
+		remainder = len(sorted_entries) - len(shown)
+		if remainder > 0:
+			lines.append(f"    ... and {remainder} more")
+	return "\n".join(lines)
 
 
 #============================================

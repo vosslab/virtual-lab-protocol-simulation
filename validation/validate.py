@@ -24,37 +24,95 @@ import validation.shared_toolkit.repo_root
 REPO_ROOT = validation.shared_toolkit.repo_root.REPO_ROOT
 
 
-# Match "N failures" / "N warnings" tokens inside any stage summary line.
+# Match "N errors" / "N warnings" / "N advisories" tokens in any stage summary.
 # Used to wrap non-zero counts in Rich markup. Rich's Console strips markup
 # automatically when stdout is not a TTY (or when NO_COLOR is set), so piped
 # output stays plain text.
-_FAILURES_RE = re.compile(r"(\d+)\s+failures\b")
+_ERRORS_RE = re.compile(r"(\d+)\s+errors\b")
 _WARNINGS_RE = re.compile(r"(\d+)\s+warnings\b")
+_ADVISORIES_RE = re.compile(r"(\d+)\s+advisories\b")
+
+
+def _extract_counts(stdout: str) -> tuple:
+	"""
+	Pull (errors, warnings, advisories) from a stage's summary line.
+
+	Reads the last line that carries the canonical "<N> errors" token so the
+	aggregate scoreboard can sum stages without re-parsing findings. Returns
+	(0, 0, 0) when no summary line is present.
+	"""
+	errors = warnings = advisories = 0
+	for line in stdout.splitlines():
+		if _ERRORS_RE.search(line):
+			err_match = _ERRORS_RE.search(line)
+			warn_match = _WARNINGS_RE.search(line)
+			adv_match = _ADVISORIES_RE.search(line)
+			errors = int(err_match.group(1))
+			warnings = int(warn_match.group(1)) if warn_match else 0
+			advisories = int(adv_match.group(1)) if adv_match else 0
+	return errors, warnings, advisories
+
+
+def _print_scoreboard(console, all_stage_outputs: list) -> None:
+	"""
+	Print the aggregate TOTAL line and, on failure, the stages with errors.
+
+	One verdict for the whole run. The verdict is ERROR-driven: any error fails
+	(FAIL); zero errors with warnings/advisories is PASS (warnings only); a
+	fully clean run is PASS. Counts are colored by severity only.
+	"""
+	total_errors = total_warnings = total_advisories = 0
+	error_stages = []
+	for stage_name, _exit_code, stdout in all_stage_outputs:
+		errors, warnings, advisories = _extract_counts(stdout)
+		total_errors += errors
+		total_warnings += warnings
+		total_advisories += advisories
+		if errors:
+			error_stages.append(stage_name.upper())
+
+	stage_count = len(all_stage_outputs)
+	counts_text = (
+		f"{total_errors} errors. {total_warnings} warnings. "
+		f"{total_advisories} advisories across {stage_count} stages."
+	)
+	counts_text = _colorize_summary(counts_text)
+
+	if total_errors:
+		verdict = "[bold red]FAIL[/bold red]"
+	elif total_warnings or total_advisories:
+		verdict = "[green]PASS[/green] (warnings only)"
+	else:
+		verdict = "[green]PASS[/green]"
+
+	console.print(f"\n[bold]TOTAL:[/bold] {counts_text}  ->  {verdict}")
+	if error_stages:
+		console.print(f"  ERROR stages: {', '.join(error_stages)}")
 
 
 def _colorize_summary(text: str) -> str:
 	"""
-	Wrap non-zero "N failures" in bold red Rich markup and non-zero
-	"N warnings" in yellow Rich markup. Zero counts stay unstyled. Use Rich
-	markup tokens ([bold red]...[/bold red]) not raw ANSI escape codes -
-	Rich's console.print sanitizes raw \\033[...] sequences and emits them
-	as literal text on TTY. Rich handles TTY-gating: markup is stripped
-	automatically on non-tty output.
+	Color the three severity-tier counts by severity only: non-zero
+	"N errors" bold red, "N warnings" yellow, "N advisories" dim. Zero counts
+	stay unstyled. Severity is the only thing color encodes here; category
+	accents live in the per-stage rollups, not in this summary line.
+
+	Uses Rich markup tokens ([bold red]...[/bold red]) not raw ANSI escape
+	codes - Rich's console.print sanitizes raw \\033[...] sequences and emits
+	them as literal text on TTY. Rich handles TTY-gating: markup is stripped
+	automatically on non-tty output or when NO_COLOR is set.
 	"""
-	def fail_sub(match: re.Match) -> str:
-		count = int(match.group(1))
-		if count == 0:
-			return match.group(0)
-		return f"[bold red]{match.group(0)}[/bold red]"
+	def make_sub(style: str):
+		def sub(match: re.Match) -> str:
+			count = int(match.group(1))
+			if count == 0:
+				return match.group(0)
+			return f"[{style}]{match.group(0)}[/{style}]"
+		return sub
 
-	def warn_sub(match: re.Match) -> str:
-		count = int(match.group(1))
-		if count == 0:
-			return match.group(0)
-		return f"[yellow]{match.group(0)}[/yellow]"
-
-	colored = _FAILURES_RE.sub(fail_sub, text)
-	colored = _WARNINGS_RE.sub(warn_sub, colored)
+	colored = _ERRORS_RE.sub(make_sub("bold red"), text)
+	colored = _WARNINGS_RE.sub(make_sub("yellow"), colored)
+	colored = _ADVISORIES_RE.sub(make_sub("dim"), colored)
 	return colored
 
 
@@ -270,6 +328,11 @@ def main() -> None:
 				console.print(_colorize_summary(stdout.rstrip()))
 			if exit_code != 0:
 				console.print(f"[bold red][{stage_name}] failed with exit code {exit_code}[/bold red]")
+
+		# Aggregate scoreboard: one verdict line so a human does not sum stages
+		# by hand. Severity drives the color and the verdict; advisories never
+		# fail the run.
+		_print_scoreboard(console, all_stage_outputs)
 
 	elif args.output_format in ('json', 'ndjson'):
 		# For JSON output: merge findings from all stages
