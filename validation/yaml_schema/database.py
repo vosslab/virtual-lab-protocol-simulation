@@ -219,10 +219,33 @@ class ContentDatabase:
 
 		return re.compile(f'^{regex_pattern}$')
 
-	def resolve_state_field(self, object_name: str, field_name: str) -> dict | None:
+	def resolve_state_field(
+		self,
+		object_name: str,
+		field_name: str,
+		subpart_targeted: bool = False,
+	) -> dict | None:
 		"""
-		Resolve state field declaration for an object.
-		Returns field dict (with 'field_name', 'type', 'default', etc.) or None.
+		Resolve a state field declaration for an object, scoped by applies_to.
+
+		A structured object may declare the same field_name twice: once at the
+		object level (applies_to: object or unset) and once at the subpart level
+		(applies_to: subpart). The caller selects the scope:
+
+		  - subpart_targeted=False (default): return the object-level decl, i.e.
+		    the entry whose applies_to is not 'subpart' (covers 'object' and the
+		    unset case). This preserves every existing caller that resolves a bare
+		    target.
+		  - subpart_targeted=True: return the subpart-level decl, i.e. the entry
+		    whose applies_to == 'subpart'.
+
+		Args:
+			object_name: The object class name.
+			field_name: The state field name to resolve.
+			subpart_targeted: Select the subpart-scoped decl when True.
+
+		Returns:
+			The matching field dict, or None if no entry matches the scope.
 		"""
 		obj = self.resolve_object(object_name)
 		if not obj:
@@ -230,7 +253,14 @@ class ContentDatabase:
 
 		state_fields = obj.get('state_fields', [])
 		for field in state_fields:
-			if isinstance(field, dict) and field.get('field_name') == field_name:
+			if not isinstance(field, dict):
+				continue
+			if field.get('field_name') != field_name:
+				continue
+			# applies_to defaults to object scope when unset.
+			applies_to = field.get('applies_to', 'object')
+			is_subpart_decl = applies_to == 'subpart'
+			if subpart_targeted == is_subpart_decl:
 				return field
 
 		return None

@@ -605,7 +605,8 @@ def load_package_materials(protocol_name: str, protocol_dirs: dict) -> dict:
 	"""
 	Read one protocol package's materials.yaml and return its materials map.
 	Returns an empty dict when the package has no materials.yaml (a protocol may
-	declare no materials). The map is {material_name: {label, display_color}}.
+	declare no materials). The map is {material_name: {label, display_color}},
+	where display_color is a single scalar hex string (no nested light/dark).
 
 	protocol_dirs must contain protocol_name; a missing key is a bug (the caller
 	resolved this name from the same protocols dict), so index directly and let a
@@ -653,7 +654,9 @@ def emit_protocol_materials_ts(
 	"""
 	Emit generated/protocol_materials.ts: PROTOCOL_MATERIALS keyed by
 	protocol_name. Each value is a MaterialRegistry (material_name -> {label,
-	display_color: {light, dark}}). Protocols with no materials emit an empty
+	display_color}), where display_color is a single scalar hex string (the
+	light-only schema in docs/specs/MATERIAL_YAML_FORMAT.md; no nested
+	light/dark split). Protocols with no materials emit an empty
 	registry entry so the lookup is total and the consumer can use
 	PROTOCOL_MATERIALS[name] ?? null without a separate presence check.
 
@@ -692,13 +695,19 @@ def emit_protocol_materials_ts(
 					f"Protocol {protocol_name}: material '{mat_name}' is not a mapping"
 				)
 			label = entry["label"]
+			# display_color is a single scalar hex string (^#[0-9a-f]{6}$) per
+			# docs/specs/MATERIAL_YAML_FORMAT.md. The project targets light
+			# workspaces only; there is no nested light/dark split. Index it
+			# directly as a required key so a missing field fails loud.
 			display_color = entry["display_color"]
+			if not isinstance(display_color, str):
+				raise ValueError(
+					f"Protocol {protocol_name}: material '{mat_name}' display_color "
+					f"must be a scalar hex string, got {type(display_color).__name__}"
+				)
 			normalized[mat_name] = {
 				"label": label,
-				"display_color": {
-					"light": display_color["light"],
-					"dark": display_color["dark"],
-				},
+				"display_color": display_color,
 			}
 		ts_lines.append(f"\t{protocol_name}: {to_ts_literal(normalized)},")
 

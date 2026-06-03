@@ -1,11 +1,22 @@
-# 96-well plate registered as a simple Servier-asset structured surface.
-# Scope note: per-well material state
-# (material_name / material_volume per well) and the per-well fill rendering
-# are intentionally OUT OF SCOPE here. This object declares only structure,
-# subpart-group addressing, one plate-level state field, and a single
-# object-level SVG so that well targets (.A1, .all_wells, .block_A_1_6, rows,
-# columns) RESOLVE against the placed object. Per-well fill needs a well.svg
-# asset and the deferred fill runtime; see docs/TODO.md / ROADMAP.md.
+# 96-well plate registered as a structured Servier-asset surface with
+# per-well material state.
+#
+# Material model: each well subpart carries its own material_name and
+# material_volume (applies_to: subpart), following the dilution_tube_rack_8
+# precedent. Per D1 (MATERIAL_YAML_FORMAT.md), a subpart material_name
+# validates by sentinel-or-registry membership, not by a per-object value
+# enum: the only object-declared allowed values are the closed sentinels
+# [empty, mixed]. Curriculum drug/assay material names (carboplatin, mtt,
+# formazan, ...) are NOT enumerated here; each protocol registers the
+# materials it writes in its own materials.yaml, and the stepper's
+# registry-backed predicate (WP-STEPPER) accepts them. This keeps the shared
+# plate object decoupled from per-lesson content.
+#
+# Visual: the identity layer only. material_name drives a material_tint
+# render effect on each well's generated geometry (MATERIAL_CONVENTION.md);
+# the color comes from the resolved display_color, never a hex here.
+# Per D5 there is no fill_height composite on wells in this plan, so
+# material_volume carries an explicit empty composite (no visual effect yet).
 object_name: well_plate_96
 kind: plate
 label: 96-well plate
@@ -115,24 +126,29 @@ state_fields:
     default: not_inspected
     applies_to: object
     description: Plate-level inspection status from microscopy.
-  # material_name / material_volume are declared at the PLATE (object) level only,
-  # as required by the kind 'plate' validator. Protocol writes to individual well
-  # subparts (well_plate_96.A1 etc.) validate against these object-level material
-  # fields. Per-well material state and per-well fill rendering are out of scope.
+  # Per-well material identity. Per D1 the object declares only the closed
+  # sentinel allowlist [empty, mixed]; registry-backed curriculum materials
+  # are accepted by the stepper predicate, not enumerated here.
+  # SEAM: [empty, mixed] is the SYNTACTIC floor here, NOT the runtime acceptance
+  # truth. Runtime acceptance is registry-backed D1: empty OR mixed OR a name in
+  # the active protocol's materials.yaml. Both the Python stepper
+  # (validation/stepper/state.py) and the TS store
+  # (src/scene_runtime/state/scene_store.ts via material_acceptance.ts) apply that
+  # predicate; do not read this allowed list as the full set of acceptable values.
   - field_name: material_name
     type: enum
-    allowed: [empty, media, cells]
+    allowed: [empty, mixed]
     default: empty
-    applies_to: object
-    description: Plate-level bulk material indicator (per-well fill out of scope).
+    applies_to: subpart
+    description: Material currently in this well.
   - field_name: material_volume
     type: float
     unit: ul
     min: 0
-    max: 36000
+    max: 300
     default: 0
-    applies_to: object
-    description: Plate-level bulk volume indicator (per-well fill out of scope).
+    applies_to: subpart
+    description: Volume of material in this well, in microliters.
 
 visual_states:
   inspection_status:
@@ -143,15 +159,18 @@ visual_states:
         output: { asset_name: 96well_pcr_plate }
       - when: cells_healthy
         output: { asset_name: 96well_pcr_plate }
-  # Material does not change the plate artwork (no per-well fill); the field has
-  # no visual effect, declared with an explicit empty composite so absence is loud.
+  # Identity layer: each well is tinted by its own material identity. The
+  # color comes from the resolved material display_color; no hex appears here.
   material_name:
-    kind: composite
-    applies_to: object
-    composite: []
+    applies_to: subpart
+    render_effect: material_tint
+    target: subpart_geometry
+  # Amount layer is out of scope for this plan (D5: no fill_height on wells).
+  # material_volume has no visual effect yet, declared with an explicit empty
+  # composite so absence stays loud.
   material_volume:
     kind: composite
-    applies_to: object
+    applies_to: subpart
     composite: []
 
 capabilities: [clickable, structured_surface, material_container]

@@ -1,84 +1,56 @@
 materials:
   running_buffer_10x:
     label: "Tris/Glycine/SDS 10x concentrate"
-    display_color:
-      light: "#d4c4a8"
-      dark: "#d4c4a8"
+    display_color: "#d4c4a8"
 
   running_buffer_1x:
     label: "Tris/Glycine/SDS 1x running buffer"
-    display_color:
-      light: "#e8dcc0"
-      dark: "#e8dcc0"
+    display_color: "#e8dcc0"
 
   running_buffer_1x_used:
     label: "Used 1x running buffer"
-    display_color:
-      light: "#d9cbb0"
-      dark: "#d9cbb0"
+    display_color: "#d9cbb0"
 
   laemmli_4x:
     label: "4x Laemmli sample buffer"
-    display_color:
-      light: "#1e3a8a"
-      dark: "#1e3a8a"
+    display_color: "#1e3a8a"
 
   bme:
     label: "beta-mercaptoethanol"
-    display_color:
-      light: "#fef3c7"
-      dark: "#fef3c7"
+    display_color: "#fef3c7"
 
   coomassie_stain:
     label: "Coomassie R-250 stain solution"
-    display_color:
-      light: "#1e40af"
-      dark: "#1e40af"
+    display_color: "#1e40af"
 
   coomassie_stain_used:
     label: "Used Coomassie stain"
-    display_color:
-      light: "#172554"
-      dark: "#172554"
+    display_color: "#172554"
 
   destain:
     label: "Destain solution (20% MeOH / 10% AcOH)"
-    display_color:
-      light: "#dbeafe"
-      dark: "#dbeafe"
+    display_color: "#dbeafe"
 
   destain_used:
     label: "Used destain"
-    display_color:
-      light: "#bfdbfe"
-      dark: "#bfdbfe"
+    display_color: "#bfdbfe"
 
   ddh2o:
     label: "Deionized water"
-    display_color:
-      light: "#f0f9ff"
-      dark: "#f0f9ff"
+    display_color: "#f0f9ff"
 
   protein_sample_raw:
     label: "Miraculin protein sample (raw)"
-    display_color:
-      light: "#f5f3ff"
-      dark: "#f5f3ff"
+    display_color: "#f5f3ff"
 
   protein_sample_mixed:
     label: "Protein + Laemmli + BME mix"
-    display_color:
-      light: "#3730a3"
-      dark: "#3730a3"
+    display_color: "#3730a3"
 
   protein_sample_denatured:
     label: "Heat-denatured mixed sample"
-    display_color:
-      light: "#3730a3"
-      dark: "#3730a3"
+    display_color: "#3730a3"
 
   protein_ladder:
     label: "Molecular weight ladder"
-    display_color:
-      light: "#06b6d4"
-      dark: "#06b6d4"
+    display_color: "#06b6d4"

@@ -32,9 +32,9 @@ visual_states:
     kind: svg
     cases:
       - when: false
-        output: { asset_name: power_supply_off }
+        output: { asset_name: power_supply_on }
       - when: true
-        output: { asset_name: power_supply_off }
+        output: { asset_name: power_supply_on }
   cathode_lead_attached:
     kind: composite
     composite: []

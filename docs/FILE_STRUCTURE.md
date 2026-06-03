@@ -199,17 +199,16 @@ Key Node test files:
 | [tests/test_protocol_emitter.mjs](../tests/test_protocol_emitter.mjs) | Emitter unit tests |
 | [tests/test_shell_signals.mjs](../tests/test_shell_signals.mjs) | Shell signal binding tests |
 | [tests/test_m2_integration.mjs](../tests/test_m2_integration.mjs) | M2 framed-layout integration |
+| `test_material_color.mjs` | D3 resolver contract: all `resolve_color_result` success and failure cases |
+| `test_subpart_visual_state_renderer.mjs` | Subpart material-tint renderer: dispatch predicate, fill, transparent empty, degrade path |
+| [tests/test_scene_store.mjs](../tests/test_scene_store.mjs) | Scene store: `getSubpartStateField` accessor, per-well independent reactivity |
+| `test_material_acceptance_cross_layer.mjs` | Cross-layer acceptance: stepper D1 and TS runtime store accept and reject the same material names |
 
 ### `assets/` - Source SVG art
 
 `assets/equipment/` contains tracked source SVG files for all lab objects.
 Sidecar `*.colormap.json` files group element ids for the recolor pipeline.
 Processed by [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py).
-
-### `tools/` - Developer-only helpers
-
-Scripts that do not appear in any build chain. See [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md)
-for the full list.
 
 ### `devel/` - Maintainer scripts
 
@@ -256,7 +255,11 @@ for the full list.
 | [specs/OBJECT_VOCABULARY.md](specs/OBJECT_VOCABULARY.md) | Canonical object vocabulary |
 | [specs/OBJECT_YAML_FORMAT.md](specs/OBJECT_YAML_FORMAT.md) | Object-definition YAML schema reference |
 | [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md) | Layout-engine placement reference |
-| [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md) | Material vocabulary and liquid rendering |
+| [specs/MATERIAL_DESIGN.md](specs/MATERIAL_DESIGN.md) | Design rationale for scalar color, transparent empty, and the separate identity/amount layers |
+| [specs/MATERIAL_VOCABULARY.md](specs/MATERIAL_VOCABULARY.md) | Canonical material terms, the settled sentinel/visible classification, and the D1 predicate entry point |
+| [specs/MATERIAL_YAML_FORMAT.md](specs/MATERIAL_YAML_FORMAT.md) | `materials.yaml` schema: entry keys, scalar `display_color` hex format, D1 predicate, closed-key rule, sentinel exemption |
+| [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md) | Runtime render-effect and target convention, color resolver typed result, SVG anchor contract, and recolor model |
+| `MATERIAL_LINT.md` | Validator and audit surface: lint rules L1-L10, D3 resolver contract, cross-YAML agreement rule, and validator hook table |
 | [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md) | SVG asset ownership and pipeline |
 | [specs/SCALING_MODEL.md](specs/SCALING_MODEL.md) | Scaling model notes |
 | [specs/WALKTHROUGH_GUIDE.md](specs/WALKTHROUGH_GUIDE.md) | Real-browser protocol walkthrough guide |

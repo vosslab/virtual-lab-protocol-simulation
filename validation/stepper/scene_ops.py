@@ -3,7 +3,7 @@
 from validation.stepper.state import StateMap
 from validation.stepper.findings import Finding, Level, FindingEmitter
 from validation.stepper.loader import LoadedContentTree
-from validation.stepper.sentinels import MATERIAL_SENTINEL_ALLOWLIST
+from validation.stepper.sentinels import NON_RENDERING_MATERIAL_SENTINELS, BUILTIN_VISIBLE_MATERIALS
 from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
@@ -163,14 +163,16 @@ def _handle_subpart_group_cascade(
 				break
 
 	if not group_members:
-		# Not a declared subpart group; treat as a canonical cell (e.g. well_plate_96.A1)
-		# Apply state directly to the object itself, not cascading
+		# Not a declared subpart group; treat as a canonical cell (e.g.
+		# well_plate_96.A1). Write to the cell's own per-subpart record so the
+		# state lives at the address the student acted on, not the whole object.
 		all_succeeded = True
 		for field_name, new_value in state_dict.items():
 			success = state_map.mutate_state_field(
 				placement_name,
 				field_name,
 				new_value,
+				subpart_name=subpart_name,
 				step_name=step_name,
 				interaction_index=interaction_index,
 				file_path="unknown",
@@ -179,15 +181,17 @@ def _handle_subpart_group_cascade(
 				all_succeeded = False
 		return all_succeeded
 
-	# Apply state fields to each cell in contains + the group itself
+	# Apply state fields to each cell in contains + the group member itself.
 	all_succeeded = True
 
-	# Write to the group's own record
+	# Write the group member's OWN subpart-state record (e.g. row_A), per the
+	# Cascade-write rule: the group member is updated AND each contained cell.
 	for field_name, new_value in state_dict.items():
 		success = state_map.mutate_state_field(
 			placement_name,
 			field_name,
 			new_value,
+			subpart_name=subpart_name,
 			step_name=step_name,
 			interaction_index=interaction_index,
 			file_path="unknown",
@@ -195,23 +199,26 @@ def _handle_subpart_group_cascade(
 		if not success:
 			all_succeeded = False
 
-	# Write to each cell in contains
+	# Write each canonical cell named in the group member's contains list. The
+	# cell name is the subpart name; it resolves to the same parent placement.
 	for cell_name in group_members:
-		# Resolve the cell to its placement_name
 		cell_target = f"{object_name_part}.{cell_name}"
-		cell_placement_name, _ = state_map.resolve_target(cell_target, step_name, interaction_index)
+		cell_placement_name, cell_subpart_name = state_map.resolve_target(
+			cell_target, step_name, interaction_index
+		)
 
 		if not cell_placement_name:
 			# Error already emitted by resolve_target
 			all_succeeded = False
 			continue
 
-		# Apply the same state fields to the cell
+		# Apply the same state fields to the cell's own per-subpart record.
 		for field_name, new_value in state_dict.items():
 			success = state_map.mutate_state_field(
 				cell_placement_name,
 				field_name,
 				new_value,
+				subpart_name=cell_subpart_name,
 				step_name=step_name,
 				interaction_index=interaction_index,
 				file_path="unknown",
@@ -234,7 +241,8 @@ def _check_material_registration(
 	"""
 	Check if material names are registered in the protocol's materials.yaml.
 
-	Emits S-UNREGISTERED findings for unregistered materials (excluding sentinels).
+	Emits S-UNREGISTERED findings for unregistered materials (excluding the
+	closed built-in names "empty" and "mixed").
 	Uses dedup logic: one finding per (protocol, material_name) pair, recording
 	the first occurrence location.
 
@@ -255,8 +263,11 @@ def _check_material_registration(
 		if not material_name:
 			continue
 
-		# Skip sentinels
-		if material_name in MATERIAL_SENTINEL_ALLOWLIST:
+		# Skip the closed built-in material names ("empty", "mixed"); every other
+		# name must be registered in the active protocol's materials.yaml.
+		if material_name in NON_RENDERING_MATERIAL_SENTINELS:
+			continue
+		if material_name in BUILTIN_VISIBLE_MATERIALS:
 			continue
 
 		# Dedup key: (protocol, material_name)
@@ -766,9 +777,14 @@ def detect_state_jumps(
 			old_value = old_state.get(field_name)
 
 			# Suppression 2: skip initial state writes (old == default)
-			# Initialization is not a transfer; the field starts uninitialized in the simulator's eyes
+			# Initialization is not a transfer; the field starts uninitialized in the simulator's eyes.
+			# A subpart record (composite key 'placement.subpart') resolves the
+			# applies_to: subpart decl so its default is read from the right scope.
 			object_name = after_state[placement_name]["object_name"]
-			field_decl = state_map.tree.get_state_field(object_name, field_name)
+			is_subpart_record = "." in placement_name
+			field_decl = state_map.tree.get_state_field(
+				object_name, field_name, subpart_targeted=is_subpart_record
+			)
 			if field_decl and old_value == field_decl.get("default"):
 				continue
 
@@ -823,8 +839,12 @@ def detect_state_jumps(
 			# Check for material identity change (material_name or held_material_name)
 			elif field_name in ("material_name", "held_material_name"):
 				if old_value != new_value and old_value is not None:
-					# Suppression: initialization is not a transfer; the field starts uninitialized in the simulator's eyes
-					field_decl = state_map.tree.get_state_field(object_name, field_name)
+					# Suppression: initialization is not a transfer; the field starts
+					# uninitialized in the simulator's eyes. A subpart record resolves
+					# the applies_to: subpart decl so its default is the right scope.
+					field_decl = state_map.tree.get_state_field(
+						object_name, field_name, subpart_targeted=is_subpart_record
+					)
 					if field_decl and old_value == field_decl.get("default"):
 						continue
 

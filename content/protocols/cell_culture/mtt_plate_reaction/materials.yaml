@@ -1,18 +1,12 @@
 materials:
   mtt:
     label: "12 mM MTT solution"
-    display_color:
-      light: "#6c6c00"
-      dark: "#6c6c00"
+    display_color: "#6c6c00"
 
   formazan:
     label: "Formazan crystal precipitate"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   waste_mtt:
     label: "MTT waste (media and dye)"
-    display_color:
-      light: "#935d00"
-      dark: "#935d00"
+    display_color: "#935d00"

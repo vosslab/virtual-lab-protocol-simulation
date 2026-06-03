@@ -78,10 +78,10 @@ The `materials.yaml` file defines the materials used in the protocol: reagents, 
 
 Each material entry is a mapping keyed by snake_case name. All fields required.
 
-| Field           | Type    | Description                                                                                                                                            |
-| --------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `label`         | string  | Display name (shown in UI and step text)                                                                                                               |
-| `display_color` | mapping | Mapping with `light` and `dark` hex keys for light/dark theme support. See [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) for the canonical palette. |
+| Field           | Type   | Description                                                                                                                      |
+| --------------- | ------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| `label`         | string | Display name (shown in UI and step text)                                                                                         |
+| `display_color` | string | A single scalar hex string (`#rrggbb`). See [MATERIAL_YAML_FORMAT.md](MATERIAL_YAML_FORMAT.md) for the exact format and rules.   |
 
 ### Materials example
 
@@ -91,15 +91,11 @@ content/protocols/cell_culture/materials.yaml:
 materials:
   pbs:
     label: "1x PBS"
-    display_color:
-      light: "#b8e5ff"
-      dark: "#b8e5ff"
+    display_color: "#b8e5ff"
 
   media:
     label: "Complete media"
-    display_color:
-      light: "#f7a6b8"
-      dark: "#f7a6b8"
+    display_color: "#f7a6b8"
 ```
 
 ## content/protocols/&lt;protocol_name&gt;/protocol.yaml
@@ -570,15 +566,16 @@ export const EQUIPMENT: readonly Record<string, InventoryItem> = {
 
 export const REAGENTS: readonly Record<string, InventoryReagent> = {
   // keyed by reagent id
-  pbs: { label: '1x PBS', display_color: { light: '#b8e5ff', dark: '#b8e5ff' } },
+  pbs: { label: '1x PBS', display_color: '#b8e5ff' },
   // ...
 };
 ```
 
 Scene code imports and consumes these exports directly; no YAML parsing happens
 at runtime. The generated types are read-only arrays and records, enforcing
-immutability at compile time. The `display_color` field is a mapping with
-`light` and `dark` hex keys, as authored in `materials.yaml`.
+immutability at compile time. The `display_color` field is a single scalar hex
+string, as authored in `materials.yaml` (see
+[MATERIAL_YAML_FORMAT.md](MATERIAL_YAML_FORMAT.md)).
 
 ## Stable-name discipline
 

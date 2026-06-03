@@ -4,6 +4,93 @@
 
 ### Additions and New Features
 
+- M3 WP-SUBPART-RENDER: added the GENERIC structured-subpart material-tint
+  renderer so per-well material color is actually drawn. New
+  `src/scene_runtime/renderer/subpart_visual_state_renderer.tsx` (265 lines) builds
+  ONE static `<svg>` overlay per structured object, sized to the def's `view_box`,
+  and draws one shape per `subpart_geometry` entry via `<For>`. Each shape's fill
+  is a per-subpart `createMemo` reading the driving field through the narrow
+  `getSubpartStateField` accessor (M3 #18) and the single color source
+  `resolve_color_result` (M3 #17): `ok:true`+color paints that color, `ok:true`+null
+  (empty/sentinel/unseeded) renders `fill="transparent"` (D4), and `ok:false` routes
+  to the per-item degrade sink (never a painted region). The interpreter keys on the
+  DECLARED contract (`render_effect == material_tint`, `applies_to == subpart`,
+  `target == subpart_geometry`, plus generated `subpart_geometry`/`view_box`),
+  hardcoding no object name, no field name (the driving field NAME is read from the
+  `visual_states` key), and no shape literal (it switches on `geometry.shape`
+  circle/rect). The pure dispatch predicate lives in a JSX-free
+  `src/scene_runtime/renderer/subpart_dispatch.ts` (`find_material_tint_subpart_field`)
+  so it is importable without the Solid JSX transform and both `scene_item.tsx` and the
+  renderer dispatch on the same function. `scene_item.tsx` stays dispatch-only: it
+  replaces the old subpart-skip with a `<Show>` on the predicate result and a one-line
+  forwarder that re-qualifies each failing well's degrade message
+  (`well_plate_96.A1`) to the existing SceneView-owned degrade sink. The overlay is a
+  separate `<svg>` over generated geometry: it references no base-SVG id, builds no DOM
+  id, does no anchor lookup, queries no arbitrary DOM, and carries
+  `pointer-events: none` so the base art stays clickable; each shape carries
+  `data-subpart-name` + `data-material-name`. Browser evidence (contract item 4, D11
+  spatial correspondence) in `tests/playwright/test_subpart_well_plate_render.mjs`
+  mounts the real generated `bench_basic` scene (which places `well_plate_96`) through
+  the production `mountScene` path and drives per-well state ONLY through the store's
+  normal seed/write path (`seed_target` + `set_object_state`, schema/enum validated,
+  no DOM hand-editing): it asserts exactly 96 `[data-subpart-name]` shapes render, all
+  transparent before any write, and after writes A1=`mixed` paints `#686868`, A2=`empty`
+  is transparent (A1 != A2), H1=`mixed` paints `#686868` (a distant painted well), and
+  H12 (unset) is transparent; screenshots saved under `test-results/subpart_render/`.
+  Modularity proof in `tests/test_subpart_visual_state_renderer.mjs` (8 pure tests):
+  the same predicate dispatches a synthetic rect-subpart object with a RENAMED driving
+  field with no new TS, and returns null whenever any contract part is missing. The
+  store's well subpart `material_name` enum is the closed sentinel set `[empty, mixed]`,
+  so only those two paint through the renderer's normal path today (`mixed` -> built-in
+  gray, `empty` -> transparent); registry-backed per-well drug colors remain gated by
+  the WP-STORE/object enum decision (the unimplemented per-well distinct-material
+  feature). `npm run check`: 6/6 PASS (228 pass, 0 fail, 2 skipped). tsc: 0 errors.
+  `npm run build`: built `dist/` GitHub Pages-ready. Existing reactivity-lifecycle and
+  scene-degrade Playwright specs still pass (no regression).
+
+- M3 WP-STORE: added the narrow reactive read accessor
+  `getSubpartStateField(placementId, subpartName, fieldName)` to
+  `src/scene_runtime/state/scene_store.ts`. It builds the subpart target
+  (`placementId + "." + subpartName`), indexes the Solid store proxy, and
+  returns one declared subpart state-field value (or `undefined` when the
+  subpart is unseeded or the field is absent). Both property reads happen on the
+  reactive proxy, so the structured-subpart renderer (M3 #19) can read each well
+  independently and track fine-grained: A1 and A2 are distinct targets that
+  update separately. The accessor never returns the `TargetState` record or the
+  `SceneStoreState` tree, so a consumer cannot subscribe to the whole store. No
+  parallel store was added; this reuses the existing `TargetState.subpart`
+  storage and its writes/seeding. Added focused tests in
+  `tests/test_scene_store.mjs` using a `well_plate_96` fixture where A1 and A2
+  hold divergent material states and are read separately; two `createMemo`-based
+  reactivity assertions prove A1/A2 track independently and a later seed+write
+  becomes visible. Those two assertions are gated to Solid's reactive (browser)
+  build, since `node --import tsx` resolves Solid's non-reactive server build by
+  default; run `node --conditions=browser --import tsx --test
+  tests/test_scene_store.mjs` to exercise them. `npm run check`: 6/6 PASS
+  (220 pass, 0 fail, 2 skipped). tsc: 0 errors.
+
+- M1 WP-MATERIALS: confirmed all 7 registry-backed well materials resolve to a
+  scalar `display_color` across every writing protocol. Added sentinel guard to
+  `MaterialValidator._validate_entry` (tag `SENTINEL_IN_REGISTRY`): rejects
+  `empty` or `mixed` authored as a materials.yaml entry per
+  `MATERIAL_YAML_FORMAT.md` "Sentinels do not appear in materials.yaml". Removed
+  the illegal `empty` entry from
+  `content/protocols/cell_culture/passage_pellet_reseed/materials.yaml`; the
+  sentinel is a built-in resolver state and was never read from the registry.
+  The protocol writes only `media` to wells; no runtime behavior depended on the
+  entry. Tests: 1451 passed (4 new). STEPPER: 0 errors, 0 s-unregistered.
+  Content lint: 168 files, 0 errors, 5 warnings, 0 advisories.
+
+- Added D6 structured-well-plate per-subpart material rule to `ObjectValidator`
+  (`validation/yaml_schema/object_validator.py`). The rule fires only for objects
+  with `structure.subpart_kind: well` and rejects any such object that lacks both
+  `material_name` and `material_volume` declared with `applies_to: subpart`.
+  Non-well structured objects (rack/tube, gel/lane) and unstructured plates are
+  unaffected. `well_plate_96.yaml` passes the rule cleanly (0 new errors).
+  Three focused behavioral pytests added in
+  `tests/test_object_validator_well_plate_subpart_material.py`.
+  Full suite: 1447 passed. Content lint: 168 files, 113 errors (timing artifact; see Decisions and Failures), 5 warnings, 0 advisories.
+
 - Registered and placed `well_plate_96` using the existing Servier SVG `96well_pcr_plate.svg`.
   Created `content/objects/plate/well_plate_96.yaml` with a grid 8x12 structure,
   subpart groups, object-level `material_name`/`material_volume` state fields (required by
@@ -17,6 +104,25 @@
 
 ### Behavior or Interface Changes
 
+- Migrated the TypeScript material-color path from nested `{light, dark}` to a
+  single scalar `display_color` hex string (M3 WP-COLOR), clearing the 171 tsc
+  `TS2322` errors that task #25's scalar pipeline emit left in
+  `generated/protocol_materials.ts`. `MaterialEntry.display_color` is now
+  `string`, `MaterialColor` is now `string | null`, and no runtime path reads
+  `.light` / `.dark`. Added `src/scene_runtime/renderer/material_color.ts` as the
+  single color source: `resolve_color_result(material_name, registry)` returns
+  the D3 discriminated union `{ ok: true; color: string | null } | { ok: false;
+  reason: string }` (empty/sentinel/no-field -> ok/null; built-in `mixed` ->
+  ok/`#686868`; registry-backed valid scalar -> ok/`#rrggbb`; non-sentinel
+  missing from a provided registry or invalid `^#[0-9a-f]{6}$` hex -> not-ok with
+  a reason; null registry -> ok/null no-color context). `resolve_material_color`
+  in `visual_state_resolver.ts` delegates to it and rethrows `ok:false` to keep
+  the render path fail-loud. Vessel fills (the `Overlays` fill consumer in
+  `scene_item.tsx`) render identically, now reading the scalar color directly.
+  Added 12 pure resolver-contract pytests-equivalent Node tests in
+  `tests/test_material_color.mjs` and updated the existing
+  `tests/test_visual_state_resolver.mjs` fixtures to scalar. tsc: 171 -> 0.
+
 - Removed the protocol-specific `well_plate_96` material-write fold from
   `validation/stepper/state.py`. The fold had been suppressing all
   `state_value_not_allowed` errors for any write to `well_plate_96.material_name`
@@ -25,12 +131,14 @@
   `validation/stepper/state.py` and `validation/yaml_schema/protocol_validator.py`;
   these had been dead since the plate was placed (targets now resolve) and removed
   cleanly without changing any active finding. With the fold gone, 834 genuine
-  `state_value_not_allowed` errors surface: protocols such as `mtt_plate_reaction`
-  and `plate_drug_treatment_*` write per-well drug material names (`carboplatin`,
-  etc.) into `well_plate_96.material_name`, whose plate-level enum does not include
-  drug material names. This is the unimplemented per-well distinct-material feature,
-  now visible instead of hidden. The validator is now protocol-agnostic throughout.
-  Current run: TOTAL 834 errors. 156 warnings. 114 advisories. FAIL (ERROR stage: STEPPER).
+  `state_value_not_allowed` errors surfaced initially: protocols such as
+  `mtt_plate_reaction` and `plate_drug_treatment_*` write per-well drug material
+  names (`carboplatin`, etc.) into `well_plate_96.material_name`, whose plate-level
+  enum does not include drug material names. This was the unimplemented per-well
+  distinct-material feature, now visible instead of hidden. The validator is now
+  protocol-agnostic throughout. After M1 per-subpart material state implementation
+  (see Additions), the 834 `state_value_not_allowed` errors resolved to 0; see
+  Decisions and Failures for the resolution path.
 
 ### Fixes and Maintenance
 
@@ -64,6 +172,26 @@
   protocol-agnostic validator was suppressing 834 genuine errors (see
   Behavior or Interface Changes above and Decisions and Failures below).
 
+- WP-MAT-CROSSREF (M0 final): updated cross-references across the spec set so each
+  non-material doc now points to the correct owning material doc. Key changes:
+  `PROTOCOL_YAML_FORMAT.md` materials block replaced stale nested `display_color`
+  table row and example (light/dark mapping) with the scalar `#rrggbb` schema and
+  a link to `MATERIAL_YAML_FORMAT.md`; also fixed the generated-data description to
+  use scalar `display_color`. `SCENE_VOCABULARY.md` split the single MATERIAL_CONVENTION
+  reference into one entry for MATERIAL_VOCABULARY.md (terms) and one for
+  MATERIAL_CONVENTION.md (render effects). `OBJECT_VOCABULARY.md` terms table now
+  points `material` at `MATERIAL_VOCABULARY.md` instead of `MATERIAL_CONVENTION.md`.
+  `validation/stepper/state.py` `spec_cite` for `unknown_material` updated from
+  `MATERIAL_CONVENTION.md material identity` to `MATERIAL_YAML_FORMAT.md D1
+  registry-backed membership`. `validation/yaml_schema/constants.py` `# spec:` comment
+  for `MATERIAL_REQUIRED_KEYS` updated to cite `MATERIAL_YAML_FORMAT.md "Material
+  entry schema"`. Within the five material docs, bare-backtick references to
+  `MATERIAL_YAML_FORMAT.md`, `MATERIAL_DESIGN.md`, and `MATERIAL_VOCABULARY.md`
+  (all tracked) were upgraded to hard markdown links. `MATERIAL_LINT.md` remains
+  as bare backtick references only (file is untracked; upgrade deferred to commit).
+  `MATERIAL_LINT.md` hook table updated to mark L5 and L3 spec_cite as EXISTS
+  (done by WP-MAT-SWEEP and this workstream respectively).
+
 ### Decisions and Failures
 
 - Decision: `kind: plate` object validation requires declaring `material_name` and
@@ -72,12 +200,58 @@
   object-level fields will be removed when per-well fill rendering is added (see TODO.md).
 - Decision: kept the validator honest after hardcode removal. Rather than re-adding the
   `well_plate_96` fold or widening the plate-level `material_name` enum as a band-aid,
-  accepted the STEPPER FAIL (834 `state_value_not_allowed` errors). The same-day
-  "0 errors PASS" figure in earlier bullets was valid only with the suppressing fold in
-  place; the corrected total is 834 errors / 156 warnings / 114 advisories -> FAIL.
-  The centrifuge rename, ambiguity fixes, scene-layout tuning, and SVG normalization from
-  the workstreams above all stand and are not reverted. Resolution requires implementing
-  per-well distinct material state for `well_plate_96` (see TODO.md).
+  the 834 `state_value_not_allowed` errors were resolved by implementing per-subpart
+  material state (M1 WP-ENUM, WP-YAML, WP-STEPPER, WP-PLATEVAL, WP-MAT-SWEEP). The
+  centrifuge rename, ambiguity fixes, scene-layout tuning, and SVG normalization from
+  earlier workstreams all stand. Final validator state after M1: 0 errors; see M1
+  gate results appended to this day-block.
+- Decision (M4 WP-DOCS, well_plate_96 plan closeout): the material plan is COMPLETE for
+  per-well material state and rendering. `tests/playwright/test_subpart_well_plate_render.mjs`
+  mounts the real generated `bench_basic` scene via the production `mountScene` path, writes
+  carboplatin through the store seed/write path (no DOM hand-editing), and asserts the
+  well renders `#a719db` by `data-subpart-name`. All automated gates are GREEN. The
+  material plan scope: per-well material state (834 `state_value_not_allowed` -> 0),
+  registry-backed material acceptance (Python stepper + TS store, cross-layer aligned),
+  scalar color resolution, PATH-B subpart geometry, and production render-path per-well
+  color are all done. The visible end-to-end per-well protocol walkthrough is OUT OF SCOPE
+  for the material plan. It is gated on task #28 (`[EXPERT_CODER] Wire visible adjust
+  gesture affordance`), a separate web_ui task in the same gesture family as the landed
+  select and type gestures -- a UI-affordance gap, not a material-rendering defect. The
+  walkthrough spec at `tests/playwright/test_per_well_drug_walkthrough.mjs` is retained
+  and honestly reports the blocker; render evidence is retained via the production-path
+  harness.
+- Decision (content_lint timing artifact): the "113 errors" count that appears in the
+  D6 validator entry above was a concurrency artifact: the D6 rule landed while the
+  materials.yaml scalar sweep (M1 WP-MAT-SWEEP) was still in progress. The ground-truth
+  content_lint count at M1 completion is 0 errors, 5 warnings. The 113 errors were not
+  pre-existing defects; they were schema findings created by the sweep transition and
+  cleared by it. Rephrase in this entry for accuracy per REPO_STYLE changelog rules.
+- Decision ([empty,mixed] schema seam): runtime acceptance of per-subpart `material_name`
+  is registry-backed per stepper D1 (the full enum including drug names). The YAML
+  `allowed` field in `well_plate_96.yaml` retains `[empty, mixed]` as the closed
+  sentinel set for the object-level enum; the runtime store accepts registry-backed
+  names via `seed_target` + `set_object_state` validated against the schema/enum at
+  write time. This is not a vocabulary escape hatch: the seam is explicit and narrow.
+  Task #27 (future: declared registry-backed field affordance) tracks the option to
+  retire the `[empty, mixed]` syntactic seam entirely.
+- Note: five new `docs/specs/MATERIAL_*.md` files were created as part of M0
+  (MATERIAL_DESIGN.md, MATERIAL_VOCABULARY.md, MATERIAL_YAML_FORMAT.md,
+  MATERIAL_CONVENTION.md narrowed, MATERIAL_LINT.md). `docs/specs/MATERIAL_LINT.md` is
+  currently untracked in git. The human must `git add docs/specs/MATERIAL_LINT.md` (and
+  the other four if not yet staged) so cross-doc links resolve on GitHub.
+
+### Developer Tests and Notes
+
+- M4 WP-DOCS final gate results (per-well material state plan):
+  - `pytest tests/`: 1460 passed.
+  - `./run_validate.sh`: TOTAL 0 errors. 288 warnings. 113 advisories across 7 stages. -> PASS (warnings only); STEPPER 0 errors.
+  - `bash check_codebase.sh`: PASS 6/6 (typecheck, typecheck:lint, lint, format:check, css:policy, test:node).
+  - `npm run build` / `build_github_pages.sh`: built `dist/` (GitHub Pages-ready).
+- M4 WP-DOCS final closeout: material plan COMPLETE for per-well state + rendering.
+  Automated gates GREEN. Per-well render proven via production-path Playwright harness.
+  Visible-UI per-well-protocol walkthrough is out of scope for this plan; gated on #28
+  (visible adjust gesture affordance, a separate web_ui task, not a material-rendering
+  defect).
 
 ## 2026-06-02
 

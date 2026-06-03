@@ -43,6 +43,8 @@ import {
   type ResolvedVisualState,
 } from "./visual_state_resolver.js";
 import { injectSvgInto } from "./inject_svg.js";
+import { SubpartVisualStateOverlay } from "./subpart_visual_state_renderer.js";
+import { find_material_tint_subpart_field } from "./subpart_dispatch.js";
 import { OBJECT_LIBRARY } from "../../../generated/object_library.js";
 
 //============================================
@@ -175,12 +177,12 @@ function Overlays(props: { resolved: ResolvedVisualState }): JSXElement {
     <For each={props.resolved.overlays}>
       {(overlay) => {
         if (overlay.type === "fill") {
-          // Bottom-anchored fill. Color from the resolved material pair (light
-          // theme) when present; otherwise a neutral translucent fill so the
-          // fill level is still visible for a sentinel/empty material.
+          // Bottom-anchored fill. Color from the resolved scalar material color
+          // when present; otherwise a neutral translucent fill so the fill level
+          // is still visible for a sentinel/empty material.
           const color =
             props.resolved.material_color !== null
-              ? props.resolved.material_color.light
+              ? props.resolved.material_color
               : "rgba(120, 120, 120, 0.35)";
           return (
             <div
@@ -281,13 +283,24 @@ export function SceneItem(props: {
   // Resolve the object's authored visual_states map (empty when the object is
   // not in the library, e.g. a missing-object placeholder), filtered to the
   // OBJECT-level entries. Subpart visual_states (applies_to: 'subpart', e.g. the
-  // per-tube material on a rack, or per-well material on a plate) render with the
-  // structured-subpart geometry that is OUT OF SCOPE for this object-level
-  // renderer pass; resolving them against object-level state would reference
-  // fields the object schema does not declare. They are rendered (if at all) by
-  // the structured-subpart path, not here.
-  const all_visual_states: ObjectVisualStates = OBJECT_LIBRARY[target]?.visual_states ?? {};
+  // per-tube material on a rack, or per-well material on a plate) are NOT resolved
+  // by this object-level renderer (resolving them against object-level state would
+  // reference fields the object schema does not declare). They are rendered by the
+  // structured-subpart path: the generic SubpartVisualStateOverlay, DISPATCHED
+  // below purely on the declared contract.
+  const object_def = OBJECT_LIBRARY[target];
+  const all_visual_states: ObjectVisualStates = object_def?.visual_states ?? {};
   const visual_states: ObjectVisualStates = filter_object_visual_states(all_visual_states);
+
+  // Dispatch for the declarative subpart material overlay. This is a pure
+  // DISPATCH on the declared contract, NOT on object identity: it is non-null
+  // exactly when this object's def carries subpart_geometry plus a subpart
+  // material_tint visual_state. find_material_tint_subpart_field reads the driving
+  // field NAME out of the declaration; scene_item.tsx names no object, field, or
+  // shape. When non-null, the overlay renders below; when null (every object
+  // without the subpart material-tint contract), nothing extra renders.
+  const subpart_contract =
+    object_def !== undefined ? find_material_tint_subpart_field(object_def) : null;
 
   // Whether this object declares any visual_states. When it does not, there is
   // no reactive artwork to derive: we render the item's bound asset directly
@@ -399,6 +412,19 @@ export function SceneItem(props: {
   // the live asset. For state-free objects the resolved asset equals the
   // bound asset from the layout pipeline.
 
+  // Per-subpart degrade forwarder. A failing well (the color resolver returns
+  // ok:false for that subpart's material) is routed to the SAME SceneView-owned
+  // degrade sink the object-level resolver uses, but under a subpart-qualified
+  // target ("well_plate_96.A1") so each failing well is tracked independently and
+  // the scene-root data-scene-degraded marker reflects it. A recovering well
+  // clears its own membership with an empty message. This keeps a subpart-level
+  // content defect observable instead of a silently invisible well.
+  function forward_subpart_degrade(subpart_name: string, message: string): void {
+    if (props.onDegrade) {
+      props.onDegrade(`${target}.${subpart_name}`, message);
+    }
+  }
+
   if (is_placeholder) {
     const placeholder_kind = item._missing_object === true ? "missing-object" : "missing-svg";
     return (
@@ -450,6 +476,21 @@ export function SceneItem(props: {
       </Show>
       <Show when={resolved() !== null}>
         <Overlays resolved={resolved()!} />
+      </Show>
+      {/* Structured-subpart material overlay. Rendered
+          only when this object DECLARES the subpart material-tint contract
+          (subpart_contract non-null + object_def present). The generic
+          interpreter draws one shape per generated subpart geometry, each tinted
+          by its own per-subpart material through the store + color resolver. */}
+      <Show when={subpart_contract !== null && object_def !== undefined}>
+        <SubpartVisualStateOverlay
+          def={object_def!}
+          store={props.store}
+          placement_id={target}
+          field_name={subpart_contract!.field_name}
+          registry={props.materialRegistry}
+          on_subpart_degrade={forward_subpart_degrade}
+        />
       </Show>
     </div>
   );

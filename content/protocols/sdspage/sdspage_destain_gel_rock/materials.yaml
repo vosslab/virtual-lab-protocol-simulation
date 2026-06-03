@@ -1,6 +1,4 @@
 materials:
   destain_used:
     label: Used destain
-    display_color:
-      light: "#bfdbfe"
-      dark: "#bfdbfe"
+    display_color: "#bfdbfe"

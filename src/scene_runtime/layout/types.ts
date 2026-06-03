@@ -97,17 +97,54 @@ export type VisualStateOutput =
   | { overlay_name: string }
   | { composite: VisualStateOutput[] };
 
+// Render-effect tokens (MATERIAL_CONVENTION.md, D12). A material-driven visual
+// state may declare a render_effect + target instead of svg/overlay/composite
+// cases. The generic interpreter (M3) keys on these tokens, never on object kind.
+export type RenderEffect = "material_tint" | "fill_height";
+// A render-effect target names either a generated geometry region
+// (subpart_geometry) or an authored SVG anchor region. See SubpartGeometry below.
+export type RenderEffectTarget = "subpart_geometry" | "anchor_liquid_bounds" | "anchor_liquid_clip";
+
 export interface VisualStateDef {
-  kind: "svg" | "overlay" | "composite";
+  // kind is present for svg/overlay/composite visual states. Material-driven
+  // render-effect visual states omit kind and carry render_effect/target.
+  kind?: "svg" | "overlay" | "composite";
   applies_to: "object" | "subpart";
   // Cases for enum/bool fields
   cases?: VisualStateCase[];
   // Formula string for int/float fields
   formula?: string;
+  // Declarative render-effect form (material_tint / fill_height). When set,
+  // the field drives the named effect on the named target region.
+  render_effect?: RenderEffect;
+  target?: RenderEffectTarget;
+  // Optional clip region for an anchor-target fill_height effect.
+  clip?: RenderEffectTarget;
+  // Optional capacity for fill_height normalization (microliters).
+  capacity_ul?: number;
 }
 
 // Keyed by field_name
 export type ObjectVisualStates = Record<string, VisualStateDef>;
+
+// Generated subpart geometry (MATERIAL_CONVENTION.md D10). A render effect whose
+// target is subpart_geometry resolves the current subpart name to one of these
+// shapes. circle covers round wells; rect covers rectangular subparts.
+export type SubpartGeometry =
+  | { shape: "circle"; cx: number; cy: number; r: number }
+  | { shape: "rect"; x: number; y: number; w: number; h: number };
+// Keyed by subpart name (A1, B7, H12). Deterministically ordered by the
+// generator (name_pattern order) so the overlay renderer iterates a stable list.
+export type SubpartGeometryMap = Record<string, SubpartGeometry>;
+
+// The base-art coordinate frame the subpart geometry is expressed in. Matches
+// the asset SVG viewBox so the overlay aligns with the rendered base art.
+export interface ViewBox {
+  min_x: number;
+  min_y: number;
+  width: number;
+  height: number;
+}
 
 // State schema surface for store validation.
 // Derived from declared state_fields (not inferred from visual_states).
@@ -126,6 +163,13 @@ export interface ObjectDef {
   visual_states: ObjectVisualStates;
   // Subpart state schema (only set on structured objects; empty object otherwise)
   subpart_state_schema: ObjectStateSchema;
+  // Generated subpart geometry for structured objects whose subparts render
+  // (PATH-B derived from the structure grid; MATERIAL_CONVENTION.md D10). Absent
+  // for objects with no rendered subparts.
+  subpart_geometry?: SubpartGeometryMap;
+  // The base-art coordinate frame subpart_geometry is expressed in (asset SVG
+  // viewBox). Present iff subpart_geometry is present.
+  view_box?: ViewBox;
 }
 
 export interface AssetSpec {

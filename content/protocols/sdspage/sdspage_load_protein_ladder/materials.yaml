@@ -1,6 +1,4 @@
 materials:
   protein_ladder:
     label: Molecular weight ladder
-    display_color:
-      light: "#06b6d4"
-      dark: "#06b6d4"
+    display_color: "#06b6d4"

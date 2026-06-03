@@ -1,18 +1,12 @@
 materials:
   dmso:
     label: "DMSO solvent"
-    display_color:
-      light: "#007576"
-      dark: "#007576"
+    display_color: "#007576"
 
   formazan_dmso_solution:
     label: "Formazan in DMSO"
-    display_color:
-      light: "#c80085"
-      dark: "#c80085"
+    display_color: "#c80085"
 
   optical_reading:
     label: "Optical absorbance at 560 nm"
-    display_color:
-      light: "#ffffff"
-      dark: "#ffffff"
+    display_color: "#ffffff"

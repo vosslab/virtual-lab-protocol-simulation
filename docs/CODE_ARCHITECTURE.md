@@ -102,6 +102,10 @@ facade and `scene_item.tsx` / `scene_view.tsx` own item and label rendering.
 | [src/scene_runtime/renderer/render_background.ts](../src/scene_runtime/renderer/render_background.ts) | Render scene background (gradient or asset) |
 | [src/scene_runtime/renderer/structural_guards.ts](../src/scene_runtime/renderer/structural_guards.ts) | Six structural guards (item count, bounds, aspect ratio, asset presence, etc.); collects all violations rather than throwing on the first; throwing wrapper is exposed for tests/CI |
 | [src/scene_runtime/renderer/inject_svg.ts](../src/scene_runtime/renderer/inject_svg.ts) | Inject inline SVG from `ASSET_SPECS` |
+| `material_color.ts` | D3 color resolver: `resolve_color_result(material_name, registry)` returns `ColorResult` discriminated union (empty/null, built-in mixed/#686868, registry-backed scalar, or `ok:false` failure) |
+| `material_acceptance.ts` | D1 registry-backed acceptance predicate: mirrors Python stepper `mutate_state_field` so TS store and Python stepper accept and reject the same material names |
+| `subpart_dispatch.ts` | JSX-free dispatch predicate (`find_material_tint_subpart_field`): identifies structured objects with a `material_tint`/`subpart` render effect from the declaration, not runtime value |
+| `subpart_visual_state_renderer.tsx` | Solid subpart material-tint overlay: one static `<svg>` per structured object over generated `subpart_geometry`; per-subpart `createMemo` reads via `getSubpartStateField` and `resolve_color_result`; `ok:true`+color paints, `ok:true`+null transparent, `ok:false` degrades |
 | [src/scene_runtime/renderer/index.ts](../src/scene_runtime/renderer/index.ts) | Barrel re-export: `renderScene`, `mountScene`, `SceneView`, `SceneItem`, `renderBackground` |
 
 ### Shell and HUD (`src/shell/`)
@@ -127,7 +131,7 @@ All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
 
 | File | Purpose |
 | --- | --- |
-| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts`; emits `OBJECT_LIBRARY` (per-object `state_schema`, `visual_states`, `subpart_state_schema`), `ASSET_SPECS`, `OBJECT_STATE_SCHEMAS` (object-level state-field contract for store validation), `OBJECT_SUBPART_STATE_SCHEMAS` (subpart-level state-field contract). `state_fields` are the contract; `visual_states` are the rendering map. |
+| [pipeline/gen_object_library.py](../pipeline/gen_object_library.py) | YAML under `content/objects/` -> `generated/object_library.ts`; emits `OBJECT_LIBRARY` (per-object `state_schema`, `visual_states`, `subpart_state_schema`, and for grid-structured objects `subpart_geometry` + `view_box` per PATH-B), `ASSET_SPECS`, `OBJECT_STATE_SCHEMAS` (object-level state-field contract for store validation), `OBJECT_SUBPART_STATE_SCHEMAS` (subpart-level state-field contract). `state_fields` are the contract; `visual_states` are the rendering map. |
 | [pipeline/gen_svg_registry.py](../pipeline/gen_svg_registry.py) | `assets/equipment/*.svg` -> `generated/svg_registry.ts` |
 | [pipeline/gen_scene_index.py](../pipeline/gen_scene_index.py) | Scene YAML -> `generated/scenes.ts` + `generated/scene_manifest.json` (per-scene classification: emitted/skipped/errored); `--missing-svg=strict|placeholder` flag (default `placeholder`) |
 | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) | Protocol YAML -> `generated/protocols.ts` + `generated/protocols_index_slim.ts` + `generated/protocol_materials.ts` (per-protocol material registry from each package `materials.yaml`) |

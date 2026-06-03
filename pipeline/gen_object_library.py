@@ -19,18 +19,14 @@ Output: generated/object_library.ts with:
   OBJECT_SUBPART_STATE_SCHEMAS - subpart-level state_fields schema per object (for store validation)
 """
 
+# Standard Library
 import os
 import sys
+import subprocess
 import xml.etree.ElementTree as ET
 
-import yaml
-
-# Standard Library
-import subprocess
-
 # PIP3 modules
-
-# local repo modules
+import yaml
 
 
 #============================================
@@ -144,6 +140,111 @@ def get_svg_aspect(svg_path: str) -> float:
 
 #============================================
 
+# Recorded PATH-B grid parameters for structured grid objects, keyed by
+# object_name. The base SVG draws each well as a cubic-Bezier circle (not a
+# <circle> element), so exact per-shape extraction by element type is not
+# available; instead we record the regular grid the art lays the wells on and
+# derive each well center from it (PATH-B). These constants are calibrated to
+# the base art and validated by an overlay screenshot
+# (tools/well_grid_overlay.mjs), NOT an authored YAML field.
+#
+# well_plate_96 (asset 96well_pcr_plate.svg, viewBox 0 0 393.3275 278.5243):
+#   origin_x/origin_y are the center of well A1 (top-left), measured directly
+#     from the inline fill-disc path (45.010, 49.260).
+#   x_spacing/y_spacing are the uniform center-to-center pitch, equal to the
+#     column-label glyph pitch (28.347) and the row-disc pitch (28.346); the
+#     grid is square. col 12 center = 45.010 + 11*28.347 = 356.83 and
+#     row H center = 49.260 + 7*28.347 = 247.69 both land on the measured wells.
+#   radius is the rendered disc radius (inner fill 10.57, outer ring 12.68);
+#     11.0 sits inside the gray ring so the tint disc reads as the well.
+PLATE_WELL_GRID = {
+	"well_plate_96": {
+		"origin_x": 45.010,
+		"origin_y": 49.260,
+		"x_spacing": 28.347,
+		"y_spacing": 28.347,
+		"radius": 11.0,
+		"view_box": {
+			"min_x": 0.0,
+			"min_y": 0.0,
+			"width": 393.3275,
+			"height": 278.5243,
+		},
+	},
+}
+
+
+#============================================
+
+def row_letter(row_index: int) -> str:
+	"""Return the row letter for a 0-based row index (0 -> 'A', top row)."""
+	letter = chr(ord("A") + row_index)
+	return letter
+
+
+#============================================
+
+def derive_grid_geometry(object_name: str, structure: dict) -> tuple:
+	"""
+	Derive a typed SubpartGeometryMap from recorded PATH-B grid parameters.
+
+	Reads the rows/cols grid from the object's structure block and the recorded
+	grid constants from PLATE_WELL_GRID. Computes one circle per subpart, keyed
+	by name_pattern (A1..H12, row A = top), ordered row-major so the emitted map
+	is deterministic. Returns (geometry_map, view_box) or (None, None) when the
+	object has no recorded grid (non-grid or unconfigured structured objects).
+
+	geometry_map: {subpart_name: {"shape": "circle", "cx", "cy", "r"}}.
+	"""
+	grid = PLATE_WELL_GRID.get(object_name)
+	if grid is None:
+		return None, None
+
+	layout = structure.get("layout")
+	if layout != "grid":
+		raise ValueError(
+			f"PLATE_WELL_GRID recorded for {object_name} but structure.layout"
+			f" is {layout!r}, expected 'grid'"
+		)
+
+	rows = int(structure["rows"])
+	cols = int(structure["cols"])
+	name_pattern = structure["name_pattern"]
+	# This generator derives only the row-letter + column-number naming the
+	# 96-well plate uses; a different pattern needs an explicit deriver.
+	if name_pattern != "{row_letter}{col}":
+		raise ValueError(
+			f"derive_grid_geometry only supports name_pattern"
+			f" '{{row_letter}}{{col}}', got {name_pattern!r} for {object_name}"
+		)
+
+	origin_x = grid["origin_x"]
+	origin_y = grid["origin_y"]
+	x_spacing = grid["x_spacing"]
+	y_spacing = grid["y_spacing"]
+	radius = grid["radius"]
+
+	# Build the map row-major (A1..A12, B1..B12, ...) so iteration order is
+	# A1 (top-left) through the last row's last column (H12, bottom-right).
+	geometry_map = {}
+	for row in range(rows):
+		for col in range(cols):
+			subpart_name = row_letter(row) + str(col + 1)
+			cx = origin_x + col * x_spacing
+			cy = origin_y + row * y_spacing
+			geometry_map[subpart_name] = {
+				"shape": "circle",
+				"cx": round(cx, 4),
+				"cy": round(cy, 4),
+				"r": round(radius, 4),
+			}
+
+	view_box = grid["view_box"]
+	return geometry_map, view_box
+
+
+#============================================
+
 def parse_state_fields(data: dict, yaml_path: str) -> tuple:
 	"""
 	Parse state_fields list into (object_level, subpart_level) dicts.
@@ -175,10 +276,26 @@ def parse_state_fields(data: dict, yaml_path: str) -> tuple:
 
 #============================================
 
+# Closed render-effect vocabulary (MATERIAL_CONVENTION.md D12). A material-driven
+# visual state declares one of these effects plus a target instead of a
+# kind/cases shape. Kept in sync with RenderEffect/RenderEffectTarget in
+# src/scene_runtime/layout/types.ts.
+RENDER_EFFECTS = ("material_tint", "fill_height")
+RENDER_TARGETS = ("subpart_geometry", "anchor_liquid_bounds", "anchor_liquid_clip")
+
+
+#============================================
+
 def parse_visual_states(data: dict, yaml_path: str) -> dict:
 	"""
 	Parse visual_states mapping from YAML into a structured Python dict.
-	Returns {field_name: {kind, applies_to, cases?, formula?}}.
+
+	Two shapes are accepted per field:
+	- kind-based (svg/overlay/composite) with cases/formula, the existing form;
+	- render-effect-based (MATERIAL_CONVENTION.md D12) with render_effect +
+	  target, the declarative material form, which omits kind.
+	Returns {field_name: {applies_to, kind?, cases?, formula?, render_effect?,
+	target?, clip?, capacity_ul?}}.
 	"""
 	raw_vs = data.get("visual_states", {})
 	if not raw_vs:
@@ -190,13 +307,36 @@ def parse_visual_states(data: dict, yaml_path: str) -> dict:
 			raise ValueError(
 				f"visual_states.{field_name} must be a mapping: {yaml_path}"
 			)
-		kind = vs_def["kind"]
 		applies_to = vs_def.get("applies_to", "object")
+		entry = {"applies_to": applies_to}
 
-		entry = {
-			"kind": kind,
-			"applies_to": applies_to,
-		}
+		# Render-effect form: declarative material_tint/fill_height. The field
+		# names an effect + target; it carries no kind/cases.
+		if "render_effect" in vs_def:
+			render_effect = vs_def["render_effect"]
+			if render_effect not in RENDER_EFFECTS:
+				raise ValueError(
+					f"visual_states.{field_name}.render_effect"
+					f" '{render_effect}' not in {RENDER_EFFECTS}: {yaml_path}"
+				)
+			target = vs_def["target"]
+			if target not in RENDER_TARGETS:
+				raise ValueError(
+					f"visual_states.{field_name}.target"
+					f" '{target}' not in {RENDER_TARGETS}: {yaml_path}"
+				)
+			entry["render_effect"] = render_effect
+			entry["target"] = target
+			# Optional anchor clip + capacity for fill_height; pass through if set.
+			if "clip" in vs_def:
+				entry["clip"] = vs_def["clip"]
+			if "capacity_ul" in vs_def:
+				entry["capacity_ul"] = vs_def["capacity_ul"]
+			result[field_name] = entry
+			continue
+
+		# Kind-based form: svg/overlay/composite with cases/formula.
+		entry["kind"] = vs_def["kind"]
 
 		if "cases" in vs_def:
 			entry["cases"] = vs_def["cases"]
@@ -335,7 +475,10 @@ def emit_visual_states_ts(visual_states: dict, indent: str) -> list:
 	lines.append(f"{indent}visual_states: " + "{")
 	for field_name, vs_def in sorted(visual_states.items()):
 		lines.append(f"{indent}\t{repr(field_name)}: " + "{")
-		lines.append(f"{indent}\t\tkind: {repr(vs_def['kind'])},")
+		# kind is present only on the svg/overlay/composite form. The
+		# render-effect form omits it.
+		if "kind" in vs_def:
+			lines.append(f"{indent}\t\tkind: {repr(vs_def['kind'])},")
 		lines.append(f"{indent}\t\tapplies_to: {repr(vs_def['applies_to'])},")
 		if "cases" in vs_def:
 			lines.append(f"{indent}\t\tcases: [")
@@ -345,6 +488,14 @@ def emit_visual_states_ts(visual_states: dict, indent: str) -> list:
 			lines.append(f"{indent}\t\t],")
 		if "formula" in vs_def:
 			lines.append(f"{indent}\t\tformula: {repr(vs_def['formula'])},")
+		# Render-effect declarative form (material_tint / fill_height).
+		if "render_effect" in vs_def:
+			lines.append(f"{indent}\t\trender_effect: {repr(vs_def['render_effect'])},")
+			lines.append(f"{indent}\t\ttarget: {repr(vs_def['target'])},")
+			if "clip" in vs_def:
+				lines.append(f"{indent}\t\tclip: {repr(vs_def['clip'])},")
+			if "capacity_ul" in vs_def:
+				lines.append(f"{indent}\t\tcapacity_ul: {vs_def['capacity_ul']},")
 		lines.append(f"{indent}\t" + "},")
 	lines.append(f"{indent}" + "},")
 	return lines
@@ -462,6 +613,11 @@ def process_object_yaml(
 		if key in layout:
 			layout_dict[key] = layout[key]
 
+	# Derive PATH-B subpart geometry for recorded grid objects (e.g. well_plate_96).
+	# Geometry is emitted ONCE per object def here, not per scene/placement.
+	structure = data.get("structure", {})
+	subpart_geometry, view_box = derive_grid_geometry(object_name, structure)
+
 	# Build full object definition including state schema and visual_states
 	object_def = {
 		"object_name": object_name,
@@ -473,6 +629,8 @@ def process_object_yaml(
 		"object_state_fields": object_state_fields,
 		"subpart_state_fields": subpart_state_fields,
 		"visual_states": visual_states,
+		"subpart_geometry": subpart_geometry,
+		"view_box": view_box,
 	}
 
 	# Build asset spec
@@ -483,6 +641,49 @@ def process_object_yaml(
 	}
 
 	return object_def, asset_spec
+
+
+#============================================
+
+def emit_subpart_geometry_ts(
+	subpart_geometry: dict,
+	view_box: dict,
+	indent: str,
+) -> list:
+	"""
+	Emit TypeScript lines for the subpart_geometry map and view_box on an
+	ObjectDef. Iteration order follows the dict insertion order, which
+	derive_grid_geometry builds row-major (A1..H12), giving a deterministic,
+	stable emit. Numbers are emitted as decimals (no float repr surprises).
+	"""
+	lines = []
+	lines.append(f"{indent}view_box: " + "{")
+	lines.append(f"{indent}\tmin_x: {view_box['min_x']},")
+	lines.append(f"{indent}\tmin_y: {view_box['min_y']},")
+	lines.append(f"{indent}\twidth: {view_box['width']},")
+	lines.append(f"{indent}\theight: {view_box['height']},")
+	lines.append(f"{indent}" + "},")
+
+	lines.append(f"{indent}subpart_geometry: " + "{")
+	# Preserve insertion order (row-major A1..H12). Do not sort: sorting by
+	# string key would put A10 before A2, breaking the spatial reading order.
+	for subpart_name, geom in subpart_geometry.items():
+		shape = geom["shape"]
+		if shape == "circle":
+			body = (
+				f"shape: 'circle', cx: {geom['cx']}, cy: {geom['cy']},"
+				f" r: {geom['r']}"
+			)
+		elif shape == "rect":
+			body = (
+				f"shape: 'rect', x: {geom['x']}, y: {geom['y']},"
+				f" w: {geom['w']}, h: {geom['h']}"
+			)
+		else:
+			raise ValueError(f"Unknown subpart geometry shape: {shape!r}")
+		lines.append(f"{indent}\t{repr(subpart_name)}: " + "{ " + body + " },")
+	lines.append(f"{indent}" + "},")
+	return lines
 
 
 #============================================
@@ -551,6 +752,14 @@ def emit_object_def_ts(object_name: str, obj: dict) -> list:
 			lines.append(fl)
 		lines.append("\t\t\t},")
 	lines.append("\t\t},")
+
+	# subpart_geometry + view_box (only for recorded grid objects). Both are
+	# present together or both absent; emit nothing when there is no geometry.
+	subpart_geometry = obj["subpart_geometry"]
+	view_box = obj["view_box"]
+	if subpart_geometry is not None:
+		geom_lines = emit_subpart_geometry_ts(subpart_geometry, view_box, "\t\t")
+		lines.extend(geom_lines)
 
 	lines.append("\t},")
 	return lines

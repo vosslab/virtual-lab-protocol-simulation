@@ -2,6 +2,7 @@
 
 from validation.stepper.loader import LoadedContentTree, ProtocolNotFoundError
 from validation.stepper.findings import Finding, Level, FindingEmitter
+from validation.stepper.sentinels import NON_RENDERING_MATERIAL_SENTINELS, BUILTIN_VISIBLE_MATERIALS
 from validation.shared_toolkit.discovery import construct_protocol_scene_path
 
 
@@ -113,10 +114,15 @@ class StateMap:
 				"file_path": file_path,
 			}
 
-			# Initialize state fields with defaults
+			# Initialize OBJECT-level state fields with defaults. Subpart-scoped
+			# fields (applies_to: subpart) are seeded lazily per subpart in
+			# _ensure_subpart_record, so the object record never carries per-
+			# subpart material/volume placeholders.
 			state_fields = obj.get("state_fields", [])
 			for field_decl in state_fields:
 				if not isinstance(field_decl, dict):
+					continue
+				if field_decl.get("applies_to") == "subpart":
 					continue
 				field_name = field_decl["field_name"]
 				default = field_decl.get("default")
@@ -576,11 +582,82 @@ class StateMap:
 		"""
 		return self._state.get(placement_name)
 
+	def get_subpart_state(self, placement_name: str, subpart_name: str) -> dict | None:
+		"""
+		Retrieve per-subpart state for a (placement, subpart) pair.
+
+		Per-subpart state is stored independently of the object-level state under
+		a composite key 'placement_name.subpart_name'. Returns None if the subpart
+		has never been written.
+
+		Args:
+			placement_name: The parent placement name.
+			subpart_name: The subpart identifier (e.g. 'A1').
+
+		Returns:
+			Dict with 'object_name' and 'state' keys, or None if not present.
+		"""
+		return self._state.get(self._subpart_key(placement_name, subpart_name))
+
+	@staticmethod
+	def _subpart_key(placement_name: str, subpart_name: str) -> str:
+		"""
+		Build the composite state key for a (placement, subpart) pair.
+
+		The dotted form is what detect_state_jumps already expects when it scans
+		for subpart records ('.' in placement_name), so per-subpart state slots
+		into the existing snapshot/jump machinery without a parallel structure.
+		"""
+		return f"{placement_name}.{subpart_name}"
+
+	def _ensure_subpart_record(self, placement_name: str, subpart_name: str) -> dict:
+		"""
+		Return the per-subpart state record, creating it on first write.
+
+		The record mirrors an object-level record ('object_name' + 'state') so the
+		same snapshot and state-jump code reads both. New subpart records seed each
+		declared subpart field with its default the first time the subpart is
+		touched, so an initial write is not mistaken for a transfer.
+
+		Args:
+			placement_name: The parent placement name.
+			subpart_name: The subpart identifier.
+
+		Returns:
+			The mutable per-subpart record dict.
+		"""
+		key = self._subpart_key(placement_name, subpart_name)
+		if key in self._state:
+			return self._state[key]
+
+		parent_record = self._state[placement_name]
+		object_name = parent_record["object_name"]
+		subpart_state: dict = {}
+
+		# Seed declared subpart fields with their defaults so the first real write
+		# is distinguishable from initialization (mirrors object-level seeding).
+		obj = self.tree.get_object(object_name)
+		if obj:
+			for field_decl in obj.get("state_fields", []):
+				if not isinstance(field_decl, dict):
+					continue
+				if field_decl.get("applies_to") != "subpart":
+					continue
+				subpart_state[field_decl["field_name"]] = field_decl.get("default")
+
+		self._state[key] = {
+			"object_name": object_name,
+			"state": subpart_state,
+			"file_path": parent_record["file_path"],
+		}
+		return self._state[key]
+
 	def mutate_state_field(
 		self,
 		placement_name: str,
 		field_name: str,
 		new_value,
+		subpart_name: str | None = None,
 		step_name: str | None = None,
 		interaction_index: int | None = None,
 		file_path: str = "unknown",
@@ -588,17 +665,27 @@ class StateMap:
 		"""
 		Mutate a state field with validation.
 
+		When subpart_name is None this mutates the object-level state and validates
+		against the object-level field decl. When subpart_name is provided this
+		mutates an independent per-subpart record and validates against the
+		applies_to: subpart field decl, leaving object-level state untouched.
+
 		Validates that:
 		  - The placement exists.
-		  - The object has the field declared.
+		  - The object declares the field in the requested scope (object vs subpart).
 		  - The new value matches the field's type and allowed constraints.
-		  - For material fields, the material is declared (unless 'empty' or 'mixed').
-		  - The object has 'material_container' capability for material field writes.
+		  - For a subpart material_name (registry-backed, D1), the value is a
+		    sentinel or a material registered in the active protocol; an enum
+		    'allowed' list on the subpart material field is not applied (the
+		    universal vessel does not enumerate every curriculum material).
+		  - For object-level material fields, the material is declared (unless a
+		    sentinel) and the object has 'material_container' capability.
 
 		Args:
 			placement_name: The placement name.
 			field_name: The field name to mutate.
 			new_value: The new value.
+			subpart_name: When set, mutate this subpart's record instead of the object.
 			step_name: Optional step name for context.
 			interaction_index: Optional interaction index for context.
 			file_path: File path for error context.
@@ -624,18 +711,25 @@ class StateMap:
 		placement_data = self._state[placement_name]
 		object_name = placement_data["object_name"]
 
-		# Verify field is declared on the object
-		field_decl = self.tree.get_state_field(object_name, field_name)
+		# A subpart target selects the applies_to: subpart decl; a bare target
+		# selects the object-level decl. The error target string keeps the
+		# subpart suffix so findings point at the exact well.
+		is_subpart = subpart_name is not None
+		error_target = self._subpart_key(placement_name, subpart_name) if is_subpart else placement_name
+
+		# Verify field is declared on the object in the requested scope
+		field_decl = self.tree.get_state_field(object_name, field_name, subpart_targeted=is_subpart)
 		if not field_decl:
+			scope_word = "subpart" if is_subpart else "object"
 			self.emitter.emit_finding(Finding(
 				level=Level.ERROR,
 				protocol_name=self.protocol_name,
 				step_name=step_name,
 				interaction_index=interaction_index,
-				target=placement_name,
+				target=error_target,
 				file_path=file_path,
 				code="undeclared_state_field",
-				message=f"state field '{field_name}' not declared on object '{object_name}'",
+				message=f"{scope_word} state field '{field_name}' not declared on object '{object_name}'",
 				spec_cite="docs/specs/OBJECT_YAML_FORMAT.md state_fields",
 			))
 			return False
@@ -644,14 +738,20 @@ class StateMap:
 		field_type = field_decl.get("type")
 		allowed = field_decl.get("allowed")
 
-		if field_type == "enum" and allowed:
+		# D1: a structured-container subpart material_name validates by
+		# sentinel-or-registry membership, NOT against an object-declared enum.
+		# Skip the enum 'allowed' gate for that case; the registry check below
+		# (and the s-unregistered gate in scene_ops) owns its validity.
+		is_subpart_material_name = is_subpart and field_name in ("material_name", "held_material_name")
+
+		if field_type == "enum" and allowed and not is_subpart_material_name:
 			if new_value not in allowed:
 				self.emitter.emit_finding(Finding(
 					level=Level.ERROR,
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,
-					target=placement_name,
+					target=error_target,
 					file_path=file_path,
 					code="state_value_not_allowed",
 					message=f"field '{field_name}' value '{new_value}' not in allowed: {allowed}",
@@ -667,7 +767,7 @@ class StateMap:
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,
-					target=placement_name,
+					target=error_target,
 					file_path=file_path,
 					code="state_value_type_mismatch",
 					message=f"field '{field_name}' expects float, got {type(new_value).__name__}",
@@ -681,7 +781,7 @@ class StateMap:
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,
-					target=placement_name,
+					target=error_target,
 					file_path=file_path,
 					code="state_value_type_mismatch",
 					message=f"field '{field_name}' expects int, got {type(new_value).__name__}",
@@ -695,7 +795,7 @@ class StateMap:
 					protocol_name=self.protocol_name,
 					step_name=step_name,
 					interaction_index=interaction_index,
-					target=placement_name,
+					target=error_target,
 					file_path=file_path,
 					code="state_value_type_mismatch",
 					message=f"field '{field_name}' expects boolean, got {type(new_value).__name__}",
@@ -705,7 +805,8 @@ class StateMap:
 
 		# Special validation for material fields
 		if field_name in ("material_name", "held_material_name"):
-			# Check capability gate
+			# Check capability gate (applies to both object and subpart writes;
+			# the parent object must be a material_container either way).
 			obj = self.tree.get_object(object_name)
 			if obj:
 				capabilities = obj.get("capabilities", [])
@@ -715,7 +816,7 @@ class StateMap:
 						protocol_name=self.protocol_name,
 						step_name=step_name,
 						interaction_index=interaction_index,
-						target=placement_name,
+						target=error_target,
 						file_path=file_path,
 						code="capability_mismatch",
 						message=f"cannot write {field_name} to '{object_name}' which lacks 'material_container' capability",
@@ -723,30 +824,50 @@ class StateMap:
 					))
 					return False
 
-			# Validate material exists
-			if new_value not in ("empty", "mixed"):
+			# D1 validity for a written material value: a non-rendering sentinel
+			# ("empty"), a built-in visible material ("mixed"), or a name in the
+			# active protocol's registry (materials.yaml, plus upstream/produced
+			# for sequence runners). The two built-in sets are closed; every other
+			# name -- including cells, formazan, mtt, and the waste_* streams --
+			# must be registered. A subpart material_name routes a miss to the
+			# existing s-unregistered gate (emitted in scene_ops), so it returns
+			# False here without raising a second error code. An object-level miss
+			# keeps the historical unknown_material ERROR.
+			is_builtin = (
+				new_value in NON_RENDERING_MATERIAL_SENTINELS
+				or new_value in BUILTIN_VISIBLE_MATERIALS
+			)
+			if not is_builtin:
 				material = self.tree.get_material(self.protocol_name, new_value)
-				# For sequence runners, also check upstream materials and produced materials
-				# (cross-mini check will emit errors if not found; don't duplicate here)
-				if not material:
-					in_upstream = new_value in self.declared_materials_union or new_value in self.produced_materials_set
-					if not in_upstream:
-						# Emit error: material not in local protocol and not in upstream (if sequence runner context)
+				in_upstream = (
+					new_value in self.declared_materials_union
+					or new_value in self.produced_materials_set
+				)
+				if not material and not in_upstream:
+					if not is_subpart_material_name:
+						# Object-level miss: historical loud error.
 						self.emitter.emit_finding(Finding(
 							level=Level.ERROR,
 							protocol_name=self.protocol_name,
 							step_name=step_name,
 							interaction_index=interaction_index,
-							target=placement_name,
+							target=error_target,
 							file_path=file_path,
 							code="unknown_material",
 							message=f"material_name '{new_value}' not declared in materials.yaml for protocol '{self.protocol_name}'",
-							spec_cite="docs/specs/MATERIAL_CONVENTION.md material identity",
+							spec_cite="docs/specs/MATERIAL_YAML_FORMAT.md D1 registry-backed membership",
 						))
-						return False
+					# Subpart miss: the s-unregistered gate (scene_ops) owns the
+					# finding; do not store an unregistered material value.
+					return False
 
-		# Apply the mutation
-		placement_data["state"][field_name] = new_value
+		# Apply the mutation to the correct record: a per-subpart record when a
+		# subpart was targeted, the object-level record otherwise.
+		if is_subpart:
+			target_record = self._ensure_subpart_record(placement_name, subpart_name)
+		else:
+			target_record = placement_data
+		target_record["state"][field_name] = new_value
 		return True
 
 	#============================================

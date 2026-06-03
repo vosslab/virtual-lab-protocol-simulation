@@ -1,21 +1,25 @@
 """
 MaterialValidator: closure check for content/protocols/<name>/materials.yaml.
 
-Spec: docs/specs/MATERIAL_CONVENTION.md "Materials YAML schema".
+Spec: docs/specs/MATERIAL_YAML_FORMAT.md "Material entry schema" and
+"Scalar display_color"; lint rule L5 in docs/specs/MATERIAL_LINT.md.
 
 Schema:
 - Top-level key `materials:` -> mapping (snake_case material_name -> entry).
 - Each entry is a closed dict with exactly two required keys:
   - `label`: string
-  - `display_color`: nested mapping with 'light' and 'dark' hex strings
+  - `display_color`: a single scalar hex string matching ^#[0-9a-f]{6}$
 - Unknown top-level keys and unknown per-entry keys are rejected.
 
-Cross-protocol material consistency validation:
-- Scalar display_color form is rejected (tag: PALETTE_SCALAR).
-- Nested display_color must have both 'light' and 'dark' keys.
-- Each color value must be a valid hex string (#rgb or #rrggbb).
-- Unknown keys in display_color are rejected.
-- Cross-protocol consistency is checked via validate_cross_protocol().
+display_color validation (L5):
+- Scalar display_color is required; it must match ^#[0-9a-f]{6}$ exactly
+  (lowercase, six digits). Uppercase hex, three-digit shorthand, eight-digit
+  alpha, named colors, and rgb()/hsl() syntax are rejected (tag: PALETTE_MALFORMED).
+- Nested display_color (a mapping with 'light'/'dark') is rejected (tag:
+  PALETTE_NESTED). The project targets light scientific workspaces only; there
+  is no theme split.
+- Cross-protocol consistency is checked via validate_cross_protocol() on the
+  scalar (label, display_color) pair.
 
 Reference resolution (T1_MATERIAL_REF) lives in ProtocolValidator; this
 validator only enforces the materials.yaml schema itself.
@@ -28,7 +32,13 @@ from validation.yaml_schema.constants import MATERIAL_REQUIRED_KEYS, MATERIAL_AL
 
 
 SNAKE_CASE_RE = re.compile(r'^[a-z][a-z0-9_]*$')
-HEX_COLOR_RE = re.compile(r'^#[0-9a-fA-F]{3,8}$')
+# Scalar display_color: exactly six lowercase hex digits (MATERIAL_YAML_FORMAT.md).
+HEX_COLOR_RE = re.compile(r'^#[0-9a-f]{6}$')
+
+# Sentinel names must NOT appear in materials.yaml (MATERIAL_YAML_FORMAT.md,
+# "Sentinels do not appear in materials.yaml"). The closed allowlist is exactly
+# {empty, mixed} per MATERIAL_VOCABULARY.md.
+MATERIAL_SENTINEL_NAMES = frozenset({"empty", "mixed"})
 
 
 class MaterialValidator:
@@ -90,6 +100,23 @@ class MaterialValidator:
 		findings = []
 		entry_path = f"{path}::materials.{material_name}"
 
+		# Sentinels must not appear in materials.yaml (MATERIAL_YAML_FORMAT.md
+		# "Sentinels do not appear in materials.yaml"; MATERIAL_VOCABULARY.md
+		# sentinel section). Reject early; do not validate the entry body.
+		if material_name in MATERIAL_SENTINEL_NAMES:
+			findings.append(Finding(
+				path=entry_path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=(
+					f"sentinel name '{material_name}' must not appear in materials.yaml; "
+					f"sentinels (empty, mixed) are exempt from registration and have no "
+					f"registry entry"
+				),
+				tag="SENTINEL_IN_REGISTRY",
+			))
+			return findings
+
 		# Material name must be snake_case.
 		if not isinstance(material_name, str) or not SNAKE_CASE_RE.match(material_name):
 			findings.append(Finding(
@@ -150,66 +177,33 @@ class MaterialValidator:
 		return findings
 
 	def _validate_display_color(self, material_name, color, entry_path: str) -> list:
-		"""Validate display_color field (nested light/dark mapping)."""
+		"""Validate display_color as a single scalar hex string.
+
+		Per MATERIAL_YAML_FORMAT.md, display_color is a scalar matching
+		^#[0-9a-f]{6}$. The nested light/dark mapping form is rejected (L5).
+		"""
 		findings = []
 
-		# Reject scalar display_color form (deprecated).
-		if isinstance(color, str):
+		# Reject the nested mapping form (light/dark). No theme split exists.
+		if isinstance(color, dict):
 			findings.append(Finding(
 				path=entry_path,
 				lineno=None,
 				severity=Severity.ERROR,
-				message=f"material '{material_name}' field 'display_color' must be a mapping with 'light' and 'dark' keys, not a scalar string",
-				tag="PALETTE_SCALAR",
+				message=f"material '{material_name}' field 'display_color' must be a single scalar hex string like '#a719db', not a nested 'light'/'dark' mapping",
+				tag="PALETTE_NESTED",
 			))
 			return findings
 
-		# Must be a mapping for nested form.
-		if not isinstance(color, dict):
+		# Require a scalar string matching exactly six lowercase hex digits.
+		if not isinstance(color, str) or not HEX_COLOR_RE.match(color):
 			findings.append(Finding(
 				path=entry_path,
 				lineno=None,
 				severity=Severity.ERROR,
-				message=f"material '{material_name}' field 'display_color' must be a mapping (dict), got {type(color).__name__}",
+				message=f"material '{material_name}' field 'display_color' must be a scalar hex string matching ^#[0-9a-f]{{6}}$ (lowercase, six digits), got '{color}'",
 				tag="PALETTE_MALFORMED",
 			))
-			return findings
-
-		# Require both 'light' and 'dark' keys.
-		required_keys = {'light', 'dark'}
-		missing_keys = required_keys - set(color.keys())
-		for key in sorted(missing_keys):
-			findings.append(Finding(
-				path=entry_path,
-				lineno=None,
-				severity=Severity.ERROR,
-				message=f"material '{material_name}' field 'display_color' missing required key '{key}'",
-				tag="PALETTE_MALFORMED",
-			))
-
-		# Reject unknown keys (closure).
-		for key in color.keys():
-			if key not in required_keys:
-				findings.append(Finding(
-					path=entry_path,
-					lineno=None,
-					severity=Severity.ERROR,
-					message=f"material '{material_name}' field 'display_color' has unknown key '{key}'; only 'light' and 'dark' are allowed",
-					tag="PALETTE_MALFORMED",
-				))
-
-		# Validate each hex value (light and dark).
-		for key in ['light', 'dark']:
-			if key in color:
-				value = color[key]
-				if not isinstance(value, str) or not HEX_COLOR_RE.match(value):
-					findings.append(Finding(
-						path=entry_path,
-						lineno=None,
-						severity=Severity.ERROR,
-						message=f"material '{material_name}' field 'display_color.{key}' must be a hex string like '#b8e5ff', got '{value}'",
-						tag="PALETTE_MALFORMED",
-					))
 
 		return findings
 
@@ -223,13 +217,13 @@ class MaterialValidator:
 		Returns:
 			List of Finding objects for divergences.
 
-		Cross-protocol rule: For any material_name appearing in 2+ files,
-		the label, display_color.light, and display_color.dark must be identical
-		across all files. Divergences are reported with tag PALETTE_DIVERGENT.
+		Cross-protocol rule: For any material_name appearing in 2+ files, the
+		label and the scalar display_color must be identical across all files.
+		Divergences are reported with tag PALETTE_DIVERGENT.
 		"""
 		findings = []
 
-		# Index: material_name -> set of (path, label, light, dark) tuples
+		# Index: material_name -> set of (path, label, display_color) tuples.
 		material_index = {}
 
 		for path, yaml_data in material_rows:
@@ -245,23 +239,17 @@ class MaterialValidator:
 					continue
 
 				label = entry.get('label', '')
-				color_info = entry.get('display_color')
+				color = entry.get('display_color')
 
-				# Extract light and dark (or None if missing/invalid).
-				light = dark = None
-				if isinstance(color_info, dict):
-					light = color_info.get('light')
-					dark = color_info.get('dark')
-
-				# Skip entries with invalid color structure (will be caught by single-file validation).
-				if light is None or dark is None:
+				# Skip entries without a scalar color (caught by single-file validation).
+				if not isinstance(color, str):
 					continue
 
 				key = material_name
 				if key not in material_index:
 					material_index[key] = set()
 
-				material_index[key].add((path, label, light, dark))
+				material_index[key].add((path, label, color))
 
 		# Check for divergences.
 		for material_name, entries in material_index.items():
@@ -269,22 +257,19 @@ class MaterialValidator:
 				# Only one occurrence or all invalid; no divergence to report.
 				continue
 
-			# Collect all variants to detect which fields diverge
+			# Collect all variants to detect which fields diverge.
 			entry_list = sorted(list(entries))
 
-			# Extract unique values for each field
+			# Extract unique values for each field.
 			labels = set(e[1] for e in entry_list)
-			lights = set(e[2] for e in entry_list)
-			darks = set(e[3] for e in entry_list)
+			colors = set(e[2] for e in entry_list)
 
-			# Determine which fields diverge
+			# Determine which fields diverge.
 			divergent_fields = []
 			if len(labels) > 1:
 				divergent_fields.append('label')
-			if len(lights) > 1:
-				divergent_fields.append('light')
-			if len(darks) > 1:
-				divergent_fields.append('dark')
+			if len(colors) > 1:
+				divergent_fields.append('display_color')
 
 			if divergent_fields:
 				# Divergence found.

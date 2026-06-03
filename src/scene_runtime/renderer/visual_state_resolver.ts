@@ -16,6 +16,7 @@
 // Unknown formula tokens fail loud.
 
 import type { ObjectVisualStates, VisualStateCase } from "../layout/types.js";
+import { resolve_color_result } from "./material_color.js";
 
 //============================================
 // Public input and output types
@@ -24,13 +25,12 @@ import type { ObjectVisualStates, VisualStateCase } from "../layout/types.js";
 // Current object state: flat map of field_name -> primitive value.
 export type ObjectState = Record<string, string | number | boolean>;
 
-// One material entry from a protocol's materials.yaml (nested display_color).
+// One material entry from a protocol's materials.yaml. display_color is a
+// single scalar hex string (^#[0-9a-f]{6}$); this project targets light
+// scientific workspaces only, so there is no light/dark theme branch.
 export interface MaterialEntry {
   label: string;
-  display_color: {
-    light: string;
-    dark: string;
-  };
+  display_color: string;
 }
 
 // Per-protocol material registry. Each protocol package carries its own
@@ -54,12 +54,11 @@ export interface TextOverlay {
 
 export type Overlay = FillOverlay | TextOverlay;
 
-// Theme-resolved material color pair, or null when the material has no color
-// (sentinel material such as `empty`, or no material field on the object).
-export type MaterialColor = {
-  light: string;
-  dark: string;
-} | null;
+// Resolved material color: a single scalar `#rrggbb` hex string, or null when
+// the material has no color (sentinel material such as `empty`, or no material
+// field on the object). There is no theme branch (see
+// docs/specs/MATERIAL_CONVENTION.md).
+export type MaterialColor = string | null;
 
 // Resolved, renderable description of one object instance.
 export interface ResolvedVisualState {
@@ -80,21 +79,8 @@ export interface ResolvedVisualState {
 }
 
 //============================================
-// Sentinel material names (no authored color)
+// Material-name state fields
 //============================================
-
-// State sentinels and protocol-output sentinels are exempt from materials.yaml
-// registration (see docs/specs/MATERIAL_CONVENTION.md). They carry no color.
-const SENTINEL_MATERIALS: ReadonlySet<string> = new Set([
-  "empty",
-  "mixed",
-  "cells",
-  "formazan",
-  "waste_mtt",
-  "waste_media",
-  "waste_drug",
-  "waste_buffer",
-]);
 
 // Material-name state fields recognized on objects and tools.
 const MATERIAL_FIELDS: readonly string[] = ["material_name", "held_material_name"];
@@ -432,49 +418,39 @@ function resolve_svg_asset(
 // Material color resolution
 //============================================
 
-// Resolve the object's current material color from the per-protocol registry.
-// Returns null for sentinel materials and for objects without a material field.
-function resolve_material_color(
-  state: ObjectState,
-  material_registry: MaterialRegistry | null,
-): { color: MaterialColor; material_name: string | null } {
-  let material_name: string | null = null;
+// Read the object's current material name from the recognized material-name
+// state fields. Returns null when the object declares no material field.
+function read_material_name(state: ObjectState): string | null {
   for (const f of MATERIAL_FIELDS) {
     if (f in state) {
       const v = state[f]!;
       if (typeof v === "string") {
-        material_name = v;
+        return v;
       }
-      break;
+      return null;
     }
   }
-  if (material_name === null) {
-    return { color: null, material_name: null };
+  return null;
+}
+
+// Resolve the object's current material color from the per-protocol registry.
+// Delegates the name -> color mapping to the single color source in
+// material_color.ts (see docs/specs/MATERIAL_CONVENTION.md): scalar
+// display_color, built-in `mixed` gray, sentinel/empty null, no theme branch.
+// The render path here is fail-loud: a ColorResult failure (a content defect,
+// e.g. a non-sentinel material missing from a provided registry, or an invalid
+// scalar color) is rethrown so the resolver surfaces it through the same loud
+// channel as every other render defect, rather than being silently dropped.
+function resolve_material_color(
+  state: ObjectState,
+  material_registry: MaterialRegistry | null,
+): { color: MaterialColor; material_name: string | null } {
+  const material_name = read_material_name(state);
+  const result = resolve_color_result(material_name, material_registry);
+  if (!result.ok) {
+    throw new Error(`visual_state_resolver: ${result.reason}`);
   }
-  if (SENTINEL_MATERIALS.has(material_name)) {
-    return { color: null, material_name };
-  }
-  // A NULL registry means there is no protocol material context at all (the
-  // diagnostic scene-viewer render path mounts scenes without a protocol, so no
-  // per-package materials.yaml is in scope). In that case there is no color to
-  // resolve: surface the material name with a null color rather than throwing.
-  // This is distinct from a PROVIDED registry (even an empty {}), which is the
-  // authoritative closed set for an active protocol: a non-sentinel material
-  // missing from a provided registry stays a loud error (a real content defect).
-  if (material_registry === null) {
-    return { color: null, material_name };
-  }
-  if (!(material_name in material_registry)) {
-    // Non-sentinel material not registered in this protocol's materials.yaml.
-    throw new Error(
-      `visual_state_resolver: material '${material_name}' not in protocol material registry`,
-    );
-  }
-  const entry = material_registry[material_name]!;
-  return {
-    color: { light: entry.display_color.light, dark: entry.display_color.dark },
-    material_name,
-  };
+  return { color: result.color, material_name };
 }
 
 //============================================

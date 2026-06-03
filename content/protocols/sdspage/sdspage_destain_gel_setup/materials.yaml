@@ -1,18 +1,12 @@
 materials:
   destain:
     label: "Destain solution (20% MeOH / 10% AcOH)"
-    display_color:
-      light: "#dbeafe"
-      dark: "#dbeafe"
+    display_color: "#dbeafe"
 
   ddh2o:
     label: "Deionized water"
-    display_color:
-      light: "#f0f9ff"
-      dark: "#f0f9ff"
+    display_color: "#f0f9ff"
 
   waste:
     label: "Liquid waste"
-    display_color:
-      light: "#8a7f73"
-      dark: "#8a7f73"
+    display_color: "#8a7f73"

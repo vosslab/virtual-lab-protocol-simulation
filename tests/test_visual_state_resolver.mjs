@@ -20,11 +20,11 @@ import { resolve_visual_state } from "../src/scene_runtime/renderer/visual_state
 const MATERIAL_REGISTRY = {
   pbs: {
     label: "1x PBS",
-    display_color: { light: "#076dad", dark: "#b8e5ff" },
+    display_color: "#076dad",
   },
   cell_suspension: {
     label: "Cell suspension",
-    display_color: { light: "#935d00", dark: "#f0d0a0" },
+    display_color: "#935d00",
   },
 };
 
@@ -70,7 +70,7 @@ describe("fill_height capacity_ml", () => {
   test("material color resolves from registry", () => {
     const state = { material_name: "pbs", material_volume: 4 };
     const out = resolve_visual_state(visual_states, state, MATERIAL_REGISTRY);
-    assert.deepEqual(out.material_color, { light: "#076dad", dark: "#b8e5ff" });
+    assert.equal(out.material_color, "#076dad");
     assert.equal(out.data_attrs["data-material"], "pbs");
   });
 

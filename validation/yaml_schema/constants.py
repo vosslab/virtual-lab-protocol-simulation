@@ -162,7 +162,7 @@ LEARNING_SEQUENCE_RUNNER_PREFIXES = {
 # MATERIAL SCHEMA CONSTANTS
 # ============================================
 
-# spec: docs/specs/MATERIAL_CONVENTION.md "Materials YAML schema"
+# spec: docs/specs/MATERIAL_YAML_FORMAT.md "Material entry schema"
 MATERIAL_REQUIRED_KEYS = {'label', 'display_color'}
 MATERIAL_OPTIONAL_KEYS = set()
 MATERIAL_ALL_KEYS = MATERIAL_REQUIRED_KEYS | MATERIAL_OPTIONAL_KEYS

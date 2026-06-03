@@ -1,6 +1,4 @@
 materials:
   protein_sample_denatured:
     label: Heat-denatured mixed sample
-    display_color:
-      light: "#3730a3"
-      dark: "#3730a3"
+    display_color: "#3730a3"

@@ -1,6 +1,4 @@
 materials:
   running_buffer_1x_used:
     label: Used 1x running buffer
-    display_color:
-      light: "#d9cbb0"
-      dark: "#d9cbb0"
+    display_color: "#d9cbb0"

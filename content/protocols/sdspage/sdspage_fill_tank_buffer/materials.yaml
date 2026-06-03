@@ -1,6 +1,4 @@
 materials:
   running_buffer_1x:
     label: Tris/Glycine/SDS 1x running buffer
-    display_color:
-      light: "#e8dcc0"
-      dark: "#e8dcc0"
+    display_color: "#e8dcc0"

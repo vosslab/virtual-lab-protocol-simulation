@@ -1,72 +1,48 @@
 materials:
   carboplatin:
     label: "Carboplatin solution"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_10mmol:
     label: "10 mM carboplatin master stock"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_400umol:
     label: "400 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_4umol:
     label: "4 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_8umol:
     label: "8 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_20umol:
     label: "20 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_40umol:
     label: "40 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_80umol:
     label: "80 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   carboplatin_200umol:
     label: "200 &micro;M carboplatin"
-    display_color:
-      light: "#a719db"
-      dark: "#a719db"
+    display_color: "#a719db"
 
   metformin:
     label: "Metformin solution"
-    display_color:
-      light: "#00775f"
-      dark: "#00775f"
+    display_color: "#00775f"
 
   metformin_1mol:
     label: "1 M metformin master stock"
-    display_color:
-      light: "#00775f"
-      dark: "#00775f"
+    display_color: "#00775f"
 
   metformin_200mmol:
     label: "200 mM metformin"
-    display_color:
-      light: "#00775f"
-      dark: "#00775f"
+    display_color: "#00775f"

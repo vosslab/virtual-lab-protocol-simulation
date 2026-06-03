@@ -28,8 +28,10 @@ Related docs:
   protocol-side vocabulary; the boundary section below cross-references
   it.
 - [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md) -- the shared placement system.
-- [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) -- the shared material
-  vocabulary and liquid rendering convention referenced from object render rules.
+- [MATERIAL_VOCABULARY.md](MATERIAL_VOCABULARY.md) -- the closed material terms,
+  sentinel/visible classification, and color resolver invariants.
+- [MATERIAL_CONVENTION.md](MATERIAL_CONVENTION.md) -- the runtime render-effect
+  and target vocabulary; the rendering contract for object visual states.
 
 ## What a scene is
 

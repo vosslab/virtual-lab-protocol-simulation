@@ -83,6 +83,7 @@ Curriculum content lives under `content/protocols/<cluster>/<protocol_name>/`. D
 
 Authoring vocabularies (protocol, object, scene, material, and the supporting
 subsystem vocabularies in [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md),
+[specs/MATERIAL_VOCABULARY.md](specs/MATERIAL_VOCABULARY.md),
 [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md), and
 [specs/SVG_PIPELINE.md](specs/SVG_PIPELINE.md)) are closed surfaces. Authors compose
 existing terms; they do not invent new ones by editing YAML alone.

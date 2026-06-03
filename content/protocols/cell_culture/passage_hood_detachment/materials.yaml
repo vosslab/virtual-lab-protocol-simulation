@@ -1,21 +1,13 @@
 materials:
   media:
     label: Growth media
-    display_color:
-      light: "#6c6c00"
-      dark: "#6c6c00"
+    display_color: "#6c6c00"
   pbs:
     label: Phosphate buffered saline (PBS)
-    display_color:
-      light: "#076dad"
-      dark: "#076dad"
+    display_color: "#076dad"
   trypsin:
     label: Trypsin-EDTA
-    display_color:
-      light: "#d40000"
-      dark: "#d40000"
+    display_color: "#d40000"
   cell_suspension:
     label: Cell suspension
-    display_color:
-      light: "#cc0066"
-      dark: "#cc0066"
+    display_color: "#cc0066"

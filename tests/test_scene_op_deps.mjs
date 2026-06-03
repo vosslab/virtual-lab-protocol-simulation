@@ -91,7 +91,12 @@ describe("scene_op_deps ObjectStateChange", () => {
   });
 
   test("auto-seeds a subpart target on first write", () => {
-    const store = create_scene_store();
+    // Registry-backed subpart material acceptance (D1): the store carries a
+    // registry registering the written material. The test's subject is the
+    // auto-seed-on-first-write behavior, not material acceptance.
+    const store = create_scene_store({
+      media: { label: "Growth media", display_color: "#6c6c00" },
+    });
     seed_scene(store);
     const deps = build_store_scene_op_deps(store, () => {});
     // conical_15ml_rack.slot_0 is NOT in the seed list; the deps must seed it.
@@ -225,7 +230,12 @@ describe("scene_op_deps SceneChange reset matrix", () => {
   });
 
   test("subpart state clears on leaving the scene", () => {
-    const store = create_scene_store();
+    // A subpart material write is registry-backed (D1): the store carries a
+    // registry that registers the written material so acceptance passes. The
+    // test's subject is the scene-change reset, not material acceptance.
+    const store = create_scene_store({
+      media: { label: "Growth media", display_color: "#6c6c00" },
+    });
     seed_scene(store);
     const deps = deps_with_next_scene(store, [{ target: "centrifuge", object_name: "centrifuge" }]);
     // Write a subpart in the current scene (auto-seeded).

@@ -147,6 +147,52 @@ Completion criteria:
 * docs/FILE_STRUCTURE.md and build scripts agree.
 * Build and generated protocol / scene artifacts are reproducible.
 
+Per-well material state plan status (dynamic-coalescing-flask.md, 2026-06-03)
+
+The material plan is COMPLETE for per-well material state and rendering. Automated gates
+GREEN. Per-well render proven via production Playwright harness (carboplatin -> #a719db
+by `data-subpart-name`, no DOM hand-editing).
+
+What shipped (M0-M4):
+
+* M0: material spec split into 5 docs under docs/specs/MATERIAL_*.md.
+* M0: SVG-namespacing/DOM-isolation contract (D13).
+* M1: per-subpart state in Python stepper; 834 state_value_not_allowed -> 0.
+* M1: D6 validator rule for structured well-plate objects.
+* M1: materials.yaml scalar display_color sweep + validator flip.
+* M1: gen_protocols.py scalar fix; MATERIAL_SENTINEL_ALLOWLIST narrowed to {empty, mixed}.
+* M2: PATH-B geometry (96 wells); determinism test.
+* M3: scalar color resolver (material_color.ts D3); generic subpart interpreter
+  (subpart_visual_state_renderer.tsx); narrow store accessor (getSubpartStateField).
+* Runtime store: accepts registry-backed subpart material_name (mirrors stepper D1).
+* M4: production render-path per-well color proven; walkthrough spec retained, honestly
+  reports blocker.
+
+Visible-UI per-well-protocol walkthrough (separate web_ui task, not a material item):
+
+* Task #28: wire visible `adjust` gesture affordance. This is a separate web_ui task in
+  the same gesture family as the landed select and type gestures (WS-M5-ST). It gates the
+  end-to-end visible walkthrough for per-well protocols (e.g.,
+  plate_drug_treatment_drug_addition) but is not a material-rendering defect and is out of
+  scope for the material plan. No design decision yet on the visible affordance shape
+  (slider, text input, dial, stepper).
+
+Non-goals of this plan:
+
+* Amount-layer (volume-driven) well rendering: wells rendering fill level by
+  `material_volume` value, not just material_name color tint.
+* Dark-mode rendering: per-subpart renderer uses the single scalar `display_color`;
+  light/dark variants are not in scope.
+* Anchor/vessel-fill render path for bottles and flasks: the CSS/SVG recolor path
+  (using `anchor_liquid_clip`/`anchor_liquid_bounds`) awaits the SVG M5 lookup seam.
+
+Future (task #27):
+
+* Declared registry-backed field affordance: retire the [empty, mixed] syntactic seam
+  in well_plate_96.yaml by making the registry-backed field explicitly declared in the
+  object schema. No runtime behavior change required; schema + validator + generator
+  changes only.
+
 Longer-term roadmap
 
 * Add richer lab gestures beyond click and adjust as needed.

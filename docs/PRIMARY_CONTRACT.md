@@ -21,7 +21,7 @@ New contract items require user approval. Agents may not add, remove, or edit co
 
    Scene object layout is handled by the layout engine. Scenes must use the layout engine for positioning clickable objects. Custom geometry is allowed only for subparts inside a structured scientific object, such as wells inside a plate, tubes inside a rack, lanes inside a gel, or marks inside an instrument display. The structured object itself still remains a YAML-declared scene object placed by the layout engine.
 
-   See [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md). All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md). Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
+   See [specs/LAYOUT_ENGINE.md](specs/LAYOUT_ENGINE.md). All materials in objects (liquids, mixtures, suspensions, waste, future solids) are handled by the material system: terms and classification in [specs/MATERIAL_VOCABULARY.md](specs/MATERIAL_VOCABULARY.md), render convention in [specs/MATERIAL_CONVENTION.md](specs/MATERIAL_CONVENTION.md). Materials should not be hard-coded into objects. This will take effort before inserting a new asset.
 
 4. **A mini-protocol is not complete until the visible interaction works.**
    A walkthrough script must load the page normally and complete the mini-protocol through the same visible UI path a student would use. The script must click visible scene objects, buttons, modal controls, and answer choices. It must not advance progress by calling internal APIs, mutating game state, forcing scene changes, or using hidden controls.

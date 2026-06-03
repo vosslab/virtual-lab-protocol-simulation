@@ -204,18 +204,22 @@ function mount(): void {
   // is always correct regardless of CSS constraints.
   const scene_viewport = measure_scene_viewport(active_scene_root);
 
-  // Reactive scene store shared by the Solid renderer and the store-driven
-  // scene_operations (WS-M3-D). The renderer seeds it from each rendered
-  // scene's PipelineResult; scene operations write it after a validated
-  // interaction, and the Solid renderer reacts.
-  const scene_store = create_scene_store();
-
   // Per-protocol material registry (WS-M3-D). Each protocol package carries its
   // own materials.yaml; gen_protocols.py emits PROTOCOL_MATERIALS keyed by
   // protocol_name. A protocol with no materials.yaml has no entry; null then
   // disables material-color resolution (geometry/asset/overlays still resolve).
   // sequence_runner registries aggregate their constituent mini-protocols.
   const material_registry: MaterialRegistry | null = PROTOCOL_MATERIALS[protocol_name] ?? null;
+
+  // Reactive scene store shared by the Solid renderer and the store-driven
+  // store-driven scene_operations. The renderer seeds it from each rendered
+  // scene's PipelineResult; scene operations write it after a validated
+  // interaction, and the Solid renderer reacts. The material registry backs the
+  // D1 acceptance check for material_name / held_material_name writes so a
+  // registered drug (carboplatin, mtt) is accepted at the store and reaches the
+  // well, while an unregistered non-sentinel name is rejected loudly -- the same
+  // predicate the Python stepper applies.
+  const scene_store = create_scene_store(material_registry);
 
   // The active scene's Solid root dispose handle. render_scene.ts owns the
   // dispose; protocol_host holds the latest handle so host teardown (and the

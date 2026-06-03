@@ -1,16 +1,10 @@
 materials:
   coomassie_stain:
     label: Coomassie R-250 stain solution
-    display_color:
-      light: "#1e40af"
-      dark: "#1e40af"
+    display_color: "#1e40af"
   coomassie_stain_used:
     label: Used Coomassie stain
-    display_color:
-      light: "#172554"
-      dark: "#172554"
+    display_color: "#172554"
   ddh2o:
     label: Deionized water
-    display_color:
-      light: "#f0f9ff"
-      dark: "#f0f9ff"
+    display_color: "#f0f9ff"

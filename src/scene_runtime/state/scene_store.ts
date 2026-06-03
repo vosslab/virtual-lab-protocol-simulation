@@ -47,6 +47,19 @@ import {
   OBJECT_SUBPART_STATE_SCHEMAS,
 } from "../../../generated/object_library.js";
 import type { ObjectStateSchema } from "../layout/types.js";
+import type { MaterialRegistry } from "../renderer/visual_state_resolver.js";
+import { is_accepted_material_name } from "../renderer/material_acceptance.js";
+
+// Declared material-identity fields whose acceptance is registry-backed (D1),
+// not gated by the object's declared enum `allowed` list. The shared
+// well_plate_96 object declares only the sentinel floor [empty, mixed]; the
+// curriculum's drug/assay names live in each protocol's materials.yaml. These
+// two fields route through is_accepted_material_name; every other enum field
+// keeps the generic closed-vocabulary membership check.
+const REGISTRY_BACKED_MATERIAL_FIELDS: ReadonlySet<string> = new Set([
+  "material_name",
+  "held_material_name",
+]);
 
 //============================================
 // Public value types
@@ -123,6 +136,25 @@ export interface SceneStore {
   // reads reactively to drive highlight. A partial write leaves the unset
   // flag unchanged.
   set_flags(target: string, flags: FlagWrite): void;
+  // NARROW reactive read of one declared subpart state field. Returns the
+  // current value of state field `fieldName` for the subpart
+  // `placementId + "." + subpartName` (e.g. ("treatment_plate", "A1",
+  // "material_name")). The structured-subpart renderer calls this
+  // inside a reactive context (memo/effect) so the read subscribes
+  // fine-grained: A1 and A2 are separate targets and update independently.
+  //
+  // This is the ONLY read surface the renderer needs for per-subpart state;
+  // it never returns the whole TargetState record or the SceneStoreState
+  // tree, so a consumer cannot subscribe to the entire store by accident.
+  //
+  // Returns undefined when the subpart target is not seeded or the field is
+  // not present on it. Reading it inside a reactive scope still subscribes to
+  // the slot, so a later seed + write becomes visible reactively.
+  getSubpartStateField(
+    placementId: string,
+    subpartName: string,
+    fieldName: string,
+  ): StateValue | undefined;
   // Clear all targets. The store returns to its empty initial condition.
   reset(): void;
 }
@@ -216,7 +248,28 @@ function build_default_flags(): TargetRuntimeFlags {
 // An undeclared key throws (ObjectStateChange writing an undeclared key is a
 // hard error per the task contract). Values are also checked against the
 // field's declared primitive type so a typed write cannot corrupt the store.
-function validate_partial(target: string, schema: ObjectStateSchema, partial: StatePartial): void {
+//
+// material_registry is the active protocol's materials.yaml registry (or null
+// for a diagnostic render). It backs the D1 acceptance check for SUBPART
+// material-identity fields; object-level fields and non-material fields ignore
+// it.
+//
+// is_subpart selects the validation regime for material_name / held_material_name
+// exactly as the Python stepper does (validation/stepper/state.py): a SUBPART
+// material field (a structured-container well/tube/lane) validates by the
+// registry-backed D1 predicate, skipping its declared enum `allowed` floor,
+// because the shared object declares only the sentinel floor [empty, mixed] and
+// the curriculum owns the drug/assay names per protocol. An OBJECT-level material
+// field keeps the generic enum `allowed` gate unchanged (its own object enumerates
+// the materials it can hold). Non-material fields keep the generic enum gate at
+// both levels.
+function validate_partial(
+  target: string,
+  schema: ObjectStateSchema,
+  partial: StatePartial,
+  is_subpart: boolean,
+  material_registry: MaterialRegistry | null,
+): void {
   for (const key of Object.keys(partial)) {
     const field_def = schema[key];
     if (field_def === undefined) {
@@ -224,14 +277,46 @@ function validate_partial(target: string, schema: ObjectStateSchema, partial: St
     }
     const value = partial[key];
     validate_value_type(target, field_def.field_name, field_def.type, value);
+    // SUBPART material-identity fields (material_name / held_material_name) accept
+    // by the registry-backed D1 predicate (sentinel-or-built-in OR a name
+    // registered in the active protocol), NOT against the object's declared enum
+    // `allowed` floor. This mirrors the Python stepper so a per-well drug write
+    // (carboplatin, mtt) that the stepper accepts also reaches the well at runtime.
+    if (is_subpart && REGISTRY_BACKED_MATERIAL_FIELDS.has(field_def.field_name)) {
+      validate_material_name(target, field_def.field_name, value, material_registry);
+      continue;
+    }
     // Closed-vocabulary enum membership check: an enum write whose value is not
     // in the declared `allowed` set is a bad ObjectStateChange and must fail
     // loud at the store, never degrade silently in the renderer. Only enforced
     // when the schema actually declares an `allowed` list (some enum fields are
-    // open-ended sentinels like material_name and declare none).
+    // open-ended sentinels and declare none). Object-level material fields stay
+    // on this path: their own object enumerates the materials it can hold.
     if (field_def.type === "enum" && field_def.allowed !== undefined) {
       validate_enum_membership(target, field_def.field_name, field_def.allowed, value);
     }
+  }
+}
+
+// Check a material-identity value against the registry-backed D1 predicate. A
+// value that is neither a built-in (`empty`, `mixed`) nor registered in the
+// active protocol's registry is a bad ObjectStateChange and throws at the store,
+// exactly as the Python stepper rejects an unregistered non-sentinel material.
+function validate_material_name(
+  target: string,
+  field_name: string,
+  value: StateValue | undefined,
+  material_registry: MaterialRegistry | null,
+): void {
+  // value is already proven defined + string-typed by validate_value_type.
+  if (typeof value !== "string") {
+    return;
+  }
+  if (!is_accepted_material_name(value, material_registry)) {
+    throw new Error(
+      `scene_store: material field "${field_name}" on target "${target}" got "${value}",` +
+        ` not a built-in (empty, mixed) and not registered in the active protocol material registry`,
+    );
   }
 }
 
@@ -287,7 +372,15 @@ function validate_value_type(
 
 // Create a fresh reactive scene store. Each protocol mount creates one
 // store; tests create one per case for isolation.
-export function create_scene_store(): SceneStore {
+//
+// material_registry is the active protocol's materials.yaml registry (the
+// PROTOCOL_MATERIALS entry for this protocol), or null when there is no protocol
+// material context. It backs the D1 acceptance check for material_name /
+// held_material_name writes so a registered drug (carboplatin, mtt) is accepted
+// while an unregistered non-sentinel name is rejected -- mirroring the Python
+// stepper. The default null keeps existing call sites and tests that write only
+// sentinels (empty, mixed) working unchanged.
+export function create_scene_store(material_registry: MaterialRegistry | null = null): SceneStore {
   const [state, set_state] = createStore<SceneStoreState>({});
 
   //----------------------------------------
@@ -379,7 +472,10 @@ export function create_scene_store(): SceneStore {
     const entry = require_target(target);
     const schema = resolve_schema(entry.object_name, entry.subpart);
     // Validate before writing so a bad key/value leaves the store untouched.
-    validate_partial(target, schema, partial);
+    // SUBPART material-identity fields validate against the active protocol
+    // registry (D1); object-level and non-material fields keep the declared-schema
+    // checks. entry.subpart is non-null exactly for a subpart target.
+    validate_partial(target, schema, partial, entry.subpart !== null, material_registry);
     // Partial-merge: only the named fields change; the rest stay as-is.
     set_state(
       produce((store: SceneStoreState) => {
@@ -446,6 +542,31 @@ export function create_scene_store(): SceneStore {
   }
 
   //----------------------------------------
+  // NARROW reactive read of one subpart state field. The full subpart target
+  // is placementId + "." + subpartName. Each property access below walks the
+  // Solid store proxy, so reading this inside a memo/effect subscribes only to
+  // that one field on that one subpart -- A1 and A2 are distinct targets and
+  // track independently. No object is copied out, so the consumer cannot
+  // accidentally subscribe to the whole TargetState or the store tree.
+  function getSubpartStateField(
+    placementId: string,
+    subpartName: string,
+    fieldName: string,
+  ): StateValue | undefined {
+    // Build the subpart target name ("treatment_plate.A1").
+    const target = `${placementId}.${subpartName}`;
+    // Reactive index into the store map. Reading a missing slot still
+    // subscribes to it, so a later seed becomes visible reactively.
+    const entry = state[target];
+    if (entry === undefined) {
+      return undefined;
+    }
+    // Reactive index into this subpart's declared-state record. Returns the
+    // field value directly; an absent field yields undefined.
+    return entry.state[fieldName];
+  }
+
+  //----------------------------------------
   function reset(): void {
     // Full reset: the store returns to its empty initial condition. Use the
     // explicit delete pass so no stale keys survive (see replace_all).
@@ -459,6 +580,7 @@ export function create_scene_store(): SceneStore {
     set_object_state,
     set_cursor,
     set_flags,
+    getSubpartStateField,
     reset,
   };
   return store;

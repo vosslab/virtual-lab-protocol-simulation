@@ -49,9 +49,19 @@ class LoadedContentTree:
 		"""
 		return self.database.resolve_target(target)
 
-	def get_state_field(self, object_name: str, field_name: str) -> dict | None:
-		"""Resolve a state field declaration for an object."""
-		return self.database.resolve_state_field(object_name, field_name)
+	def get_state_field(
+		self,
+		object_name: str,
+		field_name: str,
+		subpart_targeted: bool = False,
+	) -> dict | None:
+		"""
+		Resolve a state field declaration for an object.
+
+		Pass subpart_targeted=True to select the applies_to: subpart decl for a
+		structured object; the default selects the object-level decl.
+		"""
+		return self.database.resolve_state_field(object_name, field_name, subpart_targeted)
 
 	def get_material(self, protocol_name: str, material_name: str) -> dict | None:
 		"""Resolve a material by protocol and name."""

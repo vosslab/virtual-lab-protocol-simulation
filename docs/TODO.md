@@ -391,9 +391,29 @@ bare-bottle base SVGs land, flip `tests/test_object_asset_refs.py` from the
 baseline-counter pattern to a hard `assert missing == 0` so new gaps fail CI
 on introduction rather than drift the floor.
 
-- Implement `well_plate_96` per-well distinct material state: protocols write drug material
-  names (`carboplatin`, etc.) into `well_plate_96.material_name`, whose plate-level enum is
-  only `[empty, media, cells]`, producing 834 `state_value_not_allowed` STEPPER errors that
-  FAIL the validator. Resolution requires per-subpart material tracking plus a fill runtime;
-  at that point remove the object-level `material_name`/`material_volume`/`material_container`
+- (RESOLVED) Per-well distinct material state for `well_plate_96` -- material plan
+  COMPLETE (plan `dynamic-coalescing-flask.md` M0-M4). Per-well material state (834
+  `state_value_not_allowed` -> 0), registry-backed material acceptance, scalar color
+  resolution, PATH-B subpart geometry, and production render-path per-well color are all
+  done. Per-well render proven via production Playwright harness
+  (`tests/playwright/test_subpart_well_plate_render.mjs`). When per-well fill rendering
+  ships, remove the object-level `material_name`/`material_volume`/`material_container`
   placeholders from `content/objects/plate/well_plate_96.yaml`.
+
+- (#28) [EXPERT_CODER] Wire visible `adjust` gesture affordance. This is a SEPARATE
+  web_ui gesture task, out of scope for the material plan and not a material-rendering
+  defect. Required before per-well protocols (e.g., `plate_drug_treatment_drug_addition`)
+  can complete through visible UI. Until this lands, the contract-item-4 visible-UI
+  per-well-protocol walkthrough cannot complete. The walkthrough spec lives at
+  `tests/playwright/test_per_well_drug_walkthrough.mjs` and honestly reports the blocker.
+  Wire `adjust` in the same web_ui gesture family as the landed `select` and `type`
+  gestures (WS-M5-ST). Blocked on design decision for the visible affordance UI (slider,
+  text input, dial, stepper?).
+
+- (#27, FUTURE, not this plan) Declared registry-backed field affordance: retire the
+  `[empty, mixed]` syntactic seam in `well_plate_96.yaml`. Currently the runtime accepts
+  registry-backed drug material names via `seed_target` + validated `set_object_state`,
+  but the YAML `allowed` field is `[empty, mixed]`. A future affordance would make the
+  registry-backed field explicitly declared in the object schema so the enum is not a
+  conflicting surface. Scope: object schema + validator + generator changes; no runtime
+  behavior change required.

@@ -73,6 +73,9 @@ class ObjectValidator:
 		if 'structure' in obj:
 			findings.extend(self._validate_structure(obj, path))
 
+		# Structured-well-plate per-subpart material rule (D6 gate)
+		findings.extend(self._validate_well_plate_subpart_material(obj, path))
+
 		# Channel addressing validation (if present)
 		if 'channel_addressing' in obj:
 			findings.extend(self._validate_channel_addressing(obj, path))
@@ -649,6 +652,81 @@ class ObjectValidator:
 						severity=Severity.ERROR,
 						message=f"channel_addressing.addressable_subpart_kinds contains '{kind}' not in {CHANNEL_ADDRESSABLE_KINDS}",
 					))
+
+		return findings
+
+	def _validate_well_plate_subpart_material(self, obj: dict, path: str) -> list:
+		"""
+		Validate per-D6: a structured object with structure.subpart_kind: well
+		must declare both material_name and material_volume as per-subpart
+		state fields (applies_to: subpart). Reject if either is absent.
+
+		This rule fires ONLY for objects whose structure declares
+		subpart_kind: well. It does not apply to rack (tube), gel (lane),
+		or any non-well structured object, nor to unstructured plates.
+		"""
+		findings = []
+
+		# Rule only fires for well-subpart structured objects
+		structure = obj.get('structure')
+		if not isinstance(structure, dict):
+			return findings
+		if structure.get('subpart_kind') != 'well':
+			return findings
+
+		# Collect all (field_name, applies_to) pairs from state_fields
+		state_fields = obj.get('state_fields', [])
+		if not isinstance(state_fields, list):
+			return findings
+
+		# Build set of field_names that are explicitly applies_to: subpart
+		subpart_fields: set[str] = set()
+		for field in state_fields:
+			if not isinstance(field, dict):
+				continue
+			applies_to = field.get('applies_to', 'object')
+			if applies_to == 'subpart':
+				field_name = field.get('field_name', '')
+				if field_name:
+					subpart_fields.add(field_name)
+
+		# Check for required per-subpart fields
+		has_material_name = 'material_name' in subpart_fields
+		has_material_volume = 'material_volume' in subpart_fields
+
+		if not has_material_name and not has_material_volume:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=(
+					"structured well plate (structure.subpart_kind: well) must declare "
+					"both material_name and material_volume with applies_to: subpart; "
+					"neither is present (see docs/specs/OBJECT_YAML_FORMAT.md 'per-subpart material')"
+				),
+			))
+		elif not has_material_name:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=(
+					"structured well plate (structure.subpart_kind: well) must declare "
+					"material_name with applies_to: subpart; field is absent or declared "
+					"with applies_to: object (see docs/specs/OBJECT_YAML_FORMAT.md 'per-subpart material')"
+				),
+			))
+		elif not has_material_volume:
+			findings.append(Finding(
+				path=path,
+				lineno=None,
+				severity=Severity.ERROR,
+				message=(
+					"structured well plate (structure.subpart_kind: well) must declare "
+					"material_volume with applies_to: subpart; field is absent or declared "
+					"with applies_to: object (see docs/specs/OBJECT_YAML_FORMAT.md 'per-subpart material')"
+				),
+			))
 
 		return findings
 
