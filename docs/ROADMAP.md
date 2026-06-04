@@ -33,15 +33,12 @@ Scope:
 * Professor / help overlay
 * Results screen
 * Basic shell styling
-* Keyboard accessibility for all shell controls
 * Shell CSS isolation from scene internals
 
 Completion criteria:
 
 * Shell components are mounted through the protocol host.
 * Each shell component has stable test selectors.
-* Keyboard access works for tray and modals.
-* Modal focus behavior is correct.
 * Shell components do not mutate protocol state directly.
 * Shell CSS does not target renderer-owned scene elements.
 
@@ -201,8 +198,12 @@ Longer-term roadmap
 * Expand protocol library coverage.
 * Add optional debug panel for protocol state snapshots.
 * Improve authoring diagnostics for protocol / scene mismatches.
-* Add full accessibility review after core shell surfaces are complete.
 * Consider mobile / touch support only after desktop protocol flow is stable.
+
+Note: keyboard navigation, ARIA, focus management, and screen-reader support for shell
+controls are deferred. See the "Accessibility scope" subsection in
+[PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) for the current scope boundary and the
+conditions under which accessibility work would be re-prioritized.
 
 
 Planned features and improvements for the cell culture simulation game.

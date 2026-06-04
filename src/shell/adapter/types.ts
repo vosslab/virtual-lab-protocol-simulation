@@ -253,7 +253,7 @@ export interface ProtocolShellEmitter {
 export type UnsubscribeFn = () => void;
 
 //============================================
-// Protocol configuration types (WP-2-5)
+// Protocol configuration types
 //============================================
 
 // Closed enum for protocol kinds per PRIMARY_SPEC.md and PROTOCOL_VOCABULARY.md
@@ -268,7 +268,7 @@ export interface LearningBlock {
 
 // Validator reference (preset + optional typed parameters).
 // Authored YAML uses `value` only. The legacy `params` alias was removed
-// in WS-M1-E (vocabulary-closure patch).
+// by the vocabulary-closure patch.
 export interface ValidatorReference {
   readonly preset: ValidatorPreset;
   readonly value?: Readonly<Record<string, string | number | boolean>>;

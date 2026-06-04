@@ -3,7 +3,7 @@
 // Pure resolver for object visual_states. Maps an object's current state plus
 // its authored visual_states map plus the active protocol's material registry
 // into a renderable description. This file has NO DOM and NO Solid; it is a
-// pure function consumed by the Solid scene components (WS-M3-C).
+// pure function consumed by the Solid scene components.
 //
 // The resolver implements the closed formula mini-language tokens that
 // authored objects actually use (see

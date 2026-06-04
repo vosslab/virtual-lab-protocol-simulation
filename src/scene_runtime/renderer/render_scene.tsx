@@ -13,8 +13,8 @@
 //     for source compatibility with existing callers.
 //   - mountScene(root, result, opts): the full mount surface. Accepts an
 //     external store + material registry and RETURNS a dispose handle. The
-//     store-driven scene_operations layer (WS-M3-D) uses this so it can hold
-//     the store, drive ObjectStateChange writes, and dispose on SceneChange.
+//     store-driven scene_operations layer uses this so it can hold the store,
+//     drive ObjectStateChange writes, and dispose on SceneChange.
 //
 // Report-mode + structural-guard behavior, label sizing, background, and the
 // depth-ordered item/label emission all live in scene_view.tsx now; this file
@@ -24,7 +24,7 @@
 // render() must be disposed to release its effects/listeners. renderScene
 // tracks one dispose per root in a WeakMap and calls it before mounting a new
 // root into the same element. protocol_host calls the returned dispose on
-// teardown; SceneChange (WS-M3-D) disposes before mounting the next scene.
+// teardown; SceneChange disposes before mounting the next scene.
 
 import { render } from "solid-js/web";
 

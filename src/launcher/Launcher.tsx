@@ -171,6 +171,16 @@ export function Launcher(props: LauncherProps): JSXElement {
         <p class="launcher-subtitle">Interactive mini-protocols and full sequence runners.</p>
       </header>
       <main class="launcher-main">
+        <Show when={runners_sorted.length === 0 && mini_groups.length === 0}>
+          <div class="launcher-empty-state" data-launcher-empty>
+            <p class="launcher-empty-heading">No protocols available</p>
+            <p class="launcher-empty-body">
+              No protocol files were found in the index. If you are a course author, add
+              mini-protocol or sequence-runner YAML files under content/ and rebuild the protocol
+              index. If you are a student, contact your instructor.
+            </p>
+          </div>
+        </Show>
         <Show when={runners_sorted.length > 0}>
           <section class="launcher-tier launcher-tier-runners" data-launcher-tier="runners">
             <h2 class="tier-heading">Full protocols</h2>

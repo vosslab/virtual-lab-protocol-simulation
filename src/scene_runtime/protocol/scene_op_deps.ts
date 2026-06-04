@@ -1,7 +1,7 @@
 // src/scene_runtime/protocol/scene_op_deps.ts
 //
-// Store-driven SceneOpDeps factory (WS-M3-D). Replaces the imperative
-// attribute-poking build_scene_op_deps that lived in protocol_host.tsx. Each
+// Store-driven SceneOpDeps factory. Replaces the imperative attribute-poking
+// build_scene_op_deps that lived in protocol_host.tsx. Each
 // scene operation primitive writes the reactive scene_store (or drives the
 // scene re-render) so the Solid renderer updates visible state automatically;
 // no DOM attribute is patched here.
@@ -20,7 +20,7 @@
 //     (scene-local vessel state clears; cursor-held tool/material persists;
 //     active-target + selected flags clear; subpart state clears on leaving
 //     the scene) and disposing the prior Solid root.
-//   - LayoutMove        -> Option A (DECIDED via WS-M2-I, zero authored uses):
+//   - LayoutMove        -> Option A (zero authored uses found in corpus scan):
 //     explicitly unsupported this pass. Reported as a clear no-op (warn), not
 //     a silent skip and not a throw, so an authored protocol that later adds a
 //     LayoutMove surfaces in logs without crashing a student walkthrough.
@@ -31,7 +31,7 @@
 //
 // References:
 //   - docs/PRIMARY_SPEC.md (scene operations, reset policy)
-//   - docs/active_plans/active/ migration plan WS-M3-D (LayoutMove Option A,
+//   - docs/active_plans/active/ (LayoutMove Option A decision,
 //     reset policy test matrix, walker debug surface)
 //   - src/scene_runtime/state/scene_store.ts (store API)
 //   - src/scene_runtime/protocol/scene_operations.ts (SceneOpDeps interface)
@@ -182,7 +182,7 @@ export function build_store_scene_op_deps(
 
     //----------------------------------------
     apply_layout_move(op: LayoutMoveOp): void {
-      // Option A (DECIDED via WS-M2-I scan: zero authored LayoutMove uses).
+      // Option A (zero authored LayoutMove uses found in corpus scan).
       // Explicitly unsupported this pass: report a clear no-op rather than
       // silently skipping or throwing. If an authored protocol ever emits a
       // LayoutMove, this warning surfaces it for the follow-up that adds the

@@ -126,6 +126,18 @@ auditing existing canonical docs or onboarding a new spec.
 See [specs/SPEC_DESIGN_CHECKLIST.md](specs/SPEC_DESIGN_CHECKLIST.md) for the full
 checklist.
 
+## Accessibility scope
+
+The scene runtime is pointer-optimized. Keyboard navigation, ARIA roles, screen-reader
+support, and focus management are not current product goals for the scene interaction
+layer. Pointer-user UX (hover feedback, click targets, visual state changes) is in scope
+and must remain correct.
+
+This is a reversible scope note about current focus, not a permanent contract policy.
+Accessibility work for shell controls (tray, modals, toasts) is deferred until the shell
+UI surface is functionally stable. See [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md)
+for invariants that would govern any future accessibility commitment.
+
 ## Visual integrity: never crop scientific assets
 
 A scene cannot pass visual review if any scientific SVG asset is cropped or aspect-distorted enough to change what the object is.

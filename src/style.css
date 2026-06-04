@@ -1,5 +1,5 @@
 /*============================================
-  Protocol host page: six-region grid layout (WP-FRAME-1, M2)
+  Protocol host page: six-region grid layout
 
   Grid column/row layout:
     Columns: [avatar+bubble region] [outline column]
@@ -140,7 +140,7 @@
 }
 
 /*============================================
-  Scene panel: bounded aspect-locked panel (WP-FRAME-1)
+  Scene panel: bounded aspect-locked panel
   #scene-root is INSIDE this panel, NOT full viewport.
   Items position in scene-percent relative to #scene-root,
   which is contained inside .scene-panel.
@@ -192,7 +192,7 @@
 }
 
 /*============================================
-  Right column: read-only step outline (WP-CHROME-2)
+  Right column: read-only step outline
   Spans both scene and guidance rows.
 ============================================*/
 
@@ -260,7 +260,7 @@
 }
 
 /*============================================
-  Guidance bar: current step prompt (WP-CHROME-3)
+  Guidance bar: current step prompt
   Sits below the scene panel, above nothing.
   Teal background matching the layout doc.
 ============================================*/
@@ -357,10 +357,11 @@
   cursor: pointer;
 }
 
-/* Baseline: faint static hover/focus outline */
+/* Baseline: faint static hover outline */
+/* :focus-visible is inert under the current pointer-only scope (tabIndex removed from scene items); kept as reversible infrastructure */
 [data-item-id]:hover,
 [data-item-id]:focus-visible {
-  outline: 2px solid rgba(37, 99, 235, 0.35);
+  outline: 2px solid rgba(37, 99, 235, 0.45);
   outline-offset: 3px;
 }
 

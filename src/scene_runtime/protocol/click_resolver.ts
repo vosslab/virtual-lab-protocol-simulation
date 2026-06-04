@@ -19,7 +19,7 @@
 // Related:
 // - src/scene_runtime/renderer/render_item.ts (sets [data-item-id])
 // - docs/specs/SCENE_VOCABULARY.md (placement / data-item-id contract)
-// - runtime_seam_plan.md WP-2-4 (this module's spec)
+// - docs/active_plans/active/web_ui/runtime_seam_plan.md (click resolver spec)
 
 import type { Gesture } from "../../shell/adapter/types.js";
 

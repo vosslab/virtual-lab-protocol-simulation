@@ -1,6 +1,6 @@
 // src/scene_runtime/protocol/walker_debug.ts
 //
-// Read-only walker/debug surface (WS-M3-D). Restores window.PROTOCOL_STEPS and
+// Read-only walker/debug surface. Restores window.PROTOCOL_STEPS and
 // window.gameState that the Solid HUD migration dropped, so the canonical
 // walker (tests/playwright/e2e/protocol_walkthrough_yaml.mjs) and ad-hoc
 // debugging can read protocol progress. These are FROZEN contract surfaces per

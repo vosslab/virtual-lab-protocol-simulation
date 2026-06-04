@@ -1,6 +1,6 @@
 // src/shell/regions/GuidanceBar.tsx
 //
-// WP-CHROME-3: Current step guidance bar content component.
+// Current step guidance bar content component.
 // Renders snapshot.current_prompt inside the teal guidance bar.
 // The CSS rule adds the "Current Step Guidance: " prefix via ::before,
 // so this component renders only the prompt text.

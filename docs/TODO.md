@@ -21,17 +21,16 @@ Shell UI completion
 
 * Build the inventory / tool tray UI.
     * Use data-tray-tool-id.
-    * Confirm keyboard access and selected-state semantics.
 * Build modal UI for choice and direct-tool interactions.
-    * Focus trap required.
     * Escape cancels without advancing protocol state.
-    * Focus returns to invoking element.
 * Build feedback toast UI.
     * Success and retry states.
-    * Use role="status".
 * Build professor / help overlay.
-    * Same focus behavior as modal.
     * No protocol mutation from help UI.
+
+Note: keyboard navigation, ARIA roles, focus traps, and screen-reader support for shell
+controls are out of current scope. See the "Accessibility scope" subsection in
+[PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) for the rationale and reversal path.
 * Add basic visual styling for the shell.
     * Keep shell CSS scoped to shell selectors only.
     * Do not target scene internals, SVG elements, [data-item-id], or renderer-owned classes.

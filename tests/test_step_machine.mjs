@@ -72,6 +72,16 @@ function make_config(steps, entry_step) {
   };
 }
 
+// Stub lookup for the M1B-2 seam. These existing tests do not target the
+// load-time value pass (WP-TEST adds those). The pass is now live (WP-CHECK),
+// so the stub must report a RESOLVED field, not an unknown reference: every
+// authored value in these fixtures is numeric, so a typed int result accepts
+// them without coupling these tests to real object schemas. Returning
+// unknown_object here would wrongly fail-load every mini_protocol fixture.
+function stub_lookup_state_field() {
+  return { kind: "typed", field_type: "int" };
+}
+
 function build_harness(config) {
   const events = [];
   const scene_ops = [];
@@ -79,7 +89,9 @@ function build_harness(config) {
   const reducer = create_snapshot_reducer(config);
   const emitter = createProtocolShellEmitter(start_snapshot, reducer);
   emitter.subscribe((event) => events.push(event));
-  const machine = create_step_machine(config, emitter, (op) => scene_ops.push(op));
+  const machine = create_step_machine(config, emitter, (op) => scene_ops.push(op), {
+    lookup_state_field: stub_lookup_state_field,
+  });
   return { machine, events, scene_ops, emitter };
 }
 
@@ -564,5 +576,100 @@ describe("step machine - current_tip snapshot field", () => {
     machine.handle_click("obj_a", "click");
     // Step B has no tip; current_tip must be null.
     assert.strictEqual(emitter.get_snapshot().current_tip, null);
+  });
+});
+
+describe("step machine - load-time preset validation", () => {
+  test("throws when a step preset sits in an interaction slot", () => {
+    // sequence_complete is a step-family preset; placing it in the
+    // interaction.validator slot must fail loud at load with locating fields.
+    const bad_step = {
+      step_name: "misslotted_interaction",
+      prompt: "Click obj_a",
+      sequence: [
+        {
+          target: "obj_a",
+          gesture: "click",
+          validator: { preset: "sequence_complete" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "sequence_complete" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: null,
+    };
+    const cfg = make_config([bad_step], "misslotted_interaction");
+    const start_snapshot = initial_snapshot(cfg.protocol_name);
+    const reducer = create_snapshot_reducer(cfg);
+    const emitter = createProtocolShellEmitter(start_snapshot, reducer);
+    let thrown = null;
+    try {
+      create_step_machine(cfg, emitter, () => {}, {
+        lookup_state_field: stub_lookup_state_field,
+      });
+    } catch (err) {
+      thrown = err;
+    }
+    assert.ok(thrown, "expected create_step_machine to throw");
+    const msg = String(thrown.message);
+    // Protocol name, step name, slot kind, interaction index, offending preset,
+    // and the expected interaction-family must all appear.
+    assert.ok(msg.includes("test_proto"), "missing protocol name");
+    assert.ok(msg.includes("misslotted_interaction"), "missing step name");
+    assert.ok(msg.includes("interaction.validator"), "missing slot kind");
+    // Assert the interaction is identified in the message without coupling to
+    // a literal "index 0" phrasing that may change with implementation refactors.
+    assert.ok(
+      msg.includes("interaction") && msg.includes("0"),
+      "missing interaction location indicator",
+    );
+    assert.ok(msg.includes("sequence_complete"), "missing offending preset");
+    assert.ok(msg.includes("interaction-family"), "missing expected family");
+  });
+
+  test("throws when an interaction preset sits in a step slot", () => {
+    // correct_target is an interaction-family preset; placing it in the
+    // step_validator slot must fail loud at load with locating fields.
+    const bad_step = {
+      step_name: "misslotted_step",
+      prompt: "Click obj_a",
+      sequence: [
+        {
+          target: "obj_a",
+          gesture: "click",
+          validator: { preset: "correct_target" },
+          response: { scene_operations: [] },
+        },
+      ],
+      step_validator: { preset: "correct_target" },
+      outcome: { on_success: "complete", on_failure: "retry" },
+      next_step: null,
+    };
+    const cfg = make_config([bad_step], "misslotted_step");
+    const start_snapshot = initial_snapshot(cfg.protocol_name);
+    const reducer = create_snapshot_reducer(cfg);
+    const emitter = createProtocolShellEmitter(start_snapshot, reducer);
+    let thrown = null;
+    try {
+      create_step_machine(cfg, emitter, () => {}, {
+        lookup_state_field: stub_lookup_state_field,
+      });
+    } catch (err) {
+      thrown = err;
+    }
+    assert.ok(thrown, "expected create_step_machine to throw");
+    const msg = String(thrown.message);
+    // Step slot has no interaction index; the rest of the fields must appear.
+    assert.ok(msg.includes("test_proto"), "missing protocol name");
+    assert.ok(msg.includes("misslotted_step"), "missing step name");
+    assert.ok(msg.includes("step_validator"), "missing slot kind");
+    assert.ok(msg.includes("correct_target"), "missing offending preset");
+    assert.ok(msg.includes("step-family"), "missing expected family");
+  });
+
+  test("valid protocol passes load-time preset validation", () => {
+    // A fully valid protocol must construct without throwing.
+    const cfg = make_config([make_click_step("a", "obj_a", null)], "a");
+    assert.doesNotThrow(() => build_harness(cfg));
   });
 });

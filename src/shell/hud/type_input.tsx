@@ -1,6 +1,6 @@
 // src/shell/hud/type_input.tsx
 //
-// Visible text-input affordance for the `type` gesture (WS-M5-ST).
+// Visible text-input affordance for the `type` gesture.
 //
 // `type` is one of the closed gesture set (PROTOCOL_VOCABULARY.md). A `type`
 // interaction asks the student to enter a value (e.g. a counted cell number)
@@ -38,8 +38,9 @@ export interface TypeInputProps {
   // active_interaction_gesture === "type".
   snapshot: Accessor<ShellViewSnapshot>;
   // Commit handler. Receives the active target and the raw typed text. Wired
-  // by protocol_host.tsx to step_machine.handle_type_commit.
-  on_commit: (target: string, typed_text: string) => void;
+  // by protocol_host.tsx to step_machine.handle_type_commit. Returns true when
+  // the commit was accepted, false when it was rejected by the validator.
+  on_commit: (target: string, typed_text: string) => boolean;
 }
 
 //============================================
@@ -51,29 +52,38 @@ export function TypeInput(props: TypeInputProps): JSXElement {
   // new `type` interaction starts with an empty field.
   const [draft, set_draft] = createSignal("");
 
+  // Visible rejection feedback flag. Set to true on a rejected commit; cleared
+  // on the next accepted commit or when the active interaction target changes.
+  const [rejected, set_rejected] = createSignal(false);
+
   // Whether the active interaction is a `type` gesture.
   const is_type_active = (): boolean => props.snapshot().active_interaction_gesture === "type";
 
   // The active target for the current type interaction (null when not typing).
   const active_target = (): string | null => props.snapshot().active_interaction_target;
 
-  // Reset the draft when the active target changes (new interaction/step).
+  // Reset the draft and clear any rejection feedback when the active target
+  // changes (new interaction or step started).
   let last_target: string | null = null;
   createEffect(() => {
     const target = active_target();
     if (target !== last_target) {
       last_target = target;
       set_draft("");
+      set_rejected(false);
     }
   });
 
-  // Commit the current draft text for the active target.
+  // Commit the current draft text for the active target. Updates the rejection
+  // feedback signal based on whether the runtime accepted the committed value.
   function commit(): void {
     const target = active_target();
     if (target === null) {
       return;
     }
-    props.on_commit(target, draft());
+    const accepted = props.on_commit(target, draft());
+    // Show visible feedback when the commit is rejected by the validator.
+    set_rejected(!accepted);
   }
 
   // Commit on Enter for keyboard reachability.
@@ -144,6 +154,18 @@ export function TypeInput(props: TypeInputProps): JSXElement {
         >
           Commit
         </button>
+        <Show when={rejected()}>
+          <span
+            data-type-reject-message=""
+            style={{
+              "font-size": "13px",
+              color: "#c0392b",
+              "margin-left": "6px",
+            }}
+          >
+            Entry not accepted, try again
+          </span>
+        </Show>
       </div>
     </Show>
   );

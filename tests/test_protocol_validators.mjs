@@ -146,6 +146,103 @@ test("validate_target_with_value: right target wrong value rejects with wrong_va
 });
 
 //============================================
+// validate_target_with_value: authored-value-directed coercion (M1B)
+//
+// Coercion is directed by the AUTHORED expected value's JS type. Numeric-looking
+// observed strings match numeric expected values; malformed numeric observed
+// values emit a single named developer diagnostic and fail normally; string and
+// boolean expected values are compared same-type with no numeric coercion.
+//============================================
+
+test("validate_target_with_value: numeric expected matches numeric-string observed", () => {
+  const interaction = make_interaction("pipette", "target_with_value", {
+    set_volume: 100,
+  });
+  const result = validate_target_with_value(interaction, "pipette", { set_volume: "100" });
+  assert.strictEqual(result.ok, true);
+  assert.strictEqual(result.reason, null);
+});
+
+test("validate_target_with_value: malformed numeric observed emits named diagnostic and fails", () => {
+  const interaction = make_interaction("pipette", "target_with_value", {
+    set_volume: 100,
+  });
+  const original_warn = console.warn;
+  const warnings = [];
+  console.warn = (message) => warnings.push(message);
+  let result;
+  try {
+    result = validate_target_with_value(interaction, "pipette", { set_volume: "not_a_number" });
+  } finally {
+    console.warn = original_warn;
+  }
+  assert.strictEqual(result.ok, false);
+  assert.strictEqual(result.reason, "wrong_value");
+  assert.ok(warnings.length >= 1, "expected at least one warning");
+  // The diagnostic names the object.field, the expected value, and observed.
+  assert.match(warnings[0], /pipette\.set_volume/);
+  assert.match(warnings[0], /100/);
+  assert.match(warnings[0], /not_a_number/);
+});
+
+test("validate_target_with_value: string expected is not numerically coerced", () => {
+  const interaction = make_interaction("pipette", "target_with_value", {
+    material_name: "PBS",
+  });
+  // Same string matches.
+  const ok = validate_target_with_value(interaction, "pipette", { material_name: "PBS" });
+  assert.strictEqual(ok.ok, true);
+  // A different string fails (no coercion turns these equal).
+  const bad = validate_target_with_value(interaction, "pipette", { material_name: "DMEM" });
+  assert.strictEqual(bad.ok, false);
+  assert.strictEqual(bad.reason, "wrong_value");
+});
+
+test("validate_target_with_value: boolean expected is not parsed from strings", () => {
+  const interaction = make_interaction("flask", "target_with_value", {
+    is_capped: true,
+  });
+  // Same-type boolean matches.
+  const ok = validate_target_with_value(interaction, "flask", { is_capped: true });
+  assert.strictEqual(ok.ok, true);
+  // The string "true" must NOT be parsed into the boolean true.
+  const bad = validate_target_with_value(interaction, "flask", { is_capped: "true" });
+  assert.strictEqual(bad.ok, false);
+  assert.strictEqual(bad.reason, "wrong_value");
+});
+
+//============================================
+// validate_final_state_matches: authored-value-directed coercion (M1B)
+//============================================
+
+test("validate_final_state_matches: numeric expected matches numeric-string observed", () => {
+  const step = make_step(1, "final_state_matches", {
+    pipette: { set_volume: 100 },
+  });
+  const snapshot = { pipette: { set_volume: "100" } };
+  assert.strictEqual(validate_final_state_matches(step, snapshot), true);
+});
+
+test("validate_final_state_matches: malformed numeric observed emits named diagnostic and fails", () => {
+  const step = make_step(1, "final_state_matches", {
+    pipette: { set_volume: 100 },
+  });
+  const snapshot = { pipette: { set_volume: "oops" } };
+  const original_warn = console.warn;
+  const warnings = [];
+  console.warn = (message) => warnings.push(message);
+  let ok;
+  try {
+    ok = validate_final_state_matches(step, snapshot);
+  } finally {
+    console.warn = original_warn;
+  }
+  assert.strictEqual(ok, false);
+  assert.ok(warnings.length >= 1, "expected at least one warning");
+  assert.match(warnings[0], /pipette\.set_volume/);
+});
+
+//============================================
 // validate_sequence_complete
 //============================================
 

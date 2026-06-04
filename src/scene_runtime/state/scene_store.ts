@@ -3,10 +3,10 @@
 // Reactive scene-object state store backed by Solid's createStore.
 //
 // This store is the single source of truth for per-target scene object
-// state during a running protocol. The Solid renderer (WS-M3-C) reads from
-// it so visual updates follow state writes automatically, and the
-// store-driven scene_operations rewrite (WS-M3-D) writes to it in place of
-// the imperative Map/Set in protocol_host.tsx build_scene_op_deps.
+// state during a running protocol. The Solid renderer reads from it so visual
+// updates follow state writes automatically, and the store-driven
+// scene_operations layer writes to it in place of the imperative Map/Set
+// in protocol_host.tsx build_scene_op_deps.
 //
 // What this store is:
 //   - Runtime state keyed by target, including subpart targets

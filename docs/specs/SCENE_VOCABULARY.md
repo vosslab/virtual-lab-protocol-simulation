@@ -248,12 +248,11 @@ object with one of three closed values: `"active"`, `"candidate"`, or
 analogous to how `data-item-id` identifies the scene object, but it
 describes derived affordance state, not authoring identity.
 
-Every clickable scene object is keyboard-focusable: the renderer stamps
-`role="button"` and `tabIndex={0}` on the item root, and the accessible
-name is sourced from `BoundPlacement.label` (the same visible object label
-displayed beneath the item). For a `select` step this means the accessible
-name reflects only the visible object identity and must not reveal which
-candidate is the correct answer beyond what a sighted student already sees.
+Scene objects are pointer-clickable only. The renderer does not stamp
+`role="button"` or `tabIndex={0}` on item roots. Keyboard navigation, ARIA
+roles, and screen-reader support are explicitly out of current scope for the
+scene interaction layer; see the "Accessibility scope" section in
+[PRIMARY_DESIGN.md](../PRIMARY_DESIGN.md) for the full scope note.
 
 ## Scene-level UI feedback
 

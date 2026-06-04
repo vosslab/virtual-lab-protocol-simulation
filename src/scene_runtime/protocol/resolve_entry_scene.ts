@@ -3,7 +3,7 @@
 // Entry-scene resolution for protocols. Extracted from protocol_host.tsx so
 // that unit tests can import and exercise the logic without a DOM environment.
 //
-// Resolution precedence (WP-RESOLVE-1):
+// Resolution precedence:
 //   1. The entry step's optional `scene:` field.
 //   2. The first SceneChange.to_scene in the entry step's sequence (compat fallback).
 //   3. Throw a clear error.

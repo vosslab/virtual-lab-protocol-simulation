@@ -1,6 +1,6 @@
 // src/shell/regions/StepOutline.tsx
 //
-// WP-CHROME-2: Read-only step outline component.
+// Read-only step outline component.
 // Renders the ordered list of protocol steps as cards in the outline panel.
 // Highlights the current step, greys previous steps, and shows upcoming steps.
 // NO click navigation. Display only.
@@ -91,6 +91,7 @@ export function StepOutline(props: StepOutlineProps): JSXElement {
             data-step-name={step.step_name}
             data-step-status={status()}
             aria-current={status() === "current" ? "step" : undefined}
+            title={step.prompt}
           >
             {short_label(step.prompt)}
           </div>

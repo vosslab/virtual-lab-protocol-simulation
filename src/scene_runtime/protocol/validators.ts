@@ -71,6 +71,96 @@ export interface InteractionValidationResult {
 }
 
 //============================================
+// Authored-value-directed comparison
+//============================================
+
+// Compare an authored expected value to a runtime-observed value, with
+// coercion DIRECTED BY THE AUTHORED EXPECTED VALUE ONLY. This mirrors the
+// proven `coerce_typed_text` precedent in step_machine.ts (which keys coercion
+// off the authored expected value's JS type), so authored numeric-looking
+// strings ("10") match numeric runtime state (10) instead of silently failing
+// strict `!==` and causing perpetual retry. The declared object-schema field
+// type is intentionally NOT consulted: it is not reachable at the validator
+// site (the schema lives in scene_store.ts), so coercion stays local to these
+// two predicates and follows the authored value.
+//
+// Direction rules (no JS loose equality, no truthiness, never coerce both
+// sides generally):
+// - expected number  -> parse the observed value to a finite number, compare
+//                       numerically; never coerce the expected side.
+// - expected boolean -> require same-type boolean comparison; never parse
+//                       "1"/"true" into a boolean.
+// - expected string  -> same-type strict string comparison; no numeric
+//                       coercion (enum/material values are strings).
+//
+// `context` names object/field for the malformed-numeric diagnostic.
+function authored_value_matches(
+  expected_value: string | number | boolean,
+  observed_value: unknown,
+  context: string,
+): boolean {
+  // Expected is numeric: parse the observed side to a finite number.
+  if (typeof expected_value === "number") {
+    const observed_number = coerce_observed_to_number(observed_value);
+    if (!Number.isFinite(observed_number)) {
+      // Malformed: expected numeric but observed is not finite-parseable.
+      // Emit a single NAMED developer diagnostic and fail normally (not a
+      // silent unexplained false, not a student-facing reason).
+      emit_malformed_numeric_diagnostic(context, expected_value, observed_value);
+      return false;
+    }
+    return observed_number === expected_value;
+  }
+
+  // Expected is boolean: same-type comparison only; never parse strings.
+  if (typeof expected_value === "boolean") {
+    return observed_value === expected_value;
+  }
+
+  // Expected is string (or any other type): strict same-type comparison.
+  return observed_value === expected_value;
+}
+
+// Convert an observed runtime value to a number for numeric comparison. A value
+// that is already a number passes through; a string is trimmed and parsed; any
+// other type yields NaN (which the caller treats as malformed). An empty string
+// yields NaN rather than 0, so blank observed state is treated as malformed.
+function coerce_observed_to_number(observed_value: unknown): number {
+  if (typeof observed_value === "number") {
+    return observed_value;
+  }
+  if (typeof observed_value === "string") {
+    const trimmed = observed_value.trim();
+    if (trimmed.length === 0) {
+      return NaN;
+    }
+    return Number(trimmed);
+  }
+  return NaN;
+}
+
+// Emit a single named developer diagnostic when an authored numeric expected
+// value is compared against an observed value that cannot be parsed to a finite
+// number. There is no dedicated validator diagnostic sink in the protocol
+// layer; the established precedent (scene_op_deps.ts apply_layout_move) is a
+// narrow developer-console warning guarded by an eslint-disable comment. This
+// follows that precedent and does NOT create a student-facing feedback
+// contract.
+function emit_malformed_numeric_diagnostic(
+  context: string,
+  expected_value: number,
+  observed_value: unknown,
+): void {
+  // eslint-disable-next-line no-console -- named developer diagnostic for malformed authored numeric; no student-facing sink exists
+  console.warn(
+    `[validator] malformed numeric comparison at ${context}: ` +
+      `expected number ${String(expected_value)} but observed value ` +
+      `${JSON.stringify(observed_value)} is not finite-parseable; ` +
+      `treating as validation failure.`,
+  );
+}
+
+//============================================
 // Interaction validators
 //============================================
 
@@ -99,7 +189,7 @@ export function validate_correct_target(
  *
  * Preset: `correct_choice`
  *
- * Corrected semantics (WS-M5-ST, ratified by the repo owner): `select` is
+ * Corrected semantics (ratified by the repo owner): `select` is
  * the primary way a student interacts with a protocol -- it means "choose the
  * next-step object among the scene objects already present in the scene." There
  * is NO separate answer/choice-list concept. The selectable set is simply the
@@ -158,9 +248,21 @@ export function validate_target_with_value(
   // Compare each expected field in the validator parameters to the
   // value map. If any field does not match, fail.
   const expected_fields = interaction.validator.parameters;
-  for (const [key, expected_value] of Object.entries(expected_fields)) {
+  for (const [key, raw_expected] of Object.entries(expected_fields)) {
     const actual_value = value_map[key];
-    if (actual_value !== expected_value) {
+    // Authored-value-directed comparison: coerce the observed side by the
+    // authored expected value's JS type so numeric-looking strings match.
+    const context = `${interaction.target}.${key}`;
+    // Guard: authored values must be string, number, or boolean. Any other
+    // type (object, null, undefined) cannot be an authored validator value.
+    if (
+      typeof raw_expected !== "string" &&
+      typeof raw_expected !== "number" &&
+      typeof raw_expected !== "boolean"
+    ) {
+      return { ok: false, reason: "wrong_value" };
+    }
+    if (!authored_value_matches(raw_expected, actual_value, context)) {
       return { ok: false, reason: "wrong_value" };
     }
   }
@@ -222,11 +324,22 @@ export function validate_final_state_matches(
       return false;
     }
 
-    for (const [field_name, expected_value] of Object.entries(
+    for (const [field_name, raw_expected] of Object.entries(
       expected_fields as Record<string, unknown>,
     )) {
       const actual_value = actual_object_state[field_name];
-      if (actual_value !== expected_value) {
+      // Authored-value-directed comparison: coerce the observed side by
+      // the authored expected value's JS type so numeric-looking strings match.
+      const context = `${object_name}.${field_name}`;
+      // Guard: authored values must be string, number, or boolean.
+      if (
+        typeof raw_expected !== "string" &&
+        typeof raw_expected !== "number" &&
+        typeof raw_expected !== "boolean"
+      ) {
+        return false;
+      }
+      if (!authored_value_matches(raw_expected, actual_value, context)) {
         return false;
       }
     }

@@ -138,7 +138,11 @@ function build_harness(config) {
     apply_layout_move: (op) => scene_ops.push({ type: "layout", op }),
     start_timed_wait: (op) => scene_ops.push({ type: "wait", op }),
   });
-  const machine = create_step_machine(config, emitter, scene_op_handler);
+  const machine = create_step_machine(config, emitter, scene_op_handler, {
+    // Stub lookup for the M1B-2 seam. WP-SEAM only threads it through; the
+    // load-time value pass (WP-CHECK/WP-TEST) is not exercised here.
+    lookup_state_field: () => ({ kind: "unknown_object" }),
+  });
   return { machine, events, scene_ops, emitter };
 }
 

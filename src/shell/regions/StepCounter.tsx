@@ -1,6 +1,6 @@
 // src/shell/regions/StepCounter.tsx
 //
-// WP-CHROME-3: Step counter component.
+// Step counter component.
 // Renders "completed / total" from snapshot.progress inside the green
 // step-counter box. No score -- step count only per the plan (no scoring
 // system exists in spec or runtime).

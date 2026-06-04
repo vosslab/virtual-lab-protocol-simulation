@@ -210,7 +210,7 @@ export interface PlacementAuthored {
   _from?: "base" | "own";
   // Placeholder mode only: true when the object's SVG assets are missing from assets/.
   // Set by pipeline/gen_scene_index.py --missing-svg=placeholder. Never true in
-  // a strict (normal) build. WP-RESOLVE-3 reads this to render a labeled placeholder.
+  // a strict (normal) build. The renderer reads this to render a labeled placeholder.
   missing_svg?: true;
 }
 

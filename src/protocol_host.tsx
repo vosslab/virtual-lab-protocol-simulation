@@ -1,9 +1,9 @@
 // src/protocol_host.tsx
 //
-// WP-3-8 protocol host page entry. Wires every M2 runtime module + every
-// M3 shell component into one mountable page that loads a specific
-// protocol selected by URL query (?protocol=<name>) or by an inlined
-// window.__PROTOCOL_NAME__ fallback set by the per-protocol HTML wrapper.
+// Protocol host page entry. Wires every runtime module and every shell
+// component into one mountable page that loads a specific protocol selected
+// by URL query (?protocol=<name>) or by an inlined window.__PROTOCOL_NAME__
+// fallback set by the per-protocol HTML wrapper.
 //
 // Mount order:
 //   1. Resolve protocol name (query string or window fallback).
@@ -20,10 +20,9 @@
 //
 // Debug-only query params (documented in seam_interface.md):
 //   ?shell=off       -- skip shell mount; runtime still runs.
-//   ?walker=expose   -- set window.__shellEmitter for the M4 walker.
+//   ?walker=expose   -- set window.__shellEmitter for the walker.
 //
 // References:
-//   - docs/active_plans/active/web_ui/runtime_seam_plan.md (WP-3-8)
 //   - docs/active_plans/active/web_ui/seam_interface.md (debug flags)
 //   - src/shell/adapter/types.ts (closed seam contract)
 //   - docs/PRIMARY_CONTRACT.md item 4 (visible UI contract)
@@ -33,6 +32,7 @@ import type {
   ProtocolConfig,
   ProtocolShellEmitter,
   ShellViewSnapshot,
+  UnsubscribeFn,
 } from "./shell/adapter/types";
 
 import { PROTOCOLS } from "../generated/protocols.js";
@@ -43,6 +43,7 @@ import { runPipeline } from "./scene_runtime/layout/index.js";
 import { mountScene, type SceneDispose } from "./scene_runtime/renderer/index.js";
 import type { MaterialRegistry } from "./scene_runtime/renderer/visual_state_resolver.js";
 import { create_scene_store } from "./scene_runtime/state/scene_store.js";
+import { create_state_field_lookup } from "./scene_runtime/state/state_field_lookup_impl.js";
 import { PROTOCOL_MATERIALS } from "../generated/protocol_materials.js";
 
 import { createProtocolShellEmitter } from "./scene_runtime/protocol/emitter.js";
@@ -71,7 +72,7 @@ import { TypeInput } from "./shell/hud/type_input.js";
 
 // Walker exposes the emitter via window.__shellEmitter when
 // ?walker=expose is set. Inlined fallback for the protocol name is
-// optional and set by the per-protocol HTML wrapper (WP-3-10).
+// optional and set by the per-protocol HTML wrapper.
 declare global {
   interface Window {
     __shellEmitter?: ProtocolShellEmitter;
@@ -174,11 +175,11 @@ function mount(): void {
   // Resolve the entry scene.
   const scene_name = resolve_entry_scene_name_bound(config);
 
-  // WP-FRAME-2: measure actual #scene-root pixel dimensions before running the
-  // pipeline. getBoundingClientRect() forces a synchronous layout reflow so the
-  // CSS grid and flex sizing is resolved. The bounded panel is NOT full viewport
-  // and may have a different aspect ratio than DEFAULT_VIEWPORT (1920x1080).
-  // The pipeline's vertical_layout stage uses viewport W/H to compute item heights
+  // Measure actual #scene-root pixel dimensions before running the pipeline.
+  // getBoundingClientRect() forces a synchronous layout reflow so the CSS grid
+  // and flex sizing is resolved. The bounded panel is NOT full viewport and may
+  // have a different aspect ratio than DEFAULT_VIEWPORT (1920x1080). The
+  // pipeline's vertical_layout stage uses viewport W/H to compute item heights
   // as percentages. Passing the actual panel size makes item heights correct for
   // the bounded box: rendered pixel aspect = (visualWidth/height) * (panelW/panelH)
   // = aspect_svg (correct). Using the wrong viewport aspect ratio here would cause
@@ -205,7 +206,7 @@ function mount(): void {
   // is always correct regardless of CSS constraints.
   const scene_viewport = measure_scene_viewport(active_scene_root);
 
-  // Per-protocol material registry (WS-M3-D). Each protocol package carries its
+  // Per-protocol material registry. Each protocol package carries its
   // own materials.yaml; gen_protocols.py emits PROTOCOL_MATERIALS keyed by
   // protocol_name. A protocol with no materials.yaml has no entry; null then
   // disables material-color resolution (geometry/asset/overlays still resolve).
@@ -242,7 +243,7 @@ function mount(): void {
       viewport: scene_viewport,
     });
 
-    // WP-RESOLVE-2: fail-loud empty-scene guard (via assert_scene_not_empty).
+    // Fail-loud empty-scene guard (via assert_scene_not_empty).
     // A student-visible protocol must render a non-empty scene. dev_smoke is exempt.
     assert_scene_not_empty(
       pipeline_result.final.length,
@@ -282,7 +283,8 @@ function mount(): void {
   // item's highlight memo tracks the snapshot reactively (Solid store-dep rule)
   // and updates automatically on every step/interaction/scene change. No store
   // write, no createEffect. Threaded by reference into render_protocol_scene.
-  const affordance_snapshot_signal = subscribeEmitterToSnapshot(emitter);
+  const affordance_binding = subscribeEmitterToSnapshot(emitter);
+  const affordance_snapshot_signal = affordance_binding.snapshot;
   const active_affordance: ActiveAffordanceAccessor = () => {
     const snap = affordance_snapshot_signal();
     return {
@@ -294,7 +296,7 @@ function mount(): void {
   // First scene render. Runs after the emitter + affordance accessor exist so
   // the renderer mounts with a live highlight derivation from the start.
   render_protocol_scene(scene_name);
-  // Store-driven scene-op deps (WS-M3-D). ObjectStateChange/CursorAttach write
+  // Store-driven scene-op deps. ObjectStateChange/CursorAttach write
   // the reactive store; SceneChange re-renders the target scene through
   // render_protocol_scene (which disposes the prior Solid root and reseeds the
   // store, applying the reset policy) while the deps preserve cursor-held state
@@ -303,7 +305,14 @@ function mount(): void {
   const scene_op_handler = create_scene_op_handler(
     build_store_scene_op_deps(scene_store, render_protocol_scene),
   );
-  const step_machine = create_step_machine(active_config, emitter, scene_op_handler);
+  // Read-only declared-field lookup seam. Built over the generated object schemas;
+  // the construction layer owns the impl so the protocol layer stays free of any
+  // scene_store/registry import. The load-time authored-value validation pass
+  // consumes this inside the step machine.
+  const lookup_state_field = create_state_field_lookup();
+  const step_machine = create_step_machine(active_config, emitter, scene_op_handler, {
+    lookup_state_field,
+  });
 
   // Restore the read-only walker/debug surfaces (window.PROTOCOL_STEPS +
   // window.gameState) the Solid HUD migration dropped. Read-only: the walker
@@ -329,7 +338,7 @@ function mount(): void {
     step_machine.handle_click(target, resolved_gesture);
   });
 
-  // Mount the visible type-input affordance (WS-M5-ST). It lives in its own
+  // Mount the visible type-input affordance. It lives in its own
   // overlay container appended to the document body so it works whether or not
   // the HUD shell is mounted (?shell=off). It shows only while the active
   // interaction's gesture is `type`; a real fill + commit routes the typed text
@@ -338,7 +347,8 @@ function mount(): void {
   const type_input_root = document.createElement("div");
   type_input_root.id = "type-input-root";
   document.body.appendChild(type_input_root);
-  const type_snapshot_signal = subscribeEmitterToSnapshot(emitter);
+  const type_binding = subscribeEmitterToSnapshot(emitter);
+  const type_snapshot_signal = type_binding.snapshot;
   const dispose_type_input = render(
     () => (
       <TypeInput
@@ -352,10 +362,15 @@ function mount(): void {
   );
 
   // Optional shell mount. ?shell=off keeps the runtime running but
-  // leaves the shell DOM empty for independence testing (WP-3-11).
+  // leaves the shell DOM empty for independence testing.
   const shell_off = read_query_param("shell") === "off";
+  // Hold the shell binding's unsubscribe handle at function scope so the
+  // pagehide teardown can release it. Null when the shell is not mounted.
+  let shell_unsubscribe: UnsubscribeFn | null = null;
   if (!shell_off) {
-    const snapshot_signal = subscribeEmitterToSnapshot(emitter);
+    const shell_binding = subscribeEmitterToSnapshot(emitter);
+    const snapshot_signal = shell_binding.snapshot;
+    shell_unsubscribe = shell_binding.unsubscribe;
     // Pass config.steps to ProtocolHud so the read-only step outline can render.
     // sequence_runner protocols have no steps list; mini_protocols and dev_smoke do.
     const protocol_steps = active_config.steps ?? [];
@@ -384,6 +399,14 @@ function mount(): void {
         type_input_root.parentNode.removeChild(type_input_root);
       }
       dispose_walker_surface();
+      // Release the emitter snapshot subscriptions so listeners do not
+      // accumulate across navigations. These bindings mount outside a Solid
+      // owner, so onCleanup does not apply; pagehide is the release path.
+      affordance_binding.unsubscribe();
+      type_binding.unsubscribe();
+      if (shell_unsubscribe !== null) {
+        shell_unsubscribe();
+      }
     },
     { once: true },
   );

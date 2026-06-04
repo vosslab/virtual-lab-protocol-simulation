@@ -43,6 +43,14 @@ import {
   type Interaction as ValidatorInteraction,
   type ProtocolStep as ValidatorStep,
 } from "./validators";
+import { is_interaction_preset, is_step_preset } from "./preset_guards";
+// Read-only schema-lookup seam. Type-only import: the protocol layer names the
+// lookup shape but never imports scene_store/registry. The construction layer
+// supplies the implementation through the options object.
+import type { StateFieldLookup } from "./state_field_lookup";
+// Load-time authored-value validation pass. Uses only the injected lookup plus
+// ProtocolConfig; imports no store/registry.
+import { validate_authored_validator_values } from "./authored_value_check";
 
 //============================================
 // Public types
@@ -63,7 +71,9 @@ export interface StepMachineHandle {
   // single field declared in the validator's `value` block and compared. A
   // match advances exactly like a validated click; a mismatch emits
   // interaction_rejected (wrong_value) and does NOT advance.
-  handle_type_commit(target: string, typed_text: string): void;
+  // Returns true when the commit was accepted (validation passed) and false
+  // when the commit was rejected (wrong value, wrong target, or no active step).
+  handle_type_commit(target: string, typed_text: string): boolean;
 }
 
 //============================================
@@ -346,7 +356,7 @@ function to_validator_interaction(
 }
 
 function validator_parameters(ref: ValidatorReference): Record<string, unknown> | undefined {
-  // `value` is the sole authored spelling (WS-M1-E vocabulary-closure patch).
+  // `value` is the sole authored spelling (vocabulary-closure patch; `params` alias removed).
   const authored_value = ref.value;
   if (authored_value === undefined) {
     return undefined;
@@ -360,16 +370,16 @@ function validator_parameters(ref: ValidatorReference): Record<string, unknown> 
 
 // Convert a config ProtocolStep into the shape validators.ts expects.
 function to_validator_step(step: ProtocolStep): ValidatorStep {
-  const preset: StepValidatorPreset = step.step_validator.preset as StepValidatorPreset;
+  const preset: StepValidatorPreset = narrow_step_preset(step.step_validator.preset);
   const sequence: ReadonlyArray<ValidatorInteraction> = step.sequence.map((interaction) =>
     to_validator_interaction(
       interaction.target,
       interaction.gesture,
-      interaction.validator.preset as InteractionValidatorPreset,
+      narrow_interaction_preset(interaction.validator.preset),
       validator_parameters(interaction.validator),
     ),
   );
-  // Use `value` only (WS-M1-E vocabulary-closure patch; `params` alias removed).
+  // Use `value` only (`params` alias removed; vocabulary-closure patch).
   const validator_block: ValidatorStep["step_validator"] = step.step_validator.value
     ? {
         preset,
@@ -385,19 +395,114 @@ function to_validator_step(step: ProtocolStep): ValidatorStep {
 }
 
 //============================================
+// Load-time preset validation
+//============================================
+
+// Validate that every authored validator preset names a preset legal for the
+// slot it occupies: a step's `step_validator` must use a step-family preset, and
+// each interaction's `validator` must use an interaction-family preset. A
+// violation throws once, at protocol load, with every locating field needed to
+// find the offending YAML: the protocol name, the step name, the slot kind, the
+// interaction index (when the slot is an interaction), the offending preset
+// value, and the expected preset family for that slot.
+function validate_protocol_presets(config: ProtocolConfig): void {
+  const protocol_name = config.protocol_name;
+  for (const step of config.steps ?? []) {
+    const step_name = step.step_name;
+
+    // Step slot: must be a step-family preset.
+    const step_preset = step.step_validator.preset;
+    if (!is_step_preset(step_preset)) {
+      let message = `Invalid validator preset in protocol "${protocol_name}",`;
+      message += ` step "${step_name}", slot "step_validator":`;
+      message += ` preset "${String(step_preset)}" is not a step-family preset.`;
+      message += ` Expected one of the step-family presets`;
+      message += ` (sequence_complete, final_state_matches).`;
+      throw new Error(message);
+    }
+
+    // Interaction slots: each must be an interaction-family preset.
+    step.sequence.forEach((interaction, interaction_index) => {
+      const interaction_preset = interaction.validator.preset;
+      if (!is_interaction_preset(interaction_preset)) {
+        let message = `Invalid validator preset in protocol "${protocol_name}",`;
+        message += ` step "${step_name}",`;
+        message += ` slot "interaction.validator" at interaction index ${interaction_index}:`;
+        message += ` preset "${String(interaction_preset)}" is not an interaction-family preset.`;
+        message += ` Expected one of the interaction-family presets`;
+        message += ` (correct_target, correct_choice, target_with_value).`;
+        throw new Error(message);
+      }
+    });
+  }
+}
+
+// Narrow an authored step-slot preset to the step-family type. validate_protocol_presets()
+// has already proven, at protocol load, that every step_validator preset is a step-family
+// member; this narrow restates that proof for the type system at the use site without a
+// lateral down-cast. The throw is unreachable in a loaded protocol and exists only so the
+// function has a non-`never` narrowed return on every path.
+function narrow_step_preset(preset: ValidatorPreset): StepValidatorPreset {
+  if (!is_step_preset(preset)) {
+    throw new Error(`Non-step-family preset reached step slot: "${String(preset)}".`);
+  }
+  return preset;
+}
+
+// Narrow an authored interaction-slot preset to the interaction-family type.
+// Same load-time guarantee and unreachable-throw rationale as narrow_step_preset above.
+function narrow_interaction_preset(preset: ValidatorPreset): InteractionValidatorPreset {
+  if (!is_interaction_preset(preset)) {
+    throw new Error(`Non-interaction-family preset reached interaction slot: "${String(preset)}".`);
+  }
+  return preset;
+}
+
+//============================================
 // Factory
 //============================================
+
+// Construction-time options for create_step_machine. Threaded as an options
+// object (not a positional arg) so future load-time validators can inject more
+// read-only dependencies without churning the call signature again.
+export interface StepMachineOptions {
+  // Read-only declared-field lookup supplied by the construction layer. The
+  // load-time authored-value validation pass consumes this to check every authored
+  // validator value against the target's declared field type. This options object
+  // only threads it through; the value checks land in authored_value_check.ts.
+  lookup_state_field: StateFieldLookup;
+}
 
 export function create_step_machine(
   config: ProtocolConfig,
   emitter: RuntimeEmitterHandle,
   scene_op_handler: SceneOpHandler,
+  options: StepMachineOptions,
 ): StepMachineHandle {
   // Build step lookup once.
   const steps_by_name: Map<string, ProtocolStep> = new Map();
   for (const step of config.steps ?? []) {
     steps_by_name.set(step.step_name, step);
   }
+
+  // Load-time preset validation. Validate every authored preset against the
+  // slot family it occupies BEFORE any handler closure runs, so a misslotted or
+  // unknown preset (a step preset in an interaction slot, or vice versa) fails
+  // loud at protocol load with full locating fields, instead of surfacing as a
+  // nameless `never` throw deep inside the step machine at runtime.
+  validate_protocol_presets(config);
+
+  // Load-time authored-value validation. Run BEFORE any handler closure, beside
+  // validate_protocol_presets, so an authored validator value that targets an
+  // unknown object/subpart/field, or that mistypes a resolved field, fails loud
+  // at protocol load with full locating fields. Uses only the injected read-only
+  // lookup plus ProtocolConfig; no store/registry import here.
+  // The runtime numeric-coercion backstop in validators.ts remains as a backstop.
+  const lookup_state_field: StateFieldLookup = options.lookup_state_field;
+  validate_authored_validator_values({
+    protocol_config: config,
+    lookup_state_field,
+  });
 
   // Mutable machine state.
   let active_step_name: string | null = null;
@@ -450,7 +555,7 @@ export function create_step_machine(
   }
 
   function emit_step_validator_outcome(step: ProtocolStep): void {
-    const preset = step.step_validator.preset as StepValidatorPreset;
+    const preset = narrow_step_preset(step.step_validator.preset);
     const validator_step = to_validator_step(step);
     const passed = dispatch_step_validator(preset, validator_step, step.sequence.length, undefined);
     if (passed) {
@@ -589,7 +694,7 @@ export function create_step_machine(
       );
       return;
     }
-    const preset = interaction.validator.preset as InteractionValidatorPreset;
+    const preset = narrow_interaction_preset(interaction.validator.preset);
     // Out-of-order target or wrong gesture: reject as wrong_target.
     if (interaction.target !== target || interaction.gesture !== gesture) {
       emit_rejection(step.step_name, interaction_index, target, gesture, preset, "wrong_target");
@@ -635,7 +740,7 @@ export function create_step_machine(
     if (!interaction) {
       return;
     }
-    const preset = interaction.validator.preset as InteractionValidatorPreset;
+    const preset = narrow_interaction_preset(interaction.validator.preset);
     if (!committed) {
       // Cancel: emit interaction_rejected (reason: out_of_order) so the
       // shell sees the user dismissed the modal without committing.
@@ -696,15 +801,15 @@ export function create_step_machine(
     if (!wait_op) {
       return;
     }
-    const preset = interaction.validator.preset as InteractionValidatorPreset;
+    const preset = narrow_interaction_preset(interaction.validator.preset);
     handle_validated(step, interaction.target, interaction.gesture, preset);
   }
 
-  function handle_type_commit(target: string, typed_text: string): void {
+  function handle_type_commit(target: string, typed_text: string): boolean {
     const step = current_step();
     if (!started || completed || step === null) {
       emit_rejection(active_step_name ?? "", 0, target, "type", "correct_target", "no_active_step");
-      return;
+      return false;
     }
     const interaction = step.sequence[interaction_index];
     if (!interaction) {
@@ -716,13 +821,13 @@ export function create_step_machine(
         "correct_target",
         "no_active_step",
       );
-      return;
+      return false;
     }
-    const preset = interaction.validator.preset as InteractionValidatorPreset;
+    const preset = narrow_interaction_preset(interaction.validator.preset);
     // A type commit only applies to the active `type` interaction on its target.
     if (interaction.gesture !== "type" || interaction.target !== target) {
       emit_rejection(step.step_name, interaction_index, target, "type", preset, "wrong_target");
-      return;
+      return false;
     }
     // Build the value_map from the typed text. target_with_value compares the
     // validator's declared `value` fields against this map. The visible type
@@ -752,9 +857,10 @@ export function create_step_machine(
         preset,
         result.reason ?? "wrong_value",
       );
-      return;
+      return false;
     }
     handle_validated(step, target, "type", preset);
+    return true;
   }
 
   const handle: StepMachineHandle = {

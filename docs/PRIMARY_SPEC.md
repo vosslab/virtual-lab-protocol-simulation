@@ -105,6 +105,18 @@ Every `validator` and every `step_validator` is a named preset with typed parame
 
 The walker, validator, and runtime dispatch from the step and interaction structure above. They must not dispatch from a `step_name` or from per-protocol special cases.
 
+### Load-time authored-value check
+
+At protocol load the runtime validates every authored value used in a
+`target_with_value` validator and every field reference used in a
+`final_state_matches` step validator. Each reference is checked against the
+target object's declared state-field schema. A type-wrong or unknown reference
+throws a named, author-facing error: `UnknownAuthoredObjectError`,
+`UnknownAuthoredSubpartError`, `UnknownAuthoredFieldError`, or
+`BadAuthoredValueError`. This is a startup guard, not a new authored YAML
+field. Authors add nothing; bad values simply fail loudly when the protocol
+first loads rather than silently at runtime during a student session.
+
 ## Targets and the scene boundary
 
 A `target` is the addressable, semantic scene object or control a student acts on. It is named, not positional. Protocol YAML is geometry-free: it names no plate, well, tube, gel, column, lane, rack, or coordinate. A scene adapter holds a registry that maps each semantic `target` name to a concrete scene object. Targets that fan out to several scene objects are listed explicitly by subpart (for example `treatment_plate.A1`, `treatment_plate.A2`); the vocabulary has no named-group construct. See [specs/SCENE_VOCABULARY.md](specs/SCENE_VOCABULARY.md) for the scene side of this boundary.

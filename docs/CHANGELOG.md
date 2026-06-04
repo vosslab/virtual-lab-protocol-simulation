@@ -37,18 +37,6 @@
 
 ## 2026-06-03
 
-### Fixes and Maintenance
-
-- Stripped planning-scaffolding tags (WS-1A, WS-1B, WS-2A, WS-2B) from permanent
-  source comments in five files: `src/scene_runtime/protocol/affordance.ts`,
-  `src/scene_runtime/renderer/render_scene.tsx`,
-  `src/scene_runtime/renderer/scene_item.tsx`,
-  `src/scene_runtime/renderer/scene_view.tsx`, and `src/protocol_host.tsx`. Replaced
-  each tag with a plain English phrase (see tag replacements below). Also merged the
-  split `import type { ActiveAffordanceAccessor }` + `import { compute_affordance_kind }`
-  pair in `scene_item.tsx` into one statement with an inline type modifier, matching the
-  existing style in `render_scene.tsx`. `tsc`: 0 errors. `npm run check`: 6/6 PASS.
-
 ### Additions and New Features
 
 - M3 WP-SUBPART-RENDER: added the GENERIC structured-subpart material-tint
@@ -240,7 +228,49 @@
   a strong dashed ring. The compound attribute selectors give the ring rules higher
   specificity than the baseline hover/focus rule so a ring always wins when present.
 
+- P1 WP-TYPE-1: added `src/scene_runtime/protocol/preset_guards.ts` with typed
+  type-guard functions for all validator preset families. `load-time
+  validate_protocol_presets` in `step_machine.ts` now runs at startup and throws
+  with protocol/step/slot/index/preset/family on any misslotted preset, catching
+  authoring errors before any student interaction.
+
+- P3 WP-TYPE-3 (M1B-1): added authored-expected-value-directed coercion in
+  `validators.ts` (`target_with_value`): the declared `value` type drives
+  coercion direction -- numeric expects parse; string and bool require same-type
+  match. A named `console.warn` developer diagnostic fires on a numeric-format
+  mismatch so authors can trace type errors without reading validation source.
+  Regression tests in `tests/test_protocol_validators.mjs`.
+
+- P4 WP-RX-1: `subscribeEmitterToSnapshot` in `src/shell/signals.ts` now returns
+  `{snapshot, unsubscribe}` instead of discarding the unsubscribe handle. Three
+  call sites in `protocol_host.tsx` updated to capture the handle; `pagehide`
+  teardown wired. Resolves the previously-tracked emitter listener leak.
+  `tests/test_shell_signals.mjs` updated with fake-emitter unit tests confirming
+  subscribe/unsubscribe lifecycle.
+
+- P6 WP-UX-2: added visible type-input rejection feedback in
+  `src/shell/hud/type_input.tsx`: a Solid signal plus `<Show>` renders the
+  string "Entry not accepted, try again" when `handle_type_commit` returns false.
+  No ARIA added (pointer-optimized runtime; see "Accessibility scope" in
+  [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md)). New
+  `tests/playwright/test_type_input_feedback.mjs` proves the message appears on
+  a bad commit and is absent on a good one.
+
+- P8 WP-UX-4a: native `title` tooltip added to truncated `StepOutline` labels in
+  `src/shell/regions/StepOutline.tsx`. Pointer users hovering a clipped step name
+  now see the full label without any JS.
+
+- P9 WP-UX-4b: `src/launcher/Launcher.tsx` now uses Solid `<Show>` for the
+  empty-state path. When the protocol list is empty the launcher renders a
+  human-readable message instead of a blank screen.
+
 ### Behavior or Interface Changes
+
+- Narrowed `authored_value_matches` parameter type from `unknown` to
+  `string | number | boolean` in `src/scene_runtime/protocol/validators.ts`.
+  Both call sites in `validate_target_with_value` and `validate_final_state_matches`
+  now guard the raw `unknown` entry with an explicit type check before passing it
+  to the helper.
 
 - SCENE-LINT and SCENE-DESIGN now emit a precise prerequisite failure when
   rendered scene stats are missing or stale, replacing the generic
@@ -331,7 +361,52 @@
   member sets, so there is no behavior change; the hand-written union was a
   vocabulary duplicate that could silently drift from the canonical set.
 
+- P2 WP-TYPE-2: removed 7 lateral-downcast casts in `step_machine.ts`, narrowing
+  through the preset type-guards added in WP-TYPE-1. Type narrowing is now
+  structural, not asserted.
+
+- P5 WP-UX-1: removed misleading `tabIndex` and `role="button"` from the scene
+  object root `<div>` in `src/scene_runtime/renderer/scene_item.tsx`; these were
+  added in an earlier pass before the pointer-only scope decision was recorded.
+  Also enlarged scene-error overlay text from 10px to 14px for readability.
+
+- P7 WP-UX-3: hover-outline alpha in `src/style.css` raised from 0.35 to 0.45
+  (`rgba(37,99,235,...)`) for improved visibility on light backgrounds. Outline-only
+  (no fill); no color change.
+
+- WP-DOC-1 (this patch): added "Accessibility scope" subsection to
+  `docs/PRIMARY_DESIGN.md` recording that keyboard navigation, ARIA, focus
+  management, and screen-reader support are not current goals for the pointer-
+  optimized scene runtime. Deleted conflicting keyboard-accessibility task lines
+  from `docs/TODO.md` and `docs/ROADMAP.md`; added breadcrumb pointers to the
+  new subsection. This records the maintainer decision and prevents re-introduction
+  of accessibility work as a silent TODO item.
+
 ### Fixes and Maintenance
+
+- Scrubbed all planning/workstream/milestone scaffolding tokens from `src/`
+  comments (M1B, M1B-1, M1B-2, WP-SEAM, WP-CHECK, WP-DISC, WP-3-8, WP-3-10,
+  WP-FRAME-1, WP-FRAME-2, WP-CHROME-1 through WP-CHROME-3, WP-RESOLVE-1,
+  WP-RESOLVE-2, WP-RESOLVE-3, WP-TYPE-1, WP-2-4, WP-2-5, WS-M1-B, WS-M1-E,
+  WS-M2-I, WS-M3-C, WS-M3-D, WS-M5-ST, M-SEAM, resilient-twirling-pond).
+  Each comment was rewritten in plain present-tense language keeping the same
+  technical meaning. One token remains in a string literal (console.warn in
+  `scene_op_deps.ts`) and was intentionally left per the rule that string
+  literals must not be changed.
+- Annotated `[data-item-id]:focus-visible` in `src/style.css` as inert under
+  the current pointer-only scope (tabIndex removed from scene items); kept as
+  reversible infrastructure rather than deleted because it shares a rule block
+  with the still-active `:hover` selector.
+
+- Stripped planning-scaffolding tags (WS-1A, WS-1B, WS-2A, WS-2B) from permanent
+  source comments in five files: `src/scene_runtime/protocol/affordance.ts`,
+  `src/scene_runtime/renderer/render_scene.tsx`,
+  `src/scene_runtime/renderer/scene_item.tsx`,
+  `src/scene_runtime/renderer/scene_view.tsx`, and `src/protocol_host.tsx`. Replaced
+  each tag with a plain English phrase (see tag replacements below). Also merged the
+  split `import type { ActiveAffordanceAccessor }` + `import { compute_affordance_kind }`
+  pair in `scene_item.tsx` into one statement with an inline type modifier, matching the
+  existing style in `render_scene.tsx`. `tsc`: 0 errors. `npm run check`: 6/6 PASS.
 
 - Asset hygiene: deleted byte-duplicate `assets/equipment/vortex_new.svg`; replaced the mislabeled
   `rocking_shaker_idle.svg` with the DBCLS shaker (CC-BY-4.0, attributed in
@@ -410,6 +485,12 @@
   higher specificity) so a candidate or active ring always wins over the baseline
   `:hover`/`:focus-visible` outline and remains visible while the object is also
   hovered or focused.
+
+- P4 WP-RX-1 (emitter leak fix): the previously-tracked emitter listener leak in
+  `subscribeEmitterToSnapshot` is now resolved. The fix is documented as a
+  learning-relevant item: unsubscribe handles from reactive bridges must be
+  captured and wired to teardown (pagehide or dispose) to prevent listener
+  accumulation across navigations.
 
 ### Removals and Deprecations
 
@@ -509,6 +590,24 @@
   named follow-up for when the component is next refactored.
 
 ### Developer Tests and Notes
+
+- Robustness fixes across four test files: loosened exact-count `warnings.length === 1`
+  asserts to `>= 1` in `tests/test_protocol_validators.mjs`; replaced exact
+  subscription-count and per-slot unsubscribe-count asserts with `>= N` behavioral
+  contracts in `tests/test_shell_signals.mjs`; softened the `"interaction index 0"`
+  literal substring check in `tests/test_step_machine.mjs` to verify locating info
+  without coupling to exact phrasing; fixed silent-skip in
+  `tests/playwright/test_type_input_feedback.mjs` when the welcome affordance is
+  missing (now a hard failure), and dropped the verbatim `REJECTION_MESSAGE` copy
+  match in favor of a visibility-only assertion on `[data-type-reject-message]`.
+- Added failure message to Case 2b in `tests/test_authored_value_check.mjs`:
+  `assert.ok(err instanceof BadAuthoredValueError)` now carries a second argument
+  `` `Expected BadAuthoredValueError, got ${err.name}` `` matching Case 2a style.
+- Added Case 3e to `tests/test_authored_value_check.mjs`: "normal protocol +
+  unknown_subpart throws with context" asserts `UnknownAuthoredSubpartError` is
+  thrown for a non-dev_smoke `mini_protocol` and that `err.message` includes
+  the protocol name and step name, mirroring Case 3a context-string assertions.
+  Test count grew from 28 to 29; all pass.
 
 - New tests: `tests/playwright/test_svg_id_namespacing.mjs` (namespacing correctness + four wedge
   pages render clean), `tests/test_svg_manifest_predicate.py` (`requires_dom_svg` branches), and
@@ -690,6 +789,27 @@
   (single source); zero-warning count is now always emitted (previously omitted), preserving the
   aggregate regex contract.
 
+- M1B-2 Patch 2 (WP-SEAM): added a read-only protocol-layer lookup seam for declared object and
+  subpart state fields. New `src/scene_runtime/protocol/state_field_lookup.ts` exports the
+  `StateFieldLookupResult` discriminated union and the `StateFieldLookup` function type (zero
+  imports, no runtime deps). New `src/scene_runtime/state/state_field_lookup_impl.ts` provides
+  `create_state_field_lookup` over `OBJECT_STATE_SCHEMAS` / `OBJECT_SUBPART_STATE_SCHEMAS` plus
+  `REGISTRY_BACKED_MATERIAL_FIELDS`; resolves subpart names by first-dot split, never throws.
+  The lookup is threaded into `create_step_machine` via an `options` object
+  `{ lookup_state_field }` and wired at the single caller `src/protocol_host.tsx`. The seam keeps
+  the protocol layer free of direct schema-table imports.
+
+- M1B-2 Patch 3 (WP-CHECK): added load-time authored-value validation in
+  `src/scene_runtime/protocol/authored_value_check.ts`. `validate_authored_validator_values({
+  protocol_config, lookup_state_field })` runs in `create_step_machine` at startup (beside
+  `validate_protocol_presets`) and checks every `target_with_value` and `final_state_matches`
+  authored value against the DECLARED field type (`int`, `float`, `bool`, `string`, enum
+  `allowed` set, and registry-backed material fields). Four named author-facing error classes are
+  thrown on bad authoring: `UnknownAuthoredObjectError`, `UnknownAuthoredSubpartError`,
+  `UnknownAuthoredFieldError`, and `BadAuthoredValueError`, each carrying
+  protocol/step/validator-kind/target/field context (plus declared type for bad-value errors).
+  The M1B-1 runtime diagnostic in `validators.ts` is kept unchanged as a backstop.
+
 ### Behavior or Interface Changes
 
 - WP4 verbosity: `scene_lint` and `scene_design` `--json` now emit a single JSON document
@@ -721,6 +841,25 @@
   `tests/test_validation_verbosity.py`. Deferred cleanup nits from review left as-is: loop variable
   `l` in one internal helper, omitted `warnings=` kwarg in two yaml calls, `is_verbose` local bool
   in `svg_audit`.
+
+- M1B-2 Patch 3 (WP-CHECK, dev_smoke exemption): the `dev_smoke` exemption in
+  `authored_value_check.ts` is LOCAL to the unknown-object and unknown-subpart resolution branch
+  only. Smoke fixtures may reference objects not in the full object library; the check skips the
+  unknown-object and unknown-subpart errors for `protocol_type: dev_smoke`. Resolvable fields on
+  dev_smoke protocols (where the object IS in the library) are still type-checked. This is a
+  narrow carve-out, not a blanket exemption: a smoke protocol with a reachable field and a
+  type-wrong authored value still throws `BadAuthoredValueError`.
+
+### Developer Tests and Notes
+
+- M1B-2 Patch 4 (WP-TEST): added `tests/test_authored_value_check.mjs` (29 Node `--test` cases):
+  fake lookup, both validator shapes (`target_with_value` and `final_state_matches`), all four
+  error classes, and both sides of the dev_smoke exemption (smoke protocol skips unknown-object
+  error; resolvable field on smoke protocol is still type-checked). Updated
+  `tests/test_step_machine.mjs` and `tests/test_m2_integration.mjs` callers to pass the new
+  `{ lookup_state_field }` option. Discovery decision recorded in
+  `docs/active_plans/decisions/m1b2_discovery_seam_proposal.md` (WP-DISC). Gates: 29/29 tests
+  pass; `bash check_codebase.sh` 6/6 PASS; build and pilot walker pass.
 
 ## 2026-05-28
 

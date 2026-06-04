@@ -1,6 +1,6 @@
 // src/dist_entry.tsx
 //
-// WP-3-10 single-bundle dist entry. One esbuild output (dist/main.js) is
+// Single-bundle dist entry. One esbuild output (dist/main.js) is
 // shared by every page in dist/:
 //
 //   - dist/index.html        -> #launcher-root present -> launcher mount
@@ -19,7 +19,6 @@
 // and ignores the rest. No untyped globals are added.
 //
 // References:
-//   - docs/active_plans/active/web_ui/runtime_seam_plan.md (WP-3-10)
 //   - docs/PRIMARY_CONTRACT.md item 1 (TypeScript runtime is shared)
 
 import { ZONE_PADDING } from "./scene_runtime/layout/constants.js";

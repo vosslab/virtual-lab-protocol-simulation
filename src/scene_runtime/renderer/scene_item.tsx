@@ -233,7 +233,7 @@ function DomSvgHost(props: { asset: string; svgInstanceKey: string }): JSXElemen
       <Show when={loadError().length > 0}>
         <span
           style={{
-            "font-size": "10px",
+            "font-size": "14px",
             "font-family": "monospace",
             color: "#c0392b",
             "pointer-events": "none",
@@ -622,21 +622,6 @@ export function SceneItem(props: {
       data-asset={asset_name()}
       data-resolver-degraded={resolverDegraded().length > 0 ? resolverDegraded() : undefined}
       data-affordance={affordance_kind()}
-      // Keyboard reachability + accessible identity (keyboard accessibility). tabIndex={0} puts the
-      // clickable item in the natural Tab order; role="button" exposes it as a
-      // control; aria-label names it. The name is the object's authored visible
-      // display label (item.label, from BoundPlacement -> ObjectDef.label), NOT the
-      // protocol prompt, target name, or any answer text -- so a select step never
-      // reveals the answer beyond the visible object identity. Focus styling lives
-      // in style.css (baseline focus styling in style.css). No Enter/Space activation is added
-      // here: no existing narrow target-submit helper is exposed on the click path
-      // (clicks go through the delegated click_resolver reading data-item-id, which
-      // is not a callable submit helper), so per the plan activation is a tracked
-      // follow-up and is intentionally omitted to avoid duplicating click logic or
-      // synthesizing DOM mouse events.
-      tabIndex={0}
-      role="button"
-      aria-label={item.label}
       style={{ ...base_style, ...highlight_style() }}
     >
       {/* SVG host keyed by the resolved asset name. When the asset changes

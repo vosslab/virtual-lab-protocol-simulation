@@ -1,7 +1,7 @@
 // src/shell/hud/ProtocolHud.tsx
 //
 // Protocol HUD: wires all six-region shell components into the framed
-// interface (WP-CHROME-1 through WP-CHROME-3, M2).
+// interface.
 //
 // This component is mounted into #shell-root (a sibling of #scene-root,
 // never an ancestor -- asset-crop rule). It does NOT render visible content

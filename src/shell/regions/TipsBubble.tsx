@@ -1,6 +1,6 @@
 // src/shell/regions/TipsBubble.tsx
 //
-// WP-CHROME-3: Professor-tip bubble content component.
+// Professor-tip bubble content component.
 // Renders the tip text from the snapshot inside the .tips-bubble region.
 // When current_tip is null (no tip authored for this step), shows the
 // generic fallback "Follow the current step guidance." per the task spec.
