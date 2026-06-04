@@ -54,6 +54,7 @@ import { create_scene_op_handler } from "./scene_runtime/protocol/scene_operatio
 import { build_store_scene_op_deps } from "./scene_runtime/protocol/scene_op_deps.js";
 import { install_walker_debug_surface } from "./scene_runtime/protocol/walker_debug.js";
 import { attach_click_resolver } from "./scene_runtime/protocol/click_resolver.js";
+import type { ActiveAffordanceAccessor } from "./scene_runtime/protocol/affordance.js";
 import {
   resolve_entry_scene_name,
   assert_scene_not_empty,
@@ -254,21 +255,45 @@ function mount(): void {
     // dispose: a re-render into the same root disposes the prior root first
     // (tracked per-root in render_scene.ts), so a SceneChange re-render leaks no
     // orphan roots/effects/listeners. Pass the measured viewport so Guard 5
-    // (aspect ratio) uses the same dimensions as the pipeline.
+    // (aspect ratio) uses the same dimensions as the pipeline. The active-
+    // affordance accessor (affordance plumbing) is threaded by reference so the renderer
+    // derives highlight rings from the live interaction snapshot; mountScene
+    // re-enumerates candidate_targets from this scene's PipelineResult, so a
+    // SceneChange always rings the correct scene's objects (no stale set).
     active_dispose = mountScene(active_scene_root, pipeline_result, {
       store: scene_store,
       materialRegistry: material_registry,
       viewport: scene_viewport,
+      activeAffordance: active_affordance,
     });
     active_scene_root.setAttribute("data-active-scene", next_scene_name);
   }
 
-  render_protocol_scene(scene_name);
-
-  // Build the emitter + step machine + scene-op handler.
+  // Build the emitter + step machine + scene-op handler. The emitter is created
+  // BEFORE the first scene render so the active-affordance accessor can read its
+  // snapshot signal; the renderer needs the accessor at mount time.
   const initial_snapshot = build_initial_snapshot(active_config);
   const reducer = create_snapshot_reducer(active_config);
   const emitter = createProtocolShellEmitter(initial_snapshot, reducer);
+
+  // Active-affordance accessor (affordance plumbing). A Solid signal mirrors the emitter
+  // snapshot; the accessor returns ONLY the active-interaction slice the
+  // renderer needs. It is an ARROW that reads the signal inside, so each scene
+  // item's highlight memo tracks the snapshot reactively (Solid store-dep rule)
+  // and updates automatically on every step/interaction/scene change. No store
+  // write, no createEffect. Threaded by reference into render_protocol_scene.
+  const affordance_snapshot_signal = subscribeEmitterToSnapshot(emitter);
+  const active_affordance: ActiveAffordanceAccessor = () => {
+    const snap = affordance_snapshot_signal();
+    return {
+      active_target: snap.active_interaction_target,
+      active_gesture: snap.active_interaction_gesture,
+    };
+  };
+
+  // First scene render. Runs after the emitter + affordance accessor exist so
+  // the renderer mounts with a live highlight derivation from the start.
+  render_protocol_scene(scene_name);
   // Store-driven scene-op deps (WS-M3-D). ObjectStateChange/CursorAttach write
   // the reactive store; SceneChange re-renders the target scene through
   // render_protocol_scene (which disposes the prior Solid root and reseeds the

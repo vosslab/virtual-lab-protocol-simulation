@@ -13,7 +13,7 @@
 //     (e.g. "treatment_plate.A1").
 //   - Declared object state fields (material_name, material_volume,
 //     held_material_*, set_volume, set_temperature, set_rpm, ...) plus a
-//     small set of runtime-only flags (is_selected, is_active_target,
+//     small set of runtime-only flags (is_selected,
 //     cursor attach + held material).
 //
 // What this store is NOT:
@@ -78,8 +78,6 @@ export type StatePartial = Readonly<Record<string, StateValue>>;
 export interface TargetRuntimeFlags {
   // True when the target is the student's current selection.
   is_selected: boolean;
-  // True when the target is the active interaction target for the step.
-  is_active_target: boolean;
   // True when the cursor is "holding" this target (CursorAttach attach).
   cursor_attached: boolean;
   // Material currently held by the cursor while attached. Null when the
@@ -159,10 +157,9 @@ export interface SceneStore {
   reset(): void;
 }
 
-// Runtime-flag write payload. Either flag may be omitted to leave it as-is.
+// Runtime-flag write payload. The flag may be omitted to leave it as-is.
 export interface FlagWrite {
   is_selected?: boolean;
-  is_active_target?: boolean;
 }
 
 // Cursor write payload. attach=true holds the target (optionally with the
@@ -233,7 +230,6 @@ function build_default_state(schema: ObjectStateSchema): Record<string, StateVal
 function build_default_flags(): TargetRuntimeFlags {
   return {
     is_selected: false,
-    is_active_target: false,
     cursor_attached: false,
     held_material_name: null,
     held_material_volume: null,
@@ -533,9 +529,6 @@ export function create_scene_store(material_registry: MaterialRegistry | null = 
         // Partial-merge: only the named flags change.
         if (flags.is_selected !== undefined) {
           current.flags.is_selected = flags.is_selected;
-        }
-        if (flags.is_active_target !== undefined) {
-          current.flags.is_active_target = flags.is_active_target;
         }
       }),
     );

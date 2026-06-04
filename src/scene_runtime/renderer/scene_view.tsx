@@ -44,6 +44,7 @@ import { For, onMount, createSignal, createEffect } from "solid-js";
 
 import type { ComputedItem, PipelineResult } from "../layout/types.js";
 import type { SceneStore, TargetSeed } from "../state/scene_store.js";
+import type { ActiveAffordanceAccessor } from "../protocol/affordance.js";
 import type { MaterialRegistry } from "./visual_state_resolver.js";
 import { OBJECT_LIBRARY } from "../../../generated/object_library.js";
 import { collectStructuralViolations } from "./structural_guards.js";
@@ -150,6 +151,13 @@ export function SceneView(props: {
   store: SceneStore;
   materialRegistry: MaterialRegistry | null;
   viewport?: { w: number; h: number } | undefined;
+  // Active-affordance accessor (affordance plumbing). Threaded by reference into each
+  // SceneItem; absent when no protocol interaction context exists (scene
+  // viewer / facade render), in which case SceneItem computes no highlight.
+  activeAffordance?: ActiveAffordanceAccessor | undefined;
+  // Resolver-accepted candidate object names for this scene, computed once per
+  // scene mount in mountScene. Passed by reference; SceneItem only calls .has().
+  candidateTargets?: ReadonlySet<string> | undefined;
 }): JSXElement {
   const result = props.result;
   const root = props.root;
@@ -247,6 +255,8 @@ export function SceneView(props: {
             materialRegistry={props.materialRegistry}
             sceneName={result.scene.scene_name}
             onDegrade={onDegrade}
+            activeAffordance={props.activeAffordance}
+            candidateTargets={props.candidateTargets}
           />
           <SceneLabel item={item} fontSize={label_font_size} />
         </>

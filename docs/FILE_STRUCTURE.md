@@ -50,6 +50,7 @@ src/
 |  |      group_by_zone, horizontal_layout, vertical_layout, layout_labels,
 |  |      clamp_scene_bounds, footprint, wrap_label, index).ts
 |  +- protocol/                -- step machine and protocol drivers
+|  |  +- affordance.ts         -- pure affordance-kind mapping (compute_affordance_kind, affordance types)
 |  |  +- resolve_entry_scene.ts -- entry-scene resolution + empty-scene guard
 |  |  +- step_machine.ts       -- pure step machine (no DOM)
 |  |  +- validators.ts         -- interaction and step validator dispatch
@@ -62,6 +63,7 @@ src/
 |  |  `- scene_store.ts        -- createSceneStore: object state signals + updaters
 |  `- renderer/                -- Solid DOM rendering from PipelineResult
 |     +- render_scene.tsx      -- public Solid mount facade (mounts SceneView)
+|     +- affordance_candidates.ts -- renderer-layer candidate enumeration (enumerate_candidate_targets)
 |     +- scene_view.tsx        -- Solid SceneView (bg, items, labels, guards)
 |     +- scene_item.tsx        -- Solid SceneItem (per-item + missing-svg placeholder)
 |     +- visual_state_resolver.ts -- state + visual_states -> renderable description

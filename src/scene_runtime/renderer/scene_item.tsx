@@ -36,6 +36,7 @@ import { createMemo, createSignal, createEffect, createResource, Show, For } fro
 
 import type { ComputedItem, ObjectVisualStates } from "../layout/types.js";
 import type { SceneStore } from "../state/scene_store.js";
+import { type ActiveAffordanceAccessor, compute_affordance_kind } from "../protocol/affordance.js";
 import {
   resolve_visual_state,
   type MaterialRegistry,
@@ -57,6 +58,12 @@ const DEPTH_Z: Record<string, number> = {
   mid: 2,
   front: 3,
 };
+
+// Shared empty candidate-target set used when no candidateTargets prop is
+// provided. Never rebuilt per item: per-item memos call .has() (O(1)) on this
+// constant reference. A single constant avoids allocating a new Set on every
+// render of an item that has no active affordance plumbing wired in.
+const EMPTY_CANDIDATE_TARGETS: ReadonlySet<string> = new Set<string>();
 
 // Resolve the z-index for an item's depth tier. Items lacking a depth tier
 // render in the back tier (z-index 1).
@@ -127,21 +134,19 @@ function read_object_state(store: SceneStore, target: string): ObjectState {
   return out;
 }
 
-// Read the runtime highlight flags for a target. Missing target -> both off.
+// Read the runtime highlight flags for a target. Missing target -> off.
 function read_flags(
   store: SceneStore,
   target: string,
 ): {
   is_selected: boolean;
-  is_active_target: boolean;
 } {
   const entry = store.state[target];
   if (entry === undefined) {
-    return { is_selected: false, is_active_target: false };
+    return { is_selected: false };
   }
   return {
     is_selected: entry.flags.is_selected,
-    is_active_target: entry.flags.is_active_target,
   };
 }
 
@@ -398,6 +403,15 @@ export function SceneItem(props: {
   // child closest()/onMount race. Optional so unit harnesses can mount a bare
   // SceneItem without wiring the callback.
   onDegrade?: (target: string, message: string) => void;
+  // Active-affordance accessor (affordance plumbing). Read in
+  // ARROW form INSIDE the per-object highlight memo (never as a plain object
+  // snapshot) so the snapshot dependency is tracked reactively. Optional: absent
+  // for the scene viewer / facade render, where no highlight ring is computed.
+  activeAffordance?: ActiveAffordanceAccessor | undefined;
+  // Resolver-accepted candidate object names for this scene, computed once per
+  // scene mount and passed by reference. The affordance memo calls .has(item_target)
+  // (O(1)) and must NOT rebuild the set. Optional alongside activeAffordance.
+  candidateTargets?: ReadonlySet<string> | undefined;
 }): JSXElement {
   const item = props.item;
   const target = item.object_name;
@@ -524,13 +538,29 @@ export function SceneItem(props: {
 
   const highlight_style = createMemo<Record<string, string>>(() => {
     const f = flags();
-    if (f.is_active_target) {
-      return { "box-shadow": "0 0 0 3px #f5a623", "border-radius": "2px" };
-    }
     if (f.is_selected) {
       return { "box-shadow": "0 0 0 2px #4a90d9", "border-radius": "2px" };
     }
     return {};
+  });
+
+  // Derived affordance kind for this item (the affordance memo). The accessor is read as a
+  // FUNCTION CALL inside this memo so Solid tracks the snapshot signal as a
+  // reactive dependency. Reading props.activeAffordance?.() outside the memo
+  // (e.g. at SceneItem setup time) would capture a stale value and break
+  // reactivity; it must stay inside. candidate_targets falls back to the shared
+  // EMPTY_CANDIDATE_TARGETS constant when the prop is absent -- never a new Set.
+  const affordance_kind = createMemo<"active" | "candidate" | "none">(() => {
+    // Read the accessor INSIDE the memo: this is the reactive-tracking
+    // requirement from the plan (SolidJS concepts/effects.mdx + on-util.mdx).
+    const affordance = props.activeAffordance?.();
+    const candidate_targets = props.candidateTargets ?? EMPTY_CANDIDATE_TARGETS;
+    return compute_affordance_kind({
+      active_target: affordance?.active_target ?? null,
+      active_gesture: affordance?.active_gesture ?? null,
+      item_target: target,
+      candidate_targets,
+    });
   });
 
   // data-asset reflects the currently rendered asset so stats tooling reads
@@ -591,6 +621,22 @@ export function SceneItem(props: {
       data-item-id={item.object_name}
       data-asset={asset_name()}
       data-resolver-degraded={resolverDegraded().length > 0 ? resolverDegraded() : undefined}
+      data-affordance={affordance_kind()}
+      // Keyboard reachability + accessible identity (keyboard accessibility). tabIndex={0} puts the
+      // clickable item in the natural Tab order; role="button" exposes it as a
+      // control; aria-label names it. The name is the object's authored visible
+      // display label (item.label, from BoundPlacement -> ObjectDef.label), NOT the
+      // protocol prompt, target name, or any answer text -- so a select step never
+      // reveals the answer beyond the visible object identity. Focus styling lives
+      // in style.css (baseline focus styling in style.css). No Enter/Space activation is added
+      // here: no existing narrow target-submit helper is exposed on the click path
+      // (clicks go through the delegated click_resolver reading data-item-id, which
+      // is not a callable submit helper), so per the plan activation is a tracked
+      // follow-up and is intentionally omitted to avoid duplicating click logic or
+      // synthesizing DOM mouse events.
+      tabIndex={0}
+      role="button"
+      aria-label={item.label}
       style={{ ...base_style, ...highlight_style() }}
     >
       {/* SVG host keyed by the resolved asset name. When the asset changes

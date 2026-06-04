@@ -279,7 +279,10 @@ into a `click` teaches the student nothing about volume set-points.
 `click`; the runtime promotes a click on the active target to the
 active `select` gesture. The author's intent differs (choosing among
 present objects vs. acting on one directed object), so the two
-gestures stay separate even though the affordance is shared.
+gestures stay separate even though the affordance is shared. For
+`select`, the renderer shows equal candidate rings on all clickable
+objects and never singles out the correct answer; see
+[SCENE_VOCABULARY.md](SCENE_VOCABULARY.md#interaction-affordance) "Interaction affordance".
 
 ### The gesture extension rule
 

@@ -202,6 +202,59 @@ object identity or state. Per-placement overrides go on the
 Tab-stop behavior is expressed by `zone.align: tab-stops` plus
 per-placement `align_stop`, and that is the canonical path.
 
+## Interaction affordance
+
+The interaction affordance is the visible cue that tells a student what
+is clickable and what to act on right now. It is derived view state:
+computed by the renderer from the active-interaction snapshot, never
+authored in YAML, never persisted, and it adds no vocabulary to the
+closed authoring surface.
+
+The affordance has three tiers:
+
+- **Baseline clickable cue.** Every scene object that the click
+  resolver accepts as a target carries a baseline cue at all times:
+  a pointer cursor plus a faint hover and focus outline. This cue tells
+  the student that the object is interactive; it does not reveal any
+  step-specific intent.
+
+- **Directed-gesture active ring.** When the active interaction uses a
+  directed gesture (`click`, `drag`, `adjust`, or `type`) the single
+  active target carries a strong solid ring. This ring distinguishes
+  the one object the step is asking the student to act on from the rest
+  of the scene. The ring is not present on any other object.
+
+- **Select candidate rings.** When the active interaction uses the
+  `select` gesture every clickable candidate present in the scene
+  carries an equal strong ring. The ring is visually distinct from the
+  directed-gesture ring (different style: dashed vs. solid; distinct
+  color pair, not color-only, so the distinction is accessible). The
+  correct answer carries the same ring as every other candidate; the
+  ring never singles out the answer. The student must identify the
+  correct object from the prompt, not from a visual highlight. See the
+  `select` definition in
+  [PROTOCOL_VOCABULARY.md](PROTOCOL_VOCABULARY.md).
+
+The affordance is a derived computation. The renderer reads the
+active-interaction snapshot (active target id and active gesture) plus
+the set of rendered clickable objects and produces the ring state for
+each object as a pure derivation. No store flag is written. No YAML
+field controls it. No affordance data persists across steps or scenes;
+it recomputes automatically whenever the interaction advances.
+
+The renderer stamps a `data-affordance` attribute on every rendered scene
+object with one of three closed values: `"active"`, `"candidate"`, or
+`"none"`. This is the DOM contract the CSS ring rules consume; it is
+analogous to how `data-item-id` identifies the scene object, but it
+describes derived affordance state, not authoring identity.
+
+Every clickable scene object is keyboard-focusable: the renderer stamps
+`role="button"` and `tabIndex={0}` on the item root, and the accessible
+name is sourced from `BoundPlacement.label` (the same visible object label
+displayed beneath the item). For a `select` step this means the accessible
+name reflects only the visible object identity and must not reveal which
+candidate is the correct answer beyond what a sighted student already sees.
+
 ## Scene-level UI feedback
 
 `wrong_order_message` is a scene-side UI string shown when a learner

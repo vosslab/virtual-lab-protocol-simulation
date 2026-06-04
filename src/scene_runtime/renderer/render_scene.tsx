@@ -30,6 +30,8 @@ import { render } from "solid-js/web";
 
 import type { PipelineResult } from "../layout/types.js";
 import { create_scene_store, type SceneStore } from "../state/scene_store.js";
+import type { ActiveAffordanceAccessor } from "../protocol/affordance.js";
+import { enumerate_candidate_targets } from "./affordance_candidates.js";
 import type { MaterialRegistry } from "./visual_state_resolver.js";
 import { SceneView, build_seed_list } from "./scene_view.js";
 
@@ -68,6 +70,13 @@ export interface MountSceneOptions {
   // When true, skip seeding the store from this PipelineResult. The caller has
   // already seeded it (e.g. to preserve cursor-held state across a SceneChange).
   skipSeed?: boolean;
+  // Optional active-affordance accessor (affordance plumbing). When provided,
+  // the renderer derives each scene object's highlight ring from the active
+  // interaction read through this accessor in arrow form (Solid store-dep rule).
+  // Absent for the scene viewer / facade render, where no protocol interaction
+  // context exists, so no highlight ring is computed. Passed by reference into
+  // SceneItem.
+  activeAffordance?: ActiveAffordanceAccessor;
 }
 
 // Mount a Solid scene into root, returning a dispose handle. Clears root first,
@@ -97,6 +106,13 @@ export function mountScene(
     opts.store.seed_from_scene(build_seed_list(result));
   }
 
+  // Enumerate the resolver-accepted candidate object names ONCE per scene mount.
+  // Reuses the same PipelineResult.final the renderer stamps as data-item-id and
+  // the click resolver walks, so candidates never drift from selectable objects
+  // (see affordance_candidates.ts enumerate_candidate_targets). Passed by reference into the
+  // scene items; per-item memos only call .has() (O(1)) and never rebuild it.
+  const candidate_targets = enumerate_candidate_targets(result);
+
   // Mount the Solid view. render() returns its own dispose function.
   const solid_dispose = render(
     () => (
@@ -106,6 +122,8 @@ export function mountScene(
         store={opts.store}
         materialRegistry={opts.materialRegistry}
         viewport={opts.viewport}
+        activeAffordance={opts.activeAffordance}
+        candidateTargets={candidate_targets}
       />
     ),
     root,

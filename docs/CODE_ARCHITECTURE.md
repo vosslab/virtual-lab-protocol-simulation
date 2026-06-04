@@ -77,6 +77,7 @@ Step machine, validators, scene operations, and click resolver.
 | [src/scene_runtime/protocol/scene_op_deps.ts](../src/scene_runtime/protocol/scene_op_deps.ts) | Store-driven `SceneOpDeps`: `ObjectStateChange`/`CursorAttach` write `scene_store`; `SceneChange` reseeds + applies the reset policy (preserving cursor-held state); `LayoutMove` is a reported no-op (Option A); `TimedWait` keeps observable semantics through the subsequent state write |
 | [src/scene_runtime/protocol/walker_debug.ts](../src/scene_runtime/protocol/walker_debug.ts) | Read-only walker/debug surface: installs `window.PROTOCOL_STEPS` + `window.gameState` projected from the emitter snapshot + scene store (frozen contract) |
 | [src/scene_runtime/protocol/click_resolver.ts](../src/scene_runtime/protocol/click_resolver.ts) | Attaches DOM click listener; maps click target to interaction validator |
+| [src/scene_runtime/protocol/affordance.ts](../src/scene_runtime/protocol/affordance.ts) | Pure affordance-kind mapping: `compute_affordance_kind` + types `AffordanceKind`, `AffordanceGesture` (= canonical `Gesture` \| null), `ActiveAffordanceAccessor`, `ComputeAffordanceKindArgs`; no Solid reactive reads, no I/O, no layout import |
 | [src/scene_runtime/protocol/emitter.ts](../src/scene_runtime/protocol/emitter.ts) | `ProtocolShellEmitter` and `RuntimeEmitterHandle`; snapshot reducer pattern |
 
 Scene operations drive the reactive `scene_store` (WS-M3-D): a validated
@@ -96,6 +97,7 @@ facade and `scene_item.tsx` / `scene_view.tsx` own item and label rendering.
 | File | Purpose |
 | --- | --- |
 | [src/scene_runtime/renderer/render_scene.tsx](../src/scene_runtime/renderer/render_scene.tsx) | Public Solid mount facade: creates the scene store, mounts `SceneView` into `#scene-root`, returns a dispose handle |
+| [src/scene_runtime/renderer/affordance_candidates.ts](../src/scene_runtime/renderer/affordance_candidates.ts) | `enumerate_candidate_targets(result)`: renderer-layer candidate-set enumeration over `PipelineResult.final` (top-level object names only, subparts excluded); single source of truth with the click resolver |
 | [src/scene_runtime/renderer/scene_view.tsx](../src/scene_runtime/renderer/scene_view.tsx) | Solid `SceneView`: renders background, one `SceneItem` per placement, and label elements; runs structural guards (collects violations) and sets `data-scene-degraded` |
 | [src/scene_runtime/renderer/scene_item.tsx](../src/scene_runtime/renderer/scene_item.tsx) | Solid `SceneItem`: reactive single-item paint (position, depth, SVG inject, missing-svg placeholder dashed box, `data-*` attributes) |
 | [src/scene_runtime/renderer/visual_state_resolver.ts](../src/scene_runtime/renderer/visual_state_resolver.ts) | Pure (no-DOM, no-Solid) resolver mapping object state + authored `visual_states` + per-protocol material registry to a renderable description |

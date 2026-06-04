@@ -1,6 +1,53 @@
 # Changelog
 
+## 2026-06-04
+
+### Additions and New Features
+
+- Added unit tests for `enumerate_candidate_targets` in
+  `tests/test_affordance.mjs` (4 new cases): top-level names included, subpart
+  names with "." excluded, empty `result.final` yields empty set, and result
+  contains exactly the top-level names provided. This was the real coverage gap:
+  a bug returning an empty/wrong set would have made the whole affordance
+  invisible with no test catching it.
+- Added `adjust` and `type` directed-gesture cases to
+  `tests/test_affordance.mjs` (2 new cases): both return "active" when
+  `item == active_target`, uniformly locking the "any other directed gesture"
+  branch. Test count grew from 7 to 13.
+
+### Fixes and Maintenance
+
+- Reordered imports in `tests/playwright/test_affordance_evidence.mjs`: stdlib
+  `node:*` now comes before external `playwright`, then local `./repo_root.mjs`
+  (matches TypeScript style guide import ordering).
+- Removed dead `return {...}` from `assert_select_affordance` and
+  `assert_click_affordance` in `tests/playwright/test_affordance_evidence.mjs`;
+  both are side-effect assert functions and callers discarded the return values.
+- Replaced raw color/style literals in pass-message strings of hover-persistence
+  and focus-persistence assertions with the named constants
+  `EXPECTED_CANDIDATE_OUTLINE_COLOR` / `EXPECTED_CANDIDATE_OUTLINE_STYLE` so
+  they cannot go stale when the constants change.
+- Added design-assumption comment above `candidate_count === clickable_count`
+  assertion in `tests/playwright/test_affordance_evidence.mjs` documenting that
+  select_check contains only candidate scene objects (no non-candidate fixtures)
+  and noting the update needed if that changes.
+- Stripped WS-3A/M3 planning tags from the file header of
+  `tests/playwright/test_affordance_evidence.mjs` and replaced WS-2C tags at
+  hover-persistence and focus-persistence comments with plain wording.
+
 ## 2026-06-03
+
+### Fixes and Maintenance
+
+- Stripped planning-scaffolding tags (WS-1A, WS-1B, WS-2A, WS-2B) from permanent
+  source comments in five files: `src/scene_runtime/protocol/affordance.ts`,
+  `src/scene_runtime/renderer/render_scene.tsx`,
+  `src/scene_runtime/renderer/scene_item.tsx`,
+  `src/scene_runtime/renderer/scene_view.tsx`, and `src/protocol_host.tsx`. Replaced
+  each tag with a plain English phrase (see tag replacements below). Also merged the
+  split `import type { ActiveAffordanceAccessor }` + `import { compute_affordance_kind }`
+  pair in `scene_item.tsx` into one statement with an inline type modifier, matching the
+  existing style in `render_scene.tsx`. `tsc`: 0 errors. `npm run check`: 6/6 PASS.
 
 ### Additions and New Features
 
@@ -141,6 +188,58 @@
   renders as `<img>`, and `resolveAnchor(host, "anchor_liquid_bounds")` resolves to
   the per-instance namespaced element with no string concatenation.
 
+- M3 WS-3C: defined the interaction affordance in
+  `docs/specs/SCENE_VOCABULARY.md` (new "Interaction affordance" section)
+  and added a cross-link from `docs/specs/PROTOCOL_VOCABULARY.md` at the
+  `select` gesture definition. The spec now closes the silence that allowed
+  a visible-affordance gap: (a) every clickable scene object carries a
+  baseline cue (pointer cursor + faint hover/focus outline), always on;
+  (b) a directed gesture (`click`, `drag`, `adjust`, `type`) shows a strong
+  solid ring on the single active target; (c) a `select` gesture shows equal
+  strong candidate rings on all clickable objects present -- the correct
+  answer carries the same ring as every other candidate and is never singled
+  out (the student must identify it from the prompt); (d) the affordance is
+  derived view state computed by the renderer from the active-interaction
+  snapshot, never authored in YAML, never persisted, and it adds no
+  vocabulary. Distinct ring styles (solid vs. dashed, color-plus-style not
+  color-only) keep the directed vs. candidate cues accessible.
+
+- M2 WS-2B: clickable scene objects are now keyboard-focusable and carry an
+  accessible name. `src/scene_runtime/renderer/scene_item.tsx` gains `tabIndex={0}`
+  and `role="button"` on the item root `<div>`, making every rendered `[data-item-id]`
+  element reachable by Tab in reading order. The accessible name is sourced from
+  `BoundPlacement.label` (the same visible object label already rendered beneath
+  the item), so assistive technology announces the object by its display name
+  without revealing select-answer identity beyond what a sighted student already
+  sees. Enter/Space key activation was intentionally NOT added this pass; no
+  existing target-submit helper was available to wire it to without expanding into
+  gesture-dispatch refactoring. Activation ships as a tracked follow-up.
+
+- M3 WS-3A: added `src/scene_runtime/protocol/affordance.ts`, a pure Solid-free
+  helper that owns affordance-kind derivation. Exports `compute_affordance_kind`
+  (maps active target, active gesture, item target, and candidate set to
+  `AffordanceKind` -- "active" | "candidate" | "none") and
+  `enumerate_candidate_targets` (builds the resolver-consistent candidate set from
+  `PipelineResult.final`). Also exports types `AffordanceKind`, `AffordanceGesture`,
+  `ActiveAffordanceAccessor`, and `ComputeAffordanceKindArgs`. No Solid reactive
+  reads, no I/O, no per-protocol branch. Mount plumbing threads the active-interaction
+  accessor from `protocol_host.tsx` through `render_scene.tsx` and `scene_view.tsx`
+  down to `scene_item.tsx`.
+
+- M3 WS-3A: `src/scene_runtime/renderer/scene_item.tsx` now derives and stamps a
+  `data-affordance` attribute on every rendered scene-object root element. A
+  `createMemo` reads the active-interaction accessor (active target + gesture) and
+  calls `compute_affordance_kind` with the per-item object name and the scene's
+  candidate set, producing `"active"`, `"candidate"`, or `"none"`. The attribute
+  updates automatically on every step or interaction advance without any store write.
+
+- M2 WS-2A: added baseline clickable cue and affordance ring rules to
+  `src/style.css`. Every `[data-item-id]` element receives a pointer cursor plus a
+  faint hover and focus outline at all times. `[data-item-id][data-affordance="active"]`
+  carries a strong solid ring; `[data-item-id][data-affordance="candidate"]` carries
+  a strong dashed ring. The compound attribute selectors give the ring rules higher
+  specificity than the baseline hover/focus rule so a ring always wins when present.
+
 ### Behavior or Interface Changes
 
 - SCENE-LINT and SCENE-DESIGN now emit a precise prerequisite failure when
@@ -218,6 +317,20 @@
   copy) and is no longer imported anywhere under `src/`. `structural_guards.ts` Guard 6
   now validates asset presence against `SVG_MANIFEST`, not the removed registry.
 
+- Moved `enumerate_candidate_targets` out of `src/scene_runtime/protocol/affordance.ts`
+  into a new renderer-layer module `src/scene_runtime/renderer/affordance_candidates.ts`.
+  The function imports the layout `PipelineResult` type, so it belongs in the
+  renderer/mount layer, not the protocol layer; keeping it in `protocol/` was a
+  protocol-imports-layout boundary violation. `compute_affordance_kind` stays in
+  `src/scene_runtime/protocol/affordance.ts`. Zero behavior change; all call sites
+  updated to the new import path. `tsc`: 0 errors. `check_codebase.sh`: 6/6 PASS.
+
+- Replaced the hand-written `AffordanceGesture` union type in
+  `src/scene_runtime/protocol/affordance.ts` with the canonical `Gesture | null`
+  imported from `src/shell/adapter/types.ts`. The two definitions had identical
+  member sets, so there is no behavior change; the hand-written union was a
+  vocabulary duplicate that could silently drift from the canonical set.
+
 ### Fixes and Maintenance
 
 - Asset hygiene: deleted byte-duplicate `assets/equipment/vortex_new.svg`; replaced the mislabeled
@@ -290,6 +403,13 @@
 - One-line render-path lint fix in `scene_item.tsx`: the SVG resource error is narrowed
   to `unknown` then to Error/string/`JSON.stringify`, clearing `no-unsafe-assignment`
   and `no-base-to-string`.
+- M2 WS-2C: fixed a CSS cascade defect in `src/style.css` where the affordance ring
+  rules could be overridden by the baseline hover/focus outline. Ring selectors were
+  re-anchored to `[data-item-id][data-affordance="active"]` and
+  `[data-item-id][data-affordance="candidate"]` (compound attribute selectors,
+  higher specificity) so a candidate or active ring always wins over the baseline
+  `:hover`/`:focus-visible` outline and remains visible while the object is also
+  hovered or focused.
 
 ### Removals and Deprecations
 
@@ -302,6 +422,13 @@
 - `generated/svg_registry.ts` is now a transitional bridge file, still emitted, to be removed in
   the gated runtime cutover (scene_item render-mode flip + registry removal, including
   `structural_guards.ts` Guard 6). The cutover is gated on the material commit landing first.
+
+- Removed the `is_active_target` runtime flag from `src/scene_runtime/state/scene_store.ts`,
+  `src/scene_runtime/renderer/scene_item.tsx`, and the `test_scene_op_deps.mjs`
+  flag-clear test. The flag drove the old box-shadow highlight path; it was superseded
+  by `data-affordance="active"` + CSS outline (WS-3A/WS-2A). The `is_selected` flag
+  and the `set_flags` API are retained for the named post-selection-confirmation-ring
+  follow-up.
 
 ### Decisions and Failures
 
@@ -360,6 +487,26 @@
   MATERIAL_CONVENTION.md narrowed, MATERIAL_LINT.md). `docs/specs/MATERIAL_LINT.md` is
   currently untracked in git. The human must `git add docs/specs/MATERIAL_LINT.md` (and
   the other four if not yet staged) so cross-doc links resolve on GitHub.
+- Decision (WS-2B, keyboard Enter/Space activation): intentionally not shipped
+  this pass. No existing target-submit helper was available in the runtime; wiring
+  Enter/Space without one would have required factoring a new gesture-dispatch path,
+  expanding scope beyond a visual affordance fix. The decision records that
+  focusability and accessible naming are done; key activation is a named follow-up.
+  The WS-3A Playwright evidence run surfaced the CSS cascade defect (rings lost
+  under hover/focus) that WS-2C fixed.
+
+- TRACKED follow-up (pre-existing Solid-infra, not introduced by the affordance
+  cleanup): the emitter snapshot bridge in `src/shell/signals.ts` discards the
+  `subscribe()` unsubscribe handle on every call, creating a listener leak on
+  teardown. The candidate fix is Solid `from()`, which owns the subscription
+  lifecycle; deferred until the bridge receives broader refactoring.
+
+- TRACKED follow-up (pre-existing Solid-infra, not introduced by the affordance
+  cleanup): `src/scene_runtime/renderer/scene_view.tsx` captures `props.result`
+  and `props.root` into `const` at the top of the component body, which is the
+  Solid props-destructure antipattern (the captured values are stale after a
+  re-render, though currently harmless under dispose-remount). Deferred as a
+  named follow-up for when the component is next refactored.
 
 ### Developer Tests and Notes
 
@@ -386,6 +533,11 @@
   - `node --test`: SVG id-namespacing 5/5 and file-loading 5/5.
   - `./run_validate.sh`: PASS (0 errors).
   - Wedge-page screenshots saved under `test-results/`.
+- M3 WS-2C: hover/focus ring-persistence assertions added to
+  `tests/playwright/test_affordance_evidence.mjs`. The spec asserts that when a
+  candidate-ring object is hovered or focused, the candidate ring remains visible
+  and the baseline outline does not replace it, proving the WS-2C specificity fix
+  holds in a live browser.
 
 ## 2026-06-02
 

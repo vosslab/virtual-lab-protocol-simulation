@@ -218,14 +218,13 @@ describe("scene_op_deps SceneChange reset matrix", () => {
     assert.strictEqual(flags.held_material_volume, 10);
   });
 
-  test("active-target and selected flags clear on SceneChange", () => {
+  test("selected flag clears on SceneChange", () => {
     const store = create_scene_store();
     seed_scene(store);
     const deps = deps_with_next_scene(store, [{ target: "centrifuge", object_name: "centrifuge" }]);
-    store.set_flags("centrifuge", { is_active_target: true, is_selected: true });
+    store.set_flags("centrifuge", { is_selected: true });
     deps.apply_scene_change({ type: "SceneChange", to_scene: "next" });
     const flags = store.state["centrifuge"].flags;
-    assert.strictEqual(flags.is_active_target, false);
     assert.strictEqual(flags.is_selected, false);
   });
 
