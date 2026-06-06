@@ -1,9 +1,67 @@
 # Changelog
 
+## 2026-06-05
+
+### Additions and New Features
+
+- Extended `docs/active_plans/decisions/tooling_evaluation.md` with a "Browser UX
+  affordance layer" section answering the sharper question of what simplifies the
+  incomplete browser UI. Finding: no app framework helps; the browser is already
+  fully data-driven, and the gap is three missing gesture controls (`adjust`, `drag`,
+  `select`; `adjust` has 44 unplayable authored uses), hand-rolled working gestures,
+  and stubbed scene operations (`TimedWait`, `LayoutMove`, asset background). Top
+  recommendation: a `src/protocol_ui/` affordance layer mapping interaction to control
+  to step-machine handler, with Floating UI for object-anchored coach marks and one
+  headless library (Kobalte preferred over Ark UI) for widget internals. Evaluates
+  `@thisbeyond/solid-dnd`, solid-motionone, svg-pan-zoom, Zag.js, `@dschz/solid-flow`,
+  and SVG.js (rejected for scene objects per contract item 3). Includes a "How to
+  obtain the code" subsection with npm install and import examples.
+- Added a "Layout engine helpers (SVG placement)" section to
+  `docs/active_plans/decisions/tooling_evaluation.md`. Finding: do not replace the
+  deterministic zone-based row engine; most FOSS "SVG placement" tools are graph,
+  diagram, drag, or collision tools. Two binding constraints recorded: output must stay
+  deterministic (clean scenes are byte-identical; force/stress solvers are
+  non-deterministic unless seeded) and any helper must be a pure pipeline stage emitting
+  the existing `ComputedItem` shape. Verdicts: SAT.js (adopt-candidate, deterministic
+  collision utility for the hand-rolled `layout_labels.ts` geometry), elkjs and D3-force
+  (conditional, single-zone solver / seeded relax post-pass only), rectangle-packer
+  (conditional, inventory surfaces only), Cytoscape.js / Dagre (skip for scene;
+  authoring or debug diagrams only).
+- Precision pass on `docs/active_plans/decisions/tooling_evaluation.md` to avoid
+  overstating what is missing or forbidden: SVGO retagged "skip unless folded into the
+  existing pipeline" (not "already done"); `select` corrected to working via the
+  click-to-select promotion in `protocol_host.tsx` (not "ring only, no commit"), so
+  three of five gestures work and only `adjust`/`drag` lack a control; `TimedWait`
+  reworded from "stub" to minimal-but-observable via a subsequent state write; SVG.js
+  changed to reject-for-placement / conditional-for-subpart-internals (contract item 3
+  allows custom subpart geometry); localStorage gains a note that progress persistence
+  needs a separate restore test because the canonical walkthrough starts from cleared
+  storage. Final ranking revised accordingly.
+- Added a "TypeScript tooling gaps (support, not replace)" section to
+  `docs/active_plans/decisions/tooling_evaluation.md` (ts-pattern, fast-check,
+  Playwright `toHaveScreenshot`, @axe-core/playwright, Knip, TypeDoc, API Extractor,
+  ts-morph), with verdicts checked against the code rather than taken from the external
+  review. Key correction: ts-pattern was downgraded from adopt-candidate to conditional
+  because the repo already enforces compile-time exhaustiveness with a `never` default
+  (`src/scene_runtime/protocol/scene_operations.ts:127`, `validators.ts`), so its
+  headline pitch is already covered dependency-free. fast-check confirmed absent (real
+  gap) and runner-agnostic under `node --import tsx --test`; `toHaveScreenshot`
+  confirmed available via the existing `@playwright/test` devDependency (no new dep)
+  with zero current uses. Closed sets, the click-to-select promotion
+  (`protocol_host.tsx:326`), and the test runner were all verified in source.
+
 ## 2026-06-04
 
 ### Additions and New Features
 
+- Added `docs/active_plans/decisions/tooling_evaluation.md`, a decision record
+  evaluating every proposed tool (SolidJS, Solid stores, SVGO, Valibot/Zod, Ladle,
+  Vitest, Solid Testing Library, localStorage, Vite, XState, TanStack Router/Query,
+  yaml runtime loader, vite-plugin-solid-svg, SolidStart, SvelteKit, UnoCSS/Tailwind,
+  Storybook, esbuild watch) with pros, cons, and a fit verdict grounded in the
+  current build pipeline and contract invariants. Top recommendation: a Valibot/Zod
+  runtime guard GENERATED from `validation/yaml_schema/constants.py` (not hand-written)
+  to close the constants.py / `src/shell/adapter/types.ts` drift gap.
 - Added unit tests for `enumerate_candidate_targets` in
   `tests/test_affordance.mjs` (4 new cases): top-level names included, subpart
   names with "." excluded, empty `result.final` yields empty set, and result
