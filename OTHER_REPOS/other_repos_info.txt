@@ -1,3 +1,18 @@
+# SVG tools
+git clone --depth 1 https://github.com/svg/svgo.git
+git clone --depth 1 https://github.com/RobvanGastel/svg-priors.git
+git clone --depth 1 https://github.com/ajstarks/svgo
+git clone --depth 1 https://github.com/juanfran/svgo-inkscape.git
+git clone --depth 1 https://github.com/scour-project/scour.git
+
+# Layout and UI tools
+git clone --depth 1 https://github.com/jriecken/sat-js.git
+git clone --depth 1 https://github.com/kieler/elkjs.git
+git clone --depth 1 https://github.com/kobaltedev/kobalte.git
+git clone --depth 1 https://github.com/chakra-ui/ark.git
+git clone --depth 1 https://github.com/floating-ui/floating-ui.git
+git clone --depth 1 https://github.com/thisbeyond/solid-dnd.git
+
 # Artwork / SVG assets
 git clone --depth 1 https://github.com/duerrsimon/bioicons.git
 git clone --depth 1 https://github.com/continuous-foundation/scienceicons.git
@@ -15,6 +30,7 @@ git clone --depth 1 https://github.com/ucsf-ferguson-lab/blotRig.git
 
 # Niche / exploratory
 git clone --depth 1 https://github.com/AbramGiller/western_blot_simulator.git
+
 
 Yes. I would clone these first, in this order.
 
