@@ -101,6 +101,12 @@ export function mountScene(
     root.removeChild(root.firstChild);
   }
 
+  // Stamp the scene's workspace kind on the root so CSS can gate render-layer
+  // effects (e.g. the warm bench-surface ::after band) on workspace type.
+  // Hood and microscope workspaces must not render a bench surface cue.
+  // This attribute is cleared in the dispose function below.
+  root.setAttribute("data-scene-workspace", result.scene.workspace);
+
   // Seed the store from the pipeline result unless the caller already seeded.
   if (opts.skipSeed !== true) {
     opts.store.seed_from_scene(build_seed_list(result));
@@ -138,6 +144,9 @@ export function mountScene(
     root.removeAttribute("data-scene-degraded");
     root.removeAttribute("data-degraded-violation-count");
     root.removeAttribute("data-bg-asset-pending");
+    // Remove the workspace stamp set above so a re-mounted scene always gets
+    // the correct workspace class from its own PipelineResult.
+    root.removeAttribute("data-scene-workspace");
     if (ROOT_DISPOSERS.get(root) === dispose) {
       ROOT_DISPOSERS.delete(root);
     }

@@ -18,18 +18,18 @@
 
 async function mount_bench(root: HTMLElement): Promise<void> {
   const { SCENES } = await import("../generated/scenes.js");
-  const { OBJECT_LIBRARY, ASSET_SPECS } = await import("../generated/object_library.js");
-  const { runPipeline } = await import("./scene_runtime/layout/index.js");
+  const { resolvePrecomputedResult } =
+    await import("./scene_runtime/layout/precomputed_result.js");
   const { renderScene } = await import("./scene_runtime/renderer/index.js");
 
   const scene = SCENES.hood_basic;
   if (!scene) {
     throw new Error("Scene hood_basic not found in SCENES index");
   }
-  const result = runPipeline(scene, {
-    library: OBJECT_LIBRARY,
-    assets: ASSET_SPECS,
-  });
+  // Production layout source: consume the build-time precomputed layout for
+  // hood_basic instead of running the runtime engine. No runPipeline call path
+  // ships in this bundle.
+  const result = resolvePrecomputedResult("hood_basic", scene);
   renderScene(root, result);
 }
 

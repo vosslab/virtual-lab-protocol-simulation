@@ -155,25 +155,41 @@
   padding: 8px;
   min-height: 0; /* allow grid row to shrink */
   overflow: visible; /* never clip scientific assets; layout pipeline guards prevent items from escaping scene bounds */
+  /* Size container so .scene-panel-inner can compute the largest 16:9 box that
+     fits using container-query units (cqw/cqh). This is what FORCES exact 16:9
+     regardless of whether the panel is wider or taller than 16:9 (WP-PRECOMP2). */
+  container-type: size;
 }
 
-/* Inner wrapper that enforces the 16:9 scene aspect ratio.
-   #scene-root fills this wrapper 100%x100%.
+/* Inner wrapper that FORCES an exact 16:9 rendered scene frame (WP-PRECOMP2).
+   #scene-root fills this wrapper 100%x100%, so #scene-root is always exactly
+   16:9 regardless of the surrounding grid/header/guidance-bar sizing.
    Aspect-ratio on this intermediate element (not on #scene-root directly)
    avoids the CSS policy ban on #scene-root constraints.
-   This element is NOT a scene-content element; it is pure layout chrome.
+   This element is NOT a scene-content element; it is pure layout chrome, so
+   max-width / max-height here are permitted by tools/check_css_content_policy.py.
 
-   Strategy: width: 100% fills the available panel width; height is derived
-   from aspect-ratio (16/9). max-height: 100% caps at the panel height.
-   When the derived height would exceed the panel, it is capped and the
-   actual rendered size is measured by protocol_host.tsx via getBoundingClientRect.
-   */
+   Letterbox strategy (largest 16:9 box that fits the panel, centered):
+   the parent .scene-panel is a size container (container-type: size), so width
+   resolves against the panel via container-query units. The width is the SMALLER
+   of the panel width (100cqw) and the width a full-height 16:9 box would need
+   (100cqh * 16 / 9). aspect-ratio: 16/9 then derives the height, so the element
+   is always EXACTLY 16:9 and never exceeds either panel dimension:
+     - panel wider than 16:9  -> width = 100cqh*16/9 (height-bound): pillarbox,
+       neutral bars left/right.
+     - panel taller than 16:9 -> width = 100cqw (width-bound): letterbox,
+       neutral bars top/bottom.
+   The flex parent centers the box; the neutral bars are the .scene-panel
+   background (#e8e0cc) showing around the frame. Resizing the browser changes
+   ONLY the bar thickness and the uniform scale, never the scene-internal layout:
+   the engine and the precomputed layout always see an exact 16:9 space.
+   A plain max-width/max-height + width:100% approach does NOT force 16:9 on a
+   wider-than-16:9 panel: the explicit width wins and max-height only caps the
+   height, yielding an off-16:9 box. The container-query min() removes that. */
 .scene-panel-inner {
   position: relative;
-  width: 100%;
-  height: auto;
+  width: min(100cqw, calc(100cqh * 16 / 9));
   aspect-ratio: 16 / 9;
-  max-height: 100%;
   overflow: visible;
 }
 
@@ -189,6 +205,75 @@
   height: 100%;
   overflow: visible;
   background: linear-gradient(180deg, #e8e2d0 0%, #d4cbb3 100%);
+}
+
+/*============================================
+  Surface band: subtle horizontal surface cue drawn BEHIND all scene objects
+  via ::after (z-index 0, below data-depth="back" z-index:1). Sits at 78%
+  down from the top, fading from transparent to a tinted bottom strip.
+  pointer-events: none prevents any click interception.
+  overflow: visible on #scene-root means this pseudo-element is never clipped.
+  This is a RENDER-LAYER effect only. No layout geometry is changed.
+
+  Round 1.7 refinement: color is now CONDITIONAL on workspace type:
+  - WARM amber/wood tone for bench-type scenes: bench, cell_counter.
+    These scenes have warm lab-bench backgrounds; a warm surface band
+    reads as a believable wood-bench edge.
+  - NEUTRAL cool blue-grey for clinical scenes: microscope, incubator,
+    plate_reader. These scenes have cool/clinical backgrounds; a neutral
+    grey band reads as a clinical surface edge without introducing
+    warmth that would conflict.
+  - NO band for hood. The enclosed fume-hood interior reads cleanest
+    with no surface band. seeding_workspace also maps to workspace=hood
+    so it also receives no band (accepted limitation).
+
+  The mountScene function in render_scene.tsx stamps data-scene-workspace on
+  #scene-root from result.scene.workspace; these selectors gate on that value.
+============================================*/
+
+/* WARM surface band -- bench-type workspaces */
+#scene-root[data-scene-workspace="bench"]::after,
+#scene-root[data-scene-workspace="cell_counter"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78%;
+  bottom: 0;
+  /* Warm amber/wood-bench tone: low-opacity gradient evoking a bench-top
+     surface edge. Stays faint -- a spatial anchor hint, not a heavy stripe. */
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(80, 60, 30, 0.10) 40%,
+    rgba(80, 60, 30, 0.18) 100%
+  );
+  pointer-events: none;
+  /* Behind all scene objects (depth back = z-index 1). */
+  z-index: 0;
+}
+
+/* NEUTRAL surface band -- clinical workspaces */
+#scene-root[data-scene-workspace="microscope"]::after,
+#scene-root[data-scene-workspace="incubator"]::after,
+#scene-root[data-scene-workspace="plate_reader"]::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 78%;
+  bottom: 0;
+  /* Neutral cool blue-grey: desaturated gradient matching clinical scene
+     backgrounds. No warm tint -- reads correctly in clinical workspaces. */
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(120, 125, 130, 0.12) 40%,
+    rgba(110, 116, 122, 0.20) 100%
+  );
+  pointer-events: none;
+  /* Behind all scene objects (depth back = z-index 1). */
+  z-index: 0;
 }
 
 /*============================================
@@ -296,6 +381,17 @@
 [data-placement-name] {
   position: absolute;
   /* placement bounds set by inline style via _x, _top, _visualWidth, _height */
+  /* Grounding cue (round 1.5): soft contact drop-shadow anchored at the object
+     base. The shadow sits BELOW the item div, behind its artwork, and is never
+     clipped by overflow:hidden because overflow:visible is set on all ancestor
+     containers up to #scene-root. This gives each object a believable resting-
+     surface shadow without touching any layout geometry.
+     Round 1.5: nudged from (0px 5px 6px 0.20) to (0px 6px 8px 0.26) -- a step
+     stronger so the shadow is clearly perceptible while remaining soft and subtle.
+     Round 1.6: tint neutralized from warm-brown rgba(80,60,30) to neutral dark
+     grey rgba(40,44,48); blur/offset/opacity kept identical to round 1.5.
+     Never occludes, tints, or darkens any asset artwork. */
+  filter: drop-shadow(0px 6px 8px rgba(40, 44, 48, 0.26));
 }
 
 /* depth ordering: back -> mid -> front */

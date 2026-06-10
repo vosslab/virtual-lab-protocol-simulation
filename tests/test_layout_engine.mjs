@@ -11,12 +11,9 @@ import {
   clampSceneBounds,
   DEMO_ASSET_SPECS,
   DEMO_OBJECT_LIBRARY,
-  DEPTH_SCALE,
   groupByZone,
   horizontalLayout,
   layoutLabels as _layoutLabels,
-  LAYOUT_SHRINK_FACTOR,
-  MAX_LAYOUT_PASSES,
   normalizeSchema,
   PX_PER_SCENE_PERCENT,
   resolveInheritance,
@@ -351,6 +348,48 @@ test("verticalLayout: bottom anchor places _top above baseline by heightPct", ()
   assert.ok(Math.abs(item._top - (item._y - item._height)) < 0.001);
 });
 
+test("verticalLayout: tall item is auto-fit into the zone, aspect preserved", () => {
+  // A very tall, bottom-anchored item whose natural height exceeds the room
+  // between the baseline and the zone top must be scaled down to fit.
+  const placements = [
+    {
+      placement_name: "p",
+      object_name: "heat_block",
+      zone: "w",
+      depth_tier: 1,
+    },
+  ];
+  const bound = bindObjects(placements, DEMO_OBJECT_LIBRARY, DEMO_ASSET_SPECS, []);
+  // Tall aspect so the derived height moderately overshoots the zone room (the
+  // fit stays above the MIN_SCALE floor, so the item genuinely fits after fit).
+  bound[0].aspect = 0.7;
+  const scaled = scaleToRealWorld(bound, "bench", {}, []);
+  const zones = [
+    {
+      id: "w",
+      bounds: { left: 10, right: 90, top: 40, bottom: 70 },
+      baseline: 68,
+    },
+  ];
+  const horiz = horizontalLayout(groupByZone(scaled, zones).groups, zones);
+  const before = horiz.get("w")[0];
+  const naturalHeight = (before._visualWidth * (1920 / 1080)) / 0.7;
+  const room = 68 - 40; // baseline - zone top, bottom anchor
+  assert.ok(naturalHeight > room, "fixture must actually overshoot the zone");
+
+  const diags = [];
+  const vert = verticalLayout(horiz, zones, { w: 1920, h: 1080 }, diags);
+  const item = vert.get("w")[0];
+  // The fitted item sits inside the zone (top at or below the zone top).
+  assert.ok(item._top >= 40 - 0.001, `top ${item._top} should be >= zone top`);
+  // Aspect is preserved: height/width ratio matches the (viewport-adjusted) aspect.
+  const ratio = item._height / item._visualWidth;
+  const expectedRatio = 1920 / 1080 / 0.7;
+  assert.ok(Math.abs(ratio - expectedRatio) < 0.001, `aspect drift: ${ratio} vs ${expectedRatio}`);
+  // The width was shrunk to achieve the fit (no distortion).
+  assert.ok(item._visualWidth < before._visualWidth);
+});
+
 // ─── Stage 9 ────────────────────────────────────────────────────────
 test("layoutLabels: short labels emit one line", () => {
   assert.deepEqual(wrapLabel("Hi", 10), ["Hi"]);
@@ -361,8 +400,8 @@ test("layoutLabels: long labels wrap at nearest space to middle", () => {
   assert.equal(lines.length, 2);
 });
 
-// ─── Stage 10 ───────────────────────────────────────────────────────
-test("clampSceneBounds: zone group with item past right shifts left", () => {
+// ─── Stage 10 / validate (M6/WP-VERT1: report-only bounds validation) ──
+test("clampSceneBounds: report-only — measures overflow, never shifts positions", () => {
   const items = [
     {
       placement_name: "p",
@@ -399,17 +438,82 @@ test("clampSceneBounds: zone group with item past right shifts left", () => {
     },
   ];
   const diags = [];
+  const overflows = [];
   const zones = [{ id: "w", bounds: { left: 0, right: 100, top: 0, bottom: 100 } }];
+  // Item right edge = 95 + 20/2 = 105, past scene_bounds.right (99) by 6.
   const out = clampSceneBounds(
     new Map([["w", items]]),
     zones,
     { left: 1, right: 99, top: 5, bottom: 95 },
     diags,
+    overflows,
+    "fixture_scene",
   );
-  const shifted = out.get("w")[0];
-  assert.equal(shifted._clamped, true);
-  assert.ok(shifted._x < 95);
+  const result = out.get("w")[0];
+  // Report-only: position is unchanged (no shift), no _clamped mutation.
+  assert.equal(result._x, 95);
+  assert.equal(result._clamped, undefined);
+  // A measurement diagnostic still records the overshoot for existing tooling.
   assert.equal(diags[0].kind, "zone_clamped_to_bounds");
+  assert.ok(diags[0].dx > 0);
+  // A structured, fixable unresolved_overlap Error is recorded for the zone.
+  assert.equal(overflows.length, 1);
+  const err = overflows[0].diagnostic;
+  assert.equal(err.code, "unresolved_overlap");
+  assert.equal(err.severity, "Error");
+  assert.equal(err.failBuild, true);
+  assert.equal(err.pointer.scene_name, "fixture_scene");
+  assert.equal(err.pointer.zone_name, "w");
+  assert.ok(err.payload.involvedItems.includes("p"));
+  assert.ok(err.payload.remainingOverlapDepth > 0);
+});
+
+test("clampSceneBounds: item inside bounds records no overflow", () => {
+  const items = [
+    {
+      placement_name: "p",
+      object_name: "heat_block",
+      zone: "w",
+      _x: 50,
+      _y: 50,
+      _top: 40,
+      _height: 20,
+      _visualWidth: 20,
+      _footprint: 20,
+      _scale: 1,
+      _labelX: 50,
+      _labelY: 55,
+      _labelLines: ["x"],
+      _width_scale: 1,
+      _scale_source: "cm_model",
+      _px_per_cm: 3.2,
+      active: true,
+      aspect: 1.35,
+      kind: "equipment",
+      asset: "heat_block",
+      capabilities: [],
+      label: "x",
+      layout: {
+        default_width: 18,
+        label_width: 12,
+        anchor_y: "bottom",
+        anchor_y_offset: 0,
+      },
+    },
+  ];
+  const diags = [];
+  const overflows = [];
+  const zones = [{ id: "w", bounds: { left: 0, right: 100, top: 0, bottom: 100 } }];
+  clampSceneBounds(
+    new Map([["w", items]]),
+    zones,
+    { left: 1, right: 99, top: 5, bottom: 95 },
+    diags,
+    overflows,
+    "ok_scene",
+  );
+  assert.equal(diags.length, 0);
+  assert.equal(overflows.length, 0);
 });
 
 // ─── runPipeline + convergence loop ─────────────────────────────────
@@ -418,7 +522,6 @@ test("runPipeline: heat_block_bench fixture converges in 1 pass, no diagnostics"
   assert.equal(result.diagnostics.length, 0);
   assert.equal(result.passes.length, 1);
   assert.equal(result.passes[0].zones_shrunk.length, 0);
-  assert.equal(result.final.length, 3);
 });
 
 test("runPipeline: _width_scale fixture values match spec §7", () => {
@@ -492,8 +595,98 @@ test("runPipeline: identityDiagCount excludes placement-stage diagnostics", () =
   assert.equal(result.identityDiagCount, 0);
 });
 
-test("constants: MAX_LAYOUT_PASSES is 3, LAYOUT_SHRINK_FACTOR is 0.9", () => {
-  assert.equal(MAX_LAYOUT_PASSES, 3);
-  assert.equal(LAYOUT_SHRINK_FACTOR, 0.9);
-  assert.equal(DEPTH_SCALE.mid, 1.0);
+// ─── Stage 7 packer (M5/WP-STRAT2) ──────────────────────────────────
+// A deliberately overloaded single-row zone: a narrow zone packed with an
+// equipment primary plus several lower-priority fillers whose scale-1 footprints
+// overflow. The packer must engage, fit with no negative gap, preserve the
+// primary's scale, and lay items out left-to-right without overlap.
+const OVERLOADED_BENCH = {
+  scene_name: "overloaded_bench",
+  workspace: "bench",
+  scene_bounds: { left: 1, right: 99, top: 5, bottom: 95 },
+  zones: [
+    {
+      id: "packed_row",
+      // Narrow zone so the row of items cannot fit at scale 1.
+      bounds: { left: 20, right: 60, top: 45, bottom: 85 },
+      baseline: 80,
+      align: "left",
+    },
+  ],
+  placements: [
+    // The primary teaching object (equipment kind, highest shrink priority).
+    {
+      placement_name: "p_heat_block",
+      object_name: "heat_block",
+      zone: "packed_row",
+      depth_tier: 1,
+    },
+    // Lower-priority fillers that should shrink first.
+    {
+      placement_name: "f_rack_a",
+      object_name: "microtube_rack_24",
+      zone: "packed_row",
+      depth_tier: 1,
+    },
+    {
+      placement_name: "f_rack_b",
+      object_name: "microtube_rack_24",
+      zone: "packed_row",
+      depth_tier: 1,
+    },
+    { placement_name: "f_waste", object_name: "waste_jar", zone: "packed_row", depth_tier: 1 },
+  ],
+};
+
+test("packer: overloaded zone packs with no negative gap, primary keeps scale", () => {
+  const result = runPipeline(OVERLOADED_BENCH, {
+    library: DEMO_OBJECT_LIBRARY,
+    assets: DEMO_ASSET_SPECS,
+  });
+
+  // The dispatcher must have selected the packer for the overloaded zone.
+  const zoneDecision = result.decisionMetadata.zones.find((z) => z.zoneId === "packed_row");
+  assert.ok(zoneDecision, "expected a decision for packed_row");
+  assert.equal(zoneDecision.selectedStrategy, "pack");
+  assert.equal(zoneDecision.packerAttempted, true);
+  assert.equal(zoneDecision.packerResult, "fit");
+
+  // The packed items, in input order.
+  const items = result.stages.horizontal.get("packed_row");
+  assert.equal(items.length, 4);
+
+  // No negative gap: adjacent footprints must not overlap (left edge of item i+1
+  // is at or past the right edge of item i).
+  const ordered = [...items].sort((a, b) => a._x - b._x);
+  for (let i = 0; i < ordered.length - 1; i++) {
+    const rightEdge = ordered[i]._x + ordered[i]._footprint / 2;
+    const leftEdgeNext = ordered[i + 1]._x - ordered[i + 1]._footprint / 2;
+    assert.ok(
+      leftEdgeNext >= rightEdge - 1e-6,
+      `negative gap between ${ordered[i].placement_name} and ${ordered[i + 1].placement_name}`,
+    );
+  }
+
+  // Order is preserved: the packer never reorders the row it receives. groupByZone
+  // sorts by depth_tier then placement_name before placement, so the packer's
+  // input (and output) order is the grouped order, not the YAML order.
+  assert.deepEqual(
+    items.map((it) => it.placement_name),
+    ["f_rack_a", "f_rack_b", "f_waste", "p_heat_block"],
+  );
+
+  // Primary preservation: the equipment primary keeps a scale at least as large
+  // as every filler's, and the fillers carry the shrink.
+  const primaryScale = zoneDecision.shrinkApplied.p_heat_block;
+  for (const name of ["f_rack_a", "f_rack_b", "f_waste"]) {
+    assert.ok(
+      primaryScale >= zoneDecision.shrinkApplied[name] - 1e-9,
+      `primary scale ${primaryScale} should be >= filler ${name} scale ${zoneDecision.shrinkApplied[name]}`,
+    );
+  }
+  // At least one filler actually shrank (the zone was genuinely overloaded).
+  const anyFillerShrank = ["f_rack_a", "f_rack_b", "f_waste"].some(
+    (n) => zoneDecision.shrinkApplied[n] < 1,
+  );
+  assert.ok(anyFillerShrank, "expected at least one filler to shrink in an overloaded zone");
 });

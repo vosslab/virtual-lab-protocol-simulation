@@ -37,9 +37,9 @@ import type {
 
 import { PROTOCOLS } from "../generated/protocols.js";
 import { SCENES } from "../generated/scenes.js";
-import { OBJECT_LIBRARY, ASSET_SPECS } from "../generated/object_library.js";
 
-import { runPipeline } from "./scene_runtime/layout/index.js";
+import type { PipelineResult } from "./scene_runtime/layout/types.js";
+import { resolvePrecomputedResult } from "./scene_runtime/layout/precomputed_result.js";
 import { mountScene, type SceneDispose } from "./scene_runtime/renderer/index.js";
 import type { MaterialRegistry } from "./scene_runtime/renderer/visual_state_resolver.js";
 import { create_scene_store } from "./scene_runtime/state/scene_store.js";
@@ -90,6 +90,18 @@ function read_query_param(name: string): string | null {
   const params = new URLSearchParams(search);
   return params.get(name);
 }
+
+//============================================
+// Production layout source
+//============================================
+
+// The shipped browser bundle serves only the build-time precomputed layout from
+// generated/precomputed_layout.ts via resolvePrecomputedResult(). The runtime
+// layout engine (runPipeline) is no longer imported or reachable from this
+// production path; the ?layout=runtime parity switch was retired once parity
+// was proven (38/38 scenes matched). The engine still lives on disk and runs at
+// BUILD time (pipeline/precompute_layout.mjs) and in tests, but no runPipeline
+// call path ships to users.
 
 // Resolve the active protocol name. URL wins over the inlined fallback.
 function resolve_protocol_name(): string {
@@ -237,11 +249,13 @@ function mount(): void {
       );
     }
 
-    const pipeline_result = runPipeline(scene, {
-      library: OBJECT_LIBRARY,
-      assets: ASSET_SPECS,
-      viewport: scene_viewport,
-    });
+    // Production layout source: load the build-time precomputed layout keyed by
+    // scene_name. The canonical 16:9 frame (forced by the CSS
+    // letterbox) means the precomputed positions are pixel-correct for the
+    // rendered frame regardless of panel pixel size. A missing entry throws
+    // loudly inside resolvePrecomputedResult rather than silently falling back
+    // to the runtime engine (single production path = precomputed).
+    const pipeline_result: PipelineResult = resolvePrecomputedResult(next_scene_name, scene);
 
     // Fail-loud empty-scene guard (via assert_scene_not_empty).
     // A student-visible protocol must render a non-empty scene. dev_smoke is exempt.
@@ -377,7 +391,7 @@ function mount(): void {
     render(() => <ProtocolHud snapshot={snapshot_signal} steps={protocol_steps} />, shell_root);
   }
 
-  // Walker hook. Off by default; only consumed by the M4 walker.
+  // Walker hook. Off by default; only consumed by the protocol walkthrough.
   const walker_expose = read_query_param("walker") === "expose";
   if (walker_expose) {
     window.__shellEmitter = emitter;

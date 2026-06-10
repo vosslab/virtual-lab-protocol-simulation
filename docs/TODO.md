@@ -50,10 +50,12 @@ Scene and rendering follow-ups
 
 * Replace neutral background placeholder rendering with real asset background rendering.
     * Current placeholder uses neutral fill and data-bg-asset-pending.
-* Fix layout drift in flagged scenes.
-    * electrophoresis_bench
-    * heat_block_bench
-    * passage_hood_detachment_microscope_view
+* [resolved 2026-06-08] Fix layout drift in flagged scenes.
+    * electrophoresis_bench: resolved (compile-time layout engine, M7).
+    * heat_block_bench: resolved (compile-time layout engine, M7).
+    * passage_hood_detachment_microscope_view: resolved (compile-time layout engine, M7).
+    * All three now converge clean with zero Error diagnostics at 16:9; see
+      docs/active_plans/reports/m7_wp_valid1_evidence_table.md.
 * Add scene lint coverage for untested scene YAML.
     * Confirm per-protocol scene YAML is indexed and rendered.
     * Catch layout drift before Playwright walker runs.

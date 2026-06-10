@@ -36,7 +36,23 @@ by DOM-element presence, not by URL.
 1. Resolve protocol name from `?protocol=` query string or `window.__PROTOCOL_NAME__`.
 2. Look up `ProtocolConfig` from `generated/protocols.ts`.
 3. Resolve entry scene via `resolve_entry_scene_name` (see scene_runtime/protocol below).
-4. Call `runPipeline` then `renderScene` to paint `#scene-root`.
+4. Paint `#scene-root` from the precomputed layout. The shipped bundle loads
+   `PRECOMPUTED_LAYOUT[scene_name]` from `generated/precomputed_layout.ts`
+   (build-time layout at the canonical 16:9 frame) and assembles a
+   `PipelineResult` from it via `resolve_precomputed_result` /
+   `make_precomputed_result` in
+   `src/scene_runtime/layout/precomputed_result.ts` (the renderer reads only
+   `final` and `scene`); a missing entry throws. WP-PRECOMP3 retired the runtime
+   `runPipeline` engine and the `?layout=runtime` parity switch from every shipped
+   entry, so the production bundle holds no `runPipeline` call path -- the
+   precomputed layout is the single production path. The runtime engine in
+   `src/scene_runtime/layout/` is now BUILD-ONLY: `pipeline/precompute_layout.mjs`
+   runs it to emit `generated/precomputed_layout.ts`, and tests still import it,
+   but it is tree-shaken out of `dist/protocol_host.js`, `dist/scene_viewer.js`,
+   and `dist/launcher.js`. The CSS forces `#scene-root` to an exact 16:9 letterboxed frame
+   (`.scene-panel` size container + `.scene-panel-inner` 16:9), so precomputed
+   16:9 positions are pixel-correct at any panel size; resizing changes only the
+   neutral bars and uniform scale, never the scene-internal layout.
 5. Build emitter, scene-op handler, step machine, and click resolver.
 6. Mount `ProtocolHud` into `#shell-root` (unless `?shell=off`).
 7. Call `step_machine.start()`.
@@ -44,11 +60,17 @@ by DOM-element presence, not by URL.
 ### Scene runtime - layout (`src/scene_runtime/layout/`)
 
 Multi-pass layout pipeline. Converts a scene YAML record plus the object
-library into positioned, scaled `ComputedItem` records.
+library into positioned, scaled `ComputedItem` records. As of WP-PRECOMP3 this
+engine is BUILD-ONLY: `pipeline/precompute_layout.mjs` runs it to emit
+`generated/precomputed_layout.ts`, and tests import it, but no `runPipeline` call
+path ships in the production browser bundle. The shipped render path consumes the
+precomputed layout via `precomputed_result.ts` instead.
 
 | File | Purpose |
 | --- | --- |
-| [src/scene_runtime/layout/run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; stages 1-5 once, stages 6-10 in convergence loop |
+| [src/scene_runtime/layout/precomputed_result.ts](../src/scene_runtime/layout/precomputed_result.ts) | Production seam (WP-PRECOMP3): `resolve_precomputed_result` / `make_precomputed_result` build a renderer-ready `PipelineResult` from `PRECOMPUTED_LAYOUT[scene_name]` (throws on a missing entry). Imports `buildDecisionMetadata` directly (not the barrel) so the shipped bundle drags in no `runPipeline` call path. This is the only layout module the production bundle reaches at render time. |
+| [src/scene_runtime/layout/phases.ts](../src/scene_runtime/layout/phases.ts) | Phase registry: named phase sequence (`prepare -> resolve-metadata -> measure -> partition -> place-horizontal -> place-vertical -> place-labels -> resolve-collisions -> validate -> report`) with explicit read/mutate boundaries and bounded convergence loop |
+| [src/scene_runtime/layout/run_pipeline.ts](../src/scene_runtime/layout/run_pipeline.ts) | Top-level pipeline runner; drives named phases from the registry (build-only since WP-PRECOMP3) |
 | [src/scene_runtime/layout/types.ts](../src/scene_runtime/layout/types.ts) | All layout type definitions (`PipelineResult`, `ComputedItem`, `PlacementAuthored`, etc.) |
 | [src/scene_runtime/layout/constants.ts](../src/scene_runtime/layout/constants.ts) | Layout constants (`DEFAULT_VIEWPORT`, `WORKSPACE_PX_PER_CM`, shrink factor) |
 | [src/scene_runtime/layout/bind_objects.ts](../src/scene_runtime/layout/bind_objects.ts) | Stage: bind object YAML to placements |
@@ -63,6 +85,63 @@ library into positioned, scaled `ComputedItem` records.
 | [src/scene_runtime/layout/layout_labels.ts](../src/scene_runtime/layout/layout_labels.ts) | Label positioning |
 | [src/scene_runtime/layout/wrap_label.ts](../src/scene_runtime/layout/wrap_label.ts) | Label line-wrap helper |
 | [src/scene_runtime/layout/index.ts](../src/scene_runtime/layout/index.ts) | Barrel re-export: `runPipeline` |
+
+#### Geometry core (`src/scene_runtime/layout/geometry/`)
+
+Pure 2D AABB geometry core. Immutable `Aabb` and `Vector` value types carry no
+layout state. `detectCollision` returns a `Collision` with `overlapVectorAtoB`,
+`separationForA`, and `separationForB`; `buildResolutionCandidate` turns a
+`Collision` into a `ResolutionCandidate`, and `sortResolutionOrder` orders
+candidates deterministically. The geometry stays pure (no mutation); the label
+and object-placement layout phases consume it later and own all mutation.
+
+| File | Purpose |
+| --- | --- |
+| [src/scene_runtime/layout/geometry/types.ts](../src/scene_runtime/layout/geometry/types.ts) | Immutable value types: `Vector`, `Aabb`, `Collision`, `ResolutionCandidate` |
+| [src/scene_runtime/layout/geometry/collision.ts](../src/scene_runtime/layout/geometry/collision.ts) | `aabbFromBounds`, `detectCollision`, `buildResolutionCandidate`, `sortResolutionOrder` |
+
+#### Layout config (`src/scene_runtime/layout/config/`)
+
+Resolves a `LayoutConfig` by a fixed precedence: global defaults, scene
+`layout_rules`, zone overrides, placement-derived values, then strategy-local
+values. Stages read every tunable through `LayoutConfig` rather than importing
+constants directly, so tuning one scene does not affect others.
+
+| File | Purpose |
+| --- | --- |
+| `src/scene_runtime/layout/config/types.ts` | `LayoutConfig` and related config types |
+| `src/scene_runtime/layout/config/resolve_config.ts` | Config precedence resolver |
+| `src/scene_runtime/layout/config/index.ts` | Barrel export |
+
+#### Diagnostics (`src/scene_runtime/layout/diagnostics/`)
+
+Severity-graded typed diagnostics emitted by layout phases. Error-severity codes
+fail the build; Warnings and Review-required surface in the report and allow
+success. Per-scene decision metadata (selected strategy, packer trigger/result,
+shrink applied, rows created, resolved config) is emitted separately from the
+diagnostic stream.
+
+| File | Purpose |
+| --- | --- |
+| `src/scene_runtime/layout/diagnostics/severity_model.ts` | Error / Warning / Review-required severity types |
+| `src/scene_runtime/layout/diagnostics/payload.ts` | Typed diagnostic payload shapes |
+| `src/scene_runtime/layout/diagnostics/decision_metadata.ts` | Per-scene decision metadata type |
+| `src/scene_runtime/layout/diagnostics/index.ts` | Barrel export |
+
+#### Placement strategies (`src/scene_runtime/layout/strategies/`)
+
+`PlacementStrategy` seam with two implementations. `row_strategy.ts` is the
+default. The overflow packer (`pack_strategy.ts`) engages only when a row would
+shrink below the configured threshold or overflow; it preserves primary-object
+scale and input order before maximizing area. Object placement is 1D row
+footprint; same-tier de-overlap is deferred (see Known gaps).
+
+| File | Purpose |
+| --- | --- |
+| `src/scene_runtime/layout/strategies/placement_strategy.ts` | `PlacementStrategy` interface |
+| `src/scene_runtime/layout/strategies/row_strategy.ts` | Default row strategy |
+| `src/scene_runtime/layout/strategies/pack_strategy.ts` | Overflow packer strategy |
+| `src/scene_runtime/layout/strategies/index.ts` | Barrel export |
 
 ### Scene runtime - protocol (`src/scene_runtime/protocol/`)
 
@@ -142,6 +221,7 @@ All scripts that emit to `generated/` or produce `dist/` artifacts. Run by
 | [pipeline/list_protocols.py](../pipeline/list_protocols.py) | Parses `PROTOCOLS_INDEX` from generated TS; `emit` subcommand writes per-protocol HTML |
 | [pipeline/scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (shared by gen_scene_index) |
 | [pipeline/build_main_bundle.mjs](../pipeline/build_main_bundle.mjs) | esbuild Node API bundle: `src/launcher_entry.tsx` -> `dist/launcher.js`, `src/protocol_host_entry.tsx` -> `dist/protocol_host.js` |
+| [pipeline/precompute_layout.mjs](../pipeline/precompute_layout.mjs) | Runs the layout engine (`runPipeline`) for every scene at canonical 16:9 (1920x1080) -> `generated/precomputed_layout.ts` (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }`). Runs via `node --import tsx` in `build_github_pages.sh` after `build_generated.sh`, since it imports the generated `SCENES`, `OBJECT_LIBRARY`, and `ASSET_SPECS`. Deterministic (scenes and items sorted) so two builds are byte-identical. |
 
 ### Validation (`validation/`)
 
@@ -187,7 +267,8 @@ Developer-only helpers that do not appear in any build chain.
 | [tools/run_smoke.py](../tools/run_smoke.py) | Fast browser smoke test wrapper |
 | [tools/run_protocol_walkthrough.py](../tools/run_protocol_walkthrough.py) | Full protocol E2E wrapper |
 | [tools/build_test_fixture.sh](../tools/build_test_fixture.sh) | Build a single dev-smoke protocol for local testing |
-| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG post-processing for asset normalization |
+| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
+| `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely); see below |
 | [tools/check_css_content_policy.py](../tools/check_css_content_policy.py) | CSS content policy checker (invoked by check_codebase.sh) |
 | [tools/html_to_pdf.mjs](../tools/html_to_pdf.mjs) | Playwright-based HTML-to-PDF renderer |
 | [tools/seam_types_compile_check.ts](../tools/seam_types_compile_check.ts) | Compile-time type check for seam interface literals |
@@ -197,6 +278,100 @@ Developer-only helpers that do not appear in any build chain.
 | [tools/protocol_to_png.mjs](../tools/protocol_to_png.mjs) | `protocol:png` -- renders a protocol page to PNG; records load outcomes |
 | [tools/scene_stats.mjs](../tools/scene_stats.mjs) | `computeSceneStats` -- shared scene statistics helper |
 | [tools/bbox_helpers.mjs](../tools/bbox_helpers.mjs) | Shared bounding-box helper utilities used by scene tools |
+
+#### SVG ingestion-gate normalizer (`tools/normalize_svg_v3.py`)
+
+`normalize_svg_v3.py` is the SVG ingestion gate. Every SVG must pass through v3
+before being added to `assets/`. The tool has one job: either produce a
+guaranteed-safe normalized file, or reject the input with a clear reason and
+suggested fix. There is no "success with a warning" path.
+
+**Pipeline** (stages execute in order):
+
+```text
+parse (lxml; recovery that alters input -> reject)
+  -> classify features, reject unsupported (S2)
+  -> transform flatten (A1: translate/scale/rotate/matrix, nested groups, arc-under-matrix SVD)
+  -> shape->path (A2: rect, rounded-rect, circle, ellipse, line, polyline, polygon)
+  -> editor-cruft removal (B1: Inkscape/Sodipodi/Adobe ns allowlist)
+  -> optional floor-shadow removal (D1: --remove-floor-shadow, default off)
+  -> compute bbox with stroke pad (A3: half stroke-width + miter allowance)
+  -> decimal precision (A4)
+  -> shift geometry + rewrite viewBox to cropped origin box
+  -> serialize (S4: stable ns, UTF-8, no ns0:, final newline, preserve metadata/comments)
+  -> reference-integrity check (S1: every internal ref resolves, or reject)
+  -> emit diagnostics (--report-json)
+```
+
+**Two outcomes per file:** normalized (output parses, canonical invariant holds,
+all refs resolve) or rejected (one primary reason code + suggested fix, non-zero
+exit, no output written, input untouched).
+
+**Canonical internal invariant:** after transform flattening and shape conversion,
+all visible geometry on normalized elements is absolute path data in root
+coordinates with no geometry-affecting `transform` remaining.
+`gradientTransform`/`patternTransform` are paint-space exemptions.
+
+**Dependencies** (declared in `pip_requirements.txt`):
+
+- `lxml`: XML parse and serialize (preferred over ElementTree for namespace control)
+- `tinycss2`: CSS `<style>` block parsing; used to rewrite `url(#id)` refs on ASCII rename (F8) and to detect geometry-affecting CSS rules
+- `shapely`: bounded geometry primitive for simple-clipPath flattening; curves are flattened to polylines within a fixed tolerance before intersection
+
+**Normalizer support contract** -- every feature has one disposition:
+
+| Feature | Disposition |
+| --- | --- |
+| `path`, `rect`, `circle`, `ellipse`, `line`, `polyline`, `polygon` | normalize -> absolute path in root coords |
+| element `transform` (translate/scale/rotate/matrix/skew), nested groups | normalize -> flatten into coords |
+| `gradientTransform`, `patternTransform` | preserve (paint-space only) |
+| simple `clipPath` (one path/shape, no nested clips/mask/filter/text/image/use) | normalize -> flatten to path geometry, drop clip ref |
+| complex `clipPath` | reject (`CLIPPATH_UNSUPPORTED_COMPLEX`) |
+| `filter`, `mask`, `marker` | reject |
+| `<text>`, `<tspan>`, `textPath` | reject (`TEXT_UNSUPPORTED`); authoring rule: convert text to paths before ingestion |
+| `<use>`, `<symbol>` | reject (`USE_OR_SYMBOL_UNSUPPORTED`) |
+| `<image>` base64 or external `href` | reject (`EMBEDDED_RASTER_UNSUPPORTED` / `EXTERNAL_RESOURCE_UNSUPPORTED`) |
+| `foreignObject` | reject |
+| `<script>`, `on*=`, animation | reject (`SCRIPT_OR_HANDLER` / `ANIMATION_UNSUPPORTED`) |
+| `<!DOCTYPE>` / `<!ENTITY>` | reject (`DOCTYPE_OR_ENTITY`) |
+| inline `style=` geometry/cleanup props | normalize (resolve listed props from inline styles) |
+| `<style>` block | preserve; rewrite `url(#id)` refs on rename (F8); reject if geometry-affecting rule found (`STYLE_GEOMETRY_UNSUPPORTED`) |
+| editor cruft (Inkscape/Sodipodi/Adobe ns) | normalize (remove, B1 allowlist) |
+| `dc/cc/rdf` metadata, `<title>`, `<desc>`, pre-root comments | preserve |
+| parse failure | reject (`PARSER_ERROR`) |
+
+**Rejection reason codes** (stable tokens used in reports and tests):
+`TEXT_UNSUPPORTED`, `USE_OR_SYMBOL_UNSUPPORTED`, `FILTER_UNSUPPORTED`,
+`MASK_UNSUPPORTED`, `MARKER_UNSUPPORTED`, `CLIPPATH_UNSUPPORTED_COMPLEX`,
+`FOREIGNOBJECT_UNSUPPORTED`, `EXTERNAL_RESOURCE_UNSUPPORTED`,
+`EMBEDDED_RASTER_UNSUPPORTED`, `DOCTYPE_OR_ENTITY`, `SCRIPT_OR_HANDLER`,
+`ANIMATION_UNSUPPORTED`, `STYLE_GEOMETRY_UNSUPPORTED`, `STYLE_UNPARSEABLE`,
+`UNSUPPORTED_TRANSFORM`, `UNSUPPORTED_UNIT`, `NONSCALING_STROKE_UNRESOLVED`,
+`PARSER_ERROR`, `UNRESOLVED_REFERENCE`, `PATTERN_UNSUPPORTED`, `EMPTY_GEOMETRY`.
+
+**CLI options:** `-i`/`-o`, `--in-place`, `--padding`, `--remove-floor-shadow`,
+`--shadow-dry-run`, `--report-json`, `--self-test`.
+
+**Note on simple-clipPath flattening:** simple-clipPath flattening (A6) is part of
+the v3 design and uses shapely. It is implemented in v3; the shapely package must
+be installed for that path to execute. Complex clips always reject regardless.
+
+**Ingestion workflow:** run v3 on every SVG before placing it in `assets/`.
+If v3 rejects, fix the asset per the reason code (examples: convert text to
+paths for `TEXT_UNSUPPORTED`; pre-flatten filters or masks before ingestion for
+`FILTER_UNSUPPORTED`; remove scripts for `SCRIPT_OR_HANDLER`) and re-run. A
+normalized output is written only when all verification gates pass.
+
+```bash
+source source_me.sh && python3 tools/normalize_svg_v3.py -i raw.svg -o assets/equipment/my_asset.svg
+# or to normalize in place after copying:
+source source_me.sh && python3 tools/normalize_svg_v3.py --in-place assets/equipment/my_asset.svg
+```
+
+**Placement:** `tools/` (dev utility; emits nothing to `generated/` or `dist/`;
+not wired into any build script or `package.json` hook). The corpus
+re-normalization sweep and the CI/pre-commit ingestion gate are follow-up work
+after v3 proves stable on the corpus and one import batch.
 
 ## Data flow
 
@@ -215,11 +390,15 @@ protocol_host.tsx: look up ProtocolConfig in generated/protocols.ts
 resolve_entry_scene_name(): entry step's scene: field -> SceneChange fallback -> throw
   |
   v
-runPipeline(scene, {library: OBJECT_LIBRARY, assets: ASSET_SPECS})
-  -> normalizeSchema -> resolveInheritance -> bindObjects
-  -> scaleToRealWorld -> groupByZone -> horizontalLayout
-  -> verticalLayout -> layoutLabels -> clampSceneBounds
-  returns PipelineResult (ComputedItems)
+resolve_precomputed_result(scene_name, scene): single production layout path
+  |     PRECOMPUTED_LAYOUT[scene_name].final (build-time, 16:9; throws if missing)
+  |     -> make_precomputed_result(scene, final) -> PipelineResult
+  |
+  | (WP-PRECOMP3: runPipeline retired from the shipped bundle. The runtime
+  |  engine -- normalizeSchema -> resolveInheritance -> bindObjects ->
+  |  scaleToRealWorld -> groupByZone -> horizontalLayout -> verticalLayout ->
+  |  layoutLabels -> clampSceneBounds -- now runs only at BUILD time in
+  |  pipeline/precompute_layout.mjs and in tests.)
   |
   v
 renderScene(#scene-root, result): mounts Solid SceneView -> structural guards

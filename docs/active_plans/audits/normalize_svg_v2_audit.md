@@ -1,12 +1,18 @@
 # normalize_svg_v2 correctness audit
 
 **Date:** 2026-06-03
+**Updated:** 2026-06-08 (WP-4a: F8/F9/F10 v3 resolution added; see v3 note below)
 **Plan:** read-the-tools-svg-code-fluttering-clarke, milestone M3 (workstream M3-a)
 **File:** [tools/normalize_svg_v2.py](../../../tools/normalize_svg_v2.py)
 **Scope:** line-by-line correctness review of the SVG normalizer (path command
 conversion, curve/arc bbox math, viewBox rewrite, attribution preservation,
 ASCII id cleanup). The only confirmed defect (arc-extrema undershoot) is fixed
 in M3-b; this audit records its severity plus every other finding.
+
+**v3 note:** F8, F9, and F10 are resolved in `tools/normalize_svg_v3.py`
+(plan: wild-mapping-teacup, milestones M1-M3). v2 itself is unchanged;
+v3 is the new ingestion gate. See [CODE_ARCHITECTURE.md](../../CODE_ARCHITECTURE.md)
+for the v3 support contract and ingestion workflow.
 
 Severity labels:
 
@@ -28,10 +34,10 @@ Severity labels:
 | F5 | viewBox rewrite (origin + padding) | INFO | correct |
 | F6 | width/height sync vs viewBox | LOW | partial by design |
 | F7 | Attribution / comment preservation | INFO | correct |
-| F8 | ASCII id cleanup + ref rewrite | MEDIUM | correct, narrow ref scan |
-| F9 | `text` element bbox is a zero-size point | MEDIUM | accepted |
-| F10 | No transform / nested-transform handling | MEDIUM | out of scope, document |
-| F11 | stroke-width excluded from bbox | LOW | accepted |
+| F8 | ASCII id cleanup + ref rewrite | MEDIUM | RESOLVED in v3 (see below) |
+| F9 | `text` element bbox is a zero-size point | MEDIUM | RESOLVED in v3 (see below) |
+| F10 | No transform / nested-transform handling | MEDIUM | RESOLVED in v3 (see below) |
+| F11 | stroke-width excluded from bbox | LOW | accepted in v2; RESOLVED in v3 (A3) |
 | F12 | Local `import unicodedata` inside helper | LOW | style |
 
 Count by severity: HIGH 1, MEDIUM 4, LOW 3, INFO 4.
@@ -135,33 +141,50 @@ attribution is not renamed to `ns0:`/`ns1:`. Covered by
 `test_attribution_and_comment_preservation` and the built-in `--self-test`
 metadata fixture.
 
-## F8 -- ASCII id cleanup + reference rewrite (MEDIUM)
+## F8 -- ASCII id cleanup + reference rewrite (MEDIUM, RESOLVED in v3)
 
-`make_ascii_clean` renames non-ASCII `id`/`data-name` values via `_ascii_id`
-(NFKD transliteration, CJK drop, `layer` fallback, in-file dedup) and rewrites
-matching references in `href`/`xlink:href` fragments and `url(#id)` inside a
-fixed presentation-attribute set (lines 752-776). The reference scan is an
-enumerated attribute list, not a generic scan, and does NOT cover `url(#id)`
-inside embedded `<style>` text. That gap is acceptable here because non-ASCII ids
-referenced from `<style>` are not present in the corpus, but it is a narrower
-surface than the M1 runtime namespacer (which does handle `<style>` text).
-Recorded so a future author does not assume parity. Covered by
-`test_ascii_id_cleanup_replaces_nonascii`.
+**v2 behavior:** `make_ascii_clean` renames non-ASCII `id`/`data-name` values via
+`_ascii_id` (NFKD transliteration, CJK drop, `layer` fallback, in-file dedup) and
+rewrites matching references in `href`/`xlink:href` fragments and `url(#id)` inside a
+fixed presentation-attribute set. The reference scan is an enumerated attribute list,
+NOT a generic scan, and does NOT cover `url(#id)` inside embedded `<style>` text.
 
-## F9 -- `text` element bbox is a point (MEDIUM, accepted)
+**v3 resolution (WP-3b):** `normalize_svg_v3.py` rewrites `url(#id)` references
+inside `<style>` blocks using `tinycss2` to parse each declaration and patch renamed
+id tokens. After rename, every internal reference -- in attributes AND in `<style>`
+text -- is rewritten. The reference-integrity check (S1) then verifies that all refs
+resolve before writing output; any broken ref causes rejection (`UNRESOLVED_REFERENCE`).
+This closes F8 completely in v3. v2 is unchanged.
 
-`element_bbox` returns a zero-size `BBox(x, y, x, y)` for `text` (lines 607-610)
+## F9 -- `text` element bbox is a point (MEDIUM, RESOLVED in v3)
+
+**v2 behavior:** `element_bbox` returns a zero-size `BBox(x, y, x, y)` for `text`
 because glyph metrics require font shaping the normalizer does not do. Text-only
-assets would crop to a point; shipped lab assets are vector art, not live text,
-so this is accepted. Document if a text-bearing asset enters the corpus.
+assets crop to a point; accepted because shipped lab assets are vector art.
 
-## F10 -- No transform handling (MEDIUM, out of scope)
+**v3 resolution (WP-3a, A5):** `normalize_svg_v3.py` classifies any file containing
+`<text>`, `<tspan>`, or `textPath` as rejected with reason code `TEXT_UNSUPPORTED`
+and suggested fix "Convert text to paths before ingestion." No text element is ever
+silently given a zero-size bbox. The authoring rule is: convert text to paths in the
+vector editor (e.g. Inkscape Path > Object to Path) before running v3. This closes
+F9 deterministically in v3. v2 is unchanged.
 
-`compute_bbox` and `shift_element` ignore `transform` attributes on elements or
-ancestors. An asset that positions geometry via `transform="translate(...)"` or
-`matrix(...)` would compute a wrong bbox. Shipped assets are pre-flattened
-(no element transforms in the cropped corpus), so this does not bite today, but
-it is a real limitation to flag before normalizing transform-bearing input.
+## F10 -- No transform handling (MEDIUM, RESOLVED in v3)
+
+**v2 behavior:** `compute_bbox` and `shift_element` ignore `transform` attributes on
+elements or ancestors. An asset that positions geometry via `transform="translate(...)"` or
+`matrix(...)` computes a wrong bbox. Shipped assets were pre-flattened; this did not
+bite the corpus at audit time but is a real limitation for wild input.
+
+**v3 resolution (WP-2a, A1):** `normalize_svg_v3.py` flattens all element and group
+`transform` attributes into absolute root-coordinate path geometry before computing
+the bbox. The full transform chain (translate, scale, rotate, matrix, skewX, skewY)
+is applied; nested groups accumulate the ancestor chain. Arc segments under a
+non-uniform-scale or rotate transform use SVD to convert to the correctly oriented
+elliptic-arc or general path. After flattening, the canonical invariant check confirms
+no geometry-affecting `transform` remains on normalized elements. This fixes all 9
+transform-bearing shipped assets that v2 would have handled incorrectly. v2 is
+unchanged.
 
 ## F11 -- stroke-width excluded from bbox (LOW, accepted)
 

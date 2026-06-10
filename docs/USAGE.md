@@ -52,17 +52,25 @@ protocol navigates to `<protocol_name>.html`, which loads the shared bundle and 
 the initial scene from the protocol config.
 
 ```typescript
-// Simplified render path (protocol_host.tsx)
+// Simplified production/browser render path (protocol_host.tsx)
 const scene_name = resolve_entry_scene_name(config, PROTOCOLS);
 const scene = SCENES[scene_name];
-const result = runPipeline(scene, OBJECT_LIBRARY, ASSET_SPECS, viewport);
+const result = resolvePrecomputedResult(scene_name, scene);
 renderScene(root, result);
 ```
 
-The pipeline (`src/scene_runtime/layout/`) takes a `SceneA` plus `OBJECT_LIBRARY`
-and `ASSET_SPECS`, produces `PipelineResult.final: ComputedItem[]`, and passes the result to
-`renderScene()`. The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` and emits
-absolutely-positioned SVG-injected DOM elements.
+`resolvePrecomputedResult` (in `src/scene_runtime/layout/precomputed_result.ts`)
+loads `PRECOMPUTED_LAYOUT[scene_name]` from `generated/precomputed_layout.ts`
+(build-time layout at canonical 16:9) and assembles a renderer-ready
+`PipelineResult`. A missing entry throws. This is the single production browser
+path; no `runPipeline` call ships in the production bundle.
+
+`runPipeline` is invoked only at build time by `pipeline/precompute_layout.mjs`,
+which runs the full layout engine over every scene at 1920x1080 and emits
+`generated/precomputed_layout.ts`. Tests also import `runPipeline` directly.
+
+The renderer (`src/scene_runtime/renderer/`) reads `ComputedItem` from the
+`PipelineResult` and emits absolutely-positioned SVG-injected DOM elements.
 
 No runtime YAML parsing and no `js-yaml` dependency. Non-SVG data (object library, scenes, protocols) is compiled at build time. SVG assets are the exception: `svg_manifest_loader.ts` uses runtime `fetch()` to load SVG files from `dist/assets/svg/` via the SVG manifest. The bundled `svg_registry` injection path has been removed; the manifest-plus-`fetch()` path is the only runtime SVG loader.
 

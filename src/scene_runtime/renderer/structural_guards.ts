@@ -63,7 +63,6 @@ const LABEL_OVERLAP_TOLERANCE = 1; // percent units
 const ASPECT_TOLERANCE = 0.05; // 5% tolerance
 const AVG_CHAR_WIDTH = 0.6; // from constants.ts
 const DEFAULT_ZONE_GAP = 8; // px, converted to percent using viewport width
-const DEFAULT_VIEWPORT_WIDTH = 1200;
 
 //============================================
 // Bbox computation helpers
@@ -234,7 +233,9 @@ function checkSameZoneGap(final: ComputedItem[], scene: SceneA): StructuralViola
   const violations: StructuralViolation[] = [];
 
   const zoneGapPx = scene.layout_rules?.zone_gap ?? DEFAULT_ZONE_GAP;
-  const viewportWidth = DEFAULT_VIEWPORT_WIDTH; // fallback; could read from PipelineResult if available
+  // Use the canonical viewport width from layout/constants.ts (1920) so this
+  // guard matches every other pipeline consumer.
+  const viewportWidth = DEFAULT_VIEWPORT.w;
   const zoneGapPct = (zoneGapPx / viewportWidth) * 100;
 
   // Group items by zone

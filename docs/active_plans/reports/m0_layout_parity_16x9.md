@@ -1,0 +1,97 @@
+# M0 layout parity: fixed 16:9 precompute vs live panel
+
+Work package WP-FEAS1. Proves the existing layout engine produces the same `ComputedItem[]` at a canonical 16:9 precompute viewport as at a live 16:9 panel, so layout can move to compile time behind the 16:9 contract.
+
+## Verdict
+
+- Go signal: GO
+- Scenes checked: 38
+- Scenes passing parity + scene_name keying: 38
+- All scenes exact bit-for-bit (no epsilon needed): yes
+- Viewport sweep correct: yes
+
+## Reproducibility parameters
+
+- Precompute (canonical) viewport: 1920x1080
+- Live panel viewport (parity control): 1280x720 (same 16:9 aspect, different pixel size)
+- Sort order (serialization): items sorted ascending by `placement_name` before diffing, stable string compare.
+- Serialization method: field-by-field compare over the ComputedItem fields the renderer reads (_scale, _x, _y, _top, _visualWidth, _height, _footprint, _labelX, _labelY, _labelLines).
+- Numeric tolerance: 1e-9 absolute (IEEE-754 noise only).
+- Tolerance rationale: same-aspect 16:9 viewports run identical floating-point arithmetic in `vertical_layout.ts` (the only viewport-dependent term is `viewport.w / viewport.h`, identical for any 16:9 size), so exact equality is the expectation. The epsilon absorbs representational noise only; the report flags any non-exact match.
+
+## Per-scene parity
+
+| scene_name | items | parity | exact-zero | max abs delta | scene_name keyed | consumed artifact |
+| --- | --- | --- | --- | --- | --- | --- |
+| adversarial_overflow_smoke | 21 | PASS | yes | 0 | yes | match |
+| bench_basic | 11 | PASS | yes | 0 | yes | match |
+| cell_counter_basic | 7 | PASS | yes | 0 | yes | match |
+| cell_counter_workspace | 9 | PASS | yes | 0 | yes | match |
+| centrifuge_workspace | 14 | PASS | yes | 0 | yes | match |
+| dilution_workspace | 15 | PASS | yes | 0 | yes | match |
+| drug_dilution_setup_bench_setup | 13 | PASS | yes | 0 | yes | match |
+| electrophoresis_bench | 16 | PASS | yes | 0 | yes | match |
+| extraction_workspace | 17 | PASS | yes | 0 | yes | match |
+| heat_block_bench | 13 | PASS | yes | 0 | yes | match |
+| hemocytometer_view | 10 | PASS | yes | 0 | yes | match |
+| hood_basic | 10 | PASS | yes | 0 | yes | match |
+| hood_workspace | 11 | PASS | yes | 0 | yes | match |
+| imaging_bench | 11 | PASS | yes | 0 | yes | match |
+| incubator_workspace | 9 | PASS | yes | 0 | yes | match |
+| microscope_basic | 8 | PASS | yes | 0 | yes | match |
+| missing_svg_check | 1 | PASS | yes | 0 | yes | match |
+| mtt_reagent_prep_bench_workspace | 10 | PASS | yes | 0 | yes | match |
+| mtt_solubilization_readout_bench_workspace | 8 | PASS | yes | 0 | yes | match |
+| mtt_solubilization_readout_plate_reader_workspace | 7 | PASS | yes | 0 | yes | match |
+| passage_hood_detachment_hood_workspace | 12 | PASS | yes | 0 | yes | match |
+| passage_hood_detachment_microscope_view | 9 | PASS | yes | 0 | yes | match |
+| plate_drug_treatment_media_adjustment_plate_workspace | 12 | PASS | yes | 0 | yes | match |
+| plate_workspace | 13 | PASS | yes | 0 | yes | match |
+| sample_prep_bench | 13 | PASS | yes | 0 | yes | match |
+| sdspage_attach_lid_and_leads_workspace | 16 | PASS | yes | 0 | yes | match |
+| sdspage_destain_gel_rock_workspace | 9 | PASS | yes | 0 | yes | match |
+| sdspage_fill_tank_buffer_workspace | 16 | PASS | yes | 0 | yes | match |
+| sdspage_heat_denature_samples_workspace | 13 | PASS | yes | 0 | yes | match |
+| sdspage_load_sample_single_lane_workspace | 17 | PASS | yes | 0 | yes | match |
+| sdspage_prepare_running_buffer_workspace | 16 | PASS | yes | 0 | yes | match |
+| sdspage_prepare_sample_mix_single_lane_workspace | 13 | PASS | yes | 0 | yes | match |
+| sdspage_recycle_buffer_workspace | 16 | PASS | yes | 0 | yes | match |
+| sdspage_run_electrophoresis_workspace | 16 | PASS | yes | 0 | yes | match |
+| seeding_workspace | 13 | PASS | yes | 0 | yes | match |
+| select_check | 2 | PASS | yes | 0 | yes | match |
+| staining_bench | 9 | PASS | yes | 0 | yes | match |
+| type_check | 1 | PASS | yes | 0 | yes | match |
+
+The consumed-artifact column compares `PRECOMPUTED_LAYOUT[scene].final` (generated/precomputed_layout.ts, the exact array the browser production path renders under WP-PRECOMP2) against the runtime engine at the canonical 16:9 frame. `match` means the build artifact is byte-current with the engine.
+
+## Viewport sweep
+
+Each viewport is compared against the canonical 16:9 frame, aggregated across every scene. Only the 16:9 rows are gated: in the browser the CSS (`.scene-panel-inner { aspect-ratio: 16 / 9 }`) locks the panel to 16:9, so the live path always presents a 16:9 viewport and must move no field. The off-16:9 rows are contrast controls that document why the lock matters: the convergence loop's shrink decision keys on `item_escapes_zone_vertically`, which depends on `_height` (a viewport-aspect term), so an off-aspect viewport cascades into `_width_scale`, `_x`, and the rest. That is genuine per-aspect reflow, not pure letterboxing -- exactly the behavior the 16:9 contract removes. These rows are reported, not failed.
+
+| viewport | aspect | fields moved vs 16:9 | result |
+| --- | --- | --- | --- |
+| 1920x1080 | 16:9 | (none) | GATED OK |
+| 1280x720 | 16:9 | (none) | GATED OK |
+| 2560x1440 | 16:9 | (none) | GATED OK |
+| 960x540 | 16:9 | (none) | GATED OK |
+| 1600x1000 | off-16:9 | _height, _labelX, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
+| 1024x768 | off-16:9 | _height, _labelX, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
+
+## Static-layout evidence (re-confirmed)
+
+- `LayoutMove` is a no-op: `src/scene_runtime/protocol/scene_op_deps.ts` `apply_layout_move` warns and does not mutate layout.
+- `ObjectStateChange` changes object state and appearance only; it does not re-run the layout pipeline.
+- No resize listener: `src/protocol_host.tsx` measures `#scene-root` once via `getBoundingClientRect` at scene render; it registers no resize handler.
+- Fixed placement set: the placement set is resolved once per scene load; `SceneChange` re-runs the same `render_protocol_scene` path keyed by `scene_name` (`SCENES[next_scene_name]`).
+
+## SceneChange keying
+
+`protocol_host.render_protocol_scene` resolves a scene as `SCENES[next_scene_name]`. A precomputed-layout map keyed by `scene_name` is reachable by the identical key; every scene self-reports its key (`scene.scene_name === scene_name`), confirmed in the per-scene table.
+
+## Excluded scenes
+
+- long_labels_smoke: absent from generated SCENES: scene validation error (placement references unknown object 'dmf_bottle'); never lays out, so it cannot be a parity subject. Exclusion is unrelated to viewport aspect.
+
+## Blockers
+
+- None.

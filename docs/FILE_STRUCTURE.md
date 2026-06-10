@@ -46,6 +46,24 @@ src/
 |  |  +- run_pipeline.ts       -- top-level pipeline runner
 |  |  +- types.ts              -- PipelineResult, ComputedItem, layout types
 |  |  +- constants.ts          -- DEFAULT_VIEWPORT, shrink factor
+|  |  +- phases.ts              -- phase registry: named phase sequence with read/mutate boundaries
+|  |  +- geometry/              -- pure 2D AABB geometry core (no layout state)
+|  |  |  +- types.ts            -- Vector, Aabb, Collision, ResolutionCandidate value types
+|  |  |  `- collision.ts        -- aabbFromBounds, detectCollision, buildResolutionCandidate, sortResolutionOrder
+|  |  +- config/                -- LayoutConfig resolution (global defaults -> scene -> zone -> strategy)
+|  |  |  +- types.ts            -- LayoutConfig and related config types
+|  |  |  +- resolve_config.ts   -- config precedence resolver
+|  |  |  `- index.ts            -- barrel export
+|  |  +- diagnostics/           -- severity-graded typed diagnostics and decision metadata
+|  |  |  +- severity_model.ts   -- Error / Warning / Review-required severity types
+|  |  |  +- payload.ts          -- typed diagnostic payload shapes
+|  |  |  +- decision_metadata.ts -- per-scene decision metadata (strategy, packer, shrink, config)
+|  |  |  `- index.ts            -- barrel export
+|  |  +- strategies/            -- PlacementStrategy seam and implementations
+|  |  |  +- placement_strategy.ts -- PlacementStrategy interface
+|  |  |  +- row_strategy.ts     -- default row strategy
+|  |  |  +- pack_strategy.ts    -- overflow packer (engages below threshold or on overflow)
+|  |  |  `- index.ts            -- barrel export
 |  |  `- (bind_objects, normalize_schema, resolve_inheritance, scale_to_real_world,
 |  |      group_by_zone, horizontal_layout, vertical_layout, layout_labels,
 |  |      clamp_scene_bounds, footprint, wrap_label, index).ts
@@ -107,6 +125,7 @@ Every script that emits to `generated/`, assembles bundles, or produces
 | [list_protocols.py](../pipeline/list_protocols.py) | Reads `PROTOCOLS_INDEX`; `emit` writes one `dist/<name>.html` per protocol |
 | [scene_inheritance.py](../pipeline/scene_inheritance.py) | Scene YAML inheritance resolution library (imported by gen_scene_index) |
 | [build_main_bundle.mjs](../pipeline/build_main_bundle.mjs) | esbuild Node API: bundles launcher and protocol-host entries |
+| [precompute_layout.mjs](../pipeline/precompute_layout.mjs) | Runs the layout engine for every scene at canonical 16:9 (1920x1080) -> `generated/precomputed_layout.ts` (`{ final: ComputedItem[] }` per scene). Runs after `build_generated.sh`. |
 
 ### `content/` - Authored YAML
 
@@ -218,12 +237,15 @@ Processed by [pipeline/gen_svg_manifest.py](../pipeline/gen_svg_manifest.py).
 Scripts that do not appear in any build chain. See [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md)
 for the full list.
 
-Key tool:
+Key tools:
 
 | File | Purpose |
 | --- | --- |
+| [tools/normalize_svg_v2.py](../tools/normalize_svg_v2.py) | SVG asset normalizer (stdlib-only; kept until v3 parity is proven) |
+| `tools/normalize_svg_v3.py` | SVG ingestion-gate normalizer (lxml + tinycss2 + shapely): normalize-or-reject pipeline; run before adding any SVG to `assets/`; see [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) for support contract and ingestion workflow |
 | [tools/svg_to_html_render.mjs](../tools/svg_to_html_render.mjs) | Renders an SVG on five color swatches via Playwright Firefox and writes `<stem>_render.{html,png}` to CWD; use `--no-open` to skip auto-open |
 | [tools/svg_identity_sweep.py](../tools/svg_identity_sweep.py) | Perceptual-hash duplicate/mislabel sweep over `assets/**/*.svg`; emits a review report |
+| [tools/svg_feature_census.py](../tools/svg_feature_census.py) | Read-only feature census over the wild SVG corpus (`OTHER_REPOS/`); counts clipPath/transform/text/etc. per file, cross-tabbed against the v3 verdict; emits `docs/active_plans/reports/svg_feature_census.{json,md}` |
 
 ### `devel/` - Maintainer scripts
 
@@ -236,11 +258,13 @@ Key tool:
 | [devel/query_changelog.py](../devel/query_changelog.py) | Changelog search by date, category, keyword |
 | [devel/commit_changelog.py](../devel/commit_changelog.py) | Draft commit message from new changelog entries |
 | [devel/bump_version.py](../devel/bump_version.py) | Version bump helper |
+| [devel/ai_polish_review.mjs](../devel/ai_polish_review.mjs) | AI visual-polish reviewer over before/after scene screenshots |
 
 ### `docs/` - Documentation
 
 | File | Purpose |
 | --- | --- |
+| [NEWS.md](NEWS.md) | Curated release highlights and announcements |
 | [CHANGELOG.md](CHANGELOG.md) | Chronological record of changes |
 | [CODE_ARCHITECTURE.md](CODE_ARCHITECTURE.md) | System design, components, and data flow |
 | [FILE_STRUCTURE.md](FILE_STRUCTURE.md) | This file |
@@ -256,6 +280,7 @@ Key tool:
 | [TYPESCRIPT_STYLE.md](TYPESCRIPT_STYLE.md) | TypeScript conventions |
 | [MARKDOWN_STYLE.md](MARKDOWN_STYLE.md) | Markdown formatting rules |
 | [REPO_STYLE.md](REPO_STYLE.md) | Repo-wide conventions |
+| [LAYOUT_REMAINING_WORK.md](LAYOUT_REMAINING_WORK.md) | Scene-by-scene layout and aesthetic remaining work reference |
 | [PRIMARY_CONTRACT.md](PRIMARY_CONTRACT.md) | Hard design invariants |
 | [PRIMARY_DESIGN.md](PRIMARY_DESIGN.md) | Design philosophy |
 | [PRIMARY_SPEC.md](PRIMARY_SPEC.md) | Technical specification |
@@ -296,6 +321,7 @@ All gitignored (see [.gitignore](../.gitignore)):
 | `generated/protocols.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocols_index_slim.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) |
 | `generated/protocol_materials.ts` | [pipeline/gen_protocols.py](../pipeline/gen_protocols.py) (per-protocol material registry; keyed by protocol_name) |
+| `generated/precomputed_layout.ts` | [pipeline/precompute_layout.mjs](../pipeline/precompute_layout.mjs) (`PRECOMPUTED_LAYOUT`: per-scene `{ final: ComputedItem[] }` at canonical 16:9) |
 | `generated/scene_render_stats/<scene>.stats.json` | renderer-produced scene geometry stats (build evidence consumed by SCENE-LINT/SCENE-DESIGN), written by [build_github_pages.sh](../build_github_pages.sh) via [tools/scene_to_png.mjs](../tools/scene_to_png.mjs) |
 | `dist/` | [build_github_pages.sh](../build_github_pages.sh) (GitHub Pages bundle) |
 | `dist/assets/svg/<category>/<name>.svg` | SVG assets copied by [build_github_pages.sh](../build_github_pages.sh) |
@@ -327,7 +353,7 @@ build. Do not place authored files there.
 | New mini-protocol | `content/protocols/<cluster>/<name>/` with `protocol.yaml`, `scenes/`, `materials.yaml` |
 | New base scene | `content/base_scenes/<name>.yaml` |
 | New lab object | `content/objects/<kind>/<name>.yaml` |
-| New SVG asset | `assets/equipment/<name>.svg` (plus optional `<name>.colormap.json`) |
+| New SVG asset | `assets/equipment/<name>.svg` (run `tools/normalize_svg_v3.py` first; plus optional `<name>.colormap.json`) |
 | New pipeline generator | `pipeline/` (register in `package.json` pre-hooks; update these two docs) |
 | New shell region | `src/shell/regions/` (mount in `src/shell/hud/ProtocolHud.tsx`) |
 | New runtime module | `src/` (imported from entry or scene runtime) |

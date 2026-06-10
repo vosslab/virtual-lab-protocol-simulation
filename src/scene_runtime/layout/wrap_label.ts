@@ -4,10 +4,18 @@
 
 import { AVG_CHAR_WIDTH_PCT } from "./constants.js";
 
-export function wrapLabel(label: string | undefined, budget: number): string[] {
+// avgCharWidthPct and budgetTolerance default to the canonical constant values
+// so existing callers stay byte-identical; layoutLabels passes the resolved
+// LayoutConfig values so wrapping reads through the config layer.
+export function wrapLabel(
+  label: string | undefined,
+  budget: number,
+  avgCharWidthPct: number = AVG_CHAR_WIDTH_PCT,
+  budgetTolerance = 1.1,
+): string[] {
   if (!label) return [""];
-  const estWidth = label.length * AVG_CHAR_WIDTH_PCT;
-  if (estWidth <= budget * 1.1) return [label];
+  const estWidth = label.length * avgCharWidthPct;
+  if (estWidth <= budget * budgetTolerance) return [label];
   const mid = label.length / 2;
   const spaces: number[] = [];
   const re = /\s+/g;

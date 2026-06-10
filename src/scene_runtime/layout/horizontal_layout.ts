@@ -1,52 +1,52 @@
-// Stage 7: Horizontal layout per zone.
-// Computes _x (center), _visualWidth, _footprint, _scale per item.
-// Alignment modes: left, right, center, justify, tab-stops.
-// Overflow handling: shrink gaps -> uniform shrink to MIN_SCALE -> emit
-// zone_overflow_negative_gap diagnostic if still overflowing.
+// Stage 7: Horizontal layout per zone (dispatcher).
+//
+// Resolves the shared per-call context (gap, floor scale, zone padding) once,
+// then selects a PlacementStrategy per zone and delegates placement to it.
+// Two strategies exist: the row strategy (default greedy single-row placement)
+// and the overflow packer (non-uniform shrink plus gap compaction).
+//
+// Per-zone strategy selection: probe the row layout's required uniform scale
+// and overflow without placing anything; engage the packer when the row layout
+// would require unacceptable shrink (requiredScale < config.packer.thresholdScale)
+// OR overflows (negative gap / out of bounds). Otherwise the row strategy runs.
+// See docs/active_plans/decisions/layout_model_layer_synthesis.md
+// "Packer objective and trigger" for the ratified trigger rule.
 
-import { MIN_SCALE, ZONE_PADDING } from "./constants.js";
-import { footprintFor, visualWidthFor } from "./footprint.js";
+import { buildGlobalDefaults } from "./config/index.js";
+import { packStrategy, probeRow, rowStrategy } from "./strategies/index.js";
+import type { LayoutConfig } from "./config/index.js";
+import type { SeverityDiagnostic } from "./diagnostics/index.js";
+import type { PackerZoneOutcome } from "./strategies/index.js";
+import type { PlacementStrategy, StrategyContext } from "./strategies/index.js";
 import type { ComputedItem, Diagnostics, LayoutRules, ScaledPlacement, Zone } from "./types.js";
 
-interface PlacedItem extends ScaledPlacement {
-  _scale: number;
-  _x: number;
-  _y: number;
-  _visualWidth: number;
-  _footprint: number;
+// The result of selecting a strategy for one zone: the strategy plus the row
+// probe numbers (so the dispatcher can record requiredRowScale even when it
+// dispatches the packer).
+interface StrategyChoice {
+  strategy: PlacementStrategy;
+  requiredRowScale: number;
+  packerEngaged: boolean;
 }
 
-function placeBucket(
-  arr: ScaledPlacement[],
-  anchor: number,
-  side: "left" | "center" | "right",
-  gap: number,
-  scale: number,
-  sink: PlacedItem[],
-): { total: number } {
-  if (arr.length === 0) return { total: 0 };
-  const footprints = arr.map((it) => footprintFor(it, scale));
-  const total = footprints.reduce((s, f) => s + f, 0) + gap * (arr.length - 1);
-  let cursor: number;
-  if (side === "left") cursor = anchor;
-  else if (side === "right") cursor = anchor - total;
-  else cursor = anchor - total / 2;
-  for (let i = 0; i < arr.length; i++) {
-    const it = arr[i];
-    const fw = footprints[i];
-    if (it === undefined || fw === undefined) continue;
-    const vw = visualWidthFor(it, scale);
-    sink.push({
-      ...it,
-      _scale: scale,
-      _x: cursor + fw / 2,
-      _y: 0,
-      _visualWidth: vw,
-      _footprint: fw,
-    });
-    cursor += fw + gap;
+// Selects the placement strategy for a zone. Probes the row layout;
+// engages the packer when the row layout would require unacceptable shrink
+// (below config.packer.thresholdScale) or overflows. Tab-stop and single-row
+// modes both probe; an empty zone or a comfortably-fitting zone keeps the row
+// strategy.
+function selectStrategy(
+  zone: Zone,
+  items: ScaledPlacement[],
+  ctx: StrategyContext,
+): StrategyChoice {
+  const probe = probeRow(items, zone, ctx.gap, ctx.zonePadding, ctx.minScale);
+  const threshold = ctx.config.packer.thresholdScale;
+  // Positive trigger: unacceptable shrink OR overflow engages the packer.
+  const packerNeeded = probe.requiredScale < threshold || probe.overflow;
+  if (packerNeeded) {
+    return { strategy: packStrategy, requiredRowScale: probe.requiredScale, packerEngaged: true };
   }
-  return { total };
+  return { strategy: rowStrategy, requiredRowScale: probe.requiredScale, packerEngaged: false };
 }
 
 export function horizontalLayout(
@@ -54,173 +54,33 @@ export function horizontalLayout(
   zones: Zone[],
   layoutRules: LayoutRules = {},
   diagnostics: Diagnostics = [],
+  config: LayoutConfig = buildGlobalDefaults(),
+  sinks: {
+    sceneName?: string;
+    packerSink?: Map<string, PackerZoneOutcome>;
+    severitySink?: SeverityDiagnostic[];
+  } = {},
 ): Map<string, ComputedItem[]> {
   const result = new Map<string, ComputedItem[]>();
-  const gap = layoutRules.zone_gap ?? 2;
+  // Object spacing and the floor scale now resolve through LayoutConfig. The
+  // authored layout_rules.zone_gap still wins when set; otherwise the resolved
+  // config's objectGap (canonically 2) applies.
+  const gap = layoutRules.zone_gap ?? config.spacing.objectGap;
+  const minScale = config.packer.minScale;
+  const zonePadding = config.spacing.objectZonePadding;
 
   for (const zone of zones) {
     const items = groups.get(zone.id) ?? [];
-    const provisionalY = zone.baseline ?? (zone.bounds.top + zone.bounds.bottom) / 2;
-    if (items.length === 0) {
-      result.set(zone.id, []);
-      continue;
-    }
-    const x0 = zone.bounds.left + ZONE_PADDING;
-    const x1 = zone.bounds.right - ZONE_PADDING;
-    const zoneW = x1 - x0;
-    const mode = zone.align ?? "left";
-
-    if (mode === "tab-stops") {
-      const buckets: Record<"left" | "center" | "right", ScaledPlacement[]> = {
-        left: [],
-        center: [],
-        right: [],
-      };
-      for (const it of items) {
-        const k = it.align_stop ?? layoutRules.default_align_stop ?? "center";
-        buckets[k].push(it);
-      }
-      const out: PlacedItem[] = [];
-      const leftRes = placeBucket(buckets.left, x0, "left", gap, 1, out);
-      const rightRes = placeBucket(buckets.right, x1, "right", gap, 1, out);
-      const mid = (x0 + x1) / 2;
-      const centerRes = placeBucket(buckets.center, mid, "center", gap, 1, out);
-      const bucketTotal = leftRes.total + centerRes.total + rightRes.total + 2 * gap;
-      if (bucketTotal > zoneW + 0.5) {
-        diagnostics.push({
-          stage: "horizontal",
-          severity: "warn",
-          kind: "tab_stop_overflow",
-          zone: zone.id,
-          items: items.length,
-          overflow_pct: Number((bucketTotal - zoneW).toFixed(2)),
-        });
-      }
-      const byName = new Map(out.map((it) => [it.placement_name, it]));
-      const ordered = items.map((it): ComputedItem => {
-        const placed = byName.get(it.placement_name);
-        const labelLines: string[] = [];
-        const base: ComputedItem = {
-          ...(placed ?? {
-            ...it,
-            _scale: 1,
-            _x: 0,
-            _visualWidth: visualWidthFor(it, 1),
-            _footprint: footprintFor(it, 1),
-          }),
-          _y: provisionalY,
-          _top: 0,
-          _height: 0,
-          _labelX: 0,
-          _labelY: 0,
-          _labelLines: labelLines,
-        };
-        return base;
-      });
-      result.set(zone.id, ordered);
-      continue;
-    }
-
-    let scale = 1;
-    let footprints = items.map((it) => footprintFor(it, scale));
-    let totalFootprint =
-      footprints.reduce((s, f) => s + f, 0) + gap * Math.max(0, items.length - 1);
-
-    if (totalFootprint > zoneW) {
-      const minSpread = footprints.reduce((s, f) => s + f, 0);
-      if (minSpread >= zoneW) {
-        scale = Math.max(MIN_SCALE, zoneW / minSpread);
-        footprints = items.map((it) => footprintFor(it, scale));
-        totalFootprint = footprints.reduce((s, f) => s + f, 0);
-        if (totalFootprint > zoneW + 0.5) {
-          diagnostics.push({
-            stage: "horizontal",
-            severity: "warn",
-            kind: "zone_overflow_negative_gap",
-            zone: zone.id,
-            items: items.length,
-            overflow_pct: Number((totalFootprint - zoneW).toFixed(2)),
-          });
-        }
-      }
-    }
-
-    const out: PlacedItem[] = [];
-    if (mode === "center" || mode === "justify" || items.length === 1) {
-      const totalContent = footprints.reduce((s, f) => s + f, 0);
-      const effGap =
-        items.length > 1
-          ? mode === "justify"
-            ? (zoneW - totalContent) / (items.length - 1)
-            : gap
-          : 0;
-      const totalSpan = totalContent + effGap * Math.max(0, items.length - 1);
-      const startX = mode === "justify" ? x0 : (x0 + x1) / 2 - totalSpan / 2;
-      let cursor = startX;
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        const fw = footprints[i];
-        if (it === undefined || fw === undefined) continue;
-        const vw = visualWidthFor(it, scale);
-        out.push({
-          ...it,
-          _scale: scale,
-          _x: cursor + fw / 2,
-          _y: provisionalY,
-          _visualWidth: vw,
-          _footprint: fw,
-        });
-        cursor += fw + effGap;
-      }
-    } else if (mode === "right") {
-      let cursor = x1;
-      const placed: PlacedItem[] = [];
-      for (let i = items.length - 1; i >= 0; i--) {
-        const it = items[i];
-        const fw = footprints[i];
-        if (it === undefined || fw === undefined) continue;
-        const vw = visualWidthFor(it, scale);
-        placed[i] = {
-          ...it,
-          _scale: scale,
-          _x: cursor - fw / 2,
-          _y: provisionalY,
-          _visualWidth: vw,
-          _footprint: fw,
-        };
-        cursor -= fw + gap;
-      }
-      for (const it of placed) if (it !== undefined) out.push(it);
-    } else {
-      let cursor = x0;
-      for (let i = 0; i < items.length; i++) {
-        const it = items[i];
-        const fw = footprints[i];
-        if (it === undefined || fw === undefined) continue;
-        const vw = visualWidthFor(it, scale);
-        out.push({
-          ...it,
-          _scale: scale,
-          _x: cursor + fw / 2,
-          _y: provisionalY,
-          _visualWidth: vw,
-          _footprint: fw,
-        });
-        cursor += fw + gap;
-      }
-    }
-
-    const finalItems: ComputedItem[] = out.map(
-      (it): ComputedItem => ({
-        ...it,
-        _top: 0,
-        _height: 0,
-        _labelX: 0,
-        _labelY: 0,
-        _labelLines: [],
-      }),
-    );
-    result.set(zone.id, finalItems);
+    // The shared per-call context. requiredRowScale and the optional sinks are
+    // set per zone so the packer records the correct decision metadata. Optional
+    // keys are assigned only when present (exactOptionalPropertyTypes is on).
+    const ctx: StrategyContext = { gap, minScale, zonePadding, config, diagnostics };
+    if (sinks.sceneName !== undefined) ctx.sceneName = sinks.sceneName;
+    if (sinks.packerSink !== undefined) ctx.packerSink = sinks.packerSink;
+    if (sinks.severitySink !== undefined) ctx.severitySink = sinks.severitySink;
+    const choice = selectStrategy(zone, items, ctx);
+    ctx.requiredRowScale = choice.requiredRowScale;
+    result.set(zone.id, choice.strategy(items, zone, ctx));
   }
 
   return result;

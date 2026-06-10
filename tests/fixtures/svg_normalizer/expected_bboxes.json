@@ -1,0 +1,510 @@
+[
+  {
+    "fixture_id": "relative_hvz_rectangle",
+    "description": "Simple rectangle drawn with relative h/v/z commands",
+    "svg_body": "<path d=\"M 10 20 h 30 v 40 h -30 z\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 10.0, "min_y": 20.0, "max_x": 40.0, "max_y": 60.0},
+    "tolerance": 0.01,
+    "reason_correct": "H/V/Z relative commands expand to absolute endpoints spanning the declared width and height",
+    "feature_under_test": "relative_path_hvz"
+  },
+  {
+    "fixture_id": "relative_hvz_two_subpaths",
+    "description": "Two subpaths with relative h/v/z; bbox must be the union of both",
+    "svg_body": "<path d=\"M 10 20 h 30 v 10 z m 50 50 h 5 v 5 z\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 10.0, "min_y": 20.0, "max_x": 65.0, "max_y": 75.0},
+    "tolerance": 0.01,
+    "reason_correct": "Second subpath starts at (60,70) via relative m; union bbox spans both rectangles",
+    "feature_under_test": "relative_path_hvz_subpaths"
+  },
+  {
+    "fixture_id": "mixed_absolute_relative",
+    "description": "Path mixing absolute L/V with relative h/v",
+    "svg_body": "<path d=\"M 5 5 L 15 5 h 10 V 30 v 5 z\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 5.0, "min_y": 5.0, "max_x": 25.0, "max_y": 35.0},
+    "tolerance": 0.01,
+    "reason_correct": "Relative h 10 from x=15 reaches x=25; relative v 5 from y=30 reaches y=35",
+    "feature_under_test": "mixed_absolute_relative_commands"
+  },
+  {
+    "fixture_id": "arc_semicircle_bulge",
+    "description": "Semicircle A 50 50 0 0 0 100 0 -- bbox must include y=50 bulge not just endpoints",
+    "svg_body": "<path d=\"M 0 0 A 50 50 0 0 0 100 0\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 0.0, "min_y": 0.0, "max_x": 100.0, "max_y": 50.0},
+    "tolerance": 0.01,
+    "reason_correct": "sweep=0 CCW arc from (0,0) to (100,0) bulges downward to y=50; endpoint-only code would give height=0",
+    "feature_under_test": "arc_extrema_semicircle_bulge"
+  },
+  {
+    "fixture_id": "arc_semicircle_sweep1",
+    "description": "Semicircle with sweep=1 CW arcs upward to y=-50",
+    "svg_body": "<path d=\"M 0 0 A 50 50 0 0 1 100 0\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 0.0, "min_y": -50.0, "max_x": 100.0, "max_y": 0.0},
+    "tolerance": 0.01,
+    "reason_correct": "sweep=1 CW arc bulges upward to y=-50 (negative y in SVG coords is upward)",
+    "feature_under_test": "arc_extrema_sweep_direction"
+  },
+  {
+    "fixture_id": "arc_quarter_circle",
+    "description": "Quarter-circle arc from (50,0) to (100,50) with rx=ry=50",
+    "svg_body": "<path d=\"M 50 0 A 50 50 0 0 1 100 50\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 50.0, "min_y": 0.0, "max_x": 100.0, "max_y": 50.0},
+    "tolerance": 0.01,
+    "reason_correct": "Quarter arc stays within the bounding box of its two endpoints for this geometry",
+    "feature_under_test": "arc_extrema_quarter_circle"
+  },
+  {
+    "fixture_id": "clip_path_passthrough",
+    "description": "Simple clipPath fully containing the target; WP-3e flattens the clip to the target geometry and removes the clipPath def, so the bbox is the visible clipped region (the 10x10 target), not the defs-inclusive box",
+    "svg_body": "<defs><clipPath id=\"a\"><path d=\"M-.08.08h136.877v393.601H-.08z\" /></clipPath></defs><path clip-path=\"url(#a)\" d=\"M 5 5 h 10 v 10 z\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 5.0, "min_y": 5.0, "max_x": 15.0, "max_y": 15.0},
+    "tolerance": 0.01,
+    "reason_correct": "The clip rect (-0.08..136.797, 0.08..393.681) fully contains the 10x10 target rect at (5,5); the intersection equals the target, the clipPath def is dropped, and the bbox is the visible clipped region (5,5,15,15)",
+    "feature_under_test": "clip_path_flatten_full_containment",
+    "expected_viewbox": "0 0 14 14"
+  },
+  {
+    "fixture_id": "viewbox_crop_padding",
+    "description": "Rectangle at offset (10,20) produces viewBox 0 0 W H after crop+shift with padding=2",
+    "svg_body": "<rect x=\"10\" y=\"20\" width=\"30\" height=\"40\" fill=\"#000\" />",
+    "expected_bbox": {"min_x": 10.0, "min_y": 20.0, "max_x": 40.0, "max_y": 60.0},
+    "tolerance": 0.01,
+    "reason_correct": "Rect bbox is the declared x/y/width/height; after normalization viewBox shifts to 0 0 34 44 (adding 2px padding each side)",
+    "feature_under_test": "bbox_rect_element",
+    "expected_viewbox": "0 0 34 44"
+  },
+  {
+    "fixture_id": "rect_element_direct",
+    "description": "Rect element bbox computed directly without path conversion",
+    "svg_body": "<rect x=\"5\" y=\"10\" width=\"20\" height=\"15\" fill=\"#333\" />",
+    "expected_bbox": {"min_x": 5.0, "min_y": 10.0, "max_x": 25.0, "max_y": 25.0},
+    "tolerance": 0.01,
+    "reason_correct": "element_bbox for rect returns BBox(x, y, x+w, y+h) directly from attributes",
+    "feature_under_test": "bbox_rect_element"
+  },
+  {
+    "fixture_id": "circle_element_direct",
+    "description": "Circle element bbox: cx=50 cy=50 r=30",
+    "svg_body": "<circle cx=\"50\" cy=\"50\" r=\"30\" fill=\"#333\" />",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 80.0, "max_y": 80.0},
+    "tolerance": 0.01,
+    "reason_correct": "element_bbox for circle is BBox(cx-r, cy-r, cx+r, cy+r)",
+    "feature_under_test": "bbox_circle_element"
+  },
+  {
+    "fixture_id": "line_element_direct",
+    "description": "Line element bbox from endpoints including stroke pad (A3: stroke-width=1 gives pad=2)",
+    "svg_body": "<line x1=\"10\" y1=\"20\" x2=\"40\" y2=\"60\" stroke=\"#000\" stroke-width=\"1\" />",
+    "expected_bbox": {"min_x": 8.0, "min_y": 18.0, "max_x": 42.0, "max_y": 62.0},
+    "tolerance": 0.01,
+    "reason_correct": "element_bbox pads geometry BBox(10,20,40,60) by stroke_width/2*miterlimit=1/2*4=2 on each side (A3 stroke-pad)",
+    "feature_under_test": "bbox_line_element_stroke_padded"
+  },
+  {
+    "fixture_id": "parser_error_rejection",
+    "description": "Truncated SVG must reject with PARSER_ERROR and write no output",
+    "svg_body": null,
+    "raw_svg": "<svg xmlns=\"http://www.w3.org/2000/svg\"><rect x=\"1\"",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Malformed XML (unclosed tag) must trigger PARSER_ERROR rejection; no output file written",
+    "feature_under_test": "parser_error_rejection",
+    "expected_rejection_code": "PARSER_ERROR"
+  },
+  {
+    "fixture_id": "empty_geometry_rejection",
+    "description": "SVG with no drawable shapes must reject with EMPTY_GEOMETRY",
+    "svg_body": "<defs></defs>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "An SVG with only defs and no visible shapes has no drawable geometry; EMPTY_GEOMETRY rejection",
+    "feature_under_test": "empty_geometry_rejection",
+    "expected_rejection_code": "EMPTY_GEOMETRY"
+  },
+  {
+    "fixture_id": "transform_translated_rect",
+    "description": "Rect inside a group with translate(5,7); transform flattens into coords (WP-2a)",
+    "svg_body": "<g transform=\"translate(5,7)\"><rect x=\"10\" y=\"10\" width=\"20\" height=\"20\" fill=\"#000\"/></g>",
+    "expected_bbox": {"min_x": 15.0, "min_y": 17.0, "max_x": 35.0, "max_y": 37.0},
+    "tolerance": 0.001,
+    "reason_correct": "translate(5,7) shifts the rect 10..30 in both axes to 15..35 (x) and 17..37 (y) in root coords",
+    "feature_under_test": "transform_flatten_translate_group"
+  },
+  {
+    "fixture_id": "transform_scaled_shape",
+    "description": "Rect with scale(2,3) applied directly; non-uniform scale flattens into coords",
+    "svg_body": "<rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" transform=\"scale(2,3)\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 0.0, "min_y": 0.0, "max_x": 20.0, "max_y": 30.0},
+    "tolerance": 0.001,
+    "reason_correct": "scale(2,3) maps the 10x10 rect to 20 wide and 30 tall in root coords (fill-only, no stroke, so non-uniform scale is allowed)",
+    "feature_under_test": "transform_flatten_scale"
+  },
+  {
+    "fixture_id": "transform_rotate90_translate_path",
+    "description": "Path with rotate(90) inside translate(100,0) group; rotation+translate chain",
+    "svg_body": "<g transform=\"translate(100,0)\"><path d=\"M 0 0 L 10 0 L 10 10\" transform=\"rotate(90)\" fill=\"#000\"/></g>",
+    "expected_bbox": {"min_x": 90.0, "min_y": 0.0, "max_x": 100.0, "max_y": 10.0},
+    "tolerance": 0.001,
+    "reason_correct": "rotate(90) maps (x,y)->(-y,x): the L-shaped path spans x in [-10,0], y in [0,10]; translate(100,0) shifts x to [90,100]",
+    "feature_under_test": "transform_flatten_rotate_translate_chain"
+  },
+  {
+    "fixture_id": "transform_matrix_flip",
+    "description": "Rect with matrix(-1,0,0,1,20,0): a horizontal flip about x=10",
+    "svg_body": "<rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" transform=\"matrix(-1,0,0,1,20,0)\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 0.0, "max_x": 20.0, "max_y": 10.0},
+    "tolerance": 0.001,
+    "reason_correct": "matrix(-1,0,0,1,20,0) maps x->20-x, so the rect 0..10 becomes 10..20; y is unchanged",
+    "feature_under_test": "transform_flatten_matrix_flip"
+  },
+  {
+    "fixture_id": "transform_nested_group_chain",
+    "description": "Rect under translate(10,10) > scale(2): nested-group transform chain composes",
+    "svg_body": "<g transform=\"translate(10,10)\"><g transform=\"scale(2)\"><rect x=\"0\" y=\"0\" width=\"5\" height=\"5\" fill=\"#000\"/></g></g>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 10.0, "max_x": 20.0, "max_y": 20.0},
+    "tolerance": 0.001,
+    "reason_correct": "scale(2) maps the 5x5 rect to 10x10, then translate(10,10) shifts it to 10..20 in both axes (outermost-to-element composition order)",
+    "feature_under_test": "transform_flatten_nested_chain"
+  },
+  {
+    "fixture_id": "transform_rotated_elliptical_arc",
+    "description": "Half-ellipse arc rotated 90 degrees; arc-under-matrix uses the SVD path",
+    "svg_body": "<path d=\"M 0 0 A 50 30 0 0 0 100 0\" transform=\"rotate(90)\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": -30.0, "min_y": 0.0, "max_x": 0.0, "max_y": 100.0},
+    "tolerance": 0.001,
+    "reason_correct": "The down-bulging half-ellipse spans x in [0,100] and y in [0,30]; rotate(90) maps (x,y)->(-y,x), giving x in [-30,0] and y in [0,100]",
+    "feature_under_test": "transform_flatten_rotated_arc"
+  },
+  {
+    "fixture_id": "shape_to_path_sharp_rect",
+    "description": "Sharp rect (no rx/ry) converts to path; bbox matches declared geometry (WP-2b A2)",
+    "svg_body": "<rect x=\"10\" y=\"20\" width=\"60\" height=\"40\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 20.0, "max_x": 70.0, "max_y": 60.0},
+    "tolerance": 0.01,
+    "reason_correct": "Sharp rect path M/H/V/H/z spans exactly the declared x/y/width/height; bbox equals (x, y, x+w, y+h)",
+    "feature_under_test": "shape_to_path_rect_sharp"
+  },
+  {
+    "fixture_id": "shape_to_path_rounded_rect_rx_only",
+    "description": "Rounded rect with rx=10 only; ry defaults to rx=10; corners are quarter-arcs (WP-2b A2)",
+    "svg_body": "<rect x=\"0\" y=\"0\" width=\"60\" height=\"40\" rx=\"10\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 0.0, "min_y": 0.0, "max_x": 60.0, "max_y": 40.0},
+    "tolerance": 0.01,
+    "reason_correct": "Rounded rect bbox equals the outer rectangle; arcs stay within (x,y,x+w,y+h). rx=10 ry=10 (clamped to min(10,w/2)=10 and min(10,h/2)=10)",
+    "feature_under_test": "shape_to_path_rect_rounded_rx_only"
+  },
+  {
+    "fixture_id": "shape_to_path_rounded_rect_rx_and_ry",
+    "description": "Rounded rect with rx=8 ry=5; distinct horizontal/vertical radii (WP-2b A2)",
+    "svg_body": "<rect x=\"10\" y=\"5\" width=\"40\" height=\"30\" rx=\"8\" ry=\"5\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 5.0, "max_x": 50.0, "max_y": 35.0},
+    "tolerance": 0.01,
+    "reason_correct": "Rounded rect with distinct rx and ry; outer bbox equals (x,y,x+w,y+h); quarter-arcs stay within bounds",
+    "feature_under_test": "shape_to_path_rect_rounded_rx_ry"
+  },
+  {
+    "fixture_id": "shape_to_path_circle",
+    "description": "Circle cx=50 cy=50 r=30 converts to two-arc path; bbox matches (WP-2b A2)",
+    "svg_body": "<circle cx=\"50\" cy=\"50\" r=\"30\" fill=\"#333\"/>",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 80.0, "max_y": 80.0},
+    "tolerance": 0.01,
+    "reason_correct": "Circle path uses two half-arc segments; bbox is (cx-r, cy-r, cx+r, cy+r) = (20,20,80,80)",
+    "feature_under_test": "shape_to_path_circle"
+  },
+  {
+    "fixture_id": "shape_to_path_ellipse",
+    "description": "Ellipse cx=30 cy=40 rx=20 ry=10 converts to two-arc path (WP-2b A2)",
+    "svg_body": "<ellipse cx=\"30\" cy=\"40\" rx=\"20\" ry=\"10\" fill=\"#555\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 30.0, "max_x": 50.0, "max_y": 50.0},
+    "tolerance": 0.01,
+    "reason_correct": "Ellipse path uses two half-arcs (rx=20 ry=10); bbox is (cx-rx, cy-ry, cx+rx, cy+ry) = (10,30,50,50)",
+    "feature_under_test": "shape_to_path_ellipse"
+  },
+  {
+    "fixture_id": "shape_to_path_line",
+    "description": "Line x1=5 y1=10 x2=80 y2=60 converts to M/L path; bbox includes stroke pad (A3)",
+    "svg_body": "<line x1=\"5\" y1=\"10\" x2=\"80\" y2=\"60\" stroke=\"#000\" stroke-width=\"1\"/>",
+    "expected_bbox": {"min_x": 3.0, "min_y": 8.0, "max_x": 82.0, "max_y": 62.0},
+    "tolerance": 0.01,
+    "reason_correct": "Line geometry (5,10,80,60) padded by stroke_width/2*miterlimit=1/2*4=2 on each side (A3 stroke-pad)",
+    "feature_under_test": "shape_to_path_line_stroke_padded"
+  },
+  {
+    "fixture_id": "shape_to_path_polyline",
+    "description": "Polyline with three points converts to M/L/L path; bbox includes stroke pad (A3)",
+    "svg_body": "<polyline points=\"0,0 50,20 100,0\" fill=\"none\" stroke=\"#000\"/>",
+    "expected_bbox": {"min_x": -2.0, "min_y": -2.0, "max_x": 102.0, "max_y": 22.0},
+    "tolerance": 0.01,
+    "reason_correct": "Polyline geometry (0,0,100,20) padded by stroke_width/2*miterlimit=1/2*4=2 (stroke-width defaults to 1) (A3 stroke-pad)",
+    "feature_under_test": "shape_to_path_polyline_stroke_padded"
+  },
+  {
+    "fixture_id": "shape_to_path_polygon",
+    "description": "Polygon triangle converts to M/L/L/Z path (WP-2b A2)",
+    "svg_body": "<polygon points=\"10,10 90,10 50,80\" fill=\"#222\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 10.0, "max_x": 90.0, "max_y": 80.0},
+    "tolerance": 0.01,
+    "reason_correct": "Polygon path M 10 10 L 90 10 L 50 80 Z; bbox spans all three vertices",
+    "feature_under_test": "shape_to_path_polygon"
+  },
+  {
+    "fixture_id": "stroke_pad_thick_horizontal",
+    "description": "Thick-stroke horizontal path: padded bbox larger than geometry bbox by stroke_width/2*miterlimit (A3)",
+    "svg_body": "<path d=\"M 10 10 L 90 10\" stroke=\"#000\" stroke-width=\"10\" fill=\"none\"/>",
+    "expected_bbox": {"min_x": -10.0, "min_y": -10.0, "max_x": 110.0, "max_y": 30.0},
+    "tolerance": 0.1,
+    "reason_correct": "Geometry bbox (10,10,90,10). Butt linecap (default): pad = stroke_width/2*max(1,miterlimit) = 10/2*4 = 20 per side. Padded bbox = (-10,-10,110,30). Width=120, height=40; with padding=2 viewBox is 0 0 124 44.",
+    "feature_under_test": "stroke_pad_bbox_a3",
+    "expected_viewbox": "0 0 124 44"
+  },
+  {
+    "fixture_id": "stroke_width_scaled_under_flatten",
+    "description": "A stroked path under scale(2) has its stroke-width baked-scaled, so the stroke-padded bbox uses the SCALED stroke (the cpu.svg mesh-greyout fix)",
+    "svg_body": "<path d=\"M 0 0 L 10 0\" transform=\"scale(2)\" stroke=\"#000\" stroke-width=\"2\" fill=\"none\"/>",
+    "expected_bbox": {"min_x": -8.0, "min_y": -8.0, "max_x": 28.0, "max_y": 8.0},
+    "tolerance": 0.1,
+    "reason_correct": "scale(2) maps the line (0,0)-(10,0) to (0,0)-(20,0) and scales stroke-width 2 -> 4. Butt linecap pad = stroke_width/2*miterlimit = 4/2*4 = 8 per side, giving bbox (-8,-8,28,8). Without stroke-width scaling the pad would be wrong (4 per side).",
+    "feature_under_test": "stroke_width_scaled_on_flatten"
+  },
+  {
+    "fixture_id": "text_element_rejection",
+    "description": "SVG with a <text> element must be rejected with TEXT_UNSUPPORTED (A5)",
+    "svg_body": "<rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#000\"/><text x=\"10\" y=\"50\">Hello</text>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Text elements cannot be normalized by v3; authors must convert text to paths before ingestion",
+    "feature_under_test": "text_reject_a5",
+    "expected_rejection_code": "TEXT_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "use_element_rejection",
+    "description": "SVG with a <use> element must be rejected (WP-3b)",
+    "svg_body": "<defs><rect id=\"r\" x=\"0\" y=\"0\" width=\"10\" height=\"10\"/></defs><use href=\"#r\" x=\"20\" y=\"20\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Symbol/use expansion is not implemented in v3; refuse the whole file",
+    "feature_under_test": "use_reject_s2",
+    "expected_rejection_code": "USE_OR_SYMBOL_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "filter_element_rejection",
+    "description": "SVG with a <filter>/feGaussianBlur must be rejected (WP-3b)",
+    "svg_body": "<defs><filter id=\"f\"><feGaussianBlur stdDeviation=\"2\"/></filter></defs><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"#000\" filter=\"url(#f)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Filters can extend visible pixels beyond the geometry bbox (contract item 3)",
+    "feature_under_test": "filter_reject_s2",
+    "expected_rejection_code": "FILTER_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "mask_element_rejection",
+    "description": "SVG with a <mask> must be rejected (WP-3b)",
+    "svg_body": "<defs><mask id=\"m\"><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"#fff\"/></mask></defs><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"#000\" mask=\"url(#m)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Masks change visible pixels in ways not computable from geometry",
+    "feature_under_test": "mask_reject_s2",
+    "expected_rejection_code": "MASK_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "marker_element_rejection",
+    "description": "SVG with a marker reference must be rejected (WP-3b)",
+    "svg_body": "<defs><marker id=\"mk\"><path d=\"M 0 0 L 5 5 z\"/></marker></defs><path d=\"M 0 0 L 10 0\" stroke=\"#000\" marker-end=\"url(#mk)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "Markers draw extra geometry the bbox cannot account for",
+    "feature_under_test": "marker_reject_s2",
+    "expected_rejection_code": "MARKER_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "embedded_raster_rejection",
+    "description": "SVG with an <image> data: URI must be rejected (WP-3b)",
+    "svg_body": "<image x=\"0\" y=\"0\" width=\"10\" height=\"10\" href=\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUg==\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "An embedded base64 raster is not vector geometry v3 can normalize",
+    "feature_under_test": "embedded_raster_reject_s2",
+    "expected_rejection_code": "EMBEDDED_RASTER_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "external_image_rejection",
+    "description": "SVG with an <image> external href must be rejected (WP-3b)",
+    "svg_body": "<image x=\"0\" y=\"0\" width=\"10\" height=\"10\" href=\"https://example.com/x.png\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "An external resource reference is not self-contained vector geometry",
+    "feature_under_test": "external_image_reject_s2",
+    "expected_rejection_code": "EXTERNAL_RESOURCE_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "clippath_complex_rejection",
+    "description": "A clipPath holding more than one child shape is outside the simple allowlist and must be rejected as complex (WP-3e)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\"/><rect x=\"20\" y=\"20\" width=\"10\" height=\"10\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"40\" height=\"40\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "The simple-clip allowlist requires exactly one path/shape inside the clipPath; two children make the clip complex",
+    "feature_under_test": "clippath_complex_reject_multi_child",
+    "expected_rejection_code": "CLIPPATH_UNSUPPORTED_COMPLEX"
+  },
+  {
+    "fixture_id": "style_geometry_rejection",
+    "description": "SVG with a geometry-affecting <style> rule must be rejected (WP-3b)",
+    "svg_body": "<style>rect { fill: red; stroke-width: 4px; }</style><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "v3 resolves geometry from inline style only; a stylesheet geometry rule is unsupported",
+    "feature_under_test": "style_geometry_reject_s2",
+    "expected_rejection_code": "STYLE_GEOMETRY_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "style_unparseable_rejection",
+    "description": "SVG with an unparseable <style> block must be rejected (WP-3b)",
+    "svg_body": "<style>}}}</style><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"#000\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "tinycss2 reports a stylesheet error node for this malformed CSS",
+    "feature_under_test": "style_unparseable_reject_s2",
+    "expected_rejection_code": "STYLE_UNPARSEABLE"
+  },
+  {
+    "fixture_id": "pattern_with_geometry_rejection",
+    "description": "SVG with a pattern that has child geometry must be rejected (WP-3b)",
+    "svg_body": "<defs><pattern id=\"p\" width=\"4\" height=\"4\"><rect x=\"0\" y=\"0\" width=\"2\" height=\"2\"/></pattern></defs><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"#000\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "A pattern with child geometry would need a pattern renderer to bbox; reject",
+    "feature_under_test": "pattern_reject_s2",
+    "expected_rejection_code": "PATTERN_UNSUPPORTED"
+  },
+  {
+    "fixture_id": "dangling_reference_rejection",
+    "description": "SVG with a url(#) reference to an undefined id must be rejected (S1, WP-3b)",
+    "svg_body": "<rect x=\"0\" y=\"0\" width=\"10\" height=\"10\" fill=\"url(#nope)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "S1 reference-integrity gate rejects a dangling internal reference",
+    "feature_under_test": "unresolved_reference_s1",
+    "expected_rejection_code": "UNRESOLVED_REFERENCE"
+  },
+  {
+    "fixture_id": "clip_flatten_rect_by_rect",
+    "description": "Rect target clipped by a rect clipPath; result is the overlap region (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"5\" y=\"5\" width=\"40\" height=\"40\"/></clipPath></defs><rect x=\"20\" y=\"20\" width=\"60\" height=\"60\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 45.0, "max_y": 45.0},
+    "tolerance": 0.01,
+    "reason_correct": "Target rect (20..80) intersected with clip rect (5..45) yields the overlap (20..45) in both axes",
+    "feature_under_test": "clip_flatten_rect_rect"
+  },
+  {
+    "fixture_id": "clip_flatten_rect_by_circle",
+    "description": "Rect target clipped by a circle clipPath; result fits inside the circle (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><circle cx=\"50\" cy=\"50\" r=\"30\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 80.0, "max_y": 80.0},
+    "tolerance": 0.2,
+    "reason_correct": "The clipped region is the circle (cx=50, cy=50, r=30) since it lies entirely inside the target rect; bbox spans 20..80 within the curve-flattening tolerance",
+    "feature_under_test": "clip_flatten_rect_circle"
+  },
+  {
+    "fixture_id": "clip_flatten_rect_by_polygon",
+    "description": "Rect target clipped by a triangle polygon clipPath (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><polygon points=\"10,10 90,10 50,90\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 10.0, "max_x": 90.0, "max_y": 90.0},
+    "tolerance": 0.01,
+    "reason_correct": "The triangle clip lies inside the target rect; the clipped region is the triangle spanning x 10..90, y 10..90",
+    "feature_under_test": "clip_flatten_rect_polygon"
+  },
+  {
+    "fixture_id": "clip_flatten_curve_by_rect",
+    "description": "Curved (cubic bezier) target clipped by a left-half rect; curves flatten to polylines before intersection (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"50\" height=\"200\"/></clipPath></defs><path d=\"M 10 100 C 10 10 190 10 190 100 C 190 190 10 190 10 100 Z\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": {"min_x": 10.0, "min_y": 42.8, "max_x": 50.0, "max_y": 157.2},
+    "tolerance": 1.0,
+    "reason_correct": "The lens-shaped cubic blob spans x 10..190; clipping to x<=50 keeps the left lobe (x 10..50). The y extent of that lobe is bounded by the bezier, ~42.8..157.2 within curve-flattening tolerance",
+    "feature_under_test": "clip_flatten_curve_rect"
+  },
+  {
+    "fixture_id": "clip_flatten_transformed_target",
+    "description": "Transformed target (group translate) clipped by a rect; transform flattens first, then the clip (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\"/></clipPath></defs><g transform=\"translate(20,20)\"><rect x=\"0\" y=\"0\" width=\"60\" height=\"60\" fill=\"#000\" clip-path=\"url(#c)\"/></g>",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 80.0, "max_y": 80.0},
+    "tolerance": 0.01,
+    "reason_correct": "translate(20,20) moves the 60x60 target to 20..80 in root coords; the 0..100 clip fully contains it so the clipped region is the whole target (20..80)",
+    "feature_under_test": "clip_flatten_transformed_target"
+  },
+  {
+    "fixture_id": "clip_flatten_transformed_clip",
+    "description": "Clip child carries its own transform; flattening composes it into root coords before intersection (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"40\" height=\"40\" transform=\"translate(30,30)\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": {"min_x": 30.0, "min_y": 30.0, "max_x": 70.0, "max_y": 70.0},
+    "tolerance": 0.01,
+    "reason_correct": "The clip rect with translate(30,30) occupies 30..70 in root coords; intersected with the 0..100 target it yields the clip region 30..70",
+    "feature_under_test": "clip_flatten_transformed_clip"
+  },
+  {
+    "fixture_id": "clip_flatten_empty_intersection",
+    "description": "Disjoint target and clip yield an empty intersection; with no other geometry the document is EMPTY_GEOMETRY (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"10\" height=\"10\"/></clipPath></defs><rect x=\"100\" y=\"100\" width=\"20\" height=\"20\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "The target (100..120) and clip (0..10) do not overlap, so the clipped element has no geometry; it is the only drawable element, so the document has no drawable geometry (EMPTY_GEOMETRY)",
+    "feature_under_test": "clip_flatten_empty_intersection",
+    "expected_rejection_code": "EMPTY_GEOMETRY"
+  },
+  {
+    "fixture_id": "clip_flatten_line_child_no_area",
+    "description": "A line clip child has no fillable area; the intersection is empty and (sole geometry) rejects EMPTY_GEOMETRY (WP-3e A6)",
+    "svg_body": "<defs><clipPath id=\"c\"><line x1=\"0\" y1=\"0\" x2=\"100\" y2=\"100\"/></clipPath></defs><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\" fill=\"#000\" clip-path=\"url(#c)\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "A line clip child encloses no area, so the filled-area intersection with the target is empty; with no other geometry the document is EMPTY_GEOMETRY",
+    "feature_under_test": "clip_flatten_line_no_area",
+    "expected_rejection_code": "EMPTY_GEOMETRY"
+  },
+  {
+    "fixture_id": "clip_noop_stroke_only_contained",
+    "description": "Stroke-only (fill:none) target fully inside a containing rect clip; the no-op short circuit drops the clip ref and keeps the target geometry (Rank 1 no-op clip elimination)",
+    "svg_body": "<defs><clipPath id=\"c\"><path d=\"M 10 10 H 90 V 90 H 10 Z\"/></clipPath></defs><path clip-path=\"url(#c)\" d=\"M 30 30 L 60 30 L 60 60 Z\" fill=\"none\" stroke=\"#000\" stroke-width=\"1\"/>",
+    "expected_bbox": {"min_x": 28.0, "min_y": 28.0, "max_x": 62.0, "max_y": 62.0},
+    "tolerance": 0.01,
+    "reason_correct": "The stroke envelope of the triangle (geometry 30..60) lies inside the 10..90 clip, so the clip is a no-op: the ref is dropped and the original geometry kept. bbox is the geometry (30,30,60,60) padded by stroke_width/2*miterlimit=1/2*4=2 to (28,28,62,62)",
+    "feature_under_test": "clip_noop_stroke_only_contained"
+  },
+  {
+    "fixture_id": "clip_noop_stroke_only_trimmed_rejected",
+    "description": "Stroke-only target genuinely trimmed by a clip that cuts across the stroke; a real stroke trim stays rejected as complex (out of scope)",
+    "svg_body": "<defs><clipPath id=\"c\"><path d=\"M 0 0 H 45 V 100 H 0 Z\"/></clipPath></defs><path clip-path=\"url(#c)\" d=\"M 30 30 L 60 30 L 60 60 Z\" fill=\"none\" stroke=\"#000\" stroke-width=\"1\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "The triangle stroke spans x 30..60 but the clip keeps only x<=45, so the clip genuinely cuts the stroke (not a no-op). A true stroke trim needs stroke-to-path expansion which is out of scope; the stroke-only target stays rejected",
+    "feature_under_test": "clip_noop_stroke_only_trim_rejected",
+    "expected_rejection_code": "CLIPPATH_UNSUPPORTED_COMPLEX"
+  },
+  {
+    "fixture_id": "clip_noop_filled_contained",
+    "description": "Filled target fully inside its clip; the no-op short circuit drops the ref and keeps the original d instead of re-emitting a polygonized intersection (no precision loss)",
+    "svg_body": "<defs><clipPath id=\"c\"><path d=\"M 10 10 H 90 V 90 H 10 Z\"/></clipPath></defs><path clip-path=\"url(#c)\" d=\"M 30 30 L 60 30 L 60 60 Z\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 30.0, "min_y": 30.0, "max_x": 60.0, "max_y": 60.0},
+    "tolerance": 0.01,
+    "reason_correct": "The filled triangle (30..60) lies inside the 10..90 clip, so the clip is a no-op: ref dropped, original geometry kept. bbox is the triangle bbox (30,30,60,60) with no stroke pad",
+    "feature_under_test": "clip_noop_filled_contained"
+  },
+  {
+    "fixture_id": "clip_filled_partial_intersects",
+    "description": "Filled target partially clipped; the clip is not a no-op so the existing intersection path runs and the bbox shrinks to the overlap (existing behavior preserved)",
+    "svg_body": "<defs><clipPath id=\"c\"><path d=\"M 0 0 H 45 V 100 H 0 Z\"/></clipPath></defs><path clip-path=\"url(#c)\" d=\"M 20 20 L 80 20 L 80 80 L 20 80 Z\" fill=\"#000\"/>",
+    "expected_bbox": {"min_x": 20.0, "min_y": 20.0, "max_x": 45.0, "max_y": 80.0},
+    "tolerance": 0.01,
+    "reason_correct": "The filled rect (20..80) pokes past the clip's x<=45, so the clip genuinely trims it; the intersection is x 20..45, y 20..80",
+    "feature_under_test": "clip_filled_partial_intersects"
+  },
+  {
+    "fixture_id": "clip_complex_side_contained_target_rejected",
+    "description": "A clip with two child shapes (complex clip side) over a contained target; clip-side complexity wins and the file is rejected even though the target would otherwise be a no-op",
+    "svg_body": "<defs><clipPath id=\"c\"><rect x=\"0\" y=\"0\" width=\"100\" height=\"100\"/><rect x=\"10\" y=\"10\" width=\"5\" height=\"5\"/></clipPath></defs><path clip-path=\"url(#c)\" d=\"M 30 30 L 60 30 L 60 60 Z\" fill=\"#000\"/>",
+    "expected_bbox": null,
+    "tolerance": null,
+    "reason_correct": "The clipPath holds two child shapes, which fails the clip-side allowlist (exactly one geometry child). The clip-polygon build raises before the no-op check, so the file is rejected as complex even though the 100x100 clip would contain the target",
+    "feature_under_test": "clip_complex_side_contained_target_rejected",
+    "expected_rejection_code": "CLIPPATH_UNSUPPORTED_COMPLEX"
+  }
+]

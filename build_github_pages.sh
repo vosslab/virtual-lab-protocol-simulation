@@ -56,6 +56,13 @@ fi
 # build_generated.sh is the single source of truth for generator order.
 bash pipeline/build_generated.sh
 
+# Precompute the static scene layout at the canonical 16:9 frame
+# (1920x1080) and emit generated/precomputed_layout.ts. Runs AFTER
+# build_generated.sh because it imports the generated SCENES, OBJECT_LIBRARY,
+# and ASSET_SPECS that step produces. The browser loads these positions
+# instead of recomputing layout at runtime (WP-PRECOMP1).
+node --import tsx pipeline/precompute_layout.mjs
+
 # Two-bundle split (see docs/active_plans/active/web_ui/bundle_audit.md):
 #   src/launcher_entry.tsx       -> dist/launcher.js       (lightweight)
 #   src/protocol_host_entry.tsx  -> dist/protocol_host.js  (runtime + renderer + SVGs)

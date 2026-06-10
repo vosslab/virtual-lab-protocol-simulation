@@ -1,0 +1,121 @@
+{
+  "generated_at": "2026-06-08T12:38:37.456Z",
+  "tool": "devel/ai_polish_review.mjs",
+  "report_only": true,
+  "gates_nothing": true,
+  "model": "claude-opus-4-8",
+  "dry_run": false,
+  "credentials_present": false,
+  "rubric_items": [
+    {
+      "key": "primary_object_prominence",
+      "text": "The primary teaching object is visually prominent."
+    },
+    {
+      "key": "label_readability",
+      "text": "Labels are legible and read clearly against their background."
+    },
+    {
+      "key": "label_attachment",
+      "text": "Labels point near their intended objects and read attached, not detached."
+    },
+    {
+      "key": "object_spacing",
+      "text": "Objects have comfortable spacing without looking artificially scattered."
+    },
+    {
+      "key": "physical_plausibility",
+      "text": "The bench layout looks physically plausible."
+    },
+    {
+      "key": "scientific_asset_preservation",
+      "text": "Labels and objects preserve scientific meaning; every scientific asset is fully shown, with no cropping, misleading overlap, or hidden important object."
+    }
+  ],
+  "calibration_note": "Compare each scene's AI scores against the human calibration label in docs/active_plans/decisions/ai_polish_review_calibration.md. Promotion to a gate is deferred until calibration shows stable, useful results.",
+  "summary": {
+    "scene_count": 11,
+    "reviewed": 0,
+    "visual_review_unavailable": 11,
+    "review_required": 11
+  },
+  "scenes": [
+    {
+      "scene": "cell_counter_basic",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "staining_bench",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "sample_prep_bench",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "hood_basic",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "seeding_workspace",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "electrophoresis_bench",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "heat_block_bench",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "passage_hood_detachment_microscope_view",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "named"
+    },
+    {
+      "scene": "bench_basic",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "positive_control"
+    },
+    {
+      "scene": "plate_workspace",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "positive_control"
+    },
+    {
+      "scene": "microscope_basic",
+      "status": "visual_review_unavailable",
+      "reason": "ANTHROPIC_API_KEY not set",
+      "review_required": true,
+      "role": "positive_control"
+    }
+  ]
+}

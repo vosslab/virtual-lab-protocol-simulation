@@ -13,6 +13,8 @@ import type {
   STAGES,
   DIAGNOSTIC_KINDS,
 } from "./constants.js";
+import type { DecisionMetadata } from "./diagnostics/decision_metadata.js";
+import type { SeverityDiagnostic } from "./diagnostics/severity_model.js";
 
 export type Workspace = (typeof WORKSPACES)[number];
 export type AlignMode = (typeof ALIGN_MODES)[number];
@@ -35,7 +37,7 @@ export interface Bounds {
 export type SceneBoundsRect = Bounds;
 
 //============================================
-// Background discriminated union. Supports gradient (M2b) and asset forms.
+// Background discriminated union. Supports gradient and asset forms.
 //============================================
 
 export type Background =
@@ -99,7 +101,7 @@ export type VisualStateOutput =
 
 // Render-effect tokens (MATERIAL_CONVENTION.md, D12). A material-driven visual
 // state may declare a render_effect + target instead of svg/overlay/composite
-// cases. The generic interpreter (M3) keys on these tokens, never on object kind.
+// cases. The generic render-effect interpreter keys on these tokens, never on object kind.
 export type RenderEffect = "material_tint" | "fill_height";
 // A render-effect target names either a generated geometry region
 // (subpart_geometry) or an authored SVG anchor region. See SubpartGeometry below.
@@ -377,4 +379,16 @@ export interface PipelineResult {
   identityDiagCount: number;
   stages: PipelineStages;
   final: ComputedItem[];
+  // Per-scene decision metadata, kept SEPARATE from the diagnostics array (see
+  // diagnostics/decision_metadata.ts). The scorecard and AI reviewer read this;
+  // diagnostics stay the severity-graded problem stream. Type-only import keeps
+  // types.ts free of a runtime dependency on the diagnostics layer.
+  decisionMetadata: DecisionMetadata;
+  // Severity-graded Errors raised during layout. The report-only validate phase
+  // pushes unresolved_overlap here for any zone whose items still escape
+  // scene_bounds after the vertical auto-fit and convergence shrink.
+  // Kept SEPARATE from the legacy `diagnostics` array, whose kinds are a closed
+  // set; this carries the actionable severity payloads. Empty when nothing is
+  // unresolved.
+  severityDiagnostics: SeverityDiagnostic[];
 }
