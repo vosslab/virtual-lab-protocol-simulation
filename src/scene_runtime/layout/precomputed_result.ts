@@ -55,6 +55,24 @@ export function makePrecomputedResult(scene: SceneA, final: ComputedItem[]): Pip
     final,
     decisionMetadata: buildDecisionMetadata(scene.scene_name, []),
     severityDiagnostics: [],
+    // The renderer reads only `final` and `scene`; the computed zone bands are a
+    // build-time layout-engine artifact consumed at precompute time, unused at
+    // render time, so the production path fills an explicit empty map.
+    zoneBands: new Map(),
+    // The reflow overflow report is a build-time layout-engine artifact consumed
+    // at precompute time, unused at render time. The production path fills coherent
+    // empty defaults: no overflow, zero content, scene_bounds range.
+    reflowOverflow: false,
+    reflowTotalContent: 0,
+    reflowSceneRangeTop: scene.scene_bounds.top,
+    reflowSceneRangeBottom: scene.scene_bounds.bottom,
+    // The terminal-rescale outputs are build-time layout-engine artifacts, unused
+    // at render time (the renderer reads only `final`). The production path fills
+    // coherent empty defaults: no rescale (scale 1), no scene overflow, no label
+    // dominance.
+    reflowUniformScale: 1,
+    sceneReflowOverflow: false,
+    labelDominant: false,
   };
   return result;
 }

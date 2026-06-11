@@ -813,14 +813,15 @@ def check_label_object_overlap(
 	"""
 	B8: Predict label-object overlap per SCENE_LINT_PLAN.md §B8.
 
-	For each label L and each placement P (not L's own), checks if L's
-	label_bbox intersects P's visual_bbox with > 10 px&sup2; intersection area.
-	Emits ESCAPE_REQUIRED for overlapping label-placement pairs.
+	For each label L and each placement P (including L's own object), checks if
+	L's label_bbox intersects P's visual_bbox with > 10 px&sup2; intersection
+	area. Emits ESCAPE_REQUIRED for overlapping label-placement pairs.
 
 	Note: Ideal implementation would filter to scientific-kind placements only,
 	but object loading is not available in this context. Current implementation
-	checks all non-self placements. This is a conservative approach that may
-	over-report but does not under-report label collisions.
+	checks every placement, including the label's own object. This is a
+	conservative approach that may over-report but does not under-report label
+	collisions; a label over its own object's art is a real collision.
 
 	Args:
 		scene: Parsed scene YAML dict (unused currently; kept for API parity).
@@ -838,7 +839,7 @@ def check_label_object_overlap(
 		if p['scale_source'] != 'skipped_error'
 	]
 
-	# For each label, check intersection with all other placements.
+	# For each label, check intersection with all placements, including the label's own object.
 	for label_placement in usable:
 		label_pname = label_placement['placement_name']
 		label_bbox = label_placement.get('label_bbox')
@@ -850,12 +851,11 @@ def check_label_object_overlap(
 		label_w = label_bbox['w']
 		label_h = label_bbox['h']
 
-		# Check against all other placements.
+		# Check against every placement, with no identity exclusion. A label
+		# overlapping its own object's visual_bbox is a real collision and must
+		# be reported; there is no instance where any overlap should be excluded.
 		for other_placement in usable:
 			other_pname = other_placement['placement_name']
-			if other_pname == label_pname:
-				# Skip label's own placement.
-				continue
 
 			vb = other_placement['visual_bbox']
 			obj_x = vb['x']

@@ -3,6 +3,7 @@
 from validation.yaml_schema.constants import (
 	BASE_SCENE_REQUIRED_KEYS,
 	BASE_SCENE_ALL_KEYS,
+	LABEL_PLACEMENT_VALUES,
 )
 from validation.yaml_schema.findings import Finding, Severity
 
@@ -47,6 +48,24 @@ class BaseSceneValidator:
 					lineno=None,
 					severity=Severity.ERROR,
 					message=f"[CLOSURE] unknown top-level key '{key}' (allowed: {sorted(BASE_SCENE_ALL_KEYS)})",
+				))
+
+		# Validate layout_rules.label_placement if the block and field are present.
+		# layout_rules is optional; absent block validates cleanly (default resolved by engine).
+		# Other layout_rules keys are intentionally not validated here: partial validation of
+		# label_placement inside an otherwise opaque block is a documented choice.
+		layout_rules = scene.get('layout_rules')
+		if isinstance(layout_rules, dict) and 'label_placement' in layout_rules:
+			lp_value = layout_rules['label_placement']
+			if lp_value not in LABEL_PLACEMENT_VALUES:
+				findings.append(Finding(
+					path=path,
+					lineno=None,
+					severity=Severity.ERROR,
+					message=(
+						f"layout_rules.label_placement '{lp_value}' is not valid "
+						f"(allowed: {sorted(LABEL_PLACEMENT_VALUES)})"
+					),
 				))
 
 		if not findings:
@@ -162,5 +181,21 @@ class BaseSceneValidator:
 					severity=Severity.ERROR,
 					message=f"object_name '{placement['object_name']}' not found",
 				))
+
+			# Validate placement.layout.label_placement if the block and field are present.
+			# layout block is optional; absent block validates cleanly (default resolved by engine).
+			placement_layout = placement.get('layout')
+			if isinstance(placement_layout, dict) and 'label_placement' in placement_layout:
+				lp_value = placement_layout['label_placement']
+				if lp_value not in LABEL_PLACEMENT_VALUES:
+					findings.append(Finding(
+						path=placement_path,
+						lineno=None,
+						severity=Severity.ERROR,
+						message=(
+							f"placement.layout.label_placement '{lp_value}' is not valid "
+							f"(allowed: {sorted(LABEL_PLACEMENT_VALUES)})"
+						),
+					))
 
 		return findings

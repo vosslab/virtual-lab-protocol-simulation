@@ -30,17 +30,17 @@ side effects, and DOM behavior. The object library
 ([OBJECT_YAML_FORMAT.md](OBJECT_YAML_FORMAT.md)) owns object identity and
 the state-to-visual map.
 
-Scene YAML is engine-facing configuration consumed by the scene driver
-(`scene_driver.ts`) and by mounted
-capabilities under `capabilities`.
-It is distinct from protocol YAML and from object YAML.
+Scene YAML is engine-facing configuration consumed by the build-time
+generator (`pipeline/gen_scene_index.py`) and at runtime by the scene
+renderer (`src/scene_runtime/renderer/`) and by mounted capabilities
+under `capabilities`. It is distinct from protocol YAML and from object YAML.
 
 ## File location
 
 Shared base scenes are authored under `content/base_scenes/<base_scene_name>.yaml`.
 Protocol-scoped scene overrides (when needed) live under
-`content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml`. The scene
-driver at build time consumes these YAML files; no scene YAML lives under
+`content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml`. The
+generator at build time consumes these YAML files; no scene YAML lives under
 `src/`.
 
 Author-facing protocol content lives under `content/protocols/<cluster>/<protocol_name>/`.
@@ -56,25 +56,27 @@ content/base_scenes/<base_scene_name>.yaml                       (shared base sc
 content/protocols/<cluster>/<protocol_name>/scenes/<scene_name>.yaml  (protocol-scoped overrides)
         |
         v
-pipeline/build_scene_data.py  (validate + emit)
+pipeline/gen_scene_index.py  (validate + emit; reads generated/object_library.ts)
         |
         v
-generated/scene_data.ts     (AUTO-GENERATED, gitignored; do not hand-edit)
-src/scene_configs.ts        (authored facade re-exporting SCENE_CONFIGS)
+generated/scenes.ts          (AUTO-GENERATED, gitignored; do not hand-edit)
         |
         v
-src/scenes/scene_driver.ts  (runScene reads SCENE_CONFIGS)
-src/scenes/capabilities/*   (each capability validates its slice of config)
+pipeline/precompute_layout.mjs  (runs layout engine; reads generated/scenes.ts)
+        |
+        v
+generated/precomputed_layout.ts  (AUTO-GENERATED, gitignored; do not hand-edit)
 ```
 
-The generated `scene_data.ts` file carries an auto-generated header naming
-its YAML sources under `content/base_scenes/` and `content/protocols/`.
+The generated `scenes.ts` file carries an auto-generated header. The
+precomputed layout file carries build-time layout results consumed at
+render time by `src/scene_runtime/layout/precomputed_result.ts`.
 
-The build is invoked by [build_github_pages.sh](../../build_github_pages.sh).
-`check_codebase.sh`
-does not regenerate `scene_data.ts`; if YAML edits are pending,
-run `source source_me.sh && python3 pipeline/build_scene_data.py` before the
-type-check pass.
+The build is invoked by [build_github_pages.sh](../../build_github_pages.sh)
+via `pipeline/build_generated.sh` (runs the four generators in canonical
+order) followed by `pipeline/precompute_layout.mjs`. To regenerate after
+YAML edits, run `bash pipeline/build_generated.sh` then
+`node --import tsx pipeline/precompute_layout.mjs`.
 
 ## Top-level fields
 
@@ -213,7 +215,7 @@ object-side field list and which fields may be overridden.
 | `depth_tier`        | int                   | no       | Numeric layering hint within the zone (front-to-back ordering).                                                                                                                                                                                      |
 | `align_stop`        | enum                  | no       | One of `left`, `center`, `right`. Tab-stop group for the layout engine.                                                                                                                                                                              |
 | `baseline_override` | number (float or int) | no       | Per-placement baseline override (rare; one observed use).                                                                                                                                                                                            |
-| `layout`            | mapping               | no       | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). A placement may set any subset; unset fields fall through to the object default. |
+| `layout`            | mapping               | no       | Instance override of object layout hints. Same shape as the object's `layout` block (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`, `label_placement`). A placement may set any subset; unset fields fall through to the object default. |
 
 Notes:
 
@@ -291,7 +293,8 @@ placement, not here. See [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md).
 | `default_align_stop`     | enum                     | no       | Default alignment for placements that do not specify `align_stop` (`left`, `center`, `right`). |
 | `label_font_size`        | number (float or int)    | no       | Font size for placement labels (in pixels; must be positive).                                  |
 | `label_line_height`      | number (float or int)    | no       | Line height for placement labels (must be positive).                                           |
-| `label_offset_y`         | number (float or int)    | no       | Vertical offset for placement labels from the placement baseline (in pixels).                  |
+| `label_offset_y`         | number (float or int)    | no       | Vertical offset for placement labels from the placement baseline (in scene-percent units).                  |
+| `label_placement`        | enum (`top` or `bottom`) | no       | Scene-wide label position relative to the object. Default `top` (labels render above artwork). Per-placement `layout.label_placement` overrides this. |
 | `zone_gap`               | number (float or int)    | no       | Inter-placement gap inside a zone (in scene units). Replaces today's per-zone `gap` field.     |
 
 Example:
@@ -307,6 +310,7 @@ layout_rules:
   label_font_size: 12
   label_line_height: 1.2
   label_offset_y: 5
+  label_placement: top
   zone_gap: 3
 ```
 

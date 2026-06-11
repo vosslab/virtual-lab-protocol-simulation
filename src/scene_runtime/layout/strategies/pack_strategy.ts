@@ -14,8 +14,8 @@
 // resort.
 //
 // It is single-row, order-preserving, and deterministic. The horizontal stage
-// owns _x only; the vertical stage recomputes _y from the zone baseline, so the
-// packer never stacks rows by mutating _y (that would be wiped by vertical). The
+// owns _centerX only; the vertical stage recomputes _baselineY from the zone baseline, so the
+// packer never stacks rows by mutating _baselineY (that would be wiped by vertical). The
 // "rows" in the elkjs rectpacking vocabulary collapse to one row here; the
 // packer's compaction phase is the part that does the real work.
 //
@@ -319,8 +319,8 @@ export interface PackerZoneOutcome {
 
 interface PlacedItem extends ScaledPlacement {
   _scale: number;
-  _x: number;
-  _y: number;
+  _centerX: number;
+  _baselineY: number;
   _visualWidth: number;
   _footprint: number;
 }
@@ -365,8 +365,8 @@ function layoutRow(
     out.push({
       ...it,
       _scale: scale,
-      _x: cursor + fw / 2,
-      _y: provisionalY,
+      _centerX: cursor + fw / 2,
+      _baselineY: provisionalY,
       _visualWidth: vw,
       _footprint: fw,
     });

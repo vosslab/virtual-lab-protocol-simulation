@@ -28,6 +28,10 @@ function resolveLayout(
     anchor_y_offset: override.anchor_y_offset ?? fromObject.anchor_y_offset ?? 0,
   };
   if (cm !== undefined) out.display_width_cm = cm;
+  // label_placement is a scene-composition concern: only a placement may author
+  // it (objects stay placement-agnostic). Copy it only when authored so an
+  // unauthored placement adds no JSON key, mirroring display_width_cm above.
+  if (override.label_placement !== undefined) out.label_placement = override.label_placement;
   return out;
 }
 

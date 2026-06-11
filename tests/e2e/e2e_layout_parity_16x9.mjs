@@ -69,8 +69,8 @@ const SWEEP_VIEWPORTS = [
 // compared as a string array; placement_name/zone anchor the identity.
 const NUMERIC_FIELDS = [
   "_scale",
-  "_x",
-  "_y",
+  "_centerX",
+  "_baselineY",
   "_top",
   "_visualWidth",
   "_height",
@@ -297,13 +297,12 @@ function run_sweep(scene_names) {
     // Gate only the 16:9 rows: any 16:9 viewport must move NO field, because the
     // browser CSS locks the panel to 16:9 and that is the live path. Off-16:9
     // rows are contrast controls, not gated: they document why the 16:9 lock is
-    // necessary. The convergence loop's shrink decision keys on
-    // item_escapes_zone_vertically, which depends on _height (viewport-aspect
-    // dependent), so an off-aspect viewport cascades into _width_scale, _x, and
-    // the rest -- real per-aspect reflow, exactly what letterboxing removes.
-    // off_aspect_pure_letterbox records whether an off-16:9 viewport happened to
-    // move only the letterboxed fields (it generally does not, which is the
-    // point).
+    // necessary. Off-aspect viewports produce a different PX_PER_SCENE_PERCENT
+    // factor, which shifts _height for every item and cascades into _width_scale,
+    // _centerX, and the rest -- real per-aspect reflow, exactly what letterboxing
+    // prevents. off_aspect_pure_letterbox records whether an off-16:9 viewport
+    // happened to move only the viewport-dependent fields (it generally does not,
+    // which is the point).
     let ok;
     let off_aspect_pure_letterbox = null;
     if (vp.is_16x9) {
@@ -428,12 +427,10 @@ function format_report(scene_results, sweep, skipped_scenes) {
       "(`.scene-panel-inner { aspect-ratio: 16 / 9 }`) locks the panel to 16:9, " +
       "so the live path always presents a 16:9 viewport and must move no field. " +
       "The off-16:9 rows are contrast controls that document why the lock " +
-      "matters: the convergence loop's shrink decision keys on " +
-      "`item_escapes_zone_vertically`, which depends on `_height` (a " +
-      "viewport-aspect term), so an off-aspect viewport cascades into " +
-      "`_width_scale`, `_x`, and the rest. That is genuine per-aspect reflow, " +
-      "not pure letterboxing -- exactly the behavior the 16:9 contract removes. " +
-      "These rows are reported, not failed.",
+      "matters: a different PX_PER_SCENE_PERCENT factor shifts `_height` for " +
+      "every item and cascades into `_width_scale`, `_centerX`, and the rest. " +
+      "That is genuine per-aspect reflow, not pure letterboxing -- exactly the " +
+      "behavior the 16:9 contract removes. These rows are reported, not failed.",
   );
   lines.push("");
   lines.push("| viewport | aspect | fields moved vs 16:9 | result |");

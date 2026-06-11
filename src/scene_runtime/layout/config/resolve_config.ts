@@ -17,7 +17,6 @@ import {
   AVG_CHAR_WIDTH_PCT,
   MAX_LAYOUT_PASSES,
   LAYOUT_SHRINK_FACTOR,
-  ITEM_ESCAPES_ZONE_TOLERANCE,
   LABEL_FONT_WIDTH_FRACTION,
   LABEL_FONT_MIN_PX,
   LABEL_LINE_HEIGHT_PCT,
@@ -62,6 +61,9 @@ export function buildGlobalDefaults(): LayoutConfig {
     labelFontSize: DEFAULT_LAYOUT_RULES.label_font_size,
     labelLineHeight: DEFAULT_LAYOUT_RULES.label_line_height,
     labelOffsetY: CANONICAL_LABEL_OFFSET_Y,
+    // Default label placement: above the object. A scene layout_rules or a
+    // per-placement override can switch a label to "bottom".
+    labelPlacement: "top",
     labelLineHeightPct: LABEL_LINE_HEIGHT_PCT,
     avgCharWidthPct: AVG_CHAR_WIDTH_PCT,
     labelFontWidthFraction: LABEL_FONT_WIDTH_FRACTION,
@@ -71,7 +73,6 @@ export function buildGlobalDefaults(): LayoutConfig {
     labelMaxResolvePasses: LABEL_MAX_RESOLVE_PASSES,
     wrapBudgetTolerance: WRAP_BUDGET_TOLERANCE,
     maxFootprintRatio: MAX_FOOTPRINT_RATIO,
-    itemEscapesZoneTolerance: ITEM_ESCAPES_ZONE_TOLERANCE,
     aspectFloor: ASPECT_FLOOR,
     defaultAlignStop: DEFAULT_LAYOUT_RULES.default_align_stop,
     zoneOverrides: {},
@@ -99,6 +100,7 @@ function applySceneRules(base: LayoutConfig, sceneRules: LayoutRules): LayoutCon
     labelFontSize: sceneRules.label_font_size ?? base.labelFontSize,
     labelLineHeight: sceneRules.label_line_height ?? base.labelLineHeight,
     labelOffsetY: sceneRules.label_offset_y ?? base.labelOffsetY,
+    labelPlacement: sceneRules.label_placement ?? base.labelPlacement,
     defaultAlignStop: sceneRules.default_align_stop ?? base.defaultAlignStop,
   };
 }

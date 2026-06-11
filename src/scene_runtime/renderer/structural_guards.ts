@@ -8,14 +8,22 @@
 //     scene (still renders every item, flags it) instead of blanking the page.
 //   - runStructuralGuards(): throws on the first violation. Tests and CI use
 //     this so a structural regression fails loudly.
+//   - enforceNoLabelOwnSvgOverlap(): throws on Guard 8 (own-art label overlap)
+//     only. The renderer calls this after collecting violations so own-art
+//     overlap hard-fails at live render instead of degrading silently; other
+//     guards keep degrade-not-blank semantics.
 // The guards classify; the caller decides fatality. There is no try/catch
-// around the guard calls; the throwing wrapper simply re-raises the first
+// around the guard calls; the throwing wrappers simply re-raise the
 // violation the pure core already found.
 
 import type { ComputedItem, SceneA, Bounds } from "../layout/types.js";
 import { ASSET_SPECS } from "../../../generated/object_library.js";
 import { SVG_MANIFEST } from "../../../generated/svg_manifest.js";
-import { DEFAULT_VIEWPORT } from "../layout/constants.js";
+import {
+  DEFAULT_VIEWPORT,
+  AVG_CHAR_WIDTH_PCT,
+  LABEL_LINE_HEIGHT_PCT,
+} from "../layout/constants.js";
 
 //============================================
 // Type assertions for generated values (ESLint/TypeScript compatibility)
@@ -61,25 +69,33 @@ const JITTER_TOLERANCE = 0.5; // percent units
 const ITEM_OVERLAP_TOLERANCE = 1; // percent units
 const LABEL_OVERLAP_TOLERANCE = 1; // percent units
 const ASPECT_TOLERANCE = 0.05; // 5% tolerance
-const AVG_CHAR_WIDTH = 0.6; // from constants.ts
+// AVG_CHAR_WIDTH_PCT and LABEL_LINE_HEIGHT_PCT are imported from layout/constants.ts
+// to keep bbox estimates consistent with the engine's width/height model.
 const DEFAULT_ZONE_GAP = 8; // px, converted to percent using viewport width
 
 //============================================
 // Bbox computation helpers
 //============================================
 
+// Derive item bbox from the anchor-coordinate convention:
+//   _centerX = shared horizontal center; left/right derived from it.
+//   _top = derived visual top edge (used verbatim).
 function itemBbox(item: ComputedItem): Bounds {
   return {
-    left: item._x,
+    left: item._centerX - item._visualWidth / 2,
     top: item._top,
-    right: item._x + item._visualWidth,
+    right: item._centerX + item._visualWidth / 2,
     bottom: item._top + item._height,
   };
 }
 
+// Compute label bbox using the engine's character width and line height constants.
+// labelWidth: longest line * AVG_CHAR_WIDTH_PCT (0.45, matches wrap_label/stagger logic).
+// labelHeight: line count * LABEL_LINE_HEIGHT_PCT (2.2, matches stagger row height).
+// _labelX is the label horizontal center; _labelY is the label top edge.
 function labelBbox(item: ComputedItem): Bounds {
-  const labelWidth = Math.max(...item._labelLines.map((line) => line.length)) * AVG_CHAR_WIDTH;
-  const labelHeight = item._labelLines.length * (item.layout.label_width || 9); // rough estimate
+  const labelWidth = Math.max(...item._labelLines.map((line) => line.length)) * AVG_CHAR_WIDTH_PCT;
+  const labelHeight = item._labelLines.length * LABEL_LINE_HEIGHT_PCT;
   const labelLeft = item._labelX - labelWidth / 2;
   const labelTop = item._labelY;
 
@@ -485,5 +501,24 @@ export function runStructuralGuards(
   const first = violations[0];
   if (first) {
     throw new Error(first.message);
+  }
+}
+
+/**
+ * Gate escalation for Guard 8 (own-art label overlap). The renderer collects all
+ * violations in report mode (degrade-not-blank), but a label overlapping its own
+ * object's SVG is a manufacturing defect, not a degradation a student should ever
+ * see. This helper hard-fails on any `label_svg_overlap` violation so own-art
+ * overlap is gated at live render rather than silently reported. Other guards
+ * keep degrade-not-blank semantics.
+ *
+ * @throws Error with the first own-art overlap violation's message
+ */
+export function enforceNoLabelOwnSvgOverlap(violations: StructuralViolation[]): void {
+  // Promote own-art overlap from report-only to hard-fail. There is no instance
+  // where a label over its own object art should be tolerated.
+  const ownArt = violations.find((v) => v.guard === "label_svg_overlap");
+  if (ownArt) {
+    throw new Error(ownArt.message);
   }
 }

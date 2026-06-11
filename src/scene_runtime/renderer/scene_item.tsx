@@ -4,9 +4,11 @@
 // Solid component derived from a ComputedItem and the scene store.
 //
 // Geometry boundary (PRIMARY_DESIGN.md / plan "Solid owns rendering, not
-// layout meaning"): every geometric value (_x, _top, _visualWidth, _height,
+// layout meaning"): every geometric value (_centerX, _top, _visualWidth, _height,
 // depth, zone) comes VERBATIM from the ComputedItem produced by runPipeline.
-// This component performs NO positioning math. The structured-subpart
+// This component performs NO layout decisions. It derives CSS edges from the
+// anchor-coordinate convention (center to edge) but does not compute anchor
+// positions -- those come verbatim from the layout engine. The structured-subpart
 // exception (well/lane/slot geometry) is not handled here; it would draw from
 // declared object structure, never ad hoc component math.
 //
@@ -80,10 +82,16 @@ function z_index_for(item: ComputedItem): number {
 
 // Build the absolute-position style string for an item from its computed
 // geometry. Uses scene-percent left/top/width/height and a depth-derived z-index.
+//
+// Geometry boundary (anchor-coordinate convention):
+//   _centerX = shared horizontal center of footprint and visual box (scene-%).
+//   CSS left edge = _centerX - _visualWidth / 2 (derived at this boundary).
+//   _top = derived visual top edge (already absolute, used verbatim).
 function position_style(item: ComputedItem): Record<string, string> {
   return {
     position: "absolute",
-    left: `${item._x}%`,
+    // Derive CSS left from the anchor center: left edge = center - half-width.
+    left: `${item._centerX - item._visualWidth / 2}%`,
     top: `${item._top}%`,
     width: `${item._visualWidth}%`,
     height: `${item._height}%`,

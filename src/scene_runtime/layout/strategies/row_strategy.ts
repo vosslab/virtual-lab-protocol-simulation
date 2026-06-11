@@ -12,8 +12,8 @@ import type { PlacementStrategy, StrategyContext } from "./placement_strategy.js
 
 interface PlacedItem extends ScaledPlacement {
   _scale: number;
-  _x: number;
-  _y: number;
+  _centerX: number;
+  _baselineY: number;
   _visualWidth: number;
   _footprint: number;
 }
@@ -41,8 +41,8 @@ function placeBucket(
     sink.push({
       ...it,
       _scale: scale,
-      _x: cursor + fw / 2,
-      _y: 0,
+      _centerX: cursor + fw / 2,
+      _baselineY: 0,
       _visualWidth: vw,
       _footprint: fw,
     });
@@ -106,11 +106,11 @@ export const rowStrategy: PlacementStrategy = (
         ...(placed ?? {
           ...it,
           _scale: 1,
-          _x: 0,
+          _centerX: 0,
           _visualWidth: visualWidthFor(it, 1),
           _footprint: footprintFor(it, 1),
         }),
-        _y: provisionalY,
+        _baselineY: provisionalY,
         _top: 0,
         _height: 0,
         _labelX: 0,
@@ -168,8 +168,8 @@ export const rowStrategy: PlacementStrategy = (
       out.push({
         ...it,
         _scale: scale,
-        _x: cursor + fw / 2,
-        _y: provisionalY,
+        _centerX: cursor + fw / 2,
+        _baselineY: provisionalY,
         _visualWidth: vw,
         _footprint: fw,
       });
@@ -186,8 +186,8 @@ export const rowStrategy: PlacementStrategy = (
       placed[i] = {
         ...it,
         _scale: scale,
-        _x: cursor - fw / 2,
-        _y: provisionalY,
+        _centerX: cursor - fw / 2,
+        _baselineY: provisionalY,
         _visualWidth: vw,
         _footprint: fw,
       };
@@ -204,8 +204,8 @@ export const rowStrategy: PlacementStrategy = (
       out.push({
         ...it,
         _scale: scale,
-        _x: cursor + fw / 2,
-        _y: provisionalY,
+        _centerX: cursor + fw / 2,
+        _baselineY: provisionalY,
         _visualWidth: vw,
         _footprint: fw,
       });

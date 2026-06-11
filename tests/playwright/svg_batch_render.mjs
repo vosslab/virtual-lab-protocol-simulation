@@ -73,7 +73,12 @@ async function renderBatch(manifest, engineName) {
 
       try {
         if (!fs.existsSync(svgPath)) {
-          results.push({ svg_path: svgPath, output_png: outputPng, ok: false, error: "SVG not found" });
+          results.push({
+            svg_path: svgPath,
+            output_png: outputPng,
+            ok: false,
+            error: "SVG not found",
+          });
           continue;
         }
 
@@ -92,7 +97,11 @@ async function renderBatch(manifest, engineName) {
         await page.screenshot({ path: outputPng, fullPage: false });
 
         // Clean up temp HTML.
-        try { fs.unlinkSync(tmpHtmlPath); } catch (_) {}
+        try {
+          fs.unlinkSync(tmpHtmlPath);
+        } catch (_) {
+          /* temp html cleanup is best-effort */
+        }
 
         results.push({ svg_path: svgPath, output_png: outputPng, ok: true, error: null });
       } catch (err) {

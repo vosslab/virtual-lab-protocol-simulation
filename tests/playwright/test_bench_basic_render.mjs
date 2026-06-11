@@ -66,13 +66,16 @@ async function startLocalServer() {
     const timeout = setTimeout(() => {
       proc.kill();
       reject(new Error("Server startup timeout"));
-    }, 10000);
+    }, 30000);
 
     proc.stdout.on("data", (data) => {
       const line = data.toString().trim();
       if (line) console.log(`[SERVER] ${line}`);
-      // Look for port number like "port 8204"
-      const match = line.match(/port (\d+)/);
+      // Look for port number like "port 8204" -- exclude "viewport NxM" false matches
+      const match =
+        line.match(/\bport (\d{4,5})\b/) && !line.includes("viewport")
+          ? line.match(/\bport (\d{4,5})\b/)
+          : null;
       if (match && !serverUrl) {
         const port = match[1];
         serverUrl = `http://localhost:${port}`;
@@ -109,15 +112,15 @@ async function main() {
 
     const page = await browser.newPage({ viewport: VIEWPORT });
 
-    // The server serves from the dist/ directory, so we just need the base URL
-    const baseUrl = serverUrl;
-    console.log(`Navigating to: ${baseUrl}`);
+    // Navigate to scene_viewer.html for bench_basic scene
+    const sceneUrl = `${serverUrl}/scene_viewer.html?scene=bench_basic`;
+    console.log(`Navigating to: ${sceneUrl}`);
 
     // Capture console messages BEFORE navigation to debug rendering issues
     page.on("console", (msg) => console.log(`[PAGE CONSOLE] ${msg.type()}: ${msg.text()}`));
     page.on("pageerror", (err) => console.error(`[PAGE ERROR] ${err}`));
 
-    await page.goto(baseUrl, { waitUntil: "networkidle" });
+    await page.goto(sceneUrl, { waitUntil: "networkidle" });
 
     console.log("Checking if scene-root element exists...");
     const sceneRootExists = (await page.locator("#scene-root").count()) > 0;
@@ -295,7 +298,8 @@ async function main() {
       }
 
       // Check that SVG has non-empty content (not just placeholder rect)
-      const svgContent = await placement.locator.locator("svg").innerHTML();
+      // Use .first() because structured objects (e.g. well_plate_96) may have multiple SVGs
+      const svgContent = await placement.locator.locator("svg").first().innerHTML();
       if (!svgContent || svgContent.trim().length === 0) {
         console.error(`FAIL: Placement ${placement.name} SVG is empty`);
         assertionBFailed = true;
@@ -486,37 +490,43 @@ async function main() {
 
     console.log("\n--- Assertion H: No label-own-SVG overlap ---");
     let assertionHFailed = false;
+    let assertionHPairCount = 0;
     for (let i = 0; i < labels.length; i++) {
       const label = labels[i];
       if (!label.bbox) continue;
 
-      // Find the associated placement (label's parent placement)
-      // Assumption: label element is inside or adjacent to a placement
-      const labelElement = labelLocators[i];
-      const placementName = await labelElement.evaluate((el) => {
-        let current = el;
-        while (current) {
-          if (current.hasAttribute("data-placement-name")) {
-            return current.getAttribute("data-placement-name");
-          }
-          current = current.parentElement;
-        }
-        return null;
-      });
+      // Ownership is the SIBLING relationship the renderer emits: the label node
+      // carries data-label-for=<placement_name>, NOT an ancestor
+      // data-placement-name. The old ancestor walk returned null (the placement
+      // is a sibling, not a parent), so this assertion compared NOTHING and
+      // passed vacuously. Resolve via data-label-for instead.
+      const labelFor = await labelLocators[i].getAttribute("data-label-for");
+      if (!labelFor) continue;
 
-      const associatedPlacement = placements.find((p) => p.name === placementName);
-      if (!associatedPlacement || !associatedPlacement.svgBbox) continue;
+      const ownPlacement = placements.find((p) => p.name === labelFor);
+      if (!ownPlacement || !ownPlacement.svgBbox) continue;
+      assertionHPairCount++;
 
-      if (bboxsOverlap(label.bbox, associatedPlacement.svgBbox)) {
+      if (bboxsOverlap(label.bbox, ownPlacement.svgBbox)) {
         console.error(
-          `FAIL: Label (text: "${label.text}") overlaps its own SVG in placement ${placementName}`,
+          `FAIL: Label (text: "${label.text}") overlaps its own SVG in placement ${labelFor}`,
         );
         assertionHFailed = true;
       }
     }
 
+    // Loud-fail on a vacuous match: if no label-own-art pair was comparable, the
+    // assertion evaluated nothing and must NOT read as green.
+    if (assertionHPairCount === 0 && labels.length > 0) {
+      console.error(
+        "FAIL: Assertion H evaluated 0 label-own-art pairs (vacuous match). " +
+          "data-label-for ownership did not resolve to any placement.",
+      );
+      assertionHFailed = true;
+    }
+
     if (!assertionHFailed) {
-      console.log("PASS: No label-own-SVG overlap");
+      console.log(`PASS: No label-own-SVG overlap (${assertionHPairCount} pairs evaluated)`);
     }
 
     //============================================
@@ -604,20 +614,21 @@ async function main() {
 
     console.log("\n--- Assertion K: No scene-specific branches ---");
     let assertionKFailed = false;
-    const bundlePath = path.join(REPO_ROOT, "dist/main.js");
+    // Check scene_viewer.js (current build artifact; dist/main.js was renamed)
+    const bundlePath = path.join(REPO_ROOT, "dist/scene_viewer.js");
     if (fs.existsSync(bundlePath)) {
       const bundleContent = fs.readFileSync(bundlePath, "utf8");
       const hasBranch =
         bundleContent.includes('=== "bench_basic"') || bundleContent.includes("=== 'bench_basic'");
 
       if (hasBranch) {
-        console.error(`FAIL: Found if scene === "bench_basic" branch in dist/main.js`);
+        console.error(`FAIL: Found if scene === "bench_basic" branch in dist/scene_viewer.js`);
         assertionKFailed = true;
       } else {
-        console.log("PASS: No scene-specific branches in dist/main.js");
+        console.log("PASS: No scene-specific branches in dist/scene_viewer.js");
       }
     } else {
-      console.error(`FAIL: dist/main.js not found at ${bundlePath}`);
+      console.error(`FAIL: dist/scene_viewer.js not found at ${bundlePath}`);
       assertionKFailed = true;
     }
 

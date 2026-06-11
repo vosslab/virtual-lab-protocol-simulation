@@ -415,15 +415,6 @@
   object-fit: contain;
 }
 
-/* Labels: B4 + B5 integrates */
-[data-label] {
-  position: absolute;
-  font-family: monospace;
-  font-size: 12px;
-  color: #333333;
-  white-space: nowrap;
-  pointer-events: none;
-}
 
 /*============================================
   Interaction affordance: baseline + ring rules

@@ -18,8 +18,7 @@
 
 async function mount_bench(root: HTMLElement): Promise<void> {
   const { SCENES } = await import("../generated/scenes.js");
-  const { resolvePrecomputedResult } =
-    await import("./scene_runtime/layout/precomputed_result.js");
+  const { resolvePrecomputedResult } = await import("./scene_runtime/layout/precomputed_result.js");
   const { renderScene } = await import("./scene_runtime/renderer/index.js");
 
   const scene = SCENES.hood_basic;

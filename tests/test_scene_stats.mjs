@@ -305,15 +305,16 @@ test("disjoint labels count zero label-overlap pairs", () => {
   assert.equal(stats.layout.label_overlap_pair_count, 0);
 });
 
-test("label over its own item is not a label-art overlap, over another item is", () => {
+test("every label-art overlap counts, including a label over its own item", () => {
   const manifestEntry = makeManifestEntry("label_scene", ["own", "other"]);
   const renderedItems = [
     makeItem("own", { bbox: { x: 0, y: 0, width: 20, height: 20 } }),
     makeItem("other", { bbox: { x: 50, y: 50, width: 20, height: 20 } }),
   ];
-  // labelOwn sits over its own item ("own") -> excluded. It also overlaps the
-  // "other" item -> that one DOES count. labelOther sits only over "other",
-  // which it owns -> excluded.
+  // No identity exclusion: own-art overlap counts. labelOwn (5,5,60x60) covers
+  // both the "own" item (0,0,20x20) and the "other" item (50,50,20x20) -> 2
+  // overlaps. labelOther (52,52,5x5) sits over its own "other" item -> 1 more.
+  // labelOther does not reach "own". Total: 3 counted overlaps.
   const labels = [
     { bbox: { x: 5, y: 5, width: 60, height: 60 }, text: "own", labelFor: "own" },
     { bbox: { x: 52, y: 52, width: 5, height: 5 }, text: "other", labelFor: "other" },
@@ -325,8 +326,8 @@ test("label over its own item is not a label-art overlap, over another item is",
     labels,
     sceneRootBbox: SCENE_ROOT,
   });
-  // labelOwn vs "other" item is the only counted collision.
-  assert.equal(stats.layout.label_art_overlap_count, 1);
+  // labelOwn-vs-own, labelOwn-vs-other, labelOther-vs-other all count.
+  assert.equal(stats.layout.label_art_overlap_count, 3);
 });
 
 //============================================

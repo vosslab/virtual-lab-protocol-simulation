@@ -80,7 +80,8 @@ for file-level details.
 
 `phases.ts` holds the phase registry. `runPipeline` drives named phases:
 `prepare -> resolve-metadata -> measure -> partition -> place-horizontal ->
-place-vertical -> place-labels -> resolve-collisions -> validate -> report`,
+measure-vertical -> reflow-zones -> place-vertical -> place-labels ->
+resolve-collisions -> validate -> report`,
 with explicit read/mutate boundaries and a bounded deterministic convergence loop.
 The former `clamp_scene_bounds` step is now a validation phase (`validate_bounds`),
 not a silent fix.
@@ -148,6 +149,168 @@ Anchor modes:
 | `tip`      | Object tip sits on the baseline, adjusted by `anchor_y_offset`. |
 | `top`      | Engine fallback centers the object vertically around the baseline. |
 
+## Anchor-coordinate convention
+
+The layout engine uses an explicit anchor-coordinate convention for all
+computed layout-output fields. This convention applies only to these
+output fields; scene authors continue to place objects through row, zone,
+and placement rules in scene YAML and never write raw coordinates.
+
+### Horizontal axis: shared footprint and visual center
+
+`_centerX` is the shared horizontal center of both the object's footprint
+box and its visual box, expressed as a scene percent. These two boxes share
+one center because no horizontal visual offset exists in the system (the
+visual box is always centered inside its footprint span). `_centerX` is
+therefore simultaneously the footprint center, visual center, and label
+anchor.
+
+Bbox edges are derived, never stored:
+
+- Visual left = `_centerX - _visualWidth / 2`
+- Visual right = `_centerX + _visualWidth / 2`
+- Footprint left = `_centerX - footprint / 2`
+
+The renderer and structural guards derive CSS and bbox edges from
+`_centerX` at the layout-to-render boundary:
+`left: ${item._centerX - item._visualWidth / 2}%`.
+
+Guard: if a horizontal visual offset field (`anchor_x`, `offset_x`,
+`x_offset`) is ever introduced into the object or scene YAML vocabularies,
+this section must be revisited to state which center `_centerX` means and
+label attachment must then derive from the visual bbox center explicitly.
+
+### Vertical axis: baseline with anchor modes
+
+`_baselineY` is the vertical anchor baseline of the item's row
+(scene percent). The `anchor_y` mode pins the object to this baseline.
+
+The three anchor modes are (see `src/scene_runtime/layout/vertical_layout.ts`):
+
+| `anchor_y` | Top-edge derivation (`_top`)                                    |
+| ---------- | --------------------------------------------------------------- |
+| `bottom`   | `_top = _baselineY - _height`                                   |
+| `tip`      | `_top = _baselineY + anchor_y_offset - _height`                 |
+| `center`   | `_top = _baselineY - _height / 2` (engine fallback; no mode keyword) |
+
+`_top` is a derived output field computed by `anchorTop()` in
+`vertical_layout.ts`. It is stored for renderer consumption and is not
+primary state.
+
+In `tip` mode, `anchor_y_offset` shifts the anchored tip relative to the
+baseline. A positive `anchor_y_offset` moves the object downward (the
+tip hangs below the baseline by `anchor_y_offset`).
+
+### Label coordinate fields
+
+- `_labelX`: label center (scene percent); seeded from the object `_centerX`.
+- `_labelY`: label TOP edge (scene percent); the renderer positions the
+  label box using this top edge.
+
+## Label placement semantics
+
+`label_placement` controls whether a label renders above or below its
+object. The two values are defined:
+
+| Value    | Seed formula                                                              | Stagger direction                          |
+| -------- | ------------------------------------------------------------------------- | ------------------------------------------ |
+| `top`    | `_labelY = _top - label_offset_y - line_height_pct * label_line_count`   | Stagger upward, away from artwork (default). |
+| `bottom` | `_labelY = _baselineY + label_offset_y`                                   | Stagger downward (legacy direction).        |
+
+`label_offset_y` is the symmetric artwork-to-label gap for both directions;
+its magnitude does not change when placement flips.
+
+Precedence (highest to lowest):
+
+1. Per-placement `layout.label_placement` in scene YAML.
+2. Scene-wide `layout_rules.label_placement` in scene YAML.
+3. Engine config default: `top`.
+
+The validator accepts an absent field at either location; the default is
+resolved in the layout engine, not the validator.
+
+`top` is the system default. Every scene renders labels above objects
+unless an explicit `bottom` value is authored at the scene or placement
+level. An authored `layout_rules.label_placement: bottom` restores
+below-labels for a whole scene; per-placement `layout.label_placement`
+overrides a single object. Both are accepted, documented authoring
+choices, not workarounds.
+
+Schema detail is in [SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md) "Layout
+rules" and [SCENE_VOCABULARY.md](SCENE_VOCABULARY.md) "Label placement".
+
+## Two-pass vertical reflow
+
+The vertical axis is laid out by a measured-extent reflow that mirrors the
+horizontal `footprintFor` convention on the other axis. Horizontally, the engine
+measures each item's footprint (object plus side gaps) and packs footprints into
+zones. Vertically, the engine measures each item's vertical extent and reflows
+those extents into computed zone bands, then spaces depth-tier rows inside each
+band.
+
+The pass order is measure vertical extent, then reflow zone bands, then space
+tier rows, then a terminal uniform object rescale when content still overflows
+the scene range.
+
+### Measured vertical extent (first-class quantity)
+
+The measured vertical extent is the object height plus the artwork-to-label gap
+plus the wrapped-label box height. It is computed by `verticalFootprintFor`
+(`src/scene_runtime/layout/vertical_footprint.ts`), the vertical counterpart of
+the horizontal `footprintFor`. The extent uses the REAL wrapped line count, so a
+two-line label contributes a taller box than a one-line label. The magnitude is
+side-independent: a `top` label and a `bottom` label produce the same combined
+extent, because the gap and the box are the same size whichever side the label
+sits on.
+
+This measured extent is a first-class layout quantity. Tier-row heights, band
+heights, and the uniform-rescale denominator are all derived from it, not from
+the bare object height.
+
+### Computed zone bands
+
+A computed zone band (`ComputedZoneBand`) is the reflowed vertical range a zone
+occupies after measurement. Zones whose authored vertical ranges overlap are
+treated as one band group (side-by-side zones in an authored row share a band);
+the group's height is the maximum of its member zones' content extents. Inside a
+band, items bucket into depth-tier rows (one row per `depth_tier`), each row
+height is the maximum measured extent over the side-by-side items in that tier,
+and the rear tier is placed first at the band top with later tiers descending.
+The depth-tier-to-vertical ordering and the rear-toward-top offset are preserved
+from the pre-reflow model.
+
+When the summed band content fits the scene vertical range, leftover space is
+distributed proportionally to authored band height. When it does not fit, bands
+compress to their content extents and the residual overflow is handed to the
+uniform rescale below.
+
+### Terminal uniform object rescale
+
+When reflowed content still overflows the scene vertical range, one
+aspect-preserving factor is applied to every object's width and height together.
+Because width and height shrink by the same factor, no object is cropped or
+aspect-distorted by the rescale -- it is never-crop safe by construction. The
+fixed layout magnitudes (label line height, label gap, tier gap, zone padding)
+stay constant; only object art scales.
+
+The rescale factor shrinks only the scalable object-height portion of the
+content, not the fixed overhead:
+`scale = (sceneRange - fixedOverhead) / (totalContent - fixedOverhead)`, where
+`fixedOverhead` is the sum of zone padding, tier gaps, and per-item label boxes
+and gaps. The factor is clamped to a floor of `UNIFORM_RESCALE_MIN_SCALE`
+(`0.27`), the smallest value that still fits every measured non-fixture scene
+with zero scientific art past the scene bottom. This vertical floor is distinct
+from the horizontal packer `MIN_SCALE`.
+
+### Design intent: forgiving, lenient, mutable, mercurial
+
+The vertical layout manager is forgiving, lenient, mutable, and mercurial:
+
+- forgiving: it accommodates imperfect fit, and never crops or crashes.
+- lenient: authored bounds are seeds, not walls.
+- mutable: bands, baselines, and rows are computed, not fixed.
+- mercurial: it reflows readily as measured content changes.
+
 ## Adding a new layout-driven scene
 
 1. Create the scene YAML under `content/base_scenes/<name>.yaml`.
@@ -175,7 +338,7 @@ Anchor modes:
 Avoid changing engine constants for a single scene; constants affect every
 layout-driven scene.
 
-## Verification
+## Verification for code and YAML changes
 
 For layout code or scene YAML changes:
 
@@ -224,14 +387,14 @@ Anti-patterns (forbidden):
 - Do not accept a high score if the asset is visibly cropped.
 - Do not claim visual success while glassware bottoms are cut off.
 
-## Verification
+## Verification for documentation edits
 
 For documentation-only edits, no runtime test is required. For code or scene
 YAML changes that affect layout:
 
 ```bash
-source source_me.sh && python3 tools/build_scene_data.py
-npx tsc --noEmit -p src/tsconfig.json
+bash build_github_pages.sh
+npx tsc --noEmit -p tsconfig.json
 ```
 
 Then save screenshot evidence at laptop and desktop viewports. A passing type
@@ -268,10 +431,11 @@ Current model:
   primary-object scale and input order before maximizing area. Object placement stays 1D
   row footprint; same-tier de-overlap is deferred (see below).
 - Phase registry. `run_pipeline.ts` runs named phases (`prepare -> resolve-metadata ->
-  measure -> partition -> place-horizontal -> place-vertical -> place-labels ->
-  resolve-collisions -> validate -> report`) with explicit read/mutate boundaries and a
-  bounded, deterministic convergence loop. The former `clamp_scene_bounds` step is now a
-  validation phase (`validate_bounds`), not a silent fix.
+  measure -> partition -> place-horizontal -> measure-vertical -> reflow-zones ->
+  place-vertical -> place-labels -> resolve-collisions -> validate -> report`) with
+  explicit read/mutate boundaries and a bounded, deterministic convergence loop. The
+  former `clamp_scene_bounds` step is now a validation phase (`validate_bounds`), not a
+  silent fix.
 - Severity-graded diagnostics. `src/scene_runtime/layout/diagnostics/` emits typed
   diagnostics keyed by severity (Error / Warning / Review-required) and likely owner.
   Error-severity codes fail the build; Warnings and Review-required surface in the report

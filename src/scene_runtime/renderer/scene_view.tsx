@@ -47,7 +47,7 @@ import type { SceneStore, TargetSeed } from "../state/scene_store.js";
 import type { ActiveAffordanceAccessor } from "../protocol/affordance.js";
 import type { MaterialRegistry } from "./visual_state_resolver.js";
 import { OBJECT_LIBRARY } from "../../../generated/object_library.js";
-import { collectStructuralViolations } from "./structural_guards.js";
+import { collectStructuralViolations, enforceNoLabelOwnSvgOverlap } from "./structural_guards.js";
 import { LABEL_FONT_MIN_PX, LABEL_FONT_WIDTH_FRACTION } from "../layout/constants.js";
 import { renderBackground } from "./render_background.js";
 import { SceneItem } from "./scene_item.js";
@@ -162,10 +162,16 @@ export function SceneView(props: {
   const result = props.result;
   const root = props.root;
 
-  // Structural classification in report mode (never throws). A violation
-  // degrades, never blanks, the scene -- same policy as render_scene.ts. This
+  // Structural classification in report mode (never throws). Most violations
+  // degrade, never blank, the scene -- same policy as render_scene.ts. This
   // list is fixed at render time (geometry is immutable per PipelineResult).
   const violations = collectStructuralViolations(result.final, result.scene, props.viewport);
+
+  // Guard 8 (own-art label overlap) is the single exception to degrade-not-blank:
+  // a label over its own object's SVG is a manufacturing defect that must hard-fail
+  // at the gate, not pass green as a silent report. There is no instance where any
+  // overlap should be excluded.
+  enforceNoLabelOwnSvgOverlap(violations);
 
   // SceneView-owned reactive set of targets whose visual-state resolution has
   // failed. SceneItem feeds this through the onDegrade callback below. The set

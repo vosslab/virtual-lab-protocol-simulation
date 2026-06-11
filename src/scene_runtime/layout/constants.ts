@@ -4,6 +4,9 @@
 export const ALIGN_MODES = ["left", "right", "center", "justify", "tab-stops"] as const;
 export const ALIGN_STOPS = ["left", "center", "right"] as const;
 export const ANCHOR_YS = ["bottom", "tip", "top"] as const;
+// Closed enum: where a scene-object label renders relative to its artwork.
+// top (default) seeds the label above the object; bottom is the legacy below.
+export const LABEL_PLACEMENTS = ["top", "bottom"] as const;
 export const DEPTHS = ["back", "mid", "front"] as const;
 export const KINDS = [
   "plate",
@@ -66,6 +69,20 @@ export const DIAGNOSTIC_KINDS = [
 // Numeric constants
 export const ZONE_PADDING = 1.5;
 export const MIN_SCALE = 0.55;
+// The vertical terminal-fallback floor. When the reflowed content extent exceeds
+// the scene range, the terminal uniform object rescale shrinks every object by one
+// scene-wide factor; this is the LOWEST that factor may reach. It is DISTINCT from
+// MIN_SCALE (the horizontal packer floor, which stays 0.55). Set conservatively
+// below the densest scene's computed requirement so every non-fixture scene fits
+// through the uniform rescale without overflow. The horizontal stage keeps its own
+// 0.55 floor untouched.
+export const UNIFORM_RESCALE_MIN_SCALE = 0.27;
+// labelDominant review threshold. After the uniform rescale, a scene is
+// flagged labelDominant when its label strip is at least this fraction of the
+// scaled object height (labelBoxHeight / scaledObjectHeight >= ratio). A label
+// that grows visually dominant relative to its shrunken object is surfaced for
+// review rather than silently shipped.
+export const LABEL_DOMINANT_RATIO = 0.35;
 export const MAX_FOOTPRINT_RATIO = 2.5;
 export const PX_PER_SCENE_PERCENT = 11.52;
 // Average glyph advance as a fraction of label_font_size, used by wrap_label
@@ -75,7 +92,6 @@ export const PX_PER_SCENE_PERCENT = 11.52;
 export const AVG_CHAR_WIDTH_PCT = 0.45;
 export const MAX_LAYOUT_PASSES = 3;
 export const LAYOUT_SHRINK_FACTOR = 0.9;
-export const ITEM_ESCAPES_ZONE_TOLERANCE = 3;
 
 // Canvas-relative label font sizing. The live PNG render path mounts the scene
 // root then calls renderScene without a viewport, so the renderer derives a
@@ -92,6 +108,11 @@ export const LABEL_LINE_HEIGHT_PCT = 2.2;
 
 export const DEPTH_SCALE = { back: 0.8, mid: 1.0, front: 1.1 } as const;
 export const DEPTH_BASELINE_OFFSET = { back: -4, mid: 0, front: 4 } as const;
+// The depth spacing magnitude: the vertical step between two adjacent depth
+// bands (mid -> front = 4). The zone-band reflow stage reuses this as the
+// gap between stacked depth-tier rows (tierGap), so tier spacing matches the
+// engine's existing depth spacing instead of inventing a new constant.
+export const DEPTH_TIER_GAP = DEPTH_BASELINE_OFFSET.front - DEPTH_BASELINE_OFFSET.mid;
 export const DEFAULT_VIEWPORT = { w: 1920, h: 1080 } as const;
 export const DEFAULT_SCENE_BOUNDS = {
   left: 1,

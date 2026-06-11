@@ -7,7 +7,7 @@
 // LayoutConfig; constants.ts keeps the canonical default values that
 // buildGlobalDefaults() copies into the global-defaults config.
 //
-import type { AlignMode, AlignStop } from "../types.js";
+import type { AlignMode, AlignStop, LabelPlacement } from "../types.js";
 
 //============================================
 // Spacing (margin-based, scene-percent)
@@ -63,6 +63,9 @@ export interface LayoutConfig {
   readonly labelFontSize: number; // authored default (DEFAULT_LAYOUT_RULES.label_font_size)
   readonly labelLineHeight: number; // authored default (DEFAULT_LAYOUT_RULES.label_line_height)
   readonly labelOffsetY: number; // canonical 3.5 (see header note)
+  // Default label placement when neither a placement nor scene rule authors one.
+  readonly labelPlacement: LabelPlacement; // "top" by default
+
   readonly labelLineHeightPct: number; // staggered row height per line (LABEL_LINE_HEIGHT_PCT)
   readonly avgCharWidthPct: number; // glyph-advance fraction (AVG_CHAR_WIDTH_PCT)
   readonly labelFontWidthFraction: number; // LABEL_FONT_WIDTH_FRACTION
@@ -78,7 +81,6 @@ export interface LayoutConfig {
   readonly maxFootprintRatio: number; // MAX_FOOTPRINT_RATIO
 
   // Vertical tunables.
-  readonly itemEscapesZoneTolerance: number; // ITEM_ESCAPES_ZONE_TOLERANCE
   readonly aspectFloor: number; // Math.max(0.01, aspect) floor
 
   // Default tab-stop bucket for items lacking align_stop.

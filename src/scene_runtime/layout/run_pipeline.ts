@@ -23,13 +23,15 @@ import {
 import { normalizeSchema } from "./normalize_schema.js";
 import { resolveInheritance } from "./resolve_inheritance.js";
 import { scaleToRealWorld } from "./scale_to_real_world.js";
-import { PLACEMENT_PHASES, runPhases } from "./phases.js";
+import { PLACEMENT_PHASES, VERTICAL_TAIL_PHASES, runPhases } from "./phases.js";
+import { applyUniformRescale } from "./vertical_layout.js";
 import type { LayoutConfig } from "./config/index.js";
 import type { PackerZoneOutcome } from "./strategies/index.js";
 import type { LayoutContext } from "./phases.js";
 import type {
   AssetSpecs,
   ComputedItem,
+  ComputedZoneBand,
   Diagnostics,
   GroupedPlacements,
   ObjectLibrary,
@@ -40,11 +42,19 @@ import type {
   SceneA,
 } from "./types.js";
 
-const FITTABLE_KINDS = new Set([
-  "zone_overflow_negative_gap",
-  "tab_stop_overflow",
-  "item_escapes_zone_vertically",
-]);
+// Diagnostic kinds that drive the convergence loop's per-zone _width_scale
+// shrink + re-entry. These are HORIZONTAL fit signals only: a zone whose items
+// overflow its WIDTH is shrunk on the horizontal axis and re-placed.
+//
+// item_escapes_zone_vertically is intentionally NOT here. A vertical escape is a
+// HEIGHT problem; shrinking a zone's width to fix it is the wrong lever (it was
+// the legacy mechanism this reflow plan removes). Vertical now contributes only
+// measured extents (the measure-vertical stage) and leaves _width_scale to the
+// horizontal stage; item_escapes_zone_vertically remains in the diagnostics
+// stream as a scene-level reflow-overflow signal (surfaced in the scene-wide
+// uniform object rescale and the scene_reflow_overflow diagnostic).
+// Decoupling it here lets the loop iterate on horizontal signals only.
+const FITTABLE_KINDS = new Set(["zone_overflow_negative_gap", "tab_stop_overflow"]);
 
 export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): PipelineResult {
   const library: ObjectLibrary = opts.library ?? {};
@@ -142,6 +152,67 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
     );
   }
 
+  // Terminal uniform object rescale. After horizontal convergence, if the
+  // reflow reported the measured content overflows the scene range, shrink every
+  // object by ONE scene-wide factor (aspect preserved) and re-run the vertical
+  // placement tail ONCE on the scaled items + reflowed bands. This is a terminal
+  // scalar: it does NOT re-enter the convergence loop and leaves _width_scale to
+  // the horizontal stage. When no overflow was reported the rescale is skipped and
+  // the result reports uniformScale 1 / no scene overflow / no label dominance.
+  let reflowUniformScale = 1;
+  let sceneReflowOverflow = false;
+  let labelDominant = false;
+  if (lastCtx !== undefined && lastCtx.reflowOverflow === true) {
+    const measured =
+      lastCtx.measuredVertical ?? lastCtx.horizontal ?? new Map<string, ComputedItem[]>();
+    const rescale = applyUniformRescale(
+      measured,
+      normalScene.zones ?? [],
+      normalScene.scene_bounds,
+      lastCtx.reflowTotalContent ?? 0,
+      lastCtx.reflowFixedOverhead ?? 0,
+      viewport,
+      config,
+    );
+    reflowUniformScale = rescale.uniformScale;
+    sceneReflowOverflow = rescale.stillOverflow;
+    labelDominant = rescale.labelDominant;
+
+    // Re-run the vertical-placement tail on the scaled items + reflowed bands. The
+    // tail re-emits the stage `vertical` / `labels` / `clamp` diagnostics for the
+    // RESCALED placement, so drop the pre-rescale tail diagnostics from the last
+    // pass (the head-phase `group` / `horizontal` diagnostics are unchanged and
+    // kept) before re-running with a fresh sink, then splice the fresh tail
+    // diagnostics back in. This keeps the final diagnostics consistent with the
+    // rescaled geometry instead of reporting the superseded pre-rescale placement.
+    const TAIL_STAGES = new Set(["vertical", "labels", "clamp"]);
+    const headDiagnostics = lastPassDiagnostics.filter((d) => !TAIL_STAGES.has(d.stage));
+    const tailDiagnostics: Diagnostics = [];
+    lastCtx.measuredVertical = rescale.scaledMeasured;
+    lastCtx.zoneBands = rescale.bands;
+    lastCtx.diagnostics = tailDiagnostics;
+    lastCtx = runPhases(lastCtx, config, VERTICAL_TAIL_PHASES);
+    // reflowOverflow / reflowTotalContent on the result deliberately stay at the
+    // PRE-rescale reflow report: they are the raw "how overfull is this scene"
+    // demand signal the scene-scale tool reads, so the rescale must not overwrite
+    // them. The post-rescale state lives in the new reflowUniformScale /
+    // sceneReflowOverflow / labelDominant fields. The tail re-run does not touch
+    // these (only reflow-zones writes them, and reflow-zones is not in the tail).
+    lastPassDiagnostics = [...headDiagnostics, ...tailDiagnostics];
+
+    // Repurposed scene-level item_escapes_zone_vertically signal: emit it into the
+    // runtime diagnostics stream when the scaled content STILL overflows at the
+    // dedicated floor. It carries no placement_name (scene scope) so a consumer can
+    // distinguish it from the per-item escape the place-vertical fallback emits.
+    if (sceneReflowOverflow) {
+      lastPassDiagnostics.push({
+        stage: "vertical",
+        severity: "warn",
+        kind: "item_escapes_zone_vertically",
+      });
+    }
+  }
+
   for (const d of lastPassDiagnostics) diagnostics.push(d);
 
   // report: assemble the final ComputedItem[] and the stage maps from the last
@@ -151,6 +222,18 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
   const finalVertical = lastCtx?.vertical ?? new Map<string, ComputedItem[]>();
   const finalLabelled = lastCtx?.labelled ?? new Map<string, ComputedItem[]>();
   const finalClamped = lastCtx?.clamped ?? new Map<string, ComputedItem[]>();
+  // reflow-zones output from the final pass. Surfaced on the result for
+  // verification and consumed by place-vertical; not serialized into the precompute
+  // artifact, so the artifact stays byte-identical run-to-run.
+  const finalZoneBands = lastCtx?.zoneBands ?? new Map<string, ComputedZoneBand>();
+  // reflow-zones overflow report from the final pass. Defaults mirror an empty
+  // scene (no overflow, zero content, scene_bounds range) so a
+  // scene that produced no bands still returns coherent numbers.
+  const finalReflowOverflow = lastCtx?.reflowOverflow ?? false;
+  const finalReflowTotalContent = lastCtx?.reflowTotalContent ?? 0;
+  const finalReflowSceneRangeTop = lastCtx?.reflowSceneRangeTop ?? normalScene.scene_bounds.top;
+  const finalReflowSceneRangeBottom =
+    lastCtx?.reflowSceneRangeBottom ?? normalScene.scene_bounds.bottom;
 
   const final: ComputedItem[] = [];
   for (const zone of normalScene.zones ?? []) {
@@ -209,6 +292,14 @@ export function runPipeline(scene: SceneA, opts: Partial<PipelineInputs> = {}): 
     final,
     decisionMetadata,
     severityDiagnostics,
+    zoneBands: finalZoneBands,
+    reflowOverflow: finalReflowOverflow,
+    reflowTotalContent: finalReflowTotalContent,
+    reflowSceneRangeTop: finalReflowSceneRangeTop,
+    reflowSceneRangeBottom: finalReflowSceneRangeBottom,
+    reflowUniformScale,
+    sceneReflowOverflow,
+    labelDominant,
   };
 }
 

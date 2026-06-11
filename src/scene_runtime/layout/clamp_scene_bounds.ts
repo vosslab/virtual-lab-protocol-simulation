@@ -59,8 +59,8 @@ export function clampSceneBounds(
     let minTop = Infinity;
     let maxBottom = -Infinity;
     for (const it of items) {
-      const left = it._x - it._visualWidth / 2;
-      const right = it._x + it._visualWidth / 2;
+      const left = it._centerX - it._visualWidth / 2;
+      const right = it._centerX + it._visualWidth / 2;
       if (left < minLeft) minLeft = left;
       if (right > maxRight) maxRight = right;
       if (it._top < minTop) minTop = it._top;

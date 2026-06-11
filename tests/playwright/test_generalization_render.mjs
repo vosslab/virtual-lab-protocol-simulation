@@ -90,58 +90,8 @@ async function checkComputedStyles(locator, _page) {
 }
 
 //============================================
-// Scene-switching via main.ts rewrite
+// Local server
 //============================================
-
-async function rewriteMainTsForScene(sceneName) {
-  const mainTsPath = path.join(REPO_ROOT, "src/main.ts");
-  const originalContent = fs.readFileSync(mainTsPath, "utf8");
-
-  // Rewrite the hardcoded scene line
-  const updatedContent = originalContent.replace(
-    /const scene = SCENES\.bench_basic;/,
-    `const scene = SCENES.${sceneName};`,
-  );
-
-  fs.writeFileSync(mainTsPath, updatedContent, "utf8");
-  return originalContent; // Return original for restoration
-}
-
-async function restoreMainTs(originalContent) {
-  const mainTsPath = path.join(REPO_ROOT, "src/main.ts");
-  fs.writeFileSync(mainTsPath, originalContent, "utf8");
-}
-
-async function rebuildDist() {
-  return new Promise((resolve, reject) => {
-    const buildScript = path.join(REPO_ROOT, "build_github_pages.sh");
-    const proc = spawn("bash", [buildScript], {
-      cwd: REPO_ROOT,
-      stdio: ["ignore", "pipe", "pipe"],
-    });
-
-    const timeout = setTimeout(() => {
-      proc.kill();
-      reject(new Error("Build timeout"));
-    }, 30000);
-
-    let _buildSuccess = false;
-
-    proc.on("close", (code) => {
-      clearTimeout(timeout);
-      if (code === 0) {
-        resolve();
-      } else {
-        reject(new Error(`Build failed with code ${code}`));
-      }
-    });
-
-    proc.on("error", (err) => {
-      clearTimeout(timeout);
-      reject(err);
-    });
-  });
-}
 
 async function startLocalServer() {
   return new Promise((resolve, reject) => {
@@ -155,12 +105,16 @@ async function startLocalServer() {
     const timeout = setTimeout(() => {
       proc.kill();
       reject(new Error("Server startup timeout"));
-    }, 10000);
+    }, 30000);
 
     proc.stdout.on("data", (data) => {
       const line = data.toString().trim();
       if (line) console.log(`[SERVER] ${line}`);
-      const match = line.match(/port (\d+)/);
+      // Exclude "viewport NxM" false matches from build output
+      const match =
+        line.match(/\bport (\d{4,5})\b/) && !line.includes("viewport")
+          ? line.match(/\bport (\d{4,5})\b/)
+          : null;
       if (match && !serverUrl) {
         const port = match[1];
         serverUrl = `http://localhost:${port}`;
@@ -187,17 +141,12 @@ async function startLocalServer() {
 async function renderAndTestScene(sceneName, page, server) {
   console.log(`\n========== RENDERING SCENE: ${sceneName} ==========`);
 
-  // Rewrite main.ts for this scene
-  const originalMainTs = await rewriteMainTsForScene(sceneName);
-
-  try {
-    // Rebuild dist/
-    console.log(`Building dist/ for scene ${sceneName}...`);
-    await rebuildDist();
-
-    // Navigate to fresh server instance (same URL, new content)
-    console.log(`Navigating to ${server.url} (with ${sceneName} built)...`);
-    await page.goto(server.url, { waitUntil: "networkidle" });
+  // scene_viewer.html accepts any scene by ?scene=NAME query param; no src/main.ts rewrite needed
+  {
+    // Navigate to scene_viewer.html for this scene (no rebuild needed -- scene_viewer accepts any scene name via query param)
+    const sceneUrl = `${server.url}/scene_viewer.html?scene=${sceneName}`;
+    console.log(`Navigating to ${sceneUrl}...`);
+    await page.goto(sceneUrl, { waitUntil: "networkidle" });
 
     // Wait for scene root and placements
     const sceneRootExists = (await page.locator("#scene-root").count()) > 0;
@@ -325,7 +274,8 @@ async function renderAndTestScene(sceneName, page, server) {
         bFailed = true;
         break;
       }
-      const svgContent = await placement.locator.locator("svg").innerHTML();
+      // Use .first() because structured objects (e.g. well_plate_96) may have multiple SVGs
+      const svgContent = await placement.locator.locator("svg").first().innerHTML();
       if (!svgContent || svgContent.trim().length === 0) {
         bFailed = true;
         break;
@@ -406,29 +356,40 @@ async function renderAndTestScene(sceneName, page, server) {
     console.log(`${results.G ? "PASS" : "FAIL"}: No label outside scene`);
 
     // H: No label-own-svg overlap
+    // Ownership is the SIBLING relationship the renderer emits: the label node
+    // carries data-label-for=<placement_name>, NOT an ancestor data-placement-name.
+    // The old ancestor walk returned null (placement is a sibling, not a parent),
+    // so this assertion compared NOTHING and passed vacuously. We resolve via
+    // data-label-for and fail loudly if zero comparable pairs are found.
     console.log("Assertion H: No label-own-SVG overlap...");
     let hFailed = false;
+    let hPairCount = 0;
     for (let i = 0; i < labels.length; i++) {
-      const placementName = await labelLocators[i].evaluate((el) => {
-        let current = el;
-        while (current) {
-          if (current.hasAttribute("data-placement-name")) {
-            return current.getAttribute("data-placement-name");
-          }
-          current = current.parentElement;
-        }
-        return null;
-      });
-      const associatedPlacement = placements.find((p) => p.name === placementName);
-      if (associatedPlacement && associatedPlacement.svgBbox) {
-        if (bboxsOverlap(labels[i].bbox, associatedPlacement.svgBbox)) {
-          hFailed = true;
-          break;
-        }
+      const labelFor = await labelLocators[i].getAttribute("data-label-for");
+      if (!labelFor) continue;
+      const ownPlacement = placements.find((p) => p.name === labelFor);
+      if (!ownPlacement || !ownPlacement.svgBbox || !labels[i].bbox) continue;
+      hPairCount++;
+      if (bboxsOverlap(labels[i].bbox, ownPlacement.svgBbox)) {
+        console.error(
+          `FAIL: Label "${labels[i].text}" overlaps its own SVG in placement ${labelFor}`,
+        );
+        hFailed = true;
       }
     }
+    // Loud-fail on a vacuous match: if no label-own-art pair was comparable, the
+    // assertion evaluated nothing and must NOT read as green.
+    if (hPairCount === 0 && labels.length > 0) {
+      console.error(
+        "FAIL: Assertion H evaluated 0 label-own-art pairs (vacuous match). " +
+          "data-label-for ownership did not resolve to any placement.",
+      );
+      hFailed = true;
+    }
     results.H = !hFailed;
-    console.log(`${results.H ? "PASS" : "FAIL"}: No label-own-SVG overlap`);
+    console.log(
+      `${results.H ? "PASS" : "FAIL"}: No label-own-SVG overlap (${hPairCount} pairs evaluated)`,
+    );
 
     // I: No label-label overlap
     console.log("Assertion I: No label-label overlap...");
@@ -475,8 +436,9 @@ async function renderAndTestScene(sceneName, page, server) {
     console.log(`${results.J ? "PASS" : "FAIL"}: Label readability`);
 
     // K: No if scene === branches
+    // Check scene_viewer.js (the current build artifact; dist/main.js was renamed)
     console.log("Assertion K: No scene-specific branches...");
-    const bundlePath = path.join(REPO_ROOT, "dist/main.js");
+    const bundlePath = path.join(REPO_ROOT, "dist/scene_viewer.js");
     const bundleContent = fs.readFileSync(bundlePath, "utf8");
     const kFailed =
       bundleContent.includes('=== "bench_basic"') || bundleContent.includes("=== 'bench_basic'");
@@ -495,9 +457,6 @@ async function renderAndTestScene(sceneName, page, server) {
       assertions: results,
       passCount,
     };
-  } finally {
-    // Restore original main.ts
-    await restoreMainTs(originalMainTs);
   }
 }
 

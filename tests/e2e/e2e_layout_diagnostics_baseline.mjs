@@ -4,7 +4,7 @@
 // Emits a Markdown baseline report under docs/active_plans/reports/.
 //
 // Run with:
-//   node --import tsx tests/e2e_layout_diagnostics_baseline.mjs
+//   node --import tsx tests/e2e/e2e_layout_diagnostics_baseline.mjs
 //
 // This is a current-state baseline only. It does not edit src/, generated/, or
 // tools/, and it runs no git commands.
@@ -13,16 +13,16 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { runPipeline } from "../src/scene_runtime/layout/index.ts";
-import { SCENES } from "../generated/scenes.ts";
-import { OBJECT_LIBRARY, ASSET_SPECS } from "../generated/object_library.ts";
+import { runPipeline } from "../../src/scene_runtime/layout/index.ts";
+import { SCENES } from "../../generated/scenes.ts";
+import { OBJECT_LIBRARY, ASSET_SPECS } from "../../generated/object_library.ts";
 
 // Canonical 16:9 viewport. DEFAULT_VIEWPORT in the engine is already 1920x1080,
 // but we pass it explicitly so the baseline is unambiguous and self-documenting.
 const VIEWPORT = { w: 1920, h: 1080 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const REPO_ROOT = path.resolve(__dirname, "..");
+const REPO_ROOT = path.resolve(__dirname, "..", "..");
 const REPORT_DIR = path.join(REPO_ROOT, "docs", "active_plans", "reports");
 const REPORT_PATH = path.join(REPORT_DIR, "layout_diagnostics_baseline.md");
 
@@ -38,6 +38,18 @@ function recordScene(sceneName, scene) {
     maxIterations: false,
     totalDiagnostics: 0,
     kindCounts: {},
+    // severityDiagnostics is a SEPARATE stream from the closed-kind `diagnostics`
+    // stream above. runPipeline keeps the de-overlap Errors/Warnings/Reviews
+    // (unresolved_label_overlap, poor_label_alignment, possible_overload,
+    // unresolved_overlap) here, keyed by `code` not `kind`. The overlap gate is
+    // expressed in terms of unresolved_label_overlap, so this column is what the
+    // gate actually reads.
+    severityCounts: {},
+    // Machine-verifiable overlap pairs from the two overlap Errors' actionable
+    // payloads: the involved placement_names, the zone, and the remaining depth.
+    // Listing the pair (not just a per-scene count) lets a reviewer check a
+    // cross-zone claim against the named items directly.
+    overlapPairs: [],
   };
 
   let result;
@@ -72,6 +84,23 @@ function recordScene(sceneName, scene) {
   // only appends max_iterations_reached when it gives up, so its absence plus a
   // pass count below the cap means clean convergence.
   record.converged = !record.maxIterations;
+
+  // Tally the severity-graded de-overlap diagnostics by code, and pull out the
+  // overlap pairs from the two overlap Errors so the report can list which label
+  // sits over which artwork/label.
+  const severityDiagnostics = result.severityDiagnostics ?? [];
+  for (const d of severityDiagnostics) {
+    record.severityCounts[d.code] = (record.severityCounts[d.code] ?? 0) + 1;
+    const isOverlapError = d.code === "unresolved_label_overlap" || d.code === "unresolved_overlap";
+    if (isOverlapError && d.payload) {
+      record.overlapPairs.push({
+        code: d.code,
+        zone: d.payload.zone,
+        items: [...d.payload.involvedItems],
+        depth: d.payload.remainingOverlapDepth,
+      });
+    }
+  }
 
   return record;
 }
@@ -123,7 +152,9 @@ function buildReport(records, allKinds) {
   lines.push(`- Generated: ${now}`);
   lines.push(`- Scenes scanned: ${records.length}`);
   lines.push(`- Viewport: 1920x1080 (16:9)`);
-  lines.push("- Source: `tests/e2e_layout_diagnostics_baseline.mjs` over `generated/scenes.ts`");
+  lines.push(
+    "- Source: `tests/e2e/e2e_layout_diagnostics_baseline.mjs` over `generated/scenes.ts`",
+  );
   lines.push("");
 
   // ---- Summary of worst scenes ----
@@ -181,6 +212,86 @@ function buildReport(records, allKinds) {
       }),
     ];
     lines.push("| " + cells.join(" | ") + " |");
+  }
+  lines.push("");
+
+  // ---- Severity-graded de-overlap diagnostics ----
+  // These come from result.severityDiagnostics, a stream the closed-kind tables
+  // above never touch. The overlap gate (unresolved_label_overlap count) reads
+  // this section, so it is the gate-relevant view.
+  const allSeverityCodes = new Set();
+  for (const r of records) {
+    for (const code of Object.keys(r.severityCounts)) allSeverityCodes.add(code);
+  }
+  const sortedCodes = [...allSeverityCodes].sort();
+
+  lines.push("## Severity-graded de-overlap diagnostics");
+  lines.push("");
+  lines.push(
+    "Counts from `result.severityDiagnostics` (keyed by `code`), the de-overlap " +
+      "Error/Warning/Review stream. `unresolved_label_overlap` is the overlap-gate " +
+      "metric. `unresolved_overlap` is a bounds Error (object too big for its zone), " +
+      "not a label issue. A `.` means the code did not fire for that scene.",
+  );
+  lines.push("");
+  if (sortedCodes.length === 0) {
+    lines.push("No scene emitted any severity-graded de-overlap diagnostic.");
+  } else {
+    const sevHeader = ["Scene", ...sortedCodes];
+    lines.push("| " + sevHeader.join(" | ") + " |");
+    lines.push("| " + sevHeader.map(() => "---").join(" | ") + " |");
+    for (const r of [...records].sort((a, b) => a.scene.localeCompare(b.scene))) {
+      if (r.error) {
+        const cells = [`\`${r.scene}\``, ...sortedCodes.map(() => "-")];
+        lines.push("| " + cells.join(" | ") + " |");
+        continue;
+      }
+      const cells = [
+        `\`${r.scene}\``,
+        ...sortedCodes.map((code) => {
+          const v = r.severityCounts[code];
+          return v ? String(v) : ".";
+        }),
+      ];
+      lines.push("| " + cells.join(" | ") + " |");
+    }
+  }
+  lines.push("");
+
+  // ---- Overlap pairs (machine-verifiable) ----
+  // Lists the involved placement_names for every overlap Error, so a cross-zone
+  // claim ("this label sits over that artwork in another zone") can be checked
+  // against the named items and zone directly instead of inferred from a count.
+  lines.push("## Overlap pairs");
+  lines.push("");
+  lines.push(
+    "Each row is one overlap Error from `result.severityDiagnostics`, naming the " +
+      "two involved placements, the zone, the diagnostic code, and the remaining " +
+      "penetration depth (scene-percent). `unresolved_label_overlap` is a label " +
+      "sitting over another label or artwork; `unresolved_overlap` is an object " +
+      "escaping its zone bounds. Same-zone pairs are in-zone collisions; differing " +
+      "zone membership for the two names indicates a cross-zone graze.",
+  );
+  lines.push("");
+  const pairRows = [];
+  for (const r of [...records].sort((a, b) => a.scene.localeCompare(b.scene))) {
+    for (const p of r.overlapPairs) {
+      pairRows.push({ scene: r.scene, ...p });
+    }
+  }
+  if (pairRows.length === 0) {
+    lines.push("None. No overlap Error fired in any scene.");
+  } else {
+    lines.push("| Scene | Code | Zone | Item A | Item B | Depth |");
+    lines.push("| --- | --- | --- | --- | --- | --- |");
+    for (const p of pairRows) {
+      const itemA = p.items[0] ?? "-";
+      const itemB = p.items[1] ?? "-";
+      lines.push(
+        `| \`${p.scene}\` | ${p.code} | \`${p.zone}\` | \`${itemA}\` | ` +
+          `\`${itemB}\` | ${p.depth} |`,
+      );
+    }
   }
   lines.push("");
 

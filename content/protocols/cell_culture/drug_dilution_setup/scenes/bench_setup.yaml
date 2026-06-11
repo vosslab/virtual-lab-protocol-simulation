@@ -47,6 +47,11 @@ add_placements:
     zone: center
     depth_tier: 1
     align_stop: center
+    # This short tube sits low, but its top label floats up into the adjacent
+    # center_centrifuge artwork band. Above is structurally blocked by the tall
+    # centrifuge; below this tube (obj_bottom 84) has room.
+    layout:
+      label_placement: bottom
 
   # Dilution rack at center (right stop) -- where diluted samples go
   - placement_name: center_dilution_tube_rack

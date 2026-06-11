@@ -227,15 +227,16 @@ function computeLayout(renderedItems, sceneRootBbox, labels) {
     }
   }
 
-  // Label-vs-art overlap count: each label box against each item box, EXCLUDING
-  // the item the label belongs to (labelFor matches that item's placementName).
-  // A label sitting over its own art is expected and must not count.
+  // Label-vs-art overlap count: each label box against every item box, with no
+  // identity exclusion. A label sitting over its own object art is an overlap
+  // and must be counted; there is no instance where any overlap should be
+  // excluded. Counting own-art overlap is how the recycle_buffer_bottle
+  // label-on-own-cap defect is now caught instead of passing green.
   let labelArtOverlapCount = 0;
   for (const label of labels) {
     if (!label.bbox) continue;
     for (const item of renderedItems) {
       if (!item.bbox) continue;
-      if (label.labelFor === item.placementName) continue;
       if (bboxsOverlap(label.bbox, item.bbox, 0)) labelArtOverlapCount++;
     }
   }

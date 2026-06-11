@@ -34,6 +34,25 @@ was reporting 0 label overlap codes while labels were visually colliding).
 The fix is Lever 1 from
 [aesthetic_geometry_levers_evidence.md](active_plans/reports/aesthetic_geometry_levers_evidence.md).
 
+**Two-pass vertical reflow (WP-2 / WP-3b / WP-3c) -- SHIPPED.**
+The layout engine now measures each object's combined extent (object art plus label
+strip), groups items into depth-tier rows per zone, computes per-zone band heights and
+tier spacing, and positions objects against the reflowed bands in a second vertical
+pass. When the measured content exceeds the scene range the engine applies a single
+terminal uniform object rescale (aspect preserved, label strips and gap overhead held
+fixed) using the corrected formula that accounts for fixed overhead so post-scale
+content lands at the scene boundary. A per-scene floor (UNIFORM_RESCALE_MIN_SCALE)
+bounds the shrink; scenes still overflowing at the floor emit the
+scene_reflow_overflow signal. The recycle_buffer_bottle keystone defect -- the bottle
+placed outside the scene boundary -- is resolved.
+
+**Label horizontal alignment (M3 / WP-6) -- SHIPPED (2026-06-10).**
+WP-6 shipped label center-to-object-center alignment across all 34 curriculum scenes.
+Alignment pass rate improved from 0/412 (0%) to 299/412 (72.6%). The two standing
+label Errors (`bench_basic`, `passage_hood_detachment_microscope_view`) are resolved.
+Zero never-crop hard fails. Evidence in
+[active_plans/reports/label_alignment_wp6_review.md](active_plans/reports/label_alignment_wp6_review.md).
+
 ### What this document covers
 
 Everything else. The remaining work divides into five categories:
@@ -41,9 +60,11 @@ Everything else. The remaining work divides into five categories:
 - **Void-collapse** (authoring): reducing large center-empty regions in scene YAML.
 - **Focal-promotion** (authoring): enlarging or repositioning the primary teaching
   object in object/scene YAML.
-- **The 4 Error diagnostics** (authoring + possible contract change): four
-  `severityDiagnostics` Errors emitted by the current build, two of which may
-  warrant reclassification.
+- **The Error diagnostics** (authoring + possible contract change): after WP-6,
+  the two label Errors (`bench_basic`, `passage_hood_detachment_microscope_view`)
+  are resolved. Two Errors remain: one object-overlap Error (`seeding_workspace`,
+  deferred pending severity-contract decision) and one deferred label-Error-contract
+  item.
 - **Label-Error severity contract** (contract decision): deciding whether a
   cross-zone label graze that the label layer cannot fix should stay as an Error
   or be downgraded to a Warning.
@@ -64,7 +85,7 @@ Error-diagnostic details are in
 | --- | --- | --- | --- | --- |
 | Void-collapse | Scene YAML zone `y` baselines and `align_stop` edits | Scene author | Low per-scene; medium for multi-scene sweep | YES -- zone repositioning changes which objects appear in which curriculum context; must align with protocol intent |
 | Focal-promotion | Object YAML `display_width_cm` or scene YAML dedicated-zone edits | Object/scene author | Low-medium; "primary" picks are often debatable | YES -- enlarging an object implies it is the focal teaching object; must match protocol's first-interaction target |
-| 4 Error diagnostics | Authored zone-geometry fixes (2 label Errors + 1 object overlap) + 1 deferred pending severity-contract decision | Scene author | Low for each fix; medium if contract change needed first | Partially -- the object-overlap Error is a correctness defect; the label Errors are zone-geometry tuning |
+| Error diagnostics | 2 label Errors RESOLVED by WP-6. Remaining: 1 object-overlap Error (seeding_workspace) + severity-contract decision | Scene author | Low for remaining fix; medium if contract change needed first | Partially -- the object-overlap Error is a correctness defect; label Errors resolved |
 | Label-Error severity contract | Deciding whether cross-zone label grazes that the label layer cannot resolve should be Error or Warning | Human (contract decision) | Low implementation; high if wrong (degrades gate signal) | NO -- purely a diagnostic-system design question |
 | Baseline-tool gap | Add `severityDiagnostics` column to `tests/e2e/e2e_layout_diagnostics_baseline.mjs` | Engine/tooling developer | Low | NO -- purely a tooling fix |
 
@@ -416,27 +437,23 @@ did not produce a scored review for `bench_basic` as a standalone scene
 (it appeared in the render set as a stand-in for `heat_block_bench`).
 No r0 score available.
 
-**Label status.**
-The engine emits an `unresolved_label_overlap` Error on `bench_basic`.
+**Label status. RESOLVED (WP-6, 2026-06-10).**
+After WP-6 label-alignment work: `label_art_overlap_count=0`, `label_overlap_pair_count=0`.
+The `unresolved_label_overlap` Error on `rear_left_waste` vs `center_centrifuge` artwork
+is cleared. The baseline stats showed `label_art_overlap_count=2` (two overlapping
+pairs); both are now resolved. Alignment pass rate: 10/11 (90.9%).
 
-**Error diagnostics -- unresolved_label_overlap.**
-Involved items: `rear_left_waste` label vs `center_centrifuge` ARTWORK.
-Root cause: the `rear_left` zone (top y=5 to y=36) and the `center` zone
-(top y=38 to y=94) share the left edge at x=5. The centrifuge artwork's
-top reaches y=38, which clips the waste label band at approximately y=36.
-The `effectiveLabelHalfWidth` detection widening (the label fix) widened
-the detection box enough to flag this cross-zone label-vs-artwork
-collision. The 4-pass resolver cannot clear it because any nudge hits the
-zone boundary. Owner: scene author.
+One remaining fail: `base_right_micropipette` (diff 5.9 px, above threshold).
+No standing label Errors. No crop fails.
 
-Minimal fix: raise the `center` zone top boundary to `y_start >= 40`, or
-reduce the `rear_left` `label_offset_y` so the waste label sits at
-`y <= 34`. Either edit is a small scene YAML authoring change.
+Prior Error diagnostics (for reference only -- now resolved):
+The `rear_left` zone (top y=5 to y=36) and `center` zone (top y=38 to y=94)
+shared the left edge at x=5, causing a cross-zone label-vs-artwork collision
+the 4-pass resolver could not clear. The WP-6 label-position fix resolved it.
 
 **Recommendation.**
-Apply the minimal zone-boundary fix (raise `center` zone `y_start` to 40
-or reduce `rear_left` `label_offset_y`). This is a low-risk two-line
-authoring edit. Defer void-collapse for now (borderline status).
+No label authoring action required. The micropipette fail (5.9 px) is a
+minor positional offset, not a diagnostic Error. Scene is clean.
 
 ---
 
@@ -456,27 +473,24 @@ made this the only "clear" scene in round-0.
 Primary object: `microscope`, primary area ~18.1%. Highest in the set.
 Round-0 gave `focal_dominance` a 5. Do not touch the microscope scale.
 
-**Label status.**
-The engine emits an `unresolved_label_overlap` Error on this scene.
+**Label status. RESOLVED (WP-6, 2026-06-10).**
+After WP-6 label-alignment work: `label_art_overlap_count=0`, `label_overlap_pair_count=0`.
+The `unresolved_label_overlap` Error is cleared. Alignment pass rate: 8/9 (88.9%).
 
-**Error diagnostics -- unresolved_label_overlap (x2, symmetric).**
-Involved items: `left_cell_suspension` label vs `instrument_t75_flask`
-LABEL. Root cause: `instrument_area` zone (left x=31 to x=71) and
-`left_bench` zone (left x=4 to x=36) overlap at x=31-36. The t75 flask
-placed in the overlap band collides with the cell suspension label
-(`align_stop` right ~x=36). The collision is symmetric, counted as 2 in
-the Error table. Owner: scene author.
+Note on prior "x2" phrasing: the delta audit (2026-06-10) clarified that the
+"x2, symmetric" count in the prior Error diagnostics was a diagnostic-entry count
+(one entry per direction of overlap), not a geometry-pair count. The stats always
+showed `label_overlap_pair_count=0`; the collision was `label_art_overlap_count=1`,
+not a label-vs-label pair. Both are now 0.
 
-Minimal fix: move `instrument_t75_flask` to the `left_bench` zone
-(`align_stop` left end), OR narrow the `instrument_area` left bound to
-`x_start >= 37`. The first option (move the flask) is lower risk because
-it does not alter the zone geometry that positions the microscope.
+Prior Error diagnostics (for reference only -- now resolved):
+The `instrument_area` zone (left x=31 to x=71) and `left_bench` zone
+(left x=4 to x=36) overlapped at x=31-36. The t75 flask in the overlap
+band collided with the `left_cell_suspension` label. The WP-6 fix resolved it.
 
 **Recommendation.**
-Do not collapse the void. Address the `unresolved_label_overlap` Error
-with the targeted fix: move `instrument_t75_flask` to the `left_bench`
-zone or narrow `instrument_area` left bound to >=37. Keep the microscope
-and its surrounding cluster untouched.
+No label authoring action required. Do not collapse the void (microscope
+framing is intentional). Scene is clean.
 
 ---
 
@@ -566,6 +580,73 @@ This is an in-bounds engine/tooling change. It does not touch any authored
 scene YAML, object YAML, or protocol YAML. It does not require human approval
 beyond a normal code review. It should be done before or in parallel with the
 authoring fixes in section 5 so the gate is trustworthy when those fixes land.
+
+---
+
+### 4.3 Audit-only / deferred findings (not active work)
+
+These two findings come from the label-offset root-cause audit
+([pipette_label_offset_root_cause.md](active_plans/audits/pipette_label_offset_root_cause.md)).
+They are recorded for context. Neither is active work; both are deferred per
+an explicit user decision. Do NOT schedule, fix, or treat them as gate-blocking
+without that decision being revisited.
+
+**Finding 1: pipette and tool SVGs are un-normalized (contract item-3 gap, deferred).**
+`tools/normalize_svg_v3.py` REJECTS the micropipette and related tool assets
+with `CLIPPATH_UNSUPPORTED_COMPLEX`: they carry a `<clipPath>` applied to
+stroke-only (`fill:none`) paths that the v3 normalizer cannot flatten. The
+named assets are `assets/equipment/p200_micropipette_empty.svg`,
+`assets/equipment/p200_micropipette_filled.svg`,
+`assets/equipment/p10_micropipette_empty.svg`,
+`assets/equipment/p10_micropipette_filled.svg`, and
+`assets/equipment/micropipette_rack.svg` (the rack rejects on
+`TEXT_UNSUPPORTED`, a related normalization gap). A repo-wide normalizer run
+over all 86 `assets/equipment/*.svg` rejects 26 of them; the other reject
+reason codes are `TEXT_UNSUPPORTED`, `STYLE_GEOMETRY_UNSUPPORTED`,
+`USE_OR_SYMBOL_UNSUPPORTED`, and `EMPTY_GEOMETRY`. Because every asset that
+reaches `assets/` is supposed to pass v3 (PRIMARY_CONTRACT item 3: "All asset
+SVG files must be normalized"), each rejected asset is a contract-compliance
+gap. This is DEFERRED per user: the user will normalize these assets later.
+Cross-reference the audit at
+[pipette_label_offset_root_cause.md](active_plans/audits/pipette_label_offset_root_cause.md).
+
+**Finding 2: the alignment gate `visual_bbox` is the SVG element rect, not the
+drawn-path bbox (harmless for normalized assets).**
+The WP-6 alignment gate compares `abs(visual_bbox_center - label_bbox_center)`,
+but `visual_bbox` is `getBoundingClientRect()` of the inner `<svg>` element
+(the `object-fit: contain` letterboxed box; see `tools/scene_to_png.mjs`),
+not `getBBox()` of the drawn paths. For a NORMALIZED asset this is harmless:
+the normalizer crops the viewBox to the drawn-path bbox, so the element rect
+coincides with the drawn ink and the gate reports the true center. For an
+UN-NORMALIZED asset the element rect can diverge from the visible ink, which
+inflates the apparent offset. Additionally, for tall-thin assets placed in a
+wider footprint card, the contained element rect does not coincide with the
+footprint center even when the art is centered, so the element-rect comparison
+overstates the offset regardless of normalization. Do NOT change the gate
+measurement on the strength of un-normalized assets alone. Revisit this only if
+a NORMALIZED asset shows a real, art-level offset that the element-rect
+measurement is hiding.
+
+**Recomputed alignment pass rate (normalized-only).**
+Recomputing the WP-6 gate from `generated/scene_render_stats/*.stats.json`
+(formula above) over every labeled placement in the current render set yields
+130 fails out of 437 labeled placements (70.3% overall). The WP-6 SHIPPED note
+in section 1 records 299/412 from an earlier render set with fewer scenes; the
+current set has more placements. Of the 130 current fails, 34 use a
+normalizer-rejected (un-normalized) asset and 96 use a normalizer-accepted
+asset. Treating only normalizer-rejected assets as un-normalized, the
+normalized-only (accepted-asset) pass rate is 341/437 = 78.0%. None of the 96
+accepted-asset fails is a genuine asset-asymmetry case: the committed drawn art
+for every accepted-fail asset is already centered in its viewBox (measured
+viewBox-center offset <=2.17%, versus reported pixel gaps of 2-161px), so
+re-normalizing would not move the art enough to matter. Those fails trace
+entirely to Finding 2 (element-rect / letterboxing measurement) and, for 51 of
+them, to a separate label-placement offset in crowded scenes (label off the
+footprint center, not the art). There are ZERO accepted-asset fails caused by
+the label engine placing a label off centered art. The label-alignment
+objective is therefore met for normalized art; the residual gate fails are
+measurement artifacts and deferred un-normalized assets, not label
+misplacement.
 
 ---
 
@@ -710,8 +791,75 @@ They are recorded here so a human can action them in the appropriate order.
 | --- | --- | --- |
 | Rename `clamp_scene_bounds.ts` to `validate_bounds.ts` | `git mv src/scene_runtime/layout/clamp_scene_bounds.ts src/scene_runtime/layout/validate_bounds.ts` | Also rename the exported function `clampSceneBounds` to `validateBounds` and update all import sites. |
 | Move `devel/ai_polish_review.mjs` to `tools/` | `git mv devel/ai_polish_review.mjs tools/ai_polish_review.mjs` | This script is a developer helper with no build-chain role; per AGENTS.md it belongs in `tools/`, not `devel/`. Update `docs/FILE_STRUCTURE.md` to reflect the move. |
-| Commit untracked new files | `git add` the ~11 new markdown files that are causing `tests/test_markdown_links.py` failures | Untracked files are not browsable on GitHub, so relative links to them fail the link test. Commit the files to make the links valid. |
+| Commit untracked new files | completed: all new markdown files were committed | Was: `git add` the ~11 new markdown files causing `tests/test_markdown_links.py` failures; all are now tracked. |
 | Reconcile M7 evidence table | Edit `docs/active_plans/workstreams/m7_wp_valid1_evidence_table.md` to note that the "zero Error" line was inaccurate for `seeding_workspace` | The `seeding_workspace` `unresolved_overlap` was introduced by M6 (same day as M7) and should be noted in the M7 table with a correction. |
+
+---
+
+## 7. Vertical-reflow follow-ups (post-2026-06-10)
+
+These items are known issues and follow-ups recorded after the vertical-reflow
+spine and the terminal uniform object rescale shipped. None is a scaling defect
+in the reflow engine; they are pre-existing scene/fixture problems and future
+polish or tooling work.
+
+### 7.1 extraction_workspace renders blank
+
+`extraction_workspace` renders blank. This is a pre-existing load-failed state,
+not a scaling defect: the scene is a curriculum scene that is currently empty.
+Track it as a separate ticket (scene authoring / load failure), not as part of
+the reflow work.
+
+### 7.2 long_labels_smoke fails to render
+
+The `long_labels_smoke` fixture fails to render with a YAML validation error: a
+placement references an unknown object `dmf_bottle`. This is a pre-existing
+fixture bug (the placement names an object that is not declared), not a reflow
+defect. Fix is to correct the fixture YAML so the placement references a declared
+object.
+
+### 7.3 Cosmetic label-proximity clusters (future polish)
+
+Two pre-existing cosmetic label-proximity clusters remain for a future
+layout-polish pass. They are not correctness defects:
+
+- `sdspage_*`: horizontal closeness between the gel-comb label and the tip-box
+  label.
+- `microscope` / `hemocytometer`: top-row bottle-label crowding.
+
+Both are aesthetic spacing nits, deferred to a deliberate label-polish pass.
+
+### 7.4 Dense scenes as content-density candidates
+
+The densest scenes (uniform scale in the 0.27-0.32 range with
+`labelDominant=true`) are content-density candidates: they sit near the
+uniform-rescale floor because their measured content nearly fills the scene
+vertical range. Thinning content (fewer items per band, shorter labels) would
+raise their scale and improve legibility. The scene-scale report tool
+[tools/scene_scale_report.mjs](../tools/scene_scale_report.mjs) tells writers which scenes and which vertical
+bands are heaviest and lists the top contributing items per band, so
+density-reduction edits target the right scene and band.
+
+### 7.5 clipped_item_count undercounts fully-off-canvas objects
+
+The `clipped_item_count` stat undercounts fully off-canvas objects: it is a
+bbox-aspect check and does not flag art whose bottom is entirely past the
+renderable viewport. A future detector should flag any art bottom past the
+renderable viewport independent of bbox aspect, so a fully off-canvas object is
+counted even when its visible bbox is undistorted. Cross-reference the
+investigation in
+[docs/active_plans/audits/viewport_overflow_reflow_investigation.md](active_plans/audits/viewport_overflow_reflow_investigation.md).
+
+### 7.6 Label-on-label crowding from the full WP-4 sweep
+
+The full WP-4 per-scene visual sweep surfaced four scenes with label-vs-label
+(text-on-text) crowding in dense top header rows: `hemocytometer_view`,
+`microscope_basic`, `passage_hood_detachment_microscope_view`, and
+`seeding_workspace`. These are legibility issues only; they are not never-crop
+fails and not label-over-own-artwork. They are a horizontal label-stagger polish
+follow-up, distinct from the cosmetic clusters in 7.3. The complete merged
+per-scene evidence (quantitative columns plus by-eye verdicts) lives in
+[docs/active_plans/reports/vertical_reflow_wp4_evidence_table.md](active_plans/reports/vertical_reflow_wp4_evidence_table.md).
 
 ---
 

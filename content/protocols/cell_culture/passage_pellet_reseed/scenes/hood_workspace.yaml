@@ -39,6 +39,12 @@ add_placements:
     zone: rear_left
     depth_tier: 2
     align_stop: right
+    # Tall rear-zone object: its top label is clamped at the 6.5 zone ceiling and
+    # collides with the adjacent rear_left_fresh_media label (also clamped at
+    # 6.5). Above is structurally blocked by the clamp; below (obj_bottom 32) has
+    # room.
+    layout:
+      label_placement: bottom
 
   # Fresh media bottle in rear_left (center slot, between ethanol and the rack).
   - placement_name: rear_left_fresh_media

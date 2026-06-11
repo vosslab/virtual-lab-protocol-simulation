@@ -123,6 +123,25 @@ Speed design: one browser and one HTTP server for the entire run; waits on the
 `#scene-root[data-viewer-ready="true"]` marker, not `networkidle`. Elapsed time
 is reported per scene and as a total.
 
+## Scene vertical scale report
+
+`tools/scene_scale_report.mjs` is a read-only developer tool that runs the layout
+pipeline and reports reflow overflow ratio, required uniform scale, and health label
+per scene. Use it to see how much the WP-3b rescale will compress objects and which
+vertical band group is the heaviest contributor.
+
+```bash
+# Report one scene (includes per-zone band breakdown)
+node --import tsx tools/scene_scale_report.mjs --scene sdspage_recycle_buffer_workspace
+
+# Report all scenes sorted densest first, plus overloaded/dense/healthy counts
+node --import tsx tools/scene_scale_report.mjs --all
+```
+
+Health labels: `healthy` (requiredScale >= 0.85), `dense` (>= 0.70), `overloaded` (< 0.70).
+Rows marked with `*` in the ratio column indicate overflow (WP-3b rescale applies).
+Exit 0 on success; exit 1 on unknown scene name or bad arguments.
+
 ## Protocol rendering and step reachability
 
 `tools/protocol_to_png.mjs` is a developer tool that renders protocol pages to PNG and reports

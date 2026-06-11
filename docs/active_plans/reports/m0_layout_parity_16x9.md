@@ -15,7 +15,7 @@ Work package WP-FEAS1. Proves the existing layout engine produces the same `Comp
 - Precompute (canonical) viewport: 1920x1080
 - Live panel viewport (parity control): 1280x720 (same 16:9 aspect, different pixel size)
 - Sort order (serialization): items sorted ascending by `placement_name` before diffing, stable string compare.
-- Serialization method: field-by-field compare over the ComputedItem fields the renderer reads (_scale, _x, _y, _top, _visualWidth, _height, _footprint, _labelX, _labelY, _labelLines).
+- Serialization method: field-by-field compare over the ComputedItem fields the renderer reads (_scale, _centerX, _baselineY, _top, _visualWidth, _height, _footprint, _labelX, _labelY, _labelLines).
 - Numeric tolerance: 1e-9 absolute (IEEE-754 noise only).
 - Tolerance rationale: same-aspect 16:9 viewports run identical floating-point arithmetic in `vertical_layout.ts` (the only viewport-dependent term is `viewport.w / viewport.h`, identical for any 16:9 size), so exact equality is the expectation. The epsilon absorbs representational noise only; the report flags any non-exact match.
 
@@ -66,7 +66,7 @@ The consumed-artifact column compares `PRECOMPUTED_LAYOUT[scene].final` (generat
 
 ## Viewport sweep
 
-Each viewport is compared against the canonical 16:9 frame, aggregated across every scene. Only the 16:9 rows are gated: in the browser the CSS (`.scene-panel-inner { aspect-ratio: 16 / 9 }`) locks the panel to 16:9, so the live path always presents a 16:9 viewport and must move no field. The off-16:9 rows are contrast controls that document why the lock matters: the convergence loop's shrink decision keys on `item_escapes_zone_vertically`, which depends on `_height` (a viewport-aspect term), so an off-aspect viewport cascades into `_width_scale`, `_x`, and the rest. That is genuine per-aspect reflow, not pure letterboxing -- exactly the behavior the 16:9 contract removes. These rows are reported, not failed.
+Each viewport is compared against the canonical 16:9 frame, aggregated across every scene. Only the 16:9 rows are gated: in the browser the CSS (`.scene-panel-inner { aspect-ratio: 16 / 9 }`) locks the panel to 16:9, so the live path always presents a 16:9 viewport and must move no field. The off-16:9 rows are contrast controls that document why the lock matters: the convergence loop's shrink decision keys on `item_escapes_zone_vertically`, which depends on `_height` (a viewport-aspect term), so an off-aspect viewport cascades into `_width_scale`, `_centerX`, and the rest. That is genuine per-aspect reflow, not pure letterboxing -- exactly the behavior the 16:9 contract removes. These rows are reported, not failed.
 
 | viewport | aspect | fields moved vs 16:9 | result |
 | --- | --- | --- | --- |
@@ -74,8 +74,8 @@ Each viewport is compared against the canonical 16:9 frame, aggregated across ev
 | 1280x720 | 16:9 | (none) | GATED OK |
 | 2560x1440 | 16:9 | (none) | GATED OK |
 | 960x540 | 16:9 | (none) | GATED OK |
-| 1600x1000 | off-16:9 | _height, _labelX, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
-| 1024x768 | off-16:9 | _height, _labelX, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
+| 1600x1000 | off-16:9 | _baselineY, _height, _labelX, _labelY, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
+| 1024x768 | off-16:9 | _baselineY, _height, _labelX, _labelY, _scale, _top, _visualWidth | control: full per-aspect reflow (expected) |
 
 ## Static-layout evidence (re-confirmed)
 

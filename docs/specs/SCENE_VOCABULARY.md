@@ -126,7 +126,8 @@ object identity, structure, `state_fields`, `visual_states`, or
 
 Scene placement overrides layout hints only. A placement may carry instance
 overrides for the layout hints `default_width`,
-`label_width`, `anchor_y_offset`, `width_scale`, and `anchor_y`. A
+`label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`, and
+`label_placement`. A
 placement may not override object identity (`object_name`, `kind`,
 `label`), `state_fields`, `visual_states`, or `capabilities`. The full override surface is in
 [OBJECT_VOCABULARY.md](OBJECT_VOCABULARY.md), "## The object side of
@@ -140,7 +141,7 @@ the boundary".
 | `placement.depth_tier`        | no       | Numeric layering hint within the zone.                                                                                                                                                                                                                   |
 | `placement.align_stop`        | no       | One of `left`, `center`, `right`. Tab-stop group for the layout engine.                                                                                                                                                                                  |
 | `placement.baseline_override` | no       | Per-instance baseline override.                                                                                                                                                                                                                          |
-| `placement.layout`            | no       | Instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
+| `placement.layout`            | no       | Instance override of object layout hints (`default_width`, `label_width`, `anchor_y_offset`, `width_scale`, `anchor_y`, `label_placement`). Same shape as the object's `layout` block; a placement may set any subset, and unset fields fall through to the object default. |
 
 Notes:
 
@@ -201,6 +202,30 @@ object identity or state. Per-placement overrides go on the
 
 Tab-stop behavior is expressed by `zone.align: tab-stops` plus
 per-placement `align_stop`, and that is the canonical path.
+
+## Label placement
+
+`label_placement` is a closed enum that controls where a placement's label
+renders relative to its object. Two values are defined:
+
+| Value    | Behavior                                                                                              |
+| -------- | ----------------------------------------------------------------------------------------------------- |
+| `top`    | Default. Label renders centered above the object and staggers upward, away from artwork.              |
+| `bottom` | Label renders centered below the object and staggers downward (legacy direction).                     |
+
+Scope: scene-wide default in `layout_rules.label_placement`; per-placement
+override in `placement.layout.label_placement`. Per-placement wins over scene
+default; scene default wins over the engine default of `top`.
+
+The field is optional in both locations. An absent field resolves to `top`
+in the layout engine; the validator accepts an absent field without error.
+The default is NOT written into the scene YAML unless the author wants to
+document an intentional choice or the engine needs an explicit `bottom`
+override for a specific scene.
+
+Schema detail and the `layout_rules` field table are in
+[SCENE_YAML_FORMAT.md](SCENE_YAML_FORMAT.md). The label coordinate
+model (`_labelX`, `_labelY`) is described in [LAYOUT_ENGINE.md](LAYOUT_ENGINE.md).
 
 ## Interaction affordance
 

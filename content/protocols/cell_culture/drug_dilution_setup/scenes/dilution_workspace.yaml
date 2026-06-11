@@ -47,6 +47,13 @@ add_placements:
     zone: rear_right
     depth_tier: 2
     align_stop: right
+    # This short tube tucks beside the taller water_source bottle in a tight
+    # rear_right zone. Its top label sat on the water bottle artwork; below is the
+    # better side (graze drops from depth 4.4 to ~1.9). A clean clearance needs a
+    # taller rear_right zone or shorter labels (scene-geometry fix, out of scope
+    # for this label-placement plan); the residual graze is an accepted exception.
+    layout:
+      label_placement: bottom
 
   # Serial dilution rack in center -- the main work area
   - placement_name: dilution_rack

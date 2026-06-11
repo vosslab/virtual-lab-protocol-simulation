@@ -12,6 +12,7 @@ import type {
   SCALE_SOURCES,
   STAGES,
   DIAGNOSTIC_KINDS,
+  LABEL_PLACEMENTS,
 } from "./constants.js";
 import type { DecisionMetadata } from "./diagnostics/decision_metadata.js";
 import type { SeverityDiagnostic } from "./diagnostics/severity_model.js";
@@ -26,6 +27,7 @@ export type Capability = (typeof CAPABILITIES)[number];
 export type ScaleSource = (typeof SCALE_SOURCES)[number];
 export type StageName = (typeof STAGES)[number];
 export type DiagnosticKind = (typeof DIAGNOSTIC_KINDS)[number];
+export type LabelPlacement = (typeof LABEL_PLACEMENTS)[number];
 
 export interface Bounds {
   left: number;
@@ -65,6 +67,10 @@ export interface LayoutHint {
   anchor_y?: AnchorY;
   anchor_y_offset?: number;
   display_width_cm?: number;
+  // Optional per-placement override for where the label renders. Absent unless
+  // a placement authored it; the engine falls back to the scene rule, then the
+  // config default ("top").
+  label_placement?: LabelPlacement;
 }
 
 // State-field schema types emitted by the object-library generator.
@@ -195,6 +201,9 @@ export interface LayoutRules {
   label_line_height?: number;
   label_offset_y?: number;
   default_align_stop?: AlignStop;
+  // Scene-wide default for label placement; overridden per-placement by
+  // layout.label_placement. Absent unless authored.
+  label_placement?: LabelPlacement;
 }
 
 export interface PlacementAuthored {
@@ -243,6 +252,10 @@ export interface ResolvedLayoutHint {
   anchor_y: AnchorY;
   anchor_y_offset: number;
   display_width_cm?: number;
+  // label_placement stays optional after merge: it is copied only when the
+  // placement authored it, so an unauthored placement adds no JSON key (mirrors
+  // display_width_cm). The engine resolves the fallback chain at seed time.
+  label_placement?: LabelPlacement;
 }
 
 export interface BoundPlacement extends PlacementAuthored {
@@ -270,8 +283,8 @@ export interface ScaledPlacement extends BoundPlacement {
 
 export interface ComputedItem extends ScaledPlacement {
   _scale: number;
-  _x: number;
-  _y: number;
+  _centerX: number;
+  _baselineY: number;
   _top: number;
   _visualWidth: number;
   _height: number;
@@ -279,7 +292,53 @@ export interface ComputedItem extends ScaledPlacement {
   _labelX: number;
   _labelY: number;
   _labelLines: string[];
+  // Vertical measured-extent fields, set by the measure-vertical stage (the
+  // vertical mirror of _footprint). _combinedHeight is the SCALAR side-independent
+  // row-extent magnitude (object height + label offset + label box height); it is
+  // a magnitude, not a geometry object. _labelBoxHeight is the rendered label
+  // strip height alone (one label line height per wrapped line). _labelPlacement
+  // is the authored/default label side ("top" | "bottom") that records how that
+  // combined height is partitioned into a label strip and an object strip during
+  // placement. They are optional so an item that has not yet
+  // passed measure-vertical (a raw place-horizontal item) is still a valid
+  // ComputedItem.
+  _combinedHeight?: number;
+  _labelBoxHeight?: number;
+  _labelPlacement?: LabelPlacement;
   _clamped?: boolean;
+}
+
+// One depth tier inside a computed zone band, produced by the reflow-zones stage.
+// A tier is the set of items in a zone sharing the same depth_tier; the horizontal
+// stage already spread them side-by-side, so a tier renders as one vertical ROW.
+// rowHeight is the maximum _combinedHeight over the tier's items (the row is as
+// tall as its tallest member). rowTop is the row's top edge inside the computed
+// band; place-vertical partitions [rowTop, rowTop + rowHeight] into a label strip
+// and an object strip per the item's label side. placementNames
+// lists the tier's items in group_by_zone order (depth_tier then placement_name).
+export interface ComputedTierRow {
+  depthTier: number;
+  rowTop: number;
+  rowHeight: number;
+  placementNames: string[];
+}
+
+// A computed zone band, produced by the reflow-zones stage. It is the vertical
+// mirror of the horizontal label fold at the zone level: the authored zone bounds
+// become a SEED, and the band top/bottom are reflowed from measured per-tier
+// content so every row has room for its object + gap + wrapped label.
+// top/bottom are the computed band edges in scene-percent; baseline is the
+// authored baseline recomputed relative to the new band (authored fraction
+// preserved) or the band center when no baseline was authored. tiers are the
+// band's rows in depth order (rear toward the band top). place-vertical consumes
+// this to space tier rows and back-solve each item's baseline; reflow-zones only
+// produces it and does not move any item.
+export interface ComputedZoneBand {
+  id: string;
+  top: number;
+  bottom: number;
+  baseline: number;
+  tiers: ComputedTierRow[];
 }
 
 export interface Diagnostic {
@@ -391,4 +450,37 @@ export interface PipelineResult {
   // set; this carries the actionable severity payloads. Empty when nothing is
   // unresolved.
   severityDiagnostics: SeverityDiagnostic[];
+  // Computed zone bands from the reflow-zones stage, keyed by zone id. The band
+  // reflows the scene's vertical range from measured per-tier content; place-vertical
+  // consumes it to space tier rows. It is NOT serialized into
+  // generated/precomputed_layout.ts (the artifact serializes only `final`), so it
+  // does not affect precompute determinism. Empty when the scene has no zones.
+  zoneBands: Map<string, ComputedZoneBand>;
+  // reflow-zones overflow report (the PRE-rescale demand signal). reflowOverflow is
+  // true when the measured content extent exceeds the scene range; reflowTotalContent
+  // is the summed per-zone content extent; reflowSceneRange{Top,Bottom} are the
+  // scene_bounds top/bottom the reflow ran across. These stay at the pre-rescale
+  // values even when the terminal uniform rescale runs: they are the raw "how
+  // overfull is this scene" signal the scene-scale tool reads. reflowOverflow
+  // triggers the rescale; the post-rescale state lives in the reflowUniformScale /
+  // sceneReflowOverflow / labelDominant fields below. Not serialized into the
+  // precompute.
+  reflowOverflow: boolean;
+  reflowTotalContent: number;
+  reflowSceneRangeTop: number;
+  reflowSceneRangeBottom: number;
+  // Terminal uniform object rescale outputs, threaded for downstream review tools.
+  // reflowUniformScale is the one scene-wide factor
+  // applied to every object's width AND height (aspect preserved); it is 1 when no
+  // rescale was needed (reflowOverflow was false). sceneReflowOverflow is true when
+  // the scaled content STILL exceeds the scene range at the dedicated floor
+  // (UNIFORM_RESCALE_MIN_SCALE) -- the repurposed scene-level
+  // item_escapes_zone_vertically signal, also pushed into the diagnostics stream.
+  // labelDominant is true when, after the rescale, any item's label strip is at
+  // least LABEL_DOMINANT_RATIO of its scaled object height (a label grown visually
+  // dominant relative to its shrunken object, surfaced for review). Both flags are
+  // false when no rescale ran. Not serialized into the precompute.
+  reflowUniformScale: number;
+  sceneReflowOverflow: boolean;
+  labelDominant: boolean;
 }

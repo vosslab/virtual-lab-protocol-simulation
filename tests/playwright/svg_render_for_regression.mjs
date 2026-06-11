@@ -85,7 +85,9 @@ async function renderSvg(svgPath, outputPng, engineName) {
 async function main() {
   const args = process.argv.slice(2);
   if (args.length < 2) {
-    console.error("Usage: node svg_render_for_regression.mjs <svg_path> <output_png_path> [chromium|firefox]");
+    console.error(
+      "Usage: node svg_render_for_regression.mjs <svg_path> <output_png_path> [chromium|firefox]",
+    );
     process.exit(1);
   }
 
