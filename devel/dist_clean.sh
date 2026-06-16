@@ -33,9 +33,6 @@ delete_if_exists() {
 # Generic build outputs (any language).
 delete_if_exists dist dist-single _site build out
 
-# Generated artifact tree (gitignored; fully rebuilt by pipeline/build_generated.sh).
-delete_if_exists generated
-
 # TypeScript / JS build artifacts and bundler metadata.
 delete_if_exists _bundle.js meta.json stats.html
 delete_if_exists **/*.tsbuildinfo

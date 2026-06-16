@@ -6,8 +6,7 @@
 #   2. Wider typecheck via tsconfig.lint.json (tests/, tools/).
 #   3. ESLint (zero warnings).
 #   4. Prettier --check.
-#   5. CSS content policy via tools/check_css_content_policy.py if present.
-#   6. Node unit tests under tests/ (node --import tsx --test
+#   5. Node unit tests under tests/ (node --import tsx --test
 #      tests/test_*.mjs). The --import flag loads the tsx npm package
 #      (https://www.npmjs.com/package/tsx) as a runtime loader so .mjs
 #      tests can import .ts source modules directly. Note: tsx is the
@@ -193,14 +192,7 @@ step_run lint npx eslint --max-warnings 0 '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'
 # 4. format:check
 step_run format:check npx prettier --check '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'
 
-# 5. css:policy only if tools/check_css_content_policy.py exists
-if [ -f tools/check_css_content_policy.py ]; then
-	step_run css:policy python3 tools/check_css_content_policy.py
-else
-	step_skip css:policy "tools/check_css_content_policy.py not present"
-fi
-
-# 6. test:node
+# 5. test:node
 # Loads the tsx npm package as a runtime loader so .mjs tests can import
 # .ts source modules. Not to be confused with tsc, which is the
 # TypeScript compiler binary shipped inside the typescript package.

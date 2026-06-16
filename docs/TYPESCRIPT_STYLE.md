@@ -268,7 +268,7 @@ Single `dist/main.js` + `dist/index.html` + `dist/.nojekyll`. GitHub Pages serve
 - `[build_github_pages.sh](../build_github_pages.sh)` (build esbuild bundle).
 - `[run_web_server.sh](../run_web_server.sh)` (serve `dist/` on random port).
 - `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, wider typecheck via `tsconfig.lint.json`, lint, format-check, css-policy if present, and Node unit tests; build and Playwright are explicitly out of scope and run separately via `npm run build` / `npm run test:playwright`).
-- `[dist_clean.sh](../devel/dist_clean.sh)` (wipe `dist/`).
+- `[dist_clean.sh](../dist_clean.sh)` (wipe `dist/`).
 
 ### Module system
 

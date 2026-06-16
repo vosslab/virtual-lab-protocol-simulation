@@ -46,55 +46,10 @@ export default tseslint.config(
     files: ["**/*.{js,mjs,cjs}"],
     ...tseslint.configs.disableTypeChecked,
     languageOptions: {
-      globals: { ...globals.node, ...globals.browser },
-    },
-    rules: {
-      // Keep the disableTypeChecked rule set intact, then layer
-      // underscore-prefixed unused-var ignore on top so legacy walker
-      // helpers and debug-only locals (`_foo`) don't trip the gate.
-      ...tseslint.configs.disableTypeChecked.rules,
-      // Walker helpers, test fixtures, and legacy .mjs scripts use the
-      // `_name` convention for intentional unused vars / catch params.
-      "no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrors: "none",
-        },
-      ],
-      "@typescript-eslint/no-unused-vars": [
-        "error",
-        {
-          argsIgnorePattern: "^_",
-          varsIgnorePattern: "^_",
-          caughtErrors: "none",
-        },
-      ],
-      // `preserve-caught-error` is a typed-only style rule from typescript-eslint
-      // that requires `cause: err` chaining; it is noise on plain JS/.mjs scripts.
-      "@typescript-eslint/preserve-caught-error": "off",
-      "preserve-caught-error": "off",
+      globals: { ...globals.node },
     },
   },
   {
-    ignores: [
-      "dist/**",
-      "node_modules/**",
-      ".claude/**",
-      "OTHER_REPOS/**",
-      "test-results/**",
-      // Legacy walker harness predates the typed seam. Lives under
-      // tests/playwright/e2e/ which is already excluded from pytest
-      // collection. Out of scope for shell lint gate.
-      "tests/playwright/e2e/**",
-      "tests/playwright/walker/**",
-      // Diagnostic scripts with accumulated dead-code surface; cleanup
-      // out of scope for the shell lint gate.
-      "tools/scorecard_m2.mjs",
-      "tests/playwright/test_viewport_sweep.mjs",
-      "*.config.js",
-      "*.config.mjs",
-    ],
+    ignores: ["dist/**", "node_modules/**"],
   },
 );
