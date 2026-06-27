@@ -34,6 +34,7 @@ tests/playwright/artifacts/
 
 # === UNIVERSAL ===
 _temp*.?*
+OTHER_REPOS/
 # === TYPESCRIPT ===
 _site/
 playwright-report/
