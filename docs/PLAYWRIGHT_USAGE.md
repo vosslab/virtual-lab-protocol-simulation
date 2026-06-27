@@ -213,15 +213,7 @@ Should show `playwright@x.x.x` under the project.
 
 ## PDF generation
 
-Render HTML to PDF using `tools/html_to_pdf.mjs`.
-
-Run with npm:
-
-```bash
-npm run pdf -- --input report.html --output test-results/report.pdf
-```
-
-Or call bare node:
+Render HTML to PDF using `tools/html_to_pdf.mjs`. Run it directly with node:
 
 ```bash
 node tools/html_to_pdf.mjs --input report.html --output test-results/report.pdf
@@ -248,9 +240,8 @@ Write PDFs to `/tmp/` or `test-results/` - both are gitignored.
 
 Chromium only. Firefox and WebKit do not implement `page.pdf()`.
 
-If your `package.json` predates this tool, add the script entry and install the dev dependency:
+The tool needs the `playwright` dev dependency. If it is not installed yet:
 
 ```bash
 npm install --save-dev playwright
-npm pkg set scripts.pdf="node tools/html_to_pdf.mjs"
 ```

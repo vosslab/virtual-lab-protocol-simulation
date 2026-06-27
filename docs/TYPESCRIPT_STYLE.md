@@ -200,7 +200,7 @@ import { writeReport } from "./write_report";
 * ESLint config lives at `eslint.config.js` at the repo root (canonical, propagated). Lint correctness is enforced by `check_codebase.sh` step 3 (`npx eslint --max-warnings 0 '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'`).
 * Prettier scope in this repo is JS, TypeScript, MJS, CJS, TSX, MTS, CTS only. JSON, YAML, Markdown, and Python files are explicitly NOT prettier-managed.
 * Indent is two spaces for every prettier-managed extension (prettier default; documented in propagated `.prettierrc`). This differs from the Python tabs rule in `docs/PYTHON_STYLE.md`; agents editing `.py` use tabs, agents editing `.ts`/`.mjs`/etc use two spaces. Do not over-generalize one language's rule to the other.
-* Auto-fix path when `npm run check` step 4 (`format:check`) fails: `npm run format:write` (script alias for `npx prettier --write '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'`).
+* Auto-fix path when `./check_codebase.sh` step 4 (`format:check`) fails: run `npx prettier --write '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'` (the `npm run format:write` alias mirrors this).
 * `.prettierignore` ships from the template and covers noisy generated trees (`node_modules/`, `dist/`, `dist-single/`, `_site/`, `generated/`, `coverage/`, `playwright-report/`, `test-results/`, `blob-report/`, `package-lock.json`).
 
 ### ESLint canonical rules
@@ -263,11 +263,81 @@ esbuild produces a single deterministic ESM bundle GitHub Pages serves without p
 
 Single `dist/main.js` + `dist/index.html` + `dist/.nojekyll`. GitHub Pages serves `dist/`. No `dist-single/` portable single-file variant in the canonical base.
 
+### Front door: run the shell scripts directly
+
+The named shell scripts are the operational interface for everyone, including
+non-TypeScript coders and non-technical users. Run them directly by name; you
+never need to open `package.json` to learn how to drive a repo:
+
+- `./check_codebase.sh` (run the codebase check gate).
+- `./build_github_pages.sh` (build the GitHub Pages bundle).
+- `./run_web_server.sh` (build and serve a local preview).
+- `./dist_clean.sh` (wipe `dist/`).
+
+Each script invokes its tools directly (`npx tsc`, `npx eslint`, `npx prettier`,
+`node --test`). The `package.json` `scripts` block is a thin pass-through: the
+front-door aliases call the same shell scripts 1:1. The script name is the
+interface; the npm alias is an optional mirror for coders with npm muscle memory.
+
+Two audiences, one interface:
+
+- General and non-TypeScript coders: use the named repo scripts. They are the
+  project interface. You should not need to inspect `package.json`, learn npm
+  aliases, or know which JS tool runs underneath.
+- TypeScript coders: the shell scripts are still the source of truth. npm
+  aliases may exist as ecosystem mirrors, so `package.json` never becomes the
+  hidden command router.
+
+Alias rules:
+
+- Shell scripts are the canonical project interface; this is the cross-language
+  repo convention. Documentation leads with the shell or direct command, then
+  mentions the npm alias as an optional convenience.
+- Allow an npm alias only when it mirrors a shell script or shortens a verbose
+  tool command. `npm run check` mirroring `./check_codebase.sh` is fine;
+  `format:write` is fine because it hides a long Prettier glob.
+- Remove weak aliases that are niche, broken, or barely simplify. The `pdf`
+  alias was removed for this reason; run `node tools/html_to_pdf.mjs` directly.
+- Keep a small mirror set. Do not gut all npm scripts unless the repo is
+  intentionally non-idiomatic TypeScript; a TypeScript developer expects some
+  `package.json` scripts.
+
+| Shell script | npm alias | Job |
+| --- | --- | --- |
+| `./check_codebase.sh` | `npm run check` | Typecheck, lint, format-check, Node unit tests |
+| `./build_github_pages.sh` | `npm run build` | Build the esbuild bundle into `dist/` |
+| `./run_web_server.sh` | `npm run serve` | Build and serve `dist/` on a random port |
+| `./dist_clean.sh` | `npm run clean` | Remove `dist/` |
+
+The remaining `package.json` aliases have no shell-script front door. Run their
+direct command instead of the alias when you are not in an npm workflow. Use the
+locally-installed form (`npx ...`) so the command works without a global install:
+
+| npm alias | Direct command |
+| --- | --- |
+| `npm run format:write` | `npx prettier --write '**/*.{ts,tsx,mts,cts,js,mjs,cjs}'` |
+| `npm run test:playwright` | `npx playwright test` |
+| `npm run setup` | `./devel/setup_typescript.sh` |
+| `npm run setup:playwright` | `./devel/setup_playwright.sh` |
+
+The `tools/html_to_pdf.mjs` HTML-to-PDF tool is run directly
+(`node tools/html_to_pdf.mjs`), documented in
+[PLAYWRIGHT_USAGE.md](PLAYWRIGHT_USAGE.md); it has no npm alias.
+
+### Shell scripts versus Python scripts
+
+Use shell scripts for simple command orchestration: a short, linear sequence of
+existing tools. Use a named Python script when the workflow needs branching,
+parsing, validation, file discovery, structured output, or reusable logic. A
+future Python helper stays named and directly runnable
+(`./calculate_scene_metrics.py` or `python3 calculate_scene_metrics.py`), with a
+shell wrapper only when it improves usability, never a hidden alias.
+
 ### Canonical scripts
 
 - `[build_github_pages.sh](../build_github_pages.sh)` (build esbuild bundle).
 - `[run_web_server.sh](../run_web_server.sh)` (serve `dist/` on random port).
-- `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, wider typecheck via `tsconfig.lint.json`, lint, format-check, css-policy if present, and Node unit tests; build and Playwright are explicitly out of scope and run separately via `npm run build` / `npm run test:playwright`).
+- `[check_codebase.sh](../check_codebase.sh)` (orchestrates typecheck, wider typecheck via `tsconfig.lint.json`, lint, format-check, css-policy if present, and Node unit tests; build and Playwright are out of scope. Build them separately with `./build_github_pages.sh`; run browser tests with `npx playwright test`).
 - `[dist_clean.sh](../dist_clean.sh)` (wipe `dist/`).
 
 ### Module system

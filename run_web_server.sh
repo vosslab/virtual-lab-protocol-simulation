@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # run_web_server.sh - local dev preview for the GitHub Pages build.
 #
+# Front door: run this directly as ./run_web_server.sh. It is the interface
+# for everyone, no npm knowledge required. The npm run serve alias is an
+# optional mirror that points right back at this script.
+#
 # Always serves dist/ (the GitHub Pages artifact). Never serves the
 # repo root or _site/.
 #

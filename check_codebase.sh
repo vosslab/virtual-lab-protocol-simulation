@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # check_codebase.sh - run the codebase check gate (no build).
 #
+# Front door: run this directly as ./check_codebase.sh. It is the interface
+# for everyone, no npm knowledge required. The npm run check alias is an
+# optional mirror that points right back at this script.
+#
 # Runs (in order):
 #   1. TypeScript typecheck via tsconfig.json (src/).
 #   2. Wider typecheck via tsconfig.lint.json (tests/, tools/).
@@ -16,12 +20,12 @@
 #
 # Each step invokes its tool directly (npx tsc, npx eslint, npx prettier,
 # node --test). No dependency on package.json scripts; the package.json
-# "check" alias points at this script and stays canonical, but every
-# individual step is owned by the shell script.
+# "check" alias just points back at this script, and every individual step
+# is owned by the shell script.
 #
-# Build is not part of this gate. Run ./build_github_pages.sh (or
-# npm run build) for that. Playwright is not part of this gate either;
-# run npm run test:playwright manually after bash run_web_server.sh.
+# Build is not part of this gate. Run ./build_github_pages.sh for that
+# (npm run build mirrors it). Playwright is not part of this gate either;
+# run npx playwright test manually after ./run_web_server.sh.
 #
 # Flags:
 #   -h, --help          Print usage and exit 0.
