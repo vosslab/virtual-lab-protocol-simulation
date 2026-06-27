@@ -11,7 +11,7 @@ code-language fences are out of scope.
 import os
 import re
 
-import git_file_utils
+import file_utils
 
 
 # Files in scope: docs/PRIMARY_*.md plus every docs/specs/*.md
@@ -101,7 +101,7 @@ def test_gate_g9_camelcase_yaml_keys() -> None:
 	other code-language fenced blocks are out of scope (runtime
 	identifiers may stay camelCase).
 	"""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	paths = _build_target_paths(repo_root)
 	findings = []
 	for path in paths:

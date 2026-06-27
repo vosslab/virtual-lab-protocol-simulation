@@ -4,9 +4,9 @@ import tokenize
 
 import pytest
 
-import git_file_utils
+import file_utils
 
-REPO_ROOT = git_file_utils.get_repo_root()
+REPO_ROOT = file_utils.get_repo_root()
 SKIP_DIRS = {".git", ".venv", "__pycache__", "old_shell_folder"}
 REPORT_NAME = "report_init.txt"
 _MIN_SUBSTANTIVE_LINES = 20
@@ -55,7 +55,7 @@ def gather_files(repo_root: str) -> list[str]:
 	Collect tracked __init__.py files.
 	"""
 	paths = []
-	for path in git_file_utils.list_tracked_files(
+	for path in file_utils.list_tracked_files(
 		repo_root,
 		patterns=["**/__init__.py", "__init__.py"],
 		error_message="Failed to list tracked __init__.py files.",
@@ -70,7 +70,7 @@ def gather_changed_files(repo_root: str) -> list[str]:
 	Collect changed __init__.py files.
 	"""
 	paths = []
-	for path in git_file_utils.list_changed_files(repo_root):
+	for path in file_utils.list_changed_files(repo_root):
 		paths.append(os.path.join(repo_root, path))
 	return filter_init_files(paths)
 
@@ -206,7 +206,7 @@ def format_issue(rel_path: str, line_no: int, message: str) -> str:
 	return f"{rel_path}:{line_no}: {message}"
 
 
-_FILES = git_file_utils.collect_files(REPO_ROOT, gather_files, gather_changed_files)
+_FILES = file_utils.collect_files(REPO_ROOT, gather_files, gather_changed_files)
 _PARAMS = []
 for path in _FILES:
 	_PARAMS.append(pytest.param(path, id=os.path.relpath(path, REPO_ROOT)))

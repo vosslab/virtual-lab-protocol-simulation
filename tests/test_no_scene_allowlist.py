@@ -10,14 +10,14 @@ generator source, so the hiding gate cannot be reintroduced by accident.
 
 import os
 
-import git_file_utils
+import file_utils
 
 
 #============================================
 
 def test_scene_allowlist_identifier_absent() -> None:
 	"""The SCENE_ALLOWLIST identifier must not appear in the generator source."""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	generator_path = os.path.join(repo_root, "pipeline", "gen_scene_index.py")
 
 	with open(generator_path, "r") as f:

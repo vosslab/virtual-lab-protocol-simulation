@@ -6,9 +6,9 @@ import sys
 import yaml
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
-import git_file_utils
+import file_utils
 
-REPO_ROOT = pathlib.Path(git_file_utils.get_repo_root())
+REPO_ROOT = pathlib.Path(file_utils.get_repo_root())
 OBJECTS_DIR = REPO_ROOT / "content" / "objects"
 ASSETS_DIR = REPO_ROOT / "assets" / "equipment"
 

@@ -7,12 +7,12 @@ collect_ignore = ["e2e", "playwright"]
 import sys
 
 # local repo modules
-import git_file_utils
+import file_utils
 
 
 # Add repo root to sys.path so tests can import top-level packages without
 # needing `source source_me.sh`. Mirrors what source_me.sh exports via PYTHONPATH.
-_REPO_ROOT = git_file_utils.get_repo_root()
+_REPO_ROOT = file_utils.get_repo_root()
 if _REPO_ROOT not in sys.path:
 	sys.path.insert(0, _REPO_ROOT)
 

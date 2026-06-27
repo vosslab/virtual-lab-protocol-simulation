@@ -26,7 +26,7 @@ asserts it would be caught, then cleans up.
 import os
 import re
 
-import git_file_utils
+import file_utils
 
 
 #============================================
@@ -34,14 +34,14 @@ def _resolve_repo_root() -> str:
 	"""
 	Resolve the repository root.
 
-	Delegates to the propagated shared helper (tests/git_file_utils.py), the
+	Delegates to the propagated shared helper (tests/file_utils.py), the
 	same resolver other tests use, instead of re-implementing the git rev-parse
 	subprocess call here.
 
 	Returns:
 		str: Absolute path to repository root.
 	"""
-	return git_file_utils.get_repo_root()
+	return file_utils.get_repo_root()
 
 
 #============================================

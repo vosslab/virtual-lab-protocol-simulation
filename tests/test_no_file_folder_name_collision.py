@@ -6,7 +6,7 @@ over the module, which can hide bugs.
 """
 
 import os
-import git_file_utils
+import file_utils
 
 
 #============================================
@@ -14,7 +14,7 @@ def test_no_file_folder_name_collision():
 	"""
 	Assert that no directory contains both a file named <X>.py and a subdirectory named <X>.
 	"""
-	REPO_ROOT = git_file_utils.get_repo_root()
+	REPO_ROOT = file_utils.get_repo_root()
 
 	# Directories to exclude from the walk
 	EXCLUDE_DIRS = {

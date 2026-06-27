@@ -8,14 +8,14 @@
 # do not touch the real content tree.
 
 # local repo modules
-import git_file_utils
+import file_utils
 from validation.yaml_schema.database import ContentDatabase
 from validation.stepper.loader import LoadedContentTree
 from validation.stepper.findings import FindingEmitter, Level
 from validation.stepper.state import StateMap
 from validation.stepper.scene_ops import apply_scene_operation
 
-git_file_utils.get_repo_root()
+file_utils.get_repo_root()
 
 
 #============================================

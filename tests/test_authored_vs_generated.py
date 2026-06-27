@@ -12,7 +12,7 @@ import re
 
 import pytest
 
-import git_file_utils
+import file_utils
 
 
 #============================================
@@ -57,7 +57,7 @@ def has_generated_marker(first_comment: str) -> bool:
 #============================================
 def walk_ts_files_in_dir(dir_path: str) -> list[str]:
 	"""Walk a directory and return all .ts files (relative to repo root)."""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	ts_files = []
 	if not os.path.isdir(dir_path):
 		return ts_files
@@ -73,7 +73,7 @@ def walk_ts_files_in_dir(dir_path: str) -> list[str]:
 #============================================
 def test_src_has_no_generated_markers():
 	"""WP-1.2.1a: Assert no file under src/ carries an AUTO-GENERATED header."""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	src_dir = os.path.join(repo_root, "src")
 
 	offending_files = []
@@ -101,7 +101,7 @@ def test_generated_ts_all_have_markers():
 	conftest.pytest_sessionstart() bootstraps generated/ if any required file is missing.
 	If generated/ is still absent after bootstrap, skip with a clear message.
 	"""
-	repo_root = git_file_utils.get_repo_root()
+	repo_root = file_utils.get_repo_root()
 	generated_dir = os.path.join(repo_root, "generated")
 
 	# Check if generated/ exists and has .ts files
