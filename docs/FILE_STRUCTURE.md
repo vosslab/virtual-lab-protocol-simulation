@@ -182,7 +182,7 @@ tests/
 +- test_*.py                   -- fast pytest: pyflakes, ASCII, indent, shebang, imports, etc.
 +- test_*.mjs                  -- Node unit tests (run by node --import tsx --test)
 +- TESTS_README.md             -- test-suite overview
-+- git_file_utils.py           -- shared REPO_ROOT helper
++- file_utils.py           -- shared REPO_ROOT helper
 +- content/
 |  `- dev_smoke/               -- dev-smoke protocol fixtures (same schema as content/)
 +- data/                       -- baseline snapshots used by pytest fixtures
